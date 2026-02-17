@@ -23,6 +23,7 @@ export default function PracticePage() {
   const [scoreBand, setScoreBand] = useState("");
   const [domainOptions, setDomainOptions] = useState([]);
   const [skillOptions, setSkillOptions] = useState([]);
+  const [markedOnly, setMarkedOnly] = useState(false);
 
 
   const [questionIds, setQuestionIds] = useState([]);
@@ -36,6 +37,8 @@ export default function PracticePage() {
   const [status, setStatus] = useState("");
 
   const [markedForReview, setMarkedForReview] = useState(false);
+
+
 
 
   useEffect(() => {
@@ -99,12 +102,38 @@ export default function PracticePage() {
     if (!session) return;
 
     async function loadIds() {
+      
+      let markedIds = null;
+
+      if (markedOnly) {
+        const { data: ms, error: msErr } = await supabase
+          .from("question_state")
+          .select("question_id")
+          .eq("marked_for_review", true);
+      
+        if (msErr) {
+          setStatus(msErr.message);
+          setQuestionIds([]);
+          return;
+        }
+      
+        markedIds = (ms ?? []).map(r => r.question_id);
+      
+        if (!markedIds.length) {
+          setStatus("No marked questions yet.");
+          setQuestionIds([]);
+          return;
+        }
+      }
+
       setStatus("Loading questions...");
       setQuestion(null);
       setSelected("");
       setResult(null);
 
       let q = supabase.from("questions").select("id");
+
+      if (markedIds) q = q.in("id", markedIds);
 
       if (domain) q = q.eq("domain", domain);
       if (skill) q = q.eq("skill_desc", skill);
@@ -125,7 +154,8 @@ export default function PracticePage() {
     }
 
     loadIds();
-  }, [session, domain, skill, difficulty, scoreBand]);
+  }, [session, domain, skill, difficulty, scoreBand, markedOnly]);
+
 
   useEffect(() => {
     if (!session || !questionIds.length) return;
@@ -271,6 +301,16 @@ export default function PracticePage() {
             <option value="">Score band</option>
             {[1,2,3,4,5,6,7].map(n => <option key={n}>{n}</option>)}
           </select>
+                                 
+          <label className="row" style={{ gap: 6 }}>
+            <input
+              type="checkbox"
+              checked={markedOnly}
+              onChange={(e) => setMarkedOnly(e.target.checked)}
+            />
+            Marked only
+          </label>
+                                 
         </div>
       </div>
 
