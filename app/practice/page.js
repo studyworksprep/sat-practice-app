@@ -26,7 +26,9 @@ export default function PracticePage() {
   const [index, setIndex] = useState(0);
   const [question, setQuestion] = useState(null);
 
-  const [selected, setSelected] = useState("");
+  const [selected, setSelected] = useState(""); // for multiple choice (A/B/C/D)
+  const [freeResponse, setFreeResponse] = useState(""); // for free response
+
   const [result, setResult] = useState(null);
   const [status, setStatus] = useState("");
 
@@ -82,6 +84,8 @@ export default function PracticePage() {
       setStatus("Loading question...");
       setSelected("");
       setResult(null);
+      setFreeResponse("");
+
 
       const id = questionIds[index];
       const { data, error } = await supabase
@@ -110,15 +114,25 @@ export default function PracticePage() {
     return [];
   }, [question]);
 
+  const isFreeResponse =
+  !options.length ||
+  String(question?.question_type || "").toLowerCase().includes("free") ||
+  String(question?.question_type || "").toLowerCase().includes("grid") ||
+  String(question?.question_type || "").toLowerCase().includes("student");
+
+
   async function checkAnswer() {
-    if (!question || !selected) return;
+    if (!question) return;
+
+    const answerToSend = isFreeResponse ? freeResponse.trim() : answerToSend;
+    if (!answerToSend) return;
 
     setStatus("Checking...");
     setResult(null);
 
     const { data, error } = await supabase.rpc("submit_attempt", {
       p_question_id: question.id,
-      p_selected_answer: selected
+      p_selected_answer: answerToSend
     });
 
     if (!error && data && data.length) {
@@ -127,7 +141,7 @@ export default function PracticePage() {
       return;
     }
 
-    const isCorrect = String(selected) === String(question.correct_answer);
+    const isCorrect = String(answerToSend) === String(question.correct_answer);
     setResult(isCorrect);
     setStatus(error ? "RPC missing — fallback mode." : "");
   }
@@ -178,24 +192,41 @@ export default function PracticePage() {
         />
 
 
-          {options.map((opt, i) => {
-            const label = typeof opt === "string" ? String.fromCharCode(65 + i) : opt.label;
-            const content = typeof opt === "string" ? opt : opt.content;
-
-            return (
-              <label key={i} className="row">
-                <input
-                  type="radio"
-                  checked={selected === label}
-                  onChange={() => setSelected(label)}
-                />
-                <div>
-                  <strong>{label}.</strong>{" "}
-                  <span dangerouslySetInnerHTML={{ __html: content || "" }} />
-                </div>
+         {isFreeResponse ? (
+            <div className="row" style={{ flexDirection: "column", alignItems: "stretch" }}>
+              <label>
+                <strong>Your answer</strong>
               </label>
-            );
-          })}
+            <input
+              placeholder="Type your answer"
+              value={freeResponse}
+              onChange={(e) => setFreeResponse(e.target.value)}
+            />
+            <p style={{ margin: "8px 0 0", opacity: 0.7 }}>
+              (Free response: enter exactly what you want graded. We can improve grading rules later.)
+            </p>
+          </div>
+  ) : (
+    options.map((opt, i) => {
+      const label = typeof opt === "string" ? String.fromCharCode(65 + i) : opt.label;
+      const content = typeof opt === "string" ? opt : opt.content;
+
+      return (
+        <label key={i} className="row">
+          <input
+            type="radio"
+            checked={selected === label}
+            onChange={() => setSelected(label)}
+        />
+        <div>
+          <strong>{label}.</strong>{" "}
+          <span dangerouslySetInnerHTML={{ __html: content || "" }} />
+        </div>
+      </label>
+    );
+  })
+)}
+
 
           <div className="row" style={{ marginTop: 16 }}>
             <button onClick={checkAnswer}>Check answer</button>
