@@ -56,3 +56,21 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Prevent bullet dots inside answer choices */
+.optionContent ul,
+.optionContent ol {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+.optionContent li {
+  margin: 0;
+  padding: 0;
+}
+
+/* Also remove default paragraph margins inside answer choices */
+.optionContent p {
+  margin: 0;
+}
+
