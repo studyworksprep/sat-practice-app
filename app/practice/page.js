@@ -35,6 +35,9 @@ export default function PracticePage() {
   const [result, setResult] = useState(null);
   const [status, setStatus] = useState("");
 
+  const [markedForReview, setMarkedForReview] = useState(false);
+
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
@@ -132,7 +135,7 @@ export default function PracticePage() {
       setSelected("");
       setResult(null);
       setFreeResponse("");
-
+      setMarkedForReview(false);
 
       const id = questionIds[index];
       const { data, error } = await supabase
@@ -149,6 +152,15 @@ export default function PracticePage() {
 
       setQuestion(data);
       setStatus("");
+
+      // Load marked_for_review from question_state (if it exists)
+      const { data: qs } = await supabase
+        .from("question_state")
+        .select("marked_for_review")
+        .eq("question_id", data.id)
+        .single();
+      setMarkedForReview(Boolean(qs?.marked_for_review));
+
     }
 
     loadQuestion();
@@ -167,6 +179,22 @@ export default function PracticePage() {
   String(question?.question_type || "").toLowerCase().includes("grid") ||
   String(question?.question_type || "").toLowerCase().includes("student");
 
+  async function toggleMarkForReview() {
+    if (!question) return;
+    const newVal = !markedForReview;
+    setMarkedForReview(newVal);
+  
+    // Upsert into question_state for this user+question
+    await supabase.from("question_state").upsert(
+      {
+        user_id: session.user.id,
+        question_id: question.id,
+        marked_for_review: newVal,
+        last_attempt_at: new Date().toISOString()
+      },
+      { onConflict: "user_id,question_id" }
+    );
+  }
 
   async function checkAnswer() {
     if (!question) return;
@@ -296,6 +324,10 @@ export default function PracticePage() {
 
           <div className="row" style={{ marginTop: 16 }}>
             <button onClick={checkAnswer}>Check answer</button>
+            <button className="secondary" onClick={toggleMarkForReview}>
+              {markedForReview ? "★ Marked for review" : "☆ Mark for review"}
+            </button>
+
             <button
               className="secondary"
               disabled={index === 0}
