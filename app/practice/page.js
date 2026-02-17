@@ -152,6 +152,7 @@ export default function PracticePage() {
       const ids = (data ?? []).map((r) => r.id);
       setQuestionIds(ids);
       setIndex(0);
+      setJumpTo("");
       setStatus(ids.length ? `Loaded ${ids.length} question(s).` : "No questions match filters.");
     }
 
