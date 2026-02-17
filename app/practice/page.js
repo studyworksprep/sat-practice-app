@@ -345,8 +345,17 @@ export default function PracticePage() {
           </div>
   ) : (
     options.map((opt, i) => {
-      const label = typeof opt === "string" ? String.fromCharCode(65 + i) : opt.label;
-      const content = typeof opt === "string" ? opt : opt.content;
+      const fallbackLabel = String.fromCharCode(65 + i); // A, B, C, D...
+      const label =
+        typeof opt === "string"
+          ? fallbackLabel
+          : (opt.label ?? fallbackLabel);
+
+      const content =
+        typeof opt === "string"
+          ? opt
+          : (opt.content ?? opt.text ?? "");
+
 
       return (
         <label key={i} className="row" style={{ alignItems: "flex-start" }}>
