@@ -29,6 +29,8 @@ export default function PracticePage() {
   const [questionIds, setQuestionIds] = useState([]);
   const [index, setIndex] = useState(0);
   const [question, setQuestion] = useState(null);
+  const [jumpTo, setJumpTo] = useState("");
+
 
   const [selected, setSelected] = useState(""); // for multiple choice (A/B/C/D)
   const [freeResponse, setFreeResponse] = useState(""); // for free response
