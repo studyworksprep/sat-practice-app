@@ -13,6 +13,28 @@ function safeParseJsonArray(s) {
   }
 }
 
+const STORAGE_KEY = "sat_practice_state_v1";
+
+function loadState() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveState(state) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // ignore
+  }
+}
+
+
 export default function PracticePage() {
   const router = useRouter();
   const [session, setSession] = useState(null);
@@ -98,6 +120,31 @@ export default function PracticePage() {
   }, [domain]);
 
   useEffect(() => {
+    saveState({
+      domain,
+      skill,
+      difficulty,
+      scoreBand,
+      markedOnly,
+      index
+    });
+  }, [domain, skill, difficulty, scoreBand, markedOnly, index]);
+
+  useEffect(() => {
+    const s = loadState();
+    if (!s) return;
+  
+    if (typeof s.domain === "string") setDomain(s.domain);
+    if (typeof s.skill === "string") setSkill(s.skill);
+    if (typeof s.difficulty === "string") setDifficulty(s.difficulty);
+    if (typeof s.scoreBand === "string") setScoreBand(s.scoreBand);
+    if (typeof s.markedOnly === "boolean") setMarkedOnly(s.markedOnly);
+  
+    if (Number.isInteger(s.index) && s.index >= 0) setIndex(s.index);
+}, []);
+
+
+  useEffect(() => {
   if (!session) return;
 
   async function loadSkills() {
@@ -172,7 +219,12 @@ export default function PracticePage() {
 
       const ids = (data ?? []).map((r) => r.id);
       setQuestionIds(ids);
-      setIndex(0);
+      setIndex((prev) => {
+        const saved = loadState()?.index;
+        if (Number.isInteger(saved) && saved >= 0 && saved < ids.length) return saved;
+        return Math.min(prev, Math.max(0, ids.length - 1));
+      });
+
       setJumpTo("");
       setStatus(ids.length ? `Loaded ${ids.length} question(s).` : "No questions match filters.");
     }
