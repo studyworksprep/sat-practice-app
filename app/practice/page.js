@@ -76,15 +76,15 @@ export default function PracticePage() {
   async function loadSkills() {
     let q = supabase
       .from("questions")
-      .select("skill_code")
-      .not("skill_code", "is", null);
+      .select("skill_desc")
+      .not("skill_desc", "is", null);
 
     if (domain) q = q.eq("domain", domain);
 
     const { data, error } = await q;
     if (error) return;
 
-    const uniq = Array.from(new Set((data ?? []).map(r => r.skill_code))).sort();
+    const uniq = Array.from(new Set((data ?? []).map(r => r.skill_desc))).sort();
     setSkillOptions(uniq);
   }
 
@@ -104,7 +104,7 @@ export default function PracticePage() {
       let q = supabase.from("questions").select("id");
 
       if (domain) q = q.eq("domain", domain);
-      if (skill) q = q.eq("skill_code", skill);
+      if (skill) q = q.eq("skill_desc", skill);
       if (difficulty) q = q.eq("difficulty", Number(difficulty));
       if (scoreBand) q = q.eq("score_band", Number(scoreBand));
 
