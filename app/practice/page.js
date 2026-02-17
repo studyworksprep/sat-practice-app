@@ -424,7 +424,14 @@ export default function PracticePage() {
             <div className="card" style={{ marginTop: 16 }}>
               <h3>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
               {!result && <p>Correct answer: {question.correct_answer}</p>}
-              {question.rationale && <p>{question.rationale}</p>}
+              {question.rationale && (
+                <div
+                  className="optionContent"
+                  style={{ marginTop: 8 }}
+                  dangerouslySetInnerHTML={{ __html: question.rationale || "" }}
+                />
+)}
+
             </div>
           )}
         </div>
