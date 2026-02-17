@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { useRouter } from "next/navigation";
 
@@ -42,6 +42,18 @@ export default function PracticePage() {
 
   const [markedForReview, setMarkedForReview] = useState(false);
 
+  const contentRef = useRef(null);
+
+  function typesetMath() {
+    if (typeof window === "undefined") return;
+    if (!window.MathJax || !window.MathJax.typesetPromise) return;
+    if (!contentRef.current) return;
+  
+    // Prevent overlapping typeset calls (MathJax recommends chaining) :contentReference[oaicite:3]{index=3}
+    window.__mjxPromise = (window.__mjxPromise || Promise.resolve())
+      .then(() => window.MathJax.typesetPromise([contentRef.current]))
+      .catch(() => {});
+  }
 
 
 
@@ -72,6 +84,11 @@ export default function PracticePage() {
       const uniq = Array.from(new Set((data ?? []).map(r => r.domain))).sort();
       setDomainOptions(uniq);
   }
+
+  useEffect(() => {
+    // Typeset when a new question loads, or when result/explanation visibility changes
+    typesetMath();
+  }, [question, result, showExplanation]);
 
   loadDomains();
   }, [session]);
@@ -329,7 +346,8 @@ export default function PracticePage() {
       {status && <p>{status}</p>}
 
       {question && (
-        <div className="card" style={{ marginTop: 16 }}>
+        <div ref={contentRef} className="card" style={{ marginTop: 16 }}>
+
           <div>Question {index + 1} of {questionIds.length}</div>
 
          <div
