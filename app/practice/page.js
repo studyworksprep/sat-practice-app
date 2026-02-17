@@ -220,7 +220,12 @@ export default function PracticePage() {
             ))}
           </select>
           
-          <select value={skill} onChange={(e) => setSkill(e.target.value)}>
+          <select
+            value={skill}
+            onChange={(e) => setSkill(e.target.value)}
+            disabled={!domain}
+          >
+
             <option value="">Skill (any)</option>
             {skillOptions.map((s) => (
               <option key={s} value={s}>{s}</option>
