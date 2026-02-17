@@ -349,18 +349,22 @@ export default function PracticePage() {
       const content = typeof opt === "string" ? opt : opt.content;
 
       return (
-        <label key={i} className="row">
+        <label key={i} className="row" style={{ alignItems: "flex-start" }}>
           <input
             type="radio"
             checked={selected === label}
             onChange={() => setSelected(label)}
-        />
-        <div>
-          <strong>{label}.</strong>{" "}
-          <span dangerouslySetInnerHTML={{ __html: content || "" }} />
-        </div>
-      </label>
-    );
+            style={{ marginTop: 4 }}
+          />
+          <div>
+            <strong>{label}.</strong>{" "}
+            <span
+              className="optionContent"
+              dangerouslySetInnerHTML={{ __html: content || "" }}
+            />
+          </div>
+        </label>
+      );
   })
 )}
 
