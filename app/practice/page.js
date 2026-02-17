@@ -375,6 +375,27 @@ export default function PracticePage() {
             >
               Back
             </button>
+
+            <input
+              style={{ width: 110 }}
+              placeholder="Go to #"
+              value={jumpTo}
+              onChange={(e) => setJumpTo(e.target.value)}
+            />
+
+            <button
+              className="secondary"
+              onClick={() => {
+                const n = Number(jumpTo);
+                if (!Number.isFinite(n)) return;
+                if (n < 1 || n > questionIds.length) return;
+                setIndex(n - 1);
+                setJumpTo("");
+              }}
+            >
+              Go
+            </button>
+
             <button
               disabled={index === questionIds.length - 1}
               onClick={() => setIndex(i => i + 1)}
