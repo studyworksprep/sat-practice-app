@@ -21,6 +21,9 @@ export default function PracticePage() {
   const [skill, setSkill] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [scoreBand, setScoreBand] = useState("");
+  const [domainOptions, setDomainOptions] = useState([]);
+  const [skillOptions, setSkillOptions] = useState([]);
+
 
   const [questionIds, setQuestionIds] = useState([]);
   const [index, setIndex] = useState(0);
@@ -44,6 +47,50 @@ export default function PracticePage() {
     if (session === null) return;
     if (!session) router.push("/login");
   }, [session, router]);
+
+  useEffect(() => {
+    if (!session) return;
+
+    async function loadDomains() {
+      const { data, error } = await supabase
+        .from("questions")
+        .select("domain")
+        .not("domain", "is", null);
+
+      if (error) return;
+
+      const uniq = Array.from(new Set((data ?? []).map(r => r.domain))).sort();
+      setDomainOptions(uniq);
+  }
+
+  loadDomains();
+  }, [session]);
+
+  useEffect(() => {
+    setSkill("");
+  }, [domain]);
+
+  useEffect(() => {
+  if (!session) return;
+
+  async function loadSkills() {
+    let q = supabase
+      .from("questions")
+      .select("skill_code")
+      .not("skill_code", "is", null);
+
+    if (domain) q = q.eq("domain", domain);
+
+    const { data, error } = await q;
+    if (error) return;
+
+    const uniq = Array.from(new Set((data ?? []).map(r => r.skill_code))).sort();
+    setSkillOptions(uniq);
+  }
+
+  loadSkills();
+  }, [session, domain]);
+
 
   useEffect(() => {
     if (!session) return;
@@ -165,14 +212,28 @@ export default function PracticePage() {
       <div className="card" style={{ marginTop: 16 }}>
         <h3>Filters</h3>
         <div className="row">
-          <input placeholder="Domain" value={domain} onChange={e => setDomain(e.target.value)} />
-          <input placeholder="Skill code" value={skill} onChange={e => setSkill(e.target.value)} />
+  
+          <select value={domain} onChange={(e) => setDomain(e.target.value)}>
+            <option value="">Domain (any)</option>
+            {domainOptions.map((d) => (
+            <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+          
+          <select value={skill} onChange={(e) => setSkill(e.target.value)}>
+            <option value="">Skill (any)</option>
+            {skillOptions.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+
           <select value={difficulty} onChange={e => setDifficulty(e.target.value)}>
             <option value="">Difficulty</option>
             <option value="1">Easy</option>
             <option value="2">Medium</option>
             <option value="3">Hard</option>
           </select>
+            
           <select value={scoreBand} onChange={e => setScoreBand(e.target.value)}>
             <option value="">Score band</option>
             {[1,2,3,4,5,6,7].map(n => <option key={n}>{n}</option>)}
