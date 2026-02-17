@@ -238,7 +238,8 @@ export default function PracticePage() {
   async function checkAnswer() {
     if (!question) return;
 
-    const answerToSend = isFreeResponse ? freeResponse.trim() : answerToSend;
+    const answerToSend = isFreeResponse ? freeResponse.trim() : selected;
+
     if (!answerToSend) return;
 
     setStatus("Checking...");
@@ -468,8 +469,7 @@ export default function PracticePage() {
         )}
 
 
-            </div>
-          )}
+          
         </div>
       )}
     </div>
