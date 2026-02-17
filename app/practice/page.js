@@ -13,6 +13,68 @@ function safeParseJsonArray(s) {
   }
 }
 
+// Removes literal leading bullets (•, &bull;, etc.) that sometimes appear in option HTML
+function stripLeadingBullets(html) {
+  if (!html) return "";
+  return String(html)
+    .replace(/^\s*(?:•|&bull;|&#8226;|&#x2022;|\u2022)\s*/i, "")
+    .replace(/<p>\s*(?:•|&bull;|&#8226;|&#x2022;|\u2022)\s*/gi, "<p>");
+}
+
+// Removes MathML alttext="..." attributes that can show up as visible text in some exports
+function stripMathAltText(html) {
+  if (!html) return "";
+  return String(html).replace(/\salttext=(["']).*?\1/gi, "");
+}
+
+// Removes “long description” / accessibility caption blocks that are meant to be hidden
+// (Your CSS now defines .sr-only, but this also handles cases where it isn’t applied.)
+function stripA11yImageDescriptions(html) {
+  if (!html) return "";
+  try {
+    const doc = new DOMParser().parseFromString(String(html), "text/html");
+
+    const selectors = [
+      ".accessibility",
+      ".a11y",
+      ".screen-reader-only",
+      ".visually-hidden",
+      ".image-alt",
+      ".img-alt",
+      ".alt-text",
+      ".image-description",
+      ".img-description",
+      "[data-accessibility]",
+      "[data-a11y]",
+      "[data-alt-text]",
+      "[data-image-description]",
+      "figcaption.accessibility",
+      "figcaption.a11y",
+      "figcaption.alt-text",
+      "figcaption.image-description"
+    ];
+
+    doc.querySelectorAll(selectors.join(",")).forEach((n) => n.remove());
+
+    // Remove common “Image description:” text blocks
+    doc.querySelectorAll("figcaption, p, div, span").forEach((n) => {
+      const t = (n.textContent || "").trim().toLowerCase();
+      if (
+        t.startsWith("image description:") ||
+        t.startsWith("image:") ||
+        t.startsWith("figure description:") ||
+        t.startsWith("figure:")
+      ) {
+        n.remove();
+      }
+    });
+
+    return doc.body.innerHTML;
+  } catch {
+    return String(html);
+  }
+}
+
 const STORAGE_KEY = "sat_practice_state_v1";
 
 function loadState() {
@@ -34,51 +96,54 @@ function saveState(state) {
   }
 }
 
-
 export default function PracticePage() {
   const router = useRouter();
   const [session, setSession] = useState(null);
 
+  // Filters
   const [domain, setDomain] = useState("");
   const [skill, setSkill] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [scoreBand, setScoreBand] = useState("");
-  const [domainOptions, setDomainOptions] = useState([]);
-  const [skillOptions, setSkillOptions] = useState([]);
   const [markedOnly, setMarkedOnly] = useState(false);
 
+  // Dropdown options
+  const [domainOptions, setDomainOptions] = useState([]);
+  const [skillOptions, setSkillOptions] = useState([]);
 
+  // Question navigation
   const [questionIds, setQuestionIds] = useState([]);
   const [index, setIndex] = useState(0);
-  const [question, setQuestion] = useState(null);
   const [jumpTo, setJumpTo] = useState("");
 
+  // Current question
+  const [question, setQuestion] = useState(null);
 
-  const [selected, setSelected] = useState(""); // for multiple choice (A/B/C/D)
-  const [freeResponse, setFreeResponse] = useState(""); // for free response
-
-  const [result, setResult] = useState(null);
+  // Answer state
+  const [selected, setSelected] = useState(""); // MC: A/B/C/D
+  const [freeResponse, setFreeResponse] = useState(""); // FR: typed string
+  const [result, setResult] = useState(null); // true/false/null
   const [status, setStatus] = useState("");
   const [showExplanation, setShowExplanation] = useState(false);
 
-
+  // Marked state (per question)
   const [markedForReview, setMarkedForReview] = useState(false);
 
+  // MathJax typeset container ref
   const contentRef = useRef(null);
 
   function typesetMath() {
     if (typeof window === "undefined") return;
     if (!window.MathJax || !window.MathJax.typesetPromise) return;
     if (!contentRef.current) return;
-  
-    // Prevent overlapping typeset calls (MathJax recommends chaining) :contentReference[oaicite:3]{index=3}
+
+    // Chain to avoid overlapping typeset calls
     window.__mjxPromise = (window.__mjxPromise || Promise.resolve())
       .then(() => window.MathJax.typesetPromise([contentRef.current]))
       .catch(() => {});
   }
 
-
-
+  // Auth session
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
@@ -87,11 +152,31 @@ export default function PracticePage() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Redirect if not logged in
   useEffect(() => {
     if (session === null) return;
     if (!session) router.push("/login");
   }, [session, router]);
 
+  // Restore state (filters/index) once on mount
+  useEffect(() => {
+    const s = loadState();
+    if (!s) return;
+
+    if (typeof s.domain === "string") setDomain(s.domain);
+    if (typeof s.skill === "string") setSkill(s.skill);
+    if (typeof s.difficulty === "string") setDifficulty(s.difficulty);
+    if (typeof s.scoreBand === "string") setScoreBand(s.scoreBand);
+    if (typeof s.markedOnly === "boolean") setMarkedOnly(s.markedOnly);
+    if (Number.isInteger(s.index) && s.index >= 0) setIndex(s.index);
+  }, []);
+
+  // Persist state
+  useEffect(() => {
+    saveState({ domain, skill, difficulty, scoreBand, markedOnly, index });
+  }, [domain, skill, difficulty, scoreBand, markedOnly, index]);
+
+  // Load Domains for dropdown
   useEffect(() => {
     if (!session) return;
 
@@ -103,74 +188,45 @@ export default function PracticePage() {
 
       if (error) return;
 
-      const uniq = Array.from(new Set((data ?? []).map(r => r.domain))).sort();
+      const uniq = Array.from(new Set((data ?? []).map((r) => r.domain))).sort();
       setDomainOptions(uniq);
-  }
-    
-  loadDomains();
+    }
+
+    loadDomains();
   }, [session]);
 
-   useEffect(() => {
-    // Typeset when a new question loads, or when result/explanation visibility changes
-    typesetMath();
-  }, [question, result, showExplanation]);
-
+  // Reset skill when domain changes
   useEffect(() => {
     setSkill("");
   }, [domain]);
 
+  // Load Skills (dependent on domain) using skill_desc
   useEffect(() => {
-    saveState({
-      domain,
-      skill,
-      difficulty,
-      scoreBand,
-      markedOnly,
-      index
-    });
-  }, [domain, skill, difficulty, scoreBand, markedOnly, index]);
+    if (!session) return;
 
-  useEffect(() => {
-    const s = loadState();
-    if (!s) return;
-  
-    if (typeof s.domain === "string") setDomain(s.domain);
-    if (typeof s.skill === "string") setSkill(s.skill);
-    if (typeof s.difficulty === "string") setDifficulty(s.difficulty);
-    if (typeof s.scoreBand === "string") setScoreBand(s.scoreBand);
-    if (typeof s.markedOnly === "boolean") setMarkedOnly(s.markedOnly);
-  
-    if (Number.isInteger(s.index) && s.index >= 0) setIndex(s.index);
-}, []);
+    async function loadSkills() {
+      let q = supabase
+        .from("questions")
+        .select("skill_desc")
+        .not("skill_desc", "is", null);
 
+      if (domain) q = q.eq("domain", domain);
 
-  useEffect(() => {
-  if (!session) return;
+      const { data, error } = await q;
+      if (error) return;
 
-  async function loadSkills() {
-    let q = supabase
-      .from("questions")
-      .select("skill_desc")
-      .not("skill_desc", "is", null);
+      const uniq = Array.from(new Set((data ?? []).map((r) => r.skill_desc))).sort();
+      setSkillOptions(uniq);
+    }
 
-    if (domain) q = q.eq("domain", domain);
-
-    const { data, error } = await q;
-    if (error) return;
-
-    const uniq = Array.from(new Set((data ?? []).map(r => r.skill_desc))).sort();
-    setSkillOptions(uniq);
-  }
-
-  loadSkills();
+    loadSkills();
   }, [session, domain]);
 
-
+  // Load question IDs when filters change
   useEffect(() => {
     if (!session) return;
 
     async function loadIds() {
-      
       let markedIds = null;
 
       if (markedOnly) {
@@ -178,15 +234,15 @@ export default function PracticePage() {
           .from("question_state")
           .select("question_id")
           .eq("marked_for_review", true);
-      
+
         if (msErr) {
           setStatus(msErr.message);
           setQuestionIds([]);
           return;
         }
-      
-        markedIds = (ms ?? []).map(r => r.question_id);
-      
+
+        markedIds = (ms ?? []).map((r) => r.question_id);
+
         if (!markedIds.length) {
           setStatus("No marked questions yet.");
           setQuestionIds([]);
@@ -197,9 +253,10 @@ export default function PracticePage() {
       setStatus("Loading questions...");
       setQuestion(null);
       setSelected("");
+      setFreeResponse("");
       setResult(null);
       setShowExplanation(false);
-
+      setMarkedForReview(false);
 
       let q = supabase.from("questions").select("id");
 
@@ -219,11 +276,14 @@ export default function PracticePage() {
 
       const ids = (data ?? []).map((r) => r.id);
       setQuestionIds(ids);
-      setIndex((prev) => {
-        const saved = loadState()?.index;
-        if (Number.isInteger(saved) && saved >= 0 && saved < ids.length) return saved;
-        return Math.min(prev, Math.max(0, ids.length - 1));
-      });
+
+      // Try to keep the saved index if still valid
+      const saved = loadState()?.index;
+      if (Number.isInteger(saved) && saved >= 0 && saved < ids.length) {
+        setIndex(saved);
+      } else {
+        setIndex(0);
+      }
 
       setJumpTo("");
       setStatus(ids.length ? `Loaded ${ids.length} question(s).` : "No questions match filters.");
@@ -232,26 +292,21 @@ export default function PracticePage() {
     loadIds();
   }, [session, domain, skill, difficulty, scoreBand, markedOnly]);
 
-
+  // Load current question by ID
   useEffect(() => {
     if (!session || !questionIds.length) return;
 
     async function loadQuestion() {
       setStatus("Loading question...");
       setSelected("");
-      setResult(null);
       setFreeResponse("");
-      setMarkedForReview(false);
+      setResult(null);
       setShowExplanation(false);
-
+      setMarkedForReview(false);
 
       const id = questionIds[index];
-      const { data, error } = await supabase
-        .from("questions")
-        .select("*")
-        .eq("id", id)
-        .single();
 
+      const { data, error } = await supabase.from("questions").select("*").eq("id", id).single();
       if (error) {
         setStatus(error.message);
         setQuestion(null);
@@ -267,12 +322,17 @@ export default function PracticePage() {
         .select("marked_for_review")
         .eq("question_id", data.id)
         .single();
-      setMarkedForReview(Boolean(qs?.marked_for_review));
 
+      setMarkedForReview(Boolean(qs?.marked_for_review));
     }
 
     loadQuestion();
   }, [session, questionIds, index]);
+
+  // Typeset math after content changes
+  useEffect(() => {
+    typesetMath();
+  }, [question, result, showExplanation]);
 
   const options = useMemo(() => {
     if (!question) return [];
@@ -282,17 +342,16 @@ export default function PracticePage() {
   }, [question]);
 
   const isFreeResponse =
-  !options.length ||
-  String(question?.question_type || "").toLowerCase().includes("free") ||
-  String(question?.question_type || "").toLowerCase().includes("grid") ||
-  String(question?.question_type || "").toLowerCase().includes("student");
+    !options.length ||
+    String(question?.question_type || "").toLowerCase().includes("free") ||
+    String(question?.question_type || "").toLowerCase().includes("grid") ||
+    String(question?.question_type || "").toLowerCase().includes("student");
 
   async function toggleMarkForReview() {
-    if (!question) return;
+    if (!question || !session) return;
     const newVal = !markedForReview;
     setMarkedForReview(newVal);
-  
-    // Upsert into question_state for this user+question
+
     await supabase.from("question_state").upsert(
       {
         user_id: session.user.id,
@@ -306,44 +365,48 @@ export default function PracticePage() {
 
   async function checkAnswer() {
     setShowExplanation(false); // always hide on check
-  
     if (!question) return;
-  
+
     const answerToSend = isFreeResponse ? freeResponse.trim() : selected;
     if (!answerToSend) return;
-  
+
     setStatus("Checking...");
     setResult(null);
-  
+
     const { data, error } = await supabase.rpc("submit_attempt", {
       p_question_id: question.id,
       p_selected_answer: answerToSend
     });
-  
+
     if (!error && data && data.length) {
       setResult(Boolean(data[0].is_correct));
       setStatus("");
       return;
     }
-  
+
     const isCorrect = String(answerToSend) === String(question.correct_answer);
     setResult(isCorrect);
     setStatus(error ? "RPC missing — fallback mode." : "");
   }
-
 
   async function logout() {
     await supabase.auth.signOut();
     router.push("/login");
   }
 
+  const renderHtml = (html) =>
+    stripA11yImageDescriptions(stripMathAltText(String(html || "")));
+
+  const renderOptionHtml = (html) =>
+    stripA11yImageDescriptions(stripMathAltText(stripLeadingBullets(String(html || ""))));
+
   return (
     <div className="card">
-
       <div className="row" style={{ justifyContent: "space-between" }}>
         <h1 style={{ margin: 0 }}>Practice</h1>
         <div className="row">
           <button className="secondary" onClick={() => router.push("/")}>Home</button>
+          <button className="secondary" onClick={() => router.push("/progress")}>Progress</button>
           <button className="secondary" onClick={logout}>Log out</button>
         </div>
       </div>
@@ -351,38 +414,34 @@ export default function PracticePage() {
       <div className="card" style={{ marginTop: 16 }}>
         <h3>Filters</h3>
         <div className="row">
-  
           <select value={domain} onChange={(e) => setDomain(e.target.value)}>
             <option value="">Domain (any)</option>
             {domainOptions.map((d) => (
-            <option key={d} value={d}>{d}</option>
+              <option key={d} value={d}>{d}</option>
             ))}
           </select>
-          
-          <select
-            value={skill}
-            onChange={(e) => setSkill(e.target.value)}
-            disabled={!domain}
-          >
 
+          <select value={skill} onChange={(e) => setSkill(e.target.value)} disabled={!domain}>
             <option value="">Skill (any)</option>
             {skillOptions.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
 
-          <select value={difficulty} onChange={e => setDifficulty(e.target.value)}>
+          <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
             <option value="">Difficulty</option>
             <option value="1">Easy</option>
             <option value="2">Medium</option>
             <option value="3">Hard</option>
           </select>
-            
-          <select value={scoreBand} onChange={e => setScoreBand(e.target.value)}>
+
+          <select value={scoreBand} onChange={(e) => setScoreBand(e.target.value)}>
             <option value="">Score band</option>
-            {[1,2,3,4,5,6,7].map(n => <option key={n}>{n}</option>)}
+            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+              <option key={n} value={String(n)}>{n}</option>
+            ))}
           </select>
-                                 
+
           <label className="row" style={{ gap: 6 }}>
             <input
               type="checkbox"
@@ -391,7 +450,6 @@ export default function PracticePage() {
             />
             Marked only
           </label>
-                                 
         </div>
       </div>
 
@@ -399,92 +457,82 @@ export default function PracticePage() {
 
       {question && (
         <div ref={contentRef} className="card" style={{ marginTop: 16 }}>
-
-          <div>Question {index + 1} of {questionIds.length}</div>
-
-         <div
-          style={{ margin: "12px 0" }}
-          dangerouslySetInnerHTML={{ __html: question.stem || "" }}
-        />
-
-
-         {isFreeResponse ? (
-            <div className="row" style={{ flexDirection: "column", alignItems: "stretch" }}>
-              <label>
-                <strong>Your answer</strong>
-              </label>
-            <input
-              placeholder="Type your answer"
-              value={freeResponse}
-              onChange={(e) => setFreeResponse(e.target.value)}
-            />
-            <p style={{ margin: "8px 0 0", opacity: 0.7 }}>
-              (Free response: enter exactly what you want graded. We can improve grading rules later.)
-            </p>
-          </div>
-  ) : (
-    options.map((opt, i) => {
-      const fallbackLabel = String.fromCharCode(65 + i); // A, B, C, D...
-      const label =
-        typeof opt === "string"
-          ? fallbackLabel
-          : (opt.label ?? fallbackLabel);
-
-      const content =
-        typeof opt === "string"
-          ? opt
-          : (opt.content ?? opt.text ?? "");
-
-      const isSelected = selected === label;
-
-   return (
-      <div
-        key={i}
-        className={`optionCard ${isSelected ? "selected" : ""}`}
-        role="button"
-        tabIndex={0}
-        onClick={() => setSelected(label)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") setSelected(label);
-        }}
-      >
-        <div className="optionLetter">{label}</div>
-    
-        <div style={{ flex: 1 }}>
-          <div
-            className="optionContent"
-            dangerouslySetInnerHTML={{
-              __html: stripA11yImageDescriptions(
-                stripMathAltText(stripLeadingBullets(content || ""))
-              )
-            }}
-          />
-        </div>
-    
-        <input
-          type="radio"
-          checked={isSelected}
-          onChange={() => setSelected(label)}
-          aria-label={`Choose option ${label}`}
-          style={{ marginTop: 4 }}
-        />
-      </div>
-    );
-
-  })
-)}
-
-
-          <div className="row" style={{ marginTop: 16 }}>
-            <button onClick={checkAnswer}>Check answer</button>
+          <div className="row" style={{ justifyContent: "space-between" }}>
+            <div>Question {index + 1} of {questionIds.length}</div>
             <button className="secondary" onClick={toggleMarkForReview}>
               {markedForReview ? "★ Marked for review" : "☆ Mark for review"}
             </button>
+          </div>
+
+          <div
+            className="optionContent"
+            style={{ margin: "12px 0" }}
+            dangerouslySetInnerHTML={{ __html: renderHtml(question.stem) }}
+          />
+
+          {isFreeResponse ? (
+            <div className="row" style={{ flexDirection: "column", alignItems: "stretch" }}>
+              <label><strong>Your answer</strong></label>
+              <input
+                placeholder="Type your answer"
+                value={freeResponse}
+                onChange={(e) => setFreeResponse(e.target.value)}
+              />
+            </div>
+          ) : (
+            options.map((opt, i) => {
+              const fallbackLabel = String.fromCharCode(65 + i); // A, B, C, D...
+              const label =
+                typeof opt === "string"
+                  ? fallbackLabel
+                  : (opt.label ?? fallbackLabel);
+
+              const content =
+                typeof opt === "string"
+                  ? opt
+                  : (opt.content ?? opt.text ?? "");
+
+              const isSelected = selected === label;
+
+              return (
+                <div
+                  key={i}
+                  className={`optionCard ${isSelected ? "selected" : ""}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelected(label)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") setSelected(label);
+                  }}
+                >
+                  <div className="optionLetter">{label}</div>
+
+                  <div style={{ flex: 1 }}>
+                    <div
+                      className="optionContent"
+                      dangerouslySetInnerHTML={{ __html: renderOptionHtml(content) }}
+                    />
+                  </div>
+
+                  <input
+                    type="radio"
+                    checked={isSelected}
+                    onChange={() => setSelected(label)}
+                    aria-label={`Choose option ${label}`}
+                    style={{ marginTop: 4 }}
+                  />
+                </div>
+              );
+            })
+          )}
+
+          <div className="row" style={{ marginTop: 16 }}>
+            <button onClick={checkAnswer}>Check answer</button>
 
             <button
               className="secondary"
               disabled={index === 0}
-              onClick={() => setIndex(i => i - 1)}
+              onClick={() => setIndex((i) => i - 1)}
             >
               Back
             </button>
@@ -511,56 +559,52 @@ export default function PracticePage() {
 
             <button
               disabled={index === questionIds.length - 1}
-              onClick={() => setIndex(i => i + 1)}
+              onClick={() => setIndex((i) => i + 1)}
             >
               Next
             </button>
           </div>
 
-        {result !== null && (
-          <div className="card" style={{ marginTop: 16 }}>
-            <h3 style={{ marginTop: 0 }}>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
-        
-            {/* If incorrect, do NOT reveal automatically */}
-            {!result && !showExplanation && (
-              <button className="secondary" onClick={() => setShowExplanation(true)}>
-                Show answer & explanation
-              </button>
-            )}
-        
-            {/* If correct, show explanation immediately (change this if you want it hidden too) */}
-            {result && question.rationale && (
-              <div
-                className="optionContent"
-                style={{ marginTop: 8 }}
-                dangerouslySetInnerHTML={{ __html: question.rationale || "" }}
-              />
-            )}
-        
-            {/* If incorrect, reveal only after button click */}
-            {!result && showExplanation && (
-              <>
-                <p style={{ marginTop: 12 }}>
-                  Correct answer: <strong>{question.correct_answer}</strong>
-                </p>
-        
-                {question.rationale && (
-                  <div
-                    className="optionContent"
-                    style={{ marginTop: 8 }}
-                    dangerouslySetInnerHTML={{ __html: question.rationale || "" }}
-                  />
-                )}
-              </>
-            )}
-          </div>
-        )}
+          {result !== null && (
+            <div className="card" style={{ marginTop: 16 }}>
+              <h3 style={{ marginTop: 0 }}>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
 
+              {/* If incorrect, do NOT reveal automatically */}
+              {!result && !showExplanation && (
+                <button className="secondary" onClick={() => setShowExplanation(true)}>
+                  Show answer & explanation
+                </button>
+              )}
 
-          
+              {/* If correct, show explanation immediately */}
+              {result && question.rationale && (
+                <div
+                  className="optionContent"
+                  style={{ marginTop: 8 }}
+                  dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
+                />
+              )}
+
+              {/* If incorrect, reveal only after button click */}
+              {!result && showExplanation && (
+                <>
+                  <p style={{ marginTop: 12 }}>
+                    Correct answer: <strong>{question.correct_answer}</strong>
+                  </p>
+
+                  {question.rationale && (
+                    <div
+                      className="optionContent"
+                      style={{ marginTop: 8 }}
+                      dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
-
