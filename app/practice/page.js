@@ -84,14 +84,14 @@ export default function PracticePage() {
       const uniq = Array.from(new Set((data ?? []).map(r => r.domain))).sort();
       setDomainOptions(uniq);
   }
+    
+  loadDomains();
+  }, [session]);
 
-  useEffect(() => {
+   useEffect(() => {
     // Typeset when a new question loads, or when result/explanation visibility changes
     typesetMath();
   }, [question, result, showExplanation]);
-
-  loadDomains();
-  }, [session]);
 
   useEffect(() => {
     setSkill("");
