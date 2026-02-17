@@ -189,7 +189,10 @@ export default function PracticePage() {
                   checked={selected === label}
                   onChange={() => setSelected(label)}
                 />
-                <div><strong>{label}.</strong> {content}</div>
+                <div>
+                  <strong>{label}.</strong>{" "}
+                  <span dangerouslySetInnerHTML={{ __html: content || "" }} />
+                </div>
               </label>
             );
           })}
