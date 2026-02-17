@@ -37,6 +37,8 @@ export default function PracticePage() {
 
   const [result, setResult] = useState(null);
   const [status, setStatus] = useState("");
+  const [showExplanation, setShowExplanation] = useState(false);
+
 
   const [markedForReview, setMarkedForReview] = useState(false);
 
@@ -132,6 +134,8 @@ export default function PracticePage() {
       setQuestion(null);
       setSelected("");
       setResult(null);
+      setShowExplanation(false);
+
 
       let q = supabase.from("questions").select("id");
 
@@ -169,6 +173,8 @@ export default function PracticePage() {
       setResult(null);
       setFreeResponse("");
       setMarkedForReview(false);
+      setShowExplanation(false);
+
 
       const id = questionIds[index];
       const { data, error } = await supabase
@@ -237,6 +243,8 @@ export default function PracticePage() {
 
     setStatus("Checking...");
     setResult(null);
+    setShowExplanation(false);
+
 
     const { data, error } = await supabase.rpc("submit_attempt", {
       p_question_id: question.id,
@@ -420,17 +428,45 @@ export default function PracticePage() {
             </button>
           </div>
 
-          {result !== null && (
-            <div className="card" style={{ marginTop: 16 }}>
-              <h3>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
-              {!result && <p>Correct answer: {question.correct_answer}</p>}
-              {question.rationale && (
-                <div
-                  className="optionContent"
-                  style={{ marginTop: 8 }}
-                  dangerouslySetInnerHTML={{ __html: question.rationale || "" }}
-                />
-)}
+        {result !== null && (
+          <div className="card" style={{ marginTop: 16 }}>
+            <h3 style={{ marginTop: 0 }}>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
+        
+            {/* If incorrect, do NOT reveal automatically */}
+            {!result && !showExplanation && (
+              <button className="secondary" onClick={() => setShowExplanation(true)}>
+                Show answer & explanation
+              </button>
+            )}
+        
+            {/* If correct, show explanation immediately (change this if you want it hidden too) */}
+            {result && question.rationale && (
+              <div
+                className="optionContent"
+                style={{ marginTop: 8 }}
+                dangerouslySetInnerHTML={{ __html: question.rationale || "" }}
+              />
+            )}
+        
+            {/* If incorrect, reveal only after button click */}
+            {!result && showExplanation && (
+              <>
+                <p style={{ marginTop: 12 }}>
+                  Correct answer: <strong>{question.correct_answer}</strong>
+                </p>
+        
+                {question.rationale && (
+                  <div
+                    className="optionContent"
+                    style={{ marginTop: 8 }}
+                    dangerouslySetInnerHTML={{ __html: question.rationale || "" }}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        )}
+
 
             </div>
           )}
