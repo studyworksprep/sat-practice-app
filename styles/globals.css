@@ -74,3 +74,14 @@ button:disabled {
   margin: 0;
 }
 
+math[alttext] {
+  display: inline-block;
+}
+
+math[alttext]::after {
+  content: "";
+}
+
+math[alttext] {
+  speak: none;
+}
