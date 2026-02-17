@@ -435,24 +435,42 @@ export default function PracticePage() {
           ? opt
           : (opt.content ?? opt.text ?? "");
 
+      const isSelected = selected === label;
 
-      return (
-        <label key={i} className="row" style={{ alignItems: "flex-start" }}>
-          <input
-            type="radio"
-            checked={selected === label}
-            onChange={() => setSelected(label)}
-            style={{ marginTop: 4 }}
+   return (
+      <div
+        key={i}
+        className={`optionCard ${isSelected ? "selected" : ""}`}
+        role="button"
+        tabIndex={0}
+        onClick={() => setSelected(label)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") setSelected(label);
+        }}
+      >
+        <div className="optionLetter">{label}</div>
+    
+        <div style={{ flex: 1 }}>
+          <div
+            className="optionContent"
+            dangerouslySetInnerHTML={{
+              __html: stripA11yImageDescriptions(
+                stripMathAltText(stripLeadingBullets(content || ""))
+              )
+            }}
           />
-          <div>
-            <strong>{label}.</strong>{" "}
-            <span
-              className="optionContent"
-              dangerouslySetInnerHTML={{ __html: content || "" }}
-            />
-          </div>
-        </label>
-      );
+        </div>
+    
+        <input
+          type="radio"
+          checked={isSelected}
+          onChange={() => setSelected(label)}
+          aria-label={`Choose option ${label}`}
+          style={{ marginTop: 4 }}
+        />
+      </div>
+    );
+
   })
 )}
 
