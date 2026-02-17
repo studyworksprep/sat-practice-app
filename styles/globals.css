@@ -86,3 +86,8 @@ button:disabled {
   white-space: nowrap !important;
   border: 0 !important;
 }
+
+.card img, .card svg {
+  max-width: 100%;
+  height: auto;
+}
