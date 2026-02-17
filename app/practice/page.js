@@ -172,9 +172,11 @@ export default function PracticePage() {
         <div className="card" style={{ marginTop: 16 }}>
           <div>Question {index + 1} of {questionIds.length}</div>
 
-          <div style={{ whiteSpace: "pre-wrap", margin: "12px 0" }}>
-            {question.stem}
-          </div>
+         <div
+          style={{ margin: "12px 0" }}
+          dangerouslySetInnerHTML={{ __html: question.stem || "" }}
+        />
+
 
           {options.map((opt, i) => {
             const label = typeof opt === "string" ? String.fromCharCode(65 + i) : opt.label;
