@@ -236,32 +236,32 @@ export default function PracticePage() {
   }
 
   async function checkAnswer() {
+    setShowExplanation(false); // always hide on check
+  
     if (!question) return;
-
+  
     const answerToSend = isFreeResponse ? freeResponse.trim() : selected;
-
     if (!answerToSend) return;
-
+  
     setStatus("Checking...");
     setResult(null);
-    setShowExplanation(false);
-
-
+  
     const { data, error } = await supabase.rpc("submit_attempt", {
       p_question_id: question.id,
       p_selected_answer: answerToSend
     });
-
+  
     if (!error && data && data.length) {
       setResult(Boolean(data[0].is_correct));
       setStatus("");
       return;
     }
-
+  
     const isCorrect = String(answerToSend) === String(question.correct_answer);
     setResult(isCorrect);
     setStatus(error ? "RPC missing — fallback mode." : "");
   }
+
 
   async function logout() {
     await supabase.auth.signOut();
