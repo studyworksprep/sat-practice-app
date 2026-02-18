@@ -1,6 +1,9 @@
 :root {
   color-scheme: light;
 }
+body {
+  background: hotpink !important;
+}
 
 body {
   margin: 0;
