@@ -101,11 +101,15 @@ export default function PracticeSessionClient() {
   const skill = searchParams.get("skill") || "";
   const difficulty = searchParams.get("difficulty") || "";
   const scoreBandsParam = searchParams.get("scoreBands") || "";
-  const scoreBands = scoreBandsParam
-    .split(",")
-    .map((s) => Number(s))
-    .filter((n) => Number.isFinite(n) && n >= 1 && n <= 7);
+  const scoreBandsParam = searchParams.get("scoreBands") || "";
+
+  const scoreBands = useMemo(() => {
+    return scoreBandsParam
+      .split(",")
+      .map((s) => Number(s))
+      .filter((n) => Number.isFinite(n) && n >= 1 && n <= 7);
   }, [scoreBandsParam]);
+
 
   const markedOnly = searchParams.get("markedOnly") === "1";
 
