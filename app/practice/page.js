@@ -531,9 +531,15 @@ export default function PracticePage() {
                   role="button"
                   tabIndex={0}
                   onClick={() => setSelected(label)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") setSelected(label);
-                  }}
+               onKeyDown={(e) => {
+                  if (e.key === "Enter") setSelected(label);
+                  if (e.key === " ") {
+                    e.preventDefault();
+                    setSelected(label);
+                  }
+                }}
+                aria-pressed={isSelected}
+
                 >
                   <div className="optionLetter">{label}</div>
 
