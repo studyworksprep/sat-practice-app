@@ -223,7 +223,7 @@ export default function PracticeSessionClient() {
     }
 
     loadIds();
-  }, [session, domain, skill, difficulty, scoreBand, markedOnly]);
+  }, [session, domain, skill, difficulty, scoreBands, markedOnly]);
 
   // Load current question
   useEffect(() => {
