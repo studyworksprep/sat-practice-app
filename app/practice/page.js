@@ -404,85 +404,6 @@ export default function PracticePage() {
   return (
   <div className="page practiceWide">
     <div className="card">
-      {/* Sticky toolbar */}
-      <div
-        className="row"
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          background: "white",
-          padding: "10px 0",
-          borderBottom: "1px solid rgba(0,0,0,0.08)",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 12
-        }}
-      >
-        <div className="row" style={{ gap: 10, alignItems: "center" }}>
-          <div style={{ fontWeight: 700 }}>
-            {index + 1} / {questionIds.length}
-          </div>
-
-          <button className="secondary" onClick={toggleMarkForReview}>
-            {markedForReview ? "★ Marked" : "☆ Mark"}
-          </button>
-
-          {status ? (
-            <span style={{ fontSize: 12, opacity: 0.8 }}>{status}</span>
-          ) : null}
-        </div>
-
-        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          <button
-            className="secondary"
-            disabled={index === 0}
-            onClick={() => setIndex((i) => i - 1)}
-            aria-label="Previous question"
-          >
-            ← Prev
-          </button>
-
-          <button
-            disabled={index === questionIds.length - 1}
-            onClick={() => setIndex((i) => i + 1)}
-            aria-label="Next question"
-          >
-            Next →
-          </button>
-
-          <div className="row" style={{ gap: 6, alignItems: "center" }}>
-            <input
-              style={{ width: 90 }}
-              placeholder="Go to #"
-              value={jumpTo}
-              onChange={(e) => setJumpTo(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  const n = Number(jumpTo);
-                  if (!Number.isFinite(n)) return;
-                  if (n < 1 || n > questionIds.length) return;
-                  setIndex(n - 1);
-                  setJumpTo("");
-                }
-              }}
-              aria-label="Jump to question number"
-            />
-            <button
-              className="secondary"
-              onClick={() => {
-                const n = Number(jumpTo);
-                if (!Number.isFinite(n)) return;
-                if (n < 1 || n > questionIds.length) return;
-                setIndex(n - 1);
-                setJumpTo("");
-              }}
-            >
-              Go
-            </button>
-          </div>
-        </div>
-      </div>
 
       {status && <p>{status}</p>}
 
@@ -497,6 +418,72 @@ export default function PracticePage() {
             </div>
 
             <div className="bbRight">
+                <div className="bbRightHeader">
+                  <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                    <div className="bbRightHeaderTitle">
+                      Question {index + 1} of {questionIds.length}
+                    </div>
+                
+                    <div className="bbRightHeaderActions">
+                      <button className="secondary" onClick={toggleMarkForReview}>
+                        {markedForReview ? "★ Marked" : "☆ Mark"}
+                      </button>
+                
+                      <button
+                        className="secondary"
+                        disabled={index === 0}
+                        onClick={() => setIndex((i) => i - 1)}
+                        aria-label="Previous question"
+                      >
+                        ← Prev
+                      </button>
+                
+                      <button
+                        disabled={index === questionIds.length - 1}
+                        onClick={() => setIndex((i) => i + 1)}
+                        aria-label="Next question"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  </div>
+                
+                  <div className="row" style={{ justifyContent: "space-between", marginTop: 10 }}>
+                    <button onClick={checkAnswer}>Check answer</button>
+                
+                    <div className="row" style={{ gap: 6 }}>
+                      <input
+                        style={{ width: 90 }}
+                        placeholder="Go to #"
+                        value={jumpTo}
+                        onChange={(e) => setJumpTo(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            const n = Number(jumpTo);
+                            if (!Number.isFinite(n)) return;
+                            if (n < 1 || n > questionIds.length) return;
+                            setIndex(n - 1);
+                            setJumpTo("");
+                          }
+                        }}
+                        aria-label="Jump to question number"
+                      />
+                      <button
+                        className="secondary"
+                        onClick={() => {
+                          const n = Number(jumpTo);
+                          if (!Number.isFinite(n)) return;
+                          if (n < 1 || n > questionIds.length) return;
+                          setIndex(n - 1);
+                          setJumpTo("");
+                        }}
+                      >
+                        Go
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
               {isFreeResponse ? (
                 <div className="row" style={{ flexDirection: "column", alignItems: "stretch" }}>
                   <label><strong>Your answer</strong></label>
