@@ -28,7 +28,6 @@ function stripMathAltText(html) {
 }
 
 // Removes “long description” / accessibility caption blocks that are meant to be hidden
-// (Your CSS now defines .sr-only, but this also handles cases where it isn’t applied.)
 function stripA11yImageDescriptions(html) {
   if (!html) return "";
   try {
@@ -137,7 +136,6 @@ export default function PracticePage() {
     if (!window.MathJax || !window.MathJax.typesetPromise) return;
     if (!contentRef.current) return;
 
-    // Chain to avoid overlapping typeset calls
     window.__mjxPromise = (window.__mjxPromise || Promise.resolve())
       .then(() => window.MathJax.typesetPromise([contentRef.current]))
       .catch(() => {});
@@ -296,6 +294,7 @@ export default function PracticePage() {
   // Load current question by ID
   useEffect(() => {
     if (!session || !questionIds.length) return;
+    if (index < 0 || index >= questionIds.length) return; // ✅ guard out-of-range
 
     async function loadQuestion() {
       setStatus("Loading question...");
@@ -317,14 +316,20 @@ export default function PracticePage() {
       setQuestion(data);
       setStatus("");
 
-      // Load marked_for_review from question_state (if it exists)
-      const { data: qs } = await supabase
+      // ✅ Load marked_for_review from question_state scoped to user_id
+      const { data: qs, error: qsErr } = await supabase
         .from("question_state")
         .select("marked_for_review")
+        .eq("user_id", session.user.id)
         .eq("question_id", data.id)
-        .single();
+        .maybeSingle();
 
-      setMarkedForReview(Boolean(qs?.marked_for_review));
+      if (qsErr) {
+        // Don't block question render; just default false and show a soft status
+        setMarkedForReview(false);
+      } else {
+        setMarkedForReview(Boolean(qs?.marked_for_review));
+      }
     }
 
     loadQuestion();
@@ -350,10 +355,12 @@ export default function PracticePage() {
 
   async function toggleMarkForReview() {
     if (!question || !session) return;
+
+    const prev = markedForReview; // ✅ rollback support
     const newVal = !markedForReview;
     setMarkedForReview(newVal);
 
-    await supabase.from("question_state").upsert(
+    const { error } = await supabase.from("question_state").upsert(
       {
         user_id: session.user.id,
         question_id: question.id,
@@ -362,6 +369,11 @@ export default function PracticePage() {
       },
       { onConflict: "user_id,question_id" }
     );
+
+    if (error) {
+      setMarkedForReview(prev);
+      setStatus(`Could not update mark: ${error.message}`);
+    }
   }
 
   async function checkAnswer() {
@@ -402,33 +414,32 @@ export default function PracticePage() {
     stripA11yImageDescriptions(stripMathAltText(stripLeadingBullets(String(html || ""))));
 
   return (
-  <div className="page practiceWide">
-    <div className="card">
+    <div className="page practiceWide">
+      <div className="card">
+        {status && <p>{status}</p>}
 
-      {status && <p>{status}</p>}
+        {question && (
+          <div ref={contentRef} style={{ marginTop: 16 }}>
+            <div className="bbLayout">
+              <div className="bbLeft">
+                <div
+                  className="optionContent"
+                  dangerouslySetInnerHTML={{ __html: renderHtml(question.stem) }}
+                />
+              </div>
 
-      {question && (
-        <div ref={contentRef} style={{ marginTop: 16 }}>
-          <div className="bbLayout">
-            <div className="bbLeft">
-              <div
-                className="optionContent"
-                dangerouslySetInnerHTML={{ __html: renderHtml(question.stem) }}
-              />
-            </div>
-
-            <div className="bbRight">
+              <div className="bbRight">
                 <div className="bbRightHeader">
                   <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
                     <div className="bbRightHeaderTitle">
                       Question {index + 1} of {questionIds.length}
                     </div>
-                
+
                     <div className="bbRightHeaderActions">
                       <button className="secondary" onClick={toggleMarkForReview}>
                         {markedForReview ? "★ Marked" : "☆ Mark"}
                       </button>
-                
+
                       <button
                         className="secondary"
                         disabled={index === 0}
@@ -437,7 +448,7 @@ export default function PracticePage() {
                       >
                         ← Prev
                       </button>
-                
+
                       <button
                         disabled={index === questionIds.length - 1}
                         onClick={() => setIndex((i) => i + 1)}
@@ -447,10 +458,10 @@ export default function PracticePage() {
                       </button>
                     </div>
                   </div>
-                
+
                   <div className="row" style={{ justifyContent: "space-between", marginTop: 10 }}>
                     <button onClick={checkAnswer}>Check answer</button>
-                
+
                     <div className="row" style={{ gap: 6 }}>
                       <input
                         style={{ width: 90 }}
@@ -484,107 +495,111 @@ export default function PracticePage() {
                   </div>
                 </div>
 
-              {isFreeResponse ? (
-                <div className="row" style={{ flexDirection: "column", alignItems: "stretch" }}>
-                  <label><strong>Your answer</strong></label>
-                  <input
-                    placeholder="Type your answer"
-                    value={freeResponse}
-                    onChange={(e) => setFreeResponse(e.target.value)}
-                  />
-                </div>
-              ) : (
-                options.map((opt, i) => {
-                  const fallbackLabel = String.fromCharCode(65 + i);
-                  const label =
-                    typeof opt === "string"
-                      ? fallbackLabel
-                      : (opt.label ?? fallbackLabel);
+                {isFreeResponse ? (
+                  <div className="row" style={{ flexDirection: "column", alignItems: "stretch" }}>
+                    <label><strong>Your answer</strong></label>
+                    <input
+                      placeholder="Type your answer"
+                      value={freeResponse}
+                      onChange={(e) => setFreeResponse(e.target.value)}
+                    />
+                  </div>
+                ) : (
+                  options.map((opt, i) => {
+                    const fallbackLabel = String.fromCharCode(65 + i);
+                    const label =
+                      typeof opt === "string"
+                        ? fallbackLabel
+                        : (opt.label ?? fallbackLabel);
 
-                  const content =
-                    typeof opt === "string"
-                      ? opt
-                      : (opt.content ?? opt.text ?? "");
+                    const content =
+                      typeof opt === "string"
+                        ? opt
+                        : (opt.content ?? opt.text ?? "");
 
-                  const isSelected = selected === label;
+                    const isSelected = selected === label;
 
-                  return (
-                    <div
-                      key={i}
-                      className={`optionCard ${isSelected ? "selected" : ""}`}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setSelected(label)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") setSelected(label);
-                        if (e.key === " ") {
-                          e.preventDefault();
-                          setSelected(label);
-                        }
-                      }}
-                      aria-pressed={isSelected}
-                    >
-                      <div className="optionLetter">{label}</div>
-                      <div style={{ flex: 1 }}>
-                        <div
-                          className="optionContent"
-                          dangerouslySetInnerHTML={{ __html: renderOptionHtml(content) }}
+                    return (
+                      <div
+                        key={i}
+                        className={`optionCard ${isSelected ? "selected" : ""}`}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelected(label)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") setSelected(label);
+                          if (e.key === " ") {
+                            e.preventDefault();
+                            setSelected(label);
+                          }
+                        }}
+                        aria-pressed={isSelected}
+                      >
+                        <div className="optionLetter">{label}</div>
+                        <div style={{ flex: 1 }}>
+                          <div
+                            className="optionContent"
+                            dangerouslySetInnerHTML={{ __html: renderOptionHtml(content) }}
+                          />
+                        </div>
+                        <input
+                          type="radio"
+                          checked={isSelected}
+                          onChange={() => setSelected(label)}
+                          aria-label={`Choose option ${label}`}
                         />
                       </div>
-                      <input
-                        type="radio"
-                        checked={isSelected}
-                        onChange={() => setSelected(label)}
-                        aria-label={`Choose option ${label}`}
+                    );
+                  })
+                )}
+
+                {result !== null && (
+                  <div className="card" style={{ marginTop: 16 }}>
+                    <h3 style={{ marginTop: 0 }}>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
+
+                    {!result && !showExplanation && (
+                      <button className="secondary" onClick={() => setShowExplanation(true)}>
+                        Show answer & explanation
+                      </button>
+                    )}
+
+                    {result && question.rationale && (
+                      <div
+                        className="optionContent"
+                        style={{ marginTop: 8 }}
+                        dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
                       />
-                    </div>
-                  );
-                })
-              )}
+                    )}
 
-              
+                    {!result && showExplanation && (
+                      <>
+                        <p style={{ marginTop: 12 }}>
+                          Correct answer: <strong>{question.correct_answer}</strong>
+                        </p>
 
-              {result !== null && (
-                <div className="card" style={{ marginTop: 16 }}>
-                  <h3 style={{ marginTop: 0 }}>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
-
-                  {!result && !showExplanation && (
-                    <button className="secondary" onClick={() => setShowExplanation(true)}>
-                      Show answer & explanation
-                    </button>
-                  )}
-
-                  {result && question.rationale && (
-                    <div
-                      className="optionContent"
-                      style={{ marginTop: 8 }}
-                      dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
-                    />
-                  )}
-
-                  {!result && showExplanation && (
-                    <>
-                      <p style={{ marginTop: 12 }}>
-                        Correct answer: <strong>{question.correct_answer}</strong>
-                      </p>
-
-                      {question.rationale && (
-                        <div
-                          className="optionContent"
-                          style={{ marginTop: 8 }}
-                          dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
-                        />
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
+                        {question.rationale && (
+                          <div
+                            className="optionContent"
+                            style={{ marginTop: 8 }}
+                            dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  </div>
-);
-}
+        )}
 
+        {/* Optional: bring back nav buttons elsewhere if needed */}
+        {/* <div className="row" style={{ marginTop: 12, justifyContent: "space-between" }}>
+          <button className="secondary" onClick={() => router.push("/")}>Home</button>
+          <button className="secondary" onClick={() => router.push("/progress")}>Progress</button>
+          <button className="secondary" onClick={logout}>Log out</button>
+        </div> */}
+      </div>
+    </div>
+  );
+}
