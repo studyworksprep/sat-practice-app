@@ -647,44 +647,7 @@ export default function PracticePage() {
 
           
 
-          {result !== null && (
-            <div className="card" style={{ marginTop: 16 }}>
-              <h3 style={{ marginTop: 0 }}>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
-
-              {/* If incorrect, do NOT reveal automatically */}
-              {!result && !showExplanation && (
-                <button className="secondary" onClick={() => setShowExplanation(true)}>
-                  Show answer & explanation
-                </button>
-              )}
-
-              {/* If correct, show explanation immediately */}
-              {result && question.rationale && (
-                <div
-                  className="optionContent"
-                  style={{ marginTop: 8 }}
-                  dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
-                />
-              )}
-
-              {/* If incorrect, reveal only after button click */}
-              {!result && showExplanation && (
-                <>
-                  <p style={{ marginTop: 12 }}>
-                    Correct answer: <strong>{question.correct_answer}</strong>
-                  </p>
-
-                  {question.rationale && (
-                    <div
-                      className="optionContent"
-                      style={{ marginTop: 8 }}
-                      dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
-                    />
-                  )}
-                </>
-              )}
-            </div>
-          )}
+          
         </div>
       )}
     </div>
