@@ -1,9 +1,14 @@
 :root {
   color-scheme: light;
 }
+
 body {
-  background: hotpink !important;
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: #fafafa;
+  color: #111;
 }
+
 
 
 a { color: inherit; }
