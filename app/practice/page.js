@@ -57,7 +57,6 @@ export default function PracticeLandingPage() {
     if (!session) return;
 
     (async () => {
-      setStatus("Loading outline...");
       const { data, error } = await supabase.rpc("get_question_outline_counts", {
         p_difficulty: difficulty ? Number(difficulty) : null,
         p_score_bands: scoreBands.length ? scoreBands : null,
