@@ -402,54 +402,83 @@ export default function PracticePage() {
 
   return (
     <div className="card">
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <h1 style={{ margin: 0 }}>Practice</h1>
-        <div className="row">
-          <button className="secondary" onClick={() => router.push("/")}>Home</button>
-          <button className="secondary" onClick={() => router.push("/progress")}>Progress</button>
-          <button className="secondary" onClick={logout}>Log out</button>
+      
+      <div
+        className="row"
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          background: "var(--card-bg, white)",
+          padding: "10px 0",
+          borderBottom: "1px solid rgba(0,0,0,0.08)",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12
+        }}
+      >
+        <div className="row" style={{ gap: 10, alignItems: "center" }}>
+          <div style={{ fontWeight: 700 }}>
+            {index + 1} / {questionIds.length}
+          </div>
+      
+          <button className="secondary" onClick={toggleMarkForReview}>
+            {markedForReview ? "★ Marked" : "☆ Mark"}
+          </button>
+      
+          {status ? (
+            <span style={{ fontSize: 12, opacity: 0.8 }}>{status}</span>
+          ) : null}
         </div>
-      </div>
-
-      <div className="card" style={{ marginTop: 16 }}>
-        <h3>Filters</h3>
-        <div className="row">
-          <select value={domain} onChange={(e) => setDomain(e.target.value)}>
-            <option value="">Domain (any)</option>
-            {domainOptions.map((d) => (
-              <option key={d} value={d}>{d}</option>
-            ))}
-          </select>
-
-          <select value={skill} onChange={(e) => setSkill(e.target.value)} disabled={!domain}>
-            <option value="">Skill (any)</option>
-            {skillOptions.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-
-          <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-            <option value="">Difficulty</option>
-            <option value="1">Easy</option>
-            <option value="2">Medium</option>
-            <option value="3">Hard</option>
-          </select>
-
-          <select value={scoreBand} onChange={(e) => setScoreBand(e.target.value)}>
-            <option value="">Score band</option>
-            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-              <option key={n} value={String(n)}>{n}</option>
-            ))}
-          </select>
-
-          <label className="row" style={{ gap: 6 }}>
+      
+        <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            className="secondary"
+            disabled={index === 0}
+            onClick={() => setIndex((i) => i - 1)}
+            aria-label="Previous question"
+          >
+            ← Prev
+          </button>
+      
+          <button
+            disabled={index === questionIds.length - 1}
+            onClick={() => setIndex((i) => i + 1)}
+            aria-label="Next question"
+          >
+            Next →
+          </button>
+      
+          <div className="row" style={{ gap: 6, alignItems: "center" }}>
             <input
-              type="checkbox"
-              checked={markedOnly}
-              onChange={(e) => setMarkedOnly(e.target.checked)}
+              style={{ width: 90 }}
+              placeholder="Go to #"
+              value={jumpTo}
+              onChange={(e) => setJumpTo(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const n = Number(jumpTo);
+                  if (!Number.isFinite(n)) return;
+                  if (n < 1 || n > questionIds.length) return;
+                  setIndex(n - 1);
+                  setJumpTo("");
+                }
+              }}
+              aria-label="Jump to question number"
             />
-            Marked only
-          </label>
+            <button
+              className="secondary"
+              onClick={() => {
+                const n = Number(jumpTo);
+                if (!Number.isFinite(n)) return;
+                if (n < 1 || n > questionIds.length) return;
+                setIndex(n - 1);
+                setJumpTo("");
+              }}
+            >
+              Go
+            </button>
+          </div>
         </div>
       </div>
 
