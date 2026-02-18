@@ -105,6 +105,7 @@ export default function PracticeSessionClient() {
     .split(",")
     .map((s) => Number(s))
     .filter((n) => Number.isFinite(n) && n >= 1 && n <= 7);
+  }, [scoreBandsParam]);
 
   const markedOnly = searchParams.get("markedOnly") === "1";
 
@@ -223,7 +224,7 @@ export default function PracticeSessionClient() {
     }
 
     loadIds();
-  }, [session, domain, skill, difficulty, scoreBands, markedOnly]);
+  }, [session, domain, skill, difficulty, scoreBandsParam, markedOnly]);
 
   // Load current question
   useEffect(() => {
