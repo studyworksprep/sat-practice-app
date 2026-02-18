@@ -73,7 +73,7 @@ export default function PracticeLandingPage() {
       setRows(data ?? []);
       setStatus("");
     })();
-  }, [session, difficulty, scoreBand, markedOnly]);
+  }, [session, difficulty, scoreBands, markedOnly]);
 
   // Group rows by domain for display
   const outline = useMemo(() => {
