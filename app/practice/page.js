@@ -233,6 +233,7 @@ export default function PracticePage() {
         const { data: ms, error: msErr } = await supabase
           .from("question_state")
           .select("question_id")
+          .eq("user_id", session.user.id)
           .eq("marked_for_review", true);
 
         if (msErr) {
