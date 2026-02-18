@@ -126,48 +126,60 @@ button.secondary {
 }
 
 /* Option cards */
+/* Bluebook-like answer rows */
 .optionCard {
   position: relative;
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 12px 12px;
-  border: 1px solid #e6e6e6;
-  border-radius: 14px;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid #d8d8d8;
+  border-radius: 12px;
   background: #fff;
 }
 
-/* Hide the actual radio, keep it accessible */
+.optionCard:hover {
+  border-color: #bdbdbd;
+  background: #fbfbfb;
+}
+
+.optionCard.selected {
+  border-color: #2b2b2b;
+  box-shadow: 0 0 0 1px #2b2b2b inset;
+  background: #fff;
+}
+
+/* A/B/C/D bubble on the left */
+.optionLetter {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid #8f8f8f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex: 0 0 auto;
+  color: #111;
+}
+
+.optionCard.selected .optionLetter {
+  border-color: #111;
+}
+
+/* Slightly more natural text layout like Bluebook */
+.optionContent {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+/* Keep radio hidden but accessible (you already do this) */
 .optionCard input[type="radio"] {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
-.optionCard:hover {
-  border-color: #cfcfcf;
-}
-
-.optionCard.selected {
-  border-color: #111;
-  box-shadow: 0 0 0 2px rgba(0,0,0,0.04) inset;
-}
-
-.optionLetter {
-  min-width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  flex: 0 0 auto;
-}
-
-.optionCard.selected .optionLetter {
-  border-color: #111;
-}
 
 
 
