@@ -180,10 +180,38 @@ button.secondary {
   pointer-events: none;
 }
 
-
-
-
-
 /* Keep your HTML content tidy */
 .optionContent p { margin: 0; }
 .optionContent ul, .optionContent ol { margin: 0; padding-left: 18px; }
+
+/* Bluebook-like two-pane layout */
+.bbLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.bbLeft, .bbRight {
+  min-width: 0; /* prevents overflow in grids */
+}
+
+/* On wide screens: passage left, question/answers right */
+@media (min-width: 1000px) {
+  .container.practiceWide {
+    max-width: 1200px;
+  }
+
+  .bbLayout {
+    grid-template-columns: 1.25fr 0.75fr;
+    align-items: start;
+  }
+
+  .bbLeft {
+    border-right: 1px solid #eee;
+    padding-right: 16px;
+  }
+
+  .bbRight {
+    padding-left: 8px;
+  }
+}
