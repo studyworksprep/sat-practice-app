@@ -224,4 +224,34 @@ button.secondary {
   .bbRight {
     padding-left: 8px;
   }
+
+  /* Bluebook-ish pane styling */
+  .bbLeft {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 16px;
+    padding: 16px;
+  }
+  
+  .bbRight {
+    background: #f7f7f7;            /* subtle panel contrast */
+    border: 1px solid #e6e6e6;
+    border-radius: 16px;
+    padding: 16px;
+  }
+  
+  /* Make the stem readable like Bluebook */
+  .bbLeft .optionContent {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  
+  /* In the right panel, tighten spacing between options */
+  .bbRight .optionCard {
+    margin-top: 10px;
+  }
+  .bbRight .optionCard:first-child {
+    margin-top: 0;
+  }
+
 }
