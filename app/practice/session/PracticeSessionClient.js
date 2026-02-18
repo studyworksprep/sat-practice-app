@@ -101,7 +101,6 @@ export default function PracticeSessionClient() {
   const skill = searchParams.get("skill") || "";
   const difficulty = searchParams.get("difficulty") || "";
   const scoreBandsParam = searchParams.get("scoreBands") || "";
-  const scoreBandsParam = searchParams.get("scoreBands") || "";
 
   const scoreBands = useMemo(() => {
     return scoreBandsParam
