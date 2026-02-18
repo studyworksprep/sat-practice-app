@@ -10,7 +10,7 @@ export default function PracticeLandingPage() {
 
   // Landing filters (these affect counts + what set user starts)
   const [difficulty, setDifficulty] = useState(""); // "1"|"2"|"3"| ""
-  const [scoreBand, setScoreBand] = useState(""); // "1".."7" | ""
+  const [scoreBands, setScoreBands] = useState([]); // array of numbers
   const [markedOnly, setMarkedOnly] = useState(false);
 
   // Data
@@ -60,7 +60,7 @@ export default function PracticeLandingPage() {
       setStatus("Loading outline...");
       const { data, error } = await supabase.rpc("get_question_outline_counts", {
         p_difficulty: difficulty ? Number(difficulty) : null,
-        p_score_band: scoreBand ? Number(scoreBand) : null,
+        p_score_bands: scoreBands.length ? scoreBands : null,
         p_marked_only: markedOnly
       });
 
@@ -100,10 +100,17 @@ export default function PracticeLandingPage() {
     if (domain) params.set("domain", domain);
     if (skill) params.set("skill", skill);
     if (difficulty) params.set("difficulty", difficulty);
-    if (scoreBand) params.set("scoreBand", scoreBand);
+    if (scoreBands.length) params.set("scoreBands", scoreBands.join(","));
     if (markedOnly) params.set("markedOnly", "1");
     router.push(`/practice/session?${params.toString()}`);
   }
+  
+  function toggleScoreBand(n) {
+    setScoreBands((prev) =>
+      prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n].sort((a, b) => a - b)
+    );
+  }
+
 
   return (
     <div className="page practiceWide">
@@ -155,12 +162,31 @@ export default function PracticeLandingPage() {
               <option value="3">Hard</option>
             </select>
 
-            <select value={scoreBand} onChange={(e) => setScoreBand(e.target.value)}>
-              <option value="">Score band (any)</option>
-              {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                <option key={n} value={String(n)}>{n}</option>
-              ))}
-            </select>
+            <div className="row" style={{ alignItems: "center" }}>
+              <div style={{ fontWeight: 600, marginRight: 6 }}>Score band</div>
+              <div className="row" style={{ gap: 6 }}>
+                {[1, 2, 3, 4, 5, 6, 7].map((n) => {
+                  const on = scoreBands.includes(n);
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      className="secondary"
+                      onClick={() => toggleScoreBand(n)}
+                      aria-pressed={on}
+                      style={{
+                        padding: "8px 10px",
+                        borderColor: on ? "#111" : undefined,
+                        boxShadow: on ? "0 0 0 1px #111 inset" : undefined,
+                        fontWeight: on ? 700 : 600
+                      }}
+                    >
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             <label className="row" style={{ gap: 6 }}>
               <input
@@ -175,7 +201,7 @@ export default function PracticeLandingPage() {
               className="secondary"
               onClick={() => {
                 setDifficulty("");
-                setScoreBand("");
+                setScoreBands([]);
                 setMarkedOnly(false);
               }}
             >
