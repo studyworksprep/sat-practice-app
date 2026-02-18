@@ -555,44 +555,7 @@ export default function PracticePage() {
             })
           )}
 
-          <div className="row" style={{ marginTop: 16 }}>
-            <button onClick={checkAnswer}>Check answer</button>
-
-            <button
-              className="secondary"
-              disabled={index === 0}
-              onClick={() => setIndex((i) => i - 1)}
-            >
-              Back
-            </button>
-
-            <input
-              style={{ width: 110 }}
-              placeholder="Go to #"
-              value={jumpTo}
-              onChange={(e) => setJumpTo(e.target.value)}
-            />
-
-            <button
-              className="secondary"
-              onClick={() => {
-                const n = Number(jumpTo);
-                if (!Number.isFinite(n)) return;
-                if (n < 1 || n > questionIds.length) return;
-                setIndex(n - 1);
-                setJumpTo("");
-              }}
-            >
-              Go
-            </button>
-
-            <button
-              disabled={index === questionIds.length - 1}
-              onClick={() => setIndex((i) => i + 1)}
-            >
-              Next
-            </button>
-          </div>
+          
 
           {result !== null && (
             <div className="card" style={{ marginTop: 16 }}>
