@@ -254,4 +254,27 @@ button.secondary {
     margin-top: 0;
   }
 
+    /* Bluebook-style header inside the right pane */
+  .bbRightHeader {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #f7f7f7; /* match bbRight */
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e6e6e6;
+  }
+  
+  .bbRightHeaderTitle {
+    font-weight: 700;
+  }
+  
+  .bbRightHeaderActions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+
 }
