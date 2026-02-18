@@ -196,7 +196,7 @@ button.secondary {
 }
 
 /* On wide screens: passage left, question/answers right */
-@media (min-width: 1000px) {
+@media (min-width: 900px) {
   .container.practiceWide {
     max-width: 1200px;
   }
