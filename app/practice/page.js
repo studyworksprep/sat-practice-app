@@ -402,7 +402,7 @@ export default function PracticePage() {
     stripA11yImageDescriptions(stripMathAltText(stripLeadingBullets(String(html || ""))));
 
   return (
-  <div className="container practiceWide">
+  <div className="page practiceWide">
     <div className="card">
       {/* Sticky toolbar */}
       <div
