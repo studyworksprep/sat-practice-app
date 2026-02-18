@@ -542,24 +542,7 @@ export default function PracticePage() {
                 })
               )}
 
-              <div className="row" style={{ marginTop: 16 }}>
-                <button onClick={checkAnswer}>Check answer</button>
-
-                <button
-                  className="secondary"
-                  disabled={index === 0}
-                  onClick={() => setIndex((i) => i - 1)}
-                >
-                  Back
-                </button>
-
-                <button
-                  disabled={index === questionIds.length - 1}
-                  onClick={() => setIndex((i) => i + 1)}
-                >
-                  Next
-                </button>
-              </div>
+              
 
               {result !== null && (
                 <div className="card" style={{ marginTop: 16 }}>
