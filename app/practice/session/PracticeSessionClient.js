@@ -100,7 +100,12 @@ export default function PracticeSessionClient() {
   const domain = searchParams.get("domain") || "";
   const skill = searchParams.get("skill") || "";
   const difficulty = searchParams.get("difficulty") || "";
-  const scoreBand = searchParams.get("scoreBand") || "";
+  const scoreBandsParam = searchParams.get("scoreBands") || "";
+  const scoreBands = scoreBandsParam
+    .split(",")
+    .map((s) => Number(s))
+    .filter((n) => Number.isFinite(n) && n >= 1 && n <= 7);
+
   const markedOnly = searchParams.get("markedOnly") === "1";
 
   // Question navigation
@@ -177,7 +182,8 @@ export default function PracticeSessionClient() {
       if (domain) q = q.eq("domain", domain);
       if (skill) q = q.eq("skill_desc", skill);
       if (difficulty) q = q.eq("difficulty", Number(difficulty));
-      if (scoreBand) q = q.eq("score_band", Number(scoreBand));
+      if (scoreBands.length) q = q.in("score_band", scoreBands);
+
 
       if (markedOnly) {
         const { data: ms, error: msErr } = await supabase
@@ -344,7 +350,7 @@ export default function PracticeSessionClient() {
             {domain ? domain : "All domains"}
             {skill ? ` • ${skill}` : ""}
             {difficulty ? ` • D${difficulty}` : ""}
-            {scoreBand ? ` • Band ${scoreBand}` : ""}
+            {scoreBands.length ? ` • Bands ${scoreBands.join(",")}` : ""}
             {markedOnly ? " • Marked" : ""}
           </div>
         </div>
