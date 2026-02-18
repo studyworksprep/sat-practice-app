@@ -402,17 +402,16 @@ export default function PracticePage() {
     stripA11yImageDescriptions(stripMathAltText(stripLeadingBullets(String(html || ""))));
 
   return (
-    <div className="container practiceWide">
-      <div className="card">
-
-      
+  <div className="container practiceWide">
+    <div className="card">
+      {/* Sticky toolbar */}
       <div
         className="row"
         style={{
           position: "sticky",
           top: 0,
           zIndex: 10,
-          background: "var(--card-bg, white)",
+          background: "white",
           padding: "10px 0",
           borderBottom: "1px solid rgba(0,0,0,0.08)",
           justifyContent: "space-between",
@@ -424,16 +423,16 @@ export default function PracticePage() {
           <div style={{ fontWeight: 700 }}>
             {index + 1} / {questionIds.length}
           </div>
-      
+
           <button className="secondary" onClick={toggleMarkForReview}>
             {markedForReview ? "★ Marked" : "☆ Mark"}
           </button>
-      
+
           {status ? (
             <span style={{ fontSize: 12, opacity: 0.8 }}>{status}</span>
           ) : null}
         </div>
-      
+
         <div className="row" style={{ gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           <button
             className="secondary"
@@ -443,7 +442,7 @@ export default function PracticePage() {
           >
             ← Prev
           </button>
-      
+
           <button
             disabled={index === questionIds.length - 1}
             onClick={() => setIndex((i) => i + 1)}
@@ -451,7 +450,7 @@ export default function PracticePage() {
           >
             Next →
           </button>
-      
+
           <div className="row" style={{ gap: 6, alignItems: "center" }}>
             <input
               style={{ width: 90 }}
@@ -487,25 +486,16 @@ export default function PracticePage() {
 
       {status && <p>{status}</p>}
 
-     {question && (
-        <div ref={contentRef} className="card" style={{ marginTop: 16 }}>
-          <div className="row" style={{ justifyContent: "space-between" }}>
-            <div>Question {index + 1} of {questionIds.length}</div>
-            <button className="secondary" onClick={toggleMarkForReview}>
-              {markedForReview ? "★ Marked for review" : "☆ Mark for review"}
-            </button>
-          </div>
-      
-          <div className="bbLayout" style={{ marginTop: 12 }}>
-            {/* LEFT: passage / stem */}
+      {question && (
+        <div ref={contentRef} style={{ marginTop: 16 }}>
+          <div className="bbLayout">
             <div className="bbLeft">
               <div
                 className="optionContent"
                 dangerouslySetInnerHTML={{ __html: renderHtml(question.stem) }}
               />
             </div>
-      
-            {/* RIGHT: answers + controls + result */}
+
             <div className="bbRight">
               {isFreeResponse ? (
                 <div className="row" style={{ flexDirection: "column", alignItems: "stretch" }}>
@@ -523,14 +513,14 @@ export default function PracticePage() {
                     typeof opt === "string"
                       ? fallbackLabel
                       : (opt.label ?? fallbackLabel);
-      
+
                   const content =
                     typeof opt === "string"
                       ? opt
                       : (opt.content ?? opt.text ?? "");
-      
+
                   const isSelected = selected === label;
-      
+
                   return (
                     <div
                       key={i}
@@ -564,10 +554,10 @@ export default function PracticePage() {
                   );
                 })
               )}
-      
+
               <div className="row" style={{ marginTop: 16 }}>
                 <button onClick={checkAnswer}>Check answer</button>
-      
+
                 <button
                   className="secondary"
                   disabled={index === 0}
@@ -575,27 +565,7 @@ export default function PracticePage() {
                 >
                   Back
                 </button>
-      
-                <input
-                  style={{ width: 110 }}
-                  placeholder="Go to #"
-                  value={jumpTo}
-                  onChange={(e) => setJumpTo(e.target.value)}
-                />
-      
-                <button
-                  className="secondary"
-                  onClick={() => {
-                    const n = Number(jumpTo);
-                    if (!Number.isFinite(n)) return;
-                    if (n < 1 || n > questionIds.length) return;
-                    setIndex(n - 1);
-                    setJumpTo("");
-                  }}
-                >
-                  Go
-                </button>
-      
+
                 <button
                   disabled={index === questionIds.length - 1}
                   onClick={() => setIndex((i) => i + 1)}
@@ -603,17 +573,17 @@ export default function PracticePage() {
                   Next
                 </button>
               </div>
-      
+
               {result !== null && (
                 <div className="card" style={{ marginTop: 16 }}>
                   <h3 style={{ marginTop: 0 }}>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
-      
+
                   {!result && !showExplanation && (
                     <button className="secondary" onClick={() => setShowExplanation(true)}>
                       Show answer & explanation
                     </button>
                   )}
-      
+
                   {result && question.rationale && (
                     <div
                       className="optionContent"
@@ -621,13 +591,13 @@ export default function PracticePage() {
                       dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
                     />
                   )}
-      
+
                   {!result && showExplanation && (
                     <>
                       <p style={{ marginTop: 12 }}>
                         Correct answer: <strong>{question.correct_answer}</strong>
                       </p>
-      
+
                       {question.rationale && (
                         <div
                           className="optionContent"
@@ -643,15 +613,7 @@ export default function PracticePage() {
           </div>
         </div>
       )}
-
-
-          
-
-          
-        </div>
-      )}
     </div>
   </div>
-  );
-  
-}
+);
+
