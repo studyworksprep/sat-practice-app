@@ -337,6 +337,34 @@ button.secondary {
     background: #fff;
   }
 
+/* Bottom navigation fixed to viewport */
+.bottomNav {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  padding: 10px;
+  background: rgba(255,255,255,0.96);
+  border: 1px solid #e6e6e6;
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+  backdrop-filter: blur(6px);
+}
+
+.bottomNavMap {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  white-space: nowrap;
+}
 
 
 }
