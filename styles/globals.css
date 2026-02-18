@@ -317,29 +317,24 @@ button.secondary {
     color: #111;
   }
   
-  .qCell:hover {
-    border-color: #bbb;
-    background: #fbfbfb;
-  }
-  
   .qCell.attempted {
-    background: #f6f6f6;
-    border-color: #cfcfcf;
+    background: #f3f3f3;
   }
   
   .qCell.correct {
-    border-color: #1f7a3a;
-    box-shadow: 0 0 0 1px rgba(31,122,58,0.3) inset;
+    border-color: #2f7d46;
+    box-shadow: 0 0 0 1px rgba(47,125,70,0.25) inset;
   }
   
   .qCell.marked {
-    border-color: #b26a00;
-    box-shadow: 0 0 0 1px rgba(178,106,0,0.25) inset;
+    border-color: #b57900;
+    box-shadow: 0 0 0 1px rgba(181,121,0,0.25) inset;
   }
   
   .qCell.current {
     border-color: #111;
-    box-shadow: 0 0 0 2px rgba(0,0,0,0.12) inset;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.15) inset;
+    background: #fff;
   }
 
 
