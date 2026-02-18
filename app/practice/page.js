@@ -402,7 +402,9 @@ export default function PracticePage() {
     stripA11yImageDescriptions(stripMathAltText(stripLeadingBullets(String(html || ""))));
 
   return (
-    <div className="card">
+    <div className="container practiceWide">
+      <div className="card">
+
       
       <div
         className="row"
@@ -605,5 +607,7 @@ export default function PracticePage() {
         </div>
       )}
     </div>
+  </div>
   );
+  
 }
