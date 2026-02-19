@@ -4,15 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 
-function safeParseJsonArray(s) {
-  try {
-    const v = JSON.parse(s);
-    return Array.isArray(v) ? v : [];
-  } catch {
-    return [];
-  }
-}
-
 function stripLeadingBullets(html) {
   if (!html) return "";
   return String(html)
@@ -21,7 +12,7 @@ function stripLeadingBullets(html) {
 }
 
 function stripMathAltText(html) {
-  if (!html) returnt;
+  if (!html) return "";
   return String(html).replace(/\salttext=(["']).*?\1/gi, "");
 }
 
@@ -47,7 +38,7 @@ function stripA11yImageDescriptions(html) {
       "figcaption.accessibility",
       "figcaption.a11y",
       "figcaption.alt-text",
-      "figcaption.image-description"
+      "figcaption.image-description",
     ];
 
     doc.querySelectorAll(selectors.join(",")).forEach((n) => n.remove());
@@ -76,6 +67,27 @@ function chunkArray(arr, size) {
   return out;
 }
 
+/**
+ * answer_options_full is expected to be JSON (array) or already an array.
+ * We handle both.
+ * Expected option shape (common): { id: string, content_html?: string, content?: string, text?: string, label?: string }
+ */
+function normalizeOptions(answer_options_full) {
+  if (!answer_options_full) return [];
+  if (Array.isArray(answer_options_full)) return answer_options_full;
+  if (typeof answer_options_full === "object") return [];
+  try {
+    const parsed = JSON.parse(answer_options_full);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function getOptionHtml(opt) {
+  return opt?.content_html ?? opt?.content ?? opt?.text ?? "";
+}
+
 export default function PracticeSessionClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -101,16 +113,20 @@ export default function PracticeSessionClient() {
   const [index, setIndex] = useState(0);
   const [question, setQuestion] = useState(null);
 
-  const [selected, setSelected] = useState("");
+  // Answer state
+  const [selectedOptionId, setSelectedOptionId] = useState("");
   const [freeResponse, setFreeResponse] = useState("");
-  const [result, setResult] = useState(null);
+
+  // Result / explanation gating
+  const [result, setResult] = useState(null); // true/false/null
   const [showExplanation, setShowExplanation] = useState(false);
 
+  // Mark for review
   const [markedForReview, setMarkedForReview] = useState(false);
 
-  // Map modal + per-question state
+  // Map modal + per-question rollup state
   const [showMap, setShowMap] = useState(false);
-  const [stateById, setStateById] = useState({});
+  const [stateById, setStateById] = useState({}); // { [question_id]: { attempts_count, correct_count, marked_for_review, completed } }
 
   const [status, setStatus] = useState("Loading…");
 
@@ -125,6 +141,12 @@ export default function PracticeSessionClient() {
       .then(() => window.MathJax.typesetPromise([contentRef.current]))
       .catch(() => {});
   }
+
+  const renderHtml = (html) =>
+    stripA11yImageDescriptions(stripMathAltText(String(html || "")));
+
+  const renderOptionHtml = (html) =>
+    stripA11yImageDescriptions(stripMathAltText(stripLeadingBullets(String(html || ""))));
 
   // Auth
   useEffect(() => {
@@ -150,7 +172,7 @@ export default function PracticeSessionClient() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showMap]);
 
-  // Load IDs based on URL filters
+  // Load IDs based on URL filters (Canonical v2: questions_v2 + question_status)
   useEffect(() => {
     if (!session) return;
 
@@ -159,21 +181,22 @@ export default function PracticeSessionClient() {
       setQuestion(null);
       setResult(null);
       setShowExplanation(false);
-      setSelected("");
+      setSelectedOptionId("");
       setFreeResponse("");
       setMarkedForReview(false);
       setStateById({});
 
-      let q = supabase.from("questions").select("id");
+      let base = supabase.from("questions_v2").select("id");
 
-      if (domain) q = q.eq("domain", domain);
-      if (skill) q = q.eq("skill_desc", skill);
-      if (difficulty) q = q.eq("difficulty", Number(difficulty));
-      if (scoreBands.length) q = q.in("score_band", scoreBands);
+      if (domain) base = base.eq("domain", domain);
+      if (skill) base = base.eq("skill", skill);
+      if (difficulty) base = base.eq("difficulty", Number(difficulty));
+      if (scoreBands.length) base = base.in("score_band", scoreBands);
 
+      // Marked-only filter is applied by intersecting with question_status
       if (markedOnly) {
         const { data: ms, error: msErr } = await supabase
-          .from("question_state")
+          .from("question_status")
           .select("question_id")
           .eq("user_id", session.user.id)
           .eq("marked_for_review", true);
@@ -191,10 +214,13 @@ export default function PracticeSessionClient() {
           return;
         }
 
-        q = q.in("id", markedIds);
+        base = base.in("id", markedIds);
       }
 
-      const { data, error } = await q;
+      // Deterministic order
+      base = base.order("id", { ascending: true });
+
+      const { data, error } = await base;
       if (error) {
         setStatus(error.message);
         setQuestionIds([]);
@@ -210,7 +236,7 @@ export default function PracticeSessionClient() {
     loadIds();
   }, [session, domain, skill, difficulty, scoreBandsParam, markedOnly, scoreBands.length]);
 
-  // Load map state for current ID set
+  // Load map state (question_status rollup)
   useEffect(() => {
     if (!session) return;
     if (!questionIds.length) return;
@@ -223,8 +249,8 @@ export default function PracticeSessionClient() {
 
       for (const idsChunk of chunks) {
         const { data, error } = await supabase
-          .from("question_state")
-          .select("question_id, attempts_count, correct_count, marked_for_review")
+          .from("question_status")
+          .select("question_id, attempts_count, correct_count, marked_for_review, completed")
           .eq("user_id", session.user.id)
           .in("question_id", idsChunk);
 
@@ -235,7 +261,8 @@ export default function PracticeSessionClient() {
             merged[r.question_id] = {
               attempts_count: Number(r.attempts_count || 0),
               correct_count: Number(r.correct_count || 0),
-              marked_for_review: Boolean(r.marked_for_review)
+              marked_for_review: Boolean(r.marked_for_review),
+              completed: Boolean(r.completed),
             };
           }
         }
@@ -250,7 +277,7 @@ export default function PracticeSessionClient() {
     };
   }, [session, questionIds]);
 
-  // Load current question
+  // Load current question (Canonical v2: questions_v2 columns)
   useEffect(() => {
     if (!session) return;
     if (!questionIds.length) return;
@@ -260,15 +287,14 @@ export default function PracticeSessionClient() {
       setStatus("Loading question…");
       setResult(null);
       setShowExplanation(false);
-      setSelected("");
+      setSelectedOptionId("");
       setFreeResponse("");
-      setMarkedForReview(false);
 
       const id = questionIds[index];
 
       const { data, error } = await supabase
-        .from("questions")
-        .select("*")
+        .from("questions_v2")
+        .select("id, stimulus_html, stem_html, answer_options_full, correct_option_id, rationale_html")
         .eq("id", id)
         .single();
 
@@ -281,18 +307,25 @@ export default function PracticeSessionClient() {
       setQuestion(data);
       setStatus("");
 
-      const { data: qs } = await supabase
-        .from("question_state")
-        .select("marked_for_review")
-        .eq("user_id", session.user.id)
-        .eq("question_id", data.id)
-        .maybeSingle();
+      // Marked state: prefer map cache if present; otherwise fetch single row
+      const cached = stateById?.[data.id];
+      if (cached && typeof cached.marked_for_review === "boolean") {
+        setMarkedForReview(Boolean(cached.marked_for_review));
+      } else {
+        const { data: qs } = await supabase
+          .from("question_status")
+          .select("marked_for_review")
+          .eq("user_id", session.user.id)
+          .eq("question_id", data.id)
+          .maybeSingle();
 
-      setMarkedForReview(Boolean(qs?.marked_for_review));
+        setMarkedForReview(Boolean(qs?.marked_for_review));
+      }
     }
 
     loadQuestion();
-  }, [session, questionIds, index]);
+    // include stateById so we can use cached mark status without extra fetch
+  }, [session, questionIds, index, stateById]);
 
   useEffect(() => {
     typesetMath();
@@ -300,16 +333,51 @@ export default function PracticeSessionClient() {
 
   const options = useMemo(() => {
     if (!question) return [];
-    if (Array.isArray(question.answer_options)) return question.answer_options;
-    if (typeof question.answer_options === "string") return safeParseJsonArray(question.answer_options);
-    return [];
+    return normalizeOptions(question.answer_options_full);
   }, [question]);
 
-  const isFreeResponse =
-    !options.length ||
-    String(question?.question_type || "").toLowerCase().includes("free") ||
-    String(question?.question_type || "").toLowerCase().includes("grid") ||
-    String(question?.question_type || "").toLowerCase().includes("student");
+  const isFreeResponse = useMemo(() => {
+    return !options.length;
+  }, [options.length]);
+
+  const correctIndex = useMemo(() => {
+    if (!question || !options.length) return -1;
+    const id = String(question.correct_option_id || "");
+    return options.findIndex((o) => String(o?.id ?? "") === id);
+  }, [question, options]);
+
+  const correctLetter = useMemo(() => {
+    if (correctIndex < 0) return "";
+    return String.fromCharCode(65 + correctIndex);
+  }, [correctIndex]);
+
+  const correctOptionHtml = useMemo(() => {
+    if (correctIndex < 0) return "";
+    return getOptionHtml(options[correctIndex]);
+  }, [options, correctIndex]);
+
+  async function refreshSingleStatus(questionId) {
+    if (!session) return;
+    const { data, error } = await supabase
+      .from("question_status")
+      .select("question_id, attempts_count, correct_count, marked_for_review, completed")
+      .eq("user_id", session.user.id)
+      .eq("question_id", questionId)
+      .maybeSingle();
+
+    if (!error && data) {
+      setStateById((prev) => ({
+        ...prev,
+        [questionId]: {
+          attempts_count: Number(data.attempts_count || 0),
+          correct_count: Number(data.correct_count || 0),
+          marked_for_review: Boolean(data.marked_for_review),
+          completed: Boolean(data.completed),
+        },
+      }));
+      setMarkedForReview(Boolean(data.marked_for_review));
+    }
+  }
 
   async function toggleMarkForReview() {
     if (!question || !session) return;
@@ -317,23 +385,34 @@ export default function PracticeSessionClient() {
     const newVal = !markedForReview;
     setMarkedForReview(newVal);
 
-    await supabase.from("question_state").upsert(
-      {
-        user_id: session.user.id,
-        question_id: question.id,
-        marked_for_review: newVal,
-        last_attempt_at: new Date().toISOString()
-      },
-      { onConflict: "user_id,question_id" }
-    );
+    // Upsert into question_status (row may not exist until first attempt)
+    const { error } = await supabase
+      .from("question_status")
+      .upsert(
+        {
+          user_id: session.user.id,
+          question_id: question.id,
+          marked_for_review: newVal,
+        },
+        { onConflict: "user_id,question_id" }
+      );
 
+    if (error) {
+      setStatus(error.message);
+      // revert optimistic UI
+      setMarkedForReview((v) => !v);
+      return;
+    }
+
+    // Optimistic map update
     setStateById((prev) => ({
       ...prev,
       [question.id]: {
         attempts_count: Number(prev?.[question.id]?.attempts_count || 0),
         correct_count: Number(prev?.[question.id]?.correct_count || 0),
-        marked_for_review: newVal
-      }
+        marked_for_review: newVal,
+        completed: Boolean(prev?.[question.id]?.completed),
+      },
     }));
   }
 
@@ -341,58 +420,86 @@ export default function PracticeSessionClient() {
     setShowExplanation(false);
     if (!question) return;
 
-    const answerToSend = isFreeResponse ? freeResponse.trim() : selected;
-    if (!answerToSend) {
+    if (isFreeResponse) {
+      const answerText = freeResponse.trim();
+      if (!answerText) {
+        setStatus("Type an answer first.");
+        return;
+      }
+
+      setStatus("Saving attempt…");
+      setResult(null);
+
+      const { error } = await supabase.from("attempts").insert({
+        user_id: session.user.id,
+        question_id: question.id,
+        selected_option_id: null,
+        response_text: answerText,
+        is_correct: null, // free response not autograded here
+      });
+
+      if (error) {
+        setStatus(error.message);
+        return;
+      }
+
+      // For SPR we can't determine correctness here; keep result null
+      setStatus("");
+      await refreshSingleStatus(question.id);
+      return;
+    }
+
+    // MCQ
+    if (!selectedOptionId) {
       setStatus("Select an answer first.");
       return;
     }
 
-    setStatus("Checking…");
+    const isCorrect = String(selectedOptionId) === String(question.correct_option_id || "");
+
+    setStatus("Saving attempt…");
     setResult(null);
 
-    const { data, error } = await supabase.rpc("submit_attempt", {
-      p_question_id: question.id,
-      p_selected_answer: answerToSend
+    const { error } = await supabase.from("attempts").insert({
+      user_id: session.user.id,
+      question_id: question.id,
+      selected_option_id: selectedOptionId,
+      response_text: null,
+      is_correct: isCorrect,
     });
 
-    if (!error && data && data.length) {
-      const ok = Boolean(data[0].is_correct);
-      setResult(ok);
-      setStatus("");
-
-      setStateById((prevMap) => {
-        const prev = prevMap?.[question.id] || {
-          attempts_count: 0,
-          correct_count: 0,
-          marked_for_review: markedForReview
-        };
-        return {
-          ...prevMap,
-          [question.id]: {
-            ...prev,
-            attempts_count: Number(prev.attempts_count || 0) + 1,
-            correct_count: Number(prev.correct_count || 0) + (ok ? 1 : 0),
-            marked_for_review: Boolean(prev.marked_for_review)
-          }
-        };
-      });
-
+    if (error) {
+      setStatus(error.message);
       return;
     }
 
-    // fallback
-    const isCorrect = String(answerToSend) === String(question.correct_answer);
     setResult(isCorrect);
-    setStatus(error ? "RPC missing — fallback mode." : "");
+    setStatus("");
+
+    // Optimistic map update, then refresh from rollup
+    setStateById((prevMap) => {
+      const prev = prevMap?.[question.id] || {
+        attempts_count: 0,
+        correct_count: 0,
+        marked_for_review: markedForReview,
+        completed: false,
+      };
+      return {
+        ...prevMap,
+        [question.id]: {
+          ...prev,
+          attempts_count: Number(prev.attempts_count || 0) + 1,
+          correct_count: Number(prev.correct_count || 0) + (isCorrect ? 1 : 0),
+          marked_for_review: Boolean(prev.marked_for_review),
+          completed: true,
+        },
+      };
+    });
+
+    await refreshSingleStatus(question.id);
   }
 
-  const renderHtml = (html) =>
-    stripA11yImageDescriptions(stripMathAltText(String(html || "")));
-
-  const renderOptionHtml = (html) =>
-    stripA11yImageDescriptions(stripMathAltText(stripLeadingBullets(String(html || ""))));
-
-  // Loading / empty states (avoid blank page)
+  // Loading / empty states
   if (!session) {
     return (
       <div className="card">
@@ -444,47 +551,62 @@ export default function PracticeSessionClient() {
         <div ref={contentRef} style={{ marginTop: 16 }}>
           <div className="bbLayout">
             <div className="bbLeft">
-              <div
-                className="optionContent"
-                dangerouslySetInnerHTML={{ __html: renderHtml(question.stem) }}
-              />
+              {question.stimulus_html ? (
+                <div
+                  className="optionContent"
+                  dangerouslySetInnerHTML={{ __html: renderHtml(question.stimulus_html) }}
+                />
+              ) : null}
+
+              {question.stem_html ? (
+                <div
+                  className="optionContent"
+                  style={{ marginTop: question.stimulus_html ? 12 : 0 }}
+                  dangerouslySetInnerHTML={{ __html: renderHtml(question.stem_html) }}
+                />
+              ) : null}
             </div>
 
             <div className="bbRight">
               {/* Answer area */}
               {isFreeResponse ? (
                 <div className="row" style={{ flexDirection: "column", alignItems: "stretch" }}>
-                  <label><strong>Your answer</strong></label>
+                  <label>
+                    <strong>Your answer</strong>
+                  </label>
                   <input
                     placeholder="Type your answer"
                     value={freeResponse}
                     onChange={(e) => setFreeResponse(e.target.value)}
                   />
+                  <div style={{ marginTop: 8, fontSize: 12, opacity: 0.7 }}>
+                    Note: Free-response questions are saved, but not auto-graded in this build.
+                  </div>
                 </div>
               ) : (
                 options.map((opt, i) => {
-                  const fallbackLabel = String.fromCharCode(65 + i);
-                  const label = typeof opt === "string" ? fallbackLabel : (opt.label ?? fallbackLabel);
-                  const content = typeof opt === "string" ? opt : (opt.content ?? opt.text ?? "");
-                  const isSelected = selected === label;
+                  const letter = String.fromCharCode(65 + i);
+                  const optId = String(opt?.id ?? "");
+                  const content = getOptionHtml(opt);
+                  const isSelected = selectedOptionId === optId;
 
                   return (
                     <div
-                      key={i}
+                      key={optId || i}
                       className={`optionCard ${isSelected ? "selected" : ""}`}
                       role="button"
                       tabIndex={0}
-                      onClick={() => setSelected(label)}
+                      onClick={() => setSelectedOptionId(optId)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") setSelected(label);
+                        if (e.key === "Enter") setSelectedOptionId(optId);
                         if (e.key === " ") {
                           e.preventDefault();
-                          setSelected(label);
+                          setSelectedOptionId(optId);
                         }
                       }}
                       aria-pressed={isSelected}
                     >
-                      <div className="optionLetter">{label}</div>
+                      <div className="optionLetter">{letter}</div>
                       <div style={{ flex: 1 }}>
                         <div
                           className="optionContent"
@@ -494,8 +616,8 @@ export default function PracticeSessionClient() {
                       <input
                         type="radio"
                         checked={isSelected}
-                        onChange={() => setSelected(label)}
-                        aria-label={`Choose option ${label}`}
+                        onChange={() => setSelectedOptionId(optId)}
+                        aria-label={`Choose option ${letter}`}
                       />
                     </div>
                   );
@@ -507,31 +629,43 @@ export default function PracticeSessionClient() {
                 <div className="card" style={{ marginTop: 16 }}>
                   <h3 style={{ marginTop: 0 }}>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
 
+                  {/* Incorrect: don't auto-show explanation */}
                   {!result && !showExplanation && (
                     <button className="secondary" onClick={() => setShowExplanation(true)}>
                       Show answer & explanation
                     </button>
                   )}
 
-                  {result && question.rationale && (
+                  {/* Correct: show rationale immediately (if exists) */}
+                  {result && question.rationale_html && (
                     <div
                       className="optionContent"
                       style={{ marginTop: 8 }}
-                      dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
+                      dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale_html) }}
                     />
                   )}
 
+                  {/* Incorrect + revealed */}
                   {!result && showExplanation && (
                     <>
                       <p style={{ marginTop: 12 }}>
-                        Correct answer: <strong>{question.correct_answer}</strong>
+                        Correct answer:{" "}
+                        <strong>{correctLetter ? correctLetter : "—"}</strong>
                       </p>
 
-                      {question.rationale && (
+                      {correctOptionHtml ? (
                         <div
                           className="optionContent"
                           style={{ marginTop: 8 }}
-                          dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale) }}
+                          dangerouslySetInnerHTML={{ __html: renderOptionHtml(correctOptionHtml) }}
+                        />
+                      ) : null}
+
+                      {question.rationale_html && (
+                        <div
+                          className="optionContent"
+                          style={{ marginTop: 8 }}
+                          dangerouslySetInnerHTML={{ __html: renderHtml(question.rationale_html) }}
                         />
                       )}
                     </>
@@ -612,7 +746,7 @@ export default function PracticeSessionClient() {
                     attempted ? "attempted" : "",
                     correct ? "correct" : "",
                     marked ? "marked" : "",
-                    current ? "current" : ""
+                    current ? "current" : "",
                   ]
                     .filter(Boolean)
                     .join(" ");
