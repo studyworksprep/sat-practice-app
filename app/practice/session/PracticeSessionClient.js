@@ -94,7 +94,8 @@ export default function PracticeSessionClient() {
 
   const [session, setSession] = useState(null);
 
-  // URL filters
+  // URL filters (we keep param names domain/skill for compatibility)
+  // But DB columns are primary_class_cd_desc and skill_desc
   const domain = searchParams.get("domain") || "";
   const skill = searchParams.get("skill") || "";
   const difficulty = searchParams.get("difficulty") || "";
@@ -188,8 +189,10 @@ export default function PracticeSessionClient() {
 
       let base = supabase.from("questions_v2").select("id");
 
-      if (domain) base = base.eq("domain", domain);
-      if (skill) base = base.eq("skill", skill);
+      // IMPORTANT: map URL params to real DB columns
+      if (domain) base = base.eq("primary_class_cd_desc", domain);
+      if (skill) base = base.eq("skill_desc", skill);
+
       if (difficulty) base = base.eq("difficulty", Number(difficulty));
       if (scoreBands.length) base = base.in("score_band", scoreBands);
 
@@ -324,7 +327,6 @@ export default function PracticeSessionClient() {
     }
 
     loadQuestion();
-    // include stateById so we can use cached mark status without extra fetch
   }, [session, questionIds, index, stateById]);
 
   useEffect(() => {
@@ -385,7 +387,6 @@ export default function PracticeSessionClient() {
     const newVal = !markedForReview;
     setMarkedForReview(newVal);
 
-    // Upsert into question_status (row may not exist until first attempt)
     const { error } = await supabase
       .from("question_status")
       .upsert(
@@ -399,12 +400,10 @@ export default function PracticeSessionClient() {
 
     if (error) {
       setStatus(error.message);
-      // revert optimistic UI
       setMarkedForReview((v) => !v);
       return;
     }
 
-    // Optimistic map update
     setStateById((prev) => ({
       ...prev,
       [question.id]: {
@@ -435,7 +434,7 @@ export default function PracticeSessionClient() {
         question_id: question.id,
         selected_option_id: null,
         response_text: answerText,
-        is_correct: null, // free response not autograded here
+        is_correct: null,
       });
 
       if (error) {
@@ -443,13 +442,11 @@ export default function PracticeSessionClient() {
         return;
       }
 
-      // For SPR we can't determine correctness here; keep result null
       setStatus("");
       await refreshSingleStatus(question.id);
       return;
     }
 
-    // MCQ
     if (!selectedOptionId) {
       setStatus("Select an answer first.");
       return;
@@ -476,7 +473,6 @@ export default function PracticeSessionClient() {
     setResult(isCorrect);
     setStatus("");
 
-    // Optimistic map update, then refresh from rollup
     setStateById((prevMap) => {
       const prev = prevMap?.[question.id] || {
         attempts_count: 0,
@@ -568,7 +564,6 @@ export default function PracticeSessionClient() {
             </div>
 
             <div className="bbRight">
-              {/* Answer area */}
               {isFreeResponse ? (
                 <div className="row" style={{ flexDirection: "column", alignItems: "stretch" }}>
                   <label>
@@ -624,19 +619,16 @@ export default function PracticeSessionClient() {
                 })
               )}
 
-              {/* Result card */}
               {result !== null && (
                 <div className="card" style={{ marginTop: 16 }}>
                   <h3 style={{ marginTop: 0 }}>{result ? "✅ Correct" : "❌ Incorrect"}</h3>
 
-                  {/* Incorrect: don't auto-show explanation */}
                   {!result && !showExplanation && (
                     <button className="secondary" onClick={() => setShowExplanation(true)}>
                       Show answer & explanation
                     </button>
                   )}
 
-                  {/* Correct: show rationale immediately (if exists) */}
                   {result && question.rationale_html && (
                     <div
                       className="optionContent"
@@ -645,12 +637,10 @@ export default function PracticeSessionClient() {
                     />
                   )}
 
-                  {/* Incorrect + revealed */}
                   {!result && showExplanation && (
                     <>
                       <p style={{ marginTop: 12 }}>
-                        Correct answer:{" "}
-                        <strong>{correctLetter ? correctLetter : "—"}</strong>
+                        Correct answer: <strong>{correctLetter ? correctLetter : "—"}</strong>
                       </p>
 
                       {correctOptionHtml ? (
@@ -673,7 +663,6 @@ export default function PracticeSessionClient() {
                 </div>
               )}
 
-              {/* Bottom nav */}
               <div className="bottomNav">
                 <button
                   className="secondary bottomNavMap"
@@ -711,7 +700,6 @@ export default function PracticeSessionClient() {
           </div>
         </div>
 
-        {/* Map modal */}
         {showMap && (
           <div
             className="modalOverlay"
