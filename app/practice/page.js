@@ -29,7 +29,7 @@ async function fetchAllQuestionsForOutline({
   }
 
   // Page through questions_v2 (avoid relying on group-by RPCs)
-  // We only select the minimal fields needed for the outline.
+  // Only select minimal fields needed for the outline.
   const pageSize = 1000;
   let offset = 0;
   let all = [];
@@ -37,7 +37,7 @@ async function fetchAllQuestionsForOutline({
   while (true) {
     let q = supabase
       .from("questions_v2")
-      .select("primary_class_cd_desc, skill_desc", { count: "exact" })
+      .select("primary_class_cd_desc, skill_desc");
 
     if (difficulty) q = q.eq("difficulty", Number(difficulty));
     if (scoreBands?.length) q = q.in("score_band", scoreBands);
@@ -70,7 +70,9 @@ export default function PracticeLandingPage() {
 
   // Data
   const [summary, setSummary] = useState(null);
-  const [rows, setRows] = useState([]); // outline rows: {domain, skill_desc, question_count}
+  // outline rows: { domain, skill_desc, question_count }
+  // (domain here is the DISPLAY label: primary_class_cd_desc)
+  const [rows, setRows] = useState([]);
   const [status, setStatus] = useState("");
 
   // Auth
@@ -153,7 +155,7 @@ export default function PracticeLandingPage() {
           userId: session.user.id,
         });
 
-        // Client-side group: domain + skill_desc
+        // Client-side group: primary_class_cd_desc + skill_desc
         const map = new Map(); // key `${domain}||${skill}` => count
         for (const r of outlineRows) {
           const d = r.primary_class_cd_desc ?? "Other";
@@ -164,7 +166,7 @@ export default function PracticeLandingPage() {
 
         const grouped = Array.from(map.entries()).map(([key, count]) => {
           const [domain, skill_desc] = key.split("||");
-          return { domain: primary_class_cd_desc, skill_desc, question_count: count };
+          return { domain, skill_desc, question_count: count };
         });
 
         setRows(grouped);
@@ -197,8 +199,10 @@ export default function PracticeLandingPage() {
   }, [rows]);
 
   function startSession({ domain = "", skill = "" }) {
+    // IMPORTANT: we keep the URL param names domain/skill for compatibility
+    // but "domain" is actually primary_class_cd_desc (display name).
     const params = new URLSearchParams();
-    if (domain) base = base.eq("primary_class_cd_desc", domain);
+    if (domain) params.set("domain", domain);
     if (skill) params.set("skill", skill);
     if (difficulty) params.set("difficulty", difficulty);
     if (scoreBands.length) params.set("scoreBands", scoreBands.join(","));
@@ -212,9 +216,15 @@ export default function PracticeLandingPage() {
         <div className="row" style={{ justifyContent: "space-between" }}>
           <h1 style={{ margin: 0 }}>Practice</h1>
           <div className="row">
-            <button className="secondary" onClick={() => router.push("/")}>Home</button>
-            <button className="secondary" onClick={() => router.push("/progress")}>Progress</button>
-            <button className="secondary" onClick={logout}>Log out</button>
+            <button className="secondary" onClick={() => router.push("/")}>
+              Home
+            </button>
+            <button className="secondary" onClick={() => router.push("/progress")}>
+              Progress
+            </button>
+            <button className="secondary" onClick={logout}>
+              Log out
+            </button>
           </div>
         </div>
 
@@ -225,19 +235,27 @@ export default function PracticeLandingPage() {
             <div className="row">
               <div className="card" style={{ padding: 12, minWidth: 180 }}>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>Total attempts</div>
-                <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.total_attempts ?? 0}</div>
+                <div style={{ fontSize: 22, fontWeight: 700 }}>
+                  {summary.total_attempts ?? 0}
+                </div>
               </div>
               <div className="card" style={{ padding: 12, minWidth: 180 }}>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>Percent correct</div>
-                <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.percent_correct ?? 0}%</div>
+                <div style={{ fontSize: 22, fontWeight: 700 }}>
+                  {summary.percent_correct ?? 0}%
+                </div>
               </div>
               <div className="card" style={{ padding: 12, minWidth: 180 }}>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>Unique questions attempted</div>
-                <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.total_unique_attempted ?? 0}</div>
+                <div style={{ fontSize: 22, fontWeight: 700 }}>
+                  {summary.total_unique_attempted ?? 0}
+                </div>
               </div>
               <div className="card" style={{ padding: 12, minWidth: 180 }}>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>Marked for review</div>
-                <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.marked_count ?? 0}</div>
+                <div style={{ fontSize: 22, fontWeight: 700 }}>
+                  {summary.marked_count ?? 0}
+                </div>
               </div>
             </div>
           ) : (
