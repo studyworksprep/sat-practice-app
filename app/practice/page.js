@@ -4,11 +4,66 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { useRouter } from "next/navigation";
 
+async function fetchAllQuestionsForOutline({
+  difficulty,
+  scoreBands,
+  markedOnly,
+  userId,
+}) {
+  // If markedOnly is enabled, fetch marked question IDs first (likely small)
+  let markedIds = null;
+  if (markedOnly) {
+    const { data: ms, error: msErr } = await supabase
+      .from("question_status")
+      .select("question_id")
+      .eq("user_id", userId)
+      .eq("marked_for_review", true);
+
+    if (msErr) throw msErr;
+    markedIds = (ms ?? []).map((r) => r.question_id);
+
+    if (!markedIds.length) {
+      // Nothing marked -> empty outline
+      return [];
+    }
+  }
+
+  // Page through questions_v2 (avoid relying on group-by RPCs)
+  // We only select the minimal fields needed for the outline.
+  const pageSize = 1000;
+  let offset = 0;
+  let all = [];
+
+  while (true) {
+    let q = supabase
+      .from("questions_v2")
+      .select("domain, skill_desc", { count: "exact" });
+
+    if (difficulty) q = q.eq("difficulty", Number(difficulty));
+    if (scoreBands?.length) q = q.in("score_band", scoreBands);
+
+    if (markedIds) q = q.in("id", markedIds);
+
+    q = q.range(offset, offset + pageSize - 1);
+
+    const { data, error } = await q;
+    if (error) throw error;
+
+    const rows = data ?? [];
+    all = all.concat(rows);
+
+    if (rows.length < pageSize) break;
+    offset += pageSize;
+  }
+
+  return all;
+}
+
 export default function PracticeLandingPage() {
   const router = useRouter();
   const [session, setSession] = useState(null);
 
-  // Landing filters (these affect counts + what set user starts)
+  // Landing filters
   const [difficulty, setDifficulty] = useState(""); // "1"|"2"|"3"| ""
   const [scoreBands, setScoreBands] = useState([]); // array of numbers
   const [markedOnly, setMarkedOnly] = useState(false);
@@ -38,39 +93,86 @@ export default function PracticeLandingPage() {
     router.push("/login");
   }
 
-  // Load performance summary once (and when session changes)
+  function toggleScoreBand(n) {
+    setScoreBands((prev) =>
+      prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n].sort((a, b) => a - b)
+    );
+  }
+
+  // Load performance summary from question_status (canonical v2)
   useEffect(() => {
     if (!session) return;
 
     (async () => {
-      const { data, error } = await supabase.rpc("get_user_practice_summary");
+      setStatus("Loading…");
+
+      const { data, error } = await supabase
+        .from("question_status")
+        .select("attempts_count, correct_count, marked_for_review")
+        .eq("user_id", session.user.id);
+
       if (error) {
         setStatus(error.message);
+        setSummary(null);
         return;
       }
-      setSummary(data?.[0] ?? null);
+
+      const rs = data ?? [];
+
+      const total_attempts = rs.reduce((sum, r) => sum + Number(r.attempts_count || 0), 0);
+      const total_correct = rs.reduce((sum, r) => sum + Number(r.correct_count || 0), 0);
+      const total_unique_attempted = rs.filter((r) => Number(r.attempts_count || 0) > 0).length;
+      const marked_count = rs.filter((r) => Boolean(r.marked_for_review)).length;
+
+      const percent_correct =
+        total_attempts > 0 ? Math.round((total_correct / total_attempts) * 100) : 0;
+
+      setSummary({
+        total_attempts,
+        percent_correct,
+        total_unique_attempted,
+        marked_count,
+      });
+
+      setStatus("");
     })();
   }, [session]);
 
-  // Load outline counts whenever filters change
+  // Load outline counts from questions_v2 (canonical v2)
   useEffect(() => {
     if (!session) return;
 
     (async () => {
-      const { data, error } = await supabase.rpc("get_question_outline_counts", {
-        p_difficulty: difficulty ? Number(difficulty) : null,
-        p_score_bands: scoreBands.length ? scoreBands : null,
-        p_marked_only: markedOnly
-      });
+      setStatus("Loading outline…");
 
-      if (error) {
-        setStatus(error.message);
+      try {
+        const outlineRows = await fetchAllQuestionsForOutline({
+          difficulty,
+          scoreBands,
+          markedOnly,
+          userId: session.user.id,
+        });
+
+        // Client-side group: domain + skill_desc
+        const map = new Map(); // key `${domain}||${skill}` => count
+        for (const r of outlineRows) {
+          const d = r.domain ?? "Other";
+          const s = r.skill_desc ?? "Other";
+          const key = `${d}||${s}`;
+          map.set(key, (map.get(key) || 0) + 1);
+        }
+
+        const grouped = Array.from(map.entries()).map(([key, count]) => {
+          const [domain, skill_desc] = key.split("||");
+          return { domain, skill_desc, question_count: count };
+        });
+
+        setRows(grouped);
+        setStatus("");
+      } catch (e) {
         setRows([]);
-        return;
+        setStatus(e?.message || "Failed to load outline.");
       }
-
-      setRows(data ?? []);
-      setStatus("");
     })();
   }, [session, difficulty, scoreBands, markedOnly]);
 
@@ -103,13 +205,6 @@ export default function PracticeLandingPage() {
     if (markedOnly) params.set("markedOnly", "1");
     router.push(`/practice/session?${params.toString()}`);
   }
-  
-  function toggleScoreBand(n) {
-    setScoreBands((prev) =>
-      prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n].sort((a, b) => a - b)
-    );
-  }
-
 
   return (
     <div className="page practiceWide">
@@ -163,31 +258,21 @@ export default function PracticeLandingPage() {
 
             <div className="row" style={{ alignItems: "center" }}>
               <div style={{ fontWeight: 600, marginRight: 6 }}>Score band</div>
-              <div className="row" style={{ gap: 6 }}>
-                {[1, 2, 3, 4, 5, 6, 7].map((n) => {
-                  const on = scoreBands.includes(n);
-                  return (
-                    <button
-                      key={n}
-                      type="button"
-                      className="secondary"
-                      onClick={() => toggleScoreBand(n)}
-                      aria-pressed={on}
-                      style={{
-                        padding: "8px 10px",
-                        borderColor: on ? "#111" : undefined,
-                        boxShadow: on ? "0 0 0 1px #111 inset" : undefined,
-                        fontWeight: on ? 700 : 600
-                      }}
-                    >
-                      {n}
-                    </button>
-                  );
-                })}
+              <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+                {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                  <button
+                    key={n}
+                    className={scoreBands.includes(n) ? "" : "secondary"}
+                    onClick={() => toggleScoreBand(n)}
+                    type="button"
+                  >
+                    {n}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <label className="row" style={{ gap: 6 }}>
+            <label className="row" style={{ alignItems: "center", gap: 8 }}>
               <input
                 type="checkbox"
                 checked={markedOnly}
@@ -195,75 +280,52 @@ export default function PracticeLandingPage() {
               />
               Marked only
             </label>
-
-            <button
-              className="secondary"
-              onClick={() => {
-                setDifficulty("");
-                setScoreBands([]);
-                setMarkedOnly(false);
-              }}
-            >
-              Clear
-            </button>
           </div>
 
-          {status ? <p style={{ marginTop: 10 }}>{status}</p> : null}
+          {status ? <p style={{ marginTop: 12, opacity: 0.8 }}>{status}</p> : null}
         </div>
 
         {/* Outline */}
         <div className="card" style={{ marginTop: 16 }}>
-          <h3>Choose what to practice</h3>
+          <h3>Choose a category</h3>
 
-          {!outline.length ? (
-            <p style={{ margin: 0, opacity: 0.8 }}>
-              No questions match your filters.
-            </p>
-          ) : (
+          {outline.length ? (
             <div style={{ display: "grid", gap: 12 }}>
               {outline.map((d) => (
                 <div key={d.domain} className="card" style={{ padding: 12 }}>
                   <div className="row" style={{ justifyContent: "space-between" }}>
-                    <div style={{ fontWeight: 800 }}>
-                      {d.domain} <span style={{ opacity: 0.6, fontWeight: 600 }}>({d.total})</span>
-                    </div>
-
-                    <button
-                      className="secondary"
-                      onClick={() => startSession({ domain: d.domain })}
-                      aria-label={`Practice domain ${d.domain}`}
-                    >
-                      Practice this domain →
-                    </button>
+                    <div style={{ fontWeight: 800 }}>{d.domain}</div>
+                    <div style={{ opacity: 0.7 }}>{d.total} questions</div>
                   </div>
 
-                  <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
+                  <div className="row" style={{ flexWrap: "wrap", marginTop: 10, gap: 8 }}>
+                    <button
+                      className="secondary"
+                      type="button"
+                      onClick={() => startSession({ domain: d.domain, skill: "" })}
+                    >
+                      Start domain
+                    </button>
+
                     {d.skills.map((s) => (
                       <button
-                        key={s.skill_desc}
+                        key={`${d.domain}||${s.skill_desc}`}
+                        type="button"
                         className="secondary"
                         onClick={() => startSession({ domain: d.domain, skill: s.skill_desc })}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          width: "100%",
-                          textAlign: "left"
-                        }}
+                        title={`${s.count} questions`}
                       >
-                        <span>{s.skill_desc}</span>
-                        <span style={{ opacity: 0.7 }}>{s.count}</span>
+                        {s.skill_desc} ({s.count})
                       </button>
                     ))}
                   </div>
                 </div>
               ))}
             </div>
+          ) : (
+            <p style={{ margin: 0, opacity: 0.8 }}>No questions match these filters.</p>
           )}
         </div>
-
-        <p style={{ marginTop: 14, opacity: 0.7, fontSize: 12 }}>
-          Tip: adjust filters to update counts, then click a domain or skill to start a focused session.
-        </p>
       </div>
     </div>
   );
