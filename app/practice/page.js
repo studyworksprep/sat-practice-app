@@ -37,7 +37,7 @@ async function fetchAllQuestionsForOutline({
   while (true) {
     let q = supabase
       .from("questions_v2")
-      .select("domain, skill_desc", { count: "exact" });
+      .select("primary_class_cd_desc, skill_desc", { count: "exact" })
 
     if (difficulty) q = q.eq("difficulty", Number(difficulty));
     if (scoreBands?.length) q = q.in("score_band", scoreBands);
@@ -156,7 +156,7 @@ export default function PracticeLandingPage() {
         // Client-side group: domain + skill_desc
         const map = new Map(); // key `${domain}||${skill}` => count
         for (const r of outlineRows) {
-          const d = r.domain ?? "Other";
+          const d = r.primary_class_cd_desc ?? "Other";
           const s = r.skill_desc ?? "Other";
           const key = `${d}||${s}`;
           map.set(key, (map.get(key) || 0) + 1);
@@ -164,7 +164,7 @@ export default function PracticeLandingPage() {
 
         const grouped = Array.from(map.entries()).map(([key, count]) => {
           const [domain, skill_desc] = key.split("||");
-          return { domain, skill_desc, question_count: count };
+          return { domain: primary_class_cd_desc, skill_desc, question_count: count };
         });
 
         setRows(grouped);
@@ -198,7 +198,7 @@ export default function PracticeLandingPage() {
 
   function startSession({ domain = "", skill = "" }) {
     const params = new URLSearchParams();
-    if (domain) params.set("domain", domain);
+    if (domain) base = base.eq("primary_class_cd_desc", domain);
     if (skill) params.set("skill", skill);
     if (difficulty) params.set("difficulty", difficulty);
     if (scoreBands.length) params.set("scoreBands", scoreBands.join(","));
