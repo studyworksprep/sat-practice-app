@@ -4,61 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { useRouter } from "next/navigation";
 
-async function fetchAllQuestionsForOutline({
-  difficulty,
-  scoreBands,
-  markedOnly,
-  userId,
-}) {
-  // If markedOnly is enabled, fetch marked question IDs first (likely small)
-  let markedIds = null;
-  if (markedOnly) {
-    const { data: ms, error: msErr } = await supabase
-      .from("question_status")
-      .select("question_id")
-      .eq("user_id", userId)
-      .eq("marked_for_review", true);
-
-    if (msErr) throw msErr;
-    markedIds = (ms ?? []).map((r) => r.question_id);
-
-    if (!markedIds.length) {
-      // Nothing marked -> empty outline
-      return [];
-    }
-  }
-
-  // Page through questions_v2 (avoid relying on group-by RPCs)
-  // Only select minimal fields needed for the outline.
-  const pageSize = 1000;
-  let offset = 0;
-  let all = [];
-
-  while (true) {
-    let q = supabase
-      .from("questions_v2")
-      .select("primary_class_cd_desc, skill_desc");
-
-    if (difficulty) q = q.eq("difficulty", Number(difficulty));
-    if (scoreBands?.length) q = q.in("score_band", scoreBands);
-
-    if (markedIds) q = q.in("id", markedIds);
-
-    q = q.range(offset, offset + pageSize - 1);
-
-    const { data, error } = await q;
-    if (error) throw error;
-
-    const rows = data ?? [];
-    all = all.concat(rows);
-
-    if (rows.length < pageSize) break;
-    offset += pageSize;
-  }
-
-  return all;
-}
-
 export default function PracticeLandingPage() {
   const router = useRouter();
   const [session, setSession] = useState(null);
@@ -70,8 +15,7 @@ export default function PracticeLandingPage() {
 
   // Data
   const [summary, setSummary] = useState(null);
-  // outline rows: { domain, skill_desc, question_count }
-  // (domain here is the DISPLAY label: primary_class_cd_desc)
+  // rows: { domain, skill_desc, question_count }
   const [rows, setRows] = useState([]);
   const [status, setStatus] = useState("");
 
@@ -101,7 +45,7 @@ export default function PracticeLandingPage() {
     );
   }
 
-  // Load performance summary from question_status (canonical v2)
+  // Performance snapshot from question_status
   useEffect(() => {
     if (!session) return;
 
@@ -120,12 +64,10 @@ export default function PracticeLandingPage() {
       }
 
       const rs = data ?? [];
-
       const total_attempts = rs.reduce((sum, r) => sum + Number(r.attempts_count || 0), 0);
       const total_correct = rs.reduce((sum, r) => sum + Number(r.correct_count || 0), 0);
       const total_unique_attempted = rs.filter((r) => Number(r.attempts_count || 0) > 0).length;
       const marked_count = rs.filter((r) => Boolean(r.marked_for_review)).length;
-
       const percent_correct =
         total_attempts > 0 ? Math.round((total_correct / total_attempts) * 100) : 0;
 
@@ -140,41 +82,36 @@ export default function PracticeLandingPage() {
     })();
   }, [session]);
 
-  // Load outline counts from questions_v2 (canonical v2)
+  // Outline counts via RPC (fast)
   useEffect(() => {
     if (!session) return;
 
     (async () => {
       setStatus("Loading outline…");
 
-      try {
-        const outlineRows = await fetchAllQuestionsForOutline({
-          difficulty,
-          scoreBands,
-          markedOnly,
-          userId: session.user.id,
-        });
+      const p_difficulty = difficulty ? Number(difficulty) : null;
+      const p_score_bands = scoreBands.length ? scoreBands : null;
 
-        // Client-side group: primary_class_cd_desc + skill_desc
-        const map = new Map(); // key `${domain}||${skill}` => count
-        for (const r of outlineRows) {
-          const d = r.primary_class_cd_desc ?? "Other";
-          const s = r.skill_desc ?? "Other";
-          const key = `${d}||${s}`;
-          map.set(key, (map.get(key) || 0) + 1);
-        }
+      const { data, error } = await supabase.rpc("get_question_outline_counts_v2", {
+        p_user_id: session.user.id,
+        p_difficulty,
+        p_score_bands,
+        p_marked_only: markedOnly,
+      });
 
-        const grouped = Array.from(map.entries()).map(([key, count]) => {
-          const [domain, skill_desc] = key.split("||");
-          return { domain, skill_desc, question_count: count };
-        });
-
-        setRows(grouped);
-        setStatus("");
-      } catch (e) {
+      if (error) {
         setRows([]);
-        setStatus(e?.message || "Failed to load outline.");
+        setStatus(error.message);
+        return;
       }
+
+      setRows((data ?? []).map((r) => ({
+        domain: r.domain ?? "Other",
+        skill_desc: r.skill_desc ?? "Other",
+        question_count: Number(r.question_count || 0),
+      })));
+
+      setStatus("");
     })();
   }, [session, difficulty, scoreBands, markedOnly]);
 
@@ -192,18 +129,15 @@ export default function PracticeLandingPage() {
       entry.skills.push({ skill_desc: s, count: c });
     }
 
-    // Sort domains and skills
     const domains = Array.from(map.values()).sort((a, b) => a.domain.localeCompare(b.domain));
     domains.forEach((d) => d.skills.sort((a, b) => a.skill_desc.localeCompare(b.skill_desc)));
     return domains;
   }, [rows]);
 
   function startSession({ domain = "", skill = "" }) {
-    // IMPORTANT: we keep the URL param names domain/skill for compatibility
-    // but "domain" is actually primary_class_cd_desc (display name).
     const params = new URLSearchParams();
-    if (domain) params.set("domain", domain);
-    if (skill) params.set("skill", skill);
+    if (domain) params.set("domain", domain); // domain is primary_class_cd_desc label
+    if (skill) params.set("skill", skill);   // skill is skill_desc label
     if (difficulty) params.set("difficulty", difficulty);
     if (scoreBands.length) params.set("scoreBands", scoreBands.join(","));
     if (markedOnly) params.set("markedOnly", "1");
@@ -216,15 +150,9 @@ export default function PracticeLandingPage() {
         <div className="row" style={{ justifyContent: "space-between" }}>
           <h1 style={{ margin: 0 }}>Practice</h1>
           <div className="row">
-            <button className="secondary" onClick={() => router.push("/")}>
-              Home
-            </button>
-            <button className="secondary" onClick={() => router.push("/progress")}>
-              Progress
-            </button>
-            <button className="secondary" onClick={logout}>
-              Log out
-            </button>
+            <button className="secondary" onClick={() => router.push("/")}>Home</button>
+            <button className="secondary" onClick={() => router.push("/progress")}>Progress</button>
+            <button className="secondary" onClick={logout}>Log out</button>
           </div>
         </div>
 
@@ -235,27 +163,19 @@ export default function PracticeLandingPage() {
             <div className="row">
               <div className="card" style={{ padding: 12, minWidth: 180 }}>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>Total attempts</div>
-                <div style={{ fontSize: 22, fontWeight: 700 }}>
-                  {summary.total_attempts ?? 0}
-                </div>
+                <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.total_attempts ?? 0}</div>
               </div>
               <div className="card" style={{ padding: 12, minWidth: 180 }}>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>Percent correct</div>
-                <div style={{ fontSize: 22, fontWeight: 700 }}>
-                  {summary.percent_correct ?? 0}%
-                </div>
+                <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.percent_correct ?? 0}%</div>
               </div>
               <div className="card" style={{ padding: 12, minWidth: 180 }}>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>Unique questions attempted</div>
-                <div style={{ fontSize: 22, fontWeight: 700 }}>
-                  {summary.total_unique_attempted ?? 0}
-                </div>
+                <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.total_unique_attempted ?? 0}</div>
               </div>
               <div className="card" style={{ padding: 12, minWidth: 180 }}>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>Marked for review</div>
-                <div style={{ fontSize: 22, fontWeight: 700 }}>
-                  {summary.marked_count ?? 0}
-                </div>
+                <div style={{ fontSize: 22, fontWeight: 700 }}>{summary.marked_count ?? 0}</div>
               </div>
             </div>
           ) : (
