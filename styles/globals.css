@@ -366,5 +366,42 @@ button.secondary {
   white-space: nowrap;
 }
 
+/* --- Meta strip (question details pills) --- */
+.metaStrip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e6e6e6;
+  border-radius: 14px;
+  background: #fff;
+}
 
+.metaPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  font-size: 12px;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+}
+
+.metaPillMuted {
+  background: #fff;
+  color: rgba(0,0,0,0.65);
+  border-color: #e2e2e2;
+  font-weight: 600;
+}
+
+.metaPillWarn {
+  border-color: #b57900;
+  box-shadow: 0 0 0 1px rgba(181,121,0,0.14) inset;
+  background: #fffaf0;
+}
 }
