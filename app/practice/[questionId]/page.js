@@ -23,8 +23,15 @@ export default function QuestionPage({ params }) {
   const [startTs, setStartTs] = useState(Date.now());
   const [showRationale, setShowRationale] = useState(false);
 
-  async function load() {
-    setMsg(null);
+  async function load({ resetUI = true } = {}) {
+    // Only clear messages / reset selection when we're loading a *new* question
+    if (resetUI) {
+      setMsg(null);
+      setSelected(null);
+      setShowRationale(false);
+      setStartTs(Date.now());
+    }
+  
     const res = await fetch('/api/questions/' + questionId);
     const json = await res.json();
     if (!res.ok) {
@@ -32,11 +39,7 @@ export default function QuestionPage({ params }) {
       return;
     }
     setData(json);
-    setSelected(null);
-    setShowRationale(false);
-    setStartTs(Date.now());
   }
-
   useEffect(() => { load(); }, [questionId]);
 
   async function submitAttempt() {
