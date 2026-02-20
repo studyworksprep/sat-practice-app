@@ -40,7 +40,7 @@ export default function QuestionPage({ params }) {
     }
     setData(json);
   }
-  useEffect(() => { load(); }, [questionId]);
+  useEffect(() => { load({ resetUI: true }); }, [questionId]);
 
   async function submitAttempt() {
     if (!selected) return setMsg({ kind: 'danger', text: 'Select an answer choice first.' });
