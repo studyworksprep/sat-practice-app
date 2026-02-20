@@ -94,8 +94,7 @@ export default function PracticeSessionClient() {
 
   const [session, setSession] = useState(null);
 
-  // URL filters (param names stay domain/skill for compatibility)
-  // In DB these map to primary_class_cd_desc and skill_desc
+  // URL filters (param names stay domain/skill)
   const domain = searchParams.get("domain") || "";
   const skill = searchParams.get("skill") || "";
   const difficulty = searchParams.get("difficulty") || "";
@@ -127,20 +126,36 @@ export default function PracticeSessionClient() {
 
   // Map modal + per-question rollup state
   const [showMap, setShowMap] = useState(false);
-  const [stateById, setStateById] = useState({}); // { [question_id]: { attempts_count, correct_count, marked_for_review, completed } }
+  const [stateById, setStateById] = useState({});
 
   const [status, setStatus] = useState("Loading…");
 
   const contentRef = useRef(null);
 
+  // ✅ Robust MathJax typesetting for dynamic HTML (MathML + TeX)
   function typesetMath() {
     if (typeof window === "undefined") return;
-    if (!window.MathJax || !window.MathJax.typesetPromise) return;
-    if (!contentRef.current) return;
+    const el = contentRef.current;
+    if (!el) return;
 
-    window.__mjxPromise = (window.__mjxPromise || Promise.resolve())
-      .then(() => window.MathJax.typesetPromise([contentRef.current]))
-      .catch(() => {});
+    const mj = window.MathJax;
+    if (!mj) return;
+
+    const run = () => {
+      if (typeof mj.typesetPromise === "function") {
+        window.__mjxPromise = (window.__mjxPromise || Promise.resolve())
+          .then(() => mj.typesetPromise([el]))
+          .catch(() => {});
+      }
+    };
+
+    // MathJax v4 exposes startup.promise; wait for it so MathML input is ready
+    if (mj.startup && mj.startup.promise && typeof mj.startup.promise.then === "function") {
+      mj.startup.promise.then(run).catch(() => {});
+    } else {
+      // fallback
+      run();
+    }
   }
 
   const renderHtml = (html) =>
@@ -189,6 +204,7 @@ export default function PracticeSessionClient() {
 
       let base = supabase.from("questions_v2").select("id");
 
+      // Map URL params to canonical columns
       if (domain) base = base.eq("primary_class_cd_desc", domain);
       if (skill) base = base.eq("skill_desc", skill);
       if (difficulty) base = base.eq("difficulty", Number(difficulty));
@@ -235,7 +251,7 @@ export default function PracticeSessionClient() {
     loadIds();
   }, [session, domain, skill, difficulty, scoreBandsParam, markedOnly, scoreBands.length]);
 
-  // Load map state
+  // Load map state (question_status rollup)
   useEffect(() => {
     if (!session) return;
     if (!questionIds.length) return;
@@ -276,7 +292,7 @@ export default function PracticeSessionClient() {
     };
   }, [session, questionIds]);
 
-  // Load current question (include meta fields for strip)
+  // Load current question (include meta fields)
   useEffect(() => {
     if (!session) return;
     if (!questionIds.length) return;
@@ -326,6 +342,7 @@ export default function PracticeSessionClient() {
     loadQuestion();
   }, [session, questionIds, index, stateById]);
 
+  // ✅ Ensure MathJax typesets after question loads / explanation toggles
   useEffect(() => {
     typesetMath();
   }, [question, result, showExplanation]);
