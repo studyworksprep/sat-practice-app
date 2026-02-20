@@ -58,8 +58,8 @@ export default function QuestionPage({ params }) {
       if (!res.ok) throw new Error(json?.error || 'Submit failed');
       setMsg({ kind: json.is_correct ? 'ok' : 'danger', text: json.is_correct ? 'Correct ✅' : 'Incorrect ❌' });
       setShowRationale(true);
-      // refresh status fields
-      await load();
+      // refresh status fields, but keep the UI (don’t clear msg/selection)
+      await load({ resetUI: false });
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
