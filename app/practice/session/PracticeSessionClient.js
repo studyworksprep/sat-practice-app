@@ -67,11 +67,6 @@ function chunkArray(arr, size) {
   return out;
 }
 
-/**
- * answer_options_full is expected to be JSON (array) or already an array.
- * We handle both.
- * Expected option shape (common): { id: string, content_html?: string, content?: string, text?: string, label?: string }
- */
 function normalizeOptions(answer_options_full) {
   if (!answer_options_full) return [];
   if (Array.isArray(answer_options_full)) return answer_options_full;
@@ -88,14 +83,19 @@ function getOptionHtml(opt) {
   return opt?.content_html ?? opt?.content ?? opt?.text ?? "";
 }
 
+function fmtScoreBands(scoreBands) {
+  if (!scoreBands?.length) return "";
+  return scoreBands.join(",");
+}
+
 export default function PracticeSessionClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [session, setSession] = useState(null);
 
-  // URL filters (we keep param names domain/skill for compatibility)
-  // But DB columns are primary_class_cd_desc and skill_desc
+  // URL filters (param names stay domain/skill for compatibility)
+  // In DB these map to primary_class_cd_desc and skill_desc
   const domain = searchParams.get("domain") || "";
   const skill = searchParams.get("skill") || "";
   const difficulty = searchParams.get("difficulty") || "";
@@ -173,7 +173,7 @@ export default function PracticeSessionClient() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showMap]);
 
-  // Load IDs based on URL filters (Canonical v2: questions_v2 + question_status)
+  // Load IDs based on URL filters
   useEffect(() => {
     if (!session) return;
 
@@ -189,14 +189,11 @@ export default function PracticeSessionClient() {
 
       let base = supabase.from("questions_v2").select("id");
 
-      // IMPORTANT: map URL params to real DB columns
       if (domain) base = base.eq("primary_class_cd_desc", domain);
       if (skill) base = base.eq("skill_desc", skill);
-
       if (difficulty) base = base.eq("difficulty", Number(difficulty));
       if (scoreBands.length) base = base.in("score_band", scoreBands);
 
-      // Marked-only filter is applied by intersecting with question_status
       if (markedOnly) {
         const { data: ms, error: msErr } = await supabase
           .from("question_status")
@@ -220,7 +217,6 @@ export default function PracticeSessionClient() {
         base = base.in("id", markedIds);
       }
 
-      // Deterministic order
       base = base.order("id", { ascending: true });
 
       const { data, error } = await base;
@@ -239,7 +235,7 @@ export default function PracticeSessionClient() {
     loadIds();
   }, [session, domain, skill, difficulty, scoreBandsParam, markedOnly, scoreBands.length]);
 
-  // Load map state (question_status rollup)
+  // Load map state
   useEffect(() => {
     if (!session) return;
     if (!questionIds.length) return;
@@ -280,7 +276,7 @@ export default function PracticeSessionClient() {
     };
   }, [session, questionIds]);
 
-  // Load current question (Canonical v2: questions_v2 columns)
+  // Load current question (include meta fields for strip)
   useEffect(() => {
     if (!session) return;
     if (!questionIds.length) return;
@@ -297,7 +293,9 @@ export default function PracticeSessionClient() {
 
       const { data, error } = await supabase
         .from("questions_v2")
-        .select("id, stimulus_html, stem_html, answer_options_full, correct_option_id, rationale_html")
+        .select(
+          "id, stimulus_html, stem_html, answer_options_full, correct_option_id, rationale_html, primary_class_cd_desc, skill_desc, difficulty, score_band"
+        )
         .eq("id", id)
         .single();
 
@@ -310,7 +308,6 @@ export default function PracticeSessionClient() {
       setQuestion(data);
       setStatus("");
 
-      // Marked state: prefer map cache if present; otherwise fetch single row
       const cached = stateById?.[data.id];
       if (cached && typeof cached.marked_for_review === "boolean") {
         setMarkedForReview(Boolean(cached.marked_for_review));
@@ -357,6 +354,26 @@ export default function PracticeSessionClient() {
     if (correctIndex < 0) return "";
     return getOptionHtml(options[correctIndex]);
   }, [options, correctIndex]);
+
+  const meta = useMemo(() => {
+    if (!question) return null;
+    return {
+      domainLabel: question.primary_class_cd_desc || domain || "—",
+      skillLabel: question.skill_desc || skill || "—",
+      difficultyLabel:
+        question.difficulty != null && question.difficulty !== ""
+          ? `D${question.difficulty}`
+          : difficulty
+          ? `D${difficulty}`
+          : "—",
+      scoreBandLabel:
+        question.score_band != null && question.score_band !== ""
+          ? `Band ${question.score_band}`
+          : scoreBands.length
+          ? `Bands ${fmtScoreBands(scoreBands)}`
+          : "—",
+    };
+  }, [question, domain, skill, difficulty, scoreBands]);
 
   async function refreshSingleStatus(questionId) {
     if (!session) return;
@@ -495,7 +512,6 @@ export default function PracticeSessionClient() {
     await refreshSingleStatus(question.id);
   }
 
-  // Loading / empty states
   if (!session) {
     return (
       <div className="card">
@@ -537,14 +553,25 @@ export default function PracticeSessionClient() {
             {domain ? domain : "All domains"}
             {skill ? ` • ${skill}` : ""}
             {difficulty ? ` • D${difficulty}` : ""}
-            {scoreBands.length ? ` • Bands ${scoreBands.join(",")}` : ""}
+            {scoreBands.length ? ` • Bands ${fmtScoreBands(scoreBands)}` : ""}
             {markedOnly ? " • Marked" : ""}
           </div>
         </div>
 
         {status ? <p>{status}</p> : null}
 
-        <div ref={contentRef} style={{ marginTop: 16 }}>
+        {/* Meta strip */}
+        <div className="metaStrip" aria-label="Question details">
+          <span className="metaPill">{meta?.domainLabel}</span>
+          <span className="metaPill">{meta?.skillLabel}</span>
+          <span className="metaPill metaPillMuted">{meta?.difficultyLabel}</span>
+          <span className="metaPill metaPillMuted">{meta?.scoreBandLabel}</span>
+          <span className={`metaPill ${markedForReview ? "metaPillWarn" : "metaPillMuted"}`}>
+            {markedForReview ? "★ Marked" : "☆ Not marked"}
+          </span>
+        </div>
+
+        <div ref={contentRef} style={{ marginTop: 12 }}>
           <div className="bbLayout">
             <div className="bbLeft">
               {question.stimulus_html ? (
@@ -714,7 +741,9 @@ export default function PracticeSessionClient() {
               <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ fontWeight: 800 }}>
                   Question Map{" "}
-                  <span style={{ opacity: 0.6, fontWeight: 600 }}>({questionIds.length})</span>
+                  <span style={{ opacity: 0.6, fontWeight: 600 }}>
+                    ({questionIds.length})
+                  </span>
                 </div>
                 <button className="secondary" onClick={() => setShowMap(false)}>
                   Close
