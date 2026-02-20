@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  @apply bg-zinc-50 text-zinc-900;
+}
+
+a {
+  @apply text-blue-600 hover:text-blue-700;
+}
+
+.card {
+  @apply bg-white border border-zinc-200 rounded-xl shadow-sm;
+}
