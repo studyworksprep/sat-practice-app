@@ -16,46 +16,66 @@ export async function GET(request) {
   const { data: auth } = await supabase.auth.getUser();
   const user = auth?.user ?? null;
 
-  // We query taxonomy and join to question_status (left) to show per-user info.
-  // Requires FK question_taxonomy.question_id -> questions.id and question_status.question_id -> questions.id.
+  // Base from questions so we can embed BOTH taxonomy and status via real FKs.
   let q = supabase
-    .from('question_taxonomy')
+    .from('questions')
     .select(`
-      question_id,
-      domain_code,
-      domain_name,
-      skill_code,
-      skill_name,
-      difficulty,
-      score_band,
-      question_status!left(user_id,question_id,is_done,marked_for_review,attempts_count,correct_attempts_count)
+      id,
+      question_taxonomy (
+        question_id,
+        domain_code,
+        domain_name,
+        skill_code,
+        skill_name,
+        difficulty,
+        score_band
+      ),
+      question_status!left (
+        user_id,
+        question_id,
+        is_done,
+        marked_for_review,
+        attempts_count,
+        correct_attempts_count
+      )
     `)
-    .order('difficulty', { ascending: true })
+    .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (difficulty) q = q.eq('difficulty', Number(difficulty));
-  if (score_band) q = q.eq('score_band', Number(score_band));
-  if (domain) q = q.ilike('domain_name', `%${domain}%`);
-  if (skill) q = q.ilike('skill_name', `%${skill}%`);
+  // Filter on embedded taxonomy fields
+  if (difficulty) q = q.eq('question_taxonomy.difficulty', Number(difficulty));
+  if (score_band) q = q.eq('question_taxonomy.score_band', Number(score_band));
+  if (domain) q = q.ilike('question_taxonomy.domain_name', `%${domain}%`);
+  if (skill) q = q.ilike('question_taxonomy.skill_name', `%${skill}%`);
 
-  // If you want marked-only, filter after we join; easiest is to fetch and filter in memory.
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  const items = (data || []).map(row => {
-    const st = Array.isArray(row.question_status) ? row.question_status[0] : row.question_status;
-    return {
-      question_id: row.question_id,
-      domain_code: row.domain_code,
-      domain_name: row.domain_name,
-      skill_code: row.skill_code,
-      skill_name: row.skill_name,
-      difficulty: row.difficulty,
-      score_band: row.score_band,
-      is_done: st?.is_done ?? false,
-      marked_for_review: st?.marked_for_review ?? false,
-    };
-  }).filter(item => marked_only ? item.marked_for_review : true);
+  const items = (data || [])
+    .map((row) => {
+      const tax = row.question_taxonomy?.[0] ?? row.question_taxonomy ?? null;
+
+      // question_status is per-user; if you have RLS, it should already only return the current user's rows.
+      const st = Array.isArray(row.question_status) ? row.question_status[0] : row.question_status;
+
+      if (!tax) return null;
+
+      return {
+        question_id: row.id, // IMPORTANT: using questions.id as the question id throughout the app
+        domain_code: tax.domain_code,
+        domain_name: tax.domain_name,
+        skill_code: tax.skill_code,
+        skill_name: tax.skill_name,
+        difficulty: tax.difficulty,
+        score_band: tax.score_band,
+        is_done: st?.is_done ?? false,
+        marked_for_review: st?.marked_for_review ?? false,
+        attempts_count: st?.attempts_count ?? 0,
+        correct_attempts_count: st?.correct_attempts_count ?? 0,
+      };
+    })
+    .filter(Boolean)
+    .filter((item) => (marked_only ? item.marked_for_review : true));
 
   return NextResponse.json({ items });
 }
