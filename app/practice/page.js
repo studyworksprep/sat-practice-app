@@ -36,6 +36,10 @@ export default function PracticePage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load questions');
       setRows(json.items || []);
+      if (json.items?.length) {
+        const ids = json.items.map(q => q.question_id);
+        localStorage.setItem('practice_question_list', JSON.stringify(ids));
+      }
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
