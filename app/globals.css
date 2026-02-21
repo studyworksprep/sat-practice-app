@@ -77,6 +77,9 @@ hr { border: none; border-top: 1px solid rgba(148,163,184,0.16); margin: 14px 0;
 }
 .toast { padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.20); background: rgba(2,6,23,0.55); }
 .small { font-size: 12px; }
+nav img {
+  display: block;
+}
 
 /* Practice layout */
 .practiceGrid { display: grid; gap: 12px; grid-template-columns: 380px 1fr; align-items: start; }
