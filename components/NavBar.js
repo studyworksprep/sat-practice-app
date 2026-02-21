@@ -22,27 +22,33 @@ export default function NavBar() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: 16, paddingBottom: 10 }}>
-      <div className="row" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
-        <div className="row" style={{ alignItems: 'center' }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
+    <nav className="nav">
+      <div className="navInner">
+
+        {/* Left: Logo + Nav */}
+        <div className="navLeft">
+          <Link href="/">
             <img
               src="/studyworks-logo.png"
               alt="Studyworks"
-              style={{ height: 36 }}
+              className="logo"
             />
           </Link>
-          <Link href="/practice" className="pill">Practice</Link>
-          <Link href="/review" className="pill">Review</Link>
+
+          <div className="navLinks">
+            <Link href="/practice">Practice</Link>
+            <Link href="/review">Review</Link>
+          </div>
         </div>
-        <div className="row" style={{ alignItems: 'center' }}>
+
+        {/* Right: Auth */}
+        <div className="navRight">
           {user ? (
             <>
-              <span className="pill">
-                <span className="muted">Signed in</span>
-                <span className="kbd">{user.email}</span>
-              </span>
-              <button className="btn secondary" onClick={signOut}>Sign out</button>
+              <span className="userEmail">{user.email}</span>
+              <button className="btn secondary" onClick={signOut}>
+                Sign out
+              </button>
             </>
           ) : (
             <>
@@ -51,7 +57,8 @@ export default function NavBar() {
             </>
           )}
         </div>
+
       </div>
-    </div>
+    </nav>
   );
 }
