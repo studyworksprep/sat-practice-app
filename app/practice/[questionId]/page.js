@@ -23,15 +23,8 @@ export default function QuestionPage({ params }) {
   const [startTs, setStartTs] = useState(Date.now());
   const [showRationale, setShowRationale] = useState(false);
 
-  async function load({ resetUI = true } = {}) {
-    // Only clear messages / reset selection when we're loading a *new* question
-    if (resetUI) {
-      setMsg(null);
-      setSelected(null);
-      setShowRationale(false);
-      setStartTs(Date.now());
-    }
-  
+  async function load() {
+    setMsg(null);
     const res = await fetch('/api/questions/' + questionId);
     const json = await res.json();
     if (!res.ok) {
@@ -39,8 +32,12 @@ export default function QuestionPage({ params }) {
       return;
     }
     setData(json);
+    setSelected(null);
+    setShowRationale(false);
+    setStartTs(Date.now());
   }
-  useEffect(() => { load({ resetUI: true }); }, [questionId]);
+
+  useEffect(() => { load(); }, [questionId]);
 
   async function submitAttempt() {
     if (!selected) return setMsg({ kind: 'danger', text: 'Select an answer choice first.' });
@@ -58,8 +55,8 @@ export default function QuestionPage({ params }) {
       if (!res.ok) throw new Error(json?.error || 'Submit failed');
       setMsg({ kind: json.is_correct ? 'ok' : 'danger', text: json.is_correct ? 'Correct ✅' : 'Incorrect ❌' });
       setShowRationale(true);
-      // refresh status fields, but keep the UI (don’t clear msg/selection)
-      await load({ resetUI: false });
+      // refresh status fields
+      await load();
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
