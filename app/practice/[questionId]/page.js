@@ -67,8 +67,13 @@ export default function QuestionPage({ params }) {
   }
 
   useEffect(() => {
-    load({ resetUI: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const stored = localStorage.getItem('practice_question_list');
+    if (stored) {
+      const list = JSON.parse(stored);
+      setQuestionList(list);
+      const idx = list.indexOf(questionId);
+      setCurrentIndex(idx >= 0 ? idx : null);
+    }
   }, [questionId]);
 
   async function toggleMarked() {
@@ -182,6 +187,20 @@ export default function QuestionPage({ params }) {
     setShowExplanation(false);
     setStartTs(Date.now());
   }
+  
+  function goToIndex(idx) {
+    if (!questionList.length) return;
+    if (idx < 0 || idx >= questionList.length) return;
+    window.location.href = `/practice/${questionList[idx]}`;
+  }
+  
+  function goPrev() {
+    if (currentIndex > 0) goToIndex(currentIndex - 1);
+  }
+  
+  function goNext() {
+    if (currentIndex < questionList.length - 1) goToIndex(currentIndex + 1);
+  }
 
   const headerPills = useMemo(() => {
     const s = data?.status || {};
@@ -214,6 +233,39 @@ export default function QuestionPage({ params }) {
       </div>
 
       <div style={{ height: 14 }} />
+
+      {questionList.length > 0 && currentIndex !== null && (
+        <>
+          <div className="card" style={{ marginTop: 16 }}>
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+      
+              <button
+                className="btn secondary"
+                onClick={goPrev}
+                disabled={currentIndex === 0}
+              >
+                ← Previous
+              </button>
+      
+              <button
+                className="btn secondary"
+                onClick={() => setShowMap(true)}
+              >
+                {currentIndex + 1} / {questionList.length}
+              </button>
+      
+              <button
+                className="btn secondary"
+                onClick={goNext}
+                disabled={currentIndex === questionList.length - 1}
+              >
+                Next →
+              </button>
+      
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="card">
         {loading ? (
@@ -355,6 +407,33 @@ export default function QuestionPage({ params }) {
           </>
         )}
       </div>
+
+      {showMap && (
+        <div className="modalOverlay">
+          <div className="modalCard">
+      
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="h2">Question Map</div>
+              <button className="btn secondary" onClick={() => setShowMap(false)}>
+                Close
+              </button>
+            </div>
+      
+            <div className="questionGrid">
+              {questionList.map((id, idx) => (
+                <button
+                  key={id}
+                  className={'mapItem' + (idx === currentIndex ? ' active' : '')}
+                  onClick={() => goToIndex(idx)}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+            </div>
+      
+          </div>
+        </div>
+      )}
     </main>
   );
 }
