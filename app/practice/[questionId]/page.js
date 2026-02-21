@@ -2,61 +2,167 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import HtmlBlock from '../../../components/HtmlBlock';
 import Toast from '../../../components/Toast';
 
-function msToNice(ms) {
-  if (!ms && ms !== 0) return '—';
-  const s = Math.round(ms / 1000);
-  if (s < 60) return `${s}s`;
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  return `${m}m ${r}s`;
+function HtmlBlock({ html }) {
+  if (!html) return null;
+  return (
+    <div
+      className="prose"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
 }
 
 export default function QuestionPage({ params }) {
-  const questionId = params.questionId;
-  const [data, setData] = useState(null);
-  const [selected, setSelected] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [msg, setMsg] = useState(null);
-  const [startTs, setStartTs] = useState(Date.now());
-  const [showRationale, setShowRationale] = useState(false);
+  const questionId = params?.questionId;
 
-  async function load() {
-    setMsg(null);
-    const res = await fetch('/api/questions/' + questionId);
-    const json = await res.json();
-    if (!res.ok) {
-      setMsg({ kind: 'danger', text: json?.error || 'Failed to load question' });
-      return;
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Answer input
+  const [selected, setSelected] = useState(null); // option uuid for mcq
+  const [responseText, setResponseText] = useState(''); // for spr
+
+  // UX state
+  const [msg, setMsg] = useState(null); // {kind:'ok'|'danger'|'info', text:string}
+  const [submitting, setSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  // Explanation is completely decoupled from Check Answer
+  const [showExplanation, setShowExplanation] = useState(false);
+
+  // Track time on question
+  const [startTs, setStartTs] = useState(Date.now());
+
+  const qType = data?.version?.question_type; // "mcq" | "spr"
+  const options = data?.options || [];
+
+  async function load({ resetUI = true } = {}) {
+    setLoading(true);
+
+    if (resetUI) {
+      setMsg(null);
+      setSelected(null);
+      setResponseText('');
+      setHasSubmitted(false);
+      setShowExplanation(false);
+      setStartTs(Date.now());
     }
-    setData(json);
-    setSelected(null);
-    setShowRationale(false);
-    setStartTs(Date.now());
+
+    try {
+      const res = await fetch('/api/questions/' + questionId, { cache: 'no-store' });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to load question');
+      setData(json);
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setLoading(false);
+    }
   }
 
-  useEffect(() => { load(); }, [questionId]);
+  useEffect(() => {
+    load({ resetUI: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionId]);
+
+  async function toggleMarked() {
+    const next = !(data?.status?.marked_for_review ?? false);
+
+    // optimistic UI
+    setData((prev) => ({
+      ...prev,
+      status: { ...(prev?.status || {}), marked_for_review: next },
+    }));
+
+    try {
+      const res = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question_id: questionId,
+          marked_for_review: next,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to update status');
+    } catch (e) {
+      // rollback on failure
+      setData((prev) => ({
+        ...prev,
+        status: { ...(prev?.status || {}), marked_for_review: !next },
+      }));
+      setMsg({ kind: 'danger', text: e.message });
+    }
+  }
 
   async function submitAttempt() {
-    if (!selected) return setMsg({ kind: 'danger', text: 'Select an answer choice first.' });
+    if (!data?.version) return;
+
+    // Validate input
+    if (qType === 'mcq') {
+      if (!selected) {
+        setMsg({ kind: 'danger', text: 'Select an answer choice first.' });
+        return;
+      }
+    } else if (qType === 'spr') {
+      if (!responseText.trim()) {
+        setMsg({ kind: 'danger', text: 'Type an answer first.' });
+        return;
+      }
+    } else {
+      setMsg({ kind: 'danger', text: 'Unsupported question type.' });
+      return;
+    }
+
     setSubmitting(true);
     setMsg(null);
+
     const time_spent_ms = Date.now() - startTs;
 
     try {
+      const payload =
+        qType === 'spr'
+          ? { question_id: questionId, response_text: responseText, time_spent_ms }
+          : { question_id: questionId, selected_option_id: selected, time_spent_ms };
+
       const res = await fetch('/api/attempts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question_id: questionId, selected_option_id: selected, time_spent_ms }),
+        body: JSON.stringify(payload),
       });
+
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Submit failed');
-      setMsg({ kind: json.is_correct ? 'ok' : 'danger', text: json.is_correct ? 'Correct ✅' : 'Incorrect ❌' });
-      setShowRationale(true);
-      // refresh status fields
-      await load();
+
+      setHasSubmitted(true);
+      setMsg({
+        kind: json.is_correct ? 'ok' : 'danger',
+        text: json.is_correct ? 'Correct ✅' : 'Incorrect ❌',
+      });
+
+      // Update status counts locally (fast feedback)
+      setData((prev) => {
+        const prevAttempts = prev?.status?.attempts_count || 0;
+        const prevCorrect = prev?.status?.correct_attempts_count || 0;
+
+        return {
+          ...prev,
+          status: {
+            ...(prev?.status || {}),
+            is_done: true,
+            attempts_count: json.attempts_count ?? (prevAttempts + 1),
+            correct_attempts_count:
+              json.correct_attempts_count ?? (prevCorrect + (json.is_correct ? 1 : 0)),
+            last_is_correct: json.is_correct,
+            last_attempt_at: new Date().toISOString(),
+          },
+        };
+      });
+
+      // IMPORTANT: do NOT open explanation here
+      // showExplanation stays whatever the user set it to
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
@@ -64,129 +170,186 @@ export default function QuestionPage({ params }) {
     }
   }
 
-  async function toggleMarked() {
+  function resetAnswerUI() {
     setMsg(null);
-    const res = await fetch('/api/status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question_id: questionId, patch: { marked_for_review: !data?.status?.marked_for_review } }),
-    });
-    const json = await res.json();
-    if (!res.ok) return setMsg({ kind: 'danger', text: json?.error || 'Failed to update status' });
-    await load();
+    setSelected(null);
+    setResponseText('');
+    setHasSubmitted(false);
+    setShowExplanation(false);
+    setStartTs(Date.now());
   }
 
-  async function saveNotes(notes) {
-    const res = await fetch('/api/status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question_id: questionId, patch: { notes } }),
-    });
-    const json = await res.json();
-    if (!res.ok) setMsg({ kind: 'danger', text: json?.error || 'Failed to save notes' });
-  }
-
-  if (!data) {
-    return (
-      <main className="container">
-        <div className="card">Loading…</div>
-      </main>
-    );
-  }
+  const headerPills = useMemo(() => {
+    const s = data?.status || {};
+    return [
+      { label: 'Attempts', value: s.attempts_count ?? 0 },
+      { label: 'Correct', value: s.correct_attempts_count ?? 0 },
+      { label: 'Done', value: s.is_done ? 'Yes' : 'No' },
+      { label: 'Marked', value: s.marked_for_review ? 'Yes' : 'No' },
+    ];
+  }, [data]);
 
   return (
     <main className="container">
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/practice" className="pill">← Back to results</Link>
-        <div className="row">
-          <span className="pill">Attempts: <span className="kbd">{data?.status?.attempts_count ?? 0}</span></span>
-          <span className="pill">Correct: <span className="kbd">{data?.status?.correct_attempts_count ?? 0}</span></span>
-          <button className="btn secondary" onClick={toggleMarked}>
-            {data?.status?.marked_for_review ? 'Unmark' : 'Mark for review'}
-          </button>
+        <div>
+          <div className="h1" style={{ marginBottom: 2 }}>Practice Question</div>
+          <div className="muted small">
+            <Link href="/practice" className="muted">← Back to list</Link>
+          </div>
+        </div>
+
+        <div className="row" style={{ alignItems: 'center', gap: 8 }}>
+          {headerPills.map((p) => (
+            <span key={p.label} className="pill">
+              <span className="muted">{p.label}</span>
+              <span className="kbd">{p.value}</span>
+            </span>
+          ))}
         </div>
       </div>
 
-      <div style={{ height: 12 }} />
+      <div style={{ height: 14 }} />
 
       <div className="card">
-        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <div>
-            <div className="h2" style={{ marginBottom: 6 }}>
-              {data.taxonomy?.domain_name || data.taxonomy?.domain_code || 'Domain'}
-              <span className="muted"> · </span>
-              <span className="muted">{data.taxonomy?.skill_name || data.taxonomy?.skill_code || 'Skill'}</span>
-            </div>
-            <div className="row">
-              <span className="pill">Difficulty <span className="kbd">{data.taxonomy?.difficulty ?? '—'}</span></span>
-              <span className="pill">Score band <span className="kbd">{data.taxonomy?.score_band ?? '—'}</span></span>
-            </div>
-          </div>
-          <div className="muted small">Time: {msToNice(Date.now() - startTs)}</div>
-        </div>
-
-        <hr />
-
-        {data.version?.stimulus_html ? (
+        {loading ? (
+          <div className="muted">Loading…</div>
+        ) : !data?.version ? (
+          <div className="muted">No question data found.</div>
+        ) : (
           <>
-            <div className="h2">Stimulus</div>
-            <HtmlBlock html={data.version?.stimulus_html} />
+            {/* Stimulus + Stem */}
+            {data.version.stimulus_html ? (
+              <>
+                <div className="h2">Passage / Data</div>
+                <HtmlBlock html={data.version.stimulus_html} />
+                <hr />
+              </>
+            ) : null}
+
+            <div className="h2">Question</div>
+            <HtmlBlock html={data.version.stem_html} />
+
             <hr />
-          </>
-        ) : null}
 
-        <div className="h2">Question</div>
-        <HtmlBlock html={data.version?.stem_html} />
+            {/* Answer area */}
+            {qType === 'mcq' ? (
+              <div>
+                <div className="h2">Answer choices</div>
 
-        <hr />
+                <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
+                  {options
+                    .slice()
+                    .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
+                    .map((opt) => {
+                      const isSelected = selected === opt.id;
+                      const locked = hasSubmitted; // lock after submit
+                      return (
+                        <div
+                          key={opt.id}
+                          className={'option' + (isSelected ? ' selected' : '')}
+                          onClick={() => {
+                            if (locked) return;
+                            setSelected(opt.id);
+                          }}
+                          style={{ cursor: locked ? 'default' : 'pointer' }}
+                        >
+                          <div className="pill" style={{ minWidth: 54, justifyContent: 'center' }}>
+                            {opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <HtmlBlock html={opt.content_html} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            ) : qType === 'spr' ? (
+              <div>
+                <div className="h2">Your answer</div>
+                <input
+                  className="input"
+                  value={responseText}
+                  onChange={(e) => {
+                    if (hasSubmitted) return;
+                    setResponseText(e.target.value);
+                  }}
+                  placeholder="Type your answer…"
+                  disabled={hasSubmitted}
+                  style={hasSubmitted ? { opacity: 0.75 } : undefined}
+                />
+              </div>
+            ) : (
+              <div className="muted">Unsupported question type: {String(qType)}</div>
+            )}
 
-        <div className="h2">Answer choices</div>
-        <div style={{ display: 'grid', gap: 10 }}>
-          {data.options?.map((opt) => (
-            <div
-              key={opt.id}
-              className={'option' + (selected === opt.id ? ' selected' : '')}
-              onClick={() => setSelected(opt.id)}
-              role="button"
-              tabIndex={0}
-            >
-              <div className="pill" style={{ minWidth: 54, justifyContent: 'center' }}>{opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}</div>
-              <div style={{ flex: 1 }}>
-                <HtmlBlock html={opt.content_html} />
+            <div style={{ height: 14 }} />
+
+            {/* Primary controls */}
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="row" style={{ alignItems: 'center' }}>
+                <button className="btn" onClick={submitAttempt} disabled={submitting || loading}>
+                  {submitting ? 'Checking…' : 'Check Answer'}
+                </button>
+
+                <button
+                  className="btn secondary"
+                  onClick={toggleMarked}
+                  disabled={loading}
+                  title="Mark this question to revisit later"
+                >
+                  {data?.status?.marked_for_review ? 'Unmark' : 'Mark for review'}
+                </button>
+
+                <button
+                  className="btn secondary"
+                  onClick={resetAnswerUI}
+                  disabled={submitting || loading}
+                >
+                  Reset
+                </button>
+              </div>
+
+              <div className="muted small">
+                {hasSubmitted ? 'Submitted' : 'Not submitted'}
               </div>
             </div>
-          ))}
-        </div>
 
-        <div className="row" style={{ marginTop: 12 }}>
-          <button className="btn" disabled={submitting} onClick={submitAttempt}>
-            {submitting ? 'Submitting…' : 'Submit'}
-          </button>
-          <button className="btn secondary" onClick={() => load()}>Reload</button>
-        </div>
+            <Toast kind={msg?.kind} message={msg?.text} />
 
-        <Toast kind={msg?.kind} message={msg?.text} />
-
-        {showRationale && data.version?.rationale_html ? (
-          <>
             <hr />
-            <div className="h2">Explanation</div>
-            <HtmlBlock html={data.version?.rationale_html} />
-          </>
-        ) : null}
 
-        <hr />
-        <div className="h2">Notes</div>
-        <textarea
-          className="input"
-          rows={4}
-          defaultValue={data.status?.notes || ''}
-          placeholder="Add notes for this question…"
-          onBlur={(e) => saveNotes(e.target.value)}
-        />
-        <p className="muted small" style={{ marginTop: 8 }}>
-          Notes auto-save when you click outside the textbox.
-        </p>
+            {/* Lower navigation bar */}
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="row" style={{ alignItems: 'center' }}>
+                <button
+                  className="btn secondary"
+                  onClick={() => setShowExplanation((v) => !v)}
+                  disabled={!hasSubmitted || !data?.version?.rationale_html}
+                  title={!hasSubmitted ? 'Submit an answer to unlock explanation' : ''}
+                >
+                  {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+                </button>
+              </div>
+
+              <div className="row" style={{ alignItems: 'center' }}>
+                <button className="btn secondary" onClick={() => load({ resetUI: true })} disabled={submitting}>
+                  Reload question
+                </button>
+              </div>
+            </div>
+
+            {/* Explanation section */}
+            {showExplanation && data?.version?.rationale_html ? (
+              <>
+                <hr />
+                <div className="h2">Explanation</div>
+                <HtmlBlock html={data.version.rationale_html} />
+              </>
+            ) : null}
+          </>
+        )}
       </div>
     </main>
   );
