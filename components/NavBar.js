@@ -25,9 +25,12 @@ export default function NavBar() {
     <div className="container" style={{ paddingTop: 16, paddingBottom: 10 }}>
       <div className="row" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
         <div className="row" style={{ alignItems: 'center' }}>
-          <Link href="/" className="pill" style={{ gap: 10 }}>
-            <span style={{ fontWeight: 700 }}>1600</span>
-            <span className="muted">Practice</span>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
+            <img
+              src="/studyworks-logo.png"
+              alt="Studyworks"
+              style={{ height: 36 }}
+            />
           </Link>
           <Link href="/practice" className="pill">Practice</Link>
           <Link href="/review" className="pill">Review</Link>
