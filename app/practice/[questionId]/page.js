@@ -277,6 +277,7 @@ export default function QuestionPage({ params }) {
       )}
 
       <div className="card">
+        <Toast kind={msg?.kind} message={msg?.text} />
         {loading ? (
           <div className="muted">Loading…</div>
         ) : !data?.version ? (
@@ -380,8 +381,6 @@ export default function QuestionPage({ params }) {
                 {hasSubmitted ? 'Submitted' : 'Not submitted'}
               </div>
             </div>
-
-            <Toast kind={msg?.kind} message={msg?.text} />
 
             <hr />
 
