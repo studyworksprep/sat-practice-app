@@ -342,3 +342,48 @@ hr{
   font-size: 13px;
   color: var(--muted);
 }
+
+/* ===============================
+   Modal
+================================ */
+
+.modalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+}
+
+.modalCard{
+  background: white;
+  width: 90%;
+  max-width: 700px;
+  max-height: 80vh;
+  overflow: auto;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.questionGrid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.mapItem{
+  padding: 10px 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  cursor: pointer;
+}
+
+.mapItem.active{
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
