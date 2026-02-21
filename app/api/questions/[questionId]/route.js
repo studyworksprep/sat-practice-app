@@ -9,70 +9,70 @@ export async function GET(_request, { params }) {
   const { data: auth } = await supabase.auth.getUser();
   const user = auth?.user ?? null;
 
-  // Fetch current version
-  const { data: version, error: verErr } = await supabase
-    .from('question_versions')
-    .select('id, question_id, question_type, stimulus_html, stem_html, rationale_html, created_at')
-    .eq('question_id', questionId)
-    .eq('is_current', true)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  async function fetchVersion({ onlyCurrent }) {
+    let q = supabase
+      .from('question_versions')
+      .select('id, question_id, question_type, stimulus_html, stem_html, rationale_html, created_at, is_current')
+      .eq('question_id', questionId)
+      .order('created_at', { ascending: false })
+      .limit(1);
 
-  if (verErr)
-    return NextResponse.json({ error: verErr.message }, { status: 400 });
+    if (onlyCurrent) q = q.eq('is_current', true);
 
-  if (!version)
+    const { data, error } = await q.maybeSingle();
+    return { data, error };
+  }
+
+  // 1) Try current version
+  let { data: version, error: verErr } = await fetchVersion({ onlyCurrent: true });
+
+  if (verErr) return NextResponse.json({ error: verErr.message }, { status: 400 });
+
+  // 2) Fallback: newest version (even if is_current is not set properly)
+  if (!version) {
+    const fallback = await fetchVersion({ onlyCurrent: false });
+    if (fallback.error) return NextResponse.json({ error: fallback.error.message }, { status: 400 });
+    version = fallback.data;
+  }
+
+  if (!version) {
     return NextResponse.json(
-      { error: 'No current version found for question.' },
+      { error: 'No question_versions found for this question.' },
       { status: 404 }
     );
+  }
 
-  // Fetch answer options
+  // Options
   const { data: options, error: optErr } = await supabase
     .from('answer_options')
     .select('id, ordinal, label, content_html')
     .eq('question_version_id', version.id)
     .order('ordinal', { ascending: true });
 
-  if (optErr)
-    return NextResponse.json({ error: optErr.message }, { status: 400 });
+  if (optErr) return NextResponse.json({ error: optErr.message }, { status: 400 });
 
-  // Fetch taxonomy
+  // Taxonomy (may be null; that's OK)
   const { data: taxonomy, error: taxErr } = await supabase
     .from('question_taxonomy')
-    .select(
-      'question_id, program, domain_code, domain_name, skill_code, skill_name, difficulty, score_band'
-    )
+    .select('question_id, program, domain_code, domain_name, skill_code, skill_name, difficulty, score_band')
     .eq('question_id', questionId)
     .maybeSingle();
 
-  if (taxErr)
-    return NextResponse.json({ error: taxErr.message }, { status: 400 });
+  if (taxErr) return NextResponse.json({ error: taxErr.message }, { status: 400 });
 
-  // Fetch user-specific status
+  // Status (per user)
   let status = null;
   if (user) {
     const { data: st, error: stErr } = await supabase
       .from('question_status')
-      .select(
-        'user_id, question_id, is_done, marked_for_review, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct, notes'
-      )
+      .select('user_id, question_id, is_done, marked_for_review, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct, notes')
       .eq('user_id', user.id)
       .eq('question_id', questionId)
       .maybeSingle();
 
-    if (stErr)
-      return NextResponse.json({ error: stErr.message }, { status: 400 });
-
+    if (stErr) return NextResponse.json({ error: stErr.message }, { status: 400 });
     status = st;
   }
 
-  return NextResponse.json({
-    question_id: questionId,
-    version,
-    options: options ?? [],
-    taxonomy,
-    status,
-  });
+  return NextResponse.json({ question_id: questionId, version, options: options ?? [], taxonomy, status });
 }
