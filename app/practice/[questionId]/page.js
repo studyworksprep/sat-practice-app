@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Toast from '../../../components/Toast';
+import { useRouter } from 'next/navigation';
 
 function HtmlBlock({ html }) {
   if (!html) return null;
@@ -42,6 +43,8 @@ export default function QuestionPage({ params }) {
   const [currentIndex, setCurrentIndex] = useState(null);
   const [showMap, setShowMap] = useState(false);
 
+  const router = useRouter();
+
   async function load({ resetUI = true } = {}) {
     setLoading(true);
 
@@ -74,6 +77,12 @@ export default function QuestionPage({ params }) {
       const idx = list.indexOf(questionId);
       setCurrentIndex(idx >= 0 ? idx : null);
     }
+  }, [questionId]);
+
+  useEffect(() => {
+    if (!questionId) return;
+    load({ resetUI: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId]);
 
   async function toggleMarked() {
@@ -191,7 +200,7 @@ export default function QuestionPage({ params }) {
   function goToIndex(idx) {
     if (!questionList.length) return;
     if (idx < 0 || idx >= questionList.length) return;
-    window.location.href = `/practice/${questionList[idx]}`;
+    router.push(`/practice/${questionList[idx]}`);
   }
   
   function goPrev() {
@@ -236,7 +245,7 @@ export default function QuestionPage({ params }) {
 
       {questionList.length > 0 && currentIndex !== null && (
         <>
-          <div className="card" style={{ marginTop: 16 }}>
+          <div className="card" style={{ marginBottom: 16 }}>
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
       
               <button
