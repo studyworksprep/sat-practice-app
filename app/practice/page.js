@@ -104,9 +104,16 @@ export default function PracticePage() {
                       <span className="muted"> · </span>
                       <span className="muted">{q.skill_name || q.skill_code || 'Topic'}</span>
                     </div>
-                    <div className="muted small">
-                      Score band: {q.score_band ?? '—'} · Marked: {q.marked_for_review ? 'Yes' : 'No'} · Done: {q.is_done ? 'Yes' : 'No'}
-                      {q.question_key ? <> · <span className="kbd">{q.question_key}</span></> : null}
+                    <div className="row small muted" style={{ marginTop: 4 }}>
+                      <span>Score band {q.score_band ?? '—'}</span>
+                      <span>•</span>
+                      <span>{q.is_done ? 'Completed' : 'Not completed'}</span>
+                      {q.marked_for_review && (
+                        <>
+                          <span>•</span>
+                          <span>Marked for review</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </Link>
