@@ -37,6 +37,10 @@ export default function QuestionPage({ params }) {
 
   const qType = data?.version?.question_type; // "mcq" | "spr"
   const options = data?.options || [];
+  
+  const [questionList, setQuestionList] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(null);
+  const [showMap, setShowMap] = useState(false);
 
   async function load({ resetUI = true } = {}) {
     setLoading(true);
