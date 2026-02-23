@@ -1,22 +1,53 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Toast from '../../../components/Toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 function HtmlBlock({ html }) {
   if (!html) return null;
-  return (
-    <div
-      className="prose"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+  return <div className="prose" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+const LIST_KEY = 'practice_question_list';
+const LIST_META_KEY = 'practice_question_list_meta_v1'; // stores { queryKey, updatedAt, count }
+
+function normalizeQueryKey(sp) {
+  // Only include the filter/search params that affect the question list.
+  // This MUST match the param names used by /practice (and /api/questions).
+  const keys = ['difficulty', 'score_bands', 'domain', 'topic', 'marked_only', 'q'];
+
+  const parts = [];
+  for (const k of keys) {
+    const v = sp.get(k);
+    if (v === null) continue;
+    const trimmed = String(v).trim();
+    if (!trimmed) continue;
+    parts.push(`${k}=${trimmed}`);
+  }
+
+  // Stable ordering
+  parts.sort();
+  return parts.join('&');
+}
+
+function hasAnyListParams(sp) {
+  return Boolean(
+    sp.get('difficulty') ||
+      sp.get('score_bands') ||
+      sp.get('domain') ||
+      sp.get('topic') ||
+      sp.get('marked_only') ||
+      sp.get('q')
   );
 }
 
 export default function QuestionPage({ params }) {
   const questionId = params?.questionId;
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,14 +69,16 @@ export default function QuestionPage({ params }) {
 
   const qType = data?.version?.question_type; // "mcq" | "spr"
   const options = data?.options || [];
-  
+
+  // Session list / navigation
   const [questionList, setQuestionList] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(null);
   const [showMap, setShowMap] = useState(false);
 
-  const router = useRouter();
+  // Prevent duplicate list builds on rerenders
+  const buildingListRef = useRef(false);
 
-  async function load({ resetUI = true } = {}) {
+  async function loadQuestion({ resetUI = true } = {}) {
     setLoading(true);
 
     if (resetUI) {
@@ -69,19 +102,133 @@ export default function QuestionPage({ params }) {
     }
   }
 
-  useEffect(() => {
-    const stored = localStorage.getItem('practice_question_list');
-    if (stored) {
-      const list = JSON.parse(stored);
-      setQuestionList(list);
-      const idx = list.indexOf(questionId);
-      setCurrentIndex(idx >= 0 ? idx : null);
+  function readStoredList() {
+    try {
+      const stored = localStorage.getItem(LIST_KEY);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
     }
-  }, [questionId]);
+  }
+
+  function writeStoredList(ids, queryKey) {
+    try {
+      localStorage.setItem(LIST_KEY, JSON.stringify(ids));
+      localStorage.setItem(
+        LIST_META_KEY,
+        JSON.stringify({ queryKey, updatedAt: Date.now(), count: ids.length })
+      );
+    } catch {
+      // ignore storage failures
+    }
+  }
+
+  function readStoredMeta() {
+    try {
+      const raw = localStorage.getItem(LIST_META_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  async function buildFullFilteredListFromQuery() {
+    // Build the full list of IDs matching current filters (NOT limited to 25).
+    // Requires the filters/search to be present in the URL query string.
+    const sp = searchParams;
+    const queryKey = normalizeQueryKey(sp);
+
+    // Cache hit: if we already built the same queryKey, use stored list.
+    const meta = readStoredMeta();
+    const cached = readStoredList();
+    if (meta?.queryKey === queryKey && cached.length > 0) {
+      setQuestionList(cached);
+      const idx = cached.indexOf(questionId);
+      setCurrentIndex(idx >= 0 ? idx : null);
+      return;
+    }
+
+    if (buildingListRef.current) return;
+    buildingListRef.current = true;
+
+    try {
+      const pageSize = 100; // API cap currently 100
+      let offset = 0;
+      const allIds = [];
+
+      while (true) {
+        const params = new URLSearchParams(sp.toString());
+        params.set('limit', String(pageSize));
+        params.set('offset', String(offset));
+
+        const res = await fetch('/api/questions?' + params.toString(), { cache: 'no-store' });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || 'Failed to build practice list');
+
+        const items = json.items || [];
+        for (const it of items) {
+          if (it?.question_id) allIds.push(it.question_id);
+        }
+
+        if (items.length < pageSize) break;
+        offset += pageSize;
+
+        // Hard safety stop (prevents accidental infinite loops if API misbehaves)
+        if (offset > 50000) break;
+      }
+
+      // If the filter returns nothing, fall back to existing stored list (or empty)
+      if (allIds.length === 0) {
+        const fallback = readStoredList();
+        setQuestionList(fallback);
+        const idx = fallback.indexOf(questionId);
+        setCurrentIndex(idx >= 0 ? idx : null);
+        return;
+      }
+
+      writeStoredList(allIds, queryKey);
+
+      setQuestionList(allIds);
+      const idx = allIds.indexOf(questionId);
+      setCurrentIndex(idx >= 0 ? idx : null);
+    } finally {
+      buildingListRef.current = false;
+    }
+  }
+
+  function hydrateListAndIndex() {
+    // If filters are provided in the URL, build full filtered list.
+    // Otherwise, fall back to whatever /practice stored (typically 25).
+    if (hasAnyListParams(searchParams)) {
+      buildFullFilteredListFromQuery().catch((e) => {
+        setMsg({ kind: 'danger', text: e.message });
+        // fall back to stored list on error
+        const fallback = readStoredList();
+        setQuestionList(fallback);
+        const idx = fallback.indexOf(questionId);
+        setCurrentIndex(idx >= 0 ? idx : null);
+      });
+      return;
+    }
+
+    const list = readStoredList();
+    setQuestionList(list);
+    const idx = list.indexOf(questionId);
+    setCurrentIndex(idx >= 0 ? idx : null);
+  }
 
   useEffect(() => {
     if (!questionId) return;
-    load({ resetUI: true });
+    hydrateListAndIndex();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionId, searchParams]);
+
+  useEffect(() => {
+    if (!questionId) return;
+    loadQuestion({ resetUI: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId]);
 
@@ -180,7 +327,6 @@ export default function QuestionPage({ params }) {
       });
 
       // IMPORTANT: do NOT open explanation here
-      // showExplanation stays whatever the user set it to
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
@@ -196,17 +342,18 @@ export default function QuestionPage({ params }) {
     setShowExplanation(false);
     setStartTs(Date.now());
   }
-  
+
   function goToIndex(idx) {
     if (!questionList.length) return;
     if (idx < 0 || idx >= questionList.length) return;
-    router.push(`/practice/${questionList[idx]}`);
+    const qs = searchParams?.toString();
+    router.push(`/practice/${questionList[idx]}${qs ? `?${qs}` : ''}`);
   }
-  
+
   function goPrev() {
     if (currentIndex > 0) goToIndex(currentIndex - 1);
   }
-  
+
   function goNext() {
     if (currentIndex < questionList.length - 1) goToIndex(currentIndex + 1);
   }
@@ -225,9 +372,13 @@ export default function QuestionPage({ params }) {
     <main className="container">
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div className="h1" style={{ marginBottom: 2 }}>Practice Question</div>
+          <div className="h1" style={{ marginBottom: 2 }}>
+            Practice Question
+          </div>
           <div className="muted small">
-            <Link href="/practice" className="muted">← Back to list</Link>
+            <Link href="/practice" className="muted">
+              ← Back to list
+            </Link>
           </div>
         </div>
 
@@ -247,22 +398,14 @@ export default function QuestionPage({ params }) {
         <>
           <div className="card" style={{ marginBottom: 16 }}>
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-      
-              <button
-                className="btn secondary"
-                onClick={goPrev}
-                disabled={currentIndex === 0}
-              >
+              <button className="btn secondary" onClick={goPrev} disabled={currentIndex === 0}>
                 ← Previous
               </button>
-      
-              <button
-                className="btn secondary"
-                onClick={() => setShowMap(true)}
-              >
+
+              <button className="btn secondary" onClick={() => setShowMap(true)}>
                 {currentIndex + 1} / {questionList.length}
               </button>
-      
+
               <button
                 className="btn secondary"
                 onClick={goNext}
@@ -270,7 +413,6 @@ export default function QuestionPage({ params }) {
               >
                 Next →
               </button>
-      
             </div>
           </div>
         </>
@@ -278,6 +420,7 @@ export default function QuestionPage({ params }) {
 
       <div className="card">
         <Toast kind={msg?.kind} message={msg?.text} />
+
         {loading ? (
           <div className="muted">Loading…</div>
         ) : !data?.version ? (
@@ -368,18 +511,12 @@ export default function QuestionPage({ params }) {
                   {data?.status?.marked_for_review ? 'Unmark' : 'Mark for review'}
                 </button>
 
-                <button
-                  className="btn secondary"
-                  onClick={resetAnswerUI}
-                  disabled={submitting || loading}
-                >
+                <button className="btn secondary" onClick={resetAnswerUI} disabled={submitting || loading}>
                   Reset
                 </button>
               </div>
 
-              <div className="muted small">
-                {hasSubmitted ? 'Submitted' : 'Not submitted'}
-              </div>
+              <div className="muted small">{hasSubmitted ? 'Submitted' : 'Not submitted'}</div>
             </div>
 
             <hr />
@@ -398,7 +535,11 @@ export default function QuestionPage({ params }) {
               </div>
 
               <div className="row" style={{ alignItems: 'center' }}>
-                <button className="btn secondary" onClick={() => load({ resetUI: true })} disabled={submitting}>
+                <button
+                  className="btn secondary"
+                  onClick={() => loadQuestion({ resetUI: true })}
+                  disabled={submitting}
+                >
                   Reload question
                 </button>
               </div>
@@ -419,14 +560,13 @@ export default function QuestionPage({ params }) {
       {showMap && (
         <div className="modalOverlay">
           <div className="modalCard">
-      
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="h2">Question Map</div>
               <button className="btn secondary" onClick={() => setShowMap(false)}>
                 Close
               </button>
             </div>
-      
+
             <div className="questionGrid">
               {questionList.map((id, idx) => (
                 <button
@@ -438,7 +578,6 @@ export default function QuestionPage({ params }) {
                 </button>
               ))}
             </div>
-      
           </div>
         </div>
       )}
