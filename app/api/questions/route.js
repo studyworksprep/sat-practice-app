@@ -63,7 +63,7 @@ export async function GET(request) {
     .select(`
       id,
       question_id,
-      question_taxonomy (
+      question_taxonomy!inner (
         question_id,
         domain_code,
         domain_name,
