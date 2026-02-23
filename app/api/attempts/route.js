@@ -38,29 +38,34 @@ export async function POST(request) {
   const ca = caRows?.[0] ?? null;
 
   // 3) Determine correctness based on question_type
+  // 3) Determine correctness based on question_type
   let is_correct = false;
-
+  
   if (ver.question_type === 'mcq') {
     if (!selected_option_id) {
       return NextResponse.json({ error: 'selected_option_id required for mcq' }, { status: 400 });
     }
+  
+    // Force boolean result even if correct answer is missing
     is_correct =
-      ca?.correct_option_id &&
-      String(ca.correct_option_id) === String(selected_option_id);
+      String(ca?.correct_option_id ?? '') === String(selected_option_id);
+  
   } else if (ver.question_type === 'spr') {
     if (typeof response_text !== 'string' || response_text.trim() === '') {
       return NextResponse.json({ error: 'response_text required for spr' }, { status: 400 });
     }
-
+  
     const norm = (s) =>
       String(s ?? '')
         .trim()
         .replace(/\s+/g, ' ')
         .toLowerCase();
-
-    is_correct = ca?.correct_text && norm(ca.correct_text) === norm(response_text);
+  
+    // Force boolean result even if correct answer is missing
+    is_correct =
+      norm(ca?.correct_text ?? '') === norm(response_text);
+  
   } else {
-    // Unknown type (keep false, or you could error)
     is_correct = false;
   }
 
