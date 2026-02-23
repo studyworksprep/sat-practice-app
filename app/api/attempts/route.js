@@ -27,18 +27,20 @@ export async function POST(request) {
   if (!ver) return NextResponse.json({ error: 'No current version found' }, { status: 404 });
 
   // 2) Fetch correct answer for this version (newest if multiple)
-  const { data: caRows, error: caErr } = await supabase
+  const { data: caRows, error: caError } = await supabase
     .from('correct_answers')
-    .select('correct_option_id, correct_text, created_at')
-    .eq('question_version_id', ver.id)
-    .order('created_at', { ascending: false })
+    .select('correct_option_id, correct_text')
+    .eq('question_version_id', version_id)
     .limit(1);
-
-  if (caErr) return NextResponse.json({ error: caErr.message }, { status: 400 });
-  const ca = caRows?.[0] ?? null;
-  if (!ca || (ver.question_type === 'mcq' && !ca.correct_option_id) || (ver.question_type === 'spr' && !ca.correct_text)) {
-    return NextResponse.json({ error: 'Correct answer missing for this question version' }, { status: 400 });
+  
+  if (caError) {
+    return NextResponse.json(
+      { error: `correct_answers select failed: ${caError.message}` },
+      { status: 500 }
+    );
   }
+
+const ca = caRows?.[0];
 
   // 3) Determine correctness based on question_type
   // 3) Determine correctness based on question_type
