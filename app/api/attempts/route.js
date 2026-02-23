@@ -36,6 +36,9 @@ export async function POST(request) {
 
   if (caErr) return NextResponse.json({ error: caErr.message }, { status: 400 });
   const ca = caRows?.[0] ?? null;
+  if (!ca || (ver.question_type === 'mcq' && !ca.correct_option_id) || (ver.question_type === 'spr' && !ca.correct_text)) {
+    return NextResponse.json({ error: 'Correct answer missing for this question version' }, { status: 400 });
+  }
 
   // 3) Determine correctness based on question_type
   // 3) Determine correctness based on question_type
