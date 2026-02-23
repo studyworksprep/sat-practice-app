@@ -98,7 +98,25 @@ export default function PracticePage() {
           ) : (
             <div style={{ display: 'grid', gap: 10 }}>
               {rows.map((q) => (
-                <Link key={q.question_id} href={`/practice/${q.question_id}`} className="option" style={{ cursor: 'pointer' }}>
+               const baseParams = new URLSearchParams();
+              if (filters.difficulty) baseParams.set('difficulty', filters.difficulty);
+              
+              const bands = Array.isArray(filters.score_bands) ? filters.score_bands : [];
+              if (bands.length > 0) baseParams.set('score_bands', bands.join(','));
+              
+              if (filters.domain) baseParams.set('domain', filters.domain);
+              if (filters.topic) baseParams.set('topic', filters.topic);
+              if (filters.marked_only) baseParams.set('marked_only', 'true');
+              
+              if (search.trim()) baseParams.set('q', search.trim());
+              
+              // later, inside rows.map:
+              <Link
+                    key={q.question_id}
+                    href={`/practice/${q.question_id}?${baseParams.toString()}`}
+                    className="option"
+                    style={{ cursor: 'pointer' }}
+                  >
                   <div style={{ minWidth: 64 }}>
                     <div className="pill">{q.difficulty ? `D${q.difficulty}` : 'D?'}</div>
                   </div>
