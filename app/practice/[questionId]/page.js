@@ -302,10 +302,8 @@ export default function QuestionPage({ params }) {
       if (!res.ok) throw new Error(json?.error || 'Submit failed');
 
       setHasSubmitted(true);
-      setMsg({
-        kind: json.is_correct ? 'ok' : 'danger',
-        text: json.is_correct ? 'Correct ✅' : 'Incorrect ❌',
-      });
+      // Don't show toast for correctness anymore
+      setMsg(null);
 
       // Update status counts locally (fast feedback)
       setData((prev) => {
@@ -457,7 +455,17 @@ export default function QuestionPage({ params }) {
                         
                         <div
                           key={opt.id}
-                          className={'option' + (isSelected ? ' selected' : '')}
+                          className={
+                            'option' +
+                            (isSelected ? ' selected' : '') +
+                            (hasSubmitted && isSelected && data?.status?.last_is_correct === true ? ' correct' : '') +
+                            (hasSubmitted && isSelected && data?.status?.last_is_correct === false ? ' incorrect' : '') +
+                            (hasSubmitted &&
+                             data?.status?.last_is_correct === false &&
+                             opt.id === data?.version?.correct_option_id
+                               ? ' revealCorrect'
+                               : '')
+                          }
                           onClick={() => {
                             if (locked) return;
                             setSelected(opt.id);
