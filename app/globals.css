@@ -390,26 +390,35 @@ hr{
 
 /* MCQ option layout fix */
 
+/* MCQ option layout: College Board-ish */
+
 .option {
   display: flex;
-  align-items: flex-start; /* prevents stretching */
-  gap: 12px;
+  align-items: flex-start; /* do NOT stretch badge */
+  gap: 16px;
 }
 
-.pill.optionLabel {
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
-  padding: 0;                 /* override pill padding so it stays a perfect circle */
-  border-radius: 999px;       /* circle */
+/* the circle around A/B/C/D */
+.optionBadge {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 2px solid currentColor;
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  align-self: flex-start;     /* top align */
+
+  font-weight: 700;
   line-height: 1;
+
+  /* key: visually aligns with first line of text like CB */
+  margin-top: 8px;
 }
 
+/* pushes text down the same amount so it aligns with the badge */
 .optionContent {
   flex: 1 1 auto;
   min-width: 0;
+  padding-top: 8px;
 }
