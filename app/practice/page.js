@@ -12,6 +12,7 @@ export default function PracticePage() {
   const [msg, setMsg] = useState(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
+  const [totalCount, setTotalCount] = useState(0);
 
   // Build the "session filter" params once (no pagination params here).
   // These are what we want to carry into /practice/[questionId] so it can rebuild the full list.
@@ -56,8 +57,17 @@ export default function PracticePage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load questions');
 
-      const items = json.items || [];
-      setRows(items);
+    const items = json.items || [];
+    setRows(items);
+    
+    // support either field name: totalCount (recommended) or total
+    setTotalCount(
+      Number.isFinite(json.totalCount) ? json.totalCount :
+      Number.isFinite(json.total) ? json.total :
+      0
+    );
+
+      
 
       // Keep your existing behavior: store ONLY the current page's IDs
       // (the question page will rebuild the full list using the query params)
@@ -99,9 +109,20 @@ export default function PracticePage() {
                 Showing up to 25 results per page. Click a row to practice.
               </p>
             </div>
+
             <div className="pill">
-              Page <span className="kbd">{page + 1}</span>
+              {totalCount > 0 ? (
+                <>
+                  Showing <span className="kbd">{page * 25 + 1}</span>–<span className="kbd">{Math.min((page + 1) * 25, totalCount)}</span>{' '}
+                  of <span className="kbd">{totalCount}</span>
+                </>
+              ) : (
+                <>
+                  Showing <span className="kbd">0</span>
+                </>
+              )}
             </div>
+                  
           </div>
 
           <div className="searchRow" style={{ marginTop: 10 }}>
@@ -175,7 +196,11 @@ export default function PracticePage() {
             >
               Prev
             </button>
-            <button className="btn secondary" onClick={() => setPage((p) => p + 1)}>
+            <button
+              className="btn secondary"
+              disabled={totalCount > 0 && (page + 1) * 25 >= totalCount}
+              onClick={() => setPage((p) => p + 1)}
+            >
               Next
             </button>
           </div>
