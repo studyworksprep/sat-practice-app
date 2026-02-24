@@ -218,19 +218,31 @@ label{
 
 /* MCQ option layout: College Board-ish */
 
+
 .option {
   display: flex;
-  align-items: flex-start; /* do NOT stretch badge */
+  align-items: flex-start;
   gap: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 16px;
+  background: #fff;
 }
 
-/* the circle around A/B/C/D */
+.option.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
 .optionBadge {
   width: 42px;
   height: 42px;
   flex: 0 0 42px;
-  border: 2px solid currentColor;
+
+  border: 2px solid #111;
   border-radius: 999px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -238,29 +250,13 @@ label{
   font-weight: 700;
   line-height: 1;
 
-  /* key: visually aligns with first line of text like CB */
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
-/* pushes text down the same amount so it aligns with the badge */
 .optionContent {
   flex: 1 1 auto;
   min-width: 0;
-  padding-top: 8px;
-}
-
-/* ===============================
-   Search Row
-================================ */
-
-.searchRow{
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.searchRow .input{
-  flex: 1;
+  padding-top: 6px;
 }
 
 /* ===============================
