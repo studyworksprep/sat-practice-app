@@ -454,21 +454,20 @@ export default function QuestionPage({ params }) {
                       const isSelected = selected === opt.id;
                       const locked = hasSubmitted; // lock after submit
                       return (
-                        
                         <div
                           key={opt.id}
-                          className={'option' + (isSelected ? ' selected' : '')}
+                          className={'mcqOption' + (isSelected ? ' selected' : '')}
                           onClick={() => {
                             if (locked) return;
                             setSelected(opt.id);
                           }}
                           style={{ cursor: locked ? 'default' : 'pointer' }}
                         >
-                          <div className="optionLabel">
+                          <div className="mcqBadge">
                             {opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
                           </div>
                         
-                          <div className="optionContent">
+                          <div className="mcqContent">
                             <HtmlBlock html={opt.content_html} />
                           </div>
                         </div>
