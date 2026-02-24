@@ -16,8 +16,10 @@ export async function GET(request) {
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
 
   const supabase = createClient();
-  const { data: auth } = await supabase.auth.getUser();
+  const { data: auth, error: authErr } = await supabase.auth.getUser();
+  if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 });
   const user = auth?.user ?? null;
+  const userId = user?.id ?? null;
 
   const score_bands = (score_bands_raw || '')
     .split(',')
@@ -26,45 +28,70 @@ export async function GET(request) {
     .map((s) => Number(s))
     .filter((n) => Number.isFinite(n));
 
-  // If q is provided, match across:
-  // - questions.question_id (text identifier if present)
-  // - question_versions (current) stem_html / stimulus_html
-  // Collect matching question UUIDs, then apply as an .in('id', ...).
+  // Build an ID restriction set as we apply q and marked_only.
+  // This is always question UUIDs (questions.id).
   let restrictIds = null;
-  if (qText) {
-    const safe = qText.replace(/[%_]/g, '\\$&'); // escape wildcards a bit
-    const pattern = `%${safe}%`;
 
+  // 1) q search restriction (question_id text OR current stem/stimulus)
+  if (qText) {
+    const safe = qText.replace(/[%_]/g, '\\$&');
+    const pattern = `%${safe}%`;
     const ids = new Set();
 
-    // Match questions.question_id
     const { data: qrows, error: qErr } = await supabase
       .from('questions')
       .select('id, question_id')
       .ilike('question_id', pattern)
-      .limit(500);
+      .limit(2000);
 
     if (qErr) return NextResponse.json({ error: qErr.message }, { status: 400 });
     (qrows || []).forEach((r) => r?.id && ids.add(r.id));
 
-    // Match current question_versions stem/stimulus
     const { data: vrows, error: vErr } = await supabase
       .from('question_versions')
       .select('question_id, stem_html, stimulus_html')
       .eq('is_current', true)
       .or(`stem_html.ilike.${pattern},stimulus_html.ilike.${pattern}`)
-      .limit(500);
+      .limit(2000);
 
     if (vErr) return NextResponse.json({ error: vErr.message }, { status: 400 });
     (vrows || []).forEach((r) => r?.question_id && ids.add(r.question_id));
 
     restrictIds = Array.from(ids);
-    if (restrictIds.length === 0) {
+    if (restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
+  }
+
+  // 2) marked_only restriction (must be per-user)
+  if (marked_only) {
+    if (!userId) {
+      // If not signed in, user can't have per-user marks.
+      return NextResponse.json({ items: [], totalCount: 0 });
+    }
+
+    const { data: markedRows, error: markedErr } = await supabase
+      .from('question_status')
+      .select('question_id')
+      .eq('user_id', userId)
+      .eq('marked_for_review', true)
+      .limit(10000);
+
+    if (markedErr) return NextResponse.json({ error: markedErr.message }, { status: 400 });
+
+    const markedIds = (markedRows || []).map((r) => r.question_id).filter(Boolean);
+
+    if (restrictIds) {
+      const setRestrict = new Set(restrictIds);
+      restrictIds = markedIds.filter((id) => setRestrict.has(id));
+    } else {
+      restrictIds = markedIds;
+    }
+
+    if (!restrictIds || restrictIds.length === 0) {
       return NextResponse.json({ items: [], totalCount: 0 });
     }
   }
 
-  // Ask Supabase to compute total count for the filtered query
+  // Main query with count
   let q = supabase
     .from('questions')
     .select(
@@ -91,8 +118,7 @@ export async function GET(request) {
     `,
       { count: 'exact' }
     )
-    .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+    .order('created_at', { ascending: false });
 
   if (restrictIds) q = q.in('id', restrictIds);
 
@@ -101,16 +127,7 @@ export async function GET(request) {
   if (domain) q = q.eq('question_taxonomy.domain_name', domain);
   if (topic) q = q.eq('question_taxonomy.skill_name', topic);
 
-  // IMPORTANT: status must be per-user
-  if (user?.id) {
-    q = q.eq('question_status.user_id', user.id);
-  }
-
-  // If you want "marked only" to be *true pagination* (recommended),
-  // push it into SQL instead of filtering after pagination:
-  if (marked_only) {
-    q = q.eq('question_status.marked_for_review', true);
-  }
+  q = q.range(offset, offset + limit - 1);
 
   const { data, error, count } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -118,8 +135,15 @@ export async function GET(request) {
   const items = (data || [])
     .map((row) => {
       const tax = row.question_taxonomy?.[0] ?? row.question_taxonomy ?? null;
-      const stRaw = row.question_status;
-      const st = Array.isArray(stRaw) ? stRaw[0] : stRaw;
+
+      // pick status row for this user if present
+      const stArr = Array.isArray(row.question_status)
+        ? row.question_status
+        : row.question_status
+        ? [row.question_status]
+        : [];
+
+      const st = userId ? stArr.find((s) => s?.user_id === userId) : stArr[0];
 
       if (!tax) return null;
 
@@ -144,6 +168,6 @@ export async function GET(request) {
 
   return NextResponse.json({
     items,
-    totalCount: typeof count === 'number' ? count : null,
+    totalCount: typeof count === 'number' ? count : 0,
   });
 }
