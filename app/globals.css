@@ -216,24 +216,37 @@ label{
    Question List Rows
 ================================ */
 
-.option{
+/* MCQ option layout: College Board-ish */
+
+.option {
   display: flex;
-  gap: 14px;
-  padding: 14px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: #ffffff;
-  transition: all 0.15s ease;
+  align-items: flex-start; /* do NOT stretch badge */
+  gap: 16px;
 }
 
-.option:hover{
-  border-color: var(--accent);
-  box-shadow: 0 4px 14px rgba(37,99,235,0.08);
+/* the circle around A/B/C/D */
+.optionBadge {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 700;
+  line-height: 1;
+
+  /* key: visually aligns with first line of text like CB */
+  margin-top: 8px;
 }
 
-.option.selected{
-  border-color: var(--accent);
-  background: var(--accent-soft);
+/* pushes text down the same amount so it aligns with the badge */
+.optionContent {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-top: 8px;
 }
 
 /* ===============================
@@ -389,35 +402,4 @@ hr{
 }
 
 
-/* MCQ option layout: College Board-ish */
 
-.option {
-  display: flex;
-  align-items: flex-start; /* do NOT stretch badge */
-  gap: 16px;
-}
-
-/* the circle around A/B/C/D */
-.optionBadge {
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
-  border: 2px solid currentColor;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  font-weight: 700;
-  line-height: 1;
-
-  /* key: visually aligns with first line of text like CB */
-  margin-top: 8px;
-}
-
-/* pushes text down the same amount so it aligns with the badge */
-.optionContent {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding-top: 8px;
-}
