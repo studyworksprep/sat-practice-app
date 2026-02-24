@@ -472,7 +472,6 @@ export default function QuestionPage({ params }) {
                             <HtmlBlock html={opt.content_html} />
                           </div>
                         </div>
-
                       );
                     })}
                 </div>
