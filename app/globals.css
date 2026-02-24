@@ -398,5 +398,37 @@ hr{
   border-color: var(--accent);
 }
 
+/* Correct answer */
+.option.correct {
+  border-color: #15803d;
+  background: #f0fdf4;
+}
+
+.option.correct .optionBadge {
+  border-color: #15803d;
+  background: #15803d;
+  color: white;
+}
+
+/* Incorrect selected answer */
+.option.incorrect {
+  border-color: #b91c1c;
+  background: #fef2f2;
+}
+
+.option.incorrect .optionBadge {
+  border-color: #b91c1c;
+  background: #b91c1c;
+  color: white;
+}
+
+/* Reveal correct when user was wrong */
+.option.revealCorrect {
+  border-color: #15803d;
+}
+
+.option.revealCorrect .optionBadge {
+  border-color: #15803d;
+}
 
 
