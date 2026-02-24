@@ -219,6 +219,8 @@ label{
 /* MCQ option layout: College Board-ish */
 
 
+/* MCQ answer option */
+
 .option {
   display: flex;
   align-items: flex-start;
@@ -226,7 +228,7 @@ label{
 
   border: 1px solid var(--border);
   border-radius: 18px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   background: #fff;
 }
 
@@ -235,10 +237,11 @@ label{
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
+/* Circle badge */
 .optionBadge {
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
 
   border: 2px solid #111;
   border-radius: 999px;
@@ -250,13 +253,14 @@ label{
   font-weight: 700;
   line-height: 1;
 
-  margin-top: 6px;
+  /* This is the magic */
+  transform: translateY(3px);
 }
 
+/* Text column */
 .optionContent {
   flex: 1 1 auto;
   min-width: 0;
-  padding-top: 6px;
 }
 
 /* ===============================
