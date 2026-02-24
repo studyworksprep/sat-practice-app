@@ -13,47 +13,6 @@ export default function PracticePage() {
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
 
-  const MATH_CODES = new Set(['H', 'P', 'Q', 'S']);
-  const RW_CODES   = new Set(['CAS', 'INI', 'EOI', 'SEC']);
-  
-  <select
-    value={selectedDomain || ''}
-    onChange={(e) => setSelectedDomain(e.target.value)}
-  >
-    <option value="">All Domains</option>
-  
-    <optgroup label="Math">
-      {domains
-        .filter(d => MATH_CODES.has(d.domain_code))
-        .map(d => (
-          <option key={d.domain_code} value={d.domain_name}>
-            {d.domain_name}
-          </option>
-        ))}
-    </optgroup>
-  
-    <optgroup label="Reading and Writing">
-      {domains
-        .filter(d => RW_CODES.has(d.domain_code))
-        .map(d => (
-          <option key={d.domain_code} value={d.domain_name}>
-            {d.domain_name}
-          </option>
-        ))}
-    </optgroup>
-  
-    {/* Optional: safety net */}
-    <optgroup label="Other / Unmapped">
-      {domains
-        .filter(d => !MATH_CODES.has(d.domain_code) && !RW_CODES.has(d.domain_code))
-        .map(d => (
-          <option key={d.domain_code || d.domain_name} value={d.domain_name}>
-            {d.domain_name}
-          </option>
-        ))}
-    </optgroup>
-  </select>
-
   // Build the "session filter" params once (no pagination params here).
   // These are what we want to carry into /practice/[questionId] so it can rebuild the full list.
   const sessionQueryString = useMemo(() => {
