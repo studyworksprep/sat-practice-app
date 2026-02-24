@@ -392,19 +392,21 @@ hr{
 
 .option {
   display: flex;
-  align-items: flex-start;   /* key: prevents vertical stretching */
+  align-items: flex-start; /* prevents stretching */
   gap: 12px;
 }
 
-.optionLabel {
+.pill.optionLabel {
   width: 36px;
   height: 36px;
-  flex: 0 0 36px;            /* fixed size */
+  flex: 0 0 36px;
+  padding: 0;                 /* override pill padding so it stays a perfect circle */
+  border-radius: 999px;       /* circle */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  font-weight: 600;
+  align-self: flex-start;     /* top align */
+  line-height: 1;
 }
 
 .optionContent {
