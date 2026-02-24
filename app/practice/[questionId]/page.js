@@ -1,100 +1,87 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '../../../components/Toast';
-import { useRouter, useSearchParams } from 'next/navigation';
 
+// Minimal safe HTML renderer (matches your existing pattern)
 function HtmlBlock({ html }) {
   if (!html) return null;
-  return <div className="prose" dangerouslySetInnerHTML={{ __html: html }} />;
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
-const LIST_KEY = 'practice_question_list';
-const LIST_META_KEY = 'practice_question_list_meta_v1'; // stores { queryKey, updatedAt, count }
-
-function normalizeQueryKey(sp) {
-  // Only include the filter/search params that affect the question list.
-  // This MUST match the param names used by /practice (and /api/questions).
-  const keys = ['difficulty', 'score_bands', 'domain', 'topic', 'marked_only', 'q'];
-
-  const parts = [];
-  for (const k of keys) {
-    const v = sp.get(k);
-    if (v === null) continue;
-    const trimmed = String(v).trim();
-    if (!trimmed) continue;
-    parts.push(`${k}=${trimmed}`);
+function uniq(arr) {
+  const s = new Set();
+  const out = [];
+  for (const x of arr || []) {
+    if (!x) continue;
+    if (s.has(x)) continue;
+    s.add(x);
+    out.push(x);
   }
-
-  // Stable ordering
-  parts.sort();
-  return parts.join('&');
+  return out;
 }
 
-function hasAnyListParams(sp) {
-  return Boolean(
-    sp.get('difficulty') ||
-      sp.get('score_bands') ||
-      sp.get('domain') ||
-      sp.get('topic') ||
-      sp.get('marked_only') ||
-      sp.get('q')
-  );
-}
-
-export default function QuestionPage({ params }) {
-  const questionId = params?.questionId;
-
+export default function PracticeQuestionPage() {
+  const { questionId } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState(null);
 
-  // Answer input
-  const [selected, setSelected] = useState(null); // option uuid for mcq
-  const [responseText, setResponseText] = useState(''); // for spr
+  const [questionIds, setQuestionIds] = useState([]);
+  const [index1, setIndex1] = useState(null); // 1-based index in list
+  const [total, setTotal] = useState(null);
 
-  // UX state
-  const [msg, setMsg] = useState(null); // {kind:'ok'|'danger'|'info', text:string}
-  const [submitting, setSubmitting] = useState(false);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [responseText, setResponseText] = useState('');
 
-  // Explanation is completely decoupled from Check Answer
-  const [showExplanation, setShowExplanation] = useState(false);
+  const startedAtRef = useRef(Date.now());
 
-  // Track time on question
-  const [startTs, setStartTs] = useState(Date.now());
-
-  const qType = data?.version?.question_type; // "mcq" | "spr"
-  const options = data?.options || [];
-
-  // Session list / navigation
-  const [questionList, setQuestionList] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(null);
-  const [showMap, setShowMap] = useState(false);
-
-  // Prevent duplicate list builds on rerenders
-  const buildingListRef = useRef(false);
-
-  async function loadQuestion({ resetUI = true } = {}) {
-    setLoading(true);
-
-    if (resetUI) {
-      setMsg(null);
-      setSelected(null);
-      setResponseText('');
-      setHasSubmitted(false);
-      setShowExplanation(false);
-      setStartTs(Date.now());
+  // Build filter params (same names as practice list)
+  const sessionParams = useMemo(() => {
+    const keys = ['difficulty', 'score_bands', 'domain', 'topic', 'marked_only', 'q', 'session'];
+    const p = new URLSearchParams();
+    for (const k of keys) {
+      const v = searchParams.get(k);
+      if (v !== null && v !== '') p.set(k, v);
     }
+    return p;
+  }, [searchParams]);
 
+  const hasAnyFilters = useMemo(() => {
+    // "session" doesn’t count as a filter; it just indicates navigation from list
+    const keys = ['difficulty', 'score_bands', 'domain', 'topic', 'marked_only', 'q'];
+    return keys.some((k) => sessionParams.has(k));
+  }, [sessionParams]);
+
+  async function fetchQuestion() {
+    setLoading(true);
+    setMsg(null);
     try {
-      const res = await fetch('/api/questions/' + questionId, { cache: 'no-store' });
+      const res = await fetch(`/api/questions/${questionId}`, { cache: 'no-store' });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load question');
       setData(json);
+
+      // Preselect last selected option if present
+      if (json?.status?.last_selected_option_id) {
+        setSelected(json.status.last_selected_option_id);
+      } else {
+        setSelected(null);
+      }
+
+      // If FR, restore last response if present
+      if (json?.status?.last_response_text) {
+        setResponseText(json.status.last_response_text);
+      } else {
+        setResponseText('');
+      }
+
+      startedAtRef.current = Date.now();
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
@@ -102,496 +89,368 @@ export default function QuestionPage({ params }) {
     }
   }
 
-  function readStoredList() {
-    try {
-      const stored = localStorage.getItem(LIST_KEY);
-      if (!stored) return [];
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
+  async function fetchAllIdsWithParams(paramsObj) {
+    const limit = 100; // your /api/questions caps at 100
+    let offset = 0;
 
-  function writeStoredList(ids, queryKey) {
-    try {
-      localStorage.setItem(LIST_KEY, JSON.stringify(ids));
-      localStorage.setItem(
-        LIST_META_KEY,
-        JSON.stringify({ queryKey, updatedAt: Date.now(), count: ids.length })
-      );
-    } catch {
-      // ignore storage failures
-    }
-  }
+    // first request to get totalCount and first batch
+    const first = new URLSearchParams({ ...paramsObj, limit: String(limit), offset: '0' });
+    const firstRes = await fetch('/api/questions?' + first.toString(), { cache: 'no-store' });
+    const firstJson = await firstRes.json();
+    if (!firstRes.ok) throw new Error(firstJson?.error || 'Failed to fetch question list');
 
-  function readStoredMeta() {
-    try {
-      const raw = localStorage.getItem(LIST_META_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
-  }
+    const totalCount = Number(firstJson.totalCount || 0);
+    const ids = (firstJson.items || []).map((it) => it.question_id);
 
-  async function buildFullFilteredListFromQuery() {
-    // Build the full list of IDs matching current filters (NOT limited to 25).
-    // Requires the filters/search to be present in the URL query string.
-    const sp = searchParams;
-    const queryKey = normalizeQueryKey(sp);
+    offset += limit;
 
-    // Cache hit: if we already built the same queryKey, use stored list.
-    const meta = readStoredMeta();
-    const cached = readStoredList();
-    if (meta?.queryKey === queryKey && cached.length > 0) {
-      setQuestionList(cached);
-      const idx = cached.indexOf(questionId);
-      setCurrentIndex(idx >= 0 ? idx : null);
-      return;
-    }
-
-    if (buildingListRef.current) return;
-    buildingListRef.current = true;
-
-    try {
-      const pageSize = 100; // API cap currently 100
-      let offset = 0;
-      const allIds = [];
-
-      while (true) {
-        const params = new URLSearchParams(sp.toString());
-        params.set('limit', String(pageSize));
-        params.set('offset', String(offset));
-
-        const res = await fetch('/api/questions?' + params.toString(), { cache: 'no-store' });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json?.error || 'Failed to build practice list');
-
-        const items = json.items || [];
-        for (const it of items) {
-          if (it?.question_id) allIds.push(it.question_id);
-        }
-
-        if (items.length < pageSize) break;
-        offset += pageSize;
-
-        // Hard safety stop (prevents accidental infinite loops if API misbehaves)
-        if (offset > 50000) break;
-      }
-
-      // If the filter returns nothing, fall back to existing stored list (or empty)
-      if (allIds.length === 0) {
-        const fallback = readStoredList();
-        setQuestionList(fallback);
-        const idx = fallback.indexOf(questionId);
-        setCurrentIndex(idx >= 0 ? idx : null);
-        return;
-      }
-
-      writeStoredList(allIds, queryKey);
-
-      setQuestionList(allIds);
-      const idx = allIds.indexOf(questionId);
-      setCurrentIndex(idx >= 0 ? idx : null);
-    } finally {
-      buildingListRef.current = false;
-    }
-  }
-
-  function hydrateListAndIndex() {
-    // If filters are provided in the URL, build full filtered list.
-    // Otherwise, fall back to whatever /practice stored (typically 25).
-    if (hasAnyListParams(searchParams)) {
-      buildFullFilteredListFromQuery().catch((e) => {
-        setMsg({ kind: 'danger', text: e.message });
-        // fall back to stored list on error
-        const fallback = readStoredList();
-        setQuestionList(fallback);
-        const idx = fallback.indexOf(questionId);
-        setCurrentIndex(idx >= 0 ? idx : null);
-      });
-      return;
-    }
-
-    const list = readStoredList();
-    setQuestionList(list);
-    const idx = list.indexOf(questionId);
-    setCurrentIndex(idx >= 0 ? idx : null);
-  }
-
-  useEffect(() => {
-    if (!questionId) return;
-    hydrateListAndIndex();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionId, searchParams]);
-
-  useEffect(() => {
-    if (!questionId) return;
-    loadQuestion({ resetUI: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionId]);
-
-  async function toggleMarked() {
-    const next = !(data?.status?.marked_for_review ?? false);
-
-    // optimistic UI
-    setData((prev) => ({
-      ...prev,
-      status: { ...(prev?.status || {}), marked_for_review: next },
-    }));
-
-    try {
-      const res = await fetch('/api/status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question_id: questionId,
-          marked_for_review: next,
-        }),
-      });
+    while (ids.length < totalCount) {
+      const p = new URLSearchParams({ ...paramsObj, limit: String(limit), offset: String(offset) });
+      const res = await fetch('/api/questions?' + p.toString(), { cache: 'no-store' });
       const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || 'Failed to update status');
-    } catch (e) {
-      // rollback on failure
-      setData((prev) => ({
-        ...prev,
-        status: { ...(prev?.status || {}), marked_for_review: !next },
-      }));
-      setMsg({ kind: 'danger', text: e.message });
+      if (!res.ok) throw new Error(json?.error || 'Failed to fetch question list');
+
+      const batch = (json.items || []).map((it) => it.question_id);
+      ids.push(...batch);
+
+      if (batch.length < limit) break;
+      offset += limit;
     }
+
+    return { ids: uniq(ids), totalCount };
+  }
+
+  async function ensureQuestionList() {
+    // We want the correct total ALWAYS.
+    // Strategy:
+    // 1) Ask API for totalCount for current params (filters if present, else unfiltered).
+    // 2) If local list length matches totalCount, use it.
+    // 3) Otherwise fetch all IDs and store into localStorage + state.
+
+    const paramsObj = {};
+    for (const [k, v] of sessionParams.entries()) {
+      // exclude session flag; it’s just a marker
+      if (k === 'session') continue;
+      paramsObj[k] = v;
+    }
+
+    // Step 1: get authoritative totalCount cheaply
+    const headParams = new URLSearchParams({ ...paramsObj, limit: '1', offset: '0' });
+    const headRes = await fetch('/api/questions?' + headParams.toString(), { cache: 'no-store' });
+    const headJson = await headRes.json();
+    if (!headRes.ok) throw new Error(headJson?.error || 'Failed to get total count');
+    const totalCount = Number(headJson.totalCount || 0);
+
+    setTotal(totalCount);
+
+    // Step 2: read localStorage list
+    const savedRaw = localStorage.getItem('practice_question_list');
+    let saved = [];
+    try {
+      saved = JSON.parse(savedRaw || '[]');
+    } catch {
+      saved = [];
+    }
+
+    // If filters exist, the saved list is very likely not the right set.
+    // If no filters exist, saved is often only the current page (25).
+    const savedLooksComplete =
+      Array.isArray(saved) &&
+      saved.length > 0 &&
+      totalCount > 0 &&
+      saved.length === totalCount;
+
+    if (savedLooksComplete) {
+      setQuestionIds(saved);
+      return;
+    }
+
+    // Step 3: fetch all IDs
+    const { ids } = await fetchAllIdsWithParams(paramsObj);
+    localStorage.setItem('practice_question_list', JSON.stringify(ids));
+    setQuestionIds(ids);
   }
 
   async function submitAttempt() {
-    if (!data?.version) return;
+    if (!data) return;
 
-    // Validate input
-    if (qType === 'mcq') {
-      if (!selected) {
-        setMsg({ kind: 'danger', text: 'Select an answer choice first.' });
-        return;
-      }
-    } else if (qType === 'spr') {
-      if (!responseText.trim()) {
-        setMsg({ kind: 'danger', text: 'Type an answer first.' });
-        return;
-      }
-    } else {
-      setMsg({ kind: 'danger', text: 'Unsupported question type.' });
-      return;
-    }
+    const qType = data?.version?.question_type || data?.question_type;
 
-    setSubmitting(true);
-    setMsg(null);
+    // lock if already done for MCQ? (your app may allow reattempts; this is conservative)
+    // We'll still allow submit if selected/response exists.
+    const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
 
-    const time_spent_ms = Date.now() - startTs;
+    const body = {
+      question_id: data.question_id, // expects UUID
+      selected_option_id: qType === 'mcq' ? selected : null,
+      response_text: qType === 'fr' ? responseText : null,
+      time_spent_ms,
+    };
 
     try {
-      const payload =
-        qType === 'spr'
-          ? { question_id: questionId, response_text: responseText, time_spent_ms }
-          : { question_id: questionId, selected_option_id: selected, time_spent_ms };
-
+      setMsg(null);
       const res = await fetch('/api/attempts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(body),
       });
-
       const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || 'Submit failed');
+      if (!res.ok) throw new Error(json?.error || 'Failed to submit attempt');
 
-      setHasSubmitted(true);
-      // Don't show toast for correctness anymore
-      setMsg(null);
-
-      // Update status counts locally (fast feedback)
-      setData((prev) => {
-        const prevAttempts = prev?.status?.attempts_count || 0;
-        const prevCorrect = prev?.status?.correct_attempts_count || 0;
-
-        return {
-          ...prev,
-          status: {
-            ...(prev?.status || {}),
-            is_done: true,
-            attempts_count: json.attempts_count ?? (prevAttempts + 1),
-            correct_attempts_count:
-              json.correct_attempts_count ?? (prevCorrect + (json.is_correct ? 1 : 0)),
-            last_is_correct: json.is_correct,
-            last_attempt_at: new Date().toISOString(),
-          },
-        };
-      });
-
-      // IMPORTANT: do NOT open explanation here
+      // Re-fetch question to update status (done/marked/last correctness, etc)
+      await fetchQuestion();
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
-    } finally {
-      setSubmitting(false);
     }
   }
 
-  function resetAnswerUI() {
-    setMsg(null);
-    setSelected(null);
-    setResponseText('');
-    setHasSubmitted(false);
-    setShowExplanation(false);
-    setStartTs(Date.now());
+  function goToRelative(delta) {
+    if (!questionIds || questionIds.length === 0) return;
+    const currentIdx0 = questionIds.findIndex((id) => String(id) === String(questionId));
+    if (currentIdx0 < 0) return;
+    const nextIdx0 = Math.min(Math.max(currentIdx0 + delta, 0), questionIds.length - 1);
+    const nextId = questionIds[nextIdx0];
+    if (!nextId) return;
+
+    // Preserve session params in navigation
+    const qs = sessionParams.toString();
+    router.push(qs ? `/practice/${nextId}?${qs}` : `/practice/${nextId}`);
   }
 
-  function goToIndex(idx) {
-    if (!questionList.length) return;
-    if (idx < 0 || idx >= questionList.length) return;
-    const qs = searchParams?.toString();
-    router.push(`/practice/${questionList[idx]}${qs ? `?${qs}` : ''}`);
+  // Load question content
+  useEffect(() => {
+    fetchQuestion();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionId]);
+
+  // Ensure the list for #/total + navigation
+  useEffect(() => {
+    // If user navigated directly, we still want correct total (unfiltered)
+    ensureQuestionList()
+      .then(() => {})
+      .catch((e) => setMsg({ kind: 'danger', text: e.message }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, questionId]);
+
+  // Compute index when list is ready
+  useEffect(() => {
+    if (!questionIds || questionIds.length === 0) {
+      setIndex1(null);
+      return;
+    }
+    const idx0 = questionIds.findIndex((id) => String(id) === String(questionId));
+    setIndex1(idx0 >= 0 ? idx0 + 1 : null);
+  }, [questionIds, questionId]);
+
+  if (loading && !data) {
+    return (
+      <main className="container">
+        <div className="card">
+          <div className="muted">Loading…</div>
+        </div>
+      </main>
+    );
   }
 
-  function goPrev() {
-    if (currentIndex > 0) goToIndex(currentIndex - 1);
-  }
+  const qType = data?.version?.question_type || data?.question_type;
+  const version = data?.version || {};
+  const options = Array.isArray(data?.options) ? data.options : [];
+  const status = data?.status || {};
+  const locked = Boolean(status?.is_done);
 
-  function goNext() {
-    if (currentIndex < questionList.length - 1) goToIndex(currentIndex + 1);
-  }
-
-  const headerPills = useMemo(() => {
-    const s = data?.status || {};
-    return [
-      { label: 'Attempts', value: s.attempts_count ?? 0 },
-      { label: 'Correct', value: s.correct_attempts_count ?? 0 },
-      { label: 'Done', value: s.is_done ? 'Yes' : 'No' },
-      { label: 'Marked', value: s.marked_for_review ? 'Yes' : 'No' },
-    ];
-  }, [data]);
+  const headerPills = [
+    { label: 'Attempts', value: status?.attempts_count ?? 0 },
+    { label: 'Correct', value: status?.correct_attempts_count ?? 0 },
+    { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
+    { label: 'Marked', value: status?.marked_for_review ? 'Yes' : 'No' },
+  ];
 
   return (
     <main className="container">
-      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <div className="h1" style={{ marginBottom: 2 }}>
-            Practice Question
+      <div className="card">
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ display: 'grid', gap: 6 }}>
+            <div className="h2">Practice</div>
+
+            <div className="row" style={{ alignItems: 'center', gap: 10 }}>
+              <Link className="btn secondary" href="/practice">
+                ← Back to list
+              </Link>
+
+              <div className="pill">
+                {index1 && total !== null ? (
+                  <>
+                    <span className="kbd">{index1}</span> / <span className="kbd">{total}</span>
+                  </>
+                ) : total !== null ? (
+                  <>
+                    <span className="kbd">—</span> / <span className="kbd">{total}</span>
+                  </>
+                ) : (
+                  <span className="muted">…</span>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="muted small">
-            <Link href="/practice" className="muted">
-              ← Back to list
-            </Link>
+
+          <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {headerPills.map((p) => (
+              <span key={p.label} className="pill">
+                <span className="muted">{p.label}</span>{' '}
+                <span className="kbd">{p.value}</span>
+              </span>
+            ))}
           </div>
         </div>
 
-        <div className="row" style={{ alignItems: 'center', gap: 8 }}>
-          {headerPills.map((p) => (
-            <span key={p.label} className="pill">
-              <span className="muted">{p.label}</span>
-              <span className="kbd">{p.value}</span>
-            </span>
-          ))}
-        </div>
-      </div>
+        <Toast kind={msg?.kind} message={msg?.text} />
 
-      <div style={{ height: 14 }} />
+        <hr />
 
-      {questionList.length > 0 && currentIndex !== null && (
-        <>
-          <div className="card" style={{ marginBottom: 16 }}>
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <button className="btn secondary" onClick={goPrev} disabled={currentIndex === 0}>
-                ← Previous
-              </button>
+        {/* Stimulus + Stem */}
+        {version?.stimulus_html ? (
+          <div className="card" style={{ marginBottom: 12 }}>
+            <div className="muted small" style={{ marginBottom: 8 }}>
+              Stimulus
+            </div>
+            <HtmlBlock html={version.stimulus_html} />
+          </div>
+        ) : null}
 
-              <button className="btn secondary" onClick={() => setShowMap(true)}>
-                {currentIndex + 1} / {questionList.length}
+        {version?.stem_html ? (
+          <div className="card" style={{ marginBottom: 12 }}>
+            <div className="muted small" style={{ marginBottom: 8 }}>
+              Question
+            </div>
+            <HtmlBlock html={version.stem_html} />
+          </div>
+        ) : null}
+
+        {/* Answer area */}
+        {qType === 'mcq' ? (
+          <div>
+            <div className="h2">Answer choices</div>
+
+            <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
+              {options
+                .slice()
+                .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
+                .map((opt) => {
+                  const isSelected = selected === opt.id;
+
+                  return (
+                    <div
+                      key={opt.id}
+                      className={'option' + (isSelected ? ' selected' : '')}
+                      onClick={() => {
+                        if (locked) return;
+                        setSelected(opt.id);
+                      }}
+                      style={{ cursor: locked ? 'default' : 'pointer' }}
+                    >
+                      <div className="optionBadge">
+                        {opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
+                      </div>
+
+                      <div className="optionContent">
+                        <HtmlBlock html={opt.content_html} />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            <div className="row" style={{ gap: 10, marginTop: 14 }}>
+              <button
+                className="btn"
+                onClick={submitAttempt}
+                disabled={locked || !selected}
+                title={locked ? 'Already completed' : !selected ? 'Select an answer' : 'Submit'}
+              >
+                Submit
               </button>
 
               <button
                 className="btn secondary"
-                onClick={goNext}
-                disabled={currentIndex === questionList.length - 1}
+                onClick={() => goToRelative(-1)}
+                disabled={!questionIds?.length || (index1 !== null && index1 <= 1)}
               >
-                Next →
+                Prev
+              </button>
+
+              <button
+                className="btn secondary"
+                onClick={() => goToRelative(1)}
+                disabled={
+                  !questionIds?.length || (index1 !== null && total !== null && index1 >= total)
+                }
+              >
+                Next
               </button>
             </div>
           </div>
-        </>
-      )}
-
-      <div className="card">
-        <Toast kind={msg?.kind} message={msg?.text} />
-
-        {loading ? (
-          <div className="muted">Loading…</div>
-        ) : !data?.version ? (
-          <div className="muted">No question data found.</div>
         ) : (
-          <>
-            {/* Stimulus + Stem */}
-            {data.version.stimulus_html ? (
-              <>
-                <div className="h2">Passage / Data</div>
-                <HtmlBlock html={data.version.stimulus_html} />
-                <hr />
-              </>
-            ) : null}
+          <div>
+            <div className="h2">Your answer</div>
+            <textarea
+              className="input"
+              value={responseText}
+              onChange={(e) => setResponseText(e.target.value)}
+              placeholder="Type your answer…"
+              rows={4}
+              disabled={locked}
+              style={{ marginTop: 10 }}
+            />
 
-            <div className="h2">Question</div>
-            <HtmlBlock html={data.version.stem_html} />
+            <div className="row" style={{ gap: 10, marginTop: 14 }}>
+              <button
+                className="btn"
+                onClick={submitAttempt}
+                disabled={locked || !responseText.trim()}
+                title={locked ? 'Already completed' : !responseText.trim() ? 'Enter an answer' : 'Submit'}
+              >
+                Submit
+              </button>
 
-            <hr />
+              <button
+                className="btn secondary"
+                onClick={() => goToRelative(-1)}
+                disabled={!questionIds?.length || (index1 !== null && index1 <= 1)}
+              >
+                Prev
+              </button>
 
-            {/* Answer area */}
-            {qType === 'mcq' ? (
-              <div>
-                <div className="h2">Answer choices</div>
-
-                <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
-                  {options
-                    .slice()
-                    .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
-                    .map((opt) => {
-                      const isSelected = selected === opt.id;
-                      const locked = hasSubmitted; // lock after submit
-                      return (
-                        
-                        <div
-                          key={opt.id}
-                          className={
-                            'option' +
-                            (isSelected ? ' selected' : '') +
-                            (hasSubmitted && isSelected && data?.status?.last_is_correct === true ? ' correct' : '') +
-                            (hasSubmitted && isSelected && data?.status?.last_is_correct === false ? ' incorrect' : '') +
-                            (hasSubmitted &&
-                             data?.status?.last_is_correct === false &&
-                             opt.id === data?.version?.correct_option_id
-                               ? ' revealCorrect'
-                               : '')
-                          }
-                          onClick={() => {
-                            if (locked) return;
-                            setSelected(opt.id);
-                          }}
-                          style={{ cursor: locked ? 'default' : 'pointer' }}
-                        >
-                          <div className="optionBadge">
-                            {opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
-                          </div>
-                        
-                          <div className="optionContent">
-                            <HtmlBlock html={opt.content_html} />
-                          </div>
-                        </div>
-
-                      );
-                    })}
-                </div>
-              </div>
-            ) : qType === 'spr' ? (
-              <div>
-                <div className="h2">Your answer</div>
-                <input
-                  className="input"
-                  value={responseText}
-                  onChange={(e) => {
-                    if (hasSubmitted) return;
-                    setResponseText(e.target.value);
-                  }}
-                  placeholder="Type your answer…"
-                  disabled={hasSubmitted}
-                  style={hasSubmitted ? { opacity: 0.75 } : undefined}
-                />
-              </div>
-            ) : (
-              <div className="muted">Unsupported question type: {String(qType)}</div>
-            )}
-
-            <div style={{ height: 14 }} />
-
-            {/* Primary controls */}
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="row" style={{ alignItems: 'center' }}>
-                <button className="btn" onClick={submitAttempt} disabled={submitting || loading}>
-                  {submitting ? 'Checking…' : 'Check Answer'}
-                </button>
-
-                <button
-                  className="btn secondary"
-                  onClick={toggleMarked}
-                  disabled={loading}
-                  title="Mark this question to revisit later"
-                >
-                  {data?.status?.marked_for_review ? 'Unmark' : 'Mark for review'}
-                </button>
-
-                <button className="btn secondary" onClick={resetAnswerUI} disabled={submitting || loading}>
-                  Reset
-                </button>
-              </div>
-
-              <div className="muted small">{hasSubmitted ? 'Submitted' : 'Not submitted'}</div>
-            </div>
-
-            <hr />
-
-            {/* Lower navigation bar */}
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="row" style={{ alignItems: 'center' }}>
-                <button
-                  className="btn secondary"
-                  onClick={() => setShowExplanation((v) => !v)}
-                  disabled={!hasSubmitted || !data?.version?.rationale_html}
-                  title={!hasSubmitted ? 'Submit an answer to unlock explanation' : ''}
-                >
-                  {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
-                </button>
-              </div>
-
-              <div className="row" style={{ alignItems: 'center' }}>
-                <button
-                  className="btn secondary"
-                  onClick={() => loadQuestion({ resetUI: true })}
-                  disabled={submitting}
-                >
-                  Reload question
-                </button>
-              </div>
-            </div>
-
-            {/* Explanation section */}
-            {showExplanation && data?.version?.rationale_html ? (
-              <>
-                <hr />
-                <div className="h2">Explanation</div>
-                <HtmlBlock html={data.version.rationale_html} />
-              </>
-            ) : null}
-          </>
-        )}
-      </div>
-
-      {showMap && (
-        <div className="modalOverlay">
-          <div className="modalCard">
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="h2">Question Map</div>
-              <button className="btn secondary" onClick={() => setShowMap(false)}>
-                Close
+              <button
+                className="btn secondary"
+                onClick={() => goToRelative(1)}
+                disabled={
+                  !questionIds?.length || (index1 !== null && total !== null && index1 >= total)
+                }
+              >
+                Next
               </button>
             </div>
-
-            <div className="questionGrid">
-              {questionList.map((id, idx) => (
-                <button
-                  key={id}
-                  className={'mapItem' + (idx === currentIndex ? ' active' : '')}
-                  onClick={() => goToIndex(idx)}
-                >
-                  {idx + 1}
-                </button>
-              ))}
-            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Optional explanation block if your API provides it */}
+        {version?.explanation_html ? (
+          <>
+            <hr />
+            <div className="h2">Explanation</div>
+            <div className="card" style={{ marginTop: 10 }}>
+              <HtmlBlock html={version.explanation_html} />
+            </div>
+          </>
+        ) : null}
+
+        {/* Small debug hint if no filters and session missing */}
+        {!hasAnyFilters && !sessionParams.has('session') ? (
+          <div className="muted small" style={{ marginTop: 14 }}>
+            Tip: navigating from the list includes a session flag so the full list count stays accurate.
+          </div>
+        ) : null}
+      </div>
     </main>
   );
 }
