@@ -12,12 +12,16 @@ export default function PracticePage() {
   const [msg, setMsg] = useState(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
-  const [totalCount, setTotalCount] = useState(0);
 
   // Build the "session filter" params once (no pagination params here).
   // These are what we want to carry into /practice/[questionId] so it can rebuild the full list.
   const sessionQueryString = useMemo(() => {
     const p = new URLSearchParams();
+
+    // IMPORTANT:
+    // Always include *something* so /practice/[questionId] can detect "this came from the list"
+    // and rebuild the full filtered list even when no filters are applied.
+    p.set('session', '1');
 
     if (filters.difficulty) p.set('difficulty', String(filters.difficulty));
 
@@ -36,6 +40,7 @@ export default function PracticePage() {
   async function load() {
     setLoading(true);
     setMsg(null);
+
     try {
       const params = new URLSearchParams();
       params.set('limit', '25');
@@ -57,17 +62,8 @@ export default function PracticePage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load questions');
 
-    const items = json.items || [];
-    setRows(items);
-    
-    // support either field name: totalCount (recommended) or total
-    setTotalCount(
-      Number.isFinite(json.totalCount) ? json.totalCount :
-      Number.isFinite(json.total) ? json.total :
-      0
-    );
-
-      
+      const items = json.items || [];
+      setRows(items);
 
       // Keep your existing behavior: store ONLY the current page's IDs
       // (the question page will rebuild the full list using the query params)
@@ -109,20 +105,9 @@ export default function PracticePage() {
                 Showing up to 25 results per page. Click a row to practice.
               </p>
             </div>
-
             <div className="pill">
-              {totalCount > 0 ? (
-                <>
-                  Showing <span className="kbd">{page * 25 + 1}</span>–<span className="kbd">{Math.min((page + 1) * 25, totalCount)}</span>{' '}
-                  of <span className="kbd">{totalCount}</span>
-                </>
-              ) : (
-                <>
-                  Showing <span className="kbd">0</span>
-                </>
-              )}
+              Page <span className="kbd">{page + 1}</span>
             </div>
-                  
           </div>
 
           <div className="searchRow" style={{ marginTop: 10 }}>
@@ -146,38 +131,24 @@ export default function PracticePage() {
           ) : (
             <div style={{ display: 'grid', gap: 10 }}>
               {rows.map((q) => {
-                const href = sessionQueryString
-                  ? `/practice/${q.question_id}?${sessionQueryString}`
-                  : `/practice/${q.question_id}`;
+                const href = `/practice/${q.question_id}?${sessionQueryString}`;
 
                 return (
                   <Link
                     key={q.question_id}
                     href={href}
-                    className="questionListItem"
+                    className="option"
                     style={{ cursor: 'pointer' }}
                   >
                     <div style={{ minWidth: 64 }}>
                       <div className="pill">{q.difficulty ? `D${q.difficulty}` : 'D?'}</div>
                     </div>
 
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 650 }}>
-                        {q.domain_name || q.domain_code || 'Domain'}
-                        <span className="muted"> · </span>
-                        <span className="muted">{q.skill_name || q.skill_code || 'Topic'}</span>
-                      </div>
-
-                      <div className="row small muted" style={{ marginTop: 4 }}>
-                        <span>Score band {q.score_band ?? '—'}</span>
-                        <span>•</span>
-                        <span>{q.is_done ? 'Completed' : 'Not completed'}</span>
-                        {q.marked_for_review && (
-                          <>
-                            <span>•</span>
-                            <span>Marked for review</span>
-                          </>
-                        )}
+                    <div style={{ display: 'grid', gap: 4 }}>
+                      <div style={{ fontWeight: 600 }}>{q.question_id}</div>
+                      <div className="muted small">
+                        {q.domain_name ? q.domain_name : '—'}
+                        {q.skill_name ? ` • ${q.skill_name}` : ''}
                       </div>
                     </div>
                   </Link>
@@ -191,15 +162,16 @@ export default function PracticePage() {
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <button
               className="btn secondary"
-              disabled={page === 0}
               onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0 || loading}
             >
               Prev
             </button>
+
             <button
-              className="btn secondary"
-              disabled={totalCount > 0 && (page + 1) * 25 >= totalCount}
+              className="btn"
               onClick={() => setPage((p) => p + 1)}
+              disabled={loading || rows.length < 25}
             >
               Next
             </button>
