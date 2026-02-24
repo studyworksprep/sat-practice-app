@@ -454,6 +454,7 @@ export default function QuestionPage({ params }) {
                       const isSelected = selected === opt.id;
                       const locked = hasSubmitted; // lock after submit
                       return (
+                        
                         <div
                           key={opt.id}
                           className={'option' + (isSelected ? ' selected' : '')}
@@ -463,13 +464,15 @@ export default function QuestionPage({ params }) {
                           }}
                           style={{ cursor: locked ? 'default' : 'pointer' }}
                         >
-                          <div className="pill" style={{ minWidth: 54, justifyContent: 'center' }}>
+                          <div className="optionLabel">
                             {opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
                           </div>
-                          <div style={{ flex: 1 }}>
+                        
+                          <div className="optionContent">
                             <HtmlBlock html={opt.content_html} />
                           </div>
                         </div>
+
                       );
                     })}
                 </div>
