@@ -387,3 +387,27 @@ hr{
   background: var(--accent-soft);
   border-color: var(--accent);
 }
+
+/* MCQ option layout fix */
+
+.option {
+  display: flex;
+  align-items: flex-start;   /* key: prevents vertical stretching */
+  gap: 12px;
+}
+
+.optionLabel {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;            /* fixed size */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.optionContent {
+  flex: 1 1 auto;
+  min-width: 0;
+}
