@@ -154,7 +154,7 @@ export default function PracticePage() {
                   <Link
                     key={q.question_id}
                     href={href}
-                    className="option"
+                    className="questionListItem"
                     style={{ cursor: 'pointer' }}
                   >
                     <div style={{ minWidth: 64 }}>
