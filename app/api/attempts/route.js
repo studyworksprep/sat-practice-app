@@ -110,6 +110,9 @@ export async function POST(request) {
           correct_attempts_count,
           last_attempt_at: new Date().toISOString(),
           last_is_correct: is_correct,
+          // Remember last response so the UI can restore it after submit/refresh
+          last_selected_option_id: ver.question_type === 'mcq' ? selected_option_id : null,
+          last_response_text: ver.question_type === 'spr' ? response_text : null,
           updated_at: new Date().toISOString(),
           // preserve marked_for_review if already set
           marked_for_review: st?.marked_for_review ?? false,
@@ -119,7 +122,15 @@ export async function POST(request) {
 
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 400 });
 
-    return NextResponse.json({ ok: true, is_correct, attempts_count, correct_attempts_count, correct_option_id: ca?.correct_option_id ?? null });
+    return NextResponse.json({
+      ok: true,
+      is_correct,
+      attempts_count,
+      correct_attempts_count,
+      correct_option_id: ca?.correct_option_id ?? null,
+      // For SPR, returning the correct text is useful for immediate feedback (the UI can choose when to show it)
+      correct_text: ca?.correct_text ?? null,
+    });
   } catch (e) {
     console.error('POST /api/attempts crashed:', e);
     return NextResponse.json({ error: e?.message || 'Server error' }, { status: 500 });

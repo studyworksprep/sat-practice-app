@@ -275,6 +275,7 @@ export default function PracticeQuestionPage() {
   const status = data?.status || {};
   const locked = Boolean(status?.is_done);
   const correctOptionId = data?.correct_option_id || null;
+  const correctText = data?.correct_text || null;
 
   const headerPills = [
     { label: 'Attempts', value: status?.attempts_count ?? 0 },
@@ -422,6 +423,22 @@ export default function PracticeQuestionPage() {
         ) : (
           <div>
             <div className="h2">Your answer</div>
+
+            {locked ? (
+              <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+                <span className="pill">
+                  <span className="muted">Result</span>{' '}
+                  <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+                </span>
+
+                {!status?.last_is_correct && correctText ? (
+                  <span className="pill">
+                    <span className="muted">Correct answer</span> <span className="kbd">{correctText}</span>
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+
             <textarea
               className="input"
               value={responseText}

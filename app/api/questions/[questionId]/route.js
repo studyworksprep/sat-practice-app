@@ -65,7 +65,7 @@ export async function GET(_request, { params }) {
   if (user) {
     const { data: st, error: stErr } = await supabase
       .from('question_status')
-      .select('user_id, question_id, is_done, marked_for_review, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct, notes')
+      .select('user_id, question_id, is_done, marked_for_review, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct, last_selected_option_id, last_response_text, notes')
       .eq('user_id', user.id)
       .eq('question_id', questionId)
       .maybeSingle();
@@ -79,6 +79,7 @@ export async function GET(_request, { params }) {
   // This allows the UI to highlight correct/incorrect choices even after a refresh,
   // without exposing the answer key before submission.
   let correct_option_id = null;
+  let correct_text = null;
   if (user && status?.is_done && version?.question_type === 'mcq') {
     const { data: ca, error: caErr } = await supabase
       .from('correct_answers')
@@ -91,5 +92,25 @@ export async function GET(_request, { params }) {
     correct_option_id = ca?.correct_option_id ?? null;
   }
 
-  return NextResponse.json({ question_id: questionId, version, options: options ?? [], taxonomy, status, correct_option_id });
+  // Reveal correct text only after completion for SPR
+  if (user && status?.is_done && version?.question_type === 'spr') {
+    const { data: ca, error: caErr } = await supabase
+      .from('correct_answers')
+      .select('correct_text')
+      .eq('question_version_id', version.id)
+      .limit(1)
+      .maybeSingle();
+    if (caErr) return NextResponse.json({ error: caErr.message }, { status: 400 });
+    correct_text = ca?.correct_text ?? null;
+  }
+
+  return NextResponse.json({
+    question_id: questionId,
+    version,
+    options: options ?? [],
+    taxonomy,
+    status,
+    correct_option_id,
+    correct_text,
+  });
 }
