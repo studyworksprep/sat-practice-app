@@ -138,7 +138,10 @@ export default function PracticePage() {
           ) : (
             <div style={{ display: 'grid', gap: 10 }}>
               {rows.map((q) => {
-                const href = `/practice/${q.question_id}?${sessionQueryString}`;
+                const qid = q?.question_id ? String(q.question_id) : '';
+                if (!qid) return null; // or render a disabled row with an error badge
+              
+                const href = `/practice/${encodeURIComponent(qid)}?${sessionQueryString}`;
 
                 return (
                   <Link
