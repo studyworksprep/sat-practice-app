@@ -303,11 +303,9 @@ export default function PracticeQuestionPage() {
   const correctText = data?.correct_text || null;
 
   // Two-column “Reading” heuristic (safe + avoids affecting Math)
-  const stimulusText = stripHtml(version?.stimulus_html);
+  const domainCode = String(data?.taxonomy?.domain_code || '').toUpperCase().trim();
   const useTwoColReading =
-    qType === 'mcq' &&
-    Boolean(version?.stimulus_html) &&
-    stimulusText.length >= 160;
+  qType === 'mcq' && ['EOI', 'INI', 'CAS', 'SEC'].includes(domainCode);
 
   const headerPills = [
     { label: 'Attempts', value: status?.attempts_count ?? 0 },
