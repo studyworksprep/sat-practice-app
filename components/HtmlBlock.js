@@ -1,32 +1,27 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import renderMathInElement from 'katex/contrib/auto-render';
 
 export default function HtmlBlock({ html, className }) {
   const ref = useRef(null);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || !html) return;
 
-    // Prevent double-rendering for identical HTML payloads
-    if (el.dataset.renderedFor === (html || '')) return;
-    el.dataset.renderedFor = html || '';
+    // Only typeset if there is MathML present
+    if (!el.querySelector('math')) return;
 
-    try {
-      renderMathInElement(el, {
-        // Avoid single-$ because SAT content can include currency
-        delimiters: [
-          { left: '$$', right: '$$', display: true },
-          { left: '\\[', right: '\\]', display: true },
-          { left: '\\(', right: '\\)', display: false },
-        ],
-        throwOnError: false,
-        strict: 'ignore',
-      });
-    } catch {
-      // If KaTeX fails, show raw HTML instead of crashing
+    // Avoid re-typesetting identical HTML
+    if (el.dataset.typesetFor === html) return;
+    el.dataset.typesetFor = html;
+
+    const mj = window.MathJax;
+
+    // MathJax might not be ready immediately on first render
+    if (mj?.typesetPromise) {
+      mj.typesetClear?.([el]);        // clear old typesetting in this element (safe if exists)
+      mj.typesetPromise([el]).catch(() => {});
     }
   }, [html]);
 
