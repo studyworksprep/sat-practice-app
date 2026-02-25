@@ -68,9 +68,16 @@ export default function PracticePage() {
       // Keep your existing behavior: store ONLY the current page's IDs
       // (the question page will rebuild the full list using the query params)
       if (items.length) {
-        const ids = items.map((q) => q.question_id);
+        const ids = items.map((q) => q.question_id).filter(Boolean);
+      
+        const offset = page * 25;
+        const sessionKey = sessionQueryString; // already includes filters/search + session=1
+        localStorage.setItem(`practice_${sessionKey}_page_${offset}`, JSON.stringify(ids));
+      
+        // keep if you still want it, but it’s not used for nav anymore
         localStorage.setItem('practice_question_list', JSON.stringify(ids));
       }
+      
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
