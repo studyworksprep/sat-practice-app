@@ -395,12 +395,19 @@ export default function PracticeQuestionPage() {
                       key={opt.id}
                       className={(() => {
                         let cls = 'option' + (isSelected ? ' selected' : '');
-                        if (locked && correctOptionId) {
+                      
+                        if (locked) {
                           const isCorrect = String(opt.id) === String(correctOptionId);
-                          if (isCorrect && isSelected) cls += ' correct';
-                          else if (isCorrect) cls += ' revealCorrect';
-                          else if (isSelected) cls += ' incorrect';
+                      
+                          if (isSelected && isCorrect) {
+                            cls += ' correct';
+                          } else if (isSelected && !isCorrect) {
+                            cls += ' incorrect';
+                          }
+                      
+                          // IMPORTANT: no revealCorrect branch anymore
                         }
+                      
                         return cls;
                       })()}
                       onClick={() => {
