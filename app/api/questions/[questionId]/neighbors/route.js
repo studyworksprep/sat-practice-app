@@ -9,8 +9,10 @@ export async function GET(req, { params }) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  const currentId = params?.id;
-  if (!currentId) return NextResponse.json({ error: 'Missing question id' }, { status: 400 });
+  const currentId = params?.questionId; // ✅ FIX HERE
+  if (!currentId) {
+    return NextResponse.json({ error: 'Missing question id' }, { status: 400 });
+  }
 
   const { searchParams } = new URL(req.url);
 
