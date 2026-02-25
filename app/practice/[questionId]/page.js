@@ -533,6 +533,7 @@ export default function PracticeQuestionPage() {
         </button>
       </div>
     </div>
+    )}
 
       {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
         <>
