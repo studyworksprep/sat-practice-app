@@ -421,8 +421,48 @@ label{
   padding-top: 0px;
 }
 
-/* Keep your existing correct/incorrect states if you have them elsewhere.
-   If not, you can add them back here. */
+/* ===============================
+   Post-submit correctness states
+   (MCQ only; driven by classes in page.js)
+================================ */
+
+/* Correct selected answer */
+.option.correct{
+  border-color: #15803d;
+  background: #f0fdf4;
+  box-shadow: 0 0 0 3px rgba(21,128,61,0.14);
+}
+
+.option.correct .optionBadge{
+  border-color: #15803d;
+  background: #15803d;
+  color: #ffffff;
+}
+
+/* Incorrect selected answer */
+.option.incorrect{
+  border-color: #b91c1c;
+  background: #fef2f2;
+  box-shadow: 0 0 0 3px rgba(185,28,28,0.14);
+}
+
+.option.incorrect .optionBadge{
+  border-color: #b91c1c;
+  background: #b91c1c;
+  color: #ffffff;
+}
+
+/* Reveal correct when user picked wrong */
+.option.revealCorrect{
+  border-color: #15803d;
+  background: rgba(21,128,61,0.06);
+}
+
+.option.revealCorrect .optionBadge{
+  border-color: #15803d;
+  color: #15803d;
+  background: #ffffff;
+}
 
 /* ===============================
    Rows / Flex Utilities
