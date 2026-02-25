@@ -349,9 +349,20 @@ label{
   transform: translateY(-1px);
 }
 
+.option.selected:hover{
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 8px 18px rgba(0,0,0,0.06);
+}
+
 .option.selected{
-  border-color: var(--accent);
+  border-color: rgba(37,99,235,0.65);
+  background: rgba(37,99,235,0.06);
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.option.selected .optionBadge{
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
 @media (min-width: 900px){
@@ -371,7 +382,7 @@ label{
   font-weight: 750;
   font-size: 14px;
   line-height: 1;
-  margin-top: 2px;
+  margin-top: 0px;
 }
 
 /* Text column */
@@ -385,6 +396,15 @@ label{
 .optionContent .prose{
   font-size: 15.5px;
   line-height: 1.6;
+}
+
+/* Options should be scan-efficient: remove big paragraph margins inside answer choices */
+.optionContent .prose p{
+  margin: 0;
+}
+
+.optionContent .prose p + p{
+  margin-top: 10px; /* still gives spacing if an option genuinely has multiple paragraphs */
 }
 
 .optionContent .prose mjx-container{
