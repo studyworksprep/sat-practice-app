@@ -16,13 +16,36 @@ export default function HtmlBlock({ html, className }) {
     if (el.dataset.typesetFor === html) return;
     el.dataset.typesetFor = html;
 
-    const mj = window.MathJax;
+    let cancelled = false;
+    let tries = 0;
+    const maxTries = 60; // ~3s if 50ms interval
+    const delayMs = 50;
 
-    // MathJax might not be ready immediately on first render
-    if (mj?.typesetPromise) {
-      mj.typesetClear?.([el]);        // clear old typesetting in this element (safe if exists)
-      mj.typesetPromise([el]).catch(() => {});
-    }
+    const tryTypeset = () => {
+      if (cancelled) return;
+
+      const mj = window.MathJax;
+      if (mj?.typesetPromise) {
+        try {
+          mj.typesetClear?.([el]);
+          mj.typesetPromise([el]).catch(() => {});
+        } catch {
+          // swallow; render raw HTML if MathJax throws
+        }
+        return;
+      }
+
+      tries += 1;
+      if (tries < maxTries) {
+        setTimeout(tryTypeset, delayMs);
+      }
+    };
+
+    tryTypeset();
+
+    return () => {
+      cancelled = true;
+    };
   }, [html]);
 
   if (!html) return null;
