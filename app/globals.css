@@ -380,7 +380,7 @@ label{
   line-height: 1;
 
   /* Key: restore a tiny optical offset for baseline alignment */
-  margin-top: 2px;
+  margin-top: 3px;
 
   /* Key: force a/b/c/d to display as A/B/C/D */
   text-transform: uppercase;
