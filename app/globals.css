@@ -3,11 +3,11 @@
 ================================ */
 
 :root{
-  --bg: #ffffff;
+  --bg: #f8fafc;
   --card: #ffffff;
   --text: #111827;          /* near black */
   --muted: #6b7280;
-  --border: rgba(17,24,39,0.10);
+  --border: rgba(17,24,39,0.08);
 
   --accent: #2563eb;        /* primary blue */
   --accent-hover: #1d4ed8;
@@ -22,7 +22,7 @@
 
   --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   --text-size: 16px;
-  --text-leading: 1.6;
+  --text-leading: 1.65;
 
   --title-1: 28px;
   --title-2: 18px;
@@ -79,6 +79,10 @@ a{
 
 @media (max-width: 980px){
   .practiceGrid{ grid-template-columns: 1fr; }
+}
+
+.prose{
+  max-width: 70ch;
 }
 
 /* ===============================
@@ -349,8 +353,9 @@ label{
 }
 
 .option:hover{
-  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
-  transform: translateY(-1px);
+  background: rgba(17,24,39,0.03);
+  box-shadow: none;
+  transform: none;
 }
 
 .option.selected{
