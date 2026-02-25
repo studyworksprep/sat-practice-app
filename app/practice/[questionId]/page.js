@@ -306,7 +306,6 @@ export default function PracticeQuestionPage() {
 
   return (
     <main className="container">
-      <div className="card">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'grid', gap: 6 }}>
             <div className="h2">Practice</div>
@@ -506,7 +505,7 @@ export default function PracticeQuestionPage() {
             </div>
           </>
         ) : null}
-      </div>
+      
     </main>
   );
 }
