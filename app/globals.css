@@ -380,7 +380,7 @@ label{
   line-height: 1;
 
   /* Key: restore a tiny optical offset for baseline alignment */
-  margin-top: 1px;
+  margin-top: 2px;
 
   /* Key: force a/b/c/d to display as A/B/C/D */
   text-transform: uppercase;
@@ -399,7 +399,7 @@ label{
   overflow-wrap: anywhere;
 
   /* Key: nudge text down slightly so it aligns with badge */
-  padding-top: 1px;
+  padding-top: 0px;
 }
 
 /* Slightly compact inside answers vs passages */
@@ -415,6 +415,11 @@ label{
 /* Math inside options */
 .optionContent .prose mjx-container{
   font-size: 1.02em;
+}
+
+/* If an option contains MathJax, lift the content a hair (Math baseline sits lower) */
+.optionContent:has(mjx-container){
+  padding-top: 1px;
 }
 
 /* Keep your existing correct/incorrect states if you have them elsewhere.
