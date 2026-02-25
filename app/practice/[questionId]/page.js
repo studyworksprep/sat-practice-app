@@ -47,7 +47,10 @@ export default function PracticeQuestionPage() {
   // Option A neighbor nav
   const [prevId, setPrevId] = useState(null);
   const [nextId, setNextId] = useState(null);
-  const [navLoading, setNavLoading] = useState(true);
+
+  // ✅ IMPORTANT: start false so we don't get stuck disabled if questionId is briefly undefined
+  const [navLoading, setNavLoading] = useState(false);
+
   const [navMode, setNavMode] = useState('neighbors'); // 'neighbors' | 'index' fallback
 
   // Instant navigation metadata (from list page)
@@ -70,6 +73,9 @@ export default function PracticeQuestionPage() {
     }
     return p;
   }, [searchParams]);
+
+  // ✅ Stable dependency for effects (string, not a URLSearchParams object)
+  const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
 
   function buildHref(targetId, t, o, p) {
     const qs = new URLSearchParams(sessionParams);
@@ -107,10 +113,8 @@ export default function PracticeQuestionPage() {
 
   async function fetchPageIds(offset) {
     // Include filter/session signature in the cache key so pages don't collide
-    const sessionKey = sessionParams.toString(); // includes difficulty/score_bands/domain/topic/marked_only/q/session
-    const key = `practice_${sessionKey}_page_${offset}`;
+    const key = `practice_${sessionParamsString}_page_${offset}`;
 
-    // 1) try localStorage first
     const raw = localStorage.getItem(key);
     if (raw) {
       try {
@@ -119,15 +123,15 @@ export default function PracticeQuestionPage() {
       } catch {}
     }
 
-    // 2) otherwise fetch this page (25) from API using current filters
     const apiParams = new URLSearchParams(sessionParams);
-    apiParams.delete('session'); // not needed by API
+    apiParams.delete('session');
     apiParams.set('limit', '25');
     apiParams.set('offset', String(offset));
 
     const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || 'Failed to fetch page');
+
     const ids = (json.items || []).map((it) => it.question_id).filter(Boolean);
 
     localStorage.setItem(key, JSON.stringify(ids));
@@ -139,29 +143,21 @@ export default function PracticeQuestionPage() {
     const o = Number(searchParams.get('o'));
     const p = Number(searchParams.get('p'));
 
-    // total
     if (Number.isFinite(t) && t >= 0) setTotal(t);
-
-    // offset + index
     if (Number.isFinite(o) && o >= 0) setPageOffset(o);
-
-    // index1 can be computed instantly if we have o + p
-    if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) {
-      setIndex1(o + p + 1);
-    }
+    if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) setIndex1(o + p + 1);
   }
 
   async function ensureCurrentPageIds() {
     const o = Number(searchParams.get('o'));
     const p = Number(searchParams.get('p'));
 
-    if (!Number.isFinite(o) || o < 0) return; // if user deep-linked, we’ll still work without it
+    if (!Number.isFinite(o) || o < 0) return;
     setPageOffset(o);
 
     const ids = await fetchPageIds(o);
     setPageIds(ids);
 
-    // If p is missing (deep-link), try to compute p by finding the current id in this page
     if (!Number.isFinite(p) || p < 0) {
       const idx = ids.findIndex((id) => String(id) === String(questionId));
       if (idx >= 0) setIndex1(o + idx + 1);
@@ -171,7 +167,6 @@ export default function PracticeQuestionPage() {
   async function ensureTotalIfMissing() {
     if (total != null) return;
 
-    // quick head request (limit=1) to get totalCount
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session');
     apiParams.set('limit', '1');
@@ -195,10 +190,8 @@ export default function PracticeQuestionPage() {
 
     const ids = await fetchPageIds(targetOffset);
     const targetId = ids[targetPos];
-
     if (!targetId) return;
 
-    // Update local state immediately for snappy UI
     setPageOffset(targetOffset);
     setPageIds(ids);
     setIndex1(targetIndex1);
@@ -230,7 +223,6 @@ export default function PracticeQuestionPage() {
       if (!res.ok) throw new Error(json?.error || 'Failed to submit attempt');
 
       await fetchQuestion();
-      // Intentionally do NOT auto-open explanation.
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     }
@@ -241,7 +233,7 @@ export default function PracticeQuestionPage() {
     const next = !Boolean(data?.status?.marked_for_review);
     try {
       setMsg(null);
-      // Optimistic update
+
       setData((prev) => {
         if (!prev) return prev;
         return {
@@ -263,7 +255,6 @@ export default function PracticeQuestionPage() {
 
       setMsg({ kind: 'success', text: next ? 'Marked for review' : 'Unmarked for review' });
     } catch (e) {
-      // Revert on error
       setData((prev) => {
         if (!prev) return prev;
         return {
@@ -278,15 +269,19 @@ export default function PracticeQuestionPage() {
     }
   }
 
-  // Fetch Option A neighbors. If it fails (commonly auth), fall back to index-based nav.
+  // ✅ Fetch neighbors (Option A)
   useEffect(() => {
-    if (!questionId) return;
+    if (!questionId) {
+      // IMPORTANT: don't get stuck in loading mode
+      setNavLoading(false);
+      return;
+    }
 
     (async () => {
       setNavLoading(true);
       try {
         const res = await fetch(
-          `/api/questions/${questionId}/neighbors?${sessionParams.toString()}`,
+          `/api/questions/${questionId}/neighbors?${sessionParamsString}`,
           { cache: 'no-store' }
         );
         const json = await res.json();
@@ -296,32 +291,32 @@ export default function PracticeQuestionPage() {
         setNextId(json.next_id || null);
         setNavMode('neighbors');
       } catch (e) {
-        // Fall back to index-based navigation (t/o/p + cached paging)
         setPrevId(null);
         setNextId(null);
         setNavMode('index');
-        // Surface the error so you know what's happening (auth/rpc mismatch/etc.)
         setMsg({ kind: 'danger', text: `Neighbors failed (fallback enabled): ${e.message}` });
       } finally {
         setNavLoading(false);
       }
     })();
-  }, [questionId, sessionParams]);
+  }, [questionId, sessionParamsString]);
 
   // Load question content
   useEffect(() => {
+    if (!questionId) return;
     fetchQuestion();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId]);
 
-  // Prime meta immediately (instant #/total)
+  // Prime meta immediately
   useEffect(() => {
     primeNavMetaFromUrl();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // Ensure we have total + the current page ids (fast: 1 request max)
+  // Ensure we have total + current page ids
   useEffect(() => {
+    if (!questionId) return;
     (async () => {
       try {
         await ensureTotalIfMissing();
@@ -341,7 +336,6 @@ export default function PracticeQuestionPage() {
   const correctOptionId = data?.correct_option_id || null;
   const correctText = data?.correct_text || null;
 
-  // Two-column “Reading” heuristic (safe + avoids affecting Math)
   const domainCode = String(data?.taxonomy?.domain_code || '').toUpperCase().trim();
   const useTwoColReading = qType === 'mcq' && ['EOI', 'INI', 'CAS', 'SEC'].includes(domainCode);
 
@@ -352,11 +346,9 @@ export default function PracticeQuestionPage() {
     { label: 'Marked', value: status?.marked_for_review ? 'Yes' : 'No' },
   ];
 
-  // Fallback index-based disabled states
   const prevDisabledIndex = index1 == null || index1 <= 1;
   const nextDisabledIndex = index1 == null || (total != null && index1 >= total);
 
-  // Unified nav handlers (neighbors preferred; fallback uses index)
   const prevDisabled =
     navMode === 'neighbors' ? navLoading || !prevId : navLoading ? true : prevDisabledIndex;
   const nextDisabled =
@@ -368,7 +360,6 @@ export default function PracticeQuestionPage() {
       router.push(buildHref(prevId, total, null, null));
       return;
     }
-    // fallback
     if (index1 == null) return;
     goToIndex(index1 - 1);
   };
@@ -379,7 +370,6 @@ export default function PracticeQuestionPage() {
       router.push(buildHref(nextId, total, null, null));
       return;
     }
-    // fallback
     if (index1 == null) return;
     goToIndex(index1 + 1);
   };
@@ -424,12 +414,8 @@ export default function PracticeQuestionPage() {
 
       <hr />
 
-      {/* ===============================
-          MCQ
-      =============================== */}
       {qType === 'mcq' ? (
         <div className={useTwoColReading ? 'qaTwoCol' : ''}>
-          {/* LEFT column (Stimulus + Question) */}
           <div className={useTwoColReading ? 'qaLeft' : ''}>
             {version?.stimulus_html ? (
               <div className="card subcard" style={{ marginBottom: useTwoColReading ? 0 : 12 }}>
@@ -446,13 +432,8 @@ export default function PracticeQuestionPage() {
             ) : null}
           </div>
 
-          {/* RIGHT column (Answer choices + buttons) */}
           <div className={useTwoColReading ? 'qaRight' : ''}>
-            {!useTwoColReading ? (
-              <div className="h2">Answer choices</div>
-            ) : (
-              <div className="srOnly">Answer choices</div>
-            )}
+            {!useTwoColReading ? <div className="h2">Answer choices</div> : <div className="srOnly">Answer choices</div>}
 
             <div className="optionList">
               {options
@@ -466,18 +447,11 @@ export default function PracticeQuestionPage() {
                       key={opt.id}
                       className={(() => {
                         let cls = 'option' + (isSelected ? ' selected' : '');
-
                         if (locked) {
                           const isCorrect = String(opt.id) === String(correctOptionId);
-
-                          if (isSelected && isCorrect) {
-                            cls += ' correct';
-                          } else if (isSelected && !isCorrect) {
-                            cls += ' incorrect';
-                          }
-                          // no revealCorrect branch
+                          if (isSelected && isCorrect) cls += ' correct';
+                          else if (isSelected && !isCorrect) cls += ' incorrect';
                         }
-
                         return cls;
                       })()}
                       onClick={() => {
@@ -486,10 +460,7 @@ export default function PracticeQuestionPage() {
                       }}
                       style={{ cursor: locked ? 'default' : 'pointer' }}
                     >
-                      <div className="optionBadge">
-                        {opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
-                      </div>
-
+                      <div className="optionBadge">{opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}</div>
                       <div className="optionContent">
                         <HtmlBlock className="prose" html={opt.content_html} />
                       </div>
@@ -528,9 +499,6 @@ export default function PracticeQuestionPage() {
           </div>
         </div>
       ) : (
-        /* ===============================
-            SPR
-        =============================== */
         <div>
           {version?.stimulus_html ? (
             <div className="card subcard" style={{ marginBottom: 12 }}>
@@ -551,8 +519,7 @@ export default function PracticeQuestionPage() {
           {locked ? (
             <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
               <span className="pill">
-                <span className="muted">Result</span>{' '}
-                <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+                <span className="muted">Result</span> <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
               </span>
 
               {!status?.last_is_correct && correctText ? (
