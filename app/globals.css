@@ -15,15 +15,42 @@
 
   --danger: #ef4444;
   --success: #16a34a;
+
+  /* ===============================
+     Typography + rhythm (NEW)
+  ================================ */
+
+  --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  --text-size: 16px;
+  --text-leading: 1.6;
+
+  --title-1: 28px;
+  --title-2: 18px;
+  --title-3: 14px;
+
+  --radius-card: 16px;
+  --shadow-card: 0 10px 28px rgba(0,0,0,0.06);
+
+  --s1: 6px;
+  --s2: 10px;
+  --s3: 14px;
+  --s4: 18px;
+  --s5: 24px;
 }
 
 html, body{
   padding: 0;
   margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system,
-               Segoe UI, Roboto, Helvetica, Arial;
   background: var(--bg);
   color: var(--text);
+
+  font-family: var(--font);
+  font-size: var(--text-size);
+  line-height: var(--text-leading);
+
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 *{
@@ -42,7 +69,7 @@ a{
 .container{
   max-width: 1240px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 28px;
 }
 
 .practiceGrid{
@@ -65,9 +92,28 @@ a{
 .card{
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius-card);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Optional: for nested “Stimulus / Question / Explanation” blocks */
+.card.subcard{
   padding: 18px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+  background: #ffffff;
+}
+
+.sectionLabel{
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.card.explanation{
+  background: rgba(17,24,39,0.02);
+  border: 1px solid var(--border);
 }
 
 /* ===============================
@@ -75,15 +121,19 @@ a{
 ================================ */
 
 .h1{
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 8px;
+  font-size: var(--title-1);
+  line-height: 1.2;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--s2);
 }
 
 .h2{
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-size: var(--title-2);
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  margin: 0 0 var(--s2);
 }
 
 .muted{
@@ -91,7 +141,8 @@ a{
 }
 
 .small{
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .kbd{
@@ -104,6 +155,53 @@ a{
 }
 
 /* ===============================
+   Prose (HtmlBlock content)
+================================ */
+
+.prose{
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+.prose p{ margin: 0 0 12px; }
+.prose p:last-child{ margin-bottom: 0; }
+
+.prose h3, .prose h4{
+  margin: 14px 0 8px;
+  line-height: 1.25;
+}
+
+.prose ul, .prose ol{
+  margin: 10px 0 12px 20px;
+}
+.prose li{ margin: 6px 0; }
+
+.prose strong{ font-weight: 700; }
+.prose em{ font-style: italic; }
+
+.prose img{
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+/* MathJax CHTML tweaks (MathML → MathJax rendering) */
+.prose mjx-container{
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+}
+
+.prose mjx-container[display="true"]{
+  margin: 10px 0;
+}
+
+.prose mjx-container *{
+  line-height: 1.25;
+}
+
+/* ===============================
    Buttons
 ================================ */
 
@@ -112,15 +210,22 @@ a{
   border: 1px solid var(--accent);
   color: #ffffff;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.15s ease;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.06s ease;
 }
 
 .btn:hover{
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+}
+
+.btn:active{
+  transform: translateY(1px);
 }
 
 .btn:disabled{
@@ -129,13 +234,13 @@ a{
 }
 
 .btn.secondary{
-  background: #ffffff;
+  background: rgba(17,24,39,0.02);
   border: 1px solid var(--border);
   color: var(--text);
 }
 
 .btn.secondary:hover{
-  background: rgba(0,0,0,0.04);
+  background: rgba(17,24,39,0.045);
 }
 
 .btn.danger{
@@ -156,7 +261,12 @@ a{
   background: #ffffff;
   color: var(--text);
   outline: none;
-  font-size: 14px;
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+
+textarea.input{
+  line-height: 1.55;
 }
 
 .input:focus, select:focus, textarea:focus{
@@ -213,51 +323,57 @@ label{
 }
 
 /* ===============================
-   Question List Rows
+   MCQ Answer Options
 ================================ */
 
-/* MCQ option layout: College Board-ish */
-
-
-/* MCQ answer option */
-
-.option {
+.option{
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 14px;
 
   border: 1px solid var(--border);
   border-radius: 18px;
-  padding: 16px 18px;
+  padding: 14px 16px;
   background: #fff;
+
+  transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
 }
 
-.option.selected {
+.option:hover{
+  box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+}
+
+.option.selected{
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-soft);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 /* Circle badge */
-.optionBadge {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  border: 2px solid #111;
+.optionBadge{
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border: 2px solid rgba(17,24,39,0.75);
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: 750;
+  font-size: 14px;
   line-height: 1;
-
-  /* was 3px */
-  transform: translateY(6px);
+  margin-top: 2px;
 }
 
 /* Text column */
-.optionContent {
+.optionContent{
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/* Slightly compact inside answers vs passages */
+.optionContent .prose{
+  font-size: 15.5px;
+  line-height: 1.6;
 }
 
 /* ===============================
@@ -278,7 +394,7 @@ label{
 hr{
   border: none;
   border-top: 1px solid var(--border);
-  margin: 16px 0;
+  margin: 18px 0;
 }
 
 /* ===============================
@@ -397,38 +513,3 @@ hr{
   background: var(--accent-soft);
   border-color: var(--accent);
 }
-
-/* Correct answer */
-.option.correct {
-  border-color: #15803d;
-  background: #f0fdf4;
-}
-
-.option.correct .optionBadge {
-  border-color: #15803d;
-  background: #15803d;
-  color: white;
-}
-
-/* Incorrect selected answer */
-.option.incorrect {
-  border-color: #b91c1c;
-  background: #fef2f2;
-}
-
-.option.incorrect .optionBadge {
-  border-color: #b91c1c;
-  background: #b91c1c;
-  color: white;
-}
-
-/* Reveal correct when user was wrong */
-.option.revealCorrect {
-  border-color: #15803d;
-}
-
-.option.revealCorrect .optionBadge {
-  border-color: #15803d;
-}
-
-
