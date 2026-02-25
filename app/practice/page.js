@@ -15,13 +15,11 @@ export default function PracticePage() {
   const [totalCount, setTotalCount] = useState(0);
 
   // Build the "session filter" params once (no pagination params here).
-  // These are what we want to carry into /practice/[questionId] so it can rebuild the full list.
+  // These are what we carry into /practice/[questionId] so it can keep the same filtered session.
   const sessionQueryString = useMemo(() => {
     const p = new URLSearchParams();
 
-    // IMPORTANT:
-    // Always include *something* so /practice/[questionId] can detect "this came from the list"
-    // and rebuild the full filtered list even when no filters are applied.
+    // Always include session=1 so the question page can treat this as "came from list"
     p.set('session', '1');
 
     if (filters.difficulty) p.set('difficulty', String(filters.difficulty));
@@ -67,19 +65,13 @@ export default function PracticePage() {
       setTotalCount(Number(json.totalCount || 0));
       setRows(items);
 
-      // Keep your existing behavior: store ONLY the current page's IDs
-      // (the question page will rebuild the full list using the query params)
+      // Cache ONLY this page’s IDs, keyed by the session signature + offset
       if (items.length) {
         const ids = items.map((q) => q.question_id).filter(Boolean);
-      
         const offset = page * 25;
-        const sessionKey = sessionQueryString; // already includes filters/search + session=1
+        const sessionKey = sessionQueryString; // includes filters/search + session=1
         localStorage.setItem(`practice_${sessionKey}_page_${offset}`, JSON.stringify(ids));
-      
-        // keep if you still want it, but it’s not used for nav anymore
-        localStorage.setItem('practice_question_list', JSON.stringify(ids));
       }
-      
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
@@ -142,24 +134,20 @@ export default function PracticePage() {
               {rows.map((q, idx) => {
                 const qid = q?.question_id ? String(q.question_id) : '';
                 if (!qid) return null;
-              
-                const offset = page * 25;          // o
-                const pos = idx;                   // p
-                const i = offset + pos + 1;        // 1-based index within the filtered list
-              
+
+                const offset = page * 25; // o
+                const pos = idx; // p
+                const i = offset + pos + 1; // 1-based index within the filtered list
+
                 const href = `/practice/${encodeURIComponent(qid)}?${sessionQueryString}&t=${totalCount}&o=${offset}&p=${pos}&i=${i}`;
-              
+
                 return (
                   <Link
                     key={qid}
                     href={href}
                     className="option"
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'flex-start' }}
                   >
-                    ...
-                  </Link>
-                );
-              })}
                     <div style={{ minWidth: 64 }}>
                       <div className="pill">{q.difficulty ? `D${q.difficulty}` : 'D?'}</div>
                     </div>
@@ -188,11 +176,7 @@ export default function PracticePage() {
               Prev
             </button>
 
-            <button
-              className="btn"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={loading || rows.length < 25}
-            >
+            <button className="btn" onClick={() => setPage((p) => p + 1)} disabled={loading || rows.length < 25}>
               Next
             </button>
           </div>
