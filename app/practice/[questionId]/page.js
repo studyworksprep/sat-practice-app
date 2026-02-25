@@ -203,7 +203,7 @@ export default function PracticeQuestionPage() {
   async function submitAttempt() {
     if (!data) return;
 
-    const qTypeLocal = data?.version?.question_type || data?.question_type;
+    const qTypeLocal = String(data?.version?.question_type || data?.question_type || '').toLowerCase();
     const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
 
     const body = {
@@ -297,7 +297,7 @@ export default function PracticeQuestionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId, searchParams]);
 
-  const qType = data?.version?.question_type || data?.question_type;
+  const qType = String(data?.version?.question_type || data?.question_type || '').toLowerCase();
   const version = data?.version || {};
   const options = Array.isArray(data?.options) ? data.options : [];
   const status = data?.status || {};
@@ -462,63 +462,77 @@ export default function PracticeQuestionPage() {
           </div>
         </div>
       ) : (
-        /* ===============================
-            SPR (unchanged)
-        =============================== */
-        <div>
-          <div className="h2">Your answer</div>
-
-          {locked ? (
-            <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-              <span className="pill">
-                <span className="muted">Result</span>{' '}
-                <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
-              </span>
-
-              {!status?.last_is_correct && correctText ? (
-                <span className="pill">
-                  <span className="muted">Correct answer</span>{' '}
-                  <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
-                </span>
-              ) : null}
-            </div>
-          ) : null}
-
-          <textarea
-            className="input"
-            value={responseText}
-            onChange={(e) => setResponseText(e.target.value)}
-            placeholder="Type your answer…"
-            rows={4}
-            disabled={locked}
-            style={{ marginTop: 10 }}
-          />
-
-          <div className="row" style={{ gap: 10, marginTop: 14 }}>
-            <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
-              Submit
-            </button>
-
-            <button className="btn secondary" onClick={toggleMarkForReview}>
-              {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
-            </button>
-
-            {locked && (version?.rationale_html || version?.explanation_html) ? (
-              <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
-                {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
-              </button>
-            ) : null}
-
-            <button className="btn secondary" onClick={() => goToIndex(index1 - 1)} disabled={prevDisabled}>
-              Prev
-            </button>
-
-            <button className="btn secondary" onClick={() => goToIndex(index1 + 1)} disabled={nextDisabled}>
-              Next
-            </button>
-          </div>
+      /* ===============================
+    SPR
+    =============================== */
+    <div>
+      {/* Show stimulus + question for SPR too */}
+      {version?.stimulus_html ? (
+        <div className="card subcard" style={{ marginBottom: 12 }}>
+          <div className="sectionLabel">Stimulus</div>
+          <HtmlBlock className="prose" html={version.stimulus_html} />
         </div>
-      )}
+      ) : null}
+    
+      {version?.stem_html ? (
+        <div className="card subcard" style={{ marginBottom: 12 }}>
+          <div className="sectionLabel">Question</div>
+          <HtmlBlock className="prose" html={version.stem_html} />
+        </div>
+      ) : null}
+    
+      <div className="h2">Your answer</div>
+    
+      {locked ? (
+        <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+          <span className="pill">
+            <span className="muted">Result</span>{' '}
+            <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+          </span>
+    
+          {!status?.last_is_correct && correctText ? (
+            <span className="pill">
+              <span className="muted">Correct answer</span>{' '}
+              <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+    
+      <textarea
+        className="input"
+        value={responseText}
+        onChange={(e) => setResponseText(e.target.value)}
+        placeholder="Type your answer…"
+        rows={4}
+        disabled={locked}
+        style={{ marginTop: 10 }}
+      />
+    
+      <div className="row" style={{ gap: 10, marginTop: 14 }}>
+        <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
+          Submit
+        </button>
+    
+        <button className="btn secondary" onClick={toggleMarkForReview}>
+          {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
+        </button>
+    
+        {locked && (version?.rationale_html || version?.explanation_html) ? (
+          <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+            {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+          </button>
+        ) : null}
+    
+        <button className="btn secondary" onClick={() => goToIndex(index1 - 1)} disabled={prevDisabled}>
+          Prev
+        </button>
+    
+        <button className="btn secondary" onClick={() => goToIndex(index1 + 1)} disabled={nextDisabled}>
+          Next
+        </button>
+      </div>
+    </div>
 
       {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
         <>
