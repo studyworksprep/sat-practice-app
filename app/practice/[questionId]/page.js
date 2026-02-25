@@ -346,19 +346,15 @@ export default function PracticeQuestionPage() {
         <hr />
 
         {version?.stimulus_html ? (
-          <div className="card" style={{ marginBottom: 12 }}>
-            <div className="muted small" style={{ marginBottom: 8 }}>
-              Stimulus
-            </div>
+          <div className="card subcard" style={{ marginBottom: 12 }}>
+            <div className="sectionLabel">Stimulus</div>
             <HtmlBlock className="prose" html={version.stimulus_html} />
           </div>
         ) : null}
 
         {version?.stem_html ? (
-          <div className="card" style={{ marginBottom: 12 }}>
-            <div className="muted small" style={{ marginBottom: 8 }}>
-              Question
-            </div>
+          <div className="card subcard" style={{ marginBottom: 12 }}>
+            <div className="sectionLabel">Question</div>
             <HtmlBlock className="prose" html={version.stem_html} />
           </div>
         ) : null}
@@ -504,8 +500,8 @@ export default function PracticeQuestionPage() {
         {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
           <>
             <hr />
-            <div className="h2">Explanation</div>
-            <div className="card" style={{ marginTop: 10 }}>
+            <div className="card explanation" style={{ marginTop: 10 }}>
+              <div className="sectionLabel">Explanation</div>
               <HtmlBlock className="prose" html={version.rationale_html || version.explanation_html} />
             </div>
           </>
