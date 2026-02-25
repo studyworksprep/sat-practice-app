@@ -37,11 +37,11 @@ export default function PracticeQuestionPage() {
   const [showExplanation, setShowExplanation] = useState(false);
 
   // Instant navigation metadata (from list page)
-  const [total, setTotal] = useState(null);     // total in filtered session
-  const [index1, setIndex1] = useState(null);   // 1-based index in session
+  const [total, setTotal] = useState(null); // total in filtered session
+  const [index1, setIndex1] = useState(null); // 1-based index in session
 
   // Cache: current page ids (25) for navigation
-  const [pageIds, setPageIds] = useState([]);   // ids for current offset page
+  const [pageIds, setPageIds] = useState([]); // ids for current offset page
   const [pageOffset, setPageOffset] = useState(0); // 0,25,50,...
 
   const startedAtRef = useRef(Date.now());
@@ -74,10 +74,12 @@ export default function PracticeQuestionPage() {
       if (!res.ok) throw new Error(json?.error || 'Failed to load question');
       setData(json);
 
-      if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
+      if (json?.status?.status_json?.last_selected_option_id)
+        setSelected(json.status.status_json.last_selected_option_id);
       else setSelected(null);
 
-      if (json?.status?.status_json?.last_response_text) setResponseText(json.status.status_json.last_response_text);
+      if (json?.status?.status_json?.last_response_text)
+        setResponseText(json.status.status_json.last_response_text);
       else setResponseText('');
 
       startedAtRef.current = Date.now();
@@ -216,7 +218,6 @@ export default function PracticeQuestionPage() {
       setMsg({ kind: 'danger', text: e.message });
     }
   }
-
 
   async function toggleMarkForReview() {
     if (!data?.question_id) return;
@@ -396,7 +397,7 @@ export default function PracticeQuestionPage() {
                         {opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
                       </div>
 
-                      <div className="optionContent">>
+                      <div className="optionContent">
                         <HtmlBlock className="prose" html={opt.content_html} />
                       </div>
                     </div>
@@ -449,7 +450,8 @@ export default function PracticeQuestionPage() {
 
                 {!status?.last_is_correct && correctText ? (
                   <span className="pill">
-                    <span className="muted">Correct answer</span> <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+                    <span className="muted">Correct answer</span>{' '}
+                    <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
                   </span>
                 ) : null}
               </div>
@@ -466,14 +468,9 @@ export default function PracticeQuestionPage() {
             />
 
             <div className="row" style={{ gap: 10, marginTop: 14 }}>
-              <button
-                className="btn"
-                onClick={submitAttempt}
-                disabled={locked || !responseText.trim()}
-              >
+              <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
                 Submit
               </button>
-
 
               <button className="btn secondary" onClick={toggleMarkForReview}>
                 {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
