@@ -1,5 +1,6 @@
 import './globals.css';
 import NavBar from '../components/NavBar';
+import 'katex/dist/katex.min.css';
 
 export const metadata = {
   title: 'SAT Practice',
