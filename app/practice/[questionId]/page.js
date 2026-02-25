@@ -6,8 +6,6 @@ import Link from 'next/link';
 import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
 
-
-
 function formatCorrectText(ct) {
   if (!ct) return null;
   if (Array.isArray(ct)) return ct;
@@ -46,8 +44,11 @@ export default function PracticeQuestionPage() {
 
   const [showExplanation, setShowExplanation] = useState(false);
 
+  // Option A neighbor nav
   const [prevId, setPrevId] = useState(null);
   const [nextId, setNextId] = useState(null);
+  const [navLoading, setNavLoading] = useState(true);
+  const [navMode, setNavMode] = useState('neighbors'); // 'neighbors' | 'index' fallback
 
   // Instant navigation metadata (from list page)
   const [total, setTotal] = useState(null); // total in filtered session
@@ -104,11 +105,11 @@ export default function PracticeQuestionPage() {
     }
   }
 
- async function fetchPageIds(offset) {
+  async function fetchPageIds(offset) {
     // Include filter/session signature in the cache key so pages don't collide
     const sessionKey = sessionParams.toString(); // includes difficulty/score_bands/domain/topic/marked_only/q/session
     const key = `practice_${sessionKey}_page_${offset}`;
-  
+
     // 1) try localStorage first
     const raw = localStorage.getItem(key);
     if (raw) {
@@ -117,18 +118,18 @@ export default function PracticeQuestionPage() {
         if (Array.isArray(arr) && arr.length > 0) return arr;
       } catch {}
     }
-  
+
     // 2) otherwise fetch this page (25) from API using current filters
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session'); // not needed by API
     apiParams.set('limit', '25');
     apiParams.set('offset', String(offset));
-  
+
     const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || 'Failed to fetch page');
     const ids = (json.items || []).map((it) => it.question_id).filter(Boolean);
-  
+
     localStorage.setItem(key, JSON.stringify(ids));
     return ids;
   }
@@ -276,11 +277,13 @@ export default function PracticeQuestionPage() {
       setMsg({ kind: 'danger', text: e.message });
     }
   }
-  
+
+  // Fetch Option A neighbors. If it fails (commonly auth), fall back to index-based nav.
   useEffect(() => {
     if (!questionId) return;
-  
+
     (async () => {
+      setNavLoading(true);
       try {
         const res = await fetch(
           `/api/questions/${questionId}/neighbors?${sessionParams.toString()}`,
@@ -288,22 +291,30 @@ export default function PracticeQuestionPage() {
         );
         const json = await res.json();
         if (!res.ok) throw new Error(json?.error || 'Failed to load neighbors');
-  
-        setPrevId(json.prev_id);
-        setNextId(json.next_id);
-      } catch {
+
+        setPrevId(json.prev_id || null);
+        setNextId(json.next_id || null);
+        setNavMode('neighbors');
+      } catch (e) {
+        // Fall back to index-based navigation (t/o/p + cached paging)
         setPrevId(null);
         setNextId(null);
+        setNavMode('index');
+        // Surface the error so you know what's happening (auth/rpc mismatch/etc.)
+        setMsg({ kind: 'danger', text: `Neighbors failed (fallback enabled): ${e.message}` });
+      } finally {
+        setNavLoading(false);
       }
     })();
   }, [questionId, sessionParams]);
+
   // Load question content
   useEffect(() => {
     fetchQuestion();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId]);
 
-  // Prime meta immediately (instant #/total + button enable)
+  // Prime meta immediately (instant #/total)
   useEffect(() => {
     primeNavMetaFromUrl();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -332,8 +343,7 @@ export default function PracticeQuestionPage() {
 
   // Two-column “Reading” heuristic (safe + avoids affecting Math)
   const domainCode = String(data?.taxonomy?.domain_code || '').toUpperCase().trim();
-  const useTwoColReading =
-  qType === 'mcq' && ['EOI', 'INI', 'CAS', 'SEC'].includes(domainCode);
+  const useTwoColReading = qType === 'mcq' && ['EOI', 'INI', 'CAS', 'SEC'].includes(domainCode);
 
   const headerPills = [
     { label: 'Attempts', value: status?.attempts_count ?? 0 },
@@ -342,8 +352,37 @@ export default function PracticeQuestionPage() {
     { label: 'Marked', value: status?.marked_for_review ? 'Yes' : 'No' },
   ];
 
-  const prevDisabled = index1 == null || index1 <= 1;
-  const nextDisabled = index1 == null || (total != null && index1 >= total);
+  // Fallback index-based disabled states
+  const prevDisabledIndex = index1 == null || index1 <= 1;
+  const nextDisabledIndex = index1 == null || (total != null && index1 >= total);
+
+  // Unified nav handlers (neighbors preferred; fallback uses index)
+  const prevDisabled =
+    navMode === 'neighbors' ? navLoading || !prevId : navLoading ? true : prevDisabledIndex;
+  const nextDisabled =
+    navMode === 'neighbors' ? navLoading || !nextId : navLoading ? true : nextDisabledIndex;
+
+  const goPrev = () => {
+    if (navMode === 'neighbors') {
+      if (!prevId) return;
+      router.push(buildHref(prevId, total, null, null));
+      return;
+    }
+    // fallback
+    if (index1 == null) return;
+    goToIndex(index1 - 1);
+  };
+
+  const goNext = () => {
+    if (navMode === 'neighbors') {
+      if (!nextId) return;
+      router.push(buildHref(nextId, total, null, null));
+      return;
+    }
+    // fallback
+    if (index1 == null) return;
+    goToIndex(index1 + 1);
+  };
 
   return (
     <main className="container">
@@ -409,7 +448,11 @@ export default function PracticeQuestionPage() {
 
           {/* RIGHT column (Answer choices + buttons) */}
           <div className={useTwoColReading ? 'qaRight' : ''}>
-            {!useTwoColReading ? <div className="h2">Answer choices</div> : <div className="srOnly">Answer choices</div>}
+            {!useTwoColReading ? (
+              <div className="h2">Answer choices</div>
+            ) : (
+              <div className="srOnly">Answer choices</div>
+            )}
 
             <div className="optionList">
               {options
@@ -423,19 +466,18 @@ export default function PracticeQuestionPage() {
                       key={opt.id}
                       className={(() => {
                         let cls = 'option' + (isSelected ? ' selected' : '');
-                      
+
                         if (locked) {
                           const isCorrect = String(opt.id) === String(correctOptionId);
-                      
+
                           if (isSelected && isCorrect) {
                             cls += ' correct';
                           } else if (isSelected && !isCorrect) {
                             cls += ' incorrect';
                           }
-                      
-                          // IMPORTANT: no revealCorrect branch anymore
+                          // no revealCorrect branch
                         }
-                      
+
                         return cls;
                       })()}
                       onClick={() => {
@@ -456,7 +498,6 @@ export default function PracticeQuestionPage() {
                 })}
             </div>
 
-            {/* Buttons: behavior unchanged */}
             <div className="row" style={{ gap: 10, marginTop: 14 }}>
               <div className="btnRow">
                 <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected}>
@@ -475,19 +516,11 @@ export default function PracticeQuestionPage() {
               ) : null}
 
               <div className="btnRow">
-                <button
-                  className="btn secondary"
-                  onClick={() => prevId && router.push(buildHref(prevId, total, null, null))}
-                  disabled={!prevId}
-                >
+                <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
                   Prev
                 </button>
-                
-                <button
-                  className="btn secondary"
-                  onClick={() => nextId && router.push(buildHref(nextId, total, null, null))}
-                  disabled={!nextId}
-                >
+
+                <button className="btn secondary" onClick={goNext} disabled={nextDisabled}>
                   Next
                 </button>
               </div>
@@ -495,78 +528,77 @@ export default function PracticeQuestionPage() {
           </div>
         </div>
       ) : (
-      /* ===============================
-    SPR
-    =============================== */
-    <div>
-      {/* Show stimulus + question for SPR too */}
-      {version?.stimulus_html ? (
-        <div className="card subcard" style={{ marginBottom: 12 }}>
-          <div className="sectionLabel">Stimulus</div>
-          <HtmlBlock className="prose" html={version.stimulus_html} />
-        </div>
-      ) : null}
-    
-      {version?.stem_html ? (
-        <div className="card subcard" style={{ marginBottom: 12 }}>
-          <div className="sectionLabel">Question</div>
-          <HtmlBlock className="prose" html={version.stem_html} />
-        </div>
-      ) : null}
-    
-      <div className="h2">Your answer</div>
-    
-      {locked ? (
-        <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-          <span className="pill">
-            <span className="muted">Result</span>{' '}
-            <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
-          </span>
-    
-          {!status?.last_is_correct && correctText ? (
-            <span className="pill">
-              <span className="muted">Correct answer</span>{' '}
-              <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
-            </span>
+        /* ===============================
+            SPR
+        =============================== */
+        <div>
+          {version?.stimulus_html ? (
+            <div className="card subcard" style={{ marginBottom: 12 }}>
+              <div className="sectionLabel">Stimulus</div>
+              <HtmlBlock className="prose" html={version.stimulus_html} />
+            </div>
           ) : null}
+
+          {version?.stem_html ? (
+            <div className="card subcard" style={{ marginBottom: 12 }}>
+              <div className="sectionLabel">Question</div>
+              <HtmlBlock className="prose" html={version.stem_html} />
+            </div>
+          ) : null}
+
+          <div className="h2">Your answer</div>
+
+          {locked ? (
+            <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+              <span className="pill">
+                <span className="muted">Result</span>{' '}
+                <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+              </span>
+
+              {!status?.last_is_correct && correctText ? (
+                <span className="pill">
+                  <span className="muted">Correct answer</span>{' '}
+                  <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+
+          <textarea
+            className="input"
+            value={responseText}
+            onChange={(e) => setResponseText(e.target.value)}
+            placeholder="Type your answer…"
+            rows={4}
+            disabled={locked}
+            style={{ marginTop: 10 }}
+          />
+
+          <div className="row" style={{ gap: 10, marginTop: 14 }}>
+            <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
+              Submit
+            </button>
+
+            <button className="btn secondary" onClick={toggleMarkForReview}>
+              {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
+            </button>
+
+            {locked && (version?.rationale_html || version?.explanation_html) ? (
+              <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+                {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+              </button>
+            ) : null}
+
+            <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
+              Prev
+            </button>
+
+            <button className="btn secondary" onClick={goNext} disabled={nextDisabled}>
+              Next
+            </button>
+          </div>
         </div>
-      ) : null}
-    
-      <textarea
-        className="input"
-        value={responseText}
-        onChange={(e) => setResponseText(e.target.value)}
-        placeholder="Type your answer…"
-        rows={4}
-        disabled={locked}
-        style={{ marginTop: 10 }}
-      />
-    
-      <div className="row" style={{ gap: 10, marginTop: 14 }}>
-        <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
-          Submit
-        </button>
-    
-        <button className="btn secondary" onClick={toggleMarkForReview}>
-          {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
-        </button>
-    
-        {locked && (version?.rationale_html || version?.explanation_html) ? (
-          <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
-            {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
-          </button>
-        ) : null}
-    
-        <button className="btn secondary" onClick={() => goToIndex(index1 - 1)} disabled={prevDisabled}>
-          Prev
-        </button>
-    
-        <button className="btn secondary" onClick={() => goToIndex(index1 + 1)} disabled={nextDisabled}>
-          Next
-        </button>
-      </div>
-    </div>
-    )}
+      )}
 
       {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
         <>
