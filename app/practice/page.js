@@ -12,6 +12,7 @@ export default function PracticePage() {
   const [msg, setMsg] = useState(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
+  const [totalCount, setTotalCount] = useState(0);
 
   // Build the "session filter" params once (no pagination params here).
   // These are what we want to carry into /practice/[questionId] so it can rebuild the full list.
@@ -63,6 +64,7 @@ export default function PracticePage() {
       if (!res.ok) throw new Error(json?.error || 'Failed to load questions');
 
       const items = json.items || [];
+      setTotalCount(Number(json.totalCount || 0));
       setRows(items);
 
       // Keep your existing behavior: store ONLY the current page's IDs
@@ -137,19 +139,27 @@ export default function PracticePage() {
             <div className="muted">No questions match your filters.</div>
           ) : (
             <div style={{ display: 'grid', gap: 10 }}>
-              {rows.map((q) => {
+              {rows.map((q, idx) => {
                 const qid = q?.question_id ? String(q.question_id) : '';
-                if (!qid) return null; // or render a disabled row with an error badge
+                if (!qid) return null;
               
-                const href = `/practice/${encodeURIComponent(qid)}?${sessionQueryString}`;
-
+                const offset = page * 25;          // o
+                const pos = idx;                   // p
+                const i = offset + pos + 1;        // 1-based index within the filtered list
+              
+                const href = `/practice/${encodeURIComponent(qid)}?${sessionQueryString}&t=${totalCount}&o=${offset}&p=${pos}&i=${i}`;
+              
                 return (
                   <Link
-                    key={q.question_id}
+                    key={qid}
                     href={href}
                     className="option"
                     style={{ cursor: 'pointer' }}
                   >
+                    ...
+                  </Link>
+                );
+              })}
                     <div style={{ minWidth: 64 }}>
                       <div className="pill">{q.difficulty ? `D${q.difficulty}` : 'D?'}</div>
                     </div>
