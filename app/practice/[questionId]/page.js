@@ -213,7 +213,7 @@ export default function PracticeQuestionPage() {
       if (!res.ok) throw new Error(json?.error || 'Failed to submit attempt');
 
       await fetchQuestion();
-      setShowExplanation(true);
+      
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     }
