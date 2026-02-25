@@ -48,16 +48,16 @@ export default function PracticeQuestionPage() {
   const [prevId, setPrevId] = useState(null);
   const [nextId, setNextId] = useState(null);
 
-  // ✅ IMPORTANT: start false so we don't get stuck disabled if questionId is briefly undefined
+  // Start false; we explicitly flip to true when we begin fetching neighbors
   const [navLoading, setNavLoading] = useState(false);
 
   const [navMode, setNavMode] = useState('neighbors'); // 'neighbors' | 'index' fallback
 
-  // Instant navigation metadata (from list page)
+  // Instant navigation metadata (from list page or neighbor navigation)
   const [total, setTotal] = useState(null); // total in filtered session
   const [index1, setIndex1] = useState(null); // 1-based index in session
 
-  // Cache: current page ids (25) for navigation
+  // Cache: current page ids (25) for index-based fallback navigation
   const [pageIds, setPageIds] = useState([]); // ids for current offset page
   const [pageOffset, setPageOffset] = useState(0); // 0,25,50,...
 
@@ -74,14 +74,15 @@ export default function PracticeQuestionPage() {
     return p;
   }, [searchParams]);
 
-  // ✅ Stable dependency for effects (string, not a URLSearchParams object)
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
 
-  function buildHref(targetId, t, o, p) {
+  // ✅ NEW: support "i" (1-based index) for neighbor navigation
+  function buildHref(targetId, t, o, p, i) {
     const qs = new URLSearchParams(sessionParams);
     if (t != null) qs.set('t', String(t));
     if (o != null) qs.set('o', String(o));
     if (p != null) qs.set('p', String(p));
+    if (i != null) qs.set('i', String(i)); // ✅ new
     return `/practice/${targetId}?${qs.toString()}`;
   }
 
@@ -92,6 +93,7 @@ export default function PracticeQuestionPage() {
       const res = await fetch(`/api/questions/${questionId}`, { cache: 'no-store' });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load question');
+
       setData(json);
 
       if (json?.status?.status_json?.last_selected_option_id)
@@ -112,7 +114,6 @@ export default function PracticeQuestionPage() {
   }
 
   async function fetchPageIds(offset) {
-    // Include filter/session signature in the cache key so pages don't collide
     const key = `practice_${sessionParamsString}_page_${offset}`;
 
     const raw = localStorage.getItem(key);
@@ -138,14 +139,19 @@ export default function PracticeQuestionPage() {
     return ids;
   }
 
+  // ✅ UPDATED: also look for "i" (index) in URL
   function primeNavMetaFromUrl() {
     const t = Number(searchParams.get('t'));
     const o = Number(searchParams.get('o'));
     const p = Number(searchParams.get('p'));
+    const i = Number(searchParams.get('i')); // ✅ new
 
     if (Number.isFinite(t) && t >= 0) setTotal(t);
     if (Number.isFinite(o) && o >= 0) setPageOffset(o);
-    if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) setIndex1(o + p + 1);
+
+    // Prefer explicit "i" if present; otherwise compute from o/p.
+    if (Number.isFinite(i) && i >= 1) setIndex1(i);
+    else if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) setIndex1(o + p + 1);
   }
 
   async function ensureCurrentPageIds() {
@@ -158,6 +164,7 @@ export default function PracticeQuestionPage() {
     const ids = await fetchPageIds(o);
     setPageIds(ids);
 
+    // If p isn't present (deep-link), try to compute within this page
     if (!Number.isFinite(p) || p < 0) {
       const idx = ids.findIndex((id) => String(id) === String(questionId));
       if (idx >= 0) setIndex1(o + idx + 1);
@@ -196,7 +203,7 @@ export default function PracticeQuestionPage() {
     setPageIds(ids);
     setIndex1(targetIndex1);
 
-    router.push(buildHref(targetId, total, targetOffset, targetPos));
+    router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
   }
 
   async function submitAttempt() {
@@ -269,16 +276,22 @@ export default function PracticeQuestionPage() {
     }
   }
 
-  // ✅ Fetch neighbors (Option A)
+  // ✅ Fetch neighbors (Option A) — FIXED to avoid stale prev/next enabling buttons early
   useEffect(() => {
     if (!questionId) {
-      // IMPORTANT: don't get stuck in loading mode
       setNavLoading(false);
+      setPrevId(null);
+      setNextId(null);
       return;
     }
 
+    // ✅ Clear stale IDs immediately and show loading
+    setNavMode('neighbors');
+    setNavLoading(true);
+    setPrevId(null);
+    setNextId(null);
+
     (async () => {
-      setNavLoading(true);
       try {
         const res = await fetch(
           `/api/questions/${questionId}/neighbors?${sessionParamsString}`,
@@ -289,7 +302,6 @@ export default function PracticeQuestionPage() {
 
         setPrevId(json.prev_id || null);
         setNextId(json.next_id || null);
-        setNavMode('neighbors');
       } catch (e) {
         setPrevId(null);
         setNextId(null);
@@ -314,7 +326,7 @@ export default function PracticeQuestionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // Ensure we have total + current page ids
+  // Ensure we have total + current page ids (fallback nav)
   useEffect(() => {
     if (!questionId) return;
     (async () => {
@@ -357,7 +369,12 @@ export default function PracticeQuestionPage() {
   const goPrev = () => {
     if (navMode === 'neighbors') {
       if (!prevId) return;
-      router.push(buildHref(prevId, total, null, null));
+
+      // ✅ Maintain the counter while navigating by neighbors
+      const nextI = index1 != null ? Math.max(1, index1 - 1) : null;
+      setIndex1(nextI);
+
+      router.push(buildHref(prevId, total, null, null, nextI));
       return;
     }
     if (index1 == null) return;
@@ -367,7 +384,11 @@ export default function PracticeQuestionPage() {
   const goNext = () => {
     if (navMode === 'neighbors') {
       if (!nextId) return;
-      router.push(buildHref(nextId, total, null, null));
+
+      const nextI = index1 != null ? index1 + 1 : null;
+      setIndex1(nextI);
+
+      router.push(buildHref(nextId, total, null, null, nextI));
       return;
     }
     if (index1 == null) return;
@@ -433,7 +454,11 @@ export default function PracticeQuestionPage() {
           </div>
 
           <div className={useTwoColReading ? 'qaRight' : ''}>
-            {!useTwoColReading ? <div className="h2">Answer choices</div> : <div className="srOnly">Answer choices</div>}
+            {!useTwoColReading ? (
+              <div className="h2">Answer choices</div>
+            ) : (
+              <div className="srOnly">Answer choices</div>
+            )}
 
             <div className="optionList">
               {options
@@ -460,7 +485,9 @@ export default function PracticeQuestionPage() {
                       }}
                       style={{ cursor: locked ? 'default' : 'pointer' }}
                     >
-                      <div className="optionBadge">{opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}</div>
+                      <div className="optionBadge">
+                        {opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
+                      </div>
                       <div className="optionContent">
                         <HtmlBlock className="prose" html={opt.content_html} />
                       </div>
@@ -519,7 +546,8 @@ export default function PracticeQuestionPage() {
           {locked ? (
             <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
               <span className="pill">
-                <span className="muted">Result</span> <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+                <span className="muted">Result</span>{' '}
+                <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
               </span>
 
               {!status?.last_is_correct && correctText ? (
