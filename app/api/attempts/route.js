@@ -60,19 +60,46 @@ export async function POST(request) {
         return NextResponse.json({ error: 'selected_option_id required for mcq' }, { status: 400 });
       }
       is_correct = String(ca?.correct_option_id ?? '') === String(selected_option_id);
-    } else if (ver.question_type === 'spr') {
-      if (typeof response_text !== 'string' || response_text.trim() === '') {
-        return NextResponse.json({ error: 'response_text required for spr' }, { status: 400 });
-      }
-
-      const norm = (s) =>
-        String(s ?? '')
-          .trim()
-          .replace(/\s+/g, ' ')
-          .toLowerCase();
-
-      is_correct = norm(ca?.correct_text ?? '') === norm(response_text);
+} else if (ver.question_type === 'spr') {
+    if (typeof response_text !== 'string' || response_text.trim() === '') {
+      return NextResponse.json({ error: 'response_text required for spr' }, { status: 400 });
     }
+  
+    const norm = (s) =>
+      String(s ?? '')
+        .trim()
+        .replace(/\u2212/g, '-') // normalize Unicode minus to standard hyphen
+        .replace(/\s+/g, ' ')
+        .toLowerCase();
+  
+    const toAnswerList = (ct) => {
+      if (Array.isArray(ct)) return ct;
+  
+      if (typeof ct === 'string') {
+        const trimmed = ct.trim();
+  
+        // Handle JSON string like '["11","-7"]'
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) return parsed;
+          } catch {}
+        }
+  
+        return [trimmed];
+      }
+  
+      if (ct == null) return [];
+      return [String(ct)];
+    };
+  
+    const acceptedAnswers = toAnswerList(ca?.correct_text);
+    const studentAnswer = norm(response_text);
+  
+    is_correct = acceptedAnswers.some(
+      (answer) => norm(answer) === studentAnswer
+    );
+  }
 
     // 4) Insert attempt row
     const { error: insErr } = await supabase.from('attempts').insert({
