@@ -146,6 +146,9 @@ export default function PracticeQuestionPage() {
     const p = Number(searchParams.get('p'));
     const i = Number(searchParams.get('i')); // ✅ new
 
+    if (Number.isFinite(i) && i >= 1) setIndex1(i);
+    else if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) setIndex1(o + p + 1);
+
     if (Number.isFinite(t) && t >= 0) setTotal(t);
     if (Number.isFinite(o) && o >= 0) setPageOffset(o);
 
