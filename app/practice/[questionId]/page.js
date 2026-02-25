@@ -99,9 +99,12 @@ export default function PracticeQuestionPage() {
     }
   }
 
-  async function fetchPageIds(offset) {
+ async function fetchPageIds(offset) {
+    // Include filter/session signature in the cache key so pages don't collide
+    const sessionKey = sessionParams.toString(); // includes difficulty/score_bands/domain/topic/marked_only/q/session
+    const key = `practice_${sessionKey}_page_${offset}`;
+  
     // 1) try localStorage first
-    const key = `practice_page_${offset}`;
     const raw = localStorage.getItem(key);
     if (raw) {
       try {
@@ -109,18 +112,18 @@ export default function PracticeQuestionPage() {
         if (Array.isArray(arr) && arr.length > 0) return arr;
       } catch {}
     }
-
+  
     // 2) otherwise fetch this page (25) from API using current filters
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session'); // not needed by API
     apiParams.set('limit', '25');
     apiParams.set('offset', String(offset));
-
+  
     const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || 'Failed to fetch page');
     const ids = (json.items || []).map((it) => it.question_id).filter(Boolean);
-
+  
     localStorage.setItem(key, JSON.stringify(ids));
     return ids;
   }
