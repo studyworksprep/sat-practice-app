@@ -6,6 +6,8 @@ import Link from 'next/link';
 import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
 
+
+
 function formatCorrectText(ct) {
   if (!ct) return null;
   if (Array.isArray(ct)) return ct;
@@ -43,6 +45,9 @@ export default function PracticeQuestionPage() {
   const [responseText, setResponseText] = useState('');
 
   const [showExplanation, setShowExplanation] = useState(false);
+
+  const [prevId, setPrevId] = useState(null);
+  const [nextId, setNextId] = useState(null);
 
   // Instant navigation metadata (from list page)
   const [total, setTotal] = useState(null); // total in filtered session
@@ -271,7 +276,27 @@ export default function PracticeQuestionPage() {
       setMsg({ kind: 'danger', text: e.message });
     }
   }
-
+  
+  useEffect(() => {
+    if (!questionId) return;
+  
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/questions/${questionId}/neighbors?${sessionParams.toString()}`,
+          { cache: 'no-store' }
+        );
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || 'Failed to load neighbors');
+  
+        setPrevId(json.prev_id);
+        setNextId(json.next_id);
+      } catch {
+        setPrevId(null);
+        setNextId(null);
+      }
+    })();
+  }, [questionId, sessionParams]);
   // Load question content
   useEffect(() => {
     fetchQuestion();
@@ -450,11 +475,19 @@ export default function PracticeQuestionPage() {
               ) : null}
 
               <div className="btnRow">
-                <button className="btn secondary" onClick={() => goToIndex(index1 - 1)} disabled={prevDisabled}>
+                <button
+                  className="btn secondary"
+                  onClick={() => prevId && router.push(buildHref(prevId, total, null, null))}
+                  disabled={!prevId}
+                >
                   Prev
                 </button>
-
-                <button className="btn secondary" onClick={() => goToIndex(index1 + 1)} disabled={nextDisabled}>
+                
+                <button
+                  className="btn secondary"
+                  onClick={() => nextId && router.push(buildHref(nextId, total, null, null))}
+                  disabled={!nextId}
+                >
                   Next
                 </button>
               </div>
