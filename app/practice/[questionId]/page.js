@@ -349,7 +349,7 @@ export default function PracticeQuestionPage() {
             <div className="muted small" style={{ marginBottom: 8 }}>
               Stimulus
             </div>
-            <HtmlBlock html={version.stimulus_html} />
+            <HtmlBlock className="prose" html={version.stimulus_html} />
           </div>
         ) : null}
 
@@ -358,7 +358,7 @@ export default function PracticeQuestionPage() {
             <div className="muted small" style={{ marginBottom: 8 }}>
               Question
             </div>
-            <HtmlBlock html={version.stem_html} />
+            <HtmlBlock className="prose" html={version.stem_html} />
           </div>
         ) : null}
 
@@ -396,8 +396,8 @@ export default function PracticeQuestionPage() {
                         {opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
                       </div>
 
-                      <div className="optionContent">
-                        <HtmlBlock html={opt.content_html} />
+                      <div className="optionContent">>
+                        <HtmlBlock className="prose" html={opt.content_html} />
                       </div>
                     </div>
                   );
@@ -509,7 +509,7 @@ export default function PracticeQuestionPage() {
             <hr />
             <div className="h2">Explanation</div>
             <div className="card" style={{ marginTop: 10 }}>
-              <HtmlBlock html={version.rationale_html || version.explanation_html} />
+              <HtmlBlock className="prose" html={version.rationale_html || version.explanation_html} />
             </div>
           </>
         ) : null}
