@@ -380,7 +380,7 @@ label{
   line-height: 1;
 
   /* Key: restore a tiny optical offset for baseline alignment */
-  margin-top: 3px;
+  margin-top: 0px;
 
   /* Key: force a/b/c/d to display as A/B/C/D */
   text-transform: uppercase;
@@ -392,14 +392,13 @@ label{
   color: #fff;
 }
 
-/* Text column */
 .optionContent{
   flex: 1 1 auto;
   min-width: 0;
   overflow-wrap: anywhere;
 
-  /* Key: nudge text down slightly so it aligns with badge */
-  padding-top: 0px;
+  /* Default: fixes Reading being slightly “high” */
+  padding-top: 2px;
 }
 
 /* Slightly compact inside answers vs passages */
@@ -419,7 +418,7 @@ label{
 
 /* If an option contains MathJax, lift the content a hair (Math baseline sits lower) */
 .optionContent:has(mjx-container){
-  padding-top: 1px;
+  padding-top: 0px;
 }
 
 /* Keep your existing correct/incorrect states if you have them elsewhere.
