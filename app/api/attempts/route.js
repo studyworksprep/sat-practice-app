@@ -119,7 +119,7 @@ export async function POST(request) {
 
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 400 });
 
-    return NextResponse.json({ ok: true, is_correct, attempts_count, correct_attempts_count });
+    return NextResponse.json({ ok: true, is_correct, attempts_count, correct_attempts_count, correct_option_id: ca?.correct_option_id ?? null });
   } catch (e) {
     console.error('POST /api/attempts crashed:', e);
     return NextResponse.json({ error: e?.message || 'Server error' }, { status: 500 });

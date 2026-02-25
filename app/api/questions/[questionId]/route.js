@@ -74,5 +74,22 @@ export async function GET(_request, { params }) {
     status = st;
   }
 
-  return NextResponse.json({ question_id: questionId, version, options: options ?? [], taxonomy, status });
+
+  // Correct answer key (only reveal for authed users AFTER they've completed the question)
+  // This allows the UI to highlight correct/incorrect choices even after a refresh,
+  // without exposing the answer key before submission.
+  let correct_option_id = null;
+  if (user && status?.is_done && version?.question_type === 'mcq') {
+    const { data: ca, error: caErr } = await supabase
+      .from('correct_answers')
+      .select('correct_option_id')
+      .eq('question_version_id', version.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (caErr) return NextResponse.json({ error: caErr.message }, { status: 400 });
+    correct_option_id = ca?.correct_option_id ?? null;
+  }
+
+  return NextResponse.json({ question_id: questionId, version, options: options ?? [], taxonomy, status, correct_option_id });
 }

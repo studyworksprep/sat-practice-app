@@ -18,6 +18,8 @@ export default function PracticeQuestionPage() {
   const [selected, setSelected] = useState(null);
   const [responseText, setResponseText] = useState('');
 
+  const [showExplanation, setShowExplanation] = useState(false);
+
   // Instant navigation metadata (from list page)
   const [total, setTotal] = useState(null);     // total in filtered session
   const [index1, setIndex1] = useState(null);   // 1-based index in session
@@ -63,6 +65,7 @@ export default function PracticeQuestionPage() {
       else setResponseText('');
 
       startedAtRef.current = Date.now();
+      setShowExplanation(false);
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
@@ -177,7 +180,7 @@ export default function PracticeQuestionPage() {
     const body = {
       question_id: data.question_id,
       selected_option_id: qType === 'mcq' ? selected : null,
-      response_text: qType === 'fr' ? responseText : null,
+      response_text: qType === 'spr' ? responseText : null,
       time_spent_ms,
     };
 
@@ -192,7 +195,51 @@ export default function PracticeQuestionPage() {
       if (!res.ok) throw new Error(json?.error || 'Failed to submit attempt');
 
       await fetchQuestion();
+      setShowExplanation(true);
     } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    }
+  }
+
+
+  async function toggleMarkForReview() {
+    if (!data?.question_id) return;
+    const next = !Boolean(data?.status?.marked_for_review);
+    try {
+      setMsg(null);
+      // Optimistic update
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: {
+            ...(prev.status || {}),
+            marked_for_review: next,
+          },
+        };
+      });
+
+      const res = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question_id: data.question_id, patch: { marked_for_review: next } }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to update status');
+
+      setMsg({ kind: 'success', text: next ? 'Marked for review' : 'Unmarked for review' });
+    } catch (e) {
+      // Revert on error
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: {
+            ...(prev.status || {}),
+            marked_for_review: !next,
+          },
+        };
+      });
       setMsg({ kind: 'danger', text: e.message });
     }
   }
@@ -227,6 +274,7 @@ export default function PracticeQuestionPage() {
   const options = Array.isArray(data?.options) ? data.options : [];
   const status = data?.status || {};
   const locked = Boolean(status?.is_done);
+  const correctOptionId = data?.correct_option_id || null;
 
   const headerPills = [
     { label: 'Attempts', value: status?.attempts_count ?? 0 },
@@ -311,7 +359,16 @@ export default function PracticeQuestionPage() {
                   return (
                     <div
                       key={opt.id}
-                      className={'option' + (isSelected ? ' selected' : '')}
+                      className={(() => {
+                        let cls = 'option' + (isSelected ? ' selected' : '');
+                        if (locked && correctOptionId) {
+                          const isCorrect = String(opt.id) === String(correctOptionId);
+                          if (isCorrect && isSelected) cls += ' correct';
+                          else if (isCorrect) cls += ' revealCorrect';
+                          else if (isSelected) cls += ' incorrect';
+                        }
+                        return cls;
+                      })()}
                       onClick={() => {
                         if (locked) return;
                         setSelected(opt.id);
@@ -334,6 +391,16 @@ export default function PracticeQuestionPage() {
               <button className="btn" onClick={submitAttempt} disabled={locked || !selected}>
                 Submit
               </button>
+
+              <button className="btn secondary" onClick={toggleMarkForReview}>
+                {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
+              </button>
+
+              {locked && (version?.rationale_html || version?.explanation_html) ? (
+                <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+                  {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+                </button>
+              ) : null}
 
               <button
                 className="btn secondary"
@@ -374,6 +441,17 @@ export default function PracticeQuestionPage() {
                 Submit
               </button>
 
+
+              <button className="btn secondary" onClick={toggleMarkForReview}>
+                {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
+              </button>
+
+              {locked && (version?.rationale_html || version?.explanation_html) ? (
+                <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+                  {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+                </button>
+              ) : null}
+
               <button
                 className="btn secondary"
                 onClick={() => goToIndex(index1 - 1)}
@@ -393,12 +471,12 @@ export default function PracticeQuestionPage() {
           </div>
         )}
 
-        {version?.explanation_html ? (
+        {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
           <>
             <hr />
             <div className="h2">Explanation</div>
             <div className="card" style={{ marginTop: 10 }}>
-              <HtmlBlock html={version.explanation_html} />
+              <HtmlBlock html={version.rationale_html || version.explanation_html} />
             </div>
           </>
         ) : null}
