@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 const MATHJAX_SRC = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
 const SCRIPT_ID = 'mathjax-cdn-script';
@@ -8,25 +8,22 @@ const SCRIPT_ID = 'mathjax-cdn-script';
 function ensureMathJaxLoaded() {
   if (typeof window === 'undefined') return;
 
-  // If MathJax is already the runtime object, we're good.
+  // If MathJax is already ready, we're good.
   if (window.MathJax?.typesetPromise) return;
 
-  // If the config hasn't been set yet, set a safe default.
-  // (This won't override an existing config object.)
-  if (!window.MathJax || !window.MathJax.loader) {
-    window.MathJax = window.MathJax || {};
-    window.MathJax = {
-      ...window.MathJax,
-      loader: { load: ['input/mml', 'output/chtml'] },
-      options: {
-        ...(window.MathJax.options || {}),
-        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-      },
-      chtml: { ...(window.MathJax.chtml || {}), scale: 1.0 },
-    };
-  }
+  // Provide a safe default config (won't break if layout also sets it).
+  window.MathJax = window.MathJax || {};
+  window.MathJax = {
+    ...window.MathJax,
+    loader: window.MathJax.loader || { load: ['input/mml', 'output/chtml'] },
+    options: {
+      ...(window.MathJax.options || {}),
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+    },
+    chtml: { ...(window.MathJax.chtml || {}), scale: 1.0 },
+  };
 
-  // Inject the script once (fallback in case layout script didn't run).
+  // Inject script once as a fallback.
   if (!document.getElementById(SCRIPT_ID)) {
     const s = document.createElement('script');
     s.id = SCRIPT_ID;
@@ -36,27 +33,29 @@ function ensureMathJaxLoaded() {
   }
 }
 
-export default function HtmlBlock({ html, className }) {
+function HtmlBlockImpl({ html, className }) {
   const ref = useRef(null);
+  const lastHtmlRef = useRef(null);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || !html) return;
+    if (!el) return;
 
-    // Only typeset if there is MathML present
+    // Only update DOM when the html string actually changes.
+    if ((html || '') === (lastHtmlRef.current || '')) return;
+    lastHtmlRef.current = html || '';
+
+    // Set HTML once (this prevents React from overwriting MathJax output on unrelated rerenders)
+    el.innerHTML = html || '';
+
+    // Only typeset if MathML exists
     if (!el.querySelector('math')) return;
-
-    // Avoid re-typesetting identical HTML
-    if (el.dataset.typesetFor === html) return;
-    el.dataset.typesetFor = html;
 
     ensureMathJaxLoaded();
 
     let cancelled = false;
     let tries = 0;
-
-    // ~12s total (good for slower cold loads)
-    const maxTries = 240;
+    const maxTries = 240; // ~12s
     const delayMs = 50;
 
     const tryTypeset = () => {
@@ -68,7 +67,7 @@ export default function HtmlBlock({ html, className }) {
           mj.typesetClear?.([el]);
           mj.typesetPromise([el]).catch(() => {});
         } catch {
-          // If MathJax throws, show raw HTML instead of crashing
+          // swallow
         }
         return;
       }
@@ -84,13 +83,14 @@ export default function HtmlBlock({ html, className }) {
     };
   }, [html]);
 
-  if (!html) return null;
-
-  return (
-    <div
-      ref={ref}
-      className={className}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  );
+  // Render a stable container; content is managed imperatively in the effect above.
+  return <div ref={ref} className={className} />;
 }
+
+// Prevent rerenders when props haven't changed
+const HtmlBlock = React.memo(
+  HtmlBlockImpl,
+  (prev, next) => prev.html === next.html && prev.className === next.className
+);
+
+export default HtmlBlock;
