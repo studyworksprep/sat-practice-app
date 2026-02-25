@@ -22,6 +22,14 @@ function formatCorrectText(ct) {
   return [String(ct)];
 }
 
+function stripHtml(html) {
+  if (!html) return '';
+  return String(html)
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export default function PracticeQuestionPage() {
   const { questionId } = useParams();
   const router = useRouter();
@@ -192,13 +200,13 @@ export default function PracticeQuestionPage() {
   async function submitAttempt() {
     if (!data) return;
 
-    const qType = data?.version?.question_type || data?.question_type;
+    const qTypeLocal = data?.version?.question_type || data?.question_type;
     const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
 
     const body = {
       question_id: data.question_id,
-      selected_option_id: qType === 'mcq' ? selected : null,
-      response_text: qType === 'spr' ? responseText : null,
+      selected_option_id: qTypeLocal === 'mcq' ? selected : null,
+      response_text: qTypeLocal === 'spr' ? responseText : null,
       time_spent_ms,
     };
 
@@ -213,7 +221,7 @@ export default function PracticeQuestionPage() {
       if (!res.ok) throw new Error(json?.error || 'Failed to submit attempt');
 
       await fetchQuestion();
-      
+      // Intentionally do NOT auto-open explanation.
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     }
@@ -294,6 +302,13 @@ export default function PracticeQuestionPage() {
   const correctOptionId = data?.correct_option_id || null;
   const correctText = data?.correct_text || null;
 
+  // Two-column “Reading” heuristic (safe + avoids affecting Math)
+  const stimulusText = stripHtml(version?.stimulus_html);
+  const useTwoColReading =
+    qType === 'mcq' &&
+    Boolean(version?.stimulus_html) &&
+    stimulusText.length >= 160;
+
   const headerPills = [
     { label: 'Attempts', value: status?.attempts_count ?? 0 },
     { label: 'Correct', value: status?.correct_attempts_count ?? 0 },
@@ -306,63 +321,71 @@ export default function PracticeQuestionPage() {
 
   return (
     <main className="container">
-        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ display: 'grid', gap: 6 }}>
-            <div className="h2">Practice</div>
+      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div style={{ display: 'grid', gap: 6 }}>
+          <div className="h2">Practice</div>
 
-            <div className="row" style={{ alignItems: 'center', gap: 10 }}>
-              <Link className="btn secondary" href="/practice">
-                ← Back to list
-              </Link>
+          <div className="row" style={{ alignItems: 'center', gap: 10 }}>
+            <Link className="btn secondary" href="/practice">
+              ← Back to list
+            </Link>
 
-              <div className="pill">
-                {index1 != null && total != null ? (
-                  <>
-                    <span className="kbd">{index1}</span> / <span className="kbd">{total}</span>
-                  </>
-                ) : total != null ? (
-                  <>
-                    <span className="kbd">—</span> / <span className="kbd">{total}</span>
-                  </>
-                ) : (
-                  <span className="muted">…</span>
-                )}
-              </div>
+            <div className="pill">
+              {index1 != null && total != null ? (
+                <>
+                  <span className="kbd">{index1}</span> / <span className="kbd">{total}</span>
+                </>
+              ) : total != null ? (
+                <>
+                  <span className="kbd">—</span> / <span className="kbd">{total}</span>
+                </>
+              ) : (
+                <span className="muted">…</span>
+              )}
             </div>
-          </div>
-
-          <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            {headerPills.map((p) => (
-              <span key={p.label} className="pill">
-                <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
-              </span>
-            ))}
           </div>
         </div>
 
-        <Toast kind={msg?.kind} message={msg?.text} />
+        <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {headerPills.map((p) => (
+            <span key={p.label} className="pill">
+              <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
+            </span>
+          ))}
+        </div>
+      </div>
 
-        <hr />
+      <Toast kind={msg?.kind} message={msg?.text} />
 
-        {version?.stimulus_html ? (
-          <div className="card subcard" style={{ marginBottom: 12 }}>
-            <div className="sectionLabel">Stimulus</div>
-            <HtmlBlock className="prose" html={version.stimulus_html} />
+      <hr />
+
+      {/* ===============================
+          MCQ
+      =============================== */}
+      {qType === 'mcq' ? (
+        <div className={useTwoColReading ? 'qaTwoCol' : ''}>
+          {/* LEFT column (Stimulus + Question) */}
+          <div className={useTwoColReading ? 'qaLeft' : ''}>
+            {version?.stimulus_html ? (
+              <div className="card subcard" style={{ marginBottom: useTwoColReading ? 0 : 12 }}>
+                <div className={useTwoColReading ? 'srOnly' : 'sectionLabel'}>Stimulus</div>
+                <HtmlBlock className="prose" html={version.stimulus_html} />
+              </div>
+            ) : null}
+
+            {version?.stem_html ? (
+              <div className="card subcard" style={{ marginBottom: useTwoColReading ? 0 : 12 }}>
+                <div className={useTwoColReading ? 'srOnly' : 'sectionLabel'}>Question</div>
+                <HtmlBlock className="prose" html={version.stem_html} />
+              </div>
+            ) : null}
           </div>
-        ) : null}
 
-        {version?.stem_html ? (
-          <div className="card subcard" style={{ marginBottom: 12 }}>
-            <div className="sectionLabel">Question</div>
-            <HtmlBlock className="prose" html={version.stem_html} />
-          </div>
-        ) : null}
+          {/* RIGHT column (Answer choices + buttons) */}
+          <div className={useTwoColReading ? 'qaRight' : ''}>
+            {!useTwoColReading ? <div className="h2">Answer choices</div> : <div className="srOnly">Answer choices</div>}
 
-        {qType === 'mcq' ? (
-          <div>
-            <div className="h2">Answer choices</div>
-
-            <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
+            <div className="optionList">
               {options
                 .slice()
                 .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
@@ -400,13 +423,14 @@ export default function PracticeQuestionPage() {
                 })}
             </div>
 
+            {/* Buttons: behavior unchanged */}
             <div className="row" style={{ gap: 10, marginTop: 14 }}>
               <div className="btnRow">
                 <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected}>
                   Submit
                 </button>
-  
-                <button className="btn primary" onClick={toggleMarkForReview}>
+
+                <button className="btn secondary" onClick={toggleMarkForReview}>
                   {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
                 </button>
               </div>
@@ -416,100 +440,87 @@ export default function PracticeQuestionPage() {
                   {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
                 </button>
               ) : null}
-                
-              <div className="btnRow" style={{ marginTop: 8 }}>
-                <button
-                  className="btn secondary"
-                  onClick={() => goToIndex(index1 - 1)}
-                  disabled={prevDisabled}
-                >
+
+              <div className="btnRow">
+                <button className="btn secondary" onClick={() => goToIndex(index1 - 1)} disabled={prevDisabled}>
                   Prev
                 </button>
-  
-                <button
-                  className="btn secondary"
-                  onClick={() => goToIndex(index1 + 1)}
-                  disabled={nextDisabled}
-                >
+
+                <button className="btn secondary" onClick={() => goToIndex(index1 + 1)} disabled={nextDisabled}>
                   Next
                 </button>
               </div>
             </div>
           </div>
-        ) : (
-          <div>
-            <div className="h2">Your answer</div>
+        </div>
+      ) : (
+        /* ===============================
+            SPR (unchanged)
+        =============================== */
+        <div>
+          <div className="h2">Your answer</div>
 
-            {locked ? (
-              <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+          {locked ? (
+            <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+              <span className="pill">
+                <span className="muted">Result</span>{' '}
+                <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+              </span>
+
+              {!status?.last_is_correct && correctText ? (
                 <span className="pill">
-                  <span className="muted">Result</span>{' '}
-                  <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+                  <span className="muted">Correct answer</span>{' '}
+                  <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
                 </span>
+              ) : null}
+            </div>
+          ) : null}
 
-                {!status?.last_is_correct && correctText ? (
-                  <span className="pill">
-                    <span className="muted">Correct answer</span>{' '}
-                    <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
-                  </span>
-                ) : null}
-              </div>
+          <textarea
+            className="input"
+            value={responseText}
+            onChange={(e) => setResponseText(e.target.value)}
+            placeholder="Type your answer…"
+            rows={4}
+            disabled={locked}
+            style={{ marginTop: 10 }}
+          />
+
+          <div className="row" style={{ gap: 10, marginTop: 14 }}>
+            <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
+              Submit
+            </button>
+
+            <button className="btn secondary" onClick={toggleMarkForReview}>
+              {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
+            </button>
+
+            {locked && (version?.rationale_html || version?.explanation_html) ? (
+              <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+                {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+              </button>
             ) : null}
 
-            <textarea
-              className="input"
-              value={responseText}
-              onChange={(e) => setResponseText(e.target.value)}
-              placeholder="Type your answer…"
-              rows={4}
-              disabled={locked}
-              style={{ marginTop: 10 }}
-            />
+            <button className="btn secondary" onClick={() => goToIndex(index1 - 1)} disabled={prevDisabled}>
+              Prev
+            </button>
 
-            <div className="row" style={{ gap: 10, marginTop: 14 }}>
-              <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
-                Submit
-              </button>
-
-              <button className="btn secondary" onClick={toggleMarkForReview}>
-                {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
-              </button>
-
-              {locked && (version?.rationale_html || version?.explanation_html) ? (
-                <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
-                  {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
-                </button>
-              ) : null}
-
-              <button
-                className="btn secondary"
-                onClick={() => goToIndex(index1 - 1)}
-                disabled={prevDisabled}
-              >
-                Prev
-              </button>
-
-              <button
-                className="btn secondary"
-                onClick={() => goToIndex(index1 + 1)}
-                disabled={nextDisabled}
-              >
-                Next
-              </button>
-            </div>
+            <button className="btn secondary" onClick={() => goToIndex(index1 + 1)} disabled={nextDisabled}>
+              Next
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
-          <>
-            <hr />
-            <div className="card explanation" style={{ marginTop: 10 }}>
-              <div className="sectionLabel">Explanation</div>
-              <HtmlBlock className="prose" html={version.rationale_html || version.explanation_html} />
-            </div>
-          </>
-        ) : null}
-      
+      {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
+        <>
+          <hr />
+          <div className="card explanation" style={{ marginTop: 10 }}>
+            <div className="sectionLabel">Explanation</div>
+            <HtmlBlock className="prose" html={version.rationale_html || version.explanation_html} />
+          </div>
+        </>
+      ) : null}
     </main>
   );
 }
