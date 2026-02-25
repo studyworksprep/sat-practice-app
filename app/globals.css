@@ -81,8 +81,61 @@ a{
   .practiceGrid{ grid-template-columns: 1fr; }
 }
 
-.prose{
-  max-width: 70ch;
+/* ===============================
+   Two-column Reading layout
+================================ */
+
+.qaTwoCol{
+  display: grid;
+  grid-template-columns: minmax(520px, 1.15fr) minmax(360px, 0.85fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.qaLeft{
+  display: grid;
+  gap: 12px;
+}
+
+/* Keep reading line length comfortable in the left column */
+.qaLeft .prose{
+  max-width: 68ch;
+}
+
+.qaRight{
+  padding-left: 22px;
+  border-left: 1px solid var(--border);
+  display: grid;
+  gap: 12px;
+}
+
+@media (max-width: 980px){
+  .qaTwoCol{
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .qaLeft .prose{
+    max-width: none;
+  }
+  .qaRight{
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+}
+
+/* Screen-reader only (hide labels visually but preserve semantics) */
+.srOnly{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ===============================
@@ -172,7 +225,9 @@ a{
    Prose (HtmlBlock content)
 ================================ */
 
+/* Default: no global max-width (two-column handles reading width) */
 .prose{
+  max-width: none;
   font-size: 16px;
   line-height: 1.65;
   color: var(--text);
@@ -260,6 +315,14 @@ a{
   background: var(--danger);
   border-color: var(--danger);
   color: #ffffff;
+}
+
+/* Button grouping utility (used in page.js) */
+.btnRow{
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 /* ===============================
@@ -384,10 +447,9 @@ label{
   font-size: 14px;
   line-height: 1;
 
-  /* Key: restore a tiny optical offset for baseline alignment */
   margin-top: 0px;
 
-  /* Key: force a/b/c/d to display as A/B/C/D */
+  /* Force a/b/c/d to display as A/B/C/D */
   text-transform: uppercase;
 }
 
@@ -412,7 +474,7 @@ label{
   line-height: 1.6;
 }
 
-/* Options should be scan-efficient: remove big paragraph margins inside answer choices */
+/* Options should be scan-efficient */
 .optionContent .prose p{ margin: 0; }
 .optionContent .prose p + p{ margin-top: 10px; }
 
@@ -426,9 +488,15 @@ label{
   padding-top: 0px;
 }
 
+/* Option list wrapper (used in page.js) */
+.optionList{
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
 /* ===============================
    Post-submit correctness states
-   (MCQ only; driven by classes in page.js)
 ================================ */
 
 /* Correct selected answer */
