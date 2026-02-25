@@ -6,6 +6,22 @@ import Link from 'next/link';
 import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
 
+function formatCorrectText(ct) {
+  if (!ct) return null;
+  if (Array.isArray(ct)) return ct;
+  if (typeof ct === 'string') {
+    const t = ct.trim();
+    if (t.startsWith('[') && t.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(t);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    return [t];
+  }
+  return [String(ct)];
+}
+
 export default function PracticeQuestionPage() {
   const { questionId } = useParams();
   const router = useRouter();
@@ -58,10 +74,10 @@ export default function PracticeQuestionPage() {
       if (!res.ok) throw new Error(json?.error || 'Failed to load question');
       setData(json);
 
-      if (json?.status?.last_selected_option_id) setSelected(json.status.last_selected_option_id);
+      if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
       else setSelected(null);
 
-      if (json?.status?.last_response_text) setResponseText(json.status.last_response_text);
+      if (json?.status?.status_json?.last_response_text) setResponseText(json.status.status_json.last_response_text);
       else setResponseText('');
 
       startedAtRef.current = Date.now();
@@ -433,7 +449,7 @@ export default function PracticeQuestionPage() {
 
                 {!status?.last_is_correct && correctText ? (
                   <span className="pill">
-                    <span className="muted">Correct answer</span> <span className="kbd">{correctText}</span>
+                    <span className="muted">Correct answer</span> <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
                   </span>
                 ) : null}
               </div>

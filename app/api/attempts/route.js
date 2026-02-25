@@ -60,46 +60,40 @@ export async function POST(request) {
         return NextResponse.json({ error: 'selected_option_id required for mcq' }, { status: 400 });
       }
       is_correct = String(ca?.correct_option_id ?? '') === String(selected_option_id);
-} else if (ver.question_type === 'spr') {
-    if (typeof response_text !== 'string' || response_text.trim() === '') {
-      return NextResponse.json({ error: 'response_text required for spr' }, { status: 400 });
-    }
-  
-    const norm = (s) =>
-      String(s ?? '')
-        .trim()
-        .replace(/\u2212/g, '-') // normalize Unicode minus to standard hyphen
-        .replace(/\s+/g, ' ')
-        .toLowerCase();
-  
-    const toAnswerList = (ct) => {
-      if (Array.isArray(ct)) return ct;
-  
-      if (typeof ct === 'string') {
-        const trimmed = ct.trim();
-  
-        // Handle JSON string like '["11","-7"]'
-        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-          try {
-            const parsed = JSON.parse(trimmed);
-            if (Array.isArray(parsed)) return parsed;
-          } catch {}
-        }
-  
-        return [trimmed];
+    } else if (ver.question_type === 'spr') {
+      if (typeof response_text !== 'string' || response_text.trim() === '') {
+        return NextResponse.json({ error: 'response_text required for spr' }, { status: 400 });
       }
-  
-      if (ct == null) return [];
-      return [String(ct)];
-    };
-  
-    const acceptedAnswers = toAnswerList(ca?.correct_text);
-    const studentAnswer = norm(response_text);
-  
-    is_correct = acceptedAnswers.some(
-      (answer) => norm(answer) === studentAnswer
-    );
-  }
+
+      const norm = (s) =>
+        String(s ?? '')
+          .trim()
+          .replace(/\u2212/g, '-') // normalize Unicode minus to hyphen-minus
+          .replace(/\s+/g, ' ')
+          .toLowerCase();
+
+      const toAnswerList = (ct) => {
+        if (Array.isArray(ct)) return ct;
+        if (typeof ct === 'string') {
+          const t = ct.trim();
+          // Handle JSON stored as a string like '["11","-7"]'
+          if (t.startsWith('[') && t.endsWith(']')) {
+            try {
+              const parsed = JSON.parse(t);
+              if (Array.isArray(parsed)) return parsed;
+            } catch {}
+          }
+          return [t];
+        }
+        if (ct == null) return [];
+        return [String(ct)];
+      };
+
+      const accepted = toAnswerList(ca?.correct_text);
+      const resp = norm(response_text);
+
+      is_correct = accepted.some((a) => norm(a) === resp);
+    }
 
     // 4) Insert attempt row
     const { error: insErr } = await supabase.from('attempts').insert({
@@ -116,7 +110,7 @@ export async function POST(request) {
     // 5) Update / upsert question_status counters
     const { data: st, error: stErr } = await supabase
       .from('question_status')
-      .select('attempts_count, correct_attempts_count, marked_for_review')
+      .select('attempts_count, correct_attempts_count, marked_for_review, status_json')
       .eq('user_id', user.id)
       .eq('question_id', question_id)
       .maybeSingle();
@@ -137,9 +131,14 @@ export async function POST(request) {
           correct_attempts_count,
           last_attempt_at: new Date().toISOString(),
           last_is_correct: is_correct,
-          // Remember last response so the UI can restore it after submit/refresh
-          last_selected_option_id: ver.question_type === 'mcq' ? selected_option_id : null,
-          last_response_text: ver.question_type === 'spr' ? response_text : null,
+          // Persist client-side restore fields in status_json (schema-safe)
+          status_json: (() => {
+            const prev = (st?.status_json && typeof st.status_json === 'object') ? st.status_json : {};
+            const extra = {};
+            if (ver.question_type === 'mcq') extra.last_selected_option_id = selected_option_id ?? null;
+            if (ver.question_type === 'spr') extra.last_response_text = response_text ?? '';
+            return { ...prev, ...extra };
+          })(),
           updated_at: new Date().toISOString(),
           // preserve marked_for_review if already set
           marked_for_review: st?.marked_for_review ?? false,
