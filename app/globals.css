@@ -17,7 +17,7 @@
   --success: #16a34a;
 
   /* ===============================
-     Typography + rhythm (NEW)
+     Typography + rhythm
   ================================ */
 
   --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
@@ -53,9 +53,7 @@ html, body{
   -moz-osx-font-smoothing: grayscale;
 }
 
-*{
-  box-sizing: border-box;
-}
+*{ box-sizing: border-box; }
 
 a{
   text-decoration: none;
@@ -80,9 +78,7 @@ a{
 }
 
 @media (max-width: 980px){
-  .practiceGrid{
-    grid-template-columns: 1fr;
-  }
+  .practiceGrid{ grid-template-columns: 1fr; }
 }
 
 /* ===============================
@@ -97,10 +93,12 @@ a{
   box-shadow: var(--shadow-card);
 }
 
-/* Optional: for nested “Stimulus / Question / Explanation” blocks */
+/* Lighter nested blocks (Stimulus / Question / Explanation wrapper) */
 .card.subcard{
   padding: 18px;
   background: #ffffff;
+  box-shadow: none;
+  border: 1px solid rgba(17,24,39,0.06);
 }
 
 .sectionLabel{
@@ -111,9 +109,23 @@ a{
   margin-bottom: 10px;
 }
 
+/* Explanation: instructional feel */
 .card.explanation{
-  background: rgba(17,24,39,0.02);
-  border: 1px solid var(--border);
+  position: relative;
+  background: rgba(37,99,235,0.04);
+  border: 1px solid rgba(37,99,235,0.18);
+  padding-left: 20px;
+}
+
+.card.explanation::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:14px;
+  bottom:14px;
+  width:4px;
+  border-radius:999px;
+  background: var(--accent);
 }
 
 /* ===============================
@@ -136,9 +148,7 @@ a{
   margin: 0 0 var(--s2);
 }
 
-.muted{
-  color: var(--muted);
-}
+.muted{ color: var(--muted); }
 
 .small{
   font-size: 13px;
@@ -186,20 +196,16 @@ a{
   border-radius: 12px;
 }
 
-/* MathJax CHTML tweaks (MathML → MathJax rendering) */
+/* MathJax CHTML tweaks */
 .prose mjx-container{
   overflow-x: auto;
   overflow-y: hidden;
   padding: 2px 0;
+  font-size: 1.03em;
 }
 
-.prose mjx-container[display="true"]{
-  margin: 10px 0;
-}
-
-.prose mjx-container *{
-  line-height: 1.25;
-}
+.prose mjx-container[display="true"]{ margin: 10px 0; }
+.prose mjx-container *{ line-height: 1.25; }
 
 /* ===============================
    Buttons
@@ -224,13 +230,16 @@ a{
   border-color: var(--accent-hover);
 }
 
-.btn:active{
-  transform: translateY(1px);
-}
+.btn:active{ transform: translateY(1px); }
 
 .btn:disabled{
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* Primary emphasis (use className="btn primary") */
+.btn.primary{
+  box-shadow: 0 10px 20px rgba(37,99,235,0.22);
 }
 
 .btn.secondary{
@@ -265,9 +274,7 @@ a{
   line-height: 1.4;
 }
 
-textarea.input{
-  line-height: 1.55;
-}
+textarea.input{ line-height: 1.55; }
 
 .input:focus, select:focus, textarea:focus{
   border-color: var(--accent);
@@ -318,9 +325,7 @@ label{
   background: var(--accent-soft);
 }
 
-.chip input{
-  accent-color: var(--accent);
-}
+.chip input{ accent-color: var(--accent); }
 
 /* ===============================
    MCQ Answer Options
@@ -341,11 +346,16 @@ label{
 
 .option:hover{
   box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
 }
 
 .option.selected{
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+@media (min-width: 900px){
+  .option{ padding: 12px 15px; }
 }
 
 /* Circle badge */
@@ -368,6 +378,7 @@ label{
 .optionContent{
   flex: 1 1 auto;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Slightly compact inside answers vs passages */
@@ -375,6 +386,13 @@ label{
   font-size: 15.5px;
   line-height: 1.6;
 }
+
+.optionContent .prose mjx-container{
+  font-size: 1.02em;
+}
+
+/* Keep your existing correct/incorrect states if you have them elsewhere.
+   If not, you can add them back here. */
 
 /* ===============================
    Rows / Flex Utilities
