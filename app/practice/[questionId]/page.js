@@ -401,35 +401,39 @@ export default function PracticeQuestionPage() {
             </div>
 
             <div className="row" style={{ gap: 10, marginTop: 14 }}>
-              <button className="btn" onClick={submitAttempt} disabled={locked || !selected}>
-                Submit
-              </button>
-
-              <button className="btn secondary" onClick={toggleMarkForReview}>
-                {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
-              </button>
+              <div className="btnRow">
+                <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected}>
+                  Submit
+                </button>
+  
+                <button className="btn primary" onClick={toggleMarkForReview}>
+                  {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
+                </button>
+              </div>
 
               {locked && (version?.rationale_html || version?.explanation_html) ? (
                 <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
                   {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
                 </button>
               ) : null}
-
-              <button
-                className="btn secondary"
-                onClick={() => goToIndex(index1 - 1)}
-                disabled={prevDisabled}
-              >
-                Prev
-              </button>
-
-              <button
-                className="btn secondary"
-                onClick={() => goToIndex(index1 + 1)}
-                disabled={nextDisabled}
-              >
-                Next
-              </button>
+                
+              <div className="btnRow" style={{ marginTop: 8 }}>
+                <button
+                  className="btn secondary"
+                  onClick={() => goToIndex(index1 - 1)}
+                  disabled={prevDisabled}
+                >
+                  Prev
+                </button>
+  
+                <button
+                  className="btn secondary"
+                  onClick={() => goToIndex(index1 + 1)}
+                  disabled={nextDisabled}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         ) : (
