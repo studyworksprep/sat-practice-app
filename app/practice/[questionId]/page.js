@@ -4,11 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '../../../components/Toast';
-
-function HtmlBlock({ html }) {
-  if (!html) return null;
-  return <div dangerouslySetInnerHTML={{ __html: html }} />;
-}
+import HtmlBlock from '../../../components/HtmlBlock';
 
 export default function PracticeQuestionPage() {
   const { questionId } = useParams();
