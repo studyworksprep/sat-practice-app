@@ -372,16 +372,6 @@ export default function PracticeQuestionPage() {
   // ✅ Only enable neighbor nav when neighbors are loaded for THIS questionId
   const neighborsReady = navMode === 'neighbors' && navForId === questionId && !navLoading;
 
-  const prevDisabled =
-    navMode === 'neighbors'
-      ? !neighborsReady || !prevId
-      : navLoading ? true : prevDisabledIndex;
-
-  const nextDisabled =
-    navMode === 'neighbors'
-      ? !neighborsReady || !nextId
-      : navLoading ? true : nextDisabledIndex;
-
   const goPrev = () => {
     if (navMode === 'neighbors') {
       if (prevDisabled) return;
