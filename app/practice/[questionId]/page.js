@@ -818,8 +818,12 @@ export default function PracticeQuestionPage() {
                   const i = mapOffset + pos + 1;
                   const active = index1 != null && i === index1;
                 
-                  const diff = Number(it.difficulty); // 1,2,3
-                  const diffClass = diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : 'diffUnknown';
+                  const diff = Number(it.difficulty);
+                  const diffClass =
+                    diff === 1 ? 'diffEasy' :
+                    diff === 2 ? 'diffMed' :
+                    diff === 3 ? 'diffHard' :
+                    'diffUnknown';
                 
                   const showMark = Boolean(it.marked_for_review);
                   const showDone = Boolean(it.is_done);
@@ -840,25 +844,28 @@ export default function PracticeQuestionPage() {
                       }}
                       title={`Go to #${i}`}
                     >
+                      {/* Question number */}
                       <span className="mapNum">{i}</span>
                 
-                      {(showMark || showCorrect || showIncorrect) ? (
-                        <span className="mapIcons" aria-hidden="true">
-                          {showMark ? (
-                            <span className="mapIconBadge" title="Marked for review">
-                              {/* bookmark */}
-                              <svg viewBox="0 0 24 24" width="14" height="14">
-                                <path
-                                  fill="currentColor"
-                                  d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
-                                />
-                              </svg>
-                            </span>
-                          ) : null}
+                      {/* Top-left: Marked */}
+                      {showMark ? (
+                        <span className="mapIconCorner mapIconLeft" aria-hidden="true">
+                          <span className="mapIconBadge mark" title="Marked for review">
+                            <svg viewBox="0 0 24 24" width="14" height="14">
+                              <path
+                                fill="currentColor"
+                                d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
+                              />
+                            </svg>
+                          </span>
+                        </span>
+                      ) : null}
                 
+                      {/* Top-right: Correct / Incorrect */}
+                      {(showCorrect || showIncorrect) ? (
+                        <span className="mapIconCorner mapIconRight" aria-hidden="true">
                           {showCorrect ? (
-                            <span className="mapIconBadge" title="Correct">
-                              {/* check */}
+                            <span className="mapIconBadge correct" title="Correct">
                               <svg viewBox="0 0 24 24" width="14" height="14">
                                 <path
                                   fill="currentColor"
@@ -869,8 +876,7 @@ export default function PracticeQuestionPage() {
                           ) : null}
                 
                           {showIncorrect ? (
-                            <span className="mapIconBadge" title="Incorrect">
-                              {/* x */}
+                            <span className="mapIconBadge incorrect" title="Incorrect">
                               <svg viewBox="0 0 24 24" width="14" height="14">
                                 <path
                                   fill="currentColor"
