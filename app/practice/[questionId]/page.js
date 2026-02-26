@@ -32,7 +32,7 @@ function stripHtml(html) {
 }
 
 // Lightweight inline Desmos panel (so you don’t need another file)
-function DesmosPanel({ visible }) {
+function DesmosPanel({ visible, resizeTick }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const [ready, setReady] = useState(false);
@@ -53,13 +53,13 @@ function DesmosPanel({ visible }) {
       });
     }
 
-    // Ensure it sizes correctly after mount/toggle
+    // Ensure it sizes correctly after mount/toggle/drag
     setTimeout(() => {
       try {
         calcRef.current?.resize?.();
       } catch {}
-    }, 50);
-  }, [visible, ready]);
+    }, 0);
+  }, [visible, ready, resizeTick]);
 
   return (
     <>
@@ -88,7 +88,17 @@ export default function PracticeQuestionPage() {
   const [showExplanation, setShowExplanation] = useState(false);
 
   // Math tools
-  const [calcOpen, setCalcOpen] = useState(true);
+  // ✅ Draggable divider + minimize (not close)
+  const DEFAULT_CALC_W = 660; // wide enough that Desmos starts in its roomier layout
+  const MIN_CALC_W = 360;
+  const MAX_CALC_W = 760;
+  const MINIMIZED_W = 56;
+
+  const [calcMinimized, setCalcMinimized] = useState(false);
+  const [calcWidth, setCalcWidth] = useState(DEFAULT_CALC_W);
+  const [desmosResizeTick, setDesmosResizeTick] = useState(0);
+  const dragRef = useRef({ dragging: false, startX: 0, startW: DEFAULT_CALC_W, raf: 0 });
+
   const [showRef, setShowRef] = useState(false);
 
   // Option A neighbor nav
@@ -502,6 +512,30 @@ export default function PracticeQuestionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId, searchParams]);
 
+  // ✅ Load saved calculator width + minimized state (if any)
+  useEffect(() => {
+    try {
+      const savedW = Number(localStorage.getItem('calcWidth'));
+      if (Number.isFinite(savedW)) setCalcWidth(Math.min(Math.max(savedW, MIN_CALC_W), MAX_CALC_W));
+
+      const savedMin = localStorage.getItem('calcMinimized');
+      if (savedMin === '1') setCalcMinimized(true);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('calcWidth', String(calcWidth));
+    } catch {}
+  }, [calcWidth]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('calcMinimized', calcMinimized ? '1' : '0');
+    } catch {}
+  }, [calcMinimized]);
+
   const qType = String(data?.version?.question_type || data?.question_type || '').toLowerCase();
   const version = data?.version || {};
   const options = Array.isArray(data?.options) ? data.options : [];
@@ -582,11 +616,16 @@ export default function PracticeQuestionPage() {
   const MathToolRow = ({ align = 'flex-end' } = {}) =>
     isMath ? (
       <div className="mathRightHeader" style={{ justifyContent: align }}>
-        {!calcOpen ? (
-          <button type="button" className="btn secondary" onClick={() => setCalcOpen(true)}>
-            Open Calculator
-          </button>
-        ) : null}
+        <button
+          type="button"
+          className="btn secondary"
+          onClick={() => {
+            setCalcMinimized((m) => !m);
+            setDesmosResizeTick((t) => t + 1);
+          }}
+        >
+          {calcMinimized ? 'Show Calculator' : 'Minimize Calculator'}
+        </button>
 
         <button type="button" className="btn secondary" onClick={() => setShowRef(true)}>
           Reference Sheet
@@ -719,20 +758,82 @@ export default function PracticeQuestionPage() {
     </>
   );
 
-  // Math shell wrapper (calculator left, content right; when closed, content centers)
+  // ✅ Divider drag handlers (only affects math shell)
+  function onDividerPointerDown(e) {
+    if (calcMinimized) return;
+    e.preventDefault();
+
+    dragRef.current.dragging = true;
+    dragRef.current.startX = e.clientX;
+    dragRef.current.startW = calcWidth;
+
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+
+    const onMove = (ev) => {
+      if (!dragRef.current.dragging) return;
+      const dx = ev.clientX - dragRef.current.startX;
+      const next = Math.min(Math.max(dragRef.current.startW + dx, MIN_CALC_W), MAX_CALC_W);
+      setCalcWidth(next);
+
+      if (!dragRef.current.raf) {
+        dragRef.current.raf = requestAnimationFrame(() => {
+          dragRef.current.raf = 0;
+          setDesmosResizeTick((t) => t + 1);
+        });
+      }
+    };
+
+    const onUp = () => {
+      dragRef.current.dragging = false;
+      if (dragRef.current.raf) {
+        cancelAnimationFrame(dragRef.current.raf);
+        dragRef.current.raf = 0;
+      }
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      setDesmosResizeTick((t) => t + 1);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
+  // Math shell wrapper (calculator left, question right; draggable divider; minimize)
   const MathShell = ({ children }) => (
-    <div className={`mathShell ${calcOpen ? 'withCalc' : 'noCalc'}`}>
-      {calcOpen ? (
-        <aside className="mathLeft" aria-label="Calculator panel">
-          <div className="mathLeftHeader">
-            <div className="mathToolTitle">Calculator</div>
-            <button type="button" className="btn secondary" onClick={() => setCalcOpen(false)}>
-              Close
-            </button>
-          </div>
-          <DesmosPanel visible={calcOpen} />
-        </aside>
-      ) : null}
+    <div
+      className={`mathShell ${calcMinimized ? 'min' : 'withCalc'}`}
+      style={{ '--calcW': `${calcMinimized ? MINIMIZED_W : calcWidth}px` }}
+    >
+      <aside className={`mathLeft ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
+        <div className="mathLeftHeader">
+          <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => {
+              setCalcMinimized((m) => !m);
+              setDesmosResizeTick((t) => t + 1);
+            }}
+          >
+            {calcMinimized ? 'Expand' : 'Minimize'}
+          </button>
+        </div>
+
+        {!calcMinimized ? <DesmosPanel visible={!calcMinimized} resizeTick={desmosResizeTick} /> : <div className="calcMinBody" />}
+      </aside>
+
+      {!calcMinimized ? (
+        <div
+          className="mathDivider"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize calculator panel"
+          onPointerDown={onDividerPointerDown}
+          title="Drag to resize"
+        />
+      ) : (
+        <div className="mathDivider min" aria-hidden="true" />
+      )}
 
       <main className="mathRight">{children}</main>
     </div>
@@ -802,7 +903,7 @@ export default function PracticeQuestionPage() {
             </div>
           </div>
         ) : isMath ? (
-          // ✅ New Math format: calculator left, question+answers right
+          // ✅ Math format: calculator left (resizable), question+answers right
           <MathShell>
             <MathToolRow />
             <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
@@ -1028,18 +1129,13 @@ export default function PracticeQuestionPage() {
         </div>
       ) : null}
 
-      {/* Minimal CSS for the math two-column calculator layout (kept local to this page) */}
+      {/* Minimal CSS for the math resizable divider + minimized state (kept local to this page) */}
       <style jsx global>{`
         .mathShell {
           display: grid;
-          gap: 18px;
+          gap: 0;
           align-items: start;
-        }
-        .mathShell.withCalc {
-          grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
-        }
-        .mathShell.noCalc {
-          grid-template-columns: 1fr;
+          grid-template-columns: var(--calcW, ${DEFAULT_CALC_W}px) 12px minmax(0, 1fr);
         }
 
         .mathLeft {
@@ -1048,7 +1144,7 @@ export default function PracticeQuestionPage() {
           align-self: start;
           border: 1px solid var(--border);
           border-radius: 18px;
-          background: #fff;
+          background: #f9fafb;
           overflow: hidden;
         }
 
@@ -1059,44 +1155,93 @@ export default function PracticeQuestionPage() {
           gap: 10px;
           padding: 10px 12px;
           border-bottom: 1px solid var(--border);
+          background: rgba(17, 24, 39, 0.03);
         }
 
         .mathToolTitle {
-          font-weight: 600;
+          font-weight: 700;
         }
 
         .desmosHost {
           width: 100%;
           height: calc(100vh - 92px);
+          background: #fff;
+        }
+
+        .calcMinBody {
+          height: calc(100vh - 92px);
+        }
+
+        .mathDivider {
+          cursor: col-resize;
+          position: relative;
+        }
+
+        .mathDivider::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          margin: 0 auto;
+          width: 1px;
+          background: var(--border);
+        }
+
+        .mathDivider::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 999px;
+        }
+
+        .mathDivider:hover::after {
+          background: rgba(37, 99, 235, 0.06);
+        }
+
+        .mathDivider.min {
+          cursor: default;
         }
 
         .mathRight {
           min-width: 0;
+          padding-left: 22px;
         }
 
-        .mathShell.noCalc .mathRight {
-          max-width: 860px;
-          margin: 0 auto;
+        /* Minimised state: keep a slim rail instead of closing */
+        .mathShell.min {
+          grid-template-columns: var(--calcW, ${MINIMIZED_W}px) 12px minmax(0, 1fr);
         }
 
-        .mathRightHeader {
-          display: flex;
-          gap: 10px;
-          justify-content: flex-end;
-          align-items: center;
-          margin-bottom: 12px;
+        .mathLeft.min .mathToolTitle {
+          font-size: 12px;
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
+          color: var(--muted);
         }
 
         @media (max-width: 920px) {
-          .mathShell.withCalc {
+          .mathShell,
+          .mathShell.min {
             grid-template-columns: 1fr;
+            gap: 14px;
           }
+
+          .mathDivider,
+          .mathDivider.min {
+            display: none;
+          }
+
           .mathLeft {
             position: relative;
             top: auto;
           }
-          .desmosHost {
+
+          .desmosHost,
+          .calcMinBody {
             height: 420px;
+          }
+
+          .mathRight {
+            padding-left: 0;
           }
         }
       `}</style>
