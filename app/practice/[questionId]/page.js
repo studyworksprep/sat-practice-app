@@ -31,7 +31,8 @@ function stripHtml(html) {
     .trim();
 }
 
-// Desmos panel relying on autosize (default true); adds ResizeObserver + getState/setState persistence.
+// Desmos panel: keep a single mounted instance, persist state across minimize/resize,
+// and nudge Desmos with resize() on container size changes.
 function DesmosPanel({ isOpen, storageKey }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
@@ -63,8 +64,8 @@ function DesmosPanel({ isOpen, storageKey }) {
     try {
       const st = calcRef.current.getState();
       savedStateRef.current = st;
-      if (storageKey && typeof window !== 'undefined' && window.sessionStorage) {
-        window.sessionStorage.setItem(storageKey, JSON.stringify(st));
+      if (storageKey && typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(storageKey, JSON.stringify(st));
       }
     } catch {
       // ignore
@@ -73,11 +74,12 @@ function DesmosPanel({ isOpen, storageKey }) {
 
   const restoreState = () => {
     if (!calcRef.current) return;
+
     let st = savedStateRef.current;
 
     try {
-      if (!st && storageKey && typeof window !== 'undefined' && window.sessionStorage) {
-        const raw = window.sessionStorage.getItem(storageKey);
+      if (!st && storageKey && typeof window !== 'undefined' && window.localStorage) {
+        const raw = window.localStorage.getItem(storageKey);
         if (raw) st = JSON.parse(raw);
       }
     } catch {
@@ -86,6 +88,7 @@ function DesmosPanel({ isOpen, storageKey }) {
 
     if (st) {
       try {
+        // Avoid polluting undo history when restoring.
         calcRef.current.setState(st, { allowUndo: false });
       } catch {
         // ignore
@@ -93,7 +96,7 @@ function DesmosPanel({ isOpen, storageKey }) {
     }
   };
 
-  // Initialize exactly once, and keep the instance even when closed.
+  // Initialize exactly once.
   useEffect(() => {
     if (!ready) return;
     if (!hostRef.current) return;
@@ -101,20 +104,19 @@ function DesmosPanel({ isOpen, storageKey }) {
 
     if (!calcRef.current) {
       calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
-        autosize: true, // let Desmos handle container resizes
+        autosize: true, // Desmos can resize itself, but we still call resize() on hard layout commits.
         keypad: true,
         expressions: true,
         settingsMenu: true,
         zoomButtons: true,
       });
 
-      // If we have a persisted state (e.g., sessionStorage), load it on first init.
       restoreState();
       safeResize();
     }
 
     return () => {
-      // If this component ever truly unmounts, persist state and clean up.
+      // If this component ever unmounts, persist and destroy cleanly.
       saveState();
       try {
         calcRef.current?.destroy?.();
@@ -125,7 +127,9 @@ function DesmosPanel({ isOpen, storageKey }) {
 
       try {
         roRef.current?.disconnect?.();
-      } catch {}
+      } catch {
+        // ignore
+      }
       roRef.current = null;
 
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -134,26 +138,27 @@ function DesmosPanel({ isOpen, storageKey }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
-  // Observe container size changes and force a resize on the Desmos instance.
+  // Observe container size changes -> resize().
   useEffect(() => {
     if (!ready) return;
     if (!hostRef.current) return;
     if (!calcRef.current) return;
+    if (typeof ResizeObserver === 'undefined') return;
 
     try {
       roRef.current?.disconnect?.();
-    } catch {}
-    roRef.current = null;
-
-    if (typeof ResizeObserver === 'undefined') return;
-
+    } catch {
+      // ignore
+    }
     roRef.current = new ResizeObserver(() => safeResize());
     roRef.current.observe(hostRef.current);
 
     return () => {
       try {
         roRef.current?.disconnect?.();
-      } catch {}
+      } catch {
+        // ignore
+      }
       roRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -163,10 +168,7 @@ function DesmosPanel({ isOpen, storageKey }) {
   useEffect(() => {
     const prev = prevOpenRef.current;
 
-    if (prev && !isOpen) {
-      saveState();
-    }
-
+    if (prev && !isOpen) saveState();
     if (!prev && isOpen) {
       restoreState();
       safeResize();
@@ -193,37 +195,6 @@ function DesmosPanel({ isOpen, storageKey }) {
   );
 }
 
-function isMathLike(domain, subtopic) {
-  const d = (domain || '').toLowerCase();
-  const s = (subtopic || '').toLowerCase();
-  return (
-    d.includes('math') ||
-    d.includes('algebra') ||
-    d.includes('advanced') ||
-    d.includes('problem') ||
-    d.includes('geometry') ||
-    d.includes('trig') ||
-    s.includes('math') ||
-    s.includes('algebra') ||
-    s.includes('geometry') ||
-    s.includes('trig')
-  );
-}
-
-function formatTime(ms) {
-  const s = Math.max(0, Math.round((ms || 0) / 1000));
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  return m > 0 ? `${m}m ${r}s` : `${r}s`;
-}
-
-function isCorrectSpr(userText, correctTextList) {
-  const a = (userText || '').trim();
-  if (!a) return false;
-  const corr = formatCorrectText(correctTextList) || [];
-  return corr.some((ct) => String(ct).trim() === a);
-}
-
 export default function PracticeQuestionPage() {
   const { questionId } = useParams();
   const router = useRouter();
@@ -231,38 +202,16 @@ export default function PracticeQuestionPage() {
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState(null);
 
-  // Answer input
-  const [selected, setSelected] = useState(null); // option uuid for mcq
-  const [responseText, setResponseText] = useState(''); // for spr
+  const [selected, setSelected] = useState(null);
+  const [responseText, setResponseText] = useState('');
 
-  // UX state
-  const [toast, setToast] = useState(null);
-  const [revealed, setRevealed] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [attemptId, setAttemptId] = useState(null);
+  const [showExplanation, setShowExplanation] = useState(false);
 
-  // Timing
-  const startedAtRef = useRef(null);
-
-  // Question map/session context
-  const sessionId = searchParams?.get('session') || null;
-  const index1 = useMemo(() => {
-    const v = searchParams?.get('i');
-    if (!v) return null;
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  }, [searchParams]);
-  const total = useMemo(() => {
-    const v = searchParams?.get('n');
-    if (!v) return null;
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  }, [searchParams]);
-  const inSessionContext = !!(sessionId && index1 != null && total != null);
-
-  // Calculator panel width state (math only)
-  const DEFAULT_CALC_W = 520;
+  // Math tools
+  // ✅ Draggable divider + minimize (not close)
+  const DEFAULT_CALC_W = 660; // wide enough that Desmos starts in its roomier layout
   const MIN_CALC_W = 360;
   const MAX_CALC_W = 760;
   const MINIMIZED_W = 56;
@@ -273,156 +222,188 @@ export default function PracticeQuestionPage() {
   // IMPORTANT: prevent flicker by avoiding React updates during drag
   const shellRef = useRef(null);
   const liveWidthRef = useRef(DEFAULT_CALC_W);
-  const dragRef = useRef({ dragging: false, startX: 0, startW: DEFAULT_CALC_W });
+  const dragRef = useRef({ dragging: false, startX: 0, startW: DEFAULT_CALC_W, pendingW: DEFAULT_CALC_W });
+
+  const [showRef, setShowRef] = useState(false);
+
+  // Option A neighbor nav
+  const [prevId, setPrevId] = useState(null);
+  const [nextId, setNextId] = useState(null);
+
+  // Load persisted calculator UI prefs (width/min) once.
+  useEffect(() => {
+    try {
+      const savedW = Number(localStorage.getItem('calcWidth'));
+      if (Number.isFinite(savedW)) setCalcWidth(Math.min(Math.max(savedW, MIN_CALC_W), MAX_CALC_W));
+      const savedMin = localStorage.getItem('calcMinimized');
+      if (savedMin === '1') setCalcMinimized(true);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    startedAtRef.current = Date.now();
-  }, [questionId]);
+    liveWidthRef.current = calcWidth;
+    try {
+      localStorage.setItem('calcWidth', String(calcWidth));
+    } catch {}
+  }, [calcWidth]);
 
-  // Fetch question
+  useEffect(() => {
+    try {
+      localStorage.setItem('calcMinimized', calcMinimized ? '1' : '0');
+    } catch {}
+  }, [calcMinimized]);
+
   useEffect(() => {
     let ignore = false;
     async function load() {
       setLoading(true);
-      setRevealed(false);
-      setSelected(null);
-      setResponseText('');
-      setAttemptId(null);
+      setMsg(null);
 
       try {
         const res = await fetch(`/api/questions/${questionId}`);
         const json = await res.json();
-        if (!ignore) setData(json);
+        if (ignore) return;
+        setData(json);
+
+        // Neighbor navigation ids (Option A flow)
+        setPrevId(json?.nav?.prev_id || null);
+        setNextId(json?.nav?.next_id || null);
+
+        // Reset UI per question
+        setSelected(null);
+        setResponseText('');
+        setShowExplanation(false);
+        setShowRef(false);
       } catch (e) {
-        if (!ignore) setData(null);
+        if (!ignore) {
+          setData(null);
+          setMsg({ kind: 'error', text: 'Failed to load question.' });
+        }
       } finally {
         if (!ignore) setLoading(false);
       }
     }
+
     if (questionId) load();
     return () => {
       ignore = true;
     };
   }, [questionId]);
 
-  const q = data?.question || null;
-  const ver = data?.version || null;
-  const opts = data?.options || [];
-  const correct = data?.correct || null;
+  const domainCode = useMemo(() => String(data?.taxonomy?.domain_code || '').toUpperCase().trim(), [data]);
+  const isMath = useMemo(() => ['H', 'P', 'S', 'Q'].includes(domainCode), [domainCode]);
 
-  const questionType = ver?.question_type || q?.question_type || null;
+  const question = data?.question || {};
+  const version = data?.version || {};
+  const options = Array.isArray(data?.options) ? data.options : [];
+  const status = data?.status || {};
 
-  const mathMode = useMemo(() => {
-    return isMathLike(q?.domain, q?.subtopic);
-  }, [q?.domain, q?.subtopic]);
+  const correctOptionId = data?.correct?.correct_option_id || null;
+  const correctTexts = data?.correct?.correct_texts || null;
 
-  const correctOptionId = correct?.correct_option_id || null;
-  const correctTexts = correct?.correct_texts || null;
+  const isMcq = useMemo(() => String(version?.question_type || question?.question_type || '').toLowerCase() === 'mcq', [
+    version,
+    question,
+  ]);
+  const isSpr = useMemo(() => String(version?.question_type || question?.question_type || '').toLowerCase() === 'spr', [
+    version,
+    question,
+  ]);
 
-  const isCorrect = useMemo(() => {
-    if (!revealed) return null;
-    if (questionType === 'spr') return isCorrectSpr(responseText, correctTexts);
-    if (questionType === 'mcq') return selected && correctOptionId ? selected === correctOptionId : false;
-    return false;
-  }, [revealed, questionType, responseText, correctTexts, selected, correctOptionId]);
+  const revealed = Boolean(status?.is_revealed);
+  const isCorrect = Boolean(status?.is_correct);
 
-  function showToast(msg, kind = 'success') {
-    setToast({ msg, kind });
-    window.clearTimeout(showToast._t);
-    showToast._t = window.setTimeout(() => setToast(null), 2200);
+  const correctTextList = useMemo(() => formatCorrectText(correctTexts), [correctTexts]);
+
+  const selectedLabel = useMemo(() => {
+    const opt = options.find((o) => o.id === selected);
+    return opt?.option_label || null;
+  }, [options, selected]);
+
+  const correctLabel = useMemo(() => {
+    const opt = options.find((o) => o.id === correctOptionId);
+    return opt?.option_label || null;
+  }, [options, correctOptionId]);
+
+  function toast(kind, text) {
+    setMsg({ kind, text });
+    window.clearTimeout(toast._t);
+    toast._t = window.setTimeout(() => setMsg(null), 2600);
   }
 
-  async function submitAttempt() {
-    if (!q?.id || !ver?.id) return;
-    if (submitting) return;
+  async function submitAnswer() {
+    if (!questionId) return;
 
-    const now = Date.now();
-    const timeSpentMs = startedAtRef.current ? now - startedAtRef.current : null;
+    if (isMcq && !selected) return toast('error', 'Select an answer first.');
+    if (isSpr && !responseText.trim()) return toast('error', 'Enter an answer first.');
 
-    setSubmitting(true);
     try {
-      const body = {
-        question_id: q.id,
-        selected_option_id: questionType === 'mcq' ? selected : null,
-        response_text: questionType === 'spr' ? responseText : null,
-        time_spent_ms: timeSpentMs,
-      };
-
       const res = await fetch('/api/attempts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          question_id: questionId,
+          selected_option_id: isMcq ? selected : null,
+          response_text: isSpr ? responseText : null,
+        }),
       });
 
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.error || 'Attempt failed');
-      setAttemptId(json?.attempt_id || null);
-      setRevealed(true);
-      showToast('Saved!', 'success');
+      if (!res.ok) throw new Error(json?.error || 'Failed to submit answer.');
+
+      setData((d) => ({
+        ...(d || {}),
+        status: {
+          ...(d?.status || {}),
+          is_revealed: true,
+          is_correct: Boolean(json?.is_correct),
+        },
+        correct: {
+          ...(d?.correct || {}),
+          correct_option_id: json?.correct_option_id ?? d?.correct?.correct_option_id ?? null,
+          correct_texts: json?.correct_texts ?? d?.correct?.correct_texts ?? null,
+        },
+      }));
+
+      toast('success', 'Saved.');
     } catch (e) {
-      showToast(e?.message || 'Error saving attempt', 'error');
-    } finally {
-      setSubmitting(false);
+      toast('error', e?.message || 'Failed to submit.');
     }
   }
 
-  function resetForRetry() {
-    setRevealed(false);
-    setAttemptId(null);
-    showToast('Try again', 'success');
-  }
-
-  function openMap() {
-    if (!inSessionContext) return;
-    const params = new URLSearchParams();
-    params.set('session', sessionId);
-    params.set('i', String(index1));
-    params.set('n', String(total));
-    router.push(`/practice?${params.toString()}`);
-  }
-
-  // Drag handler for divider
+  // Divider drag
   function onDividerPointerDown(e) {
     if (calcMinimized) return;
+    e.preventDefault();
+
     dragRef.current.dragging = true;
     dragRef.current.startX = e.clientX;
     dragRef.current.startW = liveWidthRef.current;
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {}
-  }
+    dragRef.current.pendingW = liveWidthRef.current;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
 
-  useEffect(() => {
-    function onMove(e) {
+    const onMove = (ev) => {
       if (!dragRef.current.dragging) return;
-      const dx = e.clientX - dragRef.current.startX;
-      const next = Math.max(MIN_CALC_W, Math.min(MAX_CALC_W, dragRef.current.startW + dx));
+      const dx = ev.clientX - dragRef.current.startX;
+      const next = Math.min(Math.max(dragRef.current.startW + dx, MIN_CALC_W), MAX_CALC_W);
+      dragRef.current.pendingW = next;
       liveWidthRef.current = next;
-      // Update only CSS var; no React re-render during drag
-      if (shellRef.current) shellRef.current.style.setProperty('--calcW', `${next}px`);
-    }
+      shellRef.current?.style.setProperty('--calcW', `${next}px`);
+    };
 
-    function onUp() {
-      if (!dragRef.current.dragging) return;
+    const onUp = () => {
       dragRef.current.dragging = false;
-      // Commit at end so UI is consistent for future renders
-      setCalcWidth(liveWidthRef.current);
-    }
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      setCalcWidth(dragRef.current.pendingW);
+    };
 
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
-    return () => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-    };
-  }, []);
+  }
 
-  const QuestionCard = ({ children }) => (
-    <div className="card" style={{ padding: 20 }}>
-      {children}
-    </div>
-  );
-
+  // Math shell wrapper (calculator left, question right; draggable divider; minimize)
   const MathShell = ({ children }) => (
     <div
       ref={shellRef}
@@ -432,12 +413,13 @@ export default function PracticeQuestionPage() {
       <aside className={`mathLeft ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
         <div className="mathLeftHeader">
           <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+
           <button type="button" className="btn secondary" onClick={() => setCalcMinimized((m) => !m)}>
             {calcMinimized ? 'Expand' : 'Minimize'}
           </button>
         </div>
 
-        {/* Keep mounted; hide visually when minimized (do NOT collapse height to 0) */}
+        {/* Keep mounted; hide visually when minimized */}
         <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
           <DesmosPanel
             isOpen={!calcMinimized}
@@ -464,6 +446,164 @@ export default function PracticeQuestionPage() {
     </div>
   );
 
+  const AnswerBlock = () => (
+    <div className="card" style={{ padding: 20 }}>
+      {version?.stimulus_html ? (
+        <div style={{ marginBottom: 12 }}>
+          <HtmlBlock html={version.stimulus_html} />
+        </div>
+      ) : null}
+
+      {version?.stem_html ? (
+        <div style={{ marginBottom: 12 }}>
+          <HtmlBlock html={version.stem_html} />
+        </div>
+      ) : null}
+
+      {isMcq ? (
+        <div className="options">
+          {options.map((o) => {
+            const id = o.id;
+            const label = o.option_label;
+            const html = o.option_html;
+
+            const selectedNow = selected === id;
+            const correctNow = revealed && correctOptionId && id === correctOptionId;
+            const wrongSel = revealed && selectedNow && !correctNow;
+
+            const cls = [
+              'option',
+              selectedNow ? 'selected' : '',
+              correctNow ? 'correct' : '',
+              wrongSel ? 'incorrect' : '',
+              revealed && correctOptionId && selected !== correctOptionId && correctNow ? 'revealCorrect' : '',
+            ]
+              .filter(Boolean)
+              .join(' ');
+
+            return (
+              <button
+                key={id}
+                type="button"
+                className={cls}
+                onClick={() => (!revealed ? setSelected(id) : null)}
+                disabled={revealed}
+              >
+                <span className="optionBadge">{label}</span>
+                <span className="optionText">
+                  <HtmlBlock html={html} />
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : isSpr ? (
+        <div style={{ display: 'grid', gap: 10 }}>
+          <label className="muted" style={{ fontSize: 13 }}>
+            Your answer
+          </label>
+          <input
+            className="input"
+            value={responseText}
+            onChange={(e) => setResponseText(e.target.value)}
+            disabled={revealed}
+            placeholder="Type your answer…"
+            autoComplete="off"
+            spellCheck="false"
+          />
+        </div>
+      ) : null}
+
+      <div className="row" style={{ justifyContent: 'space-between', marginTop: 14, gap: 10 }}>
+        {!revealed ? (
+          <button
+            type="button"
+            className="btn"
+            onClick={submitAnswer}
+            disabled={isMcq ? !selected : isSpr ? !responseText.trim() : true}
+          >
+            Check answer
+          </button>
+        ) : (
+          <div className="row" style={{ gap: 10 }}>
+            <button type="button" className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+              {showExplanation ? 'Hide explanation' : 'Show explanation'}
+            </button>
+          </div>
+        )}
+
+        <div className="row" style={{ gap: 10 }}>
+          {prevId ? (
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={() => router.push(`/practice/${prevId}${searchParams?.toString() ? `?${searchParams}` : ''}`)}
+            >
+              ← Prev
+            </button>
+          ) : null}
+
+          {nextId ? (
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={() => router.push(`/practice/${nextId}${searchParams?.toString() ? `?${searchParams}` : ''}`)}
+            >
+              Next →
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      {revealed ? (
+        <div style={{ marginTop: 14 }}>
+          <div className={`resultBanner ${isCorrect ? 'good' : 'bad'}`}>{isCorrect ? 'Correct' : 'Incorrect'}</div>
+
+          {isMcq && correctLabel ? (
+            <div className="muted" style={{ marginTop: 10 }}>
+              Correct answer: <span className="mono">{correctLabel}</span>
+              {selectedLabel && !isCorrect ? (
+                <>
+                  {' '}
+                  (you chose <span className="mono">{selectedLabel}</span>)
+                </>
+              ) : null}
+            </div>
+          ) : null}
+
+          {isSpr && correctTextList ? (
+            <div className="muted" style={{ marginTop: 10 }}>
+              Correct answer{correctTextList.length > 1 ? 's' : ''}:{' '}
+              <span className="mono">{correctTextList.join(', ')}</span>
+            </div>
+          ) : null}
+
+          {showExplanation && version?.explanation_html ? (
+            <div style={{ marginTop: 14 }}>
+              <div className="h3" style={{ marginBottom: 8 }}>
+                Explanation
+              </div>
+              <HtmlBlock html={version.explanation_html} />
+            </div>
+          ) : null}
+
+          {version?.references_html ? (
+            <div style={{ marginTop: 14 }}>
+              <button type="button" className="btn secondary" onClick={() => setShowRef((s) => !s)}>
+                {showRef ? 'Hide references' : 'Show references'}
+              </button>
+              {showRef ? (
+                <div style={{ marginTop: 10 }}>
+                  <HtmlBlock html={version.references_html} />
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+
   return (
     <main className="container">
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -474,313 +614,42 @@ export default function PracticeQuestionPage() {
             <Link className="btn secondary" href="/practice">
               ← Back to list
             </Link>
-
-            <button
-              type="button"
-              className="qmapTrigger"
-              onClick={openMap}
-              disabled={!inSessionContext}
-              title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
-              aria-label="Open question map"
-            >
-              <span className="qmapTriggerCount">
-                {index1 != null && total != null ? (
-                  <>
-                    <span className="mono">{index1}</span> / <span className="mono">{total}</span>
-                  </>
-                ) : (
-                  'Map'
-                )}
-              </span>
-            </button>
           </div>
         </div>
 
         <div className="row" style={{ gap: 10, alignItems: 'center' }}>
           <div className="pill">
-            <span className="muted">Difficulty</span> <span className="mono">{q?.difficulty ?? '—'}</span>
+            <span className="muted">Difficulty</span> <span className="mono">{question?.difficulty ?? '—'}</span>
           </div>
           <div className="pill">
-            <span className="muted">Band</span> <span className="mono">{q?.score_band ?? '—'}</span>
+            <span className="muted">Band</span> <span className="mono">{question?.score_band ?? '—'}</span>
           </div>
         </div>
       </div>
+
+      {msg ? <Toast kind={msg.kind} msg={msg.text} /> : null}
 
       {loading ? (
         <div className="card" style={{ padding: 20, marginTop: 16 }}>
           Loading…
         </div>
-      ) : !q || !ver ? (
+      ) : !questionId || !data ? (
         <div className="card" style={{ padding: 20, marginTop: 16 }}>
           No question data found.
         </div>
-      ) : mathMode ? (
+      ) : isMath ? (
         <div style={{ marginTop: 16 }}>
           <MathShell>
-            <QuestionCard>
-              <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>
-                {q?.domain ? <span>{q.domain}</span> : null}
-                {q?.subtopic ? <span>{q?.domain ? ' • ' : ''}{q.subtopic}</span> : null}
-              </div>
-
-              {ver?.stimulus_html ? (
-                <div style={{ marginBottom: 12 }}>
-                  <HtmlBlock html={ver.stimulus_html} />
-                </div>
-              ) : null}
-
-              {ver?.stem_html ? (
-                <div style={{ marginBottom: 12 }}>
-                  <HtmlBlock html={ver.stem_html} />
-                </div>
-              ) : null}
-
-              {questionType === 'mcq' ? (
-                <div className="options">
-                  {opts.map((o) => {
-                    const id = o.id;
-                    const label = o.option_label;
-                    const html = o.option_html;
-
-                    const selectedNow = selected === id;
-                    const correctNow = revealed && correctOptionId && id === correctOptionId;
-                    const wrongSel = revealed && selectedNow && !correctNow;
-
-                    const cls = [
-                      'option',
-                      selectedNow ? 'selected' : '',
-                      correctNow ? 'correct' : '',
-                      wrongSel ? 'incorrect' : '',
-                      revealed && correctOptionId && selected !== correctOptionId && correctNow ? 'revealCorrect' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ');
-
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        className={cls}
-                        onClick={() => (!revealed ? setSelected(id) : null)}
-                        disabled={revealed}
-                      >
-                        <span className="optionBadge">{label}</span>
-                        <span className="optionText">
-                          <HtmlBlock html={html} />
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div style={{ display: 'grid', gap: 10 }}>
-                  <label className="muted" style={{ fontSize: 13 }}>
-                    Your answer
-                  </label>
-                  <input
-                    className="input"
-                    value={responseText}
-                    onChange={(e) => setResponseText(e.target.value)}
-                    disabled={revealed}
-                    placeholder="Type your answer…"
-                    autoComplete="off"
-                    spellCheck="false"
-                  />
-                </div>
-              )}
-
-              <div className="row" style={{ justifyContent: 'space-between', marginTop: 14, gap: 10 }}>
-                {!revealed ? (
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={submitAttempt}
-                    disabled={submitting || (questionType === 'mcq' ? !selected : !responseText.trim())}
-                  >
-                    {submitting ? 'Saving…' : 'Check answer'}
-                  </button>
-                ) : (
-                  <div className="row" style={{ gap: 10 }}>
-                    <button type="button" className="btn secondary" onClick={resetForRetry}>
-                      Try again
-                    </button>
-                  </div>
-                )}
-
-                <div className="muted" style={{ fontSize: 13 }}>
-                  {attemptId ? (
-                    <>
-                      Attempt saved • <span className="mono">{attemptId.slice(0, 8)}</span>
-                    </>
-                  ) : (
-                    <>Time: {formatTime(Date.now() - (startedAtRef.current || Date.now()))}</>
-                  )}
-                </div>
-              </div>
-
-              {revealed ? (
-                <div style={{ marginTop: 14 }}>
-                  <div className={`resultBanner ${isCorrect ? 'good' : 'bad'}`}>
-                    {isCorrect ? 'Correct' : 'Incorrect'}
-                  </div>
-
-                  {questionType === 'spr' && correctTexts ? (
-                    <div className="muted" style={{ marginTop: 10 }}>
-                      Correct answer{(formatCorrectText(correctTexts) || []).length > 1 ? 's' : ''}:{' '}
-                      <span className="mono">{(formatCorrectText(correctTexts) || []).join(', ')}</span>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-            </QuestionCard>
+            <AnswerBlock />
           </MathShell>
         </div>
       ) : (
         <div style={{ marginTop: 16 }}>
-          <QuestionCard>
-            <div className="muted" style={{ fontSize: 13, marginBottom: 10 }}>
-              {q?.domain ? <span>{q.domain}</span> : null}
-              {q?.subtopic ? <span>{q?.domain ? ' • ' : ''}{q.subtopic}</span> : null}
-            </div>
-
-            {ver?.stimulus_html ? (
-              <div style={{ marginBottom: 12 }}>
-                <HtmlBlock html={ver.stimulus_html} />
-              </div>
-            ) : null}
-
-            {ver?.stem_html ? (
-              <div style={{ marginBottom: 12 }}>
-                <HtmlBlock html={ver.stem_html} />
-              </div>
-            ) : null}
-
-            {questionType === 'mcq' ? (
-              <div className="options">
-                {opts.map((o) => {
-                  const id = o.id;
-                  const label = o.option_label;
-                  const html = o.option_html;
-
-                  const selectedNow = selected === id;
-                  const correctNow = revealed && correctOptionId && id === correctOptionId;
-                  const wrongSel = revealed && selectedNow && !correctNow;
-
-                  const cls = [
-                    'option',
-                    selectedNow ? 'selected' : '',
-                    correctNow ? 'correct' : '',
-                    wrongSel ? 'incorrect' : '',
-                    revealed && correctOptionId && selected !== correctOptionId && correctNow ? 'revealCorrect' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ');
-
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      className={cls}
-                      onClick={() => (!revealed ? setSelected(id) : null)}
-                      disabled={revealed}
-                    >
-                      <span className="optionBadge">{label}</span>
-                      <span className="optionText">
-                        <HtmlBlock html={html} />
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gap: 10 }}>
-                <label className="muted" style={{ fontSize: 13 }}>
-                  Your answer
-                </label>
-                <input
-                  className="input"
-                  value={responseText}
-                  onChange={(e) => setResponseText(e.target.value)}
-                  disabled={revealed}
-                  placeholder="Type your answer…"
-                  autoComplete="off"
-                  spellCheck="false"
-                />
-              </div>
-            )}
-
-            <div className="row" style={{ justifyContent: 'space-between', marginTop: 14, gap: 10 }}>
-              {!revealed ? (
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={submitAttempt}
-                  disabled={submitting || (questionType === 'mcq' ? !selected : !responseText.trim())}
-                >
-                  {submitting ? 'Saving…' : 'Check answer'}
-                </button>
-              ) : (
-                <div className="row" style={{ gap: 10 }}>
-                  <button type="button" className="btn secondary" onClick={resetForRetry}>
-                    Try again
-                  </button>
-                </div>
-              )}
-
-              <div className="muted" style={{ fontSize: 13 }}>
-                {attemptId ? (
-                  <>
-                    Attempt saved • <span className="mono">{attemptId.slice(0, 8)}</span>
-                  </>
-                ) : (
-                  <>Time: {formatTime(Date.now() - (startedAtRef.current || Date.now()))}</>
-                )}
-              </div>
-            </div>
-
-            {revealed ? (
-              <div style={{ marginTop: 14 }}>
-                <div className={`resultBanner ${isCorrect ? 'good' : 'bad'}`}>
-                  {isCorrect ? 'Correct' : 'Incorrect'}
-                </div>
-
-                {questionType === 'spr' && correctTexts ? (
-                  <div className="muted" style={{ marginTop: 10 }}>
-                    Correct answer{(formatCorrectText(correctTexts) || []).length > 1 ? 's' : ''}:{' '}
-                    <span className="mono">{(formatCorrectText(correctTexts) || []).join(', ')}</span>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-          </QuestionCard>
+          <AnswerBlock />
         </div>
       )}
 
-      {toast ? <Toast msg={toast.msg} kind={toast.kind} /> : null}
-
       <style jsx global>{`
-        .qmapTrigger {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          border: 1px solid var(--border);
-          border-radius: 999px;
-          padding: 8px 12px;
-          background: #fff;
-          font-weight: 700;
-          cursor: pointer;
-        }
-
-        .qmapTrigger:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .qmapTriggerCount {
-          display: inline-flex;
-          gap: 6px;
-        }
-
         .pill {
           border: 1px solid var(--border);
           background: #fff;
@@ -792,35 +661,31 @@ export default function PracticeQuestionPage() {
         }
 
         .mathShell {
-          --calcW: 520px;
           display: grid;
-          grid-template-columns: var(--calcW) 10px 1fr;
           gap: 0;
           align-items: stretch;
-          border-radius: 22px;
-          overflow: hidden;
+          grid-template-columns: var(--calcW, 660px) 12px minmax(0, 1fr);
         }
 
         .mathShell.min {
-          grid-template-columns: ${MINIMIZED_W}px 10px 1fr;
+          grid-template-columns: var(--calcW, 56px) 12px minmax(0, 1fr);
         }
 
         .mathLeft {
-          background: #fff;
+          position: sticky;
+          top: 12px;
+          align-self: start;
           border: 1px solid var(--border);
-          border-right: none;
-          border-top-left-radius: 22px;
-          border-bottom-left-radius: 22px;
+          border-radius: 18px;
+          background: #f9fafb;
+          max-height: calc(100vh - 24px);
           overflow: hidden;
-          display: grid;
-          grid-template-rows: auto 1fr;
-          min-height: 520px;
         }
 
         .mathLeftHeader {
           display: flex;
-          align-items: center;
           justify-content: space-between;
+          align-items: center;
           gap: 10px;
           padding: 10px 12px;
           border-bottom: 1px solid var(--border);
@@ -840,37 +705,46 @@ export default function PracticeQuestionPage() {
 
         .desmosHost {
           width: 100%;
-          height: min(440px, calc(100vh - 240px));
+          height: min(560px, calc(100vh - 220px));
+          background: #fff;
         }
 
         .calcMinBody {
-          width: 100%;
-          height: min(440px, calc(100vh - 240px));
+          height: calc(100vh - 92px);
         }
 
         .mathDivider {
-          background: rgba(17, 24, 39, 0.06);
           cursor: col-resize;
-          width: 10px;
+          position: relative;
+          align-self: stretch;
+          min-height: 360px;
+          touch-action: none;
         }
 
-        .mathDivider:hover {
-          background: rgba(17, 24, 39, 0.12);
+        .mathDivider::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          margin: 0 auto;
+          width: 1px;
+          background: var(--border);
+        }
+
+        .mathDivider:hover::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 999px;
+          background: rgba(37, 99, 235, 0.06);
         }
 
         .mathDivider.min {
           cursor: default;
-          background: rgba(17, 24, 39, 0.04);
         }
 
         .mathRight {
-          border: 1px solid var(--border);
-          border-left: none;
-          border-top-right-radius: 22px;
-          border-bottom-right-radius: 22px;
-          background: #fff;
-          padding: 0;
-          overflow: hidden;
+          min-width: 0;
+          padding-left: 22px;
         }
 
         .resultBanner {
@@ -899,7 +773,6 @@ export default function PracticeQuestionPage() {
           display: flex;
           align-items: flex-start;
           gap: 16px;
-
           border: 1px solid var(--border);
           border-radius: 18px;
           padding: 16px 18px;
@@ -959,21 +832,30 @@ export default function PracticeQuestionPage() {
           flex: 1;
         }
 
-        @media (max-width: 980px) {
+        @media (max-width: 920px) {
           .mathShell,
           .mathShell.min {
             grid-template-columns: 1fr;
-            border-radius: 22px;
+            gap: 14px;
           }
 
-          .mathLeft,
-          .mathRight {
-            border-radius: 22px;
-            border: 1px solid var(--border);
-          }
-
-          .mathDivider {
+          .mathDivider,
+          .mathDivider.min {
             display: none;
+          }
+
+          .mathLeft {
+            position: relative;
+            top: auto;
+          }
+
+          .desmosHost,
+          .calcMinBody {
+            height: 420px;
+          }
+
+          .mathRight {
+            padding-left: 0;
           }
         }
       `}</style>
