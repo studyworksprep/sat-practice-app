@@ -98,6 +98,17 @@ export default function PracticeQuestionPage() {
     return `/practice/${targetId}?${qs.toString()}`;
   }
 
+  function getIndexFromUrl() {
+  const i = Number(searchParams.get('i'));
+  if (Number.isFinite(i) && i >= 1) return i;
+
+  const o = Number(searchParams.get('o'));
+  const p = Number(searchParams.get('p'));
+  if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) return o + p + 1;
+
+  return null;
+}
+
   async function fetchQuestion() {
     setLoading(true);
     setMsg(null);
@@ -254,6 +265,18 @@ export default function PracticeQuestionPage() {
     router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
   }
 
+  async function doJumpTo() {
+    let n = Number(String(jumpTo).trim());
+    if (!Number.isFinite(n)) return;
+  
+    n = Math.trunc(n);
+    if (total != null) n = Math.min(Math.max(1, n), total);
+    else n = Math.max(1, n);
+  
+    await goToIndex(n);
+    setShowMap(false);
+  }
+
   async function submitAttempt() {
     if (!data) return;
 
@@ -331,8 +354,7 @@ export default function PracticeQuestionPage() {
     try {
       await ensureTotalIfMissing();
 
-      const iFromUrl = Number(searchParams.get('i'));
-      const i = Number.isFinite(iFromUrl) && iFromUrl >= 1 ? iFromUrl : index1 || 1;
+      const i = getIndexFromUrl() ?? index1 ?? 1;
 
       const startOffset = Math.floor((Math.max(1, i) - 1) / MAP_PAGE_SIZE) * MAP_PAGE_SIZE;
 
@@ -729,6 +751,12 @@ export default function PracticeQuestionPage() {
                   style={{ width: 140 }}
                   value={jumpTo}
                   onChange={(e) => setJumpTo(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      doJumpTo();
+                    }
+                  }}
                   placeholder="Jump to #"
                   inputMode="numeric"
                 />
@@ -799,6 +827,7 @@ export default function PracticeQuestionPage() {
                       onClick={() => {
                         const o25 = Math.floor((i - 1) / 25) * 25;
                         const p25 = (i - 1) % 25;
+                        setIndex1(i);
                         setShowMap(false);
                         router.push(buildHref(id, total, o25, p25, i));
                       }}
