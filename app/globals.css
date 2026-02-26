@@ -765,13 +765,13 @@ hr{
 
 .mapIconCorner{
   position: absolute;
-  top: 2px;
+  top: 0px;
   z-index: 2;
   pointer-events: none;
 }
 
-.mapIconLeft{ left: 2px; }
-.mapIconRight{ right: 2px; }
+.mapIconLeft{ left: 0px; }
+.mapIconRight{ right: 0px; }
 
 .mapIconBadge{
   width: 16px;
