@@ -750,15 +750,16 @@ hr{
   box-shadow: 0 0 0 2px rgba(17,24,39,0.35) inset;
 }
 
-/* Icon stack (top-right) */
-.mapIcons{
+/* --- Map icon corners + colored indicators --- */
+
+.mapIconCorner{
   position: absolute;
   top: 6px;
-  right: 6px;
-  display: inline-flex;
-  gap: 6px;
   z-index: 2;
 }
+
+.mapIconLeft{ left: 6px; }
+.mapIconRight{ right: 6px; }
 
 .mapIconBadge{
   width: 20px;
@@ -766,6 +767,25 @@ hr{
   border-radius: 999px;
   display: grid;
   place-items: center;
-  background: rgba(17,24,39,0.75);
   color: #fff;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+}
+
+/* Marked for review (yellow) */
+.mapIconBadge.mark{
+  background: rgba(234,179,8,0.95);
+}
+
+/* Correct (green) */
+.mapIconBadge.correct{
+  background: rgba(22,163,74,0.95);
+}
+
+/* Incorrect (red) */
+.mapIconBadge.incorrect{
+  background: rgba(220,38,38,0.95);
+}
+
+.mapIconBadge svg{
+  display: block;
 }
