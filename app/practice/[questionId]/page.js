@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Script from 'next/script';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '../../../components/Toast';
@@ -30,6 +31,48 @@ function stripHtml(html) {
     .trim();
 }
 
+// Lightweight inline Desmos panel (so you don’t need another file)
+function DesmosPanel({ visible }) {
+  const hostRef = useRef(null);
+  const calcRef = useRef(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    if (!ready) return;
+    if (!hostRef.current) return;
+    if (typeof window === 'undefined') return;
+    if (!window.Desmos) return;
+
+    if (!calcRef.current) {
+      calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
+        keypad: true,
+        expressions: true,
+        settingsMenu: true,
+        zoomButtons: true,
+      });
+    }
+
+    // Ensure it sizes correctly after mount/toggle
+    setTimeout(() => {
+      try {
+        calcRef.current?.resize?.();
+      } catch {}
+    }, 50);
+  }, [visible, ready]);
+
+  return (
+    <>
+      <Script
+        src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"
+        strategy="afterInteractive"
+        onLoad={() => setReady(true)}
+      />
+      <div ref={hostRef} className="desmosHost" />
+    </>
+  );
+}
+
 export default function PracticeQuestionPage() {
   const { questionId } = useParams();
   const router = useRouter();
@@ -43,6 +86,10 @@ export default function PracticeQuestionPage() {
   const [responseText, setResponseText] = useState('');
 
   const [showExplanation, setShowExplanation] = useState(false);
+
+  // Math tools
+  const [calcOpen, setCalcOpen] = useState(true);
+  const [showRef, setShowRef] = useState(false);
 
   // Option A neighbor nav
   const [prevId, setPrevId] = useState(null);
@@ -99,15 +146,15 @@ export default function PracticeQuestionPage() {
   }
 
   function getIndexFromUrl() {
-  const i = Number(searchParams.get('i'));
-  if (Number.isFinite(i) && i >= 1) return i;
+    const i = Number(searchParams.get('i'));
+    if (Number.isFinite(i) && i >= 1) return i;
 
-  const o = Number(searchParams.get('o'));
-  const p = Number(searchParams.get('p'));
-  if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) return o + p + 1;
+    const o = Number(searchParams.get('o'));
+    const p = Number(searchParams.get('p'));
+    if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) return o + p + 1;
 
-  return null;
-}
+    return null;
+  }
 
   async function fetchQuestion() {
     setLoading(true);
@@ -119,12 +166,10 @@ export default function PracticeQuestionPage() {
 
       setData(json);
 
-      if (json?.status?.status_json?.last_selected_option_id)
-        setSelected(json.status.status_json.last_selected_option_id);
+      if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
       else setSelected(null);
 
-      if (json?.status?.status_json?.last_response_text)
-        setResponseText(json.status.status_json.last_response_text);
+      if (json?.status?.status_json?.last_response_text) setResponseText(json.status.status_json.last_response_text);
       else setResponseText('');
 
       startedAtRef.current = Date.now();
@@ -202,80 +247,80 @@ export default function PracticeQuestionPage() {
       setMapLoading(false);
     }
   }
-  
-    // look for "i" (index) in URL
-    function primeNavMetaFromUrl() {
-      const t = Number(searchParams.get('t'));
-      const o = Number(searchParams.get('o'));
-      const p = Number(searchParams.get('p'));
-      const i = Number(searchParams.get('i'));
-  
-      if (Number.isFinite(t) && t >= 0) setTotal(t);
-      if (Number.isFinite(o) && o >= 0) setPageOffset(o);
-  
-      if (Number.isFinite(i) && i >= 1) setIndex1(i);
-      else if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) setIndex1(o + p + 1);
+
+  // look for "i" (index) in URL
+  function primeNavMetaFromUrl() {
+    const t = Number(searchParams.get('t'));
+    const o = Number(searchParams.get('o'));
+    const p = Number(searchParams.get('p'));
+    const i = Number(searchParams.get('i'));
+
+    if (Number.isFinite(t) && t >= 0) setTotal(t);
+    if (Number.isFinite(o) && o >= 0) setPageOffset(o);
+
+    if (Number.isFinite(i) && i >= 1) setIndex1(i);
+    else if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) setIndex1(o + p + 1);
+  }
+
+  async function ensureCurrentPageIds() {
+    const o = Number(searchParams.get('o'));
+    const p = Number(searchParams.get('p'));
+
+    if (!Number.isFinite(o) || o < 0) return;
+    setPageOffset(o);
+
+    const ids = await fetchPageIds(o);
+    setPageIds(ids);
+
+    if (!Number.isFinite(p) || p < 0) {
+      const idx = ids.findIndex((id) => String(id) === String(questionId));
+      if (idx >= 0) setIndex1(o + idx + 1);
     }
-  
-    async function ensureCurrentPageIds() {
-      const o = Number(searchParams.get('o'));
-      const p = Number(searchParams.get('p'));
-  
-      if (!Number.isFinite(o) || o < 0) return;
-      setPageOffset(o);
-  
-      const ids = await fetchPageIds(o);
-      setPageIds(ids);
-  
-      if (!Number.isFinite(p) || p < 0) {
-        const idx = ids.findIndex((id) => String(id) === String(questionId));
-        if (idx >= 0) setIndex1(o + idx + 1);
-      }
+  }
+
+  async function ensureTotalIfMissing() {
+    if (total != null) return;
+
+    const apiParams = new URLSearchParams(sessionParams);
+    apiParams.delete('session');
+    apiParams.set('limit', '1');
+    apiParams.set('offset', '0');
+
+    const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || 'Failed to get total');
+    setTotal(Number(json.totalCount || 0));
+  }
+
+  async function goToIndex(targetIndex1) {
+    if (total != null) {
+      if (targetIndex1 < 1 || targetIndex1 > total) return;
+    } else {
+      if (targetIndex1 < 1) return;
     }
-  
-    async function ensureTotalIfMissing() {
-      if (total != null) return;
-  
-      const apiParams = new URLSearchParams(sessionParams);
-      apiParams.delete('session');
-      apiParams.set('limit', '1');
-      apiParams.set('offset', '0');
-  
-      const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || 'Failed to get total');
-      setTotal(Number(json.totalCount || 0));
-    }
-  
-    async function goToIndex(targetIndex1) {
-      if (total != null) {
-        if (targetIndex1 < 1 || targetIndex1 > total) return;
-      } else {
-        if (targetIndex1 < 1) return;
-      }
-  
-      const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
-      const targetPos = (targetIndex1 - 1) % 25;
-  
-      const ids = await fetchPageIds(targetOffset);
-      const targetId = ids[targetPos];
-      if (!targetId) return;
-  
-      setPageOffset(targetOffset);
-      setPageIds(ids);
-      setIndex1(targetIndex1);
-  
-      router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
-    }
+
+    const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
+    const targetPos = (targetIndex1 - 1) % 25;
+
+    const ids = await fetchPageIds(targetOffset);
+    const targetId = ids[targetPos];
+    if (!targetId) return;
+
+    setPageOffset(targetOffset);
+    setPageIds(ids);
+    setIndex1(targetIndex1);
+
+    router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
+  }
 
   async function doJumpTo() {
     let n = Number(String(jumpTo).trim());
     if (!Number.isFinite(n)) return;
-  
+
     n = Math.trunc(n);
     if (total != null) n = Math.min(Math.max(1, n), total);
     else n = Math.max(1, n);
-  
+
     await goToIndex(n);
     setShowMap(false);
   }
@@ -466,7 +511,12 @@ export default function PracticeQuestionPage() {
   const correctText = data?.correct_text || null;
 
   const domainCode = String(data?.taxonomy?.domain_code || '').toUpperCase().trim();
+
+  // Reading domain codes (existing behavior)
   const useTwoColReading = qType === 'mcq' && ['EOI', 'INI', 'CAS', 'SEC'].includes(domainCode);
+
+  // Math domain codes (new behavior)
+  const isMath = ['H', 'P', 'S', 'Q'].includes(domainCode);
 
   const headerPills = [
     { label: 'Attempts', value: status?.attempts_count ?? 0 },
@@ -508,6 +558,185 @@ export default function PracticeQuestionPage() {
     if (index1 == null) return;
     goToIndex(index1 + 1);
   };
+
+  // Shared prompt renderer (so MCQ + SPR don’t duplicate stimulus/stem blocks)
+  const PromptBlocks = ({ compactLabels = false, mbWhenNotCompact = 12 }) => (
+    <>
+      {version?.stimulus_html ? (
+        <div className="card subcard" style={{ marginBottom: compactLabels ? 0 : mbWhenNotCompact }}>
+          <div className={compactLabels ? 'srOnly' : 'sectionLabel'}>Stimulus</div>
+          <HtmlBlock className="prose" html={version.stimulus_html} />
+        </div>
+      ) : null}
+
+      {version?.stem_html ? (
+        <div className="card subcard" style={{ marginBottom: compactLabels ? 0 : mbWhenNotCompact }}>
+          <div className={compactLabels ? 'srOnly' : 'sectionLabel'}>Question</div>
+          <HtmlBlock className="prose" html={version.stem_html} />
+        </div>
+      ) : null}
+    </>
+  );
+
+  // Math top-right tool buttons (only shown on math domains)
+  const MathToolRow = ({ align = 'flex-end' } = {}) =>
+    isMath ? (
+      <div className="mathRightHeader" style={{ justifyContent: align }}>
+        {!calcOpen ? (
+          <button type="button" className="btn secondary" onClick={() => setCalcOpen(true)}>
+            Open Calculator
+          </button>
+        ) : null}
+
+        <button type="button" className="btn secondary" onClick={() => setShowRef(true)}>
+          Reference Sheet
+        </button>
+      </div>
+    ) : null;
+
+  // MCQ options area (shared between layouts)
+  const McqOptionsArea = ({ showAnswerHeader = true }) => (
+    <>
+      {showAnswerHeader ? <div className="h2">Answer choices</div> : <div className="srOnly">Answer choices</div>}
+
+      <div className="optionList">
+        {options
+          .slice()
+          .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
+          .map((opt) => {
+            const isSelected = selected === opt.id;
+
+            return (
+              <div
+                key={opt.id}
+                className={(() => {
+                  let cls = 'option' + (isSelected ? ' selected' : '');
+                  if (locked) {
+                    const isCorrect = String(opt.id) === String(correctOptionId);
+                    if (isSelected && isCorrect) cls += ' correct';
+                    else if (isSelected && !isCorrect) cls += ' incorrect';
+                  }
+                  return cls;
+                })()}
+                onClick={() => {
+                  if (locked) return;
+                  setSelected(opt.id);
+                }}
+                style={{ cursor: locked ? 'default' : 'pointer' }}
+              >
+                <div className="optionBadge">{opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}</div>
+                <div className="optionContent">
+                  <HtmlBlock className="prose" html={opt.content_html} />
+                </div>
+              </div>
+            );
+          })}
+      </div>
+
+      <div className="row" style={{ gap: 10, marginTop: 14 }}>
+        <div className="btnRow">
+          <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected}>
+            Submit
+          </button>
+
+          <button className="btn secondary" onClick={toggleMarkForReview}>
+            {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
+          </button>
+        </div>
+
+        {locked && (version?.rationale_html || version?.explanation_html) ? (
+          <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+            {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+          </button>
+        ) : null}
+
+        <div className="btnRow">
+          <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
+            Prev
+          </button>
+
+          <button className="btn secondary" onClick={goNext} disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}>
+            Next
+          </button>
+        </div>
+      </div>
+    </>
+  );
+
+  // SPR answer area (shared between layouts)
+  const SprAnswerArea = () => (
+    <>
+      <div className="h2">Your answer</div>
+
+      {locked ? (
+        <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+          <span className="pill">
+            <span className="muted">Result</span> <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+          </span>
+
+          {!status?.last_is_correct && correctText ? (
+            <span className="pill">
+              <span className="muted">Correct answer</span>{' '}
+              <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
+      <textarea
+        className="input"
+        value={responseText}
+        onChange={(e) => setResponseText(e.target.value)}
+        placeholder="Type your answer…"
+        rows={4}
+        disabled={locked}
+        style={{ marginTop: 10 }}
+      />
+
+      <div className="row" style={{ gap: 10, marginTop: 14 }}>
+        <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
+          Submit
+        </button>
+
+        <button className="btn secondary" onClick={toggleMarkForReview}>
+          {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
+        </button>
+
+        {locked && (version?.rationale_html || version?.explanation_html) ? (
+          <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+            {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+          </button>
+        ) : null}
+
+        <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
+          Prev
+        </button>
+
+        <button className="btn secondary" onClick={goNext} disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}>
+          Next
+        </button>
+      </div>
+    </>
+  );
+
+  // Math shell wrapper (calculator left, content right; when closed, content centers)
+  const MathShell = ({ children }) => (
+    <div className={`mathShell ${calcOpen ? 'withCalc' : 'noCalc'}`}>
+      {calcOpen ? (
+        <aside className="mathLeft" aria-label="Calculator panel">
+          <div className="mathLeftHeader">
+            <div className="mathToolTitle">Calculator</div>
+            <button type="button" className="btn secondary" onClick={() => setCalcOpen(false)}>
+              Close
+            </button>
+          </div>
+          <DesmosPanel visible={calcOpen} />
+        </aside>
+      ) : null}
+
+      <main className="mathRight">{children}</main>
+    </div>
+  );
 
   return (
     <main className="container">
@@ -560,160 +789,46 @@ export default function PracticeQuestionPage() {
       <hr />
 
       {qType === 'mcq' ? (
-        <div className={useTwoColReading ? 'qaTwoCol' : ''}>
-          <div className={useTwoColReading ? 'qaLeft' : ''}>
-            {version?.stimulus_html ? (
-              <div className="card subcard" style={{ marginBottom: useTwoColReading ? 0 : 12 }}>
-                <div className={useTwoColReading ? 'srOnly' : 'sectionLabel'}>Stimulus</div>
-                <HtmlBlock className="prose" html={version.stimulus_html} />
-              </div>
-            ) : null}
-
-            {version?.stem_html ? (
-              <div className="card subcard" style={{ marginBottom: useTwoColReading ? 0 : 12 }}>
-                <div className={useTwoColReading ? 'srOnly' : 'sectionLabel'}>Question</div>
-                <HtmlBlock className="prose" html={version.stem_html} />
-              </div>
-            ) : null}
-          </div>
-
-          <div className={useTwoColReading ? 'qaRight' : ''}>
-            {!useTwoColReading ? <div className="h2">Answer choices</div> : <div className="srOnly">Answer choices</div>}
-
-            <div className="optionList">
-              {options
-                .slice()
-                .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
-                .map((opt) => {
-                  const isSelected = selected === opt.id;
-
-                  return (
-                    <div
-                      key={opt.id}
-                      className={(() => {
-                        let cls = 'option' + (isSelected ? ' selected' : '');
-                        if (locked) {
-                          const isCorrect = String(opt.id) === String(correctOptionId);
-                          if (isSelected && isCorrect) cls += ' correct';
-                          else if (isSelected && !isCorrect) cls += ' incorrect';
-                        }
-                        return cls;
-                      })()}
-                      onClick={() => {
-                        if (locked) return;
-                        setSelected(opt.id);
-                      }}
-                      style={{ cursor: locked ? 'default' : 'pointer' }}
-                    >
-                      <div className="optionBadge">{opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}</div>
-                      <div className="optionContent">
-                        <HtmlBlock className="prose" html={opt.content_html} />
-                      </div>
-                    </div>
-                  );
-                })}
+        // MCQ branch
+        useTwoColReading ? (
+          // ✅ Preserve existing Reading two-column format
+          <div className="qaTwoCol">
+            <div className="qaLeft">
+              <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
             </div>
 
-            <div className="row" style={{ gap: 10, marginTop: 14 }}>
-              <div className="btnRow">
-                <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected}>
-                  Submit
-                </button>
-
-                <button className="btn secondary" onClick={toggleMarkForReview}>
-                  {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
-                </button>
-              </div>
-
-              {locked && (version?.rationale_html || version?.explanation_html) ? (
-                <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
-                  {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
-                </button>
-              ) : null}
-
-              <div className="btnRow">
-                <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
-                  Prev
-                </button>
-
-                <button
-                  className="btn secondary"
-                  onClick={goNext}
-                  disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}
-                >
-                  Next
-                </button>
-              </div>
+            <div className="qaRight">
+              <McqOptionsArea showAnswerHeader={false} />
             </div>
           </div>
-        </div>
+        ) : isMath ? (
+          // ✅ New Math format: calculator left, question+answers right
+          <MathShell>
+            <MathToolRow />
+            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
+            <McqOptionsArea showAnswerHeader={true} />
+          </MathShell>
+        ) : (
+          // ✅ Default MCQ (non-reading, non-math): keep existing single-column behavior
+          <div>
+            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
+            <McqOptionsArea showAnswerHeader={true} />
+          </div>
+        )
       ) : (
-        <div>
-          {version?.stimulus_html ? (
-            <div className="card subcard" style={{ marginBottom: 12 }}>
-              <div className="sectionLabel">Stimulus</div>
-              <HtmlBlock className="prose" html={version.stimulus_html} />
-            </div>
-          ) : null}
-
-          {version?.stem_html ? (
-            <div className="card subcard" style={{ marginBottom: 12 }}>
-              <div className="sectionLabel">Question</div>
-              <HtmlBlock className="prose" html={version.stem_html} />
-            </div>
-          ) : null}
-
-          <div className="h2">Your answer</div>
-
-          {locked ? (
-            <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-              <span className="pill">
-                <span className="muted">Result</span> <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
-              </span>
-
-              {!status?.last_is_correct && correctText ? (
-                <span className="pill">
-                  <span className="muted">Correct answer</span>{' '}
-                  <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
-                </span>
-              ) : null}
-            </div>
-          ) : null}
-
-          <textarea
-            className="input"
-            value={responseText}
-            onChange={(e) => setResponseText(e.target.value)}
-            placeholder="Type your answer…"
-            rows={4}
-            disabled={locked}
-            style={{ marginTop: 10 }}
-          />
-
-          <div className="row" style={{ gap: 10, marginTop: 14 }}>
-            <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
-              Submit
-            </button>
-
-            <button className="btn secondary" onClick={toggleMarkForReview}>
-              {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
-            </button>
-
-            {locked && (version?.rationale_html || version?.explanation_html) ? (
-              <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
-                {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
-              </button>
-            ) : null}
-
-            <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
-              Prev
-            </button>
-
-            <button className="btn secondary" onClick={goNext} disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}>
-              Next
-            </button>
+        // SPR branch
+        isMath ? (
+          <MathShell>
+            <MathToolRow />
+            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
+            <SprAnswerArea />
+          </MathShell>
+        ) : (
+          <div>
+            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
+            <SprAnswerArea />
           </div>
-        </div>
+        )
       )}
 
       {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
@@ -724,6 +839,35 @@ export default function PracticeQuestionPage() {
             <HtmlBlock className="prose" html={version.rationale_html || version.explanation_html} />
           </div>
         </>
+      ) : null}
+
+      {/* Math Reference Sheet Modal (local PDF in /public) */}
+      {showRef ? (
+        <div className="modalOverlay" onClick={() => setShowRef(false)} role="dialog" aria-modal="true" aria-label="SAT Math reference sheet">
+          <div className="modalCard" onClick={(e) => e.stopPropagation()} style={{ width: 'min(980px, 96vw)' }}>
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div className="h2" style={{ margin: 0 }}>
+                SAT Math Reference Sheet
+              </div>
+              <div className="btnRow">
+                <a className="btn secondary" href="/math_reference_sheet.pdf" target="_blank" rel="noreferrer noopener">
+                  Open
+                </a>
+                <button className="btn secondary" onClick={() => setShowRef(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
+
+            <hr />
+
+            <iframe
+              title="SAT Math reference sheet"
+              src="/math_reference_sheet.pdf"
+              style={{ width: '100%', height: '75vh', border: 0, borderRadius: 12 }}
+            />
+          </div>
+        </div>
       ) : null}
 
       {showMap ? (
@@ -763,11 +907,7 @@ export default function PracticeQuestionPage() {
                   placeholder="Jump to #"
                   inputMode="numeric"
                 />
-                <button
-                  className="btn primary"
-                  disabled={mapLoading}
-                  onClick={doJumpTo}
-                >
+                <button className="btn primary" disabled={mapLoading} onClick={doJumpTo}>
                   Go
                 </button>
 
@@ -781,11 +921,7 @@ export default function PracticeQuestionPage() {
 
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div className="btnRow">
-                <button
-                  className="btn secondary"
-                  onClick={() => loadMapPage(mapOffset - MAP_PAGE_SIZE)}
-                  disabled={mapLoading || mapOffset <= 0}
-                >
+                <button className="btn secondary" onClick={() => loadMapPage(mapOffset - MAP_PAGE_SIZE)} disabled={mapLoading || mapOffset <= 0}>
                   Prev
                 </button>
 
@@ -817,19 +953,15 @@ export default function PracticeQuestionPage() {
                   const id = it.question_id;
                   const i = mapOffset + pos + 1;
                   const active = index1 != null && i === index1;
-                
+
                   const diff = Number(it.difficulty);
-                  const diffClass =
-                    diff === 1 ? 'diffEasy' :
-                    diff === 2 ? 'diffMed' :
-                    diff === 3 ? 'diffHard' :
-                    'diffUnknown';
-                
+                  const diffClass = diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : 'diffUnknown';
+
                   const showMark = Boolean(it.marked_for_review);
                   const showDone = Boolean(it.is_done);
                   const showCorrect = showDone && it.last_is_correct === true;
                   const showIncorrect = showDone && it.last_is_correct === false;
-                
+
                   return (
                     <button
                       key={String(id)}
@@ -846,35 +978,29 @@ export default function PracticeQuestionPage() {
                     >
                       {/* Question number */}
                       <span className="mapNum">{i}</span>
-                
+
                       {/* Top-left: Marked */}
                       {showMark ? (
                         <span className="mapIconCorner mapIconLeft" aria-hidden="true">
                           <span className="mapIconBadge mark" title="Marked for review">
                             <svg viewBox="0 0 24 24" width="14" height="14">
-                              <path
-                                fill="currentColor"
-                                d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
-                              />
+                              <path fill="currentColor" d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z" />
                             </svg>
                           </span>
                         </span>
                       ) : null}
-                
+
                       {/* Top-right: Correct / Incorrect */}
-                      {(showCorrect || showIncorrect) ? (
+                      {showCorrect || showIncorrect ? (
                         <span className="mapIconCorner mapIconRight" aria-hidden="true">
                           {showCorrect ? (
                             <span className="mapIconBadge correct" title="Correct">
                               <svg viewBox="0 0 24 24" width="14" height="14">
-                                <path
-                                  fill="currentColor"
-                                  d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"
-                                />
+                                <path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
                               </svg>
                             </span>
                           ) : null}
-                
+
                           {showIncorrect ? (
                             <span className="mapIconBadge incorrect" title="Incorrect">
                               <svg viewBox="0 0 24 24" width="14" height="14">
@@ -901,6 +1027,79 @@ export default function PracticeQuestionPage() {
           </div>
         </div>
       ) : null}
+
+      {/* Minimal CSS for the math two-column calculator layout (kept local to this page) */}
+      <style jsx global>{`
+        .mathShell {
+          display: grid;
+          gap: 18px;
+          align-items: start;
+        }
+        .mathShell.withCalc {
+          grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+        }
+        .mathShell.noCalc {
+          grid-template-columns: 1fr;
+        }
+
+        .mathLeft {
+          position: sticky;
+          top: 12px;
+          align-self: start;
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          background: #fff;
+          overflow: hidden;
+        }
+
+        .mathLeftHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .mathToolTitle {
+          font-weight: 600;
+        }
+
+        .desmosHost {
+          width: 100%;
+          height: calc(100vh - 92px);
+        }
+
+        .mathRight {
+          min-width: 0;
+        }
+
+        .mathShell.noCalc .mathRight {
+          max-width: 860px;
+          margin: 0 auto;
+        }
+
+        .mathRightHeader {
+          display: flex;
+          gap: 10px;
+          justify-content: flex-end;
+          align-items: center;
+          margin-bottom: 12px;
+        }
+
+        @media (max-width: 920px) {
+          .mathShell.withCalc {
+            grid-template-columns: 1fr;
+          }
+          .mathLeft {
+            position: relative;
+            top: auto;
+          }
+          .desmosHost {
+            height: 420px;
+          }
+        }
+      `}</style>
     </main>
   );
 }
