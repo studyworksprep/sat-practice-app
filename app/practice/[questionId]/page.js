@@ -167,7 +167,7 @@ export default function PracticeQuestionPage() {
   // ✅ Fetch IDs for map window (cached, loaded on modal open)
   async function fetchMapIds(offset) {
     const key = `practice_${sessionParamsString}_map_${offset}`;
-
+  
     const raw = localStorage.getItem(key);
     if (raw) {
       try {
@@ -175,20 +175,20 @@ export default function PracticeQuestionPage() {
         if (Array.isArray(arr) && arr.length > 0) return arr;
       } catch {}
     }
-
+  
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session');
     apiParams.set('limit', String(MAP_PAGE_SIZE));
     apiParams.set('offset', String(offset));
-
+  
     const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || 'Failed to fetch map ids');
-
+  
     const items = (json.items || []).filter((it) => it?.question_id);
-    setMapIds(items);
-    localStorage.setItem(key, JSON.stringify(ids));
-    return ids;
+  
+    localStorage.setItem(key, JSON.stringify(items));
+    return items;
   }
 
   async function loadMapPage(offset) {
@@ -766,12 +766,7 @@ export default function PracticeQuestionPage() {
                 <button
                   className="btn primary"
                   disabled={mapLoading}
-                  onClick={async () => {
-                    const n = Number(String(jumpTo).trim());
-                    if (!Number.isFinite(n) || n < 1) return;
-                    await goToIndex(n);
-                    setShowMap(false);
-                  }}
+                  onClick={doJumpTo}
                 >
                   Go
                 </button>
