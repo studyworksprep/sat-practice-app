@@ -36,6 +36,18 @@ function DesmosPanel({ visible, resizeTick }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const [ready, setReady] = useState(false);
+  const resizeTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    if (calcMinimized) return;
+    if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+    resizeTimeoutRef.current = setTimeout(() => {
+      setDesmosResizeTick((t) => t + 1);
+    }, 80);
+    return () => {
+      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+    };
+  }, [calcWidth, calcMinimized]);
 
   // If the script was already loaded, onLoad might not fire (esp. after minimization).
   useEffect(() => {
@@ -783,13 +795,6 @@ export default function PracticeQuestionPage() {
       const dx = ev.clientX - dragRef.current.startX;
       const next = Math.min(Math.max(dragRef.current.startW + dx, MIN_CALC_W), MAX_CALC_W);
       setCalcWidth(next);
-
-      if (!dragRef.current.raf) {
-        dragRef.current.raf = requestAnimationFrame(() => {
-          dragRef.current.raf = 0;
-          setDesmosResizeTick((t) => t + 1);
-        });
-      }
     };
 
     const onUp = () => {
