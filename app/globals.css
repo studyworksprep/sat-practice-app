@@ -719,6 +719,15 @@ hr{
 /* --- Map difficulty colors + status icons --- */
 .mapItem{
   position: relative;
+  padding: 12px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
 }
 
 .mapNum{
@@ -746,28 +755,37 @@ hr{
 
 /* Keep your existing .mapItem.active border, but ensure it wins visually */
 .mapItem.active{
-  box-shadow: 0 0 0 2px rgba(17,24,39,0.35) inset;
+  outline: 2px solid rgba(17,24,39,0.35);
+  outline-offset: -2px;
+  box-shadow: none;
 }
 
 /* --- Map icon corners + colored indicators --- */
 
 .mapIconCorner{
   position: absolute;
-  top: 6px;
+  top: 3px;
   z-index: 2;
+  pointer-events: none;
 }
 
-.mapIconLeft{ left: 6px; }
-.mapIconRight{ right: 6px; }
+.mapIconLeft{ left: 3px; }
+.mapIconRight{ right: 3px; }
 
 .mapIconBadge{
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 999px;
   display: grid;
   place-items: center;
   color: #fff;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+  box-shadow: none;
+}
+
+.mapIconBadge svg{
+  width: 12px;
+  height: 12px;
+  display: block;
 }
 
 /* Marked for review (yellow) */
