@@ -716,3 +716,56 @@ hr{
   color: var(--muted);
   transform: translateY(1px);
 }
+
+/* --- Map difficulty colors + status icons --- */
+.mapItem{
+  position: relative;
+}
+
+.mapNum{
+  position: relative;
+  z-index: 1;
+}
+
+/* Difficulty backgrounds */
+.mapItem.diffEasy{
+  background: #dcfce7; /* pale green */
+  border-color: #86efac;
+}
+.mapItem.diffMed{
+  background: #fef9c3; /* pale yellow */
+  border-color: #fde047;
+}
+.mapItem.diffHard{
+  background: #fee2e2; /* pale red */
+  border-color: #fca5a5;
+}
+.mapItem.diffUnknown{
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+/* Keep your existing .mapItem.active border, but ensure it wins visually */
+.mapItem.active{
+  box-shadow: 0 0 0 2px rgba(17,24,39,0.35) inset;
+}
+
+/* Icon stack (top-right) */
+.mapIcons{
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+.mapIconBadge{
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(17,24,39,0.75);
+  color: #fff;
+}
