@@ -1151,12 +1151,6 @@ export default function PracticeQuestionPage() {
           grid-template-columns: var(--calcW, 660px) 12px minmax(0, 1fr);
         }
 
-        .mathDivider {
-          align-self: stretch;     /* belt + suspenders */
-          min-height: 360px;       /* ensures visible even on short content */
-          touch-action: none;      /* improves pointer dragging on touchpads */
-        }
-
         .mathLeft {
           position: sticky;
           top: 12px;
@@ -1183,7 +1177,6 @@ export default function PracticeQuestionPage() {
         }
 
         .desmosHost {
-          .desmosHost{
           width: 100%;
           height: min(560px, calc(100vh - 220px)); /* ✅ capped */
           background: #fff;
@@ -1196,6 +1189,10 @@ export default function PracticeQuestionPage() {
         .mathDivider {
           cursor: col-resize;
           position: relative;
+
+          align-self: stretch;     /* belt + suspenders */
+          min-height: 360px;       /* ensures visible even on short content */
+          touch-action: none;      /* improves pointer dragging on touchpads */
         }
 
         .mathDivider::before {
