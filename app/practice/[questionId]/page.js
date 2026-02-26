@@ -634,7 +634,6 @@ export default function PracticeQuestionPage() {
             setDesmosResizeTick((t) => t + 1);
           }}
         >
-          {calcMinimized ? 'Show Calculator' : 'Minimize Calculator'}
         </button>
 
         <button type="button" className="btn secondary" onClick={() => setShowRef(true)}>
