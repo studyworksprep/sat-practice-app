@@ -107,13 +107,14 @@ export async function GET(request) {
         difficulty,
         score_band
       ),
-      question_status!left (
+     question_status!left (
         user_id,
         question_id,
         is_done,
         marked_for_review,
         attempts_count,
-        correct_attempts_count
+        correct_attempts_count,
+        last_is_correct
       )
     `,
       { count: 'exact' }
@@ -162,6 +163,7 @@ export async function GET(request) {
         marked_for_review: st?.marked_for_review ?? false,
         attempts_count: st?.attempts_count ?? 0,
         correct_attempts_count: st?.correct_attempts_count ?? 0,
+        last_is_correct: st?.last_is_correct ?? null,
       };
     })
     .filter(Boolean);
