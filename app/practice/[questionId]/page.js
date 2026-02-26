@@ -36,16 +36,17 @@ function DesmosPanel({ visible, resizeTick }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const [ready, setReady] = useState(false);
-  
+
+  // If the script was already loaded, onLoad might not fire (esp. after minimization).
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Desmos) setReady(true);
   }, []);
 
+  // Initialize exactly once
   useEffect(() => {
     if (!visible) return;
     if (!ready) return;
     if (!hostRef.current) return;
-    if (typeof window === 'undefined') return;
     if (!window.Desmos) return;
 
     if (!calcRef.current) {
@@ -56,20 +57,19 @@ function DesmosPanel({ visible, resizeTick }) {
         zoomButtons: true,
       });
     }
+  }, [visible, ready]);
 
-
-    // Ensure it sizes correctly after mount/toggle/drag
-    setTimeout(() => {
+  // Resize only (no re-init)
+  useEffect(() => {
+    if (!visible) return;
+    if (!calcRef.current) return;
+    // rAF helps during drag
+    requestAnimationFrame(() => {
       try {
         calcRef.current?.resize?.();
       } catch {}
-    }, 0);
-
-        // critical for drag + re-open
-    requestAnimationFrame(() => {
-      try { calcRef.current?.resize?.(); } catch {}
     });
-  }, [visible, ready, resizeTick]);
+  }, [visible, resizeTick]);
 
   return (
     <>
