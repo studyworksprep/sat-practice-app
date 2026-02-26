@@ -834,3 +834,40 @@ hr{
 .mathShell .prose mjx-container{
   font-size: 1.05em;
 }
+
+/* ===============================
+   Math Calculator Panel Polish
+================================ */
+
+/* Slightly soften calculator background */
+.mathLeft{
+  background: #f9fafb; /* subtle gray instead of pure white */
+  border: 1px solid rgba(17,24,39,0.06);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+}
+
+/* Refine header */
+.mathLeftHeader{
+  background: rgba(17,24,39,0.03);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Add a clean vertical divider feel */
+.mathShell.withCalc .mathRight{
+  padding-left: 22px;
+  border-left: 1px solid var(--border);
+}
+
+/* Remove divider when calculator closed */
+.mathShell.noCalc .mathRight{
+  border-left: none;
+  padding-left: 0;
+}
+
+/* Slight visual containment for calculator canvas */
+.desmosHost{
+  background: white;
+}
