@@ -36,6 +36,10 @@ function DesmosPanel({ visible, resizeTick }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const [ready, setReady] = useState(false);
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Desmos) setReady(true);
+  }, []);
 
   useEffect(() => {
     if (!visible) return;
@@ -53,12 +57,18 @@ function DesmosPanel({ visible, resizeTick }) {
       });
     }
 
+
     // Ensure it sizes correctly after mount/toggle/drag
     setTimeout(() => {
       try {
         calcRef.current?.resize?.();
       } catch {}
     }, 0);
+
+        // critical for drag + re-open
+    requestAnimationFrame(() => {
+      try { calcRef.current?.resize?.(); } catch {}
+    });
   }, [visible, ready, resizeTick]);
 
   return (
@@ -819,7 +829,10 @@ export default function PracticeQuestionPage() {
           </button>
         </div>
 
-        {!calcMinimized ? <DesmosPanel visible={!calcMinimized} resizeTick={desmosResizeTick} /> : <div className="calcMinBody" />}
+        <div style={{ display: calcMinimized ? 'none' : 'block' }}>
+          <DesmosPanel visible={!calcMinimized} resizeTick={desmosResizeTick} />
+        </div>
+        {calcMinimized ? <div className="calcMinBody" /> : null}
       </aside>
 
       {!calcMinimized ? (
@@ -1151,7 +1164,8 @@ export default function PracticeQuestionPage() {
           border: 1px solid var(--border);
           border-radius: 18px;
           background: #f9fafb;
-          overflow: hidden;
+          max-height: calc(100vh - 24px);
+          overflow: hidden; /* header + body */
         }
 
         .mathLeftHeader {
@@ -1169,8 +1183,9 @@ export default function PracticeQuestionPage() {
         }
 
         .desmosHost {
+          .desmosHost{
           width: 100%;
-          height: calc(100vh - 92px);
+          height: min(560px, calc(100vh - 220px)); /* ✅ capped */
           background: #fff;
         }
 
