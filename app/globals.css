@@ -662,12 +662,11 @@ hr{
   margin-top: 16px;
 }
 
-.mapItem{
-  padding: 10px 0;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: white;
-  cursor: pointer;
+.mapItem {
+  padding: 12px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mapItem.active{
