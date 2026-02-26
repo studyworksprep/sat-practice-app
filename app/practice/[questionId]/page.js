@@ -156,7 +156,9 @@ export default function PracticeQuestionPage() {
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || 'Failed to fetch page');
 
-    const ids = (json.items || []).map((it) => it.question_id).filter(Boolean);
+    const items = (json.items || []).filter((it) => it?.question_id);
+    localStorage.setItem(key, JSON.stringify(items));
+    return items;
 
     localStorage.setItem(key, JSON.stringify(ids));
     return ids;
@@ -183,7 +185,8 @@ export default function PracticeQuestionPage() {
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || 'Failed to fetch map ids');
 
-    const ids = (json.items || []).map((it) => it.question_id).filter(Boolean);
+    const items = (json.items || []).filter((it) => it?.question_id);
+    setMapIds(items);
     localStorage.setItem(key, JSON.stringify(ids));
     return ids;
   }
@@ -815,25 +818,74 @@ export default function PracticeQuestionPage() {
                   No questions in this range.
                 </div>
               ) : (
-                mapIds.map((id, pos) => {
+                mapIds.map((it, pos) => {
+                  const id = it.question_id;
                   const i = mapOffset + pos + 1;
                   const active = index1 != null && i === index1;
-
+                
+                  const diff = Number(it.difficulty); // 1,2,3
+                  const diffClass = diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : 'diffUnknown';
+                
+                  const showMark = Boolean(it.marked_for_review);
+                  const showDone = Boolean(it.is_done);
+                  const showCorrect = showDone && it.last_is_correct === true;
+                  const showIncorrect = showDone && it.last_is_correct === false;
+                
                   return (
                     <button
                       key={String(id)}
                       type="button"
-                      className={'mapItem' + (active ? ' active' : '')}
+                      className={`mapItem ${diffClass}${active ? ' active' : ''}`}
                       onClick={() => {
+                        setIndex1(i);
                         const o25 = Math.floor((i - 1) / 25) * 25;
                         const p25 = (i - 1) % 25;
-                        setIndex1(i);
                         setShowMap(false);
                         router.push(buildHref(id, total, o25, p25, i));
                       }}
                       title={`Go to #${i}`}
                     >
-                      {i}
+                      <span className="mapNum">{i}</span>
+                
+                      {(showMark || showCorrect || showIncorrect) ? (
+                        <span className="mapIcons" aria-hidden="true">
+                          {showMark ? (
+                            <span className="mapIconBadge" title="Marked for review">
+                              {/* bookmark */}
+                              <svg viewBox="0 0 24 24" width="14" height="14">
+                                <path
+                                  fill="currentColor"
+                                  d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
+                                />
+                              </svg>
+                            </span>
+                          ) : null}
+                
+                          {showCorrect ? (
+                            <span className="mapIconBadge" title="Correct">
+                              {/* check */}
+                              <svg viewBox="0 0 24 24" width="14" height="14">
+                                <path
+                                  fill="currentColor"
+                                  d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"
+                                />
+                              </svg>
+                            </span>
+                          ) : null}
+                
+                          {showIncorrect ? (
+                            <span className="mapIconBadge" title="Incorrect">
+                              {/* x */}
+                              <svg viewBox="0 0 24 24" width="14" height="14">
+                                <path
+                                  fill="currentColor"
+                                  d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3 10.6 10.6 16.9 4.3z"
+                                />
+                              </svg>
+                            </span>
+                          ) : null}
+                        </span>
+                      ) : null}
                     </button>
                   );
                 })
