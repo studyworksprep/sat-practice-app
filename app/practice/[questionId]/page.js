@@ -136,30 +136,15 @@ export default function PracticeQuestionPage() {
     }
   }
 
-    async function fetchPageIds(offset) {
-      const key = `practice_${sessionParamsString}_page_${offset}`;
-    
-      const raw = localStorage.getItem(key);
-      if (raw) {
-        try {
-          const arr = JSON.parse(raw);
-          if (Array.isArray(arr) && arr.length > 0) return arr;
-        } catch {}
-      }
-    
-      const apiParams = new URLSearchParams(sessionParams);
-      apiParams.delete('session');
-      apiParams.set('limit', '25');
-      apiParams.set('offset', String(offset));
-    
-      const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || 'Failed to fetch page');
-    
-      const ids = (json.items || []).map((it) => it.question_id).filter(Boolean);
-    
-      localStorage.setItem(key, JSON.stringify(ids));
-      return ids;
+  async function fetchPageIds(offset) {
+    const key = `practice_${sessionParamsString}_page_${offset}`;
+
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr) && arr.length > 0) return arr;
+      } catch {}
     }
 
     const apiParams = new URLSearchParams(sessionParams);
@@ -171,18 +156,18 @@ export default function PracticeQuestionPage() {
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || 'Failed to fetch page');
 
-    const items = (json.items || []).filter((it) => it?.question_id);
-    localStorage.setItem(key, JSON.stringify(items));
-    return items;
+    const ids = (json.items || []).map((it) => it.question_id).filter(Boolean);
 
     localStorage.setItem(key, JSON.stringify(ids));
     return ids;
   }
 
-  // ✅ Fetch IDs for map window (cached, loaded on modal open)
+  // ✅ Fetch IDs + metadata for map window (cached, loaded on modal open)
+  // Returns an array of "items" objects (NOT just ids), so we can render:
+  // difficulty color + marked + correct/incorrect icons.
   async function fetchMapIds(offset) {
     const key = `practice_${sessionParamsString}_map_${offset}`;
-  
+
     const raw = localStorage.getItem(key);
     if (raw) {
       try {
@@ -190,18 +175,18 @@ export default function PracticeQuestionPage() {
         if (Array.isArray(arr) && arr.length > 0) return arr;
       } catch {}
     }
-  
+
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session');
     apiParams.set('limit', String(MAP_PAGE_SIZE));
     apiParams.set('offset', String(offset));
-  
+
     const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || 'Failed to fetch map ids');
-  
+
     const items = (json.items || []).filter((it) => it?.question_id);
-  
+
     localStorage.setItem(key, JSON.stringify(items));
     return items;
   }
@@ -210,78 +195,78 @@ export default function PracticeQuestionPage() {
     setMapLoading(true);
     try {
       const safe = Math.max(0, offset);
-      const ids = await fetchMapIds(safe);
-      setMapIds(ids);
+      const items = await fetchMapIds(safe);
+      setMapIds(items);
       setMapOffset(safe);
     } finally {
       setMapLoading(false);
     }
   }
-
-  // look for "i" (index) in URL
-  function primeNavMetaFromUrl() {
-    const t = Number(searchParams.get('t'));
-    const o = Number(searchParams.get('o'));
-    const p = Number(searchParams.get('p'));
-    const i = Number(searchParams.get('i'));
-
-    if (Number.isFinite(t) && t >= 0) setTotal(t);
-    if (Number.isFinite(o) && o >= 0) setPageOffset(o);
-
-    if (Number.isFinite(i) && i >= 1) setIndex1(i);
-    else if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) setIndex1(o + p + 1);
-  }
-
-  async function ensureCurrentPageIds() {
-    const o = Number(searchParams.get('o'));
-    const p = Number(searchParams.get('p'));
-
-    if (!Number.isFinite(o) || o < 0) return;
-    setPageOffset(o);
-
-    const ids = await fetchPageIds(o);
-    setPageIds(ids);
-
-    if (!Number.isFinite(p) || p < 0) {
-      const idx = ids.findIndex((id) => String(id) === String(questionId));
-      if (idx >= 0) setIndex1(o + idx + 1);
+  
+    // look for "i" (index) in URL
+    function primeNavMetaFromUrl() {
+      const t = Number(searchParams.get('t'));
+      const o = Number(searchParams.get('o'));
+      const p = Number(searchParams.get('p'));
+      const i = Number(searchParams.get('i'));
+  
+      if (Number.isFinite(t) && t >= 0) setTotal(t);
+      if (Number.isFinite(o) && o >= 0) setPageOffset(o);
+  
+      if (Number.isFinite(i) && i >= 1) setIndex1(i);
+      else if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) setIndex1(o + p + 1);
     }
-  }
-
-  async function ensureTotalIfMissing() {
-    if (total != null) return;
-
-    const apiParams = new URLSearchParams(sessionParams);
-    apiParams.delete('session');
-    apiParams.set('limit', '1');
-    apiParams.set('offset', '0');
-
-    const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json?.error || 'Failed to get total');
-    setTotal(Number(json.totalCount || 0));
-  }
-
-  async function goToIndex(targetIndex1) {
-    if (total != null) {
-      if (targetIndex1 < 1 || targetIndex1 > total) return;
-    } else {
-      if (targetIndex1 < 1) return;
+  
+    async function ensureCurrentPageIds() {
+      const o = Number(searchParams.get('o'));
+      const p = Number(searchParams.get('p'));
+  
+      if (!Number.isFinite(o) || o < 0) return;
+      setPageOffset(o);
+  
+      const ids = await fetchPageIds(o);
+      setPageIds(ids);
+  
+      if (!Number.isFinite(p) || p < 0) {
+        const idx = ids.findIndex((id) => String(id) === String(questionId));
+        if (idx >= 0) setIndex1(o + idx + 1);
+      }
     }
-
-    const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
-    const targetPos = (targetIndex1 - 1) % 25;
-
-    const ids = await fetchPageIds(targetOffset);
-    const targetId = ids[targetPos];
-    if (!targetId) return;
-
-    setPageOffset(targetOffset);
-    setPageIds(ids);
-    setIndex1(targetIndex1);
-
-    router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
-  }
+  
+    async function ensureTotalIfMissing() {
+      if (total != null) return;
+  
+      const apiParams = new URLSearchParams(sessionParams);
+      apiParams.delete('session');
+      apiParams.set('limit', '1');
+      apiParams.set('offset', '0');
+  
+      const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to get total');
+      setTotal(Number(json.totalCount || 0));
+    }
+  
+    async function goToIndex(targetIndex1) {
+      if (total != null) {
+        if (targetIndex1 < 1 || targetIndex1 > total) return;
+      } else {
+        if (targetIndex1 < 1) return;
+      }
+  
+      const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
+      const targetPos = (targetIndex1 - 1) % 25;
+  
+      const ids = await fetchPageIds(targetOffset);
+      const targetId = ids[targetPos];
+      if (!targetId) return;
+  
+      setPageOffset(targetOffset);
+      setPageIds(ids);
+      setIndex1(targetIndex1);
+  
+      router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
+    }
 
   async function doJumpTo() {
     let n = Number(String(jumpTo).trim());
