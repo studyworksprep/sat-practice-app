@@ -366,8 +366,8 @@ export default function PracticeQuestionPage() {
     { label: 'Marked', value: status?.marked_for_review ? 'Yes' : 'No' },
   ];
 
-  const prevDisabledIndex = index1 == null || index1 <= 1;
-  const nextDisabledIndex = index1 == null || (total != null && index1 >= total);
+  const prevDisabled = navLoading || !index1 || index1 <= 1 || !prevId;
+  const nextDisabled = navLoading || !index1 || !total || index1 >= total || !nextId;
 
   // ✅ Only enable neighbor nav when neighbors are loaded for THIS questionId
   const neighborsReady = navMode === 'neighbors' && navForId === questionId && !navLoading;
