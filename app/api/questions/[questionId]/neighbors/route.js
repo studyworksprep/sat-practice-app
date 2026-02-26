@@ -22,8 +22,11 @@ export async function GET(req, { params }) {
   const topic = searchParams.get('topic');
   const marked_only = searchParams.get('marked_only') === 'true';
 
+  const userId = auth.user.id;
+
   const args = {
     current_question_id: currentId,
+    p_user_id: userId,
     p_program: 'SAT',
     p_difficulty: difficulty ? Number(difficulty) : null,
     p_score_bands: score_bands
@@ -43,18 +46,5 @@ export async function GET(req, { params }) {
     next_id: row?.next_id ?? null,
   });
 
-  const userId = auth.user.id;
 
-  const args = {
-    current_question_id: currentId,
-    p_user_id: userId,
-    p_program: 'SAT',
-    p_difficulty: difficulty ? Number(difficulty) : null,
-    p_score_bands: score_bands
-      ? score_bands.split(',').map((n) => Number(n)).filter(Number.isFinite)
-      : null,
-    p_domain_name: domain || null,
-    p_skill_name: topic || null,
-    p_marked_only: marked_only,
-  };
 }
