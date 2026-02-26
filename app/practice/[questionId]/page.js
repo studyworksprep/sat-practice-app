@@ -31,19 +31,18 @@ function stripHtml(html) {
     .trim();
 }
 
-// Lightweight inline Desmos panel (so you don’t need another file)
-function DesmosPanel({ visible, resizeTick }) {
+// Desmos panel relying on autosize (default true); no manual resize tick.
+function DesmosPanel({ visible }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const [ready, setReady] = useState(false);
-  const resizeTimeoutRef = useRef(null);
 
-  // If the script was already loaded, onLoad might not fire (esp. after minimization).
+  // If the script was already loaded, onLoad might not fire.
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Desmos) setReady(true);
   }, []);
 
-  // Initialize exactly once
+  // Initialize exactly once.
   useEffect(() => {
     if (!visible) return;
     if (!ready) return;
@@ -52,6 +51,7 @@ function DesmosPanel({ visible, resizeTick }) {
 
     if (!calcRef.current) {
       calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
+        autosize: true, // explicit (default true)
         keypad: true,
         expressions: true,
         settingsMenu: true,
@@ -60,22 +60,15 @@ function DesmosPanel({ visible, resizeTick }) {
     }
   }, [visible, ready]);
 
-  // Resize only (no re-init)
-  useEffect(() => {
-    if (!visible) return;
-    if (!calcRef.current) return;
-    // rAF helps during drag
-    requestAnimationFrame(() => {
-      try {
-        calcRef.current?.resize?.();
-      } catch {}
-    });
-  }, [visible, resizeTick]);
+  // Use env var on Vercel; fallback keeps dev from breaking if env not yet set.
+  const apiKey =
+    (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_DESMOS_API_KEY) ||
+    'bac289385bcd4778a682276b95f5f116';
 
   return (
     <>
       <Script
-        src="https://www.desmos.com/api/v1.11/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"
+        src={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${apiKey}`}
         strategy="afterInteractive"
         onLoad={() => setReady(true)}
       />
@@ -107,8 +100,11 @@ export default function PracticeQuestionPage() {
 
   const [calcMinimized, setCalcMinimized] = useState(false);
   const [calcWidth, setCalcWidth] = useState(DEFAULT_CALC_W);
-  const [desmosResizeTick, setDesmosResizeTick] = useState(0);
-  const dragRef = useRef({ dragging: false, startX: 0, startW: DEFAULT_CALC_W, raf: 0 });
+
+  // IMPORTANT: prevent flicker by avoiding React updates during drag
+  const shellRef = useRef(null);
+  const liveWidthRef = useRef(DEFAULT_CALC_W);
+  const dragRef = useRef({ dragging: false, startX: 0, startW: DEFAULT_CALC_W, pendingW: DEFAULT_CALC_W });
 
   const [showRef, setShowRef] = useState(false);
 
@@ -156,21 +152,10 @@ export default function PracticeQuestionPage() {
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
   const inSessionContext = sessionParams.get('session') === '1';
 
-  const resizeTimeoutRef = useRef(null);
-
+  // Keep liveWidthRef in sync with committed calcWidth
   useEffect(() => {
-    // Only run when calculator is shown (not minimized)
-    if (calcMinimized) return;
-  
-    if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
-    resizeTimeoutRef.current = setTimeout(() => {
-      setDesmosResizeTick((t) => t + 1);
-    }, 80);
-  
-    return () => {
-      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
-    };
-  }, [calcWidth, calcMinimized]);
+    liveWidthRef.current = calcWidth;
+  }, [calcWidth]);
 
   // support "i" (1-based index) for neighbor navigation
   function buildHref(targetId, t, o, p, i) {
@@ -245,8 +230,6 @@ export default function PracticeQuestionPage() {
   }
 
   // ✅ Fetch IDs + metadata for map window (cached, loaded on modal open)
-  // Returns an array of "items" objects (NOT just ids), so we can render:
-  // difficulty color + marked + correct/incorrect icons.
   async function fetchMapIds(offset) {
     const key = `practice_${sessionParamsString}_map_${offset}`;
 
@@ -646,11 +629,11 @@ export default function PracticeQuestionPage() {
         <button
           type="button"
           className="btn secondary"
-          onClick={() => {
-            setCalcMinimized((m) => !m);
-            setDesmosResizeTick((t) => t + 1);
-          }}
+          onClick={() => setCalcMinimized((m) => !m)}
+          aria-label={calcMinimized ? 'Expand calculator' : 'Minimize calculator'}
+          title={calcMinimized ? 'Expand calculator' : 'Minimize calculator'}
         >
+          {calcMinimized ? 'Expand Calculator' : 'Minimize Calculator'}
         </button>
 
         <button type="button" className="btn secondary" onClick={() => setShowRef(true)}>
@@ -784,14 +767,16 @@ export default function PracticeQuestionPage() {
     </>
   );
 
-  // ✅ Divider drag handlers (only affects math shell)
+  // ✅ Divider drag handlers (math shell only)
+  // Live-resize via CSS var (no React re-render) => prevents flicker.
   function onDividerPointerDown(e) {
     if (calcMinimized) return;
     e.preventDefault();
 
     dragRef.current.dragging = true;
     dragRef.current.startX = e.clientX;
-    dragRef.current.startW = calcWidth;
+    dragRef.current.startW = liveWidthRef.current;
+    dragRef.current.pendingW = liveWidthRef.current;
 
     e.currentTarget.setPointerCapture?.(e.pointerId);
 
@@ -799,18 +784,21 @@ export default function PracticeQuestionPage() {
       if (!dragRef.current.dragging) return;
       const dx = ev.clientX - dragRef.current.startX;
       const next = Math.min(Math.max(dragRef.current.startW + dx, MIN_CALC_W), MAX_CALC_W);
-      setCalcWidth(next);
+
+      dragRef.current.pendingW = next;
+      liveWidthRef.current = next;
+
+      // Update CSS variable directly (no React state update)
+      shellRef.current?.style.setProperty('--calcW', `${next}px`);
     };
 
     const onUp = () => {
       dragRef.current.dragging = false;
-      if (dragRef.current.raf) {
-        cancelAnimationFrame(dragRef.current.raf);
-        dragRef.current.raf = 0;
-      }
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      setDesmosResizeTick((t) => t + 1);
+
+      // Commit once
+      setCalcWidth(dragRef.current.pendingW);
     };
 
     window.addEventListener('pointermove', onMove);
@@ -820,26 +808,21 @@ export default function PracticeQuestionPage() {
   // Math shell wrapper (calculator left, question right; draggable divider; minimize)
   const MathShell = ({ children }) => (
     <div
+      ref={shellRef}
       className={`mathShell ${calcMinimized ? 'min' : 'withCalc'}`}
       style={{ '--calcW': `${calcMinimized ? MINIMIZED_W : calcWidth}px` }}
     >
       <aside className={`mathLeft ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
         <div className="mathLeftHeader">
           <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
-          <button
-            type="button"
-            className="btn secondary"
-            onClick={() => {
-              setCalcMinimized((m) => !m);
-              setDesmosResizeTick((t) => t + 1);
-            }}
-          >
+          <button type="button" className="btn secondary" onClick={() => setCalcMinimized((m) => !m)}>
             {calcMinimized ? 'Expand' : 'Minimize'}
           </button>
         </div>
 
-        <div style={{ display: calcMinimized ? 'none' : 'block' }}>
-          <DesmosPanel visible={!calcMinimized} resizeTick={desmosResizeTick} />
+        {/* Keep mounted; hide visually when minimized */}
+        <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
+          <DesmosPanel visible={!calcMinimized} />
         </div>
         {calcMinimized ? <div className="calcMinBody" /> : null}
       </aside>
@@ -1099,10 +1082,8 @@ export default function PracticeQuestionPage() {
                       }}
                       title={`Go to #${i}`}
                     >
-                      {/* Question number */}
                       <span className="mapNum">{i}</span>
 
-                      {/* Top-left: Marked */}
                       {showMark ? (
                         <span className="mapIconCorner mapIconLeft" aria-hidden="true">
                           <span className="mapIconBadge mark" title="Marked for review">
@@ -1113,7 +1094,6 @@ export default function PracticeQuestionPage() {
                         </span>
                       ) : null}
 
-                      {/* Top-right: Correct / Incorrect */}
                       {showCorrect || showIncorrect ? (
                         <span className="mapIconCorner mapIconRight" aria-hidden="true">
                           {showCorrect ? (
@@ -1156,7 +1136,7 @@ export default function PracticeQuestionPage() {
         .mathShell {
           display: grid;
           gap: 0;
-          align-items: stretch; /* ✅ key: makes divider fill height */
+          align-items: stretch;
           grid-template-columns: var(--calcW, 660px) 12px minmax(0, 1fr);
         }
 
@@ -1168,7 +1148,7 @@ export default function PracticeQuestionPage() {
           border-radius: 18px;
           background: #f9fafb;
           max-height: calc(100vh - 24px);
-          overflow: hidden; /* header + body */
+          overflow: hidden;
         }
 
         .mathLeftHeader {
@@ -1185,9 +1165,16 @@ export default function PracticeQuestionPage() {
           font-weight: 700;
         }
 
+        .calcBody.hidden {
+          opacity: 0;
+          pointer-events: none;
+          height: 0;
+          overflow: hidden;
+        }
+
         .desmosHost {
           width: 100%;
-          height: min(560px, calc(100vh - 220px)); /* ✅ capped */
+          height: min(560px, calc(100vh - 220px));
           background: #fff;
         }
 
@@ -1198,10 +1185,9 @@ export default function PracticeQuestionPage() {
         .mathDivider {
           cursor: col-resize;
           position: relative;
-
-          align-self: stretch;     /* belt + suspenders */
-          min-height: 360px;       /* ensures visible even on short content */
-          touch-action: none;      /* improves pointer dragging on touchpads */
+          align-self: stretch;
+          min-height: 360px;
+          touch-action: none;
         }
 
         .mathDivider::before {
