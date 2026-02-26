@@ -663,7 +663,7 @@ hr{
 }
 
 .mapItem {
-  padding: 12px 10px;
+  padding: 10px 10px 12px; /* top, left/right, bottom */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -731,6 +731,7 @@ hr{
 }
 
 .mapNum{
+   font-size: 14px;
   position: relative;
   z-index: 1;
 }
@@ -764,13 +765,13 @@ hr{
 
 .mapIconCorner{
   position: absolute;
-  top: 3px;
+  top: 2px;
   z-index: 2;
   pointer-events: none;
 }
 
-.mapIconLeft{ left: 3px; }
-.mapIconRight{ right: 3px; }
+.mapIconLeft{ left: 2px; }
+.mapIconRight{ right: 2px; }
 
 .mapIconBadge{
   width: 16px;
