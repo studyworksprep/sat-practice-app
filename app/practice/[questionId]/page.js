@@ -1134,8 +1134,14 @@ export default function PracticeQuestionPage() {
         .mathShell {
           display: grid;
           gap: 0;
-          align-items: start;
-          grid-template-columns: var(--calcW, ${DEFAULT_CALC_W}px) 12px minmax(0, 1fr);
+          align-items: stretch; /* ✅ key: makes divider fill height */
+          grid-template-columns: var(--calcW, 660px) 12px minmax(0, 1fr);
+        }
+
+        .mathDivider {
+          align-self: stretch;     /* belt + suspenders */
+          min-height: 360px;       /* ensures visible even on short content */
+          touch-action: none;      /* improves pointer dragging on touchpads */
         }
 
         .mathLeft {
