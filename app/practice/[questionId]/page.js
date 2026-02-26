@@ -38,17 +38,6 @@ function DesmosPanel({ visible, resizeTick }) {
   const [ready, setReady] = useState(false);
   const resizeTimeoutRef = useRef(null);
 
-  useEffect(() => {
-    if (calcMinimized) return;
-    if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
-    resizeTimeoutRef.current = setTimeout(() => {
-      setDesmosResizeTick((t) => t + 1);
-    }, 80);
-    return () => {
-      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
-    };
-  }, [calcWidth, calcMinimized]);
-
   // If the script was already loaded, onLoad might not fire (esp. after minimization).
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Desmos) setReady(true);
@@ -166,6 +155,22 @@ export default function PracticeQuestionPage() {
 
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
   const inSessionContext = sessionParams.get('session') === '1';
+
+  const resizeTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    // Only run when calculator is shown (not minimized)
+    if (calcMinimized) return;
+  
+    if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+    resizeTimeoutRef.current = setTimeout(() => {
+      setDesmosResizeTick((t) => t + 1);
+    }, 80);
+  
+    return () => {
+      if (resizeTimeoutRef.current) clearTimeout(resizeTimeoutRef.current);
+    };
+  }, [calcWidth, calcMinimized]);
 
   // support "i" (1-based index) for neighbor navigation
   function buildHref(targetId, t, o, p, i) {
