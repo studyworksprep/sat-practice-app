@@ -1149,28 +1149,29 @@ export default function PracticeQuestionPage() {
           aria-modal="true"
           aria-label="SAT Math reference sheet"
         >
-          <div className="modalCard" onClick={(e) => e.stopPropagation()} style={{ width: 'min(980px, 96vw)' }}>
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-              <div className="h2" style={{ margin: 0 }}>
-                SAT Math Reference Sheet
-              </div>
-              <div className="btnRow">
-                <a className="btn secondary" href="/math_reference_sheet.pdf" target="_blank" rel="noreferrer noopener">
-                  Open
-                </a>
-                <button className="btn secondary" onClick={() => setShowRef(false)}>
-                  Close
-                </button>
-              </div>
+          <div className="refModalHeader">
+            <div className="h2" style={{ margin: 0 }}>
+              SAT Math Reference Sheet
             </div>
+          
+            <button
+              type="button"
+              className="refModalClose"
+              onClick={() => setShowRef(false)}
+              aria-label="Close reference sheet"
+            >
+              ×
+            </button>
+          </div>
 
-            <hr />
-
-            <iframe
-              title="SAT Math reference sheet"
-              src="/math_reference_sheet.pdf"
-              style={{ width: '100%', height: '75vh', border: 0, borderRadius: 12 }}
-            />
+            <div className="refSheetScroll" aria-label="SAT Math reference sheet image">
+              <img
+                className="refSheetImg"
+                src="/math_reference_sheet.png"
+                alt="SAT Math reference sheet"
+                draggable={false}
+              />
+            </div>
           </div>
         </div>
       ) : null}
