@@ -1096,60 +1096,81 @@ export default function PracticeQuestionPage() {
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ display: 'grid', gap: 6 }}>
           <div className="h2">Practice</div>
-
-          <div className="row" style={{ alignItems: 'center', gap: 10 }}>
-            <Link className="btn secondary" href="/practice">
-              ← Back to list
-            </Link>
-
-            <button
-              type="button"
-              className="qmapTrigger"
-              onClick={openMap}
-              disabled={!inSessionContext}
-              title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
-              aria-label="Open question map"
-            >
-              <span className="qmapTriggerCount">
-                {index1 != null && total != null ? (
-                  <>
-                    {index1} / {total}
-                  </>
-                ) : total != null ? (
-                  <>— / {total}</>
-                ) : (
-                  <>…</>
-                )}
-              </span>
-              <span className="qmapTriggerChevron" aria-hidden="true">
-                ▾
-              </span>
-            </button>
-            {isMath ? (
-              <div className="toolTabs" role="tablist" aria-label="Math tools">
-                <button
-                  type="button"
-                  className={`toolTab ${!calcMinimized ? 'active' : ''}`}
-                  onClick={() => setCalcMinimized((m) => !m)}
-                  aria-pressed={!calcMinimized}
-                  title={!calcMinimized ? 'Minimize calculator' : 'Expand calculator'}
-                >
-                  <IconCalculator className="toolTabIcon" />
-                  <span className="toolTabLabel">Calculator</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={`toolTab ${showRef ? 'active' : ''}`}
-                  onClick={() => setShowRef(true)}
-                  aria-pressed={showRef}
-                  title="Open reference sheet"
-                >
-                  <IconReference className="toolTabIcon" />
-                  <span className="toolTabLabel">Reference</span>
-                </button>
-              </div>
-            ) : null}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              gap: 12,
+            }}
+          >
+            {/* LEFT */}
+            <div>
+              <Link className="btn secondary" href="/practice">
+                ← Back to list
+              </Link>
+            </div>
+          
+            {/* CENTER */}
+            <div style={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+              <button
+                type="button"
+                className="qmapTrigger"
+                onClick={openMap}
+                disabled={!inSessionContext}
+                title={
+                  inSessionContext
+                    ? 'Open question map'
+                    : 'Map available when opened from the practice list'
+                }
+                aria-label="Open question map"
+              >
+                <span className="qmapTriggerCount">
+                  {index1 != null && total != null ? (
+                    <>
+                      {index1} / {total}
+                    </>
+                  ) : total != null ? (
+                    <>— / {total}</>
+                  ) : (
+                    <>…</>
+                  )}
+                </span>
+                <span className="qmapTriggerChevron" aria-hidden="true">
+                  ▾
+                </span>
+              </button>
+            </div>
+          
+            {/* RIGHT */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              {isMath ? (
+                <div className="toolTabs" role="tablist" aria-label="Math tools">
+                  <button
+                    type="button"
+                    className={`toolTab ${!calcMinimized ? 'active' : ''}`}
+                    onClick={() => setCalcMinimized((m) => !m)}
+                    aria-pressed={!calcMinimized}
+                    title={!calcMinimized ? 'Minimize calculator' : 'Expand calculator'}
+                  >
+                    <IconCalculator className="toolTabIcon" />
+                    <span className="toolTabLabel">Calculator</span>
+                  </button>
+          
+                  <button
+                    type="button"
+                    className={`toolTab ${showRef ? 'active' : ''}`}
+                    onClick={() => setShowRef(true)}
+                    aria-pressed={showRef}
+                    title="Open reference sheet"
+                  >
+                    <IconReference className="toolTabIcon" />
+                    <span className="toolTabLabel">Reference</span>
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
 
