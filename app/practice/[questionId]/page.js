@@ -387,9 +387,9 @@ export default function PracticeQuestionPage() {
       const margin = 12;
 
       const minDx = margin - rect.left;
-      const maxDx = (vw - margin) - rect.right;
+      const maxDx = vw - margin - rect.right;
       const minDy = margin - rect.top;
-      const maxDy = (vh - margin) - rect.bottom;
+      const maxDy = vh - margin - rect.bottom;
 
       const curPos = refPosRef.current;
       nx = curPos.x + clamp(nx - curPos.x, minDx, maxDx);
@@ -829,6 +829,43 @@ export default function PracticeQuestionPage() {
     { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
   ];
 
+  // ✅ moved pills into question area
+  const StatusPillsRow = ({ style }) => (
+    <div
+      className="row"
+      style={{
+        alignItems: 'center',
+        gap: 8,
+        flexWrap: 'wrap',
+        justifyContent: 'flex-end',
+        marginBottom: 12,
+        ...(style || {}),
+      }}
+    >
+      {headerPills.map((p) => (
+        <span key={p.label} className="pill">
+          <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
+        </span>
+      ))}
+      <button
+        type="button"
+        className={`markReviewTopBtn ${status?.marked_for_review ? 'isMarked' : ''}`}
+        onClick={toggleMarkForReview}
+        title={status?.marked_for_review ? 'Marked for review' : 'Mark for review'}
+      >
+        <span className="markReviewTopBtnIcon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14">
+            <path
+              fill="currentColor"
+              d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
+            />
+          </svg>
+        </span>
+        {status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
+      </button>
+    </div>
+  );
+
   const prevDisabled = navLoading || !index1 || index1 <= 1 || !prevId;
   const nextDisabled = navLoading || !index1 || !total || index1 >= total || !nextId;
 
@@ -1066,10 +1103,7 @@ export default function PracticeQuestionPage() {
 
         {/* Keep mounted; hide visually when minimized */}
         <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
-          <DesmosPanel
-            isOpen={!calcMinimized}
-            storageKey={questionId ? `desmos:${questionId}` : 'desmos:unknown'}
-          />
+          <DesmosPanel isOpen={!calcMinimized} storageKey={questionId ? `desmos:${questionId}` : 'desmos:unknown'} />
         </div>
         {calcMinimized ? <div className="calcMinBody" /> : null}
       </aside>
@@ -1111,7 +1145,7 @@ export default function PracticeQuestionPage() {
                 ← Back to list
               </Link>
             </div>
-          
+
             {/* CENTER */}
             <div style={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
               <button
@@ -1119,11 +1153,7 @@ export default function PracticeQuestionPage() {
                 className="qmapTrigger"
                 onClick={openMap}
                 disabled={!inSessionContext}
-                title={
-                  inSessionContext
-                    ? 'Open question map'
-                    : 'Map available when opened from the practice list'
-                }
+                title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
                 aria-label="Open question map"
               >
                 <span className="qmapTriggerCount">
@@ -1142,7 +1172,7 @@ export default function PracticeQuestionPage() {
                 </span>
               </button>
             </div>
-          
+
             {/* RIGHT */}
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               {isMath ? (
@@ -1157,7 +1187,7 @@ export default function PracticeQuestionPage() {
                     <IconCalculator className="toolTabIcon" />
                     <span className="toolTabLabel">Calculator</span>
                   </button>
-          
+
                   <button
                     type="button"
                     className={`toolTab ${showRef ? 'active' : ''}`}
@@ -1174,29 +1204,7 @@ export default function PracticeQuestionPage() {
           </div>
         </div>
 
-        <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          {headerPills.map((p) => (
-            <span key={p.label} className="pill">
-              <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
-            </span>
-          ))}
-          <button
-            type="button"
-            className={`markReviewTopBtn ${status?.marked_for_review ? 'isMarked' : ''}`}
-            onClick={toggleMarkForReview}
-            title={status?.marked_for_review ? 'Marked for review' : 'Mark for review'}
-          >
-            <span className="markReviewTopBtnIcon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="14" height="14">
-                <path
-                  fill="currentColor"
-                  d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
-                />
-              </svg>
-            </span>
-            {status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
-          </button>
-        </div>
+        {/* pills removed from top header (moved into question area) */}
       </div>
 
       <Toast kind={msg?.kind} message={msg?.text} />
@@ -1213,6 +1221,7 @@ export default function PracticeQuestionPage() {
             </div>
 
             <div className="qaRight">
+              <StatusPillsRow />
               <McqOptionsArea showAnswerHeader={false} />
             </div>
           </div>
@@ -1220,12 +1229,14 @@ export default function PracticeQuestionPage() {
           // ✅ Math format: calculator left (resizable), question+answers right
           <MathShell>
             <MathToolRow />
+            <StatusPillsRow />
             <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
             <McqOptionsArea showAnswerHeader={true} />
           </MathShell>
         ) : (
           // ✅ Default MCQ (non-reading, non-math): keep existing single-column behavior
           <div>
+            <StatusPillsRow />
             <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
             <McqOptionsArea showAnswerHeader={true} />
           </div>
@@ -1235,11 +1246,13 @@ export default function PracticeQuestionPage() {
         isMath ? (
           <MathShell>
             <MathToolRow />
+            <StatusPillsRow />
             <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
             <SprAnswerArea />
           </MathShell>
         ) : (
           <div>
+            <StatusPillsRow />
             <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
             <SprAnswerArea />
           </div>
@@ -1270,14 +1283,14 @@ export default function PracticeQuestionPage() {
             onClick={(e) => e.stopPropagation()}
             style={{
               width: 'min(980px, 96vw)',
-              maxHeight: 'calc(100vh - 120px)',  // 👈 new
+              maxHeight: 'calc(100vh - 120px)', // 👈 new
               position: 'fixed',
               left: '50%',
               top: 80,
               transform: `translate(calc(-50% + ${refPos.x}px), ${refPos.y}px)`,
               willChange: 'transform',
-              display: 'flex',                  // 👈 new
-              flexDirection: 'column',          // 👈 new
+              display: 'flex', // 👈 new
+              flexDirection: 'column', // 👈 new
             }}
           >
             <div className="refModalHeader" onPointerDown={onRefHeaderPointerDown}>
@@ -1296,12 +1309,7 @@ export default function PracticeQuestionPage() {
             </div>
 
             <div className="refSheetContent" aria-label="SAT Math Reference sheet image">
-              <img
-                className="refSheetImg"
-                src="/math_reference_sheet.png"
-                alt="SAT Math Reference Sheet"
-                draggable={false}
-              />
+              <img className="refSheetImg" src="/math_reference_sheet.png" alt="SAT Math Reference Sheet" draggable={false} />
             </div>
           </div>
         </div>
@@ -1673,25 +1681,25 @@ export default function PracticeQuestionPage() {
 
         /* Reference sheet: size to image, but constrain to viewport */
         .refSheetContent {
-            padding: 12px;
-            overflow: auto;               /* scrolling lives here */
-            flex: 1;                      /* fills remaining height under header */
-          }
-          
-          .refSheetImg {
-            display: block;
-            margin: 0 auto;
-          
-            width: auto;
-            height: auto;
-          
-            max-width: 100%;
-            max-height: none;
-          
-            user-select: none;
-            -webkit-user-drag: none;
-            pointer-events: none;
-          }
+          padding: 12px;
+          overflow: auto; /* scrolling lives here */
+          flex: 1; /* fills remaining height under header */
+        }
+
+        .refSheetImg {
+          display: block;
+          margin: 0 auto;
+
+          width: auto;
+          height: auto;
+
+          max-width: 100%;
+          max-height: none;
+
+          user-select: none;
+          -webkit-user-drag: none;
+          pointer-events: none;
+        }
       `}</style>
     </main>
   );
