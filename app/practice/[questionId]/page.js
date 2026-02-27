@@ -1615,23 +1615,6 @@ export default function PracticeQuestionPage() {
             color: var(--text);
           }
 
-          .refSheetScroll{
-            height: 75vh;
-            overflow: auto;
-            padding: 8px;
-          }
-          
-          .refSheetImg{
-            width: 100%;
-            height: auto;
-            display: block;
-            margin: 0 auto;
-          
-            user-select: none;
-            -webkit-user-drag: none;
-            pointer-events: none;
-          }
-
           /* Reference sheet: size to image, but constrain to viewport */
           .refSheetWrap{
             padding: 10px;
