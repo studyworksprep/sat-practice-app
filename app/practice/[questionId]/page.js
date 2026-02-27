@@ -1633,26 +1633,30 @@ export default function PracticeQuestionPage() {
         @media (max-width: 920px) {
           .mathShell,
           .mathShell.min {
-            .mathShell.min .mathLeft {
-              display: none;
-
+            grid-template-columns: 1fr;
+            gap: 14px;
           }
-
+        
           .mathDivider,
           .mathDivider.min {
             display: none;
           }
-
+        
           .mathLeft {
             position: relative;
             top: auto;
           }
-
+        
+          /* If minimized on small screens, hide the calc panel */
+          .mathShell.min .mathLeft {
+            display: none;
+          }
+        
           .desmosHost,
           .calcMinBody {
             height: 420px;
           }
-
+        
           .mathRight {
             padding-left: 0;
           }
