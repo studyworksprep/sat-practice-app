@@ -1100,7 +1100,7 @@ export default function PracticeQuestionPage() {
     <div
       ref={shellRef}
       className={`mathShell ${calcMinimized ? 'min' : 'withCalc'}`}
-      style={{ '--calcW': `${calcMinimized ? MINIMIZED_W : calcWidth}px` }}
+      style={{ '--calcW': `${calcMinimized ? 0 : calcWidth}px` }}
     >
       <aside className={`mathLeft ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
         <div className="mathLeftHeader">
@@ -1601,6 +1601,10 @@ export default function PracticeQuestionPage() {
         /* Minimized state: hide the calculator column entirely (but keep it mounted) */
         .mathShell.min {
           grid-template-columns: 0px 0px minmax(0, 1fr);
+        }
+        
+        .mathShell {
+          width: 100%;
         }
         
         /* keep the DOM mounted but invisible/non-interactive */
