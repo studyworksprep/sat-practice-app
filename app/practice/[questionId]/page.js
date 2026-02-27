@@ -838,8 +838,8 @@ export default function PracticeQuestionPage() {
         ...(style || {}),
       }}
     >
-      <div className="pill" style={{ fontWeight: 750 }}>
-        <span className="muted">Question</span> <span className="kbd">{index1 ?? '—'}</span>
+      <div className="qNumBadge" aria-label={`Question ${index1 ?? 'unknown'}`}>
+        {index1 ?? '—'}
       </div>
 
       <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -1732,6 +1732,24 @@ export default function PracticeQuestionPage() {
           user-select: none;
           -webkit-user-drag: none;
           pointer-events: none;
+        }
+
+        .qNumBadge {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        
+          background: #0b0b0b;
+          color: #fff;
+        
+          font-weight: 800;
+          font-size: 18px;
+          line-height: 1;
+        
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
         }
       `}</style>
     </main>
