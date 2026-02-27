@@ -1646,6 +1646,10 @@ export default function PracticeQuestionPage() {
           color: var(--text);
         }
 
+        .modalCard {
+          overflow: hidden;
+        }
+
         /* Reference sheet: size to image, but constrain to viewport */
         .refSheetContent {
             padding: 12px;
