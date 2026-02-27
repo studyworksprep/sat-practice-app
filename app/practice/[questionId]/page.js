@@ -273,7 +273,7 @@ export default function PracticeQuestionPage() {
   // Math tools
   // ✅ Draggable divider + minimize (not close)
   const DEFAULT_CALC_W = 660; // wide enough that Desmos starts in its roomier layout
-  const MIN_CALC_W = 360;
+  const MIN_CALC_W = 450;
   const MAX_CALC_W = 760;
   const MINIMIZED_W = 56;
 
