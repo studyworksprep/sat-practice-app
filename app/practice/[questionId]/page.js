@@ -508,7 +508,6 @@ export default function PracticeQuestionPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to update status');
 
-      setMsg({ kind: 'success', text: next ? 'Marked for review' : 'Unmarked for review' });
     } catch (e) {
       setData((prev) => {
         if (!prev) return prev;
