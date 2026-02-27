@@ -1164,11 +1164,12 @@ export default function PracticeQuestionPage() {
             </button>
           </div>
     
-          <div className="refSheetScroll" aria-label="SAT Math reference sheet image">
+          <div className="refSheetWrap" aria-label="SAT Math reference sheet image">
             <img
               className="refSheetImg"
-              src="/math_reference_sheet.png"
+              src="/Math_reference_sheet.png"
               alt="SAT Math reference sheet"
+              draggable={false}
             />
           </div>
         </div>
@@ -1544,6 +1545,28 @@ export default function PracticeQuestionPage() {
             height: auto;
             display: block;
             margin: 0 auto;
+          
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+          }
+
+          /* Reference sheet: size to image, but constrain to viewport */
+          .refSheetWrap{
+            padding: 10px;
+          }
+          
+          .refSheetImg{
+            display: block;
+            margin: 0 auto;
+          
+            /* Fit-to-window behavior */
+            width: auto;
+            height: auto;
+          
+            /* Constrain to viewport (so it never overflows the screen) */
+            max-width: min(980px, 92vw);
+            max-height: calc(100vh - 170px); /* accounts for top offset + header + padding */
           
             user-select: none;
             -webkit-user-drag: none;
