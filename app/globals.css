@@ -815,7 +815,18 @@ hr{
 
 .mathShell .prose{
   font-size: 17.5px;
-  line-height: 1.6;
+  line-height: 1.55; /* tighter rhythm for math prompts */
+}
+
+/* Slightly tighten MathJax inside Math shell */
+.mathShell .prose mjx-container{
+  font-size: 1.05em;
+}
+
+/* Inline MathJax: reduce line-box expansion + align better (math only) */
+.mathShell .prose mjx-container[jax="CHTML"][display="false"]{
+  vertical-align: middle;
+  font-size: 1.05em !important;
 }
 
 /* Prevent overflow from long expressions / tables */
@@ -828,11 +839,6 @@ hr{
 .mathShell .prose img{
   max-width: 100%;
   height: auto;
-}
-
-/* Slightly tighten MathJax inside Math shell */
-.mathShell .prose mjx-container{
-  font-size: 1.05em;
 }
 
 /* Top "Mark for Review" button */
