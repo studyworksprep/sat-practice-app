@@ -1249,11 +1249,14 @@ export default function PracticeQuestionPage() {
             onClick={(e) => e.stopPropagation()}
             style={{
               width: 'min(980px, 96vw)',
+              maxHeight: 'calc(100vh - 120px)',  // 👈 new
               position: 'fixed',
               left: '50%',
               top: 80,
               transform: `translate(calc(-50% + ${refPos.x}px), ${refPos.y}px)`,
               willChange: 'transform',
+              display: 'flex',                  // 👈 new
+              flexDirection: 'column',          // 👈 new
             }}
           >
             <div className="refModalHeader" onPointerDown={onRefHeaderPointerDown}>
@@ -1271,11 +1274,11 @@ export default function PracticeQuestionPage() {
               </button>
             </div>
 
-            <div className="refSheetWrap" aria-label="SAT Math reference sheet image">
+            <div className="refSheetContent" aria-label="SAT Math Reference sheet image">
               <img
                 className="refSheetImg"
                 src="/math_reference_sheet.png"
-                alt="SAT Math reference sheet"
+                alt="SAT Math Reference Sheet"
                 draggable={false}
               />
             </div>
@@ -1644,26 +1647,26 @@ export default function PracticeQuestionPage() {
         }
 
         /* Reference sheet: size to image, but constrain to viewport */
-        .refSheetWrap {
-          padding: 10px;
-        }
-
-        .refSheetImg {
-          display: block;
-          margin: 0 auto;
-
-          /* Fit-to-window behavior */
-          width: auto;
-          height: auto;
-
-          /* Constrain to viewport (so it never overflows the screen) */
-          max-width: min(980px, 92vw);
-          max-height: calc(100vh - 170px); /* accounts for top offset + header + padding */
-
-          user-select: none;
-          -webkit-user-drag: none;
-          pointer-events: none;
-        }
+        .refSheetContent {
+            padding: 12px;
+            overflow: auto;               /* scrolling lives here */
+            flex: 1;                      /* fills remaining height under header */
+          }
+          
+          .refSheetImg {
+            display: block;
+            margin: 0 auto;
+          
+            width: auto;
+            height: auto;
+          
+            max-width: 100%;
+            max-height: none;
+          
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+          }
       `}</style>
     </main>
   );
