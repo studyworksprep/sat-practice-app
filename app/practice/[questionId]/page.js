@@ -20,11 +20,21 @@ function IconCalculator({ className = '' }) {
 
 function IconReference({ className = '' }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M14 2H7a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8l-6-6zm1 2.5L19.5 9H15a1 1 0 0 1-1-1V4.5zM7 4h6v4a3 3 0 0 0 3 3h4v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"
-      />
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Document outline */}
+      <path d="M6 2.8h8l5 5v13.4a1.8 1.8 0 0 1-1.8 1.8H6a1.8 1.8 0 0 1-1.8-1.8V4.6A1.8 1.8 0 0 1 6 2.8z" />
+
+      {/* Folded corner */}
+      <path d="M14 2.8v5h5" />
     </svg>
   );
 }
