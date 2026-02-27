@@ -823,10 +823,11 @@ hr{
   font-size: 1.05em;
 }
 
-/* Inline MathJax: reduce line-box expansion + align better (math only) */
-.mathShell .prose mjx-container[jax="CHTML"][display="false"]{
+/* Inline MathJax inside math prompts (inline usually has NO display attr) */
+.mathShell .prose mjx-container[jax="CHTML"]:not([display="true"]){
   vertical-align: middle;
-  font-size: 1.05em !important;
+  font-size: 1.04em !important;
+  padding: 0 !important; /* override global padding that inflates line boxes */
 }
 
 /* Prevent overflow from long expressions / tables */
@@ -839,13 +840,6 @@ hr{
 .mathShell .prose img{
   max-width: 100%;
   height: auto;
-}
-
-/* Inline MathJax inside prompts: prevent tall line boxes */
-.mathShell .prose mjx-container[jax="CHTML"][display="false"]{
-  vertical-align: middle;
-  font-size: 1.04em !important;
-  padding: 0 !important; /* remove the extra 2px vertical padding from global mjx */
 }
 
 /* Tighter display math spacing inside math questions */
