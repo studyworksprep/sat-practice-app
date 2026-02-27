@@ -841,6 +841,11 @@ hr{
   height: auto;
 }
 
+/* Tighter display math spacing inside math questions */
+.mathShell .prose mjx-container[display="true"]{
+  margin: 6px 0 8px;
+}
+
 /* Top "Mark for Review" button */
 
 .markReviewTopBtn{
