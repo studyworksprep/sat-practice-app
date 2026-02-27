@@ -675,7 +675,6 @@ export default function PracticeQuestionPage() {
     { label: 'Attempts', value: status?.attempts_count ?? 0 },
     { label: 'Correct', value: status?.correct_attempts_count ?? 0 },
     { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
-    { label: 'Marked', value: status?.marked_for_review ? 'Yes' : 'No' },
   ];
 
   const prevDisabled = navLoading || !index1 || index1 <= 1 || !prevId;
@@ -795,10 +794,6 @@ export default function PracticeQuestionPage() {
           <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected}>
             Submit
           </button>
-
-          <button className="btn secondary" onClick={toggleMarkForReview}>
-            {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
-          </button>
         </div>
 
         {locked && (version?.rationale_html || version?.explanation_html) ? (
@@ -860,9 +855,6 @@ export default function PracticeQuestionPage() {
           Submit
         </button>
 
-        <button className="btn secondary" onClick={toggleMarkForReview}>
-          {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
-        </button>
 
         {locked && (version?.rationale_html || version?.explanation_html) ? (
           <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
@@ -1003,11 +995,35 @@ export default function PracticeQuestionPage() {
         </div>
 
         <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          {headerPills.map((p) => (
-            <span key={p.label} className="pill">
-              <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
-            </span>
-          ))}
+
+            {headerPills.map((p) => (
+              <span key={p.label} className="pill">
+                <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
+              </span>
+            ))}       
+            <button
+              type="button"
+              className={`markReviewTopBtn ${status?.marked_for_review ? 'isMarked' : ''}`}
+              onClick={toggleMarkForReview}
+              title={status?.marked_for_review ? 'Marked for review' : 'Mark for review'}
+            >
+              {status?.marked_for_review ? (
+                <>
+                  <span className="markReviewTopBtnIcon" aria-hidden="true">
+                    {/* same flag shape you already use in the map badge */}
+                    <svg viewBox="0 0 24 24" width="14" height="14">
+                      <path
+                        fill="currentColor"
+                        d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
+                      />
+                    </svg>
+                  </span>
+                  Marked for Review
+                </>
+              ) : (
+                'Mark for Review'
+              )}
+            </button> 
         </div>
       </div>
 
