@@ -33,23 +33,23 @@ function stripHtml(html) {
 
 /**
  * Desmos panel:
- * - Initialize exactly once.
- * - Never unmount when minimized.
- * - Save state on minimize + on unmount.
- * - Restore state on expand.
+ * - Creates a single GraphingCalculator instance (no re-init on re-render).
+ * - Persists calculator state across minimize/expand and across resizes.
+ * - Uses ResizeObserver + a rAF "safeResize" to stabilize post-drag layout commits.
+ * - Stores state in localStorage (per-question key).
  */
-function DesmosPanel({ isOpen, storageKey, desmosApiKey }) {
+function DesmosPanel({ isOpen, storageKey }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const savedStateRef = useRef(null);
   const prevOpenRef = useRef(isOpen);
+
   const roRef = useRef(null);
   const rafRef = useRef(null);
 
   const [ready, setReady] = useState(false);
-  const [loadErr, setLoadErr] = useState(false);
 
-  // If Desmos already present, avoid waiting on Script onLoad
+  // If the script was already loaded, onLoad might not fire.
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Desmos) setReady(true);
   }, []);
@@ -89,115 +89,107 @@ function DesmosPanel({ isOpen, storageKey, desmosApiKey }) {
 
     if (st) {
       try {
-        // If allowUndo option isn't supported, this still won't break (wrapped).
+        // Avoid polluting undo history when restoring.
         calcRef.current.setState(st, { allowUndo: false });
-      } catch {
-        try {
-          calcRef.current.setState(st);
-        } catch {}
-      }
+      } catch {}
     }
   };
 
-  // Init calculator exactly once when ready
+  // Initialize exactly once (when script ready + host exists).
   useEffect(() => {
     if (!ready) return;
     if (!hostRef.current) return;
-    if (!window.Desmos?.GraphingCalculator) return;
-    if (calcRef.current) return;
+    if (!window.Desmos) return;
 
-    try {
+    if (!calcRef.current) {
       calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
+        autosize: true,
         keypad: true,
         expressions: true,
         settingsMenu: true,
         zoomButtons: true,
-        border: false,
       });
 
       restoreState();
       safeResize();
-
-      // ResizeObserver for container
-      if (typeof ResizeObserver !== 'undefined') {
-        roRef.current = new ResizeObserver(() => safeResize());
-        roRef.current.observe(hostRef.current);
-      }
-
-      // Nudge after mount
-      window.setTimeout(() => safeResize(), 0);
-      window.setTimeout(() => safeResize(), 80);
-    } catch {
-      // If init fails, we keep UI stable but do nothing.
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready]);
 
-  // Save/restore on minimize/expand
-  useEffect(() => {
-    const prev = prevOpenRef.current;
-    prevOpenRef.current = isOpen;
-
-    if (!calcRef.current) return;
-
-    if (prev && !isOpen) saveState();
-    if (!prev && isOpen) {
-      restoreState();
-      safeResize();
-      window.setTimeout(() => safeResize(), 80);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-
-  // Cleanup on unmount
-  useEffect(() => {
     return () => {
+      // If the page unmounts, persist and destroy cleanly.
+      saveState();
       try {
-        saveState();
+        calcRef.current?.destroy?.();
       } catch {}
+      calcRef.current = null;
+
       try {
         roRef.current?.disconnect?.();
       } catch {}
       roRef.current = null;
 
-      try {
-        if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      } catch {}
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
-
-      try {
-        calcRef.current?.destroy?.();
-      } catch {}
-      calcRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ready]);
 
-  // IMPORTANT: Keep Desmos API v1.6 (stable) + key in URL (as in your handoff notes)
-  const key = desmosApiKey || 'bac289385bcd4778a682276b95f5f116';
+  // Observe container size changes -> resize().
+  useEffect(() => {
+    if (!ready) return;
+    if (!hostRef.current) return;
+    if (!calcRef.current) return;
+    if (typeof ResizeObserver === 'undefined') return;
+
+    try {
+      roRef.current?.disconnect?.();
+    } catch {}
+    roRef.current = new ResizeObserver(() => safeResize());
+    roRef.current.observe(hostRef.current);
+
+    return () => {
+      try {
+        roRef.current?.disconnect?.();
+      } catch {}
+      roRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
+  // Save on close; restore + resize on open.
+  useEffect(() => {
+    const prev = prevOpenRef.current;
+
+    if (prev && !isOpen) saveState();
+    if (!prev && isOpen) {
+      restoreState();
+      safeResize();
+    }
+
+    prevOpenRef.current = isOpen;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // Uses NEXT_PUBLIC_DESMOS_API_KEY if present; otherwise falls back to the existing hardcoded key
+  const apiKey =
+    (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_DESMOS_API_KEY) ||
+    'bac289385bcd4778a682276b95f5f116';
 
   return (
     <>
       <Script
-        src={`https://www.desmos.com/api/v1.6/calculator.js?apiKey=${key}`}
+        src={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${apiKey}`}
         strategy="afterInteractive"
         onLoad={() => setReady(true)}
-        onError={() => setLoadErr(true)}
       />
-      {loadErr ? (
-        <div className="muted" style={{ padding: 10 }}>
-          Calculator failed to load.
-        </div>
-      ) : null}
       <div ref={hostRef} className="desmosHost" />
     </>
   );
 }
 
 /**
- * PDF.js renderer:
- * Uses a UMD build that reliably sets a global.
- * If it fails, we show a fallback Open button.
+ * PDF.js renderer for in-app reference sheet display (consistent across browsers).
+ * Renders pages into canvases inside a scroll container.
+ * Uses a UMD build that reliably exposes a global.
  */
 function PdfJsSheet({ url }) {
   const containerRef = useRef(null);
@@ -205,7 +197,7 @@ function PdfJsSheet({ url }) {
   const [loadingPdf, setLoadingPdf] = useState(true);
   const [err, setErr] = useState(null);
 
-  // PDF.js 2.x UMD sets window['pdfjs-dist/build/pdf']
+  // pdf.js 2.x UMD exposes window['pdfjs-dist/build/pdf']
   const getPdfLib = () => {
     if (typeof window === 'undefined') return null;
     return window['pdfjs-dist/build/pdf'] || window.pdfjsLib || null;
@@ -227,7 +219,6 @@ function PdfJsSheet({ url }) {
         const pdfjsLib = getPdfLib();
         if (!pdfjsLib?.getDocument) throw new Error('PDF engine unavailable');
 
-        // Worker must match this version
         pdfjsLib.GlobalWorkerOptions.workerSrc =
           'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
@@ -311,7 +302,8 @@ export default function PracticeQuestionPage() {
   const [showExplanation, setShowExplanation] = useState(false);
 
   // Math tools
-  const DEFAULT_CALC_W = 660;
+  // ✅ Draggable divider + minimize (not close)
+  const DEFAULT_CALC_W = 660; // wide enough that Desmos starts in its roomier layout
   const MIN_CALC_W = 360;
   const MAX_CALC_W = 760;
   const MINIMIZED_W = 56;
@@ -319,6 +311,7 @@ export default function PracticeQuestionPage() {
   const [calcMinimized, setCalcMinimized] = useState(false);
   const [calcWidth, setCalcWidth] = useState(DEFAULT_CALC_W);
 
+  // IMPORTANT: prevent flicker by avoiding React updates during drag
   const shellRef = useRef(null);
   const liveWidthRef = useRef(DEFAULT_CALC_W);
   const dragRef = useRef({ dragging: false, startX: 0, startW: DEFAULT_CALC_W, pendingW: DEFAULT_CALC_W });
@@ -328,24 +321,34 @@ export default function PracticeQuestionPage() {
   // Option A neighbor nav
   const [prevId, setPrevId] = useState(null);
   const [nextId, setNextId] = useState(null);
+
+  // Start false; we explicitly flip to true when we begin fetching neighbors
   const [navLoading, setNavLoading] = useState(false);
-  const [navMode, setNavMode] = useState('neighbors');
+
+  const [navMode, setNavMode] = useState('neighbors'); // 'neighbors' | 'index' fallback
+
+  // ✅ tracks which questionId the current prevId/nextId correspond to (prevents stale-enable flash)
   const [navForId, setNavForId] = useState(null);
 
-  // Instant navigation metadata
-  const [total, setTotal] = useState(null);
-  const [index1, setIndex1] = useState(null);
+  // Instant navigation metadata (from list page or neighbor navigation)
+  const [total, setTotal] = useState(null); // total in filtered session
+  const [index1, setIndex1] = useState(null); // 1-based index in session
 
-  // ✅ Question Map modal (existing)
-  const MAP_PAGE_SIZE = 100;
+  // Cache: current page ids (25) for index-based fallback navigation
+  const [pageIds, setPageIds] = useState([]); // ids for current offset page
+  const [pageOffset, setPageOffset] = useState(0); // 0,25,50,...
+
+  // ✅ Question Map (windowed, IDs fetched on open)
+  const MAP_PAGE_SIZE = 100; // must be <= API limit cap
   const [showMap, setShowMap] = useState(false);
-  const [mapOffset, setMapOffset] = useState(0);
+  const [mapOffset, setMapOffset] = useState(0); // 0,100,200...
   const [mapIds, setMapIds] = useState([]);
   const [mapLoading, setMapLoading] = useState(false);
   const [jumpTo, setJumpTo] = useState('');
 
   const startedAtRef = useRef(Date.now());
 
+  // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
     const keys = ['difficulty', 'score_bands', 'domain', 'topic', 'marked_only', 'q', 'session'];
     const p = new URLSearchParams();
@@ -359,10 +362,12 @@ export default function PracticeQuestionPage() {
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
   const inSessionContext = sessionParams.get('session') === '1';
 
+  // Keep liveWidthRef in sync with committed calcWidth
   useEffect(() => {
     liveWidthRef.current = calcWidth;
   }, [calcWidth]);
 
+  // support "i" (1-based index) for neighbor navigation
   function buildHref(targetId, t, o, p, i) {
     const qs = new URLSearchParams(sessionParams);
     if (t != null) qs.set('t', String(t));
@@ -408,6 +413,148 @@ export default function PracticeQuestionPage() {
     }
   }
 
+  async function fetchPageIds(offset) {
+    const key = `practice_${sessionParamsString}_page_${offset}`;
+
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr) && arr.length > 0) return arr;
+      } catch {}
+    }
+
+    const apiParams = new URLSearchParams(sessionParams);
+    apiParams.delete('session');
+    apiParams.set('limit', '25');
+    apiParams.set('offset', String(offset));
+
+    const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || 'Failed to fetch page');
+
+    const ids = (json.items || []).map((it) => it.question_id).filter(Boolean);
+
+    localStorage.setItem(key, JSON.stringify(ids));
+    return ids;
+  }
+
+  // ✅ Fetch IDs + metadata for map window (cached, loaded on modal open)
+  async function fetchMapIds(offset) {
+    const key = `practice_${sessionParamsString}_map_${offset}`;
+
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr) && arr.length > 0) return arr;
+      } catch {}
+    }
+
+    const apiParams = new URLSearchParams(sessionParams);
+    apiParams.delete('session');
+    apiParams.set('limit', String(MAP_PAGE_SIZE));
+    apiParams.set('offset', String(offset));
+
+    const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || 'Failed to fetch map ids');
+
+    const items = (json.items || []).filter((it) => it?.question_id);
+
+    localStorage.setItem(key, JSON.stringify(items));
+    return items;
+  }
+
+  async function loadMapPage(offset) {
+    setMapLoading(true);
+    try {
+      const safe = Math.max(0, offset);
+      const items = await fetchMapIds(safe);
+      setMapIds(items);
+      setMapOffset(safe);
+    } finally {
+      setMapLoading(false);
+    }
+  }
+
+  // look for "i" (index) in URL
+  function primeNavMetaFromUrl() {
+    const t = Number(searchParams.get('t'));
+    const o = Number(searchParams.get('o'));
+    const p = Number(searchParams.get('p'));
+    const i = Number(searchParams.get('i'));
+
+    if (Number.isFinite(t) && t >= 0) setTotal(t);
+    if (Number.isFinite(o) && o >= 0) setPageOffset(o);
+
+    if (Number.isFinite(i) && i >= 1) setIndex1(i);
+    else if (Number.isFinite(o) && o >= 0 && Number.isFinite(p) && p >= 0) setIndex1(o + p + 1);
+  }
+
+  async function ensureCurrentPageIds() {
+    const o = Number(searchParams.get('o'));
+    const p = Number(searchParams.get('p'));
+
+    if (!Number.isFinite(o) || o < 0) return;
+    setPageOffset(o);
+
+    const ids = await fetchPageIds(o);
+    setPageIds(ids);
+
+    if (!Number.isFinite(p) || p < 0) {
+      const idx = ids.findIndex((id) => String(id) === String(questionId));
+      if (idx >= 0) setIndex1(o + idx + 1);
+    }
+  }
+
+  async function ensureTotalIfMissing() {
+    if (total != null) return;
+
+    const apiParams = new URLSearchParams(sessionParams);
+    apiParams.delete('session');
+    apiParams.set('limit', '1');
+    apiParams.set('offset', '0');
+
+    const res = await fetch('/api/questions?' + apiParams.toString(), { cache: 'no-store' });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json?.error || 'Failed to get total');
+    setTotal(Number(json.totalCount || 0));
+  }
+
+  async function goToIndex(targetIndex1) {
+    if (total != null) {
+      if (targetIndex1 < 1 || targetIndex1 > total) return;
+    } else {
+      if (targetIndex1 < 1) return;
+    }
+
+    const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
+    const targetPos = (targetIndex1 - 1) % 25;
+
+    const ids = await fetchPageIds(targetOffset);
+    const targetId = ids[targetPos];
+    if (!targetId) return;
+
+    setPageOffset(targetOffset);
+    setPageIds(ids);
+    setIndex1(targetIndex1);
+
+    router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
+  }
+
+  async function doJumpTo() {
+    let n = Number(String(jumpTo).trim());
+    if (!Number.isFinite(n)) return;
+
+    n = Math.trunc(n);
+    if (total != null) n = Math.min(Math.max(1, n), total);
+    else n = Math.max(1, n);
+
+    await goToIndex(n);
+    setShowMap(false);
+  }
+
   async function submitAttempt() {
     if (!data) return;
 
@@ -437,7 +584,6 @@ export default function PracticeQuestionPage() {
     }
   }
 
-  // ✅ consolidated top button (only mark UI change)
   async function toggleMarkForReview() {
     if (!data?.question_id) return;
     const next = !Boolean(data?.status?.marked_for_review);
@@ -479,7 +625,46 @@ export default function PracticeQuestionPage() {
     }
   }
 
-  // Reference sheet modal: ESC + lock scroll
+  // ✅ Map open/close handlers + ESC
+  async function openMap() {
+    if (!inSessionContext) return;
+
+    try {
+      await ensureTotalIfMissing();
+
+      const i = getIndexFromUrl() ?? index1 ?? 1;
+
+      const startOffset = Math.floor((Math.max(1, i) - 1) / MAP_PAGE_SIZE) * MAP_PAGE_SIZE;
+
+      setShowMap(true);
+      setJumpTo('');
+      await loadMapPage(startOffset);
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+      setShowMap(true);
+      setJumpTo('');
+      await loadMapPage(0);
+    }
+  }
+
+  useEffect(() => {
+    if (!showMap) return;
+
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setShowMap(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showMap]);
+
+  // Reference sheet modal: ESC close + prevent background scroll
   useEffect(() => {
     if (!showRef) return;
 
@@ -497,7 +682,7 @@ export default function PracticeQuestionPage() {
     };
   }, [showRef]);
 
-  // Neighbor fetch (existing)
+  // ✅ Fetch neighbors (Option A) — prevent stale-enable by gating with navForId
   useEffect(() => {
     if (!questionId) {
       setNavLoading(false);
@@ -509,6 +694,8 @@ export default function PracticeQuestionPage() {
 
     setNavMode('neighbors');
     setNavLoading(true);
+
+    // Clear stale IDs immediately
     setPrevId(null);
     setNextId(null);
     setNavForId(null);
@@ -521,6 +708,8 @@ export default function PracticeQuestionPage() {
 
         setPrevId(json.prev_id || null);
         setNextId(json.next_id || null);
+
+        // ✅ Mark that these neighbors belong to this question
         setNavForId(questionId);
       } catch (e) {
         setPrevId(null);
@@ -534,13 +723,34 @@ export default function PracticeQuestionPage() {
     })();
   }, [questionId, sessionParamsString]);
 
+  // Load question content
   useEffect(() => {
     if (!questionId) return;
     fetchQuestion();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId]);
 
-  // Load saved calc UI state (existing)
+  // Prime meta immediately
+  useEffect(() => {
+    primeNavMetaFromUrl();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  // Ensure we have total + current page ids (fallback nav)
+  useEffect(() => {
+    if (!questionId) return;
+    (async () => {
+      try {
+        await ensureTotalIfMissing();
+        await ensureCurrentPageIds();
+      } catch (e) {
+        setMsg({ kind: 'danger', text: e.message });
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionId, searchParams]);
+
+  // ✅ Load saved calculator width + minimized state (if any)
   useEffect(() => {
     try {
       const savedW = Number(localStorage.getItem('calcWidth'));
@@ -573,7 +783,11 @@ export default function PracticeQuestionPage() {
   const correctText = data?.correct_text || null;
 
   const domainCode = String(data?.taxonomy?.domain_code || '').toUpperCase().trim();
+
+  // Reading domain codes (existing behavior)
   const useTwoColReading = qType === 'mcq' && ['EOI', 'INI', 'CAS', 'SEC'].includes(domainCode);
+
+  // Math domain codes (new behavior)
   const isMath = ['H', 'P', 'S', 'Q'].includes(domainCode);
 
   const headerPills = [
@@ -582,10 +796,41 @@ export default function PracticeQuestionPage() {
     { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
   ];
 
-  const neighborsReady = navMode === 'neighbors' && navForId === questionId && !navLoading;
   const prevDisabled = navLoading || !index1 || index1 <= 1 || !prevId;
   const nextDisabled = navLoading || !index1 || !total || index1 >= total || !nextId;
 
+  // ✅ Only enable neighbor nav when neighbors are loaded for THIS questionId
+  const neighborsReady = navMode === 'neighbors' && navForId === questionId && !navLoading;
+
+  const goPrev = () => {
+    if (navMode === 'neighbors') {
+      if (prevDisabled) return;
+
+      const nextI = index1 != null ? Math.max(1, index1 - 1) : null;
+      setIndex1(nextI);
+
+      router.push(buildHref(prevId, total, null, null, nextI));
+      return;
+    }
+    if (index1 == null) return;
+    goToIndex(index1 - 1);
+  };
+
+  const goNext = () => {
+    if (navMode === 'neighbors') {
+      if (nextDisabled) return;
+
+      const nextI = index1 != null ? index1 + 1 : null;
+      setIndex1(nextI);
+
+      router.push(buildHref(nextId, total, null, null, nextI));
+      return;
+    }
+    if (index1 == null) return;
+    goToIndex(index1 + 1);
+  };
+
+  // Shared prompt renderer (so MCQ + SPR don’t duplicate stimulus/stem blocks)
   const PromptBlocks = ({ compactLabels = false, hideQuestionLabel = false, mbWhenNotCompact = 12 }) => (
     <>
       {version?.stimulus_html ? (
@@ -597,7 +842,6 @@ export default function PracticeQuestionPage() {
 
       {version?.stem_html ? (
         <div className="card subcard" style={{ marginBottom: compactLabels ? 0 : mbWhenNotCompact }}>
-          {/* ✅ Math: hide "Question" label, keep srOnly */}
           <div className={compactLabels || hideQuestionLabel ? 'srOnly' : 'sectionLabel'}>Question</div>
           <HtmlBlock className="prose" html={version.stem_html} />
         </div>
@@ -605,6 +849,7 @@ export default function PracticeQuestionPage() {
     </>
   );
 
+  // Math top-right tool buttons (only shown on math domains)
   const MathToolRow = ({ align = 'flex-end' } = {}) =>
     isMath ? (
       <div className="mathRightHeader" style={{ justifyContent: align }}>
@@ -624,9 +869,9 @@ export default function PracticeQuestionPage() {
       </div>
     ) : null;
 
+  // MCQ options area (shared between layouts)
   const McqOptionsArea = ({ showAnswerHeader = true }) => (
     <>
-      {/* ✅ Math: hide "Answer choices" header */}
       {showAnswerHeader ? <div className="h2">Answer choices</div> : <div className="srOnly">Answer choices</div>}
 
       <div className="optionList">
@@ -677,11 +922,15 @@ export default function PracticeQuestionPage() {
         ) : null}
 
         <div className="btnRow">
-          <button className="btn secondary" disabled={prevDisabled}>
+          <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
             Prev
           </button>
 
-          <button className="btn secondary" disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}>
+          <button
+            className="btn secondary"
+            onClick={goNext}
+            disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}
+          >
             Next
           </button>
         </div>
@@ -689,6 +938,7 @@ export default function PracticeQuestionPage() {
     </>
   );
 
+  // SPR answer area (shared between layouts)
   const SprAnswerArea = () => (
     <>
       <div className="h2">Your answer</div>
@@ -696,12 +946,14 @@ export default function PracticeQuestionPage() {
       {locked ? (
         <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
           <span className="pill">
-            <span className="muted">Result</span> <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+            <span className="muted">Result</span>{' '}
+            <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
           </span>
 
           {!status?.last_is_correct && correctText ? (
             <span className="pill">
-              <span className="muted">Correct answer</span> <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+              <span className="muted">Correct answer</span>{' '}
+              <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
             </span>
           ) : null}
         </div>
@@ -727,10 +979,24 @@ export default function PracticeQuestionPage() {
             {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
           </button>
         ) : null}
+
+        <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
+          Prev
+        </button>
+
+        <button
+          className="btn secondary"
+          onClick={goNext}
+          disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}
+        >
+          Next
+        </button>
       </div>
     </>
   );
 
+  // ✅ Divider drag handlers (math shell only)
+  // Live-resize via CSS var (no React re-render) => prevents flicker.
   function onDividerPointerDown(e) {
     if (calcMinimized) return;
     e.preventDefault();
@@ -747,16 +1013,23 @@ export default function PracticeQuestionPage() {
       const dx = ev.clientX - dragRef.current.startX;
       let nextW = dragRef.current.startW + dx;
       nextW = Math.max(MIN_CALC_W, Math.min(MAX_CALC_W, nextW));
+
       dragRef.current.pendingW = nextW;
-      if (shellRef.current) shellRef.current.style.setProperty('--calcW', `${nextW}px`);
+
+      if (shellRef.current) {
+        shellRef.current.style.setProperty('--calcW', `${nextW}px`);
+      }
     };
 
     const onUp = () => {
       if (!dragRef.current.dragging) return;
       dragRef.current.dragging = false;
+
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      setCalcWidth(dragRef.current.pendingW);
+
+      const committed = dragRef.current.pendingW;
+      setCalcWidth(committed);
     };
 
     window.addEventListener('pointermove', onMove);
@@ -768,6 +1041,8 @@ export default function PracticeQuestionPage() {
       ref={shellRef}
       className="mathShell"
       style={{
+        // default width comes from React state for initial render + commit;
+        // during drag, we override --calcW directly.
         '--calcW': `${calcMinimized ? MINIMIZED_W : calcWidth}px`,
       }}
     >
@@ -776,13 +1051,9 @@ export default function PracticeQuestionPage() {
           <div className="muted small">{calcMinimized ? 'Calc' : 'Desmos Calculator'}</div>
         </div>
 
-        {/* keep mounted; hide visually (no height:0) */}
+        {/* Keep mounted; hide visually when minimized */}
         <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
-          <DesmosPanel
-            isOpen={!calcMinimized}
-            storageKey={questionId ? `desmos:${questionId}` : null}
-            desmosApiKey={process.env.NEXT_PUBLIC_DESMOS_API_KEY || 'bac289385bcd4778a682276b95f5f116'}
-          />
+          <DesmosPanel isOpen={!calcMinimized} storageKey={questionId ? `desmos:${questionId}` : null} />
         </div>
       </aside>
 
@@ -830,9 +1101,25 @@ export default function PracticeQuestionPage() {
               ← Back to list
             </Link>
 
-            {/* (unchanged) Question Map trigger stays where it is */}
-            <button type="button" className="qmapTrigger" disabled={!inSessionContext}>
-              <span className="qmapTriggerCount">…</span>
+            <button
+              type="button"
+              className="qmapTrigger"
+              onClick={openMap}
+              disabled={!inSessionContext}
+              title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
+              aria-label="Open question map"
+            >
+              <span className="qmapTriggerCount">
+                {index1 != null && total != null ? (
+                  <>
+                    {index1} / {total}
+                  </>
+                ) : total != null ? (
+                  <>— / {total}</>
+                ) : (
+                  <>…</>
+                )}
+              </span>
               <span className="qmapTriggerChevron" aria-hidden="true">
                 ▾
               </span>
@@ -840,7 +1127,6 @@ export default function PracticeQuestionPage() {
           </div>
         </div>
 
-        {/* ✅ consolidated Mark button at top (only mark UI change) */}
         <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <button
             type="button"
@@ -865,38 +1151,46 @@ export default function PracticeQuestionPage() {
       <hr />
 
       {qType === 'mcq' ? (
+        // MCQ branch
         useTwoColReading ? (
+          // ✅ Preserve existing Reading two-column format
           <div className="qaTwoCol">
             <div className="qaLeft">
               <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
             </div>
+
             <div className="qaRight">
               <McqOptionsArea showAnswerHeader={false} />
             </div>
           </div>
         ) : isMath ? (
+          // ✅ Math format: calculator left (resizable), question+answers right
           <MathShell>
             <MathToolRow />
             <PromptBlocks compactLabels={false} hideQuestionLabel={true} mbWhenNotCompact={12} />
             <McqOptionsArea showAnswerHeader={false} />
           </MathShell>
         ) : (
+          // ✅ Default MCQ (non-reading, non-math): keep existing single-column behavior
           <div>
             <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
             <McqOptionsArea showAnswerHeader={true} />
           </div>
         )
-      ) : isMath ? (
-        <MathShell>
-          <MathToolRow />
-          <PromptBlocks compactLabels={false} hideQuestionLabel={true} mbWhenNotCompact={12} />
-          <SprAnswerArea />
-        </MathShell>
       ) : (
-        <div>
-          <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
-          <SprAnswerArea />
-        </div>
+        // SPR branch
+        isMath ? (
+          <MathShell>
+            <MathToolRow />
+            <PromptBlocks compactLabels={false} hideQuestionLabel={true} mbWhenNotCompact={12} />
+            <SprAnswerArea />
+          </MathShell>
+        ) : (
+          <div>
+            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
+            <SprAnswerArea />
+          </div>
+        )
       )}
 
       {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
@@ -909,9 +1203,15 @@ export default function PracticeQuestionPage() {
         </>
       ) : null}
 
-      {/* ✅ Reference Sheet Modal: PDF.js render + fallback */}
+      {/* Math Reference Sheet Modal (local PDF in /public) */}
       {showRef ? (
-        <div className="modalOverlay" onClick={() => setShowRef(false)} role="dialog" aria-modal="true">
+        <div
+          className="modalOverlay"
+          onClick={() => setShowRef(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="SAT Math reference sheet"
+        >
           <div className="modalCard" onClick={(e) => e.stopPropagation()} style={{ width: 'min(980px, 96vw)' }}>
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div className="h2" style={{ margin: 0 }}>
@@ -939,7 +1239,7 @@ export default function PracticeQuestionPage() {
               }}
             >
               <PdfJsSheet url="/math_reference_sheet.pdf" />
-              <div style={{ marginTop: 10 }} className="muted">
+              <div className="muted" style={{ marginTop: 10 }}>
                 If the preview doesn’t load, use “Open” above.
               </div>
             </div>
@@ -947,81 +1247,122 @@ export default function PracticeQuestionPage() {
         </div>
       ) : null}
 
-      <style jsx global>{`
-        .mathShell {
-          display: grid;
-          gap: 0;
-          align-items: stretch;
-          grid-template-columns: var(--calcW, ${DEFAULT_CALC_W}px) 12px minmax(0, 1fr);
-        }
+      {showMap ? (
+        <div className="modalOverlay" onClick={() => setShowMap(false)} role="dialog" aria-modal="true" aria-label="Question map">
+          <div className="modalCard" onClick={(e) => e.stopPropagation()}>
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'grid', gap: 4 }}>
+                <div className="h2" style={{ margin: 0 }}>
+                  Question Map
+                </div>
+                <div className="muted small">
+                  {total != null ? (
+                    <>
+                      Showing <span className="kbd">{mapOffset + 1}</span>–<span className="kbd">{Math.min(mapOffset + MAP_PAGE_SIZE, total)}</span> of{' '}
+                      <span className="kbd">{total}</span>
+                    </>
+                  ) : (
+                    <>
+                      Showing <span className="kbd">{mapOffset + 1}</span>–<span className="kbd">{mapOffset + MAP_PAGE_SIZE}</span>
+                    </>
+                  )}
+                </div>
+              </div>
 
-        .mathCalc {
-          position: sticky;
-          top: 14px;
-          align-self: start;
-          min-width: 0;
-        }
+              <div className="btnRow" style={{ alignItems: 'center' }}>
+                <input
+                  className="input"
+                  style={{ width: 140 }}
+                  value={jumpTo}
+                  onChange={(e) => setJumpTo(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      doJumpTo();
+                    }
+                  }}
+                  placeholder="Jump to #"
+                  inputMode="numeric"
+                />
+                <button type="button" className="btn secondary" onClick={doJumpTo} disabled={!jumpTo.trim()}>
+                  Go
+                </button>
 
-        .calcHeader {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 6px 2px 10px;
-        }
+                <button type="button" className="btn secondary" onClick={() => setShowMap(false)}>
+                  Close
+                </button>
+              </div>
+            </div>
 
-        .calcBody.hidden {
-          opacity: 0;
-          visibility: hidden;
-          pointer-events: none;
-        }
+            <hr />
 
-        .desmosHost {
-          width: 100%;
-          height: min(560px, calc(100vh - 220px));
-          background: #fff;
-          border: 1px solid var(--border);
-          border-radius: 14px;
-          overflow: hidden;
-        }
+            <div className="mapGrid">
+              {mapLoading ? (
+                <div className="muted">Loading…</div>
+              ) : (
+                mapIds.map((it) => {
+                  const id = it.question_id;
+                  const i = it.index1;
 
-        .mathDivider {
-          cursor: col-resize;
-          position: relative;
-        }
-        .mathDivider::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          margin: 0 auto;
-          width: 1px;
-          background: var(--border);
-        }
+                  const isCurrent = String(id) === String(questionId);
 
-        .mathRight {
-          min-width: 0;
-          padding-left: 22px;
-        }
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      className={`mapItem ${isCurrent ? 'current' : ''} ${it.is_done ? 'done' : ''}`}
+                      onClick={() => {
+                        setShowMap(false);
+                        router.push(buildHref(id, total, null, null, i));
+                      }}
+                      title={stripHtml(it?.stem_preview || '')}
+                    >
+                      <div className="mapIndex">{i}</div>
+                      <div className="mapMeta">
+                        <div className="mapSkill">{it.skill_desc || it.skill || '—'}</div>
+                        <div className="mapDomain muted">{it.domain_code || ''}</div>
+                      </div>
 
-        @media (max-width: 920px) {
-          .mathShell {
-            grid-template-columns: 1fr;
-            gap: 14px;
-          }
-          .mathDivider {
-            display: none;
-          }
-          .mathCalc {
-            position: relative;
-            top: auto;
-          }
-          .desmosHost {
-            height: 420px;
-          }
-          .mathRight {
-            padding-left: 0;
-          }
-        }
-      `}</style>
+                      <div className="mapBadges">
+                        {it.is_done ? (
+                          <span className="mapIconBadge done" title={it.is_correct ? 'Done (correct)' : 'Done'}>
+                            ✓
+                          </span>
+                        ) : null}
+                        {it.marked_for_review ? (
+                          <span className="mapIconBadge mark" title="Marked for review">
+                            ★
+                          </span>
+                        ) : null}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginTop: 14, gap: 10 }}>
+              <button
+                type="button"
+                className="btn secondary"
+                disabled={mapOffset <= 0 || mapLoading}
+                onClick={() => loadMapPage(Math.max(0, mapOffset - MAP_PAGE_SIZE))}
+              >
+                Prev
+              </button>
+
+              <button
+                type="button"
+                className="btn secondary"
+                disabled={total != null ? mapOffset + MAP_PAGE_SIZE >= total : mapIds.length < MAP_PAGE_SIZE || mapLoading}
+                onClick={() => loadMapPage(mapOffset + MAP_PAGE_SIZE)}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
