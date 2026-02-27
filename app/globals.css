@@ -87,7 +87,7 @@ a{
 
 .qaTwoCol{
   display: grid;
-  grid-template-columns: minmax(520px, 1.15fr) minmax(360px, 0.85fr);
+  grid-template-columns: minmax(480px, 1fr) minmax(420px, 1fr);
   gap: 22px;
   align-items: start;
 }
