@@ -1167,7 +1167,7 @@ export default function PracticeQuestionPage() {
           <div className="refSheetWrap" aria-label="SAT Math reference sheet image">
             <img
               className="refSheetImg"
-              src="/Math_reference_sheet.png"
+              src="/math_reference_sheet.png"
               alt="SAT Math reference sheet"
               draggable={false}
             />
