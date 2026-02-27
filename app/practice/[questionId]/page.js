@@ -255,8 +255,26 @@ export default function PracticeQuestionPage() {
 
   const refCardRef = useRef(null);
   const refDrag = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
-  
+
   const [refPos, setRefPos] = useState({ x: 0, y: 0 }); // px offsets from initial position
+
+  // ✅ Smooth dragging refs (avoid React re-render during drag)
+  const refPosRef = useRef({ x: 0, y: 0 });
+  const refDragRafRef = useRef(null);
+
+  // Keep refPosRef synced with state (state is the persisted value)
+  useEffect(() => {
+    refPosRef.current = refPos;
+  }, [refPos]);
+
+  // When the reference window opens, apply the persisted transform once
+  useEffect(() => {
+    if (!showRef) return;
+    const card = refCardRef.current;
+    if (!card) return;
+    const { x, y } = refPosRef.current;
+    card.style.transform = `translate(calc(-50% + ${x}px), ${y}px)`;
+  }, [showRef]);
 
   // Math tools
   // ✅ Draggable divider + minimize (not close)
@@ -324,66 +342,80 @@ export default function PracticeQuestionPage() {
     liveWidthRef.current = calcWidth;
   }, [calcWidth]);
 
-
   function clamp(n, min, max) {
     return Math.max(min, Math.min(max, n));
   }
-  
+
   function onRefHeaderPointerDown(e) {
     if (e.button !== undefined && e.button !== 0) return; // left click only
     e.preventDefault();
-  
+
     const card = refCardRef.current;
     if (!card) return;
-  
+
     refDrag.current.dragging = true;
     refDrag.current.startX = e.clientX;
     refDrag.current.startY = e.clientY;
-    refDrag.current.origX = refPos.x;
-    refDrag.current.origY = refPos.y;
-  
+
+    // Start from persisted ref value (NOT state)
+    const cur = refPosRef.current;
+    refDrag.current.origX = cur.x;
+    refDrag.current.origY = cur.y;
+
+    const applyTransform = (x, y) => {
+      const el = refCardRef.current;
+      if (!el) return;
+      el.style.transform = `translate(calc(-50% + ${x}px), ${y}px)`;
+    };
+
     const onMove = (ev) => {
       if (!refDrag.current.dragging) return;
-  
+
+      const el = refCardRef.current;
+      if (!el) return;
+
       const dx = ev.clientX - refDrag.current.startX;
       const dy = ev.clientY - refDrag.current.startY;
-  
-      // Proposed new offsets
+
       let nx = refDrag.current.origX + dx;
       let ny = refDrag.current.origY + dy;
-  
-      // Keep the card on-screen
-      const rect = card.getBoundingClientRect();
+
+      // Clamp to viewport using current rect
+      const rect = el.getBoundingClientRect();
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-  
-      // card is positioned with left:50% + translateX(-50%), top: 80px
-      // so rect.left/top already reflect current position; we clamp offsets in px
       const margin = 12;
-  
-      // Compute allowable offset ranges by simulating where the card would be
-      // (we clamp based on current rect and desired delta)
-      const leftAfter = rect.left + (nx - refPos.x);
-      const topAfter = rect.top + (ny - refPos.y);
-  
+
       const minDx = margin - rect.left;
       const maxDx = (vw - margin) - rect.right;
-  
       const minDy = margin - rect.top;
       const maxDy = (vh - margin) - rect.bottom;
-  
-      nx = refPos.x + clamp(nx - refPos.x, minDx, maxDx);
-      ny = refPos.y + clamp(ny - refPos.y, minDy, maxDy);
-  
-      setRefPos({ x: nx, y: ny });
+
+      const curPos = refPosRef.current;
+      nx = curPos.x + clamp(nx - curPos.x, minDx, maxDx);
+      ny = curPos.y + clamp(ny - curPos.y, minDy, maxDy);
+
+      // Store live position without re-render
+      refPosRef.current = { x: nx, y: ny };
+
+      // Throttle DOM writes to animation frames
+      if (refDragRafRef.current) cancelAnimationFrame(refDragRafRef.current);
+      refDragRafRef.current = requestAnimationFrame(() => applyTransform(nx, ny));
     };
-  
+
     const onUp = () => {
       refDrag.current.dragging = false;
+
+      if (refDragRafRef.current) cancelAnimationFrame(refDragRafRef.current);
+      refDragRafRef.current = null;
+
+      // Commit final position once (persist)
+      setRefPos(refPosRef.current);
+
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-  
+
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
   }
@@ -629,7 +661,6 @@ export default function PracticeQuestionPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to update status');
-
     } catch (e) {
       setData((prev) => {
         if (!prev) return prev;
@@ -851,7 +882,6 @@ export default function PracticeQuestionPage() {
     </>
   );
 
-
   // Math tools moved to top nav as icon tabs (keep component for minimal diffs where it's called)
   const MathToolRow = () => null;
 
@@ -959,7 +989,6 @@ export default function PracticeQuestionPage() {
         <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
           Submit
         </button>
-
 
         {locked && (version?.rationale_html || version?.explanation_html) ? (
           <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
@@ -1108,7 +1137,7 @@ export default function PracticeQuestionPage() {
                   <IconCalculator className="toolTabIcon" />
                   <span className="toolTabLabel">Calculator</span>
                 </button>
-            
+
                 <button
                   type="button"
                   className={`toolTab ${showRef ? 'active' : ''}`}
@@ -1121,34 +1150,31 @@ export default function PracticeQuestionPage() {
                 </button>
               </div>
             ) : null}
-                            
-                
           </div>
         </div>
 
         <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-
-            {headerPills.map((p) => (
-              <span key={p.label} className="pill">
-                <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
-              </span>
-            ))}                 
-            <button
-              type="button"
-              className={`markReviewTopBtn ${status?.marked_for_review ? 'isMarked' : ''}`}
-              onClick={toggleMarkForReview}
-              title={status?.marked_for_review ? 'Marked for review' : 'Mark for review'}
-            >
-              <span className="markReviewTopBtnIcon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="14" height="14">
-                  <path
-                    fill="currentColor"
-                    d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
-                  />
-                </svg>
-              </span>
-              {status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
-            </button> 
+          {headerPills.map((p) => (
+            <span key={p.label} className="pill">
+              <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
+            </span>
+          ))}
+          <button
+            type="button"
+            className={`markReviewTopBtn ${status?.marked_for_review ? 'isMarked' : ''}`}
+            onClick={toggleMarkForReview}
+            title={status?.marked_for_review ? 'Marked for review' : 'Mark for review'}
+          >
+            <span className="markReviewTopBtnIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14">
+                <path
+                  fill="currentColor"
+                  d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
+                />
+              </svg>
+            </span>
+            {status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
+          </button>
         </div>
       </div>
 
@@ -1209,53 +1235,53 @@ export default function PracticeQuestionPage() {
         </>
       ) : null}
 
-    {showRef ? (
-      <div
-        className="modalOverlay"
-        onClick={() => setShowRef(false)}
-        role="dialog"
-        aria-modal="true"
-        aria-label="SAT Math reference sheet"
-      >
-       <div
-          ref={refCardRef}
-          className="modalCard"
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            width: 'min(980px, 96vw)',
-            position: 'fixed',
-            left: '50%',
-            top: 80,
-            transform: `translate(calc(-50% + ${refPos.x}px), ${refPos.y}px)`,
-          }}
+      {showRef ? (
+        <div
+          className="modalOverlay"
+          onClick={() => setShowRef(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="SAT Math reference sheet"
         >
-          <div className="refModalHeader" onPointerDown={onRefHeaderPointerDown}>
-            <div className="h2" style={{ margin: 0 }}>
-              SAT Math Reference Sheet
+          <div
+            ref={refCardRef}
+            className="modalCard"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: 'min(980px, 96vw)',
+              position: 'fixed',
+              left: '50%',
+              top: 80,
+              transform: `translate(calc(-50% + ${refPos.x}px), ${refPos.y}px)`,
+              willChange: 'transform',
+            }}
+          >
+            <div className="refModalHeader" onPointerDown={onRefHeaderPointerDown}>
+              <div className="h2" style={{ margin: 0 }}>
+                SAT Math Reference Sheet
+              </div>
+
+              <button
+                type="button"
+                className="refModalClose"
+                onClick={() => setShowRef(false)}
+                aria-label="Close reference sheet"
+              >
+                ×
+              </button>
             </div>
-    
-            <button
-              type="button"
-              className="refModalClose"
-              onClick={() => setShowRef(false)}
-              aria-label="Close reference sheet"
-            >
-              ×
-            </button>
-          </div>
-    
-          <div className="refSheetWrap" aria-label="SAT Math reference sheet image">
-            <img
-              className="refSheetImg"
-              src="/math_reference_sheet.png"
-              alt="SAT Math reference sheet"
-              draggable={false}
-            />
+
+            <div className="refSheetWrap" aria-label="SAT Math reference sheet image">
+              <img
+                className="refSheetImg"
+                src="/math_reference_sheet.png"
+                alt="SAT Math reference sheet"
+                draggable={false}
+              />
+            </div>
           </div>
         </div>
-                
-      </div>
-    ) : null}
+      ) : null}
 
       {showMap ? (
         <div className="modalOverlay" onClick={() => setShowMap(false)} role="dialog" aria-modal="true" aria-label="Question map">
@@ -1543,109 +1569,101 @@ export default function PracticeQuestionPage() {
         }
 
         /* Tool tabs in top nav (Calculator / Reference) */
-        .toolTabs{
+        .toolTabs {
           display: inline-flex;
           align-items: stretch;
           gap: 18px;
           margin-left: 6px;
         }
-        
-        .toolTab{
+
+        .toolTab {
           appearance: none;
           border: 0;
           background: transparent;
           cursor: pointer;
-        
+
           display: grid;
           place-items: center;
           gap: 6px;
-        
+
           padding: 6px 10px 8px;
           border-bottom: 3px solid transparent;
-        
+
           color: var(--muted);
         }
-        
-        .toolTab:hover{
+
+        .toolTab:hover {
           color: var(--text);
         }
-        
-        .toolTab.active{
+
+        .toolTab.active {
           color: var(--text);
-          border-bottom-color: rgba(17,24,39,0.9);
+          border-bottom-color: rgba(17, 24, 39, 0.9);
         }
-        
-        .toolTabIcon{
+
+        .toolTabIcon {
           width: 28px;
           height: 28px;
           display: block;
         }
-        
-        .toolTabLabel{
+
+        .toolTabLabel {
           font-size: 12.5px;
           font-weight: 600;
           line-height: 1;
         }
 
         /* Reference modal header with top-right X */
-          .refModalHeader{
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding-bottom: 8px;
-          }
-          
-          .refModalClose{
-            position: absolute;
-            right: 0;
-            top: 0;
-          
-            border: 0;
-            background: transparent;
-            font-size: 24px;
-            line-height: 1;
-            cursor: pointer;
-            padding: 4px 8px;
-          
-            color: var(--muted);
-          }
-          
-          .refModalClose:hover{
-            color: var(--text);
-          }
+        .refModalHeader {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding-bottom: 8px;
+          cursor: move; /* indicates it’s draggable */
+          user-select: none; /* don’t highlight text while dragging */
+        }
 
-          /* Reference sheet: size to image, but constrain to viewport */
-          .refSheetWrap{
-            padding: 10px;
-          }
-          
-          .refSheetImg{
-            display: block;
-            margin: 0 auto;
-          
-            /* Fit-to-window behavior */
-            width: auto;
-            height: auto;
-          
-            /* Constrain to viewport (so it never overflows the screen) */
-            max-width: min(980px, 92vw);
-            max-height: calc(100vh - 170px); /* accounts for top offset + header + padding */
-          
-            user-select: none;
-            -webkit-user-drag: none;
-            pointer-events: none;
-          }
+        .refModalClose {
+          position: absolute;
+          right: 0;
+          top: 0;
 
-          .refModalHeader{
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding-bottom: 8px;
-            cursor: move;             /* indicates it’s draggable */
-            user-select: none;        /* don’t highlight text while dragging */
-          }
+          border: 0;
+          background: transparent;
+          font-size: 24px;
+          line-height: 1;
+          cursor: pointer;
+          padding: 4px 8px;
+
+          color: var(--muted);
+        }
+
+        .refModalClose:hover {
+          color: var(--text);
+        }
+
+        /* Reference sheet: size to image, but constrain to viewport */
+        .refSheetWrap {
+          padding: 10px;
+        }
+
+        .refSheetImg {
+          display: block;
+          margin: 0 auto;
+
+          /* Fit-to-window behavior */
+          width: auto;
+          height: auto;
+
+          /* Constrain to viewport (so it never overflows the screen) */
+          max-width: min(980px, 92vw);
+          max-height: calc(100vh - 170px); /* accounts for top offset + header + padding */
+
+          user-select: none;
+          -webkit-user-drag: none;
+          pointer-events: none;
+        }
       `}</style>
     </main>
   );
