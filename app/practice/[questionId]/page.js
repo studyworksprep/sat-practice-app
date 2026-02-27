@@ -7,6 +7,28 @@ import Link from 'next/link';
 import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
 
+function IconCalculator({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M7 2h10a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zm0 2a1 1 0 0 0-1 1v3h12V5a1 1 0 0 0-1-1H7zm11 6H6v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9zM8 12h2v2H8v-2zm0 4h2v2H8v-2zm4-4h2v2h-2v-2zm0 4h2v2h-2v-2zm4-4h2v2h-2v-2zm0 4h2v2h-2v-2z"
+      />
+    </svg>
+  );
+}
+
+function IconReference({ className = '' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M14 2H7a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8l-6-6zm1 2.5L19.5 9H15a1 1 0 0 1-1-1V4.5zM7 4h6v4a3 3 0 0 0 3 3h4v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"
+      />
+    </svg>
+  );
+}
+
 function formatCorrectText(ct) {
   if (!ct) return null;
   if (Array.isArray(ct)) return ct;
@@ -729,25 +751,9 @@ export default function PracticeQuestionPage() {
     </>
   );
 
-  // Math top-right tool buttons (only shown on math domains)
-  const MathToolRow = ({ align = 'flex-end' } = {}) =>
-    isMath ? (
-      <div className="mathRightHeader" style={{ justifyContent: align }}>
-        <button
-          type="button"
-          className="btn secondary"
-          onClick={() => setCalcMinimized((m) => !m)}
-          aria-label={calcMinimized ? 'Expand calculator' : 'Minimize calculator'}
-          title={calcMinimized ? 'Expand calculator' : 'Minimize calculator'}
-        >
-          {calcMinimized ? 'Expand Calculator' : 'Minimize Calculator'}
-        </button>
 
-        <button type="button" className="btn secondary" onClick={() => setShowRef(true)}>
-          Reference Sheet
-        </button>
-      </div>
-    ) : null;
+  // Math tools moved to top nav as icon tabs (keep component for minimal diffs where it's called)
+  const MathToolRow = () => null;
 
   // MCQ options area (shared between layouts)
   const McqOptionsArea = ({ showAnswerHeader = true }) => (
@@ -990,6 +996,33 @@ export default function PracticeQuestionPage() {
                 ▾
               </span>
             </button>
+            {isMath ? (
+              <div className="toolTabs" role="tablist" aria-label="Math tools">
+                <button
+                  type="button"
+                  className={`toolTab ${!calcMinimized ? 'active' : ''}`}
+                  onClick={() => setCalcMinimized((m) => !m)}
+                  aria-pressed={!calcMinimized}
+                  title={!calcMinimized ? 'Minimize calculator' : 'Expand calculator'}
+                >
+                  <IconCalculator className="toolTabIcon" />
+                  <span className="toolTabLabel">Calculator</span>
+                </button>
+            
+                <button
+                  type="button"
+                  className={`toolTab ${showRef ? 'active' : ''}`}
+                  onClick={() => setShowRef(true)}
+                  aria-pressed={showRef}
+                  title="Open reference sheet"
+                >
+                  <IconReference className="toolTabIcon" />
+                  <span className="toolTabLabel">Reference</span>
+                </button>
+              </div>
+            ) : null}
+                            
+                
           </div>
         </div>
 
@@ -1394,6 +1427,51 @@ export default function PracticeQuestionPage() {
           .mathRight {
             padding-left: 0;
           }
+        }
+
+        /* Tool tabs in top nav (Calculator / Reference) */
+        .toolTabs{
+          display: inline-flex;
+          align-items: stretch;
+          gap: 18px;
+          margin-left: 6px;
+        }
+        
+        .toolTab{
+          appearance: none;
+          border: 0;
+          background: transparent;
+          cursor: pointer;
+        
+          display: grid;
+          place-items: center;
+          gap: 6px;
+        
+          padding: 6px 10px 8px;
+          border-bottom: 3px solid transparent;
+        
+          color: var(--muted);
+        }
+        
+        .toolTab:hover{
+          color: var(--text);
+        }
+        
+        .toolTab.active{
+          color: var(--text);
+          border-bottom-color: rgba(17,24,39,0.9);
+        }
+        
+        .toolTabIcon{
+          width: 28px;
+          height: 28px;
+          display: block;
+        }
+        
+        .toolTabLabel{
+          font-size: 12.5px;
+          font-weight: 600;
+          line-height: 1;
         }
       `}</style>
     </main>
