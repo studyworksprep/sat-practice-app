@@ -823,11 +823,12 @@ hr{
   font-size: 1.05em;
 }
 
-/* Inline MathJax inside math prompts (inline usually has NO display attr) */
+/* Inline MathJax inside math prompts: reduce line-box expansion (do NOT affect display equations) */
 .mathShell .prose mjx-container[jax="CHTML"]:not([display="true"]){
-  vertical-align: middle;
-  font-size: 1.04em !important;
-  padding: 0 !important; /* override global padding that inflates line boxes */
+  padding: 0 !important;        /* remove global 2px vertical padding */
+  line-height: 1 !important;    /* stop the container from inflating the line box */
+  vertical-align: -0.08em;      /* baseline correction; tweak -0.06em to -0.10em if needed */
+  font-size: 1.02em !important; /* slight downscale to counter MathJax’s ~118.9% */
 }
 
 /* Prevent overflow from long expressions / tables */
