@@ -1169,7 +1169,6 @@ export default function PracticeQuestionPage() {
               className="refSheetImg"
               src="/math_reference_sheet.png"
               alt="SAT Math reference sheet"
-              draggable={false}
             />
           </div>
         </div>
