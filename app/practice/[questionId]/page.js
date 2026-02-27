@@ -941,8 +941,17 @@ export default function PracticeQuestionPage() {
                   let cls = 'option' + (isSelected ? ' selected' : '');
                   if (locked) {
                     const isCorrect = String(opt.id) === String(correctOptionId);
+                    const hasSelection = selected != null;
+                  
+                    // Selected answer: green if correct, red if incorrect
                     if (isSelected && isCorrect) cls += ' correct';
-                    else if (isSelected && !isCorrect) cls += ' incorrect';
+                    else if (isSelected && hasSelection && !isCorrect) cls += ' incorrect';
+                  
+                    // If the student selected the wrong answer, also reveal the correct option in green
+                    const selectedIsWrong =
+                      hasSelection && String(selected) !== String(correctOptionId);
+                  
+                    if (!isSelected && isCorrect && selectedIsWrong) cls += ' revealCorrect';
                   }
                   return cls;
                 })()}
