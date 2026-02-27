@@ -262,6 +262,8 @@ export default function PracticeQuestionPage() {
   const refPosRef = useRef({ x: 0, y: 0 });
   const refDragRafRef = useRef(null);
 
+  const [showRef, setShowRef] = useState(false);
+
   // Keep refPosRef synced with state (state is the persisted value)
   useEffect(() => {
     refPosRef.current = refPos;
@@ -290,8 +292,6 @@ export default function PracticeQuestionPage() {
   const shellRef = useRef(null);
   const liveWidthRef = useRef(DEFAULT_CALC_W);
   const dragRef = useRef({ dragging: false, startX: 0, startW: DEFAULT_CALC_W, pendingW: DEFAULT_CALC_W });
-
-  const [showRef, setShowRef] = useState(false);
 
   // Option A neighbor nav
   const [prevId, setPrevId] = useState(null);
