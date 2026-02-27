@@ -71,7 +71,38 @@ export async function GET(_request, { params }) {
       .maybeSingle();
 
     if (stErr) return NextResponse.json({ error: stErr.message }, { status: 400 });
-    status = st;
+
+    // ✅ Fallback for older data: if status_json doesn't include restore fields,
+    // look up the most recent attempt and inject them into the response.
+    if (st) {
+      const prevJson = st.status_json && typeof st.status_json === 'object' ? st.status_json : {};
+      const needsLastSelected = st.is_done && version?.question_type === 'mcq' && prevJson.last_selected_option_id == null;
+      const needsLastResponse = st.is_done && version?.question_type === 'spr' && (prevJson.last_response_text == null || prevJson.last_response_text === '');
+
+      if (needsLastSelected || needsLastResponse) {
+        const { data: lastAttempt, error: laErr } = await supabase
+          .from('attempts')
+          .select('selected_option_id, response_text, created_at')
+          .eq('user_id', user.id)
+          .eq('question_id', questionId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!laErr && lastAttempt) {
+          const patched = { ...prevJson };
+          if (needsLastSelected) patched.last_selected_option_id = lastAttempt.selected_option_id ?? null;
+          if (needsLastResponse) patched.last_response_text = lastAttempt.response_text ?? '';
+          status = { ...st, status_json: patched };
+        } else {
+          status = st;
+        }
+      } else {
+        status = st;
+      }
+    } else {
+      status = null;
+    }
   }
 
 
