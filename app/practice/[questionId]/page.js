@@ -824,7 +824,6 @@ export default function PracticeQuestionPage() {
   const isMath = ['H', 'P', 'S', 'Q'].includes(domainCode);
 
   const headerPills = [
-    { label: 'Attempts', value: status?.attempts_count ?? 0 },
     { label: 'Correct', value: status?.correct_attempts_count ?? 0 },
     { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
   ];
@@ -832,37 +831,42 @@ export default function PracticeQuestionPage() {
   // ✅ moved pills into question area
   const StatusPillsRow = ({ style }) => (
     <div
-      className="row"
       style={{
+        display: 'flex',
         alignItems: 'center',
-        gap: 8,
+        justifyContent: 'space-between',
+        gap: 12,
         flexWrap: 'wrap',
-        justifyContent: 'flex-end',
-        marginBottom: 12,
         ...(style || {}),
       }}
     >
-      {headerPills.map((p) => (
-        <span key={p.label} className="pill">
-          <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
-        </span>
-      ))}
-      <button
-        type="button"
-        className={`markReviewTopBtn ${status?.marked_for_review ? 'isMarked' : ''}`}
-        onClick={toggleMarkForReview}
-        title={status?.marked_for_review ? 'Marked for review' : 'Mark for review'}
-      >
-        <span className="markReviewTopBtnIcon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="14" height="14">
-            <path
-              fill="currentColor"
-              d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
-            />
-          </svg>
-        </span>
-        {status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
-      </button>
+      {/* Left: Question number */}
+      <div className="pill" style={{ fontWeight: 750 }}>
+        <span className="muted">Question</span> <span className="kbd">{index1 ?? '—'}</span>
+      </div>
+  
+      {/* Right: Pills + Mark */}
+      <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        {headerPills.map((p) => (
+          <span key={p.label} className="pill">
+            <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
+          </span>
+        ))}
+  
+        <button
+          type="button"
+          className={`markReviewTopBtn ${status?.marked_for_review ? 'isMarked' : ''}`}
+          onClick={toggleMarkForReview}
+          title={status?.marked_for_review ? 'Marked for review' : 'Mark for review'}
+        >
+          <span className="markReviewTopBtnIcon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="currentColor" d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z" />
+            </svg>
+          </span>
+          {status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
+        </button>
+      </div>
     </div>
   );
 
@@ -901,7 +905,7 @@ export default function PracticeQuestionPage() {
   };
 
   // Shared prompt renderer (so MCQ + SPR don’t duplicate stimulus/stem blocks)
-  const PromptBlocks = ({ compactLabels = false, mbWhenNotCompact = 12 }) => (
+  const PromptBlocks = ({ compactLabels = true, mbWhenNotCompact = 12 }) => (
     <>
       {version?.stimulus_html ? (
         <div className="card subcard" style={{ marginBottom: compactLabels ? 0 : mbWhenNotCompact }}>
@@ -922,10 +926,6 @@ export default function PracticeQuestionPage() {
   // Math tools moved to top nav as icon tabs (keep component for minimal diffs where it's called)
   const MathToolRow = () => null;
 
-  // MCQ options area (shared between layouts)
-  const McqOptionsArea = ({ showAnswerHeader = true }) => (
-    <>
-      {showAnswerHeader ? <div className="h2">Answer choices</div> : <div className="srOnly">Answer choices</div>}
 
       <div className="optionList">
         {options
@@ -1229,24 +1229,28 @@ export default function PracticeQuestionPage() {
               <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
             </div>
 
-            <div className="qaRight">
+           <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
               <StatusPillsRow />
-              <McqOptionsArea showAnswerHeader={false} />
             </div>
+        
           </div>
         ) : isMath ? (
           // ✅ Math format: calculator left (resizable), question+answers right
           <MathShell>
             <MathToolRow />
-            <StatusPillsRow />
-            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
+            <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
+              <StatusPillsRow />
+            </div>
+            <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
             <McqOptionsArea showAnswerHeader={true} />
           </MathShell>
         ) : (
           // ✅ Default MCQ (non-reading, non-math): keep existing single-column behavior
           <div>
-            <StatusPillsRow />
-            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
+            <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
+              <StatusPillsRow />
+            </div>
+            <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
             <McqOptionsArea showAnswerHeader={true} />
           </div>
         )
@@ -1255,14 +1259,18 @@ export default function PracticeQuestionPage() {
         isMath ? (
           <MathShell>
             <MathToolRow />
-            <StatusPillsRow />
-            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
+            <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
+              <StatusPillsRow />
+            </div>
+            <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
             <SprAnswerArea />
           </MathShell>
         ) : (
           <div>
-            <StatusPillsRow />
-            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
+            <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
+              <StatusPillsRow />
+            </div>
+            <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
             <SprAnswerArea />
           </div>
         )
