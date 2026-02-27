@@ -1140,20 +1140,20 @@ export default function PracticeQuestionPage() {
         </>
       ) : null}
 
-      {/* Math Reference Sheet Modal (local PDF in /public) */}
-      {showRef ? (
-        <div
-          className="modalOverlay"
-          onClick={() => setShowRef(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="SAT Math reference sheet"
-        >
+    {showRef ? (
+      <div
+        className="modalOverlay"
+        onClick={() => setShowRef(false)}
+        role="dialog"
+        aria-modal="true"
+        aria-label="SAT Math reference sheet"
+      >
+        <div className="modalCard" onClick={(e) => e.stopPropagation()} style={{ width: 'min(980px, 96vw)' }}>
           <div className="refModalHeader">
             <div className="h2" style={{ margin: 0 }}>
               SAT Math Reference Sheet
             </div>
-          
+    
             <button
               type="button"
               className="refModalClose"
@@ -1163,18 +1163,18 @@ export default function PracticeQuestionPage() {
               ×
             </button>
           </div>
-
-            <div className="refSheetScroll" aria-label="SAT Math reference sheet image">
-              <img
-                className="refSheetImg"
-                src="/math_reference_sheet.png"
-                alt="SAT Math reference sheet"
-                draggable={false}
-              />
-            </div>
+    
+          <div className="refSheetScroll" aria-label="SAT Math reference sheet image">
+            <img
+              className="refSheetImg"
+              src="/math_reference_sheet.png"
+              alt="SAT Math reference sheet"
+              draggable={false}
+            />
           </div>
         </div>
-      ) : null}
+      </div>
+    ) : null}
 
       {showMap ? (
         <div className="modalOverlay" onClick={() => setShowMap(false)} role="dialog" aria-modal="true" aria-label="Question map">
@@ -1532,6 +1532,23 @@ export default function PracticeQuestionPage() {
           
           .refModalClose:hover{
             color: var(--text);
+          }
+
+          .refSheetScroll{
+            height: 75vh;
+            overflow: auto;
+            padding: 8px;
+          }
+          
+          .refSheetImg{
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+          
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
           }
       `}</style>
 
