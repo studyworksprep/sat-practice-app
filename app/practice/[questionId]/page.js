@@ -253,6 +253,11 @@ export default function PracticeQuestionPage() {
 
   const [showExplanation, setShowExplanation] = useState(false);
 
+  const refCardRef = useRef(null);
+  const refDrag = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
+  
+  const [refPos, setRefPos] = useState({ x: 0, y: 0 }); // px offsets from initial position
+
   // Math tools
   // ✅ Draggable divider + minimize (not close)
   const DEFAULT_CALC_W = 660; // wide enough that Desmos starts in its roomier layout
@@ -318,6 +323,70 @@ export default function PracticeQuestionPage() {
   useEffect(() => {
     liveWidthRef.current = calcWidth;
   }, [calcWidth]);
+
+
+  function clamp(n, min, max) {
+    return Math.max(min, Math.min(max, n));
+  }
+  
+  function onRefHeaderPointerDown(e) {
+    if (e.button !== undefined && e.button !== 0) return; // left click only
+    e.preventDefault();
+  
+    const card = refCardRef.current;
+    if (!card) return;
+  
+    refDrag.current.dragging = true;
+    refDrag.current.startX = e.clientX;
+    refDrag.current.startY = e.clientY;
+    refDrag.current.origX = refPos.x;
+    refDrag.current.origY = refPos.y;
+  
+    const onMove = (ev) => {
+      if (!refDrag.current.dragging) return;
+  
+      const dx = ev.clientX - refDrag.current.startX;
+      const dy = ev.clientY - refDrag.current.startY;
+  
+      // Proposed new offsets
+      let nx = refDrag.current.origX + dx;
+      let ny = refDrag.current.origY + dy;
+  
+      // Keep the card on-screen
+      const rect = card.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+  
+      // card is positioned with left:50% + translateX(-50%), top: 80px
+      // so rect.left/top already reflect current position; we clamp offsets in px
+      const margin = 12;
+  
+      // Compute allowable offset ranges by simulating where the card would be
+      // (we clamp based on current rect and desired delta)
+      const leftAfter = rect.left + (nx - refPos.x);
+      const topAfter = rect.top + (ny - refPos.y);
+  
+      const minDx = margin - rect.left;
+      const maxDx = (vw - margin) - rect.right;
+  
+      const minDy = margin - rect.top;
+      const maxDy = (vh - margin) - rect.bottom;
+  
+      nx = refPos.x + clamp(nx - refPos.x, minDx, maxDx);
+      ny = refPos.y + clamp(ny - refPos.y, minDy, maxDy);
+  
+      setRefPos({ x: nx, y: ny });
+    };
+  
+    const onUp = () => {
+      refDrag.current.dragging = false;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
 
   // support "i" (1-based index) for neighbor navigation
   function buildHref(targetId, t, o, p, i) {
@@ -1148,8 +1217,19 @@ export default function PracticeQuestionPage() {
         aria-modal="true"
         aria-label="SAT Math reference sheet"
       >
-        <div className="modalCard" onClick={(e) => e.stopPropagation()} style={{ width: 'min(980px, 96vw)' }}>
-          <div className="refModalHeader">
+       <div
+          ref={refCardRef}
+          className="modalCard"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            width: 'min(980px, 96vw)',
+            position: 'fixed',
+            left: '50%',
+            top: 80,
+            transform: `translate(calc(-50% + ${refPos.x}px), ${refPos.y}px)`,
+          }}
+        >
+          <div className="refModalHeader" onPointerDown={onRefHeaderPointerDown}>
             <div className="h2" style={{ margin: 0 }}>
               SAT Math Reference Sheet
             </div>
@@ -1173,6 +1253,7 @@ export default function PracticeQuestionPage() {
             />
           </div>
         </div>
+                
       </div>
     ) : null}
 
@@ -1572,9 +1653,17 @@ export default function PracticeQuestionPage() {
             -webkit-user-drag: none;
             pointer-events: none;
           }
-      `}</style>
 
-        
+          .refModalHeader{
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 8px;
+            cursor: move;             /* indicates it’s draggable */
+            user-select: none;        /* don’t highlight text while dragging */
+          }
+      `}</style>
     </main>
   );
 }
