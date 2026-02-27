@@ -1505,7 +1505,37 @@ export default function PracticeQuestionPage() {
           font-weight: 600;
           line-height: 1;
         }
+
+        /* Reference modal header with top-right X */
+          .refModalHeader{
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 8px;
+          }
+          
+          .refModalClose{
+            position: absolute;
+            right: 0;
+            top: 0;
+          
+            border: 0;
+            background: transparent;
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 8px;
+          
+            color: var(--muted);
+          }
+          
+          .refModalClose:hover{
+            color: var(--text);
+          }
       `}</style>
+
+        
     </main>
   );
 }
