@@ -169,7 +169,7 @@ function DesmosPanel({ isOpen, storageKey }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  // Uses NEXT_PUBLIC_DESMOS_API_KEY if present; otherwise falls back to the existing hardcoded key
+  // Use env var on Vercel; fallback keeps dev from breaking if env not yet set.
   const apiKey =
     (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_DESMOS_API_KEY) ||
     'bac289385bcd4778a682276b95f5f116';
@@ -182,107 +182,6 @@ function DesmosPanel({ isOpen, storageKey }) {
         onLoad={() => setReady(true)}
       />
       <div ref={hostRef} className="desmosHost" />
-    </>
-  );
-}
-
-/**
- * PDF.js renderer for in-app reference sheet display (consistent across browsers).
- * Renders pages into canvases inside a scroll container.
- * Uses a UMD build that reliably exposes a global.
- */
-function PdfJsSheet({ url }) {
-  const containerRef = useRef(null);
-  const [ready, setReady] = useState(false);
-  const [loadingPdf, setLoadingPdf] = useState(true);
-  const [err, setErr] = useState(null);
-
-  // pdf.js 2.x UMD exposes window['pdfjs-dist/build/pdf']
-  const getPdfLib = () => {
-    if (typeof window === 'undefined') return null;
-    return window['pdfjs-dist/build/pdf'] || window.pdfjsLib || null;
-  };
-
-  useEffect(() => {
-    if (getPdfLib()) setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
-    let cancelled = false;
-
-    async function run() {
-      setErr(null);
-      setLoadingPdf(true);
-
-      try {
-        const pdfjsLib = getPdfLib();
-        if (!pdfjsLib?.getDocument) throw new Error('PDF engine unavailable');
-
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-
-        const task = pdfjsLib.getDocument(url);
-        const pdf = await task.promise;
-        if (cancelled) return;
-
-        const el = containerRef.current;
-        if (!el) return;
-        el.innerHTML = '';
-
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-          if (cancelled) return;
-
-          const baseViewport = page.getViewport({ scale: 1 });
-          const targetW = Math.min(920, el.clientWidth || 920);
-          const scale = targetW / baseViewport.width;
-          const viewport = page.getViewport({ scale });
-
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          canvas.width = Math.floor(viewport.width);
-          canvas.height = Math.floor(viewport.height);
-
-          const wrap = document.createElement('div');
-          wrap.style.display = 'grid';
-          wrap.style.justifyContent = 'center';
-          wrap.style.margin = '0 0 14px';
-          wrap.appendChild(canvas);
-          el.appendChild(wrap);
-
-          await page.render({ canvasContext: ctx, viewport }).promise;
-        }
-
-        if (!cancelled) setLoadingPdf(false);
-      } catch (e) {
-        if (!cancelled) {
-          setErr(e?.message || 'Failed to load reference sheet');
-          setLoadingPdf(false);
-        }
-      }
-    }
-
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [ready, url]);
-
-  return (
-    <>
-      <Script
-        src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"
-        strategy="afterInteractive"
-        onLoad={() => setReady(true)}
-        onError={() => {
-          setErr('Failed to load PDF engine');
-          setLoadingPdf(false);
-        }}
-      />
-      {err ? <div className="muted">Error: {err}</div> : null}
-      {loadingPdf ? <div className="muted">Loading reference sheet…</div> : null}
-      <div ref={containerRef} style={{ width: '100%' }} />
     </>
   );
 }
@@ -664,24 +563,6 @@ export default function PracticeQuestionPage() {
     };
   }, [showMap]);
 
-  // Reference sheet modal: ESC close + prevent background scroll
-  useEffect(() => {
-    if (!showRef) return;
-
-    const onKeyDown = (e) => {
-      if (e.key === 'Escape') setShowRef(false);
-    };
-    window.addEventListener('keydown', onKeyDown);
-
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [showRef]);
-
   // ✅ Fetch neighbors (Option A) — prevent stale-enable by gating with navForId
   useEffect(() => {
     if (!questionId) {
@@ -794,6 +675,7 @@ export default function PracticeQuestionPage() {
     { label: 'Attempts', value: status?.attempts_count ?? 0 },
     { label: 'Correct', value: status?.correct_attempts_count ?? 0 },
     { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
+    { label: 'Marked', value: status?.marked_for_review ? 'Yes' : 'No' },
   ];
 
   const prevDisabled = navLoading || !index1 || index1 <= 1 || !prevId;
@@ -831,7 +713,7 @@ export default function PracticeQuestionPage() {
   };
 
   // Shared prompt renderer (so MCQ + SPR don’t duplicate stimulus/stem blocks)
-  const PromptBlocks = ({ compactLabels = false, hideQuestionLabel = false, mbWhenNotCompact = 12 }) => (
+  const PromptBlocks = ({ compactLabels = false, mbWhenNotCompact = 12 }) => (
     <>
       {version?.stimulus_html ? (
         <div className="card subcard" style={{ marginBottom: compactLabels ? 0 : mbWhenNotCompact }}>
@@ -842,7 +724,7 @@ export default function PracticeQuestionPage() {
 
       {version?.stem_html ? (
         <div className="card subcard" style={{ marginBottom: compactLabels ? 0 : mbWhenNotCompact }}>
-          <div className={compactLabels || hideQuestionLabel ? 'srOnly' : 'sectionLabel'}>Question</div>
+          <div className={compactLabels ? 'srOnly' : 'sectionLabel'}>Question</div>
           <HtmlBlock className="prose" html={version.stem_html} />
         </div>
       ) : null}
@@ -913,6 +795,10 @@ export default function PracticeQuestionPage() {
           <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected}>
             Submit
           </button>
+
+          <button className="btn secondary" onClick={toggleMarkForReview}>
+            {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
+          </button>
         </div>
 
         {locked && (version?.rationale_html || version?.explanation_html) ? (
@@ -974,6 +860,10 @@ export default function PracticeQuestionPage() {
           Submit
         </button>
 
+        <button className="btn secondary" onClick={toggleMarkForReview}>
+          {status?.marked_for_review ? 'Unmark review' : 'Mark for review'}
+        </button>
+
         {locked && (version?.rationale_html || version?.explanation_html) ? (
           <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
             {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
@@ -1011,50 +901,51 @@ export default function PracticeQuestionPage() {
     const onMove = (ev) => {
       if (!dragRef.current.dragging) return;
       const dx = ev.clientX - dragRef.current.startX;
-      let nextW = dragRef.current.startW + dx;
-      nextW = Math.max(MIN_CALC_W, Math.min(MAX_CALC_W, nextW));
+      const next = Math.min(Math.max(dragRef.current.startW + dx, MIN_CALC_W), MAX_CALC_W);
 
-      dragRef.current.pendingW = nextW;
+      dragRef.current.pendingW = next;
+      liveWidthRef.current = next;
 
-      if (shellRef.current) {
-        shellRef.current.style.setProperty('--calcW', `${nextW}px`);
-      }
+      // Update CSS variable directly (no React state update)
+      shellRef.current?.style.setProperty('--calcW', `${next}px`);
     };
 
     const onUp = () => {
-      if (!dragRef.current.dragging) return;
       dragRef.current.dragging = false;
-
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
 
-      const committed = dragRef.current.pendingW;
-      setCalcWidth(committed);
+      // Commit once
+      setCalcWidth(dragRef.current.pendingW);
     };
 
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
   }
 
+  // Math shell wrapper (calculator left, question right; draggable divider; minimize)
   const MathShell = ({ children }) => (
     <div
       ref={shellRef}
-      className="mathShell"
-      style={{
-        // default width comes from React state for initial render + commit;
-        // during drag, we override --calcW directly.
-        '--calcW': `${calcMinimized ? MINIMIZED_W : calcWidth}px`,
-      }}
+      className={`mathShell ${calcMinimized ? 'min' : 'withCalc'}`}
+      style={{ '--calcW': `${calcMinimized ? MINIMIZED_W : calcWidth}px` }}
     >
-      <aside className={`mathCalc ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
-        <div className="calcHeader">
-          <div className="muted small">{calcMinimized ? 'Calc' : 'Desmos Calculator'}</div>
+      <aside className={`mathLeft ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
+        <div className="mathLeftHeader">
+          <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+          <button type="button" className="btn secondary" onClick={() => setCalcMinimized((m) => !m)}>
+            {calcMinimized ? 'Expand' : 'Minimize'}
+          </button>
         </div>
 
         {/* Keep mounted; hide visually when minimized */}
         <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
-          <DesmosPanel isOpen={!calcMinimized} storageKey={questionId ? `desmos:${questionId}` : null} />
+          <DesmosPanel
+            isOpen={!calcMinimized}
+            storageKey={questionId ? `desmos:${questionId}` : 'desmos:unknown'}
+          />
         </div>
+        {calcMinimized ? <div className="calcMinBody" /> : null}
       </aside>
 
       {!calcMinimized ? (
@@ -1062,9 +953,9 @@ export default function PracticeQuestionPage() {
           className="mathDivider"
           role="separator"
           aria-orientation="vertical"
-          tabIndex={0}
+          aria-label="Resize calculator panel"
           onPointerDown={onDividerPointerDown}
-          title="Drag to resize calculator"
+          title="Drag to resize"
         />
       ) : (
         <div className="mathDivider min" aria-hidden="true" />
@@ -1073,22 +964,6 @@ export default function PracticeQuestionPage() {
       <main className="mathRight">{children}</main>
     </div>
   );
-
-  if (loading) {
-    return (
-      <main className="container">
-        <div className="muted">Loading…</div>
-      </main>
-    );
-  }
-
-  if (!data) {
-    return (
-      <main className="container">
-        <div className="muted">No question data found.</div>
-      </main>
-    );
-  }
 
   return (
     <main className="container">
@@ -1128,16 +1003,6 @@ export default function PracticeQuestionPage() {
         </div>
 
         <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className="btn secondary"
-            onClick={toggleMarkForReview}
-            aria-pressed={Boolean(status?.marked_for_review)}
-            title={status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
-          >
-            {status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
-          </button>
-
           {headerPills.map((p) => (
             <span key={p.label} className="pill">
               <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
@@ -1167,8 +1032,8 @@ export default function PracticeQuestionPage() {
           // ✅ Math format: calculator left (resizable), question+answers right
           <MathShell>
             <MathToolRow />
-            <PromptBlocks compactLabels={false} hideQuestionLabel={true} mbWhenNotCompact={12} />
-            <McqOptionsArea showAnswerHeader={false} />
+            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
+            <McqOptionsArea showAnswerHeader={true} />
           </MathShell>
         ) : (
           // ✅ Default MCQ (non-reading, non-math): keep existing single-column behavior
@@ -1182,7 +1047,7 @@ export default function PracticeQuestionPage() {
         isMath ? (
           <MathShell>
             <MathToolRow />
-            <PromptBlocks compactLabels={false} hideQuestionLabel={true} mbWhenNotCompact={12} />
+            <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
             <SprAnswerArea />
           </MathShell>
         ) : (
@@ -1229,20 +1094,11 @@ export default function PracticeQuestionPage() {
 
             <hr />
 
-            <div
-              style={{
-                height: '75vh',
-                overflow: 'auto',
-                borderRadius: 12,
-                border: '1px solid var(--border)',
-                padding: 12,
-              }}
-            >
-              <PdfJsSheet url="/math_reference_sheet.pdf" />
-              <div className="muted" style={{ marginTop: 10 }}>
-                If the preview doesn’t load, use “Open” above.
-              </div>
-            </div>
+            <iframe
+              title="SAT Math reference sheet"
+              src="/math_reference_sheet.pdf"
+              style={{ width: '100%', height: '75vh', border: 0, borderRadius: 12 }}
+            />
           </div>
         </div>
       ) : null}
@@ -1284,11 +1140,11 @@ export default function PracticeQuestionPage() {
                   placeholder="Jump to #"
                   inputMode="numeric"
                 />
-                <button type="button" className="btn secondary" onClick={doJumpTo} disabled={!jumpTo.trim()}>
+                <button className="btn primary" disabled={mapLoading} onClick={doJumpTo}>
                   Go
                 </button>
 
-                <button type="button" className="btn secondary" onClick={() => setShowMap(false)}>
+                <button className="btn secondary" onClick={() => setShowMap(false)}>
                   Close
                 </button>
               </div>
@@ -1296,73 +1152,242 @@ export default function PracticeQuestionPage() {
 
             <hr />
 
-            <div className="mapGrid">
-              {mapLoading ? (
-                <div className="muted">Loading…</div>
-              ) : (
-                mapIds.map((it) => {
-                  const id = it.question_id;
-                  const i = it.index1;
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div className="btnRow">
+                <button className="btn secondary" onClick={() => loadMapPage(mapOffset - MAP_PAGE_SIZE)} disabled={mapLoading || mapOffset <= 0}>
+                  Prev
+                </button>
 
-                  const isCurrent = String(id) === String(questionId);
+                <button
+                  className="btn secondary"
+                  onClick={() => loadMapPage(mapOffset + MAP_PAGE_SIZE)}
+                  disabled={mapLoading || (total != null ? mapOffset + MAP_PAGE_SIZE >= total : false)}
+                >
+                  Next
+                </button>
+              </div>
+
+              <div className="pill">
+                <span className="muted">Current</span> <span className="kbd">{index1 ?? '—'}</span>
+              </div>
+            </div>
+
+            <div className="questionGrid" style={{ marginTop: 12 }}>
+              {mapLoading ? (
+                <div className="muted" style={{ gridColumn: '1 / -1' }}>
+                  Loading…
+                </div>
+              ) : mapIds.length === 0 ? (
+                <div className="muted" style={{ gridColumn: '1 / -1' }}>
+                  No questions in this range.
+                </div>
+              ) : (
+                mapIds.map((it, pos) => {
+                  const id = it.question_id;
+                  const i = mapOffset + pos + 1;
+                  const active = index1 != null && i === index1;
+
+                  const diff = Number(it.difficulty);
+                  const diffClass = diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : 'diffUnknown';
+
+                  const showMark = Boolean(it.marked_for_review);
+                  const showDone = Boolean(it.is_done);
+                  const showCorrect = showDone && it.last_is_correct === true;
+                  const showIncorrect = showDone && it.last_is_correct === false;
 
                   return (
                     <button
-                      key={id}
+                      key={String(id)}
                       type="button"
-                      className={`mapItem ${isCurrent ? 'current' : ''} ${it.is_done ? 'done' : ''}`}
+                      className={`mapItem ${diffClass}${active ? ' active' : ''}`}
                       onClick={() => {
+                        setIndex1(i);
+                        const o25 = Math.floor((i - 1) / 25) * 25;
+                        const p25 = (i - 1) % 25;
                         setShowMap(false);
-                        router.push(buildHref(id, total, null, null, i));
+                        router.push(buildHref(id, total, o25, p25, i));
                       }}
-                      title={stripHtml(it?.stem_preview || '')}
+                      title={`Go to #${i}`}
                     >
-                      <div className="mapIndex">{i}</div>
-                      <div className="mapMeta">
-                        <div className="mapSkill">{it.skill_desc || it.skill || '—'}</div>
-                        <div className="mapDomain muted">{it.domain_code || ''}</div>
-                      </div>
+                      <span className="mapNum">{i}</span>
 
-                      <div className="mapBadges">
-                        {it.is_done ? (
-                          <span className="mapIconBadge done" title={it.is_correct ? 'Done (correct)' : 'Done'}>
-                            ✓
-                          </span>
-                        ) : null}
-                        {it.marked_for_review ? (
+                      {showMark ? (
+                        <span className="mapIconCorner mapIconLeft" aria-hidden="true">
                           <span className="mapIconBadge mark" title="Marked for review">
-                            ★
+                            <svg viewBox="0 0 24 24" width="14" height="14">
+                              <path fill="currentColor" d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z" />
+                            </svg>
                           </span>
-                        ) : null}
-                      </div>
+                        </span>
+                      ) : null}
+
+                      {showCorrect || showIncorrect ? (
+                        <span className="mapIconCorner mapIconRight" aria-hidden="true">
+                          {showCorrect ? (
+                            <span className="mapIconBadge correct" title="Correct">
+                              <svg viewBox="0 0 24 24" width="14" height="14">
+                                <path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                              </svg>
+                            </span>
+                          ) : null}
+
+                          {showIncorrect ? (
+                            <span className="mapIconBadge incorrect" title="Incorrect">
+                              <svg viewBox="0 0 24 24" width="14" height="14">
+                                <path
+                                  fill="currentColor"
+                                  d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3 10.6 10.6 16.9 4.3z"
+                                />
+                              </svg>
+                            </span>
+                          ) : null}
+                        </span>
+                      ) : null}
                     </button>
                   );
                 })
               )}
             </div>
 
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginTop: 14, gap: 10 }}>
-              <button
-                type="button"
-                className="btn secondary"
-                disabled={mapOffset <= 0 || mapLoading}
-                onClick={() => loadMapPage(Math.max(0, mapOffset - MAP_PAGE_SIZE))}
-              >
-                Prev
-              </button>
-
-              <button
-                type="button"
-                className="btn secondary"
-                disabled={total != null ? mapOffset + MAP_PAGE_SIZE >= total : mapIds.length < MAP_PAGE_SIZE || mapLoading}
-                onClick={() => loadMapPage(mapOffset + MAP_PAGE_SIZE)}
-              >
-                Next
-              </button>
-            </div>
+            {total != null && total > MAP_PAGE_SIZE ? (
+              <div className="muted small" style={{ marginTop: 10 }}>
+                Showing {MAP_PAGE_SIZE} at a time. Use Prev/Next or “Jump to #” for fast navigation.
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}
+
+      {/* Minimal CSS for the math resizable divider + minimized state (kept local to this page) */}
+      <style jsx global>{`
+        .mathShell {
+          display: grid;
+          gap: 0;
+          align-items: stretch;
+          grid-template-columns: var(--calcW, 660px) 12px minmax(0, 1fr);
+        }
+
+        .mathLeft {
+          position: sticky;
+          top: 12px;
+          align-self: start;
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          background: #f9fafb;
+          max-height: calc(100vh - 24px);
+          overflow: hidden;
+        }
+
+        .mathLeftHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--border);
+          background: rgba(17, 24, 39, 0.03);
+        }
+
+        .mathToolTitle {
+          font-weight: 700;
+        }
+
+        /* IMPORTANT: do NOT collapse to height:0 (that’s a common Desmos reset trigger).
+           Keep a stable layout box; hide visually + disable input. */
+        .calcBody.hidden {
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+          /* no height:0 */
+          /* no overflow:hidden */
+        }
+
+        .desmosHost {
+          width: 100%;
+          height: min(560px, calc(100vh - 220px));
+          background: #fff;
+        }
+
+        .calcMinBody {
+          height: calc(100vh - 92px);
+        }
+
+        .mathDivider {
+          cursor: col-resize;
+          position: relative;
+          align-self: stretch;
+          min-height: 360px;
+          touch-action: none;
+        }
+
+        .mathDivider::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          margin: 0 auto;
+          width: 1px;
+          background: var(--border);
+        }
+
+        .mathDivider::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 999px;
+        }
+
+        .mathDivider:hover::after {
+          background: rgba(37, 99, 235, 0.06);
+        }
+
+        .mathDivider.min {
+          cursor: default;
+        }
+
+        .mathRight {
+          min-width: 0;
+          padding-left: 22px;
+        }
+
+        /* Minimised state: keep a slim rail instead of closing */
+        .mathShell.min {
+          grid-template-columns: var(--calcW, ${MINIMIZED_W}px) 12px minmax(0, 1fr);
+        }
+
+        .mathLeft.min .mathToolTitle {
+          font-size: 12px;
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
+          color: var(--muted);
+        }
+
+        @media (max-width: 920px) {
+          .mathShell,
+          .mathShell.min {
+            grid-template-columns: 1fr;
+            gap: 14px;
+          }
+
+          .mathDivider,
+          .mathDivider.min {
+            display: none;
+          }
+
+          .mathLeft {
+            position: relative;
+            top: auto;
+          }
+
+          .desmosHost,
+          .calcMinBody {
+            height: 420px;
+          }
+
+          .mathRight {
+            padding-left: 0;
+          }
+        }
+      `}</style>
     </main>
   );
 }
