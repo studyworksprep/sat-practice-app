@@ -1595,7 +1595,7 @@ export default function PracticeQuestionPage() {
 
         .mathRight {
           min-width: 0;
-          padding-left: 22px;
+          padding-left: 12px;
         }
 
         .mathShell.min {
