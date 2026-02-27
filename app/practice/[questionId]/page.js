@@ -1094,7 +1094,7 @@ export default function PracticeQuestionPage() {
   return (
     <main className="container">
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'grid', gap: 6 }}>
+        <div style={{ display: 'grid', gap: 6, flex: 1, minWidth: 0 }}>
           <div className="h2">Practice</div>
           <div
             style={{
