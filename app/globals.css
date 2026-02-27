@@ -835,7 +835,8 @@ hr{
   font-size: 1.05em;
 }
 
-/* Top "Mark for Review" button (replaces the old "Marked" pill) */
+/* Top "Mark for Review" button */
+
 .markReviewTopBtn{
   display: inline-flex;
   align-items: center;
@@ -859,12 +860,17 @@ hr{
   transform: translateY(1px);
 }
 
+.markReviewTopBtnIcon{
+  display: inline-flex;
+  color: #9ca3af; /* gray when not marked */
+  transition: color 0.15s ease;
+}
+
 .markReviewTopBtn.isMarked{
   border-color: #eab308;
   background: #fef9c3;
 }
 
-.markReviewTopBtnIcon{
-  display: inline-flex;
-  color: #a16207;
+.markReviewTopBtn.isMarked .markReviewTopBtnIcon{
+  color: #a16207; /* yellow/brown when marked */
 }
