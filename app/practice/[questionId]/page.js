@@ -76,14 +76,6 @@ function formatCorrectText(ct) {
   return [String(ct)];
 }
 
-function stripHtml(html) {
-  if (!html) return '';
-  return String(html)
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 /**
  * Desmos panel:
  * - Creates a single GraphingCalculator instance (no re-init on re-render).
@@ -291,7 +283,12 @@ export default function PracticeQuestionPage() {
   // IMPORTANT: prevent flicker by avoiding React updates during drag
   const shellRef = useRef(null);
   const liveWidthRef = useRef(DEFAULT_CALC_W);
-  const dragRef = useRef({ dragging: false, startX: 0, startW: DEFAULT_CALC_W, pendingW: DEFAULT_CALC_W });
+  const dragRef = useRef({
+    dragging: false,
+    startX: 0,
+    startW: DEFAULT_CALC_W,
+    pendingW: DEFAULT_CALC_W,
+  });
 
   // Option A neighbor nav
   const [prevId, setPrevId] = useState(null);
@@ -823,12 +820,13 @@ export default function PracticeQuestionPage() {
   // Math domain codes (new behavior)
   const isMath = ['H', 'P', 'S', 'Q'].includes(domainCode);
 
+  // ✅ Removed Attempts pill
   const headerPills = [
     { label: 'Correct', value: status?.correct_attempts_count ?? 0 },
     { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
   ];
 
-  // ✅ moved pills into question area
+  // ✅ Pills row now includes Question # (index1) on the left
   const StatusPillsRow = ({ style }) => (
     <div
       style={{
@@ -840,19 +838,17 @@ export default function PracticeQuestionPage() {
         ...(style || {}),
       }}
     >
-      {/* Left: Question number */}
       <div className="pill" style={{ fontWeight: 750 }}>
         <span className="muted">Question</span> <span className="kbd">{index1 ?? '—'}</span>
       </div>
-  
-      {/* Right: Pills + Mark */}
+
       <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {headerPills.map((p) => (
           <span key={p.label} className="pill">
             <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
           </span>
         ))}
-  
+
         <button
           type="button"
           className={`markReviewTopBtn ${status?.marked_for_review ? 'isMarked' : ''}`}
@@ -904,19 +900,19 @@ export default function PracticeQuestionPage() {
     goToIndex(index1 + 1);
   };
 
-  // Shared prompt renderer (so MCQ + SPR don’t duplicate stimulus/stem blocks)
-  const PromptBlocks = ({ compactLabels = true, mbWhenNotCompact = 12 }) => (
+  // ✅ No visible "Stimulus/Question" headers (keep srOnly for a11y)
+  const PromptBlocks = ({ mb = 12 }) => (
     <>
       {version?.stimulus_html ? (
-        <div className="card subcard" style={{ marginBottom: compactLabels ? 0 : mbWhenNotCompact }}>
-          <div className={compactLabels ? 'srOnly' : 'sectionLabel'}>Stimulus</div>
+        <div className="card subcard" style={{ marginBottom: mb }}>
+          <div className="srOnly">Stimulus</div>
           <HtmlBlock className="prose" html={version.stimulus_html} />
         </div>
       ) : null}
 
       {version?.stem_html ? (
-        <div className="card subcard" style={{ marginBottom: compactLabels ? 0 : mbWhenNotCompact }}>
-          <div className={compactLabels ? 'srOnly' : 'sectionLabel'}>Question</div>
+        <div className="card subcard" style={{ marginBottom: mb }}>
+          <div className="srOnly">Question</div>
           <HtmlBlock className="prose" html={version.stem_html} />
         </div>
       ) : null}
@@ -926,6 +922,10 @@ export default function PracticeQuestionPage() {
   // Math tools moved to top nav as icon tabs (keep component for minimal diffs where it's called)
   const MathToolRow = () => null;
 
+  // ✅ MCQ options area (no "Answer choices" header)
+  const McqOptionsArea = () => (
+    <>
+      <div className="srOnly">Answer choices</div>
 
       <div className="optionList">
         {options
@@ -939,20 +939,20 @@ export default function PracticeQuestionPage() {
                 key={opt.id}
                 className={(() => {
                   let cls = 'option' + (isSelected ? ' selected' : '');
+
                   if (locked) {
                     const isCorrect = String(opt.id) === String(correctOptionId);
                     const hasSelection = selected != null;
-                  
+
                     // Selected answer: green if correct, red if incorrect
                     if (isSelected && isCorrect) cls += ' correct';
                     else if (isSelected && hasSelection && !isCorrect) cls += ' incorrect';
-                  
-                    // If the student selected the wrong answer, also reveal the correct option in green
-                    const selectedIsWrong =
-                      hasSelection && String(selected) !== String(correctOptionId);
-                  
+
+                    // Reveal correct option if selected wrong
+                    const selectedIsWrong = hasSelection && String(selected) !== String(correctOptionId);
                     if (!isSelected && isCorrect && selectedIsWrong) cls += ' revealCorrect';
                   }
+
                   return cls;
                 })()}
                 onClick={() => {
@@ -1000,10 +1000,10 @@ export default function PracticeQuestionPage() {
     </>
   );
 
-  // SPR answer area (shared between layouts)
+  // ✅ SPR answer area (no "Your answer" header)
   const SprAnswerArea = () => (
     <>
-      <div className="h2">Your answer</div>
+      <div className="srOnly">Your answer</div>
 
       {locked ? (
         <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
@@ -1134,11 +1134,21 @@ export default function PracticeQuestionPage() {
     </div>
   );
 
+  if (loading && !data) {
+    return (
+      <main className="container">
+        <div className="h2">Practice</div>
+        <div className="muted">Loading…</div>
+      </main>
+    );
+  }
+
   return (
     <main className="container">
       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div style={{ display: 'grid', gap: 6, flex: 1, minWidth: 0 }}>
           <div className="h2">Practice</div>
+
           <div
             style={{
               display: 'flex',
@@ -1212,8 +1222,6 @@ export default function PracticeQuestionPage() {
             </div>
           </div>
         </div>
-
-        {/* pills removed from top header (moved into question area) */}
       </div>
 
       <Toast kind={msg?.kind} message={msg?.text} />
@@ -1221,59 +1229,59 @@ export default function PracticeQuestionPage() {
       <hr />
 
       {qType === 'mcq' ? (
-        // MCQ branch
         useTwoColReading ? (
-          // ✅ Preserve existing Reading two-column format
+          // Reading: left stimulus/stem; right status+answers
           <div className="qaTwoCol">
             <div className="qaLeft">
-              <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
+              <PromptBlocks mb={12} />
             </div>
 
-           <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-              <StatusPillsRow />
+            <div className="qaRight">
+              <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
+                <StatusPillsRow />
+              </div>
+              <McqOptionsArea />
             </div>
-        
           </div>
         ) : isMath ? (
-          // ✅ Math format: calculator left (resizable), question+answers right
+          // Math: calc left; right status+prompt+answers
           <MathShell>
             <MathToolRow />
             <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
               <StatusPillsRow />
             </div>
-            <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
-            <McqOptionsArea showAnswerHeader={true} />
+            <PromptBlocks mb={12} />
+            <McqOptionsArea />
           </MathShell>
         ) : (
-          // ✅ Default MCQ (non-reading, non-math): keep existing single-column behavior
+          // Default MCQ
           <div>
             <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
               <StatusPillsRow />
             </div>
-            <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
-            <McqOptionsArea showAnswerHeader={true} />
+            <PromptBlocks mb={12} />
+            <McqOptionsArea />
           </div>
         )
+      ) : isMath ? (
+        // Math SPR
+        <MathShell>
+          <MathToolRow />
+          <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
+            <StatusPillsRow />
+          </div>
+          <PromptBlocks mb={12} />
+          <SprAnswerArea />
+        </MathShell>
       ) : (
-        // SPR branch
-        isMath ? (
-          <MathShell>
-            <MathToolRow />
-            <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-              <StatusPillsRow />
-            </div>
-            <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
-            <SprAnswerArea />
-          </MathShell>
-        ) : (
-          <div>
-            <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-              <StatusPillsRow />
-            </div>
-            <PromptBlocks compactLabels={true} mbWhenNotCompact={12} />
-            <SprAnswerArea />
+        // Default SPR
+        <div>
+          <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
+            <StatusPillsRow />
           </div>
-        )
+          <PromptBlocks mb={12} />
+          <SprAnswerArea />
+        </div>
       )}
 
       {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
@@ -1300,14 +1308,14 @@ export default function PracticeQuestionPage() {
             onClick={(e) => e.stopPropagation()}
             style={{
               width: 'min(980px, 96vw)',
-              maxHeight: 'calc(100vh - 120px)', // 👈 new
+              maxHeight: 'calc(100vh - 120px)',
               position: 'fixed',
               left: '50%',
               top: 80,
               transform: `translate(calc(-50% + ${refPos.x}px), ${refPos.y}px)`,
               willChange: 'transform',
-              display: 'flex', // 👈 new
-              flexDirection: 'column', // 👈 new
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
             <div className="refModalHeader" onPointerDown={onRefHeaderPointerDown}>
@@ -1326,14 +1334,25 @@ export default function PracticeQuestionPage() {
             </div>
 
             <div className="refSheetContent" aria-label="SAT Math Reference sheet image">
-              <img className="refSheetImg" src="/math_reference_sheet.png" alt="SAT Math Reference Sheet" draggable={false} />
+              <img
+                className="refSheetImg"
+                src="/math_reference_sheet.png"
+                alt="SAT Math Reference Sheet"
+                draggable={false}
+              />
             </div>
           </div>
         </div>
       ) : null}
 
       {showMap ? (
-        <div className="modalOverlay" onClick={() => setShowMap(false)} role="dialog" aria-modal="true" aria-label="Question map">
+        <div
+          className="modalOverlay"
+          onClick={() => setShowMap(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Question map"
+        >
           <div className="modalCard" onClick={(e) => e.stopPropagation()}>
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'grid', gap: 4 }}>
@@ -1383,7 +1402,11 @@ export default function PracticeQuestionPage() {
 
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div className="btnRow">
-                <button className="btn secondary" onClick={() => loadMapPage(mapOffset - MAP_PAGE_SIZE)} disabled={mapLoading || mapOffset <= 0}>
+                <button
+                  className="btn secondary"
+                  onClick={() => loadMapPage(mapOffset - MAP_PAGE_SIZE)}
+                  disabled={mapLoading || mapOffset <= 0}
+                >
                   Prev
                 </button>
 
@@ -1417,7 +1440,8 @@ export default function PracticeQuestionPage() {
                   const active = index1 != null && i === index1;
 
                   const diff = Number(it.difficulty);
-                  const diffClass = diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : 'diffUnknown';
+                  const diffClass =
+                    diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : 'diffUnknown';
 
                   const showMark = Boolean(it.marked_for_review);
                   const showDone = Boolean(it.is_done);
@@ -1521,14 +1545,10 @@ export default function PracticeQuestionPage() {
           font-weight: 700;
         }
 
-        /* IMPORTANT: do NOT collapse to height:0 (that’s a common Desmos reset trigger).
-           Keep a stable layout box; hide visually + disable input. */
         .calcBody.hidden {
           opacity: 0;
           visibility: hidden;
           pointer-events: none;
-          /* no height:0 */
-          /* no overflow:hidden */
         }
 
         .desmosHost {
@@ -1578,7 +1598,6 @@ export default function PracticeQuestionPage() {
           padding-left: 22px;
         }
 
-        /* Minimised state: keep a slim rail instead of closing */
         .mathShell.min {
           grid-template-columns: var(--calcW, ${MINIMIZED_W}px) 12px minmax(0, 1fr);
         }
@@ -1617,7 +1636,6 @@ export default function PracticeQuestionPage() {
           }
         }
 
-        /* Tool tabs in top nav (Calculator / Reference) */
         .toolTabs {
           display: inline-flex;
           align-items: stretch;
@@ -1662,15 +1680,14 @@ export default function PracticeQuestionPage() {
           line-height: 1;
         }
 
-        /* Reference modal header with top-right X */
         .refModalHeader {
           position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
           padding-bottom: 8px;
-          cursor: move; /* indicates it’s draggable */
-          user-select: none; /* don’t highlight text while dragging */
+          cursor: move;
+          user-select: none;
         }
 
         .refModalClose {
@@ -1696,11 +1713,10 @@ export default function PracticeQuestionPage() {
           overflow: hidden;
         }
 
-        /* Reference sheet: size to image, but constrain to viewport */
         .refSheetContent {
           padding: 12px;
-          overflow: auto; /* scrolling lives here */
-          flex: 1; /* fills remaining height under header */
+          overflow: auto;
+          flex: 1;
         }
 
         .refSheetImg {
