@@ -7,28 +7,6 @@ import Link from 'next/link';
 import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
 
-function IconCalculator({ className = '' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M7 2h10a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zm0 2a1 1 0 0 0-1 1v3h12V5a1 1 0 0 0-1-1H7zm11 6H6v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9zM8 12h2v2H8v-2zm0 4h2v2H8v-2zm4-4h2v2h-2v-2zm0 4h2v2h-2v-2zm4-4h2v2h-2v-2zm0 4h2v2h-2v-2z"
-      />
-    </svg>
-  );
-}
-
-function IconDoc({ className = '' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M14 2H7a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8l-6-6zm1 2.5L19.5 9H15a1 1 0 0 1-1-1V4.5zM7 4h6v4a3 3 0 0 0 3 3h4v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"
-      />
-    </svg>
-  );
-}
-
 function formatCorrectText(ct) {
   if (!ct) return null;
   if (Array.isArray(ct)) return ct;
@@ -529,6 +507,7 @@ export default function PracticeQuestionPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to update status');
+
     } catch (e) {
       setData((prev) => {
         if (!prev) return prev;
@@ -750,25 +729,25 @@ export default function PracticeQuestionPage() {
     </>
   );
 
-  // Tool row: "Mark for Review" button (moved down from bottom nav)
-  const ToolRow = ({ align = 'flex-end' } = {}) => (
-    <div className="mathRightHeader" style={{ justifyContent: align }}>
-      <button
-        type="button"
-        className={`btn secondary markBtn ${status?.marked_for_review ? 'marked' : ''}`}
-        onClick={toggleMarkForReview}
-        aria-pressed={Boolean(status?.marked_for_review)}
-        title={status?.marked_for_review ? 'Unmark for review' : 'Mark for review'}
-      >
-        <span className="markBtnIcon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="16" height="16">
-            <path fill="currentColor" d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z" />
-          </svg>
-        </span>
-        <span>{status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}</span>
-      </button>
-    </div>
-  );
+  // Math top-right tool buttons (only shown on math domains)
+  const MathToolRow = ({ align = 'flex-end' } = {}) =>
+    isMath ? (
+      <div className="mathRightHeader" style={{ justifyContent: align }}>
+        <button
+          type="button"
+          className="btn secondary"
+          onClick={() => setCalcMinimized((m) => !m)}
+          aria-label={calcMinimized ? 'Expand calculator' : 'Minimize calculator'}
+          title={calcMinimized ? 'Expand calculator' : 'Minimize calculator'}
+        >
+          {calcMinimized ? 'Expand Calculator' : 'Minimize Calculator'}
+        </button>
+
+        <button type="button" className="btn secondary" onClick={() => setShowRef(true)}>
+          Reference Sheet
+        </button>
+      </div>
+    ) : null;
 
   // MCQ options area (shared between layouts)
   const McqOptionsArea = ({ showAnswerHeader = true }) => (
@@ -874,6 +853,7 @@ export default function PracticeQuestionPage() {
         <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
           Submit
         </button>
+
 
         {locked && (version?.rationale_html || version?.explanation_html) ? (
           <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
@@ -1010,41 +990,32 @@ export default function PracticeQuestionPage() {
                 ▾
               </span>
             </button>
-
-            {isMath ? (
-              <div className="toolTabs" role="tablist" aria-label="Math tools">
-                <button
-                  type="button"
-                  className={`toolTab ${!calcMinimized ? 'active' : ''}`}
-                  onClick={() => setCalcMinimized((m) => !m)}
-                  aria-pressed={!calcMinimized}
-                  title={!calcMinimized ? 'Minimize calculator' : 'Expand calculator'}
-                >
-                  <IconCalculator className="toolTabIcon" />
-                  <span className="toolTabLabel">Calculator</span>
-                </button>
-
-                <button
-                  type="button"
-                  className={`toolTab ${showRef ? 'active' : ''}`}
-                  onClick={() => setShowRef(true)}
-                  aria-pressed={showRef}
-                  title="Open reference sheet"
-                >
-                  <IconDoc className="toolTabIcon" />
-                  <span className="toolTabLabel">Reference</span>
-                </button>
-              </div>
-            ) : null}
           </div>
         </div>
 
         <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          {headerPills.map((p) => (
-            <span key={p.label} className="pill">
-              <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
-            </span>
-          ))}
+
+            {headerPills.map((p) => (
+              <span key={p.label} className="pill">
+                <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
+              </span>
+            ))}                 
+            <button
+              type="button"
+              className={`markReviewTopBtn ${status?.marked_for_review ? 'isMarked' : ''}`}
+              onClick={toggleMarkForReview}
+              title={status?.marked_for_review ? 'Marked for review' : 'Mark for review'}
+            >
+              <span className="markReviewTopBtnIcon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                  <path
+                    fill="currentColor"
+                    d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
+                  />
+                </svg>
+              </span>
+              {status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
+            </button> 
         </div>
       </div>
 
@@ -1068,14 +1039,13 @@ export default function PracticeQuestionPage() {
         ) : isMath ? (
           // ✅ Math format: calculator left (resizable), question+answers right
           <MathShell>
-            <ToolRow />
+            <MathToolRow />
             <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
             <McqOptionsArea showAnswerHeader={true} />
           </MathShell>
         ) : (
           // ✅ Default MCQ (non-reading, non-math): keep existing single-column behavior
           <div>
-            <ToolRow align="flex-start" />
             <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
             <McqOptionsArea showAnswerHeader={true} />
           </div>
@@ -1084,13 +1054,12 @@ export default function PracticeQuestionPage() {
         // SPR branch
         isMath ? (
           <MathShell>
-            <ToolRow />
+            <MathToolRow />
             <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
             <SprAnswerArea />
           </MathShell>
         ) : (
           <div>
-            <ToolRow align="flex-start" />
             <PromptBlocks compactLabels={false} mbWhenNotCompact={12} />
             <SprAnswerArea />
           </div>
@@ -1143,13 +1112,7 @@ export default function PracticeQuestionPage() {
       ) : null}
 
       {showMap ? (
-        <div
-          className="modalOverlay"
-          onClick={() => setShowMap(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Question map"
-        >
+        <div className="modalOverlay" onClick={() => setShowMap(false)} role="dialog" aria-modal="true" aria-label="Question map">
           <div className="modalCard" onClick={(e) => e.stopPropagation()}>
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'grid', gap: 4 }}>
@@ -1159,8 +1122,8 @@ export default function PracticeQuestionPage() {
                 <div className="muted small">
                   {total != null ? (
                     <>
-                      Showing <span className="kbd">{mapOffset + 1}</span>–<span className="kbd">{Math.min(mapOffset + MAP_PAGE_SIZE, total)}</span>{' '}
-                      of <span className="kbd">{total}</span>
+                      Showing <span className="kbd">{mapOffset + 1}</span>–<span className="kbd">{Math.min(mapOffset + MAP_PAGE_SIZE, total)}</span> of{' '}
+                      <span className="kbd">{total}</span>
                     </>
                   ) : (
                     <>
@@ -1199,11 +1162,7 @@ export default function PracticeQuestionPage() {
 
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div className="btnRow">
-                <button
-                  className="btn secondary"
-                  onClick={() => loadMapPage(mapOffset - MAP_PAGE_SIZE)}
-                  disabled={mapLoading || mapOffset <= 0}
-                >
+                <button className="btn secondary" onClick={() => loadMapPage(mapOffset - MAP_PAGE_SIZE)} disabled={mapLoading || mapOffset <= 0}>
                   Prev
                 </button>
 
@@ -1237,8 +1196,7 @@ export default function PracticeQuestionPage() {
                   const active = index1 != null && i === index1;
 
                   const diff = Number(it.difficulty);
-                  const diffClass =
-                    diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : 'diffUnknown';
+                  const diffClass = diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : 'diffUnknown';
 
                   const showMark = Boolean(it.marked_for_review);
                   const showDone = Boolean(it.is_done);
@@ -1265,10 +1223,7 @@ export default function PracticeQuestionPage() {
                         <span className="mapIconCorner mapIconLeft" aria-hidden="true">
                           <span className="mapIconBadge mark" title="Marked for review">
                             <svg viewBox="0 0 24 24" width="14" height="14">
-                              <path
-                                fill="currentColor"
-                                d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z"
-                              />
+                              <path fill="currentColor" d="M6 3h12a1 1 0 0 1 1 1v17l-7-3-7 3V4a1 1 0 0 1 1-1z" />
                             </svg>
                           </span>
                         </span>
@@ -1310,6 +1265,137 @@ export default function PracticeQuestionPage() {
           </div>
         </div>
       ) : null}
+
+      {/* Minimal CSS for the math resizable divider + minimized state (kept local to this page) */}
+      <style jsx global>{`
+        .mathShell {
+          display: grid;
+          gap: 0;
+          align-items: stretch;
+          grid-template-columns: var(--calcW, 660px) 12px minmax(0, 1fr);
+        }
+
+        .mathLeft {
+          position: sticky;
+          top: 12px;
+          align-self: start;
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          background: #f9fafb;
+          max-height: calc(100vh - 24px);
+          overflow: hidden;
+        }
+
+        .mathLeftHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px;
+          border-bottom: 1px solid var(--border);
+          background: rgba(17, 24, 39, 0.03);
+        }
+
+        .mathToolTitle {
+          font-weight: 700;
+        }
+
+        /* IMPORTANT: do NOT collapse to height:0 (that’s a common Desmos reset trigger).
+           Keep a stable layout box; hide visually + disable input. */
+        .calcBody.hidden {
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+          /* no height:0 */
+          /* no overflow:hidden */
+        }
+
+        .desmosHost {
+          width: 100%;
+          height: min(560px, calc(100vh - 220px));
+          background: #fff;
+        }
+
+        .calcMinBody {
+          height: calc(100vh - 92px);
+        }
+
+        .mathDivider {
+          cursor: col-resize;
+          position: relative;
+          align-self: stretch;
+          min-height: 360px;
+          touch-action: none;
+        }
+
+        .mathDivider::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          margin: 0 auto;
+          width: 1px;
+          background: var(--border);
+        }
+
+        .mathDivider::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 999px;
+        }
+
+        .mathDivider:hover::after {
+          background: rgba(37, 99, 235, 0.06);
+        }
+
+        .mathDivider.min {
+          cursor: default;
+        }
+
+        .mathRight {
+          min-width: 0;
+          padding-left: 22px;
+        }
+
+        /* Minimised state: keep a slim rail instead of closing */
+        .mathShell.min {
+          grid-template-columns: var(--calcW, ${MINIMIZED_W}px) 12px minmax(0, 1fr);
+        }
+
+        .mathLeft.min .mathToolTitle {
+          font-size: 12px;
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
+          color: var(--muted);
+        }
+
+        @media (max-width: 920px) {
+          .mathShell,
+          .mathShell.min {
+            grid-template-columns: 1fr;
+            gap: 14px;
+          }
+
+          .mathDivider,
+          .mathDivider.min {
+            display: none;
+          }
+
+          .mathLeft {
+            position: relative;
+            top: auto;
+          }
+
+          .desmosHost,
+          .calcMinBody {
+            height: 420px;
+          }
+
+          .mathRight {
+            padding-left: 0;
+          }
+        }
+      `}</style>
     </main>
   );
 }
