@@ -1598,22 +1598,44 @@ export default function PracticeQuestionPage() {
           padding-left: 12px;
         }
 
+        /* Minimized state: hide the calculator column entirely (but keep it mounted) */
         .mathShell.min {
-          grid-template-columns: var(--calcW, ${MINIMIZED_W}px) 12px minmax(0, 1fr);
+          grid-template-columns: 0px 0px minmax(0, 1fr);
         }
-
-        .mathLeft.min .mathToolTitle {
-          font-size: 12px;
-          letter-spacing: 0.02em;
-          text-transform: uppercase;
-          color: var(--muted);
+        
+        /* keep the DOM mounted but invisible/non-interactive */
+        .mathLeft.min {
+          width: 0 !important;
+          border: 0 !important;
+          border-radius: 0 !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          overflow: hidden !important;
+          opacity: 0;
+          pointer-events: none;
+        }
+        
+        /* no divider when minimized */
+        .mathDivider.min {
+          display: none;
+        }
+        
+        /* reclaim space on the right when calc is hidden */
+        .mathShell.min .mathRight {
+          padding-left: 0;
+        }
+        
+        /* don't waste height in minimized mode */
+        .mathShell.min .calcMinBody {
+          height: 0 !important;
         }
 
         @media (max-width: 920px) {
           .mathShell,
           .mathShell.min {
-            grid-template-columns: 1fr;
-            gap: 14px;
+            .mathShell.min .mathLeft {
+              display: none;
+
           }
 
           .mathDivider,
