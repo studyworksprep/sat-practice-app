@@ -309,7 +309,7 @@ export default function PracticeQuestionPage() {
   // Cache: current page ids (25) for index-based fallback navigation
   const [pageIds, setPageIds] = useState([]); // ids for current offset page
   const [pageOffset, setPageOffset] = useState(0); // 0,25,50,...
-  
+
   // LocalStorage-backed full session id list (created on the practice list page)
   const sid = searchParams.get('sid') || '';
   const [sessionIds, setSessionIds] = useState(null); // string[] | null
@@ -450,7 +450,7 @@ export default function PracticeQuestionPage() {
     if (o != null) qs.set('o', String(o));
     if (p != null) qs.set('p', String(p));
     if (i != null) qs.set('i', String(i));
-  
+
     const safeId = encodeURIComponent(String(targetId));
     return `/practice/${safeId}?${qs.toString()}`;
   }
@@ -571,6 +571,13 @@ export default function PracticeQuestionPage() {
     return sessionIds.slice(start, start + MAP_PAGE_SIZE);
   }, [sessionIds, mapOffset]);
 
+  // ✅ FIX: define renderList OUTSIDE the JSX (this replaces the pasted "const renderList" line)
+  const renderList = useMemo(() => {
+    return mapWindowIds
+      ? mapWindowIds.map((qid) => ({ question_id: qid }))
+      : mapIds;
+  }, [mapWindowIds, mapIds]);
+
   // look for "i" (index) in URL
   function primeNavMetaFromUrl() {
     const t = Number(searchParams.get('t'));
@@ -633,15 +640,15 @@ export default function PracticeQuestionPage() {
       router.push(buildHref(targetId, total ?? sessionIds.length, null, null, targetIndex1));
       return;
     }
-    
+
     const ids = await fetchPageIds(targetOffset);
     const targetId = ids[targetPos];
     if (!targetId) return;
-    
+
     setPageOffset(targetOffset);
     setPageIds(ids);
     setIndex1(targetIndex1);
-    
+
     router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
   }
 
@@ -780,7 +787,7 @@ export default function PracticeQuestionPage() {
       if (idx0 >= 0) {
         const prev = idx0 > 0 ? sessionIds[idx0 - 1] : null;
         const next = idx0 < sessionIds.length - 1 ? sessionIds[idx0 + 1] : null;
-    
+
         setPrevId(prev);
         setNextId(next);
         setNavForId(questionId);
@@ -834,14 +841,15 @@ export default function PracticeQuestionPage() {
     primeNavMetaFromUrl();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
   // If we have a full session id list, derive total and (if needed) the current index from it.
   useEffect(() => {
     if (!sessionIds || !questionId) return;
-  
+
     if (!Number.isFinite(total) || total == null) {
       setTotal(sessionIds.length);
     }
-  
+
     // Prefer URL-provided i; otherwise infer from the session list.
     if (index1 == null) {
       const idx0 = sessionIds.indexOf(String(questionId));
@@ -957,7 +965,7 @@ export default function PracticeQuestionPage() {
   const neighborsReady = (navMode === 'neighbors' || navMode === 'session') && navForId === questionId && !navLoading;
 
   const goPrev = () => {
-    if (navMode === 'neighbors' || navMode === 'session') { 
+    if (navMode === 'neighbors' || navMode === 'session') {
       if (prevDisabled) return;
 
       const nextI = index1 != null ? Math.max(1, index1 - 1) : null;
@@ -1418,12 +1426,7 @@ export default function PracticeQuestionPage() {
             </div>
 
             <div className="refSheetContent" aria-label="SAT Math Reference sheet image">
-              <img
-                className="refSheetImg"
-                src="/math_reference_sheet.png"
-                alt="SAT Math Reference Sheet"
-                draggable={false}
-              />
+              <img className="refSheetImg" src="/math_reference_sheet.png" alt="SAT Math Reference Sheet" draggable={false} />
             </div>
           </div>
         </div>
@@ -1509,9 +1512,6 @@ export default function PracticeQuestionPage() {
             </div>
 
             <div className="questionGrid" style={{ marginTop: 12 }}>
-              const renderList = mapWindowIds
-                ? mapWindowIds.map((qid) => ({ question_id: qid })) // minimal shape for rendering
-                : mapIds;
               {mapLoading ? (
                 <div className="muted" style={{ gridColumn: '1 / -1' }}>
                   Loading…
@@ -1683,21 +1683,21 @@ export default function PracticeQuestionPage() {
         }
 
         /* Minimized state: show only the right column (no grid), keep Desmos mounted */
-        
+
         .mathShell.min {
           display: block; /* stops grid sizing quirks */
           width: 100%;
         }
-        
+
         .mathShell.min .mathLeft {
           display: none; /* hidden, but still mounted */
         }
-        
+
         .mathShell.min .mathDivider,
         .mathShell.min .mathDivider.min {
           display: none;
         }
-        
+
         .mathShell.min .mathRight {
           padding-left: 0;
         }
@@ -1707,27 +1707,27 @@ export default function PracticeQuestionPage() {
             grid-template-columns: 1fr;
             gap: 14px;
           }
-        
+
           .mathDivider,
           .mathDivider.min {
             display: none;
           }
-        
+
           .mathLeft {
             position: relative;
             top: auto;
           }
-        
+
           /* If minimized on small screens, hide the calc panel */
           .mathShell.min .mathLeft {
             display: none;
           }
-        
+
           .desmosHost,
           .calcMinBody {
             height: 420px;
           }
-        
+
           .mathRight {
             padding-left: 0;
           }
@@ -1838,14 +1838,14 @@ export default function PracticeQuestionPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-        
+
           background: #0b0b0b;
           color: #fff;
-        
+
           font-weight: 800;
           font-size: 18px;
           line-height: 1;
-        
+
           box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
         }
       `}</style>
