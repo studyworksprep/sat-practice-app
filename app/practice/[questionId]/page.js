@@ -297,7 +297,7 @@ export default function PracticeQuestionPage() {
   // Start false; we explicitly flip to true when we begin fetching neighbors
   const [navLoading, setNavLoading] = useState(false);
 
-  const [navMode, setNavMode] = useState('neighbors'); // 'neighbors' | 'index' fallback
+  const [navMode, setNavMode] = useState('neighbors'); // 'neighbors' | 'session' | 'index'
 
   // ✅ tracks which questionId the current prevId/nextId correspond to (prevents stale-enable flash)
   const [navForId, setNavForId] = useState(null);
@@ -805,7 +805,7 @@ export default function PracticeQuestionPage() {
         setNavLoading(false);
       }
     })();
-  }, [questionId, sessionParamsString]);
+  }, [questionId, sessionParamsString, sessionIds, index1]);
 
   // Load question content
   useEffect(() => {
@@ -942,7 +942,7 @@ export default function PracticeQuestionPage() {
   const neighborsReady = (navMode === 'neighbors' || navMode === 'session') && navForId === questionId && !navLoading;
 
   const goPrev = () => {
-    if if (navMode === 'neighbors' || navMode === 'session') { 
+    if (navMode === 'neighbors' || navMode === 'session') { 
       if (prevDisabled) return;
 
       const nextI = index1 != null ? Math.max(1, index1 - 1) : null;
