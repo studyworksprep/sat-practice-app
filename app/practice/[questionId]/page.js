@@ -309,6 +309,10 @@ export default function PracticeQuestionPage() {
   // Cache: current page ids (25) for index-based fallback navigation
   const [pageIds, setPageIds] = useState([]); // ids for current offset page
   const [pageOffset, setPageOffset] = useState(0); // 0,25,50,...
+  
+  // LocalStorage-backed full session id list (created on the practice list page)
+  const sid = searchParams.get('sid') || '';
+  const [sessionIds, setSessionIds] = useState(null); // string[] | null
 
   // ✅ Question Map (windowed, IDs fetched on open)
   const MAP_PAGE_SIZE = 100; // must be <= API limit cap
@@ -322,7 +326,7 @@ export default function PracticeQuestionPage() {
 
   // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
-    const keys = ['difficulty', 'score_bands', 'domain', 'topic', 'marked_only', 'q', 'session'];
+    const keys = ['difficulty', 'score_bands', 'domain', 'topic', 'marked_only', 'q', 'session', 'sid'];
     const p = new URLSearchParams();
     for (const k of keys) {
       const v = searchParams.get(k);
@@ -333,6 +337,28 @@ export default function PracticeQuestionPage() {
 
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
   const inSessionContext = sessionParams.get('session') === '1';
+
+  // Load full ordered ids for this session (if available). Enables pure index-based navigation.
+  useEffect(() => {
+    if (!sid) {
+      setSessionIds(null);
+      return;
+    }
+    try {
+      const raw = localStorage.getItem(`practice_session_${sid}`);
+      if (!raw) {
+        setSessionIds(null);
+        return;
+      }
+      const arr = String(raw)
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      setSessionIds(arr.length ? arr : null);
+    } catch {
+      setSessionIds(null);
+    }
+  }, [sid]);
 
   // Keep liveWidthRef in sync with committed calcWidth
   useEffect(() => {
@@ -424,7 +450,9 @@ export default function PracticeQuestionPage() {
     if (o != null) qs.set('o', String(o));
     if (p != null) qs.set('p', String(p));
     if (i != null) qs.set('i', String(i));
-    return `/practice/${targetId}?${qs.toString()}`;
+  
+    const safeId = encodeURIComponent(String(targetId));
+    return `/practice/${safeId}?${qs.toString()}`;
   }
 
   function getIndexFromUrl() {
@@ -582,14 +610,23 @@ export default function PracticeQuestionPage() {
     const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
     const targetPos = (targetIndex1 - 1) % 25;
 
+    // If we have the full ordered id list, use it directly (no network / no page stitching).
+    if (sessionIds && sessionIds.length >= targetIndex1) {
+      const targetId = sessionIds[targetIndex1 - 1];
+      if (!targetId) return;
+      setIndex1(targetIndex1);
+      router.push(buildHref(targetId, total ?? sessionIds.length, null, null, targetIndex1));
+      return;
+    }
+    
     const ids = await fetchPageIds(targetOffset);
     const targetId = ids[targetPos];
     if (!targetId) return;
-
+    
     setPageOffset(targetOffset);
     setPageIds(ids);
     setIndex1(targetIndex1);
-
+    
     router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
   }
 
@@ -722,6 +759,23 @@ export default function PracticeQuestionPage() {
       return;
     }
 
+    // If a full session list is available, derive neighbors purely by index (no server neighbor lookup).
+    if (sessionIds && sessionIds.length) {
+      const idx0 = index1 != null ? index1 - 1 : sessionIds.indexOf(String(questionId));
+      if (idx0 >= 0) {
+        const prev = idx0 > 0 ? sessionIds[idx0 - 1] : null;
+        const next = idx0 < sessionIds.length - 1 ? sessionIds[idx0 + 1] : null;
+    
+        setPrevId(prev);
+        setNextId(next);
+        setNavForId(questionId);
+        setNavMode('session');
+        setNavLoading(false);
+        return;
+      }
+      // If the question isn't in the list, fall through to neighbors API.
+    }
+
     setNavMode('neighbors');
     setNavLoading(true);
 
@@ -765,6 +819,21 @@ export default function PracticeQuestionPage() {
     primeNavMetaFromUrl();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+  // If we have a full session id list, derive total and (if needed) the current index from it.
+  useEffect(() => {
+    if (!sessionIds || !questionId) return;
+  
+    if (!Number.isFinite(total) || total == null) {
+      setTotal(sessionIds.length);
+    }
+  
+    // Prefer URL-provided i; otherwise infer from the session list.
+    if (index1 == null) {
+      const idx0 = sessionIds.indexOf(String(questionId));
+      if (idx0 >= 0) setIndex1(idx0 + 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionIds, questionId]);
 
   // Ensure we have total + current page ids (fallback nav)
   useEffect(() => {
@@ -870,10 +939,10 @@ export default function PracticeQuestionPage() {
   const nextDisabled = navLoading || !index1 || !total || index1 >= total || !nextId;
 
   // ✅ Only enable neighbor nav when neighbors are loaded for THIS questionId
-  const neighborsReady = navMode === 'neighbors' && navForId === questionId && !navLoading;
+  const neighborsReady = (navMode === 'neighbors' || navMode === 'session') && navForId === questionId && !navLoading;
 
   const goPrev = () => {
-    if (navMode === 'neighbors') {
+    if if (navMode === 'neighbors' || navMode === 'session') { 
       if (prevDisabled) return;
 
       const nextI = index1 != null ? Math.max(1, index1 - 1) : null;
@@ -887,7 +956,7 @@ export default function PracticeQuestionPage() {
   };
 
   const goNext = () => {
-    if (navMode === 'neighbors') {
+    if (navMode === 'neighbors' || navMode === 'session') {
       if (nextDisabled) return;
 
       const nextI = index1 != null ? index1 + 1 : null;
@@ -1458,7 +1527,8 @@ export default function PracticeQuestionPage() {
                         const o25 = Math.floor((i - 1) / 25) * 25;
                         const p25 = (i - 1) % 25;
                         setShowMap(false);
-                        router.push(buildHref(id, total, o25, p25, i));
+                        const targetId = sessionIds && sessionIds.length >= i ? sessionIds[i - 1] : id;
+                        router.push(buildHref(targetId, total, o25, p25, i));
                       }}
                       title={`Go to #${i}`}
                     >
