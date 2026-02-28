@@ -4,6 +4,10 @@ import React, { useEffect, useRef } from 'react';
 
 const MATHJAX_SRC = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
 const SCRIPT_ID = 'mathjax-cdn-script';
+const ENABLE_MATHJAX =
+  typeof process !== 'undefined'
+    ? process.env.NEXT_PUBLIC_ENABLE_MATHJAX !== 'false'
+    : true;
 
 function ensureMathJaxLoaded() {
   if (typeof window === 'undefined') return;
@@ -49,9 +53,13 @@ function HtmlBlockImpl({ html, className }) {
     el.innerHTML = html || '';
 
     // Only typeset if MathML exists
+     // If MathJax is disabled, stop here and let native MathML render
+    if (!ENABLE_MATHJAX) return;
+    
+    // Only typeset if MathML exists
     if (!el.querySelector('math')) return;
 
-    ensureMathJaxLoaded();
+ensureMathJaxLoaded();
 
     let cancelled = false;
     let tries = 0;
