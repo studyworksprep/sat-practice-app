@@ -255,15 +255,25 @@ a{
   border-radius: 12px;
 }
 
-/* MathJax CHTML tweaks */
-.prose mjx-container{
-  overflow-x: auto;
-  overflow-y: hidden;
+/* MathJax CHTML tweaks (split inline vs display) */
+
+/* Inline: do NOT add vertical padding or scrolling */
+.prose mjx-container[jax="CHTML"]:not([display="true"]){
+  overflow: visible;
   padding: 0;
+  margin: 0;
   font-size: 1em;
 }
 
-.prose mjx-container[display="true"]{ margin: 10px 0; }
+/* Display equations: keep the nice breathing room */
+.prose mjx-container[jax="CHTML"][display="true"]{
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+  margin: 10px 0;
+}
+
+/* Keep MathJax internals tight */
 .prose mjx-container *{ line-height: 1.25; }
 
 /* ===============================
@@ -815,12 +825,12 @@ hr{
 
 .mathShell .prose{
   font-size: 17.5px;
-  line-height: 1.36; /* tighter rhythm for math prompts */
+  line-height: 1.32; /* tighter rhythm for math prompts */
 }
 
 /* Slightly tighten MathJax inside Math shell */
 .mathShell .prose mjx-container[display="true"]{
-  font-size: 1.05em;
+  font-size: 1.0em;
 }
 
 /* =========================================================
@@ -833,11 +843,13 @@ hr{
   padding: 0 !important;
   margin: 0 !important;
 
-  /* Let MathJax keep its internal height calculation */
-  line-height: normal !important;
+  /* Key: inline-block with tight line-height reduces line-box weirdness */
+  display: inline-block !important;
+  line-height: 1 !important;
 
-  /* Reduce baseline shift slightly */
-  vertical-align: -0.05em !important;
+  /* baseline tuning (tweak -0.06em to -0.14em as needed) */
+  vertical-align: -0.08em !important;
+
 
   /* Counteract MathJax’s internal 118.9% sizing slightly */
   font-size: 1em !important;
