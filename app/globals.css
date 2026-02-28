@@ -823,12 +823,24 @@ hr{
   font-size: 1.05em;
 }
 
-/* Inline MathJax inside math prompts: reduce line-box expansion (do NOT affect display equations) */
-.mathShell .prose mjx-container[jax="CHTML"]:not([display="true"]){
-  padding: 0 !important;        /* remove global 2px vertical padding */
-  line-height: 1 !important;    /* stop the container from inflating the line box */
-  vertical-align: -0.08em;      /* baseline correction; tweak -0.06em to -0.10em if needed */
-  font-size: 1.02em !important; /* slight downscale to counter MathJax’s ~118.9% */
+/* =========================================================
+   MathJax Inline Normalization (Refined)
+========================================================= */
+
+.mathShell .prose mjx-container[jax="CHTML"]:not([display="true"]),
+.optionContent .prose mjx-container[jax="CHTML"]:not([display="true"]){
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  /* Let MathJax keep its internal height calculation */
+  line-height: normal !important;
+
+  /* Reduce baseline shift slightly */
+  vertical-align: -0.05em !important;
+
+  /* Counteract MathJax’s internal 118.9% sizing slightly */
+  font-size: 1em !important;
 }
 
 /* Prevent overflow from long expressions / tables */
