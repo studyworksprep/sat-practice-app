@@ -83,6 +83,8 @@ export default function PracticePage() {
       }
 
       // Cache the FULL ordered id list for this session (used for index-based prev/next + map jumps)
+      // Kept extremely compact: a single comma-separated string of question_ids.
+      //
       // IMPORTANT: stitch pages using the SAME pagination (limit=25) to guarantee identical ordering.
       if (page === 0 && Number(json.totalCount || 0) > 0) {
         const fullKey = `practice_session_${sessionId}`;
