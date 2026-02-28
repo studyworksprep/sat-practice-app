@@ -36,6 +36,15 @@ export default function PracticePage() {
     return p.toString();
   }, [filters, search]);
 
+    // Deterministic session id for this filtered set (used for localStorage-backed navigation)
+  const sessionId = useMemo(() => {
+    // djb2-ish hash (fast, stable)
+    let h = 5381;
+    const s = sessionQueryString || '';
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
+    return (h >>> 0).toString(36);
+  }, [sessionQueryString]);
+
   async function load() {
     setLoading(true);
     setMsg(null);
@@ -71,6 +80,59 @@ export default function PracticePage() {
         const offset = page * 25;
         const sessionKey = sessionQueryString; // includes filters/search + session=1
         localStorage.setItem(`practice_${sessionKey}_page_${offset}`, JSON.stringify(ids));
+      }
+
+            // Cache the FULL ordered id list for this session (used for index-based prev/next + map jumps)
+      // Kept extremely compact: a single comma-separated string of question_ids.
+      if (page === 0 && Number(json.totalCount || 0) > 0) {
+        const fullKey = `practice_session_${sessionId}`;
+        const metaKey = `practice_session_${sessionId}_meta`;
+
+        const existingMetaRaw = localStorage.getItem(metaKey);
+        let existingOk = false;
+        try {
+          const meta = existingMetaRaw ? JSON.parse(existingMetaRaw) : null;
+          existingOk = Boolean(
+            meta &&
+              meta.sessionQueryString === sessionQueryString &&
+              meta.totalCount === Number(json.totalCount || 0)
+          );
+        } catch {
+          existingOk = false;
+        }
+
+        if (!existingOk || !localStorage.getItem(fullKey)) {
+          // Don't block rendering; populate in the background.
+          (async () => {
+            try {
+              const fullParams = new URLSearchParams(params);
+              fullParams.set('offset', '0');
+
+              // fetch everything in one go (API currently supports large limits; this avoids N-page stitching)
+              const lim = Number(json.totalCount || 0);
+              fullParams.set('limit', String(Math.min(Math.max(lim, 25), 5000)));
+
+              const r2 = await fetch('/api/questions?' + fullParams.toString(), { cache: 'no-store' });
+              const j2 = await r2.json();
+              if (!r2.ok) throw new Error(j2?.error || 'Failed to cache session ids');
+
+              const all = (j2.items || []).map((q) => q.question_id).filter(Boolean);
+
+              localStorage.setItem(fullKey, all.join(','));
+              localStorage.setItem(
+                metaKey,
+                JSON.stringify({
+                  sessionQueryString,
+                  totalCount: Number(json.totalCount || 0),
+                  cachedCount: all.length,
+                  cachedAt: new Date().toISOString(),
+                })
+              );
+            } catch {
+              // ignore caching errors; app will fall back to existing neighbor scheme
+            }
+          })();
+        }
       }
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
@@ -139,7 +201,7 @@ export default function PracticePage() {
                 const pos = idx; // p
                 const i = offset + pos + 1; // 1-based index within the filtered list
 
-                const href = `/practice/${encodeURIComponent(qid)}?${sessionQueryString}&t=${totalCount}&o=${offset}&p=${pos}&i=${i}`;
+                const href = `/practice/${encodeURIComponent(qid)}?${sessionQueryString}&sid=${sessionId}&t=${totalCount}&o=${offset}&p=${pos}&i=${i}`;
 
                 return (
                   <Link
