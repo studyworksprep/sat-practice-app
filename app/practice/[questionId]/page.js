@@ -545,9 +545,18 @@ export default function PracticeQuestionPage() {
   }
 
   async function loadMapPage(offset) {
+    const safe = Math.max(0, offset);
+
+    // ✅ If we have the full ordered list, the map page is just a slice—no fetch.
+    if (sessionIds && sessionIds.length) {
+      setMapOffset(safe);
+      setMapIds([]); // unused in this mode
+      setMapLoading(false);
+      return;
+    }
+
     setMapLoading(true);
     try {
-      const safe = Math.max(0, offset);
       const items = await fetchMapIds(safe);
       setMapIds(items);
       setMapOffset(safe);
@@ -555,6 +564,12 @@ export default function PracticeQuestionPage() {
       setMapLoading(false);
     }
   }
+
+  const mapWindowIds = useMemo(() => {
+    if (!sessionIds || !sessionIds.length) return null;
+    const start = Math.max(0, mapOffset);
+    return sessionIds.slice(start, start + MAP_PAGE_SIZE);
+  }, [sessionIds, mapOffset]);
 
   // look for "i" (index) in URL
   function primeNavMetaFromUrl() {
@@ -1494,16 +1509,19 @@ export default function PracticeQuestionPage() {
             </div>
 
             <div className="questionGrid" style={{ marginTop: 12 }}>
+              const renderList = mapWindowIds
+                ? mapWindowIds.map((qid) => ({ question_id: qid })) // minimal shape for rendering
+                : mapIds;
               {mapLoading ? (
                 <div className="muted" style={{ gridColumn: '1 / -1' }}>
                   Loading…
                 </div>
-              ) : mapIds.length === 0 ? (
+              ) : renderList.length === 0 ? (
                 <div className="muted" style={{ gridColumn: '1 / -1' }}>
                   No questions in this range.
                 </div>
               ) : (
-                mapIds.map((it, pos) => {
+                renderList.map((it, pos) => {
                   const id = it.question_id;
                   const i = mapOffset + pos + 1;
                   const active = index1 != null && i === index1;
@@ -1523,12 +1541,8 @@ export default function PracticeQuestionPage() {
                       type="button"
                       className={`mapItem ${diffClass}${active ? ' active' : ''}`}
                       onClick={() => {
-                        setIndex1(i);
-                        const o25 = Math.floor((i - 1) / 25) * 25;
-                        const p25 = (i - 1) % 25;
                         setShowMap(false);
-                        const targetId = sessionIds && sessionIds.length >= i ? sessionIds[i - 1] : id;
-                        router.push(buildHref(targetId, total, o25, p25, i));
+                        goToIndex(i);
                       }}
                       title={`Go to #${i}`}
                     >
