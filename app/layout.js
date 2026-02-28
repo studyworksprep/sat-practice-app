@@ -12,7 +12,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         {/* MathJax config: enable MathML input + CHTML output */}
-        <Script id="mathjax-config" strategy="beforeInteractive">
+  {/* <Script id="mathjax-config" strategy="beforeInteractive">
           {`
             window.MathJax = {
               loader: { load: ['input/mml', 'output/chtml'] },
@@ -25,13 +25,13 @@ export default function RootLayout({ children }) {
             };
           `}
         </Script>
-
+*/}
         {/* MathJax v3 */}
-        <Script
+  {/* <Script
           id="mathjax-script"
           strategy="beforeInteractive"
           src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
-        />
+        />*/}
       </head>
       <body>
         <NavBar />
