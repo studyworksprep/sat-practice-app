@@ -141,16 +141,29 @@ export default function Filters({ initial = {}, onChange }) {
     <div className="card">
       <div className="h2">Filters</div>
 
+      {/* Quick filters — top */}
+      <div style={{ display: 'grid', gap: 7, marginBottom: 12 }}>
+        {[
+          ['marked_only', 'Only marked for review'],
+          ['wrong_only',  'Only wrong answers'],
+        ].map(([key, label]) => (
+          <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0, fontSize: 13 }}>
+            <input type="checkbox" checked={state[key]} onChange={(e) => set(key, e.target.checked)} />
+            {label}
+          </label>
+        ))}
+      </div>
+
       {/* Difficulty — one line */}
       <div className="filterInlineRow">
         <span className="filterInlineLabel">Difficulty</span>
         <div className="chips">
-          {[1, 2, 3].map((n) => {
+          {[[1,'E','Easy'],[2,'M','Medium'],[3,'H','Hard']].map(([n, label, title]) => {
             const on = state.difficulties.includes(n);
             return (
-              <label key={n} className={`chip sm${on ? ' on' : ''}`}>
+              <label key={n} className={`chip sm${on ? ' on' : ''}`} title={title}>
                 <input type="checkbox" checked={on} onChange={() => toggleDifficulty(n)} />
-                <span>D{n}</span>
+                <span>{label}</span>
               </label>
             );
           })}
@@ -188,22 +201,12 @@ export default function Filters({ initial = {}, onChange }) {
         </div>
       </div>
 
-      {/* Additional filters */}
-      <div style={{ display: 'grid', gap: 7, marginTop: 12 }}>
-        {[
-          ['wrong_only',   'Only wrong answers'],
-          ['marked_only',  'Only marked for review'],
-          ['broken_only',  'Only flagged as broken'],
-        ].map(([key, label]) => (
-          <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0, fontSize: 13 }}>
-            <input
-              type="checkbox"
-              checked={state[key]}
-              onChange={(e) => set(key, e.target.checked)}
-            />
-            {label}
-          </label>
-        ))}
+      {/* Bottom filter */}
+      <div style={{ marginTop: 12 }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0, fontSize: 13 }}>
+          <input type="checkbox" checked={state.broken_only} onChange={(e) => set('broken_only', e.target.checked)} />
+          Only flagged as broken
+        </label>
       </div>
     </div>
   );

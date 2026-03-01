@@ -5,11 +5,12 @@ import Link from 'next/link';
 import Filters from '../../components/Filters';
 import Toast from '../../components/Toast';
 
-// Icons for answer status and marked-for-review
-function StatusIcon({ is_done, last_is_correct }) {
-  if (!is_done) return <span className="qStatus unanswered" title="Not attempted">–</span>;
-  if (last_is_correct) return <span className="qStatus correct" title="Correct">✓</span>;
-  return <span className="qStatus wrong" title="Wrong">✗</span>;
+const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
+
+function AttemptedBadge({ is_done }) {
+  return (
+    <span className="qAttempted">{is_done ? 'Attempted: Yes' : 'Attempted: No'}</span>
+  );
 }
 
 function buildParams(filters, search, extra = {}) {
@@ -201,19 +202,21 @@ export default function PracticePage() {
 
                 const href = `/practice/${encodeURIComponent(qid)}?${sessionQueryString}&sid=${sessionId}&t=${totalCount}&o=${offset}&p=${pos}&i=${i}`;
 
+                const diffClass = q.difficulty === 1 ? ' easy' : q.difficulty === 2 ? ' medium' : q.difficulty === 3 ? ' hard' : '';
+
                 return (
-                  <Link key={qid} href={href} className="option qRow">
+                  <Link key={qid} href={href} className={`option qRow${diffClass}`}>
                     <div className="qRowMain">
                       <div className="qRowTop">
                         <span className="qKey">{q.question_key || qid}</span>
                         <div className="qBadges">
                           {q.difficulty != null && (
-                            <span className="pill qPill">D{q.difficulty}</span>
+                            <span className="pill qPill qDiffPill">{DIFF_LABEL[q.difficulty] ?? `D${q.difficulty}`}</span>
                           )}
                           {q.score_band != null && (
-                            <span className="pill qPill">SB{q.score_band}</span>
+                            <span className="pill qPill">Score Band {q.score_band}</span>
                           )}
-                          <StatusIcon is_done={q.is_done} last_is_correct={q.last_is_correct} />
+                          <AttemptedBadge is_done={q.is_done} />
                           {q.marked_for_review && (
                             <span className="qMark" title="Marked for review">★</span>
                           )}
