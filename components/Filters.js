@@ -240,8 +240,9 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
           <div className="chips">
             {[[1,'E','Easy'],[2,'M','Medium'],[3,'H','Hard']].map(([n, label, title]) => {
               const on = state.difficulties.includes(n);
+              const diffClass = n === 1 ? 'diff-easy' : n === 2 ? 'diff-medium' : 'diff-hard';
               return (
-                <label key={n} className={`chip sm${on ? ' on' : ''}`} title={title}>
+                <label key={n} className={`chip sm ${diffClass}${on ? ' on' : ''}`} title={title}>
                   <input type="checkbox" checked={on} onChange={() => toggleDifficulty(n)} />
                   <span>{label}</span>
                 </label>
@@ -255,8 +256,9 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
           <div className="chips">
             {[1, 2, 3, 4, 5, 6, 7].map((n) => {
               const on = (state.score_bands || []).includes(n);
+              const bandClass = n <= 3 ? 'band-low' : n <= 5 ? 'band-mid' : 'band-high';
               return (
-                <label key={n} className={`chip sm${on ? ' on' : ''}`}>
+                <label key={n} className={`chip sm ${bandClass}${on ? ' on' : ''}`}>
                   <input type="checkbox" checked={on} onChange={() => toggleScoreBand(n)} />
                   <span>{n}</span>
                 </label>
@@ -270,21 +272,6 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
             <input type="checkbox" checked={state.broken_only} onChange={(e) => set('broken_only', e.target.checked)} />
             Only flagged as broken
           </label>
-        </div>
-      </div>
-
-      {/* Domain & Topic — two columns with selectable category headers */}
-      <div>
-        <div className="filterSectionLabel" style={{ marginBottom: 8 }}>Domain &amp; Topic</div>
-        <div className="filterDomainCols">
-          <div>
-            {renderCategory('Math', mathDomains, mathTotal)}
-            {mathDomains.map(renderDomain)}
-          </div>
-          <div>
-            {renderCategory('Reading & Writing', rwDomains, rwTotal)}
-            {rwDomains.map(renderDomain)}
-          </div>
         </div>
       </div>
 
@@ -302,6 +289,21 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
           <input type="checkbox" checked={randomize} onChange={(e) => setRandomize(e.target.checked)} />
           Randomize question order
         </label>
+      </div>
+
+      {/* Domain & Topic — two columns with selectable category headers */}
+      <div>
+        <div className="filterSectionLabel" style={{ marginBottom: 8 }}>Domain &amp; Topic</div>
+        <div className="filterDomainCols">
+          <div>
+            {renderCategory('Math', mathDomains, mathTotal)}
+            {mathDomains.map(renderDomain)}
+          </div>
+          <div>
+            {renderCategory('Reading & Writing', rwDomains, rwTotal)}
+            {rwDomains.map(renderDomain)}
+          </div>
+        </div>
       </div>
     </div>
   );
