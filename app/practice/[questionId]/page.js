@@ -775,23 +775,24 @@ export default function PracticeQuestionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId, searchParams]);
 
-  // ✅ Load saved calculator width + minimized state (if any)
+  // Load saved minimized state on mount; width always resets per question (see below)
   useEffect(() => {
     try {
-      const savedW = Number(localStorage.getItem('calcWidth'));
-      if (Number.isFinite(savedW)) setCalcWidth(Math.min(Math.max(savedW, MIN_CALC_W), MAX_CALC_W));
-
       const savedMin = localStorage.getItem('calcMinimized');
       if (savedMin === '1') setCalcMinimized(true);
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Reset calculator width to 450px every time a new question loads
   useEffect(() => {
-    try {
-      localStorage.setItem('calcWidth', String(calcWidth));
-    } catch {}
-  }, [calcWidth]);
+    if (!questionId) return;
+    const resetW = 450;
+    setCalcWidth(resetW);
+    liveWidthRef.current = resetW;
+    dragRef.current.pendingW = resetW;
+    shellRef.current?.style.setProperty('--calcW', `${resetW}px`);
+  }, [questionId]);
 
   useEffect(() => {
     try {
