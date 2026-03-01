@@ -30,6 +30,7 @@ export default function PracticePage() {
     if (filters.domain) p.set('domain', String(filters.domain));
     if (filters.topic) p.set('topic', String(filters.topic));
     if (filters.marked_only) p.set('marked_only', 'true');
+    if (filters.broken_only) p.set('broken_only', 'true');
 
     if (search.trim()) p.set('q', search.trim());
 
@@ -63,6 +64,7 @@ export default function PracticePage() {
       if (filters.domain) params.set('domain', String(filters.domain));
       if (filters.topic) params.set('topic', String(filters.topic));
       if (filters.marked_only) params.set('marked_only', 'true');
+      if (filters.broken_only) params.set('broken_only', 'true');
 
       if (search.trim()) params.set('q', search.trim());
 

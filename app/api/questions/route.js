@@ -10,6 +10,7 @@ export async function GET(request) {
   const domain = searchParams.get('domain'); // domain_name
   const topic = searchParams.get('topic'); // skill_name
   const marked_only = searchParams.get('marked_only') === 'true';
+  const broken_only = searchParams.get('broken_only') === 'true';
   const qText = (searchParams.get('q') || '').trim();
 
   const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 100);
@@ -91,6 +92,35 @@ export async function GET(request) {
     }
   }
 
+  // 3) broken_only restriction (must be per-user)
+  if (broken_only) {
+    if (!userId) {
+      return NextResponse.json({ items: [], totalCount: 0 });
+    }
+
+    const { data: brokenRows, error: brokenErr } = await supabase
+      .from('question_status')
+      .select('question_id')
+      .eq('user_id', userId)
+      .eq('is_broken', true)
+      .limit(10000);
+
+    if (brokenErr) return NextResponse.json({ error: brokenErr.message }, { status: 400 });
+
+    const brokenIds = (brokenRows || []).map((r) => r.question_id).filter(Boolean);
+
+    if (restrictIds) {
+      const setRestrict = new Set(restrictIds);
+      restrictIds = brokenIds.filter((id) => setRestrict.has(id));
+    } else {
+      restrictIds = brokenIds;
+    }
+
+    if (!restrictIds || restrictIds.length === 0) {
+      return NextResponse.json({ items: [], totalCount: 0 });
+    }
+  }
+
   // Main query with count
   let q = supabase
     .from('questions')
@@ -112,6 +142,7 @@ export async function GET(request) {
         question_id,
         is_done,
         marked_for_review,
+        is_broken,
         attempts_count,
         correct_attempts_count,
         last_is_correct
@@ -162,6 +193,7 @@ export async function GET(request) {
 
         is_done: st?.is_done ?? false,
         marked_for_review: st?.marked_for_review ?? false,
+        is_broken: st?.is_broken ?? false,
         attempts_count: st?.attempts_count ?? 0,
         correct_attempts_count: st?.correct_attempts_count ?? 0,
         last_is_correct: st?.last_is_correct ?? null,

@@ -856,6 +856,45 @@ hr{
   color: #a16207; /* yellow/brown when marked */
 }
 
+/* "Flag as broken" button (in Prev/Next button row) */
+.brokenBtn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+}
+
+.brokenBtn:hover{
+  background: rgba(0,0,0,0.03);
+}
+
+.brokenBtn:active{
+  transform: translateY(1px);
+}
+
+.brokenBtnIcon{
+  display: inline-flex;
+  color: #9ca3af; /* gray when not flagged */
+  transition: color 0.15s ease;
+}
+
+.brokenBtn.isBroken{
+  border-color: #ef4444;
+  background: #fee2e2;
+}
+
+.brokenBtn.isBroken .brokenBtnIcon{
+  color: #dc2626; /* red when flagged */
+}
+
 /* ===============================
    Tool Tabs (Calculator / Reference in top header)
 ================================ */

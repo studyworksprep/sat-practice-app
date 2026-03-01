@@ -15,6 +15,7 @@ export async function POST(request) {
   const safePatch = {};
   if (patch && typeof patch === 'object') {
     if (typeof patch.marked_for_review === 'boolean') safePatch.marked_for_review = patch.marked_for_review;
+    if (typeof patch.is_broken === 'boolean') safePatch.is_broken = patch.is_broken;
     if (typeof patch.is_done === 'boolean') safePatch.is_done = patch.is_done;
     if (typeof patch.notes === 'string') safePatch.notes = patch.notes;
   }

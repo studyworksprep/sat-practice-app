@@ -8,6 +8,7 @@ const DEFAULTS = {
   domain: '',
   topic: '',
   marked_only: false,
+  broken_only: false,
 };
 
 const MATH_CODES = new Set(['H', 'P', 'Q', 'S']);
@@ -191,7 +192,7 @@ export default function Filters({ initial = {}, onChange }) {
         </div>
       </div>
 
-      <div className="row" style={{ marginTop: 10, alignItems: 'center' }}>
+      <div className="row" style={{ marginTop: 10, alignItems: 'center', gap: 20 }}>
         <label style={{ margin: 0 }}>
           <input
             type="checkbox"
@@ -200,6 +201,16 @@ export default function Filters({ initial = {}, onChange }) {
             style={{ marginRight: 8 }}
           />
           Show only marked-for-review
+        </label>
+
+        <label style={{ margin: 0 }}>
+          <input
+            type="checkbox"
+            checked={state.broken_only}
+            onChange={(e) => set('broken_only', e.target.checked)}
+            style={{ marginRight: 8 }}
+          />
+          Show only flagged-as-broken
         </label>
       </div>
     </div>

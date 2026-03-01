@@ -668,6 +668,45 @@ export default function PracticeQuestionPage() {
     }
   }
 
+  async function toggleBroken() {
+    if (!data?.question_id) return;
+    const next = !Boolean(data?.status?.is_broken);
+    try {
+      setMsg(null);
+
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: {
+            ...(prev.status || {}),
+            is_broken: next,
+          },
+        };
+      });
+
+      const res = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question_id: data.question_id, patch: { is_broken: next } }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to update status');
+    } catch (e) {
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: {
+            ...(prev.status || {}),
+            is_broken: !next,
+          },
+        };
+      });
+      setMsg({ kind: 'danger', text: e.message });
+    }
+  }
+
   // ✅ Map open/close handlers + ESC
   async function openMap() {
     if (!inSessionContext) return;
@@ -928,6 +967,20 @@ export default function PracticeQuestionPage() {
           >
             Next
           </button>
+
+          <button
+            type="button"
+            className={`brokenBtn${status?.is_broken ? ' isBroken' : ''}`}
+            onClick={toggleBroken}
+            title={status?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+          >
+            <span className="brokenBtnIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14">
+                <path fill="currentColor" d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              </svg>
+            </span>
+            {status?.is_broken ? 'Broken' : 'Broken?'}
+          </button>
         </div>
       </div>
     </>
@@ -985,6 +1038,20 @@ export default function PracticeQuestionPage() {
           disabled={nextDisabled}
         >
           Next
+        </button>
+
+        <button
+          type="button"
+          className={`brokenBtn${status?.is_broken ? ' isBroken' : ''}`}
+          onClick={toggleBroken}
+          title={status?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+        >
+          <span className="brokenBtnIcon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M5 3v18M5 3h14l-4 6 4 6H5" />
+            </svg>
+          </span>
+          {status?.is_broken ? 'Broken' : 'Broken?'}
         </button>
       </div>
     </>
