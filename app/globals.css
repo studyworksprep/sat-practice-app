@@ -1336,3 +1336,210 @@ hr{
 .markBtn.marked .markBtnIcon{
   color: rgba(234,179,8,0.95); /* yellow when marked */
 }
+
+/* ===============================
+   Math Shell (Calculator + Resizable Divider)
+================================ */
+
+.mathShell{
+  display: grid;
+  gap: 0;
+  align-items: stretch;
+  grid-template-columns: var(--calcW, 450px) 12px minmax(0, 1fr);
+}
+
+.mathLeft{
+  position: sticky;
+  top: 12px;
+  align-self: start;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #f9fafb;
+  max-height: calc(100vh - 24px);
+  overflow: hidden;
+}
+
+.mathLeftHeader{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(17,24,39,0.03);
+}
+
+.mathToolTitle{
+  font-weight: 700;
+}
+
+.calcBody.hidden{
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.desmosHost{
+  width: 100%;
+  height: min(560px, calc(100vh - 220px));
+  background: #fff;
+}
+
+.calcMinBody{
+  height: calc(100vh - 92px);
+}
+
+.mathDivider{
+  cursor: col-resize;
+  position: relative;
+  align-self: stretch;
+  min-height: 360px;
+  touch-action: none;
+}
+
+.mathDivider::before{
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: 0 auto;
+  width: 1px;
+  background: var(--border);
+}
+
+.mathDivider::after{
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+}
+
+.mathDivider:hover::after{
+  background: rgba(37,99,235,0.06);
+}
+
+.mathDivider.min{
+  cursor: default;
+}
+
+.mathRight{
+  min-width: 0;
+  padding-left: 12px;
+}
+
+/* Minimized state: show only the right column (no grid), keep Desmos mounted */
+.mathShell.min{
+  display: block;
+  width: 100%;
+}
+
+.mathShell.min .mathLeft{
+  display: none;
+}
+
+.mathShell.min .mathDivider,
+.mathShell.min .mathDivider.min{
+  display: none;
+}
+
+.mathShell.min .mathRight{
+  padding-left: 0;
+}
+
+@media (max-width: 920px){
+  .mathShell,
+  .mathShell.min{
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .mathDivider,
+  .mathDivider.min{
+    display: none;
+  }
+
+  .mathLeft{
+    position: relative;
+    top: auto;
+  }
+
+  .mathShell.min .mathLeft{
+    display: none;
+  }
+
+  .desmosHost,
+  .calcMinBody{
+    height: 420px;
+  }
+
+  .mathRight{
+    padding-left: 0;
+  }
+}
+
+/* ===============================
+   Reference Sheet Modal
+================================ */
+
+.refModalHeader{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 8px;
+  cursor: move;
+  user-select: none;
+}
+
+.refModalClose{
+  position: absolute;
+  right: 0;
+  top: 0;
+  border: 0;
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  color: var(--muted);
+}
+
+.refModalClose:hover{
+  color: var(--text);
+}
+
+.refSheetContent{
+  padding: 12px;
+  overflow: auto;
+  flex: 1;
+}
+
+.refSheetImg{
+  display: block;
+  margin: 0 auto;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* ===============================
+   Question Number Badge
+================================ */
+
+.qNumBadge{
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0b0b0b;
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
