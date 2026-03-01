@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 
 const DEFAULTS = {
   difficulties: [],
@@ -17,11 +17,13 @@ const RW_CODES    = new Set(['CAS', 'INI', 'EOI', 'SEC']);
 const MATH_ORDER  = ['H', 'P', 'Q', 'S'];
 const RW_ORDER    = ['INI', 'CAS', 'EOI', 'SEC'];
 
-export default function Filters({ initial = {}, onChange }) {
-  const [state, setState]       = useState({ ...DEFAULTS, ...initial });
+export default function Filters({ initial = {}, onChange, onStartSession }) {
+  const [state,     setState]     = useState({ ...DEFAULTS, ...initial });
   const [allDomains, setAllDomains] = useState([]);
   const [allTopics,  setAllTopics]  = useState([]);
   const [counts,     setCounts]     = useState({});
+  const [randomize,  setRandomize]  = useState(false);
+  const [starting,   setStarting]   = useState(false);
 
   // Propagate state changes to parent
   useEffect(() => { onChange?.(state); }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -38,7 +40,7 @@ export default function Filters({ initial = {}, onChange }) {
     })();
   }, []);
 
-  // Re-fetch counts whenever non-domain/topic filters change
+  // Re-fetch counts whenever non-domain/topic filters change (fires on mount for unfiltered totals)
   useEffect(() => {
     const p = new URLSearchParams();
     if (state.difficulties.length) p.set('difficulties', state.difficulties.join(','));
@@ -92,6 +94,22 @@ export default function Filters({ initial = {}, onChange }) {
     });
   }
 
+  // Toggle all domains in a category (Math or R&W)
+  function toggleCategory(domainList) {
+    const names     = domainList.map((d) => d.domain_name);
+    const allOn     = names.length > 0 && names.every((n) => state.domains.includes(n));
+    if (allOn) {
+      setState((prev) => ({ ...prev, domains: prev.domains.filter((d) => !names.includes(d)) }));
+    } else {
+      const allTopicNames = domainList.flatMap((d) => d.topics.map((t) => t.skill_name));
+      setState((prev) => ({
+        ...prev,
+        domains: [...new Set([...prev.domains, ...names])],
+        topics:  prev.topics.filter((t) => !allTopicNames.includes(t)),
+      }));
+    }
+  }
+
   // Build Math and R&W domain lists with their topics
   const { mathDomains, rwDomains } = useMemo(() => {
     const topicsByDomain = {};
@@ -113,6 +131,47 @@ export default function Filters({ initial = {}, onChange }) {
     };
   }, [allDomains, allTopics]);
 
+  // Category-level counts (sum of domain counts; undefined until counts load)
+  const mathTotal = useMemo(() => {
+    if (!Object.keys(counts).length) return undefined;
+    return mathDomains.reduce((s, d) => s + (counts[d.domain_name]?.count ?? 0), 0);
+  }, [mathDomains, counts]);
+
+  const rwTotal = useMemo(() => {
+    if (!Object.keys(counts).length) return undefined;
+    return rwDomains.reduce((s, d) => s + (counts[d.domain_name]?.count ?? 0), 0);
+  }, [rwDomains, counts]);
+
+  // Is at least one filter active? (enables the Start button)
+  const hasFilter =
+    state.difficulties.length > 0 ||
+    state.score_bands.length  > 0 ||
+    state.domains.length      > 0 ||
+    state.topics.length       > 0 ||
+    state.wrong_only || state.marked_only || state.broken_only;
+
+  async function handleStart() {
+    if (!hasFilter || starting) return;
+    setStarting(true);
+    try {
+      await onStartSession?.(state, randomize);
+    } finally {
+      setStarting(false);
+    }
+  }
+
+  function renderCategory(label, domainList, total) {
+    const names = domainList.map((d) => d.domain_name);
+    const allOn = names.length > 0 && names.every((n) => state.domains.includes(n));
+    return (
+      <label className={`categoryChip${allOn ? ' on' : ''}`}>
+        <input type="checkbox" checked={allOn} onChange={() => toggleCategory(domainList)} />
+        <span style={{ flex: 1 }}>{label}</span>
+        {total !== undefined && <span className="filterCount">{total}</span>}
+      </label>
+    );
+  }
+
   function renderDomain(domain) {
     const domainOn         = state.domains.includes(domain.domain_name);
     const domainTopicNames = domain.topics.map((t) => t.skill_name);
@@ -127,9 +186,7 @@ export default function Filters({ initial = {}, onChange }) {
             onChange={() => toggleDomain(domain.domain_name, domainTopicNames)}
           />
           <span style={{ flex: 1 }}>{domain.domain_name}</span>
-          {domainCount !== undefined && (
-            <span className="filterCount">{domainCount}</span>
-          )}
+          {domainCount !== undefined && <span className="filterCount">{domainCount}</span>}
         </label>
 
         {domain.topics.length > 0 && (
@@ -150,9 +207,7 @@ export default function Filters({ initial = {}, onChange }) {
                     onChange={() => toggleTopic(domain.domain_name, topic.skill_name)}
                   />
                   <span>{topic.skill_name}</span>
-                  {topicCount !== undefined && (
-                    <span className="filterCount">{topicCount}</span>
-                  )}
+                  {topicCount !== undefined && <span className="filterCount">{topicCount}</span>}
                 </label>
               );
             })}
@@ -218,19 +273,35 @@ export default function Filters({ initial = {}, onChange }) {
         </div>
       </div>
 
-      {/* Domain & Topic — two columns */}
+      {/* Domain & Topic — two columns with selectable category headers */}
       <div>
         <div className="filterSectionLabel" style={{ marginBottom: 8 }}>Domain &amp; Topic</div>
         <div className="filterDomainCols">
           <div>
-            <div className="filterSectionLabel">Math</div>
+            {renderCategory('Math', mathDomains, mathTotal)}
             {mathDomains.map(renderDomain)}
           </div>
           <div>
-            <div className="filterSectionLabel">Reading &amp; Writing</div>
+            {renderCategory('Reading & Writing', rwDomains, rwTotal)}
             {rwDomains.map(renderDomain)}
           </div>
         </div>
+      </div>
+
+      {/* Start Practice Session */}
+      <div className="sessionActions">
+        <button
+          className="btn"
+          style={{ width: '100%' }}
+          disabled={!hasFilter || starting}
+          onClick={handleStart}
+        >
+          {starting ? 'Loading…' : 'Start Practice Session'}
+        </button>
+        <label className="filterCheck">
+          <input type="checkbox" checked={randomize} onChange={(e) => setRandomize(e.target.checked)} />
+          Randomize question order
+        </label>
       </div>
     </div>
   );

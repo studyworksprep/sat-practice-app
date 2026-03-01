@@ -37,7 +37,7 @@ export async function GET(request) {
   const broken_only = searchParams.get('broken_only') === 'true';
   const qText = (searchParams.get('q') || '').trim();
 
-  const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 100);
+  const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 5000);
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
 
   const supabase = createClient();

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Filters from '../../components/Filters';
 import Toast from '../../components/Toast';
@@ -39,7 +40,17 @@ function buildParams(filters, search, extra = {}) {
   return p;
 }
 
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function PracticePage() {
+  const router = useRouter();
   const [filters, setFilters] = useState({});
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -61,6 +72,49 @@ export default function PracticePage() {
     for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
     return (h >>> 0).toString(36);
   }, [sessionQueryString]);
+
+  async function handleStartSession(sessionFilters, randomize) {
+    setMsg(null);
+    try {
+      const params = buildParams(sessionFilters, '', { limit: '5000', offset: '0' });
+      const res  = await fetch('/api/questions?' + params.toString(), { cache: 'no-store' });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to load questions');
+
+      let ids = (json.items || []).map((q) => q.question_id).filter(Boolean);
+      if (ids.length === 0) {
+        setMsg({ kind: 'danger', text: 'No questions match the current filters.' });
+        return;
+      }
+      if (randomize) ids = shuffleArray(ids);
+
+      // Build a session ID from filter params (no search text)
+      const sessionQs = buildParams(sessionFilters, '', { session: '1' }).toString();
+      let h = 5381;
+      for (let i = 0; i < sessionQs.length; i++) h = ((h << 5) + h) ^ sessionQs.charCodeAt(i);
+      const sid = (h >>> 0).toString(36);
+
+      // Cache question IDs in localStorage for prev/next navigation
+      localStorage.setItem(`practice_session_${sid}`, ids.join(','));
+      localStorage.setItem(
+        `practice_session_${sid}_meta`,
+        JSON.stringify({
+          sessionQueryString: sessionQs,
+          totalCount: ids.length,
+          cachedCount: ids.length,
+          cachedAt: new Date().toISOString(),
+        })
+      );
+
+      // Navigate to the first question
+      const firstId = ids[0];
+      router.push(
+        `/practice/${encodeURIComponent(firstId)}?${sessionQs}&sid=${sid}&t=${ids.length}&o=0&p=0&i=1`
+      );
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    }
+  }
 
   async function load() {
     if (!search.trim()) {
@@ -159,7 +213,7 @@ export default function PracticePage() {
   return (
     <main className="container">
       {/* Full-width filter panel */}
-      <Filters onChange={setFilters} />
+      <Filters onChange={setFilters} onStartSession={handleStartSession} />
       {msg && <Toast kind={msg?.kind} message={msg?.text} />}
 
       {/* Search row */}
