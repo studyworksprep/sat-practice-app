@@ -385,6 +385,94 @@ label{
 
 .chip input{ accent-color: var(--accent); }
 
+/* Compact chip variant for score bands, difficulty, topics */
+.chip.sm{
+  padding: 4px 10px;
+  font-size: 12px;
+  gap: 6px;
+}
+
+/* Section label inside filter tree (Math / Reading & Writing) */
+.filterSectionLabel{
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* Topic chips indented under their domain */
+.topicChips{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-left: 14px;
+  margin-top: 6px;
+  border-left: 2px solid var(--border);
+  margin-left: 10px;
+}
+
+/* ===============================
+   Question list row (practice page)
+================================ */
+
+.qRow{
+  display: block;
+  cursor: pointer;
+}
+
+.qRowMain{
+  display: grid;
+  gap: 4px;
+}
+
+.qRowTop{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.qKey{
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.qBadges{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.qPill{
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.qRowSub{
+  font-size: 12px;
+}
+
+.qStatus{
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.qStatus.correct{ color: var(--success); }
+.qStatus.wrong{ color: var(--danger); }
+.qStatus.unanswered{ color: var(--muted); }
+
+.qMark{
+  color: #ca8a04;
+  font-size: 13px;
+  line-height: 1;
+}
+
 /* ===============================
    MCQ Answer Options
 ================================ */

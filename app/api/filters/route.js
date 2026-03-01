@@ -22,6 +22,8 @@ async function fetchAll(supabase, table, select, buildQuery) {
 }
 
 // GET /api/filters
+// No params → returns { domains, topics } (topics include domain_name/code for grouping)
+// ?domain=X → returns { topics } for that domain only (legacy, kept for compat)
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get('domain');
@@ -29,26 +31,51 @@ export async function GET(request) {
 
   try {
     if (!domain) {
-      const data = await fetchAll(
-        supabase,
-        'question_taxonomy',
-        'domain_name, domain_code',
-        (q) => q.not('domain_name', 'is', null)
-      );
+      // Fetch domains and ALL topics in parallel
+      const [domainData, topicData] = await Promise.all([
+        fetchAll(
+          supabase,
+          'question_taxonomy',
+          'domain_name, domain_code',
+          (q) => q.not('domain_name', 'is', null)
+        ),
+        fetchAll(
+          supabase,
+          'question_taxonomy',
+          'domain_name, domain_code, skill_name, skill_code',
+          (q) => q.not('skill_name', 'is', null)
+        ),
+      ]);
 
-      const seen = new Set();
+      const seenDomains = new Set();
       const domains = [];
-      for (const row of data) {
+      for (const row of domainData) {
         const key = `${row.domain_name}||${row.domain_code || ''}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
+        if (seenDomains.has(key)) continue;
+        seenDomains.add(key);
         domains.push({ domain_name: row.domain_name, domain_code: row.domain_code || null });
       }
-
       domains.sort((a, b) => String(a.domain_name).localeCompare(String(b.domain_name)));
-      return NextResponse.json({ domains });
+
+      const seenTopics = new Set();
+      const topics = [];
+      for (const row of topicData) {
+        const key = `${row.domain_name}||${row.skill_name}`;
+        if (seenTopics.has(key)) continue;
+        seenTopics.add(key);
+        topics.push({
+          domain_name: row.domain_name,
+          domain_code: row.domain_code || null,
+          skill_name: row.skill_name,
+          skill_code: row.skill_code || null,
+        });
+      }
+      topics.sort((a, b) => String(a.skill_name).localeCompare(String(b.skill_name)));
+
+      return NextResponse.json({ domains, topics });
     }
 
+    // Legacy: single-domain topic fetch
     const data = await fetchAll(
       supabase,
       'question_taxonomy',
