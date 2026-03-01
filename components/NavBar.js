@@ -38,6 +38,7 @@ export default function NavBar() {
           <div className="navLinks">
             <Link href="/practice">Practice</Link>
             <Link href="/review">Review</Link>
+            {user ? <Link href="/question-bank">Question Bank</Link> : null}
           </div>
         </div>
 
