@@ -119,7 +119,8 @@ export async function GET(request) {
     `,
       { count: 'exact' }
     )
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .order('question_id', { ascending: true });
 
   if (restrictIds) q = q.in('id', restrictIds);
 
