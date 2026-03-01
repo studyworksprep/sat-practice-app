@@ -272,7 +272,7 @@ export default function PracticeQuestionPage() {
 
   // Math tools
   // ✅ Draggable divider + minimize (not close)
-  const MIN_CALC_W = 450;
+  const MIN_CALC_W = 550;
   const MAX_CALC_W = 760;
 
   const [calcMinimized, setCalcMinimized] = useState(false);
@@ -782,10 +782,10 @@ export default function PracticeQuestionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Reset calculator width to 450px every time a new question loads
+  // Reset calculator width to MIN_CALC_W every time a new question loads
   useEffect(() => {
     if (!questionId) return;
-    const resetW = 450;
+    const resetW = MIN_CALC_W;
     setCalcWidth(resetW);
     liveWidthRef.current = resetW;
     dragRef.current.pendingW = resetW;

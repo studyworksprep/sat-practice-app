@@ -1345,7 +1345,7 @@ hr{
   display: grid;
   gap: 0;
   align-items: stretch;
-  grid-template-columns: var(--calcW, 450px) 12px minmax(0, 1fr);
+  grid-template-columns: var(--calcW, 550px) 12px minmax(0, 1fr);
 }
 
 .mathLeft{
