@@ -93,7 +93,7 @@ export default function QuestionBankPage() {
     setLoading(true);
     setErr('');
     try {
-      const res = await fetch(`/api/questions?${toQS(queryParams)}`);
+      const res = await fetch(`/api/question-bank?${toQS(queryParams)}`);
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || 'Failed to load questions.');
 
