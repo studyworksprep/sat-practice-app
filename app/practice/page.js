@@ -36,7 +36,7 @@ export default function PracticePage() {
     return p.toString();
   }, [filters, search]);
 
-  // Deterministic session id for this filtered set (used for localStorage-backed navigation)
+    // Deterministic session id for this filtered set (used for localStorage-backed navigation)
   const sessionId = useMemo(() => {
     // djb2-ish hash (fast, stable)
     let h = 5381;
@@ -82,10 +82,8 @@ export default function PracticePage() {
         localStorage.setItem(`practice_${sessionKey}_page_${offset}`, JSON.stringify(ids));
       }
 
-      // Cache the FULL ordered id list for this session (used for index-based prev/next + map jumps)
+            // Cache the FULL ordered id list for this session (used for index-based prev/next + map jumps)
       // Kept extremely compact: a single comma-separated string of question_ids.
-      //
-      // IMPORTANT: stitch pages using the SAME pagination (limit=25) to guarantee identical ordering.
       if (page === 0 && Number(json.totalCount || 0) > 0) {
         const fullKey = `practice_session_${sessionId}`;
         const metaKey = `practice_session_${sessionId}_meta`;
@@ -97,8 +95,7 @@ export default function PracticePage() {
           existingOk = Boolean(
             meta &&
               meta.sessionQueryString === sessionQueryString &&
-              meta.totalCount === Number(json.totalCount || 0) &&
-              meta.cachedCount === Number(json.totalCount || 0)
+              meta.totalCount === Number(json.totalCount || 0)
           );
         } catch {
           existingOk = false;
@@ -108,32 +105,25 @@ export default function PracticePage() {
           // Don't block rendering; populate in the background.
           (async () => {
             try {
-              const total = Number(json.totalCount || 0);
-              const pageSize = 25;
-              const pages = Math.ceil(total / pageSize);
+              const fullParams = new URLSearchParams(params);
+              fullParams.set('offset', '0');
 
-              const all = [];
-              for (let pg = 0; pg < pages; pg++) {
-                const off = pg * pageSize;
+              // fetch everything in one go (API currently supports large limits; this avoids N-page stitching)
+              const lim = Number(json.totalCount || 0);
+              fullParams.set('limit', String(Math.min(Math.max(lim, 25), 5000)));
 
-                const fullParams = new URLSearchParams(params);
-                fullParams.set('limit', String(pageSize));
-                fullParams.set('offset', String(off));
+              const r2 = await fetch('/api/questions?' + fullParams.toString(), { cache: 'no-store' });
+              const j2 = await r2.json();
+              if (!r2.ok) throw new Error(j2?.error || 'Failed to cache session ids');
 
-                const r2 = await fetch('/api/questions?' + fullParams.toString(), { cache: 'no-store' });
-                const j2 = await r2.json();
-                if (!r2.ok) throw new Error(j2?.error || 'Failed to cache session ids');
-
-                const ids = (j2.items || []).map((q) => q.question_id).filter(Boolean);
-                all.push(...ids);
-              }
+              const all = (j2.items || []).map((q) => q.question_id).filter(Boolean);
 
               localStorage.setItem(fullKey, all.join(','));
               localStorage.setItem(
                 metaKey,
                 JSON.stringify({
                   sessionQueryString,
-                  totalCount: total,
+                  totalCount: Number(json.totalCount || 0),
                   cachedCount: all.length,
                   cachedAt: new Date().toISOString(),
                 })
@@ -226,8 +216,10 @@ export default function PracticePage() {
 
                     <div style={{ display: 'grid', gap: 4 }}>
                       <div style={{ fontWeight: 600 }}>{q.question_id}</div>
-                      <div className="muted small">{q.domain_name ? q.domain_name : '—'}</div>
-                      {q.topic_name ? <div className="muted small">{q.topic_name}</div> : null}
+                      <div className="muted small">
+                        {q.domain_name ? q.domain_name : '—'}
+                        {q.skill_name ? ` • ${q.skill_name}` : ''}
+                      </div>
                     </div>
                   </Link>
                 );
@@ -237,26 +229,16 @@ export default function PracticePage() {
 
           <hr />
 
-          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <button className="btn secondary" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+          <div className="row" style={{ justifyContent: 'space-between' }}>
+            <button
+              className="btn secondary"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0 || loading}
+            >
               Prev
             </button>
 
-            <div className="muted small">
-              {totalCount ? (
-                <>
-                  {page * 25 + 1}–{Math.min((page + 1) * 25, totalCount)} of {totalCount}
-                </>
-              ) : (
-                '—'
-              )}
-            </div>
-
-            <button
-              className="btn secondary"
-              disabled={(page + 1) * 25 >= totalCount}
-              onClick={() => setPage((p) => p + 1)}
-            >
+            <button className="btn" onClick={() => setPage((p) => p + 1)} disabled={loading || rows.length < 25}>
               Next
             </button>
           </div>
