@@ -27,7 +27,7 @@ export default function NavBar() {
 
         {/* Left: Logo + Nav */}
         <div className="navLeft">
-          <Link href="/">
+          <Link href={user ? '/dashboard' : '/'}>
             <img
               src="/studyworks-logo.png"
               alt="Studyworks"
@@ -35,10 +35,12 @@ export default function NavBar() {
             />
           </Link>
 
-          <div className="navLinks">
-            <Link href="/practice">Practice</Link>
-            <Link href="/review">Review</Link>
-          </div>
+          {user && (
+            <div className="navLinks">
+              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/practice">Practice</Link>
+            </div>
+          )}
         </div>
 
         {/* Right: Auth */}
@@ -52,8 +54,8 @@ export default function NavBar() {
             </>
           ) : (
             <>
-              <Link className="btn secondary" href="/login">Log in</Link>
-              <Link className="btn" href="/signup">Sign up</Link>
+              <Link className="btn secondary" href="/">Log in</Link>
+              <Link className="btn" href="/">Sign up</Link>
             </>
           )}
         </div>

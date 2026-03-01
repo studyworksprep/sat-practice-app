@@ -799,6 +799,327 @@ hr{
   display: block;
 }
 
+/* ===============================
+   Landing Page
+================================ */
+
+.landingMain {
+  min-height: calc(100vh - 62px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.landingWrap {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 48px;
+  align-items: center;
+  max-width: 960px;
+  width: 100%;
+}
+
+@media (max-width: 780px) {
+  .landingWrap {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .landingMain {
+    align-items: flex-start;
+    padding-top: 32px;
+  }
+}
+
+.landingLogo {
+  height: 44px;
+  width: auto;
+  display: block;
+  margin-bottom: 24px;
+}
+
+.landingTitle {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 14px;
+}
+
+.landingSubtitle {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+
+.landingFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.landingFeatures li {
+  font-size: 14px;
+  color: var(--muted);
+  padding-left: 20px;
+  position: relative;
+}
+
+.landingFeatures li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.landingCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.landingTabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.landingTab {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.landingTab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.landingForm {
+  display: grid;
+  gap: 2px;
+}
+
+.landingSubmit {
+  margin-top: 14px;
+  width: 100%;
+  justify-content: center;
+  font-size: 15px;
+  padding: 12px;
+}
+
+.landingSwitch {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+
+.landingLink {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ===============================
+   Dashboard
+================================ */
+
+.dbHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dbSummaryRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.dbSummaryItem {
+  flex: 1;
+  min-width: 130px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.dbSummaryValue {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.dbSummaryLabel {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.dbGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 1000px) {
+  .dbGrid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+  .dbGrid { grid-template-columns: 1fr; }
+}
+
+.dbStatList {
+  display: grid;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.dbStatRow {
+  display: grid;
+  gap: 3px;
+}
+
+.dbStatName {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dbStatMeta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dbProgressBar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(17,24,39,0.08);
+  overflow: hidden;
+}
+
+.dbProgressFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.dbTestPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+.dbTestComingSoon {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dbTestBtn {
+  margin-top: auto;
+  text-align: center;
+  justify-content: center;
+}
+
+.dbActivityList {
+  display: grid;
+  gap: 0;
+  margin-top: 4px;
+}
+
+.dbActivityItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.dbActivityItem:last-child {
+  border-bottom: none;
+}
+
+.dbActivityItem:hover {
+  background: rgba(17,24,39,0.02);
+  margin: 0 -8px;
+  padding: 10px 8px;
+  border-radius: 8px;
+}
+
+.dbActivityDot {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dbActivityDot.correct {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.dbActivityDot.incorrect {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.dbActivityInfo {
+  flex: 1;
+  font-size: 14px;
+}
+
+.dbActivityTopic {
+  font-weight: 600;
+}
+
+.dbActivityDate {
+  white-space: nowrap;
+}
+
 /* Prevent overflow from long expressions / tables */
 .mathShell .prose table{
   display: block;
