@@ -160,11 +160,11 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     }
   }
 
-  function renderCategory(label, domainList, total) {
+  function renderCategory(label, domainList, total, colorClass) {
     const names = domainList.map((d) => d.domain_name);
     const allOn = names.length > 0 && names.every((n) => state.domains.includes(n));
     return (
-      <label className={`categoryChip${allOn ? ' on' : ''}`}>
+      <label className={`categoryChip ${colorClass}${allOn ? ' on' : ''}`}>
         <input type="checkbox" checked={allOn} onChange={() => toggleCategory(domainList)} />
         <span style={{ flex: 1 }}>{label}</span>
         {total !== undefined && <span className="filterCount">{total}</span>}
@@ -173,13 +173,14 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   }
 
   function renderDomain(domain) {
+    const colorClass       = MATH_CODES.has(domain.domain_code) ? 'math' : 'rw';
     const domainOn         = state.domains.includes(domain.domain_name);
     const domainTopicNames = domain.topics.map((t) => t.skill_name);
     const domainCount      = counts[domain.domain_name]?.count;
 
     return (
       <div key={domain.domain_name} style={{ marginBottom: 8 }}>
-        <label className={`domainChip${domainOn ? ' on' : ''}`}>
+        <label className={`domainChip ${colorClass}${domainOn ? ' on' : ''}`}>
           <input
             type="checkbox"
             checked={domainOn}
@@ -292,17 +293,14 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
       </div>
 
       {/* Domain & Topic — two columns with selectable category headers */}
-      <div>
-        <div className="filterSectionLabel" style={{ marginBottom: 8 }}>Domain &amp; Topic</div>
-        <div className="filterDomainCols">
-          <div>
-            {renderCategory('Math', mathDomains, mathTotal)}
-            {mathDomains.map(renderDomain)}
-          </div>
-          <div>
-            {renderCategory('Reading & Writing', rwDomains, rwTotal)}
-            {rwDomains.map(renderDomain)}
-          </div>
+      <div className="filterDomainCols">
+        <div>
+          {renderCategory('Math', mathDomains, mathTotal, 'math')}
+          {mathDomains.map(renderDomain)}
+        </div>
+        <div>
+          {renderCategory('Reading & Writing', rwDomains, rwTotal, 'rw')}
+          {rwDomains.map(renderDomain)}
         </div>
       </div>
     </div>
