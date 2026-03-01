@@ -290,17 +290,7 @@ export default function PracticeQuestionPage() {
     pendingW: DEFAULT_CALC_W,
   });
 
-  // Option A neighbor nav
-  const [prevId, setPrevId] = useState(null);
-  const [nextId, setNextId] = useState(null);
-
-  // Start false; we explicitly flip to true when we begin fetching neighbors
   const [navLoading, setNavLoading] = useState(false);
-
-  const [navMode, setNavMode] = useState('neighbors'); // 'neighbors' | 'index' fallback
-
-  // ✅ tracks which questionId the current prevId/nextId correspond to (prevents stale-enable flash)
-  const [navForId, setNavForId] = useState(null);
 
   // Instant navigation metadata (from list page or neighbor navigation)
   const [total, setTotal] = useState(null); // total in filtered session
@@ -579,18 +569,23 @@ export default function PracticeQuestionPage() {
       if (targetIndex1 < 1) return;
     }
 
-    const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
-    const targetPos = (targetIndex1 - 1) % 25;
+    setNavLoading(true);
+    try {
+      const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
+      const targetPos = (targetIndex1 - 1) % 25;
 
-    const ids = await fetchPageIds(targetOffset);
-    const targetId = ids[targetPos];
-    if (!targetId) return;
+      const ids = await fetchPageIds(targetOffset);
+      const targetId = ids[targetPos];
+      if (!targetId) return;
 
-    setPageOffset(targetOffset);
-    setPageIds(ids);
-    setIndex1(targetIndex1);
+      setPageOffset(targetOffset);
+      setPageIds(ids);
+      setIndex1(targetIndex1);
 
-    router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
+      router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
+    } finally {
+      setNavLoading(false);
+    }
   }
 
   async function doJumpTo() {
@@ -712,78 +707,6 @@ export default function PracticeQuestionPage() {
     };
   }, [showMap]);
 
-  // ✅ Fetch neighbors — use fetchPageIds (same stable ordering as list + map) when index is
-  // known, fall back to the RPC only when navigating without index context.
-  useEffect(() => {
-    if (!questionId) {
-      setNavLoading(false);
-      setPrevId(null);
-      setNextId(null);
-      setNavForId(null);
-      return;
-    }
-
-    setNavMode('neighbors');
-    setNavLoading(true);
-
-    // Clear stale IDs immediately
-    setPrevId(null);
-    setNextId(null);
-    setNavForId(null);
-
-    const currentIndex = Number(searchParams.get('i'));
-    const hasIndex = inSessionContext && Number.isFinite(currentIndex) && currentIndex >= 1;
-
-    (async () => {
-      try {
-        if (hasIndex) {
-          // Derive prev/next from the same paginated list endpoint used by the map and
-          // practice list, so all three surfaces agree on question ordering.
-          const offset = Math.floor((currentIndex - 1) / 25) * 25;
-          const pos = (currentIndex - 1) % 25;
-          const pageIds = await fetchPageIds(offset);
-
-          let prev = null;
-          if (pos > 0) {
-            prev = pageIds[pos - 1] ?? null;
-          } else if (offset > 0) {
-            const prevPage = await fetchPageIds(offset - 25);
-            prev = prevPage[prevPage.length - 1] ?? null;
-          }
-
-          let next = null;
-          if (pos < pageIds.length - 1) {
-            next = pageIds[pos + 1] ?? null;
-          } else {
-            const nextPage = await fetchPageIds(offset + 25);
-            next = nextPage[0] ?? null;
-          }
-
-          setPrevId(prev);
-          setNextId(next);
-        } else {
-          // Fallback: RPC-based neighbors (used when there is no index in the URL).
-          const res = await fetch(`/api/questions/${questionId}/neighbors?${sessionParamsString}`, { cache: 'no-store' });
-          const json = await res.json();
-          if (!res.ok) throw new Error(json?.error || 'Failed to load neighbors');
-          setPrevId(json.prev_id || null);
-          setNextId(json.next_id || null);
-        }
-
-        // ✅ Mark that these neighbors belong to this question
-        setNavForId(questionId);
-      } catch (e) {
-        setPrevId(null);
-        setNextId(null);
-        setNavForId(null);
-        setNavMode('index');
-        setMsg({ kind: 'danger', text: `Neighbors failed (fallback enabled): ${e.message}` });
-      } finally {
-        setNavLoading(false);
-      }
-    })();
-  }, [questionId, sessionParamsString]);
-
   // Load question content
   useEffect(() => {
     if (!questionId) return;
@@ -897,37 +820,16 @@ export default function PracticeQuestionPage() {
     </div>
   );
 
-  const prevDisabled = navLoading || !index1 || index1 <= 1 || !prevId;
-  const nextDisabled = navLoading || !index1 || !total || index1 >= total || !nextId;
-
-  // ✅ Only enable neighbor nav when neighbors are loaded for THIS questionId
-  const neighborsReady = navMode === 'neighbors' && navForId === questionId && !navLoading;
+  const prevDisabled = navLoading || !index1 || index1 <= 1;
+  const nextDisabled = navLoading || !index1 || !total || index1 >= total;
 
   const goPrev = () => {
-    if (navMode === 'neighbors') {
-      if (prevDisabled) return;
-
-      const nextI = index1 != null ? Math.max(1, index1 - 1) : null;
-      setIndex1(nextI);
-
-      router.push(buildHref(prevId, total, null, null, nextI));
-      return;
-    }
-    if (index1 == null) return;
+    if (prevDisabled || index1 == null) return;
     goToIndex(index1 - 1);
   };
 
   const goNext = () => {
-    if (navMode === 'neighbors') {
-      if (nextDisabled) return;
-
-      const nextI = index1 != null ? index1 + 1 : null;
-      setIndex1(nextI);
-
-      router.push(buildHref(nextId, total, null, null, nextI));
-      return;
-    }
-    if (index1 == null) return;
+    if (nextDisabled || index1 == null) return;
     goToIndex(index1 + 1);
   };
 
@@ -1022,7 +924,7 @@ export default function PracticeQuestionPage() {
           <button
             className="btn secondary"
             onClick={goNext}
-            disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}
+            disabled={nextDisabled}
           >
             Next
           </button>
@@ -1080,7 +982,7 @@ export default function PracticeQuestionPage() {
         <button
           className="btn secondary"
           onClick={goNext}
-          disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}
+          disabled={nextDisabled}
         >
           Next
         </button>
