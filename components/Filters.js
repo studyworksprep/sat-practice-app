@@ -37,17 +37,15 @@ export default function Filters({ initial = {}, onChange }) {
     })();
   }, []);
 
-  function set(k, v) {
-    setState((prev) => ({ ...prev, [k]: v }));
-  }
+  function set(k, v) { setState((prev) => ({ ...prev, [k]: v })); }
 
   function toggleDifficulty(n) {
-    setState((prev) => {
-      const next = prev.difficulties.includes(n)
+    setState((prev) => ({
+      ...prev,
+      difficulties: prev.difficulties.includes(n)
         ? prev.difficulties.filter((d) => d !== n)
-        : [...prev.difficulties, n].sort((a, b) => a - b);
-      return { ...prev, difficulties: next };
-    });
+        : [...prev.difficulties, n].sort((a, b) => a - b),
+    }));
   }
 
   function toggleScoreBand(band) {
@@ -61,10 +59,7 @@ export default function Filters({ initial = {}, onChange }) {
   function toggleDomain(domainName, domainTopicNames) {
     setState((prev) => {
       const isDomainOn = prev.domains.includes(domainName);
-      if (isDomainOn) {
-        return { ...prev, domains: prev.domains.filter((d) => d !== domainName) };
-      }
-      // Selecting a domain: add it and drop any individually-selected topics it covers
+      if (isDomainOn) return { ...prev, domains: prev.domains.filter((d) => d !== domainName) };
       return {
         ...prev,
         domains: [...prev.domains, domainName],
@@ -75,153 +70,140 @@ export default function Filters({ initial = {}, onChange }) {
 
   function toggleTopic(domainName, skillName) {
     setState((prev) => {
-      // If the whole domain is selected, ignore individual topic clicks
       if (prev.domains.includes(domainName)) return prev;
       const isOn = prev.topics.includes(skillName);
-      return {
-        ...prev,
-        topics: isOn ? prev.topics.filter((t) => t !== skillName) : [...prev.topics, skillName],
-      };
+      return { ...prev, topics: isOn ? prev.topics.filter((t) => t !== skillName) : [...prev.topics, skillName] };
     });
   }
 
-  // Group topics by domain, build section tree
-  const sections = useMemo(() => {
+  // Build Math and R&W domain lists with their topics
+  const { mathDomains, rwDomains } = useMemo(() => {
     const topicsByDomain = {};
     for (const t of allTopics) {
       if (!topicsByDomain[t.domain_name]) topicsByDomain[t.domain_name] = [];
       topicsByDomain[t.domain_name].push(t);
     }
+    const attach = (d) => ({ ...d, topics: topicsByDomain[d.domain_name] || [] });
 
-    const math = allDomains
-      .filter((d) => MATH_CODES.has(d.domain_code))
-      .sort((a, b) => MATH_ORDER.indexOf(a.domain_code) - MATH_ORDER.indexOf(b.domain_code))
-      .map((d) => ({ ...d, topics: topicsByDomain[d.domain_name] || [] }));
-
-    const rw = allDomains
-      .filter((d) => RW_CODES.has(d.domain_code))
-      .sort((a, b) => RW_ORDER.indexOf(a.domain_code) - RW_ORDER.indexOf(b.domain_code))
-      .map((d) => ({ ...d, topics: topicsByDomain[d.domain_name] || [] }));
-
-    const other = allDomains
-      .filter((d) => !MATH_CODES.has(d.domain_code) && !RW_CODES.has(d.domain_code))
-      .sort((a, b) => String(a.domain_name).localeCompare(String(b.domain_name)))
-      .map((d) => ({ ...d, topics: topicsByDomain[d.domain_name] || [] }));
-
-    return [
-      { label: 'Math', domains: math },
-      { label: 'Reading & Writing', domains: rw },
-      ...(other.length ? [{ label: 'Other', domains: other }] : []),
-    ];
+    return {
+      mathDomains: allDomains
+        .filter((d) => MATH_CODES.has(d.domain_code))
+        .sort((a, b) => MATH_ORDER.indexOf(a.domain_code) - MATH_ORDER.indexOf(b.domain_code))
+        .map(attach),
+      rwDomains: allDomains
+        .filter((d) => RW_CODES.has(d.domain_code))
+        .sort((a, b) => RW_ORDER.indexOf(a.domain_code) - RW_ORDER.indexOf(b.domain_code))
+        .map(attach),
+    };
   }, [allDomains, allTopics]);
+
+  function renderDomain(domain) {
+    const domainOn = state.domains.includes(domain.domain_name);
+    const domainTopicNames = domain.topics.map((t) => t.skill_name);
+    return (
+      <div key={domain.domain_name} style={{ marginBottom: 8 }}>
+        <label className={`domainChip${domainOn ? ' on' : ''}`}>
+          <input
+            type="checkbox"
+            checked={domainOn}
+            onChange={() => toggleDomain(domain.domain_name, domainTopicNames)}
+          />
+          <span>{domain.domain_name}</span>
+        </label>
+
+        {domain.topics.length > 0 && (
+          <div className="topicChips">
+            {domain.topics.map((topic) => {
+              const topicOn = domainOn || state.topics.includes(topic.skill_name);
+              return (
+                <label
+                  key={topic.skill_name}
+                  className={`chip sm${topicOn ? ' on' : ''}`}
+                  style={domainOn ? { opacity: 0.6, cursor: 'default' } : undefined}
+                >
+                  <input
+                    type="checkbox"
+                    checked={topicOn}
+                    disabled={domainOn}
+                    onChange={() => toggleTopic(domain.domain_name, topic.skill_name)}
+                  />
+                  <span>{topic.skill_name}</span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="card">
       <div className="h2">Filters</div>
 
-      {/* Difficulty */}
-      <label>Difficulty</label>
-      <div className="chips">
-        {[1, 2, 3].map((n) => {
-          const on = state.difficulties.includes(n);
-          return (
-            <label key={n} className={`chip sm${on ? ' on' : ''}`}>
-              <input type="checkbox" checked={on} onChange={() => toggleDifficulty(n)} />
-              <span>D{n}</span>
-            </label>
-          );
-        })}
-      </div>
-
-      {/* Score band */}
-      <label style={{ marginTop: 12 }}>Score Band</label>
-      <div className="chips">
-        {[1, 2, 3, 4, 5, 6, 7].map((n) => {
-          const on = (state.score_bands || []).includes(n);
-          return (
-            <label key={n} className={`chip sm${on ? ' on' : ''}`}>
-              <input type="checkbox" checked={on} onChange={() => toggleScoreBand(n)} />
-              <span>{n}</span>
-            </label>
-          );
-        })}
-      </div>
-      <div className="muted small" style={{ marginTop: 4 }}>Leave all unchecked for any.</div>
-
-      {/* Domain & Topic tree */}
-      <label style={{ marginTop: 14 }}>Domain &amp; Topic</label>
-      {sections.map((section) => (
-        <div key={section.label} style={{ marginBottom: 12 }}>
-          <div className="filterSectionLabel">{section.label}</div>
-          {section.domains.map((domain) => {
-            const domainOn = state.domains.includes(domain.domain_name);
-            const domainTopicNames = domain.topics.map((t) => t.skill_name);
+      {/* Difficulty — one line */}
+      <div className="filterInlineRow">
+        <span className="filterInlineLabel">Difficulty</span>
+        <div className="chips">
+          {[1, 2, 3].map((n) => {
+            const on = state.difficulties.includes(n);
             return (
-              <div key={domain.domain_name} style={{ marginBottom: 8 }}>
-                <label className={`chip${domainOn ? ' on' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={domainOn}
-                    onChange={() => toggleDomain(domain.domain_name, domainTopicNames)}
-                  />
-                  <span>{domain.domain_name}</span>
-                </label>
-
-                {domain.topics.length > 0 && (
-                  <div className="topicChips">
-                    {domain.topics.map((topic) => {
-                      const coveredByDomain = domainOn;
-                      const topicOn = coveredByDomain || state.topics.includes(topic.skill_name);
-                      return (
-                        <label
-                          key={topic.skill_name}
-                          className={`chip sm${topicOn ? ' on' : ''}`}
-                          style={coveredByDomain ? { opacity: 0.65, cursor: 'default' } : undefined}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={topicOn}
-                            disabled={coveredByDomain}
-                            onChange={() => toggleTopic(domain.domain_name, topic.skill_name)}
-                          />
-                          <span>{topic.skill_name}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              <label key={n} className={`chip sm${on ? ' on' : ''}`}>
+                <input type="checkbox" checked={on} onChange={() => toggleDifficulty(n)} />
+                <span>D{n}</span>
+              </label>
             );
           })}
         </div>
-      ))}
+      </div>
+
+      {/* Score Band — one line */}
+      <div className="filterInlineRow">
+        <span className="filterInlineLabel">Score Band</span>
+        <div className="chips">
+          {[1, 2, 3, 4, 5, 6, 7].map((n) => {
+            const on = (state.score_bands || []).includes(n);
+            return (
+              <label key={n} className={`chip sm${on ? ' on' : ''}`}>
+                <input type="checkbox" checked={on} onChange={() => toggleScoreBand(n)} />
+                <span>{n}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Domain & Topic — two columns */}
+      <div style={{ marginTop: 14, marginBottom: 2 }}>
+        <span className="filterSectionLabel" style={{ display: 'block', marginBottom: 8 }}>Domain &amp; Topic</span>
+        <div className="filterDomainCols">
+          <div>
+            <div className="filterSectionLabel">Math</div>
+            {mathDomains.map(renderDomain)}
+          </div>
+          <div>
+            <div className="filterSectionLabel">Reading &amp; Writing</div>
+            {rwDomains.map(renderDomain)}
+          </div>
+        </div>
+      </div>
 
       {/* Additional filters */}
-      <div style={{ display: 'grid', gap: 8, marginTop: 4 }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
-          <input
-            type="checkbox"
-            checked={state.wrong_only}
-            onChange={(e) => set('wrong_only', e.target.checked)}
-          />
-          Only wrong answers
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
-          <input
-            type="checkbox"
-            checked={state.marked_only}
-            onChange={(e) => set('marked_only', e.target.checked)}
-          />
-          Only marked for review
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
-          <input
-            type="checkbox"
-            checked={state.broken_only}
-            onChange={(e) => set('broken_only', e.target.checked)}
-          />
-          Only flagged as broken
-        </label>
+      <div style={{ display: 'grid', gap: 7, marginTop: 12 }}>
+        {[
+          ['wrong_only',   'Only wrong answers'],
+          ['marked_only',  'Only marked for review'],
+          ['broken_only',  'Only flagged as broken'],
+        ].map(([key, label]) => (
+          <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0, fontSize: 13 }}>
+            <input
+              type="checkbox"
+              checked={state[key]}
+              onChange={(e) => set(key, e.target.checked)}
+            />
+            {label}
+          </label>
+        ))}
       </div>
     </div>
   );
