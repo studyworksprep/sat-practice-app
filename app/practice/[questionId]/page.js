@@ -712,7 +712,8 @@ export default function PracticeQuestionPage() {
     };
   }, [showMap]);
 
-  // ✅ Fetch neighbors (Option A) — prevent stale-enable by gating with navForId
+  // ✅ Fetch neighbors — use fetchPageIds (same stable ordering as list + map) when index is
+  // known, fall back to the RPC only when navigating without index context.
   useEffect(() => {
     if (!questionId) {
       setNavLoading(false);
@@ -730,14 +731,44 @@ export default function PracticeQuestionPage() {
     setNextId(null);
     setNavForId(null);
 
+    const currentIndex = Number(searchParams.get('i'));
+    const hasIndex = inSessionContext && Number.isFinite(currentIndex) && currentIndex >= 1;
+
     (async () => {
       try {
-        const res = await fetch(`/api/questions/${questionId}/neighbors?${sessionParamsString}`, { cache: 'no-store' });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json?.error || 'Failed to load neighbors');
+        if (hasIndex) {
+          // Derive prev/next from the same paginated list endpoint used by the map and
+          // practice list, so all three surfaces agree on question ordering.
+          const offset = Math.floor((currentIndex - 1) / 25) * 25;
+          const pos = (currentIndex - 1) % 25;
+          const pageIds = await fetchPageIds(offset);
 
-        setPrevId(json.prev_id || null);
-        setNextId(json.next_id || null);
+          let prev = null;
+          if (pos > 0) {
+            prev = pageIds[pos - 1] ?? null;
+          } else if (offset > 0) {
+            const prevPage = await fetchPageIds(offset - 25);
+            prev = prevPage[prevPage.length - 1] ?? null;
+          }
+
+          let next = null;
+          if (pos < pageIds.length - 1) {
+            next = pageIds[pos + 1] ?? null;
+          } else {
+            const nextPage = await fetchPageIds(offset + 25);
+            next = nextPage[0] ?? null;
+          }
+
+          setPrevId(prev);
+          setNextId(next);
+        } else {
+          // Fallback: RPC-based neighbors (used when there is no index in the URL).
+          const res = await fetch(`/api/questions/${questionId}/neighbors?${sessionParamsString}`, { cache: 'no-store' });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json?.error || 'Failed to load neighbors');
+          setPrevId(json.prev_id || null);
+          setNextId(json.next_id || null);
+        }
 
         // ✅ Mark that these neighbors belong to this question
         setNavForId(questionId);
