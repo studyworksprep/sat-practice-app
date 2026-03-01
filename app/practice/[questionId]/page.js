@@ -300,6 +300,8 @@ export default function PracticeQuestionPage() {
   const [pageIds, setPageIds] = useState([]); // ids for current offset page
   const [pageOffset, setPageOffset] = useState(0); // 0,25,50,...
 
+  const [showInfo, setShowInfo] = useState(false);
+
   // ✅ Question Map (windowed, IDs fetched on open)
   const MAP_PAGE_SIZE = 100; // must be <= API limit cap
   const [showMap, setShowMap] = useState(false);
@@ -841,6 +843,46 @@ export default function PracticeQuestionPage() {
             <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
           </span>
         ))}
+
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            className="infoBtn"
+            onClick={() => setShowInfo((s) => !s)}
+            aria-label="Question info"
+            title="Question info"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path fill="currentColor" d="M12 8a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-1 4h2v6h-2z" />
+            </svg>
+            Info
+          </button>
+
+          {showInfo && (
+            <>
+              <div className="infoPopOverlay" onClick={() => setShowInfo(false)} />
+              <div className="infoPop" role="dialog" aria-label="Question details">
+                <div className="infoPopRow">
+                  <span className="muted">Domain</span>
+                  <span>{data?.taxonomy?.domain_name || '—'}</span>
+                </div>
+                <div className="infoPopRow">
+                  <span className="muted">Topic</span>
+                  <span>{data?.taxonomy?.skill_name || '—'}</span>
+                </div>
+                <div className="infoPopRow">
+                  <span className="muted">Difficulty</span>
+                  <span>{data?.taxonomy?.difficulty ?? '—'}</span>
+                </div>
+                <div className="infoPopRow">
+                  <span className="muted">Score Band</span>
+                  <span>{data?.taxonomy?.score_band ?? '—'}</span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
 
         <button
           type="button"
