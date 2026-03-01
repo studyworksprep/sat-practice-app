@@ -27,7 +27,7 @@ export async function GET() {
     const ids = [...new Set(rows.map(r => r.question_id))];
     const { data: taxRows, error: taxErr } = await supabase
       .from('question_taxonomy')
-      .select('question_id, domain_name, skill_name, difficulty')
+      .select('question_id, domain_code, domain_name, skill_name, difficulty')
       .in('question_id', ids);
 
     if (taxErr) return NextResponse.json({ error: taxErr.message }, { status: 400 });
@@ -38,8 +38,14 @@ export async function GET() {
   // Domain stats
   const domainMap = {};
   for (const row of rows) {
-    const domain = taxMap[row.question_id]?.domain_name || 'Unknown';
-    if (!domainMap[domain]) domainMap[domain] = { domain_name: domain, attempted: 0, correct: 0 };
+    const tax = taxMap[row.question_id];
+    const domain = tax?.domain_name || 'Unknown';
+    if (!domainMap[domain]) domainMap[domain] = {
+      domain_code: tax?.domain_code || '',
+      domain_name: domain,
+      attempted: 0,
+      correct: 0,
+    };
     domainMap[domain].attempted++;
     if (row.last_is_correct) domainMap[domain].correct++;
   }
@@ -50,10 +56,17 @@ export async function GET() {
   // Topic stats
   const topicMap = {};
   for (const row of rows) {
-    const domain = taxMap[row.question_id]?.domain_name || 'Unknown';
-    const skill = taxMap[row.question_id]?.skill_name || 'Unknown';
+    const tax = taxMap[row.question_id];
+    const domain = tax?.domain_name || 'Unknown';
+    const skill = tax?.skill_name || 'Unknown';
     const key = `${domain}::${skill}`;
-    if (!topicMap[key]) topicMap[key] = { domain_name: domain, skill_name: skill, attempted: 0, correct: 0 };
+    if (!topicMap[key]) topicMap[key] = {
+      domain_code: tax?.domain_code || '',
+      domain_name: domain,
+      skill_name: skill,
+      attempted: 0,
+      correct: 0,
+    };
     topicMap[key].attempted++;
     if (row.last_is_correct) topicMap[key].correct++;
   }

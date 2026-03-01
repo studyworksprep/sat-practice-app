@@ -999,6 +999,55 @@ hr{
   .dbGrid { grid-template-columns: 1fr; }
 }
 
+/* Two-column English | Math performance grid */
+.dbPerfGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 700px) {
+  .dbPerfGrid { grid-template-columns: 1fr; }
+}
+
+/* List of domain blocks inside a section card */
+.dbDomainList {
+  display: grid;
+  gap: 20px;
+}
+
+/* One domain + its topics */
+.dbDomainBlock {
+  display: grid;
+  gap: 10px;
+}
+
+/* Domain header row */
+.dbDomainRow {
+  display: grid;
+  gap: 3px;
+}
+
+.dbDomainName {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Topics indented under their domain */
+.dbTopicList {
+  display: grid;
+  gap: 10px;
+  padding-left: 14px;
+  border-left: 2px solid var(--border);
+  margin-left: 4px;
+}
+
+.dbTopicRow {
+  display: grid;
+  gap: 2px;
+}
+
 .dbStatList {
   display: grid;
   gap: 14px;

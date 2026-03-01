@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+// Math domain codes per SAT section structure
+const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
+
 function pct(correct, attempted) {
   if (!attempted) return null;
   return Math.round((correct / attempted) * 100);
@@ -28,6 +31,64 @@ function formatDate(iso) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+// Build nested sections: English (Reading & Writing) and Math
+// Each section has domains, each domain has its topics nested inside.
+function buildSections(domainStats, topicStats) {
+  const topicsByDomain = {};
+  for (const t of topicStats) {
+    if (!topicsByDomain[t.domain_name]) topicsByDomain[t.domain_name] = [];
+    topicsByDomain[t.domain_name].push(t);
+  }
+
+  const english = { label: 'Reading & Writing', domains: [] };
+  const math = { label: 'Math', domains: [] };
+
+  for (const d of domainStats) {
+    const section = MATH_CODES.has(d.domain_code) ? math : english;
+    section.domains.push({ ...d, topics: topicsByDomain[d.domain_name] || [] });
+  }
+
+  return [english, math];
+}
+
+function PerfSection({ section, loading, error }) {
+  return (
+    <div className="card">
+      <div className="h2" style={{ marginBottom: 14 }}>{section.label}</div>
+      {loading ? (
+        <div className="muted small">Loading…</div>
+      ) : error ? (
+        <div className="muted small">{error}</div>
+      ) : !section.domains.length ? (
+        <div className="muted small">No data yet. Start practicing to see your stats.</div>
+      ) : (
+        <div className="dbDomainList">
+          {section.domains.map(domain => (
+            <div key={domain.domain_name} className="dbDomainBlock">
+              <div className="dbDomainRow">
+                <div className="dbDomainName">{domain.domain_name}</div>
+                <div className="dbStatMeta">{domain.attempted} attempted</div>
+                <AccuracyBar correct={domain.correct} attempted={domain.attempted} />
+              </div>
+              {domain.topics.length > 0 && (
+                <div className="dbTopicList">
+                  {domain.topics.map(topic => (
+                    <div key={topic.skill_name} className="dbTopicRow">
+                      <div className="dbStatName">{topic.skill_name}</div>
+                      <div className="dbStatMeta">{topic.attempted} attempted</div>
+                      <AccuracyBar correct={topic.correct} attempted={topic.attempted} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DashboardClient({ email }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +106,9 @@ export default function DashboardClient({ email }) {
   }, []);
 
   const overallPct = data ? pct(data.totalCorrect, data.totalAttempted) : null;
+  const sections = data
+    ? buildSections(data.domainStats, data.topicStats)
+    : [{ label: 'Reading & Writing', domains: [] }, { label: 'Math', domains: [] }];
 
   return (
     <main className="container">
@@ -78,70 +142,28 @@ export default function DashboardClient({ email }) {
         </div>
       )}
 
-      {/* Three-panel grid */}
-      <div className="dbGrid">
+      {/* Performance: English | Math (two columns, topics nested under domains) */}
+      <div className="dbPerfGrid">
+        {sections.map(section => (
+          <PerfSection key={section.label} section={section} loading={loading} error={error} />
+        ))}
+      </div>
 
-        {/* Domain performance */}
-        <div className="card">
-          <div className="h2">Performance by Domain</div>
-          {loading ? (
-            <div className="muted small">Loading…</div>
-          ) : error ? (
-            <div className="muted small">{error}</div>
-          ) : !data?.domainStats?.length ? (
-            <div className="muted small">No data yet. Start practicing to see your stats.</div>
-          ) : (
-            <div className="dbStatList">
-              {data.domainStats.map(d => (
-                <div key={d.domain_name} className="dbStatRow">
-                  <div className="dbStatName">{d.domain_name}</div>
-                  <div className="dbStatMeta">{d.attempted} attempted</div>
-                  <AccuracyBar correct={d.correct} attempted={d.attempted} />
-                </div>
-              ))}
-            </div>
-          )}
+      {/* Practice tests placeholder */}
+      <div className="card dbTestPanel" style={{ marginTop: 16 }}>
+        <div className="h2">Practice Tests</div>
+        <p className="muted small" style={{ marginTop: 0 }}>
+          Simulate the full SAT experience with timed, full-length practice tests.
+          Review your scores and section breakdowns when you&rsquo;re done.
+        </p>
+        <div className="dbTestComingSoon">
+          <span>Coming Soon</span>
         </div>
-
-        {/* Topic performance */}
-        <div className="card">
-          <div className="h2">Performance by Topic</div>
-          {loading ? (
-            <div className="muted small">Loading…</div>
-          ) : error ? (
-            <div className="muted small">{error}</div>
-          ) : !data?.topicStats?.length ? (
-            <div className="muted small">No data yet. Start practicing to see your stats.</div>
-          ) : (
-            <div className="dbStatList">
-              {data.topicStats.map(t => (
-                <div key={`${t.domain_name}::${t.skill_name}`} className="dbStatRow">
-                  <div className="dbStatName">{t.skill_name}</div>
-                  <div className="dbStatMeta muted">{t.domain_name} · {t.attempted} attempted</div>
-                  <AccuracyBar correct={t.correct} attempted={t.attempted} />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Practice tests placeholder */}
-        <div className="card dbTestPanel">
-          <div className="h2">Practice Tests</div>
-          <p className="muted small" style={{ marginTop: 0 }}>
-            Simulate the full SAT experience with timed, full-length practice tests.
-            Review your scores and section breakdowns when you&rsquo;re done.
-          </p>
-          <div className="dbTestComingSoon">
-            <span>Coming Soon</span>
-          </div>
-          <Link href="/practice-test" className="btn secondary dbTestBtn" aria-disabled="true"
-            onClick={e => e.preventDefault()}
-            style={{ opacity: 0.5, cursor: 'not-allowed', pointerEvents: 'none' }}>
-            Take a Practice Test
-          </Link>
-        </div>
-
+        <Link href="/practice-test" className="btn secondary dbTestBtn" aria-disabled="true"
+          onClick={e => e.preventDefault()}
+          style={{ opacity: 0.5, cursor: 'not-allowed', pointerEvents: 'none' }}>
+          Take a Practice Test
+        </Link>
       </div>
 
       {/* Recent activity */}
