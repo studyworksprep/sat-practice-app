@@ -70,16 +70,8 @@ a{
   padding: 28px;
 }
 
-.practiceGrid{
-  display: grid;
-  grid-template-columns: 580px 1fr;
-  gap: 16px;
-  align-items: start;
-}
-
-@media (max-width: 1100px){
-  .practiceGrid{ grid-template-columns: 1fr; }
-}
+/* practiceGrid no longer used for two-column layout; kept for compat */
+.practiceGrid{ display: block; }
 
 /* ===============================
    Two-column Reading layout
@@ -392,19 +384,63 @@ label{
   gap: 6px;
 }
 
-/* One-line filter row: inline label + chips */
+/* One-line filter row: inline label + chips (legacy, kept for compat) */
 .filterInlineRow{
   display: flex;
   align-items: center;
   gap: 10px;
   margin-top: 8px;
 }
-
 .filterInlineLabel{
   font-size: 12px;
   color: var(--muted);
   white-space: nowrap;
   flex: 0 0 80px;
+}
+
+/* Horizontal filter bar (full-width layout) */
+.filterBar{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.filterBarSection{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 20px;
+  border-left: 1px solid var(--border);
+}
+
+.filterBarSection:first-child{
+  padding-left: 0;
+  border-left: none;
+}
+
+.filterCheck{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Small count badge next to domain/topic names */
+.filterCount{
+  font-size: 10px;
+  color: var(--muted);
+  background: rgba(0,0,0,0.07);
+  border-radius: 10px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+  line-height: 1.6;
 }
 
 /* Two-column grid for Math | Reading & Writing domains */

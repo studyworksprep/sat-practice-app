@@ -63,6 +63,11 @@ export default function PracticePage() {
   }, [sessionQueryString]);
 
   async function load() {
+    if (!search.trim()) {
+      setRows([]);
+      setTotalCount(0);
+      return;
+    }
     setLoading(true);
     setMsg(null);
 
@@ -153,13 +158,32 @@ export default function PracticePage() {
 
   return (
     <main className="container">
-      <div className="practiceGrid">
-        <div style={{ minWidth: 320 }}>
-          <Filters onChange={setFilters} />
-          <Toast kind={msg?.kind} message={msg?.text} />
-        </div>
+      {/* Full-width filter panel */}
+      <Filters onChange={setFilters} />
+      {msg && <Toast kind={msg?.kind} message={msg?.text} />}
 
-        <div className="card" style={{ minWidth: 320 }}>
+      {/* Search row */}
+      <div className="card" style={{ marginTop: 12, padding: '12px 16px' }}>
+        <div className="searchRow">
+          <input
+            className="input"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by question ID, stem, or stimulus…"
+          />
+          <button className="btn secondary" onClick={() => setSearch('')} disabled={!search}>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      {/* Question list — only shown when search has text */}
+      {!search.trim() ? (
+        <p className="muted" style={{ textAlign: 'center', marginTop: 32, padding: '20px 0' }}>
+          Enter a search term above to find matching questions.
+        </p>
+      ) : (
+        <div className="card" style={{ marginTop: 12, minWidth: 320 }}>
           <div className="row" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div className="h2">Questions</div>
@@ -170,18 +194,6 @@ export default function PracticePage() {
             <div className="pill">
               Page <span className="kbd">{page + 1}</span>
             </div>
-          </div>
-
-          <div className="searchRow" style={{ marginTop: 10 }}>
-            <input
-              className="input"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search (Question ID, stem, stimulus)…"
-            />
-            <button className="btn secondary" onClick={() => setSearch('')} disabled={!search}>
-              Clear
-            </button>
           </div>
 
           <hr />
@@ -252,7 +264,7 @@ export default function PracticePage() {
             </button>
           </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }
