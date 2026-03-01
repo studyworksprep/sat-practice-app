@@ -272,22 +272,20 @@ export default function PracticeQuestionPage() {
 
   // Math tools
   // ✅ Draggable divider + minimize (not close)
-  const DEFAULT_CALC_W = 660; // wide enough that Desmos starts in its roomier layout
   const MIN_CALC_W = 450;
   const MAX_CALC_W = 760;
-  const MINIMIZED_W = 56;
 
   const [calcMinimized, setCalcMinimized] = useState(false);
-  const [calcWidth, setCalcWidth] = useState(DEFAULT_CALC_W);
+  const [calcWidth, setCalcWidth] = useState(MIN_CALC_W);
 
   // IMPORTANT: prevent flicker by avoiding React updates during drag
   const shellRef = useRef(null);
-  const liveWidthRef = useRef(DEFAULT_CALC_W);
+  const liveWidthRef = useRef(MIN_CALC_W);
   const dragRef = useRef({
     dragging: false,
     startX: 0,
-    startW: DEFAULT_CALC_W,
-    pendingW: DEFAULT_CALC_W,
+    startW: MIN_CALC_W,
+    pendingW: MIN_CALC_W,
   });
 
   const [navLoading, setNavLoading] = useState(false);
@@ -1138,8 +1136,9 @@ export default function PracticeQuestionPage() {
     window.addEventListener('pointerup', onUp);
   }
 
-  // Math shell wrapper (calculator left, question right; draggable divider; minimize)
-  const MathShell = ({ children }) => (
+  // Math shell: inlined (not a local component) so React reuses the same DOM element
+  // across re-renders instead of unmounting/remounting the Desmos subtree.
+  const mathShellJsx = (rightContent) => (
     <div
       ref={shellRef}
       className={`mathShell ${calcMinimized ? 'min' : 'withCalc'}`}
@@ -1173,7 +1172,7 @@ export default function PracticeQuestionPage() {
         <div className="mathDivider min" aria-hidden="true" />
       )}
 
-      <main className="mathRight">{children}</main>
+      <main className="mathRight">{rightContent}</main>
     </div>
   );
 
@@ -1288,14 +1287,14 @@ export default function PracticeQuestionPage() {
           </div>
         ) : isMath ? (
           // Math: calc left; right status+prompt+answers
-          <MathShell>
+          mathShellJsx(<>
             <MathToolRow />
             <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
               <StatusPillsRow />
             </div>
             <PromptBlocks mb={12} />
             <McqOptionsArea />
-          </MathShell>
+          </>)
         ) : (
           // Default MCQ
           <div>
@@ -1308,14 +1307,14 @@ export default function PracticeQuestionPage() {
         )
       ) : isMath ? (
         // Math SPR
-        <MathShell>
+        mathShellJsx(<>
           <MathToolRow />
           <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
             <StatusPillsRow />
           </div>
           <PromptBlocks mb={12} />
           <SprAnswerArea />
-        </MathShell>
+        </>)
       ) : (
         // Default SPR
         <div>
