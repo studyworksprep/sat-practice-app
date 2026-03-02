@@ -260,7 +260,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
               const on = state.difficulties.includes(n);
               const diffClass = n === 1 ? 'diff-easy' : n === 2 ? 'diff-medium' : 'diff-hard';
               return (
-                <label key={n} className={`chip sm ${diffClass}${on ? ' on' : ''}`} title={title}>
+                <label key={n} className={`chip sm circle ${diffClass}${on ? ' on' : ''}`} title={title}>
                   <input type="checkbox" checked={on} onChange={() => toggleDifficulty(n)} />
                   <span>{label}</span>
                 </label>
@@ -276,7 +276,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
               const on = (state.score_bands || []).includes(n);
               const bandClass = n <= 3 ? 'band-low' : n <= 5 ? 'band-mid' : 'band-high';
               return (
-                <label key={n} className={`chip sm ${bandClass}${on ? ' on' : ''}`}>
+                <label key={n} className={`chip sm circle ${bandClass}${on ? ' on' : ''}`}>
                   <input type="checkbox" checked={on} onChange={() => toggleScoreBand(n)} />
                   <span>{n}</span>
                 </label>

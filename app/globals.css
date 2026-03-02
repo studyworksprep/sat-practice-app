@@ -394,11 +394,23 @@ label{
   background: var(--accent-soft);
 }
 
-/* Compact chip variant for score bands, difficulty, topics */
+/* Compact chip variant for topics */
 .chip.sm{
   padding: 4px 10px;
   font-size: 12px;
   gap: 6px;
+}
+
+/* Fixed-size circle for single-character labels (E/M/H, 1–7) */
+.chip.circle{
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 0;
 }
 
 /* Difficulty chip color coding */
@@ -477,112 +489,109 @@ label{
 .filterDomainCols{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-top: 6px;
+  gap: 20px;
+  margin-top: 14px;
 }
 
-/* Full-width domain toggle button (not a pill) */
+/* Full-width domain row — left accent stripe only, no outer border */
 .domainChip{
   display: flex;
-  align-items: flex-start;
-  gap: 7px;
-  padding: 5px 10px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: rgba(0,0,0,0.04);
+  border: none;
+  border-left: 3px solid rgba(0,0,0,0.1);
+  background: rgba(0,0,0,0.03);
   cursor: pointer;
   user-select: none;
   width: 100%;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 600;
   line-height: 1.3;
+  color: var(--text);
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 
 .domainChip.on{
-  border-color: var(--accent);
+  border-left-color: var(--accent);
   background: var(--accent-soft);
 }
 
 /* Math domains = blue */
 .domainChip.math{
-  border-color: rgba(37,99,235,0.25);
-  background: rgba(37,99,235,0.04);
+  border-left-color: #2563eb;
+  background: rgba(37,99,235,0.06);
+  color: #2563eb;
 }
 .domainChip.math.on{
-  border-color: #2563eb;
-  background: rgba(37,99,235,0.12);
+  border-left-color: #2563eb;
+  background: rgba(37,99,235,0.14);
+  color: #1d4ed8;
 }
 .domainChip.math:not(.on):hover{
-  background: rgba(37,99,235,0.08);
-  border-color: rgba(37,99,235,0.4);
+  background: rgba(37,99,235,0.1);
 }
 
 /* R&W domains = orange */
 .domainChip.rw{
-  border-color: rgba(234,88,12,0.25);
-  background: rgba(234,88,12,0.04);
+  border-left-color: #ea580c;
+  background: rgba(234,88,12,0.06);
+  color: #ea580c;
 }
 .domainChip.rw.on{
-  border-color: #ea580c;
-  background: rgba(234,88,12,0.12);
+  border-left-color: #ea580c;
+  background: rgba(234,88,12,0.14);
+  color: #c2410c;
 }
 .domainChip.rw:not(.on):hover{
-  background: rgba(234,88,12,0.08);
-  border-color: rgba(234,88,12,0.4);
+  background: rgba(234,88,12,0.1);
 }
 
-.domainChip input{
-  accent-color: var(--accent);
-  margin-top: 2px;
-  flex-shrink: 0;
-}
+.domainChip input{ accent-color: var(--accent); flex-shrink: 0; }
 
-/* Selectable category header (Math / Reading & Writing) */
+/* Selectable category section header — solid coloured background, no border */
 .categoryChip{
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px 6px 8px;
-  border-radius: 8px;
-  border: 1.5px solid var(--border);
-  background: rgba(0,0,0,0.02);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(0,0,0,0.04);
   cursor: pointer;
   user-select: none;
   width: 100%;
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 8px;
-  transition: border-color 0.12s, background 0.12s, color 0.12s;
+  margin-bottom: 10px;
+  transition: background 0.12s, color 0.12s;
 }
 /* Math = blue */
 .categoryChip.math{
-  border-color: rgba(37,99,235,0.35);
-  background: rgba(37,99,235,0.06);
+  background: rgba(37,99,235,0.09);
   color: #2563eb;
 }
 .categoryChip.math.on{
-  border-color: #2563eb;
-  background: rgba(37,99,235,0.15);
+  background: rgba(37,99,235,0.17);
   color: #1e40af;
 }
-.categoryChip.math:not(.on):hover{ background: rgba(37,99,235,0.1); }
+.categoryChip.math:not(.on):hover{ background: rgba(37,99,235,0.13); }
 .categoryChip.math input{ accent-color: #2563eb; }
 
 /* Reading & Writing = orange */
 .categoryChip.rw{
-  border-color: rgba(234,88,12,0.35);
-  background: rgba(234,88,12,0.06);
+  background: rgba(234,88,12,0.08);
   color: #ea580c;
 }
 .categoryChip.rw.on{
-  border-color: #ea580c;
-  background: rgba(234,88,12,0.15);
+  background: rgba(234,88,12,0.16);
   color: #9a3412;
 }
-.categoryChip.rw:not(.on):hover{ background: rgba(234,88,12,0.1); }
+.categoryChip.rw:not(.on):hover{ background: rgba(234,88,12,0.12); }
 .categoryChip.rw input{ accent-color: #ea580c; }
 
 .categoryChip input{
@@ -610,16 +619,14 @@ label{
   margin-bottom: 6px;
 }
 
-/* Topic chips indented under their domain — one per line */
+/* Topic chips under their domain — wrap horizontally */
 .topicChips{
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-start;
-  gap: 4px;
-  padding-left: 10px;
-  margin-top: 5px;
-  border-left: 2px solid var(--border);
-  margin-left: 6px;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 /* ===============================
