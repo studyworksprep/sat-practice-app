@@ -150,7 +150,7 @@ export async function GET(request) {
       const { data: trows, error: tErr } = await supabase
         .from('question_taxonomy')
         .select('question_id')
-        .in('skill_name', topicList);
+        .in('skill_code', topicList);
       if (tErr) return NextResponse.json({ error: tErr.message }, { status: 400 });
       (trows || []).forEach((r) => r.question_id && matchingIds.add(r.question_id));
     }

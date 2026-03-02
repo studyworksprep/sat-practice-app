@@ -74,23 +74,23 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     });
   }
 
-  function toggleDomain(domainName, domainTopicNames) {
+  function toggleDomain(domainName, domainTopicCodes) {
     setState((prev) => {
       const isDomainOn = prev.domains.includes(domainName);
       if (isDomainOn) return { ...prev, domains: prev.domains.filter((d) => d !== domainName) };
       return {
         ...prev,
         domains: [...prev.domains, domainName],
-        topics:  prev.topics.filter((t) => !domainTopicNames.includes(t)),
+        topics:  prev.topics.filter((t) => !domainTopicCodes.includes(t)),
       };
     });
   }
 
-  function toggleTopic(domainName, skillName) {
+  function toggleTopic(domainName, skillCode) {
     setState((prev) => {
       if (prev.domains.includes(domainName)) return prev;
-      const isOn = prev.topics.includes(skillName);
-      return { ...prev, topics: isOn ? prev.topics.filter((t) => t !== skillName) : [...prev.topics, skillName] };
+      const isOn = prev.topics.includes(skillCode);
+      return { ...prev, topics: isOn ? prev.topics.filter((t) => t !== skillCode) : [...prev.topics, skillCode] };
     });
   }
 
@@ -101,11 +101,11 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     if (allOn) {
       setState((prev) => ({ ...prev, domains: prev.domains.filter((d) => !names.includes(d)) }));
     } else {
-      const allTopicNames = domainList.flatMap((d) => d.topics.map((t) => t.skill_name));
+      const allTopicCodes = domainList.flatMap((d) => d.topics.map((t) => t.skill_code || t.skill_name));
       setState((prev) => ({
         ...prev,
         domains: [...new Set([...prev.domains, ...names])],
-        topics:  prev.topics.filter((t) => !allTopicNames.includes(t)),
+        topics:  prev.topics.filter((t) => !allTopicCodes.includes(t)),
       }));
     }
   }
@@ -175,7 +175,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   function renderDomain(domain) {
     const colorClass       = MATH_CODES.has(domain.domain_code) ? 'math' : 'rw';
     const domainOn         = state.domains.includes(domain.domain_name);
-    const domainTopicNames = domain.topics.map((t) => t.skill_name);
+    const domainTopicCodes = domain.topics.map((t) => t.skill_code || t.skill_name);
     const domainCount      = counts[domain.domain_name]?.count;
 
     return (
@@ -184,7 +184,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
           <input
             type="checkbox"
             checked={domainOn}
-            onChange={() => toggleDomain(domain.domain_name, domainTopicNames)}
+            onChange={() => toggleDomain(domain.domain_name, domainTopicCodes)}
           />
           <span style={{ flex: 1 }}>{domain.domain_name}</span>
           {domainCount !== undefined && <span className="filterCount">{domainCount}</span>}
@@ -193,11 +193,12 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
         {domain.topics.length > 0 && (
           <div className="topicChips">
             {domain.topics.map((topic) => {
-              const topicOn    = domainOn || state.topics.includes(topic.skill_name);
-              const topicCount = counts[domain.domain_name]?.topics?.[topic.skill_name];
+              const topicKey   = topic.skill_code || topic.skill_name;
+              const topicOn    = domainOn || state.topics.includes(topicKey);
+              const topicCount = counts[domain.domain_name]?.topics?.[topicKey];
               return (
                 <label
-                  key={topic.skill_name}
+                  key={topicKey}
                   className={`chip sm${topicOn ? ' on' : ''}`}
                   style={domainOn ? { opacity: 0.6, cursor: 'default' } : undefined}
                 >
@@ -205,7 +206,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
                     type="checkbox"
                     checked={topicOn}
                     disabled={domainOn}
-                    onChange={() => toggleTopic(domain.domain_name, topic.skill_name)}
+                    onChange={() => toggleTopic(domain.domain_name, topicKey)}
                   />
                   <span>{topic.skill_name}</span>
                   {topicCount !== undefined && <span className="filterCount">{topicCount}</span>}

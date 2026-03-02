@@ -525,13 +525,13 @@ label{
 .domainChip.on{ background: var(--accent-soft); }
 
 /* Math domains = blue */
-.domainChip.math{ background: rgba(37,99,235,0.06); color: #2563eb; }
-.domainChip.math.on{ background: rgba(37,99,235,0.14); color: #1d4ed8; }
+.domainChip.math{ background: rgba(37,99,235,0.06); color: #1d4ed8; }
+.domainChip.math.on{ background: rgba(37,99,235,0.14); color: #1e40af; }
 .domainChip.math:not(.on):hover{ background: rgba(37,99,235,0.1); }
 
 /* R&W domains = orange */
-.domainChip.rw{ background: rgba(234,88,12,0.06); color: #ea580c; }
-.domainChip.rw.on{ background: rgba(234,88,12,0.14); color: #c2410c; }
+.domainChip.rw{ background: rgba(234,88,12,0.06); color: #c2410c; }
+.domainChip.rw.on{ background: rgba(234,88,12,0.14); color: #9a3412; }
 .domainChip.rw:not(.on):hover{ background: rgba(234,88,12,0.1); }
 
 .domainChip input{ accent-color: var(--accent); flex-shrink: 0; }
@@ -559,26 +559,26 @@ label{
 /* Math = blue */
 .categoryChip.math{
   background: rgba(37,99,235,0.09);
-  color: #2563eb;
+  color: #1d4ed8;
 }
 .categoryChip.math.on{
   background: rgba(37,99,235,0.17);
-  color: #1e40af;
+  color: #1e3a8a;
 }
 .categoryChip.math:not(.on):hover{ background: rgba(37,99,235,0.13); }
-.categoryChip.math input{ accent-color: #2563eb; }
+.categoryChip.math input{ accent-color: #1d4ed8; }
 
 /* Reading & Writing = orange */
 .categoryChip.rw{
   background: rgba(234,88,12,0.08);
-  color: #ea580c;
+  color: #c2410c;
 }
 .categoryChip.rw.on{
   background: rgba(234,88,12,0.16);
-  color: #9a3412;
+  color: #7c2d12;
 }
 .categoryChip.rw:not(.on):hover{ background: rgba(234,88,12,0.12); }
-.categoryChip.rw input{ accent-color: #ea580c; }
+.categoryChip.rw input{ accent-color: #c2410c; }
 
 .categoryChip input{
   accent-color: var(--accent);

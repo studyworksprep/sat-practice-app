@@ -60,7 +60,7 @@ export async function GET(request) {
       const seenTopics = new Set();
       const topics = [];
       for (const row of topicData) {
-        const key = `${row.domain_name}||${row.skill_name}`;
+        const key = `${row.domain_name}||${row.skill_code || row.skill_name}`;
         if (seenTopics.has(key)) continue;
         seenTopics.add(key);
         topics.push({

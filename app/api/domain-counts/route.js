@@ -76,7 +76,7 @@ export async function GET(request) {
   while (true) {
     let q = supabase
       .from('question_taxonomy')
-      .select('question_id, domain_name, skill_name')
+      .select('question_id, domain_name, skill_name, skill_code')
       .range(from, from + pageSize - 1);
 
     if (difficulties.length > 0) q = q.in('difficulty', difficulties);
@@ -103,10 +103,11 @@ export async function GET(request) {
     if (!byDomain[row.domain_name]) byDomain[row.domain_name] = { ids: new Set(), topics: {} };
     byDomain[row.domain_name].ids.add(row.question_id);
     if (row.skill_name) {
-      if (!byDomain[row.domain_name].topics[row.skill_name]) {
-        byDomain[row.domain_name].topics[row.skill_name] = new Set();
+      const topicKey = row.skill_code || row.skill_name;
+      if (!byDomain[row.domain_name].topics[topicKey]) {
+        byDomain[row.domain_name].topics[topicKey] = new Set();
       }
-      byDomain[row.domain_name].topics[row.skill_name].add(row.question_id);
+      byDomain[row.domain_name].topics[topicKey].add(row.question_id);
     }
   }
 
