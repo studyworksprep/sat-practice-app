@@ -279,7 +279,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
       {/* Start Practice Session */}
       <div className="sessionActions">
         <button
-          className="btn"
+          className="btn primary"
           style={{ width: '100%' }}
           disabled={!hasFilter || starting}
           onClick={handleStart}
