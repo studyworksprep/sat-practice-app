@@ -179,7 +179,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     const domainCount      = counts[domain.domain_name]?.count;
 
     return (
-      <div key={domain.domain_name} style={{ marginBottom: 8 }}>
+      <div key={domain.domain_name} className={`domainGroup ${colorClass}`}>
         <label className={`domainChip ${colorClass}${domainOn ? ' on' : ''}`}>
           <input
             type="checkbox"
