@@ -29,15 +29,33 @@ export async function POST(request, { params }) {
   if (attempt.user_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   if (attempt.status === 'completed') return NextResponse.json({ error: 'Already completed' }, { status: 400 });
 
-  // Fetch all questions in this module to build attempt_items (even unanswered ones)
-  const { data: moduleRow } = await supabase
+  // Fetch ALL modules for this test — avoids .single() failures and gives us
+  // everything needed for the module row lookup, ordering, and route-field mapping
+  const { data: allModules, error: modErr } = await supabase
     .from('practice_test_modules')
-    .select('id, time_limit_seconds')
+    .select('id, subject_code, module_number, route_code')
     .eq('practice_test_id', attempt.practice_test_id)
-    .eq('subject_code', subject_code)
-    .eq('module_number', module_number)
-    .eq('route_code', route_code)
-    .single();
+    .order('subject_code', { ascending: true })
+    .order('module_number', { ascending: true })
+    .order('created_at', { ascending: true });
+
+  if (modErr || !allModules?.length) {
+    return NextResponse.json({ error: 'No modules found for this test' }, { status: 404 });
+  }
+
+  // Derive unique subject codes and their route-field mapping
+  const sortedSubjects = [...new Set(allModules.map((m) => m.subject_code))].sort();
+  const subjectRouteField = {};
+  if (sortedSubjects[0]) subjectRouteField[sortedSubjects[0]] = 'rw_route_code';
+  if (sortedSubjects[1]) subjectRouteField[sortedSubjects[1]] = 'm_route_code';
+
+  // Find the module row without .single()
+  const moduleRow = allModules.find(
+    (m) =>
+      m.subject_code === subject_code &&
+      m.module_number === module_number &&
+      m.route_code === route_code
+  ) ?? null;
 
   if (!moduleRow) return NextResponse.json({ error: 'Module not found' }, { status: 404 });
 
@@ -72,7 +90,7 @@ export async function POST(request, { params }) {
   const versionToQid = {};
   for (const v of versions || []) versionToQid[v.id] = v.question_id;
 
-  // Grade answers and upsert into attempts table
+  // Grade answers and insert into attempts table
   let correctCount = 0;
   const now = new Date().toISOString();
 
@@ -106,7 +124,6 @@ export async function POST(request, { params }) {
 
     if (is_correct) correctCount += 1;
 
-    // Upsert into attempts
     await supabase.from('attempts').insert({
       user_id: user.id,
       question_id: questionId,
@@ -142,7 +159,7 @@ export async function POST(request, { params }) {
       .eq('from_module_number', 1);
 
     for (const rule of rules || []) {
-      const metricValue = rule.metric === 'correct_count' ? correctCount : correctCount;
+      const metricValue = correctCount; // currently only 'correct_count' metric is supported
       const t = parseFloat(rule.threshold);
       let matches = false;
       if (rule.operator === '>=') matches = metricValue >= t;
@@ -153,23 +170,27 @@ export async function POST(request, { params }) {
       if (matches) { nextRouteCode = rule.to_route_code; break; }
     }
 
-    // Update attempt with determined route
-    const patch = {};
-    if (subject_code === 'rw')   patch.rw_route_code = nextRouteCode;
-    if (subject_code === 'math') patch.m_route_code  = nextRouteCode;
-    if (Object.keys(patch).length > 0) {
-      await supabase.from('practice_test_attempts').update(patch).eq('id', attemptId);
+    // If no routing rule matched, fall back to first available module-2 route for this subject
+    if (!nextRouteCode) {
+      const fallback = allModules.find(
+        (m) => m.subject_code === subject_code && m.module_number === 2
+      );
+      nextRouteCode = fallback?.route_code ?? null;
+    }
+
+    // Store the determined route in the attempt using the dynamic field mapping
+    const routeField = subjectRouteField[subject_code];
+    if (routeField && nextRouteCode) {
+      await supabase
+        .from('practice_test_attempts')
+        .update({ [routeField]: nextRouteCode })
+        .eq('id', attemptId);
     }
   }
 
-  // Determine if this was the last module (math/2)
-  const MODULE_ORDER = [
-    { subject_code: 'rw',   module_number: 1 },
-    { subject_code: 'rw',   module_number: 2 },
-    { subject_code: 'math', module_number: 1 },
-    { subject_code: 'math', module_number: 2 },
-  ];
-  const isLast = subject_code === 'math' && module_number === 2;
+  // Determine if this was the last module (final subject, module 2)
+  const lastSubject = sortedSubjects.at(-1);
+  const isLast = subject_code === lastSubject && module_number === 2;
 
   if (isLast) {
     await supabase
@@ -179,7 +200,11 @@ export async function POST(request, { params }) {
     return NextResponse.json({ is_complete: true });
   }
 
-  // Determine next module
+  // Determine next module from the dynamic order
+  const MODULE_ORDER = sortedSubjects.flatMap((subj) => [
+    { subject_code: subj, module_number: 1 },
+    { subject_code: subj, module_number: 2 },
+  ]);
   const currentIdx = MODULE_ORDER.findIndex(
     (m) => m.subject_code === subject_code && m.module_number === module_number
   );

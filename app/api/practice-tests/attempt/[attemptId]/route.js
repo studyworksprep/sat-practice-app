@@ -3,8 +3,9 @@ import { createClient } from '../../../../../lib/supabase/server';
 
 // GET /api/practice-tests/attempt/[attemptId]
 // Returns current module state for the active session.
-// Module order: rw/1 → rw/2 → math/1 → math/2
-// "Active" = first module with no submitted practice_test_attempt_items
+// "Active" = first module (in subject/module order) with no submitted practice_test_attempt_items.
+// Fetches all practice_test_modules in one query to avoid .single() failures
+// and redundant round-trips.
 export async function GET(_request, { params }) {
   const { attemptId } = params;
   const supabase = createClient();
@@ -26,7 +27,36 @@ export async function GET(_request, { params }) {
     return NextResponse.json({ status: 'completed' });
   }
 
-  // Which modules have been submitted already?
+  // Fetch ALL modules for this test at once — avoids .single() failures and
+  // the separate redundant "fetch module id" query
+  const { data: allModules, error: modErr } = await supabase
+    .from('practice_test_modules')
+    .select('id, subject_code, module_number, route_code, time_limit_seconds')
+    .eq('practice_test_id', attempt.practice_test_id)
+    .order('subject_code', { ascending: true })
+    .order('module_number', { ascending: true })
+    .order('created_at', { ascending: true });
+
+  if (modErr || !allModules?.length) {
+    return NextResponse.json({ error: 'No modules found for this test' }, { status: 404 });
+  }
+
+  // Derive unique subject codes from actual DB data (sorted for consistent ordering)
+  const sortedSubjects = [...new Set(allModules.map((m) => m.subject_code))].sort();
+
+  // Map subject → which route field on practice_test_attempts
+  // First subject alphabetically → rw_route_code, second → m_route_code
+  const subjectRouteField = {};
+  if (sortedSubjects[0]) subjectRouteField[sortedSubjects[0]] = 'rw_route_code';
+  if (sortedSubjects[1]) subjectRouteField[sortedSubjects[1]] = 'm_route_code';
+
+  // Build the module progression order from actual subject codes
+  const MODULE_ORDER = sortedSubjects.flatMap((subj) => [
+    { subject_code: subj, module_number: 1 },
+    { subject_code: subj, module_number: 2 },
+  ]);
+
+  // Which modules have already been submitted?
   const { data: submittedItems } = await supabase
     .from('practice_test_attempt_items')
     .select('subject_code, module_number')
@@ -36,69 +66,42 @@ export async function GET(_request, { params }) {
     (submittedItems || []).map((i) => `${i.subject_code}/${i.module_number}`)
   );
 
-  // Determine active module in order
-  const MODULE_ORDER = [
-    { subject_code: 'rw',   module_number: 1, routeField: null },
-    { subject_code: 'rw',   module_number: 2, routeField: 'rw_route_code' },
-    { subject_code: 'math', module_number: 1, routeField: null },
-    { subject_code: 'math', module_number: 2, routeField: 'm_route_code' },
-  ];
-
-  let activeModule = null;
+  // Find the first module in order that hasn't been submitted
+  let activeSpec = null;
   for (const mod of MODULE_ORDER) {
-    const key = `${mod.subject_code}/${mod.module_number}`;
-    if (!submitted.has(key)) {
-      activeModule = mod;
+    if (!submitted.has(`${mod.subject_code}/${mod.module_number}`)) {
+      activeSpec = mod;
       break;
     }
   }
 
-  if (!activeModule) {
-    // All modules submitted but status not yet 'completed' — treat as done
+  if (!activeSpec) {
     return NextResponse.json({ status: 'completed' });
   }
 
-  // Determine route_code for this module
-  let route_code = null;
-  if (activeModule.module_number === 1) {
-    // Module 1 has a single fixed route; find it
-    const { data: mod1 } = await supabase
-      .from('practice_test_modules')
-      .select('route_code, time_limit_seconds')
-      .eq('practice_test_id', attempt.practice_test_id)
-      .eq('subject_code', activeModule.subject_code)
-      .eq('module_number', 1)
-      .single();
-    route_code = mod1?.route_code ?? null;
-    activeModule = { ...activeModule, time_limit_seconds: mod1?.time_limit_seconds ?? null };
+  // Determine route_code for the active module
+  let activeModuleRow = null;
+  if (activeSpec.module_number === 1) {
+    // Module 1: take the first row for this subject+module_number (no route ambiguity)
+    activeModuleRow = allModules.find(
+      (m) => m.subject_code === activeSpec.subject_code && m.module_number === 1
+    ) ?? null;
   } else {
-    // Module 2: route determined by previous submission
-    route_code = attempt[activeModule.routeField] ?? null;
+    // Module 2: route is stored in the attempt after module 1 was submitted
+    const routeField = subjectRouteField[activeSpec.subject_code];
+    const route_code = routeField ? attempt[routeField] : null;
     if (!route_code) {
       return NextResponse.json({ error: 'Module 2 route not yet determined' }, { status: 400 });
     }
-    const { data: mod2 } = await supabase
-      .from('practice_test_modules')
-      .select('time_limit_seconds')
-      .eq('practice_test_id', attempt.practice_test_id)
-      .eq('subject_code', activeModule.subject_code)
-      .eq('module_number', 2)
-      .eq('route_code', route_code)
-      .single();
-    activeModule = { ...activeModule, time_limit_seconds: mod2?.time_limit_seconds ?? null };
+    activeModuleRow = allModules.find(
+      (m) =>
+        m.subject_code === activeSpec.subject_code &&
+        m.module_number === 2 &&
+        m.route_code === route_code
+    ) ?? null;
   }
 
-  // Fetch module id
-  const { data: moduleRow } = await supabase
-    .from('practice_test_modules')
-    .select('id')
-    .eq('practice_test_id', attempt.practice_test_id)
-    .eq('subject_code', activeModule.subject_code)
-    .eq('module_number', activeModule.module_number)
-    .eq('route_code', route_code)
-    .single();
-
-  if (!moduleRow) {
+  if (!activeModuleRow) {
     return NextResponse.json({ error: 'Module not found in test' }, { status: 404 });
   }
 
@@ -106,7 +109,7 @@ export async function GET(_request, { params }) {
   const { data: items } = await supabase
     .from('practice_test_module_items')
     .select('ordinal, question_version_id')
-    .eq('practice_test_module_id', moduleRow.id)
+    .eq('practice_test_module_id', activeModuleRow.id)
     .order('ordinal', { ascending: true });
 
   const versionIds = (items || []).map((i) => i.question_version_id);
@@ -139,7 +142,6 @@ export async function GET(_request, { params }) {
       .in('question_id', questionIds)
       .order('created_at', { ascending: false });
 
-    // Keep most recent answer per question
     for (const a of existingAttempts || []) {
       if (!savedAnswers[a.question_id]) {
         savedAnswers[a.question_id] = {
@@ -178,10 +180,10 @@ export async function GET(_request, { params }) {
   return NextResponse.json({
     attempt_id: attemptId,
     practice_test_id: attempt.practice_test_id,
-    subject_code: activeModule.subject_code,
-    module_number: activeModule.module_number,
-    route_code,
-    time_limit_seconds: activeModule.time_limit_seconds,
+    subject_code: activeModuleRow.subject_code,
+    module_number: activeModuleRow.module_number,
+    route_code: activeModuleRow.route_code,
+    time_limit_seconds: activeModuleRow.time_limit_seconds,
     questions,
   });
 }
