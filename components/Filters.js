@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 
 const DEFAULTS = {
   difficulties: [],
@@ -24,6 +24,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   const [counts,     setCounts]     = useState({});
   const [randomize,  setRandomize]  = useState(false);
   const [starting,   setStarting]   = useState(false);
+  const countsInitialMount = useRef(true);
 
   // Propagate state changes to parent
   useEffect(() => { onChange?.(state); }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -40,8 +41,19 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     })();
   }, []);
 
-  // Re-fetch counts whenever non-domain/topic filters change (fires on mount for unfiltered totals)
+  // Load unfiltered counts on mount so chips show totals before any filter is touched
   useEffect(() => {
+    fetch('/api/domain-counts')
+      .then((r) => r.json())
+      .then((data) => { if (data && !data.error) setCounts(data); })
+      .catch(() => {});
+  }, []);
+
+  // Re-fetch counts whenever non-domain/topic filters change.
+  // Skips the initial mount call — the [] effect above handles that.
+  useEffect(() => {
+    if (countsInitialMount.current) { countsInitialMount.current = false; return; }
+
     const p = new URLSearchParams();
     if (state.difficulties.length) p.set('difficulties', state.difficulties.join(','));
     if (state.score_bands.length)  p.set('score_bands',  state.score_bands.join(','));
