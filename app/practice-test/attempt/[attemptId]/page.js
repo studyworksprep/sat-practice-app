@@ -1,10 +1,191 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import Script from 'next/script';
 import { useRouter, useParams } from 'next/navigation';
 import HtmlBlock from '../../../../components/HtmlBlock';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', math: 'Math' };
+
+const MIN_CALC_W = 550;
+const MAX_CALC_W = 760;
+
+// ─── Icons ────────────────────────────────────────────────────────────────────
+
+function IconCalculator({ className = '' }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect width="16" height="20" x="4" y="2" rx="2" />
+      <line x1="8" x2="16" y1="6" y2="6" />
+      <line x1="16" x2="16" y1="14" y2="18" />
+      <path d="M16 10h.01" />
+      <path d="M12 10h.01" />
+      <path d="M8 10h.01" />
+      <path d="M12 14h.01" />
+      <path d="M8 14h.01" />
+      <path d="M12 18h.01" />
+      <path d="M8 18h.01" />
+    </svg>
+  );
+}
+
+function IconReference({ className = '' }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+    </svg>
+  );
+}
+
+// ─── Desmos panel ─────────────────────────────────────────────────────────────
+
+function DesmosPanel({ isOpen, storageKey }) {
+  const hostRef = useRef(null);
+  const calcRef = useRef(null);
+  const savedStateRef = useRef(null);
+  const prevOpenRef = useRef(isOpen);
+
+  const roRef = useRef(null);
+  const rafRef = useRef(null);
+
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Desmos) setReady(true);
+  }, []);
+
+  const safeResize = () => {
+    if (!calcRef.current) return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      try { calcRef.current.resize(); } catch {}
+    });
+  };
+
+  const saveState = () => {
+    if (!calcRef.current) return;
+    try {
+      const st = calcRef.current.getState();
+      savedStateRef.current = st;
+      if (storageKey && typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(storageKey, JSON.stringify(st));
+      }
+    } catch {}
+  };
+
+  const restoreState = () => {
+    if (!calcRef.current) return;
+    let st = savedStateRef.current;
+    try {
+      if (!st && storageKey && typeof window !== 'undefined' && window.localStorage) {
+        const raw = window.localStorage.getItem(storageKey);
+        if (raw) st = JSON.parse(raw);
+      }
+    } catch {}
+    if (st) {
+      try { calcRef.current.setState(st, { allowUndo: false }); } catch {}
+    }
+  };
+
+  useEffect(() => {
+    if (!ready) return;
+    if (!hostRef.current) return;
+    if (!window.Desmos) return;
+
+    if (!calcRef.current) {
+      calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
+        autosize: true,
+        keypad: true,
+        expressions: true,
+        settingsMenu: true,
+        zoomButtons: true,
+      });
+      restoreState();
+      safeResize();
+    }
+
+    return () => {
+      saveState();
+      try { calcRef.current?.destroy?.(); } catch {}
+      calcRef.current = null;
+      try { roRef.current?.disconnect?.(); } catch {}
+      roRef.current = null;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
+  useEffect(() => {
+    if (!ready) return;
+    if (!hostRef.current) return;
+    if (!calcRef.current) return;
+    if (typeof ResizeObserver === 'undefined') return;
+
+    try { roRef.current?.disconnect?.(); } catch {}
+    roRef.current = new ResizeObserver(() => safeResize());
+    roRef.current.observe(hostRef.current);
+
+    return () => {
+      try { roRef.current?.disconnect?.(); } catch {}
+      roRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
+  useEffect(() => {
+    const prev = prevOpenRef.current;
+    if (prev && !isOpen) saveState();
+    if (!prev && isOpen) { restoreState(); safeResize(); }
+    prevOpenRef.current = isOpen;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  const apiKey =
+    (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_DESMOS_API_KEY) ||
+    'bac289385bcd4778a682276b95f5f116';
+
+  return (
+    <>
+      <Script
+        src={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${apiKey}`}
+        strategy="afterInteractive"
+        onLoad={() => setReady(true)}
+      />
+      <div ref={hostRef} className="desmosHost" />
+    </>
+  );
+}
+
+// ─── Timer display ────────────────────────────────────────────────────────────
 
 function fmtTime(secs) {
   if (secs <= 0) return '0:00';
@@ -14,13 +195,15 @@ function fmtTime(secs) {
 }
 
 function TimerChip({ seconds }) {
-  const urgent = seconds !== null && seconds <= 300; // last 5 min
+  const urgent = seconds !== null && seconds <= 300;
   return (
     <div className={`ptTimer${urgent ? ' ptTimerUrgent' : ''}`}>
       {seconds === null ? '—' : fmtTime(seconds)}
     </div>
   );
 }
+
+// ─── Question map ─────────────────────────────────────────────────────────────
 
 function QuestionMap({ questions, answers, currentIdx, onJump }) {
   return (
@@ -41,6 +224,8 @@ function QuestionMap({ questions, answers, currentIdx, onJump }) {
     </div>
   );
 }
+
+// ─── MCQ options ──────────────────────────────────────────────────────────────
 
 function McqOptions({ options, selected, onChange, disabled }) {
   return (
@@ -66,19 +251,62 @@ function McqOptions({ options, selected, onChange, disabled }) {
   );
 }
 
+// ─── Main page ────────────────────────────────────────────────────────────────
+
 export default function TestSessionPage() {
   const { attemptId } = useParams();
   const router = useRouter();
 
+  // Core test state
   const [moduleData, setModuleData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers] = useState({}); // { [question_version_id]: { selected_option_id?, response_text? } }
+  const [answers, setAnswers] = useState({});
   const [timeRemaining, setTimeRemaining] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const timerRef = useRef(null);
+
+  // Math tools state
+  const [calcMinimized, setCalcMinimized] = useState(false);
+  const [calcWidth, setCalcWidth] = useState(MIN_CALC_W);
+  const [showRef, setShowRef] = useState(false);
+  const [refPos, setRefPos] = useState({ x: 0, y: 0 });
+
+  // Refs for math shell drag
+  const shellRef = useRef(null);
+  const liveWidthRef = useRef(MIN_CALC_W);
+  const dragRef = useRef({ dragging: false, startX: 0, startW: MIN_CALC_W, pendingW: MIN_CALC_W });
+
+  // Refs for reference sheet drag
+  const refCardRef = useRef(null);
+  const refDrag = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
+  const refPosRef = useRef({ x: 0, y: 0 });
+  const refDragRafRef = useRef(null);
+
+  // Keep refs in sync
+  useEffect(() => { liveWidthRef.current = calcWidth; }, [calcWidth]);
+  useEffect(() => { refPosRef.current = refPos; }, [refPos]);
+
+  // Apply persisted ref-card transform when it opens
+  useEffect(() => {
+    if (!showRef) return;
+    const card = refCardRef.current;
+    if (!card) return;
+    const { x, y } = refPosRef.current;
+    card.style.transform = `translate(calc(-50% + ${x}px), ${y}px)`;
+  }, [showRef]);
+
+  // Reset calculator width when question changes
+  useEffect(() => {
+    setCalcWidth(MIN_CALC_W);
+    liveWidthRef.current = MIN_CALC_W;
+    dragRef.current.pendingW = MIN_CALC_W;
+    shellRef.current?.style.setProperty('--calcW', `${MIN_CALC_W}px`);
+  }, [currentIdx]);
+
+  // ─── Data loading ──────────────────────────────────────────────────────────
 
   const loadModule = useCallback(async () => {
     setLoading(true);
@@ -127,7 +355,6 @@ export default function TestSessionPage() {
 
   useEffect(() => { loadModule(); }, [loadModule]);
 
-  // Start the countdown once timeRemaining is first set (null → number)
   useEffect(() => {
     if (timeRemaining === null || submitting) return;
     clearInterval(timerRef.current);
@@ -138,7 +365,6 @@ export default function TestSessionPage() {
     return () => clearInterval(timerRef.current);
   }, [timeRemaining === null, submitting]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-submit when timer hits 0
   useEffect(() => {
     if (timeRemaining === 0 && !submitting && moduleData) {
       clearInterval(timerRef.current);
@@ -146,12 +372,13 @@ export default function TestSessionPage() {
     }
   }, [timeRemaining]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ─── Submit ────────────────────────────────────────────────────────────────
+
   async function submitModule(autoSubmit = false) {
     if (submitting || !moduleData) return;
     setSubmitting(true);
     clearInterval(timerRef.current);
 
-    // Clear timer from localStorage
     const lsKey = `pt_start_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
     localStorage.removeItem(lsKey);
 
@@ -195,6 +422,105 @@ export default function TestSessionPage() {
     }));
   }
 
+  // ─── Drag: calculator divider ──────────────────────────────────────────────
+
+  function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+
+  function onDividerPointerDown(e) {
+    if (calcMinimized) return;
+    e.preventDefault();
+
+    dragRef.current.dragging = true;
+    dragRef.current.startX = e.clientX;
+    dragRef.current.startW = liveWidthRef.current;
+    dragRef.current.pendingW = liveWidthRef.current;
+
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+
+    const onMove = (ev) => {
+      if (!dragRef.current.dragging) return;
+      const dx = ev.clientX - dragRef.current.startX;
+      const next = Math.min(Math.max(dragRef.current.startW + dx, MIN_CALC_W), MAX_CALC_W);
+      dragRef.current.pendingW = next;
+      liveWidthRef.current = next;
+      shellRef.current?.style.setProperty('--calcW', `${next}px`);
+    };
+
+    const onUp = () => {
+      dragRef.current.dragging = false;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      setCalcWidth(dragRef.current.pendingW);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
+  // ─── Drag: reference sheet header ─────────────────────────────────────────
+
+  function onRefHeaderPointerDown(e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+
+    const card = refCardRef.current;
+    if (!card) return;
+
+    refDrag.current.dragging = true;
+    refDrag.current.startX = e.clientX;
+    refDrag.current.startY = e.clientY;
+    const cur = refPosRef.current;
+    refDrag.current.origX = cur.x;
+    refDrag.current.origY = cur.y;
+
+    const applyTransform = (x, y) => {
+      const el = refCardRef.current;
+      if (!el) return;
+      el.style.transform = `translate(calc(-50% + ${x}px), ${y}px)`;
+    };
+
+    const onMove = (ev) => {
+      if (!refDrag.current.dragging) return;
+      const el = refCardRef.current;
+      if (!el) return;
+
+      const dx = ev.clientX - refDrag.current.startX;
+      const dy = ev.clientY - refDrag.current.startY;
+      let nx = refDrag.current.origX + dx;
+      let ny = refDrag.current.origY + dy;
+
+      const rect = el.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const margin = 12;
+      const minDx = margin - rect.left;
+      const maxDx = vw - margin - rect.right;
+      const minDy = margin - rect.top;
+      const maxDy = vh - margin - rect.bottom;
+      const curPos = refPosRef.current;
+      nx = curPos.x + clamp(nx - curPos.x, minDx, maxDx);
+      ny = curPos.y + clamp(ny - curPos.y, minDy, maxDy);
+      refPosRef.current = { x: nx, y: ny };
+
+      if (refDragRafRef.current) cancelAnimationFrame(refDragRafRef.current);
+      refDragRafRef.current = requestAnimationFrame(() => applyTransform(nx, ny));
+    };
+
+    const onUp = () => {
+      refDrag.current.dragging = false;
+      if (refDragRafRef.current) cancelAnimationFrame(refDragRafRef.current);
+      refDragRafRef.current = null;
+      setRefPos(refPosRef.current);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
+  // ─── Loading / error states ────────────────────────────────────────────────
+
   if (loading) {
     return (
       <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}>
@@ -225,50 +551,167 @@ export default function TestSessionPage() {
   const subjectLabel = SUBJECT_LABEL[moduleData.subject_code] || moduleData.subject_code;
   const moduleLabel = `${subjectLabel} — Module ${moduleData.module_number} of 2`;
 
+  const isMath = moduleData.subject_code === 'math';
+  const isReading = !isMath && !!q.stimulus_html;
+
+  // ─── Answer area (shared between layouts) ─────────────────────────────────
+
+  const answerArea = q.question_type === 'mcq' || q.options?.length > 0 ? (
+    <McqOptions
+      options={q.options}
+      selected={ans.selected_option_id}
+      onChange={(id) => setAnswer(q.question_version_id, 'selected_option_id', id)}
+      disabled={submitting}
+    />
+  ) : (
+    <div className="ptSprWrap">
+      <input
+        className="input"
+        type="text"
+        placeholder="Your answer"
+        value={ans.response_text || ''}
+        onChange={(e) => setAnswer(q.question_version_id, 'response_text', e.target.value)}
+        disabled={submitting}
+      />
+    </div>
+  );
+
+  // ─── Math shell (inlined to preserve Desmos DOM across re-renders) ─────────
+
+  const mathShellJsx = (rightContent) => (
+    <div
+      ref={shellRef}
+      className={`mathShell ${calcMinimized ? 'min' : 'withCalc'}`}
+      style={{ '--calcW': `${calcMinimized ? 0 : calcWidth}px` }}
+    >
+      <aside className={`mathLeft ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
+        <div className="mathLeftHeader">
+          <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+          <button type="button" className="btn secondary" onClick={() => setCalcMinimized((m) => !m)}>
+            {calcMinimized ? 'Expand' : 'Minimize'}
+          </button>
+        </div>
+        <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
+          <DesmosPanel
+            isOpen={!calcMinimized}
+            storageKey={`desmos:pt:${q.question_version_id}`}
+          />
+        </div>
+        {calcMinimized ? <div className="calcMinBody" /> : null}
+      </aside>
+
+      {!calcMinimized ? (
+        <div
+          className="mathDivider"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize calculator panel"
+          onPointerDown={onDividerPointerDown}
+          title="Drag to resize"
+        />
+      ) : (
+        <div className="mathDivider min" aria-hidden="true" />
+      )}
+
+      <main className="mathRight">{rightContent}</main>
+    </div>
+  );
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div className="ptSession">
-      {/* Session header */}
+
+      {/* Header: 3-column — module label | question counter | timer + tools */}
       <div className="ptSessionHeader">
         <div className="ptModuleLabel">{moduleLabel}</div>
-        <TimerChip seconds={timeRemaining} />
-      </div>
 
-      {/* Question panel */}
-      <div className="ptQuestionPanel">
-        <div className="ptQuestionNum">Question {currentIdx + 1} of {totalCount}</div>
-
-        {q.stimulus_html && (
-          <div className="ptStimulus">
-            <HtmlBlock html={q.stimulus_html} />
-          </div>
-        )}
-
-        <div className="ptStem">
-          <HtmlBlock html={q.stem_html} />
+        <div className="ptQCount">
+          {currentIdx + 1}
+          <span className="ptQCountSep"> / </span>
+          {totalCount}
         </div>
 
-        {q.question_type === 'mcq' || q.options?.length > 0 ? (
-          <McqOptions
-            options={q.options}
-            selected={ans.selected_option_id}
-            onChange={(id) => setAnswer(q.question_version_id, 'selected_option_id', id)}
-            disabled={submitting}
-          />
+        <div className="ptHeaderRight">
+          <TimerChip seconds={timeRemaining} />
+          {isMath && (
+            <div className="toolTabs" role="tablist" aria-label="Math tools">
+              <button
+                type="button"
+                className={`toolTab ${!calcMinimized ? 'active' : ''}`}
+                onClick={() => setCalcMinimized((m) => !m)}
+                aria-pressed={!calcMinimized}
+                title={!calcMinimized ? 'Minimize calculator' : 'Expand calculator'}
+              >
+                <IconCalculator className="toolTabIcon" />
+                <span className="toolTabLabel">Calculator</span>
+              </button>
+              <button
+                type="button"
+                className={`toolTab ${showRef ? 'active' : ''}`}
+                onClick={() => setShowRef(true)}
+                aria-pressed={showRef}
+                title="Open reference sheet"
+              >
+                <IconReference className="toolTabIcon" />
+                <span className="toolTabLabel">Reference</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Question content */}
+      <div className="ptQuestionPanel">
+        {isReading ? (
+          /* Two-column: passage left, stem + answers right */
+          <div className="qaTwoCol">
+            <div className="qaLeft">
+              <div className="card subcard">
+                <HtmlBlock className="prose" html={q.stimulus_html} />
+              </div>
+            </div>
+            <div className="qaRight">
+              <div className="ptQuestionNum">Question {currentIdx + 1} of {totalCount}</div>
+              {q.stem_html && (
+                <div className="card subcard" style={{ marginBottom: 12 }}>
+                  <HtmlBlock className="prose" html={q.stem_html} />
+                </div>
+              )}
+              {answerArea}
+            </div>
+          </div>
+        ) : isMath ? (
+          /* Math shell: Desmos left, stem + answers right */
+          mathShellJsx(
+            <>
+              <div className="ptQuestionNum">Question {currentIdx + 1} of {totalCount}</div>
+              {q.stem_html && (
+                <div className="card subcard" style={{ marginBottom: 12 }}>
+                  <HtmlBlock className="prose" html={q.stem_html} />
+                </div>
+              )}
+              {answerArea}
+            </>
+          )
         ) : (
-          <div className="ptSprWrap">
-            <input
-              className="input"
-              type="text"
-              placeholder="Your answer"
-              value={ans.response_text || ''}
-              onChange={(e) => setAnswer(q.question_version_id, 'response_text', e.target.value)}
-              disabled={submitting}
-            />
+          /* Single column: rw question without a passage */
+          <div className="ptSingleCol">
+            <div className="ptQuestionNum">Question {currentIdx + 1} of {totalCount}</div>
+            {q.stimulus_html && (
+              <div className="ptStimulus">
+                <HtmlBlock html={q.stimulus_html} />
+              </div>
+            )}
+            <div className="ptStem">
+              <HtmlBlock html={q.stem_html} />
+            </div>
+            {answerArea}
           </div>
         )}
       </div>
 
-      {/* Bottom navigation bar */}
+      {/* Bottom nav: question map chips + Prev / Next / Submit */}
       <div className="ptNavBar">
         <QuestionMap
           questions={moduleData.questions}
@@ -304,7 +747,57 @@ export default function TestSessionPage() {
         </div>
       </div>
 
-      {/* Confirm submit overlay */}
+      {/* Reference sheet modal (math only) */}
+      {showRef && (
+        <div
+          className="modalOverlay"
+          onClick={() => setShowRef(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="SAT Math reference sheet"
+        >
+          <div
+            ref={refCardRef}
+            className="modalCard"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: 'min(980px, 96vw)',
+              maxHeight: 'calc(100vh - 120px)',
+              position: 'fixed',
+              left: '50%',
+              top: 80,
+              transform: `translate(calc(-50% + ${refPos.x}px), ${refPos.y}px)`,
+              willChange: 'transform',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <div className="refModalHeader" onPointerDown={onRefHeaderPointerDown}>
+              <div className="h2" style={{ margin: 0 }}>
+                SAT Math Reference Sheet
+              </div>
+              <button
+                type="button"
+                className="refModalClose"
+                onClick={() => setShowRef(false)}
+                aria-label="Close reference sheet"
+              >
+                ×
+              </button>
+            </div>
+            <div className="refSheetContent" aria-label="SAT Math Reference sheet image">
+              <img
+                className="refSheetImg"
+                src="/math_reference_sheet.png"
+                alt="SAT Math Reference Sheet"
+                draggable={false}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Submit confirmation overlay */}
       {showConfirm && (
         <div className="ptOverlay">
           <div className="ptConfirmCard card">
