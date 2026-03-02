@@ -29,7 +29,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   // Propagate state changes to parent
   useEffect(() => { onChange?.(state); }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load domain/topic lists once
+  // Load domain/topic lists + initial unfiltered counts in one fetch
   useEffect(() => {
     (async () => {
       const res  = await fetch('/api/filters');
@@ -37,20 +37,13 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
       if (res.ok) {
         setAllDomains(json.domains || []);
         setAllTopics(json.topics  || []);
+        if (json.counts) setCounts(json.counts);
       }
     })();
   }, []);
 
-  // Load unfiltered counts on mount so chips show totals before any filter is touched
-  useEffect(() => {
-    fetch('/api/domain-counts')
-      .then((r) => r.json())
-      .then((data) => { if (data && !data.error) setCounts(data); })
-      .catch(() => {});
-  }, []);
-
-  // Re-fetch counts whenever non-domain/topic filters change.
-  // Skips the initial mount call — the [] effect above handles that.
+  // Re-fetch counts when contextual filters change (difficulty/score_band/flags).
+  // Skips the initial mount — unfiltered counts already come from /api/filters above.
   useEffect(() => {
     if (countsInitialMount.current) { countsInitialMount.current = false; return; }
 
