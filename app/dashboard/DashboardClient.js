@@ -149,19 +149,14 @@ export default function DashboardClient({ email }) {
         ))}
       </div>
 
-      {/* Practice tests placeholder */}
+      {/* Practice tests */}
       <div className="card dbTestPanel" style={{ marginTop: 16 }}>
         <div className="h2">Practice Tests</div>
         <p className="muted small" style={{ marginTop: 0 }}>
           Simulate the full SAT experience with timed, full-length practice tests.
           Review your scores and section breakdowns when you&rsquo;re done.
         </p>
-        <div className="dbTestComingSoon">
-          <span>Coming Soon</span>
-        </div>
-        <Link href="/practice-test" className="btn secondary dbTestBtn" aria-disabled="true"
-          onClick={e => e.preventDefault()}
-          style={{ opacity: 0.5, cursor: 'not-allowed', pointerEvents: 'none' }}>
+        <Link href="/practice-test" className="btn secondary dbTestBtn">
           Take a Practice Test
         </Link>
       </div>
