@@ -3,7 +3,7 @@
 ================================ */
 
 :root{
-  --bg: #f5f5f4;
+  --bg: #f9fafb;
   --card: #ffffff;
   --text: #111827;          /* near black */
   --muted: #4b5563;
@@ -1752,6 +1752,10 @@ hr{
   font-weight: 700;
 }
 
+.calcBody{
+  padding-right: 8px;
+}
+
 .calcBody.hidden{
   opacity: 0;
   visibility: hidden;
@@ -1783,17 +1787,30 @@ hr{
   margin: 0 auto;
   width: 1px;
   background: var(--border);
+  transition: background 0.15s ease;
 }
 
+.mathDivider:hover::before{
+  background: rgba(37,99,235,0.35);
+}
+
+/* Centred pill handle — visible at rest, brightens + grows on hover */
 .mathDivider::after{
   content: '';
   position: absolute;
-  inset: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 28px;
   border-radius: 999px;
+  background: rgba(17,24,39,0.15);
+  transition: background 0.15s ease, height 0.15s ease;
 }
 
 .mathDivider:hover::after{
-  background: rgba(37,99,235,0.06);
+  background: rgba(37,99,235,0.55);
+  height: 38px;
 }
 
 .mathDivider.min{
