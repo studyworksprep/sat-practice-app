@@ -6,7 +6,7 @@
   --bg: #f5f5f4;
   --card: #ffffff;
   --text: #111827;          /* near black */
-  --muted: #6b7280;
+  --muted: #4b5563;
   --border: rgba(17,24,39,0.08);
 
   --accent: #2563eb;        /* primary blue */
@@ -590,22 +590,22 @@ label{
   flex-shrink: 0;
 }
 
-/* Start Practice Session section */
-.sessionActions{
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
-  padding-bottom: 16px;
+/* Filter card header: title left, CTA right */
+.filterCardHeader{
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
 }
 
 /* Section label inside filter tree (Math / Reading & Writing) */
 .filterSectionLabel{
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   color: var(--muted);
   margin-bottom: 6px;
 }

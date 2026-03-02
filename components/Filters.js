@@ -220,14 +220,31 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
 
   return (
     <div className="card">
-      <div className="h2">Filters</div>
+      {/* Card header: title left, randomize + start button right */}
+      <div className="filterCardHeader">
+        <div className="h2" style={{ margin: 0 }}>Filters</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <label className="filterCheck">
+            <input type="checkbox" checked={randomize} onChange={(e) => setRandomize(e.target.checked)} />
+            Randomize question order
+          </label>
+          <button
+            className="btn primary"
+            disabled={!hasFilter || starting}
+            onClick={handleStart}
+          >
+            {starting ? 'Loading…' : 'Start Practice Session'}
+          </button>
+        </div>
+      </div>
 
-      {/* Horizontal top bar: quick filters | difficulty | score band | broken */}
+      {/* Horizontal top bar: quick filters | difficulty | score band */}
       <div className="filterBar">
         <div className="filterBarSection">
           {[
             ['marked_only', 'Only marked for review'],
             ['wrong_only',  'Only wrong answers'],
+            ['broken_only', 'Only flagged as broken'],
           ].map(([key, label]) => (
             <label key={key} className="filterCheck">
               <input type="checkbox" checked={state[key]} onChange={(e) => set(key, e.target.checked)} />
@@ -267,29 +284,6 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
             })}
           </div>
         </div>
-
-        <div className="filterBarSection">
-          <label className="filterCheck">
-            <input type="checkbox" checked={state.broken_only} onChange={(e) => set('broken_only', e.target.checked)} />
-            Only flagged as broken
-          </label>
-        </div>
-      </div>
-
-      {/* Start Practice Session */}
-      <div className="sessionActions">
-        <button
-          className="btn primary"
-          style={{ width: '100%' }}
-          disabled={!hasFilter || starting}
-          onClick={handleStart}
-        >
-          {starting ? 'Loading…' : 'Start Practice Session'}
-        </button>
-        <label className="filterCheck">
-          <input type="checkbox" checked={randomize} onChange={(e) => setRandomize(e.target.checked)} />
-          Randomize question order
-        </label>
       </div>
 
       {/* Domain & Topic — two columns with selectable category headers */}
