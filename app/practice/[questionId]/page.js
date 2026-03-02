@@ -1187,88 +1187,63 @@ export default function PracticeQuestionPage() {
 
   return (
     <main className="container">
-      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'grid', gap: 6, flex: 1, minWidth: 0 }}>
-          <div className="h2">Practice</div>
+      <div className="questionTopBar">
+        <div>
+          <Link className="btn secondary" href="/practice">
+            ← Back to list
+          </Link>
+        </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              gap: 12,
-            }}
-          >
-            {/* LEFT */}
-            <div>
-              <Link className="btn secondary" href="/practice">
-                ← Back to list
-              </Link>
-            </div>
+        <button
+          type="button"
+          className="qmapTrigger"
+          onClick={openMap}
+          disabled={!inSessionContext}
+          title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
+          aria-label="Open question map"
+        >
+          <span className="qmapTriggerCount">
+            {index1 != null && total != null ? (
+              <>{index1} / {total}</>
+            ) : total != null ? (
+              <>— / {total}</>
+            ) : (
+              <>…</>
+            )}
+          </span>
+          <span className="qmapTriggerChevron" aria-hidden="true">▾</span>
+        </button>
 
-            {/* CENTER */}
-            <div style={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+        <div className="questionTopBarRight">
+          {isMath ? (
+            <div className="toolTabs" role="tablist" aria-label="Math tools">
               <button
                 type="button"
-                className="qmapTrigger"
-                onClick={openMap}
-                disabled={!inSessionContext}
-                title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
-                aria-label="Open question map"
+                className={`toolTab ${!calcMinimized ? 'active' : ''}`}
+                onClick={() => setCalcMinimized((m) => !m)}
+                aria-pressed={!calcMinimized}
+                title={!calcMinimized ? 'Minimize calculator' : 'Expand calculator'}
               >
-                <span className="qmapTriggerCount">
-                  {index1 != null && total != null ? (
-                    <>
-                      {index1} / {total}
-                    </>
-                  ) : total != null ? (
-                    <>— / {total}</>
-                  ) : (
-                    <>…</>
-                  )}
-                </span>
-                <span className="qmapTriggerChevron" aria-hidden="true">
-                  ▾
-                </span>
+                <IconCalculator className="toolTabIcon" />
+                <span className="toolTabLabel">Calculator</span>
+              </button>
+
+              <button
+                type="button"
+                className={`toolTab ${showRef ? 'active' : ''}`}
+                onClick={() => setShowRef(true)}
+                aria-pressed={showRef}
+                title="Open reference sheet"
+              >
+                <IconReference className="toolTabIcon" />
+                <span className="toolTabLabel">Reference</span>
               </button>
             </div>
-
-            {/* RIGHT */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              {isMath ? (
-                <div className="toolTabs" role="tablist" aria-label="Math tools">
-                  <button
-                    type="button"
-                    className={`toolTab ${!calcMinimized ? 'active' : ''}`}
-                    onClick={() => setCalcMinimized((m) => !m)}
-                    aria-pressed={!calcMinimized}
-                    title={!calcMinimized ? 'Minimize calculator' : 'Expand calculator'}
-                  >
-                    <IconCalculator className="toolTabIcon" />
-                    <span className="toolTabLabel">Calculator</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`toolTab ${showRef ? 'active' : ''}`}
-                    onClick={() => setShowRef(true)}
-                    aria-pressed={showRef}
-                    title="Open reference sheet"
-                  >
-                    <IconReference className="toolTabIcon" />
-                    <span className="toolTabLabel">Reference</span>
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          </div>
+          ) : null}
         </div>
       </div>
 
       <Toast kind={msg?.kind} message={msg?.text} />
-
-      <hr />
 
       {qType === 'mcq' ? (
         useTwoColReading ? (
@@ -1279,9 +1254,7 @@ export default function PracticeQuestionPage() {
             </div>
 
             <div className="qaRight">
-              <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-                <StatusPillsRow />
-              </div>
+              <StatusPillsRow style={{ marginBottom: 14 }} />
               <McqOptionsArea />
             </div>
           </div>
@@ -1309,18 +1282,14 @@ export default function PracticeQuestionPage() {
         // Math SPR
         mathShellJsx(<>
           <MathToolRow />
-          <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-            <StatusPillsRow />
-          </div>
+          <StatusPillsRow style={{ marginBottom: 14 }} />
           <PromptBlocks mb={12} />
           <SprAnswerArea />
         </>)
       ) : (
         // Default SPR
         <div>
-          <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-            <StatusPillsRow />
-          </div>
+          <StatusPillsRow style={{ marginBottom: 14 }} />
           <PromptBlocks mb={12} />
           <SprAnswerArea />
         </div>
