@@ -31,6 +31,9 @@
   --radius-card: 16px;
   --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 8px 24px rgba(0,0,0,0.07);
 
+  /* Height of the sticky site nav — used by ptSession to fill remaining viewport */
+  --nav-h: 63px;
+
   --s1: 6px;
   --s2: 10px;
   --s3: 14px;
@@ -101,7 +104,8 @@ a{
   display: grid;
   grid-template-columns: minmax(480px, 1fr) minmax(420px, 1fr);
   gap: 22px;
-  align-items: start;
+  align-items: stretch;
+  min-height: 100%;
 }
 
 .qaLeft{
@@ -720,6 +724,7 @@ label{
 ================================ */
 
 .option{
+  cursor: pointer;
   display: flex;
   align-items: flex-start;
   gap: 14px;
@@ -2049,7 +2054,7 @@ hr{
 .ptSession{
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100dvh - var(--nav-h));
   overflow: hidden;
 }
 
@@ -2092,13 +2097,15 @@ hr{
 }
 
 .ptTimer{
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
   color: var(--text);
-  background: var(--border);
-  padding: 4px 14px;
+  background: rgba(17,24,39,0.06);
+  padding: 6px 22px;
   border-radius: 20px;
+  text-align: center;
 }
 
 .ptTimerUrgent{
@@ -2120,13 +2127,22 @@ hr{
   margin: 0 auto;
 }
 
-.ptQuestionNum{
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  margin-bottom: 12px;
+/* Dark filled question-number badge — matches Bluebook's square chip above the stem */
+.ptQNumBadge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  background: var(--text);
+  color: #fff;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  align-self: flex-start;
+  flex-shrink: 0;
+  margin-bottom: 10px;
 }
 
 .ptStimulus{
@@ -2186,17 +2202,58 @@ hr{
   flex-shrink: 0;
   border-top: 1px solid var(--border);
   background: var(--card);
-  padding: 10px 16px;
 }
 
+/* Chip drawer — slides in above the footer bar when the pill is clicked */
 .ptQMap{
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
   gap: 5px;
-  margin-bottom: 10px;
-  padding-bottom: 4px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
 }
+
+/* 3-column footer bar: [left spacer] [question pill] [nav buttons] */
+.ptNavFooter{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 10px 16px;
+  gap: 12px;
+}
+
+.ptNavRight{
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Dark pill — matches Bluebook's "Question X of Y" center button */
+.ptQPill{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.ptQPill:hover{ background: #1f2937; }
+
+.ptQPillArrow{
+  font-size: 10px;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.ptQPillArrow.open{ transform: rotate(180deg); }
 
 .ptQChip{
   width: 32px;

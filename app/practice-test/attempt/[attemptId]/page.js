@@ -229,24 +229,24 @@ function QuestionMap({ questions, answers, currentIdx, onJump }) {
 
 function McqOptions({ options, selected, onChange, disabled }) {
   return (
-    <div className="ptOptions">
-      {options.map((opt) => (
-        <label
-          key={opt.id}
-          className={`ptOption${selected === opt.id ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
-        >
-          <input
-            type="radio"
-            name="mcq"
-            value={opt.id}
-            checked={selected === opt.id}
-            onChange={() => !disabled && onChange(opt.id)}
-            disabled={disabled}
-          />
-          <span className="ptOptionLabel">{opt.label || String.fromCharCode(65 + (opt.ordinal - 1))}</span>
-          <HtmlBlock html={opt.content_html} className="ptOptionContent" />
-        </label>
-      ))}
+    <div className="optionList">
+      {options.map((opt) => {
+        const letter = opt.label || String.fromCharCode(65 + (opt.ordinal - 1));
+        return (
+          <div
+            key={opt.id}
+            className={`option${selected === opt.id ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
+            onClick={() => !disabled && onChange(opt.id)}
+            role="radio"
+            aria-checked={selected === opt.id}
+            tabIndex={disabled ? -1 : 0}
+            onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) onChange(opt.id); }}
+          >
+            <span className="optionBadge">{letter}</span>
+            <HtmlBlock html={opt.content_html} className="optionContent" />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -267,6 +267,9 @@ export default function TestSessionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const timerRef = useRef(null);
+
+  // Question map drawer
+  const [showMap, setShowMap] = useState(false);
 
   // Math tools state
   const [calcMinimized, setCalcMinimized] = useState(false);
@@ -622,18 +625,13 @@ export default function TestSessionPage() {
   return (
     <div className="ptSession">
 
-      {/* Header: 3-column — module label | question counter | timer + tools */}
+      {/* Header: 3-column — module label | timer (center) | tools */}
       <div className="ptSessionHeader">
         <div className="ptModuleLabel">{moduleLabel}</div>
 
-        <div className="ptQCount">
-          {currentIdx + 1}
-          <span className="ptQCountSep"> / </span>
-          {totalCount}
-        </div>
+        <TimerChip seconds={timeRemaining} />
 
         <div className="ptHeaderRight">
-          <TimerChip seconds={timeRemaining} />
           {isMath && (
             <div className="toolTabs" role="tablist" aria-label="Math tools">
               <button
@@ -667,17 +665,11 @@ export default function TestSessionPage() {
           /* Two-column: passage left, stem + answers right */
           <div className="qaTwoCol">
             <div className="qaLeft">
-              <div className="card subcard">
-                <HtmlBlock className="prose" html={q.stimulus_html} />
-              </div>
+              <HtmlBlock className="prose" html={q.stimulus_html} />
             </div>
             <div className="qaRight">
-              <div className="ptQuestionNum">Question {currentIdx + 1} of {totalCount}</div>
-              {q.stem_html && (
-                <div className="card subcard" style={{ marginBottom: 12 }}>
-                  <HtmlBlock className="prose" html={q.stem_html} />
-                </div>
-              )}
+              <div className="ptQNumBadge">{currentIdx + 1}</div>
+              {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
               {answerArea}
             </div>
           </div>
@@ -685,65 +677,79 @@ export default function TestSessionPage() {
           /* Math shell: Desmos left, stem + answers right */
           mathShellJsx(
             <>
-              <div className="ptQuestionNum">Question {currentIdx + 1} of {totalCount}</div>
-              {q.stem_html && (
-                <div className="card subcard" style={{ marginBottom: 12 }}>
-                  <HtmlBlock className="prose" html={q.stem_html} />
-                </div>
-              )}
+              <div className="ptQNumBadge">{currentIdx + 1}</div>
+              {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
               {answerArea}
             </>
           )
         ) : (
           /* Single column: rw question without a passage */
           <div className="ptSingleCol">
-            <div className="ptQuestionNum">Question {currentIdx + 1} of {totalCount}</div>
+            <div className="ptQNumBadge">{currentIdx + 1}</div>
             {q.stimulus_html && (
               <div className="ptStimulus">
                 <HtmlBlock html={q.stimulus_html} />
               </div>
             )}
-            <div className="ptStem">
-              <HtmlBlock html={q.stem_html} />
-            </div>
+            <HtmlBlock className="ptStem" html={q.stem_html} />
             {answerArea}
           </div>
         )}
       </div>
 
-      {/* Bottom nav: question map chips + Prev / Next / Submit */}
+      {/* Bottom nav: chip drawer + 3-column Bluebook-style footer */}
       <div className="ptNavBar">
-        <QuestionMap
-          questions={moduleData.questions}
-          answers={answers}
-          currentIdx={currentIdx}
-          onJump={setCurrentIdx}
-        />
-        <div className="ptNavButtons">
+        {showMap && (
+          <div className="ptQMap">
+            <QuestionMap
+              questions={moduleData.questions}
+              answers={answers}
+              currentIdx={currentIdx}
+              onJump={(i) => { setCurrentIdx(i); setShowMap(false); }}
+            />
+          </div>
+        )}
+        <div className="ptNavFooter">
+          {/* Left column — reserved for future "Mark for Review" */}
+          <div />
+
+          {/* Center — question navigator pill */}
           <button
-            className="btn secondary"
-            onClick={() => setCurrentIdx((i) => Math.max(0, i - 1))}
-            disabled={currentIdx === 0 || submitting}
+            className="ptQPill"
+            onClick={() => setShowMap((m) => !m)}
+            aria-expanded={showMap}
           >
-            Prev
+            Question {currentIdx + 1} of {totalCount}
+            <span className={`ptQPillArrow${showMap ? ' open' : ''}`}>▲</span>
           </button>
-          {currentIdx < totalCount - 1 ? (
+
+          {/* Right — Back / Next / Submit */}
+          <div className="ptNavRight">
             <button
               className="btn secondary"
-              onClick={() => setCurrentIdx((i) => Math.min(totalCount - 1, i + 1))}
-              disabled={submitting}
+              onClick={() => setCurrentIdx((i) => Math.max(0, i - 1))}
+              disabled={currentIdx === 0 || submitting}
             >
-              Next
+              Back
             </button>
-          ) : (
-            <button
-              className="btn"
-              onClick={() => setShowConfirm(true)}
-              disabled={submitting}
-            >
-              Submit Module
-            </button>
-          )}
+            {currentIdx < totalCount - 1 ? (
+              <button
+                className="btn"
+                onClick={() => setCurrentIdx((i) => Math.min(totalCount - 1, i + 1))}
+                disabled={submitting}
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                className="btn"
+                onClick={() => setShowConfirm(true)}
+                disabled={submitting}
+              >
+                Submit Module
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
