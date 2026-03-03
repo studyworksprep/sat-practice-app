@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '../../lib/supabase/server';
 import LaunchPanel from './LaunchPanel';
+import AbandonButton from './AbandonButton';
 
 function fmt(dateStr) {
   if (!dateStr) return '';
@@ -58,9 +59,12 @@ export default async function PracticeTestListPage() {
                 <div className="ptInProgressName">{testNameById[a.practice_test_id] ?? 'Practice Test'}</div>
                 <div className="muted small">Started {fmt(a.started_at)}</div>
               </div>
-              <Link href={`/practice-test/attempt/${a.id}`} className="btn">
-                Resume →
-              </Link>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Link href={`/practice-test/attempt/${a.id}`} className="btn">
+                  Resume →
+                </Link>
+                <AbandonButton attemptId={a.id} />
+              </div>
             </div>
           ))}
         </section>

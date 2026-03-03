@@ -60,14 +60,21 @@ export async function GET(_request, { params }) {
   ]);
 
   // Which modules have already been submitted?
+  // Primary: metadata.submitted_modules — written by submit-module, no RLS concerns.
+  // Secondary: practice_test_attempt_items — fallback for attempts created before this fix.
+  const submittedFromMeta = Array.isArray(attempt.metadata?.submitted_modules)
+    ? attempt.metadata.submitted_modules
+    : [];
+
   const { data: submittedItems } = await supabase
     .from('practice_test_attempt_items')
     .select('subject_code, module_number')
     .eq('practice_test_attempt_id', attemptId);
 
-  const submitted = new Set(
-    (submittedItems || []).map((i) => `${i.subject_code}/${i.module_number}`)
-  );
+  const submitted = new Set([
+    ...submittedFromMeta,
+    ...(submittedItems || []).map((i) => `${i.subject_code}/${i.module_number}`),
+  ]);
 
   // Find the first module in order that hasn't been submitted
   let activeSpec = null;

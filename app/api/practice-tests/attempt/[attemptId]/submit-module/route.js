@@ -184,15 +184,28 @@ export async function POST(request, { params }) {
       nextRouteCode = fallback?.route_code ?? null;
     }
 
-    // Store the determined route in the attempt metadata
-    const metaKey = subjectRouteField[subject_code];
-    if (metaKey && nextRouteCode) {
-      await supabase
-        .from('practice_test_attempts')
-        .update({ metadata: { ...(attempt.metadata || {}), [metaKey]: nextRouteCode } })
-        .eq('id', attemptId);
-    }
   }
+
+  // Always record the submitted module + route code in metadata.
+  // This is the primary source for tracking progress (immune to RLS issues on
+  // practice_test_attempt_items which has no user_id column).
+  const currentMeta = attempt.metadata || {};
+  const submittedMods = Array.isArray(currentMeta.submitted_modules) ? currentMeta.submitted_modules : [];
+  const moduleKey = `${subject_code}/${module_number}`;
+  let metaUpdate = {
+    ...currentMeta,
+    submitted_modules: submittedMods.includes(moduleKey)
+      ? submittedMods
+      : [...submittedMods, moduleKey],
+  };
+  if (module_number === 1) {
+    const metaKey = subjectRouteField[subject_code];
+    if (metaKey && nextRouteCode) metaUpdate = { ...metaUpdate, [metaKey]: nextRouteCode };
+  }
+  await supabase
+    .from('practice_test_attempts')
+    .update({ metadata: metaUpdate })
+    .eq('id', attemptId);
 
   // Determine if this was the last module (final subject, module 2)
   const lastSubject = sortedSubjects.at(-1);
