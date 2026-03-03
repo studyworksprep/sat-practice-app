@@ -187,6 +187,11 @@ a{
   border: 0;
 }
 
+/* Hide sr-only elements from the question HTML content (image/graph/table descriptions) */
+.sr-only{
+  display: none;
+}
+
 /* ===============================
    Cards
 ================================ */
