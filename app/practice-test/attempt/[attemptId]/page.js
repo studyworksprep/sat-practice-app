@@ -367,17 +367,7 @@ export default function TestSessionPage() {
       setModuleData(data);
       setCurrentIdx(0);
 
-      // Restore saved answers
-      const restored = {};
-      for (const q of data.questions || []) {
-        if (q.saved_answer?.selected_option_id || q.saved_answer?.response_text) {
-          restored[q.question_version_id] = {
-            selected_option_id: q.saved_answer.selected_option_id || null,
-            response_text: q.saved_answer.response_text || null,
-          };
-        }
-      }
-      setAnswers(restored);
+      setAnswers({});
 
       // Timer — use API value or fall back to SAT defaults (32 min RW, 35 min math)
       const isMathSubject = ['M', 'm', 'math', 'Math', 'MATH'].includes(data.subject_code);

@@ -141,26 +141,6 @@ export async function GET(_request, { params }) {
     .in('question_version_id', versionIds)
     .order('ordinal', { ascending: true });
 
-  // Fetch saved answers (from existing attempts) for resume
-  const questionIds = (versions || []).map((v) => v.question_id);
-  let savedAnswers = {};
-  if (questionIds.length > 0) {
-    const { data: existingAttempts } = await supabase
-      .from('attempts')
-      .select('question_id, selected_option_id, response_text, created_at')
-      .eq('user_id', user.id)
-      .in('question_id', questionIds)
-      .order('created_at', { ascending: false });
-
-    for (const a of existingAttempts || []) {
-      if (!savedAnswers[a.question_id]) {
-        savedAnswers[a.question_id] = {
-          selected_option_id: a.selected_option_id,
-          response_text: a.response_text,
-        };
-      }
-    }
-  }
 
   // Assemble questions array
   const versionMap = {};
@@ -174,7 +154,6 @@ export async function GET(_request, { params }) {
 
   const questions = (items || []).map((item) => {
     const v = versionMap[item.question_version_id] || {};
-    const saved = savedAnswers[v.question_id] || null;
     return {
       ordinal: item.ordinal,
       question_version_id: item.question_version_id,
@@ -183,7 +162,6 @@ export async function GET(_request, { params }) {
       stimulus_html: v.stimulus_html || null,
       stem_html: v.stem_html,
       options: optionsByVersion[item.question_version_id] || [],
-      saved_answer: saved,
     };
   });
 
