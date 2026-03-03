@@ -859,6 +859,38 @@ label{
   background: #ffffff;
 }
 
+/* Crossed-out answer option */
+.option.crossed{
+  opacity: 0.45;
+}
+.option.crossed .optionBadge{
+  text-decoration: line-through;
+  border-color: var(--muted);
+  color: var(--muted);
+}
+.option.crossed .optionContent{
+  text-decoration: line-through;
+}
+
+/* Cross-out / Undo toggle button */
+.crossOutBtn{
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  padding: 3px 9px;
+  border-radius: 4px;
+  white-space: nowrap;
+  line-height: 1.4;
+  transition: color 0.12s, border-color 0.12s;
+}
+.crossOutBtn:hover{
+  color: var(--text);
+  border-color: rgba(17,24,39,0.35);
+}
+
 /* ===============================
    Rows / Flex Utilities
 ================================ */

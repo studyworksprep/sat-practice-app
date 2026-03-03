@@ -247,15 +247,16 @@ function QuestionMap({ questions, answers, currentIdx, onJump, marked }) {
 
 // ─── MCQ options ──────────────────────────────────────────────────────────────
 
-function McqOptions({ options, selected, onChange, disabled }) {
+function McqOptions({ options, selected, onChange, disabled, crossedOut = {}, onCrossOut }) {
   return (
     <div className="optionList">
       {options.map((opt) => {
         const letter = opt.label || String.fromCharCode(65 + (opt.ordinal - 1));
+        const isCrossed = !!crossedOut[opt.id];
         return (
           <div
             key={opt.id}
-            className={`option${selected === opt.id ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
+            className={`option${selected === opt.id ? ' selected' : ''}${disabled ? ' disabled' : ''}${isCrossed ? ' crossed' : ''}`}
             onClick={() => !disabled && onChange(opt.id)}
             role="radio"
             aria-checked={selected === opt.id}
@@ -264,6 +265,16 @@ function McqOptions({ options, selected, onChange, disabled }) {
           >
             <span className="optionBadge">{letter}</span>
             <HtmlBlock html={opt.content_html} className="optionContent" />
+            {!disabled && onCrossOut && (
+              <button
+                type="button"
+                className="crossOutBtn"
+                onClick={(e) => { e.stopPropagation(); onCrossOut(opt.id); }}
+                aria-label={isCrossed ? `Undo cross out for option ${letter}` : `Cross out option ${letter}`}
+              >
+                {isCrossed ? 'Undo' : 'Cross out'}
+              </button>
+            )}
           </div>
         );
       })}
@@ -292,6 +303,10 @@ export default function TestSessionPage() {
   const [showMap, setShowMap] = useState(false);
   const [marked, setMarked] = useState({});
   const toggleMark = (vid) => setMarked((m) => ({ ...m, [vid]: !m[vid] }));
+
+  // Cross-out answer choices (session-only, not persisted to DB)
+  const [crossedOut, setCrossedOut] = useState({});
+  const toggleCrossOut = (optId) => setCrossedOut((c) => ({ ...c, [optId]: !c[optId] }));
 
   // Math tools state
   const [calcMinimized, setCalcMinimized] = useState(false);
@@ -336,6 +351,7 @@ export default function TestSessionPage() {
   const loadModule = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setTimeRemaining(null); // reset so timer effect re-fires when new value arrives
     try {
       const res = await fetch(`/api/practice-tests/attempt/${attemptId}`);
       const data = await res.json();
@@ -357,19 +373,18 @@ export default function TestSessionPage() {
       }
       setAnswers(restored);
 
-      // Timer
-      if (data.time_limit_seconds) {
-        const lsKey = `pt_start_${attemptId}_${data.subject_code}_${data.module_number}`;
-        let startTs = localStorage.getItem(lsKey);
-        if (!startTs) {
-          startTs = Date.now().toString();
-          localStorage.setItem(lsKey, startTs);
-        }
-        const elapsed = Math.floor((Date.now() - parseInt(startTs, 10)) / 1000);
-        setTimeRemaining(Math.max(0, data.time_limit_seconds - elapsed));
-      } else {
-        setTimeRemaining(null);
+      // Timer — use API value or fall back to SAT defaults (32 min RW, 35 min math)
+      const isMathSubject = ['M', 'm', 'math'].includes(data.subject_code);
+      const timeLimitSecs = data.time_limit_seconds
+        || (isMathSubject ? 35 * 60 : 32 * 60);
+      const lsKey = `pt_start_${attemptId}_${data.subject_code}_${data.module_number}`;
+      let startTs = localStorage.getItem(lsKey);
+      if (!startTs) {
+        startTs = Date.now().toString();
+        localStorage.setItem(lsKey, startTs);
       }
+      const elapsed = Math.floor((Date.now() - parseInt(startTs, 10)) / 1000);
+      setTimeRemaining(Math.max(0, timeLimitSecs - elapsed));
 
       setLoading(false);
     } catch {
@@ -587,6 +602,8 @@ export default function TestSessionPage() {
       selected={ans.selected_option_id}
       onChange={(id) => setAnswer(q.question_version_id, 'selected_option_id', id)}
       disabled={submitting}
+      crossedOut={crossedOut}
+      onCrossOut={toggleCrossOut}
     />
   ) : (
     <div className="ptSprWrap">
