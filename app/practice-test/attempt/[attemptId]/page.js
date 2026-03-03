@@ -381,8 +381,10 @@ export default function TestSessionPage() {
 
       // Timer — use API value or fall back to SAT defaults (32 min RW, 35 min math)
       const isMathSubject = ['M', 'm', 'math'].includes(data.subject_code);
-      const timeLimitSecs = data.time_limit_seconds
-        || (isMathSubject ? 35 * 60 : 32 * 60);
+      const timeFactor = parseFloat(localStorage.getItem(`pt_factor_${attemptId}`) || '1');
+      const timeLimitSecs = Math.round(
+        (data.time_limit_seconds || (isMathSubject ? 35 * 60 : 32 * 60)) * timeFactor
+      );
       const lsKey = `pt_start_${attemptId}_${data.subject_code}_${data.module_number}`;
       let startTs = localStorage.getItem(lsKey);
       if (!startTs) {

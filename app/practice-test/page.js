@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '../../lib/supabase/server';
-import StartTestButton from './StartTestButton';
+import LaunchPanel from './LaunchPanel';
 
 function fmt(dateStr) {
   if (!dateStr) return '';
@@ -17,6 +17,8 @@ function ScoreBadge({ score, label }) {
   );
 }
 
+const SUBJECT_LABELS = { rw: 'R&W', RW: 'R&W', math: 'Math', m: 'Math', M: 'Math' };
+
 export default async function PracticeTestListPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -24,91 +26,71 @@ export default async function PracticeTestListPage() {
 
   const { tests, attempts } = await fetchData(supabase, user.id);
 
-  // Group attempts by practice_test_id
-  const attemptsByTest = {};
-  for (const a of attempts) {
-    if (!attemptsByTest[a.practice_test_id]) attemptsByTest[a.practice_test_id] = [];
-    attemptsByTest[a.practice_test_id].push(a);
-  }
+  const inProgress = attempts.filter((a) => a.status === 'in_progress');
+  const completed = attempts.filter((a) => a.status === 'completed');
 
-  const SUBJECT_LABELS = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math' };
+  // Map test id → name for the history rows
+  const testNameById = Object.fromEntries(tests.map((t) => [t.id, t.name]));
 
   return (
-    <main className="container" style={{ maxWidth: 720, paddingTop: 32, paddingBottom: 48 }}>
+    <main className="container ptLandingMain">
       <h1 className="h1" style={{ marginBottom: 4 }}>Practice Tests</h1>
       <p className="muted small" style={{ marginBottom: 28 }}>
         Full-length, adaptive SAT practice tests with timed modules.
       </p>
 
-      {tests.length === 0 && (
-        <div className="card" style={{ textAlign: 'center', padding: '40px 24px' }}>
+      {/* ── Launch panel ─────────────────────────────────────── */}
+      {tests.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '40px 24px', marginBottom: 24 }}>
           <p className="muted">No practice tests are available yet.</p>
         </div>
+      ) : (
+        <LaunchPanel tests={tests} />
       )}
 
-      {tests.map((test) => {
-        const testAttempts = attemptsByTest[test.id] || [];
-        const inProgress = testAttempts.find((a) => a.status === 'in_progress');
-        const completed = testAttempts.filter((a) => a.status === 'completed');
-
-        const totalQ = test.modules
-          .filter((m) => m.module_number === 1)
-          .reduce((s, m) => s + m.question_count, 0) * 2; // ×2 for both modules
-
-        return (
-          <div key={test.id} className="card ptTestCard">
-            {/* Header */}
-            <div className="ptTestHeader">
-              <div>
-                <div className="h2" style={{ marginBottom: 2 }}>{test.name}</div>
-                <div className="muted small">
-                  {test.is_adaptive ? 'Adaptive' : 'Linear'} · ~{totalQ} questions ·{' '}
-                  {test.subjects.map((s) => SUBJECT_LABELS[s] || s).join(', ')}
-                </div>
+      {/* ── In-progress ──────────────────────────────────────── */}
+      {inProgress.length > 0 && (
+        <section className="ptLandingSection">
+          <div className="ptLandingSectionLabel">In Progress</div>
+          {inProgress.map((a) => (
+            <div key={a.id} className="card ptInProgressCard">
+              <div className="ptInProgressInfo">
+                <div className="ptInProgressName">{testNameById[a.practice_test_id] ?? 'Practice Test'}</div>
+                <div className="muted small">Started {fmt(a.started_at)}</div>
               </div>
-              <div className="ptTestActions">
-                {inProgress ? (
-                  <Link href={`/practice-test/attempt/${inProgress.id}`} className="btn">
-                    Resume
-                  </Link>
-                ) : (
-                  <StartTestButton practiceTestId={test.id} />
-                )}
-              </div>
+              <Link href={`/practice-test/attempt/${a.id}`} className="btn">
+                Resume →
+              </Link>
             </div>
+          ))}
+        </section>
+      )}
 
-            {/* In-progress badge */}
-            {inProgress && (
-              <div className="ptInProgressNote">
-                In-progress test started {fmt(inProgress.started_at)}
+      {/* ── Completed ────────────────────────────────────────── */}
+      {completed.length > 0 && (
+        <section className="ptLandingSection">
+          <div className="ptLandingSectionLabel">Completed Tests</div>
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            {completed.map((a, i) => (
+              <div key={a.id} className={`ptHistoryRow${i < completed.length - 1 ? ' ptHistoryRowBorder' : ''}`}>
+                <div className="ptHistoryLeft">
+                  <div className="ptHistoryName">{testNameById[a.practice_test_id] ?? 'Practice Test'}</div>
+                  <div className="muted small">{fmt(a.completed_at || a.started_at)}</div>
+                </div>
+                <div className="ptHistoryScores">
+                  {a.composite != null && <ScoreBadge score={a.composite} label="Total" />}
+                  {Object.entries(a.sectionScores || {}).map(([subj, s]) => (
+                    <ScoreBadge key={subj} score={s.scaled} label={SUBJECT_LABELS[subj] || subj} />
+                  ))}
+                </div>
+                <Link href={`/practice-test/attempt/${a.id}/results`} className="btn secondary ptHistoryBtn">
+                  Review
+                </Link>
               </div>
-            )}
-
-            {/* Past completed attempts */}
-            {completed.length > 0 && (
-              <div className="ptPastAttempts">
-                <div className="ptPastLabel">Past results</div>
-                {completed.map((a) => (
-                  <div key={a.id} className="ptAttemptRow">
-                    <div className="ptAttemptDate">{fmt(a.completed_at || a.started_at)}</div>
-                    <div className="ptAttemptScores">
-                      {a.composite != null && (
-                        <ScoreBadge score={a.composite} label="Total" />
-                      )}
-                      {Object.entries(a.sectionScores || {}).map(([subj, s]) => (
-                        <ScoreBadge key={subj} score={s.scaled} label={SUBJECT_LABELS[subj] || subj} />
-                      ))}
-                    </div>
-                    <Link href={`/practice-test/attempt/${a.id}/results`} className="btn secondary ptAttemptBtn">
-                      Review
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            )}
+            ))}
           </div>
-        );
-      })}
+        </section>
+      )}
     </main>
   );
 }

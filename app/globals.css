@@ -2045,77 +2045,151 @@ hr{
 }
 
 /* ===============================
-   Practice Test List Page
+   Practice Test Landing Page
 ================================ */
 
-.ptTestCard{
+.ptLandingMain{
+  max-width: 680px;
+  padding-top: 32px;
+  padding-bottom: 48px;
+}
+
+/* ── Launch panel ── */
+.ptLaunchPanel{
+  margin-bottom: 32px;
+}
+
+.ptLaunchTitle{
+  font-size: 16px;
+  font-weight: 700;
   margin-bottom: 16px;
 }
 
-.ptTestHeader{
+.ptLaunchFields{
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
-.ptTestActions{
+.ptLaunchField{
   display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 200px;
 }
 
-.ptInProgressNote{
-  margin-top: 10px;
-  padding: 8px 12px;
-  background: var(--accent-soft);
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--accent);
-}
-
-.ptPastAttempts{
-  margin-top: 14px;
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-}
-
-.ptPastLabel{
+.ptLaunchLabel{
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
-  margin-bottom: 8px;
 }
 
-.ptAttemptRow{
+.ptLaunchSelect{
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  appearance: auto;
+}
+.ptLaunchSelect:focus{
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.ptLaunchFooter{
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
 }
-.ptAttemptRow:last-child{ border-bottom: none; }
 
-.ptAttemptDate{
+.ptLaunchError{
   font-size: 13px;
-  color: var(--muted);
-  min-width: 100px;
+  color: var(--danger);
 }
 
-.ptAttemptScores{
+.ptLaunchBtn{
+  padding: 8px 20px;
+}
+
+/* ── Sections ── */
+.ptLandingSection{
+  margin-bottom: 28px;
+}
+
+.ptLandingSectionLabel{
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+/* ── In-progress card ── */
+.ptInProgressCard{
   display: flex;
-  gap: 12px;
-  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
 }
 
-.ptAttemptBtn{
+.ptInProgressInfo{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ptInProgressName{
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* ── History rows (completed tests) ── */
+.ptHistoryRow{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  flex-wrap: wrap;
+}
+
+.ptHistoryRowBorder{
+  border-bottom: 1px solid var(--border);
+}
+
+.ptHistoryLeft{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.ptHistoryName{
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ptHistoryScores{
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ptHistoryBtn{
   font-size: 13px;
   padding: 5px 14px;
+  flex-shrink: 0;
 }
 
 .ptScoreBadge{
