@@ -18,15 +18,17 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: 'subject_code, module_number, route_code required' }, { status: 400 });
   }
 
-  // Verify attempt ownership
+  // Verify attempt ownership — filter by user_id explicitly so this works
+  // regardless of whether a RLS SELECT policy exists for this table.
   const { data: attempt, error: attErr } = await supabase
     .from('practice_test_attempts')
     .select('id, practice_test_id, user_id, status, rw_route_code, m_route_code')
     .eq('id', attemptId)
-    .single();
+    .eq('user_id', user.id)
+    .maybeSingle();
 
-  if (attErr || !attempt) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (attempt.user_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (attErr) return NextResponse.json({ error: attErr.message }, { status: 500 });
+  if (!attempt) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   if (attempt.status === 'completed') return NextResponse.json({ error: 'Already completed' }, { status: 400 });
 
   // Fetch ALL modules for this test — avoids .single() failures and gives us
@@ -36,8 +38,7 @@ export async function POST(request, { params }) {
     .select('id, subject_code, module_number, route_code')
     .eq('practice_test_id', attempt.practice_test_id)
     .order('subject_code', { ascending: true })
-    .order('module_number', { ascending: true })
-    .order('created_at', { ascending: true });
+    .order('module_number', { ascending: true });
 
   if (modErr || !allModules?.length) {
     return NextResponse.json({ error: 'No modules found for this test' }, { status: 404 });

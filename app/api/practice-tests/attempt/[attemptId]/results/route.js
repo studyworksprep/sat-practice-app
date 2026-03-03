@@ -15,10 +15,11 @@ export async function GET(_request, { params }) {
     .from('practice_test_attempts')
     .select('id, practice_test_id, user_id, status, rw_route_code, m_route_code, started_at, completed_at')
     .eq('id', attemptId)
-    .single();
+    .eq('user_id', user.id)
+    .maybeSingle();
 
-  if (attErr || !attempt) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (attempt.user_id !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (attErr) return NextResponse.json({ error: attErr.message }, { status: 500 });
+  if (!attempt) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   // Fetch all attempt items
   const { data: attemptItems } = await supabase
