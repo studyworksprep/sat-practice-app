@@ -5,7 +5,7 @@ import Script from 'next/script';
 import { useRouter, useParams } from 'next/navigation';
 import HtmlBlock from '../../../../components/HtmlBlock';
 
-const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math' };
+const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', Math: 'Math', m: 'Math', M: 'Math' };
 
 const MIN_CALC_W = 550;
 const MAX_CALC_W = 760;
@@ -380,7 +380,7 @@ export default function TestSessionPage() {
       setAnswers(restored);
 
       // Timer — use API value or fall back to SAT defaults (32 min RW, 35 min math)
-      const isMathSubject = ['M', 'm', 'math'].includes(data.subject_code);
+      const isMathSubject = ['M', 'm', 'math', 'Math'].includes(data.subject_code);
       const timeFactor = parseFloat(localStorage.getItem(`pt_factor_${attemptId}`) || '1');
       const timeLimitSecs = Math.round(
         (data.time_limit_seconds || (isMathSubject ? 35 * 60 : 32 * 60)) * timeFactor
@@ -632,7 +632,7 @@ export default function TestSessionPage() {
   const subjectLabel = SUBJECT_LABEL[moduleData.subject_code] || moduleData.subject_code;
   const moduleLabel = `${subjectLabel} — Module ${moduleData.module_number} of 2`;
 
-  const isMath = ['M', 'm', 'math'].includes(moduleData.subject_code);
+  const isMath = ['M', 'm', 'math', 'Math'].includes(moduleData.subject_code);
   const isReading = !isMath && !!q.stimulus_html;
 
   // ─── Answer area (shared between layouts) ─────────────────────────────────
