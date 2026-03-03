@@ -1370,131 +1370,195 @@ hr{
    Dashboard
 ================================ */
 
-.dbHeader {
+.dbMain{
+  max-width: 1000px;
+  padding-top: 28px;
+  padding-bottom: 56px;
+}
+
+/* ── Banner ── */
+.dbBanner{
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.dbSummaryRow {
-  display: flex;
-  gap: 16px;
+  gap: 20px;
+  padding: 24px 28px;
   margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 60%);
+  border-left: 4px solid var(--accent);
   flex-wrap: wrap;
 }
 
-.dbSummaryItem {
-  flex: 1;
-  min-width: 130px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 16px 20px;
-  box-shadow: var(--shadow-card);
+.dbBannerText{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.dbSummaryValue {
-  font-size: 32px;
+.dbBannerGreeting{
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.dbBannerActions{
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ── Stats row ── */
+.dbStatsRow{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 540px){
+  .dbStatsRow{ grid-template-columns: 1fr 1fr; }
+}
+
+.dbStatCard{
+  padding: 18px 20px;
+}
+
+.dbStatValue{
+  font-size: 36px;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
-.dbSummaryLabel {
+.dbStatLabel{
   font-size: 12px;
   color: var(--muted);
   font-weight: 500;
 }
 
-.dbGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-}
-
-@media (max-width: 1000px) {
-  .dbGrid { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 640px) {
-  .dbGrid { grid-template-columns: 1fr; }
-}
-
-/* Two-column English | Math performance grid */
-.dbPerfGrid {
+/* ── Performance grid ── */
+.dbPerfGrid{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
-@media (max-width: 700px) {
-  .dbPerfGrid { grid-template-columns: 1fr; }
+@media (max-width: 680px){
+  .dbPerfGrid{ grid-template-columns: 1fr; }
 }
 
-/* List of domain blocks inside a section card */
-.dbDomainList {
+.dbPerfCard{
+  padding: 20px 22px;
+}
+
+.dbPerfCardHeader{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dbSectionPct{
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+/* ── Domain list ── */
+.dbDomainList{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dbDomainBlock{
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3-column grid: [name] [count] [bar] */
+.dbDomainRow{
   display: grid;
-  gap: 20px;
-}
-
-/* One domain + its topics */
-.dbDomainBlock {
-  display: grid;
+  grid-template-columns: 1fr auto 148px;
+  align-items: center;
   gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background 0.1s;
+}
+.dbDomainRow:hover{ background: var(--bg); }
+
+.dbDomainLeft{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
 }
 
-/* Domain header row */
-.dbDomainRow {
-  display: grid;
-  gap: 3px;
+.dbChevron{
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  width: 12px;
 }
+.dbChevron.invisible{ visibility: hidden; }
 
-.dbDomainName {
+.dbDomainName{
   font-size: 14px;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Topics indented under their domain */
-.dbTopicList {
-  display: grid;
-  gap: 10px;
-  padding-left: 14px;
-  border-left: 2px solid var(--border);
-  margin-left: 4px;
-}
-
-.dbTopicRow {
-  display: grid;
-  gap: 2px;
-}
-
-.dbStatList {
-  display: grid;
-  gap: 14px;
-  margin-top: 4px;
-}
-
-.dbStatRow {
-  display: grid;
-  gap: 3px;
-}
-
-.dbStatName {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.dbStatMeta {
+.dbRowCount{
   font-size: 12px;
   color: var(--muted);
+  white-space: nowrap;
+  text-align: right;
 }
 
-.dbProgressBar {
+.dbBarCell{
+  /* holds AccuracyBar */
+}
+
+/* Topics indented under domain */
+.dbTopicList{
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 10px;
+  margin-left: 6px;
+  border-left: 2px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.dbTopicRow{
+  display: grid;
+  grid-template-columns: 1fr auto 148px;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.1s;
+}
+.dbTopicRow:hover{ background: var(--bg); }
+
+.dbTopicName{
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Progress bar (shared with results page) ── */
+.dbProgressBar{
   flex: 1;
   height: 6px;
   border-radius: 999px;
@@ -1502,64 +1566,67 @@ hr{
   overflow: hidden;
 }
 
-.dbProgressFill {
+.dbProgressFill{
   height: 100%;
   border-radius: 999px;
   transition: width 0.4s ease;
 }
 
-.dbTestPanel {
+/* ── Bottom row ── */
+.dbBottomRow{
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 680px){
+  .dbBottomRow{ grid-template-columns: 1fr; }
+}
+
+.dbTestCard{
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
 }
 
-.dbTestComingSoon {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 0;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.dbTestBtn {
+.dbTestBtn{
   margin-top: auto;
   text-align: center;
   justify-content: center;
 }
 
-.dbActivityList {
-  display: grid;
-  gap: 0;
+.dbActivityCard{
+  padding: 20px 22px;
+}
+
+/* ── Activity feed ── */
+.dbActivityList{
+  display: flex;
+  flex-direction: column;
   margin-top: 4px;
 }
 
-.dbActivityItem {
+.dbActivityItem{
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 0;
+  padding: 9px 0;
   border-bottom: 1px solid var(--border);
   cursor: pointer;
-  transition: background 0.1s ease;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.1s;
 }
-
-.dbActivityItem:last-child {
-  border-bottom: none;
-}
-
-.dbActivityItem:hover {
+.dbActivityItem:last-child{ border-bottom: none; }
+.dbActivityItem:hover{
   background: rgba(17,24,39,0.02);
   margin: 0 -8px;
-  padding: 10px 8px;
+  padding: 9px 8px;
   border-radius: 8px;
 }
 
-.dbActivityDot {
+.dbActivityDot{
   width: 22px;
   height: 22px;
   flex-shrink: 0;
@@ -1570,28 +1637,23 @@ hr{
   font-size: 11px;
   font-weight: 700;
 }
+.dbActivityDot.correct{ background: #dcfce7; color: #15803d; }
+.dbActivityDot.incorrect{ background: #fee2e2; color: #b91c1c; }
 
-.dbActivityDot.correct {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.dbActivityDot.incorrect {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.dbActivityInfo {
+.dbActivityInfo{
   flex: 1;
   font-size: 14px;
-}
-
-.dbActivityTopic {
-  font-weight: 600;
-}
-
-.dbActivityDate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.dbActivityTopic{ font-weight: 600; }
+
+.dbActivityDate{
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Prevent overflow from long expressions / tables */
