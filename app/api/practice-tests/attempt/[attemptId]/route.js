@@ -34,8 +34,7 @@ export async function GET(_request, { params }) {
     .select('id, subject_code, module_number, route_code, time_limit_seconds')
     .eq('practice_test_id', attempt.practice_test_id)
     .order('subject_code', { ascending: true })
-    .order('module_number', { ascending: true })
-    .order('created_at', { ascending: true });
+    .order('module_number', { ascending: true });
 
   if (modErr || !allModules?.length) {
     return NextResponse.json({ error: 'No modules found for this test' }, { status: 404 });
