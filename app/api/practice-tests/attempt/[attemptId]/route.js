@@ -17,7 +17,7 @@ export async function GET(_request, { params }) {
   // of whether a RLS SELECT policy exists for this table.
   const { data: attempt, error: attErr } = await supabase
     .from('practice_test_attempts')
-    .select('id, practice_test_id, user_id, status, rw_route_code, m_route_code, started_at, completed_at')
+    .select('id, practice_test_id, user_id, status, metadata, started_at, finished_at')
     .eq('id', attemptId)
     .eq('user_id', user.id)
     .maybeSingle();
@@ -90,9 +90,9 @@ export async function GET(_request, { params }) {
       (m) => m.subject_code === activeSpec.subject_code && m.module_number === 1
     ) ?? null;
   } else {
-    // Module 2: route is stored in the attempt after module 1 was submitted
-    const routeField = subjectRouteField[activeSpec.subject_code];
-    const route_code = routeField ? attempt[routeField] : null;
+    // Module 2: route is stored in the attempt metadata after module 1 was submitted
+    const metaKey = subjectRouteField[activeSpec.subject_code];
+    const route_code = metaKey ? (attempt.metadata?.[metaKey] ?? null) : null;
     if (!route_code) {
       return NextResponse.json({ error: 'Module 2 route not yet determined' }, { status: 400 });
     }

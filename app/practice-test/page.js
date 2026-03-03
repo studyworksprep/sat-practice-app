@@ -75,7 +75,7 @@ export default async function PracticeTestListPage() {
               <div key={a.id} className={`ptHistoryRow${i < completed.length - 1 ? ' ptHistoryRowBorder' : ''}`}>
                 <div className="ptHistoryLeft">
                   <div className="ptHistoryName">{testNameById[a.practice_test_id] ?? 'Practice Test'}</div>
-                  <div className="muted small">{fmt(a.completed_at || a.started_at)}</div>
+                  <div className="muted small">{fmt(a.finished_at || a.started_at)}</div>
                 </div>
                 <div className="ptHistoryScores">
                   {a.composite != null && <ScoreBadge score={a.composite} label="Total" />}
@@ -124,7 +124,7 @@ async function fetchData(supabase, userId) {
 
   const { data: attemptsRaw } = await supabase
     .from('practice_test_attempts')
-    .select('id, practice_test_id, status, rw_route_code, m_route_code, started_at, completed_at')
+    .select('id, practice_test_id, status, metadata, started_at, finished_at')
     .eq('user_id', userId)
     .order('started_at', { ascending: false });
 

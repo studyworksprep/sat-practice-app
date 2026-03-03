@@ -60,7 +60,7 @@ export async function GET() {
   // User's attempts
   const { data: attemptsRaw, error: attErr } = await supabase
     .from('practice_test_attempts')
-    .select('id, practice_test_id, status, rw_route_code, m_route_code, started_at, completed_at')
+    .select('id, practice_test_id, status, metadata, started_at, finished_at')
     .eq('user_id', user.id)
     .order('started_at', { ascending: false });
 

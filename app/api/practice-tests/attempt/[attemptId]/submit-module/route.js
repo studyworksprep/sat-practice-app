@@ -22,7 +22,7 @@ export async function POST(request, { params }) {
   // regardless of whether a RLS SELECT policy exists for this table.
   const { data: attempt, error: attErr } = await supabase
     .from('practice_test_attempts')
-    .select('id, practice_test_id, user_id, status, rw_route_code, m_route_code')
+    .select('id, practice_test_id, user_id, status, metadata')
     .eq('id', attemptId)
     .eq('user_id', user.id)
     .maybeSingle();
@@ -184,12 +184,12 @@ export async function POST(request, { params }) {
       nextRouteCode = fallback?.route_code ?? null;
     }
 
-    // Store the determined route in the attempt using the dynamic field mapping
-    const routeField = subjectRouteField[subject_code];
-    if (routeField && nextRouteCode) {
+    // Store the determined route in the attempt metadata
+    const metaKey = subjectRouteField[subject_code];
+    if (metaKey && nextRouteCode) {
       await supabase
         .from('practice_test_attempts')
-        .update({ [routeField]: nextRouteCode })
+        .update({ metadata: { ...(attempt.metadata || {}), [metaKey]: nextRouteCode } })
         .eq('id', attemptId);
     }
   }
@@ -201,7 +201,7 @@ export async function POST(request, { params }) {
   if (isLast) {
     await supabase
       .from('practice_test_attempts')
-      .update({ status: 'completed', completed_at: now })
+      .update({ status: 'completed', finished_at: now })
       .eq('id', attemptId);
     return NextResponse.json({ is_complete: true });
   }
