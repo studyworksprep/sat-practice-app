@@ -38,7 +38,7 @@ export async function GET(_request, { params }) {
   // Fetch question versions (content)
   const { data: versions } = await supabase
     .from('question_versions')
-    .select('id, question_id, stimulus_html, stem_html, question_type')
+    .select('id, question_id, stimulus_html, stem_html, question_type, rationale_html')
     .in('id', versionIds);
 
   const versionMap = {};
@@ -151,6 +151,7 @@ export async function GET(_request, { params }) {
       response_text: attempt_rec?.response_text || null,
       domain_name: tax.domain_name || null,
       skill_name: tax.skill_name || null,
+      rationale_html: version.rationale_html || null,
     });
   }
 
