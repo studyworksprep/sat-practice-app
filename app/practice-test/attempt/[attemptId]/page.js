@@ -268,11 +268,12 @@ function McqOptions({ options, selected, onChange, disabled, crossedOut = {}, on
             {!disabled && onCrossOut && (
               <button
                 type="button"
-                className="crossOutBtn"
+                className={`crossOutBtn${isCrossed ? ' active' : ''}`}
                 onClick={(e) => { e.stopPropagation(); onCrossOut(opt.id); }}
                 aria-label={isCrossed ? `Undo cross out for option ${letter}` : `Cross out option ${letter}`}
+                title={isCrossed ? 'Undo cross-out' : 'Cross out this option'}
               >
-                {isCrossed ? 'Undo' : 'Cross out'}
+                {letter}
               </button>
             )}
           </div>
@@ -307,6 +308,11 @@ export default function TestSessionPage() {
   // Cross-out answer choices (session-only, not persisted to DB)
   const [crossedOut, setCrossedOut] = useState({});
   const toggleCrossOut = (optId) => setCrossedOut((c) => ({ ...c, [optId]: !c[optId] }));
+
+  // Draggable passage/answers split (reading two-column layout)
+  const [qaLeftPct, setQaLeftPct] = useState(50);
+  const qaSplitRef = useRef(null);
+  const qaLeftPctRef = useRef(50);
 
   // Math tools state
   const [calcMinimized, setCalcMinimized] = useState(false);
@@ -559,6 +565,39 @@ export default function TestSessionPage() {
     window.addEventListener('pointerup', onUp);
   }
 
+  // ─── Drag: reading passage/answers divider ────────────────────────────────
+
+  function onQaDividerPointerDown(e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+
+    const container = qaSplitRef.current;
+    if (!container) return;
+
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+
+    const startX = e.clientX;
+    const startPct = qaLeftPctRef.current;
+    const containerW = container.getBoundingClientRect().width;
+
+    const onMove = (ev) => {
+      const dx = ev.clientX - startX;
+      const dpct = (dx / containerW) * 100;
+      const next = Math.min(68, Math.max(32, startPct + dpct));
+      qaLeftPctRef.current = next;
+      container.style.setProperty('--qa-split', `${next}%`);
+    };
+
+    const onUp = () => {
+      setQaLeftPct(qaLeftPctRef.current);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
   // ─── Loading / error states ────────────────────────────────────────────────
 
   if (loading) {
@@ -716,11 +755,22 @@ export default function TestSessionPage() {
           );
 
           if (isReading) return (
-            /* Two-column: passage left, stem + answers right */
-            <div className="qaTwoCol">
+            /* Two-column: passage left | draggable divider | stem + answers right */
+            <div
+              className="qaTwoCol"
+              ref={qaSplitRef}
+              style={{ '--qa-split': `${qaLeftPct}%` }}
+            >
               <div className="qaLeft">
                 <HtmlBlock className="prose" html={q.stimulus_html} />
               </div>
+              <div
+                className="qaDivider"
+                onPointerDown={onQaDividerPointerDown}
+                role="separator"
+                aria-orientation="vertical"
+                aria-label="Drag to resize passage and question panels"
+              />
               <div className="qaRight">
                 {qNumRow}
                 {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
