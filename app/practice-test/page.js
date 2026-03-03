@@ -31,7 +31,7 @@ export default async function PracticeTestListPage() {
     attemptsByTest[a.practice_test_id].push(a);
   }
 
-  const SUBJECT_LABELS = { rw: 'Reading & Writing', math: 'Math' };
+  const SUBJECT_LABELS = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math' };
 
   return (
     <main className="container" style={{ maxWidth: 720, paddingTop: 32, paddingBottom: 48 }}>

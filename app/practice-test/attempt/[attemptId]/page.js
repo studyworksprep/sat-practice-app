@@ -5,7 +5,7 @@ import Script from 'next/script';
 import { useRouter, useParams } from 'next/navigation';
 import HtmlBlock from '../../../../components/HtmlBlock';
 
-const SUBJECT_LABEL = { rw: 'Reading & Writing', math: 'Math' };
+const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math' };
 
 const MIN_CALC_W = 550;
 const MAX_CALC_W = 760;
@@ -551,7 +551,7 @@ export default function TestSessionPage() {
   const subjectLabel = SUBJECT_LABEL[moduleData.subject_code] || moduleData.subject_code;
   const moduleLabel = `${subjectLabel} — Module ${moduleData.module_number} of 2`;
 
-  const isMath = moduleData.subject_code === 'math';
+  const isMath = ['M', 'm', 'math'].includes(moduleData.subject_code);
   const isReading = !isMath && !!q.stimulus_html;
 
   // ─── Answer area (shared between layouts) ─────────────────────────────────

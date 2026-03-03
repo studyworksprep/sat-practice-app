@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import HtmlBlock from '../../../../../components/HtmlBlock';
 
-const SUBJECT_LABEL = { rw: 'Reading & Writing', math: 'Math' };
+const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math' };
 
 function pct(correct, total) {
   if (!total) return 0;
@@ -96,7 +96,7 @@ export default function ResultsPage() {
   if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading results…</p></div>;
   if (error || data?.error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error || data?.error}</p></div>;
 
-  const SUBJECT_ORDER = ['rw', 'math'];
+  const SUBJECT_ORDER = ['RW', 'rw', 'M', 'm', 'math'];
 
   function fmtDate(d) {
     if (!d) return '';

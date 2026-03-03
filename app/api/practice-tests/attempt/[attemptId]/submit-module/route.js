@@ -43,16 +43,16 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: 'No modules found for this test' }, { status: 404 });
   }
 
-  // Derive unique subject codes — rw first, math second, any others alphabetically after
+  // Derive unique subject codes — RW first, Math second (DB stores 'RW' and 'M')
   const allSubjects = new Set(allModules.map((m) => m.subject_code));
-  const SUBJECT_PRIORITY = ['rw', 'math'];
+  const SUBJECT_PRIORITY = ['RW', 'rw', 'M', 'm', 'math'];
   const sortedSubjects = [
     ...SUBJECT_PRIORITY.filter((s) => allSubjects.has(s)),
     ...[...allSubjects].filter((s) => !SUBJECT_PRIORITY.includes(s)).sort(),
   ];
 
   // Name-based route field mapping (matches DB column semantics)
-  const subjectRouteField = { rw: 'rw_route_code', math: 'm_route_code' };
+  const subjectRouteField = { RW: 'rw_route_code', rw: 'rw_route_code', M: 'm_route_code', m: 'm_route_code', math: 'm_route_code' };
 
   // Find the module row without .single()
   const moduleRow = allModules.find(
