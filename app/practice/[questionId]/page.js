@@ -1253,6 +1253,8 @@ export default function PracticeQuestionPage() {
               <PromptBlocks mb={12} />
             </div>
 
+            <div className="qaDivider" aria-hidden="true" />
+
             <div className="qaRight">
               <StatusPillsRow style={{ marginBottom: 14 }} />
               <McqOptionsArea />
