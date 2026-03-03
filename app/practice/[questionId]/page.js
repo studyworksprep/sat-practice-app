@@ -1247,16 +1247,25 @@ export default function PracticeQuestionPage() {
 
       {qType === 'mcq' ? (
         useTwoColReading ? (
-          // Reading: left stimulus/stem; right status+answers
+          // Reading: left passage only; right question stem + answers
           <div className="qaTwoCol">
             <div className="qaLeft">
-              <PromptBlocks mb={12} />
+              {version?.stimulus_html && (
+                <div className="card subcard">
+                  <HtmlBlock className="prose" html={version.stimulus_html} />
+                </div>
+              )}
             </div>
 
             <div className="qaDivider" aria-hidden="true" />
 
             <div className="qaRight">
               <StatusPillsRow style={{ marginBottom: 14 }} />
+              {version?.stem_html && (
+                <div className="card subcard" style={{ marginBottom: 12 }}>
+                  <HtmlBlock className="prose" html={version.stem_html} />
+                </div>
+              )}
               <McqOptionsArea />
             </div>
           </div>
