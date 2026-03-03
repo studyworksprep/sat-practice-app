@@ -65,6 +65,25 @@ function IconReference({ className = '' }) {
   );
 }
 
+function IconBookmark({ filled = false }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+    </svg>
+  );
+}
+
 // ─── Desmos panel ─────────────────────────────────────────────────────────────
 
 function DesmosPanel({ isOpen, storageKey }) {
@@ -205,16 +224,17 @@ function TimerChip({ seconds }) {
 
 // ─── Question map ─────────────────────────────────────────────────────────────
 
-function QuestionMap({ questions, answers, currentIdx, onJump }) {
+function QuestionMap({ questions, answers, currentIdx, onJump, marked }) {
   return (
     <div className="ptQMap">
       {questions.map((q, i) => {
         const answered = !!answers[q.question_version_id];
         const active = i === currentIdx;
+        const isMarked = !!marked?.[q.question_version_id];
         return (
           <button
             key={q.question_version_id}
-            className={`ptQChip${active ? ' active' : answered ? ' answered' : ''}`}
+            className={`ptQChip${active ? ' active' : answered ? ' answered' : ''}${isMarked ? ' marked' : ''}`}
             onClick={() => onJump(i)}
           >
             {i + 1}
@@ -268,8 +288,10 @@ export default function TestSessionPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const timerRef = useRef(null);
 
-  // Question map drawer
+  // Question map drawer + mark-for-review (session-only, not persisted to DB)
   const [showMap, setShowMap] = useState(false);
+  const [marked, setMarked] = useState({});
+  const toggleMark = (vid) => setMarked((m) => ({ ...m, [vid]: !m[vid] }));
 
   // Math tools state
   const [calcMinimized, setCalcMinimized] = useState(false);
@@ -661,40 +683,58 @@ export default function TestSessionPage() {
 
       {/* Question content */}
       <div className="ptQuestionPanel">
-        {isReading ? (
-          /* Two-column: passage left, stem + answers right */
-          <div className="qaTwoCol">
-            <div className="qaLeft">
-              <HtmlBlock className="prose" html={q.stimulus_html} />
+        {(() => {
+          const qNumRow = (
+            <div className="ptQNumRow">
+              <span className="ptQNumBadge">{currentIdx + 1}</span>
+              <button
+                className={`ptMarkBtn${marked[q.question_version_id] ? ' marked' : ''}`}
+                onClick={() => toggleMark(q.question_version_id)}
+                aria-pressed={!!marked[q.question_version_id]}
+              >
+                <IconBookmark filled={!!marked[q.question_version_id]} />
+                {marked[q.question_version_id] ? 'Marked for Review' : 'Mark for Review'}
+              </button>
             </div>
-            <div className="qaRight">
-              <div className="ptQNumBadge">{currentIdx + 1}</div>
-              {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
-              {answerArea}
+          );
+
+          if (isReading) return (
+            /* Two-column: passage left, stem + answers right */
+            <div className="qaTwoCol">
+              <div className="qaLeft">
+                <HtmlBlock className="prose" html={q.stimulus_html} />
+              </div>
+              <div className="qaRight">
+                {qNumRow}
+                {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
+                {answerArea}
+              </div>
             </div>
-          </div>
-        ) : isMath ? (
-          /* Math shell: Desmos left, stem + answers right */
-          mathShellJsx(
+          );
+
+          if (isMath) return mathShellJsx(
+            /* Math shell: Desmos left, stem + answers right */
             <>
-              <div className="ptQNumBadge">{currentIdx + 1}</div>
+              {qNumRow}
               {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
               {answerArea}
             </>
-          )
-        ) : (
+          );
+
           /* Single column: rw question without a passage */
-          <div className="ptSingleCol">
-            <div className="ptQNumBadge">{currentIdx + 1}</div>
-            {q.stimulus_html && (
-              <div className="ptStimulus">
-                <HtmlBlock html={q.stimulus_html} />
-              </div>
-            )}
-            <HtmlBlock className="ptStem" html={q.stem_html} />
-            {answerArea}
-          </div>
-        )}
+          return (
+            <div className="ptSingleCol">
+              {qNumRow}
+              {q.stimulus_html && (
+                <div className="ptStimulus">
+                  <HtmlBlock html={q.stimulus_html} />
+                </div>
+              )}
+              <HtmlBlock className="ptStem" html={q.stem_html} />
+              {answerArea}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Bottom nav: chip drawer + 3-column Bluebook-style footer */}
@@ -706,6 +746,7 @@ export default function TestSessionPage() {
               answers={answers}
               currentIdx={currentIdx}
               onJump={(i) => { setCurrentIdx(i); setShowMap(false); }}
+              marked={marked}
             />
           </div>
         )}
