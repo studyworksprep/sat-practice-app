@@ -37,6 +37,14 @@ function ensureMathJaxLoaded() {
   }
 }
 
+// Strip wrapping double-quotes that some DB columns return around HTML strings
+function cleanHtml(raw) {
+  if (!raw) return '';
+  let s = raw;
+  if (s.startsWith('"') && s.endsWith('"')) s = s.slice(1, -1);
+  return s;
+}
+
 function HtmlBlockImpl({ html, className }) {
   const ref = useRef(null);
   const lastHtmlRef = useRef(null);
@@ -45,12 +53,14 @@ function HtmlBlockImpl({ html, className }) {
     const el = ref.current;
     if (!el) return;
 
+    const cleaned = cleanHtml(html);
+
     // Only update DOM when the html string actually changes.
-    if ((html || '') === (lastHtmlRef.current || '')) return;
-    lastHtmlRef.current = html || '';
+    if (cleaned === (lastHtmlRef.current || '')) return;
+    lastHtmlRef.current = cleaned;
 
     // Set HTML once (this prevents React from overwriting MathJax output on unrelated rerenders)
-    el.innerHTML = html || '';
+    el.innerHTML = cleaned;
 
     // Only typeset if MathML exists
      // If MathJax is disabled, stop here and let native MathML render
