@@ -135,8 +135,16 @@ export async function GET(_request, { params }) {
     correct_text = ca?.correct_text ?? null;
   }
 
+  // Fetch source_external_id from the questions table
+  const { data: questionRow } = await supabase
+    .from('questions')
+    .select('source_external_id')
+    .eq('id', questionId)
+    .maybeSingle();
+
   return NextResponse.json({
     question_id: questionId,
+    source_external_id: questionRow?.source_external_id ?? null,
     version,
     options: options ?? [],
     taxonomy,

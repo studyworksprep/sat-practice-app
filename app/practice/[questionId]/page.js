@@ -973,6 +973,12 @@ export default function PracticeQuestionPage() {
                   <span className="muted">Score Band</span>
                   <span>{data?.taxonomy?.score_band ?? '—'}</span>
                 </div>
+                {data?.source_external_id && (
+                  <div className="infoPopRow">
+                    <span className="muted">External ID</span>
+                    <span>{data.source_external_id}</span>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -1028,7 +1034,7 @@ export default function PracticeQuestionPage() {
   );
 
   // Math tools moved to top nav as icon tabs (keep component for minimal diffs where it's called)
-  const MathToolRow = () => null;
+  const mathToolRow = null;
 
   // ✅ MCQ options area (no "Answer choices" header)
   const McqOptionsArea = () => (
@@ -1123,7 +1129,7 @@ export default function PracticeQuestionPage() {
   );
 
   // ✅ SPR answer area (no "Your answer" header)
-  const SprAnswerArea = () => (
+  const sprAnswerArea = (
     <>
       <div className="srOnly">Your answer</div>
 
@@ -1367,7 +1373,7 @@ export default function PracticeQuestionPage() {
         ) : isMath ? (
           // Math: calc left; right status+prompt+answers
           mathShellJsx(<>
-            <MathToolRow />
+            {mathToolRow}
             <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
               <StatusPillsRow />
             </div>
@@ -1387,17 +1393,17 @@ export default function PracticeQuestionPage() {
       ) : isMath ? (
         // Math SPR
         mathShellJsx(<>
-          <MathToolRow />
+          {mathToolRow}
           <StatusPillsRow style={{ marginBottom: 14 }} />
           <PromptBlocks mb={12} />
-          <SprAnswerArea />
+          {sprAnswerArea}
         </>)
       ) : (
         // Default SPR
         <div>
           <StatusPillsRow style={{ marginBottom: 14 }} />
           <PromptBlocks mb={12} />
-          <SprAnswerArea />
+          {sprAnswerArea}
         </div>
       )}
 

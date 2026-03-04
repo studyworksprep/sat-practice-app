@@ -356,13 +356,13 @@ a{
 }
 
 .btn.secondary{
-  background: rgba(17,24,39,0.02);
+  background: #fff;
   border: 1px solid var(--border);
   color: var(--text);
 }
 
 .btn.secondary:hover{
-  background: rgba(17,24,39,0.045);
+  background: rgba(17,24,39,0.04);
 }
 
 .btn.danger{
