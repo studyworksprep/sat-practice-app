@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
-import { toScaledScore } from '../../../lib/scoreConversion';
+import { computeScaledScore, toScaledScore } from '../../../lib/scoreConversion';
 
 // GET /api/practice-tests
 // Returns { tests, attempts } for the current user.
@@ -66,66 +66,84 @@ export async function GET() {
 
   if (attErr) return NextResponse.json({ error: attErr.message }, { status: 400 });
 
-  // For completed attempts, calculate scores from attempt_items → attempts table
-  const completedIds = (attemptsRaw || [])
-    .filter((a) => a.status === 'completed')
-    .map((a) => a.id);
+  // For completed attempts, calculate scores from module attempts (which store correct_count per module)
+  const completedAttempts = (attemptsRaw || []).filter((a) => a.status === 'completed');
+  const completedIds = completedAttempts.map((a) => a.id);
 
-  let scoresByAttempt = {};
+  // Map subject codes to score_conversion section names
+  const subjToSection = {
+    RW: 'reading_writing', rw: 'reading_writing',
+    M: 'math', m: 'math', math: 'math', Math: 'math', MATH: 'math',
+  };
+
+  // Fetch module attempts (has correct_count per module) and score_conversion data
+  let moduleAttemptsByPta = {};
+  let lookupByTestSection = {};
+
   if (completedIds.length > 0) {
-    const { data: attemptItems } = await supabase
-      .from('practice_test_attempt_items')
-      .select('practice_test_attempt_id, subject_code, question_version_id')
+    const { data: moduleAttempts } = await supabase
+      .from('practice_test_module_attempts')
+      .select('practice_test_attempt_id, practice_test_module_id, correct_count')
       .in('practice_test_attempt_id', completedIds);
 
-    if (attemptItems?.length) {
-      // Get question_id for each question_version_id
-      const versionIds = [...new Set(attemptItems.map((i) => i.question_version_id))];
-      const { data: versions } = await supabase
-        .from('question_versions')
-        .select('id, question_id')
-        .in('id', versionIds);
+    // Map module IDs to their subject/module_number info
+    const maModuleIds = [...new Set((moduleAttempts || []).map((ma) => ma.practice_test_module_id))];
+    const relevantMods = (modulesRaw || []).filter((m) => maModuleIds.includes(m.id));
+    const modById = {};
+    for (const m of relevantMods) modById[m.id] = m;
 
-      const versionToQuestion = {};
-      for (const v of versions || []) versionToQuestion[v.id] = v.question_id;
+    // Group by practice_test_attempt_id → subject → module_number
+    for (const ma of moduleAttempts || []) {
+      const mod = modById[ma.practice_test_module_id];
+      if (!mod) continue;
+      if (!moduleAttemptsByPta[ma.practice_test_attempt_id]) moduleAttemptsByPta[ma.practice_test_attempt_id] = {};
+      const key = `${mod.subject_code}/${mod.module_number}`;
+      moduleAttemptsByPta[ma.practice_test_attempt_id][key] = {
+        correct: ma.correct_count || 0,
+        routeCode: mod.route_code,
+        subjectCode: mod.subject_code,
+        moduleNumber: mod.module_number,
+      };
+    }
 
-      // Get attempt results for these questions
-      const questionIds = [...new Set(Object.values(versionToQuestion))];
-      const { data: attemptsData } = await supabase
-        .from('attempts')
-        .select('question_id, is_correct')
-        .eq('user_id', user.id)
-        .in('question_id', questionIds);
+    // Fetch score_conversion rows for relevant tests
+    const testIds = [...new Set(completedAttempts.map((a) => a.practice_test_id))];
+    const { data: lookupRows } = await supabase
+      .from('score_conversion')
+      .select('test_id, section, module1_correct, module2_correct, scaled_score')
+      .in('test_id', testIds);
 
-      // Use most recent attempt per question
-      const latestByQuestion = {};
-      for (const a of attemptsData || []) {
-        latestByQuestion[a.question_id] = a.is_correct;
-      }
-
-      // Build attempt → subject → { correct, total }
-      for (const item of attemptItems) {
-        const qid = versionToQuestion[item.question_version_id];
-        const attemptId = item.practice_test_attempt_id;
-        const subj = item.subject_code;
-        if (!scoresByAttempt[attemptId]) scoresByAttempt[attemptId] = {};
-        if (!scoresByAttempt[attemptId][subj]) scoresByAttempt[attemptId][subj] = { correct: 0, total: 0 };
-        scoresByAttempt[attemptId][subj].total += 1;
-        if (qid && latestByQuestion[qid]) scoresByAttempt[attemptId][subj].correct += 1;
-      }
+    for (const row of lookupRows || []) {
+      const key = `${row.test_id}/${row.section}`;
+      if (!lookupByTestSection[key]) lookupByTestSection[key] = [];
+      lookupByTestSection[key].push(row);
     }
   }
 
   const attempts = (attemptsRaw || []).map((a) => {
-    const subjScores = scoresByAttempt[a.id] || {};
-    const subjects = Object.keys(subjScores);
+    const modData = moduleAttemptsByPta[a.id] || {};
+    const subjects = [...new Set(Object.values(modData).map((d) => d.subjectCode))];
     let composite = null;
     const sectionScores = {};
     let totalCorrect = 0;
     let totalQuestions = 0;
+
     for (const subj of subjects) {
-      const { correct, total } = subjScores[subj];
-      const scaled = toScaledScore(correct, total);
+      const m1 = modData[`${subj}/1`] || { correct: 0 };
+      const m2 = modData[`${subj}/2`] || { correct: 0, routeCode: null };
+      const sectionName = subjToSection[subj] || 'math';
+      const lookupKey = `${a.practice_test_id}/${sectionName}`;
+
+      const scaled = computeScaledScore({
+        section: sectionName,
+        m1Correct: m1.correct,
+        m2Correct: m2.correct,
+        routeCode: m2.routeCode,
+        lookupRows: lookupByTestSection[lookupKey] || [],
+      });
+
+      const correct = m1.correct + m2.correct;
+      const total = (modData[`${subj}/1`]?.total || m1.correct) + (modData[`${subj}/2`]?.total || m2.correct);
       sectionScores[subj] = { correct, total, scaled };
       composite = (composite || 0) + scaled;
       totalCorrect += correct;

@@ -101,7 +101,12 @@ export default async function PracticeTestListPage() {
 
 // Direct Supabase query to avoid self-referential fetch in server component
 async function fetchData(supabase, userId) {
-  const { toScaledScore } = await import('../../lib/scoreConversion');
+  const { computeScaledScore } = await import('../../lib/scoreConversion');
+
+  const subjToSection = {
+    RW: 'reading_writing', rw: 'reading_writing',
+    M: 'math', m: 'math', math: 'math', Math: 'math', MATH: 'math',
+  };
 
   const [{ data: testsRaw }, { data: modulesRaw }, { data: moduleItemsRaw }] = await Promise.all([
     supabase.from('practice_tests').select('id, code, name, is_adaptive, created_at').eq('is_published', true).order('created_at', { ascending: true }),
@@ -115,7 +120,9 @@ async function fetchData(supabase, userId) {
   }
 
   const modulesByTest = {};
+  const modById = {};
   for (const mod of modulesRaw || []) {
+    modById[mod.id] = mod;
     if (!modulesByTest[mod.practice_test_id]) modulesByTest[mod.practice_test_id] = [];
     modulesByTest[mod.practice_test_id].push({ ...mod, question_count: itemsByModule[mod.id] || 0 });
   }
@@ -132,44 +139,65 @@ async function fetchData(supabase, userId) {
     .eq('user_id', userId)
     .order('started_at', { ascending: false });
 
-  const completedIds = (attemptsRaw || []).filter((a) => a.status === 'completed').map((a) => a.id);
-  let scoresByAttempt = {};
+  const completedAttempts = (attemptsRaw || []).filter((a) => a.status === 'completed');
+  const completedIds = completedAttempts.map((a) => a.id);
+  let moduleAttemptsByPta = {};
+  let lookupByTestSection = {};
 
   if (completedIds.length > 0) {
-    const { data: attemptItems } = await supabase
-      .from('practice_test_attempt_items')
-      .select('practice_test_attempt_id, subject_code, question_version_id')
+    // Fetch per-module correct counts
+    const { data: moduleAttempts } = await supabase
+      .from('practice_test_module_attempts')
+      .select('practice_test_attempt_id, practice_test_module_id, correct_count')
       .in('practice_test_attempt_id', completedIds);
 
-    if (attemptItems?.length) {
-      const vids = [...new Set(attemptItems.map((i) => i.question_version_id))];
-      const { data: vers } = await supabase.from('question_versions').select('id, question_id').in('id', vids);
-      const v2q = {};
-      for (const v of vers || []) v2q[v.id] = v.question_id;
-      const qids = [...new Set(Object.values(v2q))];
-      const { data: attData } = await supabase.from('attempts').select('question_id, is_correct').eq('user_id', userId).in('question_id', qids);
-      const latestByQ = {};
-      for (const a of attData || []) { if (!latestByQ[a.question_id]) latestByQ[a.question_id] = a.is_correct; }
+    for (const ma of moduleAttempts || []) {
+      const mod = modById[ma.practice_test_module_id];
+      if (!mod) continue;
+      if (!moduleAttemptsByPta[ma.practice_test_attempt_id]) moduleAttemptsByPta[ma.practice_test_attempt_id] = {};
+      const key = `${mod.subject_code}/${mod.module_number}`;
+      moduleAttemptsByPta[ma.practice_test_attempt_id][key] = {
+        correct: ma.correct_count || 0,
+        routeCode: mod.route_code,
+        subjectCode: mod.subject_code,
+      };
+    }
 
-      for (const item of attemptItems) {
-        const qid = v2q[item.question_version_id];
-        const aid = item.practice_test_attempt_id;
-        const subj = item.subject_code;
-        if (!scoresByAttempt[aid]) scoresByAttempt[aid] = {};
-        if (!scoresByAttempt[aid][subj]) scoresByAttempt[aid][subj] = { correct: 0, total: 0 };
-        scoresByAttempt[aid][subj].total += 1;
-        if (qid && latestByQ[qid]) scoresByAttempt[aid][subj].correct += 1;
-      }
+    // Fetch score_conversion lookup rows
+    const testIds = [...new Set(completedAttempts.map((a) => a.practice_test_id))];
+    const { data: lookupRows } = await supabase
+      .from('score_conversion')
+      .select('test_id, section, module1_correct, module2_correct, scaled_score')
+      .in('test_id', testIds);
+
+    for (const row of lookupRows || []) {
+      const key = `${row.test_id}/${row.section}`;
+      if (!lookupByTestSection[key]) lookupByTestSection[key] = [];
+      lookupByTestSection[key].push(row);
     }
   }
 
   const attempts = (attemptsRaw || []).map((a) => {
-    const subjScores = scoresByAttempt[a.id] || {};
+    const modData = moduleAttemptsByPta[a.id] || {};
+    const subjects = [...new Set(Object.values(modData).map((d) => d.subjectCode))];
     const sectionScores = {};
     let composite = null;
-    for (const [subj, { correct, total }] of Object.entries(subjScores)) {
-      const scaled = toScaledScore(correct, total);
-      sectionScores[subj] = { correct, total, scaled };
+
+    for (const subj of subjects) {
+      const m1 = modData[`${subj}/1`] || { correct: 0 };
+      const m2 = modData[`${subj}/2`] || { correct: 0, routeCode: null };
+      const sectionName = subjToSection[subj] || 'math';
+      const lookupKey = `${a.practice_test_id}/${sectionName}`;
+
+      const scaled = computeScaledScore({
+        section: sectionName,
+        m1Correct: m1.correct,
+        m2Correct: m2.correct,
+        routeCode: m2.routeCode,
+        lookupRows: lookupByTestSection[lookupKey] || [],
+      });
+
+      sectionScores[subj] = { correct: m1.correct + m2.correct, total: m1.correct + m2.correct, scaled };
       composite = (composite || 0) + scaled;
     }
     return { ...a, composite, sectionScores };
