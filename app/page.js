@@ -1,9 +1,11 @@
 import { redirect } from 'next/navigation';
-import { getUser } from '../lib/db';
+import { getUserWithProfile } from '../lib/db';
 import LandingClient from '../components/LandingClient';
 
 export default async function HomePage() {
-  const user = await getUser();
-  if (user) redirect('/dashboard');
+  const { user, profile } = await getUserWithProfile();
+  if (user) {
+    redirect(profile?.role === 'practice' ? '/practice' : '/dashboard');
+  }
   return <LandingClient />;
 }

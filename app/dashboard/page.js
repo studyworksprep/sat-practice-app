@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation';
-import { getUser } from '../../lib/db';
+import { getUserWithProfile } from '../../lib/db';
 import DashboardClient from './DashboardClient';
 
 export default async function DashboardPage() {
-  const user = await getUser();
+  const { user, profile } = await getUserWithProfile();
   if (!user) redirect('/');
+  if (profile?.role === 'practice') redirect('/practice');
   return <DashboardClient email={user.email} />;
 }

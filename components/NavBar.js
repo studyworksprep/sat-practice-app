@@ -40,6 +40,8 @@ export default function NavBar() {
 
   const isAdmin = role === 'admin';
   const isTeacher = role === 'teacher' || role === 'admin';
+  const isPractice = role === 'practice';
+  const homeHref = user ? (isPractice ? '/practice' : '/dashboard') : '/';
 
   return (
     <nav className="nav">
@@ -47,7 +49,7 @@ export default function NavBar() {
 
         {/* Left: Logo + Nav */}
         <div className="navLeft">
-          <Link href={user ? '/dashboard' : '/'}>
+          <Link href={homeHref}>
             <img
               src="/studyworks-logo.png"
               alt="Studyworks"
@@ -57,8 +59,8 @@ export default function NavBar() {
 
           {user && (
             <div className="navLinks">
-              <Link href="/dashboard">Dashboard</Link>
-              <Link href="/practice-test">Tests</Link>
+              {!isPractice && <Link href="/dashboard">Dashboard</Link>}
+              {!isPractice && <Link href="/practice-test">Tests</Link>}
               <Link href="/practice">Practice</Link>
               {isAdmin && <Link href="/admin">Admin</Link>}
             </div>

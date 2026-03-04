@@ -25,6 +25,14 @@ export default async function PracticeTestListPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/');
 
+  // Practice-only users cannot access practice tests
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+  if ((profile?.role || 'practice') === 'practice') redirect('/practice');
+
   const { tests, attempts } = await fetchData(supabase, user.id);
 
   const inProgress = attempts.filter((a) => a.status === 'in_progress');
