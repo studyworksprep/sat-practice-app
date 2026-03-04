@@ -320,7 +320,7 @@ export default function PracticeQuestionPage() {
 
   // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
-    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'broken_only', 'q', 'session'];
+    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'broken_only', 'q', 'session', 'replay', 'sid'];
     const p = new URLSearchParams();
     for (const k of keys) {
       const v = searchParams.get(k);
@@ -331,6 +331,20 @@ export default function PracticeQuestionPage() {
 
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
   const inSessionContext = sessionParams.get('session') === '1';
+  const sidParam = searchParams.get('sid') || null;
+
+  // Read full session ID list from localStorage (used for replay/dashboard sessions)
+  function getSessionIds() {
+    if (!sidParam) return null;
+    try {
+      const raw = localStorage.getItem(`practice_session_${sidParam}`);
+      if (raw) {
+        const ids = raw.split(',').filter(Boolean);
+        if (ids.length > 0) return ids;
+      }
+    } catch {}
+    return null;
+  }
 
   // Keep liveWidthRef in sync with committed calcWidth
   useEffect(() => {
@@ -473,6 +487,10 @@ export default function PracticeQuestionPage() {
   }
 
   async function fetchPageIds(offset) {
+    // If we have a localStorage session, slice from it
+    const sessionIds = getSessionIds();
+    if (sessionIds) return sessionIds.slice(offset, offset + 25);
+
     const key = `practice_${sessionParamsString}_page_${offset}`;
 
     const raw = localStorage.getItem(key);
@@ -485,6 +503,8 @@ export default function PracticeQuestionPage() {
 
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session');
+    apiParams.delete('replay');
+    apiParams.delete('sid');
     apiParams.set('limit', '25');
     apiParams.set('offset', String(offset));
 
@@ -512,6 +532,8 @@ export default function PracticeQuestionPage() {
 
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session');
+    apiParams.delete('replay');
+    apiParams.delete('sid');
     apiParams.set('limit', String(MAP_PAGE_SIZE));
     apiParams.set('offset', String(offset));
 
@@ -570,8 +592,17 @@ export default function PracticeQuestionPage() {
   async function ensureTotalIfMissing() {
     if (total != null) return;
 
+    // Use localStorage session length if available
+    const sessionIds = getSessionIds();
+    if (sessionIds) {
+      setTotal(sessionIds.length);
+      return;
+    }
+
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session');
+    apiParams.delete('replay');
+    apiParams.delete('sid');
     apiParams.set('limit', '1');
     apiParams.set('offset', '0');
 
@@ -590,6 +621,18 @@ export default function PracticeQuestionPage() {
 
     setNavLoading(true);
     try {
+      // If we have a localStorage session (e.g. dashboard replay), use it directly
+      const sessionIds = getSessionIds();
+      if (sessionIds) {
+        const idx = targetIndex1 - 1;
+        if (idx < 0 || idx >= sessionIds.length) return;
+        const targetId = sessionIds[idx];
+        setIndex1(targetIndex1);
+        setTotal(sessionIds.length);
+        router.push(buildHref(targetId, sessionIds.length, 0, idx, targetIndex1));
+        return;
+      }
+
       const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
       const targetPos = (targetIndex1 - 1) % 25;
 
