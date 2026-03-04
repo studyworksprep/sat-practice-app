@@ -100,23 +100,41 @@ export async function GET(_request, { params }) {
   // Fetch correct answers
   const { data: correctAnswers } = await supabase
     .from('correct_answers')
-    .select('question_version_id, answer_type, correct_option_id, correct_option_ids, correct_text')
+    .select('question_version_id, answer_type, correct_option_id, correct_option_ids, correct_text, correct_number, numeric_tolerance')
     .in('question_version_id', versionIds);
 
   const correctByVersion = {};
   for (const ca of correctAnswers || []) correctByVersion[ca.question_version_id] = ca;
 
-  // Fetch user's attempts for these questions
-  const { data: userAttempts } = await supabase
-    .from('attempts')
-    .select('question_id, is_correct, selected_option_id, response_text, created_at')
-    .eq('user_id', user.id)
-    .in('question_id', questionIds)
-    .order('created_at', { ascending: false });
+  // Fetch user's answers scoped to THIS practice test attempt only.
+  // Join chain: practice_test_module_attempts → practice_test_item_attempts → attempts
+  // This prevents answers from previous attempts / other tests bleeding through.
+  const { data: moduleAttemptRows } = await supabase
+    .from('practice_test_module_attempts')
+    .select('id')
+    .eq('practice_test_attempt_id', attemptId);
+
+  const moduleAttemptIds = (moduleAttemptRows || []).map((r) => r.id);
+
+  const { data: itemAttemptRows } = moduleAttemptIds.length
+    ? await supabase
+        .from('practice_test_item_attempts')
+        .select('attempt_id')
+        .in('practice_test_module_attempt_id', moduleAttemptIds)
+    : { data: [] };
+
+  const attemptIds = [...new Set((itemAttemptRows || []).map((r) => r.attempt_id).filter(Boolean))];
+
+  const { data: userAttempts } = attemptIds.length
+    ? await supabase
+        .from('attempts')
+        .select('id, question_id, selected_option_id, response_text')
+        .in('id', attemptIds)
+    : { data: [] };
 
   const latestAttempt = {};
   for (const a of userAttempts || []) {
-    if (!latestAttempt[a.question_id]) latestAttempt[a.question_id] = a;
+    latestAttempt[a.question_id] = a;
   }
 
   // Fetch taxonomy for domain/skill breakdown
@@ -133,15 +151,46 @@ export async function GET(_request, { params }) {
   const domainStats = {};  // domain_name → { correct, total, skill_name }
   const questionReview = [];
 
+  // Helper: parse correct_text which may be a plain string or JSON array like '["77","77.0"]'
+  const parseSprAccepted = (ct) => {
+    if (!ct) return [];
+    const t = String(ct).trim();
+    if (t.startsWith('[') && t.endsWith(']')) {
+      try { const p = JSON.parse(t); if (Array.isArray(p)) return p.map(String); } catch {}
+    }
+    return [t];
+  };
+  const normText = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
   for (const item of attemptItems || []) {
     const version = versionMap[item.question_version_id];
     if (!version) continue;
     const qid = version.question_id;
     const attempt_rec = latestAttempt[qid];
-    const is_correct = attempt_rec?.is_correct ?? false;
     const was_answered = !!attempt_rec;
     const tax = taxByQuestion[qid] || {};
     const ca = correctByVersion[item.question_version_id];
+
+    // Recompute correctness from live answer-key data so stale/buggy stored values don't mislead.
+    let is_correct = false;
+    if (attempt_rec && ca) {
+      if (ca.answer_type === 'mcq' || ca.answer_type === 'single') {
+        is_correct = ca.correct_option_id === attempt_rec.selected_option_id;
+      } else if (ca.answer_type === 'multi') {
+        const userSet = new Set([attempt_rec.selected_option_id].filter(Boolean));
+        const corrSet = new Set(ca.correct_option_ids || []);
+        is_correct = userSet.size === corrSet.size && [...userSet].every((id) => corrSet.has(id));
+      } else if (ca.answer_type === 'text') {
+        const accepted = parseSprAccepted(ca.correct_text);
+        is_correct = accepted.some((a) => normText(a) === normText(attempt_rec.response_text));
+      } else if (ca.answer_type === 'number') {
+        const parsed = parseFloat(attempt_rec.response_text);
+        if (!isNaN(parsed)) {
+          const tol = parseFloat(ca.numeric_tolerance) || 0;
+          is_correct = Math.abs(parsed - parseFloat(ca.correct_number)) <= tol;
+        }
+      }
+    }
 
     // Section stats
     const subj = item.subject_code;

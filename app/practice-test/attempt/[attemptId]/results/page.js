@@ -19,6 +19,18 @@ const DOMAIN_ABBREV = {
   'Geometry and Trigonometry': 'Geo',
 };
 
+function formatSprAnswer(ct) {
+  if (!ct) return '';
+  const t = String(ct).trim();
+  if (t.startsWith('[') && t.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(t);
+      if (Array.isArray(parsed)) return parsed.join(' or ');
+    } catch {}
+  }
+  return t;
+}
+
 function abbrev(name) {
   if (!name) return '';
   return DOMAIN_ABBREV[name] || name.slice(0, 4);
@@ -174,7 +186,7 @@ function QuestionDetail({ q, allQuestions, onSelect }) {
                   {!q.is_correct && q.correct_answer?.correct_text && (
                     <div className="ptrvAnswerRow">
                       <span className="ptrvAnswerLabel">Correct answer</span>
-                      <span className="ptrvAnswerValue correct">{q.correct_answer.correct_text}</span>
+                      <span className="ptrvAnswerValue correct">{formatSprAnswer(q.correct_answer.correct_text)}</span>
                     </div>
                   )}
                 </>
