@@ -457,11 +457,13 @@ label{
   background: var(--accent-soft);
 }
 
-/* Compact chip variant for topics */
+/* Compact chip variant for topics (skill buttons) */
 .chip.sm{
   padding: 4px 10px;
   font-size: 12px;
   gap: 6px;
+  background: #fff;
+  border-color: rgba(0,0,0,0.2);
 }
 
 /* Fixed-size circle for single-character labels (E/M/H, 1–7) */
@@ -1242,9 +1244,9 @@ hr{
 .landingMain {
   min-height: calc(100vh - 62px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 40px 24px;
+  padding: 80px 24px 40px;
 }
 
 .landingWrap {
