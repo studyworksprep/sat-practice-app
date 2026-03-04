@@ -234,7 +234,7 @@ export async function GET(_request, { params }) {
       question_version_id: item.question_version_id,
       question_id: qid,
       question_type: version.question_type,
-      stimulus_html: version.stimulus_html || null,
+      stimulus_html: version.stimulus_html && version.stimulus_html !== 'NULL' ? version.stimulus_html : null,
       stem_html: version.stem_html,
       options: optionsByVersion[item.question_version_id] || [],
       correct_answer: ca || null,

@@ -7,7 +7,11 @@ import Link from 'next/link';
 import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
 
-const htmlHasContent = (html) => !!html && html.replace(/<[^>]+>/g, '').trim().length > 0;
+const htmlHasContent = (html) => {
+  if (!html) return false;
+  const text = html.replace(/<[^>]+>/g, '').trim();
+  return text.length > 0 && text !== 'NULL';
+};
 
 function IconCalculator({ className = '' }) {
   return (

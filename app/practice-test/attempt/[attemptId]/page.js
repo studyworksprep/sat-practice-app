@@ -7,7 +7,11 @@ import HtmlBlock from '../../../../components/HtmlBlock';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', Math: 'Math', MATH: 'Math', m: 'Math', M: 'Math' };
 
-const htmlHasContent = (html) => !!html && html.replace(/<[^>]+>/g, '').trim().length > 0;
+const htmlHasContent = (html) => {
+  if (!html) return false;
+  const text = html.replace(/<[^>]+>/g, '').trim();
+  return text.length > 0 && text !== 'NULL';
+};
 
 const MIN_CALC_W = 550;
 const MAX_CALC_W = 760;

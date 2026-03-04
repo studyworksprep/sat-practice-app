@@ -7,8 +7,12 @@ import HtmlBlock from '../../../../../components/HtmlBlock';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
 
-// Returns true only when an HTML string has visible text content (not just empty tags)
-const htmlHasContent = (html) => !!html && html.replace(/<[^>]+>/g, '').trim().length > 0;
+// Returns true only when an HTML string has visible text content (not just empty tags or literal "NULL")
+const htmlHasContent = (html) => {
+  if (!html) return false;
+  const text = html.replace(/<[^>]+>/g, '').trim();
+  return text.length > 0 && text !== 'NULL';
+};
 const SUBJECT_ORDER = ['RW', 'rw', 'MATH', 'M', 'm', 'math'];
 
 const DOMAIN_ABBREV = {
