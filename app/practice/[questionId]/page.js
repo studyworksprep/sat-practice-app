@@ -520,16 +520,28 @@ export default function PracticeQuestionPage() {
 
   // ✅ Fetch IDs + metadata for map window (cached, loaded on modal open)
   async function fetchMapIds(offset) {
-    // If we have a localStorage session, build map items from it
-    const sessionIds = getSessionIds();
-    if (sessionIds) {
-      return sessionIds.slice(offset, offset + MAP_PAGE_SIZE).map((qid) => ({
-        question_id: qid,
-        difficulty: null,
-        is_done: false,
-        last_is_correct: null,
-        marked_for_review: false,
-      }));
+    // If we have a localStorage session, use stored item metadata
+    if (sidParam) {
+      try {
+        const itemsRaw = localStorage.getItem(`practice_session_${sidParam}_items`);
+        if (itemsRaw) {
+          const items = JSON.parse(itemsRaw);
+          if (Array.isArray(items) && items.length > 0) {
+            return items.slice(offset, offset + MAP_PAGE_SIZE);
+          }
+        }
+      } catch {}
+      // Fallback: build from IDs only
+      const sessionIds = getSessionIds();
+      if (sessionIds) {
+        return sessionIds.slice(offset, offset + MAP_PAGE_SIZE).map((qid) => ({
+          question_id: qid,
+          difficulty: null,
+          is_done: false,
+          last_is_correct: null,
+          marked_for_review: false,
+        }));
+      }
     }
 
     const key = `practice_${sessionParamsString}_map_${offset}`;

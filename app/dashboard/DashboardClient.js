@@ -161,11 +161,22 @@ function SessionCard({ session, index }) {
   const p = pct(correct, total);
 
   function handleTileClick(qIndex) {
-    // Store the session question IDs in localStorage so the practice page
-    // can navigate through them without creating a new session record
+    // Store the session question IDs and metadata in localStorage so the
+    // practice page can navigate through them without creating a new session record
     const ids = questions.map(q => q.question_id);
     const sid = `dashboard_${Date.now()}_${index}`;
     localStorage.setItem(`practice_session_${sid}`, ids.join(','));
+    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+      questions.map(q => ({
+        question_id: q.question_id,
+        difficulty: q.difficulty,
+        is_done: true,
+        last_is_correct: q.is_correct,
+        marked_for_review: false,
+        domain_name: q.domain_name,
+        skill_name: q.skill_name,
+      }))
+    ));
     localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
       sessionQueryString: `session=1&replay=1`,
       totalCount: ids.length,
