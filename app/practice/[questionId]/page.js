@@ -272,35 +272,23 @@ export default function PracticeQuestionPage() {
 
   // Math tools
   // ✅ Draggable divider + minimize (not close)
-  const DEFAULT_CALC_W = 660; // wide enough that Desmos starts in its roomier layout
-  const MIN_CALC_W = 450;
+  const MIN_CALC_W = 550;
   const MAX_CALC_W = 760;
-  const MINIMIZED_W = 56;
 
   const [calcMinimized, setCalcMinimized] = useState(false);
-  const [calcWidth, setCalcWidth] = useState(DEFAULT_CALC_W);
+  const [calcWidth, setCalcWidth] = useState(MIN_CALC_W);
 
   // IMPORTANT: prevent flicker by avoiding React updates during drag
   const shellRef = useRef(null);
-  const liveWidthRef = useRef(DEFAULT_CALC_W);
+  const liveWidthRef = useRef(MIN_CALC_W);
   const dragRef = useRef({
     dragging: false,
     startX: 0,
-    startW: DEFAULT_CALC_W,
-    pendingW: DEFAULT_CALC_W,
+    startW: MIN_CALC_W,
+    pendingW: MIN_CALC_W,
   });
 
-  // Option A neighbor nav
-  const [prevId, setPrevId] = useState(null);
-  const [nextId, setNextId] = useState(null);
-
-  // Start false; we explicitly flip to true when we begin fetching neighbors
   const [navLoading, setNavLoading] = useState(false);
-
-  const [navMode, setNavMode] = useState('neighbors'); // 'neighbors' | 'index' fallback
-
-  // ✅ tracks which questionId the current prevId/nextId correspond to (prevents stale-enable flash)
-  const [navForId, setNavForId] = useState(null);
 
   // Instant navigation metadata (from list page or neighbor navigation)
   const [total, setTotal] = useState(null); // total in filtered session
@@ -310,6 +298,8 @@ export default function PracticeQuestionPage() {
   const [pageIds, setPageIds] = useState([]); // ids for current offset page
   const [pageOffset, setPageOffset] = useState(0); // 0,25,50,...
 
+  const [showInfo, setShowInfo] = useState(false);
+
   // ✅ Question Map (windowed, IDs fetched on open)
   const MAP_PAGE_SIZE = 100; // must be <= API limit cap
   const [showMap, setShowMap] = useState(false);
@@ -317,12 +307,14 @@ export default function PracticeQuestionPage() {
   const [mapIds, setMapIds] = useState([]);
   const [mapLoading, setMapLoading] = useState(false);
   const [jumpTo, setJumpTo] = useState('');
+  // Overlay for questions answered/marked in the current session, keyed by question_id
+  const [sessionResults, setSessionResults] = useState({});
 
   const startedAtRef = useRef(Date.now());
 
   // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
-    const keys = ['difficulty', 'score_bands', 'domain', 'topic', 'marked_only', 'q', 'session'];
+    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'broken_only', 'q', 'session'];
     const p = new URLSearchParams();
     for (const k of keys) {
       const v = searchParams.get(k);
@@ -447,6 +439,17 @@ export default function PracticeQuestionPage() {
       if (!res.ok) throw new Error(json?.error || 'Failed to load question');
 
       setData(json);
+
+      if (json?.question_id) {
+        setSessionResults((prev) => ({
+          ...prev,
+          [String(json.question_id)]: {
+            is_done: json.status?.is_done ?? false,
+            last_is_correct: json.status?.last_is_correct ?? null,
+            marked_for_review: json.status?.marked_for_review ?? false,
+          },
+        }));
+      }
 
       if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
       else setSelected(null);
@@ -579,18 +582,23 @@ export default function PracticeQuestionPage() {
       if (targetIndex1 < 1) return;
     }
 
-    const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
-    const targetPos = (targetIndex1 - 1) % 25;
+    setNavLoading(true);
+    try {
+      const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
+      const targetPos = (targetIndex1 - 1) % 25;
 
-    const ids = await fetchPageIds(targetOffset);
-    const targetId = ids[targetPos];
-    if (!targetId) return;
+      const ids = await fetchPageIds(targetOffset);
+      const targetId = ids[targetPos];
+      if (!targetId) return;
 
-    setPageOffset(targetOffset);
-    setPageIds(ids);
-    setIndex1(targetIndex1);
+      setPageOffset(targetOffset);
+      setPageIds(ids);
+      setIndex1(targetIndex1);
 
-    router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
+      router.push(buildHref(targetId, total, targetOffset, targetPos, targetIndex1));
+    } finally {
+      setNavLoading(false);
+    }
   }
 
   async function doJumpTo() {
@@ -637,6 +645,7 @@ export default function PracticeQuestionPage() {
   async function toggleMarkForReview() {
     if (!data?.question_id) return;
     const next = !Boolean(data?.status?.marked_for_review);
+    const qid = String(data.question_id);
     try {
       setMsg(null);
 
@@ -650,6 +659,10 @@ export default function PracticeQuestionPage() {
           },
         };
       });
+      setSessionResults((prev) => ({
+        ...prev,
+        [qid]: { ...(prev[qid] || {}), marked_for_review: next },
+      }));
 
       const res = await fetch('/api/status', {
         method: 'POST',
@@ -666,6 +679,49 @@ export default function PracticeQuestionPage() {
           status: {
             ...(prev.status || {}),
             marked_for_review: !next,
+          },
+        };
+      });
+      setSessionResults((prev) => ({
+        ...prev,
+        [qid]: { ...(prev[qid] || {}), marked_for_review: !next },
+      }));
+      setMsg({ kind: 'danger', text: e.message });
+    }
+  }
+
+  async function toggleBroken() {
+    if (!data?.question_id) return;
+    const next = !Boolean(data?.status?.is_broken);
+    try {
+      setMsg(null);
+
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: {
+            ...(prev.status || {}),
+            is_broken: next,
+          },
+        };
+      });
+
+      const res = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question_id: data.question_id, patch: { is_broken: next } }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to update status');
+    } catch (e) {
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: {
+            ...(prev.status || {}),
+            is_broken: !next,
           },
         };
       });
@@ -712,47 +768,6 @@ export default function PracticeQuestionPage() {
     };
   }, [showMap]);
 
-  // ✅ Fetch neighbors (Option A) — prevent stale-enable by gating with navForId
-  useEffect(() => {
-    if (!questionId) {
-      setNavLoading(false);
-      setPrevId(null);
-      setNextId(null);
-      setNavForId(null);
-      return;
-    }
-
-    setNavMode('neighbors');
-    setNavLoading(true);
-
-    // Clear stale IDs immediately
-    setPrevId(null);
-    setNextId(null);
-    setNavForId(null);
-
-    (async () => {
-      try {
-        const res = await fetch(`/api/questions/${questionId}/neighbors?${sessionParamsString}`, { cache: 'no-store' });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json?.error || 'Failed to load neighbors');
-
-        setPrevId(json.prev_id || null);
-        setNextId(json.next_id || null);
-
-        // ✅ Mark that these neighbors belong to this question
-        setNavForId(questionId);
-      } catch (e) {
-        setPrevId(null);
-        setNextId(null);
-        setNavForId(null);
-        setNavMode('index');
-        setMsg({ kind: 'danger', text: `Neighbors failed (fallback enabled): ${e.message}` });
-      } finally {
-        setNavLoading(false);
-      }
-    })();
-  }, [questionId, sessionParamsString]);
-
   // Load question content
   useEffect(() => {
     if (!questionId) return;
@@ -780,23 +795,24 @@ export default function PracticeQuestionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId, searchParams]);
 
-  // ✅ Load saved calculator width + minimized state (if any)
+  // Load saved minimized state on mount; width always resets per question (see below)
   useEffect(() => {
     try {
-      const savedW = Number(localStorage.getItem('calcWidth'));
-      if (Number.isFinite(savedW)) setCalcWidth(Math.min(Math.max(savedW, MIN_CALC_W), MAX_CALC_W));
-
       const savedMin = localStorage.getItem('calcMinimized');
       if (savedMin === '1') setCalcMinimized(true);
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Reset calculator width to MIN_CALC_W every time a new question loads
   useEffect(() => {
-    try {
-      localStorage.setItem('calcWidth', String(calcWidth));
-    } catch {}
-  }, [calcWidth]);
+    if (!questionId) return;
+    const resetW = MIN_CALC_W;
+    setCalcWidth(resetW);
+    liveWidthRef.current = resetW;
+    dragRef.current.pendingW = resetW;
+    shellRef.current?.style.setProperty('--calcW', `${resetW}px`);
+  }, [questionId]);
 
   useEffect(() => {
     try {
@@ -849,6 +865,46 @@ export default function PracticeQuestionPage() {
           </span>
         ))}
 
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            className="infoBtn"
+            onClick={() => setShowInfo((s) => !s)}
+            aria-label="Question info"
+            title="Question info"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path fill="currentColor" d="M12 8a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-1 4h2v6h-2z" />
+            </svg>
+            Info
+          </button>
+
+          {showInfo && (
+            <>
+              <div className="infoPopOverlay" onClick={() => setShowInfo(false)} />
+              <div className="infoPop" role="dialog" aria-label="Question details">
+                <div className="infoPopRow">
+                  <span className="muted">Domain</span>
+                  <span>{data?.taxonomy?.domain_name || '—'}</span>
+                </div>
+                <div className="infoPopRow">
+                  <span className="muted">Topic</span>
+                  <span>{data?.taxonomy?.skill_name || '—'}</span>
+                </div>
+                <div className="infoPopRow">
+                  <span className="muted">Difficulty</span>
+                  <span>{data?.taxonomy?.difficulty ?? '—'}</span>
+                </div>
+                <div className="infoPopRow">
+                  <span className="muted">Score Band</span>
+                  <span>{data?.taxonomy?.score_band ?? '—'}</span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
         <button
           type="button"
           className={`markReviewTopBtn ${status?.marked_for_review ? 'isMarked' : ''}`}
@@ -866,37 +922,16 @@ export default function PracticeQuestionPage() {
     </div>
   );
 
-  const prevDisabled = navLoading || !index1 || index1 <= 1 || !prevId;
-  const nextDisabled = navLoading || !index1 || !total || index1 >= total || !nextId;
-
-  // ✅ Only enable neighbor nav when neighbors are loaded for THIS questionId
-  const neighborsReady = navMode === 'neighbors' && navForId === questionId && !navLoading;
+  const prevDisabled = navLoading || !index1 || index1 <= 1;
+  const nextDisabled = navLoading || !index1 || !total || index1 >= total;
 
   const goPrev = () => {
-    if (navMode === 'neighbors') {
-      if (prevDisabled) return;
-
-      const nextI = index1 != null ? Math.max(1, index1 - 1) : null;
-      setIndex1(nextI);
-
-      router.push(buildHref(prevId, total, null, null, nextI));
-      return;
-    }
-    if (index1 == null) return;
+    if (prevDisabled || index1 == null) return;
     goToIndex(index1 - 1);
   };
 
   const goNext = () => {
-    if (navMode === 'neighbors') {
-      if (nextDisabled) return;
-
-      const nextI = index1 != null ? index1 + 1 : null;
-      setIndex1(nextI);
-
-      router.push(buildHref(nextId, total, null, null, nextI));
-      return;
-    }
-    if (index1 == null) return;
+    if (nextDisabled || index1 == null) return;
     goToIndex(index1 + 1);
   };
 
@@ -991,9 +1026,23 @@ export default function PracticeQuestionPage() {
           <button
             className="btn secondary"
             onClick={goNext}
-            disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}
+            disabled={nextDisabled}
           >
             Next
+          </button>
+
+          <button
+            type="button"
+            className={`brokenBtn${status?.is_broken ? ' isBroken' : ''}`}
+            onClick={toggleBroken}
+            title={status?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+          >
+            <span className="brokenBtnIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14">
+                <path fill="currentColor" d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              </svg>
+            </span>
+            {status?.is_broken ? 'Broken' : 'Broken?'}
           </button>
         </div>
       </div>
@@ -1049,9 +1098,23 @@ export default function PracticeQuestionPage() {
         <button
           className="btn secondary"
           onClick={goNext}
-          disabled={nextDisabled || (navMode === 'neighbors' && !neighborsReady)}
+          disabled={nextDisabled}
         >
           Next
+        </button>
+
+        <button
+          type="button"
+          className={`brokenBtn${status?.is_broken ? ' isBroken' : ''}`}
+          onClick={toggleBroken}
+          title={status?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+        >
+          <span className="brokenBtnIcon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M5 3v18M5 3h14l-4 6 4 6H5" />
+            </svg>
+          </span>
+          {status?.is_broken ? 'Broken' : 'Broken?'}
         </button>
       </div>
     </>
@@ -1095,8 +1158,9 @@ export default function PracticeQuestionPage() {
     window.addEventListener('pointerup', onUp);
   }
 
-  // Math shell wrapper (calculator left, question right; draggable divider; minimize)
-  const MathShell = ({ children }) => (
+  // Math shell: inlined (not a local component) so React reuses the same DOM element
+  // across re-renders instead of unmounting/remounting the Desmos subtree.
+  const mathShellJsx = (rightContent) => (
     <div
       ref={shellRef}
       className={`mathShell ${calcMinimized ? 'min' : 'withCalc'}`}
@@ -1130,7 +1194,7 @@ export default function PracticeQuestionPage() {
         <div className="mathDivider min" aria-hidden="true" />
       )}
 
-      <main className="mathRight">{children}</main>
+      <main className="mathRight">{rightContent}</main>
     </div>
   );
 
@@ -1145,114 +1209,98 @@ export default function PracticeQuestionPage() {
 
   return (
     <main className="container">
-      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'grid', gap: 6, flex: 1, minWidth: 0 }}>
-          <div className="h2">Practice</div>
+      <div className="questionTopBar">
+        <div>
+          <Link className="btn secondary" href="/practice">
+            ← Back to list
+          </Link>
+        </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              gap: 12,
-            }}
-          >
-            {/* LEFT */}
-            <div>
-              <Link className="btn secondary" href="/practice">
-                ← Back to list
-              </Link>
-            </div>
+        <button
+          type="button"
+          className="qmapTrigger"
+          onClick={openMap}
+          disabled={!inSessionContext}
+          title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
+          aria-label="Open question map"
+        >
+          <span className="qmapTriggerCount">
+            {index1 != null && total != null ? (
+              <>{index1} / {total}</>
+            ) : total != null ? (
+              <>— / {total}</>
+            ) : (
+              <>…</>
+            )}
+          </span>
+          <span className="qmapTriggerChevron" aria-hidden="true">▾</span>
+        </button>
 
-            {/* CENTER */}
-            <div style={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+        <div className="questionTopBarRight">
+          {isMath ? (
+            <div className="toolTabs" role="tablist" aria-label="Math tools">
               <button
                 type="button"
-                className="qmapTrigger"
-                onClick={openMap}
-                disabled={!inSessionContext}
-                title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
-                aria-label="Open question map"
+                className={`toolTab ${!calcMinimized ? 'active' : ''}`}
+                onClick={() => setCalcMinimized((m) => !m)}
+                aria-pressed={!calcMinimized}
+                title={!calcMinimized ? 'Minimize calculator' : 'Expand calculator'}
               >
-                <span className="qmapTriggerCount">
-                  {index1 != null && total != null ? (
-                    <>
-                      {index1} / {total}
-                    </>
-                  ) : total != null ? (
-                    <>— / {total}</>
-                  ) : (
-                    <>…</>
-                  )}
-                </span>
-                <span className="qmapTriggerChevron" aria-hidden="true">
-                  ▾
-                </span>
+                <IconCalculator className="toolTabIcon" />
+                <span className="toolTabLabel">Calculator</span>
+              </button>
+
+              <button
+                type="button"
+                className={`toolTab ${showRef ? 'active' : ''}`}
+                onClick={() => setShowRef(true)}
+                aria-pressed={showRef}
+                title="Open reference sheet"
+              >
+                <IconReference className="toolTabIcon" />
+                <span className="toolTabLabel">Reference</span>
               </button>
             </div>
-
-            {/* RIGHT */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              {isMath ? (
-                <div className="toolTabs" role="tablist" aria-label="Math tools">
-                  <button
-                    type="button"
-                    className={`toolTab ${!calcMinimized ? 'active' : ''}`}
-                    onClick={() => setCalcMinimized((m) => !m)}
-                    aria-pressed={!calcMinimized}
-                    title={!calcMinimized ? 'Minimize calculator' : 'Expand calculator'}
-                  >
-                    <IconCalculator className="toolTabIcon" />
-                    <span className="toolTabLabel">Calculator</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`toolTab ${showRef ? 'active' : ''}`}
-                    onClick={() => setShowRef(true)}
-                    aria-pressed={showRef}
-                    title="Open reference sheet"
-                  >
-                    <IconReference className="toolTabIcon" />
-                    <span className="toolTabLabel">Reference</span>
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          </div>
+          ) : null}
         </div>
       </div>
 
       <Toast kind={msg?.kind} message={msg?.text} />
 
-      <hr />
-
       {qType === 'mcq' ? (
         useTwoColReading ? (
-          // Reading: left stimulus/stem; right status+answers
+          // Reading: left passage only; right question stem + answers
           <div className="qaTwoCol">
             <div className="qaLeft">
-              <PromptBlocks mb={12} />
+              {version?.stimulus_html && (
+                <div className="card subcard">
+                  <HtmlBlock className="prose" html={version.stimulus_html} />
+                </div>
+              )}
             </div>
 
+            <div className="qaDivider" aria-hidden="true" />
+
             <div className="qaRight">
-              <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-                <StatusPillsRow />
-              </div>
+              <StatusPillsRow style={{ marginBottom: 14 }} />
+              {version?.stem_html && (
+                <div className="card subcard" style={{ marginBottom: 12 }}>
+                  <HtmlBlock className="prose" html={version.stem_html} />
+                </div>
+              )}
               <McqOptionsArea />
             </div>
           </div>
         ) : isMath ? (
           // Math: calc left; right status+prompt+answers
-          <MathShell>
+          mathShellJsx(<>
             <MathToolRow />
             <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
               <StatusPillsRow />
             </div>
             <PromptBlocks mb={12} />
             <McqOptionsArea />
-          </MathShell>
+          </>)
         ) : (
           // Default MCQ
           <div>
@@ -1265,20 +1313,16 @@ export default function PracticeQuestionPage() {
         )
       ) : isMath ? (
         // Math SPR
-        <MathShell>
+        mathShellJsx(<>
           <MathToolRow />
-          <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-            <StatusPillsRow />
-          </div>
+          <StatusPillsRow style={{ marginBottom: 14 }} />
           <PromptBlocks mb={12} />
           <SprAnswerArea />
-        </MathShell>
+        </>)
       ) : (
         // Default SPR
         <div>
-          <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-            <StatusPillsRow />
-          </div>
+          <StatusPillsRow style={{ marginBottom: 14 }} />
           <PromptBlocks mb={12} />
           <SprAnswerArea />
         </div>
@@ -1443,10 +1487,12 @@ export default function PracticeQuestionPage() {
                   const diffClass =
                     diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : 'diffUnknown';
 
-                  const showMark = Boolean(it.marked_for_review);
-                  const showDone = Boolean(it.is_done);
-                  const showCorrect = showDone && it.last_is_correct === true;
-                  const showIncorrect = showDone && it.last_is_correct === false;
+                  const sr = sessionResults[String(id)];
+                  const showMark = Boolean(sr !== undefined ? sr.marked_for_review : it.marked_for_review);
+                  const showDone = Boolean(sr !== undefined ? sr.is_done : it.is_done);
+                  const lastCorrect = sr !== undefined ? sr.last_is_correct : it.last_is_correct;
+                  const showCorrect = showDone && lastCorrect === true;
+                  const showIncorrect = showDone && lastCorrect === false;
 
                   return (
                     <button
@@ -1511,260 +1557,6 @@ export default function PracticeQuestionPage() {
         </div>
       ) : null}
 
-      {/* Minimal CSS for the math resizable divider + minimized state (kept local to this page) */}
-      <style jsx global>{`
-        .mathShell {
-          display: grid;
-          gap: 0;
-          align-items: stretch;
-          grid-template-columns: var(--calcW, 660px) 12px minmax(0, 1fr);
-        }
-
-        .mathLeft {
-          position: sticky;
-          top: 12px;
-          align-self: start;
-          border: 1px solid var(--border);
-          border-radius: 18px;
-          background: #f9fafb;
-          max-height: calc(100vh - 24px);
-          overflow: hidden;
-        }
-
-        .mathLeftHeader {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 10px;
-          padding: 10px 12px;
-          border-bottom: 1px solid var(--border);
-          background: rgba(17, 24, 39, 0.03);
-        }
-
-        .mathToolTitle {
-          font-weight: 700;
-        }
-
-        .calcBody.hidden {
-          opacity: 0;
-          visibility: hidden;
-          pointer-events: none;
-        }
-
-        .desmosHost {
-          width: 100%;
-          height: min(560px, calc(100vh - 220px));
-          background: #fff;
-        }
-
-        .calcMinBody {
-          height: calc(100vh - 92px);
-        }
-
-        .mathDivider {
-          cursor: col-resize;
-          position: relative;
-          align-self: stretch;
-          min-height: 360px;
-          touch-action: none;
-        }
-
-        .mathDivider::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          margin: 0 auto;
-          width: 1px;
-          background: var(--border);
-        }
-
-        .mathDivider::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: 999px;
-        }
-
-        .mathDivider:hover::after {
-          background: rgba(37, 99, 235, 0.06);
-        }
-
-        .mathDivider.min {
-          cursor: default;
-        }
-
-        .mathRight {
-          min-width: 0;
-          padding-left: 12px;
-        }
-
-        /* Minimized state: show only the right column (no grid), keep Desmos mounted */
-        
-        .mathShell.min {
-          display: block; /* stops grid sizing quirks */
-          width: 100%;
-        }
-        
-        .mathShell.min .mathLeft {
-          display: none; /* hidden, but still mounted */
-        }
-        
-        .mathShell.min .mathDivider,
-        .mathShell.min .mathDivider.min {
-          display: none;
-        }
-        
-        .mathShell.min .mathRight {
-          padding-left: 0;
-        }
-        @media (max-width: 920px) {
-          .mathShell,
-          .mathShell.min {
-            grid-template-columns: 1fr;
-            gap: 14px;
-          }
-        
-          .mathDivider,
-          .mathDivider.min {
-            display: none;
-          }
-        
-          .mathLeft {
-            position: relative;
-            top: auto;
-          }
-        
-          /* If minimized on small screens, hide the calc panel */
-          .mathShell.min .mathLeft {
-            display: none;
-          }
-        
-          .desmosHost,
-          .calcMinBody {
-            height: 420px;
-          }
-        
-          .mathRight {
-            padding-left: 0;
-          }
-        }
-
-        .toolTabs {
-          display: inline-flex;
-          align-items: stretch;
-          gap: 18px;
-          margin-left: 6px;
-        }
-
-        .toolTab {
-          appearance: none;
-          border: 0;
-          background: transparent;
-          cursor: pointer;
-
-          display: grid;
-          place-items: center;
-          gap: 6px;
-
-          padding: 6px 10px 8px;
-          border-bottom: 3px solid transparent;
-
-          color: var(--muted);
-        }
-
-        .toolTab:hover {
-          color: var(--text);
-        }
-
-        .toolTab.active {
-          color: var(--text);
-          border-bottom-color: rgba(17, 24, 39, 0.9);
-        }
-
-        .toolTabIcon {
-          width: 28px;
-          height: 28px;
-          display: block;
-        }
-
-        .toolTabLabel {
-          font-size: 12.5px;
-          font-weight: 600;
-          line-height: 1;
-        }
-
-        .refModalHeader {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding-bottom: 8px;
-          cursor: move;
-          user-select: none;
-        }
-
-        .refModalClose {
-          position: absolute;
-          right: 0;
-          top: 0;
-
-          border: 0;
-          background: transparent;
-          font-size: 24px;
-          line-height: 1;
-          cursor: pointer;
-          padding: 4px 8px;
-
-          color: var(--muted);
-        }
-
-        .refModalClose:hover {
-          color: var(--text);
-        }
-
-        .modalCard {
-          overflow: hidden;
-        }
-
-        .refSheetContent {
-          padding: 12px;
-          overflow: auto;
-          flex: 1;
-        }
-
-        .refSheetImg {
-          display: block;
-          margin: 0 auto;
-
-          width: auto;
-          height: auto;
-
-          max-width: 100%;
-          max-height: none;
-
-          user-select: none;
-          -webkit-user-drag: none;
-          pointer-events: none;
-        }
-
-        .qNumBadge {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-        
-          background: #0b0b0b;
-          color: #fff;
-        
-          font-weight: 800;
-          font-size: 18px;
-          line-height: 1;
-        
-          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-        }
-      `}</style>
     </main>
   );
 }

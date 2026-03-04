@@ -22,6 +22,10 @@ async function fetchAll(supabase, table, select, buildQuery) {
 }
 
 // GET /api/filters
+// No params → returns { domains, topics, counts }
+//   counts = { [domain_name]: { count: N, topics: { [skill_key]: M } } }
+//   (unfiltered totals; contextual filtering is handled by /api/domain-counts)
+// ?domain=X → returns { topics } for that domain only (legacy, kept for compat)
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get('domain');
@@ -29,26 +33,73 @@ export async function GET(request) {
 
   try {
     if (!domain) {
-      const data = await fetchAll(
+      // Single pass: one query builds the domain list, topic list, and unfiltered counts
+      const rows = await fetchAll(
         supabase,
         'question_taxonomy',
-        'domain_name, domain_code',
+        'question_id, domain_name, domain_code, skill_name, skill_code',
         (q) => q.not('domain_name', 'is', null)
       );
 
-      const seen = new Set();
-      const domains = [];
-      for (const row of data) {
-        const key = `${row.domain_name}||${row.domain_code || ''}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        domains.push({ domain_name: row.domain_name, domain_code: row.domain_code || null });
+      const seenDomains = new Set();
+      const seenTopics  = new Set();
+      const domains     = [];
+      const topics      = [];
+      const byDomain    = {};
+
+      for (const row of rows) {
+        // Domain list (unique)
+        const domainKey = `${row.domain_name}||${row.domain_code || ''}`;
+        if (!seenDomains.has(domainKey)) {
+          seenDomains.add(domainKey);
+          domains.push({ domain_name: row.domain_name, domain_code: row.domain_code || null });
+        }
+
+        // Topic list (unique, skill_name present)
+        if (row.skill_name) {
+          const topicKey = `${row.domain_name}||${row.skill_code || row.skill_name}`;
+          if (!seenTopics.has(topicKey)) {
+            seenTopics.add(topicKey);
+            topics.push({
+              domain_name: row.domain_name,
+              domain_code: row.domain_code || null,
+              skill_name:  row.skill_name,
+              skill_code:  row.skill_code  || null,
+            });
+          }
+        }
+
+        // Counts: unique question_id per domain and per topic
+        if (!byDomain[row.domain_name]) {
+          byDomain[row.domain_name] = { ids: new Set(), topics: {} };
+        }
+        byDomain[row.domain_name].ids.add(row.question_id);
+        if (row.skill_name) {
+          const skillKey = row.skill_code || row.skill_name;
+          if (!byDomain[row.domain_name].topics[skillKey]) {
+            byDomain[row.domain_name].topics[skillKey] = new Set();
+          }
+          byDomain[row.domain_name].topics[skillKey].add(row.question_id);
+        }
       }
 
       domains.sort((a, b) => String(a.domain_name).localeCompare(String(b.domain_name)));
-      return NextResponse.json({ domains });
+      topics.sort((a, b) => String(a.skill_name).localeCompare(String(b.skill_name)));
+
+      const counts = {};
+      for (const [dn, { ids, topics: tmap }] of Object.entries(byDomain)) {
+        counts[dn] = {
+          count: ids.size,
+          topics: Object.fromEntries(
+            Object.entries(tmap).map(([skill, skillIds]) => [skill, skillIds.size])
+          ),
+        };
+      }
+
+      return NextResponse.json({ domains, topics, counts });
     }
 
+    // Legacy: single-domain topic fetch
     const data = await fetchAll(
       supabase,
       'question_taxonomy',
@@ -56,7 +107,7 @@ export async function GET(request) {
       (q) => q.eq('domain_name', domain).not('skill_name', 'is', null)
     );
 
-    const seen = new Set();
+    const seen   = new Set();
     const topics = [];
     for (const row of data) {
       const key = `${row.skill_name}||${row.skill_code || ''}`;

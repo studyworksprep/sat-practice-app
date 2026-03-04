@@ -1,206 +1,307 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 
 const DEFAULTS = {
-  difficulty: '',
+  difficulties: [],
   score_bands: [],
-  domain: '',
-  topic: '',
+  domains: [],
+  topics: [],
+  wrong_only: false,
   marked_only: false,
+  broken_only: false,
 };
 
-const MATH_CODES = new Set(['H', 'P', 'Q', 'S']);
-const RW_CODES = new Set(['CAS', 'INI', 'EOI', 'SEC']);
+const MATH_CODES  = new Set(['H', 'P', 'Q', 'S']);
+const RW_CODES    = new Set(['CAS', 'INI', 'EOI', 'SEC']);
+const MATH_ORDER  = ['H', 'P', 'Q', 'S'];
+const RW_ORDER    = ['INI', 'CAS', 'EOI', 'SEC'];
 
-// Optional: stable SAT-ish ordering inside groups
-const MATH_ORDER = ['H', 'P', 'Q', 'S'];
-const RW_ORDER = ['INI', 'CAS', 'EOI', 'SEC'];
+export default function Filters({ initial = {}, onChange, onStartSession }) {
+  const [state,     setState]     = useState({ ...DEFAULTS, ...initial });
+  const [allDomains, setAllDomains] = useState([]);
+  const [allTopics,  setAllTopics]  = useState([]);
+  const [counts,     setCounts]     = useState({});
+  const [randomize,  setRandomize]  = useState(false);
+  const [starting,   setStarting]   = useState(false);
+  const countsInitialMount = useRef(true);
 
-export default function Filters({ initial = {}, onChange }) {
-  const [state, setState] = useState({ ...DEFAULTS, ...initial });
-  const [domains, setDomains] = useState([]);
-  const [topics, setTopics] = useState([]);
-  const topicEnabled = Boolean(state.domain);
+  // Propagate state changes to parent
+  useEffect(() => { onChange?.(state); }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Load domain/topic lists + initial unfiltered counts in one fetch
   useEffect(() => {
-    onChange?.(state);
-  }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    // Load domain dropdown options
     (async () => {
-      const res = await fetch('/api/filters');
+      const res  = await fetch('/api/filters');
       const json = await res.json();
-      if (res.ok) setDomains(json.domains || []);
+      if (res.ok) {
+        setAllDomains(json.domains || []);
+        setAllTopics(json.topics  || []);
+        if (json.counts) setCounts(json.counts);
+      }
     })();
   }, []);
 
+  // Re-fetch counts when contextual filters change (difficulty/score_band/flags).
+  // Skips the initial mount — unfiltered counts already come from /api/filters above.
   useEffect(() => {
-    // Load topics for selected domain
-    (async () => {
-      if (!state.domain) {
-        setTopics([]);
-        setState((prev) => ({ ...prev, topic: '' }));
-        return;
-      }
-      const res = await fetch('/api/filters?domain=' + encodeURIComponent(state.domain));
-      const json = await res.json();
-      if (res.ok) setTopics(json.topics || []);
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.domain]);
+    if (countsInitialMount.current) { countsInitialMount.current = false; return; }
 
-  function set(k, v) {
-    setState((prev) => ({ ...prev, [k]: v }));
+    const p = new URLSearchParams();
+    if (state.difficulties.length) p.set('difficulties', state.difficulties.join(','));
+    if (state.score_bands.length)  p.set('score_bands',  state.score_bands.join(','));
+    if (state.wrong_only)          p.set('wrong_only',   'true');
+    if (state.marked_only)         p.set('marked_only',  'true');
+    if (state.broken_only)         p.set('broken_only',  'true');
+
+    fetch('/api/domain-counts?' + p.toString())
+      .then((r) => r.json())
+      .then((data) => { if (data && !data.error) setCounts(data); })
+      .catch(() => {});
+  }, [state.difficulties, state.score_bands, state.wrong_only, state.marked_only, state.broken_only]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function set(k, v) { setState((prev) => ({ ...prev, [k]: v })); }
+
+  function toggleDifficulty(n) {
+    setState((prev) => ({
+      ...prev,
+      difficulties: prev.difficulties.includes(n)
+        ? prev.difficulties.filter((d) => d !== n)
+        : [...prev.difficulties, n].sort((a, b) => a - b),
+    }));
   }
 
   function toggleScoreBand(band) {
     setState((prev) => {
-      const setBands = new Set(prev.score_bands || []);
-      if (setBands.has(band)) setBands.delete(band);
-      else setBands.add(band);
-      const next = Array.from(setBands).sort((a, b) => a - b);
-      return { ...prev, score_bands: next };
+      const s = new Set(prev.score_bands || []);
+      s.has(band) ? s.delete(band) : s.add(band);
+      return { ...prev, score_bands: Array.from(s).sort((a, b) => a - b) };
     });
   }
 
-  const { mathDomains, rwDomains, otherDomains } = useMemo(() => {
-    const math = [];
-    const rw = [];
-    const other = [];
+  function toggleDomain(domainName, domainTopicCodes) {
+    setState((prev) => {
+      const isDomainOn = prev.domains.includes(domainName);
+      if (isDomainOn) return { ...prev, domains: prev.domains.filter((d) => d !== domainName) };
+      return {
+        ...prev,
+        domains: [...prev.domains, domainName],
+        topics:  prev.topics.filter((t) => !domainTopicCodes.includes(t)),
+      };
+    });
+  }
 
-    for (const d of domains || []) {
-      if (MATH_CODES.has(d.domain_code)) math.push(d);
-      else if (RW_CODES.has(d.domain_code)) rw.push(d);
-      else other.push(d);
+  function toggleTopic(domainName, skillCode) {
+    setState((prev) => {
+      if (prev.domains.includes(domainName)) return prev;
+      const isOn = prev.topics.includes(skillCode);
+      return { ...prev, topics: isOn ? prev.topics.filter((t) => t !== skillCode) : [...prev.topics, skillCode] };
+    });
+  }
+
+  // Toggle all domains in a category (Math or R&W)
+  function toggleCategory(domainList) {
+    const names     = domainList.map((d) => d.domain_name);
+    const allOn     = names.length > 0 && names.every((n) => state.domains.includes(n));
+    if (allOn) {
+      setState((prev) => ({ ...prev, domains: prev.domains.filter((d) => !names.includes(d)) }));
+    } else {
+      const allTopicCodes = domainList.flatMap((d) => d.topics.map((t) => t.skill_code || t.skill_name));
+      setState((prev) => ({
+        ...prev,
+        domains: [...new Set([...prev.domains, ...names])],
+        topics:  prev.topics.filter((t) => !allTopicCodes.includes(t)),
+      }));
     }
+  }
 
-    math.sort((a, b) => MATH_ORDER.indexOf(a.domain_code) - MATH_ORDER.indexOf(b.domain_code));
-    rw.sort((a, b) => RW_ORDER.indexOf(a.domain_code) - RW_ORDER.indexOf(b.domain_code));
-    other.sort((a, b) => String(a.domain_name).localeCompare(String(b.domain_name)));
+  // Build Math and R&W domain lists with their topics
+  const { mathDomains, rwDomains } = useMemo(() => {
+    const topicsByDomain = {};
+    for (const t of allTopics) {
+      if (!topicsByDomain[t.domain_name]) topicsByDomain[t.domain_name] = [];
+      topicsByDomain[t.domain_name].push(t);
+    }
+    const attach = (d) => ({ ...d, topics: topicsByDomain[d.domain_name] || [] });
 
-    return { mathDomains: math, rwDomains: rw, otherDomains: other };
-  }, [domains]);
+    return {
+      mathDomains: allDomains
+        .filter((d) => MATH_CODES.has(d.domain_code))
+        .sort((a, b) => MATH_ORDER.indexOf(a.domain_code) - MATH_ORDER.indexOf(b.domain_code))
+        .map(attach),
+      rwDomains: allDomains
+        .filter((d) => RW_CODES.has(d.domain_code))
+        .sort((a, b) => RW_ORDER.indexOf(a.domain_code) - RW_ORDER.indexOf(b.domain_code))
+        .map(attach),
+    };
+  }, [allDomains, allTopics]);
+
+  // Category-level counts (sum of domain counts; undefined until counts load)
+  const mathTotal = useMemo(() => {
+    if (!Object.keys(counts).length) return undefined;
+    return mathDomains.reduce((s, d) => s + (counts[d.domain_name]?.count ?? 0), 0);
+  }, [mathDomains, counts]);
+
+  const rwTotal = useMemo(() => {
+    if (!Object.keys(counts).length) return undefined;
+    return rwDomains.reduce((s, d) => s + (counts[d.domain_name]?.count ?? 0), 0);
+  }, [rwDomains, counts]);
+
+  // Is at least one filter active? (enables the Start button)
+  const hasFilter =
+    state.difficulties.length > 0 ||
+    state.score_bands.length  > 0 ||
+    state.domains.length      > 0 ||
+    state.topics.length       > 0 ||
+    state.wrong_only || state.marked_only || state.broken_only;
+
+  async function handleStart() {
+    if (!hasFilter || starting) return;
+    setStarting(true);
+    try {
+      await onStartSession?.(state, randomize);
+    } finally {
+      setStarting(false);
+    }
+  }
+
+  function renderCategory(label, domainList, total, colorClass) {
+    const names = domainList.map((d) => d.domain_name);
+    const allOn = names.length > 0 && names.every((n) => state.domains.includes(n));
+    return (
+      <label className={`categoryChip ${colorClass}${allOn ? ' on' : ''}`}>
+        <input type="checkbox" checked={allOn} onChange={() => toggleCategory(domainList)} />
+        <span style={{ flex: 1 }}>{label}</span>
+        {total !== undefined && <span className="filterCount">{total}</span>}
+      </label>
+    );
+  }
+
+  function renderDomain(domain) {
+    const colorClass       = MATH_CODES.has(domain.domain_code) ? 'math' : 'rw';
+    const domainOn         = state.domains.includes(domain.domain_name);
+    const domainTopicCodes = domain.topics.map((t) => t.skill_code || t.skill_name);
+    const domainCount      = counts[domain.domain_name]?.count;
+
+    return (
+      <div key={domain.domain_name} className={`domainGroup ${colorClass}`}>
+        <label className={`domainChip ${colorClass}${domainOn ? ' on' : ''}`}>
+          <input
+            type="checkbox"
+            checked={domainOn}
+            onChange={() => toggleDomain(domain.domain_name, domainTopicCodes)}
+          />
+          <span style={{ flex: 1 }}>{domain.domain_name}</span>
+          {domainCount !== undefined && <span className="filterCount">{domainCount}</span>}
+        </label>
+
+        {domain.topics.length > 0 && (
+          <div className="topicChips">
+            {domain.topics.map((topic) => {
+              const topicKey   = topic.skill_code || topic.skill_name;
+              const topicOn    = domainOn || state.topics.includes(topicKey);
+              const topicCount = counts[domain.domain_name]?.topics?.[topicKey];
+              return (
+                <label
+                  key={topicKey}
+                  className={`chip sm${topicOn ? ' on' : ''}`}
+                  style={domainOn ? { opacity: 0.6, cursor: 'default' } : undefined}
+                >
+                  <input
+                    type="checkbox"
+                    checked={topicOn}
+                    disabled={domainOn}
+                    onChange={() => toggleTopic(domain.domain_name, topicKey)}
+                  />
+                  <span>{topic.skill_name}</span>
+                  {topicCount !== undefined && <span className="filterCount">{topicCount}</span>}
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="card">
-      <div className="h2">Filters</div>
-
-      <div className="row">
-        <div className="col">
-          <label>Difficulty (1–3)</label>
-          <select
-            className="input"
-            value={state.difficulty}
-            onChange={(e) => set('difficulty', e.target.value)}
+      {/* Card header: title left, randomize + start button right */}
+      <div className="filterCardHeader">
+        <div className="h2" style={{ margin: 0 }}>Filters</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <label className="filterCheck">
+            <input type="checkbox" checked={randomize} onChange={(e) => setRandomize(e.target.checked)} />
+            Randomize question order
+          </label>
+          <button
+            className="btn primary"
+            disabled={!hasFilter || starting}
+            onClick={handleStart}
           >
-            <option value="">Any</option>
-            <option value="1">1 (Easy)</option>
-            <option value="2">2 (Medium)</option>
-            <option value="3">3 (Hard)</option>
-          </select>
+            {starting ? 'Loading…' : 'Start Practice Session'}
+          </button>
+        </div>
+      </div>
+
+      {/* Horizontal top bar: quick filters | difficulty | score band */}
+      <div className="filterBar">
+        <div className="filterBarSection">
+          {[
+            ['marked_only', 'Only marked for review'],
+            ['wrong_only',  'Only wrong answers'],
+            ['broken_only', 'Only flagged as broken'],
+          ].map(([key, label]) => (
+            <label key={key} className="filterCheck">
+              <input type="checkbox" checked={state[key]} onChange={(e) => set(key, e.target.checked)} />
+              {label}
+            </label>
+          ))}
         </div>
 
-        <div className="col">
-          <label>Score bands (multi-select)</label>
-          <div className="chips" aria-label="Score bands">
+        <div className="filterBarSection">
+          <span className="filterSectionLabel">Difficulty</span>
+          <div className="chips">
+            {[[1,'E','Easy'],[2,'M','Medium'],[3,'H','Hard']].map(([n, label, title]) => {
+              const on = state.difficulties.includes(n);
+              const diffClass = n === 1 ? 'diff-easy' : n === 2 ? 'diff-medium' : 'diff-hard';
+              return (
+                <label key={n} className={`chip sm circle ${diffClass}${on ? ' on' : ''}`} title={title}>
+                  <input type="checkbox" checked={on} onChange={() => toggleDifficulty(n)} />
+                  <span>{label}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="filterBarSection">
+          <span className="filterSectionLabel">Score Band</span>
+          <div className="chips">
             {[1, 2, 3, 4, 5, 6, 7].map((n) => {
               const on = (state.score_bands || []).includes(n);
+              const bandClass = n <= 3 ? 'band-low' : n <= 5 ? 'band-mid' : 'band-high';
               return (
-                <label key={n} className={'chip' + (on ? ' on' : '')}>
+                <label key={n} className={`chip sm circle ${bandClass}${on ? ' on' : ''}`}>
                   <input type="checkbox" checked={on} onChange={() => toggleScoreBand(n)} />
                   <span>{n}</span>
                 </label>
               );
             })}
           </div>
-          <div className="muted small" style={{ marginTop: 6 }}>
-            Leave all unchecked to include any score band.
-          </div>
         </div>
       </div>
 
-      <div className="row" style={{ marginTop: 2 }}>
-        <div className="col">
-          <label>Domain</label>
-          <select
-            className="input"
-            value={state.domain}
-            onChange={(e) => set('domain', e.target.value)}
-          >
-            <option value="">Select a domain…</option>
-
-            {mathDomains.length > 0 && (
-              <optgroup label="Math">
-                {mathDomains.map((d) => (
-                  <option
-                    key={(d.domain_name || '') + (d.domain_code || '')}
-                    value={d.domain_name}
-                  >
-                    {d.domain_name}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-
-            {rwDomains.length > 0 && (
-              <optgroup label="Reading and Writing">
-                {rwDomains.map((d) => (
-                  <option
-                    key={(d.domain_name || '') + (d.domain_code || '')}
-                    value={d.domain_name}
-                  >
-                    {d.domain_name}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-
-            {otherDomains.length > 0 && (
-              <optgroup label="Other">
-                {otherDomains.map((d) => (
-                  <option
-                    key={(d.domain_name || '') + (d.domain_code || '')}
-                    value={d.domain_name}
-                  >
-                    {d.domain_name}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-          </select>
+      {/* Domain & Topic — two columns with selectable category headers */}
+      <div className="filterDomainCols">
+        <div>
+          {renderCategory('Math', mathDomains, mathTotal, 'math')}
+          {mathDomains.map(renderDomain)}
         </div>
-
-        <div className="col">
-          <label>Topic (enabled after domain)</label>
-          <select
-            className="input"
-            value={state.topic}
-            onChange={(e) => set('topic', e.target.value)}
-            disabled={!topicEnabled}
-            style={!topicEnabled ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
-          >
-            <option value="">{topicEnabled ? 'Select a topic…' : 'Select a domain first'}</option>
-            {topics.map((t) => (
-              <option key={(t.skill_name || '') + (t.skill_code || '')} value={t.skill_name}>
-                {t.skill_name}
-              </option>
-            ))}
-          </select>
+        <div>
+          {renderCategory('Reading & Writing', rwDomains, rwTotal, 'rw')}
+          {rwDomains.map(renderDomain)}
         </div>
-      </div>
-
-      <div className="row" style={{ marginTop: 10, alignItems: 'center' }}>
-        <label style={{ margin: 0 }}>
-          <input
-            type="checkbox"
-            checked={state.marked_only}
-            onChange={(e) => set('marked_only', e.target.checked)}
-            style={{ marginRight: 8 }}
-          />
-          Show only marked-for-review
-        </label>
       </div>
     </div>
   );
