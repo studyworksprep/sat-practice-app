@@ -5,8 +5,15 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import HtmlBlock from '../../../../../components/HtmlBlock';
 
-const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math' };
-const SUBJECT_ORDER = ['RW', 'rw', 'M', 'm', 'math'];
+const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
+
+// Returns true only when an HTML string has visible text content (not just empty tags or literal "NULL")
+const htmlHasContent = (html) => {
+  if (!html) return false;
+  const text = html.replace(/<[^>]+>/g, '').trim();
+  return text.length > 0 && text !== 'NULL';
+};
+const SUBJECT_ORDER = ['RW', 'rw', 'MATH', 'M', 'm', 'math'];
 
 const DOMAIN_ABBREV = {
   'Craft and Structure': 'C&S',
@@ -18,6 +25,18 @@ const DOMAIN_ABBREV = {
   'Problem-Solving and Data Analysis': 'Data',
   'Geometry and Trigonometry': 'Geo',
 };
+
+function formatSprAnswer(ct) {
+  if (!ct) return '';
+  const t = String(ct).trim();
+  if (t.startsWith('[') && t.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(t);
+      if (Array.isArray(parsed)) return parsed.join(' or ');
+    } catch {}
+  }
+  return t;
+}
 
 function abbrev(name) {
   if (!name) return '';
@@ -97,7 +116,7 @@ function QuestionDetail({ q, allQuestions, onSelect }) {
 
       {/* Question content */}
       <div className="ptrvDetailBody">
-        {q.stimulus_html && (
+        {htmlHasContent(q.stimulus_html) && (
           <div className="ptrvStimulus">
             <HtmlBlock html={q.stimulus_html} className="prose" />
           </div>
@@ -105,6 +124,20 @@ function QuestionDetail({ q, allQuestions, onSelect }) {
         <div className="ptrvDetailStem">
           <HtmlBlock html={q.stem_html} className="prose" />
         </div>
+
+        {/* MCQ options — always visible, neutral, non-interactive */}
+        {q.options?.length > 0 && (
+          <div className="optionList ptrvOptionList">
+            {q.options.map((opt) => (
+              <div key={opt.id} className="option ptrvReviewOption">
+                <span className="optionBadge">{opt.label}</span>
+                <div className="optionContent">
+                  <HtmlBlock html={opt.content_html || ''} className="prose" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Answer reveal */}
@@ -119,47 +152,53 @@ function QuestionDetail({ q, allQuestions, onSelect }) {
 
         {showAnswer && (
           <div className="ptrvAnswerBody">
-            {q.options?.length > 0 ? (
-              /* MCQ */
-              <div className="ptrvAnswerRows">
-                <div className="ptrvAnswerRow">
-                  <span className="ptrvAnswerLabel">Your answer</span>
-                  {q.was_answered ? (
-                    <div className={`ptrvAnswerValue ${q.is_correct ? 'correct' : 'incorrect'}`}>
-                      <span className="ptrvOptLetter">{selectedOption?.label || '?'}</span>
-                      <HtmlBlock html={selectedOption?.content_html || ''} className="ptrvOptText" />
+            <div className="ptrvAnswerRows">
+              {q.options?.length > 0 ? (
+                /* MCQ — show which option the student picked and what's correct */
+                <>
+                  <div className="ptrvAnswerRow">
+                    <span className="ptrvAnswerLabel">Your answer</span>
+                    {q.was_answered && selectedOption ? (
+                      <div className={`option ptrvReviewOption ptrvAnswerOpt ${q.is_correct ? 'correct' : 'incorrect'}`}>
+                        <span className="optionBadge">{selectedOption.label}</span>
+                        <div className="optionContent">
+                          <HtmlBlock html={selectedOption.content_html || ''} className="prose" />
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="ptrvAnswerValue skipped">Not answered</span>
+                    )}
+                  </div>
+                  {(!q.is_correct || !q.was_answered) && correctOption && (
+                    <div className="ptrvAnswerRow">
+                      <span className="ptrvAnswerLabel">Correct answer</span>
+                      <div className="option ptrvReviewOption correct ptrvAnswerOpt">
+                        <span className="optionBadge">{correctOption.label}</span>
+                        <div className="optionContent">
+                          <HtmlBlock html={correctOption.content_html || ''} className="prose" />
+                        </div>
+                      </div>
                     </div>
-                  ) : (
-                    <span className="ptrvAnswerValue skipped">No answer given</span>
                   )}
-                </div>
-                {!q.is_correct && correctOption && (
+                </>
+              ) : (
+                /* SPR / free-response */
+                <>
                   <div className="ptrvAnswerRow">
-                    <span className="ptrvAnswerLabel">Correct answer</span>
-                    <div className="ptrvAnswerValue correct">
-                      <span className="ptrvOptLetter">{correctOption.label}</span>
-                      <HtmlBlock html={correctOption.content_html || ''} className="ptrvOptText" />
+                    <span className="ptrvAnswerLabel">Your answer</span>
+                    <span className={`ptrvAnswerValue ${q.is_correct ? 'correct' : q.was_answered ? 'incorrect' : 'skipped'}`}>
+                      {q.response_text || 'No answer given'}
+                    </span>
+                  </div>
+                  {!q.is_correct && q.correct_answer?.correct_text && (
+                    <div className="ptrvAnswerRow">
+                      <span className="ptrvAnswerLabel">Correct answer</span>
+                      <span className="ptrvAnswerValue correct">{formatSprAnswer(q.correct_answer.correct_text)}</span>
                     </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* SPR / free-response */
-              <div className="ptrvAnswerRows">
-                <div className="ptrvAnswerRow">
-                  <span className="ptrvAnswerLabel">Your answer</span>
-                  <span className={`ptrvAnswerValue ${q.is_correct ? 'correct' : q.was_answered ? 'incorrect' : 'skipped'}`}>
-                    {q.response_text || 'No answer given'}
-                  </span>
-                </div>
-                {!q.is_correct && q.correct_answer?.correct_text && (
-                  <div className="ptrvAnswerRow">
-                    <span className="ptrvAnswerLabel">Correct answer</span>
-                    <span className="ptrvAnswerValue correct">{q.correct_answer.correct_text}</span>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </>
+              )}
+            </div>
 
             {q.rationale_html && (
               <div className="ptrvRationale">
@@ -226,72 +265,78 @@ export default function ResultsPage() {
         <p className="muted small" style={{ marginBottom: 24 }}>Completed {fmtDate(data.completed_at)}</p>
       )}
 
-      {/* ── Top row: scores + skills ── */}
-      <div className="ptrvTopRow">
+      {/* ── Summary card: scores + skills side by side ── */}
+      <div className="card ptrvSummaryCard">
+        <div className="ptrvSummaryInner">
 
-        {/* Score card */}
-        <div className="card ptrvScoreCard">
-          <div className="ptrvCompositeWrap">
-            <span className="ptCompositeNum">{data.composite ?? '—'}</span>
-            <span className="ptCompositeLabel">Total Score</span>
+          {/* Left column: composite + section scores */}
+          <div className="ptrvScoreCol">
+            <div className="ptrvCompositeWrap">
+              <span className="ptCompositeNum">{data.composite ?? '—'}</span>
+              <span className="ptCompositeLabel">Total Score</span>
+            </div>
+            <div className="ptrvDivider" />
+            <div className="ptrvSections">
+              {SUBJECT_ORDER.map((subj) => {
+                const sec = data.sections?.[subj];
+                if (!sec) return null;
+                return (
+                  <div key={subj} className="ptrvSectionItem">
+                    <span className="ptrvSectionNum">{sec.scaled}</span>
+                    <span className="ptrvSectionName">{SUBJECT_LABEL[subj]}</span>
+                    <span className="muted small">{sec.correct}/{sec.total} correct</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div className="ptrvDivider" />
-          <div className="ptrvSections">
-            {SUBJECT_ORDER.map((subj) => {
-              const sec = data.sections?.[subj];
-              if (!sec) return null;
-              return (
-                <div key={subj} className="ptrvSectionItem">
-                  <span className="ptrvSectionNum">{sec.scaled}</span>
-                  <span className="ptrvSectionName">{SUBJECT_LABEL[subj]}</span>
-                  <span className="muted small">{sec.correct}/{sec.total} correct</span>
-                </div>
-              );
-            })}
-          </div>
+
+          {/* Vertical divider */}
+          {data.domains?.length > 0 && <div className="ptrvSummaryDivider" />}
+
+          {/* Right column: skills breakdown */}
+          {data.domains?.length > 0 && (
+            <div className="ptrvSkillsCol">
+              <div className="h2" style={{ marginBottom: 12 }}>Skills Breakdown</div>
+              <table className="ptDomainTable">
+                <thead>
+                  <tr>
+                    <th>Domain / Skill</th>
+                    <th style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>Score</th>
+                    <th style={{ width: 80 }} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.domains.map((d) => {
+                    const isOpen = openDomains[d.domain_name];
+                    return [
+                      <tr key={d.domain_name} className="ptDomainRow" onClick={() => toggleDomain(d.domain_name)} style={{ cursor: 'pointer' }}>
+                        <td><strong>{d.domain_name}</strong> <span className="muted small">{isOpen ? '▲' : '▼'}</span></td>
+                        <td style={{ textAlign: 'right', paddingRight: 8 }}>{d.correct}/{d.total}</td>
+                        <td><AccuracyBar correct={d.correct} total={d.total} /></td>
+                      </tr>,
+                      ...(isOpen ? (d.skills || []).map((s) => (
+                        <tr key={`${d.domain_name}-${s.skill_name}`} className="ptSkillRow">
+                          <td style={{ paddingLeft: 20 }}>{s.skill_name}</td>
+                          <td style={{ textAlign: 'right', paddingRight: 8 }}>{s.correct}/{s.total}</td>
+                          <td><AccuracyBar correct={s.correct} total={s.total} /></td>
+                        </tr>
+                      )) : []),
+                    ];
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
         </div>
-
-        {/* Skills card */}
-        {data.domains?.length > 0 && (
-          <div className="card ptrvSkillsCard">
-            <div className="h2" style={{ marginBottom: 12 }}>Skills Breakdown</div>
-            <table className="ptDomainTable">
-              <thead>
-                <tr>
-                  <th>Domain / Skill</th>
-                  <th style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>Score</th>
-                  <th style={{ width: 80 }} />
-                </tr>
-              </thead>
-              <tbody>
-                {data.domains.map((d) => {
-                  const isOpen = openDomains[d.domain_name];
-                  return [
-                    <tr key={d.domain_name} className="ptDomainRow" onClick={() => toggleDomain(d.domain_name)} style={{ cursor: 'pointer' }}>
-                      <td><strong>{d.domain_name}</strong> <span className="muted small">{isOpen ? '▲' : '▼'}</span></td>
-                      <td style={{ textAlign: 'right', paddingRight: 8 }}>{d.correct}/{d.total}</td>
-                      <td><AccuracyBar correct={d.correct} total={d.total} /></td>
-                    </tr>,
-                    ...(isOpen ? (d.skills || []).map((s) => (
-                      <tr key={`${d.domain_name}-${s.skill_name}`} className="ptSkillRow">
-                        <td style={{ paddingLeft: 20 }}>{s.skill_name}</td>
-                        <td style={{ textAlign: 'right', paddingRight: 8 }}>{s.correct}/{s.total}</td>
-                        <td><AccuracyBar correct={s.correct} total={s.total} /></td>
-                      </tr>
-                    )) : []),
-                  ];
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
 
       {/* ── Question review: tile grid + detail panel ── */}
       <div className="ptrvReviewRow">
 
         {/* Left: tile grid */}
-        <div className="ptrvTilesPanel">
+        <div className="card ptrvTilesPanel">
           <div className="h2" style={{ marginBottom: 14 }}>Question Review</div>
 
           {SUBJECT_ORDER.map((subj) =>
@@ -330,7 +375,7 @@ export default function ResultsPage() {
         </div>
 
         {/* Right: detail panel (sticky) */}
-        <div className="ptrvDetailWrap">
+        <div className="card ptrvDetailWrap">
           <QuestionDetail
             key={selectedQ?.question_version_id}
             q={selectedQ}

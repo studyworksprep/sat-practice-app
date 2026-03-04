@@ -159,7 +159,7 @@ export async function GET(_request, { params }) {
       question_version_id: item.question_version_id,
       question_id: v.question_id,
       question_type: v.question_type,
-      stimulus_html: v.stimulus_html || null,
+      stimulus_html: v.stimulus_html && v.stimulus_html !== 'NULL' ? v.stimulus_html : null,
       stem_html: v.stem_html,
       options: optionsByVersion[item.question_version_id] || [],
     };

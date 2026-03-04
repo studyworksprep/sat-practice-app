@@ -7,6 +7,12 @@ import Link from 'next/link';
 import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
 
+const htmlHasContent = (html) => {
+  if (!html) return false;
+  const text = html.replace(/<[^>]+>/g, '').trim();
+  return text.length > 0 && text !== 'NULL';
+};
+
 function IconCalculator({ className = '' }) {
   return (
     <svg
@@ -938,7 +944,7 @@ export default function PracticeQuestionPage() {
   // ✅ No visible "Stimulus/Question" headers (keep srOnly for a11y)
   const PromptBlocks = ({ mb = 12 }) => (
     <>
-      {version?.stimulus_html ? (
+      {htmlHasContent(version?.stimulus_html) ? (
         <div className="card subcard" style={{ marginBottom: mb }}>
           <div className="srOnly">Stimulus</div>
           <HtmlBlock className="prose" html={version.stimulus_html} />
@@ -1272,7 +1278,7 @@ export default function PracticeQuestionPage() {
           // Reading: left passage only; right question stem + answers
           <div className="qaTwoCol">
             <div className="qaLeft">
-              {version?.stimulus_html && (
+              {htmlHasContent(version?.stimulus_html) && (
                 <div className="card subcard">
                   <HtmlBlock className="prose" html={version.stimulus_html} />
                 </div>

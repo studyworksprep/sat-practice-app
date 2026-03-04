@@ -7,6 +7,12 @@ import HtmlBlock from '../../../../components/HtmlBlock';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', Math: 'Math', MATH: 'Math', m: 'Math', M: 'Math' };
 
+const htmlHasContent = (html) => {
+  if (!html) return false;
+  const text = html.replace(/<[^>]+>/g, '').trim();
+  return text.length > 0 && text !== 'NULL';
+};
+
 const MIN_CALC_W = 550;
 const MAX_CALC_W = 760;
 
@@ -375,14 +381,10 @@ export default function TestSessionPage() {
       const timeLimitSecs = Math.round(
         (data.time_limit_seconds || (isMathSubject ? 35 * 60 : 32 * 60)) * timeFactor
       );
-      const lsKey = `pt_start_${attemptId}_${data.subject_code}_${data.module_number}`;
-      let startTs = localStorage.getItem(lsKey);
-      if (!startTs) {
-        startTs = Date.now().toString();
-        localStorage.setItem(lsKey, startTs);
-      }
-      const elapsed = Math.floor((Date.now() - parseInt(startTs, 10)) / 1000);
-      setTimeRemaining(Math.max(0, timeLimitSecs - elapsed));
+      // Store accumulated elapsed seconds so time doesn't tick while the user is away
+      const elapsedKey = `pt_elapsed_${attemptId}_${data.subject_code}_${data.module_number}`;
+      const savedElapsed = parseInt(localStorage.getItem(elapsedKey) || '0', 10);
+      setTimeRemaining(Math.max(0, timeLimitSecs - savedElapsed));
 
       setLoading(false);
     } catch {
@@ -394,14 +396,27 @@ export default function TestSessionPage() {
   useEffect(() => { loadModule(); }, [loadModule]);
 
   useEffect(() => {
-    if (timeRemaining === null || submitting) return;
+    if (timeRemaining === null || submitting || !moduleData) return;
     clearInterval(timerRef.current);
     if (timeRemaining <= 0) return;
     timerRef.current = setInterval(() => {
-      setTimeRemaining((t) => (t <= 1 ? 0 : t - 1));
+      setTimeRemaining((t) => {
+        const next = t <= 1 ? 0 : t - 1;
+        // Persist elapsed seconds so pausing / leaving preserves the timer
+        if (moduleData) {
+          const isMathSubject = ['M', 'm', 'math', 'Math', 'MATH'].includes(moduleData.subject_code);
+          const timeFactor = parseFloat(localStorage.getItem(`pt_factor_${attemptId}`) || '1');
+          const timeLimitSecs = Math.round(
+            (moduleData.time_limit_seconds || (isMathSubject ? 35 * 60 : 32 * 60)) * timeFactor
+          );
+          const elapsedKey = `pt_elapsed_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
+          localStorage.setItem(elapsedKey, String(timeLimitSecs - next));
+        }
+        return next;
+      });
     }, 1000);
     return () => clearInterval(timerRef.current);
-  }, [timeRemaining === null, submitting]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [timeRemaining === null, submitting, moduleData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (timeRemaining === 0 && !submitting && moduleData) {
@@ -417,8 +432,8 @@ export default function TestSessionPage() {
     setSubmitting(true);
     clearInterval(timerRef.current);
 
-    const lsKey = `pt_start_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
-    localStorage.removeItem(lsKey);
+    const elapsedKey = `pt_elapsed_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
+    localStorage.removeItem(elapsedKey);
 
     const answerList = (moduleData.questions || []).map((q) => ({
       question_version_id: q.question_version_id,
@@ -623,7 +638,7 @@ export default function TestSessionPage() {
   const moduleLabel = `${subjectLabel} — Module ${moduleData.module_number} of 2`;
 
   const isMath = ['M', 'm', 'math', 'Math', 'MATH'].includes(moduleData.subject_code);
-  const isReading = !isMath && !!q.stimulus_html;
+  const isReading = !isMath && htmlHasContent(q.stimulus_html);
 
   // ─── Answer area (shared between layouts) ─────────────────────────────────
 
@@ -697,7 +712,18 @@ export default function TestSessionPage() {
 
       {/* Header: 3-column — module label | timer (center) | tools */}
       <div className="ptSessionHeader">
-        <div className="ptModuleLabel">{moduleLabel}</div>
+        <div className="ptModuleLabel">
+          {moduleLabel}
+          <button
+            className="btn secondary ptPauseBtn"
+            onClick={() => {
+              clearInterval(timerRef.current);
+              router.push('/practice-test');
+            }}
+          >
+            Pause & Exit
+          </button>
+        </div>
 
         <TimerChip seconds={timeRemaining} />
 
@@ -784,7 +810,7 @@ export default function TestSessionPage() {
           return (
             <div className="ptSingleCol">
               {qNumRow}
-              {q.stimulus_html && (
+              {htmlHasContent(q.stimulus_html) && (
                 <div className="ptStimulus">
                   <HtmlBlock html={q.stimulus_html} />
                 </div>

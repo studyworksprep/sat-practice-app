@@ -21,16 +21,53 @@ export async function GET(_request, { params }) {
   if (attErr) return NextResponse.json({ error: attErr.message }, { status: 500 });
   if (!attempt) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  // Fetch all attempt items
-  const { data: attemptItems } = await supabase
-    .from('practice_test_attempt_items')
-    .select('subject_code, module_number, route_code, ordinal, question_version_id')
-    .eq('practice_test_attempt_id', attemptId)
-    .order('subject_code')
-    .order('module_number')
-    .order('ordinal');
+  // Reconstruct attempt items from metadata.submitted_modules + module definitions.
+  // This works with both practice_test_module_attempts/practice_test_item_attempts
+  // and any legacy schema, since submitted_modules is always written to metadata.
+  const subjectRouteField = {
+    RW: 'rw_route_code', rw: 'rw_route_code',
+    M: 'm_route_code', m: 'm_route_code', math: 'm_route_code', Math: 'm_route_code', MATH: 'm_route_code',
+  };
 
-  const versionIds = [...new Set((attemptItems || []).map((i) => i.question_version_id))];
+  const { data: allModules } = await supabase
+    .from('practice_test_modules')
+    .select('id, subject_code, module_number, route_code')
+    .eq('practice_test_id', attempt.practice_test_id);
+
+  const attemptItems = [];
+  for (const key of attempt.metadata?.submitted_modules || []) {
+    const slash = key.lastIndexOf('/');
+    const subj = key.slice(0, slash);
+    const modNum = parseInt(key.slice(slash + 1), 10);
+
+    const routeCode =
+      modNum === 1
+        ? allModules?.find((m) => m.subject_code === subj && m.module_number === 1)?.route_code
+        : attempt.metadata?.[subjectRouteField[subj]];
+
+    const modRow = allModules?.find(
+      (m) => m.subject_code === subj && m.module_number === modNum && m.route_code === routeCode
+    );
+    if (!modRow) continue;
+
+    const { data: modItems } = await supabase
+      .from('practice_test_module_items')
+      .select('ordinal, question_version_id')
+      .eq('practice_test_module_id', modRow.id)
+      .order('ordinal', { ascending: true });
+
+    for (const item of modItems || []) {
+      attemptItems.push({
+        subject_code: subj,
+        module_number: modNum,
+        route_code: routeCode,
+        ordinal: item.ordinal,
+        question_version_id: item.question_version_id,
+      });
+    }
+  }
+
+  const versionIds = [...new Set(attemptItems.map((i) => i.question_version_id))];
 
   if (!versionIds.length) {
     return NextResponse.json({ error: 'No attempt items found' }, { status: 404 });
@@ -63,23 +100,41 @@ export async function GET(_request, { params }) {
   // Fetch correct answers
   const { data: correctAnswers } = await supabase
     .from('correct_answers')
-    .select('question_version_id, answer_type, correct_option_id, correct_option_ids, correct_text')
+    .select('question_version_id, answer_type, correct_option_id, correct_option_ids, correct_text, correct_number, numeric_tolerance')
     .in('question_version_id', versionIds);
 
   const correctByVersion = {};
   for (const ca of correctAnswers || []) correctByVersion[ca.question_version_id] = ca;
 
-  // Fetch user's attempts for these questions
-  const { data: userAttempts } = await supabase
-    .from('attempts')
-    .select('question_id, is_correct, selected_option_id, response_text, created_at')
-    .eq('user_id', user.id)
-    .in('question_id', questionIds)
-    .order('created_at', { ascending: false });
+  // Fetch user's answers scoped to THIS practice test attempt only.
+  // Join chain: practice_test_module_attempts → practice_test_item_attempts → attempts
+  // This prevents answers from previous attempts / other tests bleeding through.
+  const { data: moduleAttemptRows } = await supabase
+    .from('practice_test_module_attempts')
+    .select('id')
+    .eq('practice_test_attempt_id', attemptId);
+
+  const moduleAttemptIds = (moduleAttemptRows || []).map((r) => r.id);
+
+  const { data: itemAttemptRows } = moduleAttemptIds.length
+    ? await supabase
+        .from('practice_test_item_attempts')
+        .select('attempt_id')
+        .in('practice_test_module_attempt_id', moduleAttemptIds)
+    : { data: [] };
+
+  const attemptIds = [...new Set((itemAttemptRows || []).map((r) => r.attempt_id).filter(Boolean))];
+
+  const { data: userAttempts } = attemptIds.length
+    ? await supabase
+        .from('attempts')
+        .select('id, question_id, selected_option_id, response_text')
+        .in('id', attemptIds)
+    : { data: [] };
 
   const latestAttempt = {};
   for (const a of userAttempts || []) {
-    if (!latestAttempt[a.question_id]) latestAttempt[a.question_id] = a;
+    latestAttempt[a.question_id] = a;
   }
 
   // Fetch taxonomy for domain/skill breakdown
@@ -96,15 +151,52 @@ export async function GET(_request, { params }) {
   const domainStats = {};  // domain_name → { correct, total, skill_name }
   const questionReview = [];
 
+  // Helper: parse correct_text which may be a plain string or JSON array like '["77","77.0"]'
+  const parseSprAccepted = (ct) => {
+    if (!ct) return [];
+    const t = String(ct).trim();
+    if (t.startsWith('[') && t.endsWith(']')) {
+      try { const p = JSON.parse(t); if (Array.isArray(p)) return p.map(String); } catch {}
+    }
+    return [t];
+  };
+  const normText = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
   for (const item of attemptItems || []) {
     const version = versionMap[item.question_version_id];
     if (!version) continue;
     const qid = version.question_id;
     const attempt_rec = latestAttempt[qid];
-    const is_correct = attempt_rec?.is_correct ?? false;
     const was_answered = !!attempt_rec;
     const tax = taxByQuestion[qid] || {};
     const ca = correctByVersion[item.question_version_id];
+
+    // Recompute correctness from live answer-key data.
+    // Drive comparison by what data is present, not answer_type, so null/unexpected
+    // answer_type values in the DB don't cause correct answers to show as wrong.
+    let is_correct = false;
+    if (attempt_rec && ca) {
+      if (attempt_rec.selected_option_id) {
+        // MCQ-style: student picked an option
+        if (ca.correct_option_id) {
+          is_correct = ca.correct_option_id === attempt_rec.selected_option_id;
+        }
+        if (!is_correct && ca.correct_option_ids?.length) {
+          is_correct = ca.correct_option_ids.includes(attempt_rec.selected_option_id);
+        }
+      } else if (attempt_rec.response_text) {
+        // Free-response: compare text first, then numeric
+        const accepted = parseSprAccepted(ca.correct_text);
+        is_correct = accepted.some((a) => normText(a) === normText(attempt_rec.response_text));
+        if (!is_correct && ca.correct_number != null) {
+          const parsed = parseFloat(attempt_rec.response_text);
+          if (!isNaN(parsed)) {
+            const tol = parseFloat(ca.numeric_tolerance) || 0;
+            is_correct = Math.abs(parsed - parseFloat(ca.correct_number)) <= tol;
+          }
+        }
+      }
+    }
 
     // Section stats
     const subj = item.subject_code;
@@ -142,7 +234,7 @@ export async function GET(_request, { params }) {
       question_version_id: item.question_version_id,
       question_id: qid,
       question_type: version.question_type,
-      stimulus_html: version.stimulus_html || null,
+      stimulus_html: version.stimulus_html && version.stimulus_html !== 'NULL' ? version.stimulus_html : null,
       stem_html: version.stem_html,
       options: optionsByVersion[item.question_version_id] || [],
       correct_answer: ca || null,

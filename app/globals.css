@@ -304,6 +304,10 @@ a{
 .prose strong{ font-weight: 700; }
 .prose em{ font-style: italic; }
 
+/* Suppress browser-default quotation marks on <q> elements */
+.prose q{ quotes: none; }
+.prose q::before, .prose q::after{ content: none; }
+
 .prose img{
   max-width: 100%;
   height: auto;
@@ -2320,6 +2324,13 @@ hr{
 .ptModuleLabel{
   font-weight: 600;
   font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ptPauseBtn{
+  font-size: 12px;
+  padding: 4px 10px;
 }
 
 .ptTimer{
@@ -2616,25 +2627,41 @@ hr{
 }
 .ptrvBack:hover{ text-decoration: underline; }
 
-/* ── Top row: scores + skills ── */
-.ptrvTopRow{
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 16px;
+/* ── Summary card: scores + skills in two columns ── */
+.ptrvSummaryCard{
+  padding: 0;
+  overflow: hidden;
   margin-bottom: 28px;
-  align-items: start;
-}
-@media (max-width: 700px){
-  .ptrvTopRow{ grid-template-columns: 1fr; }
 }
 
-.ptrvScoreCard{
+.ptrvSummaryInner{
+  display: grid;
+  grid-template-columns: auto 1px 1fr;
+}
+
+.ptrvScoreCol{
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
   padding: 24px 28px;
   min-width: 200px;
+}
+
+.ptrvSummaryDivider{
+  background: var(--border);
+  width: 1px;
+  align-self: stretch;
+}
+
+.ptrvSkillsCol{
+  padding: 20px 24px;
+  overflow: auto;
+}
+
+@media (max-width: 700px){
+  .ptrvSummaryInner{ grid-template-columns: 1fr; }
+  .ptrvSummaryDivider{ width: auto; height: 1px; align-self: auto; }
 }
 
 .ptrvCompositeWrap{
@@ -2675,11 +2702,6 @@ hr{
   flex: 1;
 }
 
-.ptrvSkillsCard{
-  padding: 20px 24px;
-  overflow: auto;
-}
-
 /* ── Question review layout ── */
 .ptrvReviewRow{
   display: grid;
@@ -2693,7 +2715,9 @@ hr{
 
 /* ── Tile panel (left) ── */
 .ptrvTilesPanel{
-  /* Overflow scroll if very many questions */
+  position: sticky;
+  top: calc(var(--nav-h) + 12px);
+  max-height: calc(100vh - var(--nav-h) - 32px);
   overflow-y: auto;
 }
 
@@ -2767,11 +2791,13 @@ hr{
 
 /* ── Detail panel (right, sticky) ── */
 .ptrvDetailWrap{
+  padding: 0; /* override .card padding */
   position: sticky;
   top: calc(var(--nav-h) + 12px);
   max-height: calc(100vh - var(--nav-h) - 32px);
-  overflow-y: auto;
-  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .ptrvDetailEmpty{
@@ -2779,14 +2805,13 @@ hr{
   align-items: center;
   justify-content: center;
   min-height: 160px;
-  border: 1px dashed var(--border);
-  border-radius: 12px;
 }
 
 .ptrvDetail{
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -2861,6 +2886,7 @@ hr{
 /* ── Question content ── */
 .ptrvDetailBody{
   padding: 16px;
+  flex-shrink: 0; /* always render question in full — never let flex compress it */
 }
 
 .ptrvStimulus{
@@ -2871,8 +2897,6 @@ hr{
   margin-bottom: 16px;
   font-size: 14px;
   line-height: 1.7;
-  max-height: 280px;
-  overflow-y: auto;
 }
 
 .ptrvDetailStem{
@@ -2883,7 +2907,12 @@ hr{
 /* ── Answer reveal ── */
 .ptrvAnswerSection{
   border-top: 1px solid var(--border);
-  padding: 12px 16px 16px;
+  padding: 14px 16px 14px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .ptrvAnswerToggle{
@@ -2909,7 +2938,10 @@ hr{
 }
 
 .ptrvAnswerBody{
-  margin-top: 14px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 0 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -2961,15 +2993,20 @@ hr{
   font-style: italic;
 }
 
-.ptrvOptLetter{
-  font-weight: 700;
-  flex-shrink: 0;
-  min-width: 16px;
+/* Review option list — uses shared .option/.optionBadge/.optionContent styles */
+.ptrvOptionList{
+  gap: 8px;
+  margin-top: 14px;
 }
 
-.ptrvOptText{
+.ptrvReviewOption{
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Single colored option card inside "Your answer" / "Correct answer" rows */
+.ptrvAnswerOpt{
   flex: 1;
-  min-width: 0;
 }
 
 /* ── Rationale ── */
