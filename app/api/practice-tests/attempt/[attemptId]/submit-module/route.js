@@ -151,7 +151,8 @@ export async function POST(request, { params }) {
   }));
 
   if (attemptItemRows.length > 0) {
-    await supabase.from('practice_test_attempt_items').insert(attemptItemRows);
+    const { error: itemsErr } = await supabase.from('practice_test_attempt_items').insert(attemptItemRows);
+    if (itemsErr) return NextResponse.json({ error: `Failed to save attempt items: ${itemsErr.message}` }, { status: 500 });
   }
 
   // Apply routing rules if this was module 1
