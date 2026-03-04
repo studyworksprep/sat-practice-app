@@ -171,23 +171,29 @@ export async function GET(_request, { params }) {
     const tax = taxByQuestion[qid] || {};
     const ca = correctByVersion[item.question_version_id];
 
-    // Recompute correctness from live answer-key data so stale/buggy stored values don't mislead.
+    // Recompute correctness from live answer-key data.
+    // Drive comparison by what data is present, not answer_type, so null/unexpected
+    // answer_type values in the DB don't cause correct answers to show as wrong.
     let is_correct = false;
     if (attempt_rec && ca) {
-      if (ca.answer_type === 'mcq' || ca.answer_type === 'single') {
-        is_correct = ca.correct_option_id === attempt_rec.selected_option_id;
-      } else if (ca.answer_type === 'multi') {
-        const userSet = new Set([attempt_rec.selected_option_id].filter(Boolean));
-        const corrSet = new Set(ca.correct_option_ids || []);
-        is_correct = userSet.size === corrSet.size && [...userSet].every((id) => corrSet.has(id));
-      } else if (ca.answer_type === 'text') {
+      if (attempt_rec.selected_option_id) {
+        // MCQ-style: student picked an option
+        if (ca.correct_option_id) {
+          is_correct = ca.correct_option_id === attempt_rec.selected_option_id;
+        }
+        if (!is_correct && ca.correct_option_ids?.length) {
+          is_correct = ca.correct_option_ids.includes(attempt_rec.selected_option_id);
+        }
+      } else if (attempt_rec.response_text) {
+        // Free-response: compare text first, then numeric
         const accepted = parseSprAccepted(ca.correct_text);
         is_correct = accepted.some((a) => normText(a) === normText(attempt_rec.response_text));
-      } else if (ca.answer_type === 'number') {
-        const parsed = parseFloat(attempt_rec.response_text);
-        if (!isNaN(parsed)) {
-          const tol = parseFloat(ca.numeric_tolerance) || 0;
-          is_correct = Math.abs(parsed - parseFloat(ca.correct_number)) <= tol;
+        if (!is_correct && ca.correct_number != null) {
+          const parsed = parseFloat(attempt_rec.response_text);
+          if (!isNaN(parsed)) {
+            const tol = parseFloat(ca.numeric_tolerance) || 0;
+            is_correct = Math.abs(parsed - parseFloat(ca.correct_number)) <= tol;
+          }
         }
       }
     }
