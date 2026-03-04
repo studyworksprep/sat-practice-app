@@ -35,13 +35,11 @@ export default function NavBar() {
             />
           </Link>
 
-          {user && (
-            <div className="navLinks">
-              <Link href="/dashboard">Dashboard</Link>
-              <Link href="/practice-test">Tests</Link>
-              <Link href="/practice">Practice</Link>
-            </div>
-          )}
+          <div className="navLinks">
+            <Link href="/practice">Practice</Link>
+            <Link href="/review">Review</Link>
+            {user ? <Link href="/question-bank">Question Bank</Link> : null}
+          </div>
         </div>
 
         {/* Right: Auth */}
