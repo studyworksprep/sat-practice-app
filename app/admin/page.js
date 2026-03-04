@@ -3,11 +3,27 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '../../lib/supabase/browser';
 
+const ROLE_ORDER = ['admin', 'teacher', 'student', 'practice'];
+const ROLE_LABEL = { admin: 'Admin', teacher: 'Teacher', student: 'Student', practice: 'Practice' };
+const ROLE_COLOR = {
+  admin: '#7c3aed',
+  teacher: '#2563eb',
+  student: '#16a34a',
+  practice: '#6b7280',
+};
+
+function formatDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 export default function AdminPage() {
   const supabase = createClient();
 
   const [tests, setTests] = useState([]);
+  const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(true);
 
   // Score conversion dialog state
   const [showScoreDialog, setShowScoreDialog] = useState(false);
@@ -30,11 +46,43 @@ export default function AdminPage() {
         setTests(data || []);
         setLoading(false);
       });
+
+    fetchUsers();
   }, []);
+
+  async function fetchUsers() {
+    setUsersLoading(true);
+    try {
+      const res = await fetch('/api/admin/users');
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to load users');
+      setProfiles(json.profiles || []);
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setUsersLoading(false);
+    }
+  }
 
   function showToast(kind, message) {
     setToast({ kind, message });
     setTimeout(() => setToast(null), 4000);
+  }
+
+  async function handleRoleChange(userId, newRole) {
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, role: newRole }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to update role');
+      setProfiles((prev) => prev.map((p) => p.id === userId ? { ...p, role: newRole } : p));
+      showToast('ok', 'Role updated.');
+    } catch (err) {
+      showToast('danger', err.message);
+    }
   }
 
   async function handleSaveScores() {
@@ -64,7 +112,6 @@ export default function AdminPage() {
       return showToast('danger', 'Fill in at least one complete section (both modules + scale score).');
     }
 
-    // Validate ranges
     for (const e of entries) {
       if (e.scaled_score < 200 || e.scaled_score > 800) {
         return showToast('danger', 'Scale scores must be between 200 and 800.');
@@ -79,16 +126,11 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/score-conversion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          test_id: selectedTestId,
-          test_name: test?.name || '',
-          entries,
-        }),
+        body: JSON.stringify({ test_id: selectedTestId, test_name: test?.name || '', entries }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Save failed');
       showToast('ok', `Saved ${data.saved} score conversion(s).`);
-      // Clear fields
       setRwM1(''); setRwM2(''); setRwScaled('');
       setMathM1(''); setMathM2(''); setMathScaled('');
     } catch (err) {
@@ -96,6 +138,14 @@ export default function AdminPage() {
     } finally {
       setSaving(false);
     }
+  }
+
+  // Group profiles by role
+  const grouped = {};
+  for (const role of ROLE_ORDER) grouped[role] = [];
+  for (const p of profiles) {
+    const role = ROLE_ORDER.includes(p.role) ? p.role : 'practice';
+    grouped[role].push(p);
   }
 
   if (loading) {
@@ -126,24 +176,59 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* ── Panels row ──────────────────────────────────────── */}
+      {/* ── User count panels ──────────────────────────────────── */}
       <div className="adminPanels">
-        <div className="card adminPanel">
-          <div className="adminPanelIcon">👤</div>
-          <div className="adminPanelTitle">Students</div>
-          <div className="muted small">Coming soon</div>
-        </div>
-        <div className="card adminPanel">
-          <div className="adminPanelIcon">🎓</div>
-          <div className="adminPanelTitle">Teachers</div>
-          <div className="muted small">Coming soon</div>
-        </div>
-        <div className="card adminPanel">
-          <div className="adminPanelIcon">📝</div>
-          <div className="adminPanelTitle">Practice Accounts</div>
-          <div className="muted small">Coming soon</div>
-        </div>
+        {ROLE_ORDER.map((role) => (
+          <div className="card adminPanel" key={role}>
+            <div className="adminPanelCount" style={{ color: ROLE_COLOR[role] }}>
+              {grouped[role].length}
+            </div>
+            <div className="adminPanelTitle">{ROLE_LABEL[role]}s</div>
+          </div>
+        ))}
       </div>
+
+      {/* ── User management ────────────────────────────────────── */}
+      <section style={{ marginTop: 32 }}>
+        <h2 className="h2" style={{ marginBottom: 16 }}>Users</h2>
+        {usersLoading ? (
+          <p className="muted small">Loading users…</p>
+        ) : profiles.length === 0 ? (
+          <p className="muted small">No profiles found. Run the migration to create the profiles table.</p>
+        ) : (
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <table className="adminTable">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                </tr>
+              </thead>
+              <tbody>
+                {profiles.map((p) => (
+                  <tr key={p.id}>
+                    <td className="adminTableEmail">{p.email || '—'}</td>
+                    <td>
+                      <select
+                        className="adminRoleSelect"
+                        value={p.role}
+                        onChange={(e) => handleRoleChange(p.id, e.target.value)}
+                        style={{ color: ROLE_COLOR[p.role] || ROLE_COLOR.practice }}
+                      >
+                        {ROLE_ORDER.map((r) => (
+                          <option key={r} value={r}>{ROLE_LABEL[r]}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="muted small">{formatDate(p.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {/* ── Score Conversion Entry ──────────────────────────── */}
       <section style={{ marginTop: 32 }}>
@@ -156,7 +241,6 @@ export default function AdminPage() {
 
         {showScoreDialog && (
           <div className="card adminScoreDialog">
-            {/* Test selector */}
             <label className="adminLabel">
               Practice Test
               <select
@@ -171,58 +255,38 @@ export default function AdminPage() {
               </select>
             </label>
 
-            {/* Reading & Writing */}
             <fieldset className="adminFieldset">
               <legend className="adminLegend">Reading & Writing</legend>
               <div className="adminFieldRow">
                 <label className="adminLabel adminFieldSmall">
                   Module 1 Correct
-                  <input
-                    type="number" min="0" className="adminInput"
-                    value={rwM1} onChange={(e) => setRwM1(e.target.value)}
-                  />
+                  <input type="number" min="0" className="adminInput" value={rwM1} onChange={(e) => setRwM1(e.target.value)} />
                 </label>
                 <label className="adminLabel adminFieldSmall">
                   Module 2 Correct
-                  <input
-                    type="number" min="0" className="adminInput"
-                    value={rwM2} onChange={(e) => setRwM2(e.target.value)}
-                  />
+                  <input type="number" min="0" className="adminInput" value={rwM2} onChange={(e) => setRwM2(e.target.value)} />
                 </label>
                 <label className="adminLabel adminFieldSmall">
                   Scale Score
-                  <input
-                    type="number" min="200" max="800" className="adminInput"
-                    value={rwScaled} onChange={(e) => setRwScaled(e.target.value)}
-                  />
+                  <input type="number" min="200" max="800" className="adminInput" value={rwScaled} onChange={(e) => setRwScaled(e.target.value)} />
                 </label>
               </div>
             </fieldset>
 
-            {/* Math */}
             <fieldset className="adminFieldset">
               <legend className="adminLegend">Math</legend>
               <div className="adminFieldRow">
                 <label className="adminLabel adminFieldSmall">
                   Module 1 Correct
-                  <input
-                    type="number" min="0" className="adminInput"
-                    value={mathM1} onChange={(e) => setMathM1(e.target.value)}
-                  />
+                  <input type="number" min="0" className="adminInput" value={mathM1} onChange={(e) => setMathM1(e.target.value)} />
                 </label>
                 <label className="adminLabel adminFieldSmall">
                   Module 2 Correct
-                  <input
-                    type="number" min="0" className="adminInput"
-                    value={mathM2} onChange={(e) => setMathM2(e.target.value)}
-                  />
+                  <input type="number" min="0" className="adminInput" value={mathM2} onChange={(e) => setMathM2(e.target.value)} />
                 </label>
                 <label className="adminLabel adminFieldSmall">
                   Scale Score
-                  <input
-                    type="number" min="200" max="800" className="adminInput"
-                    value={mathScaled} onChange={(e) => setMathScaled(e.target.value)}
-                  />
+                  <input type="number" min="200" max="800" className="adminInput" value={mathScaled} onChange={(e) => setMathScaled(e.target.value)} />
                 </label>
               </div>
             </fieldset>

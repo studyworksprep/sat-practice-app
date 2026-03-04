@@ -1046,6 +1046,17 @@ hr{
   color: var(--muted);
 }
 
+.navRoleBadge{
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 /* ===============================
    Modal
 ================================ */
@@ -3140,19 +3151,57 @@ hr{
 
 .adminPanels{
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 @media (max-width: 640px){
-  .adminPanels{ grid-template-columns: 1fr; }
+  .adminPanels{ grid-template-columns: 1fr 1fr; }
 }
 
 .adminPanel{
   padding: 24px;
   text-align: center;
 }
-.adminPanelIcon{ font-size: 28px; margin-bottom: 8px; }
+.adminPanelCount{ font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
 .adminPanelTitle{ font-weight: 600; font-size: var(--title-2); }
+
+.adminTable{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.adminTable th{
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.adminTable td{
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.adminTable tbody tr:last-child td{ border-bottom: none; }
+.adminTable tbody tr:hover{ background: rgba(17,24,39,0.02); }
+.adminTableEmail{ font-weight: 500; }
+
+.adminRoleSelect{
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--card);
+  cursor: pointer;
+}
+.adminRoleSelect:focus{
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
 
 .adminScoreDialog{ padding: 24px; margin-top: 4px; }
 

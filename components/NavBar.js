@@ -7,11 +7,28 @@ import { createClient } from '../lib/supabase/browser';
 export default function NavBar() {
   const supabase = createClient();
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
+
+  async function fetchProfile(uid) {
+    if (!uid) { setRole(null); return; }
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', uid)
+      .maybeSingle();
+    setRole(data?.role || 'practice');
+  }
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data?.user ?? null));
+    supabase.auth.getUser().then(({ data }) => {
+      const u = data?.user ?? null;
+      setUser(u);
+      fetchProfile(u?.id);
+    });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const u = session?.user ?? null;
+      setUser(u);
+      fetchProfile(u?.id);
     });
     return () => sub?.subscription?.unsubscribe?.();
   }, []);
@@ -20,6 +37,9 @@ export default function NavBar() {
     await supabase.auth.signOut();
     window.location.href = '/';
   }
+
+  const isAdmin = role === 'admin';
+  const isTeacher = role === 'teacher' || role === 'admin';
 
   return (
     <nav className="nav">
@@ -40,7 +60,7 @@ export default function NavBar() {
               <Link href="/dashboard">Dashboard</Link>
               <Link href="/practice-test">Tests</Link>
               <Link href="/practice">Practice</Link>
-              <Link href="/admin">Admin</Link>
+              {isAdmin && <Link href="/admin">Admin</Link>}
             </div>
           )}
         </div>
@@ -50,6 +70,9 @@ export default function NavBar() {
           {user ? (
             <>
               <span className="userEmail">{user.email}</span>
+              {role && (
+                <span className="navRoleBadge">{role}</span>
+              )}
               <button className="btn secondary" onClick={signOut}>
                 Sign out
               </button>
