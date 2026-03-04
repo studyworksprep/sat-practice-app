@@ -5,8 +5,8 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import HtmlBlock from '../../../../../components/HtmlBlock';
 
-const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math' };
-const SUBJECT_ORDER = ['RW', 'rw', 'M', 'm', 'math'];
+const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
+const SUBJECT_ORDER = ['RW', 'rw', 'MATH', 'M', 'm', 'math'];
 
 const DOMAIN_ABBREV = {
   'Craft and Structure': 'C&S',
@@ -226,72 +226,78 @@ export default function ResultsPage() {
         <p className="muted small" style={{ marginBottom: 24 }}>Completed {fmtDate(data.completed_at)}</p>
       )}
 
-      {/* ── Top row: scores + skills ── */}
-      <div className="ptrvTopRow">
+      {/* ── Summary card: scores + skills side by side ── */}
+      <div className="card ptrvSummaryCard">
+        <div className="ptrvSummaryInner">
 
-        {/* Score card */}
-        <div className="card ptrvScoreCard">
-          <div className="ptrvCompositeWrap">
-            <span className="ptCompositeNum">{data.composite ?? '—'}</span>
-            <span className="ptCompositeLabel">Total Score</span>
+          {/* Left column: composite + section scores */}
+          <div className="ptrvScoreCol">
+            <div className="ptrvCompositeWrap">
+              <span className="ptCompositeNum">{data.composite ?? '—'}</span>
+              <span className="ptCompositeLabel">Total Score</span>
+            </div>
+            <div className="ptrvDivider" />
+            <div className="ptrvSections">
+              {SUBJECT_ORDER.map((subj) => {
+                const sec = data.sections?.[subj];
+                if (!sec) return null;
+                return (
+                  <div key={subj} className="ptrvSectionItem">
+                    <span className="ptrvSectionNum">{sec.scaled}</span>
+                    <span className="ptrvSectionName">{SUBJECT_LABEL[subj]}</span>
+                    <span className="muted small">{sec.correct}/{sec.total} correct</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div className="ptrvDivider" />
-          <div className="ptrvSections">
-            {SUBJECT_ORDER.map((subj) => {
-              const sec = data.sections?.[subj];
-              if (!sec) return null;
-              return (
-                <div key={subj} className="ptrvSectionItem">
-                  <span className="ptrvSectionNum">{sec.scaled}</span>
-                  <span className="ptrvSectionName">{SUBJECT_LABEL[subj]}</span>
-                  <span className="muted small">{sec.correct}/{sec.total} correct</span>
-                </div>
-              );
-            })}
-          </div>
+
+          {/* Vertical divider */}
+          {data.domains?.length > 0 && <div className="ptrvSummaryDivider" />}
+
+          {/* Right column: skills breakdown */}
+          {data.domains?.length > 0 && (
+            <div className="ptrvSkillsCol">
+              <div className="h2" style={{ marginBottom: 12 }}>Skills Breakdown</div>
+              <table className="ptDomainTable">
+                <thead>
+                  <tr>
+                    <th>Domain / Skill</th>
+                    <th style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>Score</th>
+                    <th style={{ width: 80 }} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.domains.map((d) => {
+                    const isOpen = openDomains[d.domain_name];
+                    return [
+                      <tr key={d.domain_name} className="ptDomainRow" onClick={() => toggleDomain(d.domain_name)} style={{ cursor: 'pointer' }}>
+                        <td><strong>{d.domain_name}</strong> <span className="muted small">{isOpen ? '▲' : '▼'}</span></td>
+                        <td style={{ textAlign: 'right', paddingRight: 8 }}>{d.correct}/{d.total}</td>
+                        <td><AccuracyBar correct={d.correct} total={d.total} /></td>
+                      </tr>,
+                      ...(isOpen ? (d.skills || []).map((s) => (
+                        <tr key={`${d.domain_name}-${s.skill_name}`} className="ptSkillRow">
+                          <td style={{ paddingLeft: 20 }}>{s.skill_name}</td>
+                          <td style={{ textAlign: 'right', paddingRight: 8 }}>{s.correct}/{s.total}</td>
+                          <td><AccuracyBar correct={s.correct} total={s.total} /></td>
+                        </tr>
+                      )) : []),
+                    ];
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
         </div>
-
-        {/* Skills card */}
-        {data.domains?.length > 0 && (
-          <div className="card ptrvSkillsCard">
-            <div className="h2" style={{ marginBottom: 12 }}>Skills Breakdown</div>
-            <table className="ptDomainTable">
-              <thead>
-                <tr>
-                  <th>Domain / Skill</th>
-                  <th style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>Score</th>
-                  <th style={{ width: 80 }} />
-                </tr>
-              </thead>
-              <tbody>
-                {data.domains.map((d) => {
-                  const isOpen = openDomains[d.domain_name];
-                  return [
-                    <tr key={d.domain_name} className="ptDomainRow" onClick={() => toggleDomain(d.domain_name)} style={{ cursor: 'pointer' }}>
-                      <td><strong>{d.domain_name}</strong> <span className="muted small">{isOpen ? '▲' : '▼'}</span></td>
-                      <td style={{ textAlign: 'right', paddingRight: 8 }}>{d.correct}/{d.total}</td>
-                      <td><AccuracyBar correct={d.correct} total={d.total} /></td>
-                    </tr>,
-                    ...(isOpen ? (d.skills || []).map((s) => (
-                      <tr key={`${d.domain_name}-${s.skill_name}`} className="ptSkillRow">
-                        <td style={{ paddingLeft: 20 }}>{s.skill_name}</td>
-                        <td style={{ textAlign: 'right', paddingRight: 8 }}>{s.correct}/{s.total}</td>
-                        <td><AccuracyBar correct={s.correct} total={s.total} /></td>
-                      </tr>
-                    )) : []),
-                  ];
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
 
       {/* ── Question review: tile grid + detail panel ── */}
       <div className="ptrvReviewRow">
 
         {/* Left: tile grid */}
-        <div className="ptrvTilesPanel">
+        <div className="card ptrvTilesPanel">
           <div className="h2" style={{ marginBottom: 14 }}>Question Review</div>
 
           {SUBJECT_ORDER.map((subj) =>
@@ -330,7 +336,7 @@ export default function ResultsPage() {
         </div>
 
         {/* Right: detail panel (sticky) */}
-        <div className="ptrvDetailWrap">
+        <div className="card ptrvDetailWrap">
           <QuestionDetail
             key={selectedQ?.question_version_id}
             q={selectedQ}
