@@ -304,6 +304,10 @@ a{
 .prose strong{ font-weight: 700; }
 .prose em{ font-style: italic; }
 
+/* Suppress browser-default quotation marks on <q> elements */
+.prose q{ quotes: none; }
+.prose q::before, .prose q::after{ content: none; }
+
 .prose img{
   max-width: 100%;
   height: auto;
