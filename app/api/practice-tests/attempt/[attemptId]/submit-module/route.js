@@ -119,7 +119,15 @@ export async function POST(request, { params }) {
         is_correct = userSet.size === corrSet.size && [...userSet].every((id) => corrSet.has(id));
       } else if (ca.answer_type === 'text') {
         const norm = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
-        is_correct = norm(ca.correct_text) === norm(ans.response_text);
+        const toList = (ct) => {
+          if (!ct) return [];
+          const t = String(ct).trim();
+          if (t.startsWith('[') && t.endsWith(']')) {
+            try { const p = JSON.parse(t); if (Array.isArray(p)) return p.map(String); } catch {}
+          }
+          return [t];
+        };
+        is_correct = toList(ca.correct_text).some((a) => norm(a) === norm(ans.response_text));
       } else if (ca.answer_type === 'number') {
         const parsed = parseFloat(ans.response_text);
         if (!isNaN(parsed)) {
