@@ -1411,12 +1411,12 @@ hr{
 /* ── Stats row ── */
 .dbStatsRow{
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 16px;
 }
 
-@media (max-width: 540px){
+@media (max-width: 700px){
   .dbStatsRow{ grid-template-columns: 1fr 1fr; }
 }
 
@@ -1655,6 +1655,144 @@ hr{
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* Smaller stat value for long topic names */
+.dbStatValueSm{
+  font-size: 28px;
+}
+
+/* ── Test scores in dashboard ── */
+.dbTestScoreList{
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.dbTestScoreRow{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.1s;
+}
+.dbTestScoreRow:last-of-type{ border-bottom: none; }
+.dbTestScoreRow:hover{
+  background: rgba(17,24,39,0.02);
+  margin: 0 -8px;
+  padding: 10px 8px;
+  border-radius: 8px;
+}
+
+.dbTestScoreInfo{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.dbTestScoreName{
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dbTestScoreBadges{
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.dbTestScoreBadge{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 40px;
+}
+
+.dbTestScoreBadgeNum{
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.dbTestScoreBadgeLabel{
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ── Practice sessions ── */
+.dbSessionList{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dbSessionCard{
+  padding: 14px 16px;
+}
+
+.dbSessionHeader{
+  margin-bottom: 10px;
+}
+
+.dbSessionMeta{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dbSessionDate{
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dbSessionStats{
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dbSessionTiles{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dbSessionTile{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  transition: opacity 0.12s, transform 0.08s;
+}
+.dbSessionTile:hover{ opacity: 0.8; transform: scale(1.08); }
+
+.dbSessionTile.correct{ background: #16a34a; color: #fff; }
+.dbSessionTile.incorrect{ background: #dc2626; color: #fff; }
+
+/* Difficulty border accents on session tiles */
+.dbSessionTile.easy{ box-shadow: inset 0 -3px 0 rgba(34,197,94,0.5); }
+.dbSessionTile.medium{ box-shadow: inset 0 -3px 0 rgba(234,179,8,0.5); }
+.dbSessionTile.hard{ box-shadow: inset 0 -3px 0 rgba(239,68,68,0.5); }
+
+.dbSessionTileNum{ font-size: 11px; line-height: 1; }
+.dbSessionTileIcon{ font-size: 10px; line-height: 1; opacity: 0.85; }
 
 /* Prevent overflow from long expressions / tables */
 .mathShell .prose table{
