@@ -67,7 +67,7 @@ export async function POST(request, { params }) {
 
   const { data: moduleItems } = await supabase
     .from('practice_test_module_items')
-    .select('ordinal, question_version_id')
+    .select('id, ordinal, question_version_id')
     .eq('practice_test_module_id', moduleRow.id)
     .order('ordinal', { ascending: true });
 
@@ -96,9 +96,10 @@ export async function POST(request, { params }) {
   const versionToQid = {};
   for (const v of versions || []) versionToQid[v.id] = v.question_id;
 
-  // Grade answers and insert into attempts table
+  // Grade answers, insert into attempts, and track attempt id per item
   let correctCount = 0;
   const now = new Date().toISOString();
+  const versionToAttemptId = {}; // question_version_id → attempts.id
 
   for (const item of moduleItems || []) {
     const ans = answerByVersion[item.question_version_id];
@@ -130,29 +131,51 @@ export async function POST(request, { params }) {
 
     if (is_correct) correctCount += 1;
 
-    await supabase.from('attempts').insert({
-      user_id: user.id,
-      question_id: questionId,
-      is_correct,
-      selected_option_id: ans.selected_option_id || null,
-      response_text: ans.response_text || null,
-      created_at: now,
-    });
+    const { data: attemptRow } = await supabase
+      .from('attempts')
+      .insert({
+        user_id: user.id,
+        question_id: questionId,
+        is_correct,
+        selected_option_id: ans.selected_option_id || null,
+        response_text: ans.response_text || null,
+        created_at: now,
+      })
+      .select('id')
+      .single();
+
+    if (attemptRow?.id) versionToAttemptId[item.question_version_id] = attemptRow.id;
   }
 
-  // Insert practice_test_attempt_items for every question in this module
-  const attemptItemRows = (moduleItems || []).map((item) => ({
-    practice_test_attempt_id: attemptId,
-    subject_code,
-    module_number,
-    route_code,
-    ordinal: item.ordinal,
-    question_version_id: item.question_version_id,
-  }));
+  // Insert one practice_test_module_attempts row for this module
+  const { data: moduleAttemptRow, error: maErr } = await supabase
+    .from('practice_test_module_attempts')
+    .insert({
+      practice_test_attempt_id: attemptId,
+      practice_test_module_id: moduleRow.id,
+      started_at: now,
+      finished_at: now,
+      correct_count: correctCount,
+      raw_score: correctCount,
+      metadata: {},
+    })
+    .select('id')
+    .single();
 
-  if (attemptItemRows.length > 0) {
-    const { error: itemsErr } = await supabase.from('practice_test_attempt_items').insert(attemptItemRows);
-    if (itemsErr) return NextResponse.json({ error: `Failed to save attempt items: ${itemsErr.message}` }, { status: 500 });
+  if (maErr) return NextResponse.json({ error: `Failed to save module attempt: ${maErr.message}` }, { status: 500 });
+
+  // Insert practice_test_item_attempts for each answered question
+  const itemAttemptRows = (moduleItems || [])
+    .filter((item) => versionToAttemptId[item.question_version_id])
+    .map((item) => ({
+      practice_test_module_attempt_id: moduleAttemptRow.id,
+      practice_test_module_item_id: item.id,
+      attempt_id: versionToAttemptId[item.question_version_id],
+    }));
+
+  if (itemAttemptRows.length > 0) {
+    const { error: itemsErr } = await supabase.from('practice_test_item_attempts').insert(itemAttemptRows);
+    if (itemsErr) return NextResponse.json({ error: `Failed to save item attempts: ${itemsErr.message}` }, { status: 500 });
   }
 
   // Apply routing rules if this was module 1

@@ -21,57 +21,49 @@ export async function GET(_request, { params }) {
   if (attErr) return NextResponse.json({ error: attErr.message }, { status: 500 });
   if (!attempt) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  // Fetch all attempt items
-  const { data: storedItems } = await supabase
-    .from('practice_test_attempt_items')
-    .select('subject_code, module_number, route_code, ordinal, question_version_id')
-    .eq('practice_test_attempt_id', attemptId)
-    .order('subject_code')
-    .order('module_number')
-    .order('ordinal');
+  // Reconstruct attempt items from metadata.submitted_modules + module definitions.
+  // This works with both practice_test_module_attempts/practice_test_item_attempts
+  // and any legacy schema, since submitted_modules is always written to metadata.
+  const subjectRouteField = {
+    RW: 'rw_route_code', rw: 'rw_route_code',
+    M: 'm_route_code', m: 'm_route_code', math: 'm_route_code', Math: 'm_route_code', MATH: 'm_route_code',
+  };
 
-  let attemptItems = storedItems || [];
+  const { data: allModules } = await supabase
+    .from('practice_test_modules')
+    .select('id, subject_code, module_number, route_code')
+    .eq('practice_test_id', attempt.practice_test_id);
 
-  // Fallback: if the attempt_items table was empty (e.g. table didn't exist when
-  // the test was submitted), reconstruct items from metadata + module definitions.
-  if (attemptItems.length === 0 && attempt.metadata?.submitted_modules?.length) {
-    const subjectRouteField = { RW: 'rw_route_code', rw: 'rw_route_code', M: 'm_route_code', m: 'm_route_code', math: 'm_route_code', Math: 'm_route_code', MATH: 'm_route_code' };
+  const attemptItems = [];
+  for (const key of attempt.metadata?.submitted_modules || []) {
+    const slash = key.lastIndexOf('/');
+    const subj = key.slice(0, slash);
+    const modNum = parseInt(key.slice(slash + 1), 10);
 
-    const { data: allModules } = await supabase
-      .from('practice_test_modules')
-      .select('id, subject_code, module_number, route_code')
-      .eq('practice_test_id', attempt.practice_test_id);
+    const routeCode =
+      modNum === 1
+        ? allModules?.find((m) => m.subject_code === subj && m.module_number === 1)?.route_code
+        : attempt.metadata?.[subjectRouteField[subj]];
 
-    for (const key of attempt.metadata.submitted_modules) {
-      const slash = key.lastIndexOf('/');
-      const subj = key.slice(0, slash);
-      const modNum = parseInt(key.slice(slash + 1), 10);
+    const modRow = allModules?.find(
+      (m) => m.subject_code === subj && m.module_number === modNum && m.route_code === routeCode
+    );
+    if (!modRow) continue;
 
-      const routeCode =
-        modNum === 1
-          ? allModules?.find((m) => m.subject_code === subj && m.module_number === 1)?.route_code
-          : attempt.metadata?.[subjectRouteField[subj]];
+    const { data: modItems } = await supabase
+      .from('practice_test_module_items')
+      .select('ordinal, question_version_id')
+      .eq('practice_test_module_id', modRow.id)
+      .order('ordinal', { ascending: true });
 
-      const modRow = allModules?.find(
-        (m) => m.subject_code === subj && m.module_number === modNum && m.route_code === routeCode
-      );
-      if (!modRow) continue;
-
-      const { data: modItems } = await supabase
-        .from('practice_test_module_items')
-        .select('ordinal, question_version_id')
-        .eq('practice_test_module_id', modRow.id)
-        .order('ordinal', { ascending: true });
-
-      for (const item of modItems || []) {
-        attemptItems.push({
-          subject_code: subj,
-          module_number: modNum,
-          route_code: routeCode,
-          ordinal: item.ordinal,
-          question_version_id: item.question_version_id,
-        });
-      }
+    for (const item of modItems || []) {
+      attemptItems.push({
+        subject_code: subj,
+        module_number: modNum,
+        route_code: routeCode,
+        ordinal: item.ordinal,
+        question_version_id: item.question_version_id,
+      });
     }
   }
 
