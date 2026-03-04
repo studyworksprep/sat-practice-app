@@ -105,6 +105,20 @@ function QuestionDetail({ q, allQuestions, onSelect }) {
         <div className="ptrvDetailStem">
           <HtmlBlock html={q.stem_html} className="prose" />
         </div>
+
+        {/* MCQ options — always visible, neutral, non-interactive */}
+        {q.options?.length > 0 && (
+          <div className="optionList ptrvOptionList">
+            {q.options.map((opt) => (
+              <div key={opt.id} className="option ptrvReviewOption">
+                <span className="optionBadge">{opt.label}</span>
+                <div className="optionContent">
+                  <HtmlBlock html={opt.content_html || ''} className="prose" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Answer reveal */}
@@ -119,48 +133,53 @@ function QuestionDetail({ q, allQuestions, onSelect }) {
 
         {showAnswer && (
           <div className="ptrvAnswerBody">
-            {q.options?.length > 0 ? (
-              /* MCQ — show all options with correct/incorrect state */
-              <div className="optionList ptrvOptionList">
-                {!q.was_answered && (
-                  <p className="muted small" style={{ marginBottom: 6 }}>Not answered — correct answer shown.</p>
-                )}
-                {q.options.map((opt) => {
-                  const isSelected = opt.id === q.selected_option_id;
-                  const isCorrectOpt = opt.id === correctOptionId || correctOptionIds.includes(opt.id);
-                  let cls = 'option ptrvReviewOption';
-                  if (isSelected) {
-                    cls += q.is_correct ? ' correct' : ' incorrect';
-                  } else if (isCorrectOpt && (!q.is_correct || !q.was_answered)) {
-                    cls += ' revealCorrect';
-                  }
-                  return (
-                    <div key={opt.id} className={cls}>
-                      <span className="optionBadge">{opt.label}</span>
-                      <div className="optionContent">
-                        <HtmlBlock html={opt.content_html || ''} className="prose" />
+            <div className="ptrvAnswerRows">
+              {q.options?.length > 0 ? (
+                /* MCQ — show which option the student picked and what's correct */
+                <>
+                  <div className="ptrvAnswerRow">
+                    <span className="ptrvAnswerLabel">Your answer</span>
+                    {q.was_answered && selectedOption ? (
+                      <div className={`option ptrvReviewOption ptrvAnswerOpt ${q.is_correct ? 'correct' : 'incorrect'}`}>
+                        <span className="optionBadge">{selectedOption.label}</span>
+                        <div className="optionContent">
+                          <HtmlBlock html={selectedOption.content_html || ''} className="prose" />
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="ptrvAnswerValue skipped">Not answered</span>
+                    )}
+                  </div>
+                  {(!q.is_correct || !q.was_answered) && correctOption && (
+                    <div className="ptrvAnswerRow">
+                      <span className="ptrvAnswerLabel">Correct answer</span>
+                      <div className="option ptrvReviewOption correct ptrvAnswerOpt">
+                        <span className="optionBadge">{correctOption.label}</span>
+                        <div className="optionContent">
+                          <HtmlBlock html={correctOption.content_html || ''} className="prose" />
+                        </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              /* SPR / free-response */
-              <div className="ptrvAnswerRows">
-                <div className="ptrvAnswerRow">
-                  <span className="ptrvAnswerLabel">Your answer</span>
-                  <span className={`ptrvAnswerValue ${q.is_correct ? 'correct' : q.was_answered ? 'incorrect' : 'skipped'}`}>
-                    {q.response_text || 'No answer given'}
-                  </span>
-                </div>
-                {!q.is_correct && q.correct_answer?.correct_text && (
+                  )}
+                </>
+              ) : (
+                /* SPR / free-response */
+                <>
                   <div className="ptrvAnswerRow">
-                    <span className="ptrvAnswerLabel">Correct answer</span>
-                    <span className="ptrvAnswerValue correct">{q.correct_answer.correct_text}</span>
+                    <span className="ptrvAnswerLabel">Your answer</span>
+                    <span className={`ptrvAnswerValue ${q.is_correct ? 'correct' : q.was_answered ? 'incorrect' : 'skipped'}`}>
+                      {q.response_text || 'No answer given'}
+                    </span>
                   </div>
-                )}
-              </div>
-            )}
+                  {!q.is_correct && q.correct_answer?.correct_text && (
+                    <div className="ptrvAnswerRow">
+                      <span className="ptrvAnswerLabel">Correct answer</span>
+                      <span className="ptrvAnswerValue correct">{q.correct_answer.correct_text}</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
             {q.rationale_html && (
               <div className="ptrvRationale">
