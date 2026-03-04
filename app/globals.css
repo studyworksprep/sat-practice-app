@@ -2972,11 +2972,17 @@ hr{
 /* Review option list — uses shared .option/.optionBadge/.optionContent styles */
 .ptrvOptionList{
   gap: 8px;
+  margin-top: 14px;
 }
 
 .ptrvReviewOption{
   cursor: default;
   pointer-events: none;
+}
+
+/* Single colored option card inside "Your answer" / "Correct answer" rows */
+.ptrvAnswerOpt{
+  flex: 1;
 }
 
 /* ── Rationale ── */
