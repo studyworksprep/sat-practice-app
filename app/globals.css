@@ -2969,15 +2969,14 @@ hr{
   font-style: italic;
 }
 
-.ptrvOptLetter{
-  font-weight: 700;
-  flex-shrink: 0;
-  min-width: 16px;
+/* Review option list — uses shared .option/.optionBadge/.optionContent styles */
+.ptrvOptionList{
+  gap: 8px;
 }
 
-.ptrvOptText{
-  flex: 1;
-  min-width: 0;
+.ptrvReviewOption{
+  cursor: default;
+  pointer-events: none;
 }
 
 /* ── Rationale ── */

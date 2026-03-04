@@ -120,28 +120,29 @@ function QuestionDetail({ q, allQuestions, onSelect }) {
         {showAnswer && (
           <div className="ptrvAnswerBody">
             {q.options?.length > 0 ? (
-              /* MCQ */
-              <div className="ptrvAnswerRows">
-                <div className="ptrvAnswerRow">
-                  <span className="ptrvAnswerLabel">Your answer</span>
-                  {q.was_answered ? (
-                    <div className={`ptrvAnswerValue ${q.is_correct ? 'correct' : 'incorrect'}`}>
-                      <span className="ptrvOptLetter">{selectedOption?.label || '?'}</span>
-                      <HtmlBlock html={selectedOption?.content_html || ''} className="ptrvOptText" />
-                    </div>
-                  ) : (
-                    <span className="ptrvAnswerValue skipped">No answer given</span>
-                  )}
-                </div>
-                {!q.is_correct && correctOption && (
-                  <div className="ptrvAnswerRow">
-                    <span className="ptrvAnswerLabel">Correct answer</span>
-                    <div className="ptrvAnswerValue correct">
-                      <span className="ptrvOptLetter">{correctOption.label}</span>
-                      <HtmlBlock html={correctOption.content_html || ''} className="ptrvOptText" />
-                    </div>
-                  </div>
+              /* MCQ — show all options with correct/incorrect state */
+              <div className="optionList ptrvOptionList">
+                {!q.was_answered && (
+                  <p className="muted small" style={{ marginBottom: 6 }}>Not answered — correct answer shown.</p>
                 )}
+                {q.options.map((opt) => {
+                  const isSelected = opt.id === q.selected_option_id;
+                  const isCorrectOpt = opt.id === correctOptionId || correctOptionIds.includes(opt.id);
+                  let cls = 'option ptrvReviewOption';
+                  if (isSelected) {
+                    cls += q.is_correct ? ' correct' : ' incorrect';
+                  } else if (isCorrectOpt && (!q.is_correct || !q.was_answered)) {
+                    cls += ' revealCorrect';
+                  }
+                  return (
+                    <div key={opt.id} className={cls}>
+                      <span className="optionBadge">{opt.label}</span>
+                      <div className="optionContent">
+                        <HtmlBlock html={opt.content_html || ''} className="prose" />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               /* SPR / free-response */
