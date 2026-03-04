@@ -7,6 +7,8 @@ import HtmlBlock from '../../../../components/HtmlBlock';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', Math: 'Math', MATH: 'Math', m: 'Math', M: 'Math' };
 
+const htmlHasContent = (html) => !!html && html.replace(/<[^>]+>/g, '').trim().length > 0;
+
 const MIN_CALC_W = 550;
 const MAX_CALC_W = 760;
 
@@ -623,7 +625,7 @@ export default function TestSessionPage() {
   const moduleLabel = `${subjectLabel} — Module ${moduleData.module_number} of 2`;
 
   const isMath = ['M', 'm', 'math', 'Math', 'MATH'].includes(moduleData.subject_code);
-  const isReading = !isMath && !!q.stimulus_html;
+  const isReading = !isMath && htmlHasContent(q.stimulus_html);
 
   // ─── Answer area (shared between layouts) ─────────────────────────────────
 
@@ -784,7 +786,7 @@ export default function TestSessionPage() {
           return (
             <div className="ptSingleCol">
               {qNumRow}
-              {q.stimulus_html && (
+              {htmlHasContent(q.stimulus_html) && (
                 <div className="ptStimulus">
                   <HtmlBlock html={q.stimulus_html} />
                 </div>

@@ -6,6 +6,9 @@ import Link from 'next/link';
 import HtmlBlock from '../../../../../components/HtmlBlock';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
+
+// Returns true only when an HTML string has visible text content (not just empty tags)
+const htmlHasContent = (html) => !!html && html.replace(/<[^>]+>/g, '').trim().length > 0;
 const SUBJECT_ORDER = ['RW', 'rw', 'MATH', 'M', 'm', 'math'];
 
 const DOMAIN_ABBREV = {
@@ -109,7 +112,7 @@ function QuestionDetail({ q, allQuestions, onSelect }) {
 
       {/* Question content */}
       <div className="ptrvDetailBody">
-        {q.stimulus_html && (
+        {htmlHasContent(q.stimulus_html) && (
           <div className="ptrvStimulus">
             <HtmlBlock html={q.stimulus_html} className="prose" />
           </div>
