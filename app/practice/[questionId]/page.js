@@ -520,6 +520,18 @@ export default function PracticeQuestionPage() {
 
   // ✅ Fetch IDs + metadata for map window (cached, loaded on modal open)
   async function fetchMapIds(offset) {
+    // If we have a localStorage session, build map items from it
+    const sessionIds = getSessionIds();
+    if (sessionIds) {
+      return sessionIds.slice(offset, offset + MAP_PAGE_SIZE).map((qid) => ({
+        question_id: qid,
+        difficulty: null,
+        is_done: false,
+        last_is_correct: null,
+        marked_for_review: false,
+      }));
+    }
+
     const key = `practice_${sessionParamsString}_map_${offset}`;
 
     const raw = localStorage.getItem(key);
