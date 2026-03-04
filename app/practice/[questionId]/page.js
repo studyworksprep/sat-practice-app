@@ -320,7 +320,7 @@ export default function PracticeQuestionPage() {
 
   // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
-    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'broken_only', 'q', 'session', 'replay', 'sid'];
+    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'hide_broken', 'q', 'session', 'replay', 'sid'];
     const p = new URLSearchParams();
     for (const k of keys) {
       const v = searchParams.get(k);

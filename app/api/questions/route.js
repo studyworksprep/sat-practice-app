@@ -3,7 +3,7 @@ import { createClient } from '../../../lib/supabase/server';
 
 // GET /api/questions
 // Params: difficulties=1,2,3 | score_bands=1,2 | domains=Algebra,... | topics=Linear+Functions,...
-//         wrong_only | marked_only | broken_only | q | limit | offset
+//         wrong_only | marked_only | hide_broken | q | limit | offset
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
 
@@ -34,7 +34,7 @@ export async function GET(request) {
 
   const wrong_only = searchParams.get('wrong_only') === 'true';
   const marked_only = searchParams.get('marked_only') === 'true';
-  const broken_only = searchParams.get('broken_only') === 'true';
+  const hide_broken = searchParams.get('hide_broken') === 'true';
   const qText = (searchParams.get('q') || '').trim();
 
   const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 5000);
@@ -48,6 +48,7 @@ export async function GET(request) {
 
   // Build an ID restriction set (questions.id UUIDs).
   let restrictIds = null;
+  let excludeBrokenIds = null;
 
   // 1) Full-text search restriction
   if (qText) {
@@ -96,10 +97,8 @@ export async function GET(request) {
     if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
   }
 
-  // 3) broken_only restriction
-  if (broken_only) {
-    if (!userId) return NextResponse.json({ items: [], totalCount: 0 });
-
+  // 3) hide_broken — exclude questions the user has flagged as broken (default behavior)
+  if (hide_broken && userId) {
     const { data: brokenRows, error: brokenErr } = await supabase
       .from('question_status')
       .select('question_id')
@@ -109,9 +108,15 @@ export async function GET(request) {
 
     if (brokenErr) return NextResponse.json({ error: brokenErr.message }, { status: 400 });
 
-    const brokenIds = (brokenRows || []).map((r) => r.question_id).filter(Boolean);
-    restrictIds = intersect(restrictIds, brokenIds);
-    if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
+    const brokenIds = new Set((brokenRows || []).map((r) => r.question_id).filter(Boolean));
+    if (brokenIds.size > 0) {
+      if (restrictIds) {
+        restrictIds = restrictIds.filter((id) => !brokenIds.has(id));
+        if (restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
+      } else {
+        excludeBrokenIds = brokenIds;
+      }
+    }
   }
 
   // 4) wrong_only restriction (is_done=true AND last_is_correct=false)
@@ -202,7 +207,7 @@ export async function GET(request) {
   const { data, error, count } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  const items = (data || [])
+  let items = (data || [])
     .map((row) => {
       const tax = row.question_taxonomy?.[0] ?? row.question_taxonomy ?? null;
 
@@ -237,10 +242,15 @@ export async function GET(request) {
     })
     .filter(Boolean);
 
-  return NextResponse.json({
-    items,
-    totalCount: typeof count === 'number' ? count : 0,
-  });
+  let totalCount = typeof count === 'number' ? count : 0;
+
+  // Post-filter broken questions when no restrictIds were available to pre-filter
+  if (excludeBrokenIds) {
+    items = items.filter((item) => !excludeBrokenIds.has(item.question_id));
+    totalCount = Math.max(0, totalCount - excludeBrokenIds.size);
+  }
+
+  return NextResponse.json({ items, totalCount });
 }
 
 // Intersect an existing restriction set with a new list.

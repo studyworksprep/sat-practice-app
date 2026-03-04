@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
 
 // GET /api/domain-counts
-// Params: difficulties, score_bands, wrong_only, marked_only, broken_only
+// Params: difficulties, score_bands, wrong_only, marked_only, hide_broken
 // Returns: { [domain_name]: { count: N, topics: { [skill_name]: M } } }
 // Counts reflect non-domain/topic filters only, so callers can show how many
 // questions exist in each domain/topic under the current filter settings.
@@ -17,7 +17,7 @@ export async function GET(request) {
 
   const wrong_only   = searchParams.get('wrong_only')   === 'true';
   const marked_only  = searchParams.get('marked_only')  === 'true';
-  const broken_only  = searchParams.get('broken_only')  === 'true';
+  const hide_broken  = searchParams.get('hide_broken')  === 'true';
 
   const supabase = createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -26,6 +26,7 @@ export async function GET(request) {
   // Build a set of question UUIDs that pass user-specific filters.
   // null means "no restriction".
   let restrictIds = null;
+  let excludeBrokenIds = null;
 
   if (marked_only) {
     if (!userId) return NextResponse.json({});
@@ -40,17 +41,22 @@ export async function GET(request) {
     if (restrictIds.length === 0) return NextResponse.json({});
   }
 
-  if (broken_only) {
-    if (!userId) return NextResponse.json({});
+  if (hide_broken && userId) {
     const { data } = await supabase
       .from('question_status')
       .select('question_id')
       .eq('user_id', userId)
       .eq('is_broken', true)
       .limit(10000);
-    const ids = (data || []).map((r) => r.question_id).filter(Boolean);
-    restrictIds = intersect(restrictIds, ids);
-    if (restrictIds.length === 0) return NextResponse.json({});
+    const brokenIds = new Set((data || []).map((r) => r.question_id).filter(Boolean));
+    if (brokenIds.size > 0) {
+      if (restrictIds) {
+        restrictIds = restrictIds.filter((id) => !brokenIds.has(id));
+        if (restrictIds.length === 0) return NextResponse.json({});
+      } else {
+        excludeBrokenIds = brokenIds;
+      }
+    }
   }
 
   if (wrong_only) {
@@ -94,6 +100,11 @@ export async function GET(request) {
   if (restrictIds !== null) {
     const rset = new Set(restrictIds);
     allTax = allTax.filter((r) => rset.has(r.question_id));
+  }
+
+  // Exclude broken questions
+  if (excludeBrokenIds) {
+    allTax = allTax.filter((r) => !excludeBrokenIds.has(r.question_id));
   }
 
   // Group by domain → topic, counting unique question_ids
