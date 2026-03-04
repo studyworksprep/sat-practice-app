@@ -307,6 +307,8 @@ export default function PracticeQuestionPage() {
   const [mapIds, setMapIds] = useState([]);
   const [mapLoading, setMapLoading] = useState(false);
   const [jumpTo, setJumpTo] = useState('');
+  // Overlay for questions answered/marked in the current session, keyed by question_id
+  const [sessionResults, setSessionResults] = useState({});
 
   const startedAtRef = useRef(Date.now());
 
@@ -437,6 +439,17 @@ export default function PracticeQuestionPage() {
       if (!res.ok) throw new Error(json?.error || 'Failed to load question');
 
       setData(json);
+
+      if (json?.question_id) {
+        setSessionResults((prev) => ({
+          ...prev,
+          [String(json.question_id)]: {
+            is_done: json.status?.is_done ?? false,
+            last_is_correct: json.status?.last_is_correct ?? null,
+            marked_for_review: json.status?.marked_for_review ?? false,
+          },
+        }));
+      }
 
       if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
       else setSelected(null);
@@ -632,6 +645,7 @@ export default function PracticeQuestionPage() {
   async function toggleMarkForReview() {
     if (!data?.question_id) return;
     const next = !Boolean(data?.status?.marked_for_review);
+    const qid = String(data.question_id);
     try {
       setMsg(null);
 
@@ -645,6 +659,10 @@ export default function PracticeQuestionPage() {
           },
         };
       });
+      setSessionResults((prev) => ({
+        ...prev,
+        [qid]: { ...(prev[qid] || {}), marked_for_review: next },
+      }));
 
       const res = await fetch('/api/status', {
         method: 'POST',
@@ -664,6 +682,10 @@ export default function PracticeQuestionPage() {
           },
         };
       });
+      setSessionResults((prev) => ({
+        ...prev,
+        [qid]: { ...(prev[qid] || {}), marked_for_review: !next },
+      }));
       setMsg({ kind: 'danger', text: e.message });
     }
   }
@@ -1465,10 +1487,12 @@ export default function PracticeQuestionPage() {
                   const diffClass =
                     diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : 'diffUnknown';
 
-                  const showMark = Boolean(it.marked_for_review);
-                  const showDone = Boolean(it.is_done);
-                  const showCorrect = showDone && it.last_is_correct === true;
-                  const showIncorrect = showDone && it.last_is_correct === false;
+                  const sr = sessionResults[String(id)];
+                  const showMark = Boolean(sr !== undefined ? sr.marked_for_review : it.marked_for_review);
+                  const showDone = Boolean(sr !== undefined ? sr.is_done : it.is_done);
+                  const lastCorrect = sr !== undefined ? sr.last_is_correct : it.last_is_correct;
+                  const showCorrect = showDone && lastCorrect === true;
+                  const showIncorrect = showDone && lastCorrect === false;
 
                   return (
                     <button
