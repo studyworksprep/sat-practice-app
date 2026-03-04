@@ -2616,25 +2616,41 @@ hr{
 }
 .ptrvBack:hover{ text-decoration: underline; }
 
-/* ── Top row: scores + skills ── */
-.ptrvTopRow{
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 16px;
+/* ── Summary card: scores + skills in two columns ── */
+.ptrvSummaryCard{
+  padding: 0;
+  overflow: hidden;
   margin-bottom: 28px;
-  align-items: start;
-}
-@media (max-width: 700px){
-  .ptrvTopRow{ grid-template-columns: 1fr; }
 }
 
-.ptrvScoreCard{
+.ptrvSummaryInner{
+  display: grid;
+  grid-template-columns: auto 1px 1fr;
+}
+
+.ptrvScoreCol{
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
   padding: 24px 28px;
   min-width: 200px;
+}
+
+.ptrvSummaryDivider{
+  background: var(--border);
+  width: 1px;
+  align-self: stretch;
+}
+
+.ptrvSkillsCol{
+  padding: 20px 24px;
+  overflow: auto;
+}
+
+@media (max-width: 700px){
+  .ptrvSummaryInner{ grid-template-columns: 1fr; }
+  .ptrvSummaryDivider{ width: auto; height: 1px; align-self: auto; }
 }
 
 .ptrvCompositeWrap{
@@ -2675,11 +2691,6 @@ hr{
   flex: 1;
 }
 
-.ptrvSkillsCard{
-  padding: 20px 24px;
-  overflow: auto;
-}
-
 /* ── Question review layout ── */
 .ptrvReviewRow{
   display: grid;
@@ -2693,7 +2704,9 @@ hr{
 
 /* ── Tile panel (left) ── */
 .ptrvTilesPanel{
-  /* Overflow scroll if very many questions */
+  position: sticky;
+  top: calc(var(--nav-h) + 12px);
+  max-height: calc(100vh - var(--nav-h) - 32px);
   overflow-y: auto;
 }
 
@@ -2767,11 +2780,11 @@ hr{
 
 /* ── Detail panel (right, sticky) ── */
 .ptrvDetailWrap{
+  padding: 0; /* override .card padding */
   position: sticky;
   top: calc(var(--nav-h) + 12px);
   max-height: calc(100vh - var(--nav-h) - 32px);
   overflow-y: auto;
-  border-radius: 12px;
 }
 
 .ptrvDetailEmpty{
@@ -2779,14 +2792,9 @@ hr{
   align-items: center;
   justify-content: center;
   min-height: 160px;
-  border: 1px dashed var(--border);
-  border-radius: 12px;
 }
 
 .ptrvDetail{
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
   overflow: hidden;
 }
 
