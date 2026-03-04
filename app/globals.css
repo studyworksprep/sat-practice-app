@@ -2324,6 +2324,13 @@ hr{
 .ptModuleLabel{
   font-weight: 600;
   font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ptPauseBtn{
+  font-size: 12px;
+  padding: 4px 10px;
 }
 
 .ptTimer{
