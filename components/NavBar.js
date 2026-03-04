@@ -40,6 +40,7 @@ export default function NavBar() {
               <Link href="/dashboard">Dashboard</Link>
               <Link href="/practice-test">Tests</Link>
               <Link href="/practice">Practice</Link>
+              <Link href="/admin">Admin</Link>
             </div>
           )}
         </div>

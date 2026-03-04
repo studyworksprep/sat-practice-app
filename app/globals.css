@@ -2993,3 +2993,74 @@ hr{
   font-size: 14px;
   line-height: 1.65;
 }
+
+/* ===============================
+   Admin Page
+================================ */
+
+.adminMain{ padding-bottom: 48px; }
+
+.adminPanels{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 640px){
+  .adminPanels{ grid-template-columns: 1fr; }
+}
+
+.adminPanel{
+  padding: 24px;
+  text-align: center;
+}
+.adminPanelIcon{ font-size: 28px; margin-bottom: 8px; }
+.adminPanelTitle{ font-weight: 600; font-size: var(--title-2); }
+
+.adminScoreDialog{ padding: 24px; margin-top: 4px; }
+
+.adminLabel{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.adminSelect,
+.adminInput{
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  background: var(--card);
+  color: var(--text);
+  width: 100%;
+}
+.adminSelect:focus,
+.adminInput:focus{
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.adminFieldset{
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px 0 0 0;
+}
+.adminLegend{
+  font-weight: 600;
+  font-size: 14px;
+  padding: 0 6px;
+}
+
+.adminFieldRow{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 520px){
+  .adminFieldRow{ grid-template-columns: 1fr; }
+}
