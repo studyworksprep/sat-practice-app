@@ -324,7 +324,10 @@ a{
 }
 .prose th{
   font-weight: 700;
-  background: var(--surface);
+  background: var(--surface, #f9fafb);
+}
+.prose tr:nth-child(even){
+  background: rgba(0,0,0,0.02);
 }
 .prose caption{
   caption-side: top;
@@ -2798,12 +2801,15 @@ hr{
   color: var(--muted);
   padding: 4px 8px 8px;
   border-bottom: 1px solid var(--border);
+  background: var(--surface, #f9fafb);
 }
 .ptDomainRow td, .ptSkillRow td{
   padding: 8px 8px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
+.ptDomainRow:nth-child(even) td{ background: rgba(0,0,0,0.02); }
+.ptDomainRow:hover td{ background: rgba(0,0,0,0.04); }
 .ptSkillRow td{
   font-size: 13px;
   color: var(--muted);
@@ -3237,13 +3243,15 @@ hr{
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
+  background: var(--surface, #f9fafb);
 }
 .adminTable td{
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
 }
+.adminTable tbody tr:nth-child(even){ background: rgba(0,0,0,0.02); }
 .adminTable tbody tr:last-child td{ border-bottom: none; }
-.adminTable tbody tr:hover{ background: rgba(17,24,39,0.02); }
+.adminTable tbody tr:hover{ background: rgba(17,24,39,0.04); }
 .adminTableEmail{ font-weight: 500; }
 
 .adminRoleSelect{
