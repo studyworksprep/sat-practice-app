@@ -42,7 +42,7 @@ export async function GET(request) {
 
   const supabase = createClient();
 
-  // Step 1: Auth + all non-user-dependent restriction queries in parallel
+  // Step 1: Auth + search + user-specific restriction queries in parallel
   const step1 = [supabase.auth.getUser()];
 
   // Search queries (don't need userId)
@@ -56,13 +56,10 @@ export async function GET(request) {
     );
   }
 
-  // Domain/topic queries (don't need userId)
-  if (domainList.length > 0) {
-    step1.push(supabase.from('question_taxonomy').select('question_id').in('domain_name', domainList));
-  }
-  if (topicList.length > 0) {
-    step1.push(supabase.from('question_taxonomy').select('question_id').in('skill_code', topicList));
-  }
+  // NOTE: Domain/topic filtering is now handled directly in the main query's
+  // question_taxonomy!inner join (see below), not as pre-restriction queries.
+  // This avoids PostgREST's default row limit truncating results and
+  // prevents large .in('id', ...) arrays from exceeding URL length limits.
 
   const step1Results = await Promise.all(step1);
 
@@ -90,42 +87,19 @@ export async function GET(request) {
     if (restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
   }
 
-  // Domain/topic results
-  if (domainList.length > 0 || topicList.length > 0) {
-    const matchingIds = new Set();
-
-    if (domainList.length > 0) {
-      const { data: drows, error: dErr } = step1Results[s1idx++];
-      if (dErr) return NextResponse.json({ error: dErr.message }, { status: 400 });
-      (drows || []).forEach((r) => r.question_id && matchingIds.add(r.question_id));
-    }
-    if (topicList.length > 0) {
-      const { data: trows, error: tErr } = step1Results[s1idx++];
-      if (tErr) return NextResponse.json({ error: tErr.message }, { status: 400 });
-      (trows || []).forEach((r) => r.question_id && matchingIds.add(r.question_id));
-    }
-
-    const taxIds = Array.from(matchingIds);
-    restrictIds = intersect(restrictIds, taxIds);
-    if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
-  }
-
   // Step 2: User-specific restrictions in parallel (need userId)
   if ((marked_only || wrong_only) && !userId) {
     return NextResponse.json({ items: [], totalCount: 0 });
   }
 
   const step2 = [];
-  const step2Keys = [];
   if (marked_only && userId) {
-    step2Keys.push('marked');
     step2.push(
       supabase.from('question_status').select('question_id')
         .eq('user_id', userId).eq('marked_for_review', true).limit(10000)
     );
   }
   if (wrong_only && userId) {
-    step2Keys.push('wrong');
     step2.push(
       supabase.from('question_status').select('question_id')
         .eq('user_id', userId).eq('is_done', true).eq('last_is_correct', false).limit(10000)
@@ -182,6 +156,21 @@ export async function GET(request) {
   if (difficulties.length > 0) q = q.in('question_taxonomy.difficulty', difficulties);
   if (score_bands.length > 0) q = q.in('question_taxonomy.score_band', score_bands);
   if (hide_broken) q = q.eq('is_broken', false);
+
+  // Domain/topic filtering via the question_taxonomy join.
+  // When both are present, use OR: match any selected domain OR any selected topic.
+  if (domainList.length > 0 && topicList.length > 0) {
+    const domainCsv = domainList.map((d) => `"${d}"`).join(',');
+    const topicCsv  = topicList.map((t) => `"${t}"`).join(',');
+    q = q.or(
+      `domain_name.in.(${domainCsv}),skill_code.in.(${topicCsv})`,
+      { foreignTable: 'question_taxonomy' }
+    );
+  } else if (domainList.length > 0) {
+    q = q.in('question_taxonomy.domain_name', domainList);
+  } else if (topicList.length > 0) {
+    q = q.in('question_taxonomy.skill_code', topicList);
+  }
 
   q = q.range(offset, offset + limit - 1);
 
