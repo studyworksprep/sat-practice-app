@@ -304,10 +304,6 @@ a{
 .prose strong{ font-weight: 700; }
 .prose em{ font-style: italic; }
 
-/* Suppress browser-default quotation marks on <q> elements */
-.prose q{ quotes: none; }
-.prose q::before, .prose q::after{ content: none; }
-
 .prose img{
   max-width: 100%;
   height: auto;
@@ -360,13 +356,13 @@ a{
 }
 
 .btn.secondary{
-  background: rgba(17,24,39,0.02);
+  background: #fff;
   border: 1px solid var(--border);
   color: var(--text);
 }
 
 .btn.secondary:hover{
-  background: rgba(17,24,39,0.045);
+  background: rgba(17,24,39,0.04);
 }
 
 .btn.danger{
@@ -461,11 +457,18 @@ label{
   background: var(--accent-soft);
 }
 
-/* Compact chip variant for topics */
+/* Compact chip variant for topics (skill buttons) */
 .chip.sm{
   padding: 4px 10px;
   font-size: 12px;
   gap: 6px;
+  background: #fff;
+  border-color: rgba(0,0,0,0.2);
+}
+
+.chip.sm.on{
+  background: var(--accent-soft);
+  border-color: var(--accent);
 }
 
 /* Fixed-size circle for single-character labels (E/M/H, 1–7) */
@@ -1050,6 +1053,17 @@ hr{
   color: var(--muted);
 }
 
+.navRoleBadge{
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 /* ===============================
    Modal
 ================================ */
@@ -1073,6 +1087,35 @@ hr{
   border-radius: 14px;
   padding: 20px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.correctModal{
+  max-width: 800px;
+  max-height: 85vh;
+}
+
+.correctFields{
+  display: grid;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.correctLabel{
+  display: grid;
+  gap: 4px;
+}
+
+.correctLabelText{
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.correctTextarea{
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 48px;
 }
 
 .questionGrid{
@@ -1235,9 +1278,9 @@ hr{
 .landingMain {
   min-height: calc(100vh - 62px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 40px 24px;
+  padding: 80px 24px 40px;
 }
 
 .landingWrap {
@@ -1415,12 +1458,12 @@ hr{
 /* ── Stats row ── */
 .dbStatsRow{
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 16px;
 }
 
-@media (max-width: 540px){
+@media (max-width: 700px){
   .dbStatsRow{ grid-template-columns: 1fr 1fr; }
 }
 
@@ -1659,6 +1702,144 @@ hr{
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* Smaller stat value for long topic names */
+.dbStatValueSm{
+  font-size: 28px;
+}
+
+/* ── Test scores in dashboard ── */
+.dbTestScoreList{
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.dbTestScoreRow{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.1s;
+}
+.dbTestScoreRow:last-of-type{ border-bottom: none; }
+.dbTestScoreRow:hover{
+  background: rgba(17,24,39,0.02);
+  margin: 0 -8px;
+  padding: 10px 8px;
+  border-radius: 8px;
+}
+
+.dbTestScoreInfo{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.dbTestScoreName{
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dbTestScoreBadges{
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.dbTestScoreBadge{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 40px;
+}
+
+.dbTestScoreBadgeNum{
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.dbTestScoreBadgeLabel{
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ── Practice sessions ── */
+.dbSessionList{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dbSessionCard{
+  padding: 14px 16px;
+}
+
+.dbSessionHeader{
+  margin-bottom: 10px;
+}
+
+.dbSessionMeta{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dbSessionDate{
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dbSessionStats{
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dbSessionTiles{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dbSessionTile{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  transition: opacity 0.12s, transform 0.08s;
+}
+.dbSessionTile:hover{ opacity: 0.8; transform: scale(1.08); }
+
+.dbSessionTile.correct{ background: #16a34a; color: #fff; }
+.dbSessionTile.incorrect{ background: #dc2626; color: #fff; }
+
+/* Difficulty border accents on session tiles */
+.dbSessionTile.easy{ box-shadow: inset 0 -3px 0 rgba(34,197,94,0.5); }
+.dbSessionTile.medium{ box-shadow: inset 0 -3px 0 rgba(234,179,8,0.5); }
+.dbSessionTile.hard{ box-shadow: inset 0 -3px 0 rgba(239,68,68,0.5); }
+
+.dbSessionTileNum{ font-size: 11px; line-height: 1; }
+.dbSessionTileIcon{ font-size: 10px; line-height: 1; opacity: 0.85; }
 
 /* Prevent overflow from long expressions / tables */
 .mathShell .prose table{
@@ -2324,13 +2505,6 @@ hr{
 .ptModuleLabel{
   font-weight: 600;
   font-size: 15px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.ptPauseBtn{
-  font-size: 12px;
-  padding: 4px 10px;
 }
 
 .ptTimer{
@@ -2627,41 +2801,25 @@ hr{
 }
 .ptrvBack:hover{ text-decoration: underline; }
 
-/* ── Summary card: scores + skills in two columns ── */
-.ptrvSummaryCard{
-  padding: 0;
-  overflow: hidden;
-  margin-bottom: 28px;
-}
-
-.ptrvSummaryInner{
+/* ── Top row: scores + skills ── */
+.ptrvTopRow{
   display: grid;
-  grid-template-columns: auto 1px 1fr;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+  align-items: start;
+}
+@media (max-width: 700px){
+  .ptrvTopRow{ grid-template-columns: 1fr; }
 }
 
-.ptrvScoreCol{
+.ptrvScoreCard{
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
   padding: 24px 28px;
   min-width: 200px;
-}
-
-.ptrvSummaryDivider{
-  background: var(--border);
-  width: 1px;
-  align-self: stretch;
-}
-
-.ptrvSkillsCol{
-  padding: 20px 24px;
-  overflow: auto;
-}
-
-@media (max-width: 700px){
-  .ptrvSummaryInner{ grid-template-columns: 1fr; }
-  .ptrvSummaryDivider{ width: auto; height: 1px; align-self: auto; }
 }
 
 .ptrvCompositeWrap{
@@ -2702,6 +2860,11 @@ hr{
   flex: 1;
 }
 
+.ptrvSkillsCard{
+  padding: 20px 24px;
+  overflow: auto;
+}
+
 /* ── Question review layout ── */
 .ptrvReviewRow{
   display: grid;
@@ -2715,9 +2878,7 @@ hr{
 
 /* ── Tile panel (left) ── */
 .ptrvTilesPanel{
-  position: sticky;
-  top: calc(var(--nav-h) + 12px);
-  max-height: calc(100vh - var(--nav-h) - 32px);
+  /* Overflow scroll if very many questions */
   overflow-y: auto;
 }
 
@@ -2791,13 +2952,11 @@ hr{
 
 /* ── Detail panel (right, sticky) ── */
 .ptrvDetailWrap{
-  padding: 0; /* override .card padding */
   position: sticky;
   top: calc(var(--nav-h) + 12px);
   max-height: calc(100vh - var(--nav-h) - 32px);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  overflow-y: auto;
+  border-radius: 12px;
 }
 
 .ptrvDetailEmpty{
@@ -2805,13 +2964,14 @@ hr{
   align-items: center;
   justify-content: center;
   min-height: 160px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
 }
 
 .ptrvDetail{
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
   overflow: hidden;
 }
 
@@ -2886,7 +3046,6 @@ hr{
 /* ── Question content ── */
 .ptrvDetailBody{
   padding: 16px;
-  flex-shrink: 0; /* always render question in full — never let flex compress it */
 }
 
 .ptrvStimulus{
@@ -2897,6 +3056,8 @@ hr{
   margin-bottom: 16px;
   font-size: 14px;
   line-height: 1.7;
+  max-height: 280px;
+  overflow-y: auto;
 }
 
 .ptrvDetailStem{
@@ -2907,12 +3068,7 @@ hr{
 /* ── Answer reveal ── */
 .ptrvAnswerSection{
   border-top: 1px solid var(--border);
-  padding: 14px 16px 14px;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  padding: 12px 16px 16px;
 }
 
 .ptrvAnswerToggle{
@@ -2938,10 +3094,7 @@ hr{
 }
 
 .ptrvAnswerBody{
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 14px 0 16px;
+  margin-top: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -2993,20 +3146,15 @@ hr{
   font-style: italic;
 }
 
-/* Review option list — uses shared .option/.optionBadge/.optionContent styles */
-.ptrvOptionList{
-  gap: 8px;
-  margin-top: 14px;
+.ptrvOptLetter{
+  font-weight: 700;
+  flex-shrink: 0;
+  min-width: 16px;
 }
 
-.ptrvReviewOption{
-  cursor: default;
-  pointer-events: none;
-}
-
-/* Single colored option card inside "Your answer" / "Correct answer" rows */
-.ptrvAnswerOpt{
+.ptrvOptText{
   flex: 1;
+  min-width: 0;
 }
 
 /* ── Rationale ── */
@@ -3032,117 +3180,110 @@ hr{
 }
 
 /* ===============================
-   Question Bank Layout
+   Admin Page
 ================================ */
 
-.qbHeader{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:16px;
-  margin-bottom:16px;
+.adminMain{ padding-bottom: 48px; }
+
+.adminPanels{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+@media (max-width: 640px){
+  .adminPanels{ grid-template-columns: 1fr 1fr; }
 }
 
-.qbHeaderActions{
-  display:flex;
-  gap:12px;
-  align-items:center;
+.adminPanel{
+  padding: 24px;
+  text-align: center;
 }
+.adminPanelCount{ font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
+.adminPanelTitle{ font-weight: 600; font-size: var(--title-2); }
 
-.qbLayout{
-  display:grid;
-  grid-template-columns: 320px 1fr;
-  gap:16px;
-  align-items:start;
+.adminTable{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
 }
-
-.qbSidebar{
-  position: sticky;
-  top: 16px;
-  padding: 16px;
+.adminTable th{
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
 }
+.adminTable td{
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.adminTable tbody tr:last-child td{ border-bottom: none; }
+.adminTable tbody tr:hover{ background: rgba(17,24,39,0.02); }
+.adminTableEmail{ font-weight: 500; }
 
-.qbLabel{
-  display:block;
-  margin: 12px 0 6px;
+.adminRoleSelect{
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   font-size: 13px;
+  font-weight: 600;
+  background: var(--card);
+  cursor: pointer;
+}
+.adminRoleSelect:focus{
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.adminScoreDialog{ padding: 24px; margin-top: 4px; }
+
+.adminLabel{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--muted);
 }
 
-.qbGrid2{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:12px;
-}
-
-.qbResultsTop{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  margin-bottom: 12px;
-}
-
-.qbPager{
-  display:flex;
-  gap:10px;
-}
-
-.qbRows{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.qbRow{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding: 12px 14px;
+.adminSelect,
+.adminInput{
+  padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: 16px;
-  background: #fff;
-}
-
-.qbRowTitle{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  align-items:center;
-}
-
-.qbRowMeta{
-  margin-top: 6px;
-  font-size: 13px;
-}
-
-.qbRowRight{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  justify-content:flex-end;
-  min-width: 150px;
-}
-
-.qbBadge{
-  display:inline-flex;
-  align-items:center;
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  font-size: 12px;
-  line-height: 1.6;
+  border-radius: 8px;
+  font-size: 15px;
+  background: var(--card);
   color: var(--text);
-  background: rgba(17,24,39,0.02);
+  width: 100%;
+}
+.adminSelect:focus,
+.adminInput:focus{
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
-.qbBadge.muted{ color: var(--muted); }
-.qbBadge.ok{ border-color: rgba(21,128,61,0.35); background: rgba(21,128,61,0.08); color: #166534; }
-.qbBadge.bad{ border-color: rgba(185,28,28,0.35); background: rgba(185,28,28,0.08); color: #991b1b; }
-.qbBadge.warn{ border-color: rgba(161,98,7,0.35); background: rgba(161,98,7,0.08); color: #854d0e; }
+.adminFieldset{
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px 0 0 0;
+}
+.adminLegend{
+  font-weight: 600;
+  font-size: 14px;
+  padding: 0 6px;
+}
 
-@media (max-width: 980px){
-  .qbLayout{ grid-template-columns: 1fr; }
-  .qbSidebar{ position: static; }
-  .qbRowRight{ min-width: 0; }
+.adminFieldRow{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 520px){
+  .adminFieldRow{ grid-template-columns: 1fr; }
 }

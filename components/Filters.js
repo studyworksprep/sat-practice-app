@@ -9,7 +9,7 @@ const DEFAULTS = {
   topics: [],
   wrong_only: false,
   marked_only: false,
-  broken_only: false,
+  show_broken: false,
 };
 
 const MATH_CODES  = new Set(['H', 'P', 'Q', 'S']);
@@ -52,13 +52,13 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     if (state.score_bands.length)  p.set('score_bands',  state.score_bands.join(','));
     if (state.wrong_only)          p.set('wrong_only',   'true');
     if (state.marked_only)         p.set('marked_only',  'true');
-    if (state.broken_only)         p.set('broken_only',  'true');
+    if (!state.show_broken)        p.set('hide_broken',  'true');
 
     fetch('/api/domain-counts?' + p.toString())
       .then((r) => r.json())
       .then((data) => { if (data && !data.error) setCounts(data); })
       .catch(() => {});
-  }, [state.difficulties, state.score_bands, state.wrong_only, state.marked_only, state.broken_only]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state.difficulties, state.score_bands, state.wrong_only, state.marked_only, state.show_broken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function set(k, v) { setState((prev) => ({ ...prev, [k]: v })); }
 
@@ -153,7 +153,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     state.score_bands.length  > 0 ||
     state.domains.length      > 0 ||
     state.topics.length       > 0 ||
-    state.wrong_only || state.marked_only || state.broken_only;
+    state.wrong_only || state.marked_only;
 
   async function handleStart() {
     if (!hasFilter || starting) return;
@@ -250,7 +250,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
           {[
             ['marked_only', 'Only marked for review'],
             ['wrong_only',  'Only wrong answers'],
-            ['broken_only', 'Only flagged as broken'],
+            ['show_broken', 'Show flagged as broken'],
           ].map(([key, label]) => (
             <label key={key} className="filterCheck">
               <input type="checkbox" checked={state[key]} onChange={(e) => set(key, e.target.checked)} />

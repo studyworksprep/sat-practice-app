@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
-import { toScaledScore } from '../../../../../../lib/scoreConversion';
+import { computeScaledScore, toScaledScore } from '../../../../../../lib/scoreConversion';
 
 // GET /api/practice-tests/attempt/[attemptId]/results
 // Returns full results including scores, domain breakdown, and question review.
@@ -148,6 +148,7 @@ export async function GET(_request, { params }) {
 
   // --- Aggregate scores ---
   const sectionStats = {}; // subject_code → { correct, total }
+  const moduleStats = {};  // `${subject_code}/${module_number}` → { correct, total, routeCode }
   const domainStats = {};  // domain_name → { correct, total, skill_name }
   const questionReview = [];
 
@@ -204,6 +205,12 @@ export async function GET(_request, { params }) {
     sectionStats[subj].total += 1;
     if (is_correct) sectionStats[subj].correct += 1;
 
+    // Per-module stats (for adaptive scoring)
+    const modKey = `${subj}/${item.module_number}`;
+    if (!moduleStats[modKey]) moduleStats[modKey] = { correct: 0, total: 0, routeCode: item.route_code };
+    moduleStats[modKey].total += 1;
+    if (is_correct) moduleStats[modKey].correct += 1;
+
     // Domain stats
     const domainKey = tax.domain_name || 'Unknown';
     if (!domainStats[domainKey]) {
@@ -248,12 +255,47 @@ export async function GET(_request, { params }) {
     });
   }
 
-  // Build section scores
+  // Map subject codes to score_conversion section names
+  const subjToSection = {
+    RW: 'reading_writing', rw: 'reading_writing',
+    M: 'math', m: 'math', math: 'math', Math: 'math', MATH: 'math',
+  };
+
+  // Fetch score_conversion lookup rows for this test
+  const { data: lookupData } = await supabase
+    .from('score_conversion')
+    .select('section, module1_correct, module2_correct, scaled_score')
+    .eq('test_id', attempt.practice_test_id);
+
+  const lookupBySection = {};
+  for (const row of lookupData || []) {
+    if (!lookupBySection[row.section]) lookupBySection[row.section] = [];
+    lookupBySection[row.section].push(row);
+  }
+
+  // Build section scores using per-module data + lookup table
   const sections = {};
   for (const [subj, stats] of Object.entries(sectionStats)) {
+    const m1 = moduleStats[`${subj}/1`] || { correct: 0, total: 0 };
+    const m2 = moduleStats[`${subj}/2`] || { correct: 0, total: 0 };
+    const sectionName = subjToSection[subj] || 'math';
+
+    const scaled = computeScaledScore({
+      section: sectionName,
+      m1Correct: m1.correct,
+      m2Correct: m2.correct,
+      routeCode: m2.routeCode || null,
+      lookupRows: lookupBySection[sectionName] || [],
+    });
+
     sections[subj] = {
       ...stats,
-      scaled: toScaledScore(stats.correct, stats.total),
+      m1Correct: m1.correct,
+      m1Total: m1.total,
+      m2Correct: m2.correct,
+      m2Total: m2.total,
+      routeCode: m2.routeCode || null,
+      scaled,
     };
   }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Filters from '../../components/Filters';
@@ -31,7 +31,7 @@ function buildParams(filters, search, extra = {}) {
 
   if (filters.wrong_only) p.set('wrong_only', 'true');
   if (filters.marked_only) p.set('marked_only', 'true');
-  if (filters.broken_only) p.set('broken_only', 'true');
+  if (!filters.show_broken) p.set('hide_broken', 'true');
 
   if (search.trim()) p.set('q', search.trim());
 
@@ -57,13 +57,21 @@ export default function PracticePage() {
   const [msg, setMsg] = useState(null);
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [totalCount, setTotalCount] = useState(0);
+  const loadIdRef = useRef(0);
+
+  // Debounce search input by 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   // Session query string: filters + search, no pagination. Passed into question detail page.
   const sessionQueryString = useMemo(() => {
-    const p = buildParams(filters, search, { session: '1' });
+    const p = buildParams(filters, debouncedSearch, { session: '1' });
     return p.toString();
-  }, [filters, search]);
+  }, [filters, debouncedSearch]);
 
   // Deterministic session id for localStorage-backed navigation
   const sessionId = useMemo(() => {
@@ -81,12 +89,13 @@ export default function PracticePage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load questions');
 
-      let ids = (json.items || []).map((q) => q.question_id).filter(Boolean);
-      if (ids.length === 0) {
+      let items = (json.items || []).filter((q) => q?.question_id);
+      if (items.length === 0) {
         setMsg({ kind: 'danger', text: 'No questions match the current filters.' });
         return;
       }
-      if (randomize) ids = shuffleArray(ids);
+      if (randomize) items = shuffleArray(items);
+      const ids = items.map((q) => q.question_id);
 
       // Build a session ID from filter params (no search text)
       const sessionQs = buildParams(sessionFilters, '', { session: '1' }).toString();
@@ -94,8 +103,9 @@ export default function PracticePage() {
       for (let i = 0; i < sessionQs.length; i++) h = ((h << 5) + h) ^ sessionQs.charCodeAt(i);
       const sid = (h >>> 0).toString(36);
 
-      // Cache question IDs in localStorage for prev/next navigation
+      // Cache question IDs + full item metadata in localStorage for prev/next navigation + map
       localStorage.setItem(`practice_session_${sid}`, ids.join(','));
+      localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(items));
       localStorage.setItem(
         `practice_session_${sid}_meta`,
         JSON.stringify({
@@ -116,23 +126,29 @@ export default function PracticePage() {
     }
   }
 
-  async function load() {
-    if (!search.trim()) {
+  const load = useCallback(async () => {
+    if (!debouncedSearch.trim()) {
       setRows([]);
       setTotalCount(0);
       return;
     }
+
+    const thisLoadId = ++loadIdRef.current;
     setLoading(true);
     setMsg(null);
 
     try {
-      const params = buildParams(filters, search, {
+      const params = buildParams(filters, debouncedSearch, {
         limit: '25',
         offset: String(page * 25),
       });
 
       const res = await fetch('/api/questions?' + params.toString(), { cache: 'no-store' });
       const json = await res.json();
+
+      // Ignore stale responses from earlier requests
+      if (loadIdRef.current !== thisLoadId) return;
+
       if (!res.ok) throw new Error(json?.error || 'Failed to load questions');
 
       const items = json.items || [];
@@ -167,7 +183,7 @@ export default function PracticePage() {
         if (!existingOk || !localStorage.getItem(fullKey)) {
           (async () => {
             try {
-              const fullParams = buildParams(filters, search, {
+              const fullParams = buildParams(filters, debouncedSearch, {
                 offset: '0',
                 limit: String(Math.min(Math.max(Number(json.totalCount || 0), 25), 5000)),
               });
@@ -176,8 +192,10 @@ export default function PracticePage() {
               const j2 = await r2.json();
               if (!r2.ok) throw new Error(j2?.error || 'Failed to cache session ids');
 
-              const all = (j2.items || []).map((q) => q.question_id).filter(Boolean);
+              const allItems = (j2.items || []).filter((q) => q?.question_id);
+              const all = allItems.map((q) => q.question_id);
               localStorage.setItem(fullKey, all.join(','));
+              localStorage.setItem(`${fullKey}_items`, JSON.stringify(allItems));
               localStorage.setItem(
                 metaKey,
                 JSON.stringify({
@@ -194,21 +212,24 @@ export default function PracticePage() {
         }
       }
     } catch (e) {
-      setMsg({ kind: 'danger', text: e.message });
+      if (loadIdRef.current === thisLoadId) {
+        setMsg({ kind: 'danger', text: e.message });
+      }
     } finally {
-      setLoading(false);
+      if (loadIdRef.current === thisLoadId) {
+        setLoading(false);
+      }
     }
-  }
+  }, [debouncedSearch, filters, page, sessionId, sessionQueryString]);
 
   // Reset pagination when filters/search change
   useEffect(() => {
     setPage(0);
-  }, [filters, search]);
+  }, [filters, debouncedSearch]);
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, filters, search]);
+  }, [load]);
 
   return (
     <main className="container">

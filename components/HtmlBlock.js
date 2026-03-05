@@ -19,7 +19,8 @@ function ensureMathJaxLoaded() {
   window.MathJax = window.MathJax || {};
   window.MathJax = {
     ...window.MathJax,
-    loader: window.MathJax.loader || { load: ['input/mml', 'output/chtml'] },
+    loader: window.MathJax.loader || { load: ['input/tex', 'input/mml', 'output/chtml'] },
+    tex: { ...(window.MathJax.tex || {}), inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]'], ['$$', '$$']] },
     options: {
       ...(window.MathJax.options || {}),
       skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
@@ -66,8 +67,9 @@ function HtmlBlockImpl({ html, className }) {
      // If MathJax is disabled, stop here and let native MathML render
     if (!ENABLE_MATHJAX) return;
     
-    // Only typeset if MathML exists
-    if (!el.querySelector('math')) return;
+    // Only typeset if math content exists (MathML tags or LaTeX delimiters)
+    const hasmath = el.querySelector('math') || /\\\(|\\\[|\$\$/.test(cleaned);
+    if (!hasmath) return;
 
 ensureMathJaxLoaded();
 

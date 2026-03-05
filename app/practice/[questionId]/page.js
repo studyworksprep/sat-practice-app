@@ -251,6 +251,12 @@ export default function PracticeQuestionPage() {
 
   const [showExplanation, setShowExplanation] = useState(false);
 
+  // Admin correction modal
+  const [userRole, setUserRole] = useState(null);
+  const [showCorrectModal, setShowCorrectModal] = useState(false);
+  const [correctForm, setCorrectForm] = useState({});
+  const [correctSubmitting, setCorrectSubmitting] = useState(false);
+
   const refCardRef = useRef(null);
   const refDrag = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
 
@@ -320,7 +326,7 @@ export default function PracticeQuestionPage() {
 
   // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
-    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'broken_only', 'q', 'session'];
+    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'hide_broken', 'q', 'session', 'replay', 'sid'];
     const p = new URLSearchParams();
     for (const k of keys) {
       const v = searchParams.get(k);
@@ -331,6 +337,20 @@ export default function PracticeQuestionPage() {
 
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
   const inSessionContext = sessionParams.get('session') === '1';
+  const sidParam = searchParams.get('sid') || null;
+
+  // Read full session ID list from localStorage (used for replay/dashboard sessions)
+  function getSessionIds() {
+    if (!sidParam) return null;
+    try {
+      const raw = localStorage.getItem(`practice_session_${sidParam}`);
+      if (raw) {
+        const ids = raw.split(',').filter(Boolean);
+        if (ids.length > 0) return ids;
+      }
+    } catch {}
+    return null;
+  }
 
   // Keep liveWidthRef in sync with committed calcWidth
   useEffect(() => {
@@ -445,6 +465,7 @@ export default function PracticeQuestionPage() {
       if (!res.ok) throw new Error(json?.error || 'Failed to load question');
 
       setData(json);
+      if (json?.user_role) setUserRole(json.user_role);
 
       if (json?.question_id) {
         setSessionResults((prev) => ({
@@ -473,6 +494,10 @@ export default function PracticeQuestionPage() {
   }
 
   async function fetchPageIds(offset) {
+    // If we have a localStorage session, slice from it
+    const sessionIds = getSessionIds();
+    if (sessionIds) return sessionIds.slice(offset, offset + 25);
+
     const key = `practice_${sessionParamsString}_page_${offset}`;
 
     const raw = localStorage.getItem(key);
@@ -485,6 +510,8 @@ export default function PracticeQuestionPage() {
 
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session');
+    apiParams.delete('replay');
+    apiParams.delete('sid');
     apiParams.set('limit', '25');
     apiParams.set('offset', String(offset));
 
@@ -500,6 +527,20 @@ export default function PracticeQuestionPage() {
 
   // ✅ Fetch IDs + metadata for map window (cached, loaded on modal open)
   async function fetchMapIds(offset) {
+    // If we have a localStorage session with stored item metadata, use it
+    if (sidParam) {
+      try {
+        const itemsRaw = localStorage.getItem(`practice_session_${sidParam}_items`);
+        if (itemsRaw) {
+          const items = JSON.parse(itemsRaw);
+          if (Array.isArray(items) && items.length > 0) {
+            return items.slice(offset, offset + MAP_PAGE_SIZE);
+          }
+        }
+      } catch {}
+      // Fall through to API fetch below (don't use dummy data from IDs only)
+    }
+
     const key = `practice_${sessionParamsString}_map_${offset}`;
 
     const raw = localStorage.getItem(key);
@@ -512,6 +553,8 @@ export default function PracticeQuestionPage() {
 
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session');
+    apiParams.delete('replay');
+    apiParams.delete('sid');
     apiParams.set('limit', String(MAP_PAGE_SIZE));
     apiParams.set('offset', String(offset));
 
@@ -570,8 +613,17 @@ export default function PracticeQuestionPage() {
   async function ensureTotalIfMissing() {
     if (total != null) return;
 
+    // Use localStorage session length if available
+    const sessionIds = getSessionIds();
+    if (sessionIds) {
+      setTotal(sessionIds.length);
+      return;
+    }
+
     const apiParams = new URLSearchParams(sessionParams);
     apiParams.delete('session');
+    apiParams.delete('replay');
+    apiParams.delete('sid');
     apiParams.set('limit', '1');
     apiParams.set('offset', '0');
 
@@ -590,6 +642,18 @@ export default function PracticeQuestionPage() {
 
     setNavLoading(true);
     try {
+      // If we have a localStorage session (e.g. dashboard replay), use it directly
+      const sessionIds = getSessionIds();
+      if (sessionIds) {
+        const idx = targetIndex1 - 1;
+        if (idx < 0 || idx >= sessionIds.length) return;
+        const targetId = sessionIds[idx];
+        setIndex1(targetIndex1);
+        setTotal(sessionIds.length);
+        router.push(buildHref(targetId, sessionIds.length, 0, idx, targetIndex1));
+        return;
+      }
+
       const targetOffset = Math.floor((targetIndex1 - 1) / 25) * 25;
       const targetPos = (targetIndex1 - 1) % 25;
 
@@ -696,21 +760,39 @@ export default function PracticeQuestionPage() {
     }
   }
 
-  async function toggleBroken() {
+  function openBrokenFlow() {
     if (!data?.question_id) return;
-    const next = !Boolean(data?.status?.is_broken);
+
+    if (userRole === 'admin') {
+      // Admin: open correction modal pre-populated with current content
+      const opts = {};
+      if (Array.isArray(data?.options)) {
+        for (const opt of data.options) {
+          opts[String(opt.id)] = opt.content_html || '';
+        }
+      }
+      setCorrectForm({
+        stimulus_html: data?.version?.stimulus_html || '',
+        stem_html: data?.version?.stem_html || '',
+        options: opts,
+      });
+      setShowCorrectModal(true);
+      return;
+    }
+
+    // Non-admin: simple toggle
+    toggleBrokenSimple();
+  }
+
+  async function toggleBrokenSimple() {
+    if (!data?.question_id) return;
+    const next = !Boolean(data?.is_broken);
     try {
       setMsg(null);
 
       setData((prev) => {
         if (!prev) return prev;
-        return {
-          ...prev,
-          status: {
-            ...(prev.status || {}),
-            is_broken: next,
-          },
-        };
+        return { ...prev, is_broken: next };
       });
 
       const res = await fetch('/api/status', {
@@ -723,15 +805,54 @@ export default function PracticeQuestionPage() {
     } catch (e) {
       setData((prev) => {
         if (!prev) return prev;
-        return {
-          ...prev,
-          status: {
-            ...(prev.status || {}),
-            is_broken: !next,
-          },
-        };
+        return { ...prev, is_broken: !next };
       });
       setMsg({ kind: 'danger', text: e.message });
+    }
+  }
+
+  async function submitCorrection() {
+    if (!data?.question_id) return;
+    setCorrectSubmitting(true);
+    try {
+      setMsg(null);
+
+      // Build patch: only include fields that differ from current
+      const body = {};
+      if (correctForm.stimulus_html !== (data?.version?.stimulus_html || '')) {
+        body.stimulus_html = correctForm.stimulus_html;
+      }
+      if (correctForm.stem_html !== (data?.version?.stem_html || '')) {
+        body.stem_html = correctForm.stem_html;
+      }
+
+      const changedOpts = {};
+      if (correctForm.options && Array.isArray(data?.options)) {
+        for (const opt of data.options) {
+          const newVal = correctForm.options[String(opt.id)];
+          if (newVal !== undefined && newVal !== (opt.content_html || '')) {
+            changedOpts[String(opt.id)] = newVal;
+          }
+        }
+      }
+      if (Object.keys(changedOpts).length > 0) body.options = changedOpts;
+
+      const res = await fetch(`/api/questions/${data.question_id}/correct`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to submit correction');
+
+      setShowCorrectModal(false);
+      // Reload question to reflect changes
+      await fetchQuestion();
+      setMsg({ kind: 'success', text: 'Correction saved and question flagged as broken.' });
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setCorrectSubmitting(false);
     }
   }
 
@@ -906,6 +1027,12 @@ export default function PracticeQuestionPage() {
                   <span className="muted">Score Band</span>
                   <span>{data?.taxonomy?.score_band ?? '—'}</span>
                 </div>
+                {data?.source_external_id && (
+                  <div className="infoPopRow">
+                    <span className="muted">External ID</span>
+                    <span>{data.source_external_id}</span>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -961,7 +1088,7 @@ export default function PracticeQuestionPage() {
   );
 
   // Math tools moved to top nav as icon tabs (keep component for minimal diffs where it's called)
-  const MathToolRow = () => null;
+  const mathToolRow = null;
 
   // ✅ MCQ options area (no "Answer choices" header)
   const McqOptionsArea = () => (
@@ -1039,16 +1166,16 @@ export default function PracticeQuestionPage() {
 
           <button
             type="button"
-            className={`brokenBtn${status?.is_broken ? ' isBroken' : ''}`}
-            onClick={toggleBroken}
-            title={status?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+            className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
+            onClick={openBrokenFlow}
+            title={data?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
           >
             <span className="brokenBtnIcon" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="14" height="14">
                 <path fill="currentColor" d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
               </svg>
             </span>
-            {status?.is_broken ? 'Broken' : 'Broken?'}
+            {data?.is_broken ? 'Broken' : 'Broken?'}
           </button>
         </div>
       </div>
@@ -1056,7 +1183,7 @@ export default function PracticeQuestionPage() {
   );
 
   // ✅ SPR answer area (no "Your answer" header)
-  const SprAnswerArea = () => (
+  const sprAnswerArea = (
     <>
       <div className="srOnly">Your answer</div>
 
@@ -1111,16 +1238,16 @@ export default function PracticeQuestionPage() {
 
         <button
           type="button"
-          className={`brokenBtn${status?.is_broken ? ' isBroken' : ''}`}
-          onClick={toggleBroken}
-          title={status?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+          className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
+          onClick={openBrokenFlow}
+          title={data?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
         >
           <span className="brokenBtnIcon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="14" height="14">
               <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M5 3v18M5 3h14l-4 6 4 6H5" />
             </svg>
           </span>
-          {status?.is_broken ? 'Broken' : 'Broken?'}
+          {data?.is_broken ? 'Broken' : 'Broken?'}
         </button>
       </div>
     </>
@@ -1300,7 +1427,7 @@ export default function PracticeQuestionPage() {
         ) : isMath ? (
           // Math: calc left; right status+prompt+answers
           mathShellJsx(<>
-            <MathToolRow />
+            {mathToolRow}
             <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
               <StatusPillsRow />
             </div>
@@ -1320,17 +1447,17 @@ export default function PracticeQuestionPage() {
       ) : isMath ? (
         // Math SPR
         mathShellJsx(<>
-          <MathToolRow />
+          {mathToolRow}
           <StatusPillsRow style={{ marginBottom: 14 }} />
           <PromptBlocks mb={12} />
-          <SprAnswerArea />
+          {sprAnswerArea}
         </>)
       ) : (
         // Default SPR
         <div>
           <StatusPillsRow style={{ marginBottom: 14 }} />
           <PromptBlocks mb={12} />
-          <SprAnswerArea />
+          {sprAnswerArea}
         </div>
       )}
 
@@ -1559,6 +1686,85 @@ export default function PracticeQuestionPage() {
                 Showing {MAP_PAGE_SIZE} at a time. Use Prev/Next or “Jump to #” for fast navigation.
               </div>
             ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {showCorrectModal ? (
+        <div
+          className="modalOverlay"
+          onClick={() => setShowCorrectModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Correction form"
+        >
+          <div className="modalCard correctModal" onClick={(e) => e.stopPropagation()}>
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="h2" style={{ margin: 0 }}>Flag &amp; Correct Question</div>
+              <button className="btn secondary" onClick={() => setShowCorrectModal(false)}>Close</button>
+            </div>
+
+            <hr />
+
+            <div className="correctFields">
+              <label className="correctLabel">
+                <span className="correctLabelText">Stimulus</span>
+                <textarea
+                  className="input correctTextarea"
+                  rows={5}
+                  value={correctForm.stimulus_html || ''}
+                  onChange={(e) => setCorrectForm((f) => ({ ...f, stimulus_html: e.target.value }))}
+                  placeholder="Paste corrected stimulus HTML…"
+                />
+              </label>
+
+              <label className="correctLabel">
+                <span className="correctLabelText">Stem</span>
+                <textarea
+                  className="input correctTextarea"
+                  rows={4}
+                  value={correctForm.stem_html || ''}
+                  onChange={(e) => setCorrectForm((f) => ({ ...f, stem_html: e.target.value }))}
+                  placeholder="Paste corrected stem HTML…"
+                />
+              </label>
+
+              {Array.isArray(data?.options) && data.options.length > 0 ? (
+                data.options
+                  .slice()
+                  .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
+                  .map((opt) => {
+                    const label = opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0));
+                    return (
+                      <label key={opt.id} className="correctLabel">
+                        <span className="correctLabelText">Answer Option {label}</span>
+                        <textarea
+                          className="input correctTextarea"
+                          rows={3}
+                          value={correctForm.options?.[String(opt.id)] ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCorrectForm((f) => ({
+                              ...f,
+                              options: { ...(f.options || {}), [String(opt.id)]: val },
+                            }));
+                          }}
+                          placeholder={`Paste corrected Option ${label} HTML…`}
+                        />
+                      </label>
+                    );
+                  })
+              ) : null}
+            </div>
+
+            <div className="row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end' }}>
+              <button className="btn secondary" onClick={() => setShowCorrectModal(false)} disabled={correctSubmitting}>
+                Cancel
+              </button>
+              <button className="btn primary" onClick={submitCorrection} disabled={correctSubmitting}>
+                {correctSubmitting ? 'Saving…' : 'Flag as Broken & Save'}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
+const SUBJECT_LABEL = { rw: 'R&W', RW: 'R&W', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
+const DIFF_CLASS = { 1: 'easy', 2: 'medium', 3: 'hard' };
 
 function pct(correct, attempted) {
   if (!attempted) return null;
@@ -11,7 +14,7 @@ function pct(correct, attempted) {
 }
 
 function pctColor(p) {
-  if (p === null) return undefined;
+  if (p === null || p === undefined) return undefined;
   return p >= 70 ? 'var(--success)' : p >= 50 ? '#ca8a04' : 'var(--danger)';
 }
 
@@ -29,6 +32,13 @@ function timeGreeting() {
 function formatDate(iso) {
   if (!iso) return '';
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+    ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
 function AccuracyBar({ correct, attempted }) {
@@ -78,7 +88,6 @@ function PerfSection({ section, loading }) {
           <span className="dbSectionPct" style={{ color: pctColor(sectionPct) }}>{sectionPct}%</span>
         )}
       </div>
-
       {loading ? (
         <p className="muted small">Loading…</p>
       ) : !section.domains.length ? (
@@ -106,7 +115,6 @@ function PerfSection({ section, loading }) {
                     <AccuracyBar correct={domain.correct} attempted={domain.attempted} />
                   </div>
                 </div>
-
                 {isOpen && hasTopics && (
                   <div className="dbTopicList">
                     {domain.topics.map((topic) => (
@@ -129,7 +137,80 @@ function PerfSection({ section, loading }) {
   );
 }
 
-// ─── Main ──────────────────────────────────────────────────────────────────
+// ── Session question tile ──
+function SessionTile({ q, index, onClick }) {
+  const diffClass = DIFF_CLASS[q.difficulty] || '';
+  return (
+    <button
+      className={`dbSessionTile ${q.is_correct ? 'correct' : 'incorrect'} ${diffClass}`}
+      onClick={onClick}
+      title={q.skill_name || q.domain_name || ''}
+    >
+      <span className="dbSessionTileNum">{index + 1}</span>
+      <span className="dbSessionTileIcon">{q.is_correct ? '✓' : '✗'}</span>
+    </button>
+  );
+}
+
+// ── Practice session card ──
+function SessionCard({ session, index }) {
+  const router = useRouter();
+  const questions = session.questions;
+  const correct = questions.filter(q => q.is_correct).length;
+  const total = questions.length;
+  const p = pct(correct, total);
+
+  function handleTileClick(qIndex) {
+    // Store the session question IDs and metadata in localStorage so the
+    // practice page can navigate through them without creating a new session record
+    const ids = questions.map(q => q.question_id);
+    const sid = `dashboard_${Date.now()}_${index}`;
+    localStorage.setItem(`practice_session_${sid}`, ids.join(','));
+    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+      questions.map(q => ({
+        question_id: q.question_id,
+        difficulty: q.difficulty,
+        is_done: true,
+        last_is_correct: q.is_correct,
+        marked_for_review: false,
+        domain_name: q.domain_name,
+        skill_name: q.skill_name,
+      }))
+    ));
+    localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
+      sessionQueryString: `session=1&replay=1`,
+      totalCount: ids.length,
+      cachedCount: ids.length,
+      cachedAt: new Date().toISOString(),
+    }));
+
+    const qid = questions[qIndex].question_id;
+    router.push(
+      `/practice/${encodeURIComponent(qid)}?session=1&replay=1&sid=${sid}&t=${ids.length}&o=0&p=${qIndex}&i=${qIndex + 1}`
+    );
+  }
+
+  return (
+    <div className="card dbSessionCard">
+      <div className="dbSessionHeader">
+        <div className="dbSessionMeta">
+          <span className="dbSessionDate">{formatDateTime(session.startedAt)}</span>
+          <span className="dbSessionStats">
+            {correct}/{total}
+            {p !== null && <span style={{ color: pctColor(p), fontWeight: 600 }}> ({p}%)</span>}
+          </span>
+        </div>
+      </div>
+      <div className="dbSessionTiles">
+        {questions.map((q, i) => (
+          <SessionTile key={q.question_id} q={q} index={i} onClick={() => handleTileClick(i)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Main ──
 
 export default function DashboardClient({ email }) {
   const [data, setData] = useState(null);
@@ -147,7 +228,6 @@ export default function DashboardClient({ email }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const overallPct = data ? pct(data.totalCorrect, data.totalAttempted) : null;
   const sections = data
     ? buildSections(data.domainStats, data.topicStats)
     : [{ label: 'Reading & Writing', domains: [] }, { label: 'Math', domains: [] }];
@@ -167,23 +247,35 @@ export default function DashboardClient({ email }) {
         </div>
       </div>
 
-      {/* ── Stats row ── */}
+      {/* ── Top stats row ── */}
       <div className="dbStatsRow">
         <div className="card dbStatCard">
-          <div className="dbStatValue">{data?.totalAttempted ?? '—'}</div>
-          <div className="dbStatLabel">Questions Attempted</div>
+          <div className="dbStatValue" style={{ color: 'var(--accent)' }}>
+            {data?.highestTestScore ?? '—'}
+          </div>
+          <div className="dbStatLabel">Highest Test Score</div>
         </div>
         <div className="card dbStatCard">
-          <div className="dbStatValue" style={{ color: 'var(--success)' }}>
-            {data?.totalCorrect ?? '—'}
+          <div className="dbStatValue dbStatValueSm" style={{ color: 'var(--success)' }}>
+            {data?.strongest ? `${data.strongest.weightedPct}%` : '—'}
           </div>
-          <div className="dbStatLabel">Correct</div>
+          <div className="dbStatLabel">
+            {data?.strongest ? data.strongest.skill_name : 'Strongest Topic'}
+          </div>
         </div>
         <div className="card dbStatCard">
-          <div className="dbStatValue" style={{ color: pctColor(overallPct) }}>
-            {overallPct !== null ? `${overallPct}%` : '—'}
+          <div className="dbStatValue dbStatValueSm" style={{ color: 'var(--danger)' }}>
+            {data?.weakest ? `${data.weakest.weightedPct}%` : '—'}
           </div>
-          <div className="dbStatLabel">Overall Accuracy</div>
+          <div className="dbStatLabel">
+            {data?.weakest ? data.weakest.skill_name : 'Weakest Topic'}
+          </div>
+        </div>
+        <div className="card dbStatCard">
+          <div className="dbStatValue" style={{ color: pctColor(data?.recentAccuracy) }}>
+            {data?.recentAccuracy != null ? `${data.recentAccuracy}%` : '—'}
+          </div>
+          <div className="dbStatLabel">Recent Accuracy</div>
         </div>
       </div>
 
@@ -194,45 +286,69 @@ export default function DashboardClient({ email }) {
         ))}
       </div>
 
-      {/* ── Bottom row: Practice Tests + Recent Activity ── */}
+      {/* ── Bottom row: Practice Tests + Recent Sessions ── */}
       <div className="dbBottomRow">
 
-        {/* Practice tests CTA */}
+        {/* Practice test scores */}
         <div className="card dbTestCard">
-          <div className="h2" style={{ marginBottom: 8 }}>Practice Tests</div>
-          <p className="muted small" style={{ marginTop: 0 }}>
-            Full-length, adaptive SAT tests with timed modules, score reports, and question-by-question review.
-          </p>
-          <Link href="/practice-test" className="btn secondary dbTestBtn">View Practice Tests</Link>
+          <div className="h2" style={{ marginBottom: 12 }}>Practice Tests</div>
+          {loading ? (
+            <p className="muted small">Loading…</p>
+          ) : !data?.testScores?.length ? (
+            <>
+              <p className="muted small" style={{ marginTop: 0 }}>
+                No completed tests yet. Take a full-length adaptive SAT practice test.
+              </p>
+              <Link href="/practice-test" className="btn secondary dbTestBtn">Take a Test</Link>
+            </>
+          ) : (
+            <div className="dbTestScoreList">
+              {data.testScores.map((ts) => (
+                <Link
+                  key={ts.attempt_id}
+                  href={`/practice-test/attempt/${ts.attempt_id}/results`}
+                  className="dbTestScoreRow"
+                >
+                  <div className="dbTestScoreInfo">
+                    <span className="dbTestScoreName">{ts.test_name}</span>
+                    <span className="muted small">{formatDate(ts.finished_at)}</span>
+                  </div>
+                  <div className="dbTestScoreBadges">
+                    {ts.composite != null && (
+                      <div className="dbTestScoreBadge">
+                        <span className="dbTestScoreBadgeNum">{ts.composite}</span>
+                        <span className="dbTestScoreBadgeLabel">Total</span>
+                      </div>
+                    )}
+                    {Object.entries(ts.sections || {}).map(([subj, s]) => (
+                      <div key={subj} className="dbTestScoreBadge">
+                        <span className="dbTestScoreBadgeNum">{s.scaled}</span>
+                        <span className="dbTestScoreBadgeLabel">{SUBJECT_LABEL[subj] || subj}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Link>
+              ))}
+              <Link href="/practice-test" className="btn secondary dbTestBtn" style={{ marginTop: 8 }}>
+                View All Tests
+              </Link>
+            </div>
+          )}
         </div>
 
-        {/* Recent activity */}
+        {/* Recent practice sessions */}
         <div className="card dbActivityCard">
-          <div className="h2" style={{ marginBottom: 8 }}>Recent Practice</div>
+          <div className="h2" style={{ marginBottom: 12 }}>Recent Practice</div>
           {loading ? (
             <p className="muted small">Loading…</p>
           ) : error ? (
             <p className="muted small">{error}</p>
-          ) : !data?.recentActivity?.length ? (
+          ) : !data?.recentSessions?.length ? (
             <p className="muted small">No questions attempted yet.</p>
           ) : (
-            <div className="dbActivityList">
-              {data.recentActivity.map((item) => (
-                <Link
-                  key={item.question_id}
-                  href={`/practice/${item.question_id}`}
-                  className="dbActivityItem"
-                >
-                  <div className={`dbActivityDot ${item.last_is_correct ? 'correct' : 'incorrect'}`}>
-                    {item.last_is_correct ? '✓' : '✗'}
-                  </div>
-                  <div className="dbActivityInfo">
-                    <span className="dbActivityTopic">{item.skill_name}</span>
-                    <span className="muted small"> · {item.domain_name}</span>
-                    {item.difficulty && <span className="muted small"> · D{item.difficulty}</span>}
-                  </div>
-                  <div className="dbActivityDate muted small">{formatDate(item.last_attempt_at)}</div>
-                </Link>
+            <div className="dbSessionList">
+              {data.recentSessions.map((session, i) => (
+                <SessionCard key={i} session={session} index={i} />
               ))}
             </div>
           )}

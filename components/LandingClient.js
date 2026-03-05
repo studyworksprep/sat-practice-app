@@ -21,9 +21,20 @@ export default function LandingClient() {
   async function onLogin(e) {
     e.preventDefault();
     setMsg(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return setMsg({ kind: 'danger', text: error.message });
-    window.location.href = '/dashboard';
+
+    // Route based on role: practice users go straight to /practice
+    let dest = '/dashboard';
+    if (authData?.user?.id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', authData.user.id)
+        .maybeSingle();
+      if (profile?.role === 'practice') dest = '/practice';
+    }
+    window.location.href = dest;
   }
 
   async function onSignup(e) {

@@ -14,7 +14,13 @@ export default function SignupPage() {
   async function onSubmit(e) {
     e.preventDefault();
     setMsg(null);
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
     if (error) return setMsg({ kind: 'danger', text: error.message });
     setMsg({ kind: 'ok', text: 'Account created. Check your email to confirm (if enabled), then log in.' });
   }

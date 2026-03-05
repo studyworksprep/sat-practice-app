@@ -14,9 +14,19 @@ export default function LoginPage() {
   async function onSubmit(e) {
     e.preventDefault();
     setMsg(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return setMsg({ kind: 'danger', text: error.message });
-    window.location.href = '/dashboard';
+
+    let dest = '/dashboard';
+    if (authData?.user?.id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', authData.user.id)
+        .maybeSingle();
+      if (profile?.role === 'practice') dest = '/practice';
+    }
+    window.location.href = dest;
   }
 
   return (

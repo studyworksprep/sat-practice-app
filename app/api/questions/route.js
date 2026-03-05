@@ -3,7 +3,7 @@ import { createClient } from '../../../lib/supabase/server';
 
 // GET /api/questions
 // Params: difficulties=1,2,3 | score_bands=1,2 | domains=Algebra,... | topics=Linear+Functions,...
-//         wrong_only | marked_only | broken_only | q | limit | offset
+//         wrong_only | marked_only | hide_broken | q | limit | offset
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
 
@@ -34,7 +34,7 @@ export async function GET(request) {
 
   const wrong_only = searchParams.get('wrong_only') === 'true';
   const marked_only = searchParams.get('marked_only') === 'true';
-  const broken_only = searchParams.get('broken_only') === 'true';
+  const hide_broken = searchParams.get('hide_broken') === 'true';
   const qText = (searchParams.get('q') || '').trim();
 
   const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 5000);
@@ -96,23 +96,7 @@ export async function GET(request) {
     if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
   }
 
-  // 3) broken_only restriction
-  if (broken_only) {
-    if (!userId) return NextResponse.json({ items: [], totalCount: 0 });
-
-    const { data: brokenRows, error: brokenErr } = await supabase
-      .from('question_status')
-      .select('question_id')
-      .eq('user_id', userId)
-      .eq('is_broken', true)
-      .limit(10000);
-
-    if (brokenErr) return NextResponse.json({ error: brokenErr.message }, { status: 400 });
-
-    const brokenIds = (brokenRows || []).map((r) => r.question_id).filter(Boolean);
-    restrictIds = intersect(restrictIds, brokenIds);
-    if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
-  }
+  // 3) hide_broken — handled in the main query via .eq('is_broken', false)
 
   // 4) wrong_only restriction (is_done=true AND last_is_correct=false)
   if (wrong_only) {
@@ -167,6 +151,7 @@ export async function GET(request) {
       `
       id,
       question_id,
+      is_broken,
       question_taxonomy!inner (
         question_id,
         domain_code,
@@ -181,7 +166,6 @@ export async function GET(request) {
         question_id,
         is_done,
         marked_for_review,
-        is_broken,
         attempts_count,
         correct_attempts_count,
         last_is_correct
@@ -196,6 +180,7 @@ export async function GET(request) {
 
   if (difficulties.length > 0) q = q.in('question_taxonomy.difficulty', difficulties);
   if (score_bands.length > 0) q = q.in('question_taxonomy.score_band', score_bands);
+  if (hide_broken) q = q.eq('is_broken', false);
 
   q = q.range(offset, offset + limit - 1);
 
@@ -229,7 +214,7 @@ export async function GET(request) {
 
         is_done: st?.is_done ?? false,
         marked_for_review: st?.marked_for_review ?? false,
-        is_broken: st?.is_broken ?? false,
+        is_broken: row.is_broken ?? false,
         attempts_count: st?.attempts_count ?? 0,
         correct_attempts_count: st?.correct_attempts_count ?? 0,
         last_is_correct: st?.last_is_correct ?? null,
@@ -237,10 +222,9 @@ export async function GET(request) {
     })
     .filter(Boolean);
 
-  return NextResponse.json({
-    items,
-    totalCount: typeof count === 'number' ? count : 0,
-  });
+  const totalCount = typeof count === 'number' ? count : 0;
+
+  return NextResponse.json({ items, totalCount });
 }
 
 // Intersect an existing restriction set with a new list.
