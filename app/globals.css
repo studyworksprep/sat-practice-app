@@ -1084,6 +1084,35 @@ hr{
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
+.correctModal{
+  max-width: 800px;
+  max-height: 85vh;
+}
+
+.correctFields{
+  display: grid;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.correctLabel{
+  display: grid;
+  gap: 4px;
+}
+
+.correctLabelText{
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.correctTextarea{
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 48px;
+}
+
 .questionGrid{
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));

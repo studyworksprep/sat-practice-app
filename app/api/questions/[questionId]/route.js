@@ -142,10 +142,22 @@ export async function GET(_request, { params }) {
     .eq('id', questionId)
     .maybeSingle();
 
+  // Fetch user role for role-gated UI features (e.g. admin correction modal)
+  let userRole = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    userRole = profile?.role || 'practice';
+  }
+
   return NextResponse.json({
     question_id: questionId,
     source_external_id: questionRow?.source_external_id ?? null,
     is_broken: questionRow?.is_broken ?? false,
+    user_role: userRole,
     version,
     options: options ?? [],
     taxonomy,
