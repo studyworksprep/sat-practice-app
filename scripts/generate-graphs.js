@@ -55,8 +55,12 @@ async function uploadToSupabase(filePath, remotePath) {
  * and waits for the graph to render.
  */
 function buildDesmosHtml(graph) {
+  const lineStyles = ['SOLID', 'DASHED', 'DOTTED'];
   const expressions = graph.expressions
-    .map((expr, i) => `calculator.setExpression({ id: 'expr${i}', latex: '${expr}' });`)
+    .map((expr, i) => {
+      const style = lineStyles[i % lineStyles.length];
+      return `calculator.setExpression({ id: 'expr${i}', latex: '${expr}', color: '#000000', lineStyle: Desmos.Styles.${style} });`;
+    })
     .join('\n');
 
   const [xMin, xMax] = graph.xRange || [-10, 10];
