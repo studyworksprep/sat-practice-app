@@ -1239,7 +1239,7 @@ export default function PracticeQuestionPage() {
         <button
           type="button"
           className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
-          onClick={toggleBroken}
+          onClick={openBrokenFlow}
           title={data?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
         >
           <span className="brokenBtnIcon" aria-hidden="true">
