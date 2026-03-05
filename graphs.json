@@ -23,6 +23,18 @@
   },
   {
     "id": "system-of-equations",
+    "title": "e1259a5b",
+    "expressions": [
+      "y = 2x + 3",
+      "y = x + 6"
+    ],
+    "xRange": [-4, 16],
+    "yRange": [-4, 20],
+    "width": 400,
+    "height": 600
+  }
+    {
+    "id": "system-of-equations",
     "title": "e1259a5a",
     "expressions": [
       "y = 2x + 3",
