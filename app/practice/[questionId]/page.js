@@ -259,6 +259,9 @@ export default function PracticeQuestionPage() {
   const [gotCorrect, setGotCorrect] = useState(false); // true once student gets it right
   const [gaveUp, setGaveUp] = useState(false); // true once student clicks Show Explanation
 
+  // Prefetch cache: stores fetched question data keyed by question_id
+  const prefetchCache = useRef({});
+
   // Admin correction modal
   const [userRole, setUserRole] = useState(null);
   const [showCorrectModal, setShowCorrectModal] = useState(false);
@@ -481,13 +484,30 @@ export default function PracticeQuestionPage() {
     return null;
   }
 
+  // Prefetch a question by ID (fire-and-forget, stores result in cache)
+  function prefetchQuestion(id) {
+    if (!id || prefetchCache.current[String(id)]) return;
+    prefetchCache.current[String(id)] = fetch(`/api/questions/${id}`, { cache: 'no-store' })
+      .then((r) => r.ok ? r.json() : null)
+      .catch(() => null);
+  }
+
   async function fetchQuestion() {
     setLoading(true);
     setMsg(null);
     try {
-      const res = await fetch(`/api/questions/${questionId}`, { cache: 'no-store' });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || 'Failed to load question');
+      // Check prefetch cache first
+      const cached = prefetchCache.current[String(questionId)];
+      delete prefetchCache.current[String(questionId)];
+      let json;
+      if (cached) {
+        json = await cached;
+      }
+      if (!json) {
+        const res = await fetch(`/api/questions/${questionId}`, { cache: 'no-store' });
+        json = await res.json();
+        if (!res.ok) throw new Error(json?.error || 'Failed to load question');
+      }
 
       setData(json);
       if (json?.user_role) setUserRole(json.user_role);
@@ -524,6 +544,18 @@ export default function PracticeQuestionPage() {
 
       startedAtRef.current = Date.now();
       setShowExplanation(false);
+
+      // Prefetch next question in background
+      try {
+        const sessionIds = getSessionIds();
+        if (sessionIds) {
+          const curIdx = sessionIds.findIndex((id) => String(id) === String(questionId));
+          if (curIdx >= 0 && curIdx + 1 < sessionIds.length) prefetchQuestion(sessionIds[curIdx + 1]);
+        } else if (pageIds.length > 0) {
+          const curIdx = pageIds.findIndex((id) => String(id) === String(questionId));
+          if (curIdx >= 0 && curIdx + 1 < pageIds.length) prefetchQuestion(pageIds[curIdx + 1]);
+        }
+      } catch {}
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {

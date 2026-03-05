@@ -6,34 +6,24 @@ export async function GET(_request, { params }) {
   const questionId = params.questionId;
   const supabase = createClient();
 
-  const { data: auth } = await supabase.auth.getUser();
-  const user = auth?.user ?? null;
-
-  async function fetchVersion({ onlyCurrent }) {
-    let q = supabase
+  // 1) Auth + version fetch in parallel (independent of each other)
+  // Fetch both current and newest version in one query (prefer is_current=true)
+  const [authResult, versionsResult] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
       .from('question_versions')
       .select('id, question_id, question_type, stimulus_html, stem_html, rationale_html, created_at, is_current')
       .eq('question_id', questionId)
+      .order('is_current', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
-    if (onlyCurrent) q = q.eq('is_current', true);
+  const user = authResult.data?.user ?? null;
 
-    const { data, error } = await q.maybeSingle();
-    return { data, error };
-  }
-
-  // 1) Try current version
-  let { data: version, error: verErr } = await fetchVersion({ onlyCurrent: true });
-
+  const { data: version, error: verErr } = versionsResult;
   if (verErr) return NextResponse.json({ error: verErr.message }, { status: 400 });
-
-  // 2) Fallback: newest version (even if is_current is not set properly)
-  if (!version) {
-    const fallback = await fetchVersion({ onlyCurrent: false });
-    if (fallback.error) return NextResponse.json({ error: fallback.error.message }, { status: 400 });
-    version = fallback.data;
-  }
 
   if (!version) {
     return NextResponse.json(
