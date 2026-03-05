@@ -1,0 +1,40 @@
+name: Generate Graph Images
+
+# Runs when graphs.json changes on main, or manually via GitHub UI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'graphs.json'
+  workflow_dispatch: # allows manual trigger from GitHub UI
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install puppeteer @supabase/supabase-js
+
+      - name: Generate graph images
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          STORAGE_BUCKET: graphs
+        run: node scripts/generate-graphs.js
+
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/graphs/ public/graphs-manifest.json
+          git diff --staged --quiet || git commit -m "chore: regenerate graph images"
+          git push

@@ -1,0 +1,36 @@
+[
+  {
+    "id": "linear-example",
+    "title": "Linear Function",
+    "expressions": [
+      "y = 2x + 3"
+    ],
+    "xRange": [-10, 10],
+    "yRange": [-10, 10],
+    "width": 600,
+    "height": 400
+  },
+  {
+    "id": "quadratic-example",
+    "title": "Quadratic Function",
+    "expressions": [
+      "y = x^2 - 4x + 3"
+    ],
+    "xRange": [-2, 6],
+    "yRange": [-2, 10],
+    "width": 600,
+    "height": 400
+  },
+  {
+    "id": "system-of-equations",
+    "title": "System of Linear Equations",
+    "expressions": [
+      "y = 2x + 1",
+      "y = -x + 7"
+    ],
+    "xRange": [-2, 8],
+    "yRange": [-2, 10],
+    "width": 600,
+    "height": 400
+  }
+]
