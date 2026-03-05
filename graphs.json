@@ -16,7 +16,7 @@
     "expressions": [
       "y = x^2 - 4x + 3"
     ],
-    "xRange": [-2, 6],
+    "xRange": [-1, 6],
     "yRange": [-2, 10],
     "width": 600,
     "height": 400
