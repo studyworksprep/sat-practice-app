@@ -310,6 +310,28 @@ a{
   border-radius: 12px;
 }
 
+.prose table{
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 15px;
+}
+.prose th, .prose td{
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+.prose th{
+  font-weight: 700;
+  background: var(--surface);
+}
+.prose caption{
+  caption-side: top;
+  text-align: left;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
 
 
 /* ===============================
