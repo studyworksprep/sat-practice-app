@@ -765,19 +765,13 @@ export default function PracticeQuestionPage() {
 
   async function toggleBroken() {
     if (!data?.question_id) return;
-    const next = !Boolean(data?.status?.is_broken);
+    const next = !Boolean(data?.is_broken);
     try {
       setMsg(null);
 
       setData((prev) => {
         if (!prev) return prev;
-        return {
-          ...prev,
-          status: {
-            ...(prev.status || {}),
-            is_broken: next,
-          },
-        };
+        return { ...prev, is_broken: next };
       });
 
       const res = await fetch('/api/status', {
@@ -790,13 +784,7 @@ export default function PracticeQuestionPage() {
     } catch (e) {
       setData((prev) => {
         if (!prev) return prev;
-        return {
-          ...prev,
-          status: {
-            ...(prev.status || {}),
-            is_broken: !next,
-          },
-        };
+        return { ...prev, is_broken: !next };
       });
       setMsg({ kind: 'danger', text: e.message });
     }
@@ -1112,16 +1100,16 @@ export default function PracticeQuestionPage() {
 
           <button
             type="button"
-            className={`brokenBtn${status?.is_broken ? ' isBroken' : ''}`}
+            className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
             onClick={toggleBroken}
-            title={status?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+            title={data?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
           >
             <span className="brokenBtnIcon" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="14" height="14">
                 <path fill="currentColor" d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
               </svg>
             </span>
-            {status?.is_broken ? 'Broken' : 'Broken?'}
+            {data?.is_broken ? 'Broken' : 'Broken?'}
           </button>
         </div>
       </div>
@@ -1184,16 +1172,16 @@ export default function PracticeQuestionPage() {
 
         <button
           type="button"
-          className={`brokenBtn${status?.is_broken ? ' isBroken' : ''}`}
+          className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
           onClick={toggleBroken}
-          title={status?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+          title={data?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
         >
           <span className="brokenBtnIcon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="14" height="14">
               <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M5 3v18M5 3h14l-4 6 4 6H5" />
             </svg>
           </span>
-          {status?.is_broken ? 'Broken' : 'Broken?'}
+          {data?.is_broken ? 'Broken' : 'Broken?'}
         </button>
       </div>
     </>

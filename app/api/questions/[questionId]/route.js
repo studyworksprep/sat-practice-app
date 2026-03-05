@@ -65,7 +65,7 @@ export async function GET(_request, { params }) {
   if (user) {
     const { data: st, error: stErr } = await supabase
       .from('question_status')
-      .select('user_id, question_id, is_done, marked_for_review, is_broken, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct, status_json, notes')
+      .select('user_id, question_id, is_done, marked_for_review, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct, status_json, notes')
       .eq('user_id', user.id)
       .eq('question_id', questionId)
       .maybeSingle();
@@ -135,16 +135,17 @@ export async function GET(_request, { params }) {
     correct_text = ca?.correct_text ?? null;
   }
 
-  // Fetch source_external_id from the questions table
+  // Fetch source_external_id and global is_broken from the questions table
   const { data: questionRow } = await supabase
     .from('questions')
-    .select('source_external_id')
+    .select('source_external_id, is_broken')
     .eq('id', questionId)
     .maybeSingle();
 
   return NextResponse.json({
     question_id: questionId,
     source_external_id: questionRow?.source_external_id ?? null,
+    is_broken: questionRow?.is_broken ?? false,
     version,
     options: options ?? [],
     taxonomy,

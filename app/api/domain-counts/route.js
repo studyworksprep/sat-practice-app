@@ -41,14 +41,13 @@ export async function GET(request) {
     if (restrictIds.length === 0) return NextResponse.json({});
   }
 
-  if (hide_broken && userId) {
+  if (hide_broken) {
     const { data } = await supabase
-      .from('question_status')
-      .select('question_id')
-      .eq('user_id', userId)
+      .from('questions')
+      .select('id')
       .eq('is_broken', true)
       .limit(10000);
-    const brokenIds = new Set((data || []).map((r) => r.question_id).filter(Boolean));
+    const brokenIds = new Set((data || []).map((r) => r.id).filter(Boolean));
     if (brokenIds.size > 0) {
       if (restrictIds) {
         restrictIds = restrictIds.filter((id) => !brokenIds.has(id));

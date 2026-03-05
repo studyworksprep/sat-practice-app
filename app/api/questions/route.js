@@ -48,7 +48,6 @@ export async function GET(request) {
 
   // Build an ID restriction set (questions.id UUIDs).
   let restrictIds = null;
-  let excludeBrokenIds = null;
 
   // 1) Full-text search restriction
   if (qText) {
@@ -97,27 +96,7 @@ export async function GET(request) {
     if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
   }
 
-  // 3) hide_broken — exclude questions the user has flagged as broken (default behavior)
-  if (hide_broken && userId) {
-    const { data: brokenRows, error: brokenErr } = await supabase
-      .from('question_status')
-      .select('question_id')
-      .eq('user_id', userId)
-      .eq('is_broken', true)
-      .limit(10000);
-
-    if (brokenErr) return NextResponse.json({ error: brokenErr.message }, { status: 400 });
-
-    const brokenIds = new Set((brokenRows || []).map((r) => r.question_id).filter(Boolean));
-    if (brokenIds.size > 0) {
-      if (restrictIds) {
-        restrictIds = restrictIds.filter((id) => !brokenIds.has(id));
-        if (restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
-      } else {
-        excludeBrokenIds = brokenIds;
-      }
-    }
-  }
+  // 3) hide_broken — handled in the main query via .eq('is_broken', false)
 
   // 4) wrong_only restriction (is_done=true AND last_is_correct=false)
   if (wrong_only) {
@@ -172,6 +151,7 @@ export async function GET(request) {
       `
       id,
       question_id,
+      is_broken,
       question_taxonomy!inner (
         question_id,
         domain_code,
@@ -186,7 +166,6 @@ export async function GET(request) {
         question_id,
         is_done,
         marked_for_review,
-        is_broken,
         attempts_count,
         correct_attempts_count,
         last_is_correct
@@ -201,13 +180,14 @@ export async function GET(request) {
 
   if (difficulties.length > 0) q = q.in('question_taxonomy.difficulty', difficulties);
   if (score_bands.length > 0) q = q.in('question_taxonomy.score_band', score_bands);
+  if (hide_broken) q = q.eq('is_broken', false);
 
   q = q.range(offset, offset + limit - 1);
 
   const { data, error, count } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  let items = (data || [])
+  const items = (data || [])
     .map((row) => {
       const tax = row.question_taxonomy?.[0] ?? row.question_taxonomy ?? null;
 
@@ -234,7 +214,7 @@ export async function GET(request) {
 
         is_done: st?.is_done ?? false,
         marked_for_review: st?.marked_for_review ?? false,
-        is_broken: st?.is_broken ?? false,
+        is_broken: row.is_broken ?? false,
         attempts_count: st?.attempts_count ?? 0,
         correct_attempts_count: st?.correct_attempts_count ?? 0,
         last_is_correct: st?.last_is_correct ?? null,
@@ -242,13 +222,7 @@ export async function GET(request) {
     })
     .filter(Boolean);
 
-  let totalCount = typeof count === 'number' ? count : 0;
-
-  // Post-filter broken questions when no restrictIds were available to pre-filter
-  if (excludeBrokenIds) {
-    items = items.filter((item) => !excludeBrokenIds.has(item.question_id));
-    totalCount = Math.max(0, totalCount - excludeBrokenIds.size);
-  }
+  const totalCount = typeof count === 'number' ? count : 0;
 
   return NextResponse.json({ items, totalCount });
 }
