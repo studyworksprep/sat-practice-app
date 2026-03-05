@@ -319,9 +319,6 @@ export default function PracticeQuestionPage() {
   const [mapIds, setMapIds] = useState([]);
   const [mapLoading, setMapLoading] = useState(false);
   const [jumpTo, setJumpTo] = useState('');
-  // Overlay for questions answered/marked in the current session, keyed by question_id
-  const [sessionResults, setSessionResults] = useState({});
-
   const startedAtRef = useRef(Date.now());
 
   // Keep the same session filter params for API calls + navigation
@@ -338,6 +335,26 @@ export default function PracticeQuestionPage() {
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
   const inSessionContext = sessionParams.get('session') === '1';
   const sidParam = searchParams.get('sid') || null;
+
+  // Overlay for questions answered/marked in the current session, keyed by question_id
+  // Persisted to sessionStorage so badges survive page remounts on navigation
+  const sessionResultsKey = sidParam ? `sr_${sidParam}` : sessionParamsString ? `sr_${sessionParamsString}` : null;
+  const [sessionResults, setSessionResultsRaw] = useState(() => {
+    if (!sessionResultsKey) return {};
+    try {
+      const raw = sessionStorage.getItem(sessionResultsKey);
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  });
+  const setSessionResults = (updater) => {
+    setSessionResultsRaw((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      if (sessionResultsKey) {
+        try { sessionStorage.setItem(sessionResultsKey, JSON.stringify(next)); } catch {}
+      }
+      return next;
+    });
+  };
 
   // Read full session ID list from localStorage (used for replay/dashboard sessions)
   function getSessionIds() {
