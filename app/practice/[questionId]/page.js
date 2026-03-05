@@ -520,7 +520,7 @@ export default function PracticeQuestionPage() {
 
   // ✅ Fetch IDs + metadata for map window (cached, loaded on modal open)
   async function fetchMapIds(offset) {
-    // If we have a localStorage session, use stored item metadata
+    // If we have a localStorage session with stored item metadata, use it
     if (sidParam) {
       try {
         const itemsRaw = localStorage.getItem(`practice_session_${sidParam}_items`);
@@ -531,17 +531,7 @@ export default function PracticeQuestionPage() {
           }
         }
       } catch {}
-      // Fallback: build from IDs only
-      const sessionIds = getSessionIds();
-      if (sessionIds) {
-        return sessionIds.slice(offset, offset + MAP_PAGE_SIZE).map((qid) => ({
-          question_id: qid,
-          difficulty: null,
-          is_done: false,
-          last_is_correct: null,
-          marked_for_review: false,
-        }));
-      }
+      // Fall through to API fetch below (don't use dummy data from IDs only)
     }
 
     const key = `practice_${sessionParamsString}_map_${offset}`;

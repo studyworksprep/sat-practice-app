@@ -14,22 +14,13 @@ export async function POST(request) {
 
   // Handle is_broken separately — it's a global flag on the questions table,
   // only writable by student/teacher/admin (not practice accounts).
+  // Uses an RPC function (SECURITY DEFINER) to bypass RLS on the questions table.
   if (patch && typeof patch.is_broken === 'boolean') {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
-    const role = profile?.role || 'practice';
-
-    if (role === 'practice') {
-      return NextResponse.json({ error: 'Practice accounts cannot flag questions as broken' }, { status: 403 });
-    }
-
     const { error: brokenErr } = await supabase
-      .from('questions')
-      .update({ is_broken: patch.is_broken })
-      .eq('id', question_id);
+      .rpc('set_question_broken', {
+        question_uuid: question_id,
+        broken: patch.is_broken,
+      });
 
     if (brokenErr) return NextResponse.json({ error: brokenErr.message }, { status: 400 });
   }

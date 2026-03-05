@@ -89,12 +89,13 @@ export default function PracticePage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load questions');
 
-      let ids = (json.items || []).map((q) => q.question_id).filter(Boolean);
-      if (ids.length === 0) {
+      let items = (json.items || []).filter((q) => q?.question_id);
+      if (items.length === 0) {
         setMsg({ kind: 'danger', text: 'No questions match the current filters.' });
         return;
       }
-      if (randomize) ids = shuffleArray(ids);
+      if (randomize) items = shuffleArray(items);
+      const ids = items.map((q) => q.question_id);
 
       // Build a session ID from filter params (no search text)
       const sessionQs = buildParams(sessionFilters, '', { session: '1' }).toString();
@@ -102,8 +103,9 @@ export default function PracticePage() {
       for (let i = 0; i < sessionQs.length; i++) h = ((h << 5) + h) ^ sessionQs.charCodeAt(i);
       const sid = (h >>> 0).toString(36);
 
-      // Cache question IDs in localStorage for prev/next navigation
+      // Cache question IDs + full item metadata in localStorage for prev/next navigation + map
       localStorage.setItem(`practice_session_${sid}`, ids.join(','));
+      localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(items));
       localStorage.setItem(
         `practice_session_${sid}_meta`,
         JSON.stringify({
@@ -190,8 +192,10 @@ export default function PracticePage() {
               const j2 = await r2.json();
               if (!r2.ok) throw new Error(j2?.error || 'Failed to cache session ids');
 
-              const all = (j2.items || []).map((q) => q.question_id).filter(Boolean);
+              const allItems = (j2.items || []).filter((q) => q?.question_id);
+              const all = allItems.map((q) => q.question_id);
               localStorage.setItem(fullKey, all.join(','));
+              localStorage.setItem(`${fullKey}_items`, JSON.stringify(allItems));
               localStorage.setItem(
                 metaKey,
                 JSON.stringify({
