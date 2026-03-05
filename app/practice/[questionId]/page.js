@@ -811,14 +811,14 @@ export default function PracticeQuestionPage() {
     }
   }
 
-  async function submitCorrection() {
+  async function submitCorrection(flagBroken) {
     if (!data?.question_id) return;
     setCorrectSubmitting(true);
     try {
       setMsg(null);
 
       // Build patch: only include fields that differ from current
-      const body = {};
+      const body = { flag_broken: flagBroken };
       if (correctForm.stimulus_html !== (data?.version?.stimulus_html || '')) {
         body.stimulus_html = correctForm.stimulus_html;
       }
@@ -848,7 +848,8 @@ export default function PracticeQuestionPage() {
       setShowCorrectModal(false);
       // Reload question to reflect changes
       await fetchQuestion();
-      setMsg({ kind: 'success', text: 'Correction saved and question flagged as broken.' });
+      const label = flagBroken ? 'Correction saved and question flagged as broken.' : 'Correction saved and question marked as not broken.';
+      setMsg({ kind: 'success', text: label });
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
@@ -1757,11 +1758,14 @@ export default function PracticeQuestionPage() {
               ) : null}
             </div>
 
-            <div className="row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end' }}>
+            <div className="row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
               <button className="btn secondary" onClick={() => setShowCorrectModal(false)} disabled={correctSubmitting}>
                 Cancel
               </button>
-              <button className="btn primary" onClick={submitCorrection} disabled={correctSubmitting}>
+              <button className="btn primary" style={{ background: 'var(--color-success, #22c55e)' }} onClick={() => submitCorrection(false)} disabled={correctSubmitting}>
+                {correctSubmitting ? 'Saving…' : 'Mark Not Broken & Save'}
+              </button>
+              <button className="btn primary" onClick={() => submitCorrection(true)} disabled={correctSubmitting}>
                 {correctSubmitting ? 'Saving…' : 'Flag as Broken & Save'}
               </button>
             </div>
