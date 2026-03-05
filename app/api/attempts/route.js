@@ -10,31 +10,45 @@ export async function POST(request) {
     if (!question_id) return NextResponse.json({ error: 'question_id required' }, { status: 400 });
 
     const supabase = createClient();
-    const { data: auth, error: authErr } = await supabase.auth.getUser();
+
+    // 1) Auth + version fetch in parallel
+    const [authResult, verResult] = await Promise.all([
+      supabase.auth.getUser(),
+      supabase
+        .from('question_versions')
+        .select('id, question_id, question_type, created_at')
+        .eq('question_id', question_id)
+        .eq('is_current', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    const { data: auth, error: authErr } = authResult;
     if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     const user = auth.user;
 
-    // 1) Fetch current version (use newest current if multiple)
-    const { data: ver, error: verErr } = await supabase
-      .from('question_versions')
-      .select('id, question_id, question_type, created_at')
-      .eq('question_id', question_id)
-      .eq('is_current', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
+    const { data: ver, error: verErr } = verResult;
     if (verErr) return NextResponse.json({ error: verErr.message }, { status: 400 });
     if (!ver) return NextResponse.json({ error: 'No current version found' }, { status: 404 });
 
-    // 2) Fetch correct answer for this version
-    const { data: ca, error: caError } = await supabase
-      .from('correct_answers')
-      .select('correct_option_id, correct_text')
-      .eq('question_version_id', ver.id) // ✅ FIX: was version_id (undefined)
-      .limit(1)
-      .maybeSingle();
+    // 2) Correct answer + existing status in parallel (both depend on ver/user)
+    const [caResult, stResult] = await Promise.all([
+      supabase
+        .from('correct_answers')
+        .select('correct_option_id, correct_text')
+        .eq('question_version_id', ver.id)
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('question_status')
+        .select('attempts_count, correct_attempts_count, marked_for_review, status_json')
+        .eq('user_id', user.id)
+        .eq('question_id', question_id)
+        .maybeSingle(),
+    ]);
 
+    const { data: ca, error: caError } = caResult;
     if (caError) {
       return NextResponse.json(
         { error: `correct_answers select failed: ${caError.message}` },
@@ -42,8 +56,6 @@ export async function POST(request) {
       );
     }
 
-    // OPTIONAL: if you want to error when answer key missing, keep this.
-    // If you prefer to treat missing as incorrect, remove this block.
     if (
       !ca ||
       (ver.question_type === 'mcq' && !ca.correct_option_id) ||
@@ -52,7 +64,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Correct answer missing for this question version' }, { status: 400 });
     }
 
-    // 3) Determine correctness based on question_type
+    // 3) Determine correctness
     let is_correct = false;
 
     if (ver.question_type === 'mcq') {
@@ -68,7 +80,7 @@ export async function POST(request) {
       const norm = (s) =>
         String(s ?? '')
           .trim()
-          .replace(/\u2212/g, '-') // normalize Unicode minus to hyphen-minus
+          .replace(/\u2212/g, '-')
           .replace(/\s+/g, ' ')
           .toLowerCase();
 
@@ -76,7 +88,6 @@ export async function POST(request) {
         if (Array.isArray(ct)) return ct;
         if (typeof ct === 'string') {
           const t = ct.trim();
-          // Handle JSON stored as a string like '["11","-7"]'
           if (t.startsWith('[') && t.endsWith(']')) {
             try {
               const parsed = JSON.parse(t);
@@ -95,57 +106,51 @@ export async function POST(request) {
       is_correct = accepted.some((a) => norm(a) === resp);
     }
 
-    // 4) Insert attempt row
-    const { error: insErr } = await supabase.from('attempts').insert({
-      user_id: user.id,
-      question_id,
-      is_correct,
-      selected_option_id: ver.question_type === 'mcq' ? selected_option_id : null,
-      response_text: ver.question_type === 'spr' ? response_text : null,
-      time_spent_ms: Number.isFinite(Number(time_spent_ms)) ? Number(time_spent_ms) : null,
-    });
-
-    if (insErr) return NextResponse.json({ error: insErr.message }, { status: 400 });
-
-    // 5) Update / upsert question_status counters
-    const { data: st, error: stErr } = await supabase
-      .from('question_status')
-      .select('attempts_count, correct_attempts_count, marked_for_review, status_json')
-      .eq('user_id', user.id)
-      .eq('question_id', question_id)
-      .maybeSingle();
-
+    const { data: st, error: stErr } = stResult;
     if (stErr) return NextResponse.json({ error: stErr.message }, { status: 400 });
 
     const attempts_count = (st?.attempts_count ?? 0) + 1;
     const correct_attempts_count = (st?.correct_attempts_count ?? 0) + (is_correct ? 1 : 0);
 
-    const { error: upErr } = await supabase
-      .from('question_status')
-      .upsert(
-        {
-          user_id: user.id,
-          question_id,
-          is_done: true,
-          attempts_count,
-          correct_attempts_count,
-          last_attempt_at: new Date().toISOString(),
-          last_is_correct: is_correct,
-          // Persist client-side restore fields in status_json (schema-safe)
-          status_json: (() => {
-            const prev = (st?.status_json && typeof st.status_json === 'object') ? st.status_json : {};
-            const extra = {};
-            if (ver.question_type === 'mcq') extra.last_selected_option_id = selected_option_id ?? null;
-            if (ver.question_type === 'spr') extra.last_response_text = response_text ?? '';
-            return { ...prev, ...extra };
-          })(),
-          updated_at: new Date().toISOString(),
-          // preserve marked_for_review if already set
-          marked_for_review: st?.marked_for_review ?? false,
-        },
-        { onConflict: 'user_id,question_id' }
-      );
+    // 4) Insert attempt + upsert status in parallel
+    const [insResult, upResult] = await Promise.all([
+      supabase.from('attempts').insert({
+        user_id: user.id,
+        question_id,
+        is_correct,
+        selected_option_id: ver.question_type === 'mcq' ? selected_option_id : null,
+        response_text: ver.question_type === 'spr' ? response_text : null,
+        time_spent_ms: Number.isFinite(Number(time_spent_ms)) ? Number(time_spent_ms) : null,
+      }),
+      supabase
+        .from('question_status')
+        .upsert(
+          {
+            user_id: user.id,
+            question_id,
+            is_done: true,
+            attempts_count,
+            correct_attempts_count,
+            last_attempt_at: new Date().toISOString(),
+            last_is_correct: is_correct,
+            status_json: (() => {
+              const prev = (st?.status_json && typeof st.status_json === 'object') ? st.status_json : {};
+              const extra = {};
+              if (ver.question_type === 'mcq') extra.last_selected_option_id = selected_option_id ?? null;
+              if (ver.question_type === 'spr') extra.last_response_text = response_text ?? '';
+              return { ...prev, ...extra };
+            })(),
+            updated_at: new Date().toISOString(),
+            marked_for_review: st?.marked_for_review ?? false,
+          },
+          { onConflict: 'user_id,question_id' }
+        ),
+    ]);
 
+    const { error: insErr } = insResult;
+    if (insErr) return NextResponse.json({ error: insErr.message }, { status: 400 });
+
+    const { error: upErr } = upResult;
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 400 });
 
     return NextResponse.json({
@@ -154,7 +159,6 @@ export async function POST(request) {
       attempts_count,
       correct_attempts_count,
       correct_option_id: ca?.correct_option_id ?? null,
-      // For SPR, returning the correct text is useful for immediate feedback (the UI can choose when to show it)
       correct_text: ca?.correct_text ?? null,
     });
   } catch (e) {

@@ -251,6 +251,8 @@ export default function PracticeQuestionPage() {
 
   const [showExplanation, setShowExplanation] = useState(false);
 
+  const [submitting, setSubmitting] = useState(false);
+
   // Retry-until-correct state
   const [wrongOptionIds, setWrongOptionIds] = useState([]); // MCQ: option IDs submitted and wrong
   const [wrongTexts, setWrongTexts] = useState([]); // SPR: wrong text responses
@@ -749,6 +751,7 @@ export default function PracticeQuestionPage() {
     }
 
     // First attempt: submit to API (this is the attempt that counts)
+    setSubmitting(true);
     const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
     const body = {
       question_id: data.question_id,
@@ -767,9 +770,32 @@ export default function PracticeQuestionPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to submit attempt');
 
+      const qid = String(data.question_id);
+
+      // Store correct answer from API response for client-side retry checking
+      setData((prev) => {
+        if (!prev) return prev;
+        const prevStatus = prev.status || {};
+        return {
+          ...prev,
+          correct_option_id: json.correct_option_id ?? prev.correct_option_id,
+          correct_text: json.correct_text ?? prev.correct_text,
+          status: {
+            ...prevStatus,
+            attempts_count: json.attempts_count ?? (prevStatus.attempts_count ?? 0) + 1,
+            correct_attempts_count: json.correct_attempts_count ?? prevStatus.correct_attempts_count,
+            is_done: true,
+            last_is_correct: json.is_correct,
+          },
+        };
+      });
+
       if (json.is_correct) {
         setGotCorrect(true);
-        await fetchQuestion();
+        setSessionResults((prev) => ({
+          ...prev,
+          [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: true },
+        }));
       } else {
         // Track the wrong answer and let student retry
         if (qTypeLocal === 'mcq' && selected != null) {
@@ -777,36 +803,15 @@ export default function PracticeQuestionPage() {
         } else if (qTypeLocal === 'spr' && responseText.trim()) {
           setWrongTexts((prev) => [...prev, responseText.trim()]);
         }
-        // Store correct answer from API response for client-side retry checking
-        if (json.correct_option_id) {
-          setData((prev) => prev ? { ...prev, correct_option_id: json.correct_option_id } : prev);
-        }
-        if (json.correct_text) {
-          setData((prev) => prev ? { ...prev, correct_text: json.correct_text } : prev);
-        }
-        // Update sessionResults for map badge
-        const qid = String(data.question_id);
         setSessionResults((prev) => ({
           ...prev,
           [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: false },
         }));
-        // Update local status counters without re-fetching
-        setData((prev) => {
-          if (!prev) return prev;
-          const prevStatus = prev.status || {};
-          return {
-            ...prev,
-            status: {
-              ...prevStatus,
-              attempts_count: (prevStatus.attempts_count ?? 0) + 1,
-              is_done: true,
-              last_is_correct: false,
-            },
-          };
-        });
       }
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -1242,8 +1247,8 @@ export default function PracticeQuestionPage() {
 
       <div className="row" style={{ gap: 10, marginTop: 14 }}>
         <div className="btnRow">
-          <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected || wrongOptionIds.includes(selected)}>
-            Submit
+          <button className="btn primary" onClick={submitAttempt} disabled={locked || submitting || !selected || wrongOptionIds.includes(selected)}>
+            {submitting ? 'Submitting…' : 'Submit'}
           </button>
         </div>
 
@@ -1326,8 +1331,8 @@ export default function PracticeQuestionPage() {
       />
 
       <div className="row" style={{ gap: 10, marginTop: 14 }}>
-        <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
-          Submit
+        <button className="btn" onClick={submitAttempt} disabled={locked || submitting || !responseText.trim()}>
+          {submitting ? 'Submitting…' : 'Submit'}
         </button>
 
         {(locked || wrongTexts.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
