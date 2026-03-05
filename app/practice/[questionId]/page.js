@@ -251,6 +251,12 @@ export default function PracticeQuestionPage() {
 
   const [showExplanation, setShowExplanation] = useState(false);
 
+  // Retry-until-correct state
+  const [wrongOptionIds, setWrongOptionIds] = useState([]); // MCQ: option IDs submitted and wrong
+  const [wrongTexts, setWrongTexts] = useState([]); // SPR: wrong text responses
+  const [gotCorrect, setGotCorrect] = useState(false); // true once student gets it right
+  const [gaveUp, setGaveUp] = useState(false); // true once student clicks Show Explanation
+
   // Admin correction modal
   const [userRole, setUserRole] = useState(null);
   const [showCorrectModal, setShowCorrectModal] = useState(false);
@@ -495,11 +501,24 @@ export default function PracticeQuestionPage() {
         }));
       }
 
-      if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
-      else setSelected(null);
+      // Reset retry state for the new question
+      const prevCorrect = json.status?.is_done && json.status?.last_is_correct;
+      setGotCorrect(Boolean(prevCorrect));
+      setGaveUp(false);
+      setWrongOptionIds([]);
+      setWrongTexts([]);
 
-      if (json?.status?.status_json?.last_response_text) setResponseText(json.status.status_json.last_response_text);
-      else setResponseText('');
+      if (prevCorrect) {
+        // Returning to a correctly-answered question: restore last selection
+        if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
+        else setSelected(null);
+        if (json?.status?.status_json?.last_response_text) setResponseText(json.status.status_json.last_response_text);
+        else setResponseText('');
+      } else {
+        // Fresh or previously-wrong question: start clean
+        setSelected(null);
+        setResponseText('');
+      }
 
       startedAtRef.current = Date.now();
       setShowExplanation(false);
@@ -723,7 +742,37 @@ export default function PracticeQuestionPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to submit attempt');
 
-      await fetchQuestion();
+      if (json.is_correct) {
+        setGotCorrect(true);
+        await fetchQuestion();
+      } else {
+        // Track the wrong answer and let student retry
+        if (qTypeLocal === 'mcq' && selected != null) {
+          setWrongOptionIds((prev) => prev.includes(selected) ? prev : [...prev, selected]);
+        } else if (qTypeLocal === 'spr' && responseText.trim()) {
+          setWrongTexts((prev) => [...prev, responseText.trim()]);
+        }
+        // Update sessionResults for map badge (mark as attempted but not done)
+        const qid = String(data.question_id);
+        setSessionResults((prev) => ({
+          ...prev,
+          [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: false },
+        }));
+        // Update local status counters without re-fetching
+        setData((prev) => {
+          if (!prev) return prev;
+          const prevStatus = prev.status || {};
+          return {
+            ...prev,
+            status: {
+              ...prevStatus,
+              attempts_count: (prevStatus.attempts_count ?? 0) + 1,
+              is_done: true,
+              last_is_correct: false,
+            },
+          };
+        });
+      }
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     }
@@ -969,7 +1018,9 @@ export default function PracticeQuestionPage() {
   const version = data?.version || {};
   const options = Array.isArray(data?.options) ? data.options : [];
   const status = data?.status || {};
-  const locked = Boolean(status?.is_done);
+  // Lock only when student got it right or gave up (clicked Show Explanation)
+  // Also lock if returning to a previously-correct question
+  const locked = gotCorrect || gaveUp || Boolean(status?.is_done && status?.last_is_correct);
   const correctOptionId = data?.correct_option_id || null;
   const correctText = data?.correct_text || null;
 
@@ -1119,6 +1170,8 @@ export default function PracticeQuestionPage() {
           .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
           .map((opt) => {
             const isSelected = selected === opt.id;
+            const isWrong = wrongOptionIds.includes(opt.id);
+            const isCorrect = String(opt.id) === String(correctOptionId);
 
             return (
               <div
@@ -1126,26 +1179,25 @@ export default function PracticeQuestionPage() {
                 className={(() => {
                   let cls = 'option' + (isSelected ? ' selected' : '');
 
+                  // Previously wrong attempts: always show red
+                  if (isWrong) cls += ' incorrect';
+
                   if (locked) {
-                    const isCorrect = String(opt.id) === String(correctOptionId);
-                    const hasSelection = selected != null;
-
-                    // Selected answer: green if correct, red if incorrect
+                    // When locked (correct or gave up): show correct answer green
                     if (isSelected && isCorrect) cls += ' correct';
-                    else if (isSelected && hasSelection && !isCorrect) cls += ' incorrect';
-
-                    // Reveal correct option if selected wrong
-                    const selectedIsWrong = hasSelection && String(selected) !== String(correctOptionId);
-                    if (!isSelected && isCorrect && selectedIsWrong) cls += ' revealCorrect';
+                    if (!isSelected && isCorrect && (gaveUp || gotCorrect)) cls += ' revealCorrect';
+                  } else if (gotCorrect && isSelected && isCorrect) {
+                    cls += ' correct';
                   }
 
                   return cls;
                 })()}
                 onClick={() => {
                   if (locked) return;
+                  if (isWrong) return; // can't re-select a wrong answer
                   setSelected(opt.id);
                 }}
-                style={{ cursor: locked ? 'default' : 'pointer' }}
+                style={{ cursor: locked || isWrong ? 'default' : 'pointer' }}
               >
                 <div className="optionBadge">{opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}</div>
                 <div className="optionContent">
@@ -1158,13 +1210,13 @@ export default function PracticeQuestionPage() {
 
       <div className="row" style={{ gap: 10, marginTop: 14 }}>
         <div className="btnRow">
-          <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected}>
+          <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected || wrongOptionIds.includes(selected)}>
             Submit
           </button>
         </div>
 
-        {locked && (version?.rationale_html || version?.explanation_html) ? (
-          <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+        {(locked || wrongOptionIds.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
+          <button className="btn secondary" onClick={() => { setGaveUp(true); setShowExplanation((s) => !s); }}>
             {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
           </button>
         ) : null}
@@ -1205,18 +1257,28 @@ export default function PracticeQuestionPage() {
     <>
       <div className="srOnly">Your answer</div>
 
-      {locked ? (
+      {gotCorrect ? (
         <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
           <span className="pill">
             <span className="muted">Result</span>{' '}
-            <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+            <span className="kbd">Correct</span>
           </span>
-
-          {!status?.last_is_correct && correctText ? (
+        </div>
+      ) : wrongTexts.length > 0 ? (
+        <div style={{ marginTop: 8 }}>
+          <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <span className="pill">
-              <span className="muted">Correct answer</span>{' '}
-              <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+              <span className="muted">Result</span>{' '}
+              <span className="kbd">Incorrect</span>
             </span>
+          </div>
+          {gaveUp && correctText ? (
+            <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
+              <span className="pill">
+                <span className="muted">Correct answer</span>{' '}
+                <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+              </span>
+            </div>
           ) : null}
         </div>
       ) : null}
@@ -1236,8 +1298,8 @@ export default function PracticeQuestionPage() {
           Submit
         </button>
 
-        {locked && (version?.rationale_html || version?.explanation_html) ? (
-          <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+        {(locked || wrongTexts.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
+          <button className="btn secondary" onClick={() => { setGaveUp(true); setShowExplanation((s) => !s); }}>
             {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
           </button>
         ) : null}
@@ -1479,7 +1541,7 @@ export default function PracticeQuestionPage() {
         </div>
       )}
 
-      {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
+      {(version?.rationale_html || version?.explanation_html) && (locked || gaveUp) && showExplanation ? (
         <>
           <hr />
           <div className="card explanation" style={{ marginTop: 10 }}>
