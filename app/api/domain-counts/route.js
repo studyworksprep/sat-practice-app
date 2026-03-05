@@ -20,34 +20,73 @@ export async function GET(request) {
   const hide_broken  = searchParams.get('hide_broken')  === 'true';
 
   const supabase = createClient();
-  const { data: auth } = await supabase.auth.getUser();
+
+  // Run auth + all restriction queries + first taxonomy page in parallel
+  const restrictionQueries = [
+    // 0: auth
+    supabase.auth.getUser(),
+    // 1: first taxonomy page (always needed)
+    (() => {
+      let q = supabase
+        .from('question_taxonomy')
+        .select('question_id, domain_name, skill_name, skill_code')
+        .range(0, 999);
+      if (difficulties.length > 0) q = q.in('difficulty', difficulties);
+      if (score_bands.length > 0)  q = q.in('score_band', score_bands);
+      return q;
+    })(),
+  ];
+
+  // 2: broken IDs (if needed)
+  if (hide_broken) {
+    restrictionQueries.push(
+      supabase.from('questions').select('id').eq('is_broken', true).limit(10000)
+    );
+  }
+
+  const results = await Promise.all(restrictionQueries);
+
+  const { data: auth } = results[0];
   const userId = auth?.user?.id ?? null;
 
-  // Build a set of question UUIDs that pass user-specific filters.
-  // null means "no restriction".
+  // Now run user-specific queries in parallel (need userId)
+  const userQueries = [];
+  if (marked_only && userId) {
+    userQueries.push(
+      supabase.from('question_status').select('question_id')
+        .eq('user_id', userId).eq('marked_for_review', true).limit(10000)
+    );
+  }
+  if (wrong_only && userId) {
+    userQueries.push(
+      supabase.from('question_status').select('question_id')
+        .eq('user_id', userId).eq('is_done', true).eq('last_is_correct', false).limit(10000)
+    );
+  }
+
+  if ((marked_only || wrong_only) && !userId) return NextResponse.json({});
+
+  const userResults = userQueries.length > 0 ? await Promise.all(userQueries) : [];
+
+  // Build restriction set
   let restrictIds = null;
   let excludeBrokenIds = null;
+  let userIdx = 0;
 
-  if (marked_only) {
-    if (!userId) return NextResponse.json({});
-    const { data } = await supabase
-      .from('question_status')
-      .select('question_id')
-      .eq('user_id', userId)
-      .eq('marked_for_review', true)
-      .limit(10000);
-    const ids = (data || []).map((r) => r.question_id).filter(Boolean);
+  if (marked_only && userId) {
+    const ids = (userResults[userIdx++]?.data || []).map((r) => r.question_id).filter(Boolean);
+    restrictIds = intersect(restrictIds, ids);
+    if (restrictIds.length === 0) return NextResponse.json({});
+  }
+
+  if (wrong_only && userId) {
+    const ids = (userResults[userIdx++]?.data || []).map((r) => r.question_id).filter(Boolean);
     restrictIds = intersect(restrictIds, ids);
     if (restrictIds.length === 0) return NextResponse.json({});
   }
 
   if (hide_broken) {
-    const { data } = await supabase
-      .from('questions')
-      .select('id')
-      .eq('is_broken', true)
-      .limit(10000);
-    const brokenIds = new Set((data || []).map((r) => r.id).filter(Boolean));
+    const brokenIds = new Set((results[2]?.data || []).map((r) => r.id).filter(Boolean));
     if (brokenIds.size > 0) {
       if (restrictIds) {
         restrictIds = restrictIds.filter((id) => !brokenIds.has(id));
@@ -58,41 +97,30 @@ export async function GET(request) {
     }
   }
 
-  if (wrong_only) {
-    if (!userId) return NextResponse.json({});
-    const { data } = await supabase
-      .from('question_status')
-      .select('question_id')
-      .eq('user_id', userId)
-      .eq('is_done', true)
-      .eq('last_is_correct', false)
-      .limit(10000);
-    const ids = (data || []).map((r) => r.question_id).filter(Boolean);
-    restrictIds = intersect(restrictIds, ids);
-    if (restrictIds.length === 0) return NextResponse.json({});
-  }
+  // Process first taxonomy page (already fetched in parallel)
+  const firstTaxResult = results[1];
+  if (firstTaxResult.error) return NextResponse.json({ error: firstTaxResult.error.message }, { status: 400 });
 
-  // Fetch all taxonomy rows matching difficulty/score_band filters (paginated).
-  // restrictIds is then applied in JS to avoid large .in() arrays.
-  const pageSize = 1000;
-  let allTax = [];
-  let from = 0;
+  let allTax = firstTaxResult.data || [];
 
-  while (true) {
-    let q = supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_name, skill_name, skill_code')
-      .range(from, from + pageSize - 1);
+  // Continue paginating if first page was full
+  if (allTax.length >= 1000) {
+    let from = 1000;
+    while (true) {
+      let q = supabase
+        .from('question_taxonomy')
+        .select('question_id, domain_name, skill_name, skill_code')
+        .range(from, from + 999);
+      if (difficulties.length > 0) q = q.in('difficulty', difficulties);
+      if (score_bands.length > 0)  q = q.in('score_band', score_bands);
 
-    if (difficulties.length > 0) q = q.in('difficulty', difficulties);
-    if (score_bands.length > 0)  q = q.in('score_band', score_bands);
+      const { data, error } = await q;
+      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-    const { data, error } = await q;
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-
-    allTax = allTax.concat(data || []);
-    if (!data || data.length < pageSize) break;
-    from += pageSize;
+      allTax = allTax.concat(data || []);
+      if (!data || data.length < 1000) break;
+      from += 1000;
+    }
   }
 
   // Filter by user restriction set (if any)

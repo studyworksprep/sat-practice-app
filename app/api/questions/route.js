@@ -41,36 +41,48 @@ export async function GET(request) {
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
 
   const supabase = createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
+
+  // Step 1: Auth + all non-user-dependent restriction queries in parallel
+  const step1 = [supabase.auth.getUser()];
+
+  // Search queries (don't need userId)
+  if (qText) {
+    const safe = qText.replace(/[%_]/g, '\\$&');
+    const pattern = `%${safe}%`;
+    step1.push(
+      supabase.from('questions').select('id, question_id').ilike('question_id', pattern).limit(2000),
+      supabase.from('question_versions').select('question_id, stem_html, stimulus_html')
+        .eq('is_current', true).or(`stem_html.ilike.${pattern},stimulus_html.ilike.${pattern}`).limit(2000),
+    );
+  }
+
+  // Domain/topic queries (don't need userId)
+  if (domainList.length > 0) {
+    step1.push(supabase.from('question_taxonomy').select('question_id').in('domain_name', domainList));
+  }
+  if (topicList.length > 0) {
+    step1.push(supabase.from('question_taxonomy').select('question_id').in('skill_code', topicList));
+  }
+
+  const step1Results = await Promise.all(step1);
+
+  const { data: auth, error: authErr } = step1Results[0];
   if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 });
   const user = auth?.user ?? null;
   const userId = user?.id ?? null;
 
-  // Build an ID restriction set (questions.id UUIDs).
+  // Build restriction set from step 1 results
   let restrictIds = null;
+  let s1idx = 1;
 
-  // 1) Full-text search restriction
+  // Search results
   if (qText) {
-    const safe = qText.replace(/[%_]/g, '\\$&');
-    const pattern = `%${safe}%`;
     const ids = new Set();
-
-    const { data: qrows, error: qErr } = await supabase
-      .from('questions')
-      .select('id, question_id')
-      .ilike('question_id', pattern)
-      .limit(2000);
-
+    const { data: qrows, error: qErr } = step1Results[s1idx++];
     if (qErr) return NextResponse.json({ error: qErr.message }, { status: 400 });
     (qrows || []).forEach((r) => r?.id && ids.add(r.id));
 
-    const { data: vrows, error: vErr } = await supabase
-      .from('question_versions')
-      .select('question_id, stem_html, stimulus_html')
-      .eq('is_current', true)
-      .or(`stem_html.ilike.${pattern},stimulus_html.ilike.${pattern}`)
-      .limit(2000);
-
+    const { data: vrows, error: vErr } = step1Results[s1idx++];
     if (vErr) return NextResponse.json({ error: vErr.message }, { status: 400 });
     (vrows || []).forEach((r) => r?.question_id && ids.add(r.question_id));
 
@@ -78,63 +90,17 @@ export async function GET(request) {
     if (restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
   }
 
-  // 2) marked_only restriction
-  if (marked_only) {
-    if (!userId) return NextResponse.json({ items: [], totalCount: 0 });
-
-    const { data: markedRows, error: markedErr } = await supabase
-      .from('question_status')
-      .select('question_id')
-      .eq('user_id', userId)
-      .eq('marked_for_review', true)
-      .limit(10000);
-
-    if (markedErr) return NextResponse.json({ error: markedErr.message }, { status: 400 });
-
-    const markedIds = (markedRows || []).map((r) => r.question_id).filter(Boolean);
-    restrictIds = intersect(restrictIds, markedIds);
-    if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
-  }
-
-  // 3) hide_broken — handled in the main query via .eq('is_broken', false)
-
-  // 4) wrong_only restriction (is_done=true AND last_is_correct=false)
-  if (wrong_only) {
-    if (!userId) return NextResponse.json({ items: [], totalCount: 0 });
-
-    const { data: wrongRows, error: wrongErr } = await supabase
-      .from('question_status')
-      .select('question_id')
-      .eq('user_id', userId)
-      .eq('is_done', true)
-      .eq('last_is_correct', false)
-      .limit(10000);
-
-    if (wrongErr) return NextResponse.json({ error: wrongErr.message }, { status: 400 });
-
-    const wrongIds = (wrongRows || []).map((r) => r.question_id).filter(Boolean);
-    restrictIds = intersect(restrictIds, wrongIds);
-    if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
-  }
-
-  // 5) Domain / topic restriction — pre-fetch taxonomy IDs so we can union domain+topic matches
+  // Domain/topic results
   if (domainList.length > 0 || topicList.length > 0) {
     const matchingIds = new Set();
 
     if (domainList.length > 0) {
-      const { data: drows, error: dErr } = await supabase
-        .from('question_taxonomy')
-        .select('question_id')
-        .in('domain_name', domainList);
+      const { data: drows, error: dErr } = step1Results[s1idx++];
       if (dErr) return NextResponse.json({ error: dErr.message }, { status: 400 });
       (drows || []).forEach((r) => r.question_id && matchingIds.add(r.question_id));
     }
-
     if (topicList.length > 0) {
-      const { data: trows, error: tErr } = await supabase
-        .from('question_taxonomy')
-        .select('question_id')
-        .in('skill_code', topicList);
+      const { data: trows, error: tErr } = step1Results[s1idx++];
       if (tErr) return NextResponse.json({ error: tErr.message }, { status: 400 });
       (trows || []).forEach((r) => r.question_id && matchingIds.add(r.question_id));
     }
@@ -143,6 +109,41 @@ export async function GET(request) {
     restrictIds = intersect(restrictIds, taxIds);
     if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
   }
+
+  // Step 2: User-specific restrictions in parallel (need userId)
+  if ((marked_only || wrong_only) && !userId) {
+    return NextResponse.json({ items: [], totalCount: 0 });
+  }
+
+  const step2 = [];
+  const step2Keys = [];
+  if (marked_only && userId) {
+    step2Keys.push('marked');
+    step2.push(
+      supabase.from('question_status').select('question_id')
+        .eq('user_id', userId).eq('marked_for_review', true).limit(10000)
+    );
+  }
+  if (wrong_only && userId) {
+    step2Keys.push('wrong');
+    step2.push(
+      supabase.from('question_status').select('question_id')
+        .eq('user_id', userId).eq('is_done', true).eq('last_is_correct', false).limit(10000)
+    );
+  }
+
+  if (step2.length > 0) {
+    const step2Results = await Promise.all(step2);
+    for (let i = 0; i < step2Results.length; i++) {
+      const { data: rows, error: err } = step2Results[i];
+      if (err) return NextResponse.json({ error: err.message }, { status: 400 });
+      const ids = (rows || []).map((r) => r.question_id).filter(Boolean);
+      restrictIds = intersect(restrictIds, ids);
+      if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
+    }
+  }
+
+  // hide_broken — handled in the main query via .eq('is_broken', false)
 
   // Main query
   let q = supabase
