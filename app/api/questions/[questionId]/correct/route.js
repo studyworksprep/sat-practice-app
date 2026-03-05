@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
 
 // POST /api/questions/:questionId/correct
 // Admin-only: update question content fields and flag as broken.
@@ -24,11 +24,15 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: 'Only admins can submit corrections' }, { status: 403 });
   }
 
+  // Use service-role client for writes so RLS does not block the updates.
+  // Auth + admin check above already gate access.
+  const admin = createServiceClient();
+
   const body = await request.json().catch(() => ({}));
   const { stimulus_html, stem_html, options, flag_broken } = body || {};
 
   // Get the current version
-  const { data: version, error: verErr } = await supabase
+  const { data: version, error: verErr } = await admin
     .from('question_versions')
     .select('id')
     .eq('question_id', questionId)
@@ -40,7 +44,7 @@ export async function POST(request, { params }) {
   // Fallback to newest version
   let versionId = version?.id;
   if (!versionId) {
-    const { data: fallback } = await supabase
+    const { data: fallback } = await admin
       .from('question_versions')
       .select('id')
       .eq('question_id', questionId)
@@ -60,7 +64,7 @@ export async function POST(request, { params }) {
   if (typeof stem_html === 'string') versionPatch.stem_html = stem_html;
 
   if (Object.keys(versionPatch).length > 0) {
-    const { error } = await supabase
+    const { error } = await admin
       .from('question_versions')
       .update(versionPatch)
       .eq('id', versionId);
@@ -71,7 +75,7 @@ export async function POST(request, { params }) {
   if (options && typeof options === 'object') {
     for (const [optionId, contentHtml] of Object.entries(options)) {
       if (typeof contentHtml !== 'string') continue;
-      const { error } = await supabase
+      const { error } = await admin
         .from('answer_options')
         .update({ content_html: contentHtml })
         .eq('id', optionId)
@@ -80,9 +84,9 @@ export async function POST(request, { params }) {
     }
   }
 
-  // Flag as broken via RPC
+  // Flag as broken via RPC (use service client to bypass RLS consistently)
   if (flag_broken !== false) {
-    const { error: brokenErr } = await supabase.rpc('set_question_broken', {
+    const { error: brokenErr } = await admin.rpc('set_question_broken', {
       question_uuid: questionId,
       broken: true,
     });
