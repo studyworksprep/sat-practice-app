@@ -460,7 +460,8 @@ label{
   gap: 8px;
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(17,24,39,0.18);
+  color: var(--text);
   background: rgba(0,0,0,0.04);
   cursor: pointer;
   user-select: none;
@@ -487,8 +488,9 @@ label{
   padding: 4px 10px;
   font-size: 12px;
   gap: 6px;
+  color: #1f2937;
   background: #fff;
-  border-color: rgba(0,0,0,0.2);
+  border-color: rgba(0,0,0,0.22);
 }
 
 .chip.sm.on{
@@ -533,7 +535,7 @@ label{
 }
 .filterInlineLabel{
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text);
   white-space: nowrap;
   flex: 0 0 80px;
 }
@@ -572,7 +574,7 @@ label{
 /* Small count badge next to domain/topic names */
 .filterCount{
   font-size: 10px;
-  color: var(--muted);
+  color: #374151;
   background: rgba(0,0,0,0.07);
   border-radius: 10px;
   padding: 1px 6px;
@@ -620,13 +622,13 @@ label{
 .domainChip.on{ background: var(--accent-soft); }
 
 /* Math domains = blue */
-.domainChip.math{ background: rgba(37,99,235,0.06); color: #1d4ed8; }
-.domainChip.math.on{ background: rgba(37,99,235,0.14); color: #1e40af; }
+.domainChip.math{ background: rgba(37,99,235,0.06); color: #1e3a8a; }
+.domainChip.math.on{ background: rgba(37,99,235,0.14); color: #1e3a8a; }
 .domainChip.math:not(.on):hover{ background: rgba(37,99,235,0.1); }
 
 /* R&W domains = orange */
-.domainChip.rw{ background: rgba(234,88,12,0.06); color: #c2410c; }
-.domainChip.rw.on{ background: rgba(234,88,12,0.14); color: #9a3412; }
+.domainChip.rw{ background: rgba(234,88,12,0.06); color: #9a3412; }
+.domainChip.rw.on{ background: rgba(234,88,12,0.14); color: #7c2d12; }
 .domainChip.rw:not(.on):hover{ background: rgba(234,88,12,0.1); }
 
 .domainChip input{ accent-color: var(--accent); flex-shrink: 0; }
@@ -647,14 +649,14 @@ label{
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #1f2937;
   margin-bottom: 12px;
   transition: background 0.12s, color 0.12s;
 }
 /* Math = blue */
 .categoryChip.math{
   background: rgba(37,99,235,0.09);
-  color: #1d4ed8;
+  color: #1e3a8a;
 }
 .categoryChip.math.on{
   background: rgba(37,99,235,0.17);
@@ -666,7 +668,7 @@ label{
 /* Reading & Writing = orange */
 .categoryChip.rw{
   background: rgba(234,88,12,0.08);
-  color: #c2410c;
+  color: #9a3412;
 }
 .categoryChip.rw.on{
   background: rgba(234,88,12,0.16);
@@ -696,7 +698,7 @@ label{
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--muted);
+  color: #1f2937;
   margin-bottom: 6px;
 }
 
