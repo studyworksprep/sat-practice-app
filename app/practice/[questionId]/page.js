@@ -723,8 +723,33 @@ export default function PracticeQuestionPage() {
     if (!data) return;
 
     const qTypeLocal = String(data?.version?.question_type || data?.question_type || '').toLowerCase();
-    const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
+    const isRetry = wrongOptionIds.length > 0 || wrongTexts.length > 0;
 
+    // Retries are checked client-side only (first attempt is what counts for accuracy)
+    if (isRetry) {
+      let retryCorrect = false;
+      if (qTypeLocal === 'mcq') {
+        retryCorrect = correctOptionId != null && String(selected) === String(correctOptionId);
+      } else if (qTypeLocal === 'spr') {
+        const accepted = formatCorrectText(correctText) || [];
+        const norm = (s) => String(s ?? '').trim().replace(/\u2212/g, '-').replace(/\s+/g, ' ').toLowerCase();
+        retryCorrect = accepted.some((a) => norm(a) === norm(responseText));
+      }
+
+      if (retryCorrect) {
+        setGotCorrect(true);
+      } else {
+        if (qTypeLocal === 'mcq' && selected != null) {
+          setWrongOptionIds((prev) => prev.includes(selected) ? prev : [...prev, selected]);
+        } else if (qTypeLocal === 'spr' && responseText.trim()) {
+          setWrongTexts((prev) => [...prev, responseText.trim()]);
+        }
+      }
+      return;
+    }
+
+    // First attempt: submit to API (this is the attempt that counts)
+    const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
     const body = {
       question_id: data.question_id,
       selected_option_id: qTypeLocal === 'mcq' ? selected : null,
@@ -752,7 +777,14 @@ export default function PracticeQuestionPage() {
         } else if (qTypeLocal === 'spr' && responseText.trim()) {
           setWrongTexts((prev) => [...prev, responseText.trim()]);
         }
-        // Update sessionResults for map badge (mark as attempted but not done)
+        // Store correct answer from API response for client-side retry checking
+        if (json.correct_option_id) {
+          setData((prev) => prev ? { ...prev, correct_option_id: json.correct_option_id } : prev);
+        }
+        if (json.correct_text) {
+          setData((prev) => prev ? { ...prev, correct_text: json.correct_text } : prev);
+        }
+        // Update sessionResults for map badge
         const qid = String(data.question_id);
         setSessionResults((prev) => ({
           ...prev,
