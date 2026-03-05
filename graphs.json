@@ -23,13 +23,13 @@
   },
   {
     "id": "system-of-equations",
-    "title": "System of Linear Equations",
+    "title": "e1259a5a",
     "expressions": [
-      "y = 2x + 1",
-      "y = -x + 7"
+      "y = 2x + 3",
+      "y = x + 6"
     ],
-    "xRange": [-2, 8],
-    "yRange": [-2, 10],
+    "xRange": [-4, 16],
+    "yRange": [-4, 20],
     "width": 600,
     "height": 400
   }
