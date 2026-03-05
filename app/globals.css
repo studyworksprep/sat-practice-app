@@ -466,6 +466,11 @@ label{
   border-color: rgba(0,0,0,0.2);
 }
 
+.chip.sm.on{
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
 /* Fixed-size circle for single-character labels (E/M/H, 1–7) */
 .chip.circle{
   padding: 0;
