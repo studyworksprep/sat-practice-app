@@ -11,12 +11,26 @@ export async function GET(_request, { params }) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: attempt, error: attErr } = await supabase
+  // Check if user is a teacher/admin who can view other students' results
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const isTeacherOrAdmin = profile?.role === 'teacher' || profile?.role === 'admin';
+
+  // Teachers/admins can view any attempt (RLS will filter); students only their own
+  const query = supabase
     .from('practice_test_attempts')
     .select('id, practice_test_id, user_id, status, metadata, started_at, finished_at')
-    .eq('id', attemptId)
-    .eq('user_id', user.id)
-    .maybeSingle();
+    .eq('id', attemptId);
+
+  if (!isTeacherOrAdmin) {
+    query.eq('user_id', user.id);
+  }
+
+  const { data: attempt, error: attErr } = await query.maybeSingle();
 
   if (attErr) return NextResponse.json({ error: attErr.message }, { status: 500 });
   if (!attempt) return NextResponse.json({ error: 'Not found' }, { status: 404 });

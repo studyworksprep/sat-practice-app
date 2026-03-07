@@ -37,6 +37,12 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
+  // Assignment state
+  const [assignments, setAssignments] = useState([]);
+  const [assignTeacher, setAssignTeacher] = useState('');
+  const [assignStudent, setAssignStudent] = useState('');
+  const [assignLoading, setAssignLoading] = useState(false);
+
   useEffect(() => {
     supabase
       .from('practice_tests')
@@ -48,6 +54,7 @@ export default function AdminPage() {
       });
 
     fetchUsers();
+    fetchAssignments();
   }, []);
 
   async function fetchUsers() {
@@ -61,6 +68,52 @@ export default function AdminPage() {
       showToast('danger', err.message);
     } finally {
       setUsersLoading(false);
+    }
+  }
+
+  async function fetchAssignments() {
+    try {
+      const res = await fetch('/api/admin/assignments');
+      const json = await res.json();
+      if (res.ok) setAssignments(json.assignments || []);
+    } catch {}
+  }
+
+  async function handleAssign() {
+    if (!assignTeacher || !assignStudent) return showToast('danger', 'Select both a teacher and a student.');
+    if (assignTeacher === assignStudent) return showToast('danger', 'Cannot assign a user to themselves.');
+    setAssignLoading(true);
+    try {
+      const res = await fetch('/api/admin/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: assignTeacher, student_id: assignStudent }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      showToast('ok', 'Student assigned.');
+      setAssignTeacher('');
+      setAssignStudent('');
+      fetchAssignments();
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setAssignLoading(false);
+    }
+  }
+
+  async function handleUnassign(teacherId, studentId) {
+    try {
+      const res = await fetch('/api/admin/assignments', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: teacherId, student_id: studentId }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      showToast('ok', 'Assignment removed.');
+      fetchAssignments();
+    } catch (err) {
+      showToast('danger', err.message);
     }
   }
 
@@ -294,6 +347,69 @@ export default function AdminPage() {
             <button className="btn" onClick={handleSaveScores} disabled={saving} style={{ marginTop: 8 }}>
               {saving ? 'Saving…' : 'Save Score Data'}
             </button>
+          </div>
+        )}
+      </section>
+
+      {/* ── Teacher-Student Assignments ────────────────────── */}
+      <section className="adminAssignSection">
+        <h2 className="h2" style={{ marginBottom: 16 }}>Teacher-Student Assignments</h2>
+
+        <div className="adminAssignGrid">
+          <label className="adminLabel">
+            Teacher
+            <select className="adminSelect" value={assignTeacher} onChange={(e) => setAssignTeacher(e.target.value)}>
+              <option value="">Select teacher…</option>
+              {profiles.filter(p => p.role === 'teacher' || p.role === 'admin').map(p => (
+                <option key={p.id} value={p.id}>{p.email}</option>
+              ))}
+            </select>
+          </label>
+          <label className="adminLabel">
+            Student
+            <select className="adminSelect" value={assignStudent} onChange={(e) => setAssignStudent(e.target.value)}>
+              <option value="">Select student…</option>
+              {profiles.filter(p => p.role === 'student' || p.role === 'practice').map(p => (
+                <option key={p.id} value={p.id}>{p.email}</option>
+              ))}
+            </select>
+          </label>
+          <button className="btn" onClick={handleAssign} disabled={assignLoading} style={{ marginBottom: 2 }}>
+            {assignLoading ? 'Assigning…' : 'Assign'}
+          </button>
+        </div>
+
+        {assignments.length > 0 && (
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <table className="adminAssignTable">
+              <thead>
+                <tr>
+                  <th>Teacher</th>
+                  <th>Student</th>
+                  <th style={{ width: 80 }} />
+                </tr>
+              </thead>
+              <tbody>
+                {assignments.map((a) => {
+                  const teacher = profiles.find(p => p.id === a.teacher_id);
+                  const student = profiles.find(p => p.id === a.student_id);
+                  return (
+                    <tr key={`${a.teacher_id}-${a.student_id}`}>
+                      <td>{teacher?.email || a.teacher_id}</td>
+                      <td>{student?.email || a.student_id}</td>
+                      <td>
+                        <button
+                          className="adminAssignRemove"
+                          onClick={() => handleUnassign(a.teacher_id, a.student_id)}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </section>
