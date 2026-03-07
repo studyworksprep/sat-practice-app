@@ -373,7 +373,14 @@ export default function TestSessionPage() {
       setModuleData(data);
       setCurrentIdx(0);
 
-      setAnswers({});
+      // Restore any saved answers from a previous session (Pause & Exit)
+      const ansKey = `pt_answers_${attemptId}_${data.subject_code}_${data.module_number}`;
+      let restored = {};
+      try {
+        const raw = localStorage.getItem(ansKey);
+        if (raw) restored = JSON.parse(raw);
+      } catch {}
+      setAnswers(restored);
 
       // Timer — use API value or fall back to SAT defaults (32 min RW, 35 min math)
       const isMathSubject = ['M', 'm', 'math', 'Math', 'MATH'].includes(data.subject_code);
@@ -433,7 +440,9 @@ export default function TestSessionPage() {
     clearInterval(timerRef.current);
 
     const elapsedKey = `pt_elapsed_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
+    const ansKey = `pt_answers_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
     localStorage.removeItem(elapsedKey);
+    localStorage.removeItem(ansKey);
 
     const answerList = (moduleData.questions || []).map((q) => ({
       question_version_id: q.question_version_id,
@@ -469,10 +478,18 @@ export default function TestSessionPage() {
   }
 
   function setAnswer(versionId, field, value) {
-    setAnswers((prev) => ({
-      ...prev,
-      [versionId]: { ...(prev[versionId] || {}), [field]: value },
-    }));
+    setAnswers((prev) => {
+      const next = {
+        ...prev,
+        [versionId]: { ...(prev[versionId] || {}), [field]: value },
+      };
+      // Persist to localStorage so answers survive Pause & Exit
+      if (moduleData) {
+        const key = `pt_answers_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
+        try { localStorage.setItem(key, JSON.stringify(next)); } catch {}
+      }
+      return next;
+    });
   }
 
   // ─── Drag: calculator divider ──────────────────────────────────────────────
