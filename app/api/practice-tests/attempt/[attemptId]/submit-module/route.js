@@ -127,7 +127,11 @@ export async function POST(request, { params }) {
           }
           return [t];
         };
-        is_correct = toList(ca.correct_text).some((a) => norm(a) === norm(ans.response_text));
+        is_correct = toList(ca.correct_text).some((a) => {
+          if (norm(a) === norm(ans.response_text)) return true;
+          const nA = parseFloat(a), nR = parseFloat(ans.response_text);
+          return !isNaN(nA) && !isNaN(nR) && nA === nR;
+        });
       } else if (ca.answer_type === 'number') {
         const parsed = parseFloat(ans.response_text);
         if (!isNaN(parsed)) {

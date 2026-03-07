@@ -103,7 +103,12 @@ export async function POST(request) {
       const accepted = toAnswerList(ca?.correct_text);
       const resp = norm(response_text);
 
-      is_correct = accepted.some((a) => norm(a) === resp);
+      is_correct = accepted.some((a) => {
+        if (norm(a) === resp) return true;
+        // Numeric equivalence: 0.88 should match .88, 3.0 should match 3, etc.
+        const nA = parseFloat(a), nR = parseFloat(response_text);
+        return !isNaN(nA) && !isNaN(nR) && nA === nR;
+      });
     }
 
     const { data: st, error: stErr } = stResult;
