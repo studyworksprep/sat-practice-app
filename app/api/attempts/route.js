@@ -42,7 +42,7 @@ export async function POST(request) {
         .maybeSingle(),
       supabase
         .from('question_status')
-        .select('attempts_count, correct_attempts_count, marked_for_review, status_json')
+        .select('attempts_count, correct_attempts_count, marked_for_review, status_json, is_done, last_is_correct')
         .eq('user_id', user.id)
         .eq('question_id', question_id)
         .maybeSingle(),
@@ -137,7 +137,7 @@ export async function POST(request) {
             attempts_count,
             correct_attempts_count,
             last_attempt_at: new Date().toISOString(),
-            last_is_correct: is_correct,
+            last_is_correct: st?.is_done ? st.last_is_correct : is_correct,
             status_json: (() => {
               const prev = (st?.status_json && typeof st.status_json === 'object') ? st.status_json : {};
               const extra = {};

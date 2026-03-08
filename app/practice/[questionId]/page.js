@@ -783,6 +783,7 @@ export default function PracticeQuestionPage() {
     }
 
     // First attempt: submit to API (this is the attempt that counts)
+    const wasDone = Boolean(status?.is_done);
     setSubmitting(true);
     const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
     const body = {
@@ -824,10 +825,13 @@ export default function PracticeQuestionPage() {
 
       if (json.is_correct) {
         setGotCorrect(true);
-        setSessionResults((prev) => ({
-          ...prev,
-          [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: true },
-        }));
+        // Only update session tracking on the true first attempt
+        if (!wasDone) {
+          setSessionResults((prev) => ({
+            ...prev,
+            [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: true },
+          }));
+        }
       } else {
         // Track the wrong answer and let student retry
         if (qTypeLocal === 'mcq' && selected != null) {
@@ -835,10 +839,13 @@ export default function PracticeQuestionPage() {
         } else if (qTypeLocal === 'spr' && responseText.trim()) {
           setWrongTexts((prev) => [...prev, responseText.trim()]);
         }
-        setSessionResults((prev) => ({
-          ...prev,
-          [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: false },
-        }));
+        // Only update session tracking on the true first attempt
+        if (!wasDone) {
+          setSessionResults((prev) => ({
+            ...prev,
+            [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: false },
+          }));
+        }
       }
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
