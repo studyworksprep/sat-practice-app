@@ -47,6 +47,8 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   useEffect(() => {
     if (countsInitialMount.current) { countsInitialMount.current = false; return; }
 
+    const controller = new AbortController();
+
     const p = new URLSearchParams();
     if (state.difficulties.length) p.set('difficulties', state.difficulties.join(','));
     if (state.score_bands.length)  p.set('score_bands',  state.score_bands.join(','));
@@ -54,10 +56,12 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     if (state.marked_only)         p.set('marked_only',  'true');
     if (!state.show_broken)        p.set('hide_broken',  'true');
 
-    fetch('/api/domain-counts?' + p.toString())
+    fetch('/api/domain-counts?' + p.toString(), { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => { if (data && !data.error) setCounts(data); })
       .catch(() => {});
+
+    return () => controller.abort();
   }, [state.difficulties, state.score_bands, state.wrong_only, state.marked_only, state.show_broken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function set(k, v) { setState((prev) => ({ ...prev, [k]: v })); }
