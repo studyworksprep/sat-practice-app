@@ -88,7 +88,7 @@ export default function TeacherReviewPage() {
     const qs = new URLSearchParams();
     qs.set('studentId', studentId);
     if (sid) qs.set('sid', sid);
-    const t = total ?? Number(searchParams.get('t')) || 0;
+    const t = total ?? (Number(searchParams.get('t')) || 0);
     qs.set('t', String(t));
     qs.set('i', String(targetIndex));
     return `/teacher/review/${targetId}?${qs.toString()}`;
