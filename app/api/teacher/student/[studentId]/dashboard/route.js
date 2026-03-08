@@ -164,7 +164,7 @@ export async function GET(_request, { params }) {
 
   const sessions = [];
   let currentSession = null;
-  const SESSION_GAP_MS = 30 * 60 * 1000;
+  const SESSION_GAP_MS = 2 * 60 * 60 * 1000;
   for (const att of recentAttempts || []) {
     const ts = new Date(att.created_at).getTime();
     if (!currentSession || (currentSession.lastTs - ts) > SESSION_GAP_MS) {
