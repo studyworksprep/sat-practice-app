@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createClient } from '../../lib/supabase/browser';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
@@ -248,8 +249,26 @@ function WelcomePanel({ role }) {
   );
 }
 
+const DIFF_CLASS = { 1: 'easy', 2: 'medium', 3: 'hard' };
+
+// ─── Session tile (clickable for teacher review) ────────
+function TchSessionTile({ q, index, onClick }) {
+  const diffClass = DIFF_CLASS[q.difficulty] || '';
+  return (
+    <button
+      className={`dbSessionTile ${q.is_correct ? 'correct' : 'incorrect'} ${diffClass}`}
+      onClick={onClick}
+      title={q.skill_name || q.domain_name || ''}
+    >
+      <span className="dbSessionTileNum">{index + 1}</span>
+      <span className="dbSessionTileIcon">{q.is_correct ? '\u2713' : '\u2717'}</span>
+    </button>
+  );
+}
+
 // ─── Student detail panel ────────────────────────────────
 function StudentDetail({ studentId }) {
+  const router = useRouter();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -342,6 +361,17 @@ function StudentDetail({ studentId }) {
               const total = questions.length;
               const p = pct(correct, total);
 
+              function handleTileClick(qIndex) {
+                const ids = questions.map(q => q.question_id);
+                const sid = `teacher_review_${Date.now()}_${i}`;
+                localStorage.setItem(`teacher_review_session_${sid}`, ids.join(','));
+
+                const qid = questions[qIndex].question_id;
+                router.push(
+                  `/teacher/review/${encodeURIComponent(qid)}?studentId=${studentId}&sid=${sid}&t=${ids.length}&i=${qIndex + 1}`
+                );
+              }
+
               return (
                 <div key={i} className="tchSessionCard">
                   <div className="tchSessionHeader">
@@ -351,12 +381,13 @@ function StudentDetail({ studentId }) {
                       {p !== null && <span style={{ color: pctColor(p), fontWeight: 600 }}> ({p}%)</span>}
                     </span>
                   </div>
-                  <div className="tchSessionTiles">
+                  <div className="dbSessionTiles">
                     {questions.map((q, qi) => (
-                      <span
+                      <TchSessionTile
                         key={qi}
-                        className={`tchSessionTile ${q.is_correct ? 'correct' : 'incorrect'}`}
-                        title={q.skill_name || q.domain_name || ''}
+                        q={q}
+                        index={qi}
+                        onClick={() => handleTileClick(qi)}
                       />
                     ))}
                   </div>
