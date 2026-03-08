@@ -27,6 +27,8 @@ function formatCorrectText(ct) {
   return [String(ct)];
 }
 
+const DIFF_CLASS = { 1: 'diffEasy', 2: 'diffMed', 3: 'diffHard' };
+
 export default function TeacherReviewPage() {
   const { questionId } = useParams();
   const router = useRouter();
@@ -41,6 +43,7 @@ export default function TeacherReviewPage() {
 
   const [total, setTotal] = useState(null);
   const [index1, setIndex1] = useState(null);
+  const [showMap, setShowMap] = useState(false);
 
   // Read session IDs from localStorage
   function getSessionIds() {
@@ -51,6 +54,16 @@ export default function TeacherReviewPage() {
         const ids = raw.split(',').filter(Boolean);
         if (ids.length > 0) return ids;
       }
+    } catch {}
+    return null;
+  }
+
+  // Read session metadata from localStorage
+  function getSessionMeta() {
+    if (!sid) return null;
+    try {
+      const raw = localStorage.getItem(`teacher_review_meta_${sid}`);
+      if (raw) return JSON.parse(raw);
     } catch {}
     return null;
   }
@@ -83,6 +96,21 @@ export default function TeacherReviewPage() {
     if (ids) setTotal(ids.length);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sid]);
+
+  // Close map on Escape
+  useEffect(() => {
+    if (!showMap) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setShowMap(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showMap]);
 
   function buildHref(targetId, targetIndex) {
     const qs = new URLSearchParams();
@@ -139,7 +167,7 @@ export default function TeacherReviewPage() {
     return (
       <main className="container" style={{ paddingTop: 40 }}>
         <p style={{ color: 'var(--danger)' }}>{error}</p>
-        <button className="btn secondary" onClick={() => router.back()}>Go Back</button>
+        <Link className="btn secondary" href="/teacher">Go Back</Link>
       </main>
     );
   }
@@ -242,9 +270,9 @@ export default function TeacherReviewPage() {
       <button className="btn secondary" onClick={() => goToIndex(index1 + 1)} disabled={nextDisabled}>
         Next
       </button>
-      <button className="btn secondary" onClick={() => router.back()}>
+      <Link className="btn secondary" href="/teacher">
         Back to Dashboard
-      </button>
+      </Link>
     </div>
   );
 
@@ -254,6 +282,93 @@ export default function TeacherReviewPage() {
       <div className="card subcard" style={{ marginTop: 16 }}>
         <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 13, color: 'var(--muted)' }}>Explanation</div>
         <HtmlBlock className="prose" html={version.rationale_html} />
+      </div>
+    );
+  };
+
+  // Question map data from localStorage
+  const mapMeta = getSessionMeta();
+  const mapIds = getSessionIds();
+
+  const QuestionMapModal = () => {
+    if (!showMap || !mapIds) return null;
+    return (
+      <div
+        className="modalOverlay"
+        onClick={() => setShowMap(false)}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Question map"
+      >
+        <div className="modalCard" onClick={(e) => e.stopPropagation()}>
+          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'grid', gap: 4 }}>
+              <div className="h2" style={{ margin: 0 }}>Question Map</div>
+              <div className="muted small">
+                {total != null ? (
+                  <><span className="kbd">{total}</span> questions in this session</>
+                ) : null}
+              </div>
+            </div>
+            <button className="btn secondary" onClick={() => setShowMap(false)}>Close</button>
+          </div>
+
+          <hr />
+
+          <div className="row" style={{ justifyContent: 'flex-end', marginBottom: 4 }}>
+            <div className="pill">
+              <span className="muted">Current</span> <span className="kbd">{index1 ?? '—'}</span>
+            </div>
+          </div>
+
+          <div className="questionGrid" style={{ marginTop: 8 }}>
+            {mapIds.map((id, pos) => {
+              const i = pos + 1;
+              const active = index1 != null && i === index1;
+              const meta = mapMeta?.[pos];
+              const diff = Number(meta?.difficulty);
+              const diffClass = DIFF_CLASS[diff] || 'diffUnknown';
+              const isCorrect = meta?.is_correct === true;
+              const isIncorrect = meta?.is_correct === false;
+
+              return (
+                <button
+                  key={String(id)}
+                  type="button"
+                  className={`mapItem ${diffClass}${active ? ' active' : ''}`}
+                  onClick={() => {
+                    setShowMap(false);
+                    router.push(buildHref(id, i));
+                  }}
+                  title={meta?.skill_name || meta?.domain_name || `Go to #${i}`}
+                >
+                  <span className="mapNum">{i}</span>
+
+                  {isCorrect || isIncorrect ? (
+                    <span className="mapIconCorner mapIconRight" aria-hidden="true">
+                      {isCorrect ? (
+                        <span className="mapIconBadge correct" title="Correct">
+                          <svg viewBox="0 0 24 24" width="14" height="14">
+                            <path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                          </svg>
+                        </span>
+                      ) : (
+                        <span className="mapIconBadge incorrect" title="Incorrect">
+                          <svg viewBox="0 0 24 24" width="14" height="14">
+                            <path
+                              fill="currentColor"
+                              d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3 10.6 10.6 16.9 4.3z"
+                            />
+                          </svg>
+                        </span>
+                      )}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     );
   };
@@ -276,7 +391,18 @@ export default function TeacherReviewPage() {
           </div>
         </div>
 
-        {total != null && index1 != null && (
+        {total != null && index1 != null && mapIds && (
+          <button
+            type="button"
+            className="qmapTrigger"
+            onClick={() => setShowMap(true)}
+            aria-label="Open question map"
+          >
+            <span className="qmapTriggerCount">{index1} / {total}</span>
+            <span className="qmapTriggerChevron" aria-hidden="true">&#9662;</span>
+          </button>
+        )}
+        {total != null && index1 != null && !mapIds && (
           <span className="muted small">{index1} of {total}</span>
         )}
       </div>
@@ -291,6 +417,12 @@ export default function TeacherReviewPage() {
         )}
         {data?.taxonomy?.difficulty != null && (
           <span className="pill"><span className="muted">Difficulty</span> <span className="kbd">{data.taxonomy.difficulty}</span></span>
+        )}
+        {data?.taxonomy?.score_band && (
+          <span className="pill"><span className="muted">Score Band</span> <span className="kbd">{data.taxonomy.score_band}</span></span>
+        )}
+        {data?.source_external_id && (
+          <span className="pill"><span className="muted">External ID</span> <span className="kbd">{data.source_external_id}</span></span>
         )}
       </div>
 
@@ -323,6 +455,8 @@ export default function TeacherReviewPage() {
           <Explanation />
         </div>
       )}
+
+      <QuestionMapModal />
     </main>
   );
 }

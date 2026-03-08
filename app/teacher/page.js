@@ -365,6 +365,15 @@ function StudentDetail({ studentId }) {
                 const ids = questions.map(q => q.question_id);
                 const sid = `teacher_review_${Date.now()}_${i}`;
                 localStorage.setItem(`teacher_review_session_${sid}`, ids.join(','));
+                // Store question metadata for the review map
+                const meta = questions.map(q => ({
+                  question_id: q.question_id,
+                  is_correct: q.is_correct,
+                  difficulty: q.difficulty,
+                  domain_name: q.domain_name || '',
+                  skill_name: q.skill_name || '',
+                }));
+                localStorage.setItem(`teacher_review_meta_${sid}`, JSON.stringify(meta));
 
                 const qid = questions[qIndex].question_id;
                 router.push(
