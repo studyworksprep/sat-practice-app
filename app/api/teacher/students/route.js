@@ -24,7 +24,7 @@ export async function GET() {
     // Admin sees all active students
     const { data: allStudents } = await supabase
       .from('profiles')
-      .select('id, email, role, created_at')
+      .select('id, email, role, created_at, first_name, last_name')
       .in('role', ['student', 'practice'])
       .neq('is_active', false)
       .order('email', { ascending: true });
@@ -62,7 +62,7 @@ export async function GET() {
 
   const { data: students } = await supabase
     .from('profiles')
-    .select('id, email, role, created_at')
+    .select('id, email, role, created_at, first_name, last_name')
     .in('id', studentIds)
     .neq('is_active', false)
     .order('email', { ascending: true });

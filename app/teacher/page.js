@@ -18,9 +18,17 @@ function pctColor(p) {
   return p >= 70 ? 'var(--success)' : p >= 50 ? '#ca8a04' : 'var(--danger)';
 }
 
-function displayName(email) {
-  if (!email) return 'Student';
-  const local = email.split('@')[0];
+function displayName(s) {
+  if (!s) return 'Student';
+  if (typeof s === 'string') {
+    const local = s.split('@')[0];
+    return local.replace(/[._-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+  if (s.first_name || s.last_name) {
+    return [s.first_name, s.last_name].filter(Boolean).join(' ');
+  }
+  if (!s.email) return 'Student';
+  const local = s.email.split('@')[0];
   return local.replace(/[._-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -297,34 +305,58 @@ function StudentDetail({ studentId }) {
       {/* Header */}
       <div className="tchStudentHeader">
         <div>
-          <h2 className="h1" style={{ margin: 0 }}>{displayName(student.email)}</h2>
+          <h2 className="h1" style={{ margin: 0 }}>{displayName(student)}</h2>
           <p className="muted small" style={{ margin: 0 }}>{student.email}</p>
         </div>
       </div>
 
-      {/* Stats row */}
-      <div className="tchStatsRow">
-        <div className="card tchStatCard">
-          <div className="tchStatValue" style={{ color: 'var(--accent)' }}>
-            {data.highestTestScore ?? '—'}
+      {/* Profile + Stats combined card */}
+      <div className="card tchOverviewCard">
+        {(student.high_school || student.graduation_year || student.target_sat_score) && (
+          <div className="tchProfileRow">
+            {student.high_school && (
+              <div className="tchProfileItem">
+                <span className="tchProfileLabel">School</span>
+                <span className="tchProfileValue">{student.high_school}</span>
+              </div>
+            )}
+            {student.graduation_year && (
+              <div className="tchProfileItem">
+                <span className="tchProfileLabel">Graduation</span>
+                <span className="tchProfileValue">{student.graduation_year}</span>
+              </div>
+            )}
+            {student.target_sat_score && (
+              <div className="tchProfileItem">
+                <span className="tchProfileLabel">Target Score</span>
+                <span className="tchProfileValue">{student.target_sat_score}</span>
+              </div>
+            )}
           </div>
-          <div className="tchStatLabel">Highest Score</div>
-        </div>
-        <div className="card tchStatCard">
-          <div className="tchStatValue">{data.totalAttempted}</div>
-          <div className="tchStatLabel">Questions Done</div>
-        </div>
-        <div className="card tchStatCard">
-          <div className="tchStatValue" style={{ color: pctColor(data.recentAccuracy) }}>
-            {data.recentAccuracy != null ? `${data.recentAccuracy}%` : '—'}
+        )}
+        <div className="tchStatsRow">
+          <div className="tchStatCol">
+            <div className="tchStatValue" style={{ color: 'var(--accent)' }}>
+              {data.highestTestScore ?? '—'}
+            </div>
+            <div className="tchStatLabel">Highest Score</div>
           </div>
-          <div className="tchStatLabel">Recent Accuracy</div>
-        </div>
-        <div className="card tchStatCard">
-          <div className="tchStatValue" style={{ color: 'var(--danger)' }}>
-            {data.weakest ? `${data.weakest.weightedPct}%` : '—'}
+          <div className="tchStatCol">
+            <div className="tchStatValue">{data.totalAttempted}</div>
+            <div className="tchStatLabel">Questions Done</div>
           </div>
-          <div className="tchStatLabel">{data.weakest ? data.weakest.skill_name : 'Weakest'}</div>
+          <div className="tchStatCol">
+            <div className="tchStatValue" style={{ color: pctColor(data.recentAccuracy) }}>
+              {data.recentAccuracy != null ? `${data.recentAccuracy}%` : '—'}
+            </div>
+            <div className="tchStatLabel">Recent Accuracy</div>
+          </div>
+          <div className="tchStatCol">
+            <div className="tchStatValue" style={{ color: 'var(--danger)' }}>
+              {data.weakest ? `${data.weakest.weightedPct}%` : '—'}
+            </div>
+            <div className="tchStatLabel">{data.weakest ? data.weakest.skill_name : 'Weakest'}</div>
+          </div>
         </div>
       </div>
 
@@ -444,7 +476,7 @@ export default function TeacherPage() {
     if (!search) return true;
     const q = search.toLowerCase();
     return (s.email || '').toLowerCase().includes(q) ||
-      displayName(s.email).toLowerCase().includes(q);
+      displayName(s).toLowerCase().includes(q);
   });
 
   return (
@@ -479,10 +511,10 @@ export default function TeacherPage() {
                 onClick={() => setSelectedId(s.id)}
               >
                 <div className="tchStudentAvatar">
-                  {(s.email || '?')[0].toUpperCase()}
+                  {(s.first_name || s.email || '?')[0].toUpperCase()}
                 </div>
                 <div className="tchStudentInfo">
-                  <span className="tchStudentName">{displayName(s.email)}</span>
+                  <span className="tchStudentName">{displayName(s)}</span>
                   <span className="tchStudentEmail">{s.email}</span>
                 </div>
               </button>
