@@ -172,7 +172,8 @@ export async function GET(_request, { params }) {
       sessions.push(currentSession);
     }
     currentSession.lastTs = ts;
-    if (!currentSession.questions.find(q => q.question_id === att.question_id)) {
+    const existing = currentSession.questions.find(q => q.question_id === att.question_id);
+    if (!existing) {
       const tax = taxMap[att.question_id];
       currentSession.questions.push({
         question_id: att.question_id,
@@ -182,6 +183,9 @@ export async function GET(_request, { params }) {
         skill_name: tax?.skill_name || null,
         difficulty: tax?.difficulty ?? null,
       });
+    } else {
+      // Iterating newest-first: older attempt is the true first attempt, use its result
+      existing.is_correct = att.is_correct;
     }
   }
   for (const s of sessions) {
