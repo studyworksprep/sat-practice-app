@@ -25,6 +25,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   const [randomize,  setRandomize]  = useState(false);
   const [starting,   setStarting]   = useState(false);
   const countsInitialMount = useRef(true);
+  const initialCounts = useRef(null);
 
   // Propagate state changes to parent
   useEffect(() => { onChange?.(state); }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -37,15 +38,35 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
       if (res.ok) {
         setAllDomains(json.domains || []);
         setAllTopics(json.topics  || []);
-        if (json.counts) setCounts(json.counts);
+        if (json.counts) {
+          setCounts(json.counts);
+          initialCounts.current = json.counts;
+        }
       }
     })();
   }, []);
 
   // Re-fetch counts when contextual filters change (difficulty/score_band/flags).
   // Skips the initial mount — unfiltered counts already come from /api/filters above.
+  // When no contextual filters are active, restores the initial counts instead of
+  // re-fetching, which avoids race conditions and endpoint discrepancies.
   useEffect(() => {
     if (countsInitialMount.current) { countsInitialMount.current = false; return; }
+
+    const hasContextualFilter =
+      state.difficulties.length > 0 ||
+      state.score_bands.length  > 0 ||
+      state.wrong_only ||
+      state.marked_only ||
+      state.show_broken;
+
+    // No contextual filters active — restore the initial unfiltered counts
+    if (!hasContextualFilter && initialCounts.current) {
+      setCounts(initialCounts.current);
+      return;
+    }
+
+    const controller = new AbortController();
 
     const p = new URLSearchParams();
     if (state.difficulties.length) p.set('difficulties', state.difficulties.join(','));
@@ -54,10 +75,14 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     if (state.marked_only)         p.set('marked_only',  'true');
     if (!state.show_broken)        p.set('hide_broken',  'true');
 
-    fetch('/api/domain-counts?' + p.toString())
+    fetch('/api/domain-counts?' + p.toString(), { signal: controller.signal })
       .then((r) => r.json())
-      .then((data) => { if (data && !data.error) setCounts(data); })
+      .then((data) => {
+        if (data && !data.error && Object.keys(data).length > 0) setCounts(data);
+      })
       .catch(() => {});
+
+    return () => controller.abort();
   }, [state.difficulties, state.score_bands, state.wrong_only, state.marked_only, state.show_broken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function set(k, v) { setState((prev) => ({ ...prev, [k]: v })); }

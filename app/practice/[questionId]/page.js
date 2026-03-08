@@ -1310,19 +1310,21 @@ export default function PracticeQuestionPage() {
             Next
           </button>
 
-          <button
-            type="button"
-            className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
-            onClick={openBrokenFlow}
-            title={data?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
-          >
-            <span className="brokenBtnIcon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="14" height="14">
-                <path fill="currentColor" d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              </svg>
-            </span>
-            {data?.is_broken ? 'Broken' : 'Broken?'}
-          </button>
+          {(userRole === 'admin' || userRole === 'teacher') ? (
+            <button
+              type="button"
+              className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
+              onClick={openBrokenFlow}
+              title={data?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+            >
+              <span className="brokenBtnIcon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                  <path fill="currentColor" d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              </span>
+              {data?.is_broken ? 'Broken' : 'Broken?'}
+            </button>
+          ) : null}
         </div>
       </div>
     </>
@@ -1392,19 +1394,21 @@ export default function PracticeQuestionPage() {
           Next
         </button>
 
-        <button
-          type="button"
-          className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
-          onClick={openBrokenFlow}
-          title={data?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
-        >
-          <span className="brokenBtnIcon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="14" height="14">
-              <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M5 3v18M5 3h14l-4 6 4 6H5" />
-            </svg>
-          </span>
-          {data?.is_broken ? 'Broken' : 'Broken?'}
-        </button>
+        {(userRole === 'admin' || userRole === 'teacher') ? (
+          <button
+            type="button"
+            className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
+            onClick={openBrokenFlow}
+            title={data?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+          >
+            <span className="brokenBtnIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14">
+                <path fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M5 3v18M5 3h14l-4 6 4 6H5" />
+              </svg>
+            </span>
+            {data?.is_broken ? 'Broken' : 'Broken?'}
+          </button>
+        ) : null}
       </div>
     </>
   );
