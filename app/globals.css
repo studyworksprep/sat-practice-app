@@ -1314,7 +1314,7 @@ hr{
   display: grid;
   grid-template-columns: 1fr 420px;
   gap: 48px;
-  align-items: center;
+  align-items: start;
   max-width: 960px;
   width: 100%;
 }
