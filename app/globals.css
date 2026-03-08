@@ -1440,6 +1440,38 @@ hr{
   text-underline-offset: 2px;
 }
 
+/* Password field with toggle */
+.passwordWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.passwordWrap .input {
+  flex: 1;
+  padding-right: 40px;
+}
+.passwordToggle {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.passwordToggle:hover {
+  color: var(--text);
+}
+.forgotLink {
+  display: block;
+  text-align: right;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
 /* ===============================
    Dashboard
 ================================ */
