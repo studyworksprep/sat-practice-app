@@ -4032,3 +4032,335 @@ hr{
   text-align: center;
   letter-spacing: 0.02em;
 }
+
+/* ===============================
+   Dashboard: More Statistics link
+================================ */
+
+.dbMoreStatsLink{
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dbMoreStatsLink:hover{
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+
+/* ===============================
+   Detailed Statistics Page
+================================ */
+
+.stMain{ padding-bottom: 60px; }
+
+.stHeader{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stHeader .h1{
+  margin: 0;
+  font-size: var(--title-1);
+  font-weight: 700;
+}
+
+/* ── Overview stat cards ── */
+
+.stOverviewRow{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.stOverviewCard{
+  text-align: center;
+  padding: 20px 14px;
+}
+
+.stOverviewValue{
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.stOverviewLabel{
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+}
+
+/* ── Two-column grid ── */
+
+.stTwoCol{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+/* ── Bar stat row ── */
+
+.stBar{
+  display: grid;
+  grid-template-columns: 140px 1fr 48px;
+  align-items: center;
+  gap: 10px;
+}
+
+.stBarLabel{
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.stBarTrack{
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.stBarFill{
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.stBarValue{
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ── Time display ── */
+
+.stTimeRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stTimeRow:last-child{ border-bottom: none; }
+
+.stTimeLabel{
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stTimeValue{
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Trend chart ── */
+
+.stTrendChart{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stTrendBars{
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 140px;
+  padding: 0 4px;
+}
+
+.stTrendCol{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.stTrendBarWrap{
+  height: 120px;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.stTrendBar{
+  width: 100%;
+  min-width: 6px;
+  max-width: 40px;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease;
+  margin: 0 auto;
+  cursor: default;
+}
+
+.stTrendBar:hover{
+  opacity: 0.8;
+}
+
+.stTrendLabel{
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
+
+.stTrendAxis{
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  padding: 0 4px;
+  border-top: 1px solid var(--border);
+  padding-top: 4px;
+}
+
+/* ── Mastery table ── */
+
+.stMasteryGrid{
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 70px 70px 100px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.stMasteryHeader{
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.stMasteryRow{
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+.stMasteryRow:last-child{ border-bottom: none; }
+
+.stMasterySkill{
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stMiniBar{
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.06);
+  overflow: hidden;
+  width: 60px;
+}
+
+.stMiniBarFill{
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* ── Suggestion rows ── */
+
+.stSuggestionRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stSuggestionRow:last-child{ border-bottom: none; }
+
+/* ── Test score table ── */
+
+.stTestGrid{
+  display: grid;
+  grid-template-columns: 1.5fr 80px 60px 60px 60px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+}
+
+.stTestHeader{
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.stTestRow{
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  border-radius: 6px;
+  transition: background 0.12s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.stTestRow:hover{
+  background: var(--accent-soft);
+}
+
+.stTestRow:last-child{ border-bottom: none; }
+
+.stTestName{
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stTestBarCell{
+  display: flex;
+  align-items: center;
+}
+
+/* ── Responsive: stats page ── */
+
+@media (max-width: 768px){
+  .stOverviewRow{
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stTwoCol{
+    grid-template-columns: 1fr;
+  }
+  .stMasteryGrid{
+    grid-template-columns: 1.5fr 1fr 50px 50px 80px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  .stTestGrid{
+    grid-template-columns: 1fr 60px 50px 50px 50px;
+  }
+  .stTestBarCell{ display: none; }
+  .stBar{
+    grid-template-columns: 100px 1fr 40px;
+  }
+}
