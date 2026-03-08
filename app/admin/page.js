@@ -37,6 +37,21 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
+  // Assignment state
+  const [assignments, setAssignments] = useState([]);
+  const [assignTeacher, setAssignTeacher] = useState('');
+  const [assignStudent, setAssignStudent] = useState('');
+  const [assignLoading, setAssignLoading] = useState(false);
+
+  // Teacher code state
+  const [teacherCodes, setTeacherCodes] = useState([]);
+  const [newCodeValue, setNewCodeValue] = useState('');
+  const [codeLoading, setCodeLoading] = useState(false);
+  const [showTeacherCodes, setShowTeacherCodes] = useState(false);
+
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // user id pending confirmation
+
   useEffect(() => {
     supabase
       .from('practice_tests')
@@ -48,6 +63,8 @@ export default function AdminPage() {
       });
 
     fetchUsers();
+    fetchAssignments();
+    fetchTeacherCodes();
   }, []);
 
   async function fetchUsers() {
@@ -61,6 +78,60 @@ export default function AdminPage() {
       showToast('danger', err.message);
     } finally {
       setUsersLoading(false);
+    }
+  }
+
+  async function fetchAssignments() {
+    try {
+      const res = await fetch('/api/admin/assignments');
+      const json = await res.json();
+      if (res.ok) setAssignments(json.assignments || []);
+    } catch {}
+  }
+
+  async function fetchTeacherCodes() {
+    try {
+      const res = await fetch('/api/admin/teacher-codes');
+      const json = await res.json();
+      if (res.ok) setTeacherCodes(json.codes || []);
+    } catch {}
+  }
+
+  async function handleAssign() {
+    if (!assignTeacher || !assignStudent) return showToast('danger', 'Select both a teacher and a student.');
+    if (assignTeacher === assignStudent) return showToast('danger', 'Cannot assign a user to themselves.');
+    setAssignLoading(true);
+    try {
+      const res = await fetch('/api/admin/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: assignTeacher, student_id: assignStudent }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      showToast('ok', 'Student assigned.');
+      setAssignTeacher('');
+      setAssignStudent('');
+      fetchAssignments();
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setAssignLoading(false);
+    }
+  }
+
+  async function handleUnassign(teacherId, studentId) {
+    try {
+      const res = await fetch('/api/admin/assignments', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: teacherId, student_id: studentId }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      showToast('ok', 'Assignment removed.');
+      fetchAssignments();
+    } catch (err) {
+      showToast('danger', err.message);
     }
   }
 
@@ -80,6 +151,74 @@ export default function AdminPage() {
       if (!res.ok) throw new Error(json.error || 'Failed to update role');
       setProfiles((prev) => prev.map((p) => p.id === userId ? { ...p, role: newRole } : p));
       showToast('ok', 'Role updated.');
+    } catch (err) {
+      showToast('danger', err.message);
+    }
+  }
+
+  async function handleToggleActive(userId, currentlyActive) {
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, is_active: !currentlyActive }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setProfiles((prev) => prev.map((p) => p.id === userId ? { ...p, is_active: !currentlyActive } : p));
+      showToast('ok', !currentlyActive ? 'Account activated.' : 'Account set to inactive.');
+    } catch (err) {
+      showToast('danger', err.message);
+    }
+  }
+
+  async function handleDeleteUser(userId) {
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setProfiles((prev) => prev.filter((p) => p.id !== userId));
+      setDeleteConfirm(null);
+      showToast('ok', 'Account permanently deleted.');
+    } catch (err) {
+      showToast('danger', err.message);
+    }
+  }
+
+  async function handleCreateCode() {
+    setCodeLoading(true);
+    try {
+      const res = await fetch('/api/admin/teacher-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCodeValue ? { code: newCodeValue } : {}),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      showToast('ok', `Teacher code "${json.code.code}" created.`);
+      setNewCodeValue('');
+      fetchTeacherCodes();
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setCodeLoading(false);
+    }
+  }
+
+  async function handleRevokeCode(id) {
+    try {
+      const res = await fetch('/api/admin/teacher-codes', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      showToast('ok', 'Teacher code revoked.');
+      fetchTeacherCodes();
     } catch (err) {
       showToast('danger', err.message);
     }
@@ -202,12 +341,14 @@ export default function AdminPage() {
                 <tr>
                   <th>Email</th>
                   <th>Role</th>
+                  <th>Status</th>
                   <th>Joined</th>
+                  <th style={{ width: 100 }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {profiles.map((p) => (
-                  <tr key={p.id}>
+                  <tr key={p.id} style={p.is_active === false ? { opacity: 0.55 } : undefined}>
                     <td className="adminTableEmail">{p.email || '—'}</td>
                     <td>
                       <select
@@ -221,11 +362,166 @@ export default function AdminPage() {
                         ))}
                       </select>
                     </td>
+                    <td>
+                      <button
+                        className="adminStatusToggle"
+                        onClick={() => handleToggleActive(p.id, p.is_active !== false)}
+                        style={{
+                          color: p.is_active !== false ? '#16a34a' : '#dc2626',
+                          background: p.is_active !== false ? 'rgba(22,163,74,0.08)' : 'rgba(220,38,38,0.08)',
+                          border: '1px solid',
+                          borderColor: p.is_active !== false ? 'rgba(22,163,74,0.25)' : 'rgba(220,38,38,0.25)',
+                          borderRadius: 6,
+                          padding: '2px 10px',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {p.is_active !== false ? 'Active' : 'Inactive'}
+                      </button>
+                    </td>
                     <td className="muted small">{formatDate(p.created_at)}</td>
+                    <td>
+                      {deleteConfirm === p.id ? (
+                        <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                          <button
+                            className="adminDeleteConfirmBtn"
+                            onClick={() => handleDeleteUser(p.id)}
+                            style={{
+                              background: '#dc2626',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: 4,
+                              padding: '2px 8px',
+                              fontSize: 11,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm(null)}
+                            style={{
+                              background: 'transparent',
+                              color: 'var(--muted)',
+                              border: '1px solid var(--border)',
+                              borderRadius: 4,
+                              padding: '2px 8px',
+                              fontSize: 11,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setDeleteConfirm(p.id)}
+                          style={{
+                            background: 'transparent',
+                            color: '#dc2626',
+                            border: '1px solid rgba(220,38,38,0.25)',
+                            borderRadius: 4,
+                            padding: '2px 8px',
+                            fontSize: 11,
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+      </section>
+
+      {/* ── Teacher Codes ──────────────────────────────────────── */}
+      <section style={{ marginTop: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h2 className="h2" style={{ margin: 0 }}>Teacher Codes</h2>
+          <button className="btn" onClick={() => setShowTeacherCodes(!showTeacherCodes)}>
+            {showTeacherCodes ? 'Close' : 'Manage Codes'}
+          </button>
+        </div>
+
+        {showTeacherCodes && (
+          <div className="card" style={{ padding: 20 }}>
+            {/* Create new code */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 20, alignItems: 'flex-end' }}>
+              <label className="adminLabel" style={{ flex: 1 }}>
+                New Code (leave blank to auto-generate)
+                <input
+                  type="text"
+                  className="adminInput"
+                  placeholder="e.g. TEACHER2025"
+                  value={newCodeValue}
+                  onChange={(e) => setNewCodeValue(e.target.value.toUpperCase())}
+                  style={{ textTransform: 'uppercase' }}
+                />
+              </label>
+              <button className="btn" onClick={handleCreateCode} disabled={codeLoading} style={{ marginBottom: 2 }}>
+                {codeLoading ? 'Creating…' : 'Create Code'}
+              </button>
+            </div>
+
+            {/* Codes table */}
+            {teacherCodes.length === 0 ? (
+              <p className="muted small">No teacher codes yet.</p>
+            ) : (
+              <div style={{ overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border)' }}>
+                <table className="adminTable">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Status</th>
+                      <th>Used By</th>
+                      <th>Created</th>
+                      <th style={{ width: 80 }} />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {teacherCodes.map((tc) => {
+                      const usedByProfile = tc.used_by ? profiles.find(p => p.id === tc.used_by) : null;
+                      return (
+                        <tr key={tc.id}>
+                          <td style={{ fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.05em' }}>{tc.code}</td>
+                          <td>
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '2px 8px',
+                              borderRadius: 4,
+                              fontSize: 11,
+                              fontWeight: 600,
+                              background: tc.used_by ? 'rgba(107,114,128,0.1)' : 'rgba(22,163,74,0.1)',
+                              color: tc.used_by ? '#6b7280' : '#16a34a',
+                            }}>
+                              {tc.used_by ? 'Used' : 'Available'}
+                            </span>
+                          </td>
+                          <td className="muted small">{usedByProfile?.email || (tc.used_by ? tc.used_by : '—')}</td>
+                          <td className="muted small">{formatDate(tc.created_at)}</td>
+                          <td>
+                            <button
+                              className="adminAssignRemove"
+                              onClick={() => handleRevokeCode(tc.id)}
+                            >
+                              Revoke
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -294,6 +590,69 @@ export default function AdminPage() {
             <button className="btn" onClick={handleSaveScores} disabled={saving} style={{ marginTop: 8 }}>
               {saving ? 'Saving…' : 'Save Score Data'}
             </button>
+          </div>
+        )}
+      </section>
+
+      {/* ── Teacher-Student Assignments ────────────────────── */}
+      <section className="adminAssignSection">
+        <h2 className="h2" style={{ marginBottom: 16 }}>Teacher-Student Assignments</h2>
+
+        <div className="adminAssignGrid">
+          <label className="adminLabel">
+            Teacher
+            <select className="adminSelect" value={assignTeacher} onChange={(e) => setAssignTeacher(e.target.value)}>
+              <option value="">Select teacher…</option>
+              {profiles.filter(p => p.role === 'teacher' || p.role === 'admin').map(p => (
+                <option key={p.id} value={p.id}>{p.email}</option>
+              ))}
+            </select>
+          </label>
+          <label className="adminLabel">
+            Student
+            <select className="adminSelect" value={assignStudent} onChange={(e) => setAssignStudent(e.target.value)}>
+              <option value="">Select student…</option>
+              {profiles.filter(p => p.role === 'student' || p.role === 'practice').map(p => (
+                <option key={p.id} value={p.id}>{p.email}</option>
+              ))}
+            </select>
+          </label>
+          <button className="btn" onClick={handleAssign} disabled={assignLoading} style={{ marginBottom: 2 }}>
+            {assignLoading ? 'Assigning…' : 'Assign'}
+          </button>
+        </div>
+
+        {assignments.length > 0 && (
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <table className="adminAssignTable">
+              <thead>
+                <tr>
+                  <th>Teacher</th>
+                  <th>Student</th>
+                  <th style={{ width: 80 }} />
+                </tr>
+              </thead>
+              <tbody>
+                {assignments.map((a) => {
+                  const teacher = profiles.find(p => p.id === a.teacher_id);
+                  const student = profiles.find(p => p.id === a.student_id);
+                  return (
+                    <tr key={`${a.teacher_id}-${a.student_id}`}>
+                      <td>{teacher?.email || a.teacher_id}</td>
+                      <td>{student?.email || a.student_id}</td>
+                      <td>
+                        <button
+                          className="adminAssignRemove"
+                          onClick={() => handleUnassign(a.teacher_id, a.student_id)}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </section>

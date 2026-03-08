@@ -6,34 +6,24 @@ export async function GET(_request, { params }) {
   const questionId = params.questionId;
   const supabase = createClient();
 
-  const { data: auth } = await supabase.auth.getUser();
-  const user = auth?.user ?? null;
-
-  async function fetchVersion({ onlyCurrent }) {
-    let q = supabase
+  // 1) Auth + version fetch in parallel (independent of each other)
+  // Fetch both current and newest version in one query (prefer is_current=true)
+  const [authResult, versionsResult] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
       .from('question_versions')
       .select('id, question_id, question_type, stimulus_html, stem_html, rationale_html, created_at, is_current')
       .eq('question_id', questionId)
+      .order('is_current', { ascending: false })
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
-    if (onlyCurrent) q = q.eq('is_current', true);
+  const user = authResult.data?.user ?? null;
 
-    const { data, error } = await q.maybeSingle();
-    return { data, error };
-  }
-
-  // 1) Try current version
-  let { data: version, error: verErr } = await fetchVersion({ onlyCurrent: true });
-
+  const { data: version, error: verErr } = versionsResult;
   if (verErr) return NextResponse.json({ error: verErr.message }, { status: 400 });
-
-  // 2) Fallback: newest version (even if is_current is not set properly)
-  if (!version) {
-    const fallback = await fetchVersion({ onlyCurrent: false });
-    if (fallback.error) return NextResponse.json({ error: fallback.error.message }, { status: 400 });
-    version = fallback.data;
-  }
 
   if (!version) {
     return NextResponse.json(
@@ -42,116 +32,102 @@ export async function GET(_request, { params }) {
     );
   }
 
-  // Options
-  const { data: options, error: optErr } = await supabase
-    .from('answer_options')
-    .select('id, ordinal, label, content_html')
-    .eq('question_version_id', version.id)
-    .order('ordinal', { ascending: true });
-
-  if (optErr) return NextResponse.json({ error: optErr.message }, { status: 400 });
-
-  // Taxonomy (may be null; that's OK)
-  const { data: taxonomy, error: taxErr } = await supabase
-    .from('question_taxonomy')
-    .select('question_id, program, domain_code, domain_name, skill_code, skill_name, difficulty, score_band')
-    .eq('question_id', questionId)
-    .maybeSingle();
-
-  if (taxErr) return NextResponse.json({ error: taxErr.message }, { status: 400 });
-
-  // Status (per user)
-  let status = null;
-  if (user) {
-    const { data: st, error: stErr } = await supabase
-      .from('question_status')
-      .select('user_id, question_id, is_done, marked_for_review, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct, status_json, notes')
-      .eq('user_id', user.id)
+  // Run all independent queries in parallel (all depend on version.id or questionId, which we have)
+  const parallelQueries = [
+    // 0: options
+    supabase
+      .from('answer_options')
+      .select('id, ordinal, label, content_html')
+      .eq('question_version_id', version.id)
+      .order('ordinal', { ascending: true }),
+    // 1: taxonomy
+    supabase
+      .from('question_taxonomy')
+      .select('question_id, program, domain_code, domain_name, skill_code, skill_name, difficulty, score_band')
       .eq('question_id', questionId)
-      .maybeSingle();
-
-    if (stErr) return NextResponse.json({ error: stErr.message }, { status: 400 });
-
-    // ✅ Fallback for older data: if status_json doesn't include restore fields,
-    // look up the most recent attempt and inject them into the response.
-    if (st) {
-      const prevJson = st.status_json && typeof st.status_json === 'object' ? st.status_json : {};
-      const needsLastSelected = st.is_done && version?.question_type === 'mcq' && prevJson.last_selected_option_id == null;
-      const needsLastResponse = st.is_done && version?.question_type === 'spr' && (prevJson.last_response_text == null || prevJson.last_response_text === '');
-
-      if (needsLastSelected || needsLastResponse) {
-        const { data: lastAttempt, error: laErr } = await supabase
-          .from('attempts')
-          .select('selected_option_id, response_text, created_at')
+      .maybeSingle(),
+    // 2: questions table (source_external_id, is_broken)
+    supabase
+      .from('questions')
+      .select('source_external_id, is_broken')
+      .eq('id', questionId)
+      .maybeSingle(),
+    // 3: status (per user) — null placeholder if no user
+    user
+      ? supabase
+          .from('question_status')
+          .select('user_id, question_id, is_done, marked_for_review, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct, status_json, notes')
           .eq('user_id', user.id)
           .eq('question_id', questionId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    // 4: correct answer (always fetch; gated in response building below)
+    supabase
+      .from('correct_answers')
+      .select('correct_option_id, correct_text')
+      .eq('question_version_id', version.id)
+      .limit(1)
+      .maybeSingle(),
+    // 5: user profile/role
+    user
+      ? supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ];
 
-        if (!laErr && lastAttempt) {
-          const patched = { ...prevJson };
-          if (needsLastSelected) patched.last_selected_option_id = lastAttempt.selected_option_id ?? null;
-          if (needsLastResponse) patched.last_response_text = lastAttempt.response_text ?? '';
-          status = { ...st, status_json: patched };
-        } else {
-          status = st;
-        }
+  const [optResult, taxResult, qRowResult, stResult, caResult, profileResult] = await Promise.all(parallelQueries);
+
+  const { data: options, error: optErr } = optResult;
+  if (optErr) return NextResponse.json({ error: optErr.message }, { status: 400 });
+
+  const { data: taxonomy, error: taxErr } = taxResult;
+  if (taxErr) return NextResponse.json({ error: taxErr.message }, { status: 400 });
+
+  const { data: questionRow } = qRowResult;
+
+  const { data: st, error: stErr } = stResult;
+  if (stErr) return NextResponse.json({ error: stErr.message }, { status: 400 });
+
+  // ✅ Fallback for older data: if status_json doesn't include restore fields,
+  // look up the most recent attempt and inject them into the response.
+  let status = null;
+  if (st) {
+    const prevJson = st.status_json && typeof st.status_json === 'object' ? st.status_json : {};
+    const needsLastSelected = st.is_done && version?.question_type === 'mcq' && prevJson.last_selected_option_id == null;
+    const needsLastResponse = st.is_done && version?.question_type === 'spr' && (prevJson.last_response_text == null || prevJson.last_response_text === '');
+
+    if (needsLastSelected || needsLastResponse) {
+      const { data: lastAttempt, error: laErr } = await supabase
+        .from('attempts')
+        .select('selected_option_id, response_text, created_at')
+        .eq('user_id', user.id)
+        .eq('question_id', questionId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!laErr && lastAttempt) {
+        const patched = { ...prevJson };
+        if (needsLastSelected) patched.last_selected_option_id = lastAttempt.selected_option_id ?? null;
+        if (needsLastResponse) patched.last_response_text = lastAttempt.response_text ?? '';
+        status = { ...st, status_json: patched };
       } else {
         status = st;
       }
     } else {
-      status = null;
+      status = st;
     }
   }
 
-
   // Correct answer key (only reveal for authed users AFTER they've completed the question)
-  // This allows the UI to highlight correct/incorrect choices even after a refresh,
-  // without exposing the answer key before submission.
+  const { data: ca } = caResult;
   let correct_option_id = null;
   let correct_text = null;
-  if (user && status?.is_done && version?.question_type === 'mcq') {
-    const { data: ca, error: caErr } = await supabase
-      .from('correct_answers')
-      .select('correct_option_id')
-      .eq('question_version_id', version.id)
-      .limit(1)
-      .maybeSingle();
-
-    if (caErr) return NextResponse.json({ error: caErr.message }, { status: 400 });
-    correct_option_id = ca?.correct_option_id ?? null;
+  if (user && status?.is_done) {
+    if (version?.question_type === 'mcq') correct_option_id = ca?.correct_option_id ?? null;
+    if (version?.question_type === 'spr') correct_text = ca?.correct_text ?? null;
   }
 
-  // Reveal correct text only after completion for SPR
-  if (user && status?.is_done && version?.question_type === 'spr') {
-    const { data: ca, error: caErr } = await supabase
-      .from('correct_answers')
-      .select('correct_text')
-      .eq('question_version_id', version.id)
-      .limit(1)
-      .maybeSingle();
-    if (caErr) return NextResponse.json({ error: caErr.message }, { status: 400 });
-    correct_text = ca?.correct_text ?? null;
-  }
-
-  // Fetch source_external_id and global is_broken from the questions table
-  const { data: questionRow } = await supabase
-    .from('questions')
-    .select('source_external_id, is_broken')
-    .eq('id', questionId)
-    .maybeSingle();
-
-  // Fetch user role for role-gated UI features (e.g. admin correction modal)
-  let userRole = null;
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
-    userRole = profile?.role || 'practice';
-  }
+  const userRole = profileResult.data?.role || (user ? 'practice' : null);
 
   return NextResponse.json({
     question_id: questionId,

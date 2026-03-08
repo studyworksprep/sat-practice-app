@@ -251,6 +251,17 @@ export default function PracticeQuestionPage() {
 
   const [showExplanation, setShowExplanation] = useState(false);
 
+  const [submitting, setSubmitting] = useState(false);
+
+  // Retry-until-correct state
+  const [wrongOptionIds, setWrongOptionIds] = useState([]); // MCQ: option IDs submitted and wrong
+  const [wrongTexts, setWrongTexts] = useState([]); // SPR: wrong text responses
+  const [gotCorrect, setGotCorrect] = useState(false); // true once student gets it right
+  const [gaveUp, setGaveUp] = useState(false); // true once student clicks Show Explanation
+
+  // Prefetch cache: stores fetched question data keyed by question_id
+  const prefetchCache = useRef({});
+
   // Admin correction modal
   const [userRole, setUserRole] = useState(null);
   const [showCorrectModal, setShowCorrectModal] = useState(false);
@@ -319,9 +330,6 @@ export default function PracticeQuestionPage() {
   const [mapIds, setMapIds] = useState([]);
   const [mapLoading, setMapLoading] = useState(false);
   const [jumpTo, setJumpTo] = useState('');
-  // Overlay for questions answered/marked in the current session, keyed by question_id
-  const [sessionResults, setSessionResults] = useState({});
-
   const startedAtRef = useRef(Date.now());
 
   // Keep the same session filter params for API calls + navigation
@@ -338,6 +346,26 @@ export default function PracticeQuestionPage() {
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
   const inSessionContext = sessionParams.get('session') === '1';
   const sidParam = searchParams.get('sid') || null;
+
+  // Overlay for questions answered/marked in the current session, keyed by question_id
+  // Persisted to sessionStorage so badges survive page remounts on navigation
+  const sessionResultsKey = sidParam ? `sr_${sidParam}` : sessionParamsString ? `sr_${sessionParamsString}` : null;
+  const [sessionResults, setSessionResultsRaw] = useState(() => {
+    if (!sessionResultsKey) return {};
+    try {
+      const raw = sessionStorage.getItem(sessionResultsKey);
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  });
+  const setSessionResults = (updater) => {
+    setSessionResultsRaw((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      if (sessionResultsKey) {
+        try { sessionStorage.setItem(sessionResultsKey, JSON.stringify(next)); } catch {}
+      }
+      return next;
+    });
+  };
 
   // Read full session ID list from localStorage (used for replay/dashboard sessions)
   function getSessionIds() {
@@ -456,13 +484,30 @@ export default function PracticeQuestionPage() {
     return null;
   }
 
+  // Prefetch a question by ID (fire-and-forget, stores result in cache)
+  function prefetchQuestion(id) {
+    if (!id || prefetchCache.current[String(id)]) return;
+    prefetchCache.current[String(id)] = fetch(`/api/questions/${id}`, { cache: 'no-store' })
+      .then((r) => r.ok ? r.json() : null)
+      .catch(() => null);
+  }
+
   async function fetchQuestion() {
     setLoading(true);
     setMsg(null);
     try {
-      const res = await fetch(`/api/questions/${questionId}`, { cache: 'no-store' });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || 'Failed to load question');
+      // Check prefetch cache first
+      const cached = prefetchCache.current[String(questionId)];
+      delete prefetchCache.current[String(questionId)];
+      let json;
+      if (cached) {
+        json = await cached;
+      }
+      if (!json) {
+        const res = await fetch(`/api/questions/${questionId}`, { cache: 'no-store' });
+        json = await res.json();
+        if (!res.ok) throw new Error(json?.error || 'Failed to load question');
+      }
 
       setData(json);
       if (json?.user_role) setUserRole(json.user_role);
@@ -478,14 +523,39 @@ export default function PracticeQuestionPage() {
         }));
       }
 
-      if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
-      else setSelected(null);
+      // Reset retry state for the new question
+      const prevCorrect = json.status?.is_done && json.status?.last_is_correct;
+      setGotCorrect(Boolean(prevCorrect));
+      setGaveUp(false);
+      setWrongOptionIds([]);
+      setWrongTexts([]);
 
-      if (json?.status?.status_json?.last_response_text) setResponseText(json.status.status_json.last_response_text);
-      else setResponseText('');
+      if (prevCorrect) {
+        // Returning to a correctly-answered question: restore last selection
+        if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
+        else setSelected(null);
+        if (json?.status?.status_json?.last_response_text) setResponseText(json.status.status_json.last_response_text);
+        else setResponseText('');
+      } else {
+        // Fresh or previously-wrong question: start clean
+        setSelected(null);
+        setResponseText('');
+      }
 
       startedAtRef.current = Date.now();
       setShowExplanation(false);
+
+      // Prefetch next question in background
+      try {
+        const sessionIds = getSessionIds();
+        if (sessionIds) {
+          const curIdx = sessionIds.findIndex((id) => String(id) === String(questionId));
+          if (curIdx >= 0 && curIdx + 1 < sessionIds.length) prefetchQuestion(sessionIds[curIdx + 1]);
+        } else if (pageIds.length > 0) {
+          const curIdx = pageIds.findIndex((id) => String(id) === String(questionId));
+          if (curIdx >= 0 && curIdx + 1 < pageIds.length) prefetchQuestion(pageIds[curIdx + 1]);
+        }
+      } catch {}
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
@@ -687,8 +757,35 @@ export default function PracticeQuestionPage() {
     if (!data) return;
 
     const qTypeLocal = String(data?.version?.question_type || data?.question_type || '').toLowerCase();
-    const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
+    const isRetry = wrongOptionIds.length > 0 || wrongTexts.length > 0;
 
+    // Retries are checked client-side only (first attempt is what counts for accuracy)
+    if (isRetry) {
+      let retryCorrect = false;
+      if (qTypeLocal === 'mcq') {
+        retryCorrect = correctOptionId != null && String(selected) === String(correctOptionId);
+      } else if (qTypeLocal === 'spr') {
+        const accepted = formatCorrectText(correctText) || [];
+        const norm = (s) => String(s ?? '').trim().replace(/\u2212/g, '-').replace(/\s+/g, ' ').toLowerCase();
+        retryCorrect = accepted.some((a) => norm(a) === norm(responseText));
+      }
+
+      if (retryCorrect) {
+        setGotCorrect(true);
+      } else {
+        if (qTypeLocal === 'mcq' && selected != null) {
+          setWrongOptionIds((prev) => prev.includes(selected) ? prev : [...prev, selected]);
+        } else if (qTypeLocal === 'spr' && responseText.trim()) {
+          setWrongTexts((prev) => [...prev, responseText.trim()]);
+        }
+      }
+      return;
+    }
+
+    // First attempt: submit to API (this is the attempt that counts)
+    const wasDone = Boolean(status?.is_done);
+    setSubmitting(true);
+    const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
     const body = {
       question_id: data.question_id,
       selected_option_id: qTypeLocal === 'mcq' ? selected : null,
@@ -706,9 +803,54 @@ export default function PracticeQuestionPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to submit attempt');
 
-      await fetchQuestion();
+      const qid = String(data.question_id);
+
+      // Store correct answer from API response for client-side retry checking
+      setData((prev) => {
+        if (!prev) return prev;
+        const prevStatus = prev.status || {};
+        return {
+          ...prev,
+          correct_option_id: json.correct_option_id ?? prev.correct_option_id,
+          correct_text: json.correct_text ?? prev.correct_text,
+          status: {
+            ...prevStatus,
+            attempts_count: json.attempts_count ?? (prevStatus.attempts_count ?? 0) + 1,
+            correct_attempts_count: json.correct_attempts_count ?? prevStatus.correct_attempts_count,
+            is_done: true,
+            last_is_correct: json.is_correct,
+          },
+        };
+      });
+
+      if (json.is_correct) {
+        setGotCorrect(true);
+        // Only update session tracking on the true first attempt
+        if (!wasDone) {
+          setSessionResults((prev) => ({
+            ...prev,
+            [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: true },
+          }));
+        }
+      } else {
+        // Track the wrong answer and let student retry
+        if (qTypeLocal === 'mcq' && selected != null) {
+          setWrongOptionIds((prev) => prev.includes(selected) ? prev : [...prev, selected]);
+        } else if (qTypeLocal === 'spr' && responseText.trim()) {
+          setWrongTexts((prev) => [...prev, responseText.trim()]);
+        }
+        // Only update session tracking on the true first attempt
+        if (!wasDone) {
+          setSessionResults((prev) => ({
+            ...prev,
+            [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: false },
+          }));
+        }
+      }
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -811,14 +953,14 @@ export default function PracticeQuestionPage() {
     }
   }
 
-  async function submitCorrection() {
+  async function submitCorrection(flagBroken) {
     if (!data?.question_id) return;
     setCorrectSubmitting(true);
     try {
       setMsg(null);
 
       // Build patch: only include fields that differ from current
-      const body = {};
+      const body = { flag_broken: flagBroken };
       if (correctForm.stimulus_html !== (data?.version?.stimulus_html || '')) {
         body.stimulus_html = correctForm.stimulus_html;
       }
@@ -848,7 +990,8 @@ export default function PracticeQuestionPage() {
       setShowCorrectModal(false);
       // Reload question to reflect changes
       await fetchQuestion();
-      setMsg({ kind: 'success', text: 'Correction saved and question flagged as broken.' });
+      const label = flagBroken ? 'Correction saved and question flagged as broken.' : 'Correction saved and question marked as not broken.';
+      setMsg({ kind: 'success', text: label });
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
@@ -951,7 +1094,9 @@ export default function PracticeQuestionPage() {
   const version = data?.version || {};
   const options = Array.isArray(data?.options) ? data.options : [];
   const status = data?.status || {};
-  const locked = Boolean(status?.is_done);
+  // Lock only when student got it right or gave up (clicked Show Explanation)
+  // Also lock if returning to a previously-correct question
+  const locked = gotCorrect || gaveUp || Boolean(status?.is_done && status?.last_is_correct);
   const correctOptionId = data?.correct_option_id || null;
   const correctText = data?.correct_text || null;
 
@@ -970,7 +1115,7 @@ export default function PracticeQuestionPage() {
   ];
 
   // ✅ Pills row now includes Question # (index1) on the left
-  const StatusPillsRow = ({ style }) => (
+  const renderStatusPills = (style) => (
     <div
       style={{
         display: 'flex',
@@ -1069,7 +1214,7 @@ export default function PracticeQuestionPage() {
   };
 
   // ✅ No visible "Stimulus/Question" headers (keep srOnly for a11y)
-  const PromptBlocks = ({ mb = 12 }) => (
+  const renderPromptBlocks = (mb = 12) => (
     <>
       {htmlHasContent(version?.stimulus_html) ? (
         <div className="card subcard" style={{ marginBottom: mb }}>
@@ -1091,7 +1236,7 @@ export default function PracticeQuestionPage() {
   const mathToolRow = null;
 
   // ✅ MCQ options area (no "Answer choices" header)
-  const McqOptionsArea = () => (
+  const mcqOptionsArea = (
     <>
       <div className="srOnly">Answer choices</div>
 
@@ -1101,6 +1246,8 @@ export default function PracticeQuestionPage() {
           .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
           .map((opt) => {
             const isSelected = selected === opt.id;
+            const isWrong = wrongOptionIds.includes(opt.id);
+            const isCorrect = String(opt.id) === String(correctOptionId);
 
             return (
               <div
@@ -1108,26 +1255,25 @@ export default function PracticeQuestionPage() {
                 className={(() => {
                   let cls = 'option' + (isSelected ? ' selected' : '');
 
+                  // Previously wrong attempts: always show red
+                  if (isWrong) cls += ' incorrect';
+
                   if (locked) {
-                    const isCorrect = String(opt.id) === String(correctOptionId);
-                    const hasSelection = selected != null;
-
-                    // Selected answer: green if correct, red if incorrect
+                    // When locked (correct or gave up): show correct answer green
                     if (isSelected && isCorrect) cls += ' correct';
-                    else if (isSelected && hasSelection && !isCorrect) cls += ' incorrect';
-
-                    // Reveal correct option if selected wrong
-                    const selectedIsWrong = hasSelection && String(selected) !== String(correctOptionId);
-                    if (!isSelected && isCorrect && selectedIsWrong) cls += ' revealCorrect';
+                    if (!isSelected && isCorrect && (gaveUp || gotCorrect)) cls += ' revealCorrect';
+                  } else if (gotCorrect && isSelected && isCorrect) {
+                    cls += ' correct';
                   }
 
                   return cls;
                 })()}
                 onClick={() => {
                   if (locked) return;
+                  if (isWrong) return; // can't re-select a wrong answer
                   setSelected(opt.id);
                 }}
-                style={{ cursor: locked ? 'default' : 'pointer' }}
+                style={{ cursor: locked || isWrong ? 'default' : 'pointer' }}
               >
                 <div className="optionBadge">{opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}</div>
                 <div className="optionContent">
@@ -1140,13 +1286,13 @@ export default function PracticeQuestionPage() {
 
       <div className="row" style={{ gap: 10, marginTop: 14 }}>
         <div className="btnRow">
-          <button className="btn primary" onClick={submitAttempt} disabled={locked || !selected}>
-            Submit
+          <button className="btn primary" onClick={submitAttempt} disabled={locked || submitting || !selected || wrongOptionIds.includes(selected)}>
+            {submitting ? 'Submitting…' : 'Submit'}
           </button>
         </div>
 
-        {locked && (version?.rationale_html || version?.explanation_html) ? (
-          <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+        {(locked || wrongOptionIds.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
+          <button className="btn secondary" onClick={() => { setGaveUp(true); setShowExplanation((s) => !s); }}>
             {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
           </button>
         ) : null}
@@ -1187,18 +1333,28 @@ export default function PracticeQuestionPage() {
     <>
       <div className="srOnly">Your answer</div>
 
-      {locked ? (
+      {gotCorrect ? (
         <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
           <span className="pill">
             <span className="muted">Result</span>{' '}
-            <span className="kbd">{status?.last_is_correct ? 'Correct' : 'Incorrect'}</span>
+            <span className="kbd">Correct</span>
           </span>
-
-          {!status?.last_is_correct && correctText ? (
+        </div>
+      ) : wrongTexts.length > 0 ? (
+        <div style={{ marginTop: 8 }}>
+          <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <span className="pill">
-              <span className="muted">Correct answer</span>{' '}
-              <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+              <span className="muted">Result</span>{' '}
+              <span className="kbd">Incorrect</span>
             </span>
+          </div>
+          {gaveUp && correctText ? (
+            <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
+              <span className="pill">
+                <span className="muted">Correct answer</span>{' '}
+                <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+              </span>
+            </div>
           ) : null}
         </div>
       ) : null}
@@ -1214,12 +1370,12 @@ export default function PracticeQuestionPage() {
       />
 
       <div className="row" style={{ gap: 10, marginTop: 14 }}>
-        <button className="btn" onClick={submitAttempt} disabled={locked || !responseText.trim()}>
-          Submit
+        <button className="btn" onClick={submitAttempt} disabled={locked || submitting || !responseText.trim()}>
+          {submitting ? 'Submitting…' : 'Submit'}
         </button>
 
-        {locked && (version?.rationale_html || version?.explanation_html) ? (
-          <button className="btn secondary" onClick={() => setShowExplanation((s) => !s)}>
+        {(locked || wrongTexts.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
+          <button className="btn secondary" onClick={() => { setGaveUp(true); setShowExplanation((s) => !s); }}>
             {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
           </button>
         ) : null}
@@ -1415,13 +1571,13 @@ export default function PracticeQuestionPage() {
             <div className="qaDivider" aria-hidden="true" />
 
             <div className="qaRight">
-              <StatusPillsRow style={{ marginBottom: 14 }} />
+              {renderStatusPills({ marginBottom: 14 })}
               {version?.stem_html && (
                 <div className="card subcard" style={{ marginBottom: 12 }}>
                   <HtmlBlock className="prose" html={version.stem_html} />
                 </div>
               )}
-              <McqOptionsArea />
+              {mcqOptionsArea}
             </div>
           </div>
         ) : isMath ? (
@@ -1429,39 +1585,39 @@ export default function PracticeQuestionPage() {
           mathShellJsx(<>
             {mathToolRow}
             <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-              <StatusPillsRow />
+              {renderStatusPills()}
             </div>
-            <PromptBlocks mb={12} />
-            <McqOptionsArea />
+            {renderPromptBlocks(12)}
+            {mcqOptionsArea}
           </>)
         ) : (
           // Default MCQ
           <div>
             <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-              <StatusPillsRow />
+              {renderStatusPills()}
             </div>
-            <PromptBlocks mb={12} />
-            <McqOptionsArea />
+            {renderPromptBlocks(12)}
+            {mcqOptionsArea}
           </div>
         )
       ) : isMath ? (
         // Math SPR
         mathShellJsx(<>
           {mathToolRow}
-          <StatusPillsRow style={{ marginBottom: 14 }} />
-          <PromptBlocks mb={12} />
+          {renderStatusPills({ marginBottom: 14 })}
+          {renderPromptBlocks(12)}
           {sprAnswerArea}
         </>)
       ) : (
         // Default SPR
         <div>
-          <StatusPillsRow style={{ marginBottom: 14 }} />
-          <PromptBlocks mb={12} />
+          {renderStatusPills({ marginBottom: 14 })}
+          {renderPromptBlocks(12)}
           {sprAnswerArea}
         </div>
       )}
 
-      {(version?.rationale_html || version?.explanation_html) && locked && showExplanation ? (
+      {(version?.rationale_html || version?.explanation_html) && (locked || gaveUp) && showExplanation ? (
         <>
           <hr />
           <div className="card explanation" style={{ marginTop: 10 }}>
@@ -1757,11 +1913,14 @@ export default function PracticeQuestionPage() {
               ) : null}
             </div>
 
-            <div className="row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end' }}>
+            <div className="row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
               <button className="btn secondary" onClick={() => setShowCorrectModal(false)} disabled={correctSubmitting}>
                 Cancel
               </button>
-              <button className="btn primary" onClick={submitCorrection} disabled={correctSubmitting}>
+              <button className="btn primary" style={{ background: 'var(--color-success, #22c55e)' }} onClick={() => submitCorrection(false)} disabled={correctSubmitting}>
+                {correctSubmitting ? 'Saving…' : 'Mark Not Broken & Save'}
+              </button>
+              <button className="btn primary" onClick={() => submitCorrection(true)} disabled={correctSubmitting}>
                 {correctSubmitting ? 'Saving…' : 'Flag as Broken & Save'}
               </button>
             </div>

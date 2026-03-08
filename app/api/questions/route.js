@@ -41,36 +41,45 @@ export async function GET(request) {
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
 
   const supabase = createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
+
+  // Step 1: Auth + search + user-specific restriction queries in parallel
+  const step1 = [supabase.auth.getUser()];
+
+  // Search queries (don't need userId)
+  if (qText) {
+    const safe = qText.replace(/[%_]/g, '\\$&');
+    const pattern = `%${safe}%`;
+    step1.push(
+      supabase.from('questions').select('id, question_id').ilike('question_id', pattern).limit(2000),
+      supabase.from('question_versions').select('question_id, stem_html, stimulus_html')
+        .eq('is_current', true).or(`stem_html.ilike.${pattern},stimulus_html.ilike.${pattern}`).limit(2000),
+    );
+  }
+
+  // NOTE: Domain/topic filtering is now handled directly in the main query's
+  // question_taxonomy!inner join (see below), not as pre-restriction queries.
+  // This avoids PostgREST's default row limit truncating results and
+  // prevents large .in('id', ...) arrays from exceeding URL length limits.
+
+  const step1Results = await Promise.all(step1);
+
+  const { data: auth, error: authErr } = step1Results[0];
   if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 });
   const user = auth?.user ?? null;
   const userId = user?.id ?? null;
 
-  // Build an ID restriction set (questions.id UUIDs).
+  // Build restriction set from step 1 results
   let restrictIds = null;
+  let s1idx = 1;
 
-  // 1) Full-text search restriction
+  // Search results
   if (qText) {
-    const safe = qText.replace(/[%_]/g, '\\$&');
-    const pattern = `%${safe}%`;
     const ids = new Set();
-
-    const { data: qrows, error: qErr } = await supabase
-      .from('questions')
-      .select('id, question_id')
-      .ilike('question_id', pattern)
-      .limit(2000);
-
+    const { data: qrows, error: qErr } = step1Results[s1idx++];
     if (qErr) return NextResponse.json({ error: qErr.message }, { status: 400 });
     (qrows || []).forEach((r) => r?.id && ids.add(r.id));
 
-    const { data: vrows, error: vErr } = await supabase
-      .from('question_versions')
-      .select('question_id, stem_html, stimulus_html')
-      .eq('is_current', true)
-      .or(`stem_html.ilike.${pattern},stimulus_html.ilike.${pattern}`)
-      .limit(2000);
-
+    const { data: vrows, error: vErr } = step1Results[s1idx++];
     if (vErr) return NextResponse.json({ error: vErr.message }, { status: 400 });
     (vrows || []).forEach((r) => r?.question_id && ids.add(r.question_id));
 
@@ -78,71 +87,37 @@ export async function GET(request) {
     if (restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
   }
 
-  // 2) marked_only restriction
-  if (marked_only) {
-    if (!userId) return NextResponse.json({ items: [], totalCount: 0 });
-
-    const { data: markedRows, error: markedErr } = await supabase
-      .from('question_status')
-      .select('question_id')
-      .eq('user_id', userId)
-      .eq('marked_for_review', true)
-      .limit(10000);
-
-    if (markedErr) return NextResponse.json({ error: markedErr.message }, { status: 400 });
-
-    const markedIds = (markedRows || []).map((r) => r.question_id).filter(Boolean);
-    restrictIds = intersect(restrictIds, markedIds);
-    if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
+  // Step 2: User-specific restrictions in parallel (need userId)
+  if ((marked_only || wrong_only) && !userId) {
+    return NextResponse.json({ items: [], totalCount: 0 });
   }
 
-  // 3) hide_broken — handled in the main query via .eq('is_broken', false)
-
-  // 4) wrong_only restriction (is_done=true AND last_is_correct=false)
-  if (wrong_only) {
-    if (!userId) return NextResponse.json({ items: [], totalCount: 0 });
-
-    const { data: wrongRows, error: wrongErr } = await supabase
-      .from('question_status')
-      .select('question_id')
-      .eq('user_id', userId)
-      .eq('is_done', true)
-      .eq('last_is_correct', false)
-      .limit(10000);
-
-    if (wrongErr) return NextResponse.json({ error: wrongErr.message }, { status: 400 });
-
-    const wrongIds = (wrongRows || []).map((r) => r.question_id).filter(Boolean);
-    restrictIds = intersect(restrictIds, wrongIds);
-    if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
+  const step2 = [];
+  if (marked_only && userId) {
+    step2.push(
+      supabase.from('question_status').select('question_id')
+        .eq('user_id', userId).eq('marked_for_review', true).limit(10000)
+    );
+  }
+  if (wrong_only && userId) {
+    step2.push(
+      supabase.from('question_status').select('question_id')
+        .eq('user_id', userId).eq('is_done', true).eq('last_is_correct', false).limit(10000)
+    );
   }
 
-  // 5) Domain / topic restriction — pre-fetch taxonomy IDs so we can union domain+topic matches
-  if (domainList.length > 0 || topicList.length > 0) {
-    const matchingIds = new Set();
-
-    if (domainList.length > 0) {
-      const { data: drows, error: dErr } = await supabase
-        .from('question_taxonomy')
-        .select('question_id')
-        .in('domain_name', domainList);
-      if (dErr) return NextResponse.json({ error: dErr.message }, { status: 400 });
-      (drows || []).forEach((r) => r.question_id && matchingIds.add(r.question_id));
+  if (step2.length > 0) {
+    const step2Results = await Promise.all(step2);
+    for (let i = 0; i < step2Results.length; i++) {
+      const { data: rows, error: err } = step2Results[i];
+      if (err) return NextResponse.json({ error: err.message }, { status: 400 });
+      const ids = (rows || []).map((r) => r.question_id).filter(Boolean);
+      restrictIds = intersect(restrictIds, ids);
+      if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
     }
-
-    if (topicList.length > 0) {
-      const { data: trows, error: tErr } = await supabase
-        .from('question_taxonomy')
-        .select('question_id')
-        .in('skill_code', topicList);
-      if (tErr) return NextResponse.json({ error: tErr.message }, { status: 400 });
-      (trows || []).forEach((r) => r.question_id && matchingIds.add(r.question_id));
-    }
-
-    const taxIds = Array.from(matchingIds);
-    restrictIds = intersect(restrictIds, taxIds);
-    if (!restrictIds || restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
   }
+
+  // hide_broken — handled in the main query via .eq('is_broken', false)
 
   // Main query
   let q = supabase
@@ -181,6 +156,21 @@ export async function GET(request) {
   if (difficulties.length > 0) q = q.in('question_taxonomy.difficulty', difficulties);
   if (score_bands.length > 0) q = q.in('question_taxonomy.score_band', score_bands);
   if (hide_broken) q = q.eq('is_broken', false);
+
+  // Domain/topic filtering via the question_taxonomy join.
+  // When both are present, use OR: match any selected domain OR any selected topic.
+  if (domainList.length > 0 && topicList.length > 0) {
+    const domainCsv = domainList.map((d) => `"${d}"`).join(',');
+    const topicCsv  = topicList.map((t) => `"${t}"`).join(',');
+    q = q.or(
+      `domain_name.in.(${domainCsv}),skill_code.in.(${topicCsv})`,
+      { foreignTable: 'question_taxonomy' }
+    );
+  } else if (domainList.length > 0) {
+    q = q.in('question_taxonomy.domain_name', domainList);
+  } else if (topicList.length > 0) {
+    q = q.in('question_taxonomy.skill_code', topicList);
+  }
 
   q = q.range(offset, offset + limit - 1);
 

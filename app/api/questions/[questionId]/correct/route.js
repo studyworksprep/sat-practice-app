@@ -84,11 +84,11 @@ export async function POST(request, { params }) {
     }
   }
 
-  // Flag as broken via RPC (use service client to bypass RLS consistently)
-  if (flag_broken !== false) {
+  // Flag/unflag broken via RPC (use service client to bypass RLS consistently)
+  if (flag_broken !== undefined) {
     const { error: brokenErr } = await admin.rpc('set_question_broken', {
       question_uuid: questionId,
-      broken: true,
+      broken: Boolean(flag_broken),
     });
     if (brokenErr) return NextResponse.json({ error: brokenErr.message }, { status: 400 });
   }

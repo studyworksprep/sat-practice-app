@@ -1,43 +1,99 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
-import { computeScaledScore } from '../../../lib/scoreConversion';
+import { createClient } from '../../../../../../lib/supabase/server';
+import { computeScaledScore } from '../../../../../../lib/scoreConversion';
 
 const subjToSection = {
   RW: 'reading_writing', rw: 'reading_writing',
   M: 'math', m: 'math', math: 'math', Math: 'math', MATH: 'math',
 };
 
-// Score-band weight: higher bands are harder questions
+const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
+
 const BAND_WEIGHT = { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8, 6: 2.0, 7: 2.2 };
 
-// GET /api/dashboard
-export async function GET() {
+// GET /api/teacher/student/[studentId]/dashboard
+export async function GET(_request, { params }) {
+  const { studentId } = params;
   const supabase = createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  const user = auth.user;
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Check role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // For teachers, verify they can view this student
+  if (profile.role === 'teacher') {
+    const { data: assignment } = await supabase
+      .from('teacher_student_assignments')
+      .select('teacher_id')
+      .eq('teacher_id', user.id)
+      .eq('student_id', studentId)
+      .maybeSingle();
+
+    if (!assignment) {
+      // Check class enrollments too
+      const { data: classes } = await supabase
+        .from('classes')
+        .select('id')
+        .eq('teacher_id', user.id);
+
+      const classIds = (classes || []).map(c => c.id);
+      let hasAccess = false;
+      if (classIds.length) {
+        const { data: enrollment } = await supabase
+          .from('class_enrollments')
+          .select('student_id')
+          .in('class_id', classIds)
+          .eq('student_id', studentId)
+          .maybeSingle();
+        hasAccess = !!enrollment;
+      }
+
+      if (!hasAccess) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+  }
+
+  // Fetch student profile
+  const { data: studentProfile } = await supabase
+    .from('profiles')
+    .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score')
+    .eq('id', studentId)
+    .maybeSingle();
+
+  if (!studentProfile) {
+    return NextResponse.json({ error: 'Student not found' }, { status: 404 });
+  }
 
   // ── Question statuses ──
-  const { data: statusRows, error } = await supabase
+  const { data: statusRows } = await supabase
     .from('question_status')
     .select('question_id, last_is_correct, last_attempt_at')
-    .eq('user_id', user.id)
+    .eq('user_id', studentId)
     .eq('is_done', true)
     .order('last_attempt_at', { ascending: false })
     .limit(5000);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   const rows = statusRows || [];
 
   // ── Taxonomy ──
   const taxMap = {};
   if (rows.length > 0) {
     const ids = [...new Set(rows.map(r => r.question_id))];
-    const { data: taxRows, error: taxErr } = await supabase
+    const { data: taxRows } = await supabase
       .from('question_taxonomy')
       .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
       .in('question_id', ids);
-    if (taxErr) return NextResponse.json({ error: taxErr.message }, { status: 400 });
     for (const t of (taxRows || [])) taxMap[t.question_id] = t;
   }
 
@@ -61,7 +117,7 @@ export async function GET() {
   const domainStats = Object.values(domainMap).sort((a, b) => a.domain_name.localeCompare(b.domain_name));
   const topicStats = Object.values(topicMap).sort((a, b) => a.skill_name.localeCompare(b.skill_name));
 
-  // ── Weighted strongest/weakest topics ──
+  // ── Weighted strongest/weakest ──
   const weightedTopics = {};
   for (const row of rows) {
     const tax = taxMap[row.question_id];
@@ -75,30 +131,27 @@ export async function GET() {
     weightedTopics[key].rawCount += 1;
     if (row.last_is_correct) weightedTopics[key].weightedCorrect += w;
   }
-
   const qualifiedTopics = Object.values(weightedTopics).filter(t => t.rawCount >= 3);
   const sorted = qualifiedTopics.map(t => ({
     ...t,
     weightedPct: Math.round((t.weightedCorrect / t.weightedTotal) * 100),
   })).sort((a, b) => b.weightedPct - a.weightedPct);
-
   const strongest = sorted[0] || null;
   const weakest = sorted.length > 1 ? sorted[sorted.length - 1] : null;
 
-  // ── Recent accuracy (last 50) ──
+  // ── Recent accuracy ──
   const recent50 = rows.slice(0, 50);
   const recentCorrect = recent50.filter(r => r.last_is_correct).length;
   const recentAccuracy = recent50.length > 0 ? Math.round((recentCorrect / recent50.length) * 100) : null;
 
-  // ── Recent practice sessions (grouped by time proximity) ──
+  // ── Recent practice sessions ──
   const { data: recentAttempts } = await supabase
     .from('attempts')
     .select('id, question_id, is_correct, created_at')
-    .eq('user_id', user.id)
+    .eq('user_id', studentId)
     .order('created_at', { ascending: false })
     .limit(200);
 
-  // Fetch taxonomy for any question_ids not already in taxMap
   const attemptQids = [...new Set((recentAttempts || []).map(a => a.question_id))];
   const missingQids = attemptQids.filter(qid => !taxMap[qid]);
   if (missingQids.length > 0) {
@@ -112,7 +165,6 @@ export async function GET() {
   const sessions = [];
   let currentSession = null;
   const SESSION_GAP_MS = 2 * 60 * 60 * 1000;
-
   for (const att of recentAttempts || []) {
     const ts = new Date(att.created_at).getTime();
     if (!currentSession || (currentSession.lastTs - ts) > SESSION_GAP_MS) {
@@ -136,21 +188,20 @@ export async function GET() {
       existing.is_correct = att.is_correct;
     }
   }
-
   for (const s of sessions) {
     s.questions.reverse();
     delete s.lastTs;
   }
-  const recentSessions = sessions.slice(0, 5);
+  const recentSessions = sessions.slice(0, 10);
 
-  // ── Practice test scores (last 4 completed) ──
+  // ── Practice test scores ──
   const { data: completedAttempts } = await supabase
     .from('practice_test_attempts')
     .select('id, practice_test_id, status, metadata, started_at, finished_at')
-    .eq('user_id', user.id)
+    .eq('user_id', studentId)
     .eq('status', 'completed')
     .order('finished_at', { ascending: false })
-    .limit(4);
+    .limit(10);
 
   let testScores = [];
   if (completedAttempts?.length) {
@@ -235,8 +286,28 @@ export async function GET() {
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))
     : null;
 
+  // ── Domain counts (total questions available per domain) ──
+  // Fetch from the domain-counts API logic
+  const { data: domainCounts } = await supabase
+    .from('question_taxonomy')
+    .select('domain_code, domain_name')
+    .limit(10000);
+
+  const totalByDomain = {};
+  for (const dc of domainCounts || []) {
+    const name = dc.domain_name || 'Unknown';
+    totalByDomain[name] = (totalByDomain[name] || 0) + 1;
+  }
+
+  // Add total available to domain stats
+  const domainStatsWithTotal = domainStats.map(d => ({
+    ...d,
+    totalAvailable: totalByDomain[d.domain_name] || 0,
+  }));
+
   return NextResponse.json({
-    domainStats,
+    student: studentProfile,
+    domainStats: domainStatsWithTotal,
     topicStats,
     totalAttempted: rows.length,
     totalCorrect: rows.filter(r => r.last_is_correct).length,
