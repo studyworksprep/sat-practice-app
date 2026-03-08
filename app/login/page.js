@@ -40,10 +40,12 @@ export default function LoginPage() {
           <input className="input" value={password} onChange={e => setPassword(e.target.value)} type="password" required />
           <div className="row" style={{ marginTop: 12 }}>
             <button className="btn" type="submit">Log in</button>
-            <Link className="btn secondary" href="/signup">Create account</Link>
           </div>
           <Toast kind={msg?.kind} message={msg?.text} />
         </form>
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
+          <Link className="btn secondary" href="/signup">Create account</Link>
+        </div>
       </div>
     </main>
   );
