@@ -274,12 +274,92 @@ function TchSessionTile({ q, index, onClick }) {
   );
 }
 
+// ─── Edit profile modal ─────────────────────────────────
+function EditProfileModal({ student, studentId, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    first_name: student.first_name || '',
+    last_name: student.last_name || '',
+    high_school: student.high_school || '',
+    graduation_year: student.graduation_year || '',
+    target_sat_score: student.target_sat_score || '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleChange = (field) => (e) => setForm(prev => ({ ...prev, [field]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/teacher/student/${studentId}/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      onSaved(data.student);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="tchModalOverlay" onClick={onClose}>
+      <div className="card tchModal" onClick={(e) => e.stopPropagation()}>
+        <div className="tchModalHeader">
+          <h3 className="h2" style={{ margin: 0 }}>Edit Student Profile</h3>
+          <button className="tchModalClose" onClick={onClose}>&times;</button>
+        </div>
+        <form onSubmit={handleSubmit} className="tchModalForm">
+          <div className="tchModalRow">
+            <label className="tchModalField">
+              <span className="tchModalLabel">First Name</span>
+              <input type="text" value={form.first_name} onChange={handleChange('first_name')} />
+            </label>
+            <label className="tchModalField">
+              <span className="tchModalLabel">Last Name</span>
+              <input type="text" value={form.last_name} onChange={handleChange('last_name')} />
+            </label>
+          </div>
+          <label className="tchModalField">
+            <span className="tchModalLabel">School</span>
+            <input type="text" value={form.high_school} onChange={handleChange('high_school')} />
+          </label>
+          <div className="tchModalRow">
+            <label className="tchModalField">
+              <span className="tchModalLabel">Graduation Year</span>
+              <input type="number" value={form.graduation_year} onChange={handleChange('graduation_year')} />
+            </label>
+            <label className="tchModalField">
+              <span className="tchModalLabel">Target SAT Score</span>
+              <input type="number" value={form.target_sat_score} onChange={handleChange('target_sat_score')} />
+            </label>
+          </div>
+          {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
+          <div className="tchModalActions">
+            <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn primary" disabled={saving}>
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Student detail panel ────────────────────────────────
 function StudentDetail({ studentId }) {
   const router = useRouter();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -308,7 +388,20 @@ function StudentDetail({ studentId }) {
           <h2 className="h1" style={{ margin: 0 }}>{displayName(student)}</h2>
           <p className="muted small" style={{ margin: 0 }}>{student.email}</p>
         </div>
+        <button className="btn secondary tchEditBtn" onClick={() => setEditOpen(true)}>Edit</button>
       </div>
+
+      {editOpen && (
+        <EditProfileModal
+          student={student}
+          studentId={studentId}
+          onClose={() => setEditOpen(false)}
+          onSaved={(updated) => {
+            setData(prev => ({ ...prev, student: { ...prev.student, ...updated } }));
+            setEditOpen(false);
+          }}
+        />
+      )}
 
       {/* Profile + Stats combined card */}
       <div className="card tchOverviewCard">
