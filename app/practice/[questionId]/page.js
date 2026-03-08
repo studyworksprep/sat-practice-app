@@ -1108,7 +1108,7 @@ export default function PracticeQuestionPage() {
   ];
 
   // ✅ Pills row now includes Question # (index1) on the left
-  const StatusPillsRow = ({ style }) => (
+  const renderStatusPills = (style) => (
     <div
       style={{
         display: 'flex',
@@ -1207,7 +1207,7 @@ export default function PracticeQuestionPage() {
   };
 
   // ✅ No visible "Stimulus/Question" headers (keep srOnly for a11y)
-  const PromptBlocks = ({ mb = 12 }) => (
+  const renderPromptBlocks = (mb = 12) => (
     <>
       {htmlHasContent(version?.stimulus_html) ? (
         <div className="card subcard" style={{ marginBottom: mb }}>
@@ -1229,7 +1229,7 @@ export default function PracticeQuestionPage() {
   const mathToolRow = null;
 
   // ✅ MCQ options area (no "Answer choices" header)
-  const McqOptionsArea = () => (
+  const mcqOptionsArea = (
     <>
       <div className="srOnly">Answer choices</div>
 
@@ -1564,13 +1564,13 @@ export default function PracticeQuestionPage() {
             <div className="qaDivider" aria-hidden="true" />
 
             <div className="qaRight">
-              <StatusPillsRow style={{ marginBottom: 14 }} />
+              {renderStatusPills({ marginBottom: 14 })}
               {version?.stem_html && (
                 <div className="card subcard" style={{ marginBottom: 12 }}>
                   <HtmlBlock className="prose" html={version.stem_html} />
                 </div>
               )}
-              <McqOptionsArea />
+              {mcqOptionsArea}
             </div>
           </div>
         ) : isMath ? (
@@ -1578,34 +1578,34 @@ export default function PracticeQuestionPage() {
           mathShellJsx(<>
             {mathToolRow}
             <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-              <StatusPillsRow />
+              {renderStatusPills()}
             </div>
-            <PromptBlocks mb={12} />
-            <McqOptionsArea />
+            {renderPromptBlocks(12)}
+            {mcqOptionsArea}
           </>)
         ) : (
           // Default MCQ
           <div>
             <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-              <StatusPillsRow />
+              {renderStatusPills()}
             </div>
-            <PromptBlocks mb={12} />
-            <McqOptionsArea />
+            {renderPromptBlocks(12)}
+            {mcqOptionsArea}
           </div>
         )
       ) : isMath ? (
         // Math SPR
         mathShellJsx(<>
           {mathToolRow}
-          <StatusPillsRow style={{ marginBottom: 14 }} />
-          <PromptBlocks mb={12} />
+          {renderStatusPills({ marginBottom: 14 })}
+          {renderPromptBlocks(12)}
           {sprAnswerArea}
         </>)
       ) : (
         // Default SPR
         <div>
-          <StatusPillsRow style={{ marginBottom: 14 }} />
-          <PromptBlocks mb={12} />
+          {renderStatusPills({ marginBottom: 14 })}
+          {renderPromptBlocks(12)}
           {sprAnswerArea}
         </div>
       )}
