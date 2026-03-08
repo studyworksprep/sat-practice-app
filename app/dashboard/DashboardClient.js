@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { exportPracticeSessions, exportTestScores, exportPerformanceStats } from '../../lib/exportCsv';
+import { suggestReviewTopics } from '../../lib/analytics';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
 const SUBJECT_LABEL = { rw: 'R&W', RW: 'R&W', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
@@ -285,6 +287,63 @@ export default function DashboardClient({ email }) {
           <PerfSection key={section.label} section={section} loading={loading} />
         ))}
       </div>
+
+      {/* ── Suggested Review Topics ── */}
+      {data?.topicStats?.length > 0 && (() => {
+        const suggestions = suggestReviewTopics(data.topicStats, 5);
+        if (!suggestions.length) return null;
+        return (
+          <div className="card" style={{ marginBottom: 20 }}>
+            <div className="h2" style={{ marginBottom: 8 }}>Suggested Review</div>
+            <p className="muted small" style={{ marginTop: 0 }}>Topics to focus on based on your recent performance.</p>
+            <div style={{ display: 'grid', gap: 6 }}>
+              {suggestions.map((t) => (
+                <div key={t.skill_name} className="dbTopicRow" style={{ padding: '6px 0' }}>
+                  <span className="dbTopicName">{t.skill_name}</span>
+                  <span className="dbRowCount">{t.correct}/{t.attempted}</span>
+                  <div className="dbBarCell">
+                    <AccuracyBar correct={t.correct} attempted={t.attempted} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Export Data ── */}
+      {data && (
+        <div className="card" style={{ marginBottom: 20 }}>
+          <div className="h2" style={{ marginBottom: 8 }}>Export Data</div>
+          <p className="muted small" style={{ marginTop: 0 }}>Download your practice data as CSV files.</p>
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            {data.recentSessions?.length > 0 && (
+              <button
+                className="btn secondary"
+                onClick={() => exportPracticeSessions(data.recentSessions)}
+              >
+                Export Practice Sessions
+              </button>
+            )}
+            {data.testScores?.length > 0 && (
+              <button
+                className="btn secondary"
+                onClick={() => exportTestScores(data.testScores)}
+              >
+                Export Test Scores
+              </button>
+            )}
+            {data.domainStats?.length > 0 && (
+              <button
+                className="btn secondary"
+                onClick={() => exportPerformanceStats(data.domainStats, data.topicStats || [])}
+              >
+                Export Performance Stats
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Bottom row: Practice Tests + Recent Sessions ── */}
       <div className="dbBottomRow">

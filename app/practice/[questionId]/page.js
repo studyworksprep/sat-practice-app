@@ -6,6 +6,8 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
+import SessionTimer from '../../../components/SessionTimer';
+import { useKeyboardShortcuts } from '../../../lib/useKeyboardShortcuts';
 
 const htmlHasContent = (html) => {
   if (!html) return false;
@@ -1213,6 +1215,33 @@ export default function PracticeQuestionPage() {
     goToIndex(index1 + 1);
   };
 
+  // Keyboard shortcuts for question navigation
+  useKeyboardShortcuts({
+    onPrev: goPrev,
+    onNext: goNext,
+    onSubmit: () => {
+      if (!locked && !submitting) submitAttempt();
+    },
+    onMark: toggleMarkForReview,
+    onExplain: () => {
+      if ((locked || wrongOptionIds.length > 0 || wrongTexts.length > 0) && (version?.rationale_html || version?.explanation_html)) {
+        setGaveUp(true);
+        setShowExplanation((s) => !s);
+      }
+    },
+    onMap: () => {
+      if (showMap) setShowMap(false);
+      else openMap();
+    },
+    onSelectOption: (idx) => {
+      if (locked || qType !== 'mcq') return;
+      const sorted = options.slice().sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0));
+      if (idx < sorted.length && !wrongOptionIds.includes(sorted[idx].id)) {
+        setSelected(sorted[idx].id);
+      }
+    },
+  }, { enabled: !showCorrectModal && !showRef });
+
   // ✅ No visible "Stimulus/Question" headers (keep srOnly for a11y)
   const renderPromptBlocks = (mb = 12) => (
     <>
@@ -1530,6 +1559,7 @@ export default function PracticeQuestionPage() {
         </button>
 
         <div className="questionTopBarRight">
+          {inSessionContext && <SessionTimer sessionId={sidParam || sessionParamsString} />}
           {isMath ? (
             <div className="toolTabs" role="tablist" aria-label="Math tools">
               <button
