@@ -311,7 +311,7 @@ a{
 }
 
 .prose table{
-  width: 100%;
+  width: auto;
   border-collapse: collapse;
   margin: 12px 0;
   font-size: 15px;
