@@ -113,6 +113,7 @@ a{
   gap: 12px;
   overflow-y: auto;
   padding-right: 4px;
+  scrollbar-gutter: stable;
 }
 
 .qaRight{
@@ -121,6 +122,7 @@ a{
   gap: 14px;
   align-content: start;   /* stack items at top — prevents grid from distributing height */
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 /* Draggable divider between passage and question panels */
