@@ -21,11 +21,12 @@ export async function GET() {
   let studentIds = [];
 
   if (role === 'admin') {
-    // Admin sees all students
+    // Admin sees all active students
     const { data: allStudents } = await supabase
       .from('profiles')
       .select('id, email, role, created_at')
       .in('role', ['student', 'practice'])
+      .neq('is_active', false)
       .order('email', { ascending: true });
     return NextResponse.json({ students: allStudents || [] });
   }
@@ -63,6 +64,7 @@ export async function GET() {
     .from('profiles')
     .select('id, email, role, created_at')
     .in('id', studentIds)
+    .neq('is_active', false)
     .order('email', { ascending: true });
 
   return NextResponse.json({ students: students || [] });
