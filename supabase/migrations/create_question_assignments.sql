@@ -34,6 +34,15 @@ create policy "Teachers manage own assignments" on public.question_assignments
     or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
   );
 
+-- Students can view assignments they are assigned to
+create policy "Students view assigned assignments" on public.question_assignments
+  for select using (
+    exists (
+      select 1 from public.question_assignment_students qas
+      where qas.assignment_id = id and qas.student_id = auth.uid()
+    )
+  );
+
 -- Students can view assignments they're assigned to; teachers/admins see theirs
 create policy "View assignment students" on public.question_assignment_students
   for select using (
