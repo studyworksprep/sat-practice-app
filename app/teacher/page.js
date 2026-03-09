@@ -453,6 +453,13 @@ function StudentDetail({ studentId }) {
         </div>
       </div>
 
+      {/* More Statistics link */}
+      <div style={{ textAlign: 'center', margin: '4px 0 16px' }}>
+        <Link href={`/teacher/student/${studentId}/stats`} className="dbMoreStatsLink">
+          More Statistics →
+        </Link>
+      </div>
+
       {/* Practice Test Results */}
       <div className="card tchSection">
         <h3 className="h2" style={{ marginBottom: 14 }}>Practice Test Results</h3>

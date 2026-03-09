@@ -199,13 +199,17 @@ function TestScoreTrend({ testScores }) {
 
 // ── Main ──
 
-export default function StatsClient({ email }) {
+export default function StatsClient({ email, fetchUrl, backUrl, backLabel, title, studentName }) {
+  const apiUrl = fetchUrl || '/api/dashboard/stats';
+  const linkBack = backUrl || '/dashboard';
+  const linkBackLabel = backLabel || '← Dashboard';
+  const pageTitle = title || 'Detailed Statistics';
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/api/dashboard/stats')
+    fetch(apiUrl)
       .then((r) => r.json())
       .then((json) => {
         if (json.error) throw new Error(json.error);
@@ -215,14 +219,30 @@ export default function StatsClient({ email }) {
       .finally(() => setLoading(false));
   }, []);
 
+  // Derive student name from API response if available (teacher view)
+  const resolvedStudentName = studentName || (() => {
+    const s = data?.student;
+    if (!s) return null;
+    if (s.first_name || s.last_name) return [s.first_name, s.last_name].filter(Boolean).join(' ');
+    if (s.email) return s.email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return null;
+  })();
+
+  const headerBlock = (
+    <div className="stHeader">
+      <Link href={linkBack} className="btn secondary">{linkBackLabel}</Link>
+      <div>
+        <h1 className="h1" style={{ margin: 0 }}>{pageTitle}</h1>
+        {resolvedStudentName && <p className="muted small" style={{ margin: 0 }}>{resolvedStudentName}</p>}
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <main className="container">
-        <div className="stHeader">
-          <Link href="/dashboard" className="btn secondary">← Dashboard</Link>
-          <h1 className="h1">Detailed Statistics</h1>
-        </div>
-        <p className="muted">Loading your analytics...</p>
+        {headerBlock}
+        <p className="muted">Loading analytics...</p>
       </main>
     );
   }
@@ -230,10 +250,7 @@ export default function StatsClient({ email }) {
   if (error) {
     return (
       <main className="container">
-        <div className="stHeader">
-          <Link href="/dashboard" className="btn secondary">← Dashboard</Link>
-          <h1 className="h1">Detailed Statistics</h1>
-        </div>
+        {headerBlock}
         <p style={{ color: 'var(--danger)' }}>{error}</p>
       </main>
     );
@@ -255,10 +272,7 @@ export default function StatsClient({ email }) {
 
   return (
     <main className="container stMain">
-      <div className="stHeader">
-        <Link href="/dashboard" className="btn secondary">← Dashboard</Link>
-        <h1 className="h1">Detailed Statistics</h1>
-      </div>
+      {headerBlock}
 
       {/* ── Overview Stats ── */}
       <div className="stOverviewRow">
