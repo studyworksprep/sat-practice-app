@@ -304,11 +304,13 @@ function SessionCard({ session, index }) {
 
 // ── Assignments Card ──
 function AssignmentsCard({ assignments }) {
-  if (!assignments?.length) return null;
   const isOverdue = (due) => due && new Date(due) < new Date();
   return (
     <div className="card dbAssignmentsCard">
       <div className="h2" style={{ marginBottom: 12 }}>Your Assignments</div>
+      {!assignments?.length ? (
+        <p className="muted small" style={{ margin: 0 }}>No assignments yet. When your teacher assigns questions, they will appear here.</p>
+      ) : (
       <div className="dbAssignList">
         {assignments.map(a => {
           const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
@@ -333,6 +335,7 @@ function AssignmentsCard({ assignments }) {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
