@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../../lib/supabase/browser';
@@ -544,6 +544,14 @@ function StudentDetail({ studentId }) {
 
 // ─── Main teacher page ───────────────────────────────────
 export default function TeacherPage() {
+  return (
+    <Suspense>
+      <TeacherPageInner />
+    </Suspense>
+  );
+}
+
+function TeacherPageInner() {
   const supabase = createClient();
   const searchParams = useSearchParams();
   const [students, setStudents] = useState([]);
