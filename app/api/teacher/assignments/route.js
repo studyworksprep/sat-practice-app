@@ -90,7 +90,7 @@ export async function GET() {
   return NextResponse.json({ assignments: enriched });
 }
 
-// POST /api/teacher/assignments — teacher requests to add a student
+// POST /api/teacher/assignments — admin-only: assign a student to a teacher
 export async function POST(request) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -102,16 +102,18 @@ export async function POST(request) {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (profile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Only admins can add students to teacher rosters' }, { status: 403 });
   }
 
   const body = await request.json().catch(() => ({}));
-  const { student_email } = body;
+  const { student_email, teacher_id } = body;
 
   if (!student_email) {
     return NextResponse.json({ error: 'student_email required' }, { status: 400 });
   }
+
+  const targetTeacherId = teacher_id || user.id;
 
   // Find the student by email
   const { data: student } = await supabase
@@ -124,46 +126,54 @@ export async function POST(request) {
     return NextResponse.json({ error: 'No student found with that email' }, { status: 404 });
   }
 
-  if (student.id === user.id) {
-    return NextResponse.json({ error: 'Cannot assign yourself' }, { status: 400 });
-  }
-
   // Check if already assigned
   const { data: existing } = await supabase
     .from('teacher_student_assignments')
     .select('student_id')
-    .eq('teacher_id', user.id)
+    .eq('teacher_id', targetTeacherId)
     .eq('student_id', student.id)
     .maybeSingle();
 
   if (existing) {
-    return NextResponse.json({ error: 'Student is already assigned to you' }, { status: 409 });
+    return NextResponse.json({ error: 'Student is already assigned' }, { status: 409 });
   }
 
   const { error } = await supabase
     .from('teacher_student_assignments')
-    .insert({ teacher_id: user.id, student_id: student.id });
+    .insert({ teacher_id: targetTeacherId, student_id: student.id });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ ok: true, student_id: student.id, email: student.email });
 }
 
-// DELETE /api/teacher/assignments — teacher removes a student
+// DELETE /api/teacher/assignments — admin-only: remove a student from a teacher
 export async function DELETE(request) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Only admins can remove students from teacher rosters' }, { status: 403 });
+  }
+
   const body = await request.json().catch(() => ({}));
-  const { student_id } = body;
+  const { student_id, teacher_id } = body;
 
   if (!student_id) return NextResponse.json({ error: 'student_id required' }, { status: 400 });
+
+  const targetTeacherId = teacher_id || user.id;
 
   const { error } = await supabase
     .from('teacher_student_assignments')
     .delete()
-    .eq('teacher_id', user.id)
+    .eq('teacher_id', targetTeacherId)
     .eq('student_id', student_id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });

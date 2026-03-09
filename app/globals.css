@@ -4563,3 +4563,246 @@ hr{
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* ===============================
+   Teacher – Sidebar Tabs
+================================ */
+.tchSidebarTabs{
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.tchSidebarTabBtn{
+  flex: 1;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+.tchSidebarTabBtn.active{
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tchSidebarTabBtn:hover{ color: var(--text); }
+
+/* ===============================
+   Teacher – Assignment Modal
+================================ */
+.tchAssignModal{
+  max-width: 820px;
+  width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.tchAssignBody{
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 20px;
+  padding: 16px 20px;
+}
+@media(max-width:700px){
+  .tchAssignBody{ grid-template-columns: 1fr; }
+}
+.tchAssignFilters{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tchAssignSection{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tchAssignChips{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tchAssignChip{
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.tchAssignChip.active{
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.tchAssignChip.small{
+  font-size: 11px;
+  padding: 2px 8px;
+}
+.tchAssignDomainList{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tchAssignDomainBlock{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tchAssignTopicChips{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: 12px;
+}
+.tchAssignPreview{
+  margin-top: 8px;
+}
+.tchAssignPreviewList{
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.tchAssignPreviewItem{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  padding: 3px 0;
+}
+
+/* ── Student selection in modal ── */
+.tchAssignStudents{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tchAssignStudentList{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+.tchAssignStudentRow{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.tchAssignStudentRow:hover{
+  background: var(--accent-soft);
+}
+.tchAssignStudentRow input[type="checkbox"]{
+  accent-color: var(--accent);
+}
+
+/* ===============================
+   Teacher – Assignment Cards
+================================ */
+.tchAssignCard{
+  padding: 0;
+  overflow: hidden;
+}
+.tchAssignCardHeader{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.tchAssignCardHeader:hover{
+  background: var(--accent-soft);
+}
+.tchAssignDetail{
+  padding: 0 16px 14px;
+  border-top: 1px solid var(--border);
+}
+.tchAssignStudentProgress{
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 10px;
+}
+.tchAssignProgressHeader{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.tchAssignProgressRow{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.tchAssignProgressRow:last-child{
+  border-bottom: none;
+}
+
+/* ===============================
+   Student – Assignments Card
+================================ */
+.dbAssignmentsCard{
+  margin-top: 0;
+}
+.dbAssignList{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dbAssignItem{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text);
+  transition: background .15s;
+}
+.dbAssignItem:hover{
+  background: var(--accent-soft);
+}
+.dbAssignItemInfo{
+  flex: 1;
+  min-width: 0;
+}
+.dbAssignItemTitle{
+  font-weight: 650;
+  font-size: 14px;
+}
+.dbAssignItemMeta{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.dbAssignItemProgress{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 100px;
+}
+.dbAssignItemPct{
+  font-weight: 700;
+  font-size: 16px;
+  min-width: 36px;
+  text-align: right;
+}

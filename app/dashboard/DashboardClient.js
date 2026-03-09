@@ -302,12 +302,48 @@ function SessionCard({ session, index }) {
   );
 }
 
+// ── Assignments Card ──
+function AssignmentsCard({ assignments }) {
+  if (!assignments?.length) return null;
+  const isOverdue = (due) => due && new Date(due) < new Date();
+  return (
+    <div className="card dbAssignmentsCard">
+      <div className="h2" style={{ marginBottom: 12 }}>Your Assignments</div>
+      <div className="dbAssignList">
+        {assignments.map(a => {
+          const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
+          const overdue = isOverdue(a.due_date);
+          return (
+            <Link key={a.id} href={`/assignments/${a.id}`} className="dbAssignItem">
+              <div className="dbAssignItemInfo">
+                <div className="dbAssignItemTitle">{a.title}</div>
+                <div className="dbAssignItemMeta">
+                  <span>{a.completed_count}/{a.question_count} questions</span>
+                  <span>by {a.teacher_name}</span>
+                  {a.due_date && <span style={{ color: overdue ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{overdue ? ' (overdue)' : ''}</span>}
+                </div>
+              </div>
+              <div className="dbAssignItemProgress">
+                <div className="dbProgressBar" style={{ flex: 1 }}>
+                  <div className="dbProgressFill" style={{ width: `${donePct}%`, background: pctColor(donePct) }} />
+                </div>
+                <span className="dbAssignItemPct" style={{ color: pctColor(donePct) }}>{donePct}%</span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Main ──
 
 export default function DashboardClient({ email }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [assignments, setAssignments] = useState([]);
 
   useEffect(() => {
     fetch('/api/dashboard')
@@ -318,6 +354,10 @@ export default function DashboardClient({ email }) {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+    fetch('/api/assignments')
+      .then(r => r.json())
+      .then(d => setAssignments(d.assignments || []))
+      .catch(() => {});
   }, []);
 
   const sections = data
@@ -380,6 +420,9 @@ export default function DashboardClient({ email }) {
           <WeakTopicsCard weakTopics={data?.weakTopics} />
         </div>
       )}
+
+      {/* ── Assignments ── */}
+      <AssignmentsCard assignments={assignments} />
 
       {/* ── Performance: R&W | Math ── */}
       <div className="dbPerfGrid">
