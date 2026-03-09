@@ -2066,6 +2066,28 @@ hr{
   color: #dc2626; /* red when flagged */
 }
 
+/* ── Error Log ── */
+.errorLogHasNote{
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.errorLogPanel{
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--surface, rgba(0,0,0,0.02));
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.errorLogTextarea{
+  width: 100%;
+  resize: vertical;
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 60px;
+}
+
 /* ===============================
    Tool Tabs (Calculator / Reference in top header)
 ================================ */
@@ -4492,4 +4514,52 @@ hr{
   .stBar{
     grid-template-columns: 100px 1fr 40px;
   }
+}
+
+/* ── Error Log (Review page) ── */
+.errorLogItem{
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.errorLogItem:hover{
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.errorLogItemHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.errorLogBadge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.errorLogNotes{
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: var(--surface, rgba(0,0,0,0.02));
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg);
+  white-space: pre-wrap;
+  word-break: break-word;
 }

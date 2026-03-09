@@ -281,6 +281,12 @@ export default function PracticeQuestionPage() {
 
   const [showRef, setShowRef] = useState(false);
 
+  // Error log state
+  const [showErrorLog, setShowErrorLog] = useState(false);
+  const [errorLogText, setErrorLogText] = useState('');
+  const [errorLogSaving, setErrorLogSaving] = useState(false);
+  const [errorLogSaved, setErrorLogSaved] = useState(false);
+
   // Keep refPosRef synced with state (state is the persisted value)
   useEffect(() => {
     refPosRef.current = refPos;
@@ -551,6 +557,9 @@ export default function PracticeQuestionPage() {
 
       startedAtRef.current = Date.now();
       setShowExplanation(false);
+      setShowErrorLog(false);
+      setErrorLogText(json?.status?.notes || '');
+      setErrorLogSaved(false);
 
       // Prefetch next question in background
       try {
@@ -906,6 +915,26 @@ export default function PracticeQuestionPage() {
         [qid]: { ...(prev[qid] || {}), marked_for_review: !next },
       }));
       setMsg({ kind: 'danger', text: e.message });
+    }
+  }
+
+  async function saveErrorLog() {
+    if (!data?.question_id || !errorLogText.trim()) return;
+    setErrorLogSaving(true);
+    try {
+      const res = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question_id: data.question_id, patch: { notes: errorLogText.trim() } }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to save note');
+      setErrorLogSaved(true);
+      setMsg({ kind: 'ok', text: 'Error log saved' });
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setErrorLogSaving(false);
     }
   }
 
@@ -1378,6 +1407,15 @@ export default function PracticeQuestionPage() {
           </button>
         ) : null}
 
+        {locked && (
+          <button
+            className={`btn secondary${errorLogText.trim() ? ' errorLogHasNote' : ''}`}
+            onClick={() => setShowErrorLog((s) => !s)}
+          >
+            {showErrorLog ? 'Hide Error Log' : (errorLogText.trim() ? 'Edit Error Log' : 'Add to Error Log')}
+          </button>
+        )}
+
         <div className="btnRow">
           <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
             Prev
@@ -1408,6 +1446,23 @@ export default function PracticeQuestionPage() {
           ) : null}
         </div>
       </div>
+
+      {showErrorLog && (
+        <div className="errorLogPanel">
+          <textarea
+            className="input errorLogTextarea"
+            value={errorLogText}
+            onChange={(e) => { setErrorLogText(e.target.value); setErrorLogSaved(false); }}
+            placeholder="Write notes about your error — what did you get wrong and why?"
+            rows={3}
+          />
+          <div className="row" style={{ gap: 8, marginTop: 8 }}>
+            <button className="btn primary" onClick={saveErrorLog} disabled={errorLogSaving || !errorLogText.trim()}>
+              {errorLogSaving ? 'Saving…' : errorLogSaved ? 'Saved' : 'Save Note'}
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 
@@ -1463,6 +1518,15 @@ export default function PracticeQuestionPage() {
           </button>
         ) : null}
 
+        {locked && (
+          <button
+            className={`btn secondary${errorLogText.trim() ? ' errorLogHasNote' : ''}`}
+            onClick={() => setShowErrorLog((s) => !s)}
+          >
+            {showErrorLog ? 'Hide Error Log' : (errorLogText.trim() ? 'Edit Error Log' : 'Add to Error Log')}
+          </button>
+        )}
+
         <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
           Prev
         </button>
@@ -1491,6 +1555,23 @@ export default function PracticeQuestionPage() {
           </button>
         ) : null}
       </div>
+
+      {showErrorLog && (
+        <div className="errorLogPanel">
+          <textarea
+            className="input errorLogTextarea"
+            value={errorLogText}
+            onChange={(e) => { setErrorLogText(e.target.value); setErrorLogSaved(false); }}
+            placeholder="Write notes about your error — what did you get wrong and why?"
+            rows={3}
+          />
+          <div className="row" style={{ gap: 8, marginTop: 8 }}>
+            <button className="btn primary" onClick={saveErrorLog} disabled={errorLogSaving || !errorLogText.trim()}>
+              {errorLogSaving ? 'Saving…' : errorLogSaved ? 'Saved' : 'Save Note'}
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 
