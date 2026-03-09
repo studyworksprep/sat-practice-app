@@ -278,14 +278,22 @@ export async function GET(_request, { params }) {
     : null;
 
   // ── Total questions available per domain and topic (unique question_ids) ──
-  const { data: domainCounts } = await supabase
-    .from('question_taxonomy')
-    .select('question_id, domain_name, skill_name')
-    .limit(10000);
+  // Paginate because Supabase caps rows per request at ~1000
+  let allTax = [];
+  let from = 0;
+  while (true) {
+    const { data } = await supabase
+      .from('question_taxonomy')
+      .select('question_id, domain_name, skill_name')
+      .range(from, from + 999);
+    allTax = allTax.concat(data || []);
+    if (!data || data.length < 1000) break;
+    from += 1000;
+  }
 
   const domainIdSets = {};
   const topicIdSets = {};
-  for (const dc of domainCounts || []) {
+  for (const dc of allTax) {
     const domain = dc.domain_name || 'Unknown';
     const skill = dc.skill_name || 'Unknown';
     const topicKey = `${domain}::${skill}`;
