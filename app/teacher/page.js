@@ -513,7 +513,7 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
             <div className="tchAssignSection">
               <span className="tchModalLabel">Score Band</span>
               <div className="tchAssignChips">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(b => (
+                {[1, 2, 3, 4, 5, 6, 7].map(b => (
                   <button key={b} type="button"
                     className={`tchAssignChip${scoreBands.includes(b) ? ' active' : ''}`}
                     style={{ borderColor: 'var(--accent)', color: scoreBands.includes(b) ? '#fff' : 'var(--accent)', background: scoreBands.includes(b) ? 'var(--accent)' : 'transparent' }}
