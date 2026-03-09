@@ -3787,6 +3787,25 @@ hr{
   border-radius: 4px;
 }
 
+.tchDiffDots{
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.tchDiffDot{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 18px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+
 .tchDomainCount{
   font-size: 12px;
   color: var(--muted);

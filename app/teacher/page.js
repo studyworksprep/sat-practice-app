@@ -119,6 +119,37 @@ function TestScoreBarChart({ testScores }) {
   );
 }
 
+// ─── Difficulty mini-bars ─────────────────────────────────
+const DIFF_COLORS = { 1: '#4caf50', 2: '#f0a830', 3: '#e05252' };
+
+function DiffDots({ byDifficulty, availByDifficulty, type }) {
+  // type: 'done' = completion%, 'acc' = accuracy%
+  return (
+    <span className="tchDiffDots">
+      {[1, 2, 3].map(d => {
+        const bd = byDifficulty?.[d];
+        let value = null;
+        if (type === 'done') {
+          const avail = availByDifficulty?.[d] || 0;
+          if (avail > 0 && bd) value = Math.round((bd.attempted / avail) * 100);
+        } else {
+          if (bd && bd.attempted > 0) value = Math.round((bd.correct / bd.attempted) * 100);
+        }
+        return (
+          <span
+            key={d}
+            className="tchDiffDot"
+            style={{ background: DIFF_COLORS[d], opacity: value != null ? 1 : 0.2 }}
+            title={value != null ? `${['Easy', 'Medium', 'Hard'][d - 1]}: ${value}%` : `${['Easy', 'Medium', 'Hard'][d - 1]}: no data`}
+          >
+            {value != null ? `${value}` : '—'}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 // ─── Domain/topic performance table ──────────────────────
 function DomainTable({ domainStats, topicStats }) {
   const [open, setOpen] = useState({});
@@ -159,9 +190,6 @@ function DomainTable({ domainStats, topicStats }) {
               {section.domains.map(domain => {
                 const isOpen = open[domain.domain_name];
                 const hasTopics = domain.topics.length > 0;
-                const completionPct = domain.totalAvailable
-                  ? Math.round((domain.attempted / domain.totalAvailable) * 100)
-                  : null;
 
                 return (
                   <div key={domain.domain_name} className="tchDomainBlock">
@@ -177,10 +205,9 @@ function DomainTable({ domainStats, topicStats }) {
                         <span className="tchDomainName">{domain.domain_name}</span>
                       </div>
                       <div className="tchDomainMeta">
-                        {completionPct !== null && (
-                          <span className="tchDomainCompletion">{completionPct}% done</span>
-                        )}
+                        <DiffDots byDifficulty={domain.byDifficulty} availByDifficulty={domain.availByDifficulty} type="done" />
                         <span className="tchDomainCount">{domain.correct}/{domain.attempted}</span>
+                        <DiffDots byDifficulty={domain.byDifficulty} availByDifficulty={domain.availByDifficulty} type="acc" />
                       </div>
                       <div className="dbBarCell">
                         <AccuracyBar correct={domain.correct} attempted={domain.attempted} />
@@ -188,25 +215,19 @@ function DomainTable({ domainStats, topicStats }) {
                     </div>
                     {isOpen && hasTopics && (
                       <div className="tchTopicList">
-                        {domain.topics.map(topic => {
-                          const topicCompletionPct = topic.totalAvailable
-                            ? Math.min(100, Math.round((topic.attempted / topic.totalAvailable) * 100))
-                            : null;
-                          return (
-                            <div key={topic.skill_name} className="tchTopicRow">
-                              <span className="tchTopicName">{topic.skill_name}</span>
-                              <div className="tchDomainMeta">
-                                {topicCompletionPct !== null && (
-                                  <span className="tchDomainCompletion">{topicCompletionPct}% done</span>
-                                )}
-                                <span className="tchDomainCount">{topic.correct}/{topic.attempted}</span>
-                              </div>
-                              <div className="dbBarCell">
-                                <AccuracyBar correct={topic.correct} attempted={topic.attempted} />
-                              </div>
+                        {domain.topics.map(topic => (
+                          <div key={topic.skill_name} className="tchTopicRow">
+                            <span className="tchTopicName">{topic.skill_name}</span>
+                            <div className="tchDomainMeta">
+                              <DiffDots byDifficulty={topic.byDifficulty} availByDifficulty={topic.availByDifficulty} type="done" />
+                              <span className="tchDomainCount">{topic.correct}/{topic.attempted}</span>
+                              <DiffDots byDifficulty={topic.byDifficulty} availByDifficulty={topic.availByDifficulty} type="acc" />
                             </div>
-                          );
-                        })}
+                            <div className="dbBarCell">
+                              <AccuracyBar correct={topic.correct} attempted={topic.attempted} />
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
