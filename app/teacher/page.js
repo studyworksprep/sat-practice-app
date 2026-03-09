@@ -45,19 +45,6 @@ function formatDateTime(iso) {
 }
 
 // ─── Accuracy bar ────────────────────────────────────────
-function AccuracyBar({ correct, attempted }) {
-  const p = pct(correct, attempted);
-  if (p === null) return null;
-  const color = pctColor(p);
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div className="dbProgressBar">
-        <div className="dbProgressFill" style={{ width: `${p}%`, background: color }} />
-      </div>
-      <span style={{ color, fontWeight: 600, fontSize: 12, minWidth: 32, textAlign: 'right' }}>{p}%</span>
-    </div>
-  );
-}
 
 // ─── Bar chart for test scores ───────────────────────────
 function TestScoreBarChart({ testScores }) {
@@ -122,30 +109,46 @@ function TestScoreBarChart({ testScores }) {
 // ─── Difficulty mini-bars ─────────────────────────────────
 const DIFF_COLORS = { 1: '#4caf50', 2: '#f0a830', 3: '#e05252' };
 
-function DiffDots({ byDifficulty, availByDifficulty, type }) {
+function DiffCells({ byDifficulty, availByDifficulty, type }) {
   // type: 'done' = completion%, 'acc' = accuracy%
+  return [1, 2, 3].map(d => {
+    const bd = byDifficulty?.[d];
+    let value = null;
+    if (type === 'done') {
+      const avail = availByDifficulty?.[d] || 0;
+      if (avail > 0 && bd) value = Math.round((bd.attempted / avail) * 100);
+    } else {
+      if (bd && bd.attempted > 0) value = Math.round((bd.correct / bd.attempted) * 100);
+    }
+    return (
+      <span key={d} className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[d] }}>
+        {value != null ? `${value}%` : '—'}
+      </span>
+    );
+  });
+}
+
+function OverallDoneCell({ attempted, totalAvailable }) {
+  const v = totalAvailable ? Math.round((attempted / totalAvailable) * 100) : null;
   return (
-    <span className="tchDiffDots">
-      {[1, 2, 3].map(d => {
-        const bd = byDifficulty?.[d];
-        let value = null;
-        if (type === 'done') {
-          const avail = availByDifficulty?.[d] || 0;
-          if (avail > 0 && bd) value = Math.round((bd.attempted / avail) * 100);
-        } else {
-          if (bd && bd.attempted > 0) value = Math.round((bd.correct / bd.attempted) * 100);
-        }
-        return (
-          <span
-            key={d}
-            className="tchDiffDot"
-            style={{ background: DIFF_COLORS[d], opacity: value != null ? 1 : 0.2 }}
-            title={value != null ? `${['Easy', 'Medium', 'Hard'][d - 1]}: ${value}%` : `${['Easy', 'Medium', 'Hard'][d - 1]}: no data`}
-          >
-            {value != null ? `${value}` : '—'}
+    <span className="tchTblCell tchTblOverall">
+      {v != null ? `${v}%` : '—'}
+    </span>
+  );
+}
+
+function OverallAccCell({ correct, attempted }) {
+  const p = pct(correct, attempted);
+  return (
+    <span className="tchTblCell tchTblOverall tchTblAccBar">
+      {p !== null ? (
+        <>
+          <span style={{ color: pctColor(p), fontWeight: 600, minWidth: 32 }}>{p}%</span>
+          <span className="dbProgressBar" style={{ flex: 1 }}>
+            <span className="dbProgressFill" style={{ width: `${p}%`, background: pctColor(p) }} />
           </span>
-        );
-      })}
+        </>
+      ) : '—'}
     </span>
   );
 }
@@ -168,24 +171,31 @@ function DomainTable({ domainStats, topicStats }) {
     section.domains.push({ ...d, topics: topicsByDomain[d.domain_name] || [] });
   }
 
+  const headerRow = (
+    <div className="tchTblHeader">
+      <span className="tchTblCell tchTblNameCol" />
+      <span className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[1] }}>E</span>
+      <span className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[2] }}>M</span>
+      <span className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[3] }}>H</span>
+      <span className="tchTblCell tchTblOverall">Done</span>
+      <span className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[1] }}>E</span>
+      <span className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[2] }}>M</span>
+      <span className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[3] }}>H</span>
+      <span className="tchTblCell tchTblOverall">Accuracy</span>
+    </div>
+  );
+
   return (
     <div>
       {[english, math].map(section => {
         if (!section.domains.length) return null;
-        const sectionTotals = section.domains.reduce(
-          (acc, d) => ({ correct: acc.correct + d.correct, attempted: acc.attempted + d.attempted }),
-          { correct: 0, attempted: 0 }
-        );
-        const sectionPct = pct(sectionTotals.correct, sectionTotals.attempted);
 
         return (
           <div key={section.label} className="tchDomainSection">
             <div className="tchDomainSectionHeader">
               <span className="h2" style={{ margin: 0 }}>{section.label}</span>
-              {sectionPct !== null && (
-                <span style={{ color: pctColor(sectionPct), fontWeight: 700, fontSize: 14 }}>{sectionPct}%</span>
-              )}
             </div>
+            {headerRow}
             <div className="tchDomainList">
               {section.domains.map(domain => {
                 const isOpen = open[domain.domain_name];
@@ -194,38 +204,32 @@ function DomainTable({ domainStats, topicStats }) {
                 return (
                   <div key={domain.domain_name} className="tchDomainBlock">
                     <div
-                      className="tchDomainRow"
+                      className="tchTblRow tchTblRowDomain"
                       onClick={() => hasTopics && toggle(domain.domain_name)}
                       style={{ cursor: hasTopics ? 'pointer' : 'default' }}
                     >
-                      <div className="tchDomainLeft">
+                      <div className="tchTblCell tchTblNameCol">
                         <span className={`dbChevron${hasTopics ? '' : ' invisible'}${isOpen ? ' open' : ''}`}>
                           <svg viewBox="0 0 16 16"><polyline points="6 4 10 8 6 12" /></svg>
                         </span>
                         <span className="tchDomainName">{domain.domain_name}</span>
                       </div>
-                      <div className="tchDomainMeta">
-                        <DiffDots byDifficulty={domain.byDifficulty} availByDifficulty={domain.availByDifficulty} type="done" />
-                        <span className="tchDomainCount">{domain.correct}/{domain.attempted}</span>
-                        <DiffDots byDifficulty={domain.byDifficulty} availByDifficulty={domain.availByDifficulty} type="acc" />
-                      </div>
-                      <div className="dbBarCell">
-                        <AccuracyBar correct={domain.correct} attempted={domain.attempted} />
-                      </div>
+                      <DiffCells byDifficulty={domain.byDifficulty} availByDifficulty={domain.availByDifficulty} type="done" />
+                      <OverallDoneCell attempted={domain.attempted} totalAvailable={domain.totalAvailable} />
+                      <DiffCells byDifficulty={domain.byDifficulty} availByDifficulty={domain.availByDifficulty} type="acc" />
+                      <OverallAccCell correct={domain.correct} attempted={domain.attempted} />
                     </div>
                     {isOpen && hasTopics && (
                       <div className="tchTopicList">
                         {domain.topics.map(topic => (
-                          <div key={topic.skill_name} className="tchTopicRow">
-                            <span className="tchTopicName">{topic.skill_name}</span>
-                            <div className="tchDomainMeta">
-                              <DiffDots byDifficulty={topic.byDifficulty} availByDifficulty={topic.availByDifficulty} type="done" />
-                              <span className="tchDomainCount">{topic.correct}/{topic.attempted}</span>
-                              <DiffDots byDifficulty={topic.byDifficulty} availByDifficulty={topic.availByDifficulty} type="acc" />
-                            </div>
-                            <div className="dbBarCell">
-                              <AccuracyBar correct={topic.correct} attempted={topic.attempted} />
-                            </div>
+                          <div key={topic.skill_name} className="tchTblRow tchTblRowTopic">
+                            <span className="tchTblCell tchTblNameCol">
+                              <span className="tchTopicName">{topic.skill_name}</span>
+                            </span>
+                            <DiffCells byDifficulty={topic.byDifficulty} availByDifficulty={topic.availByDifficulty} type="done" />
+                            <OverallDoneCell attempted={topic.attempted} totalAvailable={topic.totalAvailable} />
+                            <DiffCells byDifficulty={topic.byDifficulty} availByDifficulty={topic.availByDifficulty} type="acc" />
+                            <OverallAccCell correct={topic.correct} attempted={topic.attempted} />
                           </div>
                         ))}
                       </div>
