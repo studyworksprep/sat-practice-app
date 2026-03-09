@@ -89,13 +89,13 @@ function Sparkline({ values, color = 'var(--accent)', width = 80, height = 28 })
 }
 
 // ── SVG Line Chart ──
-function LineChart({ data: points, yMin = 0, yMax = 100, height = 180, color = TREND_COLOR, yLabel = '%', xLabels }) {
+function LineChart({ data: points, yMin = 0, yMax = 100, height = 200, color = TREND_COLOR, yLabel = '%', xLabels }) {
   if (!points.length) return <p className="muted small">Not enough data yet.</p>;
 
-  const padL = 36, padR = 12, padT = 12, padB = 28;
-  const w = 100; // percentage-based via viewBox
-  const chartW = w - padL - padR;
-  const chartH = height - padT - padB;
+  const vbW = 600, vbH = height;
+  const padL = 48, padR = 16, padT = 16, padB = 28;
+  const chartW = vbW - padL - padR;
+  const chartH = vbH - padT - padB;
   const range = yMax - yMin || 1;
 
   // Grid lines
@@ -117,14 +117,14 @@ function LineChart({ data: points, yMin = 0, yMax = 100, height = 180, color = T
 
   return (
     <div className="stLineChartWrap">
-      <svg viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none" className="stLineChart" style={{ height }}>
+      <svg viewBox={`0 0 ${vbW} ${vbH}`} className="stLineChart">
         {/* Grid */}
         {gridVals.map((v, i) => {
           const y = padT + chartH - ((v - yMin) / range) * chartH;
           return (
             <g key={i}>
-              <line x1={padL} y1={y} x2={w - padR} y2={y} stroke="var(--border)" strokeWidth="0.3" />
-              <text x={padL - 4} y={y + 1} textAnchor="end" className="stChartLabel">
+              <line x1={padL} y1={y} x2={vbW - padR} y2={y} stroke="var(--border)" strokeWidth="1" />
+              <text x={padL - 6} y={y + 4} textAnchor="end" className="stChartLabel">
                 {Math.round(v)}{yLabel}
               </text>
             </g>
@@ -137,23 +137,22 @@ function LineChart({ data: points, yMin = 0, yMax = 100, height = 180, color = T
           points={polyline}
           fill="none"
           stroke={color}
-          strokeWidth="0.8"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         {/* Dots */}
         {polyPoints.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r="1.2" fill={color}>
+          <circle key={i} cx={p.x} cy={p.y} r="4" fill={color}>
             <title>{p.label || `${Math.round(p.value)}${yLabel}`}</title>
           </circle>
         ))}
         {/* X labels */}
         {xLabels && polyPoints.map((p, i) => {
-          // Show a subset of labels to avoid overlap
           const step = Math.max(1, Math.floor(polyPoints.length / 8));
           if (i % step !== 0 && i !== polyPoints.length - 1) return null;
           return (
-            <text key={i} x={p.x} y={height - 4} textAnchor="middle" className="stChartLabel">
+            <text key={i} x={p.x} y={vbH - 6} textAnchor="middle" className="stChartLabel">
               {p.xLabel || ''}
             </text>
           );

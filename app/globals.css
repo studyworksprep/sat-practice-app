@@ -4379,11 +4379,12 @@ hr{
 
 .stLineChart{
   width: 100%;
+  height: auto;
   display: block;
 }
 
 .stChartLabel{
-  font-size: 3.2px;
+  font-size: 11px;
   fill: var(--muted);
   font-family: var(--font);
 }
