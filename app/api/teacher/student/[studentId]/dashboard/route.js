@@ -75,52 +75,68 @@ export async function GET(_request, { params }) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   }
 
-  // ── Question statuses ──
-  const { data: statusRows } = await supabase
-    .from('question_status')
-    .select('question_id, last_is_correct, last_attempt_at')
+  // ── All attempts (ordered oldest-first so first occurrence = first attempt) ──
+  const { data: allAttempts } = await supabase
+    .from('attempts')
+    .select('id, question_id, is_correct, created_at')
     .eq('user_id', studentId)
-    .eq('is_done', true)
-    .order('last_attempt_at', { ascending: false })
+    .order('created_at', { ascending: true })
     .limit(5000);
 
-  const rows = statusRows || [];
-
-  // ── Taxonomy ──
+  // ── Taxonomy for all attempted questions ──
   const taxMap = {};
-  if (rows.length > 0) {
-    const ids = [...new Set(rows.map(r => r.question_id))];
+  const allQids = [...new Set((allAttempts || []).map(a => a.question_id))];
+  if (allQids.length > 0) {
     const { data: taxRows } = await supabase
       .from('question_taxonomy')
       .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
-      .in('question_id', ids);
+      .in('question_id', allQids);
     for (const t of (taxRows || [])) taxMap[t.question_id] = t;
   }
 
-  // ── Domain & topic stats ──
+  // ── First attempt per question (source of truth for accuracy) ──
+  const firstAttemptMap = new Map();
+  for (const a of (allAttempts || [])) {
+    if (!firstAttemptMap.has(a.question_id)) {
+      firstAttemptMap.set(a.question_id, a);
+    }
+  }
+  const firstAttempts = [...firstAttemptMap.values()];
+
+  // ── Domain & topic stats (from first attempts only, with per-difficulty breakdown) ──
+  const newDiffBucket = () => ({ 1: { attempted: 0, correct: 0 }, 2: { attempted: 0, correct: 0 }, 3: { attempted: 0, correct: 0 } });
   const domainMap = {};
   const topicMap = {};
-  for (const row of rows) {
-    const tax = taxMap[row.question_id];
+  for (const att of firstAttempts) {
+    const tax = taxMap[att.question_id];
     const domain = tax?.domain_name || 'Unknown';
     const skill = tax?.skill_name || 'Unknown';
+    const diff = tax?.difficulty || 0;
 
-    if (!domainMap[domain]) domainMap[domain] = { domain_code: tax?.domain_code || '', domain_name: domain, attempted: 0, correct: 0 };
+    if (!domainMap[domain]) domainMap[domain] = { domain_code: tax?.domain_code || '', domain_name: domain, attempted: 0, correct: 0, byDifficulty: newDiffBucket() };
     domainMap[domain].attempted++;
-    if (row.last_is_correct) domainMap[domain].correct++;
+    if (att.is_correct) domainMap[domain].correct++;
+    if (diff >= 1 && diff <= 3) {
+      domainMap[domain].byDifficulty[diff].attempted++;
+      if (att.is_correct) domainMap[domain].byDifficulty[diff].correct++;
+    }
 
     const key = `${domain}::${skill}`;
-    if (!topicMap[key]) topicMap[key] = { domain_code: tax?.domain_code || '', domain_name: domain, skill_name: skill, attempted: 0, correct: 0 };
+    if (!topicMap[key]) topicMap[key] = { domain_code: tax?.domain_code || '', domain_name: domain, skill_name: skill, attempted: 0, correct: 0, byDifficulty: newDiffBucket() };
     topicMap[key].attempted++;
-    if (row.last_is_correct) topicMap[key].correct++;
+    if (att.is_correct) topicMap[key].correct++;
+    if (diff >= 1 && diff <= 3) {
+      topicMap[key].byDifficulty[diff].attempted++;
+      if (att.is_correct) topicMap[key].byDifficulty[diff].correct++;
+    }
   }
   const domainStats = Object.values(domainMap).sort((a, b) => a.domain_name.localeCompare(b.domain_name));
   const topicStats = Object.values(topicMap).sort((a, b) => a.skill_name.localeCompare(b.skill_name));
 
-  // ── Weighted strongest/weakest ──
+  // ── Weighted strongest/weakest (from first attempts) ──
   const weightedTopics = {};
-  for (const row of rows) {
-    const tax = taxMap[row.question_id];
+  for (const att of firstAttempts) {
+    const tax = taxMap[att.question_id];
     const skill = tax?.skill_name || 'Unknown';
     const domain = tax?.domain_name || 'Unknown';
     const band = tax?.score_band || 4;
@@ -129,7 +145,7 @@ export async function GET(_request, { params }) {
     if (!weightedTopics[key]) weightedTopics[key] = { skill_name: skill, domain_name: domain, weightedCorrect: 0, weightedTotal: 0, rawCount: 0 };
     weightedTopics[key].weightedTotal += w;
     weightedTopics[key].rawCount += 1;
-    if (row.last_is_correct) weightedTopics[key].weightedCorrect += w;
+    if (att.is_correct) weightedTopics[key].weightedCorrect += w;
   }
   const qualifiedTopics = Object.values(weightedTopics).filter(t => t.rawCount >= 3);
   const sorted = qualifiedTopics.map(t => ({
@@ -139,33 +155,18 @@ export async function GET(_request, { params }) {
   const strongest = sorted[0] || null;
   const weakest = sorted.length > 1 ? sorted[sorted.length - 1] : null;
 
-  // ── Recent accuracy ──
-  const recent50 = rows.slice(0, 50);
-  const recentCorrect = recent50.filter(r => r.last_is_correct).length;
+  // ── Recent accuracy (most recent 50 unique questions, first-attempt result) ──
+  const recent50 = firstAttempts.slice(-50);
+  const recentCorrect = recent50.filter(a => a.is_correct).length;
   const recentAccuracy = recent50.length > 0 ? Math.round((recentCorrect / recent50.length) * 100) : null;
 
-  // ── Recent practice sessions ──
-  const { data: recentAttempts } = await supabase
-    .from('attempts')
-    .select('id, question_id, is_correct, created_at')
-    .eq('user_id', studentId)
-    .order('created_at', { ascending: false })
-    .limit(200);
-
-  const attemptQids = [...new Set((recentAttempts || []).map(a => a.question_id))];
-  const missingQids = attemptQids.filter(qid => !taxMap[qid]);
-  if (missingQids.length > 0) {
-    const { data: extraTax } = await supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
-      .in('question_id', missingQids);
-    for (const t of (extraTax || [])) taxMap[t.question_id] = t;
-  }
+  // ── Recent practice sessions (iterate newest-first for first-attempt logic) ──
+  const recentAttempts = [...(allAttempts || [])].reverse();
 
   const sessions = [];
   let currentSession = null;
   const SESSION_GAP_MS = 2 * 60 * 60 * 1000;
-  for (const att of recentAttempts || []) {
+  for (const att of recentAttempts) {
     const ts = new Date(att.created_at).getTime();
     if (!currentSession || (currentSession.lastTs - ts) > SESSION_GAP_MS) {
       currentSession = { startedAt: att.created_at, lastTs: ts, questions: [] };
@@ -286,31 +287,59 @@ export async function GET(_request, { params }) {
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))
     : null;
 
-  // ── Domain counts (total questions available per domain) ──
-  // Fetch from the domain-counts API logic
-  const { data: domainCounts } = await supabase
-    .from('question_taxonomy')
-    .select('domain_code, domain_name')
-    .limit(10000);
-
-  const totalByDomain = {};
-  for (const dc of domainCounts || []) {
-    const name = dc.domain_name || 'Unknown';
-    totalByDomain[name] = (totalByDomain[name] || 0) + 1;
+  // ── Total questions available per domain and topic (unique question_ids, with per-difficulty) ──
+  // Paginate because Supabase caps rows per request at ~1000
+  let allTax = [];
+  let from = 0;
+  while (true) {
+    const { data } = await supabase
+      .from('question_taxonomy')
+      .select('question_id, domain_name, skill_name, difficulty')
+      .range(from, from + 999);
+    allTax = allTax.concat(data || []);
+    if (!data || data.length < 1000) break;
+    from += 1000;
   }
 
-  // Add total available to domain stats
+  const newAvailSets = () => ({ all: new Set(), 1: new Set(), 2: new Set(), 3: new Set() });
+  const domainAvail = {};
+  const topicAvail = {};
+  for (const dc of allTax) {
+    const domain = dc.domain_name || 'Unknown';
+    const skill = dc.skill_name || 'Unknown';
+    const topicKey = `${domain}::${skill}`;
+    const diff = dc.difficulty || 0;
+    if (!domainAvail[domain]) domainAvail[domain] = newAvailSets();
+    if (!topicAvail[topicKey]) topicAvail[topicKey] = newAvailSets();
+    domainAvail[domain].all.add(dc.question_id);
+    topicAvail[topicKey].all.add(dc.question_id);
+    if (diff >= 1 && diff <= 3) {
+      domainAvail[domain][diff].add(dc.question_id);
+      topicAvail[topicKey][diff].add(dc.question_id);
+    }
+  }
+
+  const availToObj = (sets) => ({
+    totalAvailable: sets?.all.size || 0,
+    availByDifficulty: { 1: sets?.[1].size || 0, 2: sets?.[2].size || 0, 3: sets?.[3].size || 0 },
+  });
+
+  // Add total available to domain and topic stats
   const domainStatsWithTotal = domainStats.map(d => ({
     ...d,
-    totalAvailable: totalByDomain[d.domain_name] || 0,
+    ...availToObj(domainAvail[d.domain_name]),
+  }));
+  const topicStatsWithTotal = topicStats.map(t => ({
+    ...t,
+    ...availToObj(topicAvail[`${t.domain_name}::${t.skill_name}`]),
   }));
 
   return NextResponse.json({
     student: studentProfile,
     domainStats: domainStatsWithTotal,
-    topicStats,
-    totalAttempted: rows.length,
-    totalCorrect: rows.filter(r => r.last_is_correct).length,
+    topicStats: topicStatsWithTotal,
+    totalAttempted: firstAttempts.length,
+    totalCorrect: firstAttempts.filter(a => a.is_correct).length,
     strongest,
     weakest,
     recentAccuracy,

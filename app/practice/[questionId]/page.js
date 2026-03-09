@@ -6,6 +6,8 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
+import SessionTimer from '../../../components/SessionTimer';
+import { useKeyboardShortcuts } from '../../../lib/useKeyboardShortcuts';
 
 const htmlHasContent = (html) => {
   if (!html) return false;
@@ -279,6 +281,12 @@ export default function PracticeQuestionPage() {
 
   const [showRef, setShowRef] = useState(false);
 
+  // Error log state
+  const [showErrorLog, setShowErrorLog] = useState(false);
+  const [errorLogText, setErrorLogText] = useState('');
+  const [errorLogSaving, setErrorLogSaving] = useState(false);
+  const [errorLogSaved, setErrorLogSaved] = useState(false);
+
   // Keep refPosRef synced with state (state is the persisted value)
   useEffect(() => {
     refPosRef.current = refPos;
@@ -331,6 +339,11 @@ export default function PracticeQuestionPage() {
   const [mapLoading, setMapLoading] = useState(false);
   const [jumpTo, setJumpTo] = useState('');
   const startedAtRef = useRef(Date.now());
+
+  // Per-question time tracking
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [questionTimeData, setQuestionTimeData] = useState(null); // { global_avg_ms, global_median_ms, attempts }
+  const timerRef = useRef(null);
 
   // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
@@ -544,6 +557,9 @@ export default function PracticeQuestionPage() {
 
       startedAtRef.current = Date.now();
       setShowExplanation(false);
+      setShowErrorLog(false);
+      setErrorLogText(json?.status?.notes || '');
+      setErrorLogSaved(false);
 
       // Prefetch next question in background
       try {
@@ -902,6 +918,26 @@ export default function PracticeQuestionPage() {
     }
   }
 
+  async function saveErrorLog() {
+    if (!data?.question_id || !errorLogText.trim()) return;
+    setErrorLogSaving(true);
+    try {
+      const res = await fetch('/api/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question_id: data.question_id, patch: { notes: errorLogText.trim() } }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to save note');
+      setErrorLogSaved(true);
+      setMsg({ kind: 'ok', text: 'Error log saved' });
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setErrorLogSaving(false);
+    }
+  }
+
   function openBrokenFlow() {
     if (!data?.question_id) return;
 
@@ -1090,6 +1126,35 @@ export default function PracticeQuestionPage() {
     } catch {}
   }, [calcMinimized]);
 
+  // Per-question timer: ticks every second while question is active (not locked)
+  useEffect(() => {
+    if (!questionId) return;
+    setElapsedMs(0);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setElapsedMs(Date.now() - startedAtRef.current);
+    }, 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [questionId]);
+
+  // Stop timer when question is answered correctly or given up
+  useEffect(() => {
+    if ((gotCorrect || gaveUp) && timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, [gotCorrect, gaveUp]);
+
+  // Fetch per-question time data (global avg/median) after question loads
+  useEffect(() => {
+    if (!data?.question_id) return;
+    setQuestionTimeData(null);
+    fetch(`/api/time-analytics?question_id=${encodeURIComponent(data.question_id)}`)
+      .then(r => r.json())
+      .then(json => { if (!json.error) setQuestionTimeData(json); })
+      .catch(() => {});
+  }, [data?.question_id]);
+
   const qType = String(data?.version?.question_type || data?.question_type || '').toLowerCase();
   const version = data?.version || {};
   const options = Array.isArray(data?.options) ? data.options : [];
@@ -1108,7 +1173,14 @@ export default function PracticeQuestionPage() {
   // Math domain codes (new behavior)
   const isMath = ['H', 'P', 'S', 'Q'].includes(domainCode);
 
-  // ✅ Removed Attempts pill
+  // Format time display
+  const formatElapsed = (ms) => {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return m > 0 ? `${m}:${String(sec).padStart(2, '0')}` : `${sec}s`;
+  };
+
   const headerPills = [
     { label: 'Correct', value: status?.correct_attempts_count ?? 0 },
     { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
@@ -1131,6 +1203,17 @@ export default function PracticeQuestionPage() {
       </div>
 
       <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        {/* Per-question timer */}
+        <span className="pill" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          <span className="muted">Time</span>{' '}
+          <span className="kbd">{formatElapsed(elapsedMs)}</span>
+        </span>
+        {questionTimeData?.global_avg_ms && (
+          <span className="pill" title="Average time across all students">
+            <span className="muted">Avg</span>{' '}
+            <span className="kbd">{formatElapsed(questionTimeData.global_avg_ms)}</span>
+          </span>
+        )}
         {headerPills.map((p) => (
           <span key={p.label} className="pill">
             <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
@@ -1212,6 +1295,33 @@ export default function PracticeQuestionPage() {
     if (nextDisabled || index1 == null) return;
     goToIndex(index1 + 1);
   };
+
+  // Keyboard shortcuts for question navigation
+  useKeyboardShortcuts({
+    onPrev: goPrev,
+    onNext: goNext,
+    onSubmit: () => {
+      if (!locked && !submitting) submitAttempt();
+    },
+    onMark: toggleMarkForReview,
+    onExplain: () => {
+      if ((locked || wrongOptionIds.length > 0 || wrongTexts.length > 0) && (version?.rationale_html || version?.explanation_html)) {
+        setGaveUp(true);
+        setShowExplanation((s) => !s);
+      }
+    },
+    onMap: () => {
+      if (showMap) setShowMap(false);
+      else openMap();
+    },
+    onSelectOption: (idx) => {
+      if (locked || qType !== 'mcq') return;
+      const sorted = options.slice().sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0));
+      if (idx < sorted.length && !wrongOptionIds.includes(sorted[idx].id)) {
+        setSelected(sorted[idx].id);
+      }
+    },
+  }, { enabled: !showCorrectModal && !showRef });
 
   // ✅ No visible "Stimulus/Question" headers (keep srOnly for a11y)
   const renderPromptBlocks = (mb = 12) => (
@@ -1297,6 +1407,15 @@ export default function PracticeQuestionPage() {
           </button>
         ) : null}
 
+        {locked && (
+          <button
+            className={`btn secondary${errorLogText.trim() ? ' errorLogHasNote' : ''}`}
+            onClick={() => setShowErrorLog((s) => !s)}
+          >
+            {showErrorLog ? 'Hide Error Log' : (errorLogText.trim() ? 'Edit Error Log' : 'Add to Error Log')}
+          </button>
+        )}
+
         <div className="btnRow">
           <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
             Prev
@@ -1327,6 +1446,23 @@ export default function PracticeQuestionPage() {
           ) : null}
         </div>
       </div>
+
+      {showErrorLog && (
+        <div className="errorLogPanel">
+          <textarea
+            className="input errorLogTextarea"
+            value={errorLogText}
+            onChange={(e) => { setErrorLogText(e.target.value); setErrorLogSaved(false); }}
+            placeholder="Write notes about your error — what did you get wrong and why?"
+            rows={3}
+          />
+          <div className="row" style={{ gap: 8, marginTop: 8 }}>
+            <button className="btn primary" onClick={saveErrorLog} disabled={errorLogSaving || !errorLogText.trim()}>
+              {errorLogSaving ? 'Saving…' : errorLogSaved ? 'Saved' : 'Save Note'}
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 
@@ -1382,6 +1518,15 @@ export default function PracticeQuestionPage() {
           </button>
         ) : null}
 
+        {locked && (
+          <button
+            className={`btn secondary${errorLogText.trim() ? ' errorLogHasNote' : ''}`}
+            onClick={() => setShowErrorLog((s) => !s)}
+          >
+            {showErrorLog ? 'Hide Error Log' : (errorLogText.trim() ? 'Edit Error Log' : 'Add to Error Log')}
+          </button>
+        )}
+
         <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
           Prev
         </button>
@@ -1410,6 +1555,23 @@ export default function PracticeQuestionPage() {
           </button>
         ) : null}
       </div>
+
+      {showErrorLog && (
+        <div className="errorLogPanel">
+          <textarea
+            className="input errorLogTextarea"
+            value={errorLogText}
+            onChange={(e) => { setErrorLogText(e.target.value); setErrorLogSaved(false); }}
+            placeholder="Write notes about your error — what did you get wrong and why?"
+            rows={3}
+          />
+          <div className="row" style={{ gap: 8, marginTop: 8 }}>
+            <button className="btn primary" onClick={saveErrorLog} disabled={errorLogSaving || !errorLogText.trim()}>
+              {errorLogSaving ? 'Saving…' : errorLogSaved ? 'Saved' : 'Save Note'}
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 
@@ -1530,6 +1692,7 @@ export default function PracticeQuestionPage() {
         </button>
 
         <div className="questionTopBarRight">
+          {/* Per-question time shown in status pills instead of session timer */}
           {isMath ? (
             <div className="toolTabs" role="tablist" aria-label="Math tools">
               <button

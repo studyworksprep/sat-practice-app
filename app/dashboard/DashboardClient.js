@@ -15,7 +15,7 @@ function pct(correct, attempted) {
 
 function pctColor(p) {
   if (p === null || p === undefined) return undefined;
-  return p >= 70 ? 'var(--success)' : p >= 50 ? '#ca8a04' : 'var(--danger)';
+  return p >= 70 ? 'var(--success)' : p >= 50 ? 'var(--amber)' : 'var(--danger)';
 }
 
 function displayName(email) {
@@ -39,6 +39,13 @@ function formatDateTime(iso) {
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
     ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function formatMs(ms) {
+  if (!ms) return '—';
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `${s}s`;
+  return `${Math.floor(s / 60)}m ${s % 60}s`;
 }
 
 function AccuracyBar({ correct, attempted }) {
@@ -68,6 +75,93 @@ function buildSections(domainStats, topicStats) {
     section.domains.push({ ...d, topics: topicsByDomain[d.domain_name] || [] });
   }
   return [english, math];
+}
+
+// ── Streak display ──
+function StreakCard({ streak, practicedToday }) {
+  return (
+    <div className="card dbStatCard">
+      <div className="dbStatValue" style={{ color: streak > 0 ? 'var(--amber)' : 'var(--muted)' }}>
+        {streak || 0}
+      </div>
+      <div className="dbStatLabel">
+        Day Streak
+        {practicedToday && streak > 0 && <span style={{ color: 'var(--success)', marginLeft: 4 }}>*</span>}
+      </div>
+    </div>
+  );
+}
+
+// ── Goal Progress Card ──
+function GoalProgressCard({ targetScore, highestScore, goalProgress, pointsToGoal }) {
+  if (!targetScore) return null;
+  return (
+    <div className="card dbGoalCard">
+      <div className="dbGoalHeader">
+        <span className="h2" style={{ fontSize: 15 }}>Goal: {targetScore}</span>
+        {highestScore && (
+          <span className="muted small">Best: {highestScore}</span>
+        )}
+      </div>
+      {goalProgress != null ? (
+        <>
+          <div className="dbGoalBarOuter">
+            <div
+              className="dbGoalBarFill"
+              style={{
+                width: `${goalProgress}%`,
+                background: goalProgress >= 100 ? 'var(--success)' : 'var(--accent)',
+              }}
+            />
+          </div>
+          <div className="dbGoalMeta">
+            {goalProgress >= 100 ? (
+              <span style={{ color: 'var(--success)', fontWeight: 600, fontSize: 13 }}>
+                Goal reached!
+              </span>
+            ) : (
+              <span className="muted small">{pointsToGoal} points to go</span>
+            )}
+            <span className="muted small">{goalProgress}%</span>
+          </div>
+        </>
+      ) : (
+        <p className="muted small" style={{ margin: '8px 0 0' }}>
+          Take a practice test to start tracking progress toward your goal.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── Weak Topics / Recommendations ──
+function WeakTopicsCard({ weakTopics }) {
+  if (!weakTopics?.length) return null;
+  return (
+    <div className="card dbRecsCard">
+      <div className="h2" style={{ marginBottom: 10, fontSize: 15 }}>Focus Areas</div>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {weakTopics.map((t) => (
+          <Link
+            key={t.skill_name}
+            href={`/practice?topics=${encodeURIComponent(t.skill_name)}&session=1`}
+            className="dbRecItem"
+          >
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 13 }}>{t.skill_name}</div>
+              <div className="muted small">{t.domain_name}</div>
+            </div>
+            <span style={{ color: pctColor(t.weightedPct), fontWeight: 600, fontSize: 13 }}>
+              {t.weightedPct}%
+            </span>
+          </Link>
+        ))}
+      </div>
+      <Link href="/dashboard/recommendations" className="dbMoreStatsLink" style={{ display: 'block', marginTop: 10, fontSize: 13 }}>
+        All Recommendations →
+      </Link>
+    </div>
+  );
 }
 
 function PerfSection({ section, loading }) {
@@ -105,8 +199,8 @@ function PerfSection({ section, loading }) {
                   style={{ cursor: hasTopics ? 'pointer' : 'default' }}
                 >
                   <div className="dbDomainLeft">
-                    <span className={`dbChevron${hasTopics ? '' : ' invisible'}`}>
-                      {isOpen ? '▾' : '▸'}
+                    <span className={`dbChevron${hasTopics ? '' : ' invisible'}${isOpen ? ' open' : ''}`}>
+                      <svg viewBox="0 0 16 16"><polyline points="6 4 10 8 6 12" /></svg>
                     </span>
                     <span className="dbDomainName">{domain.domain_name}</span>
                   </div>
@@ -161,8 +255,6 @@ function SessionCard({ session, index }) {
   const p = pct(correct, total);
 
   function handleTileClick(qIndex) {
-    // Store the session question IDs and metadata in localStorage so the
-    // practice page can navigate through them without creating a new session record
     const ids = questions.map(q => q.question_id);
     const sid = `dashboard_${Date.now()}_${index}`;
     localStorage.setItem(`practice_session_${sid}`, ids.join(','));
@@ -210,12 +302,48 @@ function SessionCard({ session, index }) {
   );
 }
 
+// ── Assignments Card ──
+function AssignmentsCard({ assignments }) {
+  if (!assignments?.length) return null;
+  const isOverdue = (due) => due && new Date(due) < new Date();
+  return (
+    <div className="card dbAssignmentsCard">
+      <div className="h2" style={{ marginBottom: 12 }}>Your Assignments</div>
+      <div className="dbAssignList">
+        {assignments.map(a => {
+          const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
+          const overdue = isOverdue(a.due_date);
+          return (
+            <Link key={a.id} href={`/assignments/${a.id}`} className="dbAssignItem">
+              <div className="dbAssignItemInfo">
+                <div className="dbAssignItemTitle">{a.title}</div>
+                <div className="dbAssignItemMeta">
+                  <span>{a.completed_count}/{a.question_count} questions</span>
+                  <span>by {a.teacher_name}</span>
+                  {a.due_date && <span style={{ color: overdue ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{overdue ? ' (overdue)' : ''}</span>}
+                </div>
+              </div>
+              <div className="dbAssignItemProgress">
+                <div className="dbProgressBar" style={{ flex: 1 }}>
+                  <div className="dbProgressFill" style={{ width: `${donePct}%`, background: pctColor(donePct) }} />
+                </div>
+                <span className="dbAssignItemPct" style={{ color: pctColor(donePct) }}>{donePct}%</span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Main ──
 
 export default function DashboardClient({ email }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [assignments, setAssignments] = useState([]);
 
   useEffect(() => {
     fetch('/api/dashboard')
@@ -226,6 +354,10 @@ export default function DashboardClient({ email }) {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+    fetch('/api/assignments')
+      .then(r => r.json())
+      .then(d => setAssignments(d.assignments || []))
+      .catch(() => {});
   }, []);
 
   const sections = data
@@ -239,7 +371,11 @@ export default function DashboardClient({ email }) {
       <div className="card dbBanner">
         <div className="dbBannerText">
           <div className="dbBannerGreeting">{timeGreeting()}, {displayName(email)}</div>
-          <p className="muted small" style={{ margin: 0 }}>Ready to practice? Let's go.</p>
+          <p className="muted small" style={{ margin: 0 }}>
+            {data?.currentStreak > 0
+              ? `${data.currentStreak} day streak — keep it going!`
+              : 'Ready to practice? Let\'s go.'}
+          </p>
         </div>
         <div className="dbBannerActions">
           <Link href="/practice" className="btn primary">Continue Practicing</Link>
@@ -247,8 +383,9 @@ export default function DashboardClient({ email }) {
         </div>
       </div>
 
-      {/* ── Top stats row ── */}
+      {/* ── Top stats row (now includes streak) ── */}
       <div className="dbStatsRow">
+        <StreakCard streak={data?.currentStreak} practicedToday={data?.practicedToday} />
         <div className="card dbStatCard">
           <div className="dbStatValue" style={{ color: 'var(--accent)' }}>
             {data?.highestTestScore ?? '—'}
@@ -264,14 +401,6 @@ export default function DashboardClient({ email }) {
           </div>
         </div>
         <div className="card dbStatCard">
-          <div className="dbStatValue dbStatValueSm" style={{ color: 'var(--danger)' }}>
-            {data?.weakest ? `${data.weakest.weightedPct}%` : '—'}
-          </div>
-          <div className="dbStatLabel">
-            {data?.weakest ? data.weakest.skill_name : 'Weakest Topic'}
-          </div>
-        </div>
-        <div className="card dbStatCard">
           <div className="dbStatValue" style={{ color: pctColor(data?.recentAccuracy) }}>
             {data?.recentAccuracy != null ? `${data.recentAccuracy}%` : '—'}
           </div>
@@ -279,12 +408,37 @@ export default function DashboardClient({ email }) {
         </div>
       </div>
 
+      {/* ── Goal Progress + Recommendations row ── */}
+      {(data?.targetScore || data?.weakTopics?.length > 0) && (
+        <div className="dbGoalRecsRow">
+          <GoalProgressCard
+            targetScore={data?.targetScore}
+            highestScore={data?.highestTestScore}
+            goalProgress={data?.goalProgress}
+            pointsToGoal={data?.pointsToGoal}
+          />
+          <WeakTopicsCard weakTopics={data?.weakTopics} />
+        </div>
+      )}
+
+      {/* ── Assignments ── */}
+      <AssignmentsCard assignments={assignments} />
+
       {/* ── Performance: R&W | Math ── */}
       <div className="dbPerfGrid">
         {sections.map((section) => (
           <PerfSection key={section.label} section={section} loading={loading} />
         ))}
       </div>
+
+      {/* ── More Statistics link ── */}
+      {data && (
+        <div style={{ textAlign: 'center', margin: '4px 0 16px' }}>
+          <Link href="/dashboard/stats" className="dbMoreStatsLink">
+            More Statistics →
+          </Link>
+        </div>
+      )}
 
       {/* ── Bottom row: Practice Tests + Recent Sessions ── */}
       <div className="dbBottomRow">

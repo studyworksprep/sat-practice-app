@@ -97,13 +97,13 @@ export async function GET(_request, { params }) {
       .eq('question_version_id', version.id)
       .limit(1)
       .maybeSingle(),
-    // Student's most recent attempt for this question
+    // Student's first attempt for this question (source of truth for scoring)
     supabase
       .from('attempts')
       .select('selected_option_id, response_text, is_correct, created_at')
       .eq('user_id', studentId)
       .eq('question_id', questionId)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true })
       .limit(1)
       .maybeSingle(),
   ]);
@@ -115,18 +115,18 @@ export async function GET(_request, { params }) {
   const { data: questionRow } = qRowResult;
   const { data: st } = stResult;
   const { data: ca } = caResult;
-  const { data: lastAttempt } = lastAttemptResult;
+  const { data: firstAttempt } = lastAttemptResult;
 
-  // Build student status with last selected answer
+  // Build student status with first attempt answer (source of truth for scoring)
   let status = null;
   if (st) {
     const prevJson = st.status_json && typeof st.status_json === 'object' ? st.status_json : {};
-    if (lastAttempt) {
+    if (firstAttempt) {
       if (version.question_type === 'mcq' && !prevJson.last_selected_option_id) {
-        prevJson.last_selected_option_id = lastAttempt.selected_option_id;
+        prevJson.last_selected_option_id = firstAttempt.selected_option_id;
       }
       if (version.question_type === 'spr' && !prevJson.last_response_text) {
-        prevJson.last_response_text = lastAttempt.response_text;
+        prevJson.last_response_text = firstAttempt.response_text;
       }
     }
     status = { ...st, status_json: prevJson };
@@ -148,6 +148,6 @@ export async function GET(_request, { params }) {
     status,
     correct_option_id,
     correct_text,
-    student_attempt: lastAttempt || null,
+    student_attempt: firstAttempt || null,
   });
 }
