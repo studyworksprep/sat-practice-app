@@ -160,7 +160,7 @@ function DomainTable({ domainStats, topicStats }) {
                 const isOpen = open[domain.domain_name];
                 const hasTopics = domain.topics.length > 0;
                 const completionPct = domain.totalAvailable
-                  ? Math.round((domain.attempted / domain.totalAvailable) * 100)
+                  ? Math.min(100, Math.round((domain.attempted / domain.totalAvailable) * 100))
                   : null;
 
                 return (

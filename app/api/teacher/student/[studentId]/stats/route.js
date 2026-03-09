@@ -113,10 +113,14 @@ export async function GET(_request, { params }) {
     for (const t of (extraTax || [])) taxMap[t.question_id] = t;
   }
 
-  // ── Enrich attempts ──
-  const enrichedAttempts = (allAttempts || []).map(a => {
+  // ── Enrich attempts (first attempt per question only) ──
+  const seenQids = new Set();
+  const enrichedAttempts = [];
+  for (const a of (allAttempts || [])) {
+    if (seenQids.has(a.question_id)) continue;   // skip retries
+    seenQids.add(a.question_id);
     const tax = taxMap[a.question_id] || {};
-    return {
+    enrichedAttempts.push({
       question_id: a.question_id,
       is_correct: a.is_correct,
       created_at: a.created_at,
@@ -126,8 +130,8 @@ export async function GET(_request, { params }) {
       domain_code: tax.domain_code || null,
       skill_name: tax.skill_name || null,
       score_band: tax.score_band ?? null,
-    };
-  });
+    });
+  }
 
   // ── Domain & topic stats ──
   const domainMap = {};
