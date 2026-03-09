@@ -188,15 +188,25 @@ function DomainTable({ domainStats, topicStats }) {
                     </div>
                     {isOpen && hasTopics && (
                       <div className="tchTopicList">
-                        {domain.topics.map(topic => (
-                          <div key={topic.skill_name} className="tchTopicRow">
-                            <span className="tchTopicName">{topic.skill_name}</span>
-                            <span className="tchDomainCount">{topic.correct}/{topic.attempted}</span>
-                            <div className="dbBarCell">
-                              <AccuracyBar correct={topic.correct} attempted={topic.attempted} />
+                        {domain.topics.map(topic => {
+                          const topicCompletionPct = topic.totalAvailable
+                            ? Math.min(100, Math.round((topic.attempted / topic.totalAvailable) * 100))
+                            : null;
+                          return (
+                            <div key={topic.skill_name} className="tchTopicRow">
+                              <span className="tchTopicName">{topic.skill_name}</span>
+                              <div className="tchDomainMeta">
+                                {topicCompletionPct !== null && (
+                                  <span className="tchDomainCompletion">{topicCompletionPct}% done</span>
+                                )}
+                                <span className="tchDomainCount">{topic.correct}/{topic.attempted}</span>
+                              </div>
+                              <div className="dbBarCell">
+                                <AccuracyBar correct={topic.correct} attempted={topic.attempted} />
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>

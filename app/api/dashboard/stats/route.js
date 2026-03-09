@@ -16,56 +16,40 @@ export async function GET() {
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   const user = auth.user;
 
-  // ── All question statuses ──
-  const { data: statusRows, error } = await supabase
-    .from('question_status')
-    .select('question_id, last_is_correct, last_attempt_at')
-    .eq('user_id', user.id)
-    .eq('is_done', true)
-    .order('last_attempt_at', { ascending: false })
-    .limit(5000);
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  const rows = statusRows || [];
-
-  // ── Taxonomy for all attempted questions ──
-  const taxMap = {};
-  if (rows.length > 0) {
-    const ids = [...new Set(rows.map(r => r.question_id))];
-    const { data: taxRows } = await supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
-      .in('question_id', ids);
-    for (const t of (taxRows || [])) taxMap[t.question_id] = t;
-  }
-
-  // ── All attempts with time data (up to 2000 for trend analysis) ──
-  const { data: allAttempts } = await supabase
+  // ── All attempts with time data (oldest-first so first occurrence = first attempt) ──
+  const { data: allAttempts, error } = await supabase
     .from('attempts')
     .select('id, question_id, is_correct, created_at, time_spent_ms')
     .eq('user_id', user.id)
     .order('created_at', { ascending: true })
-    .limit(2000);
+    .limit(5000);
 
-  // Fetch taxonomy for any question_ids in attempts not already in taxMap
-  const attemptQids = [...new Set((allAttempts || []).map(a => a.question_id))];
-  const missingQids = attemptQids.filter(qid => !taxMap[qid]);
-  if (missingQids.length > 0) {
-    const { data: extraTax } = await supabase
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  // ── Taxonomy for all attempted questions ──
+  const taxMap = {};
+  const allQids = [...new Set((allAttempts || []).map(a => a.question_id))];
+  if (allQids.length > 0) {
+    const { data: taxRows } = await supabase
       .from('question_taxonomy')
       .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
-      .in('question_id', missingQids);
-    for (const t of (extraTax || [])) taxMap[t.question_id] = t;
+      .in('question_id', allQids);
+    for (const t of (taxRows || [])) taxMap[t.question_id] = t;
   }
 
-  // ── Enrich attempts with taxonomy (first attempt per question only) ──
-  const seenQids = new Set();
-  const enrichedAttempts = [];
+  // ── First attempt per question (source of truth for accuracy) ──
+  const firstAttemptMap = new Map();
   for (const a of (allAttempts || [])) {
-    if (seenQids.has(a.question_id)) continue;   // skip retries
-    seenQids.add(a.question_id);
+    if (!firstAttemptMap.has(a.question_id)) {
+      firstAttemptMap.set(a.question_id, a);
+    }
+  }
+  const firstAttempts = [...firstAttemptMap.values()];
+
+  // ── Enrich first attempts with taxonomy ──
+  const enrichedAttempts = firstAttempts.map(a => {
     const tax = taxMap[a.question_id] || {};
-    enrichedAttempts.push({
+    return {
       question_id: a.question_id,
       is_correct: a.is_correct,
       created_at: a.created_at,
@@ -75,33 +59,33 @@ export async function GET() {
       domain_code: tax.domain_code || null,
       skill_name: tax.skill_name || null,
       score_band: tax.score_band ?? null,
-    });
-  }
+    };
+  });
 
-  // ── Domain & topic stats ──
+  // ── Domain & topic stats (from first attempts only) ──
   const domainMap = {};
   const topicMap = {};
-  for (const row of rows) {
-    const tax = taxMap[row.question_id];
+  for (const att of firstAttempts) {
+    const tax = taxMap[att.question_id];
     const domain = tax?.domain_name || 'Unknown';
     const skill = tax?.skill_name || 'Unknown';
 
     if (!domainMap[domain]) domainMap[domain] = { domain_code: tax?.domain_code || '', domain_name: domain, attempted: 0, correct: 0 };
     domainMap[domain].attempted++;
-    if (row.last_is_correct) domainMap[domain].correct++;
+    if (att.is_correct) domainMap[domain].correct++;
 
     const key = `${domain}::${skill}`;
     if (!topicMap[key]) topicMap[key] = { domain_code: tax?.domain_code || '', domain_name: domain, skill_name: skill, attempted: 0, correct: 0 };
     topicMap[key].attempted++;
-    if (row.last_is_correct) topicMap[key].correct++;
+    if (att.is_correct) topicMap[key].correct++;
   }
   const domainStats = Object.values(domainMap).sort((a, b) => a.domain_name.localeCompare(b.domain_name));
   const topicStats = Object.values(topicMap).sort((a, b) => a.skill_name.localeCompare(b.skill_name));
 
-  // ── Weighted strongest/weakest topics ──
+  // ── Weighted strongest/weakest topics (from first attempts) ──
   const weightedTopics = {};
-  for (const row of rows) {
-    const tax = taxMap[row.question_id];
+  for (const att of firstAttempts) {
+    const tax = taxMap[att.question_id];
     const skill = tax?.skill_name || 'Unknown';
     const domain = tax?.domain_name || 'Unknown';
     const band = tax?.score_band || 4;
@@ -110,7 +94,7 @@ export async function GET() {
     if (!weightedTopics[key]) weightedTopics[key] = { skill_name: skill, domain_name: domain, weightedCorrect: 0, weightedTotal: 0, rawCount: 0 };
     weightedTopics[key].weightedTotal += w;
     weightedTopics[key].rawCount += 1;
-    if (row.last_is_correct) weightedTopics[key].weightedCorrect += w;
+    if (att.is_correct) weightedTopics[key].weightedCorrect += w;
   }
 
   const qualifiedTopics = Object.values(weightedTopics).filter(t => t.rawCount >= 3);
@@ -122,9 +106,9 @@ export async function GET() {
   const strongest = sorted[0] || null;
   const weakest = sorted.length > 1 ? sorted[sorted.length - 1] : null;
 
-  // ── Recent accuracy (last 50) ──
-  const recent50 = rows.slice(0, 50);
-  const recentCorrect = recent50.filter(r => r.last_is_correct).length;
+  // ── Recent accuracy (most recent 50 unique questions, first-attempt result) ──
+  const recent50 = firstAttempts.slice(-50);
+  const recentCorrect = recent50.filter(a => a.is_correct).length;
   const recentAccuracy = recent50.length > 0 ? Math.round((recentCorrect / recent50.length) * 100) : null;
 
   // ── Practice sessions for trend (from allAttempts, newest-first for grouping) ──
@@ -257,8 +241,8 @@ export async function GET() {
   return NextResponse.json({
     domainStats,
     topicStats,
-    totalAttempted: rows.length,
-    totalCorrect: rows.filter(r => r.last_is_correct).length,
+    totalAttempted: firstAttempts.length,
+    totalCorrect: firstAttempts.filter(a => a.is_correct).length,
     strongest,
     weakest,
     recentAccuracy,

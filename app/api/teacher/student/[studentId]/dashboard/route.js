@@ -75,52 +75,58 @@ export async function GET(_request, { params }) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   }
 
-  // ── Question statuses ──
-  const { data: statusRows } = await supabase
-    .from('question_status')
-    .select('question_id, last_is_correct, last_attempt_at')
+  // ── All attempts (ordered oldest-first so first occurrence = first attempt) ──
+  const { data: allAttempts } = await supabase
+    .from('attempts')
+    .select('id, question_id, is_correct, created_at')
     .eq('user_id', studentId)
-    .eq('is_done', true)
-    .order('last_attempt_at', { ascending: false })
+    .order('created_at', { ascending: true })
     .limit(5000);
 
-  const rows = statusRows || [];
-
-  // ── Taxonomy ──
+  // ── Taxonomy for all attempted questions ──
   const taxMap = {};
-  if (rows.length > 0) {
-    const ids = [...new Set(rows.map(r => r.question_id))];
+  const allQids = [...new Set((allAttempts || []).map(a => a.question_id))];
+  if (allQids.length > 0) {
     const { data: taxRows } = await supabase
       .from('question_taxonomy')
       .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
-      .in('question_id', ids);
+      .in('question_id', allQids);
     for (const t of (taxRows || [])) taxMap[t.question_id] = t;
   }
 
-  // ── Domain & topic stats ──
+  // ── First attempt per question (source of truth for accuracy) ──
+  const firstAttemptMap = new Map();
+  for (const a of (allAttempts || [])) {
+    if (!firstAttemptMap.has(a.question_id)) {
+      firstAttemptMap.set(a.question_id, a);
+    }
+  }
+  const firstAttempts = [...firstAttemptMap.values()];
+
+  // ── Domain & topic stats (from first attempts only) ──
   const domainMap = {};
   const topicMap = {};
-  for (const row of rows) {
-    const tax = taxMap[row.question_id];
+  for (const att of firstAttempts) {
+    const tax = taxMap[att.question_id];
     const domain = tax?.domain_name || 'Unknown';
     const skill = tax?.skill_name || 'Unknown';
 
     if (!domainMap[domain]) domainMap[domain] = { domain_code: tax?.domain_code || '', domain_name: domain, attempted: 0, correct: 0 };
     domainMap[domain].attempted++;
-    if (row.last_is_correct) domainMap[domain].correct++;
+    if (att.is_correct) domainMap[domain].correct++;
 
     const key = `${domain}::${skill}`;
     if (!topicMap[key]) topicMap[key] = { domain_code: tax?.domain_code || '', domain_name: domain, skill_name: skill, attempted: 0, correct: 0 };
     topicMap[key].attempted++;
-    if (row.last_is_correct) topicMap[key].correct++;
+    if (att.is_correct) topicMap[key].correct++;
   }
   const domainStats = Object.values(domainMap).sort((a, b) => a.domain_name.localeCompare(b.domain_name));
   const topicStats = Object.values(topicMap).sort((a, b) => a.skill_name.localeCompare(b.skill_name));
 
-  // ── Weighted strongest/weakest ──
+  // ── Weighted strongest/weakest (from first attempts) ──
   const weightedTopics = {};
-  for (const row of rows) {
-    const tax = taxMap[row.question_id];
+  for (const att of firstAttempts) {
+    const tax = taxMap[att.question_id];
     const skill = tax?.skill_name || 'Unknown';
     const domain = tax?.domain_name || 'Unknown';
     const band = tax?.score_band || 4;
@@ -129,7 +135,7 @@ export async function GET(_request, { params }) {
     if (!weightedTopics[key]) weightedTopics[key] = { skill_name: skill, domain_name: domain, weightedCorrect: 0, weightedTotal: 0, rawCount: 0 };
     weightedTopics[key].weightedTotal += w;
     weightedTopics[key].rawCount += 1;
-    if (row.last_is_correct) weightedTopics[key].weightedCorrect += w;
+    if (att.is_correct) weightedTopics[key].weightedCorrect += w;
   }
   const qualifiedTopics = Object.values(weightedTopics).filter(t => t.rawCount >= 3);
   const sorted = qualifiedTopics.map(t => ({
@@ -139,33 +145,18 @@ export async function GET(_request, { params }) {
   const strongest = sorted[0] || null;
   const weakest = sorted.length > 1 ? sorted[sorted.length - 1] : null;
 
-  // ── Recent accuracy ──
-  const recent50 = rows.slice(0, 50);
-  const recentCorrect = recent50.filter(r => r.last_is_correct).length;
+  // ── Recent accuracy (most recent 50 unique questions, first-attempt result) ──
+  const recent50 = firstAttempts.slice(-50);
+  const recentCorrect = recent50.filter(a => a.is_correct).length;
   const recentAccuracy = recent50.length > 0 ? Math.round((recentCorrect / recent50.length) * 100) : null;
 
-  // ── Recent practice sessions ──
-  const { data: recentAttempts } = await supabase
-    .from('attempts')
-    .select('id, question_id, is_correct, created_at')
-    .eq('user_id', studentId)
-    .order('created_at', { ascending: false })
-    .limit(200);
-
-  const attemptQids = [...new Set((recentAttempts || []).map(a => a.question_id))];
-  const missingQids = attemptQids.filter(qid => !taxMap[qid]);
-  if (missingQids.length > 0) {
-    const { data: extraTax } = await supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
-      .in('question_id', missingQids);
-    for (const t of (extraTax || [])) taxMap[t.question_id] = t;
-  }
+  // ── Recent practice sessions (iterate newest-first for first-attempt logic) ──
+  const recentAttempts = [...(allAttempts || [])].reverse();
 
   const sessions = [];
   let currentSession = null;
   const SESSION_GAP_MS = 2 * 60 * 60 * 1000;
-  for (const att of recentAttempts || []) {
+  for (const att of recentAttempts) {
     const ts = new Date(att.created_at).getTime();
     if (!currentSession || (currentSession.lastTs - ts) > SESSION_GAP_MS) {
       currentSession = { startedAt: att.created_at, lastTs: ts, questions: [] };
@@ -286,31 +277,37 @@ export async function GET(_request, { params }) {
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))
     : null;
 
-  // ── Domain counts (total questions available per domain) ──
-  // Fetch from the domain-counts API logic
+  // ── Total questions available per domain and topic ──
   const { data: domainCounts } = await supabase
     .from('question_taxonomy')
-    .select('domain_code, domain_name')
+    .select('domain_name, skill_name')
     .limit(10000);
 
   const totalByDomain = {};
+  const totalByTopic = {};
   for (const dc of domainCounts || []) {
-    const name = dc.domain_name || 'Unknown';
-    totalByDomain[name] = (totalByDomain[name] || 0) + 1;
+    const domain = dc.domain_name || 'Unknown';
+    const skill = dc.skill_name || 'Unknown';
+    totalByDomain[domain] = (totalByDomain[domain] || 0) + 1;
+    totalByTopic[`${domain}::${skill}`] = (totalByTopic[`${domain}::${skill}`] || 0) + 1;
   }
 
-  // Add total available to domain stats
+  // Add total available to domain and topic stats
   const domainStatsWithTotal = domainStats.map(d => ({
     ...d,
     totalAvailable: totalByDomain[d.domain_name] || 0,
+  }));
+  const topicStatsWithTotal = topicStats.map(t => ({
+    ...t,
+    totalAvailable: totalByTopic[`${t.domain_name}::${t.skill_name}`] || 0,
   }));
 
   return NextResponse.json({
     student: studentProfile,
     domainStats: domainStatsWithTotal,
-    topicStats,
-    totalAttempted: rows.length,
-    totalCorrect: rows.filter(r => r.last_is_correct).length,
+    topicStats: topicStatsWithTotal,
+    totalAttempted: firstAttempts.length,
+    totalCorrect: firstAttempts.filter(a => a.is_correct).length,
     strongest,
     weakest,
     recentAccuracy,
