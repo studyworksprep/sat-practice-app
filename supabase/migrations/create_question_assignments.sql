@@ -34,13 +34,24 @@ create policy "Teachers manage own assignments" on public.question_assignments
     or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
   );
 
+-- Helper to break RLS circular dependency between question_assignments
+-- and question_assignment_students (each policy references the other table).
+create or replace function public.is_student_assigned(p_assignment_id uuid, p_student_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.question_assignment_students
+    where assignment_id = p_assignment_id and student_id = p_student_id
+  );
+$$;
+
 -- Students can view assignments they are assigned to
 create policy "Students view assigned assignments" on public.question_assignments
   for select using (
-    exists (
-      select 1 from public.question_assignment_students qas
-      where qas.assignment_id = id and qas.student_id = auth.uid()
-    )
+    public.is_student_assigned(id, auth.uid())
   );
 
 -- Students can view assignments they're assigned to; teachers/admins see theirs
