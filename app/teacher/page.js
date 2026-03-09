@@ -379,9 +379,11 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
   const [domains, setDomains] = useState([]);
   const [topics, setTopics] = useState([]);
   const [difficulties, setDifficulties] = useState([1, 2, 3]);
+  const [scoreBands, setScoreBands] = useState([]);
   const [questionLimit, setQuestionLimit] = useState(20);
   const [filterData, setFilterData] = useState(null);
   const [filterLoading, setFilterLoading] = useState(true);
+  const [dynamicCounts, setDynamicCounts] = useState(null);
   const [previewQuestions, setPreviewQuestions] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -395,6 +397,18 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
       .finally(() => setFilterLoading(false));
   }, []);
 
+  // Fetch dynamic counts when difficulty or score band filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (difficulties.length > 0 && difficulties.length < 3) params.set('difficulties', difficulties.join(','));
+    if (scoreBands.length > 0) params.set('score_bands', scoreBands.join(','));
+    params.set('hide_broken', 'true');
+    fetch(`/api/domain-counts?${params}`)
+      .then(r => r.json())
+      .then(d => { if (!d.error) setDynamicCounts(d); })
+      .catch(() => {});
+  }, [difficulties, scoreBands]);
+
   function toggleStudent(id) {
     setSelectedStudents(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
   }
@@ -405,6 +419,7 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
   function toggleDomain(name) { setDomains(prev => prev.includes(name) ? prev.filter(d => d !== name) : [...prev, name]); setPreviewQuestions(null); }
   function toggleTopic(name) { setTopics(prev => prev.includes(name) ? prev.filter(t => t !== name) : [...prev, name]); setPreviewQuestions(null); }
   function toggleDifficulty(d) { setDifficulties(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]); setPreviewQuestions(null); }
+  function toggleScoreBand(b) { setScoreBands(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]); setPreviewQuestions(null); }
 
   async function loadPreview() {
     setPreviewLoading(true);
@@ -413,6 +428,7 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
       if (domains.length) params.set('domains', domains.join(','));
       if (topics.length) params.set('topics', topics.join(','));
       if (difficulties.length < 3) params.set('difficulties', difficulties.join(','));
+      if (scoreBands.length > 0) params.set('score_bands', scoreBands.join(','));
       params.set('limit', String(questionLimit));
       params.set('hide_broken', 'true');
       const res = await fetch(`/api/questions?${params}`);
@@ -438,7 +454,7 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
           due_date: dueDate || null,
           question_ids: previewQuestions.items.map(q => q.question_id),
           student_ids: selectedStudents,
-          filter_criteria: { domains, topics, difficulties },
+          filter_criteria: { domains, topics, difficulties, score_bands: scoreBands },
         }),
       });
       const json = await res.json();
@@ -494,6 +510,18 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
                 ))}
               </div>
             </div>
+            <div className="tchAssignSection">
+              <span className="tchModalLabel">Score Band</span>
+              <div className="tchAssignChips">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(b => (
+                  <button key={b} type="button"
+                    className={`tchAssignChip${scoreBands.includes(b) ? ' active' : ''}`}
+                    style={{ borderColor: 'var(--accent)', color: scoreBands.includes(b) ? '#fff' : 'var(--accent)', background: scoreBands.includes(b) ? 'var(--accent)' : 'transparent' }}
+                    onClick={() => toggleScoreBand(b)}
+                  >{b}</button>
+                ))}
+              </div>
+            </div>
             {filterLoading ? <p className="muted small">Loading filters...</p> : (
               <div className="tchAssignSection">
                 <span className="tchModalLabel">Domains & Topics</span>
@@ -501,17 +529,24 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
                   {(filterData?.domains || []).map(d => {
                     const isDomainSelected = domains.includes(d.domain_name);
                     const domainTopics = topicsByDomain[d.domain_name] || [];
+                    const counts = dynamicCounts || filterData?.counts;
+                    const domainCount = counts?.[d.domain_name]?.count;
                     return (
                       <div key={d.domain_name} className="tchAssignDomainBlock">
                         <button type="button" className={`tchAssignChip${isDomainSelected ? ' active' : ''}`} onClick={() => toggleDomain(d.domain_name)}>
                           {d.domain_name}
-                          {filterData?.counts?.[d.domain_name] && <span className="muted small" style={{ marginLeft: 4 }}>({filterData.counts[d.domain_name].count})</span>}
+                          {domainCount != null && <span className="muted small" style={{ marginLeft: 4 }}>({domainCount})</span>}
                         </button>
                         {isDomainSelected && domainTopics.length > 0 && (
                           <div className="tchAssignTopicChips">
-                            {domainTopics.map(t => (
-                              <button key={t.skill_name} type="button" className={`tchAssignChip small${topics.includes(t.skill_name) ? ' active' : ''}`} onClick={() => toggleTopic(t.skill_name)}>{t.skill_name}</button>
-                            ))}
+                            {domainTopics.map(t => {
+                              const topicCount = counts?.[d.domain_name]?.topics?.[t.skill_code || t.skill_name];
+                              return (
+                                <button key={t.skill_name} type="button" className={`tchAssignChip small${topics.includes(t.skill_name) ? ' active' : ''}`} onClick={() => toggleTopic(t.skill_name)}>
+                                  {t.skill_name}{topicCount != null ? ` (${topicCount})` : ''}
+                                </button>
+                              );
+                            })}
                           </div>
                         )}
                       </div>

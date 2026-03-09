@@ -425,7 +425,9 @@ export default function DashboardClient({ email }) {
       )}
 
       {/* ── Assignments ── */}
-      <AssignmentsCard assignments={assignments} />
+      <div style={{ marginBottom: 16 }}>
+        <AssignmentsCard assignments={assignments} />
+      </div>
 
       {/* ── Performance: R&W | Math ── */}
       <div className="dbPerfGrid">
