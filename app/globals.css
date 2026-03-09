@@ -6,15 +6,16 @@
   --bg: #f9fafb;
   --card: #ffffff;
   --text: #111827;          /* near black */
-  --muted: #4b5563;
+  --muted: #6b7280;
   --border: rgba(17,24,39,0.08);
 
-  --accent: #2563eb;        /* primary blue */
-  --accent-hover: #1d4ed8;
-  --accent-soft: rgba(37,99,235,0.10);
+  --accent: #4f7ce0;        /* primary blue — softer */
+  --accent-hover: #3b63c4;
+  --accent-soft: rgba(79,124,224,0.08);
 
-  --danger: #ef4444;
-  --success: #16a34a;
+  --danger: #d97775;         /* muted coral-red */
+  --success: #5ba876;        /* muted sage-green */
+  --amber: #c2993e;          /* muted gold */
 
   /* ===============================
      Typography + rhythm
@@ -371,8 +372,8 @@ a{
 
 /* Primary emphasis (use className="btn primary") */
 .btn.primary{
-  background: linear-gradient(160deg, #3b82f6 0%, #2563eb 100%);
-  border-color: #2563eb;
+  background: linear-gradient(160deg, #6b9bd2 0%, var(--accent) 100%);
+  border-color: var(--accent);
   box-shadow: 0 4px 14px rgba(37,99,235,0.35);
 }
 
@@ -513,20 +514,20 @@ label{
 }
 
 /* Difficulty chip color coding */
-.chip.diff-easy.on   { border-color: #16a34a; background: rgba(22,163,74,0.12); }
-.chip.diff-medium.on { border-color: #ca8a04; background: rgba(202,138,4,0.12); }
-.chip.diff-hard.on   { border-color: #ef4444; background: rgba(239,68,68,0.12); }
-.chip.diff-easy:not(.on):hover   { background: rgba(22,163,74,0.08);  border-color: rgba(22,163,74,0.4); }
-.chip.diff-medium:not(.on):hover { background: rgba(202,138,4,0.08);  border-color: rgba(202,138,4,0.4); }
-.chip.diff-hard:not(.on):hover   { background: rgba(239,68,68,0.08);  border-color: rgba(239,68,68,0.4); }
+.chip.diff-easy.on   { border-color: var(--success); background: rgba(91,168,118,0.12); }
+.chip.diff-medium.on { border-color: var(--amber); background: rgba(194,153,62,0.12); }
+.chip.diff-hard.on   { border-color: var(--danger); background: rgba(217,119,117,0.12); }
+.chip.diff-easy:not(.on):hover   { background: rgba(91,168,118,0.08);  border-color: rgba(91,168,118,0.4); }
+.chip.diff-medium:not(.on):hover { background: rgba(194,153,62,0.08);  border-color: rgba(194,153,62,0.4); }
+.chip.diff-hard:not(.on):hover   { background: rgba(217,119,117,0.08);  border-color: rgba(217,119,117,0.4); }
 
 /* Score band chip color coding (1-3 green, 4-5 yellow, 6-7 red) */
-.chip.band-low.on  { border-color: #16a34a; background: rgba(22,163,74,0.12); }
-.chip.band-mid.on  { border-color: #ca8a04; background: rgba(202,138,4,0.12); }
-.chip.band-high.on { border-color: #ef4444; background: rgba(239,68,68,0.12); }
-.chip.band-low:not(.on):hover  { background: rgba(22,163,74,0.08);  border-color: rgba(22,163,74,0.4); }
-.chip.band-mid:not(.on):hover  { background: rgba(202,138,4,0.08);  border-color: rgba(202,138,4,0.4); }
-.chip.band-high:not(.on):hover { background: rgba(239,68,68,0.08);  border-color: rgba(239,68,68,0.4); }
+.chip.band-low.on  { border-color: var(--success); background: rgba(91,168,118,0.12); }
+.chip.band-mid.on  { border-color: var(--amber); background: rgba(194,153,62,0.12); }
+.chip.band-high.on { border-color: var(--danger); background: rgba(217,119,117,0.12); }
+.chip.band-low:not(.on):hover  { background: rgba(91,168,118,0.08);  border-color: rgba(91,168,118,0.4); }
+.chip.band-mid:not(.on):hover  { background: rgba(194,153,62,0.08);  border-color: rgba(194,153,62,0.4); }
+.chip.band-high:not(.on):hover { background: rgba(217,119,117,0.08);  border-color: rgba(217,119,117,0.4); }
 
 /* One-line filter row: inline label + chips (legacy, kept for compat) */
 .filterInlineRow{
@@ -770,7 +771,7 @@ label{
 .qStatus.unanswered{ color: var(--muted); }
 
 .qMark{
-  color: #ca8a04;
+  color: var(--amber);
   font-size: 13px;
   line-height: 1;
 }
@@ -1609,11 +1610,24 @@ hr{
 }
 
 .dbChevron{
-  font-size: 11px;
-  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  width: 12px;
+  width: 16px;
+  height: 16px;
+  transition: transform 0.15s ease;
 }
+.dbChevron svg{
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.dbChevron.open{ transform: rotate(90deg); }
 .dbChevron.invisible{ visibility: hidden; }
 
 .dbDomainName{
@@ -1891,8 +1905,8 @@ hr{
 }
 .dbSessionTile:hover{ opacity: 0.8; transform: scale(1.08); }
 
-.dbSessionTile.correct{ background: #16a34a; color: #fff; }
-.dbSessionTile.incorrect{ background: #dc2626; color: #fff; }
+.dbSessionTile.correct{ background: var(--success); color: #fff; }
+.dbSessionTile.incorrect{ background: var(--danger); color: #fff; }
 
 /* Difficulty border accents on session tiles */
 .dbSessionTile.easy{ box-shadow: inset 0 -3px 0 rgba(34,197,94,0.5); }
@@ -2044,8 +2058,8 @@ hr{
 }
 
 .brokenBtn.isBroken{
-  border-color: #ef4444;
-  background: #fee2e2;
+  border-color: var(--danger);
+  background: rgba(217,119,117,0.12);
 }
 
 .brokenBtn.isBroken .brokenBtnIcon{
@@ -2981,7 +2995,7 @@ hr{
   outline: none;
 }
 .ptrvTile.correct{
-  background: #16a34a;
+  background: var(--success);
   color: #fff;
 }
 .ptrvTile.incorrect{
@@ -3453,7 +3467,7 @@ hr{
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, #6b9bd2, #9b8ec4);
   color: #fff;
   display: flex;
   align-items: center;
@@ -3675,11 +3689,11 @@ hr{
 }
 
 .tchBarRW{
-  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  background: linear-gradient(135deg, #8bb5de, #6b9bd2);
 }
 
 .tchBarMath{
-  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  background: linear-gradient(135deg, #b5a8d4, #9b8ec4);
 }
 
 .tchBarScore{
@@ -4340,6 +4354,38 @@ hr{
 .stTestBarCell{
   display: flex;
   align-items: center;
+}
+
+/* ── Sparklines ── */
+
+.stSparkline{
+  display: block;
+  flex-shrink: 0;
+}
+
+.stOverviewCardInner{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ── SVG Line Chart ── */
+
+.stLineChartWrap{
+  width: 100%;
+  overflow: hidden;
+}
+
+.stLineChart{
+  width: 100%;
+  display: block;
+}
+
+.stChartLabel{
+  font-size: 3.2px;
+  fill: var(--muted);
+  font-family: var(--font);
 }
 
 /* ── Responsive: stats page ── */

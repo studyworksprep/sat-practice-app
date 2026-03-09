@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../../lib/supabase/browser';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
@@ -15,7 +15,7 @@ function pct(correct, attempted) {
 
 function pctColor(p) {
   if (p === null || p === undefined) return undefined;
-  return p >= 70 ? 'var(--success)' : p >= 50 ? '#ca8a04' : 'var(--danger)';
+  return p >= 70 ? 'var(--success)' : p >= 50 ? 'var(--amber)' : 'var(--danger)';
 }
 
 function displayName(s) {
@@ -103,17 +103,17 @@ function TestScoreBarChart({ testScores }) {
             <div className="tchBarScore">
               <span className="tchBarTotal">{total}</span>
               <span className="tchBarBreakdown">
-                <span style={{ color: '#3b82f6' }}>R&W {rwScore}</span>
+                <span style={{ color: '#6b9bd2' }}>R&W {rwScore}</span>
                 {' · '}
-                <span style={{ color: '#8b5cf6' }}>Math {mathScore}</span>
+                <span style={{ color: '#9b8ec4' }}>Math {mathScore}</span>
               </span>
             </div>
           </Link>
         );
       })}
       <div className="tchBarLegend">
-        <span className="tchLegendDot" style={{ background: '#3b82f6' }} /> R&W
-        <span className="tchLegendDot" style={{ background: '#8b5cf6', marginLeft: 12 }} /> Math
+        <span className="tchLegendDot" style={{ background: '#6b9bd2' }} /> R&W
+        <span className="tchLegendDot" style={{ background: '#9b8ec4', marginLeft: 12 }} /> Math
       </div>
     </div>
   );
@@ -171,8 +171,8 @@ function DomainTable({ domainStats, topicStats }) {
                       style={{ cursor: hasTopics ? 'pointer' : 'default' }}
                     >
                       <div className="tchDomainLeft">
-                        <span className={`dbChevron${hasTopics ? '' : ' invisible'}`}>
-                          {isOpen ? '▾' : '▸'}
+                        <span className={`dbChevron${hasTopics ? '' : ' invisible'}${isOpen ? ' open' : ''}`}>
+                          <svg viewBox="0 0 16 16"><polyline points="6 4 10 8 6 12" /></svg>
                         </span>
                         <span className="tchDomainName">{domain.domain_name}</span>
                       </div>
@@ -545,9 +545,10 @@ function StudentDetail({ studentId }) {
 // ─── Main teacher page ───────────────────────────────────
 export default function TeacherPage() {
   const supabase = createClient();
+  const searchParams = useSearchParams();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState(searchParams.get('selected') || null);
   const [role, setRole] = useState(null);
   const [search, setSearch] = useState('');
 

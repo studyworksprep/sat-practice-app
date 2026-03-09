@@ -15,7 +15,7 @@ function pct(correct, attempted) {
 
 function pctColor(p) {
   if (p === null || p === undefined) return undefined;
-  return p >= 70 ? 'var(--success)' : p >= 50 ? '#ca8a04' : 'var(--danger)';
+  return p >= 70 ? 'var(--success)' : p >= 50 ? 'var(--amber)' : 'var(--danger)';
 }
 
 function displayName(email) {
@@ -105,8 +105,8 @@ function PerfSection({ section, loading }) {
                   style={{ cursor: hasTopics ? 'pointer' : 'default' }}
                 >
                   <div className="dbDomainLeft">
-                    <span className={`dbChevron${hasTopics ? '' : ' invisible'}`}>
-                      {isOpen ? '▾' : '▸'}
+                    <span className={`dbChevron${hasTopics ? '' : ' invisible'}${isOpen ? ' open' : ''}`}>
+                      <svg viewBox="0 0 16 16"><polyline points="6 4 10 8 6 12" /></svg>
                     </span>
                     <span className="dbDomainName">{domain.domain_name}</span>
                   </div>

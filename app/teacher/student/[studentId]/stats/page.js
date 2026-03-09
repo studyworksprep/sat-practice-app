@@ -9,7 +9,7 @@ export default function TeacherStudentStatsPage() {
   return (
     <StatsClient
       fetchUrl={`/api/teacher/student/${studentId}/stats`}
-      backUrl="/teacher"
+      backUrl={`/teacher?selected=${studentId}`}
       backLabel="← Students"
       title="Student Statistics"
     />

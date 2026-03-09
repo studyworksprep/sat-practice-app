@@ -16,7 +16,8 @@ import { exportPracticeSessions, exportTestScores, exportPerformanceStats } from
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
 const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
-const DIFF_COLOR = { 1: 'var(--success)', 2: '#ca8a04', 3: 'var(--danger)' };
+const DIFF_COLOR = { 1: 'var(--success)', 2: 'var(--amber)', 3: 'var(--danger)' };
+const TREND_COLOR = '#4f7ce0'; // accent blue for line graphs
 const SUBJECT_LABEL = { rw: 'R&W', RW: 'R&W', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
 
 function pct(correct, attempted) {
@@ -26,7 +27,7 @@ function pct(correct, attempted) {
 
 function pctColor(p) {
   if (p === null || p === undefined) return undefined;
-  return p >= 70 ? 'var(--success)' : p >= 50 ? '#ca8a04' : 'var(--danger)';
+  return p >= 70 ? 'var(--success)' : p >= 50 ? 'var(--amber)' : 'var(--danger)';
 }
 
 function formatDate(iso) {
@@ -51,40 +52,148 @@ function StatBar({ value, max, color, label, sublabel }) {
   );
 }
 
-// ── Accuracy trend mini-chart (pure CSS) ──
-function TrendChart({ sessions }) {
-  if (!sessions.length) return <p className="muted small">Not enough data yet.</p>;
+// ── Sparkline (inline SVG) ──
+function Sparkline({ values, color = 'var(--accent)', width = 80, height = 28 }) {
+  if (!values || values.length < 2) return null;
+  const pad = 2;
+  const w = width - pad * 2;
+  const h = height - pad * 2;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
 
-  const maxPct = 100;
-  const barCount = sessions.length;
+  const points = values.map((v, i) => {
+    const x = pad + (i / (values.length - 1)) * w;
+    const y = pad + h - ((v - min) / range) * h;
+    return `${x},${y}`;
+  }).join(' ');
 
   return (
-    <div className="stTrendChart">
-      <div className="stTrendBars">
-        {sessions.map((s, i) => {
-          const height = `${s.pct}%`;
-          const color = pctColor(s.pct);
+    <svg width={width} height={height} className="stSparkline">
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* End dot */}
+      {(() => {
+        const lastX = pad + w;
+        const lastY = pad + h - ((values[values.length - 1] - min) / range) * h;
+        return <circle cx={lastX} cy={lastY} r="2" fill={color} />;
+      })()}
+    </svg>
+  );
+}
+
+// ── SVG Line Chart ──
+function LineChart({ data: points, yMin = 0, yMax = 100, height = 180, color = TREND_COLOR, yLabel = '%', xLabels }) {
+  if (!points.length) return <p className="muted small">Not enough data yet.</p>;
+
+  const padL = 36, padR = 12, padT = 12, padB = 28;
+  const w = 100; // percentage-based via viewBox
+  const chartW = w - padL - padR;
+  const chartH = height - padT - padB;
+  const range = yMax - yMin || 1;
+
+  // Grid lines
+  const gridLines = 4;
+  const gridVals = Array.from({ length: gridLines + 1 }, (_, i) => yMin + (range / gridLines) * i);
+
+  const polyPoints = points.map((p, i) => {
+    const x = padL + (points.length === 1 ? chartW / 2 : (i / (points.length - 1)) * chartW);
+    const y = padT + chartH - ((p.value - yMin) / range) * chartH;
+    return { x, y, ...p };
+  });
+
+  const polyline = polyPoints.map(p => `${p.x},${p.y}`).join(' ');
+
+  // Area fill path
+  const areaPath = `M${polyPoints[0].x},${padT + chartH} ` +
+    polyPoints.map(p => `L${p.x},${p.y}`).join(' ') +
+    ` L${polyPoints[polyPoints.length - 1].x},${padT + chartH} Z`;
+
+  return (
+    <div className="stLineChartWrap">
+      <svg viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none" className="stLineChart" style={{ height }}>
+        {/* Grid */}
+        {gridVals.map((v, i) => {
+          const y = padT + chartH - ((v - yMin) / range) * chartH;
           return (
-            <div key={i} className="stTrendCol" style={{ flex: barCount > 20 ? '0 0 auto' : 1 }}>
-              <div className="stTrendBarWrap">
-                <div
-                  className="stTrendBar"
-                  style={{ height, background: color }}
-                  title={`${formatDate(s.startedAt)}: ${s.pct}% (${s.correct}/${s.total})`}
-                />
-              </div>
-              {barCount <= 12 && (
-                <span className="stTrendLabel">{formatDate(s.startedAt)}</span>
-              )}
-            </div>
+            <g key={i}>
+              <line x1={padL} y1={y} x2={w - padR} y2={y} stroke="var(--border)" strokeWidth="0.3" />
+              <text x={padL - 4} y={y + 1} textAnchor="end" className="stChartLabel">
+                {Math.round(v)}{yLabel}
+              </text>
+            </g>
           );
         })}
-      </div>
-      <div className="stTrendAxis">
-        <span>0%</span>
-        <span>50%</span>
-        <span>100%</span>
-      </div>
+        {/* Area fill */}
+        <path d={areaPath} fill={color} opacity="0.08" />
+        {/* Line */}
+        <polyline
+          points={polyline}
+          fill="none"
+          stroke={color}
+          strokeWidth="0.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* Dots */}
+        {polyPoints.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r="1.2" fill={color}>
+            <title>{p.label || `${Math.round(p.value)}${yLabel}`}</title>
+          </circle>
+        ))}
+        {/* X labels */}
+        {xLabels && polyPoints.map((p, i) => {
+          // Show a subset of labels to avoid overlap
+          const step = Math.max(1, Math.floor(polyPoints.length / 8));
+          if (i % step !== 0 && i !== polyPoints.length - 1) return null;
+          return (
+            <text key={i} x={p.x} y={height - 4} textAnchor="middle" className="stChartLabel">
+              {p.xLabel || ''}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// ── Accuracy trend (SVG line chart) ──
+function TrendChart({ sessions }) {
+  if (sessions.length < 2) return <p className="muted small">Not enough sessions yet for a trend chart.</p>;
+
+  const points = sessions.map((s) => ({
+    value: s.pct,
+    label: `${formatDate(s.startedAt)}: ${s.pct}% (${s.correct}/${s.total})`,
+    xLabel: formatDate(s.startedAt),
+  }));
+
+  return <LineChart data={points} yMin={0} yMax={100} xLabels height={180} />;
+}
+
+// ── Test score line graph ──
+function TestScoreLineGraph({ testScores }) {
+  if (testScores.length < 2) return null;
+
+  const chronological = [...testScores].reverse();
+  const composites = chronological.map(ts => ts.composite || 0).filter(Boolean);
+  const minScore = Math.max(400, Math.floor((Math.min(...composites) - 50) / 100) * 100);
+  const maxScore = Math.min(1600, Math.ceil((Math.max(...composites) + 50) / 100) * 100);
+
+  const points = chronological.map((ts) => ({
+    value: ts.composite || 0,
+    label: `${ts.test_name}: ${ts.composite}`,
+    xLabel: formatDate(ts.finished_at),
+  }));
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <LineChart data={points} yMin={minScore} yMax={maxScore} yLabel="" xLabels height={160} color="#6b9bd2" />
     </div>
   );
 }
@@ -281,12 +390,29 @@ export default function StatsClient({ email, fetchUrl, backUrl, backLabel, title
           <div className="stOverviewLabel">Questions Attempted</div>
         </div>
         <div className="card stOverviewCard">
-          <div className="stOverviewValue" style={{ color: pctColor(overallPct) }}>{overallPct ?? '—'}%</div>
-          <div className="stOverviewLabel">Overall Accuracy</div>
+          <div className="stOverviewCardInner">
+            <div>
+              <div className="stOverviewValue" style={{ color: pctColor(overallPct) }}>{overallPct ?? '—'}%</div>
+              <div className="stOverviewLabel">Overall Accuracy</div>
+            </div>
+            {trend.length >= 3 && (
+              <Sparkline values={trend.map(s => s.pct)} color={pctColor(overallPct) || 'var(--accent)'} />
+            )}
+          </div>
         </div>
         <div className="card stOverviewCard">
-          <div className="stOverviewValue" style={{ color: 'var(--accent)' }}>{data?.highestTestScore ?? '—'}</div>
-          <div className="stOverviewLabel">Best Test Score</div>
+          <div className="stOverviewCardInner">
+            <div>
+              <div className="stOverviewValue" style={{ color: 'var(--accent)' }}>{data?.highestTestScore ?? '—'}</div>
+              <div className="stOverviewLabel">Best Test Score</div>
+            </div>
+            {(data?.testScores?.length || 0) >= 2 && (
+              <Sparkline
+                values={[...data.testScores].reverse().map(ts => ts.composite || 0)}
+                color="var(--accent)"
+              />
+            )}
+          </div>
         </div>
         <div className="card stOverviewCard">
           <div className="stOverviewValue">{data?.testScores?.length ?? 0}</div>
@@ -435,6 +561,7 @@ export default function StatsClient({ email, fetchUrl, backUrl, backLabel, title
       {/* ── Test Score History ── */}
       <div className="card">
         <div className="h2" style={{ marginBottom: 12 }}>Test Score History</div>
+        <TestScoreLineGraph testScores={data?.testScores || []} />
         <TestScoreTrend testScores={data?.testScores || []} />
       </div>
 
