@@ -270,8 +270,8 @@ export default function TeacherReviewPage() {
       <button className="btn secondary" onClick={() => goToIndex(index1 + 1)} disabled={nextDisabled}>
         Next
       </button>
-      <Link className="btn secondary" href="/teacher">
-        Back to Dashboard
+      <Link className="btn secondary" href={studentId ? `/teacher?selected=${studentId}` : '/teacher'}>
+        Back to Student Dashboard
       </Link>
     </div>
   );

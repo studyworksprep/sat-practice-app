@@ -3813,6 +3813,14 @@ hr{
   gap: 6px;
 }
 
+.tchTblAccBar .dbProgressBar{
+  display: inline-block;
+}
+
+.tchTblAccBar .dbProgressFill{
+  display: block;
+}
+
 .tchDomainName{
   font-size: 14px;
   font-weight: 600;
