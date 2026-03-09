@@ -277,29 +277,32 @@ export async function GET(_request, { params }) {
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))
     : null;
 
-  // ── Total questions available per domain and topic ──
+  // ── Total questions available per domain and topic (unique question_ids) ──
   const { data: domainCounts } = await supabase
     .from('question_taxonomy')
-    .select('domain_name, skill_name')
+    .select('question_id, domain_name, skill_name')
     .limit(10000);
 
-  const totalByDomain = {};
-  const totalByTopic = {};
+  const domainIdSets = {};
+  const topicIdSets = {};
   for (const dc of domainCounts || []) {
     const domain = dc.domain_name || 'Unknown';
     const skill = dc.skill_name || 'Unknown';
-    totalByDomain[domain] = (totalByDomain[domain] || 0) + 1;
-    totalByTopic[`${domain}::${skill}`] = (totalByTopic[`${domain}::${skill}`] || 0) + 1;
+    const topicKey = `${domain}::${skill}`;
+    if (!domainIdSets[domain]) domainIdSets[domain] = new Set();
+    if (!topicIdSets[topicKey]) topicIdSets[topicKey] = new Set();
+    domainIdSets[domain].add(dc.question_id);
+    topicIdSets[topicKey].add(dc.question_id);
   }
 
   // Add total available to domain and topic stats
   const domainStatsWithTotal = domainStats.map(d => ({
     ...d,
-    totalAvailable: totalByDomain[d.domain_name] || 0,
+    totalAvailable: domainIdSets[d.domain_name]?.size || 0,
   }));
   const topicStatsWithTotal = topicStats.map(t => ({
     ...t,
-    totalAvailable: totalByTopic[`${t.domain_name}::${t.skill_name}`] || 0,
+    totalAvailable: topicIdSets[`${t.domain_name}::${t.skill_name}`]?.size || 0,
   }));
 
   return NextResponse.json({
