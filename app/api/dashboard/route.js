@@ -235,6 +235,65 @@ export async function GET() {
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))
     : null;
 
+  // ── Profile (target score) ──
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('target_sat_score')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const targetScore = profile?.target_sat_score || null;
+
+  // ── Streak calculation ──
+  const practiceDays = new Set();
+  for (const att of recentAttempts || []) {
+    const d = new Date(att.created_at);
+    practiceDays.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+  }
+  for (const r of rows) {
+    if (r.last_attempt_at) {
+      const d = new Date(r.last_attempt_at);
+      practiceDays.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+    }
+  }
+
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const practicedToday = practiceDays.has(todayStr);
+
+  let currentStreak = 0;
+  let checkDate = new Date(today);
+  if (!practiceDays.has(todayStr)) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+  for (let i = 0; i < 365; i++) {
+    const dateStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+    if (practiceDays.has(dateStr)) {
+      currentStreak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  // ── Goal progress ──
+  const goalProgress = targetScore && highestTestScore
+    ? Math.min(100, Math.round((highestTestScore / targetScore) * 100))
+    : null;
+  const pointsToGoal = targetScore && highestTestScore
+    ? Math.max(0, targetScore - highestTestScore)
+    : null;
+
+  // ── Topic recommendations (top 3 weak topics) ──
+  const weakTopics = sorted.length > 1
+    ? sorted.slice(-3).reverse().map(t => ({
+        skill_name: t.skill_name,
+        domain_name: t.domain_name,
+        weightedPct: t.weightedPct,
+        rawCount: t.rawCount,
+      }))
+    : [];
+
   return NextResponse.json({
     domainStats,
     topicStats,
@@ -246,5 +305,11 @@ export async function GET() {
     recentSessions,
     testScores,
     highestTestScore,
+    targetScore,
+    currentStreak,
+    practicedToday,
+    goalProgress,
+    pointsToGoal,
+    weakTopics,
   });
 }

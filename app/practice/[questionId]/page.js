@@ -334,6 +334,11 @@ export default function PracticeQuestionPage() {
   const [jumpTo, setJumpTo] = useState('');
   const startedAtRef = useRef(Date.now());
 
+  // Per-question time tracking
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [questionTimeData, setQuestionTimeData] = useState(null); // { global_avg_ms, global_median_ms, attempts }
+  const timerRef = useRef(null);
+
   // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
     const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'hide_broken', 'q', 'session', 'replay', 'sid'];
@@ -1092,6 +1097,35 @@ export default function PracticeQuestionPage() {
     } catch {}
   }, [calcMinimized]);
 
+  // Per-question timer: ticks every second while question is active (not locked)
+  useEffect(() => {
+    if (!questionId) return;
+    setElapsedMs(0);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setElapsedMs(Date.now() - startedAtRef.current);
+    }, 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [questionId]);
+
+  // Stop timer when question is answered correctly or given up
+  useEffect(() => {
+    if ((gotCorrect || gaveUp) && timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, [gotCorrect, gaveUp]);
+
+  // Fetch per-question time data (global avg/median) after question loads
+  useEffect(() => {
+    if (!data?.question_id) return;
+    setQuestionTimeData(null);
+    fetch(`/api/time-analytics?question_id=${encodeURIComponent(data.question_id)}`)
+      .then(r => r.json())
+      .then(json => { if (!json.error) setQuestionTimeData(json); })
+      .catch(() => {});
+  }, [data?.question_id]);
+
   const qType = String(data?.version?.question_type || data?.question_type || '').toLowerCase();
   const version = data?.version || {};
   const options = Array.isArray(data?.options) ? data.options : [];
@@ -1110,7 +1144,14 @@ export default function PracticeQuestionPage() {
   // Math domain codes (new behavior)
   const isMath = ['H', 'P', 'S', 'Q'].includes(domainCode);
 
-  // ✅ Removed Attempts pill
+  // Format time display
+  const formatElapsed = (ms) => {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return m > 0 ? `${m}:${String(sec).padStart(2, '0')}` : `${sec}s`;
+  };
+
   const headerPills = [
     { label: 'Correct', value: status?.correct_attempts_count ?? 0 },
     { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
@@ -1133,6 +1174,17 @@ export default function PracticeQuestionPage() {
       </div>
 
       <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        {/* Per-question timer */}
+        <span className="pill" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          <span className="muted">Time</span>{' '}
+          <span className="kbd">{formatElapsed(elapsedMs)}</span>
+        </span>
+        {questionTimeData?.global_avg_ms && (
+          <span className="pill" title="Average time across all students">
+            <span className="muted">Avg</span>{' '}
+            <span className="kbd">{formatElapsed(questionTimeData.global_avg_ms)}</span>
+          </span>
+        )}
         {headerPills.map((p) => (
           <span key={p.label} className="pill">
             <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
@@ -1559,7 +1611,7 @@ export default function PracticeQuestionPage() {
         </button>
 
         <div className="questionTopBarRight">
-          {inSessionContext && <SessionTimer sessionId={sidParam || sessionParamsString} />}
+          {/* Per-question time shown in status pills instead of session timer */}
           {isMath ? (
             <div className="toolTabs" role="tablist" aria-label="Math tools">
               <button

@@ -595,8 +595,21 @@ function TeacherPageInner() {
   const [role, setRole] = useState(null);
   const [search, setSearch] = useState('');
 
+  // Assignment state
+  const [addEmail, setAddEmail] = useState('');
+  const [addLoading, setAddLoading] = useState(false);
+  const [addMsg, setAddMsg] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  function loadStudents() {
+    fetch('/api/teacher/students')
+      .then(r => r.json())
+      .then(d => setStudents(d.students || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }
+
   useEffect(() => {
-    // Check role
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user) {
         supabase
@@ -607,14 +620,48 @@ function TeacherPageInner() {
           .then(({ data: p }) => setRole(p?.role));
       }
     });
-
-    // Load students
-    fetch('/api/teacher/students')
-      .then(r => r.json())
-      .then(d => setStudents(d.students || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    loadStudents();
   }, []);
+
+  async function handleAddStudent(e) {
+    e.preventDefault();
+    if (!addEmail.trim()) return;
+    setAddLoading(true);
+    setAddMsg(null);
+    try {
+      const res = await fetch('/api/teacher/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_email: addEmail.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setAddMsg({ kind: 'ok', text: 'Student added!' });
+      setAddEmail('');
+      setShowAddForm(false);
+      loadStudents();
+    } catch (err) {
+      setAddMsg({ kind: 'danger', text: err.message });
+    } finally {
+      setAddLoading(false);
+    }
+  }
+
+  async function handleRemoveStudent(studentId) {
+    if (!confirm('Remove this student from your list?')) return;
+    try {
+      const res = await fetch('/api/teacher/assignments', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id: studentId }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      if (selectedId === studentId) setSelectedId(null);
+      loadStudents();
+    } catch (err) {
+      setAddMsg({ kind: 'danger', text: err.message });
+    }
+  }
 
   const filtered = students.filter(s => {
     if (!search) return true;
@@ -629,8 +676,46 @@ function TeacherPageInner() {
       <aside className="tchSidebar">
         <div className="tchSidebarHeader">
           <h2 className="tchSidebarTitle">Students</h2>
-          <span className="tchSidebarCount">{students.length}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="tchSidebarCount">{students.length}</span>
+            <button
+              className="btn secondary"
+              style={{ padding: '3px 10px', fontSize: 12 }}
+              onClick={() => setShowAddForm(s => !s)}
+              title="Add student by email"
+            >
+              + Add
+            </button>
+          </div>
         </div>
+
+        {/* Add student form */}
+        {showAddForm && (
+          <form onSubmit={handleAddStudent} style={{ padding: '6px 12px 10px', display: 'flex', gap: 6 }}>
+            <input
+              type="email"
+              className="input"
+              placeholder="student@email.com"
+              value={addEmail}
+              onChange={(e) => setAddEmail(e.target.value)}
+              style={{ flex: 1, fontSize: 12, padding: '5px 8px' }}
+              disabled={addLoading}
+            />
+            <button className="btn primary" style={{ fontSize: 12, padding: '5px 10px' }} disabled={addLoading}>
+              {addLoading ? '...' : 'Add'}
+            </button>
+          </form>
+        )}
+        {addMsg && (
+          <div style={{
+            padding: '4px 12px',
+            fontSize: 11,
+            color: addMsg.kind === 'ok' ? 'var(--success)' : 'var(--danger)',
+          }}>
+            {addMsg.text}
+          </div>
+        )}
+
         <div className="tchSearchWrap">
           <input
             type="text"
@@ -645,23 +730,43 @@ function TeacherPageInner() {
             <p className="muted small" style={{ padding: '12px 16px' }}>Loading...</p>
           ) : filtered.length === 0 ? (
             <p className="muted small" style={{ padding: '12px 16px' }}>
-              {students.length === 0 ? 'No students assigned.' : 'No matches.'}
+              {students.length === 0 ? 'No students assigned. Click + Add to add a student.' : 'No matches.'}
             </p>
           ) : (
             filtered.map(s => (
-              <button
-                key={s.id}
-                className={`tchStudentItem${selectedId === s.id ? ' active' : ''}`}
-                onClick={() => setSelectedId(s.id)}
-              >
-                <div className="tchStudentAvatar">
-                  {(s.first_name || s.email || '?')[0].toUpperCase()}
-                </div>
-                <div className="tchStudentInfo">
-                  <span className="tchStudentName">{displayName(s)}</span>
-                  <span className="tchStudentEmail">{s.email}</span>
-                </div>
-              </button>
+              <div key={s.id} style={{ display: 'flex', alignItems: 'center' }}>
+                <button
+                  className={`tchStudentItem${selectedId === s.id ? ' active' : ''}`}
+                  onClick={() => setSelectedId(s.id)}
+                  style={{ flex: 1 }}
+                >
+                  <div className="tchStudentAvatar">
+                    {(s.first_name || s.email || '?')[0].toUpperCase()}
+                  </div>
+                  <div className="tchStudentInfo">
+                    <span className="tchStudentName">{displayName(s)}</span>
+                    <span className="tchStudentEmail">{s.email}</span>
+                  </div>
+                </button>
+                {role === 'teacher' && (
+                  <button
+                    className="btn"
+                    style={{
+                      padding: '2px 6px',
+                      fontSize: 10,
+                      background: 'none',
+                      color: 'var(--muted)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                    }}
+                    onClick={() => handleRemoveStudent(s.id)}
+                    title="Remove student"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
             ))
           )}
         </div>
