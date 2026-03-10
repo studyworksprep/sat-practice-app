@@ -3926,6 +3926,15 @@ hr{
   background: var(--bg-raised, rgba(0,0,0,0.03));
 }
 
+.tchAdminStudentLink{
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.tchAdminStudentLink:hover{
+  background: var(--bg-raised, rgba(0,0,0,0.05));
+}
+
 .tchSection{
   margin-bottom: 16px;
   padding: 20px;

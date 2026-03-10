@@ -64,6 +64,7 @@ export default function NavBar() {
               <Link href="/practice">Practice</Link>
               {!isPractice && <Link href="/review">Review</Link>}
               {isTeacher && <Link href="/teacher">Students</Link>}
+              {isAdmin && <Link href="/teachers">Teachers</Link>}
               {isAdmin && <Link href="/admin">Admin</Link>}
             </div>
           )}
