@@ -3873,6 +3873,59 @@ hr{
   text-overflow: ellipsis;
 }
 
+.tchAdminStudentTable{
+  display: flex;
+  flex-direction: column;
+}
+
+.tchAdminStudentHeader{
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.tchAdminStudentRow{
+  display: flex;
+  align-items: center;
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.tchAdminStudentRow:last-child{
+  border-bottom: none;
+}
+
+.tchAdminStudentNameCol{
+  flex: 1;
+  min-width: 0;
+}
+
+.tchAdminStudentCell{
+  width: 70px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px){
+  .tchAdminStudentCell{ width: 50px; font-size: 11px; }
+}
+
+.tchAdminAssignRow{
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--bg-raised, rgba(0,0,0,0.03));
+}
+
 .tchSection{
   margin-bottom: 16px;
   padding: 20px;

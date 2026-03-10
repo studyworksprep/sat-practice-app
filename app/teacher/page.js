@@ -1023,6 +1023,124 @@ function StudentDetail({ studentId }) {
   );
 }
 
+// ─── Teacher detail panel (admin only) ───────────────────
+function TeacherDetail({ teacherId }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setLoading(true); setError(null);
+    fetch(`/api/admin/teachers/${teacherId}`)
+      .then(r => r.json())
+      .then(d => { if (d.error) throw new Error(d.error); setData(d); })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [teacherId]);
+
+  if (loading) return <div className="tchDetailLoading"><p className="muted">Loading teacher data...</p></div>;
+  if (error) return <div className="tchDetailError"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+  if (!data) return null;
+
+  const teacher = data.teacher;
+  const totals = data.totals;
+
+  return (
+    <div className="tchStudentDetail">
+      <div className="tchStudentHeader">
+        <div>
+          <h2 className="h1" style={{ margin: 0 }}>{displayName(teacher)}</h2>
+          <p className="muted small" style={{ margin: 0 }}>{teacher.email}</p>
+        </div>
+        {teacher.is_active === false && (
+          <span style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, padding: '2px 8px', border: '1px solid var(--danger)', borderRadius: 4 }}>Inactive</span>
+        )}
+      </div>
+
+      {/* Overview stats */}
+      <div className="card tchOverviewCard">
+        {teacher.high_school && (
+          <div className="tchProfileRow">
+            <div className="tchProfileItem"><span className="tchProfileLabel">School</span><span className="tchProfileValue">{teacher.high_school}</span></div>
+            <div className="tchProfileItem"><span className="tchProfileLabel">Joined</span><span className="tchProfileValue">{new Date(teacher.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
+          </div>
+        )}
+        {!teacher.high_school && (
+          <div className="tchProfileRow">
+            <div className="tchProfileItem"><span className="tchProfileLabel">Joined</span><span className="tchProfileValue">{new Date(teacher.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
+          </div>
+        )}
+        <div className="tchStatsRow">
+          <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--accent)' }}>{totals.students}</div><div className="tchStatLabel">Students</div></div>
+          <div className="tchStatCol"><div className="tchStatValue">{totals.activeStudents}</div><div className="tchStatLabel">Active (7d)</div></div>
+          <div className="tchStatCol"><div className="tchStatValue">{totals.questionsDone}</div><div className="tchStatLabel">Questions Done</div></div>
+          <div className="tchStatCol"><div className="tchStatValue" style={{ color: pctColor(totals.accuracy) }}>{totals.accuracy != null ? `${totals.accuracy}%` : '—'}</div><div className="tchStatLabel">Accuracy</div></div>
+        </div>
+        <div className="tchStatsRow" style={{ marginTop: 8 }}>
+          <div className="tchStatCol"><div className="tchStatValue">{totals.last7Days}</div><div className="tchStatLabel">Last 7 Days</div></div>
+          <div className="tchStatCol"><div className="tchStatValue">{totals.last30Days}</div><div className="tchStatLabel">Last 30 Days</div></div>
+          <div className="tchStatCol"><div className="tchStatValue">{totals.testsCompleted}</div><div className="tchStatLabel">Tests Taken</div></div>
+          <div className="tchStatCol"><div className="tchStatValue">{data.assignments?.length || 0}</div><div className="tchStatLabel">Assignments</div></div>
+        </div>
+      </div>
+
+      {/* Student breakdown */}
+      <div className="card tchSection">
+        <h3 className="h2" style={{ marginBottom: 14 }}>Assigned Students ({data.students.length})</h3>
+        {data.students.length === 0 ? (
+          <p className="muted small">No students assigned to this teacher.</p>
+        ) : (
+          <div className="tchAdminStudentTable">
+            <div className="tchAdminStudentHeader">
+              <span className="tchAdminStudentNameCol">Student</span>
+              <span className="tchAdminStudentCell">Done</span>
+              <span className="tchAdminStudentCell">Accuracy</span>
+              <span className="tchAdminStudentCell">7 Days</span>
+              <span className="tchAdminStudentCell">30 Days</span>
+              <span className="tchAdminStudentCell">Tests</span>
+            </div>
+            {data.students.map(s => (
+              <div key={s.id} className="tchAdminStudentRow">
+                <div className="tchAdminStudentNameCol">
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>{displayName(s)}</div>
+                  <div className="muted small">{s.email}</div>
+                </div>
+                <span className="tchAdminStudentCell">{s.questions_done}</span>
+                <span className="tchAdminStudentCell" style={{ color: pctColor(s.accuracy) }}>{s.accuracy != null ? `${s.accuracy}%` : '—'}</span>
+                <span className="tchAdminStudentCell" style={{ color: s.last_7_days > 0 ? 'var(--success)' : 'var(--muted)' }}>{s.last_7_days}</span>
+                <span className="tchAdminStudentCell">{s.last_30_days}</span>
+                <span className="tchAdminStudentCell">{s.tests_completed}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Assignments created by this teacher */}
+      {data.assignments?.length > 0 && (
+        <div className="card tchSection">
+          <h3 className="h2" style={{ marginBottom: 14 }}>Assignments Created ({data.assignments.length})</h3>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {data.assignments.map(a => (
+              <div key={a.id} className="tchAdminAssignRow">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>{a.title}</div>
+                  <div className="muted small">
+                    {a.question_count} questions
+                    {a.due_date && <> · Due {formatDate(a.due_date)}</>}
+                    {' · Created '}
+                    {formatDate(a.created_at)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main teacher page ───────────────────────────────────
 export default function TeacherPage() {
   return <Suspense><TeacherPageInner /></Suspense>;
@@ -1032,8 +1150,10 @@ function TeacherPageInner() {
   const supabase = createClient();
   const searchParams = useSearchParams();
   const [students, setStudents] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(searchParams.get('selected') || null);
+  const [selectedTeacherId, setSelectedTeacherId] = useState(null);
   const [role, setRole] = useState(null);
   const [search, setSearch] = useState('');
   const [sidebarTab, setSidebarTab] = useState('students');
@@ -1049,7 +1169,15 @@ function TeacherPageInner() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user) {
-        supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle().then(({ data: p }) => setRole(p?.role));
+        supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle().then(({ data: p }) => {
+          setRole(p?.role);
+          if (p?.role === 'admin') {
+            fetch('/api/admin/teachers')
+              .then(r => r.json())
+              .then(d => setTeachers(d.teachers || []))
+              .catch(() => {});
+          }
+        });
       }
     });
     loadStudents();
@@ -1061,15 +1189,33 @@ function TeacherPageInner() {
     return (s.email || '').toLowerCase().includes(q) || displayName(s).toLowerCase().includes(q);
   });
 
+  const filteredTeachers = teachers.filter(t => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (t.email || '').toLowerCase().includes(q) || displayName(t).toLowerCase().includes(q);
+  });
+
+  const mainContent = () => {
+    if (sidebarTab === 'assignments') return <AssignmentsPanel students={students} />;
+    if (sidebarTab === 'teachers' && selectedTeacherId) return <TeacherDetail key={selectedTeacherId} teacherId={selectedTeacherId} />;
+    if (sidebarTab === 'students' && selectedId) return <StudentDetail key={selectedId} studentId={selectedId} />;
+    return <WelcomePanel role={role} />;
+  };
+
   return (
     <div className="tchLayout">
       <aside className="tchSidebar">
         <div className="tchSidebarHeader">
           <div className="tchSidebarTabs">
-            <button className={`tchSidebarTabBtn${sidebarTab === 'students' ? ' active' : ''}`} onClick={() => setSidebarTab('students')}>
+            <button className={`tchSidebarTabBtn${sidebarTab === 'students' ? ' active' : ''}`} onClick={() => { setSidebarTab('students'); setSelectedTeacherId(null); }}>
               Students <span className="tchSidebarCount">{students.length}</span>
             </button>
-            <button className={`tchSidebarTabBtn${sidebarTab === 'assignments' ? ' active' : ''}`} onClick={() => { setSidebarTab('assignments'); setSelectedId(null); }}>
+            {role === 'admin' && (
+              <button className={`tchSidebarTabBtn${sidebarTab === 'teachers' ? ' active' : ''}`} onClick={() => { setSidebarTab('teachers'); setSelectedId(null); }}>
+                Teachers <span className="tchSidebarCount">{teachers.length}</span>
+              </button>
+            )}
+            <button className={`tchSidebarTabBtn${sidebarTab === 'assignments' ? ' active' : ''}`} onClick={() => { setSidebarTab('assignments'); setSelectedId(null); setSelectedTeacherId(null); }}>
               Assignments
             </button>
           </div>
@@ -1083,11 +1229,31 @@ function TeacherPageInner() {
               {loading ? <p className="muted small" style={{ padding: '12px 16px' }}>Loading...</p> : filtered.length === 0 ? (
                 <p className="muted small" style={{ padding: '12px 16px' }}>{students.length === 0 ? 'No students assigned yet. Ask an admin to add students to your roster.' : 'No matches.'}</p>
               ) : filtered.map(s => (
-                <button key={s.id} className={`tchStudentItem${selectedId === s.id ? ' active' : ''}`} onClick={() => { setSelectedId(s.id); setSidebarTab('students'); }}>
+                <button key={s.id} className={`tchStudentItem${selectedId === s.id ? ' active' : ''}`} onClick={() => { setSelectedId(s.id); setSidebarTab('students'); setSelectedTeacherId(null); }}>
                   <div className="tchStudentAvatar">{(s.first_name || s.email || '?')[0].toUpperCase()}</div>
                   <div className="tchStudentInfo">
                     <span className="tchStudentName">{displayName(s)}</span>
                     <span className="tchStudentEmail">{s.email}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        {sidebarTab === 'teachers' && (
+          <>
+            <div className="tchSearchWrap">
+              <input type="text" className="tchSearchInput" placeholder="Search teachers..." value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+            <div className="tchStudentList">
+              {filteredTeachers.length === 0 ? (
+                <p className="muted small" style={{ padding: '12px 16px' }}>{teachers.length === 0 ? 'No teachers found.' : 'No matches.'}</p>
+              ) : filteredTeachers.map(t => (
+                <button key={t.id} className={`tchStudentItem${selectedTeacherId === t.id ? ' active' : ''}`} onClick={() => { setSelectedTeacherId(t.id); setSidebarTab('teachers'); setSelectedId(null); }}>
+                  <div className="tchStudentAvatar" style={{ background: '#2563eb' }}>{(t.first_name || t.email || '?')[0].toUpperCase()}</div>
+                  <div className="tchStudentInfo">
+                    <span className="tchStudentName">{displayName(t)}</span>
+                    <span className="tchStudentEmail">{t.email} · {t.student_count} student{t.student_count !== 1 ? 's' : ''}</span>
                   </div>
                 </button>
               ))}
@@ -1101,7 +1267,7 @@ function TeacherPageInner() {
         )}
       </aside>
       <main className="tchMain">
-        {sidebarTab === 'assignments' ? <AssignmentsPanel students={students} /> : selectedId ? <StudentDetail key={selectedId} studentId={selectedId} /> : <WelcomePanel role={role} />}
+        {mainContent()}
       </main>
     </div>
   );
