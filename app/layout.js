@@ -11,11 +11,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Preload Desmos calculator script so it's ready when students open the calculator */}
+        {/* Speed up Desmos loading: early DNS + TLS handshake, then preload the script */}
+        <link rel="dns-prefetch" href="https://www.desmos.com" />
+        <link rel="preconnect" href="https://www.desmos.com" crossOrigin="anonymous" />
         <link
           rel="preload"
           href={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${process.env.NEXT_PUBLIC_DESMOS_API_KEY || 'bac289385bcd4778a682276b95f5f116'}`}
           as="script"
+          crossOrigin="anonymous"
         />
 
         {/* MathJax config: enable MathML input + CHTML output */}
