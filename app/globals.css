@@ -4162,6 +4162,9 @@ hr{
   background: rgba(17,24,39,0.10);
   margin-bottom: -1px;
 }
+.dbGoalRecsRow.single{
+  grid-template-columns: 1fr;
+}
 @media (max-width: 680px){
   .dbGoalRecsRow{ grid-template-columns: 1fr; }
 }

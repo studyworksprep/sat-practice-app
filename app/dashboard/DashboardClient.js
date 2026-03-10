@@ -455,21 +455,23 @@ export default function DashboardClient({ email }) {
       </div>
 
       {/* ── Goal Progress + Recommendations row ── */}
-      {(data?.targetScore || data?.weakTopics?.length > 0 || data?.dailyActivity?.some(d => d.attempted > 0)) && (
-        <div className="dbGoalRecsRow">
-          {data?.targetScore ? (
-            <GoalProgressCard
-              targetScore={data?.targetScore}
-              highestScore={data?.highestTestScore}
-              goalProgress={data?.goalProgress}
-              pointsToGoal={data?.pointsToGoal}
-            />
-          ) : (
-            <ActivityChart dailyActivity={data?.dailyActivity} />
-          )}
-          <WeakTopicsCard weakTopics={data?.weakTopics} />
-        </div>
-      )}
+      {(() => {
+        const hasGoal = Boolean(data?.targetScore);
+        const hasWeak = data?.weakTopics?.length > 0;
+        const hasActivity = data?.dailyActivity?.some(d => d.attempted > 0);
+        const cards = [];
+        if (hasGoal) cards.push(<GoalProgressCard key="goal" targetScore={data.targetScore} highestScore={data.highestTestScore} goalProgress={data.goalProgress} pointsToGoal={data.pointsToGoal} />);
+        if (hasWeak) cards.push(<WeakTopicsCard key="weak" weakTopics={data.weakTopics} />);
+        if (hasActivity) cards.push(<ActivityChart key="activity" dailyActivity={data.dailyActivity} />);
+        // Show at most 2 cards; if only 1, it spans full width
+        const visible = cards.slice(0, 2);
+        if (visible.length === 0) return null;
+        return (
+          <div className={`dbGoalRecsRow${visible.length === 1 ? ' single' : ''}`}>
+            {visible}
+          </div>
+        );
+      })()}
 
       {/* ── Assignments ── */}
       <AssignmentsCard assignments={assignments} />
