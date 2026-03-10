@@ -1,13 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
-import { computeScaledScore } from '../../../../../../lib/scoreConversion';
-
-const subjToSection = {
-  RW: 'reading_writing', rw: 'reading_writing',
-  M: 'math', m: 'math', math: 'math', Math: 'math', MATH: 'math',
-};
-
-const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
+import { computeTestScores } from '../../../../../../lib/testScoreHelper';
 
 const BAND_WEIGHT = { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8, 6: 2.0, 7: 2.2 };
 
@@ -86,7 +79,7 @@ export async function GET(_request, { params }) {
       .limit(5000),
     supabase
       .from('practice_test_attempts')
-      .select('id, practice_test_id, status, metadata, started_at, finished_at')
+      .select('id, practice_test_id, status, metadata, started_at, finished_at, composite_score, rw_scaled, math_scaled')
       .eq('user_id', studentId)
       .eq('status', 'completed')
       .order('finished_at', { ascending: false })
@@ -101,26 +94,25 @@ export async function GET(_request, { params }) {
       .select('id, test_date, rw_score, math_score, composite_score, created_at')
       .eq('student_id', studentId)
       .order('test_date', { ascending: false }),
-    // Fetch full taxonomy for availability counts — use select with only needed columns
+    // Fetch precomputed availability counts (replaces full taxonomy scan)
     supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_name, skill_name, difficulty'),
+      .from('question_availability')
+      .select('domain_name, skill_name, difficulty, question_count'),
   ]);
 
   if (!studentProfile) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   }
 
-  // ── Taxonomy map for attempted questions ──
+  // ── Taxonomy map for attempted questions (fetch only what's needed) ──
   const taxMap = {};
   const allQids = [...new Set((allAttempts || []).map(a => a.question_id))];
-
-  // Build taxMap from allTax (already fetched) for attempted question IDs
-  for (const t of (allTax || [])) {
-    if (allQids.includes(t.question_id) || true) {
-      // We need all rows for availability counts anyway, so index everything
-      taxMap[t.question_id] = t;
-    }
+  if (allQids.length > 0) {
+    const { data: taxRows } = await supabase
+      .from('question_taxonomy')
+      .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
+      .in('question_id', allQids);
+    for (const t of (taxRows || [])) taxMap[t.question_id] = t;
   }
 
   // ── First attempt per question (source of truth for accuracy) ──
@@ -224,115 +216,38 @@ export async function GET(_request, { params }) {
   }
   const recentSessions = sessions.slice(0, 10);
 
-  // ── Practice test scores ──
-  let testScores = [];
-  if (completedAttempts?.length) {
-    const testIds = [...new Set(completedAttempts.map(a => a.practice_test_id))];
-    const attemptIds = completedAttempts.map(a => a.id);
-
-    // Parallel: fetch tests, module attempts, and score conversion together
-    const [{ data: tests }, { data: moduleAttempts }, { data: lookupRows }] = await Promise.all([
-      supabase.from('practice_tests').select('id, name').in('id', testIds),
-      supabase
-        .from('practice_test_module_attempts')
-        .select('practice_test_attempt_id, practice_test_module_id, correct_count')
-        .in('practice_test_attempt_id', attemptIds),
-      supabase
-        .from('score_conversion')
-        .select('test_id, section, module1_correct, module2_correct, scaled_score')
-        .in('test_id', testIds),
-    ]);
-
-    const testNameById = {};
-    for (const t of tests || []) testNameById[t.id] = t.name;
-
-    const modIds = [...new Set((moduleAttempts || []).map(ma => ma.practice_test_module_id))];
-    const { data: mods } = modIds.length
-      ? await supabase.from('practice_test_modules').select('id, subject_code, module_number, route_code').in('id', modIds)
-      : { data: [] };
-
-    const modById = {};
-    for (const m of mods || []) modById[m.id] = m;
-
-    const lookupByTestSection = {};
-    for (const row of lookupRows || []) {
-      const key = `${row.test_id}/${row.section}`;
-      if (!lookupByTestSection[key]) lookupByTestSection[key] = [];
-      lookupByTestSection[key].push(row);
-    }
-
-    const maByPta = {};
-    for (const ma of moduleAttempts || []) {
-      const mod = modById[ma.practice_test_module_id];
-      if (!mod) continue;
-      if (!maByPta[ma.practice_test_attempt_id]) maByPta[ma.practice_test_attempt_id] = {};
-      maByPta[ma.practice_test_attempt_id][`${mod.subject_code}/${mod.module_number}`] = {
-        correct: ma.correct_count || 0,
-        routeCode: mod.route_code,
-        subjectCode: mod.subject_code,
-      };
-    }
-
-    testScores = completedAttempts.map(a => {
-      const modData = maByPta[a.id] || {};
-      const subjects = [...new Set(Object.values(modData).map(d => d.subjectCode))];
-      const sections = {};
-      let composite = null;
-
-      for (const subj of subjects) {
-        const m1 = modData[`${subj}/1`] || { correct: 0 };
-        const m2 = modData[`${subj}/2`] || { correct: 0, routeCode: null };
-        const sectionName = subjToSection[subj] || 'math';
-        const lookupKey = `${a.practice_test_id}/${sectionName}`;
-
-        const scaled = computeScaledScore({
-          section: sectionName,
-          m1Correct: m1.correct,
-          m2Correct: m2.correct,
-          routeCode: m2.routeCode,
-          lookupRows: lookupByTestSection[lookupKey] || [],
-        });
-
-        sections[subj] = { scaled };
-        composite = (composite || 0) + scaled;
-      }
-
-      return {
-        attempt_id: a.id,
-        test_name: testNameById[a.practice_test_id] || 'Practice Test',
-        finished_at: a.finished_at,
-        composite,
-        sections,
-      };
-    });
-  }
+  // ── Practice test scores (uses cached scores when available) ──
+  const testScores = await computeTestScores(supabase, completedAttempts);
 
   const highestTestScore = testScores.length > 0
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))
     : null;
 
-  // ── Total questions available per domain and topic (from allTax already fetched) ──
-  const newAvailSets = () => ({ all: new Set(), 1: new Set(), 2: new Set(), 3: new Set() });
+  // ── Total questions available per domain and topic (from question_availability table) ──
   const domainAvail = {};
   const topicAvail = {};
-  for (const dc of (allTax || [])) {
-    const domain = dc.domain_name || 'Unknown';
-    const skill = dc.skill_name || 'Unknown';
+  for (const row of (allTax || [])) {
+    const domain = row.domain_name || 'Unknown';
+    const skill = row.skill_name || 'Unknown';
     const topicKey = `${domain}::${skill}`;
-    const diff = dc.difficulty || 0;
-    if (!domainAvail[domain]) domainAvail[domain] = newAvailSets();
-    if (!topicAvail[topicKey]) topicAvail[topicKey] = newAvailSets();
-    domainAvail[domain].all.add(dc.question_id);
-    topicAvail[topicKey].all.add(dc.question_id);
-    if (diff >= 1 && diff <= 3) {
-      domainAvail[domain][diff].add(dc.question_id);
-      topicAvail[topicKey][diff].add(dc.question_id);
+    const diff = row.difficulty || 0;
+
+    if (!domainAvail[domain]) domainAvail[domain] = { total: 0, 1: 0, 2: 0, 3: 0 };
+    if (!topicAvail[topicKey]) topicAvail[topicKey] = { total: 0, 1: 0, 2: 0, 3: 0 };
+
+    if (diff === 0) {
+      // difficulty=0 row holds the total count for this domain+skill
+      domainAvail[domain].total += row.question_count;
+      topicAvail[topicKey].total += row.question_count;
+    } else if (diff >= 1 && diff <= 3) {
+      domainAvail[domain][diff] += row.question_count;
+      topicAvail[topicKey][diff] += row.question_count;
     }
   }
 
-  const availToObj = (sets) => ({
-    totalAvailable: sets?.all.size || 0,
-    availByDifficulty: { 1: sets?.[1].size || 0, 2: sets?.[2].size || 0, 3: sets?.[3].size || 0 },
+  const availToObj = (counts) => ({
+    totalAvailable: counts?.total || 0,
+    availByDifficulty: { 1: counts?.[1] || 0, 2: counts?.[2] || 0, 3: counts?.[3] || 0 },
   });
 
   // Add total available to domain and topic stats

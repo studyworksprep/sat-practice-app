@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../lib/supabase/server';
-import { computeScaledScore } from '../../../../lib/scoreConversion';
-
-const subjToSection = {
-  RW: 'reading_writing', rw: 'reading_writing',
-  M: 'math', m: 'math', math: 'math', Math: 'math', MATH: 'math',
-};
+import { computeTestScores } from '../../../../lib/testScoreHelper';
 
 const BAND_WEIGHT = { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8, 6: 2.0, 7: 2.2 };
 
@@ -149,90 +144,13 @@ export async function GET() {
   // ── Practice test scores (all completed) ──
   const { data: completedAttempts } = await supabase
     .from('practice_test_attempts')
-    .select('id, practice_test_id, status, metadata, started_at, finished_at')
+    .select('id, practice_test_id, status, metadata, started_at, finished_at, composite_score, rw_scaled, math_scaled')
     .eq('user_id', user.id)
     .eq('status', 'completed')
     .order('finished_at', { ascending: false })
     .limit(20);
 
-  let testScores = [];
-  if (completedAttempts?.length) {
-    const testIds = [...new Set(completedAttempts.map(a => a.practice_test_id))];
-    const { data: tests } = await supabase.from('practice_tests').select('id, name').in('id', testIds);
-    const testNameById = {};
-    for (const t of tests || []) testNameById[t.id] = t.name;
-
-    const attemptIds = completedAttempts.map(a => a.id);
-    const { data: moduleAttempts } = await supabase
-      .from('practice_test_module_attempts')
-      .select('practice_test_attempt_id, practice_test_module_id, correct_count')
-      .in('practice_test_attempt_id', attemptIds);
-
-    const modIds = [...new Set((moduleAttempts || []).map(ma => ma.practice_test_module_id))];
-    const { data: mods } = modIds.length
-      ? await supabase.from('practice_test_modules').select('id, subject_code, module_number, route_code').in('id', modIds)
-      : { data: [] };
-
-    const modById = {};
-    for (const m of mods || []) modById[m.id] = m;
-
-    const { data: lookupRows } = await supabase
-      .from('score_conversion')
-      .select('test_id, section, module1_correct, module2_correct, scaled_score')
-      .in('test_id', testIds);
-
-    const lookupByTestSection = {};
-    for (const row of lookupRows || []) {
-      const key = `${row.test_id}/${row.section}`;
-      if (!lookupByTestSection[key]) lookupByTestSection[key] = [];
-      lookupByTestSection[key].push(row);
-    }
-
-    const maByPta = {};
-    for (const ma of moduleAttempts || []) {
-      const mod = modById[ma.practice_test_module_id];
-      if (!mod) continue;
-      if (!maByPta[ma.practice_test_attempt_id]) maByPta[ma.practice_test_attempt_id] = {};
-      maByPta[ma.practice_test_attempt_id][`${mod.subject_code}/${mod.module_number}`] = {
-        correct: ma.correct_count || 0,
-        routeCode: mod.route_code,
-        subjectCode: mod.subject_code,
-      };
-    }
-
-    testScores = completedAttempts.map(a => {
-      const modData = maByPta[a.id] || {};
-      const subjects = [...new Set(Object.values(modData).map(d => d.subjectCode))];
-      const sections = {};
-      let composite = null;
-
-      for (const subj of subjects) {
-        const m1 = modData[`${subj}/1`] || { correct: 0 };
-        const m2 = modData[`${subj}/2`] || { correct: 0, routeCode: null };
-        const sectionName = subjToSection[subj] || 'math';
-        const lookupKey = `${a.practice_test_id}/${sectionName}`;
-
-        const scaled = computeScaledScore({
-          section: sectionName,
-          m1Correct: m1.correct,
-          m2Correct: m2.correct,
-          routeCode: m2.routeCode,
-          lookupRows: lookupByTestSection[lookupKey] || [],
-        });
-
-        sections[subj] = { scaled };
-        composite = (composite || 0) + scaled;
-      }
-
-      return {
-        attempt_id: a.id,
-        test_name: testNameById[a.practice_test_id] || 'Practice Test',
-        finished_at: a.finished_at,
-        composite,
-        sections,
-      };
-    });
-  }
+  const testScores = await computeTestScores(supabase, completedAttempts);
 
   const highestTestScore = testScores.length > 0
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))

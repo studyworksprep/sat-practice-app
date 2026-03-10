@@ -315,6 +315,16 @@ export async function GET(_request, { params }) {
 
   const composite = Object.values(sections).reduce((s, sec) => s + sec.scaled, 0);
 
+  // Cache computed scores on the attempt row for faster dashboard queries
+  const rwScaled = sections['RW']?.scaled || sections['rw']?.scaled || null;
+  const mathScaled = sections['M']?.scaled || sections['m']?.scaled || sections['MATH']?.scaled || sections['math']?.scaled || sections['Math']?.scaled || null;
+  if (attempt.composite_score == null && composite > 0) {
+    await supabase
+      .from('practice_test_attempts')
+      .update({ composite_score: composite, rw_scaled: rwScaled, math_scaled: mathScaled })
+      .eq('id', attemptId);
+  }
+
   // Flatten domain stats
   const domains = Object.values(domainStats).map((d) => ({
     ...d,
