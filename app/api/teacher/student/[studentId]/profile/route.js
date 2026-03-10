@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
 
-const ALLOWED_FIELDS = ['first_name', 'last_name', 'high_school', 'graduation_year', 'target_sat_score', 'sat_test_date'];
+const ALLOWED_FIELDS = ['first_name', 'last_name', 'high_school', 'graduation_year', 'target_sat_score'];
 
 // PATCH /api/teacher/student/[studentId]/profile
 export async function PATCH(request, { params }) {
@@ -69,11 +69,6 @@ export async function PATCH(request, { params }) {
   // Convert graduation_year and target_sat_score to numbers if present
   if (updates.graduation_year != null) updates.graduation_year = Number(updates.graduation_year) || null;
   if (updates.target_sat_score != null) updates.target_sat_score = Number(updates.target_sat_score) || null;
-  // sat_test_date: accept ISO string or null
-  if ('sat_test_date' in updates) {
-    updates.sat_test_date = updates.sat_test_date || null;
-  }
-
   const { error } = await supabase
     .from('profiles')
     .update(updates)
@@ -86,7 +81,7 @@ export async function PATCH(request, { params }) {
   // Return updated profile
   const { data: updated } = await supabase
     .from('profiles')
-    .select('id, email, first_name, last_name, high_school, graduation_year, target_sat_score, sat_test_date')
+    .select('id, email, first_name, last_name, high_school, graduation_year, target_sat_score')
     .eq('id', studentId)
     .maybeSingle();
 

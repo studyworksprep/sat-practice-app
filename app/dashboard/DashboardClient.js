@@ -440,7 +440,7 @@ export default function DashboardClient({ email }) {
           </p>
           {data && (() => {
             const sp = data.studentProfile || {};
-            const satCountdown = timeUntilSat(sp.satTestDate);
+            const satCountdown = timeUntilSat(sp.nextSatDate);
             const chips = [];
             if (sp.school) chips.push({ label: sp.school });
             if (sp.graduationYear) chips.push({ label: `Class of ${sp.graduationYear}` });
@@ -522,6 +522,36 @@ export default function DashboardClient({ email }) {
           <Link href="/dashboard/stats" className="dbMoreStatsLink">
             More Statistics →
           </Link>
+        </div>
+      )}
+
+      {/* ── Official SAT Scores ── */}
+      {data?.officialScores?.length > 0 && (
+        <div className="card dbOfficialScoresCard">
+          <div className="h2" style={{ marginBottom: 12 }}>Official SAT Scores</div>
+          <div className="dbOfficialScoresList">
+            {data.officialScores.map((s) => (
+              <div key={s.id} className="dbOfficialScoreRow">
+                <span className="dbOfficialScoreDate">
+                  {new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+                <div className="dbTestScoreBadges">
+                  <div className="dbTestScoreBadge">
+                    <span className="dbTestScoreBadgeNum">{s.composite_score}</span>
+                    <span className="dbTestScoreBadgeLabel">Total</span>
+                  </div>
+                  <div className="dbTestScoreBadge">
+                    <span className="dbTestScoreBadgeNum">{s.rw_score}</span>
+                    <span className="dbTestScoreBadgeLabel">R&W</span>
+                  </div>
+                  <div className="dbTestScoreBadge">
+                    <span className="dbTestScoreBadgeNum">{s.math_score}</span>
+                    <span className="dbTestScoreBadgeLabel">Math</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

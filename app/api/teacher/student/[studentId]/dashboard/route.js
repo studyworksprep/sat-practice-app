@@ -67,7 +67,7 @@ export async function GET(_request, { params }) {
   // Fetch student profile
   const { data: studentProfile } = await supabase
     .from('profiles')
-    .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score, sat_test_date')
+    .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score')
     .eq('id', studentId)
     .maybeSingle();
 
@@ -334,8 +334,23 @@ export async function GET(_request, { params }) {
     ...availToObj(topicAvail[`${t.domain_name}::${t.skill_name}`]),
   }));
 
+  // ── SAT registrations & official scores ──
+  const { data: satRegistrations } = await supabase
+    .from('sat_test_registrations')
+    .select('id, test_date, created_at')
+    .eq('student_id', studentId)
+    .order('test_date', { ascending: true });
+
+  const { data: satScores } = await supabase
+    .from('sat_official_scores')
+    .select('id, test_date, rw_score, math_score, composite_score, created_at')
+    .eq('student_id', studentId)
+    .order('test_date', { ascending: false });
+
   return NextResponse.json({
     student: studentProfile,
+    satRegistrations: satRegistrations || [],
+    officialScores: satScores || [],
     domainStats: domainStatsWithTotal,
     topicStats: topicStatsWithTotal,
     totalAttempted: firstAttempts.length,

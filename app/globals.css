@@ -3672,6 +3672,131 @@ hr{
   font-weight: 600;
 }
 
+.tchProfileActions{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.tchProfileActionBtn{
+  font-size: 12px !important;
+  padding: 6px 12px !important;
+}
+
+.tchRegSection{
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tchRegList{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tchRegItem{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--bg-raised, rgba(0,0,0,0.03));
+}
+
+.tchRegItem.past{
+  color: var(--muted);
+}
+
+.tchRegDelete{
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  line-height: 1;
+}
+.tchRegDelete:hover{
+  color: var(--danger);
+}
+
+.tchScoresSection{
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.tchScoresList{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tchScoreItem{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--bg-raised, rgba(0,0,0,0.03));
+}
+
+.tchScoreDate{
+  color: var(--muted);
+  min-width: 90px;
+}
+
+.tchScoreComposite{
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+  min-width: 40px;
+}
+
+.tchScoreBreakdown{
+  color: var(--muted);
+  font-size: 12px;
+  flex: 1;
+}
+
+.dbOfficialScoresCard{
+  margin-bottom: 20px;
+}
+
+.dbOfficialScoresList{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dbOfficialScoreRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg-raised, rgba(0,0,0,0.03));
+}
+
+.dbOfficialScoreDate{
+  font-weight: 600;
+  font-size: 13px;
+  min-width: 100px;
+}
+
 .tchStatsRow{
   display: grid;
   grid-template-columns: repeat(4, 1fr);

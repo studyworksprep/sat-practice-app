@@ -238,7 +238,7 @@ export async function GET() {
   // ── Profile (target score + student info) ──
   const { data: profile } = await supabase
     .from('profiles')
-    .select('target_sat_score, first_name, last_name, high_school, graduation_year, sat_test_date')
+    .select('target_sat_score, first_name, last_name, high_school, graduation_year')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -264,6 +264,24 @@ export async function GET() {
       }
     }
   }
+
+  // ── SAT test registrations (upcoming) ──
+  const { data: satRegistrations } = await supabase
+    .from('sat_test_registrations')
+    .select('id, test_date')
+    .eq('student_id', user.id)
+    .order('test_date', { ascending: true });
+
+  const now = new Date();
+  const upcomingRegistrations = (satRegistrations || []).filter(r => new Date(r.test_date) > now);
+  const nextSatDate = upcomingRegistrations.length > 0 ? upcomingRegistrations[0].test_date : null;
+
+  // ── Official SAT scores ──
+  const { data: satScores } = await supabase
+    .from('sat_official_scores')
+    .select('id, test_date, rw_score, math_score, composite_score')
+    .eq('student_id', user.id)
+    .order('test_date', { ascending: false });
 
   // ── Streak calculation ──
   const practiceDays = new Set();
@@ -362,8 +380,9 @@ export async function GET() {
       lastName: profile?.last_name || null,
       school: profile?.high_school || null,
       graduationYear: profile?.graduation_year || null,
-      satTestDate: profile?.sat_test_date || null,
+      nextSatDate,
     },
+    officialScores: satScores || [],
     teacherName,
   });
 }

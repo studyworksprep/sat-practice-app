@@ -302,7 +302,6 @@ function EditProfileModal({ student, studentId, onClose, onSaved }) {
     high_school: student.high_school || '',
     graduation_year: student.graduation_year || '',
     target_sat_score: student.target_sat_score || '',
-    sat_test_date: student.sat_test_date ? student.sat_test_date.slice(0, 16) : '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -359,14 +358,126 @@ function EditProfileModal({ student, studentId, onClose, onSaved }) {
               <input type="number" value={form.target_sat_score} onChange={handleChange('target_sat_score')} />
             </label>
           </div>
-          <label className="tchModalField">
-            <span className="tchModalLabel">Upcoming SAT Date</span>
-            <input type="datetime-local" value={form.sat_test_date} onChange={handleChange('sat_test_date')} />
-          </label>
           {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
           <div className="tchModalActions">
             <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Add Test Registration modal ──────────────────────────
+function AddRegistrationModal({ studentId, onClose, onSaved }) {
+  const [testDate, setTestDate] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!testDate) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/teacher/student/${studentId}/registrations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test_date: testDate }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      onSaved(data.registration);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="tchModalOverlay" onClick={onClose}>
+      <div className="card tchModal" onClick={(e) => e.stopPropagation()}>
+        <div className="tchModalHeader">
+          <h3 className="h2" style={{ margin: 0 }}>Add Test Registration</h3>
+          <button className="tchModalClose" onClick={onClose}>&times;</button>
+        </div>
+        <form onSubmit={handleSubmit} className="tchModalForm">
+          <label className="tchModalField">
+            <span className="tchModalLabel">SAT Test Date</span>
+            <input type="datetime-local" value={testDate} onChange={(e) => setTestDate(e.target.value)} required />
+          </label>
+          {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
+          <div className="tchModalActions">
+            <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn primary" disabled={saving}>{saving ? 'Saving...' : 'Add'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Add Official Score modal ─────────────────────────────
+function AddScoreModal({ studentId, onClose, onSaved }) {
+  const [form, setForm] = useState({ test_date: '', rw_score: '', math_score: '' });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const handleChange = (field) => (e) => setForm(prev => ({ ...prev, [field]: e.target.value }));
+  const composite = (Number(form.rw_score) || 0) + (Number(form.math_score) || 0);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/teacher/student/${studentId}/scores`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      onSaved(data.score);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="tchModalOverlay" onClick={onClose}>
+      <div className="card tchModal" onClick={(e) => e.stopPropagation()}>
+        <div className="tchModalHeader">
+          <h3 className="h2" style={{ margin: 0 }}>Add Official SAT Score</h3>
+          <button className="tchModalClose" onClick={onClose}>&times;</button>
+        </div>
+        <form onSubmit={handleSubmit} className="tchModalForm">
+          <label className="tchModalField">
+            <span className="tchModalLabel">Test Date</span>
+            <input type="date" value={form.test_date} onChange={handleChange('test_date')} required />
+          </label>
+          <div className="tchModalRow">
+            <label className="tchModalField">
+              <span className="tchModalLabel">Reading & Writing</span>
+              <input type="number" min="200" max="800" step="10" value={form.rw_score} onChange={handleChange('rw_score')} required placeholder="200-800" />
+            </label>
+            <label className="tchModalField">
+              <span className="tchModalLabel">Math</span>
+              <input type="number" min="200" max="800" step="10" value={form.math_score} onChange={handleChange('math_score')} required placeholder="200-800" />
+            </label>
+          </div>
+          {form.rw_score && form.math_score && (
+            <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--accent)' }}>
+              Composite: {composite}
+            </div>
+          )}
+          {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
+          <div className="tchModalActions">
+            <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn primary" disabled={saving}>{saving ? 'Saving...' : 'Add'}</button>
           </div>
         </form>
       </div>
@@ -749,6 +860,10 @@ function StudentDetail({ studentId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [registrations, setRegistrations] = useState([]);
+  const [officialScores, setOfficialScores] = useState([]);
+  const [addRegOpen, setAddRegOpen] = useState(false);
+  const [addScoreOpen, setAddScoreOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true); setError(null);
@@ -757,7 +872,25 @@ function StudentDetail({ studentId }) {
       .then(d => { if (d.error) throw new Error(d.error); setData(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
+    fetch(`/api/teacher/student/${studentId}/registrations`)
+      .then(r => r.json())
+      .then(d => setRegistrations(d.registrations || []))
+      .catch(() => {});
+    fetch(`/api/teacher/student/${studentId}/scores`)
+      .then(r => r.json())
+      .then(d => setOfficialScores(d.scores || []))
+      .catch(() => {});
   }, [studentId]);
+
+  const deleteRegistration = async (id) => {
+    await fetch(`/api/teacher/student/${studentId}/registrations?id=${id}`, { method: 'DELETE' });
+    setRegistrations(prev => prev.filter(r => r.id !== id));
+  };
+
+  const deleteScore = async (id) => {
+    await fetch(`/api/teacher/student/${studentId}/scores?id=${id}`, { method: 'DELETE' });
+    setOfficialScores(prev => prev.filter(s => s.id !== id));
+  };
 
   if (loading) return <div className="tchDetailLoading"><p className="muted">Loading student data...</p></div>;
   if (error) return <div className="tchDetailError"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
@@ -774,15 +907,69 @@ function StudentDetail({ studentId }) {
         <button className="btn secondary tchEditBtn" onClick={() => setEditOpen(true)}>Edit</button>
       </div>
       {editOpen && <EditProfileModal student={student} studentId={studentId} onClose={() => setEditOpen(false)} onSaved={(updated) => { setData(prev => ({ ...prev, student: { ...prev.student, ...updated } })); setEditOpen(false); }} />}
+      {addRegOpen && <AddRegistrationModal studentId={studentId} onClose={() => setAddRegOpen(false)} onSaved={(reg) => { setRegistrations(prev => [...prev, reg].sort((a, b) => new Date(a.test_date) - new Date(b.test_date))); setAddRegOpen(false); }} />}
+      {addScoreOpen && <AddScoreModal studentId={studentId} onClose={() => setAddScoreOpen(false)} onSaved={(score) => { setOfficialScores(prev => [score, ...prev]); setAddScoreOpen(false); }} />}
       <div className="card tchOverviewCard">
-        {(student.high_school || student.graduation_year || student.target_sat_score || student.sat_test_date) && (
+        {(student.high_school || student.graduation_year || student.target_sat_score) && (
           <div className="tchProfileRow">
             {student.high_school && <div className="tchProfileItem"><span className="tchProfileLabel">School</span><span className="tchProfileValue">{student.high_school}</span></div>}
             {student.graduation_year && <div className="tchProfileItem"><span className="tchProfileLabel">Graduation</span><span className="tchProfileValue">{student.graduation_year}</span></div>}
             {student.target_sat_score && <div className="tchProfileItem"><span className="tchProfileLabel">Target Score</span><span className="tchProfileValue">{student.target_sat_score}</span></div>}
-            {student.sat_test_date && <div className="tchProfileItem"><span className="tchProfileLabel">SAT Date</span><span className="tchProfileValue">{new Date(student.sat_test_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>}
           </div>
         )}
+        {/* Upcoming SAT Registrations */}
+        {(() => {
+          const now = new Date();
+          const upcoming = registrations.filter(r => new Date(r.test_date) > now);
+          const past = registrations.filter(r => new Date(r.test_date) <= now);
+          return (upcoming.length > 0 || past.length > 0) ? (
+            <div className="tchRegSection">
+              {upcoming.length > 0 && (
+                <div className="tchRegList">
+                  <span className="tchProfileLabel" style={{ marginBottom: 4 }}>Upcoming SATs</span>
+                  {upcoming.map(r => (
+                    <div key={r.id} className="tchRegItem">
+                      <span>{new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <button className="tchRegDelete" onClick={() => deleteRegistration(r.id)} title="Remove">&times;</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {past.length > 0 && (
+                <div className="tchRegList">
+                  <span className="tchProfileLabel" style={{ marginBottom: 4, color: 'var(--muted)' }}>Past SATs</span>
+                  {past.map(r => (
+                    <div key={r.id} className="tchRegItem past">
+                      <span>{new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <button className="tchRegDelete" onClick={() => deleteRegistration(r.id)} title="Remove">&times;</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null;
+        })()}
+        {/* Official SAT Scores */}
+        {officialScores.length > 0 && (
+          <div className="tchScoresSection">
+            <span className="tchProfileLabel" style={{ marginBottom: 6 }}>Official SAT Scores</span>
+            <div className="tchScoresList">
+              {officialScores.map(s => (
+                <div key={s.id} className="tchScoreItem">
+                  <span className="tchScoreDate">{new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  <span className="tchScoreComposite">{s.composite_score}</span>
+                  <span className="tchScoreBreakdown">R&W {s.rw_score} · Math {s.math_score}</span>
+                  <button className="tchRegDelete" onClick={() => deleteScore(s.id)} title="Remove">&times;</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* Action buttons */}
+        <div className="tchProfileActions">
+          <button className="btn secondary tchProfileActionBtn" onClick={() => setAddRegOpen(true)}>+ Test Registration</button>
+          <button className="btn secondary tchProfileActionBtn" onClick={() => setAddScoreOpen(true)}>+ Official Score</button>
+        </div>
         <div className="tchStatsRow">
           <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--accent)' }}>{data.highestTestScore ?? '—'}</div><div className="tchStatLabel">Highest Score</div></div>
           <div className="tchStatCol"><div className="tchStatValue">{data.totalAttempted}</div><div className="tchStatLabel">Questions Done</div></div>
