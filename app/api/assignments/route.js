@@ -48,7 +48,7 @@ export async function GET() {
     const statusPromise = allQuestionIds.length > 0
       ? supabase
           .from("question_status")
-          .select("question_id, is_done, is_correct")
+          .select("question_id, is_done, last_is_correct")
           .eq("user_id", user.id)
           .in("question_id", allQuestionIds)
           .eq("is_done", true)
@@ -70,7 +70,7 @@ export async function GET() {
     const correctSet = new Set();
     for (const s of (statusRows || [])) {
       doneSet.add(s.question_id);
-      if (s.is_correct) correctSet.add(s.question_id);
+      if (s.last_is_correct) correctSet.add(s.question_id);
     }
 
     // Build assignments without any additional queries
