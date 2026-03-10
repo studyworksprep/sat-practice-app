@@ -49,6 +49,11 @@ export default function AdminPage() {
   const [codeLoading, setCodeLoading] = useState(false);
   const [showTeacherCodes, setShowTeacherCodes] = useState(false);
 
+  // Teacher invite code state
+  const [inviteTeachers, setInviteTeachers] = useState([]);
+  const [showInviteCodes, setShowInviteCodes] = useState(false);
+  const [inviteCodeLoading, setInviteCodeLoading] = useState({});
+
   // Delete confirmation state
   const [deleteConfirm, setDeleteConfirm] = useState(null); // user id pending confirmation
 
@@ -65,6 +70,7 @@ export default function AdminPage() {
     fetchUsers();
     fetchAssignments();
     fetchTeacherCodes();
+    fetchInviteCodes();
   }, []);
 
   async function fetchUsers() {
@@ -221,6 +227,51 @@ export default function AdminPage() {
       fetchTeacherCodes();
     } catch (err) {
       showToast('danger', err.message);
+    }
+  }
+
+  async function fetchInviteCodes() {
+    try {
+      const res = await fetch('/api/admin/teacher-invite-codes');
+      const json = await res.json();
+      if (res.ok) setInviteTeachers(json.teachers || []);
+    } catch {}
+  }
+
+  async function handleGenerateInviteCode(teacherId) {
+    setInviteCodeLoading(prev => ({ ...prev, [teacherId]: true }));
+    try {
+      const res = await fetch('/api/admin/teacher-invite-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: teacherId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      showToast('ok', `Invite code "${json.code}" generated.`);
+      fetchInviteCodes();
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setInviteCodeLoading(prev => ({ ...prev, [teacherId]: false }));
+    }
+  }
+
+  async function handleRevokeInviteCode(teacherId) {
+    setInviteCodeLoading(prev => ({ ...prev, [teacherId]: true }));
+    try {
+      const res = await fetch('/api/admin/teacher-invite-codes', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: teacherId }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      showToast('ok', 'Invite code removed.');
+      fetchInviteCodes();
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setInviteCodeLoading(prev => ({ ...prev, [teacherId]: false }));
     }
   }
 
@@ -521,6 +572,90 @@ export default function AdminPage() {
                   </tbody>
                 </table>
               </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* ── Teacher Invite Codes ─────────────────────────────── */}
+      <section style={{ marginTop: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h2 className="h2" style={{ margin: 0 }}>Teacher Invite Codes</h2>
+          <button className="btn" onClick={() => setShowInviteCodes(!showInviteCodes)}>
+            {showInviteCodes ? 'Close' : 'Manage Invite Codes'}
+          </button>
+        </div>
+        <p className="muted small" style={{ marginTop: -8, marginBottom: 12 }}>
+          Students can enter a teacher&apos;s invite code during sign-up to be automatically assigned.
+        </p>
+
+        {showInviteCodes && (
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            {inviteTeachers.length === 0 ? (
+              <p className="muted small" style={{ padding: 20 }}>No teachers found.</p>
+            ) : (
+              <table className="adminTable">
+                <thead>
+                  <tr>
+                    <th>Teacher</th>
+                    <th>Invite Code</th>
+                    <th style={{ width: 160 }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inviteTeachers.map((t) => (
+                    <tr key={t.id}>
+                      <td>
+                        {t.first_name || t.last_name
+                          ? `${t.first_name || ''} ${t.last_name || ''}`.trim()
+                          : t.email}
+                        {(t.first_name || t.last_name) && (
+                          <span className="muted small" style={{ marginLeft: 6 }}>{t.email}</span>
+                        )}
+                      </td>
+                      <td>
+                        {t.teacher_invite_code ? (
+                          <span style={{
+                            fontFamily: 'monospace',
+                            fontWeight: 600,
+                            letterSpacing: '0.08em',
+                            fontSize: 14,
+                            background: 'rgba(22,163,74,0.08)',
+                            color: '#16a34a',
+                            padding: '2px 10px',
+                            borderRadius: 4,
+                          }}>
+                            {t.teacher_invite_code}
+                          </span>
+                        ) : (
+                          <span className="muted small">None</span>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button
+                            className="btn"
+                            style={{ fontSize: 11, padding: '3px 10px' }}
+                            onClick={() => handleGenerateInviteCode(t.id)}
+                            disabled={inviteCodeLoading[t.id]}
+                          >
+                            {inviteCodeLoading[t.id] ? '…' : t.teacher_invite_code ? 'Regenerate' : 'Generate'}
+                          </button>
+                          {t.teacher_invite_code && (
+                            <button
+                              className="adminAssignRemove"
+                              onClick={() => handleRevokeInviteCode(t.id)}
+                              disabled={inviteCodeLoading[t.id]}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
         )}

@@ -23,7 +23,7 @@ export async function GET(_request, { params }) {
   // Teachers/admins can view any attempt (RLS will filter); students only their own
   const query = supabase
     .from('practice_test_attempts')
-    .select('id, practice_test_id, user_id, status, metadata, started_at, finished_at')
+    .select('id, practice_test_id, user_id, status, metadata, started_at, finished_at, composite_score')
     .eq('id', attemptId);
 
   if (!isTeacherOrAdmin) {
