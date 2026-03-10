@@ -1550,6 +1550,27 @@ hr{
   flex-shrink: 0;
   flex-wrap: wrap;
 }
+.dbBannerChips{
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.dbBannerChip{
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  background: rgba(0,0,0,0.04);
+  padding: 2px 8px;
+  border-radius: 4px;
+  line-height: 1.5;
+}
+.dbBannerChip.accent{
+  color: var(--accent);
+  background: rgba(59,130,246,0.08);
+  font-weight: 600;
+}
 
 /* ── Stats row ── */
 .dbStatsRow{

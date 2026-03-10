@@ -235,14 +235,35 @@ export async function GET() {
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))
     : null;
 
-  // ── Profile (target score) ──
+  // ── Profile (target score + student info) ──
   const { data: profile } = await supabase
     .from('profiles')
-    .select('target_sat_score')
+    .select('target_sat_score, first_name, last_name, high_school, graduation_year, sat_test_date')
     .eq('id', user.id)
     .maybeSingle();
 
   const targetScore = profile?.target_sat_score || null;
+
+  // ── Teacher name (from teacher_student_assignments) ──
+  let teacherName = null;
+  {
+    const { data: tsa } = await supabase
+      .from('teacher_student_assignments')
+      .select('teacher_id')
+      .eq('student_id', user.id)
+      .limit(1)
+      .maybeSingle();
+    if (tsa?.teacher_id) {
+      const { data: teacherProfile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, email')
+        .eq('id', tsa.teacher_id)
+        .maybeSingle();
+      if (teacherProfile) {
+        teacherName = [teacherProfile.first_name, teacherProfile.last_name].filter(Boolean).join(' ') || teacherProfile.email?.split('@')[0] || null;
+      }
+    }
+  }
 
   // ── Streak calculation ──
   const practiceDays = new Set();
@@ -336,5 +357,13 @@ export async function GET() {
     pointsToGoal,
     weakTopics,
     dailyActivity,
+    studentProfile: {
+      firstName: profile?.first_name || null,
+      lastName: profile?.last_name || null,
+      school: profile?.high_school || null,
+      graduationYear: profile?.graduation_year || null,
+      satTestDate: profile?.sat_test_date || null,
+    },
+    teacherName,
   });
 }

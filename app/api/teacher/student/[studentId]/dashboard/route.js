@@ -67,7 +67,7 @@ export async function GET(_request, { params }) {
   // Fetch student profile
   const { data: studentProfile } = await supabase
     .from('profiles')
-    .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score')
+    .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score, sat_test_date')
     .eq('id', studentId)
     .maybeSingle();
 

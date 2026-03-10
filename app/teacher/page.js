@@ -302,6 +302,7 @@ function EditProfileModal({ student, studentId, onClose, onSaved }) {
     high_school: student.high_school || '',
     graduation_year: student.graduation_year || '',
     target_sat_score: student.target_sat_score || '',
+    sat_test_date: student.sat_test_date ? student.sat_test_date.slice(0, 16) : '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -358,6 +359,10 @@ function EditProfileModal({ student, studentId, onClose, onSaved }) {
               <input type="number" value={form.target_sat_score} onChange={handleChange('target_sat_score')} />
             </label>
           </div>
+          <label className="tchModalField">
+            <span className="tchModalLabel">Upcoming SAT Date</span>
+            <input type="datetime-local" value={form.sat_test_date} onChange={handleChange('sat_test_date')} />
+          </label>
           {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
           <div className="tchModalActions">
             <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
@@ -770,11 +775,12 @@ function StudentDetail({ studentId }) {
       </div>
       {editOpen && <EditProfileModal student={student} studentId={studentId} onClose={() => setEditOpen(false)} onSaved={(updated) => { setData(prev => ({ ...prev, student: { ...prev.student, ...updated } })); setEditOpen(false); }} />}
       <div className="card tchOverviewCard">
-        {(student.high_school || student.graduation_year || student.target_sat_score) && (
+        {(student.high_school || student.graduation_year || student.target_sat_score || student.sat_test_date) && (
           <div className="tchProfileRow">
             {student.high_school && <div className="tchProfileItem"><span className="tchProfileLabel">School</span><span className="tchProfileValue">{student.high_school}</span></div>}
             {student.graduation_year && <div className="tchProfileItem"><span className="tchProfileLabel">Graduation</span><span className="tchProfileValue">{student.graduation_year}</span></div>}
             {student.target_sat_score && <div className="tchProfileItem"><span className="tchProfileLabel">Target Score</span><span className="tchProfileValue">{student.target_sat_score}</span></div>}
+            {student.sat_test_date && <div className="tchProfileItem"><span className="tchProfileLabel">SAT Date</span><span className="tchProfileValue">{new Date(student.sat_test_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>}
           </div>
         )}
         <div className="tchStatsRow">

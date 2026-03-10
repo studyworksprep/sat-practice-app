@@ -48,6 +48,22 @@ function formatMs(ms) {
   return `${Math.floor(s / 60)}m ${s % 60}s`;
 }
 
+function timeUntilSat(isoDate) {
+  if (!isoDate) return null;
+  const target = new Date(isoDate);
+  const now = new Date();
+  const diffMs = target.getTime() - now.getTime();
+  if (diffMs <= 0) return 'Today!';
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  if (days === 1) return '1 day';
+  if (days < 7) return `${days} days`;
+  const weeks = Math.floor(days / 7);
+  const remDays = days % 7;
+  if (weeks < 4) return remDays > 0 ? `${weeks}w ${remDays}d` : `${weeks} weeks`;
+  const months = Math.floor(days / 30);
+  return months === 1 ? '1 month' : `${months} months`;
+}
+
 function AccuracyBar({ correct, attempted }) {
   const p = pct(correct, attempted);
   if (p === null) return null;
@@ -422,6 +438,23 @@ export default function DashboardClient({ email }) {
               ? `${data.currentStreak} day streak — keep it going!`
               : 'Ready to practice? Let\'s go.'}
           </p>
+          {data && (() => {
+            const sp = data.studentProfile || {};
+            const satCountdown = timeUntilSat(sp.satTestDate);
+            const chips = [];
+            if (sp.school) chips.push({ label: sp.school });
+            if (sp.graduationYear) chips.push({ label: `Class of ${sp.graduationYear}` });
+            if (data.teacherName) chips.push({ label: `Teacher: ${data.teacherName}` });
+            if (satCountdown) chips.push({ label: `SAT in ${satCountdown}`, accent: true });
+            if (!chips.length) return null;
+            return (
+              <div className="dbBannerChips">
+                {chips.map((c, i) => (
+                  <span key={i} className={`dbBannerChip${c.accent ? ' accent' : ''}`}>{c.label}</span>
+                ))}
+              </div>
+            );
+          })()}
         </div>
         <div className="dbBannerActions">
           <Link href="/practice" className="btn primary">Continue Practicing</Link>
