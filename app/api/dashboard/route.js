@@ -17,28 +17,86 @@ export async function GET() {
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   const user = auth.user;
 
-  // ── Question statuses ──
-  const { data: statusRows, error } = await supabase
-    .from('question_status')
-    .select('question_id, last_is_correct, last_attempt_at')
-    .eq('user_id', user.id)
-    .eq('is_done', true)
-    .order('last_attempt_at', { ascending: false })
-    .limit(5000);
+  // ── Parallel batch 1: all independent queries ──
+  const [
+    { data: statusRows, error },
+    { data: recentAttempts },
+    { data: completedAttempts },
+    { data: profile },
+    { data: tsa },
+    { data: satRegistrations },
+    { data: satScores },
+  ] = await Promise.all([
+    supabase
+      .from('question_status')
+      .select('question_id, last_is_correct, last_attempt_at')
+      .eq('user_id', user.id)
+      .eq('is_done', true)
+      .order('last_attempt_at', { ascending: false })
+      .limit(5000),
+    supabase
+      .from('attempts')
+      .select('id, question_id, is_correct, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(200),
+    supabase
+      .from('practice_test_attempts')
+      .select('id, practice_test_id, status, metadata, started_at, finished_at')
+      .eq('user_id', user.id)
+      .eq('status', 'completed')
+      .order('finished_at', { ascending: false })
+      .limit(4),
+    supabase
+      .from('profiles')
+      .select('target_sat_score, first_name, last_name, high_school, graduation_year')
+      .eq('id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('teacher_student_assignments')
+      .select('teacher_id')
+      .eq('student_id', user.id)
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('sat_test_registrations')
+      .select('id, test_date')
+      .eq('student_id', user.id)
+      .order('test_date', { ascending: true }),
+    supabase
+      .from('sat_official_scores')
+      .select('id, test_date, rw_score, math_score, composite_score')
+      .eq('student_id', user.id)
+      .order('test_date', { ascending: false }),
+  ]);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   const rows = statusRows || [];
 
-  // ── Taxonomy ──
+  // ── Taxonomy: single query for all question IDs from both statuses and attempts ──
   const taxMap = {};
-  if (rows.length > 0) {
-    const ids = [...new Set(rows.map(r => r.question_id))];
+  const allQids = new Set(rows.map(r => r.question_id));
+  for (const a of (recentAttempts || [])) allQids.add(a.question_id);
+  if (allQids.size > 0) {
     const { data: taxRows, error: taxErr } = await supabase
       .from('question_taxonomy')
       .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
-      .in('question_id', ids);
+      .in('question_id', [...allQids]);
     if (taxErr) return NextResponse.json({ error: taxErr.message }, { status: 400 });
     for (const t of (taxRows || [])) taxMap[t.question_id] = t;
+  }
+
+  // ── Teacher name (fetch in parallel with taxonomy if available) ──
+  let teacherName = null;
+  if (tsa?.teacher_id) {
+    const { data: teacherProfile } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, email')
+      .eq('id', tsa.teacher_id)
+      .maybeSingle();
+    if (teacherProfile) {
+      teacherName = [teacherProfile.first_name, teacherProfile.last_name].filter(Boolean).join(' ') || teacherProfile.email?.split('@')[0] || null;
+    }
   }
 
   // ── Domain & topic stats ──
@@ -91,24 +149,6 @@ export async function GET() {
   const recentAccuracy = recent50.length > 0 ? Math.round((recentCorrect / recent50.length) * 100) : null;
 
   // ── Recent practice sessions (grouped by time proximity) ──
-  const { data: recentAttempts } = await supabase
-    .from('attempts')
-    .select('id, question_id, is_correct, created_at')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(200);
-
-  // Fetch taxonomy for any question_ids not already in taxMap
-  const attemptQids = [...new Set((recentAttempts || []).map(a => a.question_id))];
-  const missingQids = attemptQids.filter(qid => !taxMap[qid]);
-  if (missingQids.length > 0) {
-    const { data: extraTax } = await supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
-      .in('question_id', missingQids);
-    for (const t of (extraTax || [])) taxMap[t.question_id] = t;
-  }
-
   const sessions = [];
   let currentSession = null;
   const SESSION_GAP_MS = 2 * 60 * 60 * 1000;
@@ -144,26 +184,26 @@ export async function GET() {
   const recentSessions = sessions.slice(0, 5);
 
   // ── Practice test scores (last 4 completed) ──
-  const { data: completedAttempts } = await supabase
-    .from('practice_test_attempts')
-    .select('id, practice_test_id, status, metadata, started_at, finished_at')
-    .eq('user_id', user.id)
-    .eq('status', 'completed')
-    .order('finished_at', { ascending: false })
-    .limit(4);
-
   let testScores = [];
   if (completedAttempts?.length) {
     const testIds = [...new Set(completedAttempts.map(a => a.practice_test_id))];
-    const { data: tests } = await supabase.from('practice_tests').select('id, name').in('id', testIds);
+    const attemptIds = completedAttempts.map(a => a.id);
+
+    // Parallel: fetch tests, module attempts, and score conversion together
+    const [{ data: tests }, { data: moduleAttempts }, { data: lookupRows }] = await Promise.all([
+      supabase.from('practice_tests').select('id, name').in('id', testIds),
+      supabase
+        .from('practice_test_module_attempts')
+        .select('practice_test_attempt_id, practice_test_module_id, correct_count')
+        .in('practice_test_attempt_id', attemptIds),
+      supabase
+        .from('score_conversion')
+        .select('test_id, section, module1_correct, module2_correct, scaled_score')
+        .in('test_id', testIds),
+    ]);
+
     const testNameById = {};
     for (const t of tests || []) testNameById[t.id] = t.name;
-
-    const attemptIds = completedAttempts.map(a => a.id);
-    const { data: moduleAttempts } = await supabase
-      .from('practice_test_module_attempts')
-      .select('practice_test_attempt_id, practice_test_module_id, correct_count')
-      .in('practice_test_attempt_id', attemptIds);
 
     const modIds = [...new Set((moduleAttempts || []).map(ma => ma.practice_test_module_id))];
     const { data: mods } = modIds.length
@@ -172,11 +212,6 @@ export async function GET() {
 
     const modById = {};
     for (const m of mods || []) modById[m.id] = m;
-
-    const { data: lookupRows } = await supabase
-      .from('score_conversion')
-      .select('test_id, section, module1_correct, module2_correct, scaled_score')
-      .in('test_id', testIds);
 
     const lookupByTestSection = {};
     for (const row of lookupRows || []) {
@@ -235,53 +270,12 @@ export async function GET() {
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))
     : null;
 
-  // ── Profile (target score + student info) ──
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('target_sat_score, first_name, last_name, high_school, graduation_year')
-    .eq('id', user.id)
-    .maybeSingle();
-
   const targetScore = profile?.target_sat_score || null;
 
-  // ── Teacher name (from teacher_student_assignments) ──
-  let teacherName = null;
-  {
-    const { data: tsa } = await supabase
-      .from('teacher_student_assignments')
-      .select('teacher_id')
-      .eq('student_id', user.id)
-      .limit(1)
-      .maybeSingle();
-    if (tsa?.teacher_id) {
-      const { data: teacherProfile } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, email')
-        .eq('id', tsa.teacher_id)
-        .maybeSingle();
-      if (teacherProfile) {
-        teacherName = [teacherProfile.first_name, teacherProfile.last_name].filter(Boolean).join(' ') || teacherProfile.email?.split('@')[0] || null;
-      }
-    }
-  }
-
-  // ── SAT test registrations (upcoming) ──
-  const { data: satRegistrations } = await supabase
-    .from('sat_test_registrations')
-    .select('id, test_date')
-    .eq('student_id', user.id)
-    .order('test_date', { ascending: true });
-
+  // ── SAT registrations ──
   const now = new Date();
   const upcomingRegistrations = (satRegistrations || []).filter(r => new Date(r.test_date) > now);
   const nextSatDate = upcomingRegistrations.length > 0 ? upcomingRegistrations[0].test_date : null;
-
-  // ── Official SAT scores ──
-  const { data: satScores } = await supabase
-    .from('sat_official_scores')
-    .select('id, test_date, rw_score, math_score, composite_score')
-    .eq('student_id', user.id)
-    .order('test_date', { ascending: false });
 
   // ── Streak calculation ──
   const practiceDays = new Set();

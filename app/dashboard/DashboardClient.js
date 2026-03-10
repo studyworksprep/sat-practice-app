@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -422,9 +422,12 @@ export default function DashboardClient({ email }) {
       .catch(() => {});
   }, []);
 
-  const sections = data
-    ? buildSections(data.domainStats, data.topicStats)
-    : [{ label: 'Reading & Writing', domains: [] }, { label: 'Math', domains: [] }];
+  const sections = useMemo(() =>
+    data
+      ? buildSections(data.domainStats, data.topicStats)
+      : [{ label: 'Reading & Writing', domains: [] }, { label: 'Math', domains: [] }],
+    [data?.domainStats, data?.topicStats]
+  );
 
   return (
     <main className="container dbMain">

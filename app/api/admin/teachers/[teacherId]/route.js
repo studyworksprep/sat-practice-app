@@ -18,47 +18,64 @@ export async function GET(_request, { params }) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  // Teacher profile
-  const { data: teacher } = await supabase
-    .from('profiles')
-    .select('id, email, first_name, last_name, created_at, is_active, high_school')
-    .eq('id', teacherId)
-    .maybeSingle();
+  // Teacher profile + assigned student IDs in parallel
+  const [{ data: teacher }, { data: assignments }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, email, first_name, last_name, created_at, is_active, high_school')
+      .eq('id', teacherId)
+      .maybeSingle(),
+    supabase
+      .from('teacher_student_assignments')
+      .select('student_id')
+      .eq('teacher_id', teacherId),
+  ]);
 
   if (!teacher) {
     return NextResponse.json({ error: 'Teacher not found' }, { status: 404 });
   }
 
-  // Assigned students
-  const { data: assignments } = await supabase
-    .from('teacher_student_assignments')
-    .select('student_id')
-    .eq('teacher_id', teacherId);
-
   const studentIds = (assignments || []).map(a => a.student_id);
 
-  let students = [];
-  if (studentIds.length) {
-    const { data: studentProfiles } = await supabase
-      .from('profiles')
-      .select('id, email, first_name, last_name, is_active, graduation_year, high_school, target_sat_score')
-      .in('id', studentIds)
-      .order('email', { ascending: true });
-    students = studentProfiles || [];
-  }
+  // Fetch student profiles, question statuses, test completions, and assignments all in parallel
+  const [
+    { data: studentProfiles },
+    { data: allStatuses },
+    { data: testCompletions },
+    { data: questionAssignments },
+  ] = await Promise.all([
+    studentIds.length
+      ? supabase
+          .from('profiles')
+          .select('id, email, first_name, last_name, is_active, graduation_year, high_school, target_sat_score')
+          .in('id', studentIds)
+          .order('email', { ascending: true })
+      : Promise.resolve({ data: [] }),
+    studentIds.length
+      ? supabase
+          .from('question_status')
+          .select('user_id, last_is_correct, last_attempt_at')
+          .in('user_id', studentIds)
+          .eq('is_done', true)
+          .order('last_attempt_at', { ascending: false })
+          .limit(10000)
+      : Promise.resolve({ data: [] }),
+    studentIds.length
+      ? supabase
+          .from('practice_test_attempts')
+          .select('id, user_id')
+          .in('user_id', studentIds)
+          .eq('status', 'completed')
+      : Promise.resolve({ data: [] }),
+    supabase
+      .from('question_assignments')
+      .select('id, title, created_at, due_date, question_count')
+      .eq('created_by', teacherId)
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ]);
 
-  // Get question_status for all assigned students (done questions)
-  let allStatuses = [];
-  if (studentIds.length) {
-    const { data: statuses } = await supabase
-      .from('question_status')
-      .select('user_id, question_id, last_is_correct, last_attempt_at')
-      .in('user_id', studentIds)
-      .eq('is_done', true)
-      .order('last_attempt_at', { ascending: false })
-      .limit(10000);
-    allStatuses = statuses || [];
-  }
+  const students = studentProfiles || [];
 
   // Per-student activity stats
   const studentStatsMap = {};
@@ -70,44 +87,26 @@ export async function GET(_request, { params }) {
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  for (const s of allStatuses) {
+  let totalLast7 = 0;
+  let totalLast30 = 0;
+  for (const s of (allStatuses || [])) {
     const stats = studentStatsMap[s.user_id];
     if (!stats) continue;
     stats.total++;
     if (s.last_is_correct) stats.correct++;
     if (s.last_attempt_at) {
       const d = new Date(s.last_attempt_at);
-      if (d >= sevenDaysAgo) stats.last7++;
-      if (d >= thirtyDaysAgo) stats.last30++;
+      if (d >= sevenDaysAgo) { stats.last7++; totalLast7++; }
+      if (d >= thirtyDaysAgo) { stats.last30++; totalLast30++; }
     }
   }
 
-  // Get practice test completions for assigned students
-  let testCompletions = [];
-  if (studentIds.length) {
-    const { data: completedTests } = await supabase
-      .from('practice_test_attempts')
-      .select('id, user_id, practice_test_id, status, finished_at')
-      .in('user_id', studentIds)
-      .eq('status', 'completed')
-      .order('finished_at', { ascending: false })
-      .limit(500);
-    testCompletions = completedTests || [];
-  }
-
+  // Get practice test completions per student
   const testsPerStudent = {};
-  for (const t of testCompletions) {
+  for (const t of (testCompletions || [])) {
     if (!testsPerStudent[t.user_id]) testsPerStudent[t.user_id] = 0;
     testsPerStudent[t.user_id]++;
   }
-
-  // Question assignments created by this teacher
-  const { data: questionAssignments } = await supabase
-    .from('question_assignments')
-    .select('id, title, created_at, due_date, question_count')
-    .eq('created_by', teacherId)
-    .order('created_at', { ascending: false })
-    .limit(20);
 
   // Build student list with stats
   const studentsWithStats = students.map(s => {
@@ -124,11 +123,10 @@ export async function GET(_request, { params }) {
   });
 
   // Aggregate totals
-  const totalQuestionsDone = allStatuses.length;
-  const totalCorrect = allStatuses.filter(s => s.last_is_correct).length;
-  const totalLast7 = allStatuses.filter(s => s.last_attempt_at && new Date(s.last_attempt_at) >= sevenDaysAgo).length;
-  const totalLast30 = allStatuses.filter(s => s.last_attempt_at && new Date(s.last_attempt_at) >= thirtyDaysAgo).length;
-  const totalTestsCompleted = testCompletions.length;
+  const statusList = allStatuses || [];
+  const totalQuestionsDone = statusList.length;
+  const totalCorrect = statusList.filter(s => s.last_is_correct).length;
+  const totalTestsCompleted = (testCompletions || []).length;
   const activeStudents = studentsWithStats.filter(s => s.last_7_days > 0).length;
 
   return NextResponse.json({

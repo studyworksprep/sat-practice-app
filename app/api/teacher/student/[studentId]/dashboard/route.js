@@ -64,34 +64,63 @@ export async function GET(_request, { params }) {
     }
   }
 
-  // Fetch student profile
-  const { data: studentProfile } = await supabase
-    .from('profiles')
-    .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score')
-    .eq('id', studentId)
-    .maybeSingle();
+  // ── Parallel batch: all independent queries at once ──
+  const [
+    { data: studentProfile },
+    { data: allAttempts },
+    { data: completedAttempts },
+    { data: satRegistrations },
+    { data: satScores },
+    { data: allTax },
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score')
+      .eq('id', studentId)
+      .maybeSingle(),
+    supabase
+      .from('attempts')
+      .select('id, question_id, is_correct, created_at')
+      .eq('user_id', studentId)
+      .order('created_at', { ascending: true })
+      .limit(5000),
+    supabase
+      .from('practice_test_attempts')
+      .select('id, practice_test_id, status, metadata, started_at, finished_at')
+      .eq('user_id', studentId)
+      .eq('status', 'completed')
+      .order('finished_at', { ascending: false })
+      .limit(10),
+    supabase
+      .from('sat_test_registrations')
+      .select('id, test_date, created_at')
+      .eq('student_id', studentId)
+      .order('test_date', { ascending: true }),
+    supabase
+      .from('sat_official_scores')
+      .select('id, test_date, rw_score, math_score, composite_score, created_at')
+      .eq('student_id', studentId)
+      .order('test_date', { ascending: false }),
+    // Fetch full taxonomy for availability counts — use select with only needed columns
+    supabase
+      .from('question_taxonomy')
+      .select('question_id, domain_name, skill_name, difficulty'),
+  ]);
 
   if (!studentProfile) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   }
 
-  // ── All attempts (ordered oldest-first so first occurrence = first attempt) ──
-  const { data: allAttempts } = await supabase
-    .from('attempts')
-    .select('id, question_id, is_correct, created_at')
-    .eq('user_id', studentId)
-    .order('created_at', { ascending: true })
-    .limit(5000);
-
-  // ── Taxonomy for all attempted questions ──
+  // ── Taxonomy map for attempted questions ──
   const taxMap = {};
   const allQids = [...new Set((allAttempts || []).map(a => a.question_id))];
-  if (allQids.length > 0) {
-    const { data: taxRows } = await supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
-      .in('question_id', allQids);
-    for (const t of (taxRows || [])) taxMap[t.question_id] = t;
+
+  // Build taxMap from allTax (already fetched) for attempted question IDs
+  for (const t of (allTax || [])) {
+    if (allQids.includes(t.question_id) || true) {
+      // We need all rows for availability counts anyway, so index everything
+      taxMap[t.question_id] = t;
+    }
   }
 
   // ── First attempt per question (source of truth for accuracy) ──
@@ -196,26 +225,26 @@ export async function GET(_request, { params }) {
   const recentSessions = sessions.slice(0, 10);
 
   // ── Practice test scores ──
-  const { data: completedAttempts } = await supabase
-    .from('practice_test_attempts')
-    .select('id, practice_test_id, status, metadata, started_at, finished_at')
-    .eq('user_id', studentId)
-    .eq('status', 'completed')
-    .order('finished_at', { ascending: false })
-    .limit(10);
-
   let testScores = [];
   if (completedAttempts?.length) {
     const testIds = [...new Set(completedAttempts.map(a => a.practice_test_id))];
-    const { data: tests } = await supabase.from('practice_tests').select('id, name').in('id', testIds);
+    const attemptIds = completedAttempts.map(a => a.id);
+
+    // Parallel: fetch tests, module attempts, and score conversion together
+    const [{ data: tests }, { data: moduleAttempts }, { data: lookupRows }] = await Promise.all([
+      supabase.from('practice_tests').select('id, name').in('id', testIds),
+      supabase
+        .from('practice_test_module_attempts')
+        .select('practice_test_attempt_id, practice_test_module_id, correct_count')
+        .in('practice_test_attempt_id', attemptIds),
+      supabase
+        .from('score_conversion')
+        .select('test_id, section, module1_correct, module2_correct, scaled_score')
+        .in('test_id', testIds),
+    ]);
+
     const testNameById = {};
     for (const t of tests || []) testNameById[t.id] = t.name;
-
-    const attemptIds = completedAttempts.map(a => a.id);
-    const { data: moduleAttempts } = await supabase
-      .from('practice_test_module_attempts')
-      .select('practice_test_attempt_id, practice_test_module_id, correct_count')
-      .in('practice_test_attempt_id', attemptIds);
 
     const modIds = [...new Set((moduleAttempts || []).map(ma => ma.practice_test_module_id))];
     const { data: mods } = modIds.length
@@ -224,11 +253,6 @@ export async function GET(_request, { params }) {
 
     const modById = {};
     for (const m of mods || []) modById[m.id] = m;
-
-    const { data: lookupRows } = await supabase
-      .from('score_conversion')
-      .select('test_id, section, module1_correct, module2_correct, scaled_score')
-      .in('test_id', testIds);
 
     const lookupByTestSection = {};
     for (const row of lookupRows || []) {
@@ -287,24 +311,11 @@ export async function GET(_request, { params }) {
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))
     : null;
 
-  // ── Total questions available per domain and topic (unique question_ids, with per-difficulty) ──
-  // Paginate because Supabase caps rows per request at ~1000
-  let allTax = [];
-  let from = 0;
-  while (true) {
-    const { data } = await supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_name, skill_name, difficulty')
-      .range(from, from + 999);
-    allTax = allTax.concat(data || []);
-    if (!data || data.length < 1000) break;
-    from += 1000;
-  }
-
+  // ── Total questions available per domain and topic (from allTax already fetched) ──
   const newAvailSets = () => ({ all: new Set(), 1: new Set(), 2: new Set(), 3: new Set() });
   const domainAvail = {};
   const topicAvail = {};
-  for (const dc of allTax) {
+  for (const dc of (allTax || [])) {
     const domain = dc.domain_name || 'Unknown';
     const skill = dc.skill_name || 'Unknown';
     const topicKey = `${domain}::${skill}`;
@@ -333,19 +344,6 @@ export async function GET(_request, { params }) {
     ...t,
     ...availToObj(topicAvail[`${t.domain_name}::${t.skill_name}`]),
   }));
-
-  // ── SAT registrations & official scores ──
-  const { data: satRegistrations } = await supabase
-    .from('sat_test_registrations')
-    .select('id, test_date, created_at')
-    .eq('student_id', studentId)
-    .order('test_date', { ascending: true });
-
-  const { data: satScores } = await supabase
-    .from('sat_official_scores')
-    .select('id, test_date, rw_score, math_score, composite_score, created_at')
-    .eq('student_id', studentId)
-    .order('test_date', { ascending: false });
 
   return NextResponse.json({
     student: studentProfile,
