@@ -529,28 +529,68 @@ export default function DashboardClient({ email }) {
       {data?.officialScores?.length > 0 && (
         <div className="card dbOfficialScoresCard">
           <div className="h2" style={{ marginBottom: 12 }}>Official SAT Scores</div>
-          <div className="dbOfficialScoresList">
-            {data.officialScores.map((s) => (
-              <div key={s.id} className="dbOfficialScoreRow">
-                <span className="dbOfficialScoreDate">
-                  {new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </span>
-                <div className="dbTestScoreBadges">
-                  <div className="dbTestScoreBadge">
-                    <span className="dbTestScoreBadgeNum">{s.composite_score}</span>
-                    <span className="dbTestScoreBadgeLabel">Total</span>
-                  </div>
-                  <div className="dbTestScoreBadge">
-                    <span className="dbTestScoreBadgeNum">{s.rw_score}</span>
-                    <span className="dbTestScoreBadgeLabel">R&W</span>
-                  </div>
-                  <div className="dbTestScoreBadge">
-                    <span className="dbTestScoreBadgeNum">{s.math_score}</span>
-                    <span className="dbTestScoreBadgeLabel">Math</span>
+          <div className="dbOfficialScoresLayout">
+            <div className="dbOfficialScoresList">
+              {data.officialScores.map((s) => (
+                <div key={s.id} className="dbOfficialScoreRow">
+                  <span className="dbOfficialScoreDate">
+                    {new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+                  </span>
+                  <span className="dbOfficialScoreComposite">{s.composite_score}</span>
+                  <span className="dbOfficialScoreBreakdown">R&W {s.rw_score} · M {s.math_score}</span>
+                </div>
+              ))}
+            </div>
+            {data.officialScores.length >= 2 && (() => {
+              const scores = [...data.officialScores].reverse();
+              const maxY = 1600;
+              const minY = Math.max(0, Math.min(...scores.map(s => Math.min(s.rw_score, s.math_score))) - 50);
+              const range = maxY - minY || 1;
+              const w = 280;
+              const h = 140;
+              const pad = { top: 10, right: 10, bottom: 20, left: 32 };
+              const cw = w - pad.left - pad.right;
+              const ch = h - pad.top - pad.bottom;
+              const xStep = scores.length > 1 ? cw / (scores.length - 1) : 0;
+
+              const toY = (val) => pad.top + ch - ((val - minY) / range) * ch;
+              const toX = (i) => pad.left + i * xStep;
+
+              const makeLine = (key) => scores.map((s, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(s[key]).toFixed(1)}`).join(' ');
+
+              const gridLines = [200, 400, 600, 800, 1000, 1200, 1400, 1600].filter(v => v >= minY && v <= maxY);
+
+              return (
+                <div className="dbOfficialScoresChart">
+                  <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h}>
+                    {gridLines.map(v => (
+                      <g key={v}>
+                        <line x1={pad.left} x2={w - pad.right} y1={toY(v)} y2={toY(v)} stroke="var(--border)" strokeWidth="0.5" />
+                        <text x={pad.left - 4} y={toY(v) + 3} textAnchor="end" fontSize="8" fill="var(--muted)">{v}</text>
+                      </g>
+                    ))}
+                    <path d={makeLine('composite_score')} fill="none" stroke="var(--accent)" strokeWidth="2" />
+                    <path d={makeLine('rw_score')} fill="none" stroke="#6b9bd2" strokeWidth="1.5" strokeDasharray="4 2" />
+                    <path d={makeLine('math_score')} fill="none" stroke="#9b8ec4" strokeWidth="1.5" strokeDasharray="4 2" />
+                    {scores.map((s, i) => (
+                      <g key={i}>
+                        <circle cx={toX(i)} cy={toY(s.composite_score)} r="3" fill="var(--accent)" />
+                        <circle cx={toX(i)} cy={toY(s.rw_score)} r="2" fill="#6b9bd2" />
+                        <circle cx={toX(i)} cy={toY(s.math_score)} r="2" fill="#9b8ec4" />
+                        <text x={toX(i)} y={h - 4} textAnchor="middle" fontSize="7" fill="var(--muted)">
+                          {new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+                        </text>
+                      </g>
+                    ))}
+                  </svg>
+                  <div className="dbOfficialChartLegend">
+                    <span><span className="dbOfficialLegendDot" style={{ background: 'var(--accent)' }} />Composite</span>
+                    <span><span className="dbOfficialLegendDot" style={{ background: '#6b9bd2' }} />R&W</span>
+                    <span><span className="dbOfficialLegendDot" style={{ background: '#9b8ec4' }} />Math</span>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })()}
           </div>
         </div>
       )}

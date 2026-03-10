@@ -3775,26 +3775,72 @@ hr{
   margin-bottom: 20px;
 }
 
+.dbOfficialScoresLayout{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 600px){
+  .dbOfficialScoresLayout{ grid-template-columns: 1fr; }
+}
+
 .dbOfficialScoresList{
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .dbOfficialScoreRow{
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 10px 12px;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
   background: var(--bg-raised, rgba(0,0,0,0.03));
+  font-size: 13px;
 }
 
 .dbOfficialScoreDate{
-  font-weight: 600;
-  font-size: 13px;
-  min-width: 100px;
+  color: var(--muted);
+  font-size: 12px;
+  min-width: 52px;
+}
+
+.dbOfficialScoreComposite{
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+  min-width: 36px;
+}
+
+.dbOfficialScoreBreakdown{
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.dbOfficialScoresChart{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dbOfficialChartLegend{
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.dbOfficialLegendDot{
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
 }
 
 .tchStatsRow{
