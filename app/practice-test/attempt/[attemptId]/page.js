@@ -152,6 +152,13 @@ function DesmosPanel({ isOpen, storageKey }) {
         expressions: true,
         settingsMenu: true,
         zoomButtons: true,
+        degreeMode: true,
+        clearIntoDegreeMode: true,
+        images: false,
+        folders: false,
+        notes: false,
+        links: false,
+        restrictedFunctions: true,
       });
       restoreState();
       safeResize();
