@@ -164,6 +164,49 @@ function WeakTopicsCard({ weakTopics }) {
   );
 }
 
+// ── Daily Activity Chart ──
+function ActivityChart({ dailyActivity }) {
+  if (!dailyActivity?.length) return null;
+  const max = Math.max(1, ...dailyActivity.map(d => d.attempted));
+  const totalQ = dailyActivity.reduce((s, d) => s + d.attempted, 0);
+  const totalC = dailyActivity.reduce((s, d) => s + d.correct, 0);
+  const avgPct = totalQ > 0 ? Math.round((totalC / totalQ) * 100) : null;
+
+  const dayLabel = (dateStr) => {
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'narrow' });
+  };
+
+  return (
+    <div className="card dbActivityChartCard">
+      <div className="dbActivityChartHeader">
+        <span className="h2" style={{ fontSize: 15 }}>Last 14 Days</span>
+        <span className="muted small">
+          {totalQ} questions{avgPct != null ? ` · ${avgPct}% correct` : ''}
+        </span>
+      </div>
+      <div className="dbActivityBars">
+        {dailyActivity.map((day) => {
+          const h = day.attempted > 0 ? Math.max(6, Math.round((day.attempted / max) * 100)) : 0;
+          const p = day.attempted > 0 ? Math.round((day.correct / day.attempted) * 100) : 0;
+          const color = day.attempted === 0 ? 'var(--border)' : pctColor(p);
+          return (
+            <div key={day.date} className="dbActivityBarCol" title={`${day.date}: ${day.attempted} questions, ${day.correct} correct`}>
+              <div className="dbActivityBarTrack">
+                <div
+                  className="dbActivityBarFill"
+                  style={{ height: `${h}%`, background: color }}
+                />
+              </div>
+              <span className="dbActivityBarLabel">{dayLabel(day.date)}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function PerfSection({ section, loading }) {
   const [open, setOpen] = useState({});
   const toggle = (name) => setOpen((prev) => ({ ...prev, [name]: !prev[name] }));
@@ -412,14 +455,18 @@ export default function DashboardClient({ email }) {
       </div>
 
       {/* ── Goal Progress + Recommendations row ── */}
-      {(data?.targetScore || data?.weakTopics?.length > 0) && (
+      {(data?.targetScore || data?.weakTopics?.length > 0 || data?.dailyActivity?.some(d => d.attempted > 0)) && (
         <div className="dbGoalRecsRow">
-          <GoalProgressCard
-            targetScore={data?.targetScore}
-            highestScore={data?.highestTestScore}
-            goalProgress={data?.goalProgress}
-            pointsToGoal={data?.pointsToGoal}
-          />
+          {data?.targetScore ? (
+            <GoalProgressCard
+              targetScore={data?.targetScore}
+              highestScore={data?.highestTestScore}
+              goalProgress={data?.goalProgress}
+              pointsToGoal={data?.pointsToGoal}
+            />
+          ) : (
+            <ActivityChart dailyActivity={data?.dailyActivity} />
+          )}
           <WeakTopicsCard weakTopics={data?.weakTopics} />
         </div>
       )}

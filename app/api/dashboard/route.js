@@ -276,6 +276,30 @@ export async function GET() {
     }
   }
 
+  // ── Daily activity (last 14 days) ──
+  const dailyActivity = [];
+  {
+    const now = new Date();
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      dailyActivity.push({ date: dateStr, attempted: 0, correct: 0 });
+    }
+    const dayIndex = {};
+    for (let i = 0; i < dailyActivity.length; i++) dayIndex[dailyActivity[i].date] = i;
+
+    for (const row of rows) {
+      if (!row.last_attempt_at) continue;
+      const d = new Date(row.last_attempt_at);
+      const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      if (dayIndex[ds] !== undefined) {
+        dailyActivity[dayIndex[ds]].attempted++;
+        if (row.last_is_correct) dailyActivity[dayIndex[ds]].correct++;
+      }
+    }
+  }
+
   // ── Goal progress ──
   const goalProgress = targetScore && highestTestScore
     ? Math.min(100, Math.round((highestTestScore / targetScore) * 100))
@@ -311,5 +335,6 @@ export async function GET() {
     goalProgress,
     pointsToGoal,
     weakTopics,
+    dailyActivity,
   });
 }
