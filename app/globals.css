@@ -29,8 +29,8 @@
   --title-2: 18px;
   --title-3: 14px;
 
-  --radius-card: 16px;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 8px 24px rgba(0,0,0,0.07);
+  --radius-card: 0px;
+  --shadow-card: none;
 
   /* Height of the sticky site nav — used by ptSession to fill remaining viewport */
   --nav-h: 63px;
@@ -120,10 +120,15 @@ a{
 .qaRight{
   padding-left: 20px;
   display: grid;
-  gap: 14px;
+  gap: 0;
   align-content: start;   /* stack items at top — prevents grid from distributing height */
   overflow-y: auto;
   scrollbar-gutter: stable;
+}
+
+/* Unified right-column container for stem + answers + controls */
+.qaRightPanel{
+  padding: 20px 24px;
 }
 
 /* Draggable divider between passage and question panels */
@@ -201,19 +206,24 @@ a{
 
 .card{
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(17,24,39,0.10);
   border-radius: var(--radius-card);
-  padding: 20px;
+  padding: 20px 24px;
   box-shadow: var(--shadow-card);
+}
+
+/* Adjacent cards share borders — collapse with negative margin */
+.card + .card{
+  margin-top: -1px;
 }
 
 /* Lighter nested blocks (Stimulus / Question / Explanation wrapper) */
 .card.subcard{
-  padding: 18px;
+  padding: 16px 20px;
   background: #ffffff;
   box-shadow: none;
-  border: 1px solid rgba(17,24,39,0.06);
-  border-radius: 12px;
+  border: 1px solid rgba(17,24,39,0.08);
+  border-radius: 0;
 }
 
 .sectionLabel{
@@ -236,10 +246,10 @@ a{
   content:"";
   position:absolute;
   left:0;
-  top:14px;
-  bottom:14px;
+  top:0;
+  bottom:0;
   width:4px;
-  border-radius:999px;
+  border-radius:0;
   background: var(--accent);
 }
 
@@ -310,7 +320,7 @@ a{
 .prose img{
   max-width: 100%;
   height: auto;
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 .prose table{
@@ -348,8 +358,8 @@ a{
   background: var(--accent);
   border: 1px solid var(--accent);
   color: #ffffff;
-  padding: 10px 14px;
-  border-radius: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
   font-size: 14px;
@@ -414,7 +424,7 @@ a{
 .input, select, textarea{
   width: 100%;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: #ffffff;
   color: var(--text);
@@ -609,7 +619,7 @@ label{
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border-radius: 8px;
+  border-radius: 0;
   border: none;
   background: rgba(0,0,0,0.03);
   cursor: pointer;
@@ -642,7 +652,7 @@ label{
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 0;
   border: none;
   background: rgba(0,0,0,0.04);
   cursor: pointer;
@@ -1017,7 +1027,7 @@ hr{
 
 .toast{
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 0;
   border: 1px solid var(--border);
   background: rgba(0,0,0,0.04);
   margin-top: 12px;
@@ -1114,9 +1124,10 @@ hr{
   max-width: 700px;
   max-height: 80vh;
   overflow: auto;
-  border-radius: 14px;
-  padding: 20px;
+  border-radius: 0;
+  padding: 24px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  border: 1px solid rgba(17,24,39,0.10);
 }
 
 .correctModal{
@@ -1217,7 +1228,7 @@ hr{
   align-items: center;
   justify-content: center;
 
-  border-radius: 10px;
+  border-radius: 0;
   border: 1px solid var(--border);
   background: #fff;
   cursor: pointer;
@@ -1380,10 +1391,10 @@ hr{
 
 .landingCard {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
+  border: 1px solid rgba(17,24,39,0.10);
+  border-radius: 0;
   padding: 28px;
-  box-shadow: var(--shadow-card);
+  box-shadow: none;
 }
 
 .landingTabs {
@@ -1492,7 +1503,7 @@ hr{
   justify-content: space-between;
   gap: 20px;
   padding: 24px 28px;
-  margin-bottom: 16px;
+  margin-bottom: -1px;
   background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 60%);
   border-left: 4px solid var(--accent);
   flex-wrap: wrap;
@@ -1521,8 +1532,9 @@ hr{
 .dbStatsRow{
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: 1px;
+  background: rgba(17,24,39,0.10);
+  margin-bottom: -1px;
 }
 
 @media (max-width: 700px){
@@ -1530,7 +1542,7 @@ hr{
 }
 
 .dbStatCard{
-  padding: 18px 20px;
+  padding: 16px 20px;
 }
 
 .dbStatValue{
@@ -1551,8 +1563,9 @@ hr{
 .dbPerfGrid{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: 1px;
+  background: rgba(17,24,39,0.10);
+  margin-bottom: -1px;
 }
 
 @media (max-width: 680px){
@@ -1560,7 +1573,7 @@ hr{
 }
 
 .dbPerfCard{
-  padding: 20px 22px;
+  padding: 20px 24px;
 }
 
 .dbPerfCardHeader{
@@ -1595,9 +1608,9 @@ hr{
   display: grid;
   grid-template-columns: 1fr auto 148px;
   align-items: center;
-  gap: 10px;
-  padding: 6px 8px;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 0;
   transition: background 0.1s;
 }
 .dbDomainRow:hover{ background: var(--bg); }
@@ -1664,9 +1677,9 @@ hr{
   display: grid;
   grid-template-columns: 1fr auto 148px;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 0;
   transition: background 0.1s;
 }
 .dbTopicRow:hover{ background: var(--bg); }
@@ -1698,8 +1711,9 @@ hr{
 .dbBottomRow{
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 14px;
-  align-items: start;
+  gap: 1px;
+  background: rgba(17,24,39,0.10);
+  align-items: stretch;
 }
 
 @media (max-width: 680px){
@@ -1707,7 +1721,7 @@ hr{
 }
 
 .dbTestCard{
-  padding: 20px 22px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
 }
@@ -1719,7 +1733,7 @@ hr{
 }
 
 .dbActivityCard{
-  padding: 20px 22px;
+  padding: 20px 24px;
 }
 
 /* ── Activity feed ── */
@@ -1745,7 +1759,7 @@ hr{
   background: rgba(17,24,39,0.02);
   margin: 0 -8px;
   padding: 9px 8px;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .dbActivityDot{
@@ -1806,7 +1820,7 @@ hr{
   background: rgba(17,24,39,0.02);
   margin: 0 -8px;
   padding: 10px 8px;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .dbTestScoreInfo{
@@ -1857,7 +1871,7 @@ hr{
 }
 
 .dbSessionCard{
-  padding: 14px 16px;
+  padding: 16px 20px;
 }
 
 .dbSessionHeader{
@@ -1896,7 +1910,7 @@ hr{
   gap: 2px;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: 4px;
   border: none;
   cursor: pointer;
   font-size: 11px;
@@ -2004,8 +2018,8 @@ hr{
   right: 0;
   z-index: 100;
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border: 1px solid rgba(17,24,39,0.10);
+  border-radius: 0;
   padding: 12px 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.13);
   min-width: 220px;
@@ -2076,7 +2090,7 @@ hr{
   margin-top: 12px;
   padding: 12px;
   background: var(--surface, rgba(0,0,0,0.02));
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid var(--border);
 }
 
@@ -2170,8 +2184,8 @@ hr{
   position: sticky;
   top: 12px;
   align-self: start;
-  border: 1px solid var(--border);
-  border-radius: 18px;
+  border: 1px solid rgba(17,24,39,0.10);
+  border-radius: 0;
   background: #f9fafb;
   max-height: calc(100vh - 24px);
   overflow: hidden;
@@ -2376,7 +2390,7 @@ hr{
 .qNumBadge{
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2682,7 +2696,7 @@ hr{
 .ptStimulus{
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 16px;
   margin-bottom: 16px;
   font-size: 14px;
@@ -3056,7 +3070,7 @@ hr{
   top: calc(var(--nav-h) + 12px);
   max-height: calc(100vh - var(--nav-h) - 32px);
   overflow-y: auto;
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 .ptrvDetailEmpty{
@@ -3065,12 +3079,12 @@ hr{
   justify-content: center;
   min-height: 160px;
   border: 1px dashed var(--border);
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 .ptrvDetail{
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
   background: var(--surface);
   overflow: hidden;
 }
@@ -3371,7 +3385,7 @@ hr{
 
 .adminFieldset{
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 16px;
   margin: 16px 0 0 0;
 }
@@ -3471,7 +3485,7 @@ hr{
   padding: 10px 12px;
   border: none;
   background: none;
-  border-radius: 10px;
+  border-radius: 0;
   cursor: pointer;
   text-align: left;
   transition: background 0.12s;
@@ -3554,7 +3568,7 @@ hr{
   display: flex;
   gap: 12px;
   padding: 14px;
-  border-radius: 12px;
+  border-radius: 0;
   background: var(--bg);
   border: 1px solid var(--border);
 }
@@ -3670,7 +3684,7 @@ hr{
   align-items: center;
   gap: 12px;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: 0;
   transition: background 0.12s;
   text-decoration: none;
   color: inherit;
@@ -3873,7 +3887,7 @@ hr{
 .tchSessionCard{
   padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
 }
 
 .tchSessionHeader{
@@ -4121,15 +4135,16 @@ hr{
 .dbGoalRecsRow{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: 1px;
+  background: rgba(17,24,39,0.10);
+  margin-bottom: -1px;
 }
 @media (max-width: 680px){
   .dbGoalRecsRow{ grid-template-columns: 1fr; }
 }
 
 .dbGoalCard{
-  padding: 18px 22px;
+  padding: 20px 24px;
 }
 .dbGoalHeader{
   display: flex;
@@ -4157,7 +4172,7 @@ hr{
 }
 
 .dbRecsCard{
-  padding: 18px 22px;
+  padding: 20px 24px;
 }
 .dbRecItem{
   display: flex;
@@ -4768,9 +4783,10 @@ hr{
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   background: var(--bg);
-  border-radius: 10px;
+  border-radius: 0;
+  border: 1px solid rgba(17,24,39,0.06);
   text-decoration: none;
   color: var(--text);
   transition: background .15s;

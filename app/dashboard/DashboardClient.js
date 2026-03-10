@@ -425,9 +425,7 @@ export default function DashboardClient({ email }) {
       )}
 
       {/* ── Assignments ── */}
-      <div style={{ marginBottom: 16 }}>
-        <AssignmentsCard assignments={assignments} />
-      </div>
+      <AssignmentsCard assignments={assignments} />
 
       {/* ── Performance: R&W | Math ── */}
       <div className="dbPerfGrid">
@@ -438,7 +436,7 @@ export default function DashboardClient({ email }) {
 
       {/* ── More Statistics link ── */}
       {data && (
-        <div style={{ textAlign: 'center', margin: '4px 0 16px' }}>
+        <div style={{ textAlign: 'center', padding: '12px 0' }}>
           <Link href="/dashboard/stats" className="dbMoreStatsLink">
             More Statistics →
           </Link>
