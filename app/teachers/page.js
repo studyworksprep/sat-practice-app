@@ -73,11 +73,75 @@ function WelcomePanel() {
   );
 }
 
+// ─── Edit Teacher Profile modal ─────────────────────────
+function EditTeacherProfileModal({ teacher, teacherId, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    first_name: teacher.first_name || '',
+    last_name: teacher.last_name || '',
+    high_school: teacher.high_school || '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const handleChange = (field) => (e) => setForm(prev => ({ ...prev, [field]: e.target.value }));
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/teachers/${teacherId}/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      onSaved(data.teacher);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="tchModalOverlay" onClick={onClose}>
+      <div className="card tchModal" onClick={(e) => e.stopPropagation()}>
+        <div className="tchModalHeader">
+          <h3 className="h2" style={{ margin: 0 }}>Edit Teacher Profile</h3>
+          <button className="tchModalClose" onClick={onClose}>&times;</button>
+        </div>
+        <form onSubmit={handleSubmit} className="tchModalForm">
+          <div className="tchModalRow">
+            <label className="tchModalField">
+              <span className="tchModalLabel">First Name</span>
+              <input type="text" value={form.first_name} onChange={handleChange('first_name')} />
+            </label>
+            <label className="tchModalField">
+              <span className="tchModalLabel">Last Name</span>
+              <input type="text" value={form.last_name} onChange={handleChange('last_name')} />
+            </label>
+          </div>
+          <label className="tchModalField">
+            <span className="tchModalLabel">School</span>
+            <input type="text" value={form.high_school} onChange={handleChange('high_school')} />
+          </label>
+          {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
+          <div className="tchModalActions">
+            <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Teacher detail panel ────────────────────────────────
 function TeacherDetail({ teacherId }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true); setError(null);
@@ -102,10 +166,14 @@ function TeacherDetail({ teacherId }) {
           <h2 className="h1" style={{ margin: 0 }}>{displayName(teacher)}</h2>
           <p className="muted small" style={{ margin: 0 }}>{teacher.email}</p>
         </div>
-        {teacher.is_active === false && (
-          <span style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, padding: '2px 8px', border: '1px solid var(--danger)', borderRadius: 4 }}>Inactive</span>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {teacher.is_active === false && (
+            <span style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, padding: '2px 8px', border: '1px solid var(--danger)', borderRadius: 4 }}>Inactive</span>
+          )}
+          <button className="btn secondary tchEditBtn" onClick={() => setEditOpen(true)}>Edit</button>
+        </div>
       </div>
+      {editOpen && <EditTeacherProfileModal teacher={teacher} teacherId={teacherId} onClose={() => setEditOpen(false)} onSaved={(updated) => { setData(prev => ({ ...prev, teacher: { ...prev.teacher, ...updated } })); setEditOpen(false); }} />}
 
       {/* Overview stats */}
       <div className="card tchOverviewCard">
