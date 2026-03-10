@@ -139,6 +139,10 @@ async function fetchData(supabase, userId) {
     const mods = modulesByTest[t.id] || [];
     const subjects = [...new Set(mods.map((m) => m.subject_code))];
     return { ...t, subjects, modules: mods };
+  }).sort((a, b) => {
+    const numA = parseInt((a.name || '').match(/(\d+)/)?.[1], 10) || 0;
+    const numB = parseInt((b.name || '').match(/(\d+)/)?.[1], 10) || 0;
+    return numA - numB;
   });
 
   const { data: attemptsRaw } = await supabase
