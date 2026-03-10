@@ -329,7 +329,8 @@ a{
 }
 
 .prose table{
-  width: auto;
+  width: auto !important;
+  max-width: 100%;
   border-collapse: collapse;
   margin: 12px 0;
   font-size: 15px;
