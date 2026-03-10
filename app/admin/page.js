@@ -234,7 +234,9 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/teacher-invite-codes');
       const json = await res.json();
-      if (res.ok) setInviteTeachers(json.teachers || []);
+      if (res.ok) {
+        setInviteTeachers(json.teachers || []);
+      }
     } catch {}
   }
 

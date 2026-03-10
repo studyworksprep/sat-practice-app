@@ -27,11 +27,22 @@ export async function GET() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const { data: teachers, error } = await supabase
+  let { data: teachers, error } = await supabase
     .from('profiles')
     .select('id, email, first_name, last_name, teacher_invite_code')
     .in('role', ['teacher', 'admin'])
     .order('last_name', { ascending: true });
+
+  // If teacher_invite_code column doesn't exist yet, retry without it
+  if (error && error.message?.includes('teacher_invite_code')) {
+    const fallback = await supabase
+      .from('profiles')
+      .select('id, email, first_name, last_name')
+      .in('role', ['teacher', 'admin'])
+      .order('last_name', { ascending: true });
+    teachers = (fallback.data || []).map(t => ({ ...t, teacher_invite_code: null }));
+    error = fallback.error;
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
