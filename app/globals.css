@@ -74,6 +74,11 @@ a{
   padding: 28px;
 }
 
+/* Wider container for question pages — scales with viewport but caps at 1600px */
+.container.containerWide{
+  max-width: min(92vw, 1600px);
+}
+
 /* practiceGrid no longer used for two-column layout; kept for compat */
 .practiceGrid{ display: block; }
 

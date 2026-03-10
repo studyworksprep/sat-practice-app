@@ -1660,7 +1660,7 @@ export default function PracticeQuestionPage() {
   }
 
   return (
-    <main className="container">
+    <main className="container containerWide">
       <div className="questionTopBar">
         <div>
           <Link className="btn secondary" href="/practice">
