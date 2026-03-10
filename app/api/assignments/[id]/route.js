@@ -56,6 +56,8 @@ export async function GET(request, { params }) {
         .in('question_id', questionIds),
     ]);
 
+    const taxMap = {};
+    for (const t of taxRows || []) taxMap[t.question_id] = t;
     const statusMap = {};
     for (const s of statusRows || []) statusMap[s.question_id] = s;
 
