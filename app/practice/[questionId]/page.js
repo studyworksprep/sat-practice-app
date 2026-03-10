@@ -1181,14 +1181,16 @@ export default function PracticeQuestionPage() {
     return m > 0 ? `${m}:${String(sec).padStart(2, '0')}` : `${sec}s`;
   };
 
-  const headerPills = [
-    { label: 'Correct', value: status?.correct_attempts_count ?? 0 },
-    { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
-  ];
+  // Done pill: green "Yes" if correct, red "Yes" if wrong, plain "No" if unanswered
+  const doneValue = status?.is_done ? 'Yes' : 'No';
+  const doneColor = status?.is_done
+    ? (status?.last_is_correct ? 'var(--success)' : 'var(--danger)')
+    : undefined;
 
   // ✅ Pills row now includes Question # (index1) on the left
   const renderStatusPills = (style) => (
     <div
+      className="statusPillRow"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -1203,22 +1205,10 @@ export default function PracticeQuestionPage() {
       </div>
 
       <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-        {/* Per-question timer */}
-        <span className="pill" style={{ fontVariantNumeric: 'tabular-nums' }}>
-          <span className="muted">Time</span>{' '}
-          <span className="kbd">{formatElapsed(elapsedMs)}</span>
+        <span className="pill">
+          <span className="muted">Done</span>{' '}
+          <span className="kbd" style={doneColor ? { color: doneColor, fontWeight: 700 } : undefined}>{doneValue}</span>
         </span>
-        {questionTimeData?.global_avg_ms && (
-          <span className="pill" title="Average time across all students">
-            <span className="muted">Avg</span>{' '}
-            <span className="kbd">{formatElapsed(questionTimeData.global_avg_ms)}</span>
-          </span>
-        )}
-        {headerPills.map((p) => (
-          <span key={p.label} className="pill">
-            <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
-          </span>
-        ))}
 
         <div style={{ position: 'relative' }}>
           <button
@@ -1671,25 +1661,35 @@ export default function PracticeQuestionPage() {
           </Link>
         </div>
 
-        <button
-          type="button"
-          className="qmapTrigger"
-          onClick={openMap}
-          disabled={!inSessionContext}
-          title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
-          aria-label="Open question map"
-        >
-          <span className="qmapTriggerCount">
-            {index1 != null && total != null ? (
-              <>{index1} / {total}</>
-            ) : total != null ? (
-              <>— / {total}</>
-            ) : (
-              <>…</>
-            )}
-          </span>
-          <span className="qmapTriggerChevron" aria-hidden="true">▾</span>
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <button
+            type="button"
+            className="qmapTrigger"
+            onClick={openMap}
+            disabled={!inSessionContext}
+            title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
+            aria-label="Open question map"
+          >
+            <span className="qmapTriggerCount">
+              {index1 != null && total != null ? (
+                <>{index1} / {total}</>
+              ) : total != null ? (
+                <>— / {total}</>
+              ) : (
+                <>…</>
+              )}
+            </span>
+            <span className="qmapTriggerChevron" aria-hidden="true">▾</span>
+          </button>
+
+          <div className="topBarTimer" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span>{formatElapsed(elapsedMs)}</span>
+          </div>
+        </div>
 
         <div className="questionTopBarRight">
           {/* Per-question time shown in status pills instead of session timer */}
@@ -1739,7 +1739,7 @@ export default function PracticeQuestionPage() {
 
             <div className="qaRight">
               <div className="card subcard qaRightPanel">
-                {renderStatusPills({ marginBottom: 12 })}
+                {renderStatusPills()}
                 {version?.stem_html && (
                   <div style={{ marginBottom: 12 }}>
                     <HtmlBlock className="prose" html={version.stem_html} />
@@ -1754,7 +1754,7 @@ export default function PracticeQuestionPage() {
           mathShellJsx(<>
             {mathToolRow}
             <div className="card subcard qaRightPanel">
-              {renderStatusPills({ marginBottom: 12 })}
+              {renderStatusPills()}
               {renderPromptBlocks()}
               {mcqOptionsArea}
             </div>
@@ -1762,7 +1762,7 @@ export default function PracticeQuestionPage() {
         ) : (
           // Default MCQ
           <div className="card subcard qaRightPanel">
-            {renderStatusPills({ marginBottom: 12 })}
+            {renderStatusPills()}
             {renderPromptBlocks()}
             {mcqOptionsArea}
           </div>
@@ -1772,7 +1772,7 @@ export default function PracticeQuestionPage() {
         mathShellJsx(<>
           {mathToolRow}
           <div className="card subcard qaRightPanel">
-            {renderStatusPills({ marginBottom: 12 })}
+            {renderStatusPills()}
             {renderPromptBlocks()}
             {sprAnswerArea}
           </div>
@@ -1780,7 +1780,7 @@ export default function PracticeQuestionPage() {
       ) : (
         // Default SPR
         <div className="card subcard qaRightPanel">
-          {renderStatusPills({ marginBottom: 12 })}
+          {renderStatusPills()}
           {renderPromptBlocks()}
           {sprAnswerArea}
         </div>
