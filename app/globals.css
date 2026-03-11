@@ -5170,18 +5170,106 @@ hr{
   background: var(--surface, #f9fafb);
 }
 
+/* Formatting toolbar for card inputs */
+.fcFormatBar{
+  display: flex;
+  gap: 2px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  background: var(--surface, #f9fafb);
+  border-radius: 4px 4px 0 0;
+}
+.fcFormatBtn{
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  line-height: 1.4;
+}
+.fcFormatBtn:hover{
+  background: var(--accent-soft);
+  border-color: var(--border);
+}
+.fcFormatBtn b{ font-weight: 800; }
+.fcFormatBtn i{ font-style: italic; }
+
+/* Bigger textareas for card creation */
+.fcTextarea{
+  border-radius: 0 0 4px 4px !important;
+  min-height: 80px;
+  resize: vertical;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ---- Review Modal / Overlay ---- */
+.fcModalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fcFadeIn 0.2s ease;
+}
+@keyframes fcFadeIn{
+  from{ opacity: 0; }
+  to{ opacity: 1; }
+}
+.fcModal{
+  background: var(--card);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  padding: 28px 32px;
+  position: relative;
+  animation: fcSlideUp 0.25s ease;
+}
+@keyframes fcSlideUp{
+  from{ transform: translateY(24px); opacity: 0; }
+  to{ transform: translateY(0); opacity: 1; }
+}
+.fcModalClose{
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.fcModalClose:hover{
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+/* ---- Card styling (card-like) ---- */
 .flashcardContainer{
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
+  width: 100%;
 }
 
 .flashcard{
   width: 100%;
-  max-width: 480px;
-  min-height: 240px;
-  perspective: 800px;
+  max-width: 540px;
+  min-height: 300px;
+  perspective: 1000px;
   cursor: pointer;
   user-select: none;
 }
@@ -5189,8 +5277,8 @@ hr{
 .flashcardInner{
   position: relative;
   width: 100%;
-  min-height: 240px;
-  transition: transform 0.45s ease;
+  min-height: 300px;
+  transition: transform 0.5s ease;
   transform-style: preserve-3d;
 }
 
@@ -5206,16 +5294,22 @@ hr{
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 28px 24px;
-  border: 1px solid var(--border);
+  padding: 36px 32px;
+  border-radius: 14px;
   background: white;
   text-align: center;
-  min-height: 240px;
+  min-height: 300px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.flashcardFront{
+  background: linear-gradient(135deg, #fff 0%, #f0f4ff 100%);
 }
 
 .flashcardBack{
   transform: rotateY(180deg);
-  background: var(--surface, #f9fafb);
+  background: linear-gradient(135deg, #fafbff 0%, #f5f0ff 100%);
 }
 
 .flashcardLabel{
@@ -5224,26 +5318,76 @@ hr{
   letter-spacing: 0.08em;
   color: var(--muted);
   position: absolute;
-  top: 12px;
-  left: 16px;
+  top: 14px;
+  left: 18px;
 }
 
 .flashcardText{
-  font-size: 18px;
-  line-height: 1.5;
+  font-size: 20px;
+  line-height: 1.55;
   font-weight: 500;
   word-break: break-word;
+  max-width: 100%;
 }
+.flashcardText strong{ font-weight: 700; }
+.flashcardText em{ font-style: italic; }
+.flashcardText ul{
+  text-align: left;
+  margin: 6px 0;
+  padding-left: 20px;
+}
+.flashcardText li{ margin-bottom: 2px; }
 
 .flashcardHint{
   position: absolute;
-  bottom: 12px;
+  bottom: 14px;
 }
 
+/* Navigation arrows */
+.fcNavRow{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 540px;
+}
+.fcNavBtn{
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  transition: background 0.15s, border-color 0.15s;
+}
+.fcNavBtn:hover:not(:disabled){
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.fcNavBtn:disabled{
+  opacity: 0.3;
+  cursor: default;
+}
+.fcNavCounter{
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Mastery section */
 .flashcardMastery{
   text-align: center;
   width: 100%;
-  max-width: 480px;
+  max-width: 540px;
 }
 
 .flashcardMasteryButtons{
@@ -5261,26 +5405,31 @@ hr{
   font-weight: 700;
   font-size: 16px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
 }
 
 .flashcardMasteryBtn:hover{
-  border-color: var(--accent);
-  color: var(--accent);
+  transform: scale(1.1);
 }
 
 .flashcardMasteryBtn.mastery0{ color: var(--danger); border-color: var(--danger); }
-.flashcardMasteryBtn.mastery0:hover{ background: var(--danger); color: white; }
+.flashcardMasteryBtn.mastery0:hover,
+.flashcardMasteryBtn.mastery0.active{ background: var(--danger); color: white; }
 .flashcardMasteryBtn.mastery1{ color: #e67e22; border-color: #e67e22; }
-.flashcardMasteryBtn.mastery1:hover{ background: #e67e22; color: white; }
+.flashcardMasteryBtn.mastery1:hover,
+.flashcardMasteryBtn.mastery1.active{ background: #e67e22; color: white; }
 .flashcardMasteryBtn.mastery2{ color: var(--amber); border-color: var(--amber); }
-.flashcardMasteryBtn.mastery2:hover{ background: var(--amber); color: white; }
+.flashcardMasteryBtn.mastery2:hover,
+.flashcardMasteryBtn.mastery2.active{ background: var(--amber); color: white; }
 .flashcardMasteryBtn.mastery3{ color: #3498db; border-color: #3498db; }
-.flashcardMasteryBtn.mastery3:hover{ background: #3498db; color: white; }
+.flashcardMasteryBtn.mastery3:hover,
+.flashcardMasteryBtn.mastery3.active{ background: #3498db; color: white; }
 .flashcardMasteryBtn.mastery4{ color: #2ecc71; border-color: #2ecc71; }
-.flashcardMasteryBtn.mastery4:hover{ background: #2ecc71; color: white; }
+.flashcardMasteryBtn.mastery4:hover,
+.flashcardMasteryBtn.mastery4.active{ background: #2ecc71; color: white; }
 .flashcardMasteryBtn.mastery5{ color: var(--success); border-color: var(--success); }
-.flashcardMasteryBtn.mastery5:hover{ background: var(--success); color: white; }
+.flashcardMasteryBtn.mastery5:hover,
+.flashcardMasteryBtn.mastery5.active{ background: var(--success); color: white; }
 
 .flashcardMasteryLabels{
   display: flex;

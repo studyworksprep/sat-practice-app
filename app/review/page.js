@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Toast from '../../components/Toast';
 
@@ -37,6 +37,254 @@ function TabButton({ active, label, count, onClick }) {
   );
 }
 
+/* ---- Rich text helpers ---- */
+
+function renderFormattedText(text) {
+  if (!text) return '';
+  // Escape HTML first
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  // Bold: **text**
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic: *text*
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Bullet lines: lines starting with "- "
+  const lines = html.split('\n');
+  let inList = false;
+  let result = [];
+  for (const line of lines) {
+    if (line.trimStart().startsWith('- ')) {
+      if (!inList) { result.push('<ul>'); inList = true; }
+      result.push('<li>' + line.trimStart().slice(2) + '</li>');
+    } else {
+      if (inList) { result.push('</ul>'); inList = false; }
+      result.push(line);
+    }
+  }
+  if (inList) result.push('</ul>');
+  return result.join('\n');
+}
+
+function FormatToolbar({ textareaRef, value, onChange }) {
+  function wrapSelection(before, after) {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selected = value.substring(start, end);
+    const newVal = value.substring(0, start) + before + selected + after + value.substring(end);
+    onChange(newVal);
+    // Restore cursor after the wrapped text
+    setTimeout(() => {
+      el.focus();
+      const newPos = start + before.length + selected.length + after.length;
+      el.setSelectionRange(start + before.length, start + before.length + selected.length);
+    }, 0);
+  }
+
+  function insertBullet() {
+    const el = textareaRef.current;
+    if (!el) return;
+    const pos = el.selectionStart;
+    // Find start of current line
+    const lineStart = value.lastIndexOf('\n', pos - 1) + 1;
+    const prefix = value.substring(lineStart, pos);
+    if (prefix.startsWith('- ')) return; // already a bullet
+    const newVal = value.substring(0, lineStart) + '- ' + value.substring(lineStart);
+    onChange(newVal);
+    setTimeout(() => { el.focus(); el.setSelectionRange(pos + 2, pos + 2); }, 0);
+  }
+
+  return (
+    <div className="fcFormatBar">
+      <button type="button" className="fcFormatBtn" title="Bold (**text**)" onClick={() => wrapSelection('**', '**')}><b>B</b></button>
+      <button type="button" className="fcFormatBtn" title="Italic (*text*)" onClick={() => wrapSelection('*', '*')}><i>I</i></button>
+      <button type="button" className="fcFormatBtn" title="Bullet point" onClick={insertBullet}>• List</button>
+    </div>
+  );
+}
+
+function FormattedTextarea({ value, onChange, placeholder, rows }) {
+  const ref = useRef(null);
+  return (
+    <div>
+      <FormatToolbar textareaRef={ref} value={value} onChange={onChange} />
+      <textarea
+        ref={ref}
+        className="input fcTextarea"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={rows || 3}
+        style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
+      />
+    </div>
+  );
+}
+
+/* ---- Flashcard Review Modal ---- */
+
+function FlashcardReviewModal({ setId, setName, onClose }) {
+  const [cards, setCards] = useState([]);
+  const [cardIndex, setCardIndex] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState(null);
+  const [reviewed, setReviewed] = useState(0);
+  const [savingMastery, setSavingMastery] = useState(false);
+  const [selectedMastery, setSelectedMastery] = useState(null); // track user's selection for current card
+
+  const loadCards = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/flashcards?set_id=${setId}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to load cards');
+      // Shuffle cards weighted by mastery (lower mastery = earlier)
+      const sorted = (json.cards || []).sort(() => Math.random() - 0.5);
+      setCards(sorted);
+      setCardIndex(0);
+      setFlipped(false);
+      setSelectedMastery(null);
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setLoading(false);
+    }
+  }, [setId]);
+
+  useEffect(() => { loadCards(); }, [loadCards]);
+
+  // Close on Escape
+  useEffect(() => {
+    function handleKey(e) { if (e.key === 'Escape') onClose(); }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
+  const card = cards[cardIndex] || null;
+  const currentMastery = card ? (selectedMastery !== null ? selectedMastery : card.mastery) : null;
+
+  function goTo(idx) {
+    setCardIndex(idx);
+    setFlipped(false);
+    setSelectedMastery(null);
+  }
+
+  async function rateMastery(level) {
+    if (!card || savingMastery) return;
+    setSelectedMastery(level);
+    setSavingMastery(true);
+    try {
+      const res = await fetch('/api/flashcards', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ card_id: card.id, mastery: level }),
+      });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json?.error || 'Failed to save rating');
+      }
+      // Update local card data
+      setCards(prev => prev.map((c, i) => i === cardIndex ? { ...c, mastery: level } : c));
+      setReviewed(r => r + 1);
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+      setSelectedMastery(null);
+    } finally {
+      setSavingMastery(false);
+    }
+  }
+
+  return (
+    <div className="fcModalOverlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="fcModal">
+        <button className="fcModalClose" onClick={onClose} title="Close">&times;</button>
+
+        <div style={{ marginBottom: 20 }}>
+          <div className="h1" style={{ marginBottom: 2, fontSize: 22 }}>{setName || 'Flashcards'}</div>
+          <div className="muted small">{reviewed} reviewed this session</div>
+        </div>
+
+        {msg && <Toast kind={msg.kind} message={msg.text} />}
+
+        {loading ? (
+          <div className="muted">Loading…</div>
+        ) : !cards.length ? (
+          <div className="muted">No cards in this set yet. Add some cards first!</div>
+        ) : (
+          <div className="flashcardContainer">
+            <div
+              className={`flashcard${flipped ? ' flipped' : ''}`}
+              onClick={() => setFlipped(f => !f)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setFlipped(f => !f); } }}
+            >
+              <div className="flashcardInner">
+                <div className="flashcardFace flashcardFront">
+                  <div className="flashcardLabel">FRONT</div>
+                  <div className="flashcardText" dangerouslySetInnerHTML={{ __html: renderFormattedText(card.front) }} />
+                  <div className="flashcardHint muted small">Click to flip</div>
+                </div>
+                <div className="flashcardFace flashcardBack">
+                  <div className="flashcardLabel">BACK</div>
+                  <div className="flashcardText" dangerouslySetInnerHTML={{ __html: renderFormattedText(card.back) }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation arrows */}
+            <div className="fcNavRow">
+              <button
+                className="fcNavBtn"
+                onClick={() => goTo(cardIndex - 1)}
+                disabled={cardIndex === 0}
+                title="Previous card"
+              >
+                &#8592;
+              </button>
+              <span className="fcNavCounter">{cardIndex + 1} / {cards.length}</span>
+              <button
+                className="fcNavBtn"
+                onClick={() => goTo(cardIndex + 1)}
+                disabled={cardIndex >= cards.length - 1}
+                title="Next card"
+              >
+                &#8594;
+              </button>
+            </div>
+
+            {/* Mastery rating - always visible */}
+            <div className="flashcardMastery">
+              <div className="small muted" style={{ marginBottom: 8 }}>How well do you know this?</div>
+              <div className="flashcardMasteryButtons">
+                {[0, 1, 2, 3, 4, 5].map((level) => (
+                  <button
+                    key={level}
+                    className={`flashcardMasteryBtn mastery${level}${currentMastery === level ? ' active' : ''}`}
+                    onClick={() => rateMastery(level)}
+                    disabled={savingMastery}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+              <div className="flashcardMasteryLabels small muted">
+                <span>No clue</span>
+                <span>Perfect</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---- Main Review Page ---- */
+
 export default function ReviewPage() {
   const [items, setItems] = useState([]);
   const [smartItems, setSmartItems] = useState([]);
@@ -56,6 +304,9 @@ export default function ReviewPage() {
   const [addCardFront, setAddCardFront] = useState('');
   const [addCardBack, setAddCardBack] = useState('');
   const [addCardSaving, setAddCardSaving] = useState(false);
+
+  // Review modal state
+  const [reviewModal, setReviewModal] = useState(null); // { setId, setName } or null
 
   async function loadMarked() {
     setLoading(true);
@@ -330,29 +581,29 @@ export default function ReviewPage() {
                     >
                       + Add Card
                     </button>
-                    <Link
-                      href={`/flashcards?set_id=${s.id}`}
+                    <button
                       className="btn primary"
-                      style={{ fontSize: 12, padding: '4px 12px', textDecoration: 'none', opacity: s.card_count === 0 ? 0.5 : 1, pointerEvents: s.card_count === 0 ? 'none' : 'auto' }}
+                      style={{ fontSize: 12, padding: '4px 12px', opacity: s.card_count === 0 ? 0.5 : 1 }}
+                      disabled={s.card_count === 0}
+                      onClick={() => setReviewModal({ setId: s.id, setName: s.name })}
                     >
                       Review
-                    </Link>
+                    </button>
                   </div>
 
                   {showAddCard === s.id && (
-                    <div style={{ gridColumn: '1 / -1', marginTop: 8, display: 'grid', gap: 8 }}>
-                      <input
-                        className="input"
+                    <div style={{ gridColumn: '1 / -1', marginTop: 8, display: 'grid', gap: 8, width: '100%' }}>
+                      <FormattedTextarea
                         value={addCardFront}
-                        onChange={(e) => setAddCardFront(e.target.value)}
-                        placeholder="Front (term or question)"
+                        onChange={setAddCardFront}
+                        placeholder="Front (term or question) — use **bold**, *italic*, or - for bullets"
+                        rows={3}
                       />
-                      <textarea
-                        className="input"
+                      <FormattedTextarea
                         value={addCardBack}
-                        onChange={(e) => setAddCardBack(e.target.value)}
+                        onChange={setAddCardBack}
                         placeholder="Back (definition or answer)"
-                        rows={2}
+                        rows={4}
                       />
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button className="btn primary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={addCard} disabled={addCardSaving || !addCardFront.trim() || !addCardBack.trim()}>
@@ -398,6 +649,15 @@ export default function ReviewPage() {
           );
         })()}
       </div>
+
+      {/* Flashcard Review Modal */}
+      {reviewModal && (
+        <FlashcardReviewModal
+          setId={reviewModal.setId}
+          setName={reviewModal.setName}
+          onClose={() => { setReviewModal(null); loadFlashSets(); }}
+        />
+      )}
     </main>
   );
 }
