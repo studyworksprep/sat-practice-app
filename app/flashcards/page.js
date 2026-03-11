@@ -1,11 +1,19 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '../../components/Toast';
 
 export default function FlashcardReviewPage() {
+  return (
+    <Suspense fallback={<main className="container"><div className="card"><div className="muted">Loading…</div></div></main>}>
+      <FlashcardReviewInner />
+    </Suspense>
+  );
+}
+
+function FlashcardReviewInner() {
   const searchParams = useSearchParams();
   const setId = searchParams.get('set_id');
 
