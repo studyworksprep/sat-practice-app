@@ -47,6 +47,16 @@ export default function ReviewPage() {
   const [errorLogLoading, setErrorLogLoading] = useState(false);
   const [tab, setTab] = useState('marked');
 
+  // Flashcard state
+  const [flashSets, setFlashSets] = useState([]);
+  const [flashLoading, setFlashLoading] = useState(false);
+  const [showNewSet, setShowNewSet] = useState(false);
+  const [newSetName, setNewSetName] = useState('');
+  const [showAddCard, setShowAddCard] = useState(null); // set id or null
+  const [addCardFront, setAddCardFront] = useState('');
+  const [addCardBack, setAddCardBack] = useState('');
+  const [addCardSaving, setAddCardSaving] = useState(false);
+
   async function loadMarked() {
     setLoading(true);
     setMsg(null);
@@ -90,7 +100,63 @@ export default function ReviewPage() {
     }
   }
 
-  useEffect(() => { loadMarked(); loadSmart(); loadErrorLog(); }, []);
+  async function loadFlashSets() {
+    setFlashLoading(true);
+    try {
+      const res = await fetch('/api/flashcard-sets');
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to load flashcard sets');
+      setFlashSets(json.sets || []);
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setFlashLoading(false);
+    }
+  }
+
+  async function createSet() {
+    if (!newSetName.trim()) return;
+    try {
+      const res = await fetch('/api/flashcard-sets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newSetName.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to create set');
+      setNewSetName('');
+      setShowNewSet(false);
+      loadFlashSets();
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    }
+  }
+
+  async function addCard() {
+    if (!showAddCard || !addCardFront.trim() || !addCardBack.trim()) return;
+    setAddCardSaving(true);
+    try {
+      const res = await fetch('/api/flashcards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ set_id: showAddCard, front: addCardFront.trim(), back: addCardBack.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to add card');
+      setAddCardFront('');
+      setAddCardBack('');
+      setMsg({ kind: 'ok', text: 'Flashcard added!' });
+      loadFlashSets();
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setAddCardSaving(false);
+    }
+  }
+
+  useEffect(() => { loadMarked(); loadSmart(); loadErrorLog(); loadFlashSets(); }, []);
+
+  const totalCards = flashSets.reduce((sum, s) => sum + (s.card_count || 0), 0);
 
   return (
     <main className="container">
@@ -98,10 +164,11 @@ export default function ReviewPage() {
         <div className="h1">Review</div>
 
         {/* Tab switcher */}
-        <div style={{ display: 'flex', gap: 0, marginTop: 8, marginBottom: 14, borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', gap: 0, marginTop: 8, marginBottom: 14, borderBottom: '1px solid var(--border)', flexWrap: 'wrap' }}>
           <TabButton active={tab === 'marked'} label="Marked for Review" count={items.length} onClick={() => setTab('marked')} />
           <TabButton active={tab === 'smart'} label="Smart Review" count={smartItems.length} onClick={() => setTab('smart')} />
           <TabButton active={tab === 'errorlog'} label="Error Log" count={errorLogItems.length} onClick={() => setTab('errorlog')} />
+          <TabButton active={tab === 'flashcards'} label="Flashcards" count={totalCards} onClick={() => setTab('flashcards')} />
         </div>
 
         {tab === 'marked' && (
@@ -117,6 +184,11 @@ export default function ReviewPage() {
         {tab === 'errorlog' && (
           <p className="muted small" style={{ marginTop: 0, marginBottom: 10 }}>
             Questions where you've recorded notes about your errors.
+          </p>
+        )}
+        {tab === 'flashcards' && (
+          <p className="muted small" style={{ marginTop: 0, marginBottom: 10 }}>
+            Your flashcard sets. Start a review session or add new cards.
           </p>
         )}
 
@@ -230,6 +302,98 @@ export default function ReviewPage() {
                   </Link>
                 );
               })}
+            </div>
+          );
+        })()}
+
+        {/* Flashcards tab */}
+        {tab === 'flashcards' && (() => {
+          if (flashLoading) return <div className="muted">Loading…</div>;
+
+          return (
+            <div style={{ display: 'grid', gap: 12 }}>
+              {flashSets.map((s) => (
+                <div key={s.id} className="flashcardSetRow">
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 650, fontSize: 15 }}>{s.name}</div>
+                    <div className="muted small">{s.card_count} card{s.card_count !== 1 ? 's' : ''}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <button
+                      className="btn secondary"
+                      style={{ fontSize: 12, padding: '4px 12px' }}
+                      onClick={() => {
+                        setShowAddCard(showAddCard === s.id ? null : s.id);
+                        setAddCardFront('');
+                        setAddCardBack('');
+                      }}
+                    >
+                      + Add Card
+                    </button>
+                    <Link
+                      href={`/flashcards?set_id=${s.id}`}
+                      className="btn primary"
+                      style={{ fontSize: 12, padding: '4px 12px', textDecoration: 'none', opacity: s.card_count === 0 ? 0.5 : 1, pointerEvents: s.card_count === 0 ? 'none' : 'auto' }}
+                    >
+                      Review
+                    </Link>
+                  </div>
+
+                  {showAddCard === s.id && (
+                    <div style={{ gridColumn: '1 / -1', marginTop: 8, display: 'grid', gap: 8 }}>
+                      <input
+                        className="input"
+                        value={addCardFront}
+                        onChange={(e) => setAddCardFront(e.target.value)}
+                        placeholder="Front (term or question)"
+                      />
+                      <textarea
+                        className="input"
+                        value={addCardBack}
+                        onChange={(e) => setAddCardBack(e.target.value)}
+                        placeholder="Back (definition or answer)"
+                        rows={2}
+                      />
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn primary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={addCard} disabled={addCardSaving || !addCardFront.trim() || !addCardBack.trim()}>
+                          {addCardSaving ? 'Saving…' : 'Save Card'}
+                        </button>
+                        <button className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={() => setShowAddCard(null)}>
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* New set creation */}
+              {showNewSet ? (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input
+                    className="input"
+                    value={newSetName}
+                    onChange={(e) => setNewSetName(e.target.value)}
+                    placeholder="New set name"
+                    style={{ flex: 1 }}
+                    onKeyDown={(e) => e.key === 'Enter' && createSet()}
+                  />
+                  <button className="btn primary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={createSet} disabled={!newSetName.trim()}>
+                    Create
+                  </button>
+                  <button className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={() => { setShowNewSet(false); setNewSetName(''); }}>
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="btn secondary"
+                  style={{ justifySelf: 'start', fontSize: 13 }}
+                  onClick={() => setShowNewSet(true)}
+                >
+                  + New Set
+                </button>
+              )}
             </div>
           );
         })()}
