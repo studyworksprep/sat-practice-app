@@ -348,6 +348,7 @@ export default function ReviewPage() {
   const [addCardFront, setAddCardFront] = useState('');
   const [addCardBack, setAddCardBack] = useState('');
   const [addCardSaving, setAddCardSaving] = useState(false);
+  const [expandedParents, setExpandedParents] = useState({}); // { parentId: true/false }
 
   // Review modal state
   const [reviewModal, setReviewModal] = useState(null); // { setId, setName } or null
@@ -451,7 +452,17 @@ export default function ReviewPage() {
 
   useEffect(() => { loadMarked(); loadSmart(); loadErrorLog(); loadFlashSets(); }, []);
 
-  const totalCards = flashSets.reduce((sum, s) => sum + (s.card_count || 0), 0);
+  // Count cards only from sets without a parent (to avoid double-counting sub-set cards)
+  const parentIds = new Set(flashSets.filter(s => !s.parent_set_id).map(s => s.id));
+  const totalCards = flashSets.reduce((sum, s) => {
+    if (!s.parent_set_id) {
+      // For parent sets with children, use total_card_count if available
+      const children = flashSets.filter(c => c.parent_set_id === s.id);
+      if (children.length > 0) return sum + (s.total_card_count || 0);
+      return sum + (s.card_count || 0);
+    }
+    return sum;
+  }, 0);
 
   return (
     <main className="container">
@@ -605,62 +616,138 @@ export default function ReviewPage() {
         {tab === 'flashcards' && (() => {
           if (flashLoading) return <div className="muted">Loading…</div>;
 
-          return (
-            <div style={{ display: 'grid', gap: 12 }}>
-              {flashSets.map((s) => (
-                <div key={s.id} className="flashcardSetRow">
+          // Separate parent sets (no parent_set_id) from child sets
+          const parentSets = flashSets.filter(s => !s.parent_set_id);
+          const childMap = {}; // parentId → [children]
+          for (const s of flashSets) {
+            if (s.parent_set_id) {
+              if (!childMap[s.parent_set_id]) childMap[s.parent_set_id] = [];
+              childMap[s.parent_set_id].push(s);
+            }
+          }
+
+          function toggleParent(parentId) {
+            setExpandedParents(prev => ({ ...prev, [parentId]: !prev[parentId] }));
+          }
+
+          function renderMasteryBar(avgMastery, small) {
+            if (avgMastery === null || avgMastery === undefined) return null;
+            const color = avgMastery >= 70 ? 'var(--success)' : avgMastery >= 40 ? 'var(--amber)' : 'var(--danger)';
+            return (
+              <div className={`fcMasteryBar${small ? ' fcMasteryBarSmall' : ''}`}>
+                <div className="fcMasteryTrack">
+                  <div className="fcMasteryFill" style={{ width: `${avgMastery}%`, background: color }} />
+                </div>
+                <span className="fcMasteryPct" style={{ color }}>{avgMastery}%</span>
+              </div>
+            );
+          }
+
+          function renderSetRow(s, isChild) {
+            const hasChildren = childMap[s.id] && childMap[s.id].length > 0;
+            const isExpanded = expandedParents[s.id];
+            const displayCount = hasChildren ? (s.total_card_count || 0) : s.card_count;
+            const displayMastery = hasChildren ? s.total_avg_mastery : s.avg_mastery;
+
+            return (
+              <div key={s.id} className={`flashcardSetRow${isChild ? ' fcSubsetRow' : ''}`}>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {hasChildren && (
+                    <button
+                      className={`fcChevron${isExpanded ? ' fcChevronOpen' : ''}`}
+                      onClick={() => toggleParent(s.id)}
+                      aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                    >
+                      &#9654;
+                    </button>
+                  )}
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 650, fontSize: 15 }}>{s.name}</div>
-                    <div className="muted small">{s.card_count} card{s.card_count !== 1 ? 's' : ''}</div>
+                    <div style={{ fontWeight: 650, fontSize: isChild ? 14 : 15 }}>{s.name}</div>
+                    <div className="muted small">
+                      {displayCount} card{displayCount !== 1 ? 's' : ''}
+                    </div>
+                    {renderMasteryBar(displayMastery, isChild)}
                   </div>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  {!hasChildren && (
+                    <>
+                      <button
+                        className="btn secondary"
+                        style={{ fontSize: 12, padding: '4px 12px' }}
+                        onClick={() => {
+                          setShowAddCard(showAddCard === s.id ? null : s.id);
+                          setAddCardFront('');
+                          setAddCardBack('');
+                        }}
+                      >
+                        + Add Card
+                      </button>
+                      <button
+                        className="btn primary"
+                        style={{ fontSize: 12, padding: '4px 12px', opacity: s.card_count === 0 ? 0.5 : 1 }}
+                        disabled={s.card_count === 0}
+                        onClick={() => setReviewModal({ setId: s.id, setName: s.name })}
+                      >
+                        Review
+                      </button>
+                    </>
+                  )}
+                  {hasChildren && (
                     <button
                       className="btn secondary"
                       style={{ fontSize: 12, padding: '4px 12px' }}
-                      onClick={() => {
-                        setShowAddCard(showAddCard === s.id ? null : s.id);
-                        setAddCardFront('');
-                        setAddCardBack('');
-                      }}
+                      onClick={() => toggleParent(s.id)}
                     >
-                      + Add Card
+                      {isExpanded ? 'Collapse' : 'Expand'}
                     </button>
-                    <button
-                      className="btn primary"
-                      style={{ fontSize: 12, padding: '4px 12px', opacity: s.card_count === 0 ? 0.5 : 1 }}
-                      disabled={s.card_count === 0}
-                      onClick={() => setReviewModal({ setId: s.id, setName: s.name })}
-                    >
-                      Review
-                    </button>
-                  </div>
-
-                  {showAddCard === s.id && (
-                    <div style={{ gridColumn: '1 / -1', marginTop: 8, display: 'grid', gap: 8, width: '100%' }}>
-                      <FormattedTextarea
-                        value={addCardFront}
-                        onChange={setAddCardFront}
-                        placeholder="Front (term or question) — use **bold**, *italic*, or - for bullets"
-                        rows={3}
-                      />
-                      <FormattedTextarea
-                        value={addCardBack}
-                        onChange={setAddCardBack}
-                        placeholder="Back (definition or answer)"
-                        rows={4}
-                      />
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button className="btn primary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={addCard} disabled={addCardSaving || !addCardFront.trim() || !addCardBack.trim()}>
-                          {addCardSaving ? 'Saving…' : 'Save Card'}
-                        </button>
-                        <button className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={() => setShowAddCard(null)}>
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
                   )}
                 </div>
-              ))}
+
+                {showAddCard === s.id && (
+                  <div style={{ gridColumn: '1 / -1', marginTop: 8, display: 'grid', gap: 8, width: '100%' }}>
+                    <FormattedTextarea
+                      value={addCardFront}
+                      onChange={setAddCardFront}
+                      placeholder="Front (term or question) — use **bold**, *italic*, or - for bullets"
+                      rows={3}
+                    />
+                    <FormattedTextarea
+                      value={addCardBack}
+                      onChange={setAddCardBack}
+                      placeholder="Back (definition or answer)"
+                      rows={4}
+                    />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button className="btn primary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={addCard} disabled={addCardSaving || !addCardFront.trim() || !addCardBack.trim()}>
+                        {addCardSaving ? 'Saving…' : 'Save Card'}
+                      </button>
+                      <button className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={() => setShowAddCard(null)}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          return (
+            <div style={{ display: 'grid', gap: 12 }}>
+              {parentSets.map((s) => {
+                const children = childMap[s.id] || [];
+                const isExpanded = expandedParents[s.id];
+                return (
+                  <div key={s.id}>
+                    {renderSetRow(s, false)}
+                    {isExpanded && children.length > 0 && (
+                      <div className="fcSubsetList">
+                        {children.map(child => renderSetRow(child, true))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               {/* New set creation */}
               {showNewSet ? (

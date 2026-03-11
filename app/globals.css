@@ -5170,6 +5170,70 @@ hr{
   background: var(--surface, #f9fafb);
 }
 
+/* Chevron for expandable parent sets */
+.fcChevron{
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px;
+  transition: transform 0.25s ease;
+  transform: rotate(0deg);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.fcChevron:hover{ color: var(--text); }
+.fcChevronOpen{ transform: rotate(90deg); }
+
+/* Sub-set list container */
+.fcSubsetList{
+  margin-left: 24px;
+  border-left: 2px solid var(--border);
+  padding-left: 0;
+}
+.fcSubsetRow{
+  border-top: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 14px;
+}
+.fcSubsetRow + .fcSubsetRow{
+  border-top: 1px solid var(--border);
+}
+
+/* Mastery bar */
+.fcMasteryBar{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.fcMasteryBarSmall{ margin-top: 3px; }
+.fcMasteryTrack{
+  flex: 1;
+  max-width: 120px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.fcMasteryBarSmall .fcMasteryTrack{
+  max-width: 90px;
+  height: 5px;
+}
+.fcMasteryFill{
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.fcMasteryPct{
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 32px;
+}
+.fcMasteryBarSmall .fcMasteryPct{ font-size: 11px; }
+
 /* Formatting toolbar for card inputs */
 .fcFormatBar{
   display: flex;
