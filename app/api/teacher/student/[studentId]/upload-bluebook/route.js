@@ -266,6 +266,7 @@ export async function POST(request, { params }) {
           selected_option_id: selectedOptionId,
           response_text: responseText,
           created_at: now,
+          source: 'practice_test',
         })
         .select('id')
         .single();

@@ -12,10 +12,12 @@ export async function GET() {
   const user = auth.user;
 
   // ── All attempts with time data (oldest-first so first occurrence = first attempt) ──
+  // Only include practice attempts (not practice_test or review)
   const { data: allAttempts, error } = await supabase
     .from('attempts')
     .select('id, question_id, is_correct, created_at, time_spent_ms')
     .eq('user_id', user.id)
+    .eq('source', 'practice')
     .order('created_at', { ascending: true })
     .limit(5000);
 

@@ -33,6 +33,7 @@ export async function GET() {
       .from('attempts')
       .select('id, question_id, is_correct, created_at')
       .eq('user_id', user.id)
+      .eq('source', 'practice')
       .order('created_at', { ascending: false })
       .limit(200),
     supabase

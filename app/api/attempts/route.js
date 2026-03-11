@@ -6,8 +6,10 @@ import { createClient } from '../../../lib/supabase/server';
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { question_id, selected_option_id, response_text, time_spent_ms } = body || {};
+    const { question_id, selected_option_id, response_text, time_spent_ms, source } = body || {};
     if (!question_id) return NextResponse.json({ error: 'question_id required' }, { status: 400 });
+    const VALID_SOURCES = ['practice', 'practice_test', 'review'];
+    const attemptSource = VALID_SOURCES.includes(source) ? source : 'practice';
 
     const supabase = createClient();
 
@@ -126,6 +128,7 @@ export async function POST(request) {
         selected_option_id: ver.question_type === 'mcq' ? selected_option_id : null,
         response_text: ver.question_type === 'spr' ? response_text : null,
         time_spent_ms: Number.isFinite(Number(time_spent_ms)) ? Number(time_spent_ms) : null,
+        source: attemptSource,
       }),
       supabase
         .from('question_status')

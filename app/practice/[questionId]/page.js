@@ -553,23 +553,14 @@ export default function PracticeQuestionPage() {
       }
 
       // Reset retry state for the new question
-      const prevCorrect = json.status?.is_done && json.status?.last_is_correct;
-      setGotCorrect(Boolean(prevCorrect));
+      setGotCorrect(false);
       setGaveUp(false);
       setWrongOptionIds([]);
       setWrongTexts([]);
 
-      if (prevCorrect) {
-        // Returning to a correctly-answered question: restore last selection
-        if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
-        else setSelected(null);
-        if (json?.status?.status_json?.last_response_text) setResponseText(json.status.status_json.last_response_text);
-        else setResponseText('');
-      } else {
-        // Fresh or previously-wrong question: start clean
-        setSelected(null);
-        setResponseText('');
-      }
+      // Always start clean: no pre-selected answer
+      setSelected(null);
+      setResponseText('');
 
       startedAtRef.current = Date.now();
       setShowExplanation(false);
@@ -818,11 +809,14 @@ export default function PracticeQuestionPage() {
     const wasDone = Boolean(status?.is_done);
     setSubmitting(true);
     const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
+    // Determine attempt source: replay sessions are 'review', everything else is 'practice'
+    const isReplay = searchParams.get('replay') === '1';
     const body = {
       question_id: data.question_id,
       selected_option_id: qTypeLocal === 'mcq' ? selected : null,
       response_text: qTypeLocal === 'spr' ? responseText : null,
       time_spent_ms,
+      source: isReplay ? 'review' : 'practice',
     };
 
     try {
@@ -1211,8 +1205,7 @@ export default function PracticeQuestionPage() {
   const options = Array.isArray(data?.options) ? data.options : [];
   const status = data?.status || {};
   // Lock only when student got it right or gave up (clicked Show Explanation)
-  // Also lock if returning to a previously-correct question
-  const locked = gotCorrect || gaveUp || Boolean(status?.is_done && status?.last_is_correct);
+  const locked = gotCorrect || gaveUp;
   const correctOptionId = data?.correct_option_id || null;
   const correctText = data?.correct_text || null;
 

@@ -75,6 +75,7 @@ export async function GET(_request, { params }) {
       .from('attempts')
       .select('id, question_id, is_correct, created_at')
       .eq('user_id', studentId)
+      .eq('source', 'practice')
       .order('created_at', { ascending: true })
       .limit(5000),
     supabase
