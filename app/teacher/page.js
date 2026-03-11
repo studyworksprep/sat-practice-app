@@ -853,6 +853,176 @@ function AssignmentsPanel({ students }) {
   );
 }
 
+// ─── Upload Bluebook modal ───────────────────────────────
+function UploadBluebookModal({ studentId, onClose, onUploaded }) {
+  const [tests, setTests] = useState([]);
+  const [selectedTestId, setSelectedTestId] = useState('');
+  const [rwScore, setRwScore] = useState('');
+  const [mathScore, setMathScore] = useState('');
+  const [file, setFile] = useState(null);
+  const [parsed, setParsed] = useState(null);
+  const [parseError, setParseError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/practice-tests')
+      .then(r => r.json())
+      .then(d => setTests(d.tests || []))
+      .catch(() => {});
+  }, []);
+
+  const composite = (Number(rwScore) || 0) + (Number(mathScore) || 0);
+
+  async function handleFileChange(e) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    setParsed(null);
+    setParseError(null);
+    setResult(null);
+
+    try {
+      const text = await f.text();
+      // Dynamic import to keep parser out of server bundle
+      const { parseBluebookHtml } = await import('../../lib/parseBluebookHtml');
+      const data = parseBluebookHtml(text);
+      setParsed(data);
+    } catch (err) {
+      setParseError(err.message || 'Failed to parse the HTML file');
+    }
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!selectedTestId) return setError('Select a practice test.');
+    if (!parsed) return setError('Upload and parse a Bluebook HTML file first.');
+    if (!rwScore || !mathScore) return setError('Enter both RW and Math scores.');
+    const rw = parseInt(rwScore, 10);
+    const math = parseInt(mathScore, 10);
+    if (rw < 200 || rw > 800 || math < 200 || math > 800) {
+      return setError('Scores must be between 200 and 800.');
+    }
+
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/teacher/student/${studentId}/upload-bluebook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          practice_test_id: selectedTestId,
+          rw_score: rw,
+          math_score: math,
+          questions: parsed.questions,
+          correctCounts: parsed.correctCounts,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      setResult(data);
+      if (onUploaded) onUploaded(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="tchModalOverlay" onClick={onClose}>
+      <div className="card tchModal" style={{ maxWidth: 520 }} onClick={(e) => e.stopPropagation()}>
+        <div className="tchModalHeader">
+          <h3 className="h2" style={{ margin: 0 }}>Upload Bluebook Results</h3>
+          <button className="tchModalClose" onClick={onClose}>&times;</button>
+        </div>
+        {result ? (
+          <div style={{ padding: '16px 0' }}>
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <div style={{ fontSize: 36, fontWeight: 700, color: 'var(--accent)' }}>{result.composite_score}</div>
+              <div className="muted small">Composite Score</div>
+              <div style={{ marginTop: 8, fontSize: 14 }}>
+                <span style={{ color: '#6b9bd2', fontWeight: 600 }}>R&W {result.rw_scaled}</span>
+                {' · '}
+                <span style={{ color: '#9b8ec4', fontWeight: 600 }}>Math {result.math_scaled}</span>
+              </div>
+              <div className="muted small" style={{ marginTop: 8 }}>{result.questions_imported} questions imported</div>
+            </div>
+            <div className="tchModalActions">
+              <button className="btn primary" onClick={onClose}>Done</button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="tchModalForm">
+            <label className="tchModalField">
+              <span className="tchModalLabel">Practice Test</span>
+              <select value={selectedTestId} onChange={(e) => setSelectedTestId(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14 }}>
+                <option value="">— Select a test —</option>
+                {tests.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="tchModalField">
+              <span className="tchModalLabel">Bluebook HTML File (.htm)</span>
+              <input type="file" accept=".htm,.html" onChange={handleFileChange} style={{ fontSize: 13 }} />
+            </label>
+
+            {parseError && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{parseError}</p>}
+
+            {parsed && (
+              <div style={{ background: 'var(--surface-alt, var(--surface))', borderRadius: 8, padding: 12, fontSize: 13 }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>{parsed.testName}</div>
+                {parsed.testDate && <div className="muted small">{parsed.testDate}</div>}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
+                  <div>
+                    <span className="muted small">R&W: </span>
+                    <span style={{ fontWeight: 600 }}>{parsed.correctCounts.rw.total}/{parsed.questions.filter(q => q.subjectCode === 'RW').length} correct</span>
+                    <div className="muted small" style={{ fontSize: 11 }}>M1: {parsed.correctCounts.rw.m1} · M2: {parsed.correctCounts.rw.m2}</div>
+                  </div>
+                  <div>
+                    <span className="muted small">Math: </span>
+                    <span style={{ fontWeight: 600 }}>{parsed.correctCounts.math.total}/{parsed.questions.filter(q => q.subjectCode === 'MATH').length} correct</span>
+                    <div className="muted small" style={{ fontSize: 11 }}>M1: {parsed.correctCounts.math.m1} · M2: {parsed.correctCounts.math.m2}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="tchModalRow">
+              <label className="tchModalField">
+                <span className="tchModalLabel">R&W Scaled Score</span>
+                <input type="number" min="200" max="800" step="10" value={rwScore} onChange={(e) => setRwScore(e.target.value)} required placeholder="200-800" />
+              </label>
+              <label className="tchModalField">
+                <span className="tchModalLabel">Math Scaled Score</span>
+                <input type="number" min="200" max="800" step="10" value={mathScore} onChange={(e) => setMathScore(e.target.value)} required placeholder="200-800" />
+              </label>
+            </div>
+
+            {rwScore && mathScore && (
+              <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--accent)' }}>
+                Composite: {composite}
+              </div>
+            )}
+
+            {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
+
+            <div className="tchModalActions">
+              <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
+              <button type="submit" className="btn primary" disabled={saving || !parsed || !selectedTestId}>
+                {saving ? 'Uploading...' : 'Upload Results'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Student detail panel ────────────────────────────────
 function StudentDetail({ studentId }) {
   const router = useRouter();
@@ -864,6 +1034,7 @@ function StudentDetail({ studentId }) {
   const [officialScores, setOfficialScores] = useState([]);
   const [addRegOpen, setAddRegOpen] = useState(false);
   const [addScoreOpen, setAddScoreOpen] = useState(false);
+  const [uploadBluebookOpen, setUploadBluebookOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true); setError(null);
@@ -909,6 +1080,7 @@ function StudentDetail({ studentId }) {
       {editOpen && <EditProfileModal student={student} studentId={studentId} onClose={() => setEditOpen(false)} onSaved={(updated) => { setData(prev => ({ ...prev, student: { ...prev.student, ...updated } })); setEditOpen(false); }} />}
       {addRegOpen && <AddRegistrationModal studentId={studentId} onClose={() => setAddRegOpen(false)} onSaved={(reg) => { setRegistrations(prev => [...prev, reg].sort((a, b) => new Date(a.test_date) - new Date(b.test_date))); setAddRegOpen(false); }} />}
       {addScoreOpen && <AddScoreModal studentId={studentId} onClose={() => setAddScoreOpen(false)} onSaved={(score) => { setOfficialScores(prev => [score, ...prev]); setAddScoreOpen(false); }} />}
+      {uploadBluebookOpen && <UploadBluebookModal studentId={studentId} onClose={() => setUploadBluebookOpen(false)} onUploaded={() => { fetch(`/api/teacher/student/${studentId}/dashboard`).then(r => r.json()).then(d => { if (!d.error) setData(d); }); }} />}
       <div className="card tchOverviewCard">
         {(student.high_school || student.graduation_year || student.target_sat_score) && (
           <div className="tchProfileRow">
@@ -969,6 +1141,7 @@ function StudentDetail({ studentId }) {
         <div className="tchProfileActions">
           <button className="btn secondary tchProfileActionBtn" onClick={() => setAddRegOpen(true)}>+ Test Registration</button>
           <button className="btn secondary tchProfileActionBtn" onClick={() => setAddScoreOpen(true)}>+ Official Score</button>
+          <button className="btn primary tchProfileActionBtn" onClick={() => setUploadBluebookOpen(true)}>Upload Bluebook Results</button>
         </div>
         <div className="tchStatsRow">
           <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--accent)' }}>{data.highestTestScore ?? '—'}</div><div className="tchStatLabel">Highest Score</div></div>
