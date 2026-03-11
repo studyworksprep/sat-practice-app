@@ -31,7 +31,8 @@ function buildParams(filters, search, extra = {}) {
 
   if (filters.wrong_only) p.set('wrong_only', 'true');
   if (filters.marked_only) p.set('marked_only', 'true');
-  if (!filters.show_broken) p.set('hide_broken', 'true');
+  if (filters.show_broken) p.set('only_broken', 'true');
+  else p.set('hide_broken', 'true');
 
   if (search.trim()) p.set('q', search.trim());
 
