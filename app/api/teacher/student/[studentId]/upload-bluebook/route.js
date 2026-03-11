@@ -51,7 +51,7 @@ export async function POST(request, { params }) {
   }
 
   const body = await request.json();
-  const { practice_test_id, rw_score, math_score, questions, correctCounts } = body;
+  const { practice_test_id, rw_score, math_score, test_date, questions, correctCounts } = body;
 
   if (!practice_test_id || !questions?.length || !correctCounts) {
     return NextResponse.json({ error: 'practice_test_id, questions, and correctCounts are required' }, { status: 400 });
@@ -125,7 +125,7 @@ export async function POST(request, { params }) {
     return candidates[0];
   }
 
-  const now = new Date().toISOString();
+  const now = test_date ? new Date(test_date + 'T12:00:00Z').toISOString() : new Date().toISOString();
 
   // Build submitted_modules metadata
   const submittedModuleKeys = Object.keys(subjectModules);

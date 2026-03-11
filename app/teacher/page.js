@@ -859,6 +859,7 @@ function UploadBluebookModal({ studentId, onClose, onUploaded }) {
   const [selectedTestId, setSelectedTestId] = useState('');
   const [rwScore, setRwScore] = useState('');
   const [mathScore, setMathScore] = useState('');
+  const [testDate, setTestDate] = useState('');
   const [file, setFile] = useState(null);
   const [parsed, setParsed] = useState(null);
   const [parseError, setParseError] = useState(null);
@@ -915,6 +916,7 @@ function UploadBluebookModal({ studentId, onClose, onUploaded }) {
           practice_test_id: selectedTestId,
           rw_score: rw,
           math_score: math,
+          test_date: testDate || null,
           questions: parsed.questions,
           correctCounts: parsed.correctCounts,
         }),
@@ -1001,6 +1003,11 @@ function UploadBluebookModal({ studentId, onClose, onUploaded }) {
                 <input type="number" min="200" max="800" step="10" value={mathScore} onChange={(e) => setMathScore(e.target.value)} required placeholder="200-800" />
               </label>
             </div>
+
+            <label className="tchModalField">
+              <span className="tchModalLabel">Test Date</span>
+              <input type="date" value={testDate} onChange={(e) => setTestDate(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14 }} />
+            </label>
 
             {rwScore && mathScore && (
               <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--accent)' }}>
