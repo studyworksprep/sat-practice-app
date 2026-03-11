@@ -889,6 +889,10 @@ function UploadBluebookModal({ studentId, onClose, onUploaded }) {
       // Dynamic import to keep parser out of server bundle
       const { parseBluebookHtml } = await import('../../lib/parseBluebookHtml');
       const data = parseBluebookHtml(text);
+      if (!data.questions.length) {
+        setParseError('The file was read but no questions could be extracted. This Bluebook HTML format may not be supported yet.');
+        return;
+      }
       setParsed(data);
     } catch (err) {
       setParseError(err.message || 'Failed to parse the HTML file');
@@ -899,6 +903,7 @@ function UploadBluebookModal({ studentId, onClose, onUploaded }) {
     e.preventDefault();
     if (!selectedTestId) return setError('Select a practice test.');
     if (!parsed) return setError('Upload and parse a Bluebook HTML file first.');
+    if (!parsed.questions.length) return setError('No questions were parsed from the uploaded file.');
     if (!rwScore || !mathScore) return setError('Enter both RW and Math scores.');
     const rw = parseInt(rwScore, 10);
     const math = parseInt(mathScore, 10);

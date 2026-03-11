@@ -53,8 +53,14 @@ export async function POST(request, { params }) {
   const body = await request.json();
   const { practice_test_id, rw_score, math_score, test_date, questions, correctCounts } = body;
 
-  if (!practice_test_id || !questions?.length || !correctCounts) {
-    return NextResponse.json({ error: 'practice_test_id, questions, and correctCounts are required' }, { status: 400 });
+  if (!practice_test_id) {
+    return NextResponse.json({ error: 'practice_test_id is required' }, { status: 400 });
+  }
+  if (!questions?.length) {
+    return NextResponse.json({ error: 'No questions provided. The Bluebook HTML file may not have been parsed successfully.' }, { status: 400 });
+  }
+  if (!correctCounts) {
+    return NextResponse.json({ error: 'correctCounts is required' }, { status: 400 });
   }
 
   const rwScaled = parseInt(rw_score, 10) || null;
