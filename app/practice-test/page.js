@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createClient } from '../../lib/supabase/server';
 import LaunchPanel from './LaunchPanel';
 import AbandonButton from './AbandonButton';
+import DeleteResultButton from './DeleteResultButton';
 
 function fmt(dateStr) {
   if (!dateStr) return '';
@@ -95,9 +96,12 @@ export default async function PracticeTestListPage() {
                     <ScoreBadge key={subj} score={s.scaled} label={SUBJECT_LABELS[subj] || subj} />
                   ))}
                 </div>
-                <Link href={`/practice-test/attempt/${a.id}/results`} className="btn secondary ptHistoryBtn">
-                  Review
-                </Link>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <Link href={`/practice-test/attempt/${a.id}/results`} className="btn secondary ptHistoryBtn">
+                    Review
+                  </Link>
+                  <DeleteResultButton attemptId={a.id} />
+                </div>
               </div>
             ))}
           </div>

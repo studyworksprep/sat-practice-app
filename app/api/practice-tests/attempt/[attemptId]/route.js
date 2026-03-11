@@ -1,6 +1,79 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../lib/supabase/server';
 
+// DELETE /api/practice-tests/attempt/[attemptId]
+// Permanently deletes a completed practice test attempt and all related records.
+export async function DELETE(_request, { params }) {
+  const { attemptId } = params;
+  const supabase = createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { data: attempt, error: attErr } = await supabase
+    .from('practice_test_attempts')
+    .select('id, user_id, status')
+    .eq('id', attemptId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (attErr) return NextResponse.json({ error: attErr.message }, { status: 500 });
+  if (!attempt) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  if (attempt.status === 'in_progress') {
+    return NextResponse.json({ error: 'Cannot delete an in-progress attempt. Abandon it first.' }, { status: 400 });
+  }
+
+  // Delete linked records in order: item_attempts → module_attempts → attempt
+  // 1. Get module attempt ids
+  const { data: moduleAttempts } = await supabase
+    .from('practice_test_module_attempts')
+    .select('id')
+    .eq('practice_test_attempt_id', attemptId);
+
+  const moduleAttemptIds = (moduleAttempts || []).map((ma) => ma.id);
+
+  if (moduleAttemptIds.length > 0) {
+    // 2. Get linked attempt ids from item_attempts before deleting
+    const { data: itemAttempts } = await supabase
+      .from('practice_test_item_attempts')
+      .select('attempt_id')
+      .in('practice_test_module_attempt_id', moduleAttemptIds);
+
+    const attemptIds = (itemAttempts || []).map((ia) => ia.attempt_id).filter(Boolean);
+
+    // 3. Delete item_attempts
+    await supabase
+      .from('practice_test_item_attempts')
+      .delete()
+      .in('practice_test_module_attempt_id', moduleAttemptIds);
+
+    // 4. Delete individual attempts rows
+    if (attemptIds.length > 0) {
+      await supabase
+        .from('attempts')
+        .delete()
+        .in('id', attemptIds);
+    }
+
+    // 5. Delete module_attempts
+    await supabase
+      .from('practice_test_module_attempts')
+      .delete()
+      .eq('practice_test_attempt_id', attemptId);
+  }
+
+  // 6. Delete the practice test attempt itself
+  const { error: deleteErr } = await supabase
+    .from('practice_test_attempts')
+    .delete()
+    .eq('id', attemptId)
+    .eq('user_id', user.id);
+
+  if (deleteErr) return NextResponse.json({ error: deleteErr.message }, { status: 500 });
+
+  return NextResponse.json({ success: true });
+}
+
 // GET /api/practice-tests/attempt/[attemptId]
 // Returns current module state for the active session.
 // "Active" = first module (in subject/module order) with no submitted practice_test_attempt_items.
