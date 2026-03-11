@@ -126,25 +126,45 @@ function FormattedTextarea({ value, onChange, placeholder, rows }) {
 
 /* ---- Flashcard Review Modal ---- */
 
+function pickWeightedRandom(cards, excludeId) {
+  let pool = cards.length > 1 && excludeId
+    ? cards.filter(c => c.id !== excludeId)
+    : cards;
+  if (!pool.length) return null;
+  // weight = 6 - mastery (mastery 0 → weight 6, mastery 5 → weight 1)
+  const totalWeight = pool.reduce((sum, c) => sum + (6 - (c.mastery || 0)), 0);
+  let r = Math.random() * totalWeight;
+  for (const card of pool) {
+    r -= (6 - (card.mastery || 0));
+    if (r <= 0) return card;
+  }
+  return pool[pool.length - 1];
+}
+
 function FlashcardReviewModal({ setId, setName, onClose }) {
-  const [cards, setCards] = useState([]);
-  const [cardIndex, setCardIndex] = useState(0);
+  const [allCards, setAllCards] = useState([]);      // full card pool
+  const [history, setHistory] = useState([]);        // cards the user has visited (stack)
+  const [historyIdx, setHistoryIdx] = useState(-1);  // current position in history
   const [flipped, setFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState(null);
   const [reviewed, setReviewed] = useState(0);
   const [savingMastery, setSavingMastery] = useState(false);
-  const [selectedMastery, setSelectedMastery] = useState(null); // track user's selection for current card
+  const [selectedMastery, setSelectedMastery] = useState(null);
 
   const loadCards = useCallback(async () => {
     try {
       const res = await fetch(`/api/flashcards?set_id=${setId}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load cards');
-      // Shuffle cards weighted by mastery (lower mastery = earlier)
-      const sorted = (json.cards || []).sort(() => Math.random() - 0.5);
-      setCards(sorted);
-      setCardIndex(0);
+      const loaded = json.cards || [];
+      setAllCards(loaded);
+      // Pick first card weighted-random
+      if (loaded.length) {
+        const first = pickWeightedRandom(loaded, null);
+        setHistory([first]);
+        setHistoryIdx(0);
+      }
       setFlipped(false);
       setSelectedMastery(null);
     } catch (e) {
@@ -163,11 +183,35 @@ function FlashcardReviewModal({ setId, setName, onClose }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
-  const card = cards[cardIndex] || null;
+  const card = history[historyIdx] || null;
   const currentMastery = card ? (selectedMastery !== null ? selectedMastery : card.mastery) : null;
 
-  function goTo(idx) {
-    setCardIndex(idx);
+  function goBack() {
+    if (historyIdx <= 0) return;
+    setHistoryIdx(historyIdx - 1);
+    setFlipped(false);
+    // Restore the mastery for the card we're going back to
+    const prevCard = history[historyIdx - 1];
+    const fresh = allCards.find(c => c.id === prevCard.id);
+    setSelectedMastery(fresh && fresh.mastery !== prevCard.mastery ? null : null);
+    setSelectedMastery(null);
+  }
+
+  function goNext() {
+    // If we're not at the end of history, move forward
+    if (historyIdx < history.length - 1) {
+      setHistoryIdx(historyIdx + 1);
+      setFlipped(false);
+      setSelectedMastery(null);
+      return;
+    }
+    // Otherwise pick a new weighted-random card
+    const next = pickWeightedRandom(allCards, card?.id);
+    if (!next) return;
+    // Use fresh data from allCards
+    const freshNext = allCards.find(c => c.id === next.id) || next;
+    setHistory(prev => [...prev.slice(0, historyIdx + 1), freshNext]);
+    setHistoryIdx(historyIdx + 1);
     setFlipped(false);
     setSelectedMastery(null);
   }
@@ -186,8 +230,9 @@ function FlashcardReviewModal({ setId, setName, onClose }) {
         const json = await res.json();
         throw new Error(json?.error || 'Failed to save rating');
       }
-      // Update local card data
-      setCards(prev => prev.map((c, i) => i === cardIndex ? { ...c, mastery: level } : c));
+      // Update mastery in allCards pool and in history
+      setAllCards(prev => prev.map(c => c.id === card.id ? { ...c, mastery: level } : c));
+      setHistory(prev => prev.map(c => c.id === card.id ? { ...c, mastery: level } : c));
       setReviewed(r => r + 1);
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
@@ -211,7 +256,7 @@ function FlashcardReviewModal({ setId, setName, onClose }) {
 
         {loading ? (
           <div className="muted">Loading…</div>
-        ) : !cards.length ? (
+        ) : !allCards.length ? (
           <div className="muted">No cards in this set yet. Add some cards first!</div>
         ) : (
           <div className="flashcardContainer">
@@ -239,17 +284,16 @@ function FlashcardReviewModal({ setId, setName, onClose }) {
             <div className="fcNavRow">
               <button
                 className="fcNavBtn"
-                onClick={() => goTo(cardIndex - 1)}
-                disabled={cardIndex === 0}
+                onClick={goBack}
+                disabled={historyIdx <= 0}
                 title="Previous card"
               >
                 &#8592;
               </button>
-              <span className="fcNavCounter">{cardIndex + 1} / {cards.length}</span>
+              <span className="fcNavCounter">{reviewed} reviewed</span>
               <button
                 className="fcNavBtn"
-                onClick={() => goTo(cardIndex + 1)}
-                disabled={cardIndex >= cards.length - 1}
+                onClick={goNext}
                 title="Next card"
               >
                 &#8594;
