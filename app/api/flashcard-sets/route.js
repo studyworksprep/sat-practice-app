@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
+import { getSATVocabularyCards } from '../../../lib/satVocabulary';
 
 const DEFAULT_SETS = ['My Math', 'My Reading', 'Common SAT Words'];
 const SAT_WORDS_SUBSET_COUNT = 10;
@@ -50,6 +51,45 @@ async function ensureDefaults(supabase, userId) {
       }
       if (toCreate.length) {
         await supabase.from('flashcard_sets').insert(toCreate);
+      }
+    }
+
+    // Auto-populate vocabulary cards into sub-sets if they're empty
+    // Re-fetch children to include any just-created sets
+    const { data: allChildren } = await supabase
+      .from('flashcard_sets')
+      .select('id, name')
+      .eq('parent_set_id', satWordsParent.id)
+      .order('name', { ascending: true });
+
+    if (allChildren && allChildren.length > 0) {
+      const childIds = allChildren.map(c => c.id);
+      const { count: existingCards } = await supabase
+        .from('flashcards')
+        .select('id', { count: 'exact', head: true })
+        .in('set_id', childIds);
+
+      if (!existingCards || existingCards === 0) {
+        // Seed vocabulary cards
+        const cards = getSATVocabularyCards();
+        const perSet = Math.ceil(cards.length / allChildren.length);
+
+        for (let i = 0; i < allChildren.length; i++) {
+          const subset = allChildren[i];
+          const batch = cards.slice(i * perSet, Math.min((i + 1) * perSet, cards.length));
+          if (batch.length === 0) continue;
+
+          const rows = batch.map(c => ({
+            set_id: subset.id,
+            front: c.front,
+            back: c.back,
+          }));
+
+          // Insert in batches of 100
+          for (let j = 0; j < rows.length; j += 100) {
+            await supabase.from('flashcards').insert(rows.slice(j, j + 100));
+          }
+        }
       }
     }
   }
