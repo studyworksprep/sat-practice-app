@@ -141,10 +141,12 @@ function pickWeightedRandom(cards, excludeId) {
   return pool[pool.length - 1];
 }
 
-function FlashcardReviewModal({ setId, setName, onClose }) {
-  const [allCards, setAllCards] = useState([]);      // full card pool
-  const [history, setHistory] = useState([]);        // cards the user has visited (stack)
-  const [historyIdx, setHistoryIdx] = useState(-1);  // current position in history
+// mode: 'flashcard' (user cards) or 'sat' (SAT vocabulary)
+// For 'sat' mode, setId is the set_number (1-10)
+function FlashcardReviewModal({ setId, setName, mode, onClose }) {
+  const [allCards, setAllCards] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [historyIdx, setHistoryIdx] = useState(-1);
   const [flipped, setFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState(null);
@@ -152,14 +154,18 @@ function FlashcardReviewModal({ setId, setName, onClose }) {
   const [savingMastery, setSavingMastery] = useState(false);
   const [selectedMastery, setSelectedMastery] = useState(null);
 
+  const isSAT = mode === 'sat';
+
   const loadCards = useCallback(async () => {
     try {
-      const res = await fetch(`/api/flashcards?set_id=${setId}`);
+      const url = isSAT
+        ? `/api/sat-vocabulary?set_number=${setId}`
+        : `/api/flashcards?set_id=${setId}`;
+      const res = await fetch(url);
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load cards');
       const loaded = json.cards || [];
       setAllCards(loaded);
-      // Pick first card weighted-random
       if (loaded.length) {
         const first = pickWeightedRandom(loaded, null);
         setHistory([first]);
@@ -172,7 +178,7 @@ function FlashcardReviewModal({ setId, setName, onClose }) {
     } finally {
       setLoading(false);
     }
-  }, [setId]);
+  }, [setId, isSAT]);
 
   useEffect(() => { loadCards(); }, [loadCards]);
 
@@ -190,25 +196,18 @@ function FlashcardReviewModal({ setId, setName, onClose }) {
     if (historyIdx <= 0) return;
     setHistoryIdx(historyIdx - 1);
     setFlipped(false);
-    // Restore the mastery for the card we're going back to
-    const prevCard = history[historyIdx - 1];
-    const fresh = allCards.find(c => c.id === prevCard.id);
-    setSelectedMastery(fresh && fresh.mastery !== prevCard.mastery ? null : null);
     setSelectedMastery(null);
   }
 
   function goNext() {
-    // If we're not at the end of history, move forward
     if (historyIdx < history.length - 1) {
       setHistoryIdx(historyIdx + 1);
       setFlipped(false);
       setSelectedMastery(null);
       return;
     }
-    // Otherwise pick a new weighted-random card
     const next = pickWeightedRandom(allCards, card?.id);
     if (!next) return;
-    // Use fresh data from allCards
     const freshNext = allCards.find(c => c.id === next.id) || next;
     setHistory(prev => [...prev.slice(0, historyIdx + 1), freshNext]);
     setHistoryIdx(historyIdx + 1);
@@ -221,16 +220,21 @@ function FlashcardReviewModal({ setId, setName, onClose }) {
     setSelectedMastery(level);
     setSavingMastery(true);
     try {
-      const res = await fetch('/api/flashcards', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ card_id: card.id, mastery: level }),
-      });
+      const res = isSAT
+        ? await fetch('/api/sat-vocabulary', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ vocabulary_id: card.id, mastery: level }),
+          })
+        : await fetch('/api/flashcards', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ card_id: card.id, mastery: level }),
+          });
       if (!res.ok) {
         const json = await res.json();
         throw new Error(json?.error || 'Failed to save rating');
       }
-      // Update mastery in allCards pool and in history
       setAllCards(prev => prev.map(c => c.id === card.id ? { ...c, mastery: level } : c));
       setHistory(prev => prev.map(c => c.id === card.id ? { ...c, mastery: level } : c));
       setReviewed(r => r + 1);
@@ -257,7 +261,7 @@ function FlashcardReviewModal({ setId, setName, onClose }) {
         {loading ? (
           <div className="muted">Loading…</div>
         ) : !allCards.length ? (
-          <div className="muted">No cards in this set yet. Add some cards first!</div>
+          <div className="muted">No cards in this set yet.</div>
         ) : (
           <div className="flashcardContainer">
             <div
@@ -339,19 +343,25 @@ export default function ReviewPage() {
   const [errorLogLoading, setErrorLogLoading] = useState(false);
   const [tab, setTab] = useState('marked');
 
-  // Flashcard state
+  // Flashcard state (user-created sets)
   const [flashSets, setFlashSets] = useState([]);
   const [flashLoading, setFlashLoading] = useState(false);
   const [showNewSet, setShowNewSet] = useState(false);
   const [newSetName, setNewSetName] = useState('');
-  const [showAddCard, setShowAddCard] = useState(null); // set id or null
+  const [showAddCard, setShowAddCard] = useState(null);
   const [addCardFront, setAddCardFront] = useState('');
   const [addCardBack, setAddCardBack] = useState('');
   const [addCardSaving, setAddCardSaving] = useState(false);
-  const [expandedParents, setExpandedParents] = useState({}); // { parentId: true/false }
+
+  // SAT vocabulary state
+  const [satSets, setSatSets] = useState([]);
+  const [satTotalCards, setSatTotalCards] = useState(0);
+  const [satTotalMastery, setSatTotalMastery] = useState(null);
+  const [satLoading, setSatLoading] = useState(false);
+  const [satExpanded, setSatExpanded] = useState(false);
 
   // Review modal state
-  const [reviewModal, setReviewModal] = useState(null); // { setId, setName } or null
+  const [reviewModal, setReviewModal] = useState(null); // { setId, setName, mode }
 
   async function loadMarked() {
     setLoading(true);
@@ -410,6 +420,22 @@ export default function ReviewPage() {
     }
   }
 
+  async function loadSATSets() {
+    setSatLoading(true);
+    try {
+      const res = await fetch('/api/sat-vocabulary');
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to load SAT vocabulary');
+      setSatSets(json.sets || []);
+      setSatTotalCards(json.totalCards || 0);
+      setSatTotalMastery(json.totalAvgMastery);
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setSatLoading(false);
+    }
+  }
+
   async function createSet() {
     if (!newSetName.trim()) return;
     try {
@@ -450,19 +476,24 @@ export default function ReviewPage() {
     }
   }
 
-  useEffect(() => { loadMarked(); loadSmart(); loadErrorLog(); loadFlashSets(); }, []);
+  useEffect(() => { loadMarked(); loadSmart(); loadErrorLog(); loadFlashSets(); loadSATSets(); }, []);
 
-  // Count cards only from sets without a parent (to avoid double-counting sub-set cards)
-  const parentIds = new Set(flashSets.filter(s => !s.parent_set_id).map(s => s.id));
-  const totalCards = flashSets.reduce((sum, s) => {
-    if (!s.parent_set_id) {
-      // For parent sets with children, use total_card_count if available
-      const children = flashSets.filter(c => c.parent_set_id === s.id);
-      if (children.length > 0) return sum + (s.total_card_count || 0);
-      return sum + (s.card_count || 0);
-    }
-    return sum;
-  }, 0);
+  // Total cards for the tab badge: user flashcards + SAT vocabulary
+  const userCardCount = flashSets.reduce((sum, s) => sum + (s.card_count || 0), 0);
+  const totalCards = userCardCount + satTotalCards;
+
+  function renderMasteryBar(avgMastery, small) {
+    if (avgMastery === null || avgMastery === undefined) return null;
+    const color = avgMastery >= 70 ? 'var(--success)' : avgMastery >= 40 ? 'var(--amber)' : 'var(--danger)';
+    return (
+      <div className={`fcMasteryBar${small ? ' fcMasteryBarSmall' : ''}`}>
+        <div className="fcMasteryTrack">
+          <div className="fcMasteryFill" style={{ width: `${avgMastery}%`, background: color }} />
+        </div>
+        <span className="fcMasteryPct" style={{ color }}>{avgMastery}%</span>
+      </div>
+    );
+  }
 
   return (
     <main className="container">
@@ -494,7 +525,7 @@ export default function ReviewPage() {
         )}
         {tab === 'flashcards' && (
           <p className="muted small" style={{ marginTop: 0, marginBottom: 10 }}>
-            Your flashcard sets. Start a review session or add new cards.
+            Your flashcard sets and SAT vocabulary.
           </p>
         )}
 
@@ -614,64 +645,80 @@ export default function ReviewPage() {
 
         {/* Flashcards tab */}
         {tab === 'flashcards' && (() => {
-          if (flashLoading) return <div className="muted">Loading…</div>;
+          if (flashLoading && satLoading) return <div className="muted">Loading…</div>;
 
-          // Separate parent sets (no parent_set_id) from child sets
-          const parentSets = flashSets.filter(s => !s.parent_set_id);
-          const childMap = {}; // parentId → [children]
-          for (const s of flashSets) {
-            if (s.parent_set_id) {
-              if (!childMap[s.parent_set_id]) childMap[s.parent_set_id] = [];
-              childMap[s.parent_set_id].push(s);
-            }
-          }
-
-          function toggleParent(parentId) {
-            setExpandedParents(prev => ({ ...prev, [parentId]: !prev[parentId] }));
-          }
-
-          function renderMasteryBar(avgMastery, small) {
-            if (avgMastery === null || avgMastery === undefined) return null;
-            const color = avgMastery >= 70 ? 'var(--success)' : avgMastery >= 40 ? 'var(--amber)' : 'var(--danger)';
-            return (
-              <div className={`fcMasteryBar${small ? ' fcMasteryBarSmall' : ''}`}>
-                <div className="fcMasteryTrack">
-                  <div className="fcMasteryFill" style={{ width: `${avgMastery}%`, background: color }} />
-                </div>
-                <span className="fcMasteryPct" style={{ color }}>{avgMastery}%</span>
-              </div>
-            );
-          }
-
-          function renderSetRow(s, isChild) {
-            const hasChildren = childMap[s.id] && childMap[s.id].length > 0;
-            const isExpanded = expandedParents[s.id];
-            const displayCount = hasChildren ? (s.total_card_count || 0) : s.card_count;
-            const displayMastery = hasChildren ? s.total_avg_mastery : s.avg_mastery;
-
-            return (
-              <div key={s.id} className={`flashcardSetRow${isChild ? ' fcSubsetRow' : ''}`}>
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {hasChildren && (
-                    <button
-                      className={`fcChevron${isExpanded ? ' fcChevronOpen' : ''}`}
-                      onClick={() => toggleParent(s.id)}
-                      aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                    >
-                      &#9654;
-                    </button>
-                  )}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 650, fontSize: isChild ? 14 : 15 }}>{s.name}</div>
-                    <div className="muted small">
-                      {displayCount} card{displayCount !== 1 ? 's' : ''}
+          return (
+            <div style={{ display: 'grid', gap: 12 }}>
+              {/* SAT Vocabulary section */}
+              {satTotalCards > 0 && (
+                <div>
+                  <div className="flashcardSetRow">
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <button
+                        className={`fcChevron${satExpanded ? ' fcChevronOpen' : ''}`}
+                        onClick={() => setSatExpanded(!satExpanded)}
+                        aria-label={satExpanded ? 'Collapse' : 'Expand'}
+                      >
+                        &#9654;
+                      </button>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 650, fontSize: 15 }}>Common SAT Words</div>
+                        <div className="muted small">
+                          {satTotalCards} card{satTotalCards !== 1 ? 's' : ''}
+                        </div>
+                        {renderMasteryBar(satTotalMastery, false)}
+                      </div>
                     </div>
-                    {renderMasteryBar(displayMastery, isChild)}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <button
+                        className="btn secondary"
+                        style={{ fontSize: 12, padding: '4px 12px' }}
+                        onClick={() => setSatExpanded(!satExpanded)}
+                      >
+                        {satExpanded ? 'Collapse' : 'Expand'}
+                      </button>
+                    </div>
                   </div>
+                  {satExpanded && (
+                    <div className="fcSubsetList">
+                      {satSets.map((s) => (
+                        <div key={s.set_number} className="flashcardSetRow fcSubsetRow">
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 650, fontSize: 14 }}>{s.name}</div>
+                            <div className="muted small">
+                              {s.card_count} card{s.card_count !== 1 ? 's' : ''}
+                            </div>
+                            {renderMasteryBar(s.avg_mastery, true)}
+                          </div>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <button
+                              className="btn primary"
+                              style={{ fontSize: 12, padding: '4px 12px', opacity: s.card_count === 0 ? 0.5 : 1 }}
+                              disabled={s.card_count === 0}
+                              onClick={() => setReviewModal({ setId: s.set_number, setName: s.name, mode: 'sat' })}
+                            >
+                              Review
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  {!hasChildren && (
-                    <>
+              )}
+
+              {/* User-created flashcard sets */}
+              {flashSets.filter(s => !s.parent_set_id).map((s) => (
+                <div key={s.id}>
+                  <div className="flashcardSetRow">
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 650, fontSize: 15 }}>{s.name}</div>
+                      <div className="muted small">
+                        {s.card_count} card{s.card_count !== 1 ? 's' : ''}
+                      </div>
+                      {renderMasteryBar(s.avg_mastery, false)}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <button
                         className="btn secondary"
                         style={{ fontSize: 12, padding: '4px 12px' }}
@@ -687,67 +734,39 @@ export default function ReviewPage() {
                         className="btn primary"
                         style={{ fontSize: 12, padding: '4px 12px', opacity: s.card_count === 0 ? 0.5 : 1 }}
                         disabled={s.card_count === 0}
-                        onClick={() => setReviewModal({ setId: s.id, setName: s.name })}
+                        onClick={() => setReviewModal({ setId: s.id, setName: s.name, mode: 'flashcard' })}
                       >
                         Review
                       </button>
-                    </>
-                  )}
-                  {hasChildren && (
-                    <button
-                      className="btn secondary"
-                      style={{ fontSize: 12, padding: '4px 12px' }}
-                      onClick={() => toggleParent(s.id)}
-                    >
-                      {isExpanded ? 'Collapse' : 'Expand'}
-                    </button>
-                  )}
-                </div>
-
-                {showAddCard === s.id && (
-                  <div style={{ gridColumn: '1 / -1', marginTop: 8, display: 'grid', gap: 8, width: '100%' }}>
-                    <FormattedTextarea
-                      value={addCardFront}
-                      onChange={setAddCardFront}
-                      placeholder="Front (term or question) — use **bold**, *italic*, or - for bullets"
-                      rows={3}
-                    />
-                    <FormattedTextarea
-                      value={addCardBack}
-                      onChange={setAddCardBack}
-                      placeholder="Back (definition or answer)"
-                      rows={4}
-                    />
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="btn primary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={addCard} disabled={addCardSaving || !addCardFront.trim() || !addCardBack.trim()}>
-                        {addCardSaving ? 'Saving…' : 'Save Card'}
-                      </button>
-                      <button className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={() => setShowAddCard(null)}>
-                        Cancel
-                      </button>
                     </div>
-                  </div>
-                )}
-              </div>
-            );
-          }
 
-          return (
-            <div style={{ display: 'grid', gap: 12 }}>
-              {parentSets.map((s) => {
-                const children = childMap[s.id] || [];
-                const isExpanded = expandedParents[s.id];
-                return (
-                  <div key={s.id}>
-                    {renderSetRow(s, false)}
-                    {isExpanded && children.length > 0 && (
-                      <div className="fcSubsetList">
-                        {children.map(child => renderSetRow(child, true))}
+                    {showAddCard === s.id && (
+                      <div style={{ gridColumn: '1 / -1', marginTop: 8, display: 'grid', gap: 8, width: '100%' }}>
+                        <FormattedTextarea
+                          value={addCardFront}
+                          onChange={setAddCardFront}
+                          placeholder="Front (term or question) — use **bold**, *italic*, or - for bullets"
+                          rows={3}
+                        />
+                        <FormattedTextarea
+                          value={addCardBack}
+                          onChange={setAddCardBack}
+                          placeholder="Back (definition or answer)"
+                          rows={4}
+                        />
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button className="btn primary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={addCard} disabled={addCardSaving || !addCardFront.trim() || !addCardBack.trim()}>
+                            {addCardSaving ? 'Saving…' : 'Save Card'}
+                          </button>
+                          <button className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }} onClick={() => setShowAddCard(null)}>
+                            Cancel
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
-                );
-              })}
+                </div>
+              ))}
 
               {/* New set creation */}
               {showNewSet ? (
@@ -786,7 +805,8 @@ export default function ReviewPage() {
         <FlashcardReviewModal
           setId={reviewModal.setId}
           setName={reviewModal.setName}
-          onClose={() => { setReviewModal(null); loadFlashSets(); }}
+          mode={reviewModal.mode}
+          onClose={() => { setReviewModal(null); loadFlashSets(); loadSATSets(); }}
         />
       )}
     </main>
