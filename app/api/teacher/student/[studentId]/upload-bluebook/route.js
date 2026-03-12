@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
 import { createServiceClient } from '../../../../../../lib/supabase/server';
-import { computeScaledScore } from '../../../../../../lib/scoreConversion';
+import { computeScaledScore, isHardRoute } from '../../../../../../lib/scoreConversion';
 
 // POST /api/teacher/student/[studentId]/upload-bluebook
 // Body: {
@@ -119,13 +119,9 @@ export async function POST(request, { params }) {
       const m1Correct = subjectCode === 'RW' ? rwM1Correct : mathM1Correct;
       const isHard = m1Correct >= threshold;
 
-      // Try to find hard/easy route based on common naming conventions
-      const hardCandidate = candidates.find(c =>
-        /hard|h|2/i.test(String(c.route_code))
-      );
-      const easyCandidate = candidates.find(c =>
-        /easy|e|1/i.test(String(c.route_code))
-      );
+      // Match hard/easy route based on route_code values (exact match: "hard"/"h"/"2" vs "easy"/"e"/"1")
+      const hardCandidate = candidates.find(c => isHardRoute(c.route_code));
+      const easyCandidate = candidates.find(c => !isHardRoute(c.route_code));
       return (isHard ? hardCandidate : easyCandidate) || candidates[0];
     }
     return candidates[0];

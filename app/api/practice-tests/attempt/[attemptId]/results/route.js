@@ -23,7 +23,7 @@ export async function GET(_request, { params }) {
   // Teachers/admins can view any attempt (RLS will filter); students only their own
   const query = supabase
     .from('practice_test_attempts')
-    .select('id, practice_test_id, user_id, status, metadata, started_at, finished_at, composite_score')
+    .select('id, practice_test_id, user_id, status, metadata, started_at, finished_at, composite_score, rw_scaled, math_scaled')
     .eq('id', attemptId);
 
   if (!isTeacherOrAdmin) {
@@ -288,19 +288,33 @@ export async function GET(_request, { params }) {
   }
 
   // Build section scores using per-module data + lookup table
+  // If the attempt already has cached scaled scores (e.g. from a Bluebook upload
+  // where the teacher entered the official scores), prefer those over recomputing.
+  const hasCachedScores = attempt.composite_score != null && (attempt.rw_scaled != null || attempt.math_scaled != null);
+
   const sections = {};
   for (const [subj, stats] of Object.entries(sectionStats)) {
     const m1 = moduleStats[`${subj}/1`] || { correct: 0, total: 0 };
     const m2 = moduleStats[`${subj}/2`] || { correct: 0, total: 0 };
     const sectionName = subjToSection[subj] || 'math';
 
-    const scaled = computeScaledScore({
-      section: sectionName,
-      m1Correct: m1.correct,
-      m2Correct: m2.correct,
-      routeCode: m2.routeCode || null,
-      lookupRows: lookupBySection[sectionName] || [],
-    });
+    let scaled;
+    if (hasCachedScores) {
+      // Use the cached score for this section (from upload or prior computation)
+      const isRW = sectionName === 'reading_writing';
+      scaled = isRW ? attempt.rw_scaled : attempt.math_scaled;
+    }
+
+    // Fall back to computation if no cached score for this section
+    if (scaled == null) {
+      scaled = computeScaledScore({
+        section: sectionName,
+        m1Correct: m1.correct,
+        m2Correct: m2.correct,
+        routeCode: m2.routeCode || null,
+        lookupRows: lookupBySection[sectionName] || [],
+      });
+    }
 
     sections[subj] = {
       ...stats,
@@ -313,12 +327,14 @@ export async function GET(_request, { params }) {
     };
   }
 
-  const composite = Object.values(sections).reduce((s, sec) => s + sec.scaled, 0);
+  const composite = hasCachedScores
+    ? attempt.composite_score
+    : Object.values(sections).reduce((s, sec) => s + sec.scaled, 0);
 
   // Cache computed scores on the attempt row for faster dashboard queries
-  const rwScaled = sections['RW']?.scaled || sections['rw']?.scaled || null;
-  const mathScaled = sections['M']?.scaled || sections['m']?.scaled || sections['MATH']?.scaled || sections['math']?.scaled || sections['Math']?.scaled || null;
   if (attempt.composite_score == null && composite > 0) {
+    const rwScaled = sections['RW']?.scaled || sections['rw']?.scaled || null;
+    const mathScaled = sections['M']?.scaled || sections['m']?.scaled || sections['MATH']?.scaled || sections['math']?.scaled || sections['Math']?.scaled || null;
     await supabase
       .from('practice_test_attempts')
       .update({ composite_score: composite, rw_scaled: rwScaled, math_scaled: mathScaled })
