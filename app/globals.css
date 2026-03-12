@@ -1988,8 +1988,18 @@ hr{
 }
 
 .mathShell .prose img{
-  max-width: 100%;
+  display: block;
+  max-width: min(360px, 100%);
   height: auto;
+  margin: 8px auto;
+}
+
+/* Stimulus images in practice test math questions */
+.ptStimulus img{
+  display: block;
+  max-width: min(360px, 100%);
+  height: auto;
+  margin: 8px auto;
 }
 
 /* Tighter display math spacing inside math questions */
