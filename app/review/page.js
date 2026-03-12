@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Toast from '../../components/Toast';
+import { getSATVocabularyCards, SAT_WORD_COUNT } from '../../lib/satVocabulary';
 
 function pctColor(p) {
   if (p === null || p === undefined) return undefined;
@@ -352,6 +353,7 @@ export default function ReviewPage() {
 
   // Review modal state
   const [reviewModal, setReviewModal] = useState(null); // { setId, setName } or null
+  const [loadingWords, setLoadingWords] = useState(false);
 
   async function loadMarked() {
     setLoading(true);
@@ -447,6 +449,50 @@ export default function ReviewPage() {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
       setAddCardSaving(false);
+    }
+  }
+
+  async function loadSATWords() {
+    setLoadingWords(true);
+    try {
+      // Find the "Common SAT Words" parent set and its children
+      const parentSet = flashSets.find(s => s.name === 'Common SAT Words' && !s.parent_set_id);
+      if (!parentSet) throw new Error('Common SAT Words set not found. Please reload the page.');
+      const children = flashSets.filter(s => s.parent_set_id === parentSet.id).sort((a, b) => a.name.localeCompare(b.name));
+      if (children.length === 0) throw new Error('No sub-sets found. Please reload the page.');
+
+      // Check if already loaded
+      const totalExisting = children.reduce((sum, c) => sum + (c.card_count || 0), 0);
+      if (totalExisting > 0) {
+        setMsg({ kind: 'danger', text: `Sub-sets already contain ${totalExisting} cards. Remove existing cards first to reload.` });
+        return;
+      }
+
+      const cards = getSATVocabularyCards();
+      const perSet = Math.ceil(cards.length / children.length);
+      let totalInserted = 0;
+
+      for (let i = 0; i < children.length; i++) {
+        const subset = children[i];
+        const batch = cards.slice(i * perSet, Math.min((i + 1) * perSet, cards.length));
+        if (batch.length === 0) continue;
+
+        const res = await fetch('/api/flashcards/bulk-import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ set_id: subset.id, cards: batch }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || `Failed to import into ${subset.name}`);
+        totalInserted += json.inserted;
+      }
+
+      setMsg({ kind: 'ok', text: `Loaded ${totalInserted} SAT vocabulary words across ${children.length} sub-sets!` });
+      loadFlashSets();
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setLoadingWords(false);
     }
   }
 
@@ -694,13 +740,25 @@ export default function ReviewPage() {
                     </>
                   )}
                   {hasChildren && (
-                    <button
-                      className="btn secondary"
-                      style={{ fontSize: 12, padding: '4px 12px' }}
-                      onClick={() => toggleParent(s.id)}
-                    >
-                      {isExpanded ? 'Collapse' : 'Expand'}
-                    </button>
+                    <>
+                      {s.name === 'Common SAT Words' && displayCount === 0 && (
+                        <button
+                          className="btn primary"
+                          style={{ fontSize: 12, padding: '4px 12px' }}
+                          disabled={loadingWords}
+                          onClick={loadSATWords}
+                        >
+                          {loadingWords ? 'Loading…' : `Load ${SAT_WORD_COUNT} Words`}
+                        </button>
+                      )}
+                      <button
+                        className="btn secondary"
+                        style={{ fontSize: 12, padding: '4px 12px' }}
+                        onClick={() => toggleParent(s.id)}
+                      >
+                        {isExpanded ? 'Collapse' : 'Expand'}
+                      </button>
+                    </>
                   )}
                 </div>
 
