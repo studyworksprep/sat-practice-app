@@ -11,6 +11,7 @@ import { useKeyboardShortcuts } from '../../../lib/useKeyboardShortcuts';
 
 const htmlHasContent = (html) => {
   if (!html) return false;
+  if (/<img\s/i.test(html)) return true;
   const text = html.replace(/<[^>]+>/g, '').trim();
   return text.length > 0 && text !== 'NULL';
 };

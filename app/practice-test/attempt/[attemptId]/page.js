@@ -9,6 +9,7 @@ const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 
 
 const htmlHasContent = (html) => {
   if (!html) return false;
+  if (/<img\s/i.test(html)) return true;
   const text = html.replace(/<[^>]+>/g, '').trim();
   return text.length > 0 && text !== 'NULL';
 };
