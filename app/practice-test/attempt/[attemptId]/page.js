@@ -825,6 +825,11 @@ export default function TestSessionPage() {
             /* Math shell: Desmos left, stem + answers right */
             <>
               {qNumRow}
+              {htmlHasContent(q.stimulus_html) && (
+                <div className="ptStimulus">
+                  <HtmlBlock className="prose" html={q.stimulus_html} />
+                </div>
+              )}
               {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
               {answerArea}
             </>
