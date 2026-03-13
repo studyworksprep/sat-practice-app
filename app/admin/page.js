@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '../../lib/supabase/browser';
 
 const ROLE_ORDER = ['admin', 'teacher', 'student', 'practice'];
@@ -57,6 +58,9 @@ export default function AdminPage() {
   // Delete confirmation state
   const [deleteConfirm, setDeleteConfirm] = useState(null); // user id pending confirmation
 
+  // Bug reports
+  const [recentBugs, setRecentBugs] = useState([]);
+
   useEffect(() => {
     supabase
       .from('practice_tests')
@@ -71,6 +75,7 @@ export default function AdminPage() {
     fetchAssignments();
     fetchTeacherCodes();
     fetchInviteCodes();
+    fetchRecentBugs();
   }, []);
 
   async function fetchUsers() {
@@ -277,6 +282,14 @@ export default function AdminPage() {
     }
   }
 
+  async function fetchRecentBugs() {
+    try {
+      const res = await fetch('/api/admin/bug-reports?limit=4');
+      const json = await res.json();
+      if (res.ok) setRecentBugs(json.reports || []);
+    } catch {}
+  }
+
   async function handleSaveScores() {
     if (!selectedTestId) return showToast('danger', 'Select a test first.');
 
@@ -379,6 +392,37 @@ export default function AdminPage() {
           </div>
         ))}
       </div>
+
+      {/* ── Recent Bug Reports ───────────────────────────────── */}
+      <section style={{ marginTop: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <h2 className="h2" style={{ margin: 0 }}>Recent Bug Reports</h2>
+          <Link href="/bugs" className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }}>
+            View All
+          </Link>
+        </div>
+        {recentBugs.length === 0 ? (
+          <p className="muted small">No bug reports yet.</p>
+        ) : (
+          <div className="adminBugGrid">
+            {recentBugs.map((bug) => (
+              <div key={bug.id} className="card adminBugCard">
+                <div className="adminBugCardHeader">
+                  <span className="adminBugTitle">{bug.title || 'Bug Report'}</span>
+                  <span className={`adminBugStatus adminBugStatus--${bug.status}`}>
+                    {bug.status === 'in_progress' ? 'In Progress' : bug.status?.charAt(0).toUpperCase() + bug.status?.slice(1)}
+                  </span>
+                </div>
+                <p className="adminBugDesc">{bug.description}</p>
+                <div className="adminBugMeta">
+                  <span>{formatDate(bug.created_at)}</span>
+                  {bug.created_by && <span>by {bug.created_by}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* ── User management ────────────────────────────────────── */}
       <section style={{ marginTop: 32 }}>
