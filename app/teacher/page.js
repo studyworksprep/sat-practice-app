@@ -198,6 +198,7 @@ function DomainTable({ domainStats, topicStats }) {
       <span className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[2] }}>M</span>
       <span className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[3] }}>H</span>
       <span className="tchTblCell tchTblOverall">Accuracy</span>
+      <span className="tchTblCell tchTblOverall">Mastery</span>
     </div>
   );
 
@@ -232,6 +233,7 @@ function DomainTable({ domainStats, topicStats }) {
                       <OverallDoneCell attempted={domain.attempted} totalAvailable={domain.totalAvailable} />
                       <DiffCells byDifficulty={domain.byDifficulty} availByDifficulty={domain.availByDifficulty} type="acc" />
                       <OverallAccCell correct={domain.correct} attempted={domain.attempted} />
+                      <span className="tchTblCell tchTblOverall"><MasteryBar value={domain.mastery} size="small" /></span>
                     </div>
                     {isOpen && hasTopics && (
                       <div className="tchTopicList">
@@ -244,6 +246,7 @@ function DomainTable({ domainStats, topicStats }) {
                             <OverallDoneCell attempted={topic.attempted} totalAvailable={topic.totalAvailable} />
                             <DiffCells byDifficulty={topic.byDifficulty} availByDifficulty={topic.availByDifficulty} type="acc" />
                             <OverallAccCell correct={topic.correct} attempted={topic.attempted} />
+                            <span className="tchTblCell tchTblOverall"><MasteryBar value={topic.mastery} size="small" /></span>
                           </div>
                         ))}
                       </div>
@@ -259,48 +262,229 @@ function DomainTable({ domainStats, topicStats }) {
   );
 }
 
-// ─── Welcome / info panel ────────────────────────────────
-function WelcomePanel({ role }) {
+// ─── Mastery bar helper ──────────────────────────────────
+function MasteryBar({ value, size = 'normal' }) {
+  if (value === null || value === undefined) return <span className="muted small">—</span>;
+  const color = value >= 70 ? 'var(--success)' : value >= 40 ? 'var(--amber)' : 'var(--danger)';
+  const cls = size === 'small' ? 'tchMasteryBarWrap small' : 'tchMasteryBarWrap';
   return (
-    <div className="tchWelcome">
-      <div className="card tchWelcomeCard">
-        <h2 className="h1" style={{ marginBottom: 8 }}>
-          {role === 'admin' ? 'Admin Dashboard' : 'Teacher Dashboard'}
-        </h2>
-        <p className="muted" style={{ marginBottom: 20 }}>
-          Select a student from the panel on the left to view their progress, or use the Assignments tab to create and track question assignments.
-        </p>
-        <div className="tchFeatureGrid">
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128202;</div>
-            <div>
-              <strong>Practice Test Results</strong>
-              <p className="muted small">View bar charts of test scores over time. Click any test to see the full question-by-question breakdown.</p>
+    <div className={cls}>
+      <span className="tchMasteryValue" style={{ color, fontWeight: 600, minWidth: size === 'small' ? 28 : 32 }}>{value}%</span>
+      <div className="tchMasteryTrack">
+        <div className="tchMasteryFill" style={{ width: `${value}%`, background: color }} />
+      </div>
+    </div>
+  );
+}
+
+function masteryLabel(value) {
+  if (value === null || value === undefined) return '—';
+  if (value >= 80) return 'Strong';
+  if (value >= 60) return 'Developing';
+  if (value >= 40) return 'Emerging';
+  return 'Needs Work';
+}
+
+// ─── Roster mastery table ────────────────────────────────
+function RosterMasteryTable({ domains, topics }) {
+  const [open, setOpen] = useState({});
+  const toggle = (name) => setOpen(prev => ({ ...prev, [name]: !prev[name] }));
+
+  const topicsByDomain = {};
+  for (const t of topics || []) {
+    if (!topicsByDomain[t.domain_name]) topicsByDomain[t.domain_name] = [];
+    topicsByDomain[t.domain_name].push(t);
+  }
+
+  const english = { label: 'Reading & Writing', domains: [] };
+  const math = { label: 'Math', domains: [] };
+  for (const d of domains || []) {
+    const section = d.isEnglish ? english : math;
+    section.domains.push({ ...d, topics: topicsByDomain[d.domain_name] || [] });
+  }
+
+  return (
+    <div>
+      {[english, math].map(section => {
+        if (!section.domains.length) return null;
+        return (
+          <div key={section.label} className="tchDomainSection">
+            <div className="tchDomainSectionHeader">
+              <span className="h2" style={{ margin: 0 }}>{section.label}</span>
+            </div>
+            <div className="tchMasteryHeader">
+              <span className="tchMasteryNameCol">Domain / Topic</span>
+              <span className="tchMasteryQuesCol">Questions</span>
+              <span className="tchMasteryLevelCol">Mastery</span>
+            </div>
+            <div className="tchDomainList">
+              {section.domains.map(domain => {
+                const isOpen = open[domain.domain_name];
+                const hasTopics = domain.topics.length > 0;
+                return (
+                  <div key={domain.domain_name} className="tchDomainBlock">
+                    <div
+                      className="tchTblRow tchTblRowDomain"
+                      onClick={() => hasTopics && toggle(domain.domain_name)}
+                      style={{ cursor: hasTopics ? 'pointer' : 'default' }}
+                    >
+                      <div className="tchMasteryNameCol" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span className={`dbChevron${hasTopics ? '' : ' invisible'}${isOpen ? ' open' : ''}`}>
+                          <svg viewBox="0 0 16 16"><polyline points="6 4 10 8 6 12" /></svg>
+                        </span>
+                        <span className="tchDomainName">{domain.domain_name}</span>
+                      </div>
+                      <span className="tchMasteryQuesCol muted small">{domain.attempted} done / {domain.correct} correct</span>
+                      <span className="tchMasteryLevelCol"><MasteryBar value={domain.mastery} /></span>
+                    </div>
+                    {isOpen && hasTopics && (
+                      <div className="tchTopicList">
+                        {domain.topics.map(topic => (
+                          <div key={topic.skill_name} className="tchTblRow tchTblRowTopic">
+                            <span className="tchMasteryNameCol"><span className="tchTopicName">{topic.skill_name}</span></span>
+                            <span className="tchMasteryQuesCol muted small">{topic.attempted} / {topic.correct}</span>
+                            <span className="tchMasteryLevelCol"><MasteryBar value={topic.mastery} size="small" /></span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128200;</div>
-            <div>
-              <strong>Domain & Topic Performance</strong>
-              <p className="muted small">See accuracy and completion percentage across all SAT domains, with drill-down into individual skills.</p>
-            </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Dashboard hub (replaces WelcomePanel) ───────────────
+function TeacherDashboardHub({ role, students, onSelectStudent }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    fetch('/api/teacher/dashboard')
+      .then(r => r.json())
+      .then(d => { if (!d.error) setData(d); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="tchDetailLoading"><p className="muted">Loading dashboard...</p></div>;
+  if (!data) return <div className="tchDetailError"><p style={{ color: 'var(--danger)' }}>Failed to load dashboard.</p></div>;
+
+  return (
+    <div className="tchDashHub">
+      <div className="tchDashHubHeader">
+        <h2 className="h1" style={{ margin: 0 }}>{role === 'admin' ? 'Admin' : 'Teacher'} Dashboard</h2>
+        <span className="muted">{data.studentCount} student{data.studentCount !== 1 ? 's' : ''}</span>
+      </div>
+
+      {/* Tab bar */}
+      <div className="tchDashTabs">
+        {[
+          { key: 'overview', label: 'Overview' },
+          { key: 'activity', label: 'Student Activity' },
+          { key: 'mastery', label: 'Roster Mastery' },
+        ].map(tab => (
+          <button key={tab.key} className={`tchDashTab${activeTab === tab.key ? ' active' : ''}`} onClick={() => setActiveTab(tab.key)}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'overview' && (
+        <div className="tchDashOverview">
+          {/* Recent Practice Sessions */}
+          <div className="card tchSection">
+            <h3 className="h2" style={{ marginBottom: 14 }}>Recent Practice Sessions</h3>
+            {!data.recentSessions?.length ? <p className="muted small">No recent practice sessions.</p> : (
+              <div className="tchHubSessionList">
+                {data.recentSessions.map((s, i) => (
+                  <button key={i} className="tchHubSessionRow" onClick={() => onSelectStudent(s.studentId)}>
+                    <span className="tchHubSessionName">{s.studentName}</span>
+                    <span className="tchHubSessionDate">{formatDateTime(s.startedAt)}</span>
+                    <span className="tchHubSessionCount">{s.questionCount} Qs</span>
+                    <span className="tchHubSessionAcc" style={{ color: pctColor(s.accuracy) }}>{s.accuracy != null ? `${s.accuracy}%` : '—'}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128221;</div>
-            <div>
-              <strong>Assignments</strong>
-              <p className="muted small">Create targeted question assignments by topic and difficulty. Track student completion and performance.</p>
-            </div>
-          </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#127919;</div>
-            <div>
-              <strong>Key Statistics</strong>
-              <p className="muted small">At-a-glance metrics including highest test score, strongest/weakest topics, and recent accuracy.</p>
-            </div>
+
+          {/* Recent Practice Tests */}
+          <div className="card tchSection">
+            <h3 className="h2" style={{ marginBottom: 14 }}>Recent Practice Tests</h3>
+            {!data.recentTests?.length ? <p className="muted small">No completed practice tests yet.</p> : (
+              <div className="tchHubTestList">
+                {data.recentTests.map((ts, i) => {
+                  const rwSection = Object.entries(ts.sections || {}).find(([k]) => ['RW', 'rw'].includes(k));
+                  const mathSection = Object.entries(ts.sections || {}).find(([k]) => ['M', 'm', 'MATH', 'math', 'Math'].includes(k));
+                  const rwScore = rwSection?.[1]?.scaled || 0;
+                  const mathScore = mathSection?.[1]?.scaled || 0;
+                  return (
+                    <button key={i} className="tchHubTestRow" onClick={() => onSelectStudent(ts.studentId)}>
+                      <span className="tchHubTestName">{ts.studentName}</span>
+                      <span className="tchHubTestLabel">{ts.test_name}</span>
+                      <span className="tchHubTestDate">{formatDate(ts.finished_at)}</span>
+                      <span className="tchHubTestScore">
+                        <strong>{ts.composite}</strong>
+                        <span className="muted small" style={{ marginLeft: 6 }}>
+                          <span style={{ color: '#6b9bd2' }}>R&W {rwScore}</span>{' · '}<span style={{ color: '#9b8ec4' }}>M {mathScore}</span>
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
+
+      {activeTab === 'activity' && (
+        <div className="card tchSection">
+          <h3 className="h2" style={{ marginBottom: 14 }}>Student Activity</h3>
+          <div className="tchActivityTable">
+            <div className="tchActivityHeader">
+              <span className="tchActNameCol">Student</span>
+              <span className="tchActCol">7d Qs</span>
+              <span className="tchActCol">30d Qs</span>
+              <span className="tchActCol">30d Tests</span>
+              <span className="tchActCol">Total Qs</span>
+              <span className="tchActCol">Total Tests</span>
+              <span className="tchActCol">Flashcards</span>
+              <span className="tchActCol">Last Active</span>
+            </div>
+            {data.activityByStudent.map(s => (
+              <button key={s.studentId} className="tchActivityRow" onClick={() => onSelectStudent(s.studentId)}>
+                <span className="tchActNameCol">
+                  <span style={{ fontWeight: 600, fontSize: 13 }}>{s.studentName}</span>
+                  <span className="muted small">{s.email}</span>
+                </span>
+                <span className="tchActCol">{s.practiceQuestions7}</span>
+                <span className="tchActCol">{s.practiceQuestions30}</span>
+                <span className="tchActCol">{s.practiceTests30}</span>
+                <span className="tchActCol">{s.totalQuestions}</span>
+                <span className="tchActCol">{s.totalTests}</span>
+                <span className="tchActCol">{s.flashcards}</span>
+                <span className="tchActCol muted small">{s.lastActive ? formatDate(s.lastActive) : 'Never'}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'mastery' && (
+        <div className="card tchSection">
+          <h3 className="h2" style={{ marginBottom: 6 }}>Roster-Wide Mastery</h3>
+          <p className="muted small" style={{ marginBottom: 14 }}>Mastery is weighted by question difficulty and score band, scaled by volume, with a recency bonus for strong recent performance.</p>
+          <RosterMasteryTable domains={data.rosterMastery.domains} topics={data.rosterMastery.topics} />
+        </div>
+      )}
     </div>
   );
 }
@@ -1256,7 +1440,7 @@ function TeacherPageInner() {
   const [selectedId, setSelectedId] = useState(searchParams.get('selected') || null);
   const [role, setRole] = useState(null);
   const [search, setSearch] = useState('');
-  const [sidebarTab, setSidebarTab] = useState('students');
+  const [sidebarTab, setSidebarTab] = useState(searchParams.get('selected') ? 'students' : 'dashboard');
 
   function loadStudents() {
     fetch('/api/teacher/students')
@@ -1286,6 +1470,9 @@ function TeacherPageInner() {
       <aside className="tchSidebar">
         <div className="tchSidebarHeader">
           <div className="tchSidebarTabs">
+            <button className={`tchSidebarTabBtn${sidebarTab === 'dashboard' ? ' active' : ''}`} onClick={() => { setSidebarTab('dashboard'); setSelectedId(null); }}>
+              Dashboard
+            </button>
             <button className={`tchSidebarTabBtn${sidebarTab === 'students' ? ' active' : ''}`} onClick={() => setSidebarTab('students')}>
               Students <span className="tchSidebarCount">{students.length}</span>
             </button>
@@ -1314,6 +1501,11 @@ function TeacherPageInner() {
             </div>
           </>
         )}
+        {sidebarTab === 'dashboard' && (
+          <div style={{ padding: '12px 16px' }}>
+            <p className="muted small" style={{ margin: 0 }}>Viewing roster dashboard. Select a student or tab to navigate.</p>
+          </div>
+        )}
         {sidebarTab === 'assignments' && (
           <div style={{ padding: '12px 16px' }}>
             <p className="muted small" style={{ margin: 0 }}>Manage assignments in the main panel.</p>
@@ -1321,7 +1513,12 @@ function TeacherPageInner() {
         )}
       </aside>
       <main className="tchMain">
-        {sidebarTab === 'assignments' ? <AssignmentsPanel students={students} /> : selectedId ? <StudentDetail key={selectedId} studentId={selectedId} /> : <WelcomePanel role={role} />}
+        {sidebarTab === 'assignments'
+          ? <AssignmentsPanel students={students} />
+          : sidebarTab === 'students' && selectedId
+            ? <StudentDetail key={selectedId} studentId={selectedId} />
+            : <TeacherDashboardHub role={role} students={students} onSelectStudent={(id) => { setSelectedId(id); setSidebarTab('students'); }} />
+        }
       </main>
     </div>
   );

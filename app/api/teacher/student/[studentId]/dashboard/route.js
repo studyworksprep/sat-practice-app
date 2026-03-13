@@ -4,6 +4,40 @@ import { computeTestScores } from '../../../../../../lib/testScoreHelper';
 
 const BAND_WEIGHT = { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8, 6: 2.0, 7: 2.2 };
 
+// Mastery weights
+const DIFF_WEIGHT = { 1: 0.6, 2: 1.0, 3: 1.5 };
+const MASTERY_BAND_WEIGHT = { 1: 0.7, 2: 0.85, 3: 1.0, 4: 1.15, 5: 1.3, 6: 1.5, 7: 1.7 };
+const VOLUME_CURVE = 0.15;
+
+function computeMastery(attempts, taxMap) {
+  if (!attempts.length) return null;
+  let weightedCorrect = 0;
+  let weightedTotal = 0;
+  for (const a of attempts) {
+    const tax = taxMap[a.question_id];
+    const dw = DIFF_WEIGHT[tax?.difficulty] || 1.0;
+    const bw = MASTERY_BAND_WEIGHT[tax?.score_band] || 1.15;
+    const w = dw * bw;
+    weightedTotal += w;
+    if (a.is_correct) weightedCorrect += w;
+  }
+  const rawAccuracy = weightedTotal > 0 ? weightedCorrect / weightedTotal : 0;
+  const volumeFactor = 1 - Math.exp(-VOLUME_CURVE * attempts.length);
+  // Recency bonus: if recent (14-day) accuracy > 70% with 3+ questions, +5%
+  const now = Date.now();
+  const DAY = 86400000;
+  let recentCorrect = 0, recentTotal = 0;
+  for (const a of attempts) {
+    if (now - new Date(a.created_at).getTime() <= 14 * DAY) {
+      recentTotal++;
+      if (a.is_correct) recentCorrect++;
+    }
+  }
+  const recencyBonus = (recentTotal >= 3 && recentCorrect / recentTotal > 0.7) ? 0.05 : 0;
+  const mastery = rawAccuracy * volumeFactor * (1 + recencyBonus);
+  return Math.min(Math.round(mastery * 100), 100);
+}
+
 // GET /api/teacher/student/[studentId]/dashboard
 export async function GET(_request, { params }) {
   const { studentId } = params;
@@ -251,14 +285,30 @@ export async function GET(_request, { params }) {
     availByDifficulty: { 1: counts?.[1] || 0, 2: counts?.[2] || 0, 3: counts?.[3] || 0 },
   });
 
-  // Add total available to domain and topic stats
+  // ── Mastery by domain and topic ──
+  const domainAttempts = {};
+  const topicAttempts = {};
+  for (const att of firstAttempts) {
+    const tax = taxMap[att.question_id];
+    const domain = tax?.domain_name || 'Unknown';
+    const skill = tax?.skill_name || 'Unknown';
+    const key = `${domain}::${skill}`;
+    if (!domainAttempts[domain]) domainAttempts[domain] = [];
+    domainAttempts[domain].push(att);
+    if (!topicAttempts[key]) topicAttempts[key] = [];
+    topicAttempts[key].push(att);
+  }
+
+  // Add total available and mastery to domain and topic stats
   const domainStatsWithTotal = domainStats.map(d => ({
     ...d,
     ...availToObj(domainAvail[d.domain_name]),
+    mastery: computeMastery(domainAttempts[d.domain_name] || [], taxMap),
   }));
   const topicStatsWithTotal = topicStats.map(t => ({
     ...t,
     ...availToObj(topicAvail[`${t.domain_name}::${t.skill_name}`]),
+    mastery: computeMastery(topicAttempts[`${t.domain_name}::${t.skill_name}`] || [], taxMap),
   }));
 
   return NextResponse.json({
