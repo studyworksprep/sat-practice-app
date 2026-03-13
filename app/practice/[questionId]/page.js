@@ -161,6 +161,7 @@ function DesmosPanel({ isOpen, storageKey }) {
         expressions: true,
         settingsMenu: true,
         zoomButtons: true,
+        forceEnableGeometryFunctions: true,
       });
 
       restoreState();
@@ -304,7 +305,7 @@ export default function PracticeQuestionPage() {
   // Math tools
   // ✅ Draggable divider + minimize (not close)
   const MIN_CALC_W = 550;
-  const MAX_CALC_W = 760;
+  const MAX_CALC_W = 1200;
 
   const [calcMinimized, setCalcMinimized] = useState(false);
   const [calcWidth, setCalcWidth] = useState(MIN_CALC_W);

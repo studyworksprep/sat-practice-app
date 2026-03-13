@@ -2203,17 +2203,17 @@ hr{
 
 .desmosHost{
   width: 100%;
-  height: min(560px, calc(100vh - 220px));
+  height: min(700px, calc(100vh - 220px));
   background: #fff;
 }
 
-/* Narrower calculator height inside the practice test's constrained panel */
+/* Calculator height inside the practice test's constrained panel */
 .ptQuestionPanel .desmosHost{
-  height: min(480px, calc(100vh - 340px));
+  height: min(700px, calc(100vh - 260px));
 }
 
 .ptQuestionPanel .mathLeft{
-  max-height: calc(100vh - 200px);
+  max-height: calc(100vh - 140px);
 }
 
 .calcMinBody{

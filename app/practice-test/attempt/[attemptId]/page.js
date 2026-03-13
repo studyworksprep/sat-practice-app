@@ -14,7 +14,7 @@ const htmlHasContent = (html) => {
 };
 
 const MIN_CALC_W = 550;
-const MAX_CALC_W = 760;
+const MAX_CALC_W = 1200;
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -152,6 +152,7 @@ function DesmosPanel({ isOpen, storageKey }) {
         expressions: true,
         settingsMenu: true,
         zoomButtons: true,
+        forceEnableGeometryFunctions: true,
       });
       restoreState();
       safeResize();
