@@ -64,7 +64,8 @@ function renderFormattedText(text) {
     }
   }
   if (inList) result.push('</ul>');
-  return result.join('\n');
+  // Convert paragraph breaks (blank lines) to visible spacing in HTML
+  return result.join('\n').replace(/\n\n+/g, '<br><br>');
 }
 
 function FormatToolbar({ textareaRef, value, onChange }) {
@@ -648,7 +649,7 @@ export default function ReviewPage() {
           if (flashLoading && satLoading) return <div className="muted">Loading…</div>;
 
           return (
-            <div style={{ display: 'grid', gap: 12 }}>
+            <div style={{ display: 'grid', gap: 12, maxWidth: 600 }}>
               {/* SAT Vocabulary section */}
               {satTotalCards > 0 && (
                 <div>

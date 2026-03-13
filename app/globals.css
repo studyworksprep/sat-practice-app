@@ -2034,6 +2034,7 @@ hr{
   display: block;
   overflow-x: auto;
   max-width: 100%;
+  width: fit-content !important;
 }
 
 .mathShell .prose img{
