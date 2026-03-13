@@ -47,10 +47,12 @@ function formatDateTime(iso) {
 }
 
 // ─── Bar chart for test scores ───────────────────────────
-function TestScoreBarChart({ testScores }) {
+function TestScoreBarChart({ testScores, onDelete }) {
   if (!testScores?.length) return null;
   const maxScore = 1600;
   const barHeight = 36;
+  const [confirmId, setConfirmId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   return (
     <div className="tchBarChart">
@@ -64,29 +66,54 @@ function TestScoreBarChart({ testScores }) {
         const mathPct = (mathScore / maxScore) * 100;
 
         return (
-          <Link
-            key={ts.attempt_id}
-            href={`/practice-test/attempt/${ts.attempt_id}/results`}
-            className="tchBarRow"
-            title={`${ts.test_name} — Click to view full results`}
-          >
-            <div className="tchBarLabel">
-              <span className="tchBarTestName">{ts.test_name}</span>
-              <span className="tchBarDate">{formatDate(ts.finished_at)}</span>
-            </div>
-            <div className="tchBarTrack" style={{ height: barHeight }}>
-              <div className="tchBarSegment tchBarRW" style={{ width: `${rwPct}%` }} title={`R&W: ${rwScore}`} />
-              <div className="tchBarSegment tchBarMath" style={{ width: `${mathPct}%` }} title={`Math: ${mathScore}`} />
-            </div>
-            <div className="tchBarScore">
-              <span className="tchBarTotal">{total}</span>
-              <span className="tchBarBreakdown">
-                <span style={{ color: '#6b9bd2' }}>R&W {rwScore}</span>
-                {' · '}
-                <span style={{ color: '#9b8ec4' }}>Math {mathScore}</span>
-              </span>
-            </div>
-          </Link>
+          <div key={ts.attempt_id} className="tchBarRowWrap" style={{ position: 'relative' }}>
+            <Link
+              href={`/practice-test/attempt/${ts.attempt_id}/results`}
+              className="tchBarRow"
+              title={`${ts.test_name} — Click to view full results`}
+            >
+              <div className="tchBarLabel">
+                <span className="tchBarTestName">{ts.test_name}</span>
+                <span className="tchBarDate">{formatDate(ts.finished_at)}</span>
+              </div>
+              <div className="tchBarTrack" style={{ height: barHeight }}>
+                <div className="tchBarSegment tchBarRW" style={{ width: `${rwPct}%` }} title={`R&W: ${rwScore}`} />
+                <div className="tchBarSegment tchBarMath" style={{ width: `${mathPct}%` }} title={`Math: ${mathScore}`} />
+              </div>
+              <div className="tchBarScore">
+                <span className="tchBarTotal">{total}</span>
+                <span className="tchBarBreakdown">
+                  <span style={{ color: '#6b9bd2' }}>R&W {rwScore}</span>
+                  {' · '}
+                  <span style={{ color: '#9b8ec4' }}>Math {mathScore}</span>
+                </span>
+              </div>
+            </Link>
+            {onDelete && confirmId === ts.attempt_id ? (
+              <div className="tchBarDeleteConfirm" style={{ display: 'flex', gap: 4, alignItems: 'center', position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'var(--bg-card, #fff)', padding: '4px 8px', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,.15)', zIndex: 5 }}>
+                <button
+                  className="btn"
+                  style={{ background: 'var(--danger)', borderColor: 'var(--danger)', color: '#fff', padding: '4px 10px', fontSize: 12 }}
+                  disabled={deleting}
+                  onClick={() => { setDeleting(true); onDelete(ts.attempt_id).finally(() => { setDeleting(false); setConfirmId(null); }); }}
+                >
+                  {deleting ? 'Deleting…' : 'Confirm'}
+                </button>
+                <button className="btn secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => setConfirmId(null)} disabled={deleting}>Cancel</button>
+              </div>
+            ) : onDelete ? (
+              <button
+                className="tchBarDeleteBtn"
+                title="Delete this result"
+                onClick={(e) => { e.preventDefault(); setConfirmId(ts.attempt_id); }}
+                style={{ position: 'absolute', right: 4, top: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 14, padding: '2px 6px', borderRadius: 4, opacity: 0.5 }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--danger)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.5'; e.currentTarget.style.color = 'var(--muted)'; }}
+              >
+                &times;
+              </button>
+            ) : null}
+          </div>
         );
       })}
       <div className="tchBarLegend">
@@ -1075,6 +1102,13 @@ function StudentDetail({ studentId }) {
     setOfficialScores(prev => prev.filter(s => s.id !== id));
   };
 
+  const deleteTestAttempt = async (attemptId) => {
+    const res = await fetch(`/api/practice-tests/attempt/${attemptId}`, { method: 'DELETE' });
+    if (res.ok) {
+      setData(prev => ({ ...prev, testScores: (prev.testScores || []).filter(ts => ts.attempt_id !== attemptId) }));
+    }
+  };
+
   if (loading) return <div className="tchDetailLoading"><p className="muted">Loading student data...</p></div>;
   if (error) return <div className="tchDetailError"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
   if (!data) return null;
@@ -1167,7 +1201,7 @@ function StudentDetail({ studentId }) {
       </div>
       <div className="card tchSection">
         <h3 className="h2" style={{ marginBottom: 14 }}>Practice Test Results</h3>
-        {!data.testScores?.length ? <p className="muted small">No completed practice tests yet.</p> : <TestScoreBarChart testScores={data.testScores} />}
+        {!data.testScores?.length ? <p className="muted small">No completed practice tests yet.</p> : <TestScoreBarChart testScores={data.testScores} onDelete={deleteTestAttempt} />}
       </div>
       <div className="card tchSection">
         <h3 className="h2" style={{ marginBottom: 14 }}>Domain & Topic Performance</h3>

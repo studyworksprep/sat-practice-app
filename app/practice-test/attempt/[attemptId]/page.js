@@ -532,6 +532,11 @@ export default function TestSessionPage() {
     localStorage.removeItem(ansKey);
     localStorage.removeItem(qtKey);
 
+    // Clean up Desmos calculator state for this module's questions
+    (moduleData.questions || []).forEach((q) => {
+      try { localStorage.removeItem(`desmos:pt:${attemptId}:${q.question_version_id}`); } catch {}
+    });
+
     const answerList = (moduleData.questions || []).map((q) => ({
       question_version_id: q.question_version_id,
       question_id: q.question_id,
@@ -788,7 +793,7 @@ export default function TestSessionPage() {
         <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
           <DesmosPanel
             isOpen={!calcMinimized}
-            storageKey={`desmos:pt:${q.question_version_id}`}
+            storageKey={`desmos:pt:${attemptId}:${q.question_version_id}`}
           />
         </div>
         {calcMinimized ? <div className="calcMinBody" /> : null}

@@ -10,12 +10,25 @@ export async function DELETE(_request, { params }) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { data: attempt, error: attErr } = await supabase
+  // Check if user is a teacher/admin who can delete any attempt
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const isTeacherOrAdmin = profile?.role === 'teacher' || profile?.role === 'admin';
+
+  const query = supabase
     .from('practice_test_attempts')
     .select('id, user_id, status')
-    .eq('id', attemptId)
-    .eq('user_id', user.id)
-    .maybeSingle();
+    .eq('id', attemptId);
+
+  if (!isTeacherOrAdmin) {
+    query.eq('user_id', user.id);
+  }
+
+  const { data: attempt, error: attErr } = await query.maybeSingle();
 
   if (attErr) return NextResponse.json({ error: attErr.message }, { status: 500 });
   if (!attempt) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -63,11 +76,16 @@ export async function DELETE(_request, { params }) {
   }
 
   // 6. Delete the practice test attempt itself
-  const { error: deleteErr } = await supabase
+  const delQuery = supabase
     .from('practice_test_attempts')
     .delete()
-    .eq('id', attemptId)
-    .eq('user_id', user.id);
+    .eq('id', attemptId);
+
+  if (!isTeacherOrAdmin) {
+    delQuery.eq('user_id', user.id);
+  }
+
+  const { error: deleteErr } = await delQuery;
 
   if (deleteErr) return NextResponse.json({ error: deleteErr.message }, { status: 500 });
 
