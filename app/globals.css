@@ -3983,6 +3983,48 @@ hr{
   color: inherit;
 }
 
+.tchBarRowWrap{
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.tchBarRowWrap .tchBarRow{
+  flex: 1;
+  min-width: 0;
+}
+
+.tchBarActions{
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+.tchBarDeleteBtn{
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.tchBarRowWrap:hover .tchBarDeleteBtn{
+  opacity: 0.6;
+}
+
+.tchBarDeleteBtn:hover{
+  opacity: 1 !important;
+  color: var(--danger);
+  background: rgba(224,82,82,0.08);
+}
+
 .tchBarRow:hover{
   background: rgba(37,99,235,0.05);
 }

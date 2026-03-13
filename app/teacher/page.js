@@ -66,7 +66,7 @@ function TestScoreBarChart({ testScores, onDelete }) {
         const mathPct = (mathScore / maxScore) * 100;
 
         return (
-          <div key={ts.attempt_id} className="tchBarRowWrap" style={{ position: 'relative' }}>
+          <div key={ts.attempt_id} className="tchBarRowWrap">
             <Link
               href={`/practice-test/attempt/${ts.attempt_id}/results`}
               className="tchBarRow"
@@ -89,30 +89,31 @@ function TestScoreBarChart({ testScores, onDelete }) {
                 </span>
               </div>
             </Link>
-            {onDelete && confirmId === ts.attempt_id ? (
-              <div className="tchBarDeleteConfirm" style={{ display: 'flex', gap: 4, alignItems: 'center', position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'var(--bg-card, #fff)', padding: '4px 8px', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,.15)', zIndex: 5 }}>
-                <button
-                  className="btn"
-                  style={{ background: 'var(--danger)', borderColor: 'var(--danger)', color: '#fff', padding: '4px 10px', fontSize: 12 }}
-                  disabled={deleting}
-                  onClick={() => { setDeleting(true); onDelete(ts.attempt_id).finally(() => { setDeleting(false); setConfirmId(null); }); }}
-                >
-                  {deleting ? 'Deleting…' : 'Confirm'}
-                </button>
-                <button className="btn secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => setConfirmId(null)} disabled={deleting}>Cancel</button>
+            {onDelete && (
+              <div className="tchBarActions">
+                {confirmId === ts.attempt_id ? (
+                  <>
+                    <button
+                      className="btn"
+                      style={{ background: 'var(--danger)', borderColor: 'var(--danger)', color: '#fff', padding: '4px 10px', fontSize: 12 }}
+                      disabled={deleting}
+                      onClick={() => { setDeleting(true); onDelete(ts.attempt_id).finally(() => { setDeleting(false); setConfirmId(null); }); }}
+                    >
+                      {deleting ? 'Deleting…' : 'Yes, delete'}
+                    </button>
+                    <button className="btn secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => setConfirmId(null)} disabled={deleting}>Cancel</button>
+                  </>
+                ) : (
+                  <button
+                    className="tchBarDeleteBtn"
+                    title="Delete this result"
+                    onClick={() => setConfirmId(ts.attempt_id)}
+                  >
+                    &times;
+                  </button>
+                )}
               </div>
-            ) : onDelete ? (
-              <button
-                className="tchBarDeleteBtn"
-                title="Delete this result"
-                onClick={(e) => { e.preventDefault(); setConfirmId(ts.attempt_id); }}
-                style={{ position: 'absolute', right: 4, top: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 14, padding: '2px 6px', borderRadius: 4, opacity: 0.5 }}
-                onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--danger)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.5'; e.currentTarget.style.color = 'var(--muted)'; }}
-              >
-                &times;
-              </button>
-            ) : null}
+            )}
           </div>
         );
       })}
