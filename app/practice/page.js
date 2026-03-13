@@ -259,11 +259,6 @@ export default function PracticePage() {
         >
           {teacherMode ? 'Teacher Mode' : 'Training Mode'}
         </button>
-        <span className="modeToggleHint">
-          {teacherMode
-            ? 'Presentation mode — no attempt history is recorded'
-            : 'Practice mode — attempts are tracked to your profile'}
-        </span>
       </div>
 
       {/* Full-width filter panel */}

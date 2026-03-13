@@ -2044,7 +2044,7 @@ export default function PracticeQuestionPage() {
                     >
                       <span className="mapNum">{i}</span>
 
-                      {showMark ? (
+                      {!isTeacherMode && showMark ? (
                         <span className="mapIconCorner mapIconLeft" aria-hidden="true">
                           <span className="mapIconBadge mark" title="Marked for review">
                             <svg viewBox="0 0 24 24" width="14" height="14">
@@ -2054,7 +2054,7 @@ export default function PracticeQuestionPage() {
                         </span>
                       ) : null}
 
-                      {showCorrect || showIncorrect ? (
+                      {!isTeacherMode && (showCorrect || showIncorrect) ? (
                         <span className="mapIconCorner mapIconRight" aria-hidden="true">
                           {showCorrect ? (
                             <span className="mapIconBadge correct" title="Correct">
