@@ -62,6 +62,22 @@ export default function PracticePage() {
   const [totalCount, setTotalCount] = useState(0);
   const loadIdRef = useRef(0);
 
+  // Teacher Mode vs Training Mode toggle
+  const [teacherMode, setTeacherMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sat_teacher_mode') === '1';
+    }
+    return false;
+  });
+
+  function toggleTeacherMode() {
+    setTeacherMode((prev) => {
+      const next = !prev;
+      localStorage.setItem('sat_teacher_mode', next ? '1' : '0');
+      return next;
+    });
+  }
+
   // Debounce search input by 300ms
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300);
@@ -119,8 +135,9 @@ export default function PracticePage() {
 
       // Navigate to the first question
       const firstId = ids[0];
+      const tmParam = teacherMode ? '&tm=1' : '';
       router.push(
-        `/practice/${encodeURIComponent(firstId)}?${sessionQs}&sid=${sid}&t=${ids.length}&o=0&p=0&i=1`
+        `/practice/${encodeURIComponent(firstId)}?${sessionQs}&sid=${sid}&t=${ids.length}&o=0&p=0&i=1${tmParam}`
       );
     } catch (e) {
       setMsg({ kind: 'danger', text: e.message });
@@ -234,6 +251,21 @@ export default function PracticePage() {
 
   return (
     <main className="container">
+      {/* Mode toggle */}
+      <div className="modeToggleBar">
+        <button
+          className={`modeToggleBtn ${teacherMode ? 'teacherActive' : 'trainingActive'}`}
+          onClick={toggleTeacherMode}
+        >
+          {teacherMode ? 'Teacher Mode' : 'Training Mode'}
+        </button>
+        <span className="modeToggleHint">
+          {teacherMode
+            ? 'Presentation mode — no attempt history is recorded'
+            : 'Practice mode — attempts are tracked to your profile'}
+        </span>
+      </div>
+
       {/* Full-width filter panel */}
       <Filters onChange={setFilters} onStartSession={handleStartSession} />
       {msg && <Toast kind={msg?.kind} message={msg?.text} />}
@@ -288,7 +320,8 @@ export default function PracticePage() {
                 const pos = idx;
                 const i = offset + pos + 1;
 
-                const href = `/practice/${encodeURIComponent(qid)}?${sessionQueryString}&sid=${sessionId}&t=${totalCount}&o=${offset}&p=${pos}&i=${i}`;
+                const tmQ = teacherMode ? '&tm=1' : '';
+                const href = `/practice/${encodeURIComponent(qid)}?${sessionQueryString}&sid=${sessionId}&t=${totalCount}&o=${offset}&p=${pos}&i=${i}${tmQ}`;
 
                 const diffClass = q.difficulty === 1 ? ' easy' : q.difficulty === 2 ? ' medium' : q.difficulty === 3 ? ' hard' : '';
 
@@ -304,8 +337,8 @@ export default function PracticePage() {
                           {q.score_band != null && (
                             <span className="pill qPill">Score Band {q.score_band}</span>
                           )}
-                          <AttemptedBadge is_done={q.is_done} />
-                          {q.marked_for_review && (
+                          {!teacherMode && <AttemptedBadge is_done={q.is_done} />}
+                          {!teacherMode && q.marked_for_review && (
                             <span className="qMark" title="Marked for review">★</span>
                           )}
                         </div>

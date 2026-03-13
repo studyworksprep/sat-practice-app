@@ -178,7 +178,7 @@ export default function NavBar() {
               <div className="navLinks">
                 {!isPractice && <Link href="/dashboard">Dashboard</Link>}
                 {!isPractice && <Link href="/practice-test">Tests</Link>}
-                <Link href="/practice">Practice</Link>
+                <Link href="/practice">Question Bank</Link>
                 {!isPractice && <Link href="/review">Review</Link>}
                 {isTeacher && <Link href="/teacher">Students</Link>}
                 {isAdmin && <Link href="/teachers">Teachers</Link>}

@@ -364,7 +364,7 @@ export default function PracticeQuestionPage() {
 
   // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
-    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'hide_broken', 'q', 'session', 'replay', 'sid'];
+    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'hide_broken', 'q', 'session', 'replay', 'sid', 'tm'];
     const p = new URLSearchParams();
     for (const k of keys) {
       const v = searchParams.get(k);
@@ -376,6 +376,7 @@ export default function PracticeQuestionPage() {
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
   const inSessionContext = sessionParams.get('session') === '1';
   const sidParam = searchParams.get('sid') || null;
+  const isTeacherMode = searchParams.get('tm') === '1';
 
   // Overlay for questions answered/marked in the current session, keyed by question_id
   // Persisted to sessionStorage so badges survive page remounts on navigation
@@ -539,10 +540,15 @@ export default function PracticeQuestionPage() {
         if (!res.ok) throw new Error(json?.error || 'Failed to load question');
       }
 
+      // In Teacher Mode, strip status/history so the question appears fresh
+      if (isTeacherMode) {
+        json = { ...json, status: null, correct_option_id: null, correct_text: null };
+      }
+
       setData(json);
       if (json?.user_role) setUserRole(json.user_role);
 
-      if (json?.question_id) {
+      if (json?.question_id && !isTeacherMode) {
         setSessionResults((prev) => ({
           ...prev,
           [String(json.question_id)]: {
@@ -818,6 +824,7 @@ export default function PracticeQuestionPage() {
       response_text: qTypeLocal === 'spr' ? responseText : null,
       time_spent_ms,
       source: isReplay ? 'review' : 'practice',
+      teacher_mode: isTeacherMode || undefined,
     };
 
     try {
@@ -833,27 +840,39 @@ export default function PracticeQuestionPage() {
       const qid = String(data.question_id);
 
       // Store correct answer from API response for client-side retry checking
-      setData((prev) => {
-        if (!prev) return prev;
-        const prevStatus = prev.status || {};
-        return {
-          ...prev,
-          correct_option_id: json.correct_option_id ?? prev.correct_option_id,
-          correct_text: json.correct_text ?? prev.correct_text,
-          status: {
-            ...prevStatus,
-            attempts_count: json.attempts_count ?? (prevStatus.attempts_count ?? 0) + 1,
-            correct_attempts_count: json.correct_attempts_count ?? prevStatus.correct_attempts_count,
-            is_done: true,
-            last_is_correct: json.is_correct,
-          },
-        };
-      });
+      if (isTeacherMode) {
+        // Teacher Mode: update local data with correct answer info but don't touch status
+        setData((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            correct_option_id: json.correct_option_id ?? prev.correct_option_id,
+            correct_text: json.correct_text ?? prev.correct_text,
+          };
+        });
+      } else {
+        setData((prev) => {
+          if (!prev) return prev;
+          const prevStatus = prev.status || {};
+          return {
+            ...prev,
+            correct_option_id: json.correct_option_id ?? prev.correct_option_id,
+            correct_text: json.correct_text ?? prev.correct_text,
+            status: {
+              ...prevStatus,
+              attempts_count: json.attempts_count ?? (prevStatus.attempts_count ?? 0) + 1,
+              correct_attempts_count: json.correct_attempts_count ?? prevStatus.correct_attempts_count,
+              is_done: true,
+              last_is_correct: json.is_correct,
+            },
+          };
+        });
+      }
 
       if (json.is_correct) {
         setGotCorrect(true);
-        // Only update session tracking on the true first attempt
-        if (!wasDone) {
+        // Only update session tracking on the true first attempt (skip in Teacher Mode)
+        if (!isTeacherMode && !wasDone) {
           setSessionResults((prev) => ({
             ...prev,
             [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: true },
@@ -866,8 +885,8 @@ export default function PracticeQuestionPage() {
         } else if (qTypeLocal === 'spr' && responseText.trim()) {
           setWrongTexts((prev) => [...prev, responseText.trim()]);
         }
-        // Only update session tracking on the true first attempt
-        if (!wasDone) {
+        // Only update session tracking on the true first attempt (skip in Teacher Mode)
+        if (!isTeacherMode && !wasDone) {
           setSessionResults((prev) => ({
             ...prev,
             [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: false },
@@ -882,7 +901,7 @@ export default function PracticeQuestionPage() {
   }
 
   async function toggleMarkForReview() {
-    if (!data?.question_id) return;
+    if (!data?.question_id || isTeacherMode) return;
     const next = !Boolean(data?.status?.marked_for_review);
     const qid = String(data.question_id);
     try {
@@ -1250,10 +1269,14 @@ export default function PracticeQuestionPage() {
       </div>
 
       <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-        <span className="pill">
-          <span className="muted">Done</span>{' '}
-          <span className="kbd" style={doneColor ? { color: doneColor, fontWeight: 700 } : undefined}>{doneValue}</span>
-        </span>
+        {isTeacherMode ? (
+          <span className="pill" style={{ background: '#7c3aed', color: '#fff', fontWeight: 700 }}>Teacher Mode</span>
+        ) : (
+          <span className="pill">
+            <span className="muted">Done</span>{' '}
+            <span className="kbd" style={doneColor ? { color: doneColor, fontWeight: 700 } : undefined}>{doneValue}</span>
+          </span>
+        )}
 
         <div style={{ position: 'relative' }}>
           <button
