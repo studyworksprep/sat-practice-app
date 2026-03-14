@@ -258,10 +258,6 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
         {/* Skills popover */}
         {isPopoverOpen && domain.topics.length > 0 && (
           <div className={`skillsPopover ${colorClass}`} ref={popoverRef}>
-            <div className="skillsPopoverHeader">
-              <span className="small" style={{ fontWeight: 600 }}>Skills in {domain.domain_name}</span>
-              <button className="skillsPopoverClose" onClick={() => setOpenSkills(null)}>Done</button>
-            </div>
             <div className="skillsPopoverBody">
               {domain.topics.map((topic) => {
                 const topicKey   = topic.skill_code || topic.skill_name;

@@ -29,50 +29,6 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-// ─── Welcome panel ──────────────────────────────────────
-function WelcomePanel() {
-  return (
-    <div className="tchWelcome">
-      <div className="card tchWelcomeCard">
-        <h2 className="h1" style={{ marginBottom: 8 }}>Teacher Management</h2>
-        <p className="muted" style={{ marginBottom: 20 }}>
-          Select a teacher from the panel on the left to view their students, activity metrics, and assignments.
-        </p>
-        <div className="tchFeatureGrid">
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128100;</div>
-            <div>
-              <strong>Assigned Students</strong>
-              <p className="muted small">See which students are assigned to each teacher with per-student activity breakdowns.</p>
-            </div>
-          </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128200;</div>
-            <div>
-              <strong>Activity Metrics</strong>
-              <p className="muted small">Track questions completed, accuracy, and practice activity across 7-day and 30-day windows.</p>
-            </div>
-          </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128221;</div>
-            <div>
-              <strong>Assignments</strong>
-              <p className="muted small">View all question assignments created by the teacher with due dates and question counts.</p>
-            </div>
-          </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128202;</div>
-            <div>
-              <strong>Aggregate Stats</strong>
-              <p className="muted small">Overview of total student engagement, test completions, and overall accuracy for the teacher's roster.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Edit Teacher Profile modal ─────────────────────────
 function EditTeacherProfileModal({ teacher, teacherId, onClose, onSaved }) {
   const [form, setForm] = useState({
@@ -137,7 +93,7 @@ function EditTeacherProfileModal({ teacher, teacherId, onClose, onSaved }) {
 }
 
 // ─── Teacher detail panel ────────────────────────────────
-function TeacherDetail({ teacherId }) {
+function TeacherDetail({ teacherId, onBack }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -152,88 +108,102 @@ function TeacherDetail({ teacherId }) {
       .finally(() => setLoading(false));
   }, [teacherId]);
 
-  if (loading) return <div className="tchDetailLoading"><p className="muted">Loading teacher data...</p></div>;
-  if (error) return <div className="tchDetailError"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+  if (loading) return <div style={{ padding: '48px 0', textAlign: 'center' }}><p className="muted">Loading teacher data...</p></div>;
+  if (error) return <div style={{ padding: '48px 0' }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
   if (!data) return null;
 
   const teacher = data.teacher;
   const totals = data.totals;
 
   return (
-    <div className="tchStudentDetail">
-      <div className="tchStudentHeader">
+    <div style={{ maxWidth: 900 }}>
+      {/* Back button + header */}
+      <button className="btn secondary sm" onClick={onBack} style={{ marginBottom: 12 }}>&larr; All Teachers</button>
+
+      <div className="tmDetailHeader">
         <div>
           <h2 className="h1" style={{ margin: 0 }}>{displayName(teacher)}</h2>
-          <p className="muted small" style={{ margin: 0 }}>{teacher.email}</p>
+          <p className="muted small" style={{ margin: '2px 0 0' }}>{teacher.email}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {teacher.is_active === false && (
-            <span style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, padding: '2px 8px', border: '1px solid var(--danger)', borderRadius: 4 }}>Inactive</span>
+            <span className="tmInactiveBadge">Inactive</span>
           )}
-          <button className="btn secondary tchEditBtn" onClick={() => setEditOpen(true)}>Edit</button>
+          <button className="btn secondary" onClick={() => setEditOpen(true)}>Edit</button>
         </div>
       </div>
       {editOpen && <EditTeacherProfileModal teacher={teacher} teacherId={teacherId} onClose={() => setEditOpen(false)} onSaved={(updated) => { setData(prev => ({ ...prev, teacher: { ...prev.teacher, ...updated } })); setEditOpen(false); }} />}
 
-      {/* Overview stats */}
-      <div className="card tchOverviewCard">
-        <div className="tchProfileRow">
-          {teacher.high_school && <div className="tchProfileItem"><span className="tchProfileLabel">School</span><span className="tchProfileValue">{teacher.high_school}</span></div>}
-          <div className="tchProfileItem"><span className="tchProfileLabel">Joined</span><span className="tchProfileValue">{new Date(teacher.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>
+      {/* Stats card */}
+      <div className="card tmStatsCard">
+        {teacher.high_school && (
+          <div className="tmProfileMeta">
+            <span className="muted small">School</span>
+            <span style={{ fontWeight: 600, fontSize: 14 }}>{teacher.high_school}</span>
+          </div>
+        )}
+        <div className="tmProfileMeta">
+          <span className="muted small">Joined</span>
+          <span style={{ fontWeight: 600, fontSize: 14 }}>{new Date(teacher.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
         </div>
-        <div className="tchStatsRow">
-          <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--accent)' }}>{totals.students}</div><div className="tchStatLabel">Students</div></div>
-          <div className="tchStatCol"><div className="tchStatValue">{totals.activeStudents}</div><div className="tchStatLabel">Active (7d)</div></div>
-          <div className="tchStatCol"><div className="tchStatValue">{totals.questionsDone}</div><div className="tchStatLabel">Questions Done</div></div>
-          <div className="tchStatCol"><div className="tchStatValue" style={{ color: pctColor(totals.accuracy) }}>{totals.accuracy != null ? `${totals.accuracy}%` : '—'}</div><div className="tchStatLabel">Accuracy</div></div>
-        </div>
-        <div className="tchStatsRow" style={{ marginTop: 8 }}>
-          <div className="tchStatCol"><div className="tchStatValue">{totals.last7Days}</div><div className="tchStatLabel">Last 7 Days</div></div>
-          <div className="tchStatCol"><div className="tchStatValue">{totals.last30Days}</div><div className="tchStatLabel">Last 30 Days</div></div>
-          <div className="tchStatCol"><div className="tchStatValue">{totals.testsCompleted}</div><div className="tchStatLabel">Tests Taken</div></div>
-          <div className="tchStatCol"><div className="tchStatValue">{data.assignments?.length || 0}</div><div className="tchStatLabel">Assignments</div></div>
+        {teacher.teacher_invite_code && (
+          <div className="tmProfileMeta">
+            <span className="muted small">Invite Code</span>
+            <span style={{ fontWeight: 600, fontSize: 14, fontFamily: 'var(--font-mono, monospace)', color: 'var(--accent)' }}>{teacher.teacher_invite_code}</span>
+          </div>
+        )}
+
+        <div className="tmStatGrid">
+          <div className="tmStatItem"><span className="tmStatValue" style={{ color: 'var(--accent)' }}>{totals.students}</span><span className="tmStatLabel">Students</span></div>
+          <div className="tmStatItem"><span className="tmStatValue">{totals.activeStudents}</span><span className="tmStatLabel">Active (7d)</span></div>
+          <div className="tmStatItem"><span className="tmStatValue">{totals.questionsDone}</span><span className="tmStatLabel">Questions Done</span></div>
+          <div className="tmStatItem"><span className="tmStatValue" style={{ color: pctColor(totals.accuracy) }}>{totals.accuracy != null ? `${totals.accuracy}%` : '—'}</span><span className="tmStatLabel">Accuracy</span></div>
+          <div className="tmStatItem"><span className="tmStatValue">{totals.last7Days}</span><span className="tmStatLabel">Last 7 Days</span></div>
+          <div className="tmStatItem"><span className="tmStatValue">{totals.last30Days}</span><span className="tmStatLabel">Last 30 Days</span></div>
+          <div className="tmStatItem"><span className="tmStatValue">{totals.testsCompleted}</span><span className="tmStatLabel">Tests Taken</span></div>
+          <div className="tmStatItem"><span className="tmStatValue">{data.assignments?.length || 0}</span><span className="tmStatLabel">Assignments</span></div>
         </div>
       </div>
 
       {/* Student breakdown */}
-      <div className="card tchSection">
+      <div className="card" style={{ marginTop: 16 }}>
         <h3 className="h2" style={{ marginBottom: 14 }}>Assigned Students ({data.students.length})</h3>
         {data.students.length === 0 ? (
           <p className="muted small">No students assigned to this teacher.</p>
         ) : (
-          <div className="tchAdminStudentTable">
-            <div className="tchAdminStudentHeader">
-              <span className="tchAdminStudentNameCol">Student</span>
-              <span className="tchAdminStudentCell">Done</span>
-              <span className="tchAdminStudentCell">Accuracy</span>
-              <span className="tchAdminStudentCell">7 Days</span>
-              <span className="tchAdminStudentCell">30 Days</span>
-              <span className="tchAdminStudentCell">Tests</span>
+          <div className="tmStudentTable">
+            <div className="tmStudentThead">
+              <span className="tmStudentTh" style={{ flex: 2 }}>Student</span>
+              <span className="tmStudentTh tmStudentThNum">Done</span>
+              <span className="tmStudentTh tmStudentThNum">Accuracy</span>
+              <span className="tmStudentTh tmStudentThNum">7 Days</span>
+              <span className="tmStudentTh tmStudentThNum">30 Days</span>
+              <span className="tmStudentTh tmStudentThNum">Tests</span>
             </div>
             {data.students.map(s => (
-              <Link key={s.id} href={`/teacher?selected=${s.id}`} className="tchAdminStudentRow tchAdminStudentLink">
-                <div className="tchAdminStudentNameCol">
-                  <div style={{ fontWeight: 600, fontSize: 13 }}>{displayName(s)}</div>
-                  <div className="muted small">{s.email}</div>
+              <Link key={s.id} href={`/teacher?selected=${s.id}`} className="tmStudentRow">
+                <div className="tmStudentTd" style={{ flex: 2 }}>
+                  <span style={{ fontWeight: 600, fontSize: 13 }}>{displayName(s)}</span>
+                  <span className="muted small">{s.email}</span>
                 </div>
-                <span className="tchAdminStudentCell">{s.questions_done}</span>
-                <span className="tchAdminStudentCell" style={{ color: pctColor(s.accuracy) }}>{s.accuracy != null ? `${s.accuracy}%` : '—'}</span>
-                <span className="tchAdminStudentCell" style={{ color: s.last_7_days > 0 ? 'var(--success)' : 'var(--muted)' }}>{s.last_7_days}</span>
-                <span className="tchAdminStudentCell">{s.last_30_days}</span>
-                <span className="tchAdminStudentCell">{s.tests_completed}</span>
+                <span className="tmStudentTd tmStudentTdNum">{s.questions_done}</span>
+                <span className="tmStudentTd tmStudentTdNum" style={{ color: pctColor(s.accuracy) }}>{s.accuracy != null ? `${s.accuracy}%` : '—'}</span>
+                <span className="tmStudentTd tmStudentTdNum" style={{ color: s.last_7_days > 0 ? 'var(--success)' : 'var(--muted)' }}>{s.last_7_days}</span>
+                <span className="tmStudentTd tmStudentTdNum">{s.last_30_days}</span>
+                <span className="tmStudentTd tmStudentTdNum">{s.tests_completed}</span>
               </Link>
             ))}
           </div>
         )}
       </div>
 
-      {/* Assignments created by this teacher */}
+      {/* Assignments */}
       {data.assignments?.length > 0 && (
-        <div className="card tchSection">
+        <div className="card" style={{ marginTop: 16 }}>
           <h3 className="h2" style={{ marginBottom: 14 }}>Assignments Created ({data.assignments.length})</h3>
-          <div style={{ display: 'grid', gap: 8 }}>
+          <div style={{ display: 'grid', gap: 6 }}>
             {data.assignments.map(a => (
-              <div key={a.id} className="tchAdminAssignRow">
+              <div key={a.id} className="tmAssignRow">
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 13 }}>{a.title}</div>
                   <div className="muted small">
@@ -292,35 +262,47 @@ export default function TeachersPage() {
   });
 
   return (
-    <div className="tchLayout">
-      <aside className="tchSidebar">
-        <div className="tchSidebarHeader">
-          <div className="tchSidebarTabs">
-            <button className="tchSidebarTabBtn active">
-              Teachers <span className="tchSidebarCount">{teachers.length}</span>
-            </button>
+    <main className="container" style={{ maxWidth: 1000, paddingTop: 28, paddingBottom: 48 }}>
+      {selectedId ? (
+        <TeacherDetail key={selectedId} teacherId={selectedId} onBack={() => setSelectedId(null)} />
+      ) : (
+        <>
+          <h1 className="h1" style={{ marginBottom: 4 }}>Teacher Management</h1>
+          <p className="muted small" style={{ marginBottom: 20 }}>
+            View teacher rosters, activity metrics, and assignments.
+          </p>
+
+          {/* Search */}
+          <div style={{ marginBottom: 16 }}>
+            <input
+              type="text"
+              className="input"
+              placeholder="Search teachers..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{ maxWidth: 320 }}
+            />
           </div>
-        </div>
-        <div className="tchSearchWrap">
-          <input type="text" className="tchSearchInput" placeholder="Search teachers..." value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
-        <div className="tchStudentList">
+
+          {/* Teacher cards grid */}
           {filtered.length === 0 ? (
-            <p className="muted small" style={{ padding: '12px 16px' }}>{teachers.length === 0 ? 'No teachers found.' : 'No matches.'}</p>
-          ) : filtered.map(t => (
-            <button key={t.id} className={`tchStudentItem${selectedId === t.id ? ' active' : ''}`} onClick={() => setSelectedId(t.id)}>
-              <div className="tchStudentAvatar" style={{ background: '#2563eb' }}>{(t.first_name || t.email || '?')[0].toUpperCase()}</div>
-              <div className="tchStudentInfo">
-                <span className="tchStudentName">{displayName(t)}</span>
-                <span className="tchStudentEmail">{t.student_count} student{t.student_count !== 1 ? 's' : ''}</span>
-              </div>
-            </button>
-          ))}
-        </div>
-      </aside>
-      <main className="tchMain">
-        {selectedId ? <TeacherDetail key={selectedId} teacherId={selectedId} /> : <WelcomePanel />}
-      </main>
-    </div>
+            <p className="muted">{teachers.length === 0 ? 'No teachers found.' : 'No matches.'}</p>
+          ) : (
+            <div className="tmTeacherGrid">
+              {filtered.map(t => (
+                <button key={t.id} className="card tmTeacherCard" onClick={() => setSelectedId(t.id)}>
+                  <div className="tmTeacherAvatar">{(t.first_name || t.email || '?')[0].toUpperCase()}</div>
+                  <div className="tmTeacherInfo">
+                    <span className="tmTeacherName">{displayName(t)}</span>
+                    <span className="muted small">{t.email}</span>
+                  </div>
+                  <span className="tmTeacherCount">{t.student_count} student{t.student_count !== 1 ? 's' : ''}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </main>
   );
 }
