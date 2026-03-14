@@ -45,6 +45,12 @@ export default function AdminPage() {
   const [assignStudent, setAssignStudent] = useState('');
   const [assignLoading, setAssignLoading] = useState(false);
 
+  // Manager-teacher assignment state
+  const [mtAssignments, setMtAssignments] = useState([]);
+  const [mtManager, setMtManager] = useState('');
+  const [mtTeacher, setMtTeacher] = useState('');
+  const [mtLoading, setMtLoading] = useState(false);
+
   // Teacher code state
   const [teacherCodes, setTeacherCodes] = useState([]);
   const [newCodeValue, setNewCodeValue] = useState('');
@@ -74,6 +80,7 @@ export default function AdminPage() {
 
     fetchUsers();
     fetchAssignments();
+    fetchManagerAssignments();
     fetchTeacherCodes();
     fetchInviteCodes();
     fetchRecentBugs();
@@ -142,6 +149,53 @@ export default function AdminPage() {
       if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
       showToast('ok', 'Assignment removed.');
       fetchAssignments();
+    } catch (err) {
+      showToast('danger', err.message);
+    }
+  }
+
+  // ── Manager-Teacher assignments ──
+  async function fetchManagerAssignments() {
+    try {
+      const res = await fetch('/api/admin/manager-assignments');
+      const json = await res.json();
+      if (res.ok) setMtAssignments(json.assignments || []);
+    } catch {}
+  }
+
+  async function handleMtAssign() {
+    if (!mtManager || !mtTeacher) return showToast('danger', 'Select both a manager and a teacher.');
+    if (mtManager === mtTeacher) return showToast('danger', 'Cannot assign a user to themselves.');
+    setMtLoading(true);
+    try {
+      const res = await fetch('/api/admin/manager-assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manager_id: mtManager, teacher_id: mtTeacher }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      showToast('ok', 'Teacher assigned to manager.');
+      setMtManager('');
+      setMtTeacher('');
+      fetchManagerAssignments();
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setMtLoading(false);
+    }
+  }
+
+  async function handleMtUnassign(managerId, teacherId) {
+    try {
+      const res = await fetch('/api/admin/manager-assignments', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manager_id: managerId, teacher_id: teacherId }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      showToast('ok', 'Manager-teacher assignment removed.');
+      fetchManagerAssignments();
     } catch (err) {
       showToast('danger', err.message);
     }
@@ -826,6 +880,69 @@ export default function AdminPage() {
                         <button
                           className="adminAssignRemove"
                           onClick={() => handleUnassign(a.teacher_id, a.student_id)}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* ── Manager-Teacher Assignments ────────────────────── */}
+      <section className="adminAssignSection">
+        <h2 className="h2" style={{ marginBottom: 16 }}>Manager-Teacher Assignments</h2>
+
+        <div className="adminAssignGrid">
+          <label className="adminLabel">
+            Manager
+            <select className="adminSelect" value={mtManager} onChange={(e) => setMtManager(e.target.value)}>
+              <option value="">Select manager…</option>
+              {profiles.filter(p => p.role === 'manager').map(p => (
+                <option key={p.id} value={p.id}>{p.email}</option>
+              ))}
+            </select>
+          </label>
+          <label className="adminLabel">
+            Teacher
+            <select className="adminSelect" value={mtTeacher} onChange={(e) => setMtTeacher(e.target.value)}>
+              <option value="">Select teacher…</option>
+              {profiles.filter(p => p.role === 'teacher').map(p => (
+                <option key={p.id} value={p.id}>{p.email}</option>
+              ))}
+            </select>
+          </label>
+          <button className="btn" onClick={handleMtAssign} disabled={mtLoading} style={{ marginBottom: 2 }}>
+            {mtLoading ? 'Assigning…' : 'Assign'}
+          </button>
+        </div>
+
+        {mtAssignments.length > 0 && (
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <table className="adminAssignTable">
+              <thead>
+                <tr>
+                  <th>Manager</th>
+                  <th>Teacher</th>
+                  <th style={{ width: 80 }} />
+                </tr>
+              </thead>
+              <tbody>
+                {mtAssignments.map((a) => {
+                  const manager = profiles.find(p => p.id === a.manager_id);
+                  const teacher = profiles.find(p => p.id === a.teacher_id);
+                  return (
+                    <tr key={`${a.manager_id}-${a.teacher_id}`}>
+                      <td>{manager?.email || a.manager_id}</td>
+                      <td>{teacher?.email || a.teacher_id}</td>
+                      <td>
+                        <button
+                          className="adminAssignRemove"
+                          onClick={() => handleMtUnassign(a.manager_id, a.teacher_id)}
                         >
                           Remove
                         </button>

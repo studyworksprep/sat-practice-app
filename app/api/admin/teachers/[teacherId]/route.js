@@ -18,6 +18,19 @@ export async function GET(_request, { params }) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  // If manager, verify they are assigned to this teacher
+  if (adminProfile.role === 'manager') {
+    const { data: mta } = await supabase
+      .from('manager_teacher_assignments')
+      .select('teacher_id')
+      .eq('manager_id', user.id)
+      .eq('teacher_id', teacherId)
+      .maybeSingle();
+    if (!mta) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  }
+
   // Teacher profile + assigned student IDs in parallel
   const [{ data: teacher }, { data: assignments }] = await Promise.all([
     supabase
