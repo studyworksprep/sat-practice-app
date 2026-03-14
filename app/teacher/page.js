@@ -46,6 +46,22 @@ function formatDateTime(iso) {
     ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
+function relativeTime(iso) {
+  if (!iso) return 'Never';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `${weeks}w ago`;
+  return formatDate(iso);
+}
+
 // ─── Bar chart for test scores ───────────────────────────
 function TestScoreBarChart({ testScores }) {
   if (!testScores?.length) return null;
@@ -227,52 +243,6 @@ function DomainTable({ domainStats, topicStats }) {
           </div>
         );
       })}
-    </div>
-  );
-}
-
-// ─── Welcome / info panel ────────────────────────────────
-function WelcomePanel({ role }) {
-  return (
-    <div className="tchWelcome">
-      <div className="card tchWelcomeCard">
-        <h2 className="h1" style={{ marginBottom: 8 }}>
-          {role === 'admin' ? 'Admin Dashboard' : 'Teacher Dashboard'}
-        </h2>
-        <p className="muted" style={{ marginBottom: 20 }}>
-          Select a student from the panel on the left to view their progress, or use the Assignments tab to create and track question assignments.
-        </p>
-        <div className="tchFeatureGrid">
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128202;</div>
-            <div>
-              <strong>Practice Test Results</strong>
-              <p className="muted small">View bar charts of test scores over time. Click any test to see the full question-by-question breakdown.</p>
-            </div>
-          </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128200;</div>
-            <div>
-              <strong>Domain & Topic Performance</strong>
-              <p className="muted small">See accuracy and completion percentage across all SAT domains, with drill-down into individual skills.</p>
-            </div>
-          </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128221;</div>
-            <div>
-              <strong>Assignments</strong>
-              <p className="muted small">Create targeted question assignments by topic and difficulty. Track student completion and performance.</p>
-            </div>
-          </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#127919;</div>
-            <div>
-              <strong>Key Statistics</strong>
-              <p className="muted small">At-a-glance metrics including highest test score, strongest/weakest topics, and recent accuracy.</p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -570,7 +540,7 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
 }
 
 // ─── Assignment list panel ────────────────────────────────
-function AssignmentsPanel({ students }) {
+function AssignmentsPanel({ students, onBack }) {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -617,7 +587,10 @@ function AssignmentsPanel({ students }) {
   return (
     <div className="tchStudentDetail">
       <div className="tchStudentHeader">
-        <h2 className="h1" style={{ margin: 0 }}>Assignments</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button className="btn secondary" onClick={onBack} style={{ padding: '4px 10px', fontSize: 13 }}>Back</button>
+          <h2 className="h1" style={{ margin: 0 }}>Assignments</h2>
+        </div>
         <button className="btn primary" onClick={() => setShowCreate(true)}>+ New Assignment</button>
       </div>
       {showCreate && <CreateAssignmentModal students={students} onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); loadAssignments(); }} />}
@@ -703,7 +676,7 @@ function AssignmentsPanel({ students }) {
 }
 
 // ─── Student detail panel ────────────────────────────────
-function StudentDetail({ studentId }) {
+function StudentDetail({ studentId, onBack }) {
   const router = useRouter();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -727,9 +700,12 @@ function StudentDetail({ studentId }) {
   return (
     <div className="tchStudentDetail">
       <div className="tchStudentHeader">
-        <div>
-          <h2 className="h1" style={{ margin: 0 }}>{displayName(student)}</h2>
-          <p className="muted small" style={{ margin: 0 }}>{student.email}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button className="btn secondary" onClick={onBack} style={{ padding: '4px 10px', fontSize: 13 }}>Back</button>
+          <div>
+            <h2 className="h1" style={{ margin: 0 }}>{displayName(student)}</h2>
+            <p className="muted small" style={{ margin: 0 }}>{student.email}</p>
+          </div>
         </div>
         <button className="btn secondary tchEditBtn" onClick={() => setEditOpen(true)}>Edit</button>
       </div>
@@ -750,7 +726,7 @@ function StudentDetail({ studentId }) {
         </div>
       </div>
       <div style={{ textAlign: 'center', margin: '4px 0 16px' }}>
-        <Link href={`/teacher/student/${studentId}/stats`} className="dbMoreStatsLink">More Statistics →</Link>
+        <Link href={`/teacher/student/${studentId}/stats`} className="dbMoreStatsLink">More Statistics</Link>
       </div>
       <div className="card tchSection">
         <h3 className="h2" style={{ marginBottom: 14 }}>Practice Test Results</h3>
@@ -795,6 +771,278 @@ function StudentDetail({ studentId }) {
   );
 }
 
+// ─── Trend arrow component ──────────────────────────────
+function TrendIndicator({ trend }) {
+  if (trend === null || trend === undefined) return <span className="muted">—</span>;
+  const isUp = trend > 0;
+  const isDown = trend < 0;
+  const color = isUp ? 'var(--success)' : isDown ? 'var(--danger)' : 'var(--text-muted)';
+  const arrow = isUp ? '\u2191' : isDown ? '\u2193' : '\u2192';
+  return (
+    <span style={{ color, fontWeight: 600, fontSize: 13 }}>
+      {arrow} {isUp ? '+' : ''}{trend}%
+    </span>
+  );
+}
+
+// ─── Dashboard overview (roster + alerts) ─────────────────
+function DashboardOverview({ onSelectStudent, onShowAssignments }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sortBy, setSortBy] = useState('last_activity');
+  const [sortDir, setSortDir] = useState('desc');
+
+  useEffect(() => {
+    fetch('/api/teacher/roster-overview')
+      .then(r => r.json())
+      .then(d => { if (d.error) throw new Error(d.error); setData(d); })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading dashboard...</p></div>;
+  if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+
+  const students = data?.students || [];
+  const alerts = data?.alerts || {};
+
+  // Sort
+  function toggleSort(col) {
+    if (sortBy === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortBy(col); setSortDir('desc'); }
+  }
+
+  const sorted = [...students].sort((a, b) => {
+    let av = a[sortBy], bv = b[sortBy];
+    // Handle nulls: push to bottom
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    if (sortBy === 'last_activity') {
+      av = new Date(av).getTime();
+      bv = new Date(bv).getTime();
+    }
+    if (typeof av === 'string') {
+      av = av.toLowerCase();
+      bv = (bv || '').toLowerCase();
+    }
+    if (av < bv) return sortDir === 'asc' ? -1 : 1;
+    if (av > bv) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const sortIcon = (col) => {
+    if (sortBy !== col) return '';
+    return sortDir === 'asc' ? ' \u25B2' : ' \u25BC';
+  };
+
+  // Summary stats
+  const totalStudents = students.length;
+  const activeThisWeek = students.filter(s => s.weekly_attempts > 0).length;
+  const avgAccuracy = (() => {
+    const withAcc = students.filter(s => s.recent_accuracy != null);
+    if (!withAcc.length) return null;
+    return Math.round(withAcc.reduce((sum, s) => sum + s.recent_accuracy, 0) / withAcc.length);
+  })();
+
+  // Build lookup for alerts by student id
+  const inactiveSet = new Set((alerts.inactive || []).map(a => a.id));
+  const decliningSet = new Set((alerts.declining || []).map(a => a.id));
+  const improvingSet = new Set((alerts.improving || []).map(a => a.id));
+
+  return (
+    <div className="tchDashboard">
+      {/* Header */}
+      <div className="tchDashHeader">
+        <h1 className="h1" style={{ margin: 0 }}>Tutor Dashboard</h1>
+        <button className="btn secondary" onClick={onShowAssignments}>Assignments</button>
+      </div>
+
+      {/* Summary stats strip */}
+      <div className="tchSummaryStrip">
+        <div className="tchSummaryItem">
+          <span className="tchSummaryValue">{totalStudents}</span>
+          <span className="tchSummaryLabel">Students</span>
+        </div>
+        <div className="tchSummaryItem">
+          <span className="tchSummaryValue">{activeThisWeek}</span>
+          <span className="tchSummaryLabel">Active this week</span>
+        </div>
+        <div className="tchSummaryItem">
+          <span className="tchSummaryValue" style={{ color: pctColor(avgAccuracy) }}>{avgAccuracy != null ? `${avgAccuracy}%` : '—'}</span>
+          <span className="tchSummaryLabel">Avg. accuracy</span>
+        </div>
+        <div className="tchSummaryItem">
+          <span className="tchSummaryValue" style={{ color: alerts.declining?.length ? 'var(--danger)' : 'var(--success)' }}>{alerts.declining?.length || 0}</span>
+          <span className="tchSummaryLabel">Needs attention</span>
+        </div>
+      </div>
+
+      <div className="tchDashBody">
+        {/* Left: student roster table */}
+        <div className="tchRosterPanel">
+          <div className="card tchRosterCard">
+            <div className="tchRosterHeader">
+              <h2 className="h2" style={{ margin: 0 }}>Student Roster</h2>
+              <span className="muted small">{totalStudents} student{totalStudents !== 1 ? 's' : ''}</span>
+            </div>
+
+            {students.length === 0 ? (
+              <div style={{ padding: 24 }}>
+                <p className="muted">No students on your roster yet.</p>
+                <p className="muted small">Ask an admin to assign students to your account.</p>
+              </div>
+            ) : (
+              <div className="tchRosterTable">
+                <div className="tchRosterThead">
+                  <span className="tchRosterTh tchRosterThName" onClick={() => toggleSort('first_name')} style={{ cursor: 'pointer' }}>Student{sortIcon('first_name')}</span>
+                  <span className="tchRosterTh tchRosterThActive" onClick={() => toggleSort('last_activity')} style={{ cursor: 'pointer' }}>Last Active{sortIcon('last_activity')}</span>
+                  <span className="tchRosterTh tchRosterThNum" onClick={() => toggleSort('total_attempted')} style={{ cursor: 'pointer' }}>Questions{sortIcon('total_attempted')}</span>
+                  <span className="tchRosterTh tchRosterThNum" onClick={() => toggleSort('recent_accuracy')} style={{ cursor: 'pointer' }}>Accuracy{sortIcon('recent_accuracy')}</span>
+                  <span className="tchRosterTh tchRosterThTrend">Trend</span>
+                  <span className="tchRosterTh tchRosterThNum" onClick={() => toggleSort('highest_test_score')} style={{ cursor: 'pointer' }}>Best Score{sortIcon('highest_test_score')}</span>
+                  <span className="tchRosterTh tchRosterThActions">Actions</span>
+                </div>
+
+                {sorted.map(s => {
+                  const isInactive = inactiveSet.has(s.id);
+                  const isDeclining = decliningSet.has(s.id);
+                  const isImproving = improvingSet.has(s.id);
+
+                  return (
+                    <div
+                      key={s.id}
+                      className={`tchRosterRow${isInactive ? ' inactive' : ''}${isDeclining ? ' declining' : ''}${isImproving ? ' improving' : ''}`}
+                    >
+                      <span className="tchRosterTd tchRosterTdName">
+                        <span className="tchRosterAvatar">{(s.first_name || s.email || '?')[0].toUpperCase()}</span>
+                        <span>
+                          <span className="tchRosterStudentName">{displayName(s)}</span>
+                          {s.target_sat_score && <span className="tchRosterTarget">Target: {s.target_sat_score}</span>}
+                        </span>
+                      </span>
+                      <span className={`tchRosterTd tchRosterTdActive${isInactive ? ' warn' : ''}`}>
+                        {relativeTime(s.last_activity)}
+                        {s.weekly_attempts > 0 && <span className="tchRosterWeekly">{s.weekly_attempts} this wk</span>}
+                      </span>
+                      <span className="tchRosterTd tchRosterTdNum">{s.total_attempted || 0}</span>
+                      <span className="tchRosterTd tchRosterTdNum">
+                        {s.recent_accuracy != null ? (
+                          <span style={{ color: pctColor(s.recent_accuracy), fontWeight: 600 }}>{s.recent_accuracy}%</span>
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </span>
+                      <span className="tchRosterTd tchRosterTdTrend">
+                        <TrendIndicator trend={s.accuracy_trend} />
+                      </span>
+                      <span className="tchRosterTd tchRosterTdNum">
+                        {s.highest_test_score ? (
+                          <span style={{ fontWeight: 600 }}>{s.highest_test_score}</span>
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </span>
+                      <span className="tchRosterTd tchRosterTdActions">
+                        <button className="btn primary tchRosterBtn" onClick={() => onSelectStudent(s.id)}>View</button>
+                        <Link href={`/teacher/student/${s.id}/stats`} className="btn secondary tchRosterBtn">Stats</Link>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right: alerts panel */}
+        <div className="tchAlertsPanel">
+          {/* Inactive students */}
+          {alerts.inactive?.length > 0 && (
+            <div className="card tchAlertCard">
+              <h3 className="tchAlertTitle tchAlertTitleWarn">Inactive Students</h3>
+              <div className="tchAlertList">
+                {alerts.inactive.map(a => {
+                  const s = students.find(x => x.id === a.id);
+                  if (!s) return null;
+                  return (
+                    <div key={a.id} className="tchAlertItem">
+                      <div className="tchAlertItemInfo">
+                        <span className="tchAlertItemName">{displayName(s)}</span>
+                        <span className="tchAlertItemMeta">
+                          {a.days_inactive != null ? `${a.days_inactive} days inactive` : 'No activity recorded'}
+                        </span>
+                      </div>
+                      <button className="btn secondary tchAlertBtn" onClick={() => onSelectStudent(a.id)}>View</button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Declining accuracy */}
+          {alerts.declining?.length > 0 && (
+            <div className="card tchAlertCard">
+              <h3 className="tchAlertTitle tchAlertTitleDanger">Declining Accuracy</h3>
+              <div className="tchAlertList">
+                {alerts.declining.map(a => {
+                  const s = students.find(x => x.id === a.id);
+                  if (!s) return null;
+                  return (
+                    <div key={a.id} className="tchAlertItem">
+                      <div className="tchAlertItemInfo">
+                        <span className="tchAlertItemName">{displayName(s)}</span>
+                        <span className="tchAlertItemMeta" style={{ color: 'var(--danger)' }}>
+                          {a.trend}% from previous period
+                        </span>
+                      </div>
+                      <button className="btn secondary tchAlertBtn" onClick={() => onSelectStudent(a.id)}>View</button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Improving / momentum */}
+          {alerts.improving?.length > 0 && (
+            <div className="card tchAlertCard">
+              <h3 className="tchAlertTitle tchAlertTitleSuccess">Gaining Momentum</h3>
+              <div className="tchAlertList">
+                {alerts.improving.map(a => {
+                  const s = students.find(x => x.id === a.id);
+                  if (!s) return null;
+                  return (
+                    <div key={a.id} className="tchAlertItem">
+                      <div className="tchAlertItemInfo">
+                        <span className="tchAlertItemName">{displayName(s)}</span>
+                        <span className="tchAlertItemMeta" style={{ color: 'var(--success)' }}>
+                          +{a.trend}% from previous period
+                        </span>
+                      </div>
+                      <button className="btn secondary tchAlertBtn" onClick={() => onSelectStudent(a.id)}>View</button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* No alerts at all */}
+          {!alerts.inactive?.length && !alerts.declining?.length && !alerts.improving?.length && (
+            <div className="card tchAlertCard">
+              <h3 className="tchAlertTitle">All Clear</h3>
+              <p className="muted small" style={{ margin: 0 }}>No alerts right now. All students are active and on track.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main teacher page ───────────────────────────────────
 export default function TeacherPage() {
   return <Suspense><TeacherPageInner /></Suspense>;
@@ -803,78 +1051,50 @@ export default function TeacherPage() {
 function TeacherPageInner() {
   const supabase = createClient();
   const searchParams = useSearchParams();
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState(searchParams.get('selected') ? 'student' : 'dashboard');
   const [selectedId, setSelectedId] = useState(searchParams.get('selected') || null);
-  const [role, setRole] = useState(null);
-  const [search, setSearch] = useState('');
-  const [sidebarTab, setSidebarTab] = useState('students');
+  const [students, setStudents] = useState([]);
+  const [studentsLoaded, setStudentsLoaded] = useState(false);
 
-  function loadStudents() {
+  // Load basic student list for assignment modal
+  useEffect(() => {
     fetch('/api/teacher/students')
       .then(r => r.json())
-      .then(d => setStudents(d.students || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) {
-        supabase.from('profiles').select('role').eq('id', data.user.id).maybeSingle().then(({ data: p }) => setRole(p?.role));
-      }
-    });
-    loadStudents();
+      .then(d => { setStudents(d.students || []); setStudentsLoaded(true); })
+      .catch(() => setStudentsLoaded(true));
   }, []);
 
-  const filtered = students.filter(s => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (s.email || '').toLowerCase().includes(q) || displayName(s).toLowerCase().includes(q);
-  });
+  function selectStudent(id) {
+    setSelectedId(id);
+    setView('student');
+  }
+
+  function goBack() {
+    setView('dashboard');
+    setSelectedId(null);
+  }
 
   return (
-    <div className="tchLayout">
-      <aside className="tchSidebar">
-        <div className="tchSidebarHeader">
-          <div className="tchSidebarTabs">
-            <button className={`tchSidebarTabBtn${sidebarTab === 'students' ? ' active' : ''}`} onClick={() => setSidebarTab('students')}>
-              Students <span className="tchSidebarCount">{students.length}</span>
-            </button>
-            <button className={`tchSidebarTabBtn${sidebarTab === 'assignments' ? ' active' : ''}`} onClick={() => { setSidebarTab('assignments'); setSelectedId(null); }}>
-              Assignments
-            </button>
-          </div>
-        </div>
-        {sidebarTab === 'students' && (
-          <>
-            <div className="tchSearchWrap">
-              <input type="text" className="tchSearchInput" placeholder="Search students..." value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <div className="tchStudentList">
-              {loading ? <p className="muted small" style={{ padding: '12px 16px' }}>Loading...</p> : filtered.length === 0 ? (
-                <p className="muted small" style={{ padding: '12px 16px' }}>{students.length === 0 ? 'No students assigned yet. Ask an admin to add students to your roster.' : 'No matches.'}</p>
-              ) : filtered.map(s => (
-                <button key={s.id} className={`tchStudentItem${selectedId === s.id ? ' active' : ''}`} onClick={() => { setSelectedId(s.id); setSidebarTab('students'); }}>
-                  <div className="tchStudentAvatar">{(s.first_name || s.email || '?')[0].toUpperCase()}</div>
-                  <div className="tchStudentInfo">
-                    <span className="tchStudentName">{displayName(s)}</span>
-                    <span className="tchStudentEmail">{s.email}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-        {sidebarTab === 'assignments' && (
-          <div style={{ padding: '12px 16px' }}>
-            <p className="muted small" style={{ margin: 0 }}>Manage assignments in the main panel.</p>
-          </div>
-        )}
-      </aside>
-      <main className="tchMain">
-        {sidebarTab === 'assignments' ? <AssignmentsPanel students={students} /> : selectedId ? <StudentDetail key={selectedId} studentId={selectedId} /> : <WelcomePanel role={role} />}
-      </main>
+    <div className="container tchPage">
+      {view === 'dashboard' && (
+        <DashboardOverview
+          onSelectStudent={selectStudent}
+          onShowAssignments={() => setView('assignments')}
+        />
+      )}
+      {view === 'student' && selectedId && (
+        <StudentDetail
+          key={selectedId}
+          studentId={selectedId}
+          onBack={goBack}
+        />
+      )}
+      {view === 'assignments' && (
+        <AssignmentsPanel
+          students={students}
+          onBack={goBack}
+        />
+      )}
     </div>
   );
 }

@@ -3394,100 +3394,176 @@ hr{
    Teacher Page
 ================================ */
 
-.tchLayout{
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  min-height: calc(100vh - var(--nav-h));
+/* ── Page container ── */
+
+.tchPage{
+  max-width: 1280px;
+  padding-top: 24px;
+  padding-bottom: 48px;
 }
 
-@media (max-width: 768px){
-  .tchLayout{ grid-template-columns: 1fr; }
-  .tchSidebar{ max-height: 280px; }
-}
+/* ── Dashboard overview ── */
 
-/* ── Sidebar ── */
+.tchDashboard{}
 
-.tchSidebar{
-  background: var(--card);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.tchSidebarHeader{
+.tchDashHeader{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 16px 0;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
-.tchSidebarTitle{
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0;
+.tchSummaryStrip{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
-.tchSidebarCount{
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 99px;
-}
-
-.tchSearchWrap{
-  padding: 12px 16px 8px;
-}
-
-.tchSearchInput{
-  width: 100%;
-  padding: 8px 12px;
+.tchSummaryItem{
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 13px;
-  background: var(--bg);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tchSummaryValue{
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.tchSummaryLabel{
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tchDashBody{
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 960px){
+  .tchDashBody{ grid-template-columns: 1fr; }
+  .tchSummaryStrip{ grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 500px){
+  .tchSummaryStrip{ grid-template-columns: 1fr; }
+}
+
+/* ── Roster table ── */
+
+.tchRosterPanel{
+  min-width: 0;
+}
+
+.tchRosterCard{
+  padding: 0;
+  overflow: hidden;
+}
+
+.tchRosterHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tchRosterTable{
+  overflow-x: auto;
+}
+
+.tchRosterThead{
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) 110px 80px 80px 80px 80px minmax(100px, 1fr);
+  gap: 0;
+  padding: 0 16px;
+  background: rgba(17,24,39,0.025);
+  border-bottom: 1px solid var(--border);
+}
+
+.tchRosterTh{
+  padding: 10px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tchRosterTh:hover{
   color: var(--text);
-  outline: none;
-  transition: border-color 0.15s;
 }
 
-.tchSearchInput:focus{
-  border-color: var(--accent);
+.tchRosterThNum, .tchRosterTdNum{
+  text-align: center;
 }
 
-.tchStudentList{
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px 8px 8px;
+.tchRosterThTrend, .tchRosterTdTrend{
+  text-align: center;
 }
 
-.tchStudentItem{
+.tchRosterThActions, .tchRosterTdActions{
+  text-align: right;
+}
+
+.tchRosterRow{
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) 110px 80px 80px 80px 80px minmax(100px, 1fr);
+  gap: 0;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+.tchRosterRow:last-child{
+  border-bottom: none;
+}
+
+.tchRosterRow:hover{
+  background: rgba(37,99,235,0.03);
+}
+
+.tchRosterRow.inactive{
+  background: rgba(217,119,117,0.04);
+}
+
+.tchRosterRow.declining{
+  background: rgba(217,119,117,0.04);
+}
+
+.tchRosterRow.improving{
+  background: rgba(91,168,118,0.04);
+}
+
+.tchRosterTd{
+  padding: 12px 8px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.tchRosterTdName{
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 100%;
-  padding: 10px 12px;
-  border: none;
-  background: none;
-  border-radius: 10px;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.12s;
+  min-width: 0;
 }
 
-.tchStudentItem:hover{
-  background: rgba(37,99,235,0.06);
-}
-
-.tchStudentItem.active{
-  background: var(--accent-soft);
-}
-
-.tchStudentAvatar{
-  width: 32px;
-  height: 32px;
+.tchRosterAvatar{
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: linear-gradient(135deg, #6b9bd2, #9b8ec4);
   color: #fff;
@@ -3495,17 +3571,130 @@ hr{
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   flex-shrink: 0;
 }
 
-.tchStudentInfo{
+.tchRosterStudentName{
+  font-weight: 600;
+  font-size: 13px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tchRosterTarget{
+  font-size: 11px;
+  color: var(--muted);
+  display: block;
+}
+
+.tchRosterTdActive{
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  font-size: 13px;
+}
+
+.tchRosterTdActive.warn{
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.tchRosterWeekly{
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.tchRosterTdNum{
+  justify-content: center;
+  font-size: 13px;
+}
+
+.tchRosterTdTrend{
+  justify-content: center;
+}
+
+.tchRosterTdActions{
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.tchRosterBtn{
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+  border-radius: 6px !important;
+}
+
+@media (max-width: 800px){
+  .tchRosterThead,
+  .tchRosterRow{
+    grid-template-columns: minmax(140px, 2fr) 90px 60px 60px 60px minmax(80px, 1fr);
+  }
+  /* Hide trend column on smaller screens */
+  .tchRosterThTrend,
+  .tchRosterTdTrend{
+    display: none;
+  }
+}
+
+/* ── Alerts panel ── */
+
+.tchAlertsPanel{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 24px;
+}
+
+.tchAlertCard{
+  padding: 16px;
+}
+
+.tchAlertTitle{
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+
+.tchAlertTitleWarn{
+  border-bottom-color: var(--amber);
+}
+
+.tchAlertTitleDanger{
+  border-bottom-color: var(--danger);
+}
+
+.tchAlertTitleSuccess{
+  border-bottom-color: var(--success);
+}
+
+.tchAlertList{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tchAlertItem{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tchAlertItemInfo{
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.tchStudentName{
+.tchAlertItemName{
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
@@ -3513,59 +3702,15 @@ hr{
   text-overflow: ellipsis;
 }
 
-.tchStudentEmail{
+.tchAlertItemMeta{
   font-size: 11px;
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-/* ── Main content ── */
-
-.tchMain{
-  padding: 24px 28px;
-  overflow-y: auto;
-  max-height: calc(100vh - var(--nav-h));
-}
-
-/* Welcome panel */
-
-.tchWelcome{
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.tchWelcomeCard{
-  padding: 28px;
-}
-
-.tchFeatureGrid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-@media (max-width: 600px){
-  .tchFeatureGrid{ grid-template-columns: 1fr; }
-}
-
-.tchFeature{
-  display: flex;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-}
-
-.tchFeatureIcon{
-  font-size: 24px;
+.tchAlertBtn{
+  padding: 3px 8px !important;
+  font-size: 11px !important;
   flex-shrink: 0;
-}
-
-.tchFeature p{
-  margin: 4px 0 0;
 }
 
 /* Student detail */
