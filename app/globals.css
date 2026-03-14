@@ -3532,38 +3532,54 @@ hr{
 
 .tchDashHeader{
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 20px;
 }
 
-.tchSummaryStrip{
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+/* ── Combined info card ── */
+
+.tchInfoCard{
   margin-bottom: 24px;
+  padding: 20px 24px;
 }
 
-.tchSummaryItem{
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 18px;
+.tchInfoRow{
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.tchInfoStat{
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.tchSummaryValue{
-  font-size: 24px;
+.tchInfoStatValue{
+  font-size: 22px;
   font-weight: 750;
   letter-spacing: -0.02em;
 }
 
-.tchSummaryLabel{
+.tchInfoStatLabel{
   font-size: 12px;
   color: var(--muted);
+}
+
+.tchInfoDivider{
+  width: 1px;
+  height: 36px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.tchInviteCode{
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.06em;
+  color: var(--accent);
 }
 
 .tchDashBody{
@@ -3575,11 +3591,12 @@ hr{
 
 @media (max-width: 960px){
   .tchDashBody{ grid-template-columns: 1fr; }
-  .tchSummaryStrip{ grid-template-columns: 1fr 1fr; }
 }
 
-@media (max-width: 500px){
-  .tchSummaryStrip{ grid-template-columns: 1fr; }
+@media (max-width: 600px){
+  .tchInfoRow{ gap: 16px; }
+  .tchInfoDivider{ display: none; }
+  .tchInfoRow{ display: grid; grid-template-columns: 1fr 1fr; }
 }
 
 /* ── Roster table ── */

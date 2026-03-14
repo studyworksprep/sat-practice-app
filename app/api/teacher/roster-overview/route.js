@@ -24,7 +24,7 @@ export async function GET() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, first_name, last_name, email, teacher_invite_code')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -299,7 +299,14 @@ export async function GET() {
     .filter(s => s.accuracy_trend !== null && s.accuracy_trend >= 8)
     .map(s => ({ id: s.id, trend: s.accuracy_trend, recent_accuracy: s.recent_accuracy }));
 
+  const teacherName = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.email || 'Teacher';
+
   return NextResponse.json({
+    teacher: {
+      name: teacherName,
+      role: profile.role,
+      invite_code: profile.teacher_invite_code || null,
+    },
     students,
     alerts: { inactive, declining, improving },
   });

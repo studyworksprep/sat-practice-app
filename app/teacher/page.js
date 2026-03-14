@@ -1482,6 +1482,7 @@ function DashboardOverview({ onSelectStudent, onShowAssignments }) {
   if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading dashboard...</p></div>;
   if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
 
+  const teacher = data?.teacher || {};
   const students = data?.students || [];
   const alerts = data?.alerts || {};
 
@@ -1531,29 +1532,46 @@ function DashboardOverview({ onSelectStudent, onShowAssignments }) {
 
   return (
     <div className="tchDashboard">
-      {/* Header */}
+      {/* Header with teacher name */}
       <div className="tchDashHeader">
-        <h1 className="h1" style={{ margin: 0 }}>Tutor Dashboard</h1>
+        <div>
+          <h1 className="h1" style={{ margin: 0 }}>{teacher.name || 'Dashboard'}</h1>
+          <span className="muted" style={{ fontSize: 14 }}>{teacher.role === 'admin' ? 'Admin' : 'Tutor'} Dashboard</span>
+        </div>
         <button className="btn secondary" onClick={onShowAssignments}>Assignments</button>
       </div>
 
-      {/* Summary stats strip */}
-      <div className="tchSummaryStrip">
-        <div className="tchSummaryItem">
-          <span className="tchSummaryValue">{totalStudents}</span>
-          <span className="tchSummaryLabel">Students</span>
-        </div>
-        <div className="tchSummaryItem">
-          <span className="tchSummaryValue">{activeThisWeek}</span>
-          <span className="tchSummaryLabel">Active this week</span>
-        </div>
-        <div className="tchSummaryItem">
-          <span className="tchSummaryValue" style={{ color: pctColor(avgAccuracy) }}>{avgAccuracy != null ? `${avgAccuracy}%` : '—'}</span>
-          <span className="tchSummaryLabel">Avg. accuracy</span>
-        </div>
-        <div className="tchSummaryItem">
-          <span className="tchSummaryValue" style={{ color: alerts.declining?.length ? 'var(--danger)' : 'var(--success)' }}>{alerts.declining?.length || 0}</span>
-          <span className="tchSummaryLabel">Needs attention</span>
+      {/* Combined roster info card */}
+      <div className="card tchInfoCard">
+        <div className="tchInfoRow">
+          <div className="tchInfoStat">
+            <span className="tchInfoStatValue">{totalStudents}</span>
+            <span className="tchInfoStatLabel">Students</span>
+          </div>
+          <div className="tchInfoDivider" />
+          <div className="tchInfoStat">
+            <span className="tchInfoStatValue">{activeThisWeek}</span>
+            <span className="tchInfoStatLabel">Active this week</span>
+          </div>
+          <div className="tchInfoDivider" />
+          <div className="tchInfoStat">
+            <span className="tchInfoStatValue" style={{ color: pctColor(avgAccuracy) }}>{avgAccuracy != null ? `${avgAccuracy}%` : '—'}</span>
+            <span className="tchInfoStatLabel">Avg. accuracy (30-day)</span>
+          </div>
+          <div className="tchInfoDivider" />
+          <div className="tchInfoStat">
+            <span className="tchInfoStatValue" style={{ color: alerts.declining?.length ? 'var(--danger)' : 'var(--success)' }}>{alerts.declining?.length || 0}</span>
+            <span className="tchInfoStatLabel">Needs attention</span>
+          </div>
+          {teacher.invite_code && (
+            <>
+              <div className="tchInfoDivider" />
+              <div className="tchInfoStat">
+                <span className="tchInfoStatValue tchInviteCode">{teacher.invite_code}</span>
+                <span className="tchInfoStatLabel">Invite code</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
