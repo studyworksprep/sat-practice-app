@@ -100,6 +100,7 @@ export async function GET() {
       recentTests: [],
       activityByStudent: [],
       rosterMastery: { domains: [], topics: [] },
+      upcomingRegistrations: [],
     });
   }
 
@@ -111,6 +112,7 @@ export async function GET() {
     { data: completedTests },
     { data: flashcardData },
     { data: allTax },
+    { data: registrations },
   ] = await Promise.all([
     svc
       .from('profiles')
@@ -137,6 +139,13 @@ export async function GET() {
       .from('question_taxonomy')
       .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
       .limit(50000),
+    svc
+      .from('sat_test_registrations')
+      .select('id, user_id, test_date')
+      .in('user_id', studentIds)
+      .gte('test_date', new Date().toISOString())
+      .order('test_date', { ascending: true })
+      .limit(50),
   ]);
 
   // Get flashcard counts per student
@@ -324,6 +333,19 @@ export async function GET() {
     correct: t.attempts.filter(a => a.is_correct).length,
   })).sort((a, b) => a.skill_name.localeCompare(b.skill_name));
 
+  // ── Upcoming SAT registrations ──
+  const now = Date.now();
+  const upcomingRegistrations = (registrations || []).map(r => {
+    const testTime = new Date(r.test_date).getTime();
+    const daysUntil = Math.ceil((testTime - now) / 86400000);
+    return {
+      student_id: r.user_id,
+      student_name: displayName(profileMap[r.user_id]),
+      test_date: r.test_date,
+      days_until: daysUntil,
+    };
+  });
+
   return NextResponse.json({
     studentCount: studentIds.length,
     recentSessions,
@@ -333,6 +355,7 @@ export async function GET() {
       domains: domainMastery,
       topics: topicMastery,
     },
+    upcomingRegistrations,
   });
 }
 
