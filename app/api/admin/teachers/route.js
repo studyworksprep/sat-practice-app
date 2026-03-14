@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../../lib/supabase/server';
 
 // GET /api/admin/teachers — list teachers (admins see all, managers see assigned)
 export async function GET() {
@@ -17,10 +17,13 @@ export async function GET() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  // Use service client for cross-user queries (auth already verified above)
+  const svc = createServiceClient();
+
   let teachers;
   if (profile.role === 'admin') {
     // Admins see all teachers and managers
-    const { data } = await supabase
+    const { data } = await svc
       .from('profiles')
       .select('id, email, first_name, last_name, created_at, is_active, role')
       .in('role', ['teacher', 'manager'])
@@ -28,7 +31,7 @@ export async function GET() {
     teachers = data || [];
   } else {
     // Managers see only their assigned teachers
-    const { data: mta } = await supabase
+    const { data: mta } = await svc
       .from('manager_teacher_assignments')
       .select('teacher_id')
       .eq('manager_id', user.id);
@@ -38,7 +41,7 @@ export async function GET() {
       return NextResponse.json({ teachers: [] });
     }
 
-    const { data } = await supabase
+    const { data } = await svc
       .from('profiles')
       .select('id, email, first_name, last_name, created_at, is_active, role')
       .in('id', teacherIds)
@@ -49,7 +52,7 @@ export async function GET() {
   // Get student counts for these teachers
   const teacherIds = teachers.map(t => t.id);
   const { data: assignments } = teacherIds.length
-    ? await supabase
+    ? await svc
         .from('teacher_student_assignments')
         .select('teacher_id, student_id')
         .in('teacher_id', teacherIds)

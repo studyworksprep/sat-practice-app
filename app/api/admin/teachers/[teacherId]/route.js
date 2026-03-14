@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
 
 // GET /api/admin/teachers/[teacherId] — teacher detail with assigned students and their activity
 export async function GET(_request, { params }) {
@@ -18,9 +18,12 @@ export async function GET(_request, { params }) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  // Use service client for cross-user queries (auth already verified above)
+  const svc = createServiceClient();
+
   // If manager, verify they are assigned to this teacher
   if (adminProfile.role === 'manager') {
-    const { data: mta } = await supabase
+    const { data: mta } = await svc
       .from('manager_teacher_assignments')
       .select('teacher_id')
       .eq('manager_id', user.id)
@@ -33,12 +36,12 @@ export async function GET(_request, { params }) {
 
   // Teacher profile + assigned student IDs in parallel
   const [{ data: teacher }, { data: assignments }] = await Promise.all([
-    supabase
+    svc
       .from('profiles')
       .select('id, email, first_name, last_name, created_at, is_active, high_school, teacher_invite_code')
       .eq('id', teacherId)
       .maybeSingle(),
-    supabase
+    svc
       .from('teacher_student_assignments')
       .select('student_id')
       .eq('teacher_id', teacherId),
@@ -58,14 +61,14 @@ export async function GET(_request, { params }) {
     { data: questionAssignments },
   ] = await Promise.all([
     studentIds.length
-      ? supabase
+      ? svc
           .from('profiles')
           .select('id, email, first_name, last_name, is_active, graduation_year, high_school, target_sat_score')
           .in('id', studentIds)
           .order('email', { ascending: true })
       : Promise.resolve({ data: [] }),
     studentIds.length
-      ? supabase
+      ? svc
           .from('question_status')
           .select('user_id, last_is_correct, last_attempt_at')
           .in('user_id', studentIds)
@@ -74,13 +77,13 @@ export async function GET(_request, { params }) {
           .limit(10000)
       : Promise.resolve({ data: [] }),
     studentIds.length
-      ? supabase
+      ? svc
           .from('practice_test_attempts')
           .select('id, user_id')
           .in('user_id', studentIds)
           .eq('status', 'completed')
       : Promise.resolve({ data: [] }),
-    supabase
+    svc
       .from('question_assignments')
       .select('id, title, created_at, due_date, question_count')
       .eq('created_by', teacherId)
@@ -144,7 +147,7 @@ export async function GET(_request, { params }) {
 
   // ── Teacher's own training data ──────────────────────────────────
   // Practice test results
-  const { data: teacherTests } = await supabase
+  const { data: teacherTests } = await svc
     .from('practice_test_attempts')
     .select('id, practice_test_id, status, started_at, finished_at, composite_score, rw_scaled, math_scaled')
     .eq('user_id', teacherId)
@@ -155,7 +158,7 @@ export async function GET(_request, { params }) {
   // Get test names for teacher's tests
   const teacherTestIds = [...new Set((teacherTests || []).map(t => t.practice_test_id))];
   const { data: teacherTestNames } = teacherTestIds.length
-    ? await supabase.from('practice_tests').select('id, name').in('id', teacherTestIds)
+    ? await svc.from('practice_tests').select('id, name').in('id', teacherTestIds)
     : { data: [] };
   const testNameMap = {};
   for (const t of teacherTestNames || []) testNameMap[t.id] = t.name;
@@ -170,7 +173,7 @@ export async function GET(_request, { params }) {
   }));
 
   // Teacher's own practice sessions (question attempts)
-  const { data: teacherStatuses } = await supabase
+  const { data: teacherStatuses } = await svc
     .from('question_status')
     .select('question_id, last_is_correct, last_attempt_at')
     .eq('user_id', teacherId)
@@ -203,7 +206,7 @@ export async function GET(_request, { params }) {
     let allTax = [];
     for (let i = 0; i < tQuestionIds.length; i += 1000) {
       const chunk = tQuestionIds.slice(i, i + 1000);
-      const { data: taxData } = await supabase
+      const { data: taxData } = await svc
         .from('question_taxonomy')
         .select('question_id, domain_code, domain_name, skill_name')
         .in('question_id', chunk);
