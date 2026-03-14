@@ -11,6 +11,7 @@ import { useKeyboardShortcuts } from '../../../lib/useKeyboardShortcuts';
 
 const htmlHasContent = (html) => {
   if (!html) return false;
+  if (/<img\s/i.test(html)) return true;
   const text = html.replace(/<[^>]+>/g, '').trim();
   return text.length > 0 && text !== 'NULL';
 };
@@ -162,6 +163,13 @@ function DesmosPanel({ isOpen, storageKey }) {
         settingsMenu: true,
         zoomButtons: true,
         forceEnableGeometryFunctions: true,
+        degreeMode: true,
+        clearIntoDegreeMode: true,
+        images: false,
+        folders: false,
+        notes: false,
+        links: false,
+        restrictedFunctions: true,
       });
 
       restoreState();
@@ -288,6 +296,15 @@ export default function PracticeQuestionPage() {
   const [errorLogSaving, setErrorLogSaving] = useState(false);
   const [errorLogSaved, setErrorLogSaved] = useState(false);
 
+  // Flashcard state
+  const [showFlashcardDialog, setShowFlashcardDialog] = useState(false);
+  const [flashcardSets, setFlashcardSets] = useState([]);
+  const [flashcardSetId, setFlashcardSetId] = useState('');
+  const [flashcardFront, setFlashcardFront] = useState('');
+  const [flashcardBack, setFlashcardBack] = useState('');
+  const [flashcardSaving, setFlashcardSaving] = useState(false);
+  const [flashcardSaved, setFlashcardSaved] = useState(false);
+
   // Keep refPosRef synced with state (state is the persisted value)
   useEffect(() => {
     refPosRef.current = refPos;
@@ -348,7 +365,7 @@ export default function PracticeQuestionPage() {
 
   // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
-    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'hide_broken', 'q', 'session', 'replay', 'sid'];
+    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'hide_broken', 'q', 'session', 'replay', 'sid', 'tm'];
     const p = new URLSearchParams();
     for (const k of keys) {
       const v = searchParams.get(k);
@@ -360,6 +377,7 @@ export default function PracticeQuestionPage() {
   const sessionParamsString = useMemo(() => sessionParams.toString(), [sessionParams]);
   const inSessionContext = sessionParams.get('session') === '1';
   const sidParam = searchParams.get('sid') || null;
+  const isTeacherMode = searchParams.get('tm') === '1';
 
   // Overlay for questions answered/marked in the current session, keyed by question_id
   // Persisted to sessionStorage so badges survive page remounts on navigation
@@ -523,10 +541,15 @@ export default function PracticeQuestionPage() {
         if (!res.ok) throw new Error(json?.error || 'Failed to load question');
       }
 
+      // In Teacher Mode, strip status/history so the question appears fresh
+      if (isTeacherMode) {
+        json = { ...json, status: null, correct_option_id: null, correct_text: null };
+      }
+
       setData(json);
       if (json?.user_role) setUserRole(json.user_role);
 
-      if (json?.question_id) {
+      if (json?.question_id && !isTeacherMode) {
         setSessionResults((prev) => ({
           ...prev,
           [String(json.question_id)]: {
@@ -538,23 +561,14 @@ export default function PracticeQuestionPage() {
       }
 
       // Reset retry state for the new question
-      const prevCorrect = json.status?.is_done && json.status?.last_is_correct;
-      setGotCorrect(Boolean(prevCorrect));
+      setGotCorrect(false);
       setGaveUp(false);
       setWrongOptionIds([]);
       setWrongTexts([]);
 
-      if (prevCorrect) {
-        // Returning to a correctly-answered question: restore last selection
-        if (json?.status?.status_json?.last_selected_option_id) setSelected(json.status.status_json.last_selected_option_id);
-        else setSelected(null);
-        if (json?.status?.status_json?.last_response_text) setResponseText(json.status.status_json.last_response_text);
-        else setResponseText('');
-      } else {
-        // Fresh or previously-wrong question: start clean
-        setSelected(null);
-        setResponseText('');
-      }
+      // Always start clean: no pre-selected answer
+      setSelected(null);
+      setResponseText('');
 
       startedAtRef.current = Date.now();
       setShowExplanation(false);
@@ -803,11 +817,15 @@ export default function PracticeQuestionPage() {
     const wasDone = Boolean(status?.is_done);
     setSubmitting(true);
     const time_spent_ms = Math.max(0, Date.now() - startedAtRef.current);
+    // Determine attempt source: replay sessions are 'review', everything else is 'practice'
+    const isReplay = searchParams.get('replay') === '1';
     const body = {
       question_id: data.question_id,
       selected_option_id: qTypeLocal === 'mcq' ? selected : null,
       response_text: qTypeLocal === 'spr' ? responseText : null,
       time_spent_ms,
+      source: isReplay ? 'review' : 'practice',
+      teacher_mode: isTeacherMode || undefined,
     };
 
     try {
@@ -823,27 +841,39 @@ export default function PracticeQuestionPage() {
       const qid = String(data.question_id);
 
       // Store correct answer from API response for client-side retry checking
-      setData((prev) => {
-        if (!prev) return prev;
-        const prevStatus = prev.status || {};
-        return {
-          ...prev,
-          correct_option_id: json.correct_option_id ?? prev.correct_option_id,
-          correct_text: json.correct_text ?? prev.correct_text,
-          status: {
-            ...prevStatus,
-            attempts_count: json.attempts_count ?? (prevStatus.attempts_count ?? 0) + 1,
-            correct_attempts_count: json.correct_attempts_count ?? prevStatus.correct_attempts_count,
-            is_done: true,
-            last_is_correct: json.is_correct,
-          },
-        };
-      });
+      if (isTeacherMode) {
+        // Teacher Mode: update local data with correct answer info but don't touch status
+        setData((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            correct_option_id: json.correct_option_id ?? prev.correct_option_id,
+            correct_text: json.correct_text ?? prev.correct_text,
+          };
+        });
+      } else {
+        setData((prev) => {
+          if (!prev) return prev;
+          const prevStatus = prev.status || {};
+          return {
+            ...prev,
+            correct_option_id: json.correct_option_id ?? prev.correct_option_id,
+            correct_text: json.correct_text ?? prev.correct_text,
+            status: {
+              ...prevStatus,
+              attempts_count: json.attempts_count ?? (prevStatus.attempts_count ?? 0) + 1,
+              correct_attempts_count: json.correct_attempts_count ?? prevStatus.correct_attempts_count,
+              is_done: true,
+              last_is_correct: json.is_correct,
+            },
+          };
+        });
+      }
 
       if (json.is_correct) {
         setGotCorrect(true);
-        // Only update session tracking on the true first attempt
-        if (!wasDone) {
+        // Only update session tracking on the true first attempt (skip in Teacher Mode)
+        if (!isTeacherMode && !wasDone) {
           setSessionResults((prev) => ({
             ...prev,
             [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: true },
@@ -856,8 +886,8 @@ export default function PracticeQuestionPage() {
         } else if (qTypeLocal === 'spr' && responseText.trim()) {
           setWrongTexts((prev) => [...prev, responseText.trim()]);
         }
-        // Only update session tracking on the true first attempt
-        if (!wasDone) {
+        // Only update session tracking on the true first attempt (skip in Teacher Mode)
+        if (!isTeacherMode && !wasDone) {
           setSessionResults((prev) => ({
             ...prev,
             [qid]: { ...(prev[qid] || {}), is_done: true, last_is_correct: false },
@@ -872,7 +902,7 @@ export default function PracticeQuestionPage() {
   }
 
   async function toggleMarkForReview() {
-    if (!data?.question_id) return;
+    if (!data?.question_id || isTeacherMode) return;
     const next = !Boolean(data?.status?.marked_for_review);
     const qid = String(data.question_id);
     try {
@@ -936,6 +966,41 @@ export default function PracticeQuestionPage() {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
       setErrorLogSaving(false);
+    }
+  }
+
+  async function openFlashcardDialog() {
+    setShowFlashcardDialog(true);
+    setFlashcardSaved(false);
+    try {
+      const res = await fetch('/api/flashcard-sets');
+      const json = await res.json();
+      if (res.ok && json.sets) {
+        setFlashcardSets(json.sets);
+        if (!flashcardSetId && json.sets.length) setFlashcardSetId(json.sets[0].id);
+      }
+    } catch {}
+  }
+
+  async function saveFlashcard() {
+    if (!flashcardSetId || !flashcardFront.trim() || !flashcardBack.trim()) return;
+    setFlashcardSaving(true);
+    try {
+      const res = await fetch('/api/flashcards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ set_id: flashcardSetId, front: flashcardFront.trim(), back: flashcardBack.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to save flashcard');
+      setFlashcardSaved(true);
+      setFlashcardFront('');
+      setFlashcardBack('');
+      setMsg({ kind: 'ok', text: 'Flashcard saved!' });
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setFlashcardSaving(false);
     }
   }
 
@@ -1161,8 +1226,7 @@ export default function PracticeQuestionPage() {
   const options = Array.isArray(data?.options) ? data.options : [];
   const status = data?.status || {};
   // Lock only when student got it right or gave up (clicked Show Explanation)
-  // Also lock if returning to a previously-correct question
-  const locked = gotCorrect || gaveUp || Boolean(status?.is_done && status?.last_is_correct);
+  const locked = gotCorrect || gaveUp;
   const correctOptionId = data?.correct_option_id || null;
   const correctText = data?.correct_text || null;
 
@@ -1182,14 +1246,16 @@ export default function PracticeQuestionPage() {
     return m > 0 ? `${m}:${String(sec).padStart(2, '0')}` : `${sec}s`;
   };
 
-  const headerPills = [
-    { label: 'Correct', value: status?.correct_attempts_count ?? 0 },
-    { label: 'Done', value: status?.is_done ? 'Yes' : 'No' },
-  ];
+  // Done pill: green "Yes" if correct, red "Yes" if wrong, plain "No" if unanswered
+  const doneValue = status?.is_done ? 'Yes' : 'No';
+  const doneColor = status?.is_done
+    ? (status?.last_is_correct ? 'var(--success)' : 'var(--danger)')
+    : undefined;
 
   // ✅ Pills row now includes Question # (index1) on the left
   const renderStatusPills = (style) => (
     <div
+      className="statusPillRow"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -1204,22 +1270,14 @@ export default function PracticeQuestionPage() {
       </div>
 
       <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-        {/* Per-question timer */}
-        <span className="pill" style={{ fontVariantNumeric: 'tabular-nums' }}>
-          <span className="muted">Time</span>{' '}
-          <span className="kbd">{formatElapsed(elapsedMs)}</span>
-        </span>
-        {questionTimeData?.global_avg_ms && (
-          <span className="pill" title="Average time across all students">
-            <span className="muted">Avg</span>{' '}
-            <span className="kbd">{formatElapsed(questionTimeData.global_avg_ms)}</span>
+        {isTeacherMode ? (
+          <span className="pill" style={{ background: '#7c3aed', color: '#fff', fontWeight: 700 }}>Teacher Mode</span>
+        ) : (
+          <span className="pill">
+            <span className="muted">Done</span>{' '}
+            <span className="kbd" style={doneColor ? { color: doneColor, fontWeight: 700 } : undefined}>{doneValue}</span>
           </span>
         )}
-        {headerPills.map((p) => (
-          <span key={p.label} className="pill">
-            <span className="muted">{p.label}</span> <span className="kbd">{p.value}</span>
-          </span>
-        ))}
 
         <div style={{ position: 'relative' }}>
           <button
@@ -1325,17 +1383,17 @@ export default function PracticeQuestionPage() {
   }, { enabled: !showCorrectModal && !showRef });
 
   // ✅ No visible "Stimulus/Question" headers (keep srOnly for a11y)
-  const renderPromptBlocks = (mb = 12) => (
+  const renderPromptBlocks = () => (
     <>
       {htmlHasContent(version?.stimulus_html) ? (
-        <div className="card subcard" style={{ marginBottom: mb }}>
+        <div style={{ marginBottom: 12 }}>
           <div className="srOnly">Stimulus</div>
           <HtmlBlock className="prose" html={version.stimulus_html} />
         </div>
       ) : null}
 
       {version?.stem_html ? (
-        <div className="card subcard" style={{ marginBottom: mb }}>
+        <div style={{ marginBottom: 12 }}>
           <div className="srOnly">Question</div>
           <HtmlBlock className="prose" html={version.stem_html} />
         </div>
@@ -1416,6 +1474,10 @@ export default function PracticeQuestionPage() {
             {showErrorLog ? 'Hide Error Log' : (errorLogText.trim() ? 'Edit Error Log' : 'Add to Error Log')}
           </button>
         )}
+
+        <button className="btn secondary" onClick={openFlashcardDialog}>
+          Make Flashcard
+        </button>
 
         <div className="btnRow">
           <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
@@ -1527,6 +1589,10 @@ export default function PracticeQuestionPage() {
             {showErrorLog ? 'Hide Error Log' : (errorLogText.trim() ? 'Edit Error Log' : 'Add to Error Log')}
           </button>
         )}
+
+        <button className="btn secondary" onClick={openFlashcardDialog}>
+          Make Flashcard
+        </button>
 
         <button className="btn secondary" onClick={goPrev} disabled={prevDisabled}>
           Prev
@@ -1664,7 +1730,7 @@ export default function PracticeQuestionPage() {
   }
 
   return (
-    <main className="container">
+    <main className="container containerWide">
       <div className="questionTopBar">
         <div>
           <Link className="btn secondary" href="/practice">
@@ -1672,25 +1738,35 @@ export default function PracticeQuestionPage() {
           </Link>
         </div>
 
-        <button
-          type="button"
-          className="qmapTrigger"
-          onClick={openMap}
-          disabled={!inSessionContext}
-          title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
-          aria-label="Open question map"
-        >
-          <span className="qmapTriggerCount">
-            {index1 != null && total != null ? (
-              <>{index1} / {total}</>
-            ) : total != null ? (
-              <>— / {total}</>
-            ) : (
-              <>…</>
-            )}
-          </span>
-          <span className="qmapTriggerChevron" aria-hidden="true">▾</span>
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <button
+            type="button"
+            className="qmapTrigger"
+            onClick={openMap}
+            disabled={!inSessionContext}
+            title={inSessionContext ? 'Open question map' : 'Map available when opened from the practice list'}
+            aria-label="Open question map"
+          >
+            <span className="qmapTriggerCount">
+              {index1 != null && total != null ? (
+                <>{index1} / {total}</>
+              ) : total != null ? (
+                <>— / {total}</>
+              ) : (
+                <>…</>
+              )}
+            </span>
+            <span className="qmapTriggerChevron" aria-hidden="true">▾</span>
+          </button>
+
+          <div className="topBarTimer" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span>{formatElapsed(elapsedMs)}</span>
+          </div>
+        </div>
 
         <div className="questionTopBarRight">
           {/* Per-question time shown in status pills instead of session timer */}
@@ -1739,32 +1815,32 @@ export default function PracticeQuestionPage() {
             <div className="qaDivider" aria-hidden="true" />
 
             <div className="qaRight">
-              {renderStatusPills({ marginBottom: 14 })}
-              {version?.stem_html && (
-                <div className="card subcard" style={{ marginBottom: 12 }}>
-                  <HtmlBlock className="prose" html={version.stem_html} />
-                </div>
-              )}
-              {mcqOptionsArea}
+              <div className="card subcard qaRightPanel">
+                {renderStatusPills()}
+                {version?.stem_html && (
+                  <div style={{ marginBottom: 12 }}>
+                    <HtmlBlock className="prose" html={version.stem_html} />
+                  </div>
+                )}
+                {mcqOptionsArea}
+              </div>
             </div>
           </div>
         ) : isMath ? (
           // Math: calc left; right status+prompt+answers
           mathShellJsx(<>
             {mathToolRow}
-            <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
+            <div className="card subcard qaRightPanel">
               {renderStatusPills()}
+              {renderPromptBlocks()}
+              {mcqOptionsArea}
             </div>
-            {renderPromptBlocks(12)}
-            {mcqOptionsArea}
           </>)
         ) : (
           // Default MCQ
-          <div>
-            <div className="card subcard" style={{ padding: 12, marginBottom: 12 }}>
-              {renderStatusPills()}
-            </div>
-            {renderPromptBlocks(12)}
+          <div className="card subcard qaRightPanel">
+            {renderStatusPills()}
+            {renderPromptBlocks()}
             {mcqOptionsArea}
           </div>
         )
@@ -1772,15 +1848,17 @@ export default function PracticeQuestionPage() {
         // Math SPR
         mathShellJsx(<>
           {mathToolRow}
-          {renderStatusPills({ marginBottom: 14 })}
-          {renderPromptBlocks(12)}
-          {sprAnswerArea}
+          <div className="card subcard qaRightPanel">
+            {renderStatusPills()}
+            {renderPromptBlocks()}
+            {sprAnswerArea}
+          </div>
         </>)
       ) : (
         // Default SPR
-        <div>
-          {renderStatusPills({ marginBottom: 14 })}
-          {renderPromptBlocks(12)}
+        <div className="card subcard qaRightPanel">
+          {renderStatusPills()}
+          {renderPromptBlocks()}
           {sprAnswerArea}
         </div>
       )}
@@ -1967,7 +2045,7 @@ export default function PracticeQuestionPage() {
                     >
                       <span className="mapNum">{i}</span>
 
-                      {showMark ? (
+                      {!isTeacherMode && showMark ? (
                         <span className="mapIconCorner mapIconLeft" aria-hidden="true">
                           <span className="mapIconBadge mark" title="Marked for review">
                             <svg viewBox="0 0 24 24" width="14" height="14">
@@ -1977,7 +2055,7 @@ export default function PracticeQuestionPage() {
                         </span>
                       ) : null}
 
-                      {showCorrect || showIncorrect ? (
+                      {!isTeacherMode && (showCorrect || showIncorrect) ? (
                         <span className="mapIconCorner mapIconRight" aria-hidden="true">
                           {showCorrect ? (
                             <span className="mapIconBadge correct" title="Correct">
@@ -2095,6 +2173,60 @@ export default function PracticeQuestionPage() {
           </div>
         </div>
       ) : null}
+
+      {/* Flashcard dialog */}
+      {showFlashcardDialog && (
+        <div className="modalOverlay" onClick={() => setShowFlashcardDialog(false)}>
+          <div className="modalCard" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 440 }}>
+            <div className="h2" style={{ marginBottom: 12 }}>Make Flashcard</div>
+
+            <label className="small muted" style={{ display: 'block', marginBottom: 4 }}>Set</label>
+            <select
+              className="input"
+              value={flashcardSetId}
+              onChange={(e) => setFlashcardSetId(e.target.value)}
+              style={{ marginBottom: 12 }}
+            >
+              {flashcardSets.map((s) => (
+                <option key={s.id} value={s.id}>{s.name} ({s.card_count})</option>
+              ))}
+            </select>
+
+            <label className="small muted" style={{ display: 'block', marginBottom: 4 }}>Front</label>
+            <textarea
+              className="input"
+              value={flashcardFront}
+              onChange={(e) => { setFlashcardFront(e.target.value); setFlashcardSaved(false); }}
+              placeholder="Term, question, or concept…"
+              rows={2}
+              style={{ marginBottom: 12 }}
+            />
+
+            <label className="small muted" style={{ display: 'block', marginBottom: 4 }}>Back</label>
+            <textarea
+              className="input"
+              value={flashcardBack}
+              onChange={(e) => { setFlashcardBack(e.target.value); setFlashcardSaved(false); }}
+              placeholder="Definition, answer, or explanation…"
+              rows={3}
+              style={{ marginBottom: 16 }}
+            />
+
+            <div className="row" style={{ gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn secondary" onClick={() => setShowFlashcardDialog(false)}>
+                Close
+              </button>
+              <button
+                className="btn primary"
+                onClick={saveFlashcard}
+                disabled={flashcardSaving || !flashcardFront.trim() || !flashcardBack.trim() || !flashcardSetId}
+              >
+                {flashcardSaving ? 'Saving…' : flashcardSaved ? 'Saved!' : 'Save Card'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </main>
   );

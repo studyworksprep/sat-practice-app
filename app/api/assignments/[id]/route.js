@@ -41,24 +41,23 @@ export async function GET(request, { params }) {
 
   const questionIds = assignment.question_ids || [];
 
-  // Fetch taxonomy for each question
+  // Fetch taxonomy and student status in parallel
   let questions = [];
   if (questionIds.length) {
-    const { data: taxRows } = await supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_code, domain_name, skill_code, skill_name, difficulty, score_band')
-      .in('question_id', questionIds);
+    const [{ data: taxRows }, { data: statusRows }] = await Promise.all([
+      supabase
+        .from('question_taxonomy')
+        .select('question_id, domain_code, domain_name, skill_code, skill_name, difficulty, score_band')
+        .in('question_id', questionIds),
+      supabase
+        .from('question_status')
+        .select('question_id, is_done, last_is_correct, attempts_count, correct_attempts_count')
+        .eq('user_id', user.id)
+        .in('question_id', questionIds),
+    ]);
 
     const taxMap = {};
     for (const t of taxRows || []) taxMap[t.question_id] = t;
-
-    // Fetch student's status for these questions
-    const { data: statusRows } = await supabase
-      .from('question_status')
-      .select('question_id, is_done, last_is_correct, attempts_count, correct_attempts_count')
-      .eq('user_id', user.id)
-      .in('question_id', questionIds);
-
     const statusMap = {};
     for (const s of statusRows || []) statusMap[s.question_id] = s;
 

@@ -5,7 +5,11 @@ import LandingClient from '../components/LandingClient';
 export default async function HomePage() {
   const { user, profile } = await getUserWithProfile();
   if (user) {
-    redirect(profile?.role === 'practice' ? '/practice' : '/dashboard');
+    const dest =
+      profile?.role === 'practice' ? '/practice' :
+      profile?.role === 'teacher' ? '/teacher' :
+      '/dashboard';
+    redirect(dest);
   }
   return <LandingClient />;
 }
