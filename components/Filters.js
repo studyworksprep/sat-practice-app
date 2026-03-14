@@ -24,11 +24,25 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   const [counts,     setCounts]     = useState({});
   const [randomize,  setRandomize]  = useState(false);
   const [starting,   setStarting]   = useState(false);
+  const [openSkills, setOpenSkills] = useState(null); // domain_name of open skills popover
   const countsInitialMount = useRef(true);
   const initialCounts = useRef(null);
+  const popoverRef = useRef(null);
 
   // Propagate state changes to parent
   useEffect(() => { onChange?.(state); }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Close skills popover on outside click
+  useEffect(() => {
+    if (!openSkills) return;
+    function handleClick(e) {
+      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+        setOpenSkills(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [openSkills]);
 
   // Load domain/topic lists + initial unfiltered counts in one fetch
   useEffect(() => {
@@ -47,9 +61,6 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   }, []);
 
   // Re-fetch counts when contextual filters change (difficulty/score_band/flags).
-  // Skips the initial mount — unfiltered counts already come from /api/filters above.
-  // When no contextual filters are active, restores the initial counts instead of
-  // re-fetching, which avoids race conditions and endpoint discrepancies.
   useEffect(() => {
     if (countsInitialMount.current) { countsInitialMount.current = false; return; }
 
@@ -60,7 +71,6 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
       state.marked_only ||
       state.show_broken;
 
-    // No contextual filters active — restore the initial unfiltered counts
     if (!hasContextualFilter && initialCounts.current) {
       setCounts(initialCounts.current);
       return;
@@ -162,7 +172,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     };
   }, [allDomains, allTopics]);
 
-  // Category-level counts (sum of domain counts; undefined until counts load)
+  // Category-level counts
   const mathTotal = useMemo(() => {
     if (!Object.keys(counts).length) return undefined;
     return mathDomains.reduce((s, d) => s + (counts[d.domain_name]?.count ?? 0), 0);
@@ -173,13 +183,18 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     return rwDomains.reduce((s, d) => s + (counts[d.domain_name]?.count ?? 0), 0);
   }, [rwDomains, counts]);
 
-  // Is at least one filter active? (enables the Start button)
   const hasFilter =
     state.difficulties.length > 0 ||
     state.score_bands.length  > 0 ||
     state.domains.length      > 0 ||
     state.topics.length       > 0 ||
     state.wrong_only || state.marked_only;
+
+  // Count how many skills are selected within a domain
+  function selectedSkillCount(domain) {
+    if (state.domains.includes(domain.domain_name)) return domain.topics.length;
+    return domain.topics.filter(t => state.topics.includes(t.skill_code || t.skill_name)).length;
+  }
 
   async function handleStart() {
     if (!hasFilter || starting) return;
@@ -208,42 +223,68 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     const domainOn         = state.domains.includes(domain.domain_name);
     const domainTopicCodes = domain.topics.map((t) => t.skill_code || t.skill_name);
     const domainCount      = counts[domain.domain_name]?.count;
+    const skillsSel        = selectedSkillCount(domain);
+    const isPopoverOpen    = openSkills === domain.domain_name;
 
     return (
       <div key={domain.domain_name} className={`domainGroup ${colorClass}`}>
-        <label className={`domainChip ${colorClass}${domainOn ? ' on' : ''}`}>
-          <input
-            type="checkbox"
-            checked={domainOn}
-            onChange={() => toggleDomain(domain.domain_name, domainTopicCodes)}
-          />
-          <span style={{ flex: 1 }}>{domain.domain_name}</span>
-          {domainCount !== undefined && <span className="filterCount">{domainCount}</span>}
-        </label>
+        <div className="domainRow">
+          <label className={`domainChip ${colorClass}${domainOn ? ' on' : ''}`}>
+            <input
+              type="checkbox"
+              checked={domainOn}
+              onChange={() => toggleDomain(domain.domain_name, domainTopicCodes)}
+            />
+            <span style={{ flex: 1 }}>{domain.domain_name}</span>
+            {domainCount !== undefined && <span className="filterCount">{domainCount}</span>}
+          </label>
 
-        {domain.topics.length > 0 && (
-          <div className="topicChips">
-            {domain.topics.map((topic) => {
-              const topicKey   = topic.skill_code || topic.skill_name;
-              const topicOn    = domainOn || state.topics.includes(topicKey);
-              const topicCount = counts[domain.domain_name]?.topics?.[topicKey];
-              return (
-                <label
-                  key={topicKey}
-                  className={`chip sm${topicOn ? ' on' : ''}`}
-                  style={domainOn ? { opacity: 0.6, cursor: 'default' } : undefined}
-                >
-                  <input
-                    type="checkbox"
-                    checked={topicOn}
-                    disabled={domainOn}
-                    onChange={() => toggleTopic(domain.domain_name, topicKey)}
-                  />
-                  <span>{topic.skill_name}</span>
-                  {topicCount !== undefined && <span className="filterCount">{topicCount}</span>}
-                </label>
-              );
-            })}
+          {domain.topics.length > 0 && (
+            <button
+              className={`domainSkillsBtn ${colorClass}${skillsSel > 0 && !domainOn ? ' hasSelection' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenSkills(isPopoverOpen ? null : domain.domain_name);
+              }}
+            >
+              Skills{skillsSel > 0 && !domainOn ? ` (${skillsSel})` : ''}
+              <svg viewBox="0 0 16 16" width="12" height="12" className={isPopoverOpen ? 'open' : ''}>
+                <polyline points="4 6 8 10 12 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {/* Skills popover */}
+        {isPopoverOpen && domain.topics.length > 0 && (
+          <div className={`skillsPopover ${colorClass}`} ref={popoverRef}>
+            <div className="skillsPopoverHeader">
+              <span className="small" style={{ fontWeight: 600 }}>Skills in {domain.domain_name}</span>
+              <button className="skillsPopoverClose" onClick={() => setOpenSkills(null)}>Done</button>
+            </div>
+            <div className="skillsPopoverBody">
+              {domain.topics.map((topic) => {
+                const topicKey   = topic.skill_code || topic.skill_name;
+                const topicOn    = domainOn || state.topics.includes(topicKey);
+                const topicCount = counts[domain.domain_name]?.topics?.[topicKey];
+                return (
+                  <label
+                    key={topicKey}
+                    className={`chip sm${topicOn ? ' on' : ''}`}
+                    style={domainOn ? { opacity: 0.6, cursor: 'default' } : undefined}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={topicOn}
+                      disabled={domainOn}
+                      onChange={() => toggleTopic(domain.domain_name, topicKey)}
+                    />
+                    <span>{topic.skill_name}</span>
+                    {topicCount !== undefined && <span className="filterCount">{topicCount}</span>}
+                  </label>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -318,7 +359,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
         </div>
       </div>
 
-      {/* Domain & Topic — two columns with selectable category headers */}
+      {/* Domain & Topic — two columns, compact rows with skills popovers */}
       <div className="filterDomainCols">
         <div>
           {renderCategory('Math', mathDomains, mathTotal, 'math')}
