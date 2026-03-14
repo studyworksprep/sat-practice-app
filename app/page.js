@@ -7,7 +7,7 @@ export default async function HomePage() {
   if (user) {
     const dest =
       profile?.role === 'practice' ? '/practice' :
-      profile?.role === 'teacher' ? '/teacher' :
+      profile?.role === 'teacher' || profile?.role === 'manager' ? '/teacher' :
       '/dashboard';
     redirect(dest);
   }

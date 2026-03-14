@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '../../lib/supabase/browser';
 
-const ROLE_ORDER = ['admin', 'teacher', 'student', 'practice'];
-const ROLE_LABEL = { admin: 'Admin', teacher: 'Teacher', student: 'Student', practice: 'Practice' };
+const ROLE_ORDER = ['admin', 'manager', 'teacher', 'student', 'practice'];
+const ROLE_LABEL = { admin: 'Admin', manager: 'Manager', teacher: 'Teacher', student: 'Student', practice: 'Practice' };
 const ROLE_COLOR = {
   admin: '#7c3aed',
+  manager: '#0891b2',
   teacher: '#2563eb',
   student: '#16a34a',
   practice: '#6b7280',
@@ -784,7 +785,7 @@ export default function AdminPage() {
             Teacher
             <select className="adminSelect" value={assignTeacher} onChange={(e) => setAssignTeacher(e.target.value)}>
               <option value="">Select teacher…</option>
-              {profiles.filter(p => p.role === 'teacher' || p.role === 'admin').map(p => (
+              {profiles.filter(p => p.role === 'teacher' || p.role === 'manager' || p.role === 'admin').map(p => (
                 <option key={p.id} value={p.id}>{p.email}</option>
               ))}
             </select>

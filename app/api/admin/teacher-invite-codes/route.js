@@ -30,7 +30,7 @@ export async function GET() {
   let { data: teachers, error } = await supabase
     .from('profiles')
     .select('id, email, first_name, last_name, teacher_invite_code')
-    .in('role', ['teacher', 'admin'])
+    .in('role', ['teacher', 'manager', 'admin'])
     .order('last_name', { ascending: true });
 
   // If teacher_invite_code column doesn't exist yet, retry without it
@@ -38,7 +38,7 @@ export async function GET() {
     const fallback = await supabase
       .from('profiles')
       .select('id, email, first_name, last_name')
-      .in('role', ['teacher', 'admin'])
+      .in('role', ['teacher', 'manager', 'admin'])
       .order('last_name', { ascending: true });
     teachers = (fallback.data || []).map(t => ({ ...t, teacher_invite_code: null }));
     error = fallback.error;

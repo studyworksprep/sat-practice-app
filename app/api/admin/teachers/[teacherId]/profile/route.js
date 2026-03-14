@@ -17,7 +17,7 @@ export async function PATCH(request, { params }) {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.role !== 'admin') {
+  if (profile?.role !== 'admin' && profile?.role !== 'manager') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

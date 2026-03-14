@@ -155,7 +155,8 @@ export default function NavBar() {
   }
 
   const isAdmin = role === 'admin';
-  const isTeacher = role === 'teacher' || role === 'admin';
+  const isManager = role === 'manager';
+  const isTeacher = role === 'teacher' || role === 'manager' || role === 'admin';
   const isPractice = role === 'practice';
   const homeHref = user ? (isPractice ? '/practice' : '/dashboard') : '/';
 
@@ -181,7 +182,7 @@ export default function NavBar() {
                 <Link href="/practice">Question Bank</Link>
                 {!isPractice && <Link href="/review">Review</Link>}
                 {isTeacher && <Link href="/teacher">Students</Link>}
-                {isAdmin && <Link href="/teachers">Teachers</Link>}
+                {(isAdmin || isManager) && <Link href="/teachers">Teachers</Link>}
                 {isAdmin && <Link href="/admin">Admin</Link>}
               </div>
             )}

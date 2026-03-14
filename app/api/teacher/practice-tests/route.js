@@ -40,7 +40,7 @@ export async function GET(request) {
     .maybeSingle();
 
   const role = profile?.role;
-  if (role !== 'teacher' && role !== 'admin') {
+  if (role !== 'teacher' && role !== 'manager' && role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

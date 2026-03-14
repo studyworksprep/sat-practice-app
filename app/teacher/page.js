@@ -395,7 +395,7 @@ function TeacherDashboardHub({ role, students, onSelectStudent }) {
   return (
     <div className="tchDashHub">
       <div className="tchDashHubHeader">
-        <h2 className="h1" style={{ margin: 0 }}>{role === 'admin' ? 'Admin' : 'Teacher'} Dashboard</h2>
+        <h2 className="h1" style={{ margin: 0 }}>{role === 'admin' ? 'Admin' : role === 'manager' ? 'Manager' : 'Teacher'} Dashboard</h2>
         <span className="muted">{data.studentCount} student{data.studentCount !== 1 ? 's' : ''}</span>
       </div>
 

@@ -18,7 +18,7 @@ export async function GET(_request, { params }) {
     .eq('id', user.id)
     .maybeSingle();
 
-  const isTeacherOrAdmin = profile?.role === 'teacher' || profile?.role === 'admin';
+  const isTeacherOrAdmin = profile?.role === 'teacher' || profile?.role === 'manager' || profile?.role === 'admin';
 
   // Teachers/admins can view any attempt (RLS will filter); students only their own
   const query = supabase

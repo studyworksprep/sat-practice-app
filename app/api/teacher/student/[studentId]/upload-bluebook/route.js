@@ -36,12 +36,12 @@ export async function POST(request, { params }) {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
+  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   // For teachers, verify they can view this student
-  if (profile.role === 'teacher') {
+  if (profile.role === 'teacher' || profile.role === 'manager') {
     const { data: canView } = await supabase.rpc('teacher_can_view_student', {
       target_student_id: studentId,
     });

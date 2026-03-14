@@ -36,6 +36,8 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   useEffect(() => {
     if (!openSkills) return;
     function handleClick(e) {
+      // Ignore clicks on any Skills button (they handle their own toggle)
+      if (e.target.closest('.domainSkillsBtn')) return;
       if (popoverRef.current && !popoverRef.current.contains(e.target)) {
         setOpenSkills(null);
       }

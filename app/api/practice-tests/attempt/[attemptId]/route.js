@@ -17,7 +17,7 @@ export async function DELETE(_request, { params }) {
     .eq('id', user.id)
     .maybeSingle();
 
-  const isTeacherOrAdmin = profile?.role === 'teacher' || profile?.role === 'admin';
+  const isTeacherOrAdmin = profile?.role === 'teacher' || profile?.role === 'manager' || profile?.role === 'admin';
 
   const query = supabase
     .from('practice_test_attempts')

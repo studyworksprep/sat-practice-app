@@ -8,9 +8,9 @@ async function verifyTeacherAccess(supabase, userId, studentId) {
     .eq('id', userId)
     .maybeSingle();
 
-  if (profile?.role !== 'teacher' && profile?.role !== 'admin') return false;
+  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') return false;
 
-  if (profile.role === 'teacher') {
+  if (profile.role === 'teacher' || profile.role === 'manager') {
     const { data: assignment } = await supabase
       .from('teacher_student_assignments')
       .select('teacher_id')

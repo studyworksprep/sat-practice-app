@@ -13,7 +13,7 @@ export async function GET() {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.role !== 'admin') {
+  if (profile?.role !== 'admin' && profile?.role !== 'manager') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -21,7 +21,7 @@ export async function GET() {
   const { data: teachers } = await supabase
     .from('profiles')
     .select('id, email, first_name, last_name, created_at, is_active')
-    .eq('role', 'teacher')
+    .in('role', ['teacher', 'manager'])
     .order('email', { ascending: true });
 
   // Get all teacher-student assignments

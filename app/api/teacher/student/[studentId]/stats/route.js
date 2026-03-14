@@ -19,12 +19,12 @@ export async function GET(_request, { params }) {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
+  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   // For teachers, verify they can view this student
-  if (profile.role === 'teacher') {
+  if (profile.role === 'teacher' || profile.role === 'manager') {
     const { data: assignment } = await supabase
       .from('teacher_student_assignments')
       .select('teacher_id')

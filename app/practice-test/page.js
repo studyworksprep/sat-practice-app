@@ -35,7 +35,7 @@ export default async function PracticeTestListPage() {
     .maybeSingle();
   if ((profile?.role || 'practice') === 'practice') redirect('/practice');
 
-  const isTeacher = profile?.role === 'teacher' || profile?.role === 'admin';
+  const isTeacher = profile?.role === 'teacher' || profile?.role === 'manager' || profile?.role === 'admin';
   const { tests, attempts } = await fetchData(supabase, user.id);
 
   const inProgress = attempts.filter((a) => a.status === 'in_progress');

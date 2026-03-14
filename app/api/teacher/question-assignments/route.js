@@ -19,7 +19,7 @@ export async function GET() {
       .eq("id", user.id)
       .single();
 
-    if (!profile || (profile.role !== "teacher" && profile.role !== "admin")) {
+    if (!profile || (profile.role !== "teacher" && profile.role !== "manager" && profile.role !== "admin")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -114,7 +114,7 @@ export async function POST(request) {
       .eq("id", user.id)
       .single();
 
-    if (!profile || (profile.role !== "teacher" && profile.role !== "admin")) {
+    if (!profile || (profile.role !== "teacher" && profile.role !== "manager" && profile.role !== "admin")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -190,7 +190,7 @@ export async function DELETE(request) {
       .eq("id", user.id)
       .single();
 
-    if (!profile || (profile.role !== "teacher" && profile.role !== "admin")) {
+    if (!profile || (profile.role !== "teacher" && profile.role !== "manager" && profile.role !== "admin")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
