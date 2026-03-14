@@ -4,6 +4,7 @@ import { createClient } from '../../lib/supabase/server';
 import LaunchPanel from './LaunchPanel';
 import AbandonButton from './AbandonButton';
 import DeleteResultButton from './DeleteResultButton';
+import PracticeTestClient from './PracticeTestClient';
 
 function fmt(dateStr) {
   if (!dateStr) return '';
@@ -34,6 +35,7 @@ export default async function PracticeTestListPage() {
     .maybeSingle();
   if ((profile?.role || 'practice') === 'practice') redirect('/practice');
 
+  const isTeacher = profile?.role === 'teacher' || profile?.role === 'admin';
   const { tests, attempts } = await fetchData(supabase, user.id);
 
   const inProgress = attempts.filter((a) => a.status === 'in_progress');
@@ -42,8 +44,8 @@ export default async function PracticeTestListPage() {
   // Map test id → name for the history rows
   const testNameById = Object.fromEntries(tests.map((t) => [t.id, t.name]));
 
-  return (
-    <main className="container ptLandingMain">
+  const trainingContent = (
+    <>
       <h1 className="h1" style={{ marginBottom: 4 }}>Practice Tests</h1>
       <p className="muted small" style={{ marginBottom: 28 }}>
         Full-length, adaptive SAT practice tests with timed modules.
@@ -107,8 +109,10 @@ export default async function PracticeTestListPage() {
           </div>
         </section>
       )}
-    </main>
+    </>
   );
+
+  return <PracticeTestClient trainingContent={trainingContent} isTeacher={isTeacher} />;
 }
 
 // Direct Supabase query to avoid self-referential fetch in server component
@@ -161,7 +165,6 @@ async function fetchData(supabase, userId) {
   let lookupByTestSection = {};
 
   if (completedIds.length > 0) {
-    // Fetch per-module correct counts
     const { data: moduleAttempts } = await supabase
       .from('practice_test_module_attempts')
       .select('practice_test_attempt_id, practice_test_module_id, correct_count')
@@ -179,7 +182,6 @@ async function fetchData(supabase, userId) {
       };
     }
 
-    // Fetch score_conversion lookup rows
     const testIds = [...new Set(completedAttempts.map((a) => a.practice_test_id))];
     const { data: lookupRows } = await supabase
       .from('score_conversion')
