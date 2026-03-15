@@ -32,9 +32,6 @@ function TeacherDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading dashboard...</p></div>;
-  if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
-
   const teacher = rosterData?.teacher || {};
   const students = rosterData?.students || [];
   const alerts = rosterData?.alerts || {};
@@ -56,6 +53,9 @@ function TeacherDashboard() {
   const goToStudent = useCallback((studentId) => {
     router.push(`/teacher/students?selected=${studentId}`);
   }, [router]);
+
+  if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading dashboard...</p></div>;
+  if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
 
   return (
     <div className="container tchPage">
