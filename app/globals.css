@@ -4824,7 +4824,18 @@ hr{
 /* Student detail */
 
 .tchStudentDetail{
-  max-width: 860px;
+  max-width: 1200px;
+}
+
+.tchDetailGrid{
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px){
+  .tchDetailGrid{ grid-template-columns: 1fr; }
 }
 
 .tchStudentHeader{
@@ -4837,7 +4848,7 @@ hr{
 
 .tchOverviewCard{
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .tchProfileRow{
@@ -5040,11 +5051,14 @@ hr{
 
 .tchStatsRow{
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
 }
 
-@media (max-width: 700px){
+@media (max-width: 900px){
+  .tchStatsRow{ grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 500px){
   .tchStatsRow{ grid-template-columns: 1fr 1fr; }
 }
 
