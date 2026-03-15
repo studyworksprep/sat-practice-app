@@ -496,7 +496,7 @@ export default function DashboardClient({ email }) {
       </div>
 
       {/* ── Top stats row (now includes streak) ── */}
-      <div className="dbStatsRow">
+      <div className="dbStatsRow" style={assignmentCompletionPct != null ? { gridTemplateColumns: 'repeat(5, 1fr)' } : undefined}>
         <StreakCard streak={data?.currentStreak} practicedToday={data?.practicedToday} />
         <div className="card dbStatCard">
           <div className="dbStatValue" style={{ color: 'var(--accent)' }}>
