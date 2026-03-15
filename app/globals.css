@@ -1139,6 +1139,14 @@ label{
 .optionContent .prose p{ margin: 0; }
 .optionContent .prose p + p{ margin-top: 10px; }
 
+/* Graph / image answer choices — keep them compact */
+.optionContent .prose img{
+  display: block;
+  max-width: min(200px, 100%);
+  height: auto;
+  margin: 4px 0;
+}
+
 /* Math inside options */
 .optionContent .prose mjx-container{
   font-size: 1.02em;
