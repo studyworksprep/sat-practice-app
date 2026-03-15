@@ -1140,9 +1140,9 @@ label{
 .optionContent .prose p + p{ margin-top: 10px; }
 
 /* Graph / image answer choices — keep them compact */
-.optionContent .prose img{
+.option .optionContent .prose img{
   display: block;
-  max-width: min(200px, 100%);
+  max-width: min(150px, 100%);
   height: auto;
   margin: 4px 0;
 }
