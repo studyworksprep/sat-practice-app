@@ -34,9 +34,9 @@ function TeacherAvatar({ name, fallbackLetter, size = 72 }) {
   const [imgError, setImgError] = useState(false);
   // Try multiple file extensions
   const baseName = name.replace(/\s+/g, ' ').trim();
-  const src = `/profile_pictures/${baseName}.jpg`;
-  const srcPng = `/profile_pictures/${baseName}.png`;
-  const srcWebp = `/profile_pictures/${baseName}.webp`;
+  const src = `/avatars/${baseName}.jpg`;
+  const srcPng = `/avatars/${baseName}.png`;
+  const srcWebp = `/avatars/${baseName}.webp`;
 
   if (imgError) {
     return (
