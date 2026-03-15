@@ -39,8 +39,19 @@ export default function AssignmentDetailPage() {
     const toStart = incomplete.length > 0 ? incomplete : data.questions;
     const ids = toStart.map(q => q.question_id);
     const sid = `assignment_${id}_${Date.now()}`;
-    localStorage.setItem(`practice_session_${sid}`, JSON.stringify(
-      ids.map(qid => ({ question_id: qid }))
+    // Store comma-separated IDs (expected by getSessionIds in practice page)
+    localStorage.setItem(`practice_session_${sid}`, ids.join(','));
+    // Store item metadata so the question map uses assignment questions, not the full DB
+    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+      toStart.map(q => ({
+        question_id: q.question_id,
+        difficulty: q.difficulty,
+        is_done: q.is_done,
+        last_is_correct: q.last_is_correct,
+        marked_for_review: false,
+        domain_name: q.domain_name || '',
+        skill_name: q.skill_name || '',
+      }))
     ));
     localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
       sessionQueryString: `session=1`,
@@ -112,10 +123,35 @@ export default function AssignmentDetailPage() {
       <div className="card" style={{ padding: '16px 20px', marginTop: 12 }}>
         <h2 className="h2" style={{ marginBottom: 12 }}>Questions</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {questions.map((q, i) => (
+          {questions.map((q, i) => {
+            // Build a session so clicking a question opens it in assignment context
+            const clickSid = `assignment_${id}_click`;
+            function handleQuestionClick() {
+              const allIds = questions.map(x => x.question_id);
+              localStorage.setItem(`practice_session_${clickSid}`, allIds.join(','));
+              localStorage.setItem(`practice_session_${clickSid}_items`, JSON.stringify(
+                questions.map(x => ({
+                  question_id: x.question_id,
+                  difficulty: x.difficulty,
+                  is_done: x.is_done,
+                  last_is_correct: x.last_is_correct,
+                  marked_for_review: false,
+                  domain_name: x.domain_name || '',
+                  skill_name: x.skill_name || '',
+                }))
+              ));
+              localStorage.setItem(`practice_session_${clickSid}_meta`, JSON.stringify({
+                sessionQueryString: `session=1`,
+                totalCount: allIds.length,
+                cachedCount: allIds.length,
+                cachedAt: new Date().toISOString(),
+              }));
+            }
+            return (
             <Link
               key={q.question_id}
-              href={`/practice/${encodeURIComponent(q.question_id)}`}
+              href={`/practice/${encodeURIComponent(q.question_id)}?session=1&sid=${clickSid}&t=${questions.length}&o=0&p=${i}&i=${i + 1}`}
+              onClick={handleQuestionClick}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px',
                 borderRadius: 8, textDecoration: 'none', color: 'var(--text)',
@@ -141,7 +177,8 @@ export default function AssignmentDetailPage() {
               )}
               {q.is_done && <span className="muted small">{q.attempts_count} attempt{q.attempts_count !== 1 ? 's' : ''}</span>}
             </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     </main>

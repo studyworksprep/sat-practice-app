@@ -69,7 +69,6 @@ export async function PATCH(request, { params }) {
   // Convert graduation_year and target_sat_score to numbers if present
   if (updates.graduation_year != null) updates.graduation_year = Number(updates.graduation_year) || null;
   if (updates.target_sat_score != null) updates.target_sat_score = Number(updates.target_sat_score) || null;
-
   const { error } = await supabase
     .from('profiles')
     .update(updates)

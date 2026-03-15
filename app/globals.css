@@ -29,8 +29,8 @@
   --title-2: 18px;
   --title-3: 14px;
 
-  --radius-card: 16px;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.07), 0 8px 24px rgba(0,0,0,0.07);
+  --radius-card: 0px;
+  --shadow-card: none;
 
   /* Height of the sticky site nav — used by ptSession to fill remaining viewport */
   --nav-h: 63px;
@@ -72,6 +72,11 @@ a{
   max-width: 1240px;
   margin: 0 auto;
   padding: 28px;
+}
+
+/* Wider container for question pages — scales with viewport but caps at 1600px */
+.container.containerWide{
+  max-width: min(92vw, 1600px);
 }
 
 /* practiceGrid no longer used for two-column layout; kept for compat */
@@ -120,10 +125,15 @@ a{
 .qaRight{
   padding-left: 20px;
   display: grid;
-  gap: 14px;
+  gap: 0;
   align-content: start;   /* stack items at top — prevents grid from distributing height */
   overflow-y: auto;
   scrollbar-gutter: stable;
+}
+
+/* Unified right-column container for stem + answers + controls */
+.qaRightPanel{
+  padding: 20px 24px;
 }
 
 /* Draggable divider between passage and question panels */
@@ -201,19 +211,24 @@ a{
 
 .card{
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(17,24,39,0.10);
   border-radius: var(--radius-card);
-  padding: 20px;
+  padding: 20px 24px;
   box-shadow: var(--shadow-card);
+}
+
+/* Adjacent cards share borders — collapse with negative margin */
+.card + .card{
+  margin-top: -1px;
 }
 
 /* Lighter nested blocks (Stimulus / Question / Explanation wrapper) */
 .card.subcard{
-  padding: 18px;
+  padding: 16px 20px;
   background: #ffffff;
   box-shadow: none;
-  border: 1px solid rgba(17,24,39,0.06);
-  border-radius: 12px;
+  border: 1px solid rgba(17,24,39,0.08);
+  border-radius: 0;
 }
 
 .sectionLabel{
@@ -236,10 +251,10 @@ a{
   content:"";
   position:absolute;
   left:0;
-  top:14px;
-  bottom:14px;
+  top:0;
+  bottom:0;
   width:4px;
-  border-radius:999px;
+  border-radius:0;
   background: var(--accent);
 }
 
@@ -310,11 +325,12 @@ a{
 .prose img{
   max-width: 100%;
   height: auto;
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 .prose table{
-  width: auto;
+  width: auto !important;
+  max-width: 100%;
   border-collapse: collapse;
   margin: 12px 0;
   font-size: 15px;
@@ -348,8 +364,8 @@ a{
   background: var(--accent);
   border: 1px solid var(--accent);
   color: #ffffff;
-  padding: 10px 14px;
-  border-radius: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
   font-size: 14px;
@@ -408,13 +424,62 @@ a{
 }
 
 /* ===============================
+   Mode Toggle (Teacher / Training)
+================================ */
+
+.modeToggleBar{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+  padding: 10px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.modeToggleBtn{
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  white-space: nowrap;
+}
+
+.modeToggleBtn.trainingActive{
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.modeToggleBtn.teacherActive{
+  background: #7c3aed;
+  color: #fff;
+  border-color: #7c3aed;
+  box-shadow: 0 2px 8px rgba(124,58,237,0.3);
+}
+
+.modeToggleBtn:hover{
+  opacity: 0.9;
+}
+
+.modeToggleHint{
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+/* ===============================
    Inputs
 ================================ */
 
 .input, select, textarea{
   width: 100%;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: #ffffff;
   color: var(--text);
@@ -609,7 +674,7 @@ label{
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border-radius: 8px;
+  border-radius: 0;
   border: none;
   background: rgba(0,0,0,0.03);
   cursor: pointer;
@@ -642,7 +707,7 @@ label{
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 0;
   border: none;
   background: rgba(0,0,0,0.04);
   cursor: pointer;
@@ -1017,7 +1082,7 @@ hr{
 
 .toast{
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 0;
   border: 1px solid var(--border);
   background: rgba(0,0,0,0.04);
   margin-top: 12px;
@@ -1114,9 +1179,10 @@ hr{
   max-width: 700px;
   max-height: 80vh;
   overflow: auto;
-  border-radius: 14px;
-  padding: 20px;
+  border-radius: 0;
+  padding: 24px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  border: 1px solid rgba(17,24,39,0.10);
 }
 
 .correctModal{
@@ -1209,6 +1275,29 @@ hr{
   transform: translateY(1px);
 }
 
+/* Timer in top bar (under map button) */
+.topBarTimer{
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  line-height: 1;
+}
+.topBarTimer svg{
+  opacity: 0.6;
+}
+
+/* Status pill row background */
+.statusPillRow{
+  background: var(--bg, rgba(0,0,0,0.02));
+  padding: 10px 14px;
+  border-radius: 0;
+  margin: -20px -24px 16px -24px;
+  border-bottom: 1px solid var(--border);
+}
+
 /* --- Map difficulty colors + status icons --- */
 .mapItem{
   position: relative;
@@ -1217,7 +1306,7 @@ hr{
   align-items: center;
   justify-content: center;
 
-  border-radius: 10px;
+  border-radius: 0;
   border: 1px solid var(--border);
   background: #fff;
   cursor: pointer;
@@ -1380,10 +1469,10 @@ hr{
 
 .landingCard {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
+  border: 1px solid rgba(17,24,39,0.10);
+  border-radius: 0;
   padding: 28px;
-  box-shadow: var(--shadow-card);
+  box-shadow: none;
 }
 
 .landingTabs {
@@ -1492,7 +1581,7 @@ hr{
   justify-content: space-between;
   gap: 20px;
   padding: 24px 28px;
-  margin-bottom: 16px;
+  margin-bottom: -1px;
   background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 60%);
   border-left: 4px solid var(--accent);
   flex-wrap: wrap;
@@ -1516,13 +1605,35 @@ hr{
   flex-shrink: 0;
   flex-wrap: wrap;
 }
+.dbBannerChips{
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.dbBannerChip{
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  background: rgba(0,0,0,0.04);
+  padding: 2px 8px;
+  border-radius: 4px;
+  line-height: 1.5;
+}
+.dbBannerChip.accent{
+  color: var(--accent);
+  background: rgba(59,130,246,0.08);
+  font-weight: 600;
+}
 
 /* ── Stats row ── */
 .dbStatsRow{
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: 1px;
+  background: rgba(17,24,39,0.10);
+  margin-bottom: -1px;
 }
 
 @media (max-width: 700px){
@@ -1530,7 +1641,7 @@ hr{
 }
 
 .dbStatCard{
-  padding: 18px 20px;
+  padding: 16px 20px;
 }
 
 .dbStatValue{
@@ -1551,8 +1662,9 @@ hr{
 .dbPerfGrid{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: 1px;
+  background: rgba(17,24,39,0.10);
+  margin-bottom: -1px;
 }
 
 @media (max-width: 680px){
@@ -1560,7 +1672,7 @@ hr{
 }
 
 .dbPerfCard{
-  padding: 20px 22px;
+  padding: 20px 24px;
 }
 
 .dbPerfCardHeader{
@@ -1595,9 +1707,9 @@ hr{
   display: grid;
   grid-template-columns: 1fr auto 148px;
   align-items: center;
-  gap: 10px;
-  padding: 6px 8px;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 0;
   transition: background 0.1s;
 }
 .dbDomainRow:hover{ background: var(--bg); }
@@ -1664,9 +1776,9 @@ hr{
   display: grid;
   grid-template-columns: 1fr auto 148px;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 0;
   transition: background 0.1s;
 }
 .dbTopicRow:hover{ background: var(--bg); }
@@ -1698,8 +1810,9 @@ hr{
 .dbBottomRow{
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 14px;
-  align-items: start;
+  gap: 1px;
+  background: rgba(17,24,39,0.10);
+  align-items: stretch;
 }
 
 @media (max-width: 680px){
@@ -1707,7 +1820,7 @@ hr{
 }
 
 .dbTestCard{
-  padding: 20px 22px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
 }
@@ -1719,7 +1832,7 @@ hr{
 }
 
 .dbActivityCard{
-  padding: 20px 22px;
+  padding: 20px 24px;
 }
 
 /* ── Activity feed ── */
@@ -1745,7 +1858,7 @@ hr{
   background: rgba(17,24,39,0.02);
   margin: 0 -8px;
   padding: 9px 8px;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .dbActivityDot{
@@ -1806,7 +1919,7 @@ hr{
   background: rgba(17,24,39,0.02);
   margin: 0 -8px;
   padding: 10px 8px;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .dbTestScoreInfo{
@@ -1857,7 +1970,7 @@ hr{
 }
 
 .dbSessionCard{
-  padding: 14px 16px;
+  padding: 16px 20px;
 }
 
 .dbSessionHeader{
@@ -1896,7 +2009,7 @@ hr{
   gap: 2px;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: 4px;
   border: none;
   cursor: pointer;
   font-size: 11px;
@@ -1921,11 +2034,22 @@ hr{
   display: block;
   overflow-x: auto;
   max-width: 100%;
+  width: fit-content !important;
 }
 
 .mathShell .prose img{
-  max-width: 100%;
+  display: block;
+  max-width: min(360px, 100%);
   height: auto;
+  margin: 8px auto;
+}
+
+/* Stimulus images in practice test math questions */
+.ptStimulus img{
+  display: block;
+  max-width: min(360px, 100%);
+  height: auto;
+  margin: 8px auto;
 }
 
 /* Tighter display math spacing inside math questions */
@@ -2004,8 +2128,8 @@ hr{
   right: 0;
   z-index: 100;
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border: 1px solid rgba(17,24,39,0.10);
+  border-radius: 0;
   padding: 12px 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.13);
   min-width: 220px;
@@ -2076,7 +2200,7 @@ hr{
   margin-top: 12px;
   padding: 12px;
   background: var(--surface, rgba(0,0,0,0.02));
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid var(--border);
 }
 
@@ -2170,8 +2294,8 @@ hr{
   position: sticky;
   top: 12px;
   align-self: start;
-  border: 1px solid var(--border);
-  border-radius: 18px;
+  border: 1px solid rgba(17,24,39,0.10);
+  border-radius: 0;
   background: #f9fafb;
   max-height: calc(100vh - 24px);
   overflow: hidden;
@@ -2376,7 +2500,7 @@ hr{
 .qNumBadge{
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2682,7 +2806,7 @@ hr{
 .ptStimulus{
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 16px;
   margin-bottom: 16px;
   font-size: 14px;
@@ -3056,7 +3180,7 @@ hr{
   top: calc(var(--nav-h) + 12px);
   max-height: calc(100vh - var(--nav-h) - 32px);
   overflow-y: auto;
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 .ptrvDetailEmpty{
@@ -3065,12 +3189,12 @@ hr{
   justify-content: center;
   min-height: 160px;
   border: 1px dashed var(--border);
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 .ptrvDetail{
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
   background: var(--surface);
   overflow: hidden;
 }
@@ -3371,7 +3495,7 @@ hr{
 
 .adminFieldset{
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 16px;
   margin: 16px 0 0 0;
 }
@@ -3471,7 +3595,7 @@ hr{
   padding: 10px 12px;
   border: none;
   background: none;
-  border-radius: 10px;
+  border-radius: 0;
   cursor: pointer;
   text-align: left;
   transition: background 0.12s;
@@ -3529,43 +3653,272 @@ hr{
   max-height: calc(100vh - var(--nav-h));
 }
 
-/* Welcome panel */
+/* Dashboard hub */
 
-.tchWelcome{
-  max-width: 720px;
-  margin: 0 auto;
+.tchDashHub{
+  max-width: 960px;
 }
 
-.tchWelcomeCard{
-  padding: 28px;
-}
-
-.tchFeatureGrid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-@media (max-width: 600px){
-  .tchFeatureGrid{ grid-template-columns: 1fr; }
-}
-
-.tchFeature{
+.tchDashHubHeader{
   display: flex;
+  align-items: baseline;
   gap: 12px;
-  padding: 14px;
-  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.tchDashTabs{
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tchDashTab{
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: color .15s, border-color .15s;
+}
+
+.tchDashTab:hover{
+  color: var(--text);
+}
+
+.tchDashTab.active{
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tchDashOverview{
+  display: grid;
+  gap: 20px;
+}
+
+/* Hub session list */
+.tchHubSessionList{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tchHubSessionRow{
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.5fr 0.5fr;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
   background: var(--bg);
   border: 1px solid var(--border);
+  border-radius: 0;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  transition: background .12s;
+  color: var(--text);
 }
 
-.tchFeatureIcon{
-  font-size: 24px;
-  flex-shrink: 0;
+.tchHubSessionRow:hover{
+  background: var(--surface);
 }
 
-.tchFeature p{
-  margin: 4px 0 0;
+.tchHubSessionName{
+  font-weight: 600;
+}
+
+.tchHubSessionDate{
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tchHubSessionCount{
+  text-align: center;
+  font-size: 12px;
+}
+
+.tchHubSessionAcc{
+  text-align: right;
+  font-weight: 600;
+}
+
+/* Hub test list */
+.tchHubTestList{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tchHubTestRow{
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.7fr 1.5fr;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  transition: background .12s;
+  color: var(--text);
+}
+
+.tchHubTestRow:hover{
+  background: var(--surface);
+}
+
+.tchHubTestName{
+  font-weight: 600;
+}
+
+.tchHubTestLabel{
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tchHubTestDate{
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tchHubTestScore{
+  text-align: right;
+  font-size: 14px;
+}
+
+/* Activity table */
+.tchActivityTable{
+  overflow-x: auto;
+}
+
+.tchActivityHeader{
+  display: grid;
+  grid-template-columns: 1.8fr repeat(6, 0.6fr) 0.8fr;
+  gap: 4px;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  border-bottom: 2px solid var(--border);
+}
+
+.tchActivityRow{
+  display: grid;
+  grid-template-columns: 1.8fr repeat(6, 0.6fr) 0.8fr;
+  gap: 4px;
+  padding: 10px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  color: var(--text);
+  transition: background .12s;
+}
+
+.tchActivityRow:hover{
+  background: var(--bg);
+}
+
+.tchActNameCol{
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.tchActCol{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Mastery bars */
+.tchMasteryBarWrap{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 80px;
+}
+
+.tchMasteryBarWrap.small{
+  min-width: 60px;
+  gap: 4px;
+}
+
+.tchMasteryValue{
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tchMasteryBarWrap.small .tchMasteryValue{
+  font-size: 11px;
+}
+
+.tchMasteryTrack{
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.tchMasteryFill{
+  height: 100%;
+  border-radius: 3px;
+  transition: width .3s ease;
+}
+
+/* Roster mastery table */
+.tchMasteryHeader{
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1.2fr;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  border-bottom: 2px solid var(--border);
+}
+
+.tchMasteryNameCol{
+  min-width: 0;
+}
+
+.tchMasteryQuesCol{
+  text-align: center;
+}
+
+.tchMasteryLevelCol{
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 700px){
+  .tchHubSessionRow{ grid-template-columns: 1fr 1fr; }
+  .tchHubTestRow{ grid-template-columns: 1fr 1fr; }
+  .tchActivityHeader,
+  .tchActivityRow{ grid-template-columns: 1.5fr repeat(3, 0.7fr) 0.8fr; }
+  .tchActivityHeader > :nth-child(5),
+  .tchActivityHeader > :nth-child(6),
+  .tchActivityHeader > :nth-child(7),
+  .tchActivityRow > :nth-child(5),
+  .tchActivityRow > :nth-child(6),
+  .tchActivityRow > :nth-child(7){ display: none; }
 }
 
 /* Student detail */
@@ -3614,6 +3967,177 @@ hr{
   font-weight: 600;
 }
 
+.tchProfileActions{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.tchProfileActionBtn{
+  font-size: 12px !important;
+  padding: 6px 12px !important;
+}
+
+.tchRegSection{
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tchRegList{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tchRegItem{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--bg-raised, rgba(0,0,0,0.03));
+}
+
+.tchRegItem.past{
+  color: var(--muted);
+}
+
+.tchRegDelete{
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  line-height: 1;
+}
+.tchRegDelete:hover{
+  color: var(--danger);
+}
+
+.tchScoresSection{
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.tchScoresList{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tchScoreItem{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--bg-raised, rgba(0,0,0,0.03));
+}
+
+.tchScoreDate{
+  color: var(--muted);
+  min-width: 90px;
+}
+
+.tchScoreComposite{
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+  min-width: 40px;
+}
+
+.tchScoreBreakdown{
+  color: var(--muted);
+  font-size: 12px;
+  flex: 1;
+}
+
+.dbOfficialScoresCard{
+  margin-bottom: 20px;
+}
+
+.dbOfficialScoresLayout{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 600px){
+  .dbOfficialScoresLayout{ grid-template-columns: 1fr; }
+}
+
+.dbOfficialScoresList{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dbOfficialScoreRow{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--bg-raised, rgba(0,0,0,0.03));
+  font-size: 13px;
+}
+
+.dbOfficialScoreDate{
+  color: var(--muted);
+  font-size: 12px;
+  min-width: 52px;
+}
+
+.dbOfficialScoreComposite{
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+  min-width: 36px;
+}
+
+.dbOfficialScoreBreakdown{
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.dbOfficialScoresChart{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dbOfficialChartLegend{
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.dbOfficialLegendDot{
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
 .tchStatsRow{
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -3644,6 +4168,68 @@ hr{
   text-overflow: ellipsis;
 }
 
+.tchAdminStudentTable{
+  display: flex;
+  flex-direction: column;
+}
+
+.tchAdminStudentHeader{
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.tchAdminStudentRow{
+  display: flex;
+  align-items: center;
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.tchAdminStudentRow:last-child{
+  border-bottom: none;
+}
+
+.tchAdminStudentNameCol{
+  flex: 1;
+  min-width: 0;
+}
+
+.tchAdminStudentCell{
+  width: 70px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px){
+  .tchAdminStudentCell{ width: 50px; font-size: 11px; }
+}
+
+.tchAdminAssignRow{
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--bg-raised, rgba(0,0,0,0.03));
+}
+
+.tchAdminStudentLink{
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.tchAdminStudentLink:hover{
+  background: var(--bg-raised, rgba(0,0,0,0.05));
+}
+
 .tchSection{
   margin-bottom: 16px;
   padding: 20px;
@@ -3670,10 +4256,52 @@ hr{
   align-items: center;
   gap: 12px;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: 0;
   transition: background 0.12s;
   text-decoration: none;
   color: inherit;
+}
+
+.tchBarRowWrap{
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.tchBarRowWrap .tchBarRow{
+  flex: 1;
+  min-width: 0;
+}
+
+.tchBarActions{
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+.tchBarDeleteBtn{
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.tchBarRowWrap:hover .tchBarDeleteBtn{
+  opacity: 0.6;
+}
+
+.tchBarDeleteBtn:hover{
+  opacity: 1 !important;
+  color: var(--danger);
+  background: rgba(224,82,82,0.08);
 }
 
 .tchBarRow:hover{
@@ -3873,7 +4501,7 @@ hr{
 .tchSessionCard{
   padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
 }
 
 .tchSessionHeader{
@@ -4121,15 +4749,19 @@ hr{
 .dbGoalRecsRow{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 16px;
+  gap: 1px;
+  background: rgba(17,24,39,0.10);
+  margin-bottom: -1px;
+}
+.dbGoalRecsRow.single{
+  grid-template-columns: 1fr;
 }
 @media (max-width: 680px){
   .dbGoalRecsRow{ grid-template-columns: 1fr; }
 }
 
 .dbGoalCard{
-  padding: 18px 22px;
+  padding: 20px 24px;
 }
 .dbGoalHeader{
   display: flex;
@@ -4157,7 +4789,7 @@ hr{
 }
 
 .dbRecsCard{
-  padding: 18px 22px;
+  padding: 20px 24px;
 }
 .dbRecItem{
   display: flex;
@@ -4170,6 +4802,52 @@ hr{
 }
 .dbRecItem:hover{
   background: var(--bg);
+}
+
+/* ── Activity Chart ── */
+.dbActivityChartCard{
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+}
+.dbActivityChartHeader{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.dbActivityBars{
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  flex: 1;
+  min-height: 100px;
+}
+.dbActivityBarCol{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.dbActivityBarTrack{
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+}
+.dbActivityBarFill{
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  min-height: 0;
+  transition: height 0.3s ease;
+}
+.dbActivityBarLabel{
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1;
 }
 
 /* ===============================
@@ -4768,9 +5446,10 @@ hr{
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   background: var(--bg);
-  border-radius: 10px;
+  border-radius: 0;
+  border: 1px solid rgba(17,24,39,0.06);
   text-decoration: none;
   color: var(--text);
   transition: background .15s;
@@ -4805,4 +5484,664 @@ hr{
   font-size: 16px;
   min-width: 36px;
   text-align: right;
+}
+
+/* ===============================
+   Flashcards
+================================ */
+
+.flashcardSetRow{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--surface, #f9fafb);
+}
+
+/* Chevron for expandable parent sets */
+.fcChevron{
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px;
+  transition: transform 0.25s ease;
+  transform: rotate(0deg);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.fcChevron:hover{ color: var(--text); }
+.fcChevronOpen{ transform: rotate(90deg); }
+
+/* Sub-set list container */
+.fcSubsetList{
+  margin-left: 24px;
+  border-left: 2px solid var(--border);
+  padding-left: 0;
+}
+.fcSubsetRow{
+  border-top: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 14px;
+}
+.fcSubsetRow + .fcSubsetRow{
+  border-top: 1px solid var(--border);
+}
+
+/* Mastery bar */
+.fcMasteryBar{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.fcMasteryBarSmall{ margin-top: 3px; }
+.fcMasteryTrack{
+  flex: 1;
+  max-width: 120px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.fcMasteryBarSmall .fcMasteryTrack{
+  max-width: 90px;
+  height: 5px;
+}
+.fcMasteryFill{
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+.fcMasteryPct{
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 32px;
+}
+.fcMasteryBarSmall .fcMasteryPct{ font-size: 11px; }
+
+/* Formatting toolbar for card inputs */
+.fcFormatBar{
+  display: flex;
+  gap: 2px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  background: var(--surface, #f9fafb);
+  border-radius: 4px 4px 0 0;
+}
+.fcFormatBtn{
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  line-height: 1.4;
+}
+.fcFormatBtn:hover{
+  background: var(--accent-soft);
+  border-color: var(--border);
+}
+.fcFormatBtn b{ font-weight: 800; }
+.fcFormatBtn i{ font-style: italic; }
+
+/* Bigger textareas for card creation */
+.fcTextarea{
+  border-radius: 0 0 4px 4px !important;
+  min-height: 80px;
+  resize: vertical;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ---- Review Modal / Overlay ---- */
+.fcModalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fcFadeIn 0.2s ease;
+}
+@keyframes fcFadeIn{
+  from{ opacity: 0; }
+  to{ opacity: 1; }
+}
+.fcModal{
+  background: var(--card);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  padding: 28px 32px;
+  position: relative;
+  animation: fcSlideUp 0.25s ease;
+}
+@keyframes fcSlideUp{
+  from{ transform: translateY(24px); opacity: 0; }
+  to{ transform: translateY(0); opacity: 1; }
+}
+.fcModalClose{
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.fcModalClose:hover{
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+/* ---- Card styling (card-like) ---- */
+.flashcardContainer{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.flashcard{
+  width: 100%;
+  max-width: 540px;
+  min-height: 300px;
+  perspective: 1000px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.flashcardInner{
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+  transition: transform 0.5s ease;
+  transform-style: preserve-3d;
+}
+
+.flashcard.flipped .flashcardInner{
+  transform: rotateY(180deg);
+}
+
+.flashcardFace{
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 36px 32px;
+  border-radius: 14px;
+  background: white;
+  text-align: center;
+  min-height: 300px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.flashcardFront{
+  background: linear-gradient(135deg, #fff 0%, #f0f4ff 100%);
+}
+
+.flashcardBack{
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, #fafbff 0%, #f5f0ff 100%);
+}
+
+.flashcardLabel{
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  position: absolute;
+  top: 14px;
+  left: 18px;
+}
+
+.flashcardText{
+  font-size: 20px;
+  line-height: 1.55;
+  font-weight: 500;
+  word-break: break-word;
+  max-width: 100%;
+}
+.flashcardText strong{ font-weight: 700; }
+.flashcardText em{ font-style: italic; }
+.flashcardText ul{
+  text-align: left;
+  margin: 6px 0;
+  padding-left: 20px;
+}
+.flashcardText li{ margin-bottom: 2px; }
+
+.flashcardHint{
+  position: absolute;
+  bottom: 14px;
+}
+
+/* Navigation arrows */
+.fcNavRow{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 540px;
+}
+.fcNavBtn{
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  transition: background 0.15s, border-color 0.15s;
+}
+.fcNavBtn:hover:not(:disabled){
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.fcNavBtn:disabled{
+  opacity: 0.3;
+  cursor: default;
+}
+.fcNavCounter{
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Mastery section */
+.flashcardMastery{
+  text-align: center;
+  width: 100%;
+  max-width: 540px;
+}
+
+.flashcardMasteryButtons{
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.flashcardMasteryBtn{
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: white;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.flashcardMasteryBtn:hover{
+  transform: scale(1.1);
+}
+
+.flashcardMasteryBtn.mastery0{ color: var(--danger); border-color: var(--danger); }
+.flashcardMasteryBtn.mastery0:hover,
+.flashcardMasteryBtn.mastery0.active{ background: var(--danger); color: white; }
+.flashcardMasteryBtn.mastery1{ color: #e67e22; border-color: #e67e22; }
+.flashcardMasteryBtn.mastery1:hover,
+.flashcardMasteryBtn.mastery1.active{ background: #e67e22; color: white; }
+.flashcardMasteryBtn.mastery2{ color: var(--amber); border-color: var(--amber); }
+.flashcardMasteryBtn.mastery2:hover,
+.flashcardMasteryBtn.mastery2.active{ background: var(--amber); color: white; }
+.flashcardMasteryBtn.mastery3{ color: #3498db; border-color: #3498db; }
+.flashcardMasteryBtn.mastery3:hover,
+.flashcardMasteryBtn.mastery3.active{ background: #3498db; color: white; }
+.flashcardMasteryBtn.mastery4{ color: #2ecc71; border-color: #2ecc71; }
+.flashcardMasteryBtn.mastery4:hover,
+.flashcardMasteryBtn.mastery4.active{ background: #2ecc71; color: white; }
+.flashcardMasteryBtn.mastery5{ color: var(--success); border-color: var(--success); }
+.flashcardMasteryBtn.mastery5:hover,
+.flashcardMasteryBtn.mastery5.active{ background: var(--success); color: white; }
+
+.flashcardMasteryLabels{
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding: 0 8px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Bug Report – Nav Button
+   ═══════════════════════════════════════════════════════ */
+.navBugBtn{
+  background: rgba(239,68,68,0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.navBugBtn:hover{
+  background: rgba(239,68,68,0.2);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Bug Report – Modal
+   ═══════════════════════════════════════════════════════ */
+.bugModalOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.bugModal{
+  background: var(--bg-card, #fff);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+.bugModalHeader{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.bugModalClose{
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0 4px;
+  line-height: 1;
+}
+.bugModalClose:hover{ color: var(--danger); }
+.bugModalBody{
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.bugModalError{
+  background: rgba(239,68,68,0.08);
+  color: #dc2626;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.bugModalLabel{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+}
+.bugModalInput{
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--fg);
+}
+.bugModalTextarea{
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  resize: vertical;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: inherit;
+}
+.bugModalFileRow{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bugModalPreview{
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Bug List Page
+   ═══════════════════════════════════════════════════════ */
+.bugListMain{
+  max-width: 860px;
+}
+.bugListHeader{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.bugListFilters{
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.bugFilterBtn{
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.12s;
+}
+.bugFilterBtn:hover{ background: rgba(37,99,235,0.05); }
+.bugFilterActive{
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.bugFilterActive:hover{ background: var(--accent); }
+.bugFilterCount{
+  background: rgba(0,0,0,0.08);
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.bugFilterActive .bugFilterCount{
+  background: rgba(255,255,255,0.25);
+}
+.bugListCards{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bugCard{
+  padding: 16px 20px;
+}
+.bugCardTop{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.bugCardTitle{
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 6px 0;
+}
+.bugCardMeta{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bugStatusBadge{
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.bugCardActions{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.bugStatusSelect{
+  font-size: 12px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+}
+.bugDeleteBtn{
+  background: none;
+  border: 1px solid rgba(220,38,38,0.2);
+  border-radius: 5px;
+  color: #dc2626;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 7px;
+}
+.bugDeleteBtn:hover{
+  background: rgba(220,38,38,0.08);
+}
+.bugCardDesc{
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg);
+  margin: 0 0 8px 0;
+  white-space: pre-wrap;
+}
+.bugCardImageWrap{
+  margin-top: 8px;
+}
+.bugCardImage{
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.bugCardImage:hover{ opacity: 0.85; }
+
+/* Lightbox */
+.bugLightbox{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 20px;
+}
+.bugLightboxImg{
+  max-width: 95vw;
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.5);
+}
+
+/* ═══════════════════════════════════════════════════════
+   Admin Page – Recent Bugs Panel
+   ═══════════════════════════════════════════════════════ */
+.adminBugGrid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.adminBugCard{
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.adminBugCardHeader{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.adminBugTitle{
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.adminBugStatus{
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.adminBugStatus--open{ background: rgba(239,68,68,0.1); color: #dc2626; }
+.adminBugStatus--in_progress{ background: rgba(234,179,8,0.1); color: #b45309; }
+.adminBugStatus--resolved{ background: rgba(22,163,74,0.1); color: #16a34a; }
+.adminBugStatus--closed{ background: rgba(107,114,128,0.1); color: #6b7280; }
+.adminBugDesc{
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.adminBugMeta{
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: auto;
 }

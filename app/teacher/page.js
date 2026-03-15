@@ -47,10 +47,12 @@ function formatDateTime(iso) {
 }
 
 // ─── Bar chart for test scores ───────────────────────────
-function TestScoreBarChart({ testScores }) {
+function TestScoreBarChart({ testScores, onDelete }) {
   if (!testScores?.length) return null;
   const maxScore = 1600;
   const barHeight = 36;
+  const [confirmId, setConfirmId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   return (
     <div className="tchBarChart">
@@ -64,29 +66,55 @@ function TestScoreBarChart({ testScores }) {
         const mathPct = (mathScore / maxScore) * 100;
 
         return (
-          <Link
-            key={ts.attempt_id}
-            href={`/practice-test/attempt/${ts.attempt_id}/results`}
-            className="tchBarRow"
-            title={`${ts.test_name} — Click to view full results`}
-          >
-            <div className="tchBarLabel">
-              <span className="tchBarTestName">{ts.test_name}</span>
-              <span className="tchBarDate">{formatDate(ts.finished_at)}</span>
-            </div>
-            <div className="tchBarTrack" style={{ height: barHeight }}>
-              <div className="tchBarSegment tchBarRW" style={{ width: `${rwPct}%` }} title={`R&W: ${rwScore}`} />
-              <div className="tchBarSegment tchBarMath" style={{ width: `${mathPct}%` }} title={`Math: ${mathScore}`} />
-            </div>
-            <div className="tchBarScore">
-              <span className="tchBarTotal">{total}</span>
-              <span className="tchBarBreakdown">
-                <span style={{ color: '#6b9bd2' }}>R&W {rwScore}</span>
-                {' · '}
-                <span style={{ color: '#9b8ec4' }}>Math {mathScore}</span>
-              </span>
-            </div>
-          </Link>
+          <div key={ts.attempt_id} className="tchBarRowWrap">
+            <Link
+              href={`/practice-test/attempt/${ts.attempt_id}/results`}
+              className="tchBarRow"
+              title={`${ts.test_name} — Click to view full results`}
+            >
+              <div className="tchBarLabel">
+                <span className="tchBarTestName">{ts.test_name}</span>
+                <span className="tchBarDate">{formatDate(ts.finished_at)}</span>
+              </div>
+              <div className="tchBarTrack" style={{ height: barHeight }}>
+                <div className="tchBarSegment tchBarRW" style={{ width: `${rwPct}%` }} title={`R&W: ${rwScore}`} />
+                <div className="tchBarSegment tchBarMath" style={{ width: `${mathPct}%` }} title={`Math: ${mathScore}`} />
+              </div>
+              <div className="tchBarScore">
+                <span className="tchBarTotal">{total}</span>
+                <span className="tchBarBreakdown">
+                  <span style={{ color: '#6b9bd2' }}>R&W {rwScore}</span>
+                  {' · '}
+                  <span style={{ color: '#9b8ec4' }}>Math {mathScore}</span>
+                </span>
+              </div>
+            </Link>
+            {onDelete && (
+              <div className="tchBarActions">
+                {confirmId === ts.attempt_id ? (
+                  <>
+                    <button
+                      className="btn"
+                      style={{ background: 'var(--danger)', borderColor: 'var(--danger)', color: '#fff', padding: '4px 10px', fontSize: 12 }}
+                      disabled={deleting}
+                      onClick={() => { setDeleting(true); onDelete(ts.attempt_id).finally(() => { setDeleting(false); setConfirmId(null); }); }}
+                    >
+                      {deleting ? 'Deleting…' : 'Yes, delete'}
+                    </button>
+                    <button className="btn secondary" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => setConfirmId(null)} disabled={deleting}>Cancel</button>
+                  </>
+                ) : (
+                  <button
+                    className="tchBarDeleteBtn"
+                    title="Delete this result"
+                    onClick={() => setConfirmId(ts.attempt_id)}
+                  >
+                    &times;
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         );
       })}
       <div className="tchBarLegend">
@@ -170,6 +198,7 @@ function DomainTable({ domainStats, topicStats }) {
       <span className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[2] }}>M</span>
       <span className="tchTblCell tchTblDiffCell" style={{ color: DIFF_COLORS[3] }}>H</span>
       <span className="tchTblCell tchTblOverall">Accuracy</span>
+      <span className="tchTblCell tchTblOverall">Mastery</span>
     </div>
   );
 
@@ -204,6 +233,7 @@ function DomainTable({ domainStats, topicStats }) {
                       <OverallDoneCell attempted={domain.attempted} totalAvailable={domain.totalAvailable} />
                       <DiffCells byDifficulty={domain.byDifficulty} availByDifficulty={domain.availByDifficulty} type="acc" />
                       <OverallAccCell correct={domain.correct} attempted={domain.attempted} />
+                      <span className="tchTblCell tchTblOverall"><MasteryBar value={domain.mastery} size="small" /></span>
                     </div>
                     {isOpen && hasTopics && (
                       <div className="tchTopicList">
@@ -216,6 +246,7 @@ function DomainTable({ domainStats, topicStats }) {
                             <OverallDoneCell attempted={topic.attempted} totalAvailable={topic.totalAvailable} />
                             <DiffCells byDifficulty={topic.byDifficulty} availByDifficulty={topic.availByDifficulty} type="acc" />
                             <OverallAccCell correct={topic.correct} attempted={topic.attempted} />
+                            <span className="tchTblCell tchTblOverall"><MasteryBar value={topic.mastery} size="small" /></span>
                           </div>
                         ))}
                       </div>
@@ -231,48 +262,229 @@ function DomainTable({ domainStats, topicStats }) {
   );
 }
 
-// ─── Welcome / info panel ────────────────────────────────
-function WelcomePanel({ role }) {
+// ─── Mastery bar helper ──────────────────────────────────
+function MasteryBar({ value, size = 'normal' }) {
+  if (value === null || value === undefined) return <span className="muted small">—</span>;
+  const color = value >= 70 ? 'var(--success)' : value >= 40 ? 'var(--amber)' : 'var(--danger)';
+  const cls = size === 'small' ? 'tchMasteryBarWrap small' : 'tchMasteryBarWrap';
   return (
-    <div className="tchWelcome">
-      <div className="card tchWelcomeCard">
-        <h2 className="h1" style={{ marginBottom: 8 }}>
-          {role === 'admin' ? 'Admin Dashboard' : 'Teacher Dashboard'}
-        </h2>
-        <p className="muted" style={{ marginBottom: 20 }}>
-          Select a student from the panel on the left to view their progress, or use the Assignments tab to create and track question assignments.
-        </p>
-        <div className="tchFeatureGrid">
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128202;</div>
-            <div>
-              <strong>Practice Test Results</strong>
-              <p className="muted small">View bar charts of test scores over time. Click any test to see the full question-by-question breakdown.</p>
+    <div className={cls}>
+      <span className="tchMasteryValue" style={{ color, fontWeight: 600, minWidth: size === 'small' ? 28 : 32 }}>{value}%</span>
+      <div className="tchMasteryTrack">
+        <div className="tchMasteryFill" style={{ width: `${value}%`, background: color }} />
+      </div>
+    </div>
+  );
+}
+
+function masteryLabel(value) {
+  if (value === null || value === undefined) return '—';
+  if (value >= 80) return 'Strong';
+  if (value >= 60) return 'Developing';
+  if (value >= 40) return 'Emerging';
+  return 'Needs Work';
+}
+
+// ─── Roster mastery table ────────────────────────────────
+function RosterMasteryTable({ domains, topics }) {
+  const [open, setOpen] = useState({});
+  const toggle = (name) => setOpen(prev => ({ ...prev, [name]: !prev[name] }));
+
+  const topicsByDomain = {};
+  for (const t of topics || []) {
+    if (!topicsByDomain[t.domain_name]) topicsByDomain[t.domain_name] = [];
+    topicsByDomain[t.domain_name].push(t);
+  }
+
+  const english = { label: 'Reading & Writing', domains: [] };
+  const math = { label: 'Math', domains: [] };
+  for (const d of domains || []) {
+    const section = d.isEnglish ? english : math;
+    section.domains.push({ ...d, topics: topicsByDomain[d.domain_name] || [] });
+  }
+
+  return (
+    <div>
+      {[english, math].map(section => {
+        if (!section.domains.length) return null;
+        return (
+          <div key={section.label} className="tchDomainSection">
+            <div className="tchDomainSectionHeader">
+              <span className="h2" style={{ margin: 0 }}>{section.label}</span>
+            </div>
+            <div className="tchMasteryHeader">
+              <span className="tchMasteryNameCol">Domain / Topic</span>
+              <span className="tchMasteryQuesCol">Questions</span>
+              <span className="tchMasteryLevelCol">Mastery</span>
+            </div>
+            <div className="tchDomainList">
+              {section.domains.map(domain => {
+                const isOpen = open[domain.domain_name];
+                const hasTopics = domain.topics.length > 0;
+                return (
+                  <div key={domain.domain_name} className="tchDomainBlock">
+                    <div
+                      className="tchTblRow tchTblRowDomain"
+                      onClick={() => hasTopics && toggle(domain.domain_name)}
+                      style={{ cursor: hasTopics ? 'pointer' : 'default' }}
+                    >
+                      <div className="tchMasteryNameCol" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span className={`dbChevron${hasTopics ? '' : ' invisible'}${isOpen ? ' open' : ''}`}>
+                          <svg viewBox="0 0 16 16"><polyline points="6 4 10 8 6 12" /></svg>
+                        </span>
+                        <span className="tchDomainName">{domain.domain_name}</span>
+                      </div>
+                      <span className="tchMasteryQuesCol muted small">{domain.attempted} done / {domain.correct} correct</span>
+                      <span className="tchMasteryLevelCol"><MasteryBar value={domain.mastery} /></span>
+                    </div>
+                    {isOpen && hasTopics && (
+                      <div className="tchTopicList">
+                        {domain.topics.map(topic => (
+                          <div key={topic.skill_name} className="tchTblRow tchTblRowTopic">
+                            <span className="tchMasteryNameCol"><span className="tchTopicName">{topic.skill_name}</span></span>
+                            <span className="tchMasteryQuesCol muted small">{topic.attempted} / {topic.correct}</span>
+                            <span className="tchMasteryLevelCol"><MasteryBar value={topic.mastery} size="small" /></span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128200;</div>
-            <div>
-              <strong>Domain & Topic Performance</strong>
-              <p className="muted small">See accuracy and completion percentage across all SAT domains, with drill-down into individual skills.</p>
-            </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Dashboard hub (replaces WelcomePanel) ───────────────
+function TeacherDashboardHub({ role, students, onSelectStudent }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    fetch('/api/teacher/dashboard')
+      .then(r => r.json())
+      .then(d => { if (!d.error) setData(d); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="tchDetailLoading"><p className="muted">Loading dashboard...</p></div>;
+  if (!data) return <div className="tchDetailError"><p style={{ color: 'var(--danger)' }}>Failed to load dashboard.</p></div>;
+
+  return (
+    <div className="tchDashHub">
+      <div className="tchDashHubHeader">
+        <h2 className="h1" style={{ margin: 0 }}>{role === 'admin' ? 'Admin' : 'Teacher'} Dashboard</h2>
+        <span className="muted">{data.studentCount} student{data.studentCount !== 1 ? 's' : ''}</span>
+      </div>
+
+      {/* Tab bar */}
+      <div className="tchDashTabs">
+        {[
+          { key: 'overview', label: 'Overview' },
+          { key: 'activity', label: 'Student Activity' },
+          { key: 'mastery', label: 'Roster Mastery' },
+        ].map(tab => (
+          <button key={tab.key} className={`tchDashTab${activeTab === tab.key ? ' active' : ''}`} onClick={() => setActiveTab(tab.key)}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'overview' && (
+        <div className="tchDashOverview">
+          {/* Recent Practice Sessions */}
+          <div className="card tchSection">
+            <h3 className="h2" style={{ marginBottom: 14 }}>Recent Practice Sessions</h3>
+            {!data.recentSessions?.length ? <p className="muted small">No recent practice sessions.</p> : (
+              <div className="tchHubSessionList">
+                {data.recentSessions.map((s, i) => (
+                  <button key={i} className="tchHubSessionRow" onClick={() => onSelectStudent(s.studentId)}>
+                    <span className="tchHubSessionName">{s.studentName}</span>
+                    <span className="tchHubSessionDate">{formatDateTime(s.startedAt)}</span>
+                    <span className="tchHubSessionCount">{s.questionCount} Qs</span>
+                    <span className="tchHubSessionAcc" style={{ color: pctColor(s.accuracy) }}>{s.accuracy != null ? `${s.accuracy}%` : '—'}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#128221;</div>
-            <div>
-              <strong>Assignments</strong>
-              <p className="muted small">Create targeted question assignments by topic and difficulty. Track student completion and performance.</p>
-            </div>
-          </div>
-          <div className="tchFeature">
-            <div className="tchFeatureIcon">&#127919;</div>
-            <div>
-              <strong>Key Statistics</strong>
-              <p className="muted small">At-a-glance metrics including highest test score, strongest/weakest topics, and recent accuracy.</p>
-            </div>
+
+          {/* Recent Practice Tests */}
+          <div className="card tchSection">
+            <h3 className="h2" style={{ marginBottom: 14 }}>Recent Practice Tests</h3>
+            {!data.recentTests?.length ? <p className="muted small">No completed practice tests yet.</p> : (
+              <div className="tchHubTestList">
+                {data.recentTests.map((ts, i) => {
+                  const rwSection = Object.entries(ts.sections || {}).find(([k]) => ['RW', 'rw'].includes(k));
+                  const mathSection = Object.entries(ts.sections || {}).find(([k]) => ['M', 'm', 'MATH', 'math', 'Math'].includes(k));
+                  const rwScore = rwSection?.[1]?.scaled || 0;
+                  const mathScore = mathSection?.[1]?.scaled || 0;
+                  return (
+                    <button key={i} className="tchHubTestRow" onClick={() => onSelectStudent(ts.studentId)}>
+                      <span className="tchHubTestName">{ts.studentName}</span>
+                      <span className="tchHubTestLabel">{ts.test_name}</span>
+                      <span className="tchHubTestDate">{formatDate(ts.finished_at)}</span>
+                      <span className="tchHubTestScore">
+                        <strong>{ts.composite}</strong>
+                        <span className="muted small" style={{ marginLeft: 6 }}>
+                          <span style={{ color: '#6b9bd2' }}>R&W {rwScore}</span>{' · '}<span style={{ color: '#9b8ec4' }}>M {mathScore}</span>
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
+
+      {activeTab === 'activity' && (
+        <div className="card tchSection">
+          <h3 className="h2" style={{ marginBottom: 14 }}>Student Activity</h3>
+          <div className="tchActivityTable">
+            <div className="tchActivityHeader">
+              <span className="tchActNameCol">Student</span>
+              <span className="tchActCol">7d Qs</span>
+              <span className="tchActCol">30d Qs</span>
+              <span className="tchActCol">30d Tests</span>
+              <span className="tchActCol">Total Qs</span>
+              <span className="tchActCol">Total Tests</span>
+              <span className="tchActCol">Flashcards</span>
+              <span className="tchActCol">Last Active</span>
+            </div>
+            {data.activityByStudent.map(s => (
+              <button key={s.studentId} className="tchActivityRow" onClick={() => onSelectStudent(s.studentId)}>
+                <span className="tchActNameCol">
+                  <span style={{ fontWeight: 600, fontSize: 13 }}>{s.studentName}</span>
+                  <span className="muted small">{s.email}</span>
+                </span>
+                <span className="tchActCol">{s.practiceQuestions7}</span>
+                <span className="tchActCol">{s.practiceQuestions30}</span>
+                <span className="tchActCol">{s.practiceTests30}</span>
+                <span className="tchActCol">{s.totalQuestions}</span>
+                <span className="tchActCol">{s.totalTests}</span>
+                <span className="tchActCol">{s.flashcards}</span>
+                <span className="tchActCol muted small">{s.lastActive ? formatDate(s.lastActive) : 'Never'}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'mastery' && (
+        <div className="card tchSection">
+          <h3 className="h2" style={{ marginBottom: 6 }}>Roster-Wide Mastery</h3>
+          <p className="muted small" style={{ marginBottom: 14 }}>Mastery is weighted by question difficulty and score band, scaled by volume, with a recency bonus for strong recent performance.</p>
+          <RosterMasteryTable domains={data.rosterMastery.domains} topics={data.rosterMastery.topics} />
+        </div>
+      )}
     </div>
   );
 }
@@ -369,6 +581,122 @@ function EditProfileModal({ student, studentId, onClose, onSaved }) {
   );
 }
 
+// ─── Add Test Registration modal ──────────────────────────
+function AddRegistrationModal({ studentId, onClose, onSaved }) {
+  const [testDate, setTestDate] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!testDate) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/teacher/student/${studentId}/registrations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test_date: testDate }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      onSaved(data.registration);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="tchModalOverlay" onClick={onClose}>
+      <div className="card tchModal" onClick={(e) => e.stopPropagation()}>
+        <div className="tchModalHeader">
+          <h3 className="h2" style={{ margin: 0 }}>Add Test Registration</h3>
+          <button className="tchModalClose" onClick={onClose}>&times;</button>
+        </div>
+        <form onSubmit={handleSubmit} className="tchModalForm">
+          <label className="tchModalField">
+            <span className="tchModalLabel">SAT Test Date</span>
+            <input type="datetime-local" value={testDate} onChange={(e) => setTestDate(e.target.value)} required />
+          </label>
+          {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
+          <div className="tchModalActions">
+            <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn primary" disabled={saving}>{saving ? 'Saving...' : 'Add'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Add Official Score modal ─────────────────────────────
+function AddScoreModal({ studentId, onClose, onSaved }) {
+  const [form, setForm] = useState({ test_date: '', rw_score: '', math_score: '' });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const handleChange = (field) => (e) => setForm(prev => ({ ...prev, [field]: e.target.value }));
+  const composite = (Number(form.rw_score) || 0) + (Number(form.math_score) || 0);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/teacher/student/${studentId}/scores`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      onSaved(data.score);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="tchModalOverlay" onClick={onClose}>
+      <div className="card tchModal" onClick={(e) => e.stopPropagation()}>
+        <div className="tchModalHeader">
+          <h3 className="h2" style={{ margin: 0 }}>Add Official SAT Score</h3>
+          <button className="tchModalClose" onClick={onClose}>&times;</button>
+        </div>
+        <form onSubmit={handleSubmit} className="tchModalForm">
+          <label className="tchModalField">
+            <span className="tchModalLabel">Test Date</span>
+            <input type="date" value={form.test_date} onChange={handleChange('test_date')} required />
+          </label>
+          <div className="tchModalRow">
+            <label className="tchModalField">
+              <span className="tchModalLabel">Reading & Writing</span>
+              <input type="number" min="200" max="800" step="10" value={form.rw_score} onChange={handleChange('rw_score')} required placeholder="200-800" />
+            </label>
+            <label className="tchModalField">
+              <span className="tchModalLabel">Math</span>
+              <input type="number" min="200" max="800" step="10" value={form.math_score} onChange={handleChange('math_score')} required placeholder="200-800" />
+            </label>
+          </div>
+          {form.rw_score && form.math_score && (
+            <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--accent)' }}>
+              Composite: {composite}
+            </div>
+          )}
+          {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
+          <div className="tchModalActions">
+            <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn primary" disabled={saving}>{saving ? 'Saving...' : 'Add'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Create assignment modal ──────────────────────────────
 function CreateAssignmentModal({ students, onClose, onCreated }) {
   const [title, setTitle] = useState('');
@@ -379,9 +707,11 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
   const [domains, setDomains] = useState([]);
   const [topics, setTopics] = useState([]);
   const [difficulties, setDifficulties] = useState([1, 2, 3]);
+  const [scoreBands, setScoreBands] = useState([]);
   const [questionLimit, setQuestionLimit] = useState(20);
   const [filterData, setFilterData] = useState(null);
   const [filterLoading, setFilterLoading] = useState(true);
+  const [dynamicCounts, setDynamicCounts] = useState(null);
   const [previewQuestions, setPreviewQuestions] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -395,6 +725,18 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
       .finally(() => setFilterLoading(false));
   }, []);
 
+  // Fetch dynamic counts when difficulty or score band filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (difficulties.length > 0 && difficulties.length < 3) params.set('difficulties', difficulties.join(','));
+    if (scoreBands.length > 0) params.set('score_bands', scoreBands.join(','));
+    params.set('hide_broken', 'true');
+    fetch(`/api/domain-counts?${params}`)
+      .then(r => r.json())
+      .then(d => { if (!d.error) setDynamicCounts(d); })
+      .catch(() => {});
+  }, [difficulties, scoreBands]);
+
   function toggleStudent(id) {
     setSelectedStudents(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
   }
@@ -405,6 +747,7 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
   function toggleDomain(name) { setDomains(prev => prev.includes(name) ? prev.filter(d => d !== name) : [...prev, name]); setPreviewQuestions(null); }
   function toggleTopic(name) { setTopics(prev => prev.includes(name) ? prev.filter(t => t !== name) : [...prev, name]); setPreviewQuestions(null); }
   function toggleDifficulty(d) { setDifficulties(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]); setPreviewQuestions(null); }
+  function toggleScoreBand(b) { setScoreBands(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]); setPreviewQuestions(null); }
 
   async function loadPreview() {
     setPreviewLoading(true);
@@ -413,6 +756,7 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
       if (domains.length) params.set('domains', domains.join(','));
       if (topics.length) params.set('topics', topics.join(','));
       if (difficulties.length < 3) params.set('difficulties', difficulties.join(','));
+      if (scoreBands.length > 0) params.set('score_bands', scoreBands.join(','));
       params.set('limit', String(questionLimit));
       params.set('hide_broken', 'true');
       const res = await fetch(`/api/questions?${params}`);
@@ -438,7 +782,7 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
           due_date: dueDate || null,
           question_ids: previewQuestions.items.map(q => q.question_id),
           student_ids: selectedStudents,
-          filter_criteria: { domains, topics, difficulties },
+          filter_criteria: { domains, topics, difficulties, score_bands: scoreBands },
         }),
       });
       const json = await res.json();
@@ -494,6 +838,18 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
                 ))}
               </div>
             </div>
+            <div className="tchAssignSection">
+              <span className="tchModalLabel">Score Band</span>
+              <div className="tchAssignChips">
+                {[1, 2, 3, 4, 5, 6, 7].map(b => (
+                  <button key={b} type="button"
+                    className={`tchAssignChip${scoreBands.includes(b) ? ' active' : ''}`}
+                    style={{ borderColor: 'var(--accent)', color: scoreBands.includes(b) ? '#fff' : 'var(--accent)', background: scoreBands.includes(b) ? 'var(--accent)' : 'transparent' }}
+                    onClick={() => toggleScoreBand(b)}
+                  >{b}</button>
+                ))}
+              </div>
+            </div>
             {filterLoading ? <p className="muted small">Loading filters...</p> : (
               <div className="tchAssignSection">
                 <span className="tchModalLabel">Domains & Topics</span>
@@ -501,17 +857,24 @@ function CreateAssignmentModal({ students, onClose, onCreated }) {
                   {(filterData?.domains || []).map(d => {
                     const isDomainSelected = domains.includes(d.domain_name);
                     const domainTopics = topicsByDomain[d.domain_name] || [];
+                    const counts = dynamicCounts || filterData?.counts;
+                    const domainCount = counts?.[d.domain_name]?.count;
                     return (
                       <div key={d.domain_name} className="tchAssignDomainBlock">
                         <button type="button" className={`tchAssignChip${isDomainSelected ? ' active' : ''}`} onClick={() => toggleDomain(d.domain_name)}>
                           {d.domain_name}
-                          {filterData?.counts?.[d.domain_name] && <span className="muted small" style={{ marginLeft: 4 }}>({filterData.counts[d.domain_name].count})</span>}
+                          {domainCount != null && <span className="muted small" style={{ marginLeft: 4 }}>({domainCount})</span>}
                         </button>
                         {isDomainSelected && domainTopics.length > 0 && (
                           <div className="tchAssignTopicChips">
-                            {domainTopics.map(t => (
-                              <button key={t.skill_name} type="button" className={`tchAssignChip small${topics.includes(t.skill_name) ? ' active' : ''}`} onClick={() => toggleTopic(t.skill_name)}>{t.skill_name}</button>
-                            ))}
+                            {domainTopics.map(t => {
+                              const topicCount = counts?.[d.domain_name]?.topics?.[t.skill_code || t.skill_name];
+                              return (
+                                <button key={t.skill_name} type="button" className={`tchAssignChip small${topics.includes(t.skill_name) ? ' active' : ''}`} onClick={() => toggleTopic(t.skill_name)}>
+                                  {t.skill_name}{topicCount != null ? ` (${topicCount})` : ''}
+                                </button>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -702,6 +1065,188 @@ function AssignmentsPanel({ students }) {
   );
 }
 
+// ─── Upload Bluebook modal ───────────────────────────────
+function UploadBluebookModal({ studentId, onClose, onUploaded }) {
+  const [tests, setTests] = useState([]);
+  const [selectedTestId, setSelectedTestId] = useState('');
+  const [rwScore, setRwScore] = useState('');
+  const [mathScore, setMathScore] = useState('');
+  const [testDate, setTestDate] = useState('');
+  const [file, setFile] = useState(null);
+  const [parsed, setParsed] = useState(null);
+  const [parseError, setParseError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/practice-tests')
+      .then(r => r.json())
+      .then(d => setTests(d.tests || []))
+      .catch(() => {});
+  }, []);
+
+  const composite = (Number(rwScore) || 0) + (Number(mathScore) || 0);
+
+  async function handleFileChange(e) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    setParsed(null);
+    setParseError(null);
+    setResult(null);
+
+    try {
+      const text = await f.text();
+      // Dynamic import to keep parser out of server bundle
+      const { parseBluebookHtml } = await import('../../lib/parseBluebookHtml');
+      const data = parseBluebookHtml(text);
+      if (!data.questions.length) {
+        setParseError('The file was read but no questions could be extracted. This Bluebook HTML format may not be supported yet.');
+        return;
+      }
+      setParsed(data);
+    } catch (err) {
+      setParseError(err.message || 'Failed to parse the HTML file');
+    }
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!selectedTestId) return setError('Select a practice test.');
+    if (!parsed) return setError('Upload and parse a Bluebook HTML file first.');
+    if (!parsed.questions.length) return setError('No questions were parsed from the uploaded file.');
+    if (!rwScore || !mathScore) return setError('Enter both RW and Math scores.');
+    const rw = parseInt(rwScore, 10);
+    const math = parseInt(mathScore, 10);
+    if (rw < 200 || rw > 800 || math < 200 || math > 800) {
+      return setError('Scores must be between 200 and 800.');
+    }
+
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/teacher/student/${studentId}/upload-bluebook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          practice_test_id: selectedTestId,
+          rw_score: rw,
+          math_score: math,
+          test_date: testDate || null,
+          questions: parsed.questions,
+          correctCounts: parsed.correctCounts,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      setResult(data);
+      if (onUploaded) onUploaded(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="tchModalOverlay" onClick={onClose}>
+      <div className="card tchModal" style={{ maxWidth: 520 }} onClick={(e) => e.stopPropagation()}>
+        <div className="tchModalHeader">
+          <h3 className="h2" style={{ margin: 0 }}>Upload Bluebook Results</h3>
+          <button className="tchModalClose" onClick={onClose}>&times;</button>
+        </div>
+        {result ? (
+          <div style={{ padding: '16px 0' }}>
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <div style={{ fontSize: 36, fontWeight: 700, color: 'var(--accent)' }}>{result.composite_score}</div>
+              <div className="muted small">Composite Score</div>
+              <div style={{ marginTop: 8, fontSize: 14 }}>
+                <span style={{ color: '#6b9bd2', fontWeight: 600 }}>R&W {result.rw_scaled}</span>
+                {' · '}
+                <span style={{ color: '#9b8ec4', fontWeight: 600 }}>Math {result.math_scaled}</span>
+              </div>
+              <div className="muted small" style={{ marginTop: 8 }}>{result.questions_imported} questions imported</div>
+            </div>
+            <div className="tchModalActions">
+              <button className="btn primary" onClick={onClose}>Done</button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="tchModalForm">
+            <label className="tchModalField">
+              <span className="tchModalLabel">Practice Test</span>
+              <select value={selectedTestId} onChange={(e) => setSelectedTestId(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14 }}>
+                <option value="">— Select a test —</option>
+                {tests.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="tchModalField">
+              <span className="tchModalLabel">Bluebook HTML File (.htm)</span>
+              <input type="file" accept=".htm,.html" onChange={handleFileChange} style={{ fontSize: 13 }} />
+            </label>
+
+            {parseError && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{parseError}</p>}
+
+            {parsed && (
+              <div style={{ background: 'var(--surface-alt, var(--surface))', borderRadius: 8, padding: 12, fontSize: 13 }}>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>{parsed.testName}</div>
+                {parsed.testDate && <div className="muted small">{parsed.testDate}</div>}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
+                  <div>
+                    <span className="muted small">R&W: </span>
+                    <span style={{ fontWeight: 600 }}>{parsed.correctCounts.rw.total}/{parsed.questions.filter(q => q.subjectCode === 'RW').length} correct</span>
+                    <div className="muted small" style={{ fontSize: 11 }}>M1: {parsed.correctCounts.rw.m1} · M2: {parsed.correctCounts.rw.m2}</div>
+                  </div>
+                  <div>
+                    <span className="muted small">Math: </span>
+                    <span style={{ fontWeight: 600 }}>{parsed.correctCounts.math.total}/{parsed.questions.filter(q => q.subjectCode === 'MATH').length} correct</span>
+                    <div className="muted small" style={{ fontSize: 11 }}>M1: {parsed.correctCounts.math.m1} · M2: {parsed.correctCounts.math.m2}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="tchModalRow">
+              <label className="tchModalField">
+                <span className="tchModalLabel">R&W Scaled Score</span>
+                <input type="number" min="200" max="800" step="10" value={rwScore} onChange={(e) => setRwScore(e.target.value)} required placeholder="200-800" />
+              </label>
+              <label className="tchModalField">
+                <span className="tchModalLabel">Math Scaled Score</span>
+                <input type="number" min="200" max="800" step="10" value={mathScore} onChange={(e) => setMathScore(e.target.value)} required placeholder="200-800" />
+              </label>
+            </div>
+
+            <label className="tchModalField">
+              <span className="tchModalLabel">Test Date</span>
+              <input type="date" value={testDate} onChange={(e) => setTestDate(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14 }} />
+            </label>
+
+            {rwScore && mathScore && (
+              <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--accent)' }}>
+                Composite: {composite}
+              </div>
+            )}
+
+            {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
+
+            <div className="tchModalActions">
+              <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
+              <button type="submit" className="btn primary" disabled={saving || !parsed || !selectedTestId}>
+                {saving ? 'Uploading...' : 'Upload Results'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Student detail panel ────────────────────────────────
 function StudentDetail({ studentId }) {
   const router = useRouter();
@@ -709,6 +1254,11 @@ function StudentDetail({ studentId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [registrations, setRegistrations] = useState([]);
+  const [officialScores, setOfficialScores] = useState([]);
+  const [addRegOpen, setAddRegOpen] = useState(false);
+  const [addScoreOpen, setAddScoreOpen] = useState(false);
+  const [uploadBluebookOpen, setUploadBluebookOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true); setError(null);
@@ -717,7 +1267,32 @@ function StudentDetail({ studentId }) {
       .then(d => { if (d.error) throw new Error(d.error); setData(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
+    fetch(`/api/teacher/student/${studentId}/registrations`)
+      .then(r => r.json())
+      .then(d => setRegistrations(d.registrations || []))
+      .catch(() => {});
+    fetch(`/api/teacher/student/${studentId}/scores`)
+      .then(r => r.json())
+      .then(d => setOfficialScores(d.scores || []))
+      .catch(() => {});
   }, [studentId]);
+
+  const deleteRegistration = async (id) => {
+    await fetch(`/api/teacher/student/${studentId}/registrations?id=${id}`, { method: 'DELETE' });
+    setRegistrations(prev => prev.filter(r => r.id !== id));
+  };
+
+  const deleteScore = async (id) => {
+    await fetch(`/api/teacher/student/${studentId}/scores?id=${id}`, { method: 'DELETE' });
+    setOfficialScores(prev => prev.filter(s => s.id !== id));
+  };
+
+  const deleteTestAttempt = async (attemptId) => {
+    const res = await fetch(`/api/practice-tests/attempt/${attemptId}`, { method: 'DELETE' });
+    if (res.ok) {
+      setData(prev => ({ ...prev, testScores: (prev.testScores || []).filter(ts => ts.attempt_id !== attemptId) }));
+    }
+  };
 
   if (loading) return <div className="tchDetailLoading"><p className="muted">Loading student data...</p></div>;
   if (error) return <div className="tchDetailError"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
@@ -734,6 +1309,9 @@ function StudentDetail({ studentId }) {
         <button className="btn secondary tchEditBtn" onClick={() => setEditOpen(true)}>Edit</button>
       </div>
       {editOpen && <EditProfileModal student={student} studentId={studentId} onClose={() => setEditOpen(false)} onSaved={(updated) => { setData(prev => ({ ...prev, student: { ...prev.student, ...updated } })); setEditOpen(false); }} />}
+      {addRegOpen && <AddRegistrationModal studentId={studentId} onClose={() => setAddRegOpen(false)} onSaved={(reg) => { setRegistrations(prev => [...prev, reg].sort((a, b) => new Date(a.test_date) - new Date(b.test_date))); setAddRegOpen(false); }} />}
+      {addScoreOpen && <AddScoreModal studentId={studentId} onClose={() => setAddScoreOpen(false)} onSaved={(score) => { setOfficialScores(prev => [score, ...prev]); setAddScoreOpen(false); }} />}
+      {uploadBluebookOpen && <UploadBluebookModal studentId={studentId} onClose={() => setUploadBluebookOpen(false)} onUploaded={() => { fetch(`/api/teacher/student/${studentId}/dashboard`).then(r => r.json()).then(d => { if (!d.error) setData(d); }); }} />}
       <div className="card tchOverviewCard">
         {(student.high_school || student.graduation_year || student.target_sat_score) && (
           <div className="tchProfileRow">
@@ -742,6 +1320,60 @@ function StudentDetail({ studentId }) {
             {student.target_sat_score && <div className="tchProfileItem"><span className="tchProfileLabel">Target Score</span><span className="tchProfileValue">{student.target_sat_score}</span></div>}
           </div>
         )}
+        {/* Upcoming SAT Registrations */}
+        {(() => {
+          const now = new Date();
+          const upcoming = registrations.filter(r => new Date(r.test_date) > now);
+          const past = registrations.filter(r => new Date(r.test_date) <= now);
+          return (upcoming.length > 0 || past.length > 0) ? (
+            <div className="tchRegSection">
+              {upcoming.length > 0 && (
+                <div className="tchRegList">
+                  <span className="tchProfileLabel" style={{ marginBottom: 4 }}>Upcoming SATs</span>
+                  {upcoming.map(r => (
+                    <div key={r.id} className="tchRegItem">
+                      <span>{new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <button className="tchRegDelete" onClick={() => deleteRegistration(r.id)} title="Remove">&times;</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {past.length > 0 && (
+                <div className="tchRegList">
+                  <span className="tchProfileLabel" style={{ marginBottom: 4, color: 'var(--muted)' }}>Past SATs</span>
+                  {past.map(r => (
+                    <div key={r.id} className="tchRegItem past">
+                      <span>{new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <button className="tchRegDelete" onClick={() => deleteRegistration(r.id)} title="Remove">&times;</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null;
+        })()}
+        {/* Official SAT Scores */}
+        {officialScores.length > 0 && (
+          <div className="tchScoresSection">
+            <span className="tchProfileLabel" style={{ marginBottom: 6 }}>Official SAT Scores</span>
+            <div className="tchScoresList">
+              {officialScores.map(s => (
+                <div key={s.id} className="tchScoreItem">
+                  <span className="tchScoreDate">{new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  <span className="tchScoreComposite">{s.composite_score}</span>
+                  <span className="tchScoreBreakdown">R&W {s.rw_score} · Math {s.math_score}</span>
+                  <button className="tchRegDelete" onClick={() => deleteScore(s.id)} title="Remove">&times;</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* Action buttons */}
+        <div className="tchProfileActions">
+          <button className="btn secondary tchProfileActionBtn" onClick={() => setAddRegOpen(true)}>+ Test Registration</button>
+          <button className="btn secondary tchProfileActionBtn" onClick={() => setAddScoreOpen(true)}>+ Official Score</button>
+          <button className="btn primary tchProfileActionBtn" onClick={() => setUploadBluebookOpen(true)}>Upload Bluebook Results</button>
+        </div>
         <div className="tchStatsRow">
           <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--accent)' }}>{data.highestTestScore ?? '—'}</div><div className="tchStatLabel">Highest Score</div></div>
           <div className="tchStatCol"><div className="tchStatValue">{data.totalAttempted}</div><div className="tchStatLabel">Questions Done</div></div>
@@ -754,7 +1386,7 @@ function StudentDetail({ studentId }) {
       </div>
       <div className="card tchSection">
         <h3 className="h2" style={{ marginBottom: 14 }}>Practice Test Results</h3>
-        {!data.testScores?.length ? <p className="muted small">No completed practice tests yet.</p> : <TestScoreBarChart testScores={data.testScores} />}
+        {!data.testScores?.length ? <p className="muted small">No completed practice tests yet.</p> : <TestScoreBarChart testScores={data.testScores} onDelete={deleteTestAttempt} />}
       </div>
       <div className="card tchSection">
         <h3 className="h2" style={{ marginBottom: 14 }}>Domain & Topic Performance</h3>
@@ -808,7 +1440,7 @@ function TeacherPageInner() {
   const [selectedId, setSelectedId] = useState(searchParams.get('selected') || null);
   const [role, setRole] = useState(null);
   const [search, setSearch] = useState('');
-  const [sidebarTab, setSidebarTab] = useState('students');
+  const [sidebarTab, setSidebarTab] = useState(searchParams.get('selected') ? 'students' : 'dashboard');
 
   function loadStudents() {
     fetch('/api/teacher/students')
@@ -838,6 +1470,9 @@ function TeacherPageInner() {
       <aside className="tchSidebar">
         <div className="tchSidebarHeader">
           <div className="tchSidebarTabs">
+            <button className={`tchSidebarTabBtn${sidebarTab === 'dashboard' ? ' active' : ''}`} onClick={() => { setSidebarTab('dashboard'); setSelectedId(null); }}>
+              Dashboard
+            </button>
             <button className={`tchSidebarTabBtn${sidebarTab === 'students' ? ' active' : ''}`} onClick={() => setSidebarTab('students')}>
               Students <span className="tchSidebarCount">{students.length}</span>
             </button>
@@ -866,6 +1501,11 @@ function TeacherPageInner() {
             </div>
           </>
         )}
+        {sidebarTab === 'dashboard' && (
+          <div style={{ padding: '12px 16px' }}>
+            <p className="muted small" style={{ margin: 0 }}>Viewing roster dashboard. Select a student or tab to navigate.</p>
+          </div>
+        )}
         {sidebarTab === 'assignments' && (
           <div style={{ padding: '12px 16px' }}>
             <p className="muted small" style={{ margin: 0 }}>Manage assignments in the main panel.</p>
@@ -873,7 +1513,12 @@ function TeacherPageInner() {
         )}
       </aside>
       <main className="tchMain">
-        {sidebarTab === 'assignments' ? <AssignmentsPanel students={students} /> : selectedId ? <StudentDetail key={selectedId} studentId={selectedId} /> : <WelcomePanel role={role} />}
+        {sidebarTab === 'assignments'
+          ? <AssignmentsPanel students={students} />
+          : sidebarTab === 'students' && selectedId
+            ? <StudentDetail key={selectedId} studentId={selectedId} />
+            : <TeacherDashboardHub role={role} students={students} onSelectStudent={(id) => { setSelectedId(id); setSidebarTab('students'); }} />
+        }
       </main>
     </div>
   );

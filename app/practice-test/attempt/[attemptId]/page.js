@@ -9,6 +9,7 @@ const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 
 
 const htmlHasContent = (html) => {
   if (!html) return false;
+  if (/<img\s/i.test(html)) return true;
   const text = html.replace(/<[^>]+>/g, '').trim();
   return text.length > 0 && text !== 'NULL';
 };
@@ -152,6 +153,13 @@ function DesmosPanel({ isOpen, storageKey }) {
         expressions: true,
         settingsMenu: true,
         zoomButtons: true,
+        degreeMode: true,
+        clearIntoDegreeMode: true,
+        images: false,
+        folders: false,
+        notes: false,
+        links: false,
+        restrictedFunctions: true,
       });
       restoreState();
       safeResize();
@@ -311,6 +319,14 @@ export default function TestSessionPage() {
   const [marked, setMarked] = useState({});
   const toggleMark = (vid) => setMarked((m) => ({ ...m, [vid]: !m[vid] }));
 
+  // Per-question cumulative time tracking (milliseconds)
+  // questionTimesRef: { [question_version_id]: accumulated_ms }
+  const questionTimesRef = useRef({});
+  // Track when we started viewing the current question
+  const questionStartRef = useRef(null);
+  // Track which question_version_id is currently being viewed
+  const activeQvIdRef = useRef(null);
+
   // Cross-out answer choices (session-only, not persisted to DB)
   const [crossedOut, setCrossedOut] = useState({});
   const toggleCrossOut = (optId) => setCrossedOut((c) => ({ ...c, [optId]: !c[optId] }));
@@ -358,6 +374,63 @@ export default function TestSessionPage() {
     shellRef.current?.style.setProperty('--calcW', `${MIN_CALC_W}px`);
   }, [currentIdx]);
 
+  // ─── Per-question timing helpers ───────────────────────────────────────────
+
+  // Flush elapsed time for the currently-viewed question into the cumulative map
+  const flushQuestionTime = useCallback(() => {
+    if (activeQvIdRef.current && questionStartRef.current) {
+      const elapsed = Date.now() - questionStartRef.current;
+      const prev = questionTimesRef.current[activeQvIdRef.current] || 0;
+      questionTimesRef.current[activeQvIdRef.current] = prev + elapsed;
+    }
+    questionStartRef.current = null;
+  }, []);
+
+  // Persist per-question times to localStorage (for pause & resume)
+  const saveQuestionTimes = useCallback(() => {
+    if (!moduleData) return;
+    const key = `pt_qtimes_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
+    try { localStorage.setItem(key, JSON.stringify(questionTimesRef.current)); } catch {}
+  }, [attemptId, moduleData]);
+
+  // When the current question index changes, flush the previous question's time
+  // and start the timer for the new question
+  useEffect(() => {
+    const q = moduleData?.questions?.[currentIdx];
+    if (!q) return;
+
+    // Flush time for the previous question
+    flushQuestionTime();
+    saveQuestionTimes();
+
+    // Start timing the new question
+    activeQvIdRef.current = q.question_version_id;
+    questionStartRef.current = Date.now();
+  }, [currentIdx, moduleData]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Flush timing on page unload / visibility change so pausing preserves data
+  useEffect(() => {
+    const handleUnload = () => {
+      flushQuestionTime();
+      saveQuestionTimes();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        flushQuestionTime();
+        saveQuestionTimes();
+      } else if (document.visibilityState === 'visible' && activeQvIdRef.current) {
+        // Resume timing when user returns
+        questionStartRef.current = Date.now();
+      }
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [flushQuestionTime, saveQuestionTimes]);
+
   // ─── Data loading ──────────────────────────────────────────────────────────
 
   const loadModule = useCallback(async () => {
@@ -381,6 +454,16 @@ export default function TestSessionPage() {
         if (raw) restored = JSON.parse(raw);
       } catch {}
       setAnswers(restored);
+
+      // Restore per-question cumulative times from localStorage
+      const qtKey = `pt_qtimes_${attemptId}_${data.subject_code}_${data.module_number}`;
+      try {
+        const rawQt = localStorage.getItem(qtKey);
+        questionTimesRef.current = rawQt ? JSON.parse(rawQt) : {};
+      } catch { questionTimesRef.current = {}; }
+      // Start timing the first question
+      activeQvIdRef.current = data.questions?.[0]?.question_version_id || null;
+      questionStartRef.current = Date.now();
 
       // Timer — use API value or fall back to SAT defaults (32 min RW, 35 min math)
       const isMathSubject = ['M', 'm', 'math', 'Math', 'MATH'].includes(data.subject_code);
@@ -439,15 +522,26 @@ export default function TestSessionPage() {
     setSubmitting(true);
     clearInterval(timerRef.current);
 
+    // Flush the in-progress question's time before building the answer list
+    flushQuestionTime();
+
     const elapsedKey = `pt_elapsed_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
     const ansKey = `pt_answers_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
+    const qtKey = `pt_qtimes_${attemptId}_${moduleData.subject_code}_${moduleData.module_number}`;
     localStorage.removeItem(elapsedKey);
     localStorage.removeItem(ansKey);
+    localStorage.removeItem(qtKey);
+
+    // Clean up Desmos calculator state for this module's questions
+    (moduleData.questions || []).forEach((q) => {
+      try { localStorage.removeItem(`desmos:pt:${attemptId}:${q.question_version_id}`); } catch {}
+    });
 
     const answerList = (moduleData.questions || []).map((q) => ({
       question_version_id: q.question_version_id,
       question_id: q.question_id,
       ...(answers[q.question_version_id] || {}),
+      time_spent_ms: Math.round(questionTimesRef.current[q.question_version_id] || 0),
     }));
 
     try {
@@ -699,7 +793,7 @@ export default function TestSessionPage() {
         <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
           <DesmosPanel
             isOpen={!calcMinimized}
-            storageKey={`desmos:pt:${q.question_version_id}`}
+            storageKey={`desmos:pt:${attemptId}:${q.question_version_id}`}
           />
         </div>
         {calcMinimized ? <div className="calcMinBody" /> : null}
@@ -818,6 +912,11 @@ export default function TestSessionPage() {
             /* Math shell: Desmos left, stem + answers right */
             <>
               {qNumRow}
+              {htmlHasContent(q.stimulus_html) && (
+                <div className="ptStimulus">
+                  <HtmlBlock className="prose" html={q.stimulus_html} />
+                </div>
+              )}
               {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
               {answerArea}
             </>

@@ -18,6 +18,7 @@ export async function GET(request) {
   const wrong_only   = searchParams.get('wrong_only')   === 'true';
   const marked_only  = searchParams.get('marked_only')  === 'true';
   const hide_broken  = searchParams.get('hide_broken')  === 'true';
+  const only_broken  = searchParams.get('only_broken')  === 'true';
 
   const supabase = createClient();
 
@@ -37,8 +38,8 @@ export async function GET(request) {
     })(),
   ];
 
-  // 2: broken IDs (if needed)
-  if (hide_broken) {
+  // 2: broken IDs (if needed for hide_broken or only_broken)
+  if (hide_broken || only_broken) {
     restrictionQueries.push(
       supabase.from('questions').select('id').eq('is_broken', true).limit(10000)
     );
@@ -85,7 +86,11 @@ export async function GET(request) {
     if (restrictIds.length === 0) return NextResponse.json({});
   }
 
-  if (hide_broken) {
+  if (only_broken) {
+    const brokenIds = (results[2]?.data || []).map((r) => r.id).filter(Boolean);
+    restrictIds = intersect(restrictIds, brokenIds);
+    if (restrictIds.length === 0) return NextResponse.json({});
+  } else if (hide_broken) {
     const brokenIds = new Set((results[2]?.data || []).map((r) => r.id).filter(Boolean));
     if (brokenIds.size > 0) {
       if (restrictIds) {

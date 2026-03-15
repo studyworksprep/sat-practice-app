@@ -73,7 +73,8 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     if (state.score_bands.length)  p.set('score_bands',  state.score_bands.join(','));
     if (state.wrong_only)          p.set('wrong_only',   'true');
     if (state.marked_only)         p.set('marked_only',  'true');
-    if (!state.show_broken)        p.set('hide_broken',  'true');
+    if (state.show_broken)          p.set('only_broken',  'true');
+    else                            p.set('hide_broken',  'true');
 
     fetch('/api/domain-counts?' + p.toString(), { signal: controller.signal })
       .then((r) => r.json())
@@ -275,7 +276,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
           {[
             ['marked_only', 'Only marked for review'],
             ['wrong_only',  'Only wrong answers'],
-            ['show_broken', 'Show flagged as broken'],
+            ['show_broken', 'Flagged as broken'],
           ].map(([key, label]) => (
             <label key={key} className="filterCheck">
               <input type="checkbox" checked={state[key]} onChange={(e) => set(key, e.target.checked)} />

@@ -30,7 +30,6 @@ export default function LandingClient() {
   const [highSchool, setHighSchool] = useState('');
   const [graduationYear, setGraduationYear] = useState('');
   const [targetSatScore, setTargetSatScore] = useState('');
-  const [tutorName, setTutorName] = useState('');
   const [teacherCode, setTeacherCode] = useState('');
   const [signupMsg, setSignupMsg] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -98,7 +97,7 @@ export default function LandingClient() {
             highSchool: highSchool || undefined,
             graduationYear: graduationYear ? Number(graduationYear) : undefined,
             targetSatScore: targetSatScore ? Number(targetSatScore) : undefined,
-            tutorName: tutorName || undefined,
+            teacherCode: teacherCode || undefined,
           }),
           ...(userType === 'teacher' && { teacherCode }),
         }),
@@ -323,8 +322,8 @@ export default function LandingClient() {
                     </div>
                   </div>
 
-                  <label>Studyworks tutor&apos;s name (if any)</label>
-                  <input className="input" value={tutorName} onChange={e => setTutorName(e.target.value)} placeholder="Optional" />
+                  <label>Teacher code (if provided by your teacher)</label>
+                  <input className="input" value={teacherCode} onChange={e => setTeacherCode(e.target.value)} placeholder="Optional" />
                 </>
               )}
 
