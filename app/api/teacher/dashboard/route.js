@@ -141,9 +141,9 @@ export async function GET() {
       .limit(50000),
     svc
       .from('sat_test_registrations')
-      .select('id, user_id, test_date')
-      .in('user_id', studentIds)
-      .gte('test_date', new Date().toISOString())
+      .select('id, student_id, test_date')
+      .in('student_id', studentIds)
+      .gte('test_date', new Date().toISOString().split('T')[0])
       .order('test_date', { ascending: true })
       .limit(50),
   ]);
@@ -339,8 +339,8 @@ export async function GET() {
     const testTime = new Date(r.test_date).getTime();
     const daysUntil = Math.ceil((testTime - now) / 86400000);
     return {
-      student_id: r.user_id,
-      student_name: displayName(profileMap[r.user_id]),
+      student_id: r.student_id,
+      student_name: displayName(profileMap[r.student_id]),
       test_date: r.test_date,
       days_until: daysUntil,
     };
