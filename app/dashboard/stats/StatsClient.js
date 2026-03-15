@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   accuracyByDifficulty,
@@ -36,7 +36,7 @@ function formatDate(iso) {
 }
 
 // ── Simple bar component ──
-function StatBar({ value, max, color, label, sublabel }) {
+const StatBar = memo(function StatBar({ value, max, color, label, sublabel }) {
   const width = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
     <div className="stBar">
@@ -50,10 +50,10 @@ function StatBar({ value, max, color, label, sublabel }) {
       <span className="stBarValue" style={{ color }}>{value}%</span>
     </div>
   );
-}
+});
 
 // ── Sparkline (inline SVG) ──
-function Sparkline({ values, color = 'var(--accent)', width = 80, height = 28 }) {
+const Sparkline = memo(function Sparkline({ values, color = 'var(--accent)', width = 80, height = 28 }) {
   if (!values || values.length < 2) return null;
   const pad = 2;
   const w = width - pad * 2;
@@ -86,10 +86,10 @@ function Sparkline({ values, color = 'var(--accent)', width = 80, height = 28 })
       })()}
     </svg>
   );
-}
+});
 
 // ── SVG Line Chart ──
-function LineChart({ data: points, yMin = 0, yMax = 100, height = 200, color = TREND_COLOR, yLabel = '%', xLabels }) {
+const LineChart = memo(function LineChart({ data: points, yMin = 0, yMax = 100, height = 200, color = TREND_COLOR, yLabel = '%', xLabels }) {
   if (!points.length) return <p className="muted small">Not enough data yet.</p>;
 
   const vbW = 600, vbH = height;
@@ -160,10 +160,10 @@ function LineChart({ data: points, yMin = 0, yMax = 100, height = 200, color = T
       </svg>
     </div>
   );
-}
+});
 
 // ── Accuracy trend (SVG line chart) ──
-function TrendChart({ sessions }) {
+const TrendChart = memo(function TrendChart({ sessions }) {
   if (sessions.length < 2) return <p className="muted small">Not enough sessions yet for a trend chart.</p>;
 
   const points = sessions.map((s) => ({
@@ -173,10 +173,10 @@ function TrendChart({ sessions }) {
   }));
 
   return <LineChart data={points} yMin={0} yMax={100} xLabels height={180} />;
-}
+});
 
 // ── Test score line graph ──
-function TestScoreLineGraph({ testScores }) {
+const TestScoreLineGraph = memo(function TestScoreLineGraph({ testScores }) {
   if (testScores.length < 2) return null;
 
   const chronological = [...testScores].reverse();
@@ -195,10 +195,10 @@ function TestScoreLineGraph({ testScores }) {
       <LineChart data={points} yMin={minScore} yMax={maxScore} yLabel="" xLabels height={160} color="#6b9bd2" />
     </div>
   );
-}
+});
 
 // ── Topic mastery table ──
-function MasteryTable({ topicStats, enrichedAttempts }) {
+const MasteryTable = memo(function MasteryTable({ topicStats, enrichedAttempts }) {
   // Group attempts by skill_name for mastery computation
   const attemptsBySkill = {};
   for (const a of enrichedAttempts) {
@@ -253,10 +253,10 @@ function MasteryTable({ topicStats, enrichedAttempts }) {
       )}
     </div>
   );
-}
+});
 
 // ── Test score trend ──
-function TestScoreTrend({ testScores }) {
+const TestScoreTrend = memo(function TestScoreTrend({ testScores }) {
   if (!testScores.length) return <p className="muted small">No completed tests yet.</p>;
 
   // Reverse so oldest is first (chronological)
@@ -302,7 +302,7 @@ function TestScoreTrend({ testScores }) {
       })}
     </div>
   );
-}
+});
 
 
 // ── Main ──
@@ -336,6 +336,17 @@ export default function StatsClient({ email, fetchUrl, backUrl, backLabel, title
     return null;
   })();
 
+  const enriched = data?.enrichedAttempts || [];
+
+  const diffBreakdown = useMemo(() => accuracyByDifficulty(enriched), [enriched]);
+  const timeByDiff = useMemo(() => avgTimeByDifficulty(enriched), [enriched]);
+  const trend = useMemo(() => accuracyTrend(enriched), [enriched]);
+  const suggestions = useMemo(() => suggestReviewTopics(data?.topicStats || [], 5), [data?.topicStats]);
+
+  // Separate R&W vs Math domains
+  const rwDomains = useMemo(() => (data?.domainStats || []).filter(d => !MATH_CODES.has(d.domain_code)), [data?.domainStats]);
+  const mathDomains = useMemo(() => (data?.domainStats || []).filter(d => MATH_CODES.has(d.domain_code)), [data?.domainStats]);
+
   const headerBlock = (
     <div className="stHeader">
       <Link href={linkBack} className="btn secondary">{linkBackLabel}</Link>
@@ -363,16 +374,6 @@ export default function StatsClient({ email, fetchUrl, backUrl, backLabel, title
       </main>
     );
   }
-
-  const enriched = data?.enrichedAttempts || [];
-  const diffBreakdown = accuracyByDifficulty(enriched);
-  const timeByDiff = avgTimeByDifficulty(enriched);
-  const trend = accuracyTrend(enriched);
-  const suggestions = suggestReviewTopics(data?.topicStats || [], 5);
-
-  // Separate R&W vs Math domains
-  const rwDomains = (data?.domainStats || []).filter(d => !MATH_CODES.has(d.domain_code));
-  const mathDomains = (data?.domainStats || []).filter(d => MATH_CODES.has(d.domain_code));
 
   const totalAttempted = data?.totalAttempted || 0;
   const totalCorrect = data?.totalCorrect || 0;

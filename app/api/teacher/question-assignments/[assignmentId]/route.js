@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
       .eq("id", user.id)
       .single();
 
-    if (!profile || (profile.role !== "teacher" && profile.role !== "admin")) {
+    if (!profile || (profile.role !== "teacher" && profile.role !== "manager" && profile.role !== "admin")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -84,7 +84,7 @@ export async function GET(request, { params }) {
           .eq("user_id", row.student_id)
           .in("question_id", questionIds)
           .eq("is_done", true)
-          .eq("is_correct", true);
+          .eq("last_is_correct", true);
 
         correctCount = correctCnt || 0;
       }

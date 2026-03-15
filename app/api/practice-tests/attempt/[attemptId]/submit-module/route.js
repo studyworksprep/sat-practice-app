@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
 
 // POST /api/practice-tests/attempt/[attemptId]/submit-module
-// Body: { subject_code, module_number, route_code, answers: [{question_version_id, question_id, selected_option_id?, response_text?}] }
+// Body: { subject_code, module_number, route_code, answers: [{question_version_id, question_id, selected_option_id?, response_text?, time_spent_ms?}] }
 // Grades answers, records attempt_items, applies routing rules, advances attempt state.
 export async function POST(request, { params }) {
   const { attemptId } = params;
@@ -143,6 +143,8 @@ export async function POST(request, { params }) {
 
     if (is_correct) correctCount += 1;
 
+    const timeSpent = Number.isFinite(Number(ans.time_spent_ms)) ? Number(ans.time_spent_ms) : null;
+
     const { data: attemptRow } = await supabase
       .from('attempts')
       .insert({
@@ -151,7 +153,9 @@ export async function POST(request, { params }) {
         is_correct,
         selected_option_id: ans.selected_option_id || null,
         response_text: ans.response_text || null,
+        time_spent_ms: timeSpent,
         created_at: now,
+        source: 'practice_test',
       })
       .select('id')
       .single();

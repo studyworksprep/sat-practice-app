@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '../../lib/supabase/browser';
 
-const ROLE_ORDER = ['admin', 'teacher', 'student', 'practice'];
-const ROLE_LABEL = { admin: 'Admin', teacher: 'Teacher', student: 'Student', practice: 'Practice' };
+const ROLE_ORDER = ['admin', 'manager', 'teacher', 'student', 'practice'];
+const ROLE_LABEL = { admin: 'Admin', manager: 'Manager', teacher: 'Teacher', student: 'Student', practice: 'Practice' };
 const ROLE_COLOR = {
   admin: '#7c3aed',
+  manager: '#0891b2',
   teacher: '#2563eb',
   student: '#16a34a',
   practice: '#6b7280',
@@ -43,14 +45,28 @@ export default function AdminPage() {
   const [assignStudent, setAssignStudent] = useState('');
   const [assignLoading, setAssignLoading] = useState(false);
 
+  // Manager-teacher assignment state
+  const [mtAssignments, setMtAssignments] = useState([]);
+  const [mtManager, setMtManager] = useState('');
+  const [mtTeacher, setMtTeacher] = useState('');
+  const [mtLoading, setMtLoading] = useState(false);
+
   // Teacher code state
   const [teacherCodes, setTeacherCodes] = useState([]);
   const [newCodeValue, setNewCodeValue] = useState('');
   const [codeLoading, setCodeLoading] = useState(false);
   const [showTeacherCodes, setShowTeacherCodes] = useState(false);
 
+  // Teacher invite code state
+  const [inviteTeachers, setInviteTeachers] = useState([]);
+  const [showInviteCodes, setShowInviteCodes] = useState(false);
+  const [inviteCodeLoading, setInviteCodeLoading] = useState({});
+
   // Delete confirmation state
   const [deleteConfirm, setDeleteConfirm] = useState(null); // user id pending confirmation
+
+  // Bug reports
+  const [recentBugs, setRecentBugs] = useState([]);
 
   useEffect(() => {
     supabase
@@ -64,7 +80,10 @@ export default function AdminPage() {
 
     fetchUsers();
     fetchAssignments();
+    fetchManagerAssignments();
     fetchTeacherCodes();
+    fetchInviteCodes();
+    fetchRecentBugs();
   }, []);
 
   async function fetchUsers() {
@@ -130,6 +149,53 @@ export default function AdminPage() {
       if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
       showToast('ok', 'Assignment removed.');
       fetchAssignments();
+    } catch (err) {
+      showToast('danger', err.message);
+    }
+  }
+
+  // ── Manager-Teacher assignments ──
+  async function fetchManagerAssignments() {
+    try {
+      const res = await fetch('/api/admin/manager-assignments');
+      const json = await res.json();
+      if (res.ok) setMtAssignments(json.assignments || []);
+    } catch {}
+  }
+
+  async function handleMtAssign() {
+    if (!mtManager || !mtTeacher) return showToast('danger', 'Select both a manager and a teacher.');
+    if (mtManager === mtTeacher) return showToast('danger', 'Cannot assign a user to themselves.');
+    setMtLoading(true);
+    try {
+      const res = await fetch('/api/admin/manager-assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manager_id: mtManager, teacher_id: mtTeacher }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      showToast('ok', 'Teacher assigned to manager.');
+      setMtManager('');
+      setMtTeacher('');
+      fetchManagerAssignments();
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setMtLoading(false);
+    }
+  }
+
+  async function handleMtUnassign(managerId, teacherId) {
+    try {
+      const res = await fetch('/api/admin/manager-assignments', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manager_id: managerId, teacher_id: teacherId }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      showToast('ok', 'Manager-teacher assignment removed.');
+      fetchManagerAssignments();
     } catch (err) {
       showToast('danger', err.message);
     }
@@ -224,6 +290,61 @@ export default function AdminPage() {
     }
   }
 
+  async function fetchInviteCodes() {
+    try {
+      const res = await fetch('/api/admin/teacher-invite-codes');
+      const json = await res.json();
+      if (res.ok) {
+        setInviteTeachers(json.teachers || []);
+      }
+    } catch {}
+  }
+
+  async function handleGenerateInviteCode(teacherId) {
+    setInviteCodeLoading(prev => ({ ...prev, [teacherId]: true }));
+    try {
+      const res = await fetch('/api/admin/teacher-invite-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: teacherId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      showToast('ok', `Invite code "${json.code}" generated.`);
+      fetchInviteCodes();
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setInviteCodeLoading(prev => ({ ...prev, [teacherId]: false }));
+    }
+  }
+
+  async function handleRevokeInviteCode(teacherId) {
+    setInviteCodeLoading(prev => ({ ...prev, [teacherId]: true }));
+    try {
+      const res = await fetch('/api/admin/teacher-invite-codes', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacher_id: teacherId }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      showToast('ok', 'Invite code removed.');
+      fetchInviteCodes();
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setInviteCodeLoading(prev => ({ ...prev, [teacherId]: false }));
+    }
+  }
+
+  async function fetchRecentBugs() {
+    try {
+      const res = await fetch('/api/admin/bug-reports?limit=4');
+      const json = await res.json();
+      if (res.ok) setRecentBugs(json.reports || []);
+    } catch {}
+  }
+
   async function handleSaveScores() {
     if (!selectedTestId) return showToast('danger', 'Select a test first.');
 
@@ -280,12 +401,21 @@ export default function AdminPage() {
   }
 
   // Group profiles by role
-  const grouped = {};
-  for (const role of ROLE_ORDER) grouped[role] = [];
-  for (const p of profiles) {
-    const role = ROLE_ORDER.includes(p.role) ? p.role : 'practice';
-    grouped[role].push(p);
-  }
+  const grouped = useMemo(() => {
+    const g = {};
+    for (const role of ROLE_ORDER) g[role] = [];
+    for (const p of profiles) {
+      const role = ROLE_ORDER.includes(p.role) ? p.role : 'practice';
+      g[role].push(p);
+    }
+    return g;
+  }, [profiles]);
+
+  // Memoize filtered lists for assignment dropdowns
+  const teacherProfiles = useMemo(() => profiles.filter(p => p.role === 'teacher' || p.role === 'manager' || p.role === 'admin'), [profiles]);
+  const studentProfiles = useMemo(() => profiles.filter(p => p.role === 'student' || p.role === 'practice'), [profiles]);
+  const managerProfiles = useMemo(() => profiles.filter(p => p.role === 'manager'), [profiles]);
+  const teacherOnlyProfiles = useMemo(() => profiles.filter(p => p.role === 'teacher'), [profiles]);
 
   if (loading) {
     return (
@@ -326,6 +456,37 @@ export default function AdminPage() {
           </div>
         ))}
       </div>
+
+      {/* ── Recent Bug Reports ───────────────────────────────── */}
+      <section style={{ marginTop: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <h2 className="h2" style={{ margin: 0 }}>Recent Bug Reports</h2>
+          <Link href="/bugs" className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }}>
+            View All
+          </Link>
+        </div>
+        {recentBugs.length === 0 ? (
+          <p className="muted small">No bug reports yet.</p>
+        ) : (
+          <div className="adminBugGrid">
+            {recentBugs.map((bug) => (
+              <div key={bug.id} className="card adminBugCard">
+                <div className="adminBugCardHeader">
+                  <span className="adminBugTitle">{bug.title || 'Bug Report'}</span>
+                  <span className={`adminBugStatus adminBugStatus--${bug.status}`}>
+                    {bug.status === 'in_progress' ? 'In Progress' : bug.status?.charAt(0).toUpperCase() + bug.status?.slice(1)}
+                  </span>
+                </div>
+                <p className="adminBugDesc">{bug.description}</p>
+                <div className="adminBugMeta">
+                  <span>{formatDate(bug.created_at)}</span>
+                  {bug.created_by && <span>by {bug.created_by}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* ── User management ────────────────────────────────────── */}
       <section style={{ marginTop: 32 }}>
@@ -526,6 +687,90 @@ export default function AdminPage() {
         )}
       </section>
 
+      {/* ── Teacher Invite Codes ─────────────────────────────── */}
+      <section style={{ marginTop: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h2 className="h2" style={{ margin: 0 }}>Teacher Invite Codes</h2>
+          <button className="btn" onClick={() => setShowInviteCodes(!showInviteCodes)}>
+            {showInviteCodes ? 'Close' : 'Manage Invite Codes'}
+          </button>
+        </div>
+        <p className="muted small" style={{ marginTop: -8, marginBottom: 12 }}>
+          Students can enter a teacher&apos;s invite code during sign-up to be automatically assigned.
+        </p>
+
+        {showInviteCodes && (
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            {inviteTeachers.length === 0 ? (
+              <p className="muted small" style={{ padding: 20 }}>No teachers found.</p>
+            ) : (
+              <table className="adminTable">
+                <thead>
+                  <tr>
+                    <th>Teacher</th>
+                    <th>Invite Code</th>
+                    <th style={{ width: 160 }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inviteTeachers.map((t) => (
+                    <tr key={t.id}>
+                      <td>
+                        {t.first_name || t.last_name
+                          ? `${t.first_name || ''} ${t.last_name || ''}`.trim()
+                          : t.email}
+                        {(t.first_name || t.last_name) && (
+                          <span className="muted small" style={{ marginLeft: 6 }}>{t.email}</span>
+                        )}
+                      </td>
+                      <td>
+                        {t.teacher_invite_code ? (
+                          <span style={{
+                            fontFamily: 'monospace',
+                            fontWeight: 600,
+                            letterSpacing: '0.08em',
+                            fontSize: 14,
+                            background: 'rgba(22,163,74,0.08)',
+                            color: '#16a34a',
+                            padding: '2px 10px',
+                            borderRadius: 4,
+                          }}>
+                            {t.teacher_invite_code}
+                          </span>
+                        ) : (
+                          <span className="muted small">None</span>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button
+                            className="btn"
+                            style={{ fontSize: 11, padding: '3px 10px' }}
+                            onClick={() => handleGenerateInviteCode(t.id)}
+                            disabled={inviteCodeLoading[t.id]}
+                          >
+                            {inviteCodeLoading[t.id] ? '…' : t.teacher_invite_code ? 'Regenerate' : 'Generate'}
+                          </button>
+                          {t.teacher_invite_code && (
+                            <button
+                              className="adminAssignRemove"
+                              onClick={() => handleRevokeInviteCode(t.id)}
+                              disabled={inviteCodeLoading[t.id]}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+      </section>
+
       {/* ── Score Conversion Entry ──────────────────────────── */}
       <section style={{ marginTop: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -603,7 +848,7 @@ export default function AdminPage() {
             Teacher
             <select className="adminSelect" value={assignTeacher} onChange={(e) => setAssignTeacher(e.target.value)}>
               <option value="">Select teacher…</option>
-              {profiles.filter(p => p.role === 'teacher' || p.role === 'admin').map(p => (
+              {teacherProfiles.map(p => (
                 <option key={p.id} value={p.id}>{p.email}</option>
               ))}
             </select>
@@ -612,7 +857,7 @@ export default function AdminPage() {
             Student
             <select className="adminSelect" value={assignStudent} onChange={(e) => setAssignStudent(e.target.value)}>
               <option value="">Select student…</option>
-              {profiles.filter(p => p.role === 'student' || p.role === 'practice').map(p => (
+              {studentProfiles.map(p => (
                 <option key={p.id} value={p.id}>{p.email}</option>
               ))}
             </select>
@@ -644,6 +889,69 @@ export default function AdminPage() {
                         <button
                           className="adminAssignRemove"
                           onClick={() => handleUnassign(a.teacher_id, a.student_id)}
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* ── Manager-Teacher Assignments ────────────────────── */}
+      <section className="adminAssignSection">
+        <h2 className="h2" style={{ marginBottom: 16 }}>Manager-Teacher Assignments</h2>
+
+        <div className="adminAssignGrid">
+          <label className="adminLabel">
+            Manager
+            <select className="adminSelect" value={mtManager} onChange={(e) => setMtManager(e.target.value)}>
+              <option value="">Select manager…</option>
+              {managerProfiles.map(p => (
+                <option key={p.id} value={p.id}>{p.email}</option>
+              ))}
+            </select>
+          </label>
+          <label className="adminLabel">
+            Teacher
+            <select className="adminSelect" value={mtTeacher} onChange={(e) => setMtTeacher(e.target.value)}>
+              <option value="">Select teacher…</option>
+              {teacherOnlyProfiles.map(p => (
+                <option key={p.id} value={p.id}>{p.email}</option>
+              ))}
+            </select>
+          </label>
+          <button className="btn" onClick={handleMtAssign} disabled={mtLoading} style={{ marginBottom: 2 }}>
+            {mtLoading ? 'Assigning…' : 'Assign'}
+          </button>
+        </div>
+
+        {mtAssignments.length > 0 && (
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <table className="adminAssignTable">
+              <thead>
+                <tr>
+                  <th>Manager</th>
+                  <th>Teacher</th>
+                  <th style={{ width: 80 }} />
+                </tr>
+              </thead>
+              <tbody>
+                {mtAssignments.map((a) => {
+                  const manager = profiles.find(p => p.id === a.manager_id);
+                  const teacher = profiles.find(p => p.id === a.teacher_id);
+                  return (
+                    <tr key={`${a.manager_id}-${a.teacher_id}`}>
+                      <td>{manager?.email || a.manager_id}</td>
+                      <td>{teacher?.email || a.teacher_id}</td>
+                      <td>
+                        <button
+                          className="adminAssignRemove"
+                          onClick={() => handleMtUnassign(a.manager_id, a.teacher_id)}
                         >
                           Remove
                         </button>

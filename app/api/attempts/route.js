@@ -6,8 +6,10 @@ import { createClient } from '../../../lib/supabase/server';
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { question_id, selected_option_id, response_text, time_spent_ms } = body || {};
+    const { question_id, selected_option_id, response_text, time_spent_ms, source, teacher_mode } = body || {};
     if (!question_id) return NextResponse.json({ error: 'question_id required' }, { status: 400 });
+    const VALID_SOURCES = ['practice', 'practice_test', 'review'];
+    const attemptSource = VALID_SOURCES.includes(source) ? source : 'practice';
 
     const supabase = createClient();
 
@@ -114,6 +116,18 @@ export async function POST(request) {
     const { data: st, error: stErr } = stResult;
     if (stErr) return NextResponse.json({ error: stErr.message }, { status: 400 });
 
+    // Teacher Mode: return correctness without recording anything
+    if (teacher_mode) {
+      return NextResponse.json({
+        ok: true,
+        is_correct,
+        attempts_count: 0,
+        correct_attempts_count: 0,
+        correct_option_id: ca?.correct_option_id ?? null,
+        correct_text: ca?.correct_text ?? null,
+      });
+    }
+
     const attempts_count = (st?.attempts_count ?? 0) + 1;
     const correct_attempts_count = (st?.correct_attempts_count ?? 0) + (is_correct ? 1 : 0);
 
@@ -126,6 +140,7 @@ export async function POST(request) {
         selected_option_id: ver.question_type === 'mcq' ? selected_option_id : null,
         response_text: ver.question_type === 'spr' ? response_text : null,
         time_spent_ms: Number.isFinite(Number(time_spent_ms)) ? Number(time_spent_ms) : null,
+        source: attemptSource,
       }),
       supabase
         .from('question_status')

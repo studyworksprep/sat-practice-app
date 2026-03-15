@@ -1,15 +1,42 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
-import { computeScaledScore } from '../../../../../../lib/scoreConversion';
-
-const subjToSection = {
-  RW: 'reading_writing', rw: 'reading_writing',
-  M: 'math', m: 'math', math: 'math', Math: 'math', MATH: 'math',
-};
-
-const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
+import { computeTestScores } from '../../../../../../lib/testScoreHelper';
 
 const BAND_WEIGHT = { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8, 6: 2.0, 7: 2.2 };
+
+// Mastery weights
+const DIFF_WEIGHT = { 1: 0.6, 2: 1.0, 3: 1.5 };
+const MASTERY_BAND_WEIGHT = { 1: 0.7, 2: 0.85, 3: 1.0, 4: 1.15, 5: 1.3, 6: 1.5, 7: 1.7 };
+const VOLUME_CURVE = 0.15;
+
+function computeMastery(attempts, taxMap) {
+  if (!attempts.length) return null;
+  let weightedCorrect = 0;
+  let weightedTotal = 0;
+  for (const a of attempts) {
+    const tax = taxMap[a.question_id];
+    const dw = DIFF_WEIGHT[tax?.difficulty] || 1.0;
+    const bw = MASTERY_BAND_WEIGHT[tax?.score_band] || 1.15;
+    const w = dw * bw;
+    weightedTotal += w;
+    if (a.is_correct) weightedCorrect += w;
+  }
+  const rawAccuracy = weightedTotal > 0 ? weightedCorrect / weightedTotal : 0;
+  const volumeFactor = 1 - Math.exp(-VOLUME_CURVE * attempts.length);
+  // Recency bonus: if recent (14-day) accuracy > 70% with 3+ questions, +5%
+  const now = Date.now();
+  const DAY = 86400000;
+  let recentCorrect = 0, recentTotal = 0;
+  for (const a of attempts) {
+    if (now - new Date(a.created_at).getTime() <= 14 * DAY) {
+      recentTotal++;
+      if (a.is_correct) recentCorrect++;
+    }
+  }
+  const recencyBonus = (recentTotal >= 3 && recentCorrect / recentTotal > 0.7) ? 0.05 : 0;
+  const mastery = rawAccuracy * volumeFactor * (1 + recencyBonus);
+  return Math.min(Math.round(mastery * 100), 100);
+}
 
 // GET /api/teacher/student/[studentId]/dashboard
 export async function GET(_request, { params }) {
@@ -26,12 +53,12 @@ export async function GET(_request, { params }) {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
+  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   // For teachers, verify they can view this student
-  if (profile.role === 'teacher') {
+  if (profile.role === 'teacher' || profile.role === 'manager') {
     const { data: assignment } = await supabase
       .from('teacher_student_assignments')
       .select('teacher_id')
@@ -64,26 +91,55 @@ export async function GET(_request, { params }) {
     }
   }
 
-  // Fetch student profile
-  const { data: studentProfile } = await supabase
-    .from('profiles')
-    .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score')
-    .eq('id', studentId)
-    .maybeSingle();
+  // ── Parallel batch: all independent queries at once ──
+  const [
+    { data: studentProfile },
+    { data: allAttempts },
+    { data: completedAttempts },
+    { data: satRegistrations },
+    { data: satScores },
+    { data: allTax },
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score')
+      .eq('id', studentId)
+      .maybeSingle(),
+    supabase
+      .from('attempts')
+      .select('id, question_id, is_correct, created_at')
+      .eq('user_id', studentId)
+      .eq('source', 'practice')
+      .order('created_at', { ascending: true })
+      .limit(5000),
+    supabase
+      .from('practice_test_attempts')
+      .select('id, practice_test_id, status, metadata, started_at, finished_at, composite_score, rw_scaled, math_scaled')
+      .eq('user_id', studentId)
+      .eq('status', 'completed')
+      .order('finished_at', { ascending: false })
+      .limit(10),
+    supabase
+      .from('sat_test_registrations')
+      .select('id, test_date, created_at')
+      .eq('student_id', studentId)
+      .order('test_date', { ascending: true }),
+    supabase
+      .from('sat_official_scores')
+      .select('id, test_date, rw_score, math_score, composite_score, created_at')
+      .eq('student_id', studentId)
+      .order('test_date', { ascending: false }),
+    // Fetch precomputed availability counts (replaces full taxonomy scan)
+    supabase
+      .from('question_availability')
+      .select('domain_name, skill_name, difficulty, question_count'),
+  ]);
 
   if (!studentProfile) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   }
 
-  // ── All attempts (ordered oldest-first so first occurrence = first attempt) ──
-  const { data: allAttempts } = await supabase
-    .from('attempts')
-    .select('id, question_id, is_correct, created_at')
-    .eq('user_id', studentId)
-    .order('created_at', { ascending: true })
-    .limit(5000);
-
-  // ── Taxonomy for all attempted questions ──
+  // ── Taxonomy map for attempted questions (fetch only what's needed) ──
   const taxMap = {};
   const allQids = [...new Set((allAttempts || []).map(a => a.question_id))];
   if (allQids.length > 0) {
@@ -195,147 +251,70 @@ export async function GET(_request, { params }) {
   }
   const recentSessions = sessions.slice(0, 10);
 
-  // ── Practice test scores ──
-  const { data: completedAttempts } = await supabase
-    .from('practice_test_attempts')
-    .select('id, practice_test_id, status, metadata, started_at, finished_at')
-    .eq('user_id', studentId)
-    .eq('status', 'completed')
-    .order('finished_at', { ascending: false })
-    .limit(10);
-
-  let testScores = [];
-  if (completedAttempts?.length) {
-    const testIds = [...new Set(completedAttempts.map(a => a.practice_test_id))];
-    const { data: tests } = await supabase.from('practice_tests').select('id, name').in('id', testIds);
-    const testNameById = {};
-    for (const t of tests || []) testNameById[t.id] = t.name;
-
-    const attemptIds = completedAttempts.map(a => a.id);
-    const { data: moduleAttempts } = await supabase
-      .from('practice_test_module_attempts')
-      .select('practice_test_attempt_id, practice_test_module_id, correct_count')
-      .in('practice_test_attempt_id', attemptIds);
-
-    const modIds = [...new Set((moduleAttempts || []).map(ma => ma.practice_test_module_id))];
-    const { data: mods } = modIds.length
-      ? await supabase.from('practice_test_modules').select('id, subject_code, module_number, route_code').in('id', modIds)
-      : { data: [] };
-
-    const modById = {};
-    for (const m of mods || []) modById[m.id] = m;
-
-    const { data: lookupRows } = await supabase
-      .from('score_conversion')
-      .select('test_id, section, module1_correct, module2_correct, scaled_score')
-      .in('test_id', testIds);
-
-    const lookupByTestSection = {};
-    for (const row of lookupRows || []) {
-      const key = `${row.test_id}/${row.section}`;
-      if (!lookupByTestSection[key]) lookupByTestSection[key] = [];
-      lookupByTestSection[key].push(row);
-    }
-
-    const maByPta = {};
-    for (const ma of moduleAttempts || []) {
-      const mod = modById[ma.practice_test_module_id];
-      if (!mod) continue;
-      if (!maByPta[ma.practice_test_attempt_id]) maByPta[ma.practice_test_attempt_id] = {};
-      maByPta[ma.practice_test_attempt_id][`${mod.subject_code}/${mod.module_number}`] = {
-        correct: ma.correct_count || 0,
-        routeCode: mod.route_code,
-        subjectCode: mod.subject_code,
-      };
-    }
-
-    testScores = completedAttempts.map(a => {
-      const modData = maByPta[a.id] || {};
-      const subjects = [...new Set(Object.values(modData).map(d => d.subjectCode))];
-      const sections = {};
-      let composite = null;
-
-      for (const subj of subjects) {
-        const m1 = modData[`${subj}/1`] || { correct: 0 };
-        const m2 = modData[`${subj}/2`] || { correct: 0, routeCode: null };
-        const sectionName = subjToSection[subj] || 'math';
-        const lookupKey = `${a.practice_test_id}/${sectionName}`;
-
-        const scaled = computeScaledScore({
-          section: sectionName,
-          m1Correct: m1.correct,
-          m2Correct: m2.correct,
-          routeCode: m2.routeCode,
-          lookupRows: lookupByTestSection[lookupKey] || [],
-        });
-
-        sections[subj] = { scaled };
-        composite = (composite || 0) + scaled;
-      }
-
-      return {
-        attempt_id: a.id,
-        test_name: testNameById[a.practice_test_id] || 'Practice Test',
-        finished_at: a.finished_at,
-        composite,
-        sections,
-      };
-    });
-  }
+  // ── Practice test scores (uses cached scores when available) ──
+  const testScores = await computeTestScores(supabase, completedAttempts);
 
   const highestTestScore = testScores.length > 0
     ? Math.max(...testScores.map(t => t.composite).filter(Boolean))
     : null;
 
-  // ── Total questions available per domain and topic (unique question_ids, with per-difficulty) ──
-  // Paginate because Supabase caps rows per request at ~1000
-  let allTax = [];
-  let from = 0;
-  while (true) {
-    const { data } = await supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_name, skill_name, difficulty')
-      .range(from, from + 999);
-    allTax = allTax.concat(data || []);
-    if (!data || data.length < 1000) break;
-    from += 1000;
-  }
-
-  const newAvailSets = () => ({ all: new Set(), 1: new Set(), 2: new Set(), 3: new Set() });
+  // ── Total questions available per domain and topic (from question_availability table) ──
   const domainAvail = {};
   const topicAvail = {};
-  for (const dc of allTax) {
-    const domain = dc.domain_name || 'Unknown';
-    const skill = dc.skill_name || 'Unknown';
+  for (const row of (allTax || [])) {
+    const domain = row.domain_name || 'Unknown';
+    const skill = row.skill_name || 'Unknown';
     const topicKey = `${domain}::${skill}`;
-    const diff = dc.difficulty || 0;
-    if (!domainAvail[domain]) domainAvail[domain] = newAvailSets();
-    if (!topicAvail[topicKey]) topicAvail[topicKey] = newAvailSets();
-    domainAvail[domain].all.add(dc.question_id);
-    topicAvail[topicKey].all.add(dc.question_id);
-    if (diff >= 1 && diff <= 3) {
-      domainAvail[domain][diff].add(dc.question_id);
-      topicAvail[topicKey][diff].add(dc.question_id);
+    const diff = row.difficulty || 0;
+
+    if (!domainAvail[domain]) domainAvail[domain] = { total: 0, 1: 0, 2: 0, 3: 0 };
+    if (!topicAvail[topicKey]) topicAvail[topicKey] = { total: 0, 1: 0, 2: 0, 3: 0 };
+
+    if (diff === 0) {
+      // difficulty=0 row holds the total count for this domain+skill
+      domainAvail[domain].total += row.question_count;
+      topicAvail[topicKey].total += row.question_count;
+    } else if (diff >= 1 && diff <= 3) {
+      domainAvail[domain][diff] += row.question_count;
+      topicAvail[topicKey][diff] += row.question_count;
     }
   }
 
-  const availToObj = (sets) => ({
-    totalAvailable: sets?.all.size || 0,
-    availByDifficulty: { 1: sets?.[1].size || 0, 2: sets?.[2].size || 0, 3: sets?.[3].size || 0 },
+  const availToObj = (counts) => ({
+    totalAvailable: counts?.total || 0,
+    availByDifficulty: { 1: counts?.[1] || 0, 2: counts?.[2] || 0, 3: counts?.[3] || 0 },
   });
 
-  // Add total available to domain and topic stats
+  // ── Mastery by domain and topic ──
+  const domainAttempts = {};
+  const topicAttempts = {};
+  for (const att of firstAttempts) {
+    const tax = taxMap[att.question_id];
+    const domain = tax?.domain_name || 'Unknown';
+    const skill = tax?.skill_name || 'Unknown';
+    const key = `${domain}::${skill}`;
+    if (!domainAttempts[domain]) domainAttempts[domain] = [];
+    domainAttempts[domain].push(att);
+    if (!topicAttempts[key]) topicAttempts[key] = [];
+    topicAttempts[key].push(att);
+  }
+
+  // Add total available and mastery to domain and topic stats
   const domainStatsWithTotal = domainStats.map(d => ({
     ...d,
     ...availToObj(domainAvail[d.domain_name]),
+    mastery: computeMastery(domainAttempts[d.domain_name] || [], taxMap),
   }));
   const topicStatsWithTotal = topicStats.map(t => ({
     ...t,
     ...availToObj(topicAvail[`${t.domain_name}::${t.skill_name}`]),
+    mastery: computeMastery(topicAttempts[`${t.domain_name}::${t.skill_name}`] || [], taxMap),
   }));
 
   return NextResponse.json({
     student: studentProfile,
+    satRegistrations: satRegistrations || [],
+    officialScores: satScores || [],
     domainStats: domainStatsWithTotal,
     topicStats: topicStatsWithTotal,
     totalAttempted: firstAttempts.length,

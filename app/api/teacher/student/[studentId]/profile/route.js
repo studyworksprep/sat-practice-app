@@ -17,12 +17,12 @@ export async function PATCH(request, { params }) {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
+  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   // For teachers, verify access to this student
-  if (profile.role === 'teacher') {
+  if (profile.role === 'teacher' || profile.role === 'manager') {
     const { data: assignment } = await supabase
       .from('teacher_student_assignments')
       .select('teacher_id')
@@ -69,7 +69,6 @@ export async function PATCH(request, { params }) {
   // Convert graduation_year and target_sat_score to numbers if present
   if (updates.graduation_year != null) updates.graduation_year = Number(updates.graduation_year) || null;
   if (updates.target_sat_score != null) updates.target_sat_score = Number(updates.target_sat_score) || null;
-
   const { error } = await supabase
     .from('profiles')
     .update(updates)

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -48,7 +48,23 @@ function formatMs(ms) {
   return `${Math.floor(s / 60)}m ${s % 60}s`;
 }
 
-function AccuracyBar({ correct, attempted }) {
+function timeUntilSat(isoDate) {
+  if (!isoDate) return null;
+  const target = new Date(isoDate);
+  const now = new Date();
+  const diffMs = target.getTime() - now.getTime();
+  if (diffMs <= 0) return 'Today!';
+  const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  if (days === 1) return '1 day';
+  if (days < 7) return `${days} days`;
+  const weeks = Math.floor(days / 7);
+  const remDays = days % 7;
+  if (weeks < 4) return remDays > 0 ? `${weeks}w ${remDays}d` : `${weeks} weeks`;
+  const months = Math.floor(days / 30);
+  return months === 1 ? '1 month' : `${months} months`;
+}
+
+const AccuracyBar = memo(function AccuracyBar({ correct, attempted }) {
   const p = pct(correct, attempted);
   if (p === null) return null;
   const color = pctColor(p);
@@ -60,7 +76,7 @@ function AccuracyBar({ correct, attempted }) {
       <span style={{ color, fontWeight: 600, fontSize: 12, minWidth: 32, textAlign: 'right' }}>{p}%</span>
     </div>
   );
-}
+});
 
 function buildSections(domainStats, topicStats) {
   const topicsByDomain = {};
@@ -78,7 +94,7 @@ function buildSections(domainStats, topicStats) {
 }
 
 // ── Streak display ──
-function StreakCard({ streak, practicedToday }) {
+const StreakCard = memo(function StreakCard({ streak, practicedToday }) {
   return (
     <div className="card dbStatCard">
       <div className="dbStatValue" style={{ color: streak > 0 ? 'var(--amber)' : 'var(--muted)' }}>
@@ -90,10 +106,10 @@ function StreakCard({ streak, practicedToday }) {
       </div>
     </div>
   );
-}
+});
 
 // ── Goal Progress Card ──
-function GoalProgressCard({ targetScore, highestScore, goalProgress, pointsToGoal }) {
+const GoalProgressCard = memo(function GoalProgressCard({ targetScore, highestScore, goalProgress, pointsToGoal }) {
   if (!targetScore) return null;
   return (
     <div className="card dbGoalCard">
@@ -132,10 +148,10 @@ function GoalProgressCard({ targetScore, highestScore, goalProgress, pointsToGoa
       )}
     </div>
   );
-}
+});
 
 // ── Weak Topics / Recommendations ──
-function WeakTopicsCard({ weakTopics }) {
+const WeakTopicsCard = memo(function WeakTopicsCard({ weakTopics }) {
   if (!weakTopics?.length) return null;
   return (
     <div className="card dbRecsCard">
@@ -162,9 +178,52 @@ function WeakTopicsCard({ weakTopics }) {
       </Link>
     </div>
   );
-}
+});
 
-function PerfSection({ section, loading }) {
+// ── Daily Activity Chart ──
+const ActivityChart = memo(function ActivityChart({ dailyActivity }) {
+  if (!dailyActivity?.length) return null;
+  const max = Math.max(1, ...dailyActivity.map(d => d.attempted));
+  const totalQ = dailyActivity.reduce((s, d) => s + d.attempted, 0);
+  const totalC = dailyActivity.reduce((s, d) => s + d.correct, 0);
+  const avgPct = totalQ > 0 ? Math.round((totalC / totalQ) * 100) : null;
+
+  const dayLabel = (dateStr) => {
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'narrow' });
+  };
+
+  return (
+    <div className="card dbActivityChartCard">
+      <div className="dbActivityChartHeader">
+        <span className="h2" style={{ fontSize: 15 }}>Last 14 Days</span>
+        <span className="muted small">
+          {totalQ} questions{avgPct != null ? ` · ${avgPct}% correct` : ''}
+        </span>
+      </div>
+      <div className="dbActivityBars">
+        {dailyActivity.map((day) => {
+          const h = day.attempted > 0 ? Math.max(6, Math.round((day.attempted / max) * 100)) : 0;
+          const p = day.attempted > 0 ? Math.round((day.correct / day.attempted) * 100) : 0;
+          const color = day.attempted === 0 ? 'var(--border)' : pctColor(p);
+          return (
+            <div key={day.date} className="dbActivityBarCol" title={`${day.date}: ${day.attempted} questions, ${day.correct} correct`}>
+              <div className="dbActivityBarTrack">
+                <div
+                  className="dbActivityBarFill"
+                  style={{ height: `${h}%`, background: color }}
+                />
+              </div>
+              <span className="dbActivityBarLabel">{dayLabel(day.date)}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+
+const PerfSection = memo(function PerfSection({ section, loading }) {
   const [open, setOpen] = useState({});
   const toggle = (name) => setOpen((prev) => ({ ...prev, [name]: !prev[name] }));
 
@@ -229,10 +288,10 @@ function PerfSection({ section, loading }) {
       )}
     </div>
   );
-}
+});
 
 // ── Session question tile ──
-function SessionTile({ q, index, onClick }) {
+const SessionTile = memo(function SessionTile({ q, index, onClick }) {
   const diffClass = DIFF_CLASS[q.difficulty] || '';
   return (
     <button
@@ -244,10 +303,10 @@ function SessionTile({ q, index, onClick }) {
       <span className="dbSessionTileIcon">{q.is_correct ? '✓' : '✗'}</span>
     </button>
   );
-}
+});
 
 // ── Practice session card ──
-function SessionCard({ session, index }) {
+const SessionCard = memo(function SessionCard({ session, index }) {
   const router = useRouter();
   const questions = session.questions;
   const correct = questions.filter(q => q.is_correct).length;
@@ -300,15 +359,17 @@ function SessionCard({ session, index }) {
       </div>
     </div>
   );
-}
+});
 
 // ── Assignments Card ──
-function AssignmentsCard({ assignments }) {
-  if (!assignments?.length) return null;
+const AssignmentsCard = memo(function AssignmentsCard({ assignments }) {
   const isOverdue = (due) => due && new Date(due) < new Date();
   return (
     <div className="card dbAssignmentsCard">
       <div className="h2" style={{ marginBottom: 12 }}>Your Assignments</div>
+      {!assignments?.length ? (
+        <p className="muted small" style={{ margin: 0 }}>No assignments yet. When your teacher assigns questions, they will appear here.</p>
+      ) : (
       <div className="dbAssignList">
         {assignments.map(a => {
           const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
@@ -333,9 +394,10 @@ function AssignmentsCard({ assignments }) {
           );
         })}
       </div>
+      )}
     </div>
   );
-}
+});
 
 // ── Main ──
 
@@ -360,9 +422,42 @@ export default function DashboardClient({ email }) {
       .catch(() => {});
   }, []);
 
-  const sections = data
-    ? buildSections(data.domainStats, data.topicStats)
-    : [{ label: 'Reading & Writing', domains: [] }, { label: 'Math', domains: [] }];
+  const sections = useMemo(() =>
+    data
+      ? buildSections(data.domainStats, data.topicStats)
+      : [{ label: 'Reading & Writing', domains: [] }, { label: 'Math', domains: [] }],
+    [data?.domainStats, data?.topicStats]
+  );
+
+  const bannerChips = useMemo(() => {
+    if (!data) return null;
+    const sp = data.studentProfile || {};
+    const satCountdown = timeUntilSat(sp.nextSatDate);
+    const chips = [];
+    if (sp.school) chips.push({ label: sp.school });
+    if (sp.graduationYear) chips.push({ label: `Class of ${sp.graduationYear}` });
+    if (data.teacherName) chips.push({ label: `Teacher: ${data.teacherName}` });
+    if (satCountdown) chips.push({ label: `SAT in ${satCountdown}`, accent: true });
+    return chips.length ? chips : null;
+  }, [data]);
+
+  const goalRecsRow = useMemo(() => {
+    if (!data) return null;
+    const hasGoal = Boolean(data.targetScore);
+    const hasWeak = data.weakTopics?.length > 0;
+    const hasActivity = data.dailyActivity?.some(d => d.attempted > 0);
+    const cards = [];
+    if (hasGoal) cards.push(<GoalProgressCard key="goal" targetScore={data.targetScore} highestScore={data.highestTestScore} goalProgress={data.goalProgress} pointsToGoal={data.pointsToGoal} />);
+    if (hasWeak) cards.push(<WeakTopicsCard key="weak" weakTopics={data.weakTopics} />);
+    if (hasActivity) cards.push(<ActivityChart key="activity" dailyActivity={data.dailyActivity} />);
+    const visible = cards.slice(0, 2);
+    if (visible.length === 0) return null;
+    return (
+      <div className={`dbGoalRecsRow${visible.length === 1 ? ' single' : ''}`}>
+        {visible}
+      </div>
+    );
+  }, [data?.targetScore, data?.highestTestScore, data?.goalProgress, data?.pointsToGoal, data?.weakTopics, data?.dailyActivity]);
 
   return (
     <main className="container dbMain">
@@ -376,6 +471,13 @@ export default function DashboardClient({ email }) {
               ? `${data.currentStreak} day streak — keep it going!`
               : 'Ready to practice? Let\'s go.'}
           </p>
+          {bannerChips && (
+            <div className="dbBannerChips">
+              {bannerChips.map((c, i) => (
+                <span key={i} className={`dbBannerChip${c.accent ? ' accent' : ''}`}>{c.label}</span>
+              ))}
+            </div>
+          )}
         </div>
         <div className="dbBannerActions">
           <Link href="/practice" className="btn primary">Continue Practicing</Link>
@@ -409,17 +511,7 @@ export default function DashboardClient({ email }) {
       </div>
 
       {/* ── Goal Progress + Recommendations row ── */}
-      {(data?.targetScore || data?.weakTopics?.length > 0) && (
-        <div className="dbGoalRecsRow">
-          <GoalProgressCard
-            targetScore={data?.targetScore}
-            highestScore={data?.highestTestScore}
-            goalProgress={data?.goalProgress}
-            pointsToGoal={data?.pointsToGoal}
-          />
-          <WeakTopicsCard weakTopics={data?.weakTopics} />
-        </div>
-      )}
+      {goalRecsRow}
 
       {/* ── Assignments ── */}
       <AssignmentsCard assignments={assignments} />
@@ -433,10 +525,80 @@ export default function DashboardClient({ email }) {
 
       {/* ── More Statistics link ── */}
       {data && (
-        <div style={{ textAlign: 'center', margin: '4px 0 16px' }}>
+        <div style={{ textAlign: 'center', padding: '12px 0' }}>
           <Link href="/dashboard/stats" className="dbMoreStatsLink">
             More Statistics →
           </Link>
+        </div>
+      )}
+
+      {/* ── Official SAT Scores ── */}
+      {data?.officialScores?.length > 0 && (
+        <div className="card dbOfficialScoresCard">
+          <div className="h2" style={{ marginBottom: 12 }}>Official SAT Scores</div>
+          <div className="dbOfficialScoresLayout">
+            <div className="dbOfficialScoresList">
+              {data.officialScores.map((s) => (
+                <div key={s.id} className="dbOfficialScoreRow">
+                  <span className="dbOfficialScoreDate">
+                    {new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+                  </span>
+                  <span className="dbOfficialScoreComposite">{s.composite_score}</span>
+                  <span className="dbOfficialScoreBreakdown">R&W {s.rw_score} · M {s.math_score}</span>
+                </div>
+              ))}
+            </div>
+            {data.officialScores.length >= 2 && (() => {
+              const scores = [...data.officialScores].reverse();
+              const maxY = 1600;
+              const minY = Math.max(0, Math.min(...scores.map(s => Math.min(s.rw_score, s.math_score))) - 50);
+              const range = maxY - minY || 1;
+              const w = 280;
+              const h = 140;
+              const pad = { top: 10, right: 10, bottom: 20, left: 32 };
+              const cw = w - pad.left - pad.right;
+              const ch = h - pad.top - pad.bottom;
+              const xStep = scores.length > 1 ? cw / (scores.length - 1) : 0;
+
+              const toY = (val) => pad.top + ch - ((val - minY) / range) * ch;
+              const toX = (i) => pad.left + i * xStep;
+
+              const makeLine = (key) => scores.map((s, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(s[key]).toFixed(1)}`).join(' ');
+
+              const gridLines = [200, 400, 600, 800, 1000, 1200, 1400, 1600].filter(v => v >= minY && v <= maxY);
+
+              return (
+                <div className="dbOfficialScoresChart">
+                  <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h}>
+                    {gridLines.map(v => (
+                      <g key={v}>
+                        <line x1={pad.left} x2={w - pad.right} y1={toY(v)} y2={toY(v)} stroke="var(--border)" strokeWidth="0.5" />
+                        <text x={pad.left - 4} y={toY(v) + 3} textAnchor="end" fontSize="8" fill="var(--muted)">{v}</text>
+                      </g>
+                    ))}
+                    <path d={makeLine('composite_score')} fill="none" stroke="var(--accent)" strokeWidth="2" />
+                    <path d={makeLine('rw_score')} fill="none" stroke="#6b9bd2" strokeWidth="1.5" strokeDasharray="4 2" />
+                    <path d={makeLine('math_score')} fill="none" stroke="#9b8ec4" strokeWidth="1.5" strokeDasharray="4 2" />
+                    {scores.map((s, i) => (
+                      <g key={i}>
+                        <circle cx={toX(i)} cy={toY(s.composite_score)} r="3" fill="var(--accent)" />
+                        <circle cx={toX(i)} cy={toY(s.rw_score)} r="2" fill="#6b9bd2" />
+                        <circle cx={toX(i)} cy={toY(s.math_score)} r="2" fill="#9b8ec4" />
+                        <text x={toX(i)} y={h - 4} textAnchor="middle" fontSize="7" fill="var(--muted)">
+                          {new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+                        </text>
+                      </g>
+                    ))}
+                  </svg>
+                  <div className="dbOfficialChartLegend">
+                    <span><span className="dbOfficialLegendDot" style={{ background: 'var(--accent)' }} />Composite</span>
+                    <span><span className="dbOfficialLegendDot" style={{ background: '#6b9bd2' }} />R&W</span>
+                    <span><span className="dbOfficialLegendDot" style={{ background: '#9b8ec4' }} />Math</span>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
         </div>
       )}
 

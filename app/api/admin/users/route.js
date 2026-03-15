@@ -49,7 +49,7 @@ export async function PATCH(request) {
   const updates = {};
 
   if (role !== undefined) {
-    const validRoles = ['practice', 'student', 'teacher', 'admin'];
+    const validRoles = ['practice', 'student', 'teacher', 'manager', 'admin'];
     if (!validRoles.includes(role)) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }

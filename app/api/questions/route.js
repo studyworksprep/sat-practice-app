@@ -35,6 +35,7 @@ export async function GET(request) {
   const wrong_only = searchParams.get('wrong_only') === 'true';
   const marked_only = searchParams.get('marked_only') === 'true';
   const hide_broken = searchParams.get('hide_broken') === 'true';
+  const only_broken = searchParams.get('only_broken') === 'true';
   const qText = (searchParams.get('q') || '').trim();
 
   const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 5000);
@@ -155,7 +156,8 @@ export async function GET(request) {
 
   if (difficulties.length > 0) q = q.in('question_taxonomy.difficulty', difficulties);
   if (score_bands.length > 0) q = q.in('question_taxonomy.score_band', score_bands);
-  if (hide_broken) q = q.eq('is_broken', false);
+  if (only_broken) q = q.eq('is_broken', true);
+  else if (hide_broken) q = q.eq('is_broken', false);
 
   // Domain/topic filtering via the question_taxonomy join.
   // When both are present, use OR: match any selected domain OR any selected topic.
