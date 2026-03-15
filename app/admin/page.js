@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '../../lib/supabase/browser';
 
@@ -401,12 +401,21 @@ export default function AdminPage() {
   }
 
   // Group profiles by role
-  const grouped = {};
-  for (const role of ROLE_ORDER) grouped[role] = [];
-  for (const p of profiles) {
-    const role = ROLE_ORDER.includes(p.role) ? p.role : 'practice';
-    grouped[role].push(p);
-  }
+  const grouped = useMemo(() => {
+    const g = {};
+    for (const role of ROLE_ORDER) g[role] = [];
+    for (const p of profiles) {
+      const role = ROLE_ORDER.includes(p.role) ? p.role : 'practice';
+      g[role].push(p);
+    }
+    return g;
+  }, [profiles]);
+
+  // Memoize filtered lists for assignment dropdowns
+  const teacherProfiles = useMemo(() => profiles.filter(p => p.role === 'teacher' || p.role === 'manager' || p.role === 'admin'), [profiles]);
+  const studentProfiles = useMemo(() => profiles.filter(p => p.role === 'student' || p.role === 'practice'), [profiles]);
+  const managerProfiles = useMemo(() => profiles.filter(p => p.role === 'manager'), [profiles]);
+  const teacherOnlyProfiles = useMemo(() => profiles.filter(p => p.role === 'teacher'), [profiles]);
 
   if (loading) {
     return (
@@ -839,7 +848,7 @@ export default function AdminPage() {
             Teacher
             <select className="adminSelect" value={assignTeacher} onChange={(e) => setAssignTeacher(e.target.value)}>
               <option value="">Select teacher…</option>
-              {profiles.filter(p => p.role === 'teacher' || p.role === 'manager' || p.role === 'admin').map(p => (
+              {teacherProfiles.map(p => (
                 <option key={p.id} value={p.id}>{p.email}</option>
               ))}
             </select>
@@ -848,7 +857,7 @@ export default function AdminPage() {
             Student
             <select className="adminSelect" value={assignStudent} onChange={(e) => setAssignStudent(e.target.value)}>
               <option value="">Select student…</option>
-              {profiles.filter(p => p.role === 'student' || p.role === 'practice').map(p => (
+              {studentProfiles.map(p => (
                 <option key={p.id} value={p.id}>{p.email}</option>
               ))}
             </select>
@@ -902,7 +911,7 @@ export default function AdminPage() {
             Manager
             <select className="adminSelect" value={mtManager} onChange={(e) => setMtManager(e.target.value)}>
               <option value="">Select manager…</option>
-              {profiles.filter(p => p.role === 'manager').map(p => (
+              {managerProfiles.map(p => (
                 <option key={p.id} value={p.id}>{p.email}</option>
               ))}
             </select>
@@ -911,7 +920,7 @@ export default function AdminPage() {
             Teacher
             <select className="adminSelect" value={mtTeacher} onChange={(e) => setMtTeacher(e.target.value)}>
               <option value="">Select teacher…</option>
-              {profiles.filter(p => p.role === 'teacher').map(p => (
+              {teacherOnlyProfiles.map(p => (
                 <option key={p.id} value={p.id}>{p.email}</option>
               ))}
             </select>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -48,15 +48,15 @@ function StudentsPageInner() {
     }
   }, [activeTab, hubData]);
 
-  function selectStudent(id) {
+  const selectStudent = useCallback((id) => {
     setSelectedId(id);
     setView('student');
-  }
+  }, []);
 
-  function goBack() {
+  const goBack = useCallback(() => {
     setView('roster');
     setSelectedId(null);
-  }
+  }, []);
 
   if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading students...</p></div>;
   if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
@@ -80,7 +80,7 @@ function StudentsPageInner() {
     else { setSortBy(col); setSortDir('desc'); }
   }
 
-  const sorted = [...students].sort((a, b) => {
+  const sorted = useMemo(() => [...students].sort((a, b) => {
     let av = a[sortBy], bv = b[sortBy];
     if (av == null && bv == null) return 0;
     if (av == null) return 1;
@@ -96,16 +96,16 @@ function StudentsPageInner() {
     if (av < bv) return sortDir === 'asc' ? -1 : 1;
     if (av > bv) return sortDir === 'asc' ? 1 : -1;
     return 0;
-  });
+  }), [students, sortBy, sortDir]);
 
-  const sortIcon = (col) => {
+  const sortIcon = useCallback((col) => {
     if (sortBy !== col) return '';
     return sortDir === 'asc' ? ' \u25B2' : ' \u25BC';
-  };
+  }, [sortBy, sortDir]);
 
-  const inactiveSet = new Set((alerts.inactive || []).map(a => a.id));
-  const decliningSet = new Set((alerts.declining || []).map(a => a.id));
-  const improvingSet = new Set((alerts.improving || []).map(a => a.id));
+  const inactiveSet = useMemo(() => new Set((alerts.inactive || []).map(a => a.id)), [alerts.inactive]);
+  const decliningSet = useMemo(() => new Set((alerts.declining || []).map(a => a.id)), [alerts.declining]);
+  const improvingSet = useMemo(() => new Set((alerts.improving || []).map(a => a.id)), [alerts.improving]);
 
   const tabs = [
     { key: 'roster', label: 'Roster' },

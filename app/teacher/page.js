@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { displayName, formatDate, formatDateTime, relativeTime, pct, pctColor, TrendIndicator } from './shared';
@@ -44,18 +44,18 @@ function TeacherDashboard() {
 
   // Summary stats
   const totalStudents = students.length;
-  const activeThisWeek = students.filter(s => s.weekly_attempts > 0).length;
-  const avgAccuracy = (() => {
+  const activeThisWeek = useMemo(() => students.filter(s => s.weekly_attempts > 0).length, [students]);
+  const avgAccuracy = useMemo(() => {
     const withAcc = students.filter(s => s.recent_accuracy != null);
     if (!withAcc.length) return null;
     return Math.round(withAcc.reduce((sum, s) => sum + s.recent_accuracy, 0) / withAcc.length);
-  })();
+  }, [students]);
 
   const totalAlerts = (alerts.inactive?.length || 0) + (alerts.declining?.length || 0);
 
-  function goToStudent(studentId) {
+  const goToStudent = useCallback((studentId) => {
     router.push(`/teacher/students?selected=${studentId}`);
-  }
+  }, [router]);
 
   return (
     <div className="container tchPage">

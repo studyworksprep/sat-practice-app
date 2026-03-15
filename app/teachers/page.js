@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '../../lib/supabase/browser';
 
@@ -30,7 +30,7 @@ function formatDate(iso) {
 }
 
 // ─── Teacher avatar with profile picture support ─────────
-function TeacherAvatar({ name, fallbackLetter, size = 72 }) {
+const TeacherAvatar = memo(function TeacherAvatar({ name, fallbackLetter, size = 72 }) {
   const [imgError, setImgError] = useState(false);
   // Try multiple file extensions
   const baseName = name.replace(/\s+/g, ' ').trim();
@@ -63,7 +63,7 @@ function TeacherAvatar({ name, fallbackLetter, size = 72 }) {
       }}
     />
   );
-}
+});
 
 // ─── Edit Teacher Profile modal ─────────────────────────
 function EditTeacherProfileModal({ teacher, teacherId, onClose, onSaved }) {
@@ -379,7 +379,7 @@ function TeacherTrainingSection({ training, teacherName }) {
   );
 }
 
-function DomainMasteryCard({ domain, isOpen, onToggle }) {
+const DomainMasteryCard = memo(function DomainMasteryCard({ domain, isOpen, onToggle }) {
   const barColor = pctColor(domain.accuracy);
   return (
     <div style={{ marginBottom: 6 }}>
@@ -418,7 +418,7 @@ function DomainMasteryCard({ domain, isOpen, onToggle }) {
       )}
     </div>
   );
-}
+});
 
 // ─── Main page ───────────────────────────────────────────
 export default function TeachersPage() {
@@ -453,11 +453,11 @@ export default function TeachersPage() {
   if (loading) return <div className="container" style={{ padding: '40px 20px' }}><p className="muted">Loading...</p></div>;
   if (!authorized) return <div className="container" style={{ padding: '40px 20px' }}><p style={{ color: 'var(--danger)' }}>Access denied. Admin role required.</p></div>;
 
-  const filtered = teachers.filter(t => {
+  const filtered = useMemo(() => teachers.filter(t => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (t.email || '').toLowerCase().includes(q) || displayName(t).toLowerCase().includes(q);
-  });
+  }), [teachers, search]);
 
   return (
     <main className="container" style={{ maxWidth: 1000, paddingTop: 28, paddingBottom: 48 }}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -64,7 +64,7 @@ function timeUntilSat(isoDate) {
   return months === 1 ? '1 month' : `${months} months`;
 }
 
-function AccuracyBar({ correct, attempted }) {
+const AccuracyBar = memo(function AccuracyBar({ correct, attempted }) {
   const p = pct(correct, attempted);
   if (p === null) return null;
   const color = pctColor(p);
@@ -76,7 +76,7 @@ function AccuracyBar({ correct, attempted }) {
       <span style={{ color, fontWeight: 600, fontSize: 12, minWidth: 32, textAlign: 'right' }}>{p}%</span>
     </div>
   );
-}
+});
 
 function buildSections(domainStats, topicStats) {
   const topicsByDomain = {};
@@ -94,7 +94,7 @@ function buildSections(domainStats, topicStats) {
 }
 
 // ── Streak display ──
-function StreakCard({ streak, practicedToday }) {
+const StreakCard = memo(function StreakCard({ streak, practicedToday }) {
   return (
     <div className="card dbStatCard">
       <div className="dbStatValue" style={{ color: streak > 0 ? 'var(--amber)' : 'var(--muted)' }}>
@@ -106,10 +106,10 @@ function StreakCard({ streak, practicedToday }) {
       </div>
     </div>
   );
-}
+});
 
 // ── Goal Progress Card ──
-function GoalProgressCard({ targetScore, highestScore, goalProgress, pointsToGoal }) {
+const GoalProgressCard = memo(function GoalProgressCard({ targetScore, highestScore, goalProgress, pointsToGoal }) {
   if (!targetScore) return null;
   return (
     <div className="card dbGoalCard">
@@ -148,10 +148,10 @@ function GoalProgressCard({ targetScore, highestScore, goalProgress, pointsToGoa
       )}
     </div>
   );
-}
+});
 
 // ── Weak Topics / Recommendations ──
-function WeakTopicsCard({ weakTopics }) {
+const WeakTopicsCard = memo(function WeakTopicsCard({ weakTopics }) {
   if (!weakTopics?.length) return null;
   return (
     <div className="card dbRecsCard">
@@ -178,10 +178,10 @@ function WeakTopicsCard({ weakTopics }) {
       </Link>
     </div>
   );
-}
+});
 
 // ── Daily Activity Chart ──
-function ActivityChart({ dailyActivity }) {
+const ActivityChart = memo(function ActivityChart({ dailyActivity }) {
   if (!dailyActivity?.length) return null;
   const max = Math.max(1, ...dailyActivity.map(d => d.attempted));
   const totalQ = dailyActivity.reduce((s, d) => s + d.attempted, 0);
@@ -221,9 +221,9 @@ function ActivityChart({ dailyActivity }) {
       </div>
     </div>
   );
-}
+});
 
-function PerfSection({ section, loading }) {
+const PerfSection = memo(function PerfSection({ section, loading }) {
   const [open, setOpen] = useState({});
   const toggle = (name) => setOpen((prev) => ({ ...prev, [name]: !prev[name] }));
 
@@ -288,10 +288,10 @@ function PerfSection({ section, loading }) {
       )}
     </div>
   );
-}
+});
 
 // ── Session question tile ──
-function SessionTile({ q, index, onClick }) {
+const SessionTile = memo(function SessionTile({ q, index, onClick }) {
   const diffClass = DIFF_CLASS[q.difficulty] || '';
   return (
     <button
@@ -303,10 +303,10 @@ function SessionTile({ q, index, onClick }) {
       <span className="dbSessionTileIcon">{q.is_correct ? '✓' : '✗'}</span>
     </button>
   );
-}
+});
 
 // ── Practice session card ──
-function SessionCard({ session, index }) {
+const SessionCard = memo(function SessionCard({ session, index }) {
   const router = useRouter();
   const questions = session.questions;
   const correct = questions.filter(q => q.is_correct).length;
@@ -359,10 +359,10 @@ function SessionCard({ session, index }) {
       </div>
     </div>
   );
-}
+});
 
 // ── Assignments Card ──
-function AssignmentsCard({ assignments }) {
+const AssignmentsCard = memo(function AssignmentsCard({ assignments }) {
   const isOverdue = (due) => due && new Date(due) < new Date();
   return (
     <div className="card dbAssignmentsCard">
@@ -397,7 +397,7 @@ function AssignmentsCard({ assignments }) {
       )}
     </div>
   );
-}
+});
 
 // ── Main ──
 
@@ -429,6 +429,36 @@ export default function DashboardClient({ email }) {
     [data?.domainStats, data?.topicStats]
   );
 
+  const bannerChips = useMemo(() => {
+    if (!data) return null;
+    const sp = data.studentProfile || {};
+    const satCountdown = timeUntilSat(sp.nextSatDate);
+    const chips = [];
+    if (sp.school) chips.push({ label: sp.school });
+    if (sp.graduationYear) chips.push({ label: `Class of ${sp.graduationYear}` });
+    if (data.teacherName) chips.push({ label: `Teacher: ${data.teacherName}` });
+    if (satCountdown) chips.push({ label: `SAT in ${satCountdown}`, accent: true });
+    return chips.length ? chips : null;
+  }, [data]);
+
+  const goalRecsRow = useMemo(() => {
+    if (!data) return null;
+    const hasGoal = Boolean(data.targetScore);
+    const hasWeak = data.weakTopics?.length > 0;
+    const hasActivity = data.dailyActivity?.some(d => d.attempted > 0);
+    const cards = [];
+    if (hasGoal) cards.push(<GoalProgressCard key="goal" targetScore={data.targetScore} highestScore={data.highestTestScore} goalProgress={data.goalProgress} pointsToGoal={data.pointsToGoal} />);
+    if (hasWeak) cards.push(<WeakTopicsCard key="weak" weakTopics={data.weakTopics} />);
+    if (hasActivity) cards.push(<ActivityChart key="activity" dailyActivity={data.dailyActivity} />);
+    const visible = cards.slice(0, 2);
+    if (visible.length === 0) return null;
+    return (
+      <div className={`dbGoalRecsRow${visible.length === 1 ? ' single' : ''}`}>
+        {visible}
+      </div>
+    );
+  }, [data?.targetScore, data?.highestTestScore, data?.goalProgress, data?.pointsToGoal, data?.weakTopics, data?.dailyActivity]);
+
   return (
     <main className="container dbMain">
 
@@ -441,23 +471,13 @@ export default function DashboardClient({ email }) {
               ? `${data.currentStreak} day streak — keep it going!`
               : 'Ready to practice? Let\'s go.'}
           </p>
-          {data && (() => {
-            const sp = data.studentProfile || {};
-            const satCountdown = timeUntilSat(sp.nextSatDate);
-            const chips = [];
-            if (sp.school) chips.push({ label: sp.school });
-            if (sp.graduationYear) chips.push({ label: `Class of ${sp.graduationYear}` });
-            if (data.teacherName) chips.push({ label: `Teacher: ${data.teacherName}` });
-            if (satCountdown) chips.push({ label: `SAT in ${satCountdown}`, accent: true });
-            if (!chips.length) return null;
-            return (
-              <div className="dbBannerChips">
-                {chips.map((c, i) => (
-                  <span key={i} className={`dbBannerChip${c.accent ? ' accent' : ''}`}>{c.label}</span>
-                ))}
-              </div>
-            );
-          })()}
+          {bannerChips && (
+            <div className="dbBannerChips">
+              {bannerChips.map((c, i) => (
+                <span key={i} className={`dbBannerChip${c.accent ? ' accent' : ''}`}>{c.label}</span>
+              ))}
+            </div>
+          )}
         </div>
         <div className="dbBannerActions">
           <Link href="/practice" className="btn primary">Continue Practicing</Link>
@@ -491,23 +511,7 @@ export default function DashboardClient({ email }) {
       </div>
 
       {/* ── Goal Progress + Recommendations row ── */}
-      {(() => {
-        const hasGoal = Boolean(data?.targetScore);
-        const hasWeak = data?.weakTopics?.length > 0;
-        const hasActivity = data?.dailyActivity?.some(d => d.attempted > 0);
-        const cards = [];
-        if (hasGoal) cards.push(<GoalProgressCard key="goal" targetScore={data.targetScore} highestScore={data.highestTestScore} goalProgress={data.goalProgress} pointsToGoal={data.pointsToGoal} />);
-        if (hasWeak) cards.push(<WeakTopicsCard key="weak" weakTopics={data.weakTopics} />);
-        if (hasActivity) cards.push(<ActivityChart key="activity" dailyActivity={data.dailyActivity} />);
-        // Show at most 2 cards; if only 1, it spans full width
-        const visible = cards.slice(0, 2);
-        if (visible.length === 0) return null;
-        return (
-          <div className={`dbGoalRecsRow${visible.length === 1 ? ' single' : ''}`}>
-            {visible}
-          </div>
-        );
-      })()}
+      {goalRecsRow}
 
       {/* ── Assignments ── */}
       <AssignmentsCard assignments={assignments} />
