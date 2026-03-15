@@ -776,17 +776,19 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
 }
 
 // ─── Create assignment modal ──────────────────────────────
-export function CreateAssignmentModal({ students, onClose, onCreated }) {
+export function CreateAssignmentModal({ students, initialStudents, onClose, onCreated }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [selectedStudents, setSelectedStudents] = useState(initialStudents || []);
   const [selectAll, setSelectAll] = useState(false);
   const [domains, setDomains] = useState([]);
   const [topics, setTopics] = useState([]);
   const [difficulties, setDifficulties] = useState([1, 2, 3]);
   const [scoreBands, setScoreBands] = useState([]);
   const [questionLimit, setQuestionLimit] = useState(20);
+  const [randomize, setRandomize] = useState(false);
+  const [undoneOnly, setUndoneOnly] = useState(false);
   const [filterData, setFilterData] = useState(null);
   const [filterLoading, setFilterLoading] = useState(true);
   const [dynamicCounts, setDynamicCounts] = useState(null);
@@ -836,6 +838,9 @@ export function CreateAssignmentModal({ students, onClose, onCreated }) {
       if (scoreBands.length > 0) params.set('score_bands', scoreBands.join(','));
       params.set('limit', String(questionLimit));
       params.set('hide_broken', 'true');
+      if (undoneOnly && selectedStudents.length > 0) {
+        params.set('exclude_done_for', selectedStudents.join(','));
+      }
       const res = await fetch(`/api/questions?${params}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
@@ -857,7 +862,9 @@ export function CreateAssignmentModal({ students, onClose, onCreated }) {
           title: title.trim(),
           description: description.trim() || null,
           due_date: dueDate || null,
-          question_ids: previewQuestions.items.map(q => q.question_id),
+          question_ids: randomize
+            ? [...previewQuestions.items].sort(() => Math.random() - 0.5).map(q => q.question_id)
+            : previewQuestions.items.map(q => q.question_id),
           student_ids: selectedStudents,
           filter_criteria: { domains, topics, difficulties, score_bands: scoreBands },
         }),
@@ -925,6 +932,16 @@ export function CreateAssignmentModal({ students, onClose, onCreated }) {
                   >{b}</button>
                 ))}
               </div>
+            </div>
+            <div className="tchAssignSection" style={{ display: 'flex', gap: 16 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+                <input type="checkbox" checked={randomize} onChange={e => setRandomize(e.target.checked)} />
+                Randomize question order
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+                <input type="checkbox" checked={undoneOnly} onChange={e => { setUndoneOnly(e.target.checked); setPreviewQuestions(null); }} />
+                Only undone questions
+              </label>
             </div>
             {filterLoading ? <p className="muted small">Loading filters...</p> : (
               <div className="tchAssignSection">
@@ -1152,6 +1169,7 @@ export function StudentDetail({ studentId, onBack }) {
   const [addRegOpen, setAddRegOpen] = useState(false);
   const [addScoreOpen, setAddScoreOpen] = useState(false);
   const [uploadBluebookOpen, setUploadBluebookOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true); setError(null);
@@ -1208,6 +1226,7 @@ export function StudentDetail({ studentId, onBack }) {
       {addRegOpen && <AddRegistrationModal studentId={studentId} onClose={() => setAddRegOpen(false)} onSaved={(reg) => { setRegistrations(prev => [...prev, reg].sort((a, b) => new Date(a.test_date) - new Date(b.test_date))); setAddRegOpen(false); }} />}
       {addScoreOpen && <AddScoreModal studentId={studentId} onClose={() => setAddScoreOpen(false)} onSaved={(score) => { setOfficialScores(prev => [score, ...prev]); setAddScoreOpen(false); }} />}
       {uploadBluebookOpen && <UploadBluebookModal studentId={studentId} onClose={() => setUploadBluebookOpen(false)} onUploaded={() => { fetch(`/api/teacher/student/${studentId}/dashboard`).then(r => r.json()).then(d => { if (!d.error) setData(d); }); }} />}
+      {assignOpen && <CreateAssignmentModal students={[student]} initialStudents={[studentId]} onClose={() => setAssignOpen(false)} onCreated={() => setAssignOpen(false)} />}
       <div className="card tchOverviewCard">
         {(student.high_school || student.graduation_year || student.target_sat_score || student.start_date) && (
           <div className="tchProfileRow">
@@ -1266,6 +1285,7 @@ export function StudentDetail({ studentId, onBack }) {
         <div className="tchProfileActions">
           <button className="btn secondary tchProfileActionBtn" onClick={() => setAddRegOpen(true)}>+ Test Registration</button>
           <button className="btn secondary tchProfileActionBtn" onClick={() => setAddScoreOpen(true)}>+ Official Score</button>
+          <button className="btn secondary tchProfileActionBtn" onClick={() => setAssignOpen(true)}>+ Assignment</button>
           <button className="btn primary tchProfileActionBtn" onClick={() => setUploadBluebookOpen(true)}>Upload Bluebook Results</button>
         </div>
         <div className="tchStatsRow">
