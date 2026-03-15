@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
 
-const ALLOWED_FIELDS = ['first_name', 'last_name', 'high_school', 'graduation_year', 'target_sat_score'];
+const ALLOWED_FIELDS = ['first_name', 'last_name', 'high_school', 'graduation_year', 'target_sat_score', 'start_date'];
 
 // PATCH /api/teacher/student/[studentId]/profile
 export async function PATCH(request, { params }) {
@@ -81,7 +81,7 @@ export async function PATCH(request, { params }) {
   // Return updated profile
   const { data: updated } = await supabase
     .from('profiles')
-    .select('id, email, first_name, last_name, high_school, graduation_year, target_sat_score')
+    .select('id, email, first_name, last_name, high_school, graduation_year, target_sat_score, start_date')
     .eq('id', studentId)
     .maybeSingle();
 

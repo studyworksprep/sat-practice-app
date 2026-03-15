@@ -102,7 +102,7 @@ export async function GET(_request, { params }) {
   ] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score')
+      .select('id, email, role, created_at, first_name, last_name, high_school, graduation_year, target_sat_score, start_date')
       .eq('id', studentId)
       .maybeSingle(),
     supabase

@@ -406,6 +406,7 @@ export function EditProfileModal({ student, studentId, onClose, onSaved }) {
     high_school: student.high_school || '',
     graduation_year: student.graduation_year || '',
     target_sat_score: student.target_sat_score || '',
+    start_date: student.start_date || '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -462,6 +463,10 @@ export function EditProfileModal({ student, studentId, onClose, onSaved }) {
               <input type="number" value={form.target_sat_score} onChange={handleChange('target_sat_score')} />
             </label>
           </div>
+          <label className="tchModalField">
+            <span className="tchModalLabel">Start Date</span>
+            <input type="date" value={form.start_date} onChange={handleChange('start_date')} />
+          </label>
           {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
           <div className="tchModalActions">
             <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
@@ -1204,11 +1209,12 @@ export function StudentDetail({ studentId, onBack }) {
       {addScoreOpen && <AddScoreModal studentId={studentId} onClose={() => setAddScoreOpen(false)} onSaved={(score) => { setOfficialScores(prev => [score, ...prev]); setAddScoreOpen(false); }} />}
       {uploadBluebookOpen && <UploadBluebookModal studentId={studentId} onClose={() => setUploadBluebookOpen(false)} onUploaded={() => { fetch(`/api/teacher/student/${studentId}/dashboard`).then(r => r.json()).then(d => { if (!d.error) setData(d); }); }} />}
       <div className="card tchOverviewCard">
-        {(student.high_school || student.graduation_year || student.target_sat_score) && (
+        {(student.high_school || student.graduation_year || student.target_sat_score || student.start_date) && (
           <div className="tchProfileRow">
             {student.high_school && <div className="tchProfileItem"><span className="tchProfileLabel">School</span><span className="tchProfileValue">{student.high_school}</span></div>}
             {student.graduation_year && <div className="tchProfileItem"><span className="tchProfileLabel">Graduation</span><span className="tchProfileValue">{student.graduation_year}</span></div>}
             {student.target_sat_score && <div className="tchProfileItem"><span className="tchProfileLabel">Target Score</span><span className="tchProfileValue">{student.target_sat_score}</span></div>}
+            {student.start_date && <div className="tchProfileItem"><span className="tchProfileLabel">Start Date</span><span className="tchProfileValue">{new Date(student.start_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>}
           </div>
         )}
         {(() => {
