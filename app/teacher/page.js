@@ -48,7 +48,7 @@ function TeacherDashboard() {
     return Math.round(withAcc.reduce((sum, s) => sum + s.recent_accuracy, 0) / withAcc.length);
   }, [students]);
 
-  const totalAlerts = (alerts.inactive?.length || 0) + (alerts.declining?.length || 0);
+  const totalAlerts = alerts.inactive?.length || 0;
 
   const goToStudent = useCallback((studentId) => {
     router.push(`/teacher/students?selected=${studentId}`);
@@ -171,19 +171,21 @@ function TeacherDashboard() {
 
           {/* Right column: alerts + registrations */}
           <div className="tchDashAlertsCol">
-            {/* Upcoming SAT Registrations */}
-            {upcomingRegistrations.length > 0 && (
-              <div className="card tchAlertCard">
-                <h3 className="tchAlertTitle" style={{ color: 'var(--accent)' }}>Upcoming SATs</h3>
-                <div className="tchAlertList">
-                  {upcomingRegistrations.map((r, i) => (
+            {/* Upcoming SAT Dates */}
+            <div className="card tchAlertCard">
+              <h3 className="tchAlertTitle" style={{ color: 'var(--accent)' }}>Upcoming SAT Dates</h3>
+              {!upcomingRegistrations.length ? (
+                <p className="muted small" style={{ padding: '4px 0', margin: 0 }}>No upcoming SAT registrations.</p>
+              ) : (
+                <div className="tchAlertList" style={{ maxHeight: 300, overflowY: 'auto' }}>
+                  {[...upcomingRegistrations].sort((a, b) => new Date(a.test_date) - new Date(b.test_date)).map((r, i) => (
                     <button key={i} className="tchAlertItem" style={{ cursor: 'pointer', background: 'none', border: 'none', width: '100%', textAlign: 'left' }} onClick={() => goToStudent(r.student_id)}>
                       <div className="tchAlertItemInfo">
                         <span className="tchAlertItemName">{r.student_name}</span>
                         <span className="tchAlertItemMeta">
                           {new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                          {r.days_until != null && r.days_until <= 30 && (
-                            <span style={{ color: r.days_until <= 7 ? 'var(--danger)' : 'var(--amber)', fontWeight: 600, marginLeft: 6 }}>
+                          {r.days_until != null && (
+                            <span style={{ color: r.days_until <= 7 ? 'var(--danger)' : r.days_until <= 30 ? 'var(--amber)' : 'var(--muted)', fontWeight: 600, marginLeft: 6 }}>
                               {r.days_until === 0 ? 'Today' : r.days_until === 1 ? 'Tomorrow' : `in ${r.days_until}d`}
                             </span>
                           )}
@@ -192,31 +194,8 @@ function TeacherDashboard() {
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Declining accuracy */}
-            {alerts.declining?.length > 0 && (
-              <div className="card tchAlertCard">
-                <h3 className="tchAlertTitle tchAlertTitleDanger">Declining Accuracy</h3>
-                <div className="tchAlertList">
-                  {alerts.declining.map(a => {
-                    const s = students.find(x => x.id === a.id);
-                    if (!s) return null;
-                    return (
-                      <button key={a.id} className="tchAlertItem" style={{ cursor: 'pointer', background: 'none', border: 'none', width: '100%', textAlign: 'left' }} onClick={() => goToStudent(a.id)}>
-                        <div className="tchAlertItemInfo">
-                          <span className="tchAlertItemName">{displayName(s)}</span>
-                          <span className="tchAlertItemMeta" style={{ color: 'var(--danger)' }}>
-                            {a.trend}% from previous period
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Inactive students */}
             {alerts.inactive?.length > 0 && (
@@ -265,7 +244,7 @@ function TeacherDashboard() {
             )}
 
             {/* All clear */}
-            {!alerts.inactive?.length && !alerts.declining?.length && !alerts.improving?.length && !upcomingRegistrations.length && (
+            {!alerts.inactive?.length && !alerts.improving?.length && (
               <div className="card tchAlertCard">
                 <h3 className="tchAlertTitle">All Clear</h3>
                 <p className="muted small" style={{ margin: 0 }}>No alerts right now. All students are active and on track.</p>
