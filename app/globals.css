@@ -5136,29 +5136,31 @@ hr{
 
 .tmTeacherGrid{
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
 }
 
 .tmTeacherCard{
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 20px 22px;
+  padding: 32px 24px 28px;
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  transition: border-color 0.12s, box-shadow 0.12s;
+  border-radius: 16px;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 }
 .tmTeacherCard:hover{
   border-color: var(--accent);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+  transform: translateY(-2px);
 }
 
 .tmTeacherAvatar{
-  width: 48px;
-  height: 48px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: #2563eb;
   color: #fff;
@@ -5166,31 +5168,42 @@ hr{
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 18px;
+  font-size: 28px;
   flex-shrink: 0;
 }
 
+.tmTeacherAvatarImg{
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+
 .tmTeacherInfo{
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
 }
 
 .tmTeacherName{
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: 700;
+  font-size: 17px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .tmTeacherCount{
   font-size: 13px;
-  color: var(--muted);
-  white-space: nowrap;
-  flex-shrink: 0;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 4px;
 }
 
 /* Detail view */

@@ -29,6 +29,42 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+// ─── Teacher avatar with profile picture support ─────────
+function TeacherAvatar({ name, fallbackLetter, size = 72 }) {
+  const [imgError, setImgError] = useState(false);
+  // Try multiple file extensions
+  const baseName = name.replace(/\s+/g, ' ').trim();
+  const src = `/profile_pictures/${baseName}.jpg`;
+  const srcPng = `/profile_pictures/${baseName}.png`;
+  const srcWebp = `/profile_pictures/${baseName}.webp`;
+
+  if (imgError) {
+    return (
+      <div className="tmTeacherAvatar" style={{ width: size, height: size, fontSize: size * 0.38 }}>
+        {fallbackLetter}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={name}
+      className="tmTeacherAvatarImg"
+      style={{ width: size, height: size }}
+      onError={(e) => {
+        if (e.target.src.endsWith('.jpg')) {
+          e.target.src = srcPng;
+        } else if (e.target.src.endsWith('.png')) {
+          e.target.src = srcWebp;
+        } else {
+          setImgError(true);
+        }
+      }}
+    />
+  );
+}
+
 // ─── Edit Teacher Profile modal ─────────────────────────
 function EditTeacherProfileModal({ teacher, teacherId, onClose, onSaved }) {
   const [form, setForm] = useState({
@@ -181,7 +217,7 @@ function TeacherDetail({ teacherId, onBack }) {
               <span className="tmStudentTh tmStudentThNum">Tests</span>
             </div>
             {data.students.map(s => (
-              <Link key={s.id} href={`/teacher?selected=${s.id}`} className="tmStudentRow">
+              <Link key={s.id} href={`/teacher/students?selected=${s.id}`} className="tmStudentRow">
                 <div className="tmStudentTd" style={{ flex: 2 }}>
                   <span style={{ fontWeight: 600, fontSize: 13 }}>{displayName(s)}</span>
                   <span className="muted small">{s.email}</span>
@@ -451,16 +487,20 @@ export default function TeachersPage() {
             <p className="muted">{teachers.length === 0 ? 'No teachers found.' : 'No matches.'}</p>
           ) : (
             <div className="tmTeacherGrid">
-              {filtered.map(t => (
-                <button key={t.id} className="card tmTeacherCard" onClick={() => setSelectedId(t.id)}>
-                  <div className="tmTeacherAvatar">{(t.first_name || t.email || '?')[0].toUpperCase()}</div>
-                  <div className="tmTeacherInfo">
-                    <span className="tmTeacherName">{displayName(t)}</span>
-                    <span className="muted small">{t.email}</span>
-                  </div>
-                  <span className="tmTeacherCount">{t.student_count} student{t.student_count !== 1 ? 's' : ''}</span>
-                </button>
-              ))}
+              {filtered.map(t => {
+                const name = displayName(t);
+                const photoName = [t.first_name, t.last_name].filter(Boolean).join(' ');
+                return (
+                  <button key={t.id} className="card tmTeacherCard" onClick={() => setSelectedId(t.id)}>
+                    <TeacherAvatar name={photoName || name} fallbackLetter={(t.first_name || t.email || '?')[0].toUpperCase()} size={72} />
+                    <div className="tmTeacherInfo">
+                      <span className="tmTeacherName">{name}</span>
+                      <span className="muted small">{t.email}</span>
+                      <span className="tmTeacherCount">{t.student_count} student{t.student_count !== 1 ? 's' : ''}</span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
         </>
