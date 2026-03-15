@@ -336,6 +336,17 @@ export default function StatsClient({ email, fetchUrl, backUrl, backLabel, title
     return null;
   })();
 
+  const enriched = data?.enrichedAttempts || [];
+
+  const diffBreakdown = useMemo(() => accuracyByDifficulty(enriched), [enriched]);
+  const timeByDiff = useMemo(() => avgTimeByDifficulty(enriched), [enriched]);
+  const trend = useMemo(() => accuracyTrend(enriched), [enriched]);
+  const suggestions = useMemo(() => suggestReviewTopics(data?.topicStats || [], 5), [data?.topicStats]);
+
+  // Separate R&W vs Math domains
+  const rwDomains = useMemo(() => (data?.domainStats || []).filter(d => !MATH_CODES.has(d.domain_code)), [data?.domainStats]);
+  const mathDomains = useMemo(() => (data?.domainStats || []).filter(d => MATH_CODES.has(d.domain_code)), [data?.domainStats]);
+
   const headerBlock = (
     <div className="stHeader">
       <Link href={linkBack} className="btn secondary">{linkBackLabel}</Link>
@@ -363,17 +374,6 @@ export default function StatsClient({ email, fetchUrl, backUrl, backLabel, title
       </main>
     );
   }
-
-  const enriched = data?.enrichedAttempts || [];
-
-  const diffBreakdown = useMemo(() => accuracyByDifficulty(enriched), [enriched]);
-  const timeByDiff = useMemo(() => avgTimeByDifficulty(enriched), [enriched]);
-  const trend = useMemo(() => accuracyTrend(enriched), [enriched]);
-  const suggestions = useMemo(() => suggestReviewTopics(data?.topicStats || [], 5), [data?.topicStats]);
-
-  // Separate R&W vs Math domains
-  const rwDomains = useMemo(() => (data?.domainStats || []).filter(d => !MATH_CODES.has(d.domain_code)), [data?.domainStats]);
-  const mathDomains = useMemo(() => (data?.domainStats || []).filter(d => MATH_CODES.has(d.domain_code)), [data?.domainStats]);
 
   const totalAttempted = data?.totalAttempted || 0;
   const totalCorrect = data?.totalCorrect || 0;
