@@ -1285,13 +1285,13 @@ export function StudentDetail({ studentId, onBack }) {
         <div className="tchProfileActions">
           <button className="btn secondary tchProfileActionBtn" onClick={() => setAddRegOpen(true)}>+ Test Registration</button>
           <button className="btn secondary tchProfileActionBtn" onClick={() => setAddScoreOpen(true)}>+ Official Score</button>
-          <button className="btn secondary tchProfileActionBtn" onClick={() => setAssignOpen(true)}>+ Assignment</button>
           <button className="btn primary tchProfileActionBtn" onClick={() => setUploadBluebookOpen(true)}>Upload Bluebook Results</button>
         </div>
         <div className="tchStatsRow">
           <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--accent)' }}>{data.highestTestScore ?? '—'}</div><div className="tchStatLabel">Highest Score</div></div>
           <div className="tchStatCol"><div className="tchStatValue">{data.totalAttempted}</div><div className="tchStatLabel">Questions Done</div></div>
           <div className="tchStatCol"><div className="tchStatValue" style={{ color: pctColor(data.recentAccuracy) }}>{data.recentAccuracy != null ? `${data.recentAccuracy}%` : '—'}</div><div className="tchStatLabel">Recent Accuracy</div></div>
+          <div className="tchStatCol"><div className="tchStatValue" style={{ color: pctColor(data.assignmentCompletionPct) }}>{data.assignmentCompletionPct != null ? `${data.assignmentCompletionPct}%` : '—'}</div><div className="tchStatLabel">Assignment Completion</div></div>
           <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--danger)' }}>{data.weakest ? `${data.weakest.weightedPct}%` : '—'}</div><div className="tchStatLabel">{data.weakest ? data.weakest.skill_name : 'Weakest'}</div></div>
         </div>
       </div>
@@ -1305,6 +1305,37 @@ export function StudentDetail({ studentId, onBack }) {
       <div className="card tchSection">
         <h3 className="h2" style={{ marginBottom: 14 }}>Domain & Topic Performance</h3>
         {!data.domainStats?.length ? <p className="muted small">No practice data yet.</p> : <DomainTable domainStats={data.domainStats} topicStats={data.topicStats} />}
+      </div>
+      <div className="card tchSection">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <h3 className="h2" style={{ margin: 0 }}>Assignments</h3>
+          <button className="btn primary" style={{ padding: '4px 12px', fontSize: 13 }} onClick={() => setAssignOpen(true)}>+ New Assignment</button>
+        </div>
+        {!data.studentAssignments?.length ? <p className="muted small">No assignments yet.</p> : (
+          <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+            {data.studentAssignments.map(a => {
+              const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
+              const isOverdue = a.due_date && new Date(a.due_date) < new Date();
+              return (
+                <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{a.title}</div>
+                    <div className="muted small" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <span>{a.completed_count}/{a.question_count} questions</span>
+                      {a.due_date && <span style={{ color: isOverdue ? 'var(--danger)' : undefined }}>Due {new Date(a.due_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{isOverdue ? ' (overdue)' : ''}</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 100 }}>
+                    <div className="dbProgressBar" style={{ flex: 1, height: 6 }}>
+                      <div className="dbProgressFill" style={{ width: `${donePct}%`, background: pctColor(donePct) }} />
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: pctColor(donePct), minWidth: 36, textAlign: 'right' }}>{donePct}%</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
       <div className="card tchSection">
         <h3 className="h2" style={{ marginBottom: 14 }}>Recent Practice Sessions</h3>

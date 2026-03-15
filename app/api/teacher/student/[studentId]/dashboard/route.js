@@ -311,6 +311,60 @@ export async function GET(_request, { params }) {
     mastery: computeMastery(topicAttempts[`${t.domain_name}::${t.skill_name}`] || [], taxMap),
   }));
 
+  // ── Assignments for this student ──
+  const { data: assignStudentRows } = await supabase
+    .from('question_assignment_students')
+    .select('assignment_id, question_assignments(id, title, description, due_date, question_ids, created_at)')
+    .eq('student_id', studentId);
+
+  const validAssignRows = (assignStudentRows || []).filter(r => r.question_assignments);
+  let studentAssignments = [];
+  let assignmentCompletionPct = null;
+
+  if (validAssignRows.length > 0) {
+    const allAssignQids = [];
+    for (const row of validAssignRows) {
+      for (const qid of (row.question_assignments.question_ids || [])) {
+        if (!allAssignQids.includes(qid)) allAssignQids.push(qid);
+      }
+    }
+
+    const { data: doneStatusRows } = allAssignQids.length > 0
+      ? await supabase
+          .from('question_status')
+          .select('question_id')
+          .eq('user_id', studentId)
+          .in('question_id', allAssignQids)
+          .eq('is_done', true)
+      : { data: [] };
+
+    const doneSet = new Set((doneStatusRows || []).map(r => r.question_id));
+
+    let totalAssignQuestions = 0;
+    let totalAssignCompleted = 0;
+
+    studentAssignments = validAssignRows.map(row => {
+      const a = row.question_assignments;
+      const qids = a.question_ids || [];
+      const completedCount = qids.filter(qid => doneSet.has(qid)).length;
+      totalAssignQuestions += qids.length;
+      totalAssignCompleted += completedCount;
+      return {
+        id: a.id,
+        title: a.title,
+        description: a.description,
+        due_date: a.due_date,
+        question_count: qids.length,
+        completed_count: completedCount,
+        created_at: a.created_at,
+      };
+    }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    if (totalAssignQuestions > 0) {
+      assignmentCompletionPct = Math.round((totalAssignCompleted / totalAssignQuestions) * 100);
+    }
+  }
+
   return NextResponse.json({
     student: studentProfile,
     satRegistrations: satRegistrations || [],
@@ -325,5 +379,7 @@ export async function GET(_request, { params }) {
     recentSessions,
     testScores,
     highestTestScore,
+    studentAssignments,
+    assignmentCompletionPct,
   });
 }

@@ -422,6 +422,16 @@ export default function DashboardClient({ email }) {
       .catch(() => {});
   }, []);
 
+  const assignmentCompletionPct = useMemo(() => {
+    if (!assignments?.length) return null;
+    let totalQ = 0, totalDone = 0;
+    for (const a of assignments) {
+      totalQ += a.question_count || 0;
+      totalDone += a.completed_count || 0;
+    }
+    return totalQ > 0 ? Math.round((totalDone / totalQ) * 100) : null;
+  }, [assignments]);
+
   const sections = useMemo(() =>
     data
       ? buildSections(data.domainStats, data.topicStats)
@@ -508,6 +518,14 @@ export default function DashboardClient({ email }) {
           </div>
           <div className="dbStatLabel">Recent Accuracy</div>
         </div>
+        {assignmentCompletionPct != null && (
+          <div className="card dbStatCard">
+            <div className="dbStatValue" style={{ color: pctColor(assignmentCompletionPct) }}>
+              {assignmentCompletionPct}%
+            </div>
+            <div className="dbStatLabel">Assignment Completion</div>
+          </div>
+        )}
       </div>
 
       {/* ── Goal Progress + Recommendations row ── */}
