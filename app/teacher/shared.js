@@ -642,8 +642,6 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!selectedTestId) return setError('Select a practice test.');
-    if (!parsed) return setError('Upload and parse a Bluebook HTML file first.');
-    if (!parsed.questions.length) return setError('No questions were parsed from the uploaded file.');
     if (!rwScore || !mathScore) return setError('Enter both RW and Math scores.');
     const rw = parseInt(rwScore, 10);
     const math = parseInt(mathScore, 10);
@@ -662,8 +660,8 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
           rw_score: rw,
           math_score: math,
           test_date: testDate || null,
-          questions: parsed.questions,
-          correctCounts: parsed.correctCounts,
+          questions: parsed?.questions || null,
+          correctCounts: parsed?.correctCounts || null,
         }),
       });
       const data = await res.json();
@@ -694,7 +692,11 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
                 {' · '}
                 <span style={{ color: '#9b8ec4', fontWeight: 600 }}>Math {result.math_scaled}</span>
               </div>
-              <div className="muted small" style={{ marginTop: 8 }}>{result.questions_imported} questions imported</div>
+              {result.questions_imported ? (
+                <div className="muted small" style={{ marginTop: 8 }}>{result.questions_imported} questions imported</div>
+              ) : (
+                <div className="muted small" style={{ marginTop: 8 }}>Score recorded (no question details)</div>
+              )}
             </div>
             <div className="tchModalActions">
               <button className="btn primary" onClick={onClose}>Done</button>
@@ -713,8 +715,9 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
             </label>
 
             <label className="tchModalField">
-              <span className="tchModalLabel">Bluebook HTML File (.htm)</span>
+              <span className="tchModalLabel">Bluebook HTML File (.htm) <span className="muted" style={{ fontWeight: 400 }}>— optional</span></span>
               <input type="file" accept=".htm,.html" onChange={handleFileChange} style={{ fontSize: 13 }} />
+              {!file && !parsed && <span className="muted small" style={{ marginTop: 2 }}>Skip to record scores only, without question-level details.</span>}
             </label>
 
             {parseError && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{parseError}</p>}
@@ -764,7 +767,7 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
 
             <div className="tchModalActions">
               <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
-              <button type="submit" className="btn primary" disabled={saving || !parsed || !selectedTestId}>
+              <button type="submit" className="btn primary" disabled={saving || !selectedTestId || !rwScore || !mathScore}>
                 {saving ? 'Uploading...' : 'Upload Results'}
               </button>
             </div>
