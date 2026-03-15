@@ -204,7 +204,8 @@ export async function GET() {
         allSessions.push(currentSession);
       }
       currentSession.lastTs = ts;
-      if (!currentSession.seenQids.has(att.question_id)) {
+      const existing = currentSession.questions.find(q => q.question_id === att.question_id);
+      if (!existing) {
         currentSession.seenQids.add(att.question_id);
         const tax = taxMap[att.question_id];
         currentSession.questions.push({
@@ -214,6 +215,9 @@ export async function GET() {
           skill_name: tax?.skill_name || null,
           difficulty: tax?.difficulty ?? null,
         });
+      } else {
+        // Iterating newest-first: older attempt is the true first attempt, use its result
+        existing.is_correct = att.is_correct;
       }
     }
   }
