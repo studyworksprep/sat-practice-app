@@ -450,14 +450,14 @@ export default function TeachersPage() {
     });
   }, []);
 
-  if (loading) return <div className="container" style={{ padding: '40px 20px' }}><p className="muted">Loading...</p></div>;
-  if (!authorized) return <div className="container" style={{ padding: '40px 20px' }}><p style={{ color: 'var(--danger)' }}>Access denied. Admin role required.</p></div>;
-
   const filtered = useMemo(() => teachers.filter(t => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (t.email || '').toLowerCase().includes(q) || displayName(t).toLowerCase().includes(q);
   }), [teachers, search]);
+
+  if (loading) return <div className="container" style={{ padding: '40px 20px' }}><p className="muted">Loading...</p></div>;
+  if (!authorized) return <div className="container" style={{ padding: '40px 20px' }}><p style={{ color: 'var(--danger)' }}>Access denied. Admin role required.</p></div>;
 
   return (
     <main className="container" style={{ maxWidth: 1000, paddingTop: 28, paddingBottom: 48 }}>
