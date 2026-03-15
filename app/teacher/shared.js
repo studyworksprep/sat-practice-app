@@ -38,13 +38,13 @@ export function displayName(s) {
 
 export function formatDate(iso) {
   if (!iso) return '';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export function formatDateTime(iso) {
   if (!iso) return '';
   const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
     ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
@@ -100,10 +100,11 @@ export function TestScoreBarChart({ testScores, onDelete }) {
   if (!testScores?.length) return null;
   const maxScore = 1600;
   const barHeight = 36;
+  const sorted = [...testScores].sort((a, b) => new Date(b.finished_at) - new Date(a.finished_at));
 
   return (
     <div className="tchBarChart">
-      {testScores.map((ts) => {
+      {sorted.map((ts) => {
         const rwSection = Object.entries(ts.sections || {}).find(([k]) => ['RW', 'rw'].includes(k));
         const mathSection = Object.entries(ts.sections || {}).find(([k]) => ['M', 'm', 'MATH', 'math', 'Math'].includes(k));
         const rwScore = rwSection?.[1]?.scaled || 0;
@@ -167,6 +168,50 @@ export function TestScoreBarChart({ testScores, onDelete }) {
       <div className="tchBarLegend">
         <span className="tchLegendDot" style={{ background: '#6b9bd2' }} /> R&W
         <span className="tchLegendDot" style={{ background: '#9b8ec4', marginLeft: 12 }} /> Math
+      </div>
+    </div>
+  );
+}
+
+// ─── Session card with delete ────────────────────────────
+function SessionCard({ session, index, questions, correct, total, p, onTileClick, onDelete }) {
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  return (
+    <div className="tchSessionCard">
+      <div className="tchSessionHeader">
+        <span className="tchSessionDate">{formatDateTime(session.startedAt)}</span>
+        <span className="tchSessionStats">
+          {correct}/{total}{p !== null && <span style={{ color: pctColor(p), fontWeight: 600 }}> ({p}%)</span>}
+        </span>
+        {onDelete && (
+          confirming ? (
+            <span style={{ display: 'inline-flex', gap: 4, marginLeft: 8 }}>
+              <button
+                className="btn"
+                style={{ background: 'var(--danger)', borderColor: 'var(--danger)', color: '#fff', padding: '2px 8px', fontSize: 11 }}
+                disabled={deleting}
+                onClick={() => { setDeleting(true); onDelete(index).finally(() => { setDeleting(false); setConfirming(false); }); }}
+              >
+                {deleting ? 'Deleting…' : 'Yes, delete'}
+              </button>
+              <button className="btn secondary" style={{ padding: '2px 8px', fontSize: 11 }} onClick={() => setConfirming(false)} disabled={deleting}>Cancel</button>
+            </span>
+          ) : (
+            <button
+              className="tchBarDeleteBtn"
+              title="Delete this session"
+              onClick={() => setConfirming(true)}
+              style={{ marginLeft: 8 }}
+            >
+              &times;
+            </button>
+          )
+        )}
+      </div>
+      <div className="dbSessionTiles">
+        {questions.map((q, qi) => <TchSessionTile key={qi} q={q} index={qi} onClick={() => onTileClick(qi)} />)}
       </div>
     </div>
   );
@@ -1208,6 +1253,22 @@ export function StudentDetail({ studentId, onBack }) {
     }
   };
 
+  const deleteSession = async (sessionIndex) => {
+    const session = data.recentSessions[sessionIndex];
+    if (!session?.attemptIds?.length) return;
+    const res = await fetch(`/api/teacher/student/${studentId}/delete-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attemptIds: session.attemptIds }),
+    });
+    if (res.ok) {
+      setData(prev => ({
+        ...prev,
+        recentSessions: (prev.recentSessions || []).filter((_, i) => i !== sessionIndex),
+      }));
+    }
+  };
+
   if (loading) return <div className="tchDetailLoading"><p className="muted">Loading student data...</p></div>;
   if (error) return <div className="tchDetailError"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
   if (!data) return null;
@@ -1270,15 +1331,17 @@ export function StudentDetail({ studentId, onBack }) {
                     router.push(`/teacher/review/${encodeURIComponent(questions[qIndex].question_id)}?studentId=${studentId}&sid=${sid}&t=${ids.length}&i=${qIndex + 1}`);
                   }
                   return (
-                    <div key={i} className="tchSessionCard">
-                      <div className="tchSessionHeader">
-                        <span className="tchSessionDate">{formatDateTime(session.startedAt)}</span>
-                        <span className="tchSessionStats">{correct}/{total}{p !== null && <span style={{ color: pctColor(p), fontWeight: 600 }}> ({p}%)</span>}</span>
-                      </div>
-                      <div className="dbSessionTiles">
-                        {questions.map((q, qi) => <TchSessionTile key={qi} q={q} index={qi} onClick={() => handleTileClick(qi)} />)}
-                      </div>
-                    </div>
+                    <SessionCard
+                      key={i}
+                      session={session}
+                      index={i}
+                      questions={questions}
+                      correct={correct}
+                      total={total}
+                      p={p}
+                      onTileClick={handleTileClick}
+                      onDelete={deleteSession}
+                    />
                   );
                 })}
               </div>

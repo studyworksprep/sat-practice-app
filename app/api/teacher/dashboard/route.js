@@ -122,6 +122,7 @@ export async function GET() {
       .from('attempts')
       .select('id, user_id, question_id, is_correct, created_at, source')
       .in('user_id', studentIds)
+      .eq('source', 'practice')
       .order('created_at', { ascending: false })
       .limit(10000),
     svc
@@ -175,7 +176,7 @@ export async function GET() {
   // ── Recent practice sessions (across all students, last 2 weeks) ──
   const twoWeeksAgo = Date.now() - 14 * 86400000;
   const recentPracticeAttempts = (allAttempts || []).filter(
-    a => a.source === 'practice' && new Date(a.created_at).getTime() > twoWeeksAgo
+    a => new Date(a.created_at).getTime() > twoWeeksAgo
   );
 
   // Group into sessions per student

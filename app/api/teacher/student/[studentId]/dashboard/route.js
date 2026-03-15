@@ -225,10 +225,11 @@ export async function GET(_request, { params }) {
   for (const att of recentAttempts) {
     const ts = new Date(att.created_at).getTime();
     if (!currentSession || (currentSession.lastTs - ts) > SESSION_GAP_MS) {
-      currentSession = { startedAt: att.created_at, lastTs: ts, questions: [] };
+      currentSession = { startedAt: att.created_at, lastTs: ts, questions: [], attemptIds: [] };
       sessions.push(currentSession);
     }
     currentSession.lastTs = ts;
+    currentSession.attemptIds.push(att.id);
     const existing = currentSession.questions.find(q => q.question_id === att.question_id);
     if (!existing) {
       const tax = taxMap[att.question_id];
