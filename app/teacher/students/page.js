@@ -58,27 +58,9 @@ function StudentsPageInner() {
     setSelectedId(null);
   }, []);
 
-  if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading students...</p></div>;
-  if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
-
-  // Student detail view
-  if (view === 'student' && selectedId) {
-    return (
-      <div className="container tchPage">
-        <StudentDetail key={selectedId} studentId={selectedId} onBack={goBack} />
-      </div>
-    );
-  }
-
   const teacher = rosterData?.teacher || {};
   const students = rosterData?.students || [];
   const alerts = rosterData?.alerts || {};
-
-  // Sort
-  function toggleSort(col) {
-    if (sortBy === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    else { setSortBy(col); setSortDir('desc'); }
-  }
 
   const sorted = useMemo(() => [...students].sort((a, b) => {
     let av = a[sortBy], bv = b[sortBy];
@@ -106,6 +88,24 @@ function StudentsPageInner() {
   const inactiveSet = useMemo(() => new Set((alerts.inactive || []).map(a => a.id)), [alerts.inactive]);
   const decliningSet = useMemo(() => new Set((alerts.declining || []).map(a => a.id)), [alerts.declining]);
   const improvingSet = useMemo(() => new Set((alerts.improving || []).map(a => a.id)), [alerts.improving]);
+
+  if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading students...</p></div>;
+  if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+
+  // Student detail view
+  if (view === 'student' && selectedId) {
+    return (
+      <div className="container tchPage">
+        <StudentDetail key={selectedId} studentId={selectedId} onBack={goBack} />
+      </div>
+    );
+  }
+
+  // Sort
+  function toggleSort(col) {
+    if (sortBy === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortBy(col); setSortDir('desc'); }
+  }
 
   const tabs = [
     { key: 'roster', label: 'Roster' },
