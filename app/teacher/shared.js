@@ -95,11 +95,11 @@ export function TrendIndicator({ trend }) {
 
 // ─── Bar chart for test scores ───────────────────────────
 export function TestScoreBarChart({ testScores, onDelete }) {
+  const [confirmId, setConfirmId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   if (!testScores?.length) return null;
   const maxScore = 1600;
   const barHeight = 36;
-  const [confirmId, setConfirmId] = useState(null);
-  const [deleting, setDeleting] = useState(false);
 
   return (
     <div className="tchBarChart">
