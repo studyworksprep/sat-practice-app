@@ -74,7 +74,9 @@ export async function GET(request) {
     );
   }
 
-  if ((marked_only || wrong_only || undone_only) && !userId) return NextResponse.json({});
+  if ((marked_only || wrong_only || undone_only) && !userId) {
+    return NextResponse.json({ error: 'auth_required' }, { status: 401 });
+  }
 
   const userResults = userQueries.length > 0 ? await Promise.all(userQueries) : [];
 

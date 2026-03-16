@@ -97,7 +97,7 @@ export default function Filters({ initial = {}, onChange, onStartSession, userRo
         return r.json();
       })
       .then((data) => {
-        if (data && !data.error) setCounts(data);
+        if (data && !data.error && Object.keys(data).length > 0) setCounts(data);
       })
       .catch(() => {});
 
