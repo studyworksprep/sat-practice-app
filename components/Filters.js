@@ -94,7 +94,7 @@ export default function Filters({ initial = {}, onChange, onStartSession, userRo
     fetch('/api/domain-counts?' + p.toString(), { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
-        if (data && !data.error && Object.keys(data).length > 0) setCounts(data);
+        if (data && !data.error) setCounts(data);
       })
       .catch(() => {});
 
