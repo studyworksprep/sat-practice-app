@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../lib/supabase/server';
 
 // GET /api/domain-counts
 // Params: difficulties, score_bands, wrong_only, marked_only, hide_broken
@@ -51,23 +51,30 @@ export async function GET(request) {
 
   const results = await Promise.all(restrictionQueries);
 
+  // Use service client for user-specific queries to bypass RLS.
+  // The regular client may have stale auth cookies (middleware refreshes
+  // tokens on the response, but route handlers read the original request
+  // cookies). userId comes from the trusted middleware x-user-id header.
+  const svc = (marked_only || wrong_only || undone_only) && userId
+    ? createServiceClient() : null;
+
   // Now run user-specific queries in parallel (need userId)
   const userQueries = [];
   if (marked_only && userId) {
     userQueries.push(
-      supabase.from('question_status').select('question_id')
+      svc.from('question_status').select('question_id')
         .eq('user_id', userId).eq('marked_for_review', true).limit(10000)
     );
   }
   if (wrong_only && userId) {
     userQueries.push(
-      supabase.from('question_status').select('question_id')
+      svc.from('question_status').select('question_id')
         .eq('user_id', userId).eq('is_done', true).eq('last_is_correct', false).limit(10000)
     );
   }
   if (undone_only && userId) {
     userQueries.push(
-      supabase.from('question_status').select('question_id')
+      svc.from('question_status').select('question_id')
         .eq('user_id', userId).eq('is_done', true).limit(50000)
     );
   }
