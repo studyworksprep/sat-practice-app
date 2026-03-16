@@ -696,12 +696,12 @@ label{
 
 /* Math domains = blue */
 .domainChip.math{ background: rgba(37,99,235,0.06); color: #1e3a8a; }
-.domainChip.math.on{ background: rgba(37,99,235,0.14); color: #1e3a8a; }
+.domainChip.math.on{ background: rgba(37,99,235,0.22); color: #1e3a8a; border-left: 3px solid #2563eb; font-weight: 600; }
 .domainChip.math:not(.on):hover{ background: rgba(37,99,235,0.1); }
 
 /* R&W domains = orange */
 .domainChip.rw{ background: rgba(234,88,12,0.06); color: #9a3412; }
-.domainChip.rw.on{ background: rgba(234,88,12,0.14); color: #7c2d12; }
+.domainChip.rw.on{ background: rgba(234,88,12,0.22); color: #7c2d12; border-left: 3px solid #ea580c; font-weight: 600; }
 .domainChip.rw:not(.on):hover{ background: rgba(234,88,12,0.1); }
 
 .domainChip input{ accent-color: var(--accent); flex-shrink: 0; }
@@ -732,7 +732,7 @@ label{
   color: #1e3a8a;
 }
 .categoryChip.math.on{
-  background: rgba(37,99,235,0.17);
+  background: rgba(37,99,235,0.25);
   color: #1e3a8a;
 }
 .categoryChip.math:not(.on):hover{ background: rgba(37,99,235,0.13); }
@@ -744,7 +744,7 @@ label{
   color: #9a3412;
 }
 .categoryChip.rw.on{
-  background: rgba(234,88,12,0.16);
+  background: rgba(234,88,12,0.25);
   color: #7c2d12;
 }
 .categoryChip.rw:not(.on):hover{ background: rgba(234,88,12,0.12); }
