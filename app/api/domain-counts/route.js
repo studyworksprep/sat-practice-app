@@ -24,11 +24,12 @@ export async function GET(request) {
 
   const supabase = createClient();
 
-  // Run auth + all restriction queries + first taxonomy page in parallel
+  // Get user ID from middleware header (avoids stale-cookie auth issues)
+  const userId = request.headers.get('x-user-id') || null;
+
+  // Run restriction queries + first taxonomy page in parallel
   const restrictionQueries = [
-    // 0: auth
-    supabase.auth.getUser(),
-    // 1: first taxonomy page (always needed)
+    // 0: first taxonomy page (always needed)
     (() => {
       let q = supabase
         .from('question_taxonomy')
@@ -41,7 +42,7 @@ export async function GET(request) {
     })(),
   ];
 
-  // 2: broken IDs (if needed for hide_broken or only_broken)
+  // 1: broken IDs (if needed for hide_broken or only_broken)
   if (hide_broken || only_broken) {
     restrictionQueries.push(
       supabase.from('questions').select('id').eq('is_broken', true).limit(10000)
@@ -49,9 +50,6 @@ export async function GET(request) {
   }
 
   const results = await Promise.all(restrictionQueries);
-
-  const { data: auth } = results[0];
-  const userId = auth?.user?.id ?? null;
 
   // Now run user-specific queries in parallel (need userId)
   const userQueries = [];
@@ -113,11 +111,11 @@ export async function GET(request) {
   }
 
   if (only_broken) {
-    const brokenIds = (results[2]?.data || []).map((r) => r.id).filter(Boolean);
+    const brokenIds = (results[1]?.data || []).map((r) => r.id).filter(Boolean);
     restrictIds = intersect(restrictIds, brokenIds);
     if (restrictIds.length === 0) return NextResponse.json({});
   } else if (hide_broken) {
-    const brokenIds = new Set((results[2]?.data || []).map((r) => r.id).filter(Boolean));
+    const brokenIds = new Set((results[1]?.data || []).map((r) => r.id).filter(Boolean));
     if (brokenIds.size > 0) {
       if (restrictIds) {
         restrictIds = restrictIds.filter((id) => !brokenIds.has(id));
@@ -129,7 +127,7 @@ export async function GET(request) {
   }
 
   // Process first taxonomy page (already fetched in parallel)
-  const firstTaxResult = results[1];
+  const firstTaxResult = results[0];
   if (firstTaxResult.error) return NextResponse.json({ error: firstTaxResult.error.message }, { status: 400 });
 
   let allTax = firstTaxResult.data || [];

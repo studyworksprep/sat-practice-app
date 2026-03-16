@@ -5,9 +5,10 @@ import { createServerClient } from '@supabase/ssr';
 const BLOCKED_FOR_PRACTICE = ['/dashboard', '/practice-test', '/admin', '/review'];
 
 export async function middleware(request) {
-  let response = NextResponse.next({
-    request: { headers: request.headers },
-  });
+  const requestHeaders = new Headers(request.headers);
+
+  // We'll collect cookies set during auth refresh, then apply them to the final response
+  const cookiesToSet = [];
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -18,10 +19,10 @@ export async function middleware(request) {
           return request.cookies.get(name)?.value;
         },
         set(name, value, options) {
-          response.cookies.set({ name, value, ...options });
+          cookiesToSet.push({ name, value, ...options });
         },
         remove(name, options) {
-          response.cookies.set({ name, value: '', ...options });
+          cookiesToSet.push({ name, value: '', ...options });
         },
       },
     }
@@ -29,6 +30,11 @@ export async function middleware(request) {
 
   // Refresh session if expired - important for Server Components
   const { data: { user } } = await supabase.auth.getUser();
+
+  // Pass authenticated user ID to route handlers via request header
+  if (user) {
+    requestHeaders.set('x-user-id', user.id);
+  }
 
   // Role-based route protection for practice-only accounts
   if (user) {
@@ -51,6 +57,15 @@ export async function middleware(request) {
         return NextResponse.redirect(url);
       }
     }
+  }
+
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+
+  // Apply auth cookies (refresh tokens etc.) to the response
+  for (const cookie of cookiesToSet) {
+    response.cookies.set(cookie);
   }
 
   return response;
