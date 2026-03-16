@@ -830,7 +830,7 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
   const [dueDate, setDueDate] = useState('');
   const [selectedStudents, setSelectedStudents] = useState(initialStudents || []);
   const [selectAll, setSelectAll] = useState(false);
-  const [domains, setDomains] = useState([]);
+  const [expandedDomains, setExpandedDomains] = useState([]);
   const [topics, setTopics] = useState([]);
   const [difficulties, setDifficulties] = useState([1, 2, 3]);
   const [scoreBands, setScoreBands] = useState([]);
@@ -871,8 +871,21 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
     if (selectAll) { setSelectedStudents([]); } else { setSelectedStudents(students.map(s => s.id)); }
     setSelectAll(!selectAll);
   }
-  function toggleDomain(name) { setDomains(prev => prev.includes(name) ? prev.filter(d => d !== name) : [...prev, name]); setPreviewQuestions(null); }
-  function toggleTopic(name) { setTopics(prev => prev.includes(name) ? prev.filter(t => t !== name) : [...prev, name]); setPreviewQuestions(null); }
+  const topicsByDomain = {};
+  for (const t of filterData?.topics || []) {
+    if (!topicsByDomain[t.domain_name]) topicsByDomain[t.domain_name] = [];
+    topicsByDomain[t.domain_name].push(t);
+  }
+
+  function toggleExpandDomain(name) { setExpandedDomains(prev => prev.includes(name) ? prev.filter(d => d !== name) : [...prev, name]); }
+  function topicKey(t) { return t.skill_code || t.skill_name; }
+  function toggleTopic(key) { setTopics(prev => prev.includes(key) ? prev.filter(t => t !== key) : [...prev, key]); setPreviewQuestions(null); }
+  function toggleAllTopics(domainName) {
+    const domainTopicKeys = (topicsByDomain[domainName] || []).map(t => topicKey(t));
+    const allSelected = domainTopicKeys.every(k => topics.includes(k));
+    setTopics(prev => allSelected ? prev.filter(t => !domainTopicKeys.includes(t)) : [...new Set([...prev, ...domainTopicKeys])]);
+    setPreviewQuestions(null);
+  }
   function toggleDifficulty(d) { setDifficulties(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]); setPreviewQuestions(null); }
   function toggleScoreBand(b) { setScoreBands(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]); setPreviewQuestions(null); }
 
@@ -880,7 +893,6 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
     setPreviewLoading(true);
     try {
       const params = new URLSearchParams();
-      if (domains.length) params.set('domains', domains.join(','));
       if (topics.length) params.set('topics', topics.join(','));
       if (difficulties.length < 3) params.set('difficulties', difficulties.join(','));
       if (scoreBands.length > 0) params.set('score_bands', scoreBands.join(','));
@@ -914,7 +926,7 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
             ? [...previewQuestions.items].sort(() => Math.random() - 0.5).map(q => q.question_id)
             : previewQuestions.items.map(q => q.question_id),
           student_ids: selectedStudents,
-          filter_criteria: { domains, topics, difficulties, score_bands: scoreBands },
+          filter_criteria: { topics, difficulties, score_bands: scoreBands },
         }),
       });
       const json = await res.json();
@@ -922,12 +934,6 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
       onCreated();
     } catch (e) { setError(e.message); }
     finally { setSaving(false); }
-  }
-
-  const topicsByDomain = {};
-  for (const t of filterData?.topics || []) {
-    if (!topicsByDomain[t.domain_name]) topicsByDomain[t.domain_name] = [];
-    topicsByDomain[t.domain_name].push(t);
   }
 
   return (
@@ -996,22 +1002,29 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
                 <span className="tchModalLabel">Domains & Topics</span>
                 <div className="tchAssignDomainList">
                   {(filterData?.domains || []).map(d => {
-                    const isDomainSelected = domains.includes(d.domain_name);
-                    const domainTopics = topicsByDomain[d.domain_name] || [];
+                    const isExpanded = expandedDomains.includes(d.domain_name);
+                    const domainTopicList = topicsByDomain[d.domain_name] || [];
                     const counts = dynamicCounts || filterData?.counts;
                     const domainCount = counts?.[d.domain_name]?.count;
+                    const selectedCount = domainTopicList.filter(t => topics.includes(topicKey(t))).length;
+                    const allSelected = domainTopicList.length > 0 && selectedCount === domainTopicList.length;
                     return (
                       <div key={d.domain_name} className="tchAssignDomainBlock">
-                        <button type="button" className={`tchAssignChip${isDomainSelected ? ' active' : ''}`} onClick={() => toggleDomain(d.domain_name)}>
+                        <button type="button" className={`tchAssignChip${allSelected ? ' active' : selectedCount > 0 ? ' partial' : ''}`} onClick={() => toggleExpandDomain(d.domain_name)}>
                           {d.domain_name}
                           {domainCount != null && <span className="muted small" style={{ marginLeft: 4 }}>({domainCount})</span>}
+                          {selectedCount > 0 && !allSelected && <span className="muted small" style={{ marginLeft: 4 }}>[{selectedCount}/{domainTopicList.length}]</span>}
+                          <span style={{ marginLeft: 4, fontSize: 10 }}>{isExpanded ? '▾' : '▸'}</span>
                         </button>
-                        {isDomainSelected && domainTopics.length > 0 && (
+                        {isExpanded && domainTopicList.length > 0 && (
                           <div className="tchAssignTopicChips">
-                            {domainTopics.map(t => {
+                            <button type="button" className={`tchAssignChip small${allSelected ? ' active' : ''}`} onClick={() => toggleAllTopics(d.domain_name)} style={{ fontStyle: 'italic' }}>
+                              {allSelected ? 'Deselect All' : 'Select All'}
+                            </button>
+                            {domainTopicList.map(t => {
                               const topicCount = counts?.[d.domain_name]?.topics?.[t.skill_code || t.skill_name];
                               return (
-                                <button key={t.skill_name} type="button" className={`tchAssignChip small${topics.includes(t.skill_name) ? ' active' : ''}`} onClick={() => toggleTopic(t.skill_name)}>
+                                <button key={t.skill_name} type="button" className={`tchAssignChip small${topics.includes(topicKey(t)) ? ' active' : ''}`} onClick={() => toggleTopic(topicKey(t))}>
                                   {t.skill_name}{topicCount != null ? ` (${topicCount})` : ''}
                                 </button>
                               );

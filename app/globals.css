@@ -6755,6 +6755,10 @@ hr{
   border-color: var(--accent);
   color: #fff;
 }
+.tchAssignChip.partial{
+  border-color: var(--accent);
+  color: var(--accent);
+}
 .tchAssignChip.small{
   font-size: 11px;
   padding: 2px 8px;
