@@ -9,6 +9,7 @@ const DEFAULTS = {
   topics: [],
   wrong_only: false,
   marked_only: false,
+  undone_only: false,
   show_broken: false,
 };
 
@@ -17,7 +18,7 @@ const RW_CODES    = new Set(['CAS', 'INI', 'EOI', 'SEC']);
 const MATH_ORDER  = ['H', 'P', 'Q', 'S'];
 const RW_ORDER    = ['INI', 'CAS', 'EOI', 'SEC'];
 
-export default function Filters({ initial = {}, onChange, onStartSession }) {
+export default function Filters({ initial = {}, onChange, onStartSession, userRole }) {
   const [state,     setState]     = useState({ ...DEFAULTS, ...initial });
   const [allDomains, setAllDomains] = useState([]);
   const [allTopics,  setAllTopics]  = useState([]);
@@ -190,7 +191,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     state.difficulties.length > 0 ||
     state.score_bands.length  > 0 ||
     state.topics.length       > 0 ||
-    state.wrong_only || state.marked_only;
+    state.wrong_only || state.marked_only || state.undone_only;
 
   // Count how many skills are selected within a domain
   function selectedSkillCount(domain) {
@@ -312,7 +313,10 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
           {[
             ['marked_only', 'Only marked for review'],
             ['wrong_only',  'Only wrong answers'],
-            ['show_broken', 'Flagged as broken'],
+            ['undone_only', 'Only undone questions'],
+            ...(userRole === 'admin' || userRole === 'manager'
+              ? [['show_broken', 'Flagged as broken']]
+              : []),
           ].map(([key, label]) => (
             <label key={key} className="filterCheck">
               <input type="checkbox" checked={state[key]} onChange={(e) => set(key, e.target.checked)} />

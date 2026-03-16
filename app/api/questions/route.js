@@ -36,6 +36,7 @@ export async function GET(request) {
   const marked_only = searchParams.get('marked_only') === 'true';
   const hide_broken = searchParams.get('hide_broken') === 'true';
   const only_broken = searchParams.get('only_broken') === 'true';
+  const undone_only = searchParams.get('undone_only') === 'true';
   const qText = (searchParams.get('q') || '').trim();
 
   // exclude_done_for: comma-separated student IDs — exclude questions done by ALL listed students
@@ -161,6 +162,29 @@ export async function GET(request) {
             excludeDoneIds = toExclude;
           }
         }
+      }
+    }
+  }
+
+  // undone_only — exclude questions the current user has already completed
+  if (undone_only && userId) {
+    const svc = createServiceClient();
+    const { data: doneRows } = await svc
+      .from('question_status')
+      .select('question_id')
+      .eq('user_id', userId)
+      .eq('is_done', true)
+      .limit(50000);
+    if (doneRows && doneRows.length > 0) {
+      const toExclude = doneRows.map(r => r.question_id);
+      if (restrictIds) {
+        const excludeSet = new Set(toExclude);
+        restrictIds = restrictIds.filter(id => !excludeSet.has(id));
+        if (restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
+      } else {
+        excludeDoneIds = excludeDoneIds
+          ? [...new Set([...excludeDoneIds, ...toExclude])]
+          : toExclude;
       }
     }
   }

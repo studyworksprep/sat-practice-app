@@ -31,6 +31,7 @@ function buildParams(filters, search, extra = {}) {
 
   if (filters.wrong_only) p.set('wrong_only', 'true');
   if (filters.marked_only) p.set('marked_only', 'true');
+  if (filters.undone_only) p.set('undone_only', 'true');
   if (filters.show_broken) p.set('only_broken', 'true');
   else p.set('hide_broken', 'true');
 
@@ -61,8 +62,16 @@ export default function PracticePage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [totalCount, setTotalCount] = useState(0);
   const loadIdRef = useRef(0);
+  const [userRole, setUserRole] = useState(null);
 
-  // Dashboard data for Training Mode cards
+  // Fetch current user's role
+  useEffect(() => {
+    fetch('/api/me')
+      .then(r => r.json())
+      .then(d => { if (d.role) setUserRole(d.role); })
+      .catch(() => {});
+  }, []);
+
   // Teacher Mode vs Training Mode toggle
   const [teacherMode, setTeacherMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -263,7 +272,7 @@ export default function PracticePage() {
       </div>
 
       {/* Full-width filter panel */}
-      <Filters onChange={setFilters} onStartSession={handleStartSession} />
+      <Filters onChange={setFilters} onStartSession={handleStartSession} userRole={userRole} />
       {msg && <Toast kind={msg?.kind} message={msg?.text} />}
 
       {/* Search row */}
