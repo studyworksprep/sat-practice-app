@@ -229,7 +229,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
 
     return (
       <div key={domain.domain_name} className={`domainGroup ${colorClass}`}>
-        <div className="domainRow">
+        <div className={`domainRow ${colorClass}${domainOn ? ' on' : ''}`}>
           <label className={`domainChip ${colorClass}${domainOn ? ' on' : ''}`}>
             <input
               type="checkbox"
