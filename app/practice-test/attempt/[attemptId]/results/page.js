@@ -7,14 +7,16 @@ import Link from 'next/link';
 import HtmlBlock from '../../../../../components/HtmlBlock';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
+const SUBJECT_LABEL_FULL = { rw: 'Reading and Writing', RW: 'Reading and Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
 
-// Returns true only when an HTML string has visible text content (not just empty tags or literal "NULL")
 const htmlHasContent = (html) => {
   if (!html) return false;
   const text = html.replace(/<[^>]+>/g, '').trim();
   return text.length > 0 && text !== 'NULL';
 };
 const SUBJECT_ORDER = ['RW', 'rw', 'MATH', 'M', 'm', 'math'];
+const MATH_CODES = new Set(['M', 'm', 'math', 'Math', 'MATH']);
+const RW_CODES = new Set(['RW', 'rw']);
 
 const DOMAIN_ABBREV = {
   'Craft and Structure': 'C&S',
@@ -26,6 +28,8 @@ const DOMAIN_ABBREV = {
   'Problem-Solving and Data Analysis': 'Data',
   'Geometry and Trigonometry': 'Geo',
 };
+
+const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
 
 function formatSprAnswer(ct) {
   if (!ct) return '';
@@ -49,12 +53,164 @@ function pct(correct, total) {
   return Math.round((correct / total) * 100);
 }
 
-function AccuracyBar({ correct, total }) {
-  const p = pct(correct, total);
-  const cls = p >= 70 ? 'green' : p >= 50 ? 'yellow' : 'red';
+function pctColor(p) {
+  if (p >= 80) return '#3b9c6e';
+  if (p >= 60) return '#c9963a';
+  return '#c0564a';
+}
+
+function fmtTime(ms) {
+  if (!ms && ms !== 0) return '—';
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return rem > 0 ? `${m}m ${rem}s` : `${m}m`;
+}
+
+// ─── SVG Donut chart ──────────────────────────────────────────────────────
+
+function DonutChart({ percentage, size = 140, strokeWidth = 14, label, sublabel }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const correctDash = (percentage / 100) * circumference;
+  const incorrectDash = circumference - correctDash;
+  const color = pctColor(percentage);
+
   return (
-    <div className="dbProgressBar" style={{ marginTop: 4 }}>
-      <div className={`dbProgressFill ${cls}`} style={{ width: `${p}%` }} />
+    <div className="ptrvDonut">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* Background circle */}
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e8e8e8" strokeWidth={strokeWidth} />
+        {/* Incorrect portion */}
+        {percentage < 100 && (
+          <circle
+            cx={size / 2} cy={size / 2} r={radius} fill="none"
+            stroke="#d97a6a" strokeWidth={strokeWidth}
+            strokeDasharray={`${incorrectDash} ${correctDash}`}
+            strokeDashoffset={correctDash}
+            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          />
+        )}
+        {/* Correct portion */}
+        <circle
+          cx={size / 2} cy={size / 2} r={radius} fill="none"
+          stroke={color} strokeWidth={strokeWidth}
+          strokeDasharray={`${correctDash} ${circumference - correctDash}`}
+          strokeDashoffset={0}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          strokeLinecap="round"
+        />
+        {/* Center text */}
+        <text x={size / 2} y={size / 2 - 6} textAnchor="middle" dominantBaseline="central"
+          fontSize="28" fontWeight="700" fill="var(--fg, #222)">{percentage}%</text>
+        <text x={size / 2} y={size / 2 + 18} textAnchor="middle" dominantBaseline="central"
+          fontSize="11" fill="var(--muted, #888)">Accuracy</text>
+      </svg>
+    </div>
+  );
+}
+
+// ─── Score ring (large) ───────────────────────────────────────────────────
+
+function ScoreRing({ score, max = 1600, label }) {
+  const p = Math.min(score / max, 1);
+  const size = 160;
+  const strokeWidth = 12;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const dash = p * circumference;
+
+  return (
+    <div className="ptrvScoreRing">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e8e8e8" strokeWidth={strokeWidth} />
+        <circle
+          cx={size / 2} cy={size / 2} r={radius} fill="none"
+          stroke="var(--accent)" strokeWidth={strokeWidth}
+          strokeDasharray={`${dash} ${circumference - dash}`}
+          strokeDashoffset={0}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          strokeLinecap="round"
+        />
+        <text x={size / 2} y={size / 2 - 8} textAnchor="middle" dominantBaseline="central"
+          fontSize="40" fontWeight="800" fill="var(--accent)">{score}</text>
+        <text x={size / 2} y={size / 2 + 22} textAnchor="middle" dominantBaseline="central"
+          fontSize="12" fill="var(--muted, #888)">{label}</text>
+      </svg>
+    </div>
+  );
+}
+
+// ─── Domain analytics card ────────────────────────────────────────────────
+
+function DomainAnalyticsCard({ title, subtitle, domains }) {
+  if (!domains?.length) return null;
+  return (
+    <div className="card ptrvDomainCard">
+      <h3 className="ptrvDomainCardTitle">{title}</h3>
+      <p className="ptrvDomainCardSub">{subtitle}</p>
+      <div className="ptrvDomainBars">
+        {domains.map((d) => {
+          const p = pct(d.correct, d.total);
+          const color = pctColor(p);
+          return (
+            <div key={d.domain_name} className="ptrvDomainBarItem">
+              <div className="ptrvDomainBarHeader">
+                <span className="ptrvDomainBarName">{d.domain_name}</span>
+                <span className="ptrvDomainBarPct" style={{ background: color }}>{p}%</span>
+              </div>
+              <div className="ptrvDomainBarTrack">
+                <div className="ptrvDomainBarFill" style={{ width: `${p}%`, background: '#3366cc' }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Timing bar (one per module) ──────────────────────────────────────────
+
+function TimingBar({ label, questions }) {
+  const totalTime = questions.reduce((s, q) => s + (q.time_spent_ms || 0), 0);
+  if (!totalTime) return null;
+  const [hoveredIdx, setHoveredIdx] = useState(null);
+
+  return (
+    <div className="ptrvTimingRow">
+      <div className="ptrvTimingLabel">{label}</div>
+      <div className="ptrvTimingBarWrap">
+        <div className="ptrvTimingBar">
+          {questions.map((q, i) => {
+            const w = ((q.time_spent_ms || 0) / totalTime) * 100;
+            if (w < 0.3) return null;
+            const isCorrect = q.is_correct;
+            const isSkipped = !q.was_answered;
+            return (
+              <div
+                key={i}
+                className={`ptrvTimingSeg ${isCorrect ? 'correct' : isSkipped ? 'skipped' : 'incorrect'}`}
+                style={{ width: `${w}%` }}
+                onMouseEnter={() => setHoveredIdx(i)}
+                onMouseLeave={() => setHoveredIdx(null)}
+              >
+                {hoveredIdx === i && (
+                  <div className="ptrvTimingTooltip">
+                    <strong>Q{q.ordinal}</strong>
+                    <span>{fmtTime(q.time_spent_ms)}</span>
+                    <span className={isCorrect ? 'correct' : isSkipped ? 'skipped' : 'incorrect'}>
+                      {isCorrect ? 'Correct' : isSkipped ? 'Skipped' : 'Incorrect'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div className="ptrvTimingTotal">{fmtTime(totalTime)}</div>
+      </div>
     </div>
   );
 }
@@ -92,7 +248,6 @@ function DesmosPopup({ isOpen, onClose }) {
 
   useEffect(() => {
     if (!isOpen) return;
-    // Reset position when reopened
     posRef.current = { x: 0, y: 0 };
     if (cardRef.current) cardRef.current.style.transform = '';
   }, [isOpen]);
@@ -253,7 +408,6 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
           <HtmlBlock html={q.stem_html} className="prose" />
         </div>
 
-        {/* MCQ options — always visible, neutral, non-interactive */}
         {q.options?.length > 0 && (
           <div className="optionList ptrvOptionList">
             {q.options.map((opt) => (
@@ -282,7 +436,6 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
           <div className="ptrvAnswerBody">
             <div className="ptrvAnswerRows">
               {q.options?.length > 0 ? (
-                /* MCQ — show which option the student picked and what's correct */
                 <>
                   <div className="ptrvAnswerRow">
                     <span className="ptrvAnswerLabel">Your answer</span>
@@ -310,7 +463,6 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
                   )}
                 </>
               ) : (
-                /* SPR / free-response */
                 <>
                   <div className="ptrvAnswerRow">
                     <span className="ptrvAnswerLabel">Your answer</span>
@@ -338,7 +490,7 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
         )}
       </div>
 
-      {/* Action buttons: flashcard + error log */}
+      {/* Action buttons */}
       <div className="ptrvActions" style={{ display: 'flex', gap: 8, padding: '12px 16px', flexWrap: 'wrap' }}>
         <button className="btn secondary" style={{ fontSize: 13 }} onClick={() => onMakeFlashcard(q)}>
           Make Flashcard
@@ -363,18 +515,17 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedQ, setSelectedQ] = useState(null);
-  const [openDomains, setOpenDomains] = useState({});
 
   // Desmos calculator popup
   const [showCalc, setShowCalc] = useState(false);
-  const isMathQuestion = selectedQ && ['M', 'm', 'math', 'Math', 'MATH'].includes(selectedQ.subject_code);
+  const isMathQuestion = selectedQ && MATH_CODES.has(selectedQ.subject_code);
 
   // Auto-open calculator when a math question is selected
   const prevSubjRef = useRef(null);
   useEffect(() => {
     if (!selectedQ) return;
-    const wasMath = prevSubjRef.current && ['M', 'm', 'math', 'Math', 'MATH'].includes(prevSubjRef.current);
-    const isMath = ['M', 'm', 'math', 'Math', 'MATH'].includes(selectedQ.subject_code);
+    const wasMath = prevSubjRef.current && MATH_CODES.has(prevSubjRef.current);
+    const isMath = MATH_CODES.has(selectedQ.subject_code);
     if (isMath && !wasMath) setShowCalc(true);
     if (!isMath && wasMath) setShowCalc(false);
     prevSubjRef.current = selectedQ.subject_code;
@@ -479,7 +630,7 @@ export default function ResultsPage() {
     }
   }
 
-  if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading results…</p></div>;
+  if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading results...</p></div>;
   if (error || data?.error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error || data?.error}</p></div>;
 
   function fmtDate(d) {
@@ -487,103 +638,190 @@ export default function ResultsPage() {
     return new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
-  function toggleDomain(name) {
-    setOpenDomains((prev) => ({ ...prev, [name]: !prev[name] }));
-  }
+  const questions = data.questions || [];
 
-  // Group questions by subject/module, preserving original order
-  const groupKeys = [];
+  // Group questions by subject/module
   const questionsByGroup = {};
-  for (const q of data.questions || []) {
+  for (const q of questions) {
     const key = `${q.subject_code}/${q.module_number}`;
-    if (!questionsByGroup[key]) { questionsByGroup[key] = []; groupKeys.push(key); }
+    if (!questionsByGroup[key]) questionsByGroup[key] = [];
     questionsByGroup[key].push(q);
   }
+
+  // Separate domains by subject
+  const rwDomains = (data.domains || []).filter(d => RW_CODES.has(d.subject_code));
+  const mathDomains = (data.domains || []).filter(d => MATH_CODES.has(d.subject_code));
+
+  // Difficulty breakdown
+  const diffStats = {};
+  for (const q of questions) {
+    const d = q.difficulty || 0;
+    if (!diffStats[d]) diffStats[d] = { total: 0, correct: 0, incorrect: 0, omitted: 0 };
+    diffStats[d].total += 1;
+    if (q.is_correct) diffStats[d].correct += 1;
+    else if (q.was_answered) diffStats[d].incorrect += 1;
+    else diffStats[d].omitted += 1;
+  }
+
+  // Critical Review Areas — skills with lowest accuracy (min 2 questions, sorted worst first)
+  const skillStats = {};
+  for (const q of questions) {
+    const key = q.skill_name || 'Unknown';
+    if (!skillStats[key]) skillStats[key] = { skill_name: key, domain_name: q.domain_name, correct: 0, total: 0, incorrect: [] };
+    skillStats[key].total += 1;
+    if (q.is_correct) skillStats[key].correct += 1;
+    else skillStats[key].incorrect.push(q);
+  }
+  const criticalAreas = Object.values(skillStats)
+    .filter(s => s.total >= 2 && pct(s.correct, s.total) < 80)
+    .sort((a, b) => pct(a.correct, a.total) - pct(b.correct, b.total))
+    .slice(0, 6);
+
+  // Check if timing data exists
+  const hasTimingData = questions.some(q => q.time_spent_ms != null && q.time_spent_ms > 0);
+
+  // Section scores
+  const sectionEntries = SUBJECT_ORDER.map(subj => data.sections?.[subj] ? [subj, data.sections[subj]] : null).filter(Boolean);
 
   return (
     <main className="container ptrvMain">
 
-      <Link href="/practice-test" className="muted small ptrvBack">← Practice Tests</Link>
+      <Link href="/practice-test" className="muted small ptrvBack">&larr; Practice Tests</Link>
 
       <h1 className="h1" style={{ marginBottom: 4 }}>{data.test_name || 'Practice Test'}</h1>
       {data.completed_at && (
-        <p className="muted small" style={{ marginBottom: 24 }}>Completed {fmtDate(data.completed_at)}</p>
+        <p className="muted small" style={{ marginBottom: 28 }}>Completed {fmtDate(data.completed_at)}</p>
       )}
 
-      {/* ── Summary card: scores + skills side by side ── */}
-      <div className="card ptrvSummaryCard">
-        <div className="ptrvSummaryInner">
-
-          {/* Left column: composite + section scores */}
-          <div className="ptrvScoreCol">
-            <div className="ptrvCompositeWrap">
-              <span className="ptCompositeNum">{data.composite ?? '—'}</span>
-              <span className="ptCompositeLabel">Total Score</span>
+      {/* ═══ SCORE HEADER ═══ */}
+      <div className="ptrvScoreHeader">
+        <ScoreRing score={data.composite ?? 0} label="Total Score" />
+        <div className="ptrvSectionScores">
+          {sectionEntries.map(([subj, sec]) => (
+            <div key={subj} className="ptrvSectionCard">
+              <div className="ptrvSectionScore">{sec.scaled}</div>
+              <div className="ptrvSectionLabel">{SUBJECT_LABEL[subj]}</div>
+              <div className="ptrvSectionDetail">{sec.correct}/{sec.total} correct</div>
             </div>
-            <div className="ptrvDivider" />
-            <div className="ptrvSections">
-              {SUBJECT_ORDER.map((subj) => {
-                const sec = data.sections?.[subj];
-                if (!sec) return null;
-                return (
-                  <div key={subj} className="ptrvSectionItem">
-                    <span className="ptrvSectionNum">{sec.scaled}</span>
-                    <span className="ptrvSectionName">{SUBJECT_LABEL[subj]}</span>
-                    <span className="muted small">{sec.correct}/{sec.total} correct</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Vertical divider */}
-          {data.domains?.length > 0 && <div className="ptrvSummaryDivider" />}
-
-          {/* Right column: skills breakdown */}
-          {data.domains?.length > 0 && (
-            <div className="ptrvSkillsCol">
-              <div className="h2" style={{ marginBottom: 12 }}>Skills Breakdown</div>
-              <table className="ptDomainTable">
-                <thead>
-                  <tr>
-                    <th>Domain / Skill</th>
-                    <th style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>Score</th>
-                    <th style={{ width: 80 }} />
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.domains.map((d) => {
-                    const isOpen = openDomains[d.domain_name];
-                    return [
-                      <tr key={d.domain_name} className="ptDomainRow" onClick={() => toggleDomain(d.domain_name)} style={{ cursor: 'pointer' }}>
-                        <td><strong>{d.domain_name}</strong> <span className="muted small">{isOpen ? '▲' : '▼'}</span></td>
-                        <td style={{ textAlign: 'right', paddingRight: 8 }}>{d.correct}/{d.total}</td>
-                        <td><AccuracyBar correct={d.correct} total={d.total} /></td>
-                      </tr>,
-                      ...(isOpen ? (d.skills || []).map((s) => (
-                        <tr key={`${d.domain_name}-${s.skill_name}`} className="ptSkillRow">
-                          <td style={{ paddingLeft: 20 }}>{s.skill_name}</td>
-                          <td style={{ textAlign: 'right', paddingRight: 8 }}>{s.correct}/{s.total}</td>
-                          <td><AccuracyBar correct={s.correct} total={s.total} /></td>
-                        </tr>
-                      )) : []),
-                    ];
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
+          ))}
         </div>
       </div>
 
-      {/* ── Question review: tile grid + detail panel ── */}
+      {/* ═══ DOMAIN ANALYTICS ═══ */}
+      {(rwDomains.length > 0 || mathDomains.length > 0) && (
+        <div className="ptrvDomainRow">
+          <DomainAnalyticsCard
+            title="Reading and Writing"
+            subtitle="Domain level analytics for reading and writing"
+            domains={rwDomains}
+          />
+          <DomainAnalyticsCard
+            title="Math"
+            subtitle="Domain level analytics for math"
+            domains={mathDomains}
+          />
+        </div>
+      )}
+
+      {/* ═══ DIFFICULTY BREAKDOWN ═══ */}
+      {Object.keys(diffStats).some(k => k !== '0') && (
+        <div className="ptrvSection">
+          <h2 className="ptrvSectionH2">Difficulty Level Breakdown</h2>
+          <p className="ptrvSectionSub">Accuracy breakdown by question difficulty</p>
+          <div className="ptrvDiffGrid">
+            {[1, 2, 3].map(d => {
+              const s = diffStats[d];
+              if (!s) return null;
+              const p = pct(s.correct, s.total);
+              return (
+                <div key={d} className="card ptrvDiffCard">
+                  <h3 className="ptrvDiffTitle">{DIFF_LABEL[d]} Questions</h3>
+                  <p className="ptrvDiffCount">Total Questions: {s.total}</p>
+                  <DonutChart percentage={p} />
+                  <div className="ptrvDiffLegend">
+                    <div className="ptrvDiffLegendItem">
+                      <span className="ptrvDiffDot" style={{ background: '#3b9c6e' }} /> Correct: {s.correct}
+                    </div>
+                    <div className="ptrvDiffLegendItem">
+                      <span className="ptrvDiffDot" style={{ background: '#d97a6a' }} /> Incorrect: {s.incorrect}
+                    </div>
+                    <div className="ptrvDiffLegendItem">
+                      <span className="ptrvDiffDot" style={{ background: '#ccc' }} /> Omitted: {s.omitted}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ CRITICAL REVIEW AREAS ═══ */}
+      {criticalAreas.length > 0 && (
+        <div className="ptrvSection">
+          <h2 className="ptrvSectionH2">Critical Review Areas</h2>
+          <p className="ptrvSectionSub">Skills that need the most attention based on this test</p>
+          <div className="ptrvCritGrid">
+            {criticalAreas.map(s => {
+              const p = pct(s.correct, s.total);
+              const color = pctColor(p);
+              return (
+                <div key={s.skill_name} className="card ptrvCritCard">
+                  <div className="ptrvCritHeader">
+                    <span className="ptrvCritName">{s.skill_name}</span>
+                    <span className="ptrvCritPct" style={{ color }}>{p}%</span>
+                  </div>
+                  <div className="ptrvCritDomain">{s.domain_name}</div>
+                  <div className="ptrvCritBar">
+                    <div className="ptrvCritBarFill" style={{ width: `${p}%`, background: color }} />
+                  </div>
+                  <div className="ptrvCritDetail">{s.correct}/{s.total} correct</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ TIMING ANALYSIS ═══ */}
+      {hasTimingData && (
+        <div className="ptrvSection">
+          <h2 className="ptrvSectionH2">Timing Analysis</h2>
+          <p className="ptrvSectionSub">Time distribution across questions in each module</p>
+          <div className="card ptrvTimingCard">
+            {SUBJECT_ORDER.map(subj =>
+              [1, 2].map(modNum => {
+                const key = `${subj}/${modNum}`;
+                const qs = questionsByGroup[key];
+                if (!qs?.length) return null;
+                const hasTime = qs.some(q => q.time_spent_ms != null && q.time_spent_ms > 0);
+                if (!hasTime) return null;
+                return (
+                  <TimingBar
+                    key={key}
+                    label={`${SUBJECT_LABEL[subj]} · M${modNum}`}
+                    questions={qs}
+                  />
+                );
+              })
+            )}
+            <div className="ptrvTimingLegend">
+              <span><span className="ptrvTimingLegDot correct" /> Correct</span>
+              <span><span className="ptrvTimingLegDot incorrect" /> Incorrect</span>
+              <span><span className="ptrvTimingLegDot skipped" /> Skipped</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ QUESTION REVIEW ═══ */}
+      <div className="ptrvSection">
+        <h2 className="ptrvSectionH2">Question Review</h2>
+      </div>
       <div className="ptrvReviewRow">
 
         {/* Left: tile grid */}
         <div className="card ptrvTilesPanel">
-          <div className="h2" style={{ marginBottom: 14 }}>Question Review</div>
-
           {SUBJECT_ORDER.map((subj) =>
             [1, 2].map((modNum) => {
               const key = `${subj}/${modNum}`;
@@ -624,14 +862,13 @@ export default function ResultsPage() {
           <QuestionDetail
             key={selectedQ?.question_version_id}
             q={selectedQ}
-            allQuestions={data.questions || []}
+            allQuestions={questions}
             onSelect={setSelectedQ}
             onMakeFlashcard={openFlashcardDialog}
             onToggleErrorLog={() => setShowErrorLog((s) => !s)}
             errorLogActive={showErrorLog}
           />
 
-          {/* Error log panel — below question detail */}
           {showErrorLog && selectedQ && (
             <div className="errorLogPanel" style={{ padding: '0 16px 16px' }}>
               <textarea
@@ -643,7 +880,7 @@ export default function ResultsPage() {
               />
               <div className="row" style={{ gap: 8, marginTop: 8 }}>
                 <button className="btn primary" onClick={saveErrorLog} disabled={errorLogSaving || !errorLogText.trim()}>
-                  {errorLogSaving ? 'Saving…' : errorLogSaved ? 'Saved' : 'Save Note'}
+                  {errorLogSaving ? 'Saving...' : errorLogSaved ? 'Saved' : 'Save Note'}
                 </button>
               </div>
             </div>
@@ -701,7 +938,7 @@ export default function ResultsPage() {
               className="input"
               value={flashcardFront}
               onChange={(e) => { setFlashcardFront(e.target.value); setFlashcardSaved(false); }}
-              placeholder="Term, question, or concept…"
+              placeholder="Term, question, or concept..."
               rows={2}
               style={{ marginBottom: 12 }}
             />
@@ -711,7 +948,7 @@ export default function ResultsPage() {
               className="input"
               value={flashcardBack}
               onChange={(e) => { setFlashcardBack(e.target.value); setFlashcardSaved(false); }}
-              placeholder="Definition, answer, or explanation…"
+              placeholder="Definition, answer, or explanation..."
               rows={3}
               style={{ marginBottom: 16 }}
             />
@@ -725,7 +962,7 @@ export default function ResultsPage() {
                 onClick={saveFlashcard}
                 disabled={flashcardSaving || !flashcardFront.trim() || !flashcardBack.trim() || !flashcardSetId}
               >
-                {flashcardSaving ? 'Saving…' : flashcardSaved ? 'Saved!' : 'Save Card'}
+                {flashcardSaving ? 'Saving...' : flashcardSaved ? 'Saved!' : 'Save Card'}
               </button>
             </div>
           </div>

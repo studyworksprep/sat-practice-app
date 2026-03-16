@@ -142,7 +142,7 @@ export async function GET(_request, { params }) {
   const { data: userAttempts } = attemptIds.length
     ? await supabase
         .from('attempts')
-        .select('id, question_id, selected_option_id, response_text')
+        .select('id, question_id, selected_option_id, response_text, time_spent_ms')
         .in('id', attemptIds)
     : { data: [] };
 
@@ -154,7 +154,7 @@ export async function GET(_request, { params }) {
   // Fetch taxonomy for domain/skill breakdown
   const { data: taxonomy } = await supabase
     .from('question_taxonomy')
-    .select('question_id, domain_name, domain_code, skill_name, skill_code')
+    .select('question_id, domain_name, domain_code, skill_name, skill_code, difficulty')
     .in('question_id', questionIds);
 
   const taxByQuestion = {};
@@ -265,6 +265,8 @@ export async function GET(_request, { params }) {
       response_text: attempt_rec?.response_text || null,
       domain_name: tax.domain_name || null,
       skill_name: tax.skill_name || null,
+      difficulty: tax.difficulty ?? null,
+      time_spent_ms: attempt_rec?.time_spent_ms ?? null,
       rationale_html: version.rationale_html || null,
     });
   }
