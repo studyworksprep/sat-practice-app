@@ -32,6 +32,7 @@ export async function GET(request) {
       let q = supabase
         .from('question_taxonomy')
         .select('question_id, domain_name, skill_name, skill_code')
+        .order('question_id')
         .range(0, 999);
       if (difficulties.length > 0) q = q.in('difficulty', difficulties);
       if (score_bands.length > 0)  q = q.in('score_band', score_bands);
@@ -137,6 +138,7 @@ export async function GET(request) {
       let q = supabase
         .from('question_taxonomy')
         .select('question_id, domain_name, skill_name, skill_code')
+        .order('question_id')
         .range(from, from + 999);
       if (difficulties.length > 0) q = q.in('difficulty', difficulties);
       if (score_bands.length > 0)  q = q.in('score_band', score_bands);
