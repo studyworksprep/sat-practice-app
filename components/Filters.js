@@ -92,7 +92,10 @@ export default function Filters({ initial = {}, onChange, onStartSession, userRo
     else                            p.set('hide_broken',  'true');
 
     fetch('/api/domain-counts?' + p.toString(), { signal: controller.signal })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      })
       .then((data) => {
         if (data && !data.error) setCounts(data);
       })

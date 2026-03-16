@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
 
-async function fetchAll(supabase, table, select, buildQuery) {
+async function fetchAll(supabase, table, select, buildQuery, orderCol) {
   const pageSize = 1000;
   let from = 0;
   let all = [];
 
   while (true) {
-    let q = supabase.from(table).select(select).range(from, from + pageSize - 1);
+    let q = supabase.from(table).select(select);
+    if (orderCol) q = q.order(orderCol);
+    q = q.range(from, from + pageSize - 1);
     if (buildQuery) q = buildQuery(q);
 
     const { data, error } = await q;
@@ -38,7 +40,8 @@ export async function GET(request) {
         supabase,
         'question_taxonomy',
         'question_id, domain_name, domain_code, skill_name, skill_code',
-        (q) => q.not('domain_name', 'is', null)
+        (q) => q.not('domain_name', 'is', null),
+        'question_id'
       );
 
       const seenDomains = new Set();
@@ -104,7 +107,8 @@ export async function GET(request) {
       supabase,
       'question_taxonomy',
       'skill_name, skill_code',
-      (q) => q.eq('domain_name', domain).not('skill_name', 'is', null)
+      (q) => q.eq('domain_name', domain).not('skill_name', 'is', null),
+      'skill_name'
     );
 
     const seen   = new Set();

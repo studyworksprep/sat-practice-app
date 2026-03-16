@@ -7,6 +7,7 @@ import { createClient } from '../../../lib/supabase/server';
 // Counts reflect non-domain/topic filters only, so callers can show how many
 // questions exist in each domain/topic under the current filter settings.
 export async function GET(request) {
+  try {
   const { searchParams } = new URL(request.url);
 
   const difficulties = (searchParams.get('difficulties') || '')
@@ -194,6 +195,10 @@ export async function GET(request) {
   }
 
   return NextResponse.json(result);
+  } catch (e) {
+    console.error('[domain-counts]', e);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 function intersect(existing, incoming) {
