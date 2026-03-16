@@ -7,27 +7,6 @@ import Filters from '../../components/Filters';
 import Toast from '../../components/Toast';
 
 const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
-const DIFF_CLASS = { 1: 'easy', 2: 'medium', 3: 'hard' };
-const SUBJECT_LABEL = { rw: 'R&W', RW: 'R&W', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
-
-function pct(correct, attempted) {
-  if (!attempted) return null;
-  return Math.round((correct / attempted) * 100);
-}
-function pctColor(p) {
-  if (p == null) return undefined;
-  return p >= 70 ? 'var(--success)' : p >= 50 ? 'var(--amber)' : 'var(--danger)';
-}
-function formatDate(iso) {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-function formatDateTime(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
-    ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-}
 
 function AttemptedBadge({ is_done }) {
   return (
@@ -84,14 +63,6 @@ export default function PracticePage() {
   const loadIdRef = useRef(0);
 
   // Dashboard data for Training Mode cards
-  const [dashData, setDashData] = useState(null);
-  useEffect(() => {
-    fetch('/api/dashboard')
-      .then(r => r.json())
-      .then(d => { if (!d.error) setDashData(d); })
-      .catch(() => {});
-  }, []);
-
   // Teacher Mode vs Training Mode toggle
   const [teacherMode, setTeacherMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -294,75 +265,6 @@ export default function PracticePage() {
       {/* Full-width filter panel */}
       <Filters onChange={setFilters} onStartSession={handleStartSession} />
       {msg && <Toast kind={msg?.kind} message={msg?.text} />}
-
-      {/* Compact Practice Tests + Recent Practice cards (Training Mode only) */}
-      {!teacherMode && dashData && (
-        <div className="qbCardsRow">
-          {/* Practice Tests */}
-          <div className="card qbMiniCard">
-            <div className="qbMiniCardHeader">
-              <span className="h3" style={{ margin: 0 }}>Practice Tests</span>
-              <Link href="/practice-test" className="btn secondary sm">All Tests</Link>
-            </div>
-            {!dashData.testScores?.length ? (
-              <p className="muted small" style={{ margin: 0 }}>No completed tests yet.</p>
-            ) : (
-              <div className="qbTestList">
-                {dashData.testScores.slice(0, 3).map(ts => (
-                  <Link key={ts.attempt_id} href={`/practice-test/attempt/${ts.attempt_id}/results`} className="qbTestRow">
-                    <div className="qbTestInfo">
-                      <span className="qbTestName">{ts.test_name}</span>
-                      <span className="muted small">{formatDate(ts.finished_at)}</span>
-                    </div>
-                    <div className="qbTestScores">
-                      {ts.composite != null && <span className="qbTestBadge"><strong>{ts.composite}</strong></span>}
-                      {Object.entries(ts.sections || {}).map(([subj, s]) => (
-                        <span key={subj} className="qbTestBadgeSub">{SUBJECT_LABEL[subj] || subj} {s.scaled}</span>
-                      ))}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Recent Practice */}
-          <div className="card qbMiniCard">
-            <div className="qbMiniCardHeader">
-              <span className="h3" style={{ margin: 0 }}>Recent Practice</span>
-            </div>
-            {!dashData.recentSessions?.length ? (
-              <p className="muted small" style={{ margin: 0 }}>No recent sessions.</p>
-            ) : (
-              <div className="qbSessionList">
-                {dashData.recentSessions.slice(0, 3).map((session, i) => {
-                  const correct = session.questions.filter(q => q.is_correct).length;
-                  const total = session.questions.length;
-                  const p = pct(correct, total);
-                  return (
-                    <div key={i} className="qbSessionItem">
-                      <div className="qbSessionMeta">
-                        <span className="small">{formatDateTime(session.startedAt)}</span>
-                        <span className="small" style={{ fontWeight: 600 }}>
-                          {correct}/{total}
-                          {p != null && <span style={{ color: pctColor(p) }}> ({p}%)</span>}
-                        </span>
-                      </div>
-                      <div className="qbSessionTiles">
-                        {session.questions.map((q, j) => (
-                          <span key={j} className={`qbTile ${q.is_correct ? 'correct' : 'incorrect'} ${DIFF_CLASS[q.difficulty] || ''}`} title={q.skill_name || q.domain_name || ''}>
-                            {j + 1}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Search row */}
       <div className="card" style={{ marginTop: 12, padding: '12px 16px' }}>
