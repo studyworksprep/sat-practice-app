@@ -17,6 +17,7 @@ export async function GET(request) {
 
   const wrong_only   = searchParams.get('wrong_only')   === 'true';
   const marked_only  = searchParams.get('marked_only')  === 'true';
+  const undone_only  = searchParams.get('undone_only')  === 'true';
   const hide_broken  = searchParams.get('hide_broken')  === 'true';
   const only_broken  = searchParams.get('only_broken')  === 'true';
 
@@ -64,8 +65,14 @@ export async function GET(request) {
         .eq('user_id', userId).eq('is_done', true).eq('last_is_correct', false).limit(10000)
     );
   }
+  if (undone_only && userId) {
+    userQueries.push(
+      supabase.from('question_status').select('question_id')
+        .eq('user_id', userId).eq('is_done', true).limit(50000)
+    );
+  }
 
-  if ((marked_only || wrong_only) && !userId) return NextResponse.json({});
+  if ((marked_only || wrong_only || undone_only) && !userId) return NextResponse.json({});
 
   const userResults = userQueries.length > 0 ? await Promise.all(userQueries) : [];
 
@@ -84,6 +91,21 @@ export async function GET(request) {
     const ids = (userResults[userIdx++]?.data || []).map((r) => r.question_id).filter(Boolean);
     restrictIds = intersect(restrictIds, ids);
     if (restrictIds.length === 0) return NextResponse.json({});
+  }
+
+  // undone_only: exclude questions already done by the current user
+  let excludeDoneIds = null;
+  if (undone_only && userId) {
+    const doneIds = (userResults[userIdx++]?.data || []).map((r) => r.question_id).filter(Boolean);
+    if (doneIds.length > 0) {
+      if (restrictIds) {
+        const doneSet = new Set(doneIds);
+        restrictIds = restrictIds.filter((id) => !doneSet.has(id));
+        if (restrictIds.length === 0) return NextResponse.json({});
+      } else {
+        excludeDoneIds = new Set(doneIds);
+      }
+    }
   }
 
   if (only_broken) {
@@ -137,6 +159,11 @@ export async function GET(request) {
   // Exclude broken questions
   if (excludeBrokenIds) {
     allTax = allTax.filter((r) => !excludeBrokenIds.has(r.question_id));
+  }
+
+  // Exclude done questions
+  if (excludeDoneIds) {
+    allTax = allTax.filter((r) => !excludeDoneIds.has(r.question_id));
   }
 
   // Group by domain → topic, counting unique question_ids

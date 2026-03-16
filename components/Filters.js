@@ -72,6 +72,7 @@ export default function Filters({ initial = {}, onChange, onStartSession, userRo
       state.score_bands.length  > 0 ||
       state.wrong_only ||
       state.marked_only ||
+      state.undone_only ||
       state.show_broken;
 
     if (!hasContextualFilter && initialCounts.current) {
@@ -86,6 +87,7 @@ export default function Filters({ initial = {}, onChange, onStartSession, userRo
     if (state.score_bands.length)  p.set('score_bands',  state.score_bands.join(','));
     if (state.wrong_only)          p.set('wrong_only',   'true');
     if (state.marked_only)         p.set('marked_only',  'true');
+    if (state.undone_only)         p.set('undone_only',  'true');
     if (state.show_broken)          p.set('only_broken',  'true');
     else                            p.set('hide_broken',  'true');
 
@@ -97,7 +99,7 @@ export default function Filters({ initial = {}, onChange, onStartSession, userRo
       .catch(() => {});
 
     return () => controller.abort();
-  }, [state.difficulties, state.score_bands, state.wrong_only, state.marked_only, state.show_broken]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state.difficulties, state.score_bands, state.wrong_only, state.marked_only, state.undone_only, state.show_broken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function set(k, v) { setState((prev) => ({ ...prev, [k]: v })); }
 
