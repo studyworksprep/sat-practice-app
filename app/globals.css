@@ -792,21 +792,24 @@ label{
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 0 10px;
+  padding: 0 12px;
   border: none;
-  background: rgba(0,0,0,0.04);
+  background: transparent;
   font-size: 11px;
   font-weight: 600;
   color: var(--muted);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.12s, color 0.12s;
+  border-left: 1px solid rgba(0,0,0,0.06);
 }
-.domainSkillsBtn:hover{ background: rgba(0,0,0,0.08); color: var(--text); }
+.domainSkillsBtn:hover{ background: rgba(0,0,0,0.05); color: var(--text); }
 .domainSkillsBtn.math{ color: #3b82f6; }
-.domainSkillsBtn.math:hover{ background: rgba(37,99,235,0.1); }
+.domainSkillsBtn.math:hover{ background: rgba(37,99,235,0.08); color: #2563eb; }
+.domainSkillsBtn.math.hasSelection{ background: rgba(37,99,235,0.08); color: #2563eb; }
 .domainSkillsBtn.rw{ color: #ea580c; }
-.domainSkillsBtn.rw:hover{ background: rgba(234,88,12,0.1); }
+.domainSkillsBtn.rw:hover{ background: rgba(234,88,12,0.08); color: #c2410c; }
+.domainSkillsBtn.rw.hasSelection{ background: rgba(234,88,12,0.08); color: #c2410c; }
 .domainSkillsBtn.hasSelection{ font-weight: 700; }
 .domainSkillsBtn svg{
   transition: transform 0.15s;
