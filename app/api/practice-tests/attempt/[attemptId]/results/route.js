@@ -158,7 +158,13 @@ export async function GET(_request, { params }) {
     .in('question_id', questionIds);
 
   const taxByQuestion = {};
-  for (const t of taxonomy || []) taxByQuestion[t.question_id] = t;
+  const skillCodeToName = {}; // skill_code → skill_name (best-effort lookup)
+  for (const t of taxonomy || []) {
+    taxByQuestion[t.question_id] = t;
+    if (t.skill_code && t.skill_name) skillCodeToName[t.skill_code] = t.skill_name;
+  }
+  // Helper: resolve a human-readable skill name from taxonomy row
+  const resolveSkillName = (tax) => tax.skill_name || skillCodeToName[tax.skill_code] || tax.skill_code || 'Unknown';
 
   // --- Aggregate scores ---
   const sectionStats = {}; // subject_code → { correct, total }
@@ -240,7 +246,7 @@ export async function GET(_request, { params }) {
     domainStats[domainKey].total += 1;
     if (is_correct) domainStats[domainKey].correct += 1;
 
-    const skillKey = tax.skill_name || 'Unknown';
+    const skillKey = resolveSkillName(tax);
     if (!domainStats[domainKey].skills[skillKey]) {
       domainStats[domainKey].skills[skillKey] = { correct: 0, total: 0, skill_code: tax.skill_code || null };
     }
@@ -264,7 +270,7 @@ export async function GET(_request, { params }) {
       selected_option_id: attempt_rec?.selected_option_id || null,
       response_text: attempt_rec?.response_text || null,
       domain_name: tax.domain_name || null,
-      skill_name: tax.skill_name || null,
+      skill_name: resolveSkillName(tax),
       difficulty: tax.difficulty ?? null,
       score_band: tax.score_band ?? null,
       time_spent_ms: attempt_rec?.time_spent_ms ?? null,
@@ -388,7 +394,7 @@ export async function GET(_request, { params }) {
     if (!oiAccum[skillCode]) {
       oiAccum[skillCode] = {
         skill_code: skillCode,
-        skill_name: tax.skill_name || skillCode,
+        skill_name: resolveSkillName(tax),
         domain_name: tax.domain_name || '',
         subject_code: q.subject_code,
         learnability: learnMap[skillCode] ?? 5,

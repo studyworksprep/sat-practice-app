@@ -32,13 +32,13 @@ export async function GET() {
 
   if (skillErr) return NextResponse.json({ error: skillErr.message }, { status: 500 });
 
-  // Deduplicate by skill_code
+  // Deduplicate by skill_code, preferring rows that have a skill_name
   const skillMap = {};
   for (const s of skills || []) {
-    if (s.skill_code && !skillMap[s.skill_code]) {
+    if (s.skill_code && (!skillMap[s.skill_code] || (!skillMap[s.skill_code].skill_name && s.skill_name))) {
       skillMap[s.skill_code] = {
         skill_code: s.skill_code,
-        skill_name: s.skill_name,
+        skill_name: s.skill_name || s.skill_code,
         domain_code: s.domain_code,
         domain_name: s.domain_name,
       };
