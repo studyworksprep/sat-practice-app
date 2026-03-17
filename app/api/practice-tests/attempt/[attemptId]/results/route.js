@@ -426,6 +426,31 @@ export async function GET(_request, { params }) {
     .filter(s => s.opportunity_index > 0)
     .sort((a, b) => b.opportunity_index - a.opportunity_index);
 
+  // ── Student & teacher profile for PDF header ───────────────────────────
+  const studentId = attempt.user_id;
+  const { data: studentProfile } = await supabase
+    .from('profiles')
+    .select('first_name, last_name, email, high_school, graduation_year, target_sat_score')
+    .eq('id', studentId)
+    .maybeSingle();
+
+  const { data: teacherAssignment } = await supabase
+    .from('teacher_student_assignments')
+    .select('teacher_id')
+    .eq('student_id', studentId)
+    .limit(1)
+    .maybeSingle();
+
+  let teacherProfile = null;
+  if (teacherAssignment?.teacher_id) {
+    const { data: tp } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, email')
+      .eq('id', teacherAssignment.teacher_id)
+      .maybeSingle();
+    teacherProfile = tp;
+  }
+
   return NextResponse.json({
     attempt_id: attemptId,
     practice_test_id: attempt.practice_test_id,
@@ -439,5 +464,16 @@ export async function GET(_request, { params }) {
     domains,
     questions: questionReview,
     opportunity,
+    student: studentProfile ? {
+      name: [studentProfile.first_name, studentProfile.last_name].filter(Boolean).join(' ') || null,
+      email: studentProfile.email,
+      high_school: studentProfile.high_school || null,
+      graduation_year: studentProfile.graduation_year || null,
+      target_sat_score: studentProfile.target_sat_score || null,
+    } : null,
+    teacher: teacherProfile ? {
+      name: [teacherProfile.first_name, teacherProfile.last_name].filter(Boolean).join(' ') || null,
+      email: teacherProfile.email,
+    } : null,
   });
 }

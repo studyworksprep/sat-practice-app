@@ -721,7 +721,10 @@ export default function ResultsPage() {
     }
   }
 
-  function generatePDF() {
+  async function generatePDF() {
+    const { default: jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
+
     const questions = data?.questions || [];
     const sectionEntries = SUBJECT_ORDER.map(subj => data?.sections?.[subj] ? [subj, data.sections[subj]] : null).filter(Boolean);
     const rwDomains = (data?.domains || []).filter(d => RW_CODES.has(d.subject_code));
@@ -729,100 +732,184 @@ export default function ResultsPage() {
     const opportunity = data?.opportunity || [];
 
     const fmtDatePdf = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const marginL = 40;
+    const marginR = 40;
+    const contentW = pageW - marginL - marginR;
+    let y = 40;
 
-    // Build domain+skills HTML
-    const domainHTML = (domains, label) => {
-      if (!domains?.length) return '';
-      return `<div class="section"><h2>${label} — Domain Breakdown</h2>` +
-        domains.map(d => {
-          const dp = d.total ? Math.round((d.correct / d.total) * 100) : 0;
-          const skillRows = (d.skills || []).map(s => {
-            const sp = s.total ? Math.round((s.correct / s.total) * 100) : 0;
-            return `<tr><td style="padding-left:24px">${s.skill_name}</td><td>${s.correct}/${s.total}</td><td>${sp}%</td></tr>`;
-          }).join('');
-          return `<h3 style="margin:10px 0 4px">${d.domain_name} — ${dp}% (${d.correct}/${d.total})</h3>` +
-            (skillRows ? `<table><thead><tr><th>Skill</th><th>Score</th><th>Accuracy</th></tr></thead><tbody>${skillRows}</tbody></table>` : '');
-        }).join('') + '</div>';
-    };
+    const ensureSpace = (needed) => { if (y + needed > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); y = 40; } };
+    const sectionTitle = (text) => { ensureSpace(30); doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(30); doc.text(text, marginL, y); y += 4; doc.setDrawColor(50); doc.setLineWidth(1.5); doc.line(marginL, y, pageW - marginR, y); y += 14; };
+    const subTitle = (text) => { ensureSpace(20); doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(80); doc.text(text, marginL, y); y += 14; };
 
-    // OI table
-    const oiHTML = opportunity.length > 0
-      ? `<div class="section"><h2>Opportunity Index — Top 5</h2><table><thead><tr><th>Skill</th><th>Domain</th><th>Accuracy</th><th>Learnability</th><th>OI Score</th></tr></thead><tbody>` +
-        opportunity.slice(0, 5).map(s => {
-          const acc = s.total ? Math.round((s.correct / s.total) * 100) : 0;
-          return `<tr><td>${s.skill_name}</td><td>${s.domain_name}</td><td>${acc}% (${s.correct}/${s.total})</td><td>${s.learnability}</td><td><strong>${s.opportunity_index.toFixed(1)}</strong></td></tr>`;
-        }).join('') + '</tbody></table></div>'
-      : '';
+    // ─── TITLE ────────────────────────────────────────────
+    doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.setTextColor(30);
+    doc.text(data?.test_name || 'Practice Test', marginL, y);
+    y += 16;
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
+    doc.text('Score Report', marginL, y);
+    if (data?.completed_at) { doc.text(fmtDatePdf(data.completed_at), pageW - marginR, y, { align: 'right' }); }
+    y += 20;
 
-    // Questions table grouped by subject/module
-    const questionsByGroup = {};
-    for (const q of questions) {
-      const key = `${q.subject_code}/${q.module_number}`;
-      if (!questionsByGroup[key]) questionsByGroup[key] = [];
-      questionsByGroup[key].push(q);
+    // ─── STUDENT INFO ─────────────────────────────────────
+    if (data?.student) {
+      doc.setDrawColor(200); doc.setLineWidth(0.5);
+      doc.roundedRect(marginL, y, contentW, data?.teacher ? 62 : 38, 4, 4);
+      y += 12;
+      doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(120);
+      doc.text('STUDENT', marginL + 10, y); y += 10;
+      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30);
+      doc.text(data.student.name || data.student.email || '—', marginL + 10, y);
+      // Right side details
+      const detailParts = [];
+      if (data.student.high_school) detailParts.push(data.student.high_school);
+      if (data.student.graduation_year) detailParts.push(`Class of ${data.student.graduation_year}`);
+      if (data.student.target_sat_score) detailParts.push(`Target: ${data.student.target_sat_score}`);
+      if (detailParts.length) {
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
+        doc.text(detailParts.join('  |  '), pageW - marginR - 10, y, { align: 'right' });
+      }
+      y += 6;
+      if (data.student.email && data.student.name) {
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
+        doc.text(data.student.email, marginL + 10, y + 4); y += 8;
+      }
+
+      if (data?.teacher) {
+        y += 4;
+        doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(120);
+        doc.text('TEACHER', marginL + 10, y); y += 10;
+        doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(60);
+        const teacherLine = [data.teacher.name, data.teacher.email].filter(Boolean).join(' — ');
+        doc.text(teacherLine || '—', marginL + 10, y);
+      }
+
+      y += 18;
     }
 
-    let questionsHTML = '<div class="section page-break"><h2>Full Question List</h2>';
+    // ─── SCORES ───────────────────────────────────────────
+    sectionTitle('Scores');
+    const scoreBoxW = contentW / (sectionEntries.length + 1);
+    // Composite
+    doc.setFontSize(28); doc.setFont('helvetica', 'bold'); doc.setTextColor(37, 99, 235);
+    doc.text(String(data?.composite ?? '—'), marginL + scoreBoxW * 0.5, y + 2, { align: 'center' });
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
+    doc.text('Total Score', marginL + scoreBoxW * 0.5, y + 16, { align: 'center' });
+    // Section scores
+    sectionEntries.forEach(([subj, sec], i) => {
+      const cx = marginL + scoreBoxW * (i + 1.5);
+      doc.setFontSize(22); doc.setFont('helvetica', 'bold'); doc.setTextColor(37, 99, 235);
+      doc.text(String(sec.scaled), cx, y + 2, { align: 'center' });
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
+      doc.text(SUBJECT_LABEL[subj] || subj, cx, y + 16, { align: 'center' });
+      doc.text(`${sec.correct}/${sec.total} correct`, cx, y + 26, { align: 'center' });
+    });
+    y += 40;
+
+    // ─── DOMAIN BREAKDOWN ─────────────────────────────────
+    const renderDomains = (domains, label) => {
+      if (!domains?.length) return;
+      sectionTitle(`${label} — Domain Breakdown`);
+      for (const d of domains) {
+        const dp = d.total ? Math.round((d.correct / d.total) * 100) : 0;
+        subTitle(`${d.domain_name} — ${dp}% (${d.correct}/${d.total})`);
+        if (d.skills?.length) {
+          const rows = d.skills.map(s => {
+            const sp = s.total ? Math.round((s.correct / s.total) * 100) : 0;
+            return [s.skill_name, `${s.correct}/${s.total}`, `${sp}%`];
+          });
+          doc.autoTable({
+            startY: y, margin: { left: marginL, right: marginR },
+            head: [['Skill', 'Score', 'Accuracy']],
+            body: rows,
+            styles: { fontSize: 9, cellPadding: 3 },
+            headStyles: { fillColor: [240, 240, 240], textColor: [80, 80, 80], fontStyle: 'bold' },
+            theme: 'grid',
+          });
+          y = doc.lastAutoTable.finalY + 10;
+        }
+      }
+    };
+    renderDomains(rwDomains, 'Reading & Writing');
+    renderDomains(mathDomains, 'Math');
+
+    // ─── OPPORTUNITY INDEX ────────────────────────────────
+    if (opportunity.length > 0) {
+      sectionTitle('Opportunity Index — Top 5');
+      const oiRows = opportunity.slice(0, 5).map(s => {
+        const acc = s.total ? Math.round((s.correct / s.total) * 100) : 0;
+        return [s.skill_name, s.domain_name, `${acc}% (${s.correct}/${s.total})`, String(s.learnability), s.opportunity_index.toFixed(1)];
+      });
+      doc.autoTable({
+        startY: y, margin: { left: marginL, right: marginR },
+        head: [['Skill', 'Domain', 'Accuracy', 'Learnability', 'OI Score']],
+        body: oiRows,
+        styles: { fontSize: 9, cellPadding: 3 },
+        headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold' },
+        theme: 'grid',
+      });
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    // ─── FULL QUESTION LIST ───────────────────────────────
+    doc.addPage();
+    y = 40;
+    sectionTitle('Full Question List');
+
+    const questionsByGroupPdf = {};
+    for (const q of questions) {
+      const key = `${q.subject_code}/${q.module_number}`;
+      if (!questionsByGroupPdf[key]) questionsByGroupPdf[key] = [];
+      questionsByGroupPdf[key].push(q);
+    }
+
     for (const subj of SUBJECT_ORDER) {
       for (const modNum of [1, 2]) {
         const key = `${subj}/${modNum}`;
-        const qs = questionsByGroup[key];
+        const qs = questionsByGroupPdf[key];
         if (!qs?.length) continue;
-        questionsHTML += `<h3>${SUBJECT_LABEL[subj] || subj} · Module ${modNum}</h3><table><thead><tr><th>Q#</th><th>Domain</th><th>Skill</th><th>Difficulty</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th></tr></thead><tbody>`;
-        for (const q of qs) {
+        subTitle(`${SUBJECT_LABEL[subj] || subj} · Module ${modNum}`);
+        const rows = qs.map(q => {
           const correctCA = q.correct_answer;
           const selectedOpt = q.options?.find(o => o.id === q.selected_option_id);
           const correctOpt = q.options?.find(o => o.id === correctCA?.correct_option_id || (correctCA?.correct_option_ids || []).includes(o.id));
           const yourAns = selectedOpt ? selectedOpt.label : (q.response_text || '—');
           const correctAns = correctOpt ? correctOpt.label : (correctCA?.correct_text || (correctCA?.correct_number != null ? String(correctCA.correct_number) : '—'));
           const result = q.is_correct ? 'Correct' : q.was_answered ? 'Incorrect' : 'Omitted';
-          const resultColor = q.is_correct ? '#16a34a' : q.was_answered ? '#dc2626' : '#888';
-          questionsHTML += `<tr><td>${q.ordinal}</td><td>${q.domain_name || '—'}</td><td style="font-size:11px">${q.skill_name || '—'}</td><td>${DIFF_LABEL[q.difficulty] || '—'}</td><td>${yourAns}</td><td>${correctAns}</td><td style="color:${resultColor};font-weight:600">${result}</td></tr>`;
-        }
-        questionsHTML += '</tbody></table>';
+          return [String(q.ordinal), q.domain_name || '—', q.skill_name || '—', DIFF_LABEL[q.difficulty] || '—', yourAns, correctAns, result];
+        });
+        doc.autoTable({
+          startY: y, margin: { left: marginL, right: marginR },
+          head: [['Q#', 'Domain', 'Skill', 'Difficulty', 'Your Answer', 'Correct', 'Result']],
+          body: rows,
+          styles: { fontSize: 8, cellPadding: 2.5 },
+          headStyles: { fillColor: [240, 240, 240], textColor: [80, 80, 80], fontStyle: 'bold', fontSize: 7 },
+          columnStyles: {
+            0: { cellWidth: 24 },
+            3: { cellWidth: 48 },
+            4: { cellWidth: 50 },
+            5: { cellWidth: 46 },
+            6: { cellWidth: 42 },
+          },
+          theme: 'grid',
+          didParseCell: (hookData) => {
+            if (hookData.section === 'body' && hookData.column.index === 6) {
+              const v = hookData.cell.raw;
+              if (v === 'Correct') hookData.cell.styles.textColor = [22, 163, 74];
+              else if (v === 'Incorrect') hookData.cell.styles.textColor = [220, 38, 38];
+              else hookData.cell.styles.textColor = [136, 136, 136];
+              hookData.cell.styles.fontStyle = 'bold';
+            }
+          },
+        });
+        y = doc.lastAutoTable.finalY + 12;
       }
     }
-    questionsHTML += '</div>';
 
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${data?.test_name || 'Practice Test'} — Score Report</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 12px; color: #222; padding: 24px; }
-  h1 { font-size: 20px; margin-bottom: 2px; }
-  h2 { font-size: 16px; margin-bottom: 8px; border-bottom: 2px solid #333; padding-bottom: 4px; }
-  h3 { font-size: 13px; margin: 8px 0 4px; }
-  .section { margin-bottom: 20px; }
-  .page-break { page-break-before: always; }
-  .scores { display: flex; gap: 24px; align-items: center; margin: 12px 0 16px; }
-  .score-box { text-align: center; }
-  .score-box .num { font-size: 28px; font-weight: 800; color: #2563eb; }
-  .score-box .lbl { font-size: 11px; color: #666; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 11px; }
-  th { text-align: left; padding: 4px 6px; border-bottom: 2px solid #ccc; font-weight: 700; font-size: 10px; text-transform: uppercase; color: #555; }
-  td { padding: 3px 6px; border-bottom: 1px solid #eee; }
-  tr:nth-child(even) { background: #fafafa; }
-  .meta { font-size: 11px; color: #666; margin-bottom: 16px; }
-  @media print { .page-break { page-break-before: always; } }
-</style></head><body>
-  <h1>${data?.test_name || 'Practice Test'} — Score Report</h1>
-  <div class="meta">${fmtDatePdf(data?.completed_at)}</div>
-  <div class="section">
-    <div class="scores">
-      <div class="score-box"><div class="num">${data?.composite ?? '—'}</div><div class="lbl">Total Score</div></div>
-      ${sectionEntries.map(([subj, sec]) => `<div class="score-box"><div class="num">${sec.scaled}</div><div class="lbl">${SUBJECT_LABEL[subj]}</div><div class="lbl">${sec.correct}/${sec.total} correct</div></div>`).join('')}
-    </div>
-  </div>
-  ${domainHTML(rwDomains, 'Reading & Writing')}
-  ${domainHTML(mathDomains, 'Math')}
-  ${oiHTML}
-  ${questionsHTML}
-</body></html>`;
-
-    const w = window.open('', '_blank');
-    if (!w) { setMsg({ kind: 'danger', text: 'Pop-up blocked. Please allow pop-ups for this site.' }); return; }
-    w.document.write(html);
-    w.document.close();
-    setTimeout(() => { w.print(); }, 400);
+    // Download
+    const filename = `${(data?.test_name || 'Practice-Test').replace(/[^a-zA-Z0-9]+/g, '-')}-Score-Report.pdf`;
+    doc.save(filename);
   }
 
   if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading results...</p></div>;
