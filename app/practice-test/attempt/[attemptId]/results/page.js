@@ -723,7 +723,8 @@ export default function ResultsPage() {
 
   async function generatePDF() {
     const { default: jsPDF } = await import('jspdf');
-    await import('jspdf-autotable');
+    const { applyPlugin } = await import('jspdf-autotable');
+    applyPlugin(jsPDF);
 
     const questions = data?.questions || [];
     const sectionEntries = SUBJECT_ORDER.map(subj => data?.sections?.[subj] ? [subj, data.sections[subj]] : null).filter(Boolean);
