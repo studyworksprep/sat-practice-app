@@ -68,11 +68,26 @@ function TeacherDashboard() {
         {/* Header */}
         <div className="tchDashHeader">
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/avatars/${encodeURIComponent(teacher.name || 'unknown')}.webp`}
+              alt={teacher.name || 'Avatar'}
+              style={{
+                width: 48, height: 48, borderRadius: '50%',
+                objectFit: 'cover', flexShrink: 0,
+                background: 'var(--accent, #2563eb)',
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
             <div style={{
               width: 48, height: 48, borderRadius: '50%',
               background: 'var(--accent, #2563eb)', color: '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              alignItems: 'center', justifyContent: 'center',
               fontSize: 20, fontWeight: 700, flexShrink: 0,
+              display: 'none',
             }}>
               {(teacher.name || 'T')[0].toUpperCase()}
             </div>
@@ -235,14 +250,14 @@ function TeacherDashboard() {
                           }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
                               <span style={{ fontWeight: 600, fontSize: 13, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {r.title}
+                                {r.student_name}
                               </span>
                               <span style={{ fontSize: 12, fontFamily: 'monospace', color: isComplete ? 'var(--success)' : 'var(--muted)', whiteSpace: 'nowrap' }}>
                                 {r.completed_count}/{r.question_count}
                               </span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginTop: 2 }}>
-                              <span className="muted" style={{ fontSize: 12 }}>{r.student_name}</span>
+                              <span className="muted" style={{ fontSize: 12 }}>{r.title}</span>
                               {r.due_date && (
                                 <span style={{
                                   fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
