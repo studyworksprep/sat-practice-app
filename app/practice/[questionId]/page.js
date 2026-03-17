@@ -1051,7 +1051,7 @@ export default function PracticeQuestionPage() {
 
       setData((prev) => {
         if (!prev) return prev;
-        return { ...prev, is_broken: next };
+        return { ...prev, is_broken: next, broken_by: next ? 'You' : null, broken_at: next ? new Date().toISOString() : null };
       });
 
       const res = await fetch('/api/status', {
@@ -1064,7 +1064,7 @@ export default function PracticeQuestionPage() {
     } catch (e) {
       setData((prev) => {
         if (!prev) return prev;
-        return { ...prev, is_broken: !next };
+        return { ...prev, is_broken: !next, broken_by: !next ? prev.broken_by : null, broken_at: !next ? prev.broken_at : null };
       });
       setMsg({ kind: 'danger', text: e.message });
     }
@@ -2134,6 +2134,13 @@ export default function PracticeQuestionPage() {
               <div className="h2" style={{ margin: 0 }}>Flag &amp; Correct Question</div>
               <button className="btn secondary" onClick={() => setShowCorrectModal(false)}>Close</button>
             </div>
+
+            {data?.is_broken && data?.broken_by && (
+              <div style={{ background: 'rgba(217,119,117,0.10)', border: '1px solid var(--danger, #dc2626)', borderRadius: 8, padding: '10px 14px', marginTop: 4, fontSize: 14, color: 'var(--danger, #dc2626)' }}>
+                Flagged by <strong>{data.broken_by}</strong>
+                {data.broken_at && (<> on {new Date(data.broken_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(data.broken_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</>)}
+              </div>
+            )}
 
             <hr />
 

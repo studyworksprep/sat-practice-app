@@ -46,10 +46,10 @@ export async function GET(_request, { params }) {
       .select('question_id, program, domain_code, domain_name, skill_code, skill_name, difficulty, score_band')
       .eq('question_id', questionId)
       .maybeSingle(),
-    // 2: questions table (source_external_id, is_broken)
+    // 2: questions table (source_external_id, is_broken, broken_by, broken_at)
     supabase
       .from('questions')
-      .select('source_external_id, is_broken')
+      .select('source_external_id, is_broken, broken_by, broken_at')
       .eq('id', questionId)
       .maybeSingle(),
     // 3: status (per user) — null placeholder if no user
@@ -83,6 +83,18 @@ export async function GET(_request, { params }) {
   if (taxErr) return NextResponse.json({ error: taxErr.message }, { status: 400 });
 
   const { data: questionRow } = qRowResult;
+
+  // Look up who flagged the question as broken (if applicable)
+  let brokenByName = null;
+  if (questionRow?.broken_by) {
+    const { data: brokenProfile } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, email')
+      .eq('id', questionRow.broken_by)
+      .maybeSingle();
+    brokenByName = [brokenProfile?.first_name, brokenProfile?.last_name].filter(Boolean).join(' ')
+      || brokenProfile?.email || null;
+  }
 
   const { data: st, error: stErr } = stResult;
   if (stErr) return NextResponse.json({ error: stErr.message }, { status: 400 });
@@ -133,6 +145,8 @@ export async function GET(_request, { params }) {
     question_id: questionId,
     source_external_id: questionRow?.source_external_id ?? null,
     is_broken: questionRow?.is_broken ?? false,
+    broken_by: brokenByName,
+    broken_at: questionRow?.broken_at ?? null,
     user_role: userRole,
     version,
     options: options ?? [],
