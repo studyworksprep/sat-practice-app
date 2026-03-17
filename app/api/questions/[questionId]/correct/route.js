@@ -1,35 +1,31 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
+import { createServiceClient } from '../../../../../lib/supabase/server';
 
 // POST /api/questions/:questionId/correct
-// Admin-only: update question content fields and flag as broken.
+// Admin/Manager: update question content & taxonomy fields, flag as broken.
 export async function POST(request, { params }) {
   const questionId = params.questionId;
-  const supabase = createClient();
 
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  }
+  // Prefer middleware-provided user ID (avoids stale-cookie auth issues)
+  const userId = request.headers.get('x-user-id');
+  if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
-  // Only admins can submit corrections
-  const { data: profile } = await supabase
+  const admin = createServiceClient();
+
+  // Only admins and managers can submit corrections
+  const { data: profile } = await admin
     .from('profiles')
     .select('role')
-    .eq('id', auth.user.id)
+    .eq('id', userId)
     .maybeSingle();
   const role = profile?.role || 'practice';
 
-  if (role !== 'admin') {
-    return NextResponse.json({ error: 'Only admins can submit corrections' }, { status: 403 });
+  if (role !== 'admin' && role !== 'manager') {
+    return NextResponse.json({ error: 'Only admins and managers can submit corrections' }, { status: 403 });
   }
 
-  // Use service-role client for writes so RLS does not block the updates.
-  // Auth + admin check above already gate access.
-  const admin = createServiceClient();
-
   const body = await request.json().catch(() => ({}));
-  const { stimulus_html, stem_html, options, flag_broken } = body || {};
+  const { stimulus_html, stem_html, options, flag_broken, taxonomy } = body || {};
 
   // Get the current version
   const { data: version, error: verErr } = await admin
@@ -81,6 +77,28 @@ export async function POST(request, { params }) {
         .eq('id', optionId)
         .eq('question_version_id', versionId);
       if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+  }
+
+  // Update taxonomy fields if provided
+  if (taxonomy && typeof taxonomy === 'object') {
+    const taxPatch = {};
+    if (taxonomy.difficulty !== undefined) taxPatch.difficulty = Number(taxonomy.difficulty) || null;
+    if (taxonomy.score_band !== undefined) taxPatch.score_band = Number(taxonomy.score_band) || null;
+    if (typeof taxonomy.domain_code === 'string') {
+      taxPatch.domain_code = taxonomy.domain_code;
+      taxPatch.domain_name = taxonomy.domain_name || null;
+    }
+    if (typeof taxonomy.skill_code === 'string') {
+      taxPatch.skill_code = taxonomy.skill_code;
+      taxPatch.skill_name = taxonomy.skill_name || null;
+    }
+    if (Object.keys(taxPatch).length > 0) {
+      const { error: taxErr } = await admin
+        .from('question_taxonomy')
+        .update(taxPatch)
+        .eq('question_id', questionId);
+      if (taxErr) return NextResponse.json({ error: taxErr.message }, { status: 400 });
     }
   }
 
