@@ -328,6 +328,14 @@ a{
   border-radius: 0;
 }
 
+/* Figures / reference images inside stimuli — keep compact like math graphs */
+.prose .stimulus_reference img{
+  display: block;
+  max-width: min(360px, 100%);
+  height: auto;
+  margin: 8px auto;
+}
+
 .prose table{
   width: auto !important;
   max-width: 100%;
