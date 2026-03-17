@@ -832,7 +832,7 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
   const [selectAll, setSelectAll] = useState(false);
   const [expandedDomains, setExpandedDomains] = useState([]);
   const [topics, setTopics] = useState([]);
-  const [difficulties, setDifficulties] = useState([1, 2, 3]);
+  const [difficulties, setDifficulties] = useState([]);
   const [scoreBands, setScoreBands] = useState([]);
   const [questionLimit, setQuestionLimit] = useState(20);
   const [randomize, setRandomize] = useState(false);
@@ -894,9 +894,9 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
     try {
       const params = new URLSearchParams();
       if (topics.length) params.set('topics', topics.join(','));
-      if (difficulties.length < 3) params.set('difficulties', difficulties.join(','));
+      if (difficulties.length > 0 && difficulties.length < 3) params.set('difficulties', difficulties.join(','));
       if (scoreBands.length > 0) params.set('score_bands', scoreBands.join(','));
-      params.set('limit', String(questionLimit));
+      params.set('limit', String(questionLimit || 9999));
       params.set('hide_broken', 'true');
       if (undoneOnly && selectedStudents.length > 0) {
         params.set('exclude_done_for', selectedStudents.join(','));
@@ -960,7 +960,7 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
               </label>
               <label className="tchModalField">
                 <span className="tchModalLabel">Max Questions</span>
-                <input type="number" min={1} max={100} value={questionLimit} onChange={e => setQuestionLimit(Number(e.target.value) || 20)} />
+                <input type="text" inputMode="numeric" value={questionLimit} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setQuestionLimit(v === '' ? '' : Number(v)); }} />
               </label>
             </div>
             <div className="tchAssignSection">

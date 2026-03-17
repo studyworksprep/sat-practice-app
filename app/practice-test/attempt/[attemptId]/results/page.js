@@ -741,8 +741,8 @@ export default function ResultsPage() {
     let y = 40;
 
     const ensureSpace = (needed) => { if (y + needed > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); y = 40; } };
-    const sectionTitle = (text) => { ensureSpace(50); y += 18; doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(30); doc.text(text, marginL, y); y += 6; doc.setDrawColor(50); doc.setLineWidth(1.5); doc.line(marginL, y, pageW - marginR, y); y += 18; };
-    const subTitle = (text) => { ensureSpace(30); y += 10; doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(80); doc.text(text, marginL, y); y += 14; };
+    const sectionTitle = (text) => { ensureSpace(60); y += 28; doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(30); doc.text(text, marginL, y); y += 6; doc.setDrawColor(50); doc.setLineWidth(1.5); doc.line(marginL, y, pageW - marginR, y); y += 20; };
+    const subTitle = (text) => { ensureSpace(36); y += 16; doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(80); doc.text(text, marginL, y); y += 14; };
 
     // ─── TITLE ────────────────────────────────────────────
     doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.setTextColor(30);
@@ -806,7 +806,7 @@ export default function ResultsPage() {
       doc.text(SUBJECT_LABEL[subj] || subj, cx, y + 16, { align: 'center' });
       doc.text(`${sec.correct}/${sec.total} correct`, cx, y + 26, { align: 'center' });
     });
-    y += 40;
+    y += 48;
 
     // ─── DOMAIN BREAKDOWN ─────────────────────────────────
     const renderDomains = (domains, label) => {
@@ -828,7 +828,7 @@ export default function ResultsPage() {
             headStyles: { fillColor: [240, 240, 240], textColor: [80, 80, 80], fontStyle: 'bold' },
             theme: 'grid',
           });
-          y = doc.lastAutoTable.finalY + 6;
+          y = doc.lastAutoTable.finalY + 10;
         }
       }
     };
