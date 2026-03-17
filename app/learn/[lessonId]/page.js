@@ -1,0 +1,320 @@
+'use client';
+
+import { useEffect, useState, Suspense } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import HtmlBlock from '../../../components/HtmlBlock';
+
+export default function LessonViewerPage() {
+  return <Suspense><LessonViewer /></Suspense>;
+}
+
+function LessonViewer() {
+  const { lessonId } = useParams();
+  const [lesson, setLesson] = useState(null);
+  const [progress, setProgress] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`/api/lessons/${lessonId}`).then(r => r.json()),
+      fetch(`/api/lessons/${lessonId}/progress`).then(r => r.json()),
+    ])
+      .then(([lessonData, progressData]) => {
+        if (lessonData.error) throw new Error(lessonData.error);
+        setLesson(lessonData.lesson);
+        setProgress(progressData.progress);
+        // Start progress if first visit
+        if (!progressData.progress) {
+          fetch(`/api/lessons/${lessonId}/progress`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({}),
+          });
+        }
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [lessonId]);
+
+  // Mark a block as read
+  async function markBlockComplete(blockId) {
+    const res = await fetch(`/api/lessons/${lessonId}/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ block_id: blockId }),
+    });
+    const data = await res.json();
+    if (data.progress) setProgress(data.progress);
+  }
+
+  // Submit a knowledge check answer
+  async function submitCheck(blockId, selectedIndex, isCorrect) {
+    const res = await fetch(`/api/lessons/${lessonId}/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        block_id: blockId,
+        check_answer: { selected: selectedIndex, correct: isCorrect },
+      }),
+    });
+    const data = await res.json();
+    if (data.progress) setProgress(data.progress);
+  }
+
+  // Mark lesson as complete
+  async function markComplete() {
+    const res = await fetch(`/api/lessons/${lessonId}/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mark_complete: true }),
+    });
+    const data = await res.json();
+    if (data.progress) setProgress(data.progress);
+  }
+
+  if (loading) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Loading…</p></div>;
+  if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+  if (!lesson) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Lesson not found.</p></div>;
+
+  const blocks = lesson.blocks || [];
+  const completedBlocks = new Set(progress?.completed_blocks || []);
+  const checkAnswers = progress?.check_answers || {};
+  const isComplete = !!progress?.completed_at;
+
+  const progressPct = blocks.length > 0
+    ? Math.round((completedBlocks.size / blocks.length) * 100)
+    : 0;
+
+  return (
+    <div className="container" style={{ paddingTop: 24, maxWidth: 800, paddingBottom: 80 }}>
+      {/* Header */}
+      <Link href="/learn" style={{ fontSize: 13, color: 'var(--accent)' }}>&larr; Back to Learn</Link>
+
+      <div style={{ marginTop: 12, marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 6px' }}>{lesson.title}</h1>
+        {lesson.description && (
+          <p className="muted" style={{ fontSize: 14, margin: '0 0 8px' }}>{lesson.description}</p>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <span className="muted" style={{ fontSize: 13 }}>by {lesson.author_name}</span>
+          {lesson.topics?.length > 0 && (
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {lesson.topics.map((t, i) => (
+                <span key={i} style={{
+                  fontSize: 11, padding: '1px 6px', borderRadius: 3,
+                  background: 'var(--bg-alt, #f0f4ff)', color: 'var(--accent)',
+                }}>
+                  {t.skill_code || t.domain_name}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--border, #eee)', overflow: 'hidden' }}>
+            <div style={{ width: `${progressPct}%`, height: '100%', borderRadius: 3, background: isComplete ? 'var(--success)' : 'var(--accent)', transition: 'width 0.3s' }} />
+          </div>
+          <span style={{ fontSize: 12, fontWeight: 600, color: isComplete ? 'var(--success)' : 'var(--muted)' }}>
+            {isComplete ? 'Complete' : `${progressPct}%`}
+          </span>
+        </div>
+      </div>
+
+      {/* Blocks */}
+      {blocks.map((block) => (
+        <div key={block.id} style={{ marginBottom: 24 }}>
+          {block.block_type === 'text' && (
+            <TextBlock block={block} isRead={completedBlocks.has(block.id)} onRead={() => markBlockComplete(block.id)} />
+          )}
+          {block.block_type === 'video' && (
+            <VideoBlock block={block} isWatched={completedBlocks.has(block.id)} onWatched={() => markBlockComplete(block.id)} />
+          )}
+          {block.block_type === 'check' && (
+            <CheckBlock
+              block={block}
+              previousAnswer={checkAnswers[block.id]}
+              onSubmit={(selected, correct) => submitCheck(block.id, selected, correct)}
+            />
+          )}
+          {block.block_type === 'question_link' && (
+            <QuestionLinkBlock block={block} isComplete={completedBlocks.has(block.id)} />
+          )}
+        </div>
+      ))}
+
+      {/* Complete button */}
+      {blocks.length > 0 && !isComplete && (
+        <div style={{ textAlign: 'center', marginTop: 32 }}>
+          <button className="btn primary" onClick={markComplete} style={{ fontSize: 15, padding: '10px 32px' }}>
+            Mark Lesson Complete
+          </button>
+        </div>
+      )}
+
+      {isComplete && (
+        <div className="card" style={{ textAlign: 'center', padding: 24, marginTop: 24, background: 'var(--bg-alt, #f0faf0)' }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--success)' }}>Lesson Complete!</span>
+          <p className="muted" style={{ margin: '8px 0 0', fontSize: 14 }}>
+            <Link href="/learn" style={{ color: 'var(--accent)' }}>Browse more lessons</Link>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Text block renderer ─────────────────────────────────
+function TextBlock({ block, isRead, onRead }) {
+  useEffect(() => {
+    if (!isRead) {
+      // Mark as read after a short delay (user has seen it)
+      const timer = setTimeout(() => onRead(), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isRead, onRead]);
+
+  return (
+    <div className="card" style={{ padding: '20px 24px' }}>
+      <HtmlBlock className="prose" html={block.content.html || ''} />
+    </div>
+  );
+}
+
+// ─── Video block renderer ────────────────────────────────
+function VideoBlock({ block, isWatched, onWatched }) {
+  const embedUrl = getEmbedUrl(block.content.url);
+
+  return (
+    <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      {embedUrl ? (
+        <div
+          style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#000' }}
+          onClick={() => { if (!isWatched) onWatched(); }}
+        >
+          <iframe
+            src={embedUrl}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      ) : (
+        <div style={{ padding: 20 }}>
+          <a href={block.content.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>
+            {block.content.url || 'No video URL set'}
+          </a>
+        </div>
+      )}
+      {block.content.caption && (
+        <p className="muted" style={{ fontSize: 13, padding: '8px 16px', margin: 0 }}>{block.content.caption}</p>
+      )}
+    </div>
+  );
+}
+
+function getEmbedUrl(url) {
+  if (!url) return null;
+  let m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (m) return `https://www.youtube-nocookie.com/embed/${m[1]}`;
+  m = url.match(/vimeo\.com\/(\d+)/);
+  if (m) return `https://player.vimeo.com/video/${m[1]}`;
+  return null;
+}
+
+// ─── Knowledge check renderer ────────────────────────────
+function CheckBlock({ block, previousAnswer, onSubmit }) {
+  const [selected, setSelected] = useState(previousAnswer?.selected ?? null);
+  const [submitted, setSubmitted] = useState(!!previousAnswer);
+  const [showExplanation, setShowExplanation] = useState(!!previousAnswer);
+
+  const content = block.content;
+  const choices = content.choices || [];
+  const correctIdx = content.correct_index ?? 0;
+
+  function handleSubmit() {
+    if (selected === null) return;
+    const isCorrect = selected === correctIdx;
+    setSubmitted(true);
+    setShowExplanation(true);
+    onSubmit(selected, isCorrect);
+  }
+
+  return (
+    <div className="card" style={{ padding: '20px 24px', border: submitted ? `2px solid ${selected === correctIdx ? 'var(--success)' : 'var(--danger)'}` : undefined }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', marginBottom: 8 }}>Knowledge Check</div>
+      <p style={{ fontSize: 15, fontWeight: 600, margin: '0 0 12px' }}>{content.prompt}</p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {choices.map((choice, i) => {
+          const isCorrectChoice = i === correctIdx;
+          const isSelected = i === selected;
+          let bg = 'transparent';
+          let border = '1px solid var(--border, #ddd)';
+          if (submitted) {
+            if (isCorrectChoice) { bg = 'rgba(76,175,80,0.1)'; border = '1px solid var(--success)'; }
+            else if (isSelected && !isCorrectChoice) { bg = 'rgba(224,82,82,0.1)'; border = '1px solid var(--danger)'; }
+          } else if (isSelected) {
+            bg = 'var(--bg-alt, #f0f4ff)';
+            border = '1px solid var(--accent)';
+          }
+
+          return (
+            <button
+              key={i}
+              onClick={() => { if (!submitted) setSelected(i); }}
+              disabled={submitted}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px', borderRadius: 8, background: bg, border,
+                cursor: submitted ? 'default' : 'pointer', textAlign: 'left', fontSize: 14, width: '100%',
+              }}
+            >
+              <span style={{ fontWeight: 700, color: 'var(--muted)', width: 20, flexShrink: 0 }}>
+                {String.fromCharCode(65 + i)}
+              </span>
+              <span>{choice}</span>
+              {submitted && isCorrectChoice && <span style={{ marginLeft: 'auto', color: 'var(--success)', fontWeight: 700 }}>&#10003;</span>}
+              {submitted && isSelected && !isCorrectChoice && <span style={{ marginLeft: 'auto', color: 'var(--danger)', fontWeight: 700 }}>&#10007;</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {!submitted && (
+        <button className="btn primary" onClick={handleSubmit} disabled={selected === null} style={{ marginTop: 12, fontSize: 13 }}>
+          Check Answer
+        </button>
+      )}
+
+      {showExplanation && content.explanation && (
+        <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 6, background: 'var(--bg-alt, #f8f9fb)', fontSize: 14 }}>
+          <strong>Explanation:</strong> {content.explanation}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Question link renderer ──────────────────────────────
+function QuestionLinkBlock({ block, isComplete }) {
+  const questionId = block.content.question_id;
+  if (!questionId) return null;
+
+  return (
+    <div className="card" style={{ padding: '16px 20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', marginBottom: 4 }}>Practice Question</div>
+          <span style={{ fontSize: 14, fontWeight: 600 }}>{questionId}</span>
+        </div>
+        <Link href={`/practice/${questionId}`} className="btn secondary" style={{ fontSize: 13 }}>
+          {isComplete ? 'Review' : 'Practice'} &rarr;
+        </Link>
+      </div>
+    </div>
+  );
+}
