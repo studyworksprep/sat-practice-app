@@ -82,7 +82,18 @@ export async function GET(_request, { params }) {
   const { data: taxonomy, error: taxErr } = taxResult;
   if (taxErr) return NextResponse.json({ error: taxErr.message }, { status: 400 });
 
-  const { data: questionRow } = qRowResult;
+  let questionRow = qRowResult.data;
+
+  // If the query failed (e.g. broken_by/broken_at columns not yet migrated),
+  // retry without the audit columns so source_external_id + is_broken still work.
+  if (qRowResult.error && !questionRow) {
+    const { data: fallbackRow } = await supabase
+      .from('questions')
+      .select('source_external_id, is_broken')
+      .eq('id', questionId)
+      .maybeSingle();
+    questionRow = fallbackRow;
+  }
 
   // Look up who flagged the question as broken (if applicable)
   let brokenByName = null;

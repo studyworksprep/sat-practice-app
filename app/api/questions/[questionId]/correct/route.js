@@ -102,13 +102,27 @@ export async function POST(request, { params }) {
     }
   }
 
-  // Flag/unflag broken via RPC (use service client to bypass RLS consistently)
+  // Flag/unflag broken — update directly via service client (the RPC relies on
+  // auth.uid() which is null for service clients, so we write the row ourselves).
   if (flag_broken !== undefined) {
-    const { error: brokenErr } = await admin.rpc('set_question_broken', {
-      question_uuid: questionId,
-      broken: Boolean(flag_broken),
-    });
-    if (brokenErr) return NextResponse.json({ error: brokenErr.message }, { status: 400 });
+    const isBroken = Boolean(flag_broken);
+    const brokenPatch = {
+      is_broken: isBroken,
+      broken_by: isBroken ? userId : null,
+      broken_at: isBroken ? new Date().toISOString() : null,
+    };
+    const { error: brokenErr } = await admin
+      .from('questions')
+      .update(brokenPatch)
+      .eq('id', questionId);
+    if (brokenErr) {
+      // Fallback: if broken_by/broken_at columns don't exist yet, try updating just is_broken
+      const { error: fallbackErr } = await admin
+        .from('questions')
+        .update({ is_broken: isBroken })
+        .eq('id', questionId);
+      if (fallbackErr) return NextResponse.json({ error: fallbackErr.message }, { status: 400 });
+    }
   }
 
   return NextResponse.json({ ok: true });
