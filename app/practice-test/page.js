@@ -155,7 +155,7 @@ async function fetchData(supabase, userId) {
 
   const { data: attemptsRaw } = await supabase
     .from('practice_test_attempts')
-    .select('id, practice_test_id, status, metadata, started_at, finished_at')
+    .select('id, practice_test_id, status, metadata, started_at, finished_at, composite_score, rw_scaled, math_scaled')
     .eq('user_id', userId)
     .order('started_at', { ascending: false });
 
@@ -196,6 +196,9 @@ async function fetchData(supabase, userId) {
   }
 
   const attempts = (attemptsRaw || []).map((a) => {
+    // Prefer cached scores (written by the results page) for consistency
+    const hasCached = a.composite_score != null && (a.rw_scaled != null || a.math_scaled != null);
+
     const modData = moduleAttemptsByPta[a.id] || {};
     const subjects = [...new Set(Object.values(modData).map((d) => d.subjectCode))];
     const sectionScores = {};
@@ -205,19 +208,30 @@ async function fetchData(supabase, userId) {
       const m1 = modData[`${subj}/1`] || { correct: 0 };
       const m2 = modData[`${subj}/2`] || { correct: 0, routeCode: null };
       const sectionName = subjToSection[subj] || 'math';
-      const lookupKey = `${a.practice_test_id}/${sectionName}`;
 
-      const scaled = computeScaledScore({
-        section: sectionName,
-        m1Correct: m1.correct,
-        m2Correct: m2.correct,
-        routeCode: m2.routeCode,
-        lookupRows: lookupByTestSection[lookupKey] || [],
-      });
+      let scaled;
+      if (hasCached) {
+        const isRW = sectionName === 'reading_writing';
+        scaled = isRW ? a.rw_scaled : a.math_scaled;
+      }
+      if (scaled == null) {
+        const lookupKey = `${a.practice_test_id}/${sectionName}`;
+        scaled = computeScaledScore({
+          section: sectionName,
+          m1Correct: m1.correct,
+          m2Correct: m2.correct,
+          routeCode: m2.routeCode,
+          lookupRows: lookupByTestSection[lookupKey] || [],
+        });
+      }
 
       sectionScores[subj] = { correct: m1.correct + m2.correct, total: m1.correct + m2.correct, scaled };
       composite = (composite || 0) + scaled;
     }
+
+    // Use the cached composite if available (most authoritative)
+    if (hasCached) composite = a.composite_score;
+
     return { ...a, composite, sectionScores };
   });
 

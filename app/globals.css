@@ -4266,8 +4266,8 @@ hr{
   display: flex;
   height: 28px;
   border-radius: 4px;
-  overflow: hidden;
   background: #e8e8e8;
+  position: relative;
 }
 .ptrvTimingSeg{
   position: relative;
@@ -4275,6 +4275,9 @@ hr{
   transition: opacity 0.15s;
   min-width: 2px;
 }
+.ptrvTimingSeg:first-child{ border-radius: 4px 0 0 4px; }
+.ptrvTimingSeg:last-child{ border-radius: 0 4px 4px 0; border-right: none !important; }
+.ptrvTimingSeg:first-child:last-child{ border-radius: 4px; }
 .ptrvTimingSeg:hover{ opacity: 0.75; }
 .ptrvTimingSeg.correct{ background: var(--success, #22c55e); }
 .ptrvTimingSeg.incorrect{ background: #dc2626; }

@@ -145,6 +145,7 @@ function ScoreRing({ score, max = 1600, label }) {
 // ─── Domain analytics card ────────────────────────────────────────────────
 
 function DomainAnalyticsCard({ title, subtitle, domains }) {
+  const [expandedDomain, setExpandedDomain] = useState(null);
   if (!domains?.length) return null;
   return (
     <div className="card ptrvDomainCard">
@@ -154,15 +155,46 @@ function DomainAnalyticsCard({ title, subtitle, domains }) {
         {domains.map((d) => {
           const p = pct(d.correct, d.total);
           const color = pctColor(p);
+          const isExpanded = expandedDomain === d.domain_name;
+          const hasSkills = d.skills?.length > 0;
           return (
             <div key={d.domain_name} className="ptrvDomainBarItem">
               <div className="ptrvDomainBarHeader">
                 <span className="ptrvDomainBarName">{d.domain_name}</span>
-                <span className="ptrvDomainBarPct" style={{ background: color }}>{p}%</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span className="ptrvDomainBarPct" style={{ background: color }}>{p}%</span>
+                  {hasSkills && (
+                    <button
+                      onClick={() => setExpandedDomain(isExpanded ? null : d.domain_name)}
+                      style={{
+                        background: 'none', border: '1px solid var(--border, #ddd)', borderRadius: 4,
+                        padding: '1px 6px', fontSize: 11, cursor: 'pointer',
+                        color: 'var(--muted, #888)', fontWeight: 500,
+                      }}
+                    >
+                      {isExpanded ? 'Hide' : 'Skills'}
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="ptrvDomainBarTrack">
                 <div className="ptrvDomainBarFill" style={{ width: `${p}%`, background: '#3366cc' }} />
               </div>
+              {isExpanded && d.skills?.length > 0 && (
+                <div style={{ marginTop: 6, paddingLeft: 8, borderLeft: '2px solid var(--border, #ddd)' }}>
+                  {d.skills.map((s) => {
+                    const sp = pct(s.correct, s.total);
+                    const sColor = pctColor(sp);
+                    return (
+                      <div key={s.skill_name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 13 }}>
+                        <span style={{ flex: 1, color: 'var(--fg, #333)' }}>{s.skill_name}</span>
+                        <span className="muted" style={{ fontSize: 12 }}>{s.correct}/{s.total}</span>
+                        <span style={{ fontWeight: 600, color: sColor, minWidth: 36, textAlign: 'right' }}>{sp}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
@@ -689,6 +721,110 @@ export default function ResultsPage() {
     }
   }
 
+  function generatePDF() {
+    const questions = data?.questions || [];
+    const sectionEntries = SUBJECT_ORDER.map(subj => data?.sections?.[subj] ? [subj, data.sections[subj]] : null).filter(Boolean);
+    const rwDomains = (data?.domains || []).filter(d => RW_CODES.has(d.subject_code));
+    const mathDomains = (data?.domains || []).filter(d => MATH_CODES.has(d.subject_code));
+    const opportunity = data?.opportunity || [];
+
+    const fmtDatePdf = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+
+    // Build domain+skills HTML
+    const domainHTML = (domains, label) => {
+      if (!domains?.length) return '';
+      return `<div class="section"><h2>${label} — Domain Breakdown</h2>` +
+        domains.map(d => {
+          const dp = d.total ? Math.round((d.correct / d.total) * 100) : 0;
+          const skillRows = (d.skills || []).map(s => {
+            const sp = s.total ? Math.round((s.correct / s.total) * 100) : 0;
+            return `<tr><td style="padding-left:24px">${s.skill_name}</td><td>${s.correct}/${s.total}</td><td>${sp}%</td></tr>`;
+          }).join('');
+          return `<h3 style="margin:10px 0 4px">${d.domain_name} — ${dp}% (${d.correct}/${d.total})</h3>` +
+            (skillRows ? `<table><thead><tr><th>Skill</th><th>Score</th><th>Accuracy</th></tr></thead><tbody>${skillRows}</tbody></table>` : '');
+        }).join('') + '</div>';
+    };
+
+    // OI table
+    const oiHTML = opportunity.length > 0
+      ? `<div class="section"><h2>Opportunity Index — Top 5</h2><table><thead><tr><th>Skill</th><th>Domain</th><th>Accuracy</th><th>Learnability</th><th>OI Score</th></tr></thead><tbody>` +
+        opportunity.slice(0, 5).map(s => {
+          const acc = s.total ? Math.round((s.correct / s.total) * 100) : 0;
+          return `<tr><td>${s.skill_name}</td><td>${s.domain_name}</td><td>${acc}% (${s.correct}/${s.total})</td><td>${s.learnability}</td><td><strong>${s.opportunity_index.toFixed(1)}</strong></td></tr>`;
+        }).join('') + '</tbody></table></div>'
+      : '';
+
+    // Questions table grouped by subject/module
+    const questionsByGroup = {};
+    for (const q of questions) {
+      const key = `${q.subject_code}/${q.module_number}`;
+      if (!questionsByGroup[key]) questionsByGroup[key] = [];
+      questionsByGroup[key].push(q);
+    }
+
+    let questionsHTML = '<div class="section page-break"><h2>Full Question List</h2>';
+    for (const subj of SUBJECT_ORDER) {
+      for (const modNum of [1, 2]) {
+        const key = `${subj}/${modNum}`;
+        const qs = questionsByGroup[key];
+        if (!qs?.length) continue;
+        questionsHTML += `<h3>${SUBJECT_LABEL[subj] || subj} · Module ${modNum}</h3><table><thead><tr><th>Q#</th><th>Domain</th><th>Skill</th><th>Difficulty</th><th>Your Answer</th><th>Correct Answer</th><th>Result</th></tr></thead><tbody>`;
+        for (const q of qs) {
+          const correctCA = q.correct_answer;
+          const selectedOpt = q.options?.find(o => o.id === q.selected_option_id);
+          const correctOpt = q.options?.find(o => o.id === correctCA?.correct_option_id || (correctCA?.correct_option_ids || []).includes(o.id));
+          const yourAns = selectedOpt ? selectedOpt.label : (q.response_text || '—');
+          const correctAns = correctOpt ? correctOpt.label : (correctCA?.correct_text || (correctCA?.correct_number != null ? String(correctCA.correct_number) : '—'));
+          const result = q.is_correct ? 'Correct' : q.was_answered ? 'Incorrect' : 'Omitted';
+          const resultColor = q.is_correct ? '#16a34a' : q.was_answered ? '#dc2626' : '#888';
+          questionsHTML += `<tr><td>${q.ordinal}</td><td>${q.domain_name || '—'}</td><td style="font-size:11px">${q.skill_name || '—'}</td><td>${DIFF_LABEL[q.difficulty] || '—'}</td><td>${yourAns}</td><td>${correctAns}</td><td style="color:${resultColor};font-weight:600">${result}</td></tr>`;
+        }
+        questionsHTML += '</tbody></table>';
+      }
+    }
+    questionsHTML += '</div>';
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${data?.test_name || 'Practice Test'} — Score Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 12px; color: #222; padding: 24px; }
+  h1 { font-size: 20px; margin-bottom: 2px; }
+  h2 { font-size: 16px; margin-bottom: 8px; border-bottom: 2px solid #333; padding-bottom: 4px; }
+  h3 { font-size: 13px; margin: 8px 0 4px; }
+  .section { margin-bottom: 20px; }
+  .page-break { page-break-before: always; }
+  .scores { display: flex; gap: 24px; align-items: center; margin: 12px 0 16px; }
+  .score-box { text-align: center; }
+  .score-box .num { font-size: 28px; font-weight: 800; color: #2563eb; }
+  .score-box .lbl { font-size: 11px; color: #666; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 11px; }
+  th { text-align: left; padding: 4px 6px; border-bottom: 2px solid #ccc; font-weight: 700; font-size: 10px; text-transform: uppercase; color: #555; }
+  td { padding: 3px 6px; border-bottom: 1px solid #eee; }
+  tr:nth-child(even) { background: #fafafa; }
+  .meta { font-size: 11px; color: #666; margin-bottom: 16px; }
+  @media print { .page-break { page-break-before: always; } }
+</style></head><body>
+  <h1>${data?.test_name || 'Practice Test'} — Score Report</h1>
+  <div class="meta">${fmtDatePdf(data?.completed_at)}</div>
+  <div class="section">
+    <div class="scores">
+      <div class="score-box"><div class="num">${data?.composite ?? '—'}</div><div class="lbl">Total Score</div></div>
+      ${sectionEntries.map(([subj, sec]) => `<div class="score-box"><div class="num">${sec.scaled}</div><div class="lbl">${SUBJECT_LABEL[subj]}</div><div class="lbl">${sec.correct}/${sec.total} correct</div></div>`).join('')}
+    </div>
+  </div>
+  ${domainHTML(rwDomains, 'Reading & Writing')}
+  ${domainHTML(mathDomains, 'Math')}
+  ${oiHTML}
+  ${questionsHTML}
+</body></html>`;
+
+    const w = window.open('', '_blank');
+    if (!w) { setMsg({ kind: 'danger', text: 'Pop-up blocked. Please allow pop-ups for this site.' }); return; }
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => { w.print(); }, 400);
+  }
+
   if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading results...</p></div>;
   if (error || data?.error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error || data?.error}</p></div>;
 
@@ -747,10 +883,28 @@ export default function ResultsPage() {
 
       <Link href="/practice-test" className="muted small ptrvBack">&larr; Practice Tests</Link>
 
-      <h1 className="h1" style={{ marginBottom: 4 }}>{data.test_name || 'Practice Test'}</h1>
-      {data.completed_at && (
-        <p className="muted small" style={{ marginBottom: 28 }}>Completed {fmtDate(data.completed_at)}</p>
-      )}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <div>
+          <h1 className="h1" style={{ marginBottom: 4 }}>{data.test_name || 'Practice Test'}</h1>
+          {data.completed_at && (
+            <p className="muted small" style={{ marginBottom: 0 }}>Completed {fmtDate(data.completed_at)}</p>
+          )}
+        </div>
+        <button
+          className="btn secondary"
+          onClick={generatePDF}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, marginTop: 4 }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="12" y1="18" x2="12" y2="12" />
+            <polyline points="9 15 12 18 15 15" />
+          </svg>
+          Export PDF
+        </button>
+      </div>
+      <div style={{ marginBottom: 28 }} />
 
       {/* ═══ SCORE HEADER ═══ */}
       <div className="ptrvScoreHeader">
