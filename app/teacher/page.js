@@ -14,19 +14,24 @@ function TeacherDashboard() {
   const router = useRouter();
   const [rosterData, setRosterData] = useState(null);
   const [hubData, setHubData] = useState(null);
+  const [assignmentRows, setAssignmentRows] = useState([]);
+  const [assignmentPage, setAssignmentPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const ASSIGNMENTS_PER_PAGE = 8;
 
   useEffect(() => {
     Promise.all([
       fetch('/api/teacher/roster-overview').then(r => r.json()),
       fetch('/api/teacher/dashboard').then(r => r.json()),
+      fetch('/api/teacher/assignment-feed').then(r => r.json()),
     ])
-      .then(([roster, hub]) => {
+      .then(([roster, hub, feed]) => {
         if (roster.error) throw new Error(roster.error);
         if (hub.error) throw new Error(hub.error);
         setRosterData(roster);
         setHubData(hub);
+        setAssignmentRows(feed.rows || []);
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
@@ -62,11 +67,21 @@ function TeacherDashboard() {
       <div className="tchDashboard">
         {/* Header */}
         <div className="tchDashHeader">
-          <div>
-            <h1 className="h1" style={{ margin: 0 }}>{teacher.name || 'Dashboard'}</h1>
-            <span className="muted" style={{ fontSize: 14 }}>
-              {teacher.role === 'admin' ? 'Admin' : teacher.role === 'manager' ? 'Manager' : 'Tutor'} Dashboard
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: '50%',
+              background: 'var(--accent, #2563eb)', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 20, fontWeight: 700, flexShrink: 0,
+            }}>
+              {(teacher.name || 'T')[0].toUpperCase()}
+            </div>
+            <div>
+              <h1 className="h1" style={{ margin: 0 }}>{teacher.name || 'Dashboard'}</h1>
+              <span className="muted" style={{ fontSize: 14 }}>
+                {teacher.role === 'admin' ? 'Admin' : teacher.role === 'manager' ? 'Manager' : 'Tutor'} Dashboard
+              </span>
+            </div>
           </div>
           <Link href="/teacher/students" className="btn secondary">View All Students</Link>
         </div>
@@ -197,28 +212,74 @@ function TeacherDashboard() {
               )}
             </div>
 
-            {/* Inactive students */}
-            {alerts.inactive?.length > 0 && (
-              <div className="card tchAlertCard">
-                <h3 className="tchAlertTitle tchAlertTitleWarn">Inactive Students</h3>
-                <div className="tchAlertList">
-                  {alerts.inactive.map(a => {
-                    const s = students.find(x => x.id === a.id);
-                    if (!s) return null;
-                    return (
-                      <button key={a.id} className="tchAlertItem" style={{ cursor: 'pointer', background: 'none', border: 'none', width: '100%', textAlign: 'left' }} onClick={() => goToStudent(a.id)}>
-                        <div className="tchAlertItemInfo">
-                          <span className="tchAlertItemName">{displayName(s)}</span>
-                          <span className="tchAlertItemMeta">
-                            {a.days_inactive != null ? `${a.days_inactive} days inactive` : 'No activity recorded'}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            {/* Assignments */}
+            <div className="card tchAlertCard">
+              <h3 className="tchAlertTitle" style={{ color: 'var(--accent)' }}>Assignments</h3>
+              {assignmentRows.length === 0 ? (
+                <p className="muted small" style={{ padding: '4px 0', margin: 0 }}>No assignments yet.</p>
+              ) : (() => {
+                const pageRows = assignmentRows.slice(assignmentPage * ASSIGNMENTS_PER_PAGE, (assignmentPage + 1) * ASSIGNMENTS_PER_PAGE);
+                const totalPages = Math.ceil(assignmentRows.length / ASSIGNMENTS_PER_PAGE);
+                const now = new Date();
+                return (
+                  <>
+                    <div className="tchAlertList">
+                      {pageRows.map((r, i) => {
+                        const isPastDue = r.due_date && new Date(r.due_date) < now;
+                        const isComplete = r.question_count > 0 && r.completed_count >= r.question_count;
+                        return (
+                          <div key={`${r.assignment_id}-${r.student_name}-${i}`} style={{
+                            padding: '8px 0',
+                            borderBottom: i < pageRows.length - 1 ? '1px solid var(--border, #eee)' : 'none',
+                            opacity: isComplete ? 0.6 : 1,
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+                              <span style={{ fontWeight: 600, fontSize: 13, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {r.title}
+                              </span>
+                              <span style={{ fontSize: 12, fontFamily: 'monospace', color: isComplete ? 'var(--success)' : 'var(--muted)', whiteSpace: 'nowrap' }}>
+                                {r.completed_count}/{r.question_count}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginTop: 2 }}>
+                              <span className="muted" style={{ fontSize: 12 }}>{r.student_name}</span>
+                              {r.due_date && (
+                                <span style={{
+                                  fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+                                  color: isPastDue && !isComplete ? 'var(--danger)' : 'var(--muted)',
+                                }}>
+                                  {isPastDue && !isComplete ? 'Past due · ' : ''}
+                                  {new Date(r.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {totalPages > 1 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0 0', borderTop: '1px solid var(--border, #eee)', marginTop: 4 }}>
+                        <button
+                          className="btn secondary"
+                          style={{ fontSize: 11, padding: '2px 8px' }}
+                          disabled={assignmentPage === 0}
+                          onClick={() => setAssignmentPage(p => p - 1)}
+                        >Prev</button>
+                        <span className="muted" style={{ fontSize: 11 }}>
+                          {assignmentPage + 1} / {totalPages}
+                        </span>
+                        <button
+                          className="btn secondary"
+                          style={{ fontSize: 11, padding: '2px 8px' }}
+                          disabled={assignmentPage >= totalPages - 1}
+                          onClick={() => setAssignmentPage(p => p + 1)}
+                        >Next</button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
 
             {/* Improving / momentum */}
             {alerts.improving?.length > 0 && (
