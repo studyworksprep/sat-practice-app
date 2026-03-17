@@ -1,45 +1,26 @@
-#!/usr/bin/env node
-/**
- * Seed a "Getting Started" tutorial lesson that walks students through
- * every feature of the SAT practice platform.
- *
- * Usage:
- *   node scripts/seed-tutorial-lesson.js
- *
- * Requires .env.local with NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
- * The lesson is authored by the first admin user found, or you can pass
- * AUTHOR_EMAIL=someone@example.com to override.
- */
+'use client';
 
-const { createClient } = require('@supabase/supabase-js');
-const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') });
+import { useState } from 'react';
+import Link from 'next/link';
+import HtmlBlock from '../../../components/HtmlBlock';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// ─── Static tutorial content ─────────────────────────────
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local');
-  process.exit(1);
-}
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-
-// ─── Tutorial content ──────────────────────────────────────
-
-const LESSON_TITLE = 'Getting Started: Your Guide to SAT Practice';
-const LESSON_DESCRIPTION =
-  'Learn how to use every feature of this platform — from the Question Bank and Practice Tests to Flashcards, Error Logs, Smart Review, and more — so you can make the most of your study time and improve your scores.';
+const LESSON = {
+  title: 'Getting Started: Your Guide to SAT Practice',
+  description:
+    'Learn how to use every feature of this platform — from the Question Bank and Practice Tests to Flashcards, Error Logs, Smart Review, and more — so you can make the most of your study time and improve your scores.',
+};
 
 const BLOCKS = [
-  // ── 1. Welcome ──
+  // 0 – Welcome
   {
+    id: 'welcome',
     block_type: 'text',
-    sort_order: 0,
     content: {
       html: `
 <h2>Welcome to Your SAT Practice Platform</h2>
-<p>This lesson will walk you through every tool available to help you prepare for the SAT. By the end, you'll know exactly how to use each feature to build an effective study routine.</p>
+<p>This lesson walks you through every tool available to help you prepare for the SAT. By the end you'll know exactly how to use each feature to build an effective study routine.</p>
 <p>Here's what we'll cover:</p>
 <ul>
   <li><strong>Dashboard</strong> — Your home base for tracking progress</li>
@@ -49,15 +30,14 @@ const BLOCKS = [
   <li><strong>Assignments</strong> — Work assigned by your teacher</li>
   <li><strong>Tips</strong> — How to build a study routine that actually works</li>
 </ul>
-<p>Let's get started!</p>
-      `.trim(),
+<p>Let's get started!</p>`.trim(),
     },
   },
 
-  // ── 2. Dashboard ──
+  // 1 – Dashboard
   {
+    id: 'dashboard',
     block_type: 'text',
-    sort_order: 1,
     content: {
       html: `
 <h2>Your Dashboard</h2>
@@ -73,21 +53,20 @@ const BLOCKS = [
 <p>The dashboard highlights your <strong>weakest skills</strong> — the topics where your accuracy is lowest. Each one links directly to a filtered practice session so you can jump straight into working on what matters most.</p>
 
 <h3>Performance Breakdown</h3>
-<p>You'll see separate sections for <strong>Reading &amp; Writing</strong> and <strong>Math</strong>, each broken down by domain (like Algebra, Advanced Math, Craft and Structure, etc.). Expand any domain to see your accuracy on each individual skill. The color-coded bars make it easy to spot where you're strong (green) and where you need work (red/yellow).</p>
+<p>You'll see separate sections for <strong>Reading &amp; Writing</strong> and <strong>Math</strong>, each broken down by domain (Algebra, Advanced Math, Craft and Structure, etc.). Expand any domain to see your accuracy on each skill. Color-coded bars make it easy to spot where you're strong (green) and where you need work (red/yellow).</p>
 
 <h3>Activity Chart</h3>
 <p>The last 14 days of your practice are shown as a bar chart. Taller bars mean more questions; the color shows your accuracy that day. Use this to make sure you're practicing consistently.</p>
 
 <h3>Practice Test History &amp; Scores</h3>
-<p>Your most recent practice sessions and official test scores are displayed here. You can click any question tile to jump back to it in the Question Bank.</p>
-      `.trim(),
+<p>Your most recent practice sessions and official test scores are displayed here. You can click any question tile to jump back to it in the Question Bank.</p>`.trim(),
     },
   },
 
-  // ── 3. Knowledge check: Dashboard ──
+  // 2 – Check: Dashboard
   {
+    id: 'check-dashboard',
     block_type: 'check',
-    sort_order: 2,
     content: {
       prompt: 'What does the "Focus Areas" section on your Dashboard show you?',
       choices: [
@@ -102,10 +81,10 @@ const BLOCKS = [
     },
   },
 
-  // ── 4. Question Bank ──
+  // 3 – Question Bank
   {
+    id: 'question-bank',
     block_type: 'text',
-    sort_order: 3,
     content: {
       html: `
 <h2>The Question Bank</h2>
@@ -134,25 +113,24 @@ const BLOCKS = [
 </ul>
 
 <h3>Tools</h3>
-<p>For Math questions, you have access to:</p>
+<p>For Math questions you have access to:</p>
 <ul>
   <li><strong>Desmos Graphing Calculator</strong> — The same calculator available on the real digital SAT. You can resize, minimize, and drag it around the screen.</li>
   <li><strong>SAT Math Reference Sheet</strong> — Contains all the formulas provided on test day (area, volume, circle equations, etc.)</li>
 </ul>
 
 <h3>Marking for Review</h3>
-<p>Click the <strong>star icon (★)</strong> on any question to mark it for review. Marked questions appear in your Smart Review queue and can be filtered in the Question Bank using the "Marked" filter. Use this for questions you found tricky or want to revisit later.</p>
+<p>Click the <strong>star icon (★)</strong> on any question to mark it for review. Marked questions appear in your Smart Review queue and can be filtered in the Question Bank. Use this for questions you found tricky or want to revisit later.</p>
 
 <h3>Error Log Notes</h3>
-<p>After answering a question, you can click <strong>"Add to Error Log"</strong> to write a note about what you got wrong and why. This forces you to reflect on your mistake — which is one of the most powerful study techniques. Your notes are saved and accessible from the Review page.</p>
-      `.trim(),
+<p>After answering a question, click <strong>"Add to Error Log"</strong> to write a note about what you got wrong and why. This forces you to reflect on your mistake — which is one of the most powerful study techniques. Your notes are saved and accessible from the Review page.</p>`.trim(),
     },
   },
 
-  // ── 5. Knowledge check: Question Bank ──
+  // 4 – Check: Question Bank
   {
+    id: 'check-qbank',
     block_type: 'check',
-    sort_order: 4,
     content: {
       prompt: 'Which of these is NOT a filter available in the Question Bank?',
       choices: [
@@ -167,10 +145,10 @@ const BLOCKS = [
     },
   },
 
-  // ── 6. Practice Tests ──
+  // 5 – Practice Tests
   {
+    id: 'practice-tests',
     block_type: 'text',
-    sort_order: 5,
     content: {
       html: `
 <h2>Practice Tests</h2>
@@ -185,7 +163,7 @@ const BLOCKS = [
 </ul>
 
 <h3>Adaptive Routing</h3>
-<p>Just like the real digital SAT, your performance on Module 1 determines the difficulty of Module 2. If you do well on Module 1, you'll get harder (but higher-scoring) questions in Module 2.</p>
+<p>Just like the real digital SAT, your performance on Module 1 determines the difficulty of Module 2. Do well on Module 1 and you'll get harder (but higher-scoring) questions in Module 2.</p>
 
 <h3>Taking a Test</h3>
 <ol>
@@ -205,15 +183,14 @@ const BLOCKS = [
 </ul>
 <p>Your scores are tracked over time on your Dashboard, so you can see your progress across multiple tests.</p>
 
-<p><strong>Pro tip:</strong> Take a practice test every 1–2 weeks to measure your progress. Review every question you got wrong afterward — this is where the real learning happens.</p>
-      `.trim(),
+<p><strong>Pro tip:</strong> Take a practice test every 1–2 weeks to measure your progress. Review every question you got wrong afterward — this is where the real learning happens.</p>`.trim(),
     },
   },
 
-  // ── 7. Knowledge check: Practice Tests ──
+  // 6 – Check: Practice Tests
   {
+    id: 'check-tests',
     block_type: 'check',
-    sort_order: 6,
     content: {
       prompt: 'What happens if you do well on Module 1 of a practice test section?',
       choices: [
@@ -228,10 +205,10 @@ const BLOCKS = [
     },
   },
 
-  // ── 8. Review Tools ──
+  // 7 – Review Tools
   {
+    id: 'review-tools',
     block_type: 'text',
-    sort_order: 7,
     content: {
       html: `
 <h2>Review Tools</h2>
@@ -264,15 +241,14 @@ const BLOCKS = [
   <li><strong>Study SAT Vocabulary</strong> — 10 pre-made sets of common SAT words are already loaded</li>
 </ul>
 <p>When studying a set, cards are presented in a click-to-flip format. After each card, rate your mastery from 0 (no clue) to 5 (perfect). The system uses <strong>weighted randomization</strong> — cards you rate lower appear more often, so you spend more time on what you don't know.</p>
-<p>Your mastery percentage is tracked per set with a color-coded progress bar (green ≥ 70%, yellow ≥ 40%, red &lt; 40%).</p>
-      `.trim(),
+<p>Your mastery percentage is tracked per set with a color-coded progress bar (green ≥ 70%, yellow ≥ 40%, red &lt; 40%).</p>`.trim(),
     },
   },
 
-  // ── 9. Knowledge check: Review Tools ──
+  // 8 – Check: Flashcards
   {
+    id: 'check-flashcards',
     block_type: 'check',
-    sort_order: 8,
     content: {
       prompt: 'How does the flashcard system decide which cards to show you more often?',
       choices: [
@@ -287,10 +263,10 @@ const BLOCKS = [
     },
   },
 
-  // ── 10. Assignments ──
+  // 9 – Assignments
   {
+    id: 'assignments',
     block_type: 'text',
-    sort_order: 9,
     content: {
       html: `
 <h2>Assignments</h2>
@@ -311,19 +287,18 @@ const BLOCKS = [
   <li>Pay attention to <strong>due dates</strong>. Overdue assignments are highlighted in red</li>
   <li>Your teacher can see your completion percentage and accuracy, so do your best work</li>
   <li>If you get a question wrong, you can retry it — use the retry-until-correct approach to make sure you understand the concept before moving on</li>
-</ul>
-      `.trim(),
+</ul>`.trim(),
     },
   },
 
-  // ── 11. Putting it all together ──
+  // 10 – Study Routine
   {
+    id: 'study-routine',
     block_type: 'text',
-    sort_order: 10,
     content: {
       html: `
 <h2>Building an Effective Study Routine</h2>
-<p>Now that you know all the tools, here's how to put them together into a study routine that will actually improve your scores:</p>
+<p>Now that you know all the tools, here's how to put them together into a routine that will actually improve your scores:</p>
 
 <h3>Daily Practice (15–30 minutes)</h3>
 <ol>
@@ -352,15 +327,14 @@ const BLOCKS = [
   <li><strong>Focus on weaknesses.</strong> It's tempting to practice what you're already good at, but the biggest score gains come from improving your weakest areas.</li>
   <li><strong>Review mistakes actively.</strong> Don't just read the explanation — write a note in your Error Log about what you'll do differently next time.</li>
   <li><strong>Use the tools together.</strong> The Question Bank, Smart Review, Error Log, and Flashcards are designed to work as a system. Each one reinforces the others.</li>
-</ul>
-      `.trim(),
+</ul>`.trim(),
     },
   },
 
-  // ── 12. Final knowledge check ──
+  // 11 – Check: Study Routine
   {
+    id: 'check-routine',
     block_type: 'check',
-    sort_order: 11,
     content: {
       prompt:
         'According to the recommended study routine, what should you do first during your daily practice?',
@@ -376,14 +350,14 @@ const BLOCKS = [
     },
   },
 
-  // ── 13. Wrap-up ──
+  // 12 – Wrap-up
   {
+    id: 'wrapup',
     block_type: 'text',
-    sort_order: 12,
     content: {
       html: `
 <h2>You're Ready!</h2>
-<p>You now know how to use every feature of this platform. Here's a quick summary of where to find everything:</p>
+<p>You now know how to use every feature of this platform. Here's a quick reference:</p>
 <table style="width:100%; border-collapse:collapse; margin:12px 0;">
   <tr style="border-bottom:1px solid #ddd;">
     <td style="padding:8px; font-weight:bold;">Dashboard</td>
@@ -406,105 +380,133 @@ const BLOCKS = [
     <td style="padding:8px;">Teacher-assigned question sets (on your Dashboard)</td>
   </tr>
 </table>
-<p>The most important thing is to <strong>start practicing consistently</strong>. Even a few questions a day will add up. Good luck — you've got this!</p>
-      `.trim(),
+<p>The most important thing is to <strong>start practicing consistently</strong>. Even a few questions a day will add up. Good luck — you've got this!</p>`.trim(),
     },
   },
 ];
 
-// ─── Main ──────────────────────────────────────────────────
+// ─── Page component ──────────────────────────────────────
 
-async function main() {
-  // Find an admin user to be the author (or use AUTHOR_EMAIL)
-  const authorEmail = process.env.AUTHOR_EMAIL;
-  let authorId;
+export default function GettingStartedPage() {
+  return (
+    <div className="container" style={{ paddingTop: 24, maxWidth: 800, paddingBottom: 80 }}>
+      {/* Header */}
+      <Link href="/learn" style={{ fontSize: 13, color: 'var(--accent)' }}>&larr; Back to Learn</Link>
 
-  if (authorEmail) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', authorEmail)
-      .single();
-    if (!data) {
-      console.error(`No profile found for email: ${authorEmail}`);
-      process.exit(1);
-    }
-    authorId = data.id;
-  } else {
-    const { data } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('role', 'admin')
-      .limit(1)
-      .single();
-    if (!data) {
-      console.error('No admin user found. Set AUTHOR_EMAIL env var to specify an author.');
-      process.exit(1);
-    }
-    authorId = data.id;
-  }
+      <div style={{ marginTop: 12, marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, margin: '0 0 6px' }}>{LESSON.title}</h1>
+        <p className="muted" style={{ fontSize: 14, margin: '0 0 8px' }}>{LESSON.description}</p>
+        <span className="muted" style={{ fontSize: 13 }}>Platform Tutorial</span>
+      </div>
 
-  console.log(`Author ID: ${authorId}`);
-
-  // Check if tutorial lesson already exists
-  const { data: existing } = await supabase
-    .from('lessons')
-    .select('id')
-    .eq('title', LESSON_TITLE)
-    .maybeSingle();
-
-  if (existing) {
-    console.log(`Tutorial lesson already exists (id: ${existing.id}). Deleting and recreating...`);
-    await supabase.from('lessons').delete().eq('id', existing.id);
-  }
-
-  // Create the lesson
-  const { data: lesson, error: lessonErr } = await supabase
-    .from('lessons')
-    .insert({
-      author_id: authorId,
-      title: LESSON_TITLE,
-      description: LESSON_DESCRIPTION,
-      visibility: 'shared',
-      status: 'published',
-    })
-    .select('id')
-    .single();
-
-  if (lessonErr) {
-    console.error('Failed to create lesson:', lessonErr.message);
-    process.exit(1);
-  }
-
-  console.log(`Created lesson: ${lesson.id}`);
-
-  // Insert blocks
-  const blockRows = BLOCKS.map((b) => ({
-    lesson_id: lesson.id,
-    block_type: b.block_type,
-    sort_order: b.sort_order,
-    content: b.content,
-  }));
-
-  const { error: blocksErr } = await supabase.from('lesson_blocks').insert(blockRows);
-
-  if (blocksErr) {
-    console.error('Failed to insert blocks:', blocksErr.message);
-    process.exit(1);
-  }
-
-  console.log(`Inserted ${blockRows.length} blocks`);
-
-  // Tag with a general topic (no specific domain — this is a platform tutorial)
-  // Skip topic tagging since this is a meta-tutorial, not a subject lesson
-
-  console.log('\nDone! Tutorial lesson created successfully.');
-  console.log(`Lesson ID: ${lesson.id}`);
-  console.log(`View at: /learn/${lesson.id}`);
-  console.log(`Edit at: /teacher/content/${lesson.id}`);
+      {/* Blocks */}
+      {BLOCKS.map((block) => (
+        <div key={block.id} style={{ marginBottom: 24 }}>
+          {block.block_type === 'text' && (
+            <div className="card" style={{ padding: '20px 24px' }}>
+              <HtmlBlock className="prose" html={block.content.html} />
+            </div>
+          )}
+          {block.block_type === 'check' && (
+            <StaticCheckBlock content={block.content} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// ─── Knowledge check (self-contained, no API) ────────────
+
+function StaticCheckBlock({ content }) {
+  const [selected, setSelected] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  const choices = content.choices || [];
+  const correctIdx = content.correct_index ?? 0;
+
+  function handleSubmit() {
+    if (selected === null) return;
+    setSubmitted(true);
+  }
+
+  return (
+    <div
+      className="card"
+      style={{
+        padding: '20px 24px',
+        border: submitted
+          ? `2px solid ${selected === correctIdx ? 'var(--success)' : 'var(--danger)'}`
+          : undefined,
+      }}
+    >
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', marginBottom: 8 }}>
+        Knowledge Check
+      </div>
+      <p style={{ fontSize: 15, fontWeight: 600, margin: '0 0 12px' }}>{content.prompt}</p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {choices.map((choice, i) => {
+          const isCorrectChoice = i === correctIdx;
+          const isSelected = i === selected;
+          let bg = 'transparent';
+          let border = '1px solid var(--border, #ddd)';
+          if (submitted) {
+            if (isCorrectChoice) {
+              bg = 'rgba(76,175,80,0.1)';
+              border = '1px solid var(--success)';
+            } else if (isSelected && !isCorrectChoice) {
+              bg = 'rgba(224,82,82,0.1)';
+              border = '1px solid var(--danger)';
+            }
+          } else if (isSelected) {
+            bg = 'var(--bg-alt, #f0f4ff)';
+            border = '1px solid var(--accent)';
+          }
+
+          return (
+            <button
+              key={i}
+              onClick={() => { if (!submitted) setSelected(i); }}
+              disabled={submitted}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px', borderRadius: 8, background: bg, border,
+                cursor: submitted ? 'default' : 'pointer', textAlign: 'left',
+                fontSize: 14, width: '100%',
+              }}
+            >
+              <span style={{ fontWeight: 700, color: 'var(--muted)', width: 20, flexShrink: 0 }}>
+                {String.fromCharCode(65 + i)}
+              </span>
+              <span>{choice}</span>
+              {submitted && isCorrectChoice && (
+                <span style={{ marginLeft: 'auto', color: 'var(--success)', fontWeight: 700 }}>&#10003;</span>
+              )}
+              {submitted && isSelected && !isCorrectChoice && (
+                <span style={{ marginLeft: 'auto', color: 'var(--danger)', fontWeight: 700 }}>&#10007;</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {!submitted && (
+        <button
+          className="btn primary"
+          onClick={handleSubmit}
+          disabled={selected === null}
+          style={{ marginTop: 12, fontSize: 13 }}
+        >
+          Check Answer
+        </button>
+      )}
+
+      {submitted && content.explanation && (
+        <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 6, background: 'var(--bg-alt, #f8f9fb)', fontSize: 14 }}>
+          <strong>Explanation:</strong> {content.explanation}
+        </div>
+      )}
+    </div>
+  );
+}

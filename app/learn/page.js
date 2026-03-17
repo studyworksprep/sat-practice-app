@@ -48,6 +48,28 @@ function LearnLibrary() {
     <div className="container" style={{ paddingTop: 32, maxWidth: 900 }}>
       <h1 className="h1" style={{ marginBottom: 20 }}>Learn</h1>
 
+      {/* Getting Started tutorial banner */}
+      <Link href="/learn/getting-started" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <div className="card" style={{
+          padding: '16px 20px', marginBottom: 20, cursor: 'pointer',
+          background: 'linear-gradient(135deg, var(--bg-alt, #f0f4ff) 0%, #e8eeff 100%)',
+          border: '1px solid var(--accent)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 24 }}>📖</span>
+            <div style={{ flex: 1 }}>
+              <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--accent)' }}>
+                Getting Started: Your Guide to SAT Practice
+              </span>
+              <p className="muted" style={{ fontSize: 13, margin: '2px 0 0' }}>
+                New here? Learn how to use the Question Bank, Practice Tests, Flashcards, Smart Review, and more.
+              </p>
+            </div>
+            <span style={{ color: 'var(--accent)', fontSize: 18, fontWeight: 700 }}>&rarr;</span>
+          </div>
+        </div>
+      </Link>
+
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '2px solid var(--border, #eee)' }}>
         {[
