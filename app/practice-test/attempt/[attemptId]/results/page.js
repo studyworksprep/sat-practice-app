@@ -173,7 +173,7 @@ function DomainAnalyticsCard({ title, subtitle, domains }) {
 
 // ─── Timing bar (one per module) ──────────────────────────────────────────
 
-function TimingBar({ label, questions }) {
+function TimingBar({ label, questions, onBarClick }) {
   const totalTime = questions.reduce((s, q) => s + (q.time_spent_ms || 0), 0);
   if (!totalTime) return null;
   const [hoveredIdx, setHoveredIdx] = useState(null);
@@ -182,7 +182,7 @@ function TimingBar({ label, questions }) {
     <div className="ptrvTimingRow">
       <div className="ptrvTimingLabel">{label}</div>
       <div className="ptrvTimingBarWrap">
-        <div className="ptrvTimingBar">
+        <div className="ptrvTimingBar" onClick={onBarClick} style={{ cursor: 'pointer' }}>
           {questions.map((q, i) => {
             const w = ((q.time_spent_ms || 0) / totalTime) * 100;
             if (w < 0.3) return null;
@@ -192,14 +192,16 @@ function TimingBar({ label, questions }) {
               <div
                 key={i}
                 className={`ptrvTimingSeg ${isCorrect ? 'correct' : isSkipped ? 'skipped' : 'incorrect'}`}
-                style={{ width: `${w}%` }}
+                style={{ width: `${w}%`, borderRight: '1px solid rgba(255,255,255,0.35)' }}
                 onMouseEnter={() => setHoveredIdx(i)}
                 onMouseLeave={() => setHoveredIdx(null)}
               >
                 {hoveredIdx === i && (
                   <div className="ptrvTimingTooltip">
-                    <strong>Q{q.ordinal}</strong>
-                    <span>{fmtTime(q.time_spent_ms)}</span>
+                    <strong>Q{q.ordinal} · {fmtTime(q.time_spent_ms)}</strong>
+                    {q.difficulty != null && <span>{DIFF_LABEL[q.difficulty] || `Diff ${q.difficulty}`}</span>}
+                    {q.domain_name && <span style={{ opacity: 0.85 }}>{q.domain_name}</span>}
+                    {q.skill_name && q.skill_name !== q.domain_name && <span style={{ opacity: 0.7, fontSize: 11 }}>{q.skill_name}</span>}
                     <span className={isCorrect ? 'correct' : isSkipped ? 'skipped' : 'incorrect'}>
                       {isCorrect ? 'Correct' : isSkipped ? 'Skipped' : 'Incorrect'}
                     </span>
@@ -210,6 +212,60 @@ function TimingBar({ label, questions }) {
           })}
         </div>
         <div className="ptrvTimingTotal">{fmtTime(totalTime)}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Timing detail popup ──────────────────────────────────────────────────
+
+function TimingDetailPopup({ label, questions, onClose }) {
+  if (!questions?.length) return null;
+  const sorted = [...questions].sort((a, b) => a.ordinal - b.ordinal);
+  return (
+    <div className="modalOverlay" onClick={onClose}>
+      <div className="modalCard" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div className="h2" style={{ margin: 0 }}>{label} — Time Breakdown</div>
+          <button className="btn secondary" onClick={onClose} style={{ fontSize: 12, padding: '4px 10px' }}>Close</button>
+        </div>
+        <div style={{ overflow: 'auto', flex: 1 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid var(--border, #ddd)', textAlign: 'left' }}>
+                <th style={{ padding: '6px 8px' }}>Q#</th>
+                <th style={{ padding: '6px 8px' }}>Time</th>
+                <th style={{ padding: '6px 8px' }}>Difficulty</th>
+                <th style={{ padding: '6px 8px' }}>Domain</th>
+                <th style={{ padding: '6px 8px' }}>Skill</th>
+                <th style={{ padding: '6px 8px' }}>Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((q) => {
+                const isCorrect = q.is_correct;
+                const isSkipped = !q.was_answered;
+                return (
+                  <tr key={q.question_version_id} style={{ borderBottom: '1px solid var(--border, #eee)' }}>
+                    <td style={{ padding: '6px 8px', fontWeight: 600 }}>{q.ordinal}</td>
+                    <td style={{ padding: '6px 8px', fontFamily: 'monospace' }}>{fmtTime(q.time_spent_ms)}</td>
+                    <td style={{ padding: '6px 8px' }}>{DIFF_LABEL[q.difficulty] || '—'}</td>
+                    <td style={{ padding: '6px 8px', fontSize: 12 }}>{q.domain_name || '—'}</td>
+                    <td style={{ padding: '6px 8px', fontSize: 12 }}>{q.skill_name || '—'}</td>
+                    <td style={{ padding: '6px 8px' }}>
+                      <span style={{
+                        color: isCorrect ? '#16a34a' : isSkipped ? '#888' : '#dc2626',
+                        fontWeight: 600, fontSize: 12,
+                      }}>
+                        {isCorrect ? 'Correct' : isSkipped ? 'Skipped' : 'Incorrect'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -531,6 +587,9 @@ export default function ResultsPage() {
     prevSubjRef.current = selectedQ.subject_code;
   }, [selectedQ]);
 
+  // Timing detail popup state
+  const [timingPopup, setTimingPopup] = useState(null); // { label, questions }
+
   // Flashcard state
   const [showFlashcardDialog, setShowFlashcardDialog] = useState(false);
   const [flashcardSets, setFlashcardSets] = useState([]);
@@ -800,7 +859,7 @@ export default function ResultsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.opportunity.map((s, i) => {
+                {data.opportunity.slice(0, 5).map((s, i) => {
                   const acc = s.total ? Math.round((s.correct / s.total) * 100) : 0;
                   const maxOI = data.opportunity[0]?.opportunity_index || 1;
                   const barW = Math.max(4, (s.opportunity_index / maxOI) * 100);
@@ -850,34 +909,88 @@ export default function ResultsPage() {
       )}
 
       {/* ═══ TIMING ANALYSIS ═══ */}
-      {hasTimingData && (
-        <div className="ptrvSection">
-          <h2 className="ptrvSectionH2">Timing Analysis</h2>
-          <p className="ptrvSectionSub">Time distribution across questions in each module</p>
-          <div className="card ptrvTimingCard">
-            {SUBJECT_ORDER.map(subj =>
-              [1, 2].map(modNum => {
-                const key = `${subj}/${modNum}`;
-                const qs = questionsByGroup[key];
-                if (!qs?.length) return null;
-                const hasTime = qs.some(q => q.time_spent_ms != null && q.time_spent_ms > 0);
-                if (!hasTime) return null;
-                return (
-                  <TimingBar
-                    key={key}
-                    label={`${SUBJECT_LABEL[subj]} · M${modNum}`}
-                    questions={qs}
-                  />
-                );
-              })
-            )}
-            <div className="ptrvTimingLegend">
-              <span><span className="ptrvTimingLegDot correct" /> Correct</span>
-              <span><span className="ptrvTimingLegDot incorrect" /> Incorrect</span>
-              <span><span className="ptrvTimingLegDot skipped" /> Skipped</span>
+      {hasTimingData && (() => {
+        // Build slowest-questions lists per subject
+        const rwTimedQs = questions.filter(q => RW_CODES.has(q.subject_code) && q.time_spent_ms > 0);
+        const mathTimedQs = questions.filter(q => MATH_CODES.has(q.subject_code) && q.time_spent_ms > 0);
+        const slowestRW = [...rwTimedQs].sort((a, b) => (b.time_spent_ms || 0) - (a.time_spent_ms || 0)).slice(0, 5);
+        const slowestMath = [...mathTimedQs].sort((a, b) => (b.time_spent_ms || 0) - (a.time_spent_ms || 0)).slice(0, 5);
+
+        return (
+          <div className="ptrvSection">
+            <h2 className="ptrvSectionH2">Timing Analysis</h2>
+            <p className="ptrvSectionSub">Time distribution across questions in each module — click a bar for details</p>
+            <div className="card ptrvTimingCard">
+              {SUBJECT_ORDER.map(subj =>
+                [1, 2].map(modNum => {
+                  const key = `${subj}/${modNum}`;
+                  const qs = questionsByGroup[key];
+                  if (!qs?.length) return null;
+                  const hasTime = qs.some(q => q.time_spent_ms != null && q.time_spent_ms > 0);
+                  if (!hasTime) return null;
+                  const barLabel = `${SUBJECT_LABEL[subj]} · M${modNum}`;
+                  return (
+                    <TimingBar
+                      key={key}
+                      label={barLabel}
+                      questions={qs}
+                      onBarClick={() => setTimingPopup({ label: barLabel, questions: qs })}
+                    />
+                  );
+                })
+              )}
+              <div className="ptrvTimingLegend">
+                <span><span className="ptrvTimingLegDot correct" /> Correct</span>
+                <span><span className="ptrvTimingLegDot incorrect" /> Incorrect</span>
+                <span><span className="ptrvTimingLegDot skipped" /> Skipped</span>
+              </div>
             </div>
+
+            {/* Most time-consuming questions */}
+            {(slowestRW.length > 0 || slowestMath.length > 0) && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginTop: 16 }}>
+                {[
+                  { label: 'Reading & Writing', items: slowestRW },
+                  { label: 'Math', items: slowestMath },
+                ].filter(g => g.items.length > 0).map(g => (
+                  <div key={g.label} className="card" style={{ padding: 16 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>Slowest Questions — {g.label}</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {g.items.map((q, idx) => (
+                        <div key={q.question_version_id} style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '6px 8px', borderRadius: 6,
+                          background: idx === 0 ? 'rgba(220,38,38,0.06)' : 'transparent',
+                        }}>
+                          <span style={{
+                            fontWeight: 700, fontSize: 13, minWidth: 32,
+                            color: q.is_correct ? '#16a34a' : q.was_answered ? '#dc2626' : '#888',
+                          }}>Q{q.ordinal}</span>
+                          <span style={{ fontFamily: 'monospace', fontWeight: 600, fontSize: 13, minWidth: 42 }}>{fmtTime(q.time_spent_ms)}</span>
+                          <span className="muted" style={{ fontSize: 12, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {q.domain_name ? abbrev(q.domain_name) : ''}{q.skill_name ? ` · ${q.skill_name}` : ''}
+                          </span>
+                          {q.difficulty != null && (
+                            <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.6 }}>{DIFF_LABEL[q.difficulty]}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        );
+      })()}
+
+      {/* Timing detail popup */}
+      {timingPopup && (
+        <TimingDetailPopup
+          label={timingPopup.label}
+          questions={timingPopup.questions}
+          onClose={() => setTimingPopup(null)}
+        />
       )}
 
       {/* ═══ QUESTION REVIEW ═══ */}
