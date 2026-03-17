@@ -331,7 +331,7 @@ a{
 /* Figures / reference images inside stimuli — keep compact like math graphs */
 .prose .stimulus_reference img{
   display: block;
-  max-width: min(260px, 100%);
+  max-width: min(360px, 100%);
   height: auto;
   margin: 8px auto;
 }
@@ -2256,7 +2256,7 @@ hr{
 
 .mathShell .prose img{
   display: block;
-  max-width: min(260px, 100%);
+  max-width: min(360px, 100%);
   height: auto;
   margin: 8px auto;
 }
@@ -2264,7 +2264,7 @@ hr{
 /* Cap graph / figure images inside the right-side question panel */
 .qaRightPanel .prose img{
   display: block;
-  max-width: min(260px, 100%);
+  max-width: min(360px, 100%);
   height: auto;
   margin: 8px auto;
 }
@@ -2272,7 +2272,7 @@ hr{
 /* Stimulus images in practice test math questions */
 .ptStimulus img{
   display: block;
-  max-width: min(260px, 100%);
+  max-width: min(360px, 100%);
   height: auto;
   margin: 8px auto;
 }
