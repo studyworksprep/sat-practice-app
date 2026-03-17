@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
-import { computeScaledScore, toScaledScore } from '../../../../../../lib/scoreConversion';
+import { computeScaledScore, toScaledScore, isHardRoute } from '../../../../../../lib/scoreConversion';
 
 // GET /api/practice-tests/attempt/[attemptId]/results
 // Returns full results including scores, domain breakdown, and question review.
@@ -154,7 +154,7 @@ export async function GET(_request, { params }) {
   // Fetch taxonomy for domain/skill breakdown
   const { data: taxonomy } = await supabase
     .from('question_taxonomy')
-    .select('question_id, domain_name, domain_code, skill_name, skill_code, difficulty')
+    .select('question_id, domain_name, domain_code, skill_name, skill_code, difficulty, score_band')
     .in('question_id', questionIds);
 
   const taxByQuestion = {};
@@ -266,6 +266,7 @@ export async function GET(_request, { params }) {
       domain_name: tax.domain_name || null,
       skill_name: tax.skill_name || null,
       difficulty: tax.difficulty ?? null,
+      score_band: tax.score_band ?? null,
       time_spent_ms: attempt_rec?.time_spent_ms ?? null,
       rationale_html: version.rationale_html || null,
     });
@@ -356,6 +357,75 @@ export async function GET(_request, { params }) {
     .eq('id', attempt.practice_test_id)
     .single();
 
+  // ── Opportunity Index computation ─────────────────────────────────
+  // OI(skill) = (L / 10) × Σ EASE_WEIGHT[band] × MODULE_WEIGHT[route, module]
+  // for each wrong question in the skill.
+  const EASE_WEIGHT = { 1: 2.2, 2: 2.0, 3: 1.8, 4: 1.6, 5: 1.4, 6: 1.2, 7: 1.0 };
+  const MODULE_WEIGHT_EASY = { 1: 1.0, 2: 0.25 };
+  const MODULE_WEIGHT_HARD = { 1: 1.0, 2: 1.0 };
+
+  // Fetch learnability ratings
+  const { data: learnRows } = await supabase
+    .from('skill_learnability')
+    .select('skill_code, learnability');
+
+  const learnMap = {};
+  for (const r of learnRows || []) learnMap[r.skill_code] = r.learnability;
+
+  // Determine route per subject
+  const routeBySubject = {};
+  for (const [subj, sec] of Object.entries(sections)) {
+    routeBySubject[subj] = isHardRoute(sec.routeCode) ? 'hard' : 'easy';
+  }
+
+  // Accumulate OI per skill (keyed by skill_code)
+  const oiAccum = {}; // skill_code → { skill_name, domain_name, subject_code, learnability, rawSum, correct, total }
+  for (const q of questionReview) {
+    const tax = taxByQuestion[q.question_id] || {};
+    const skillCode = tax.skill_code;
+    if (!skillCode) continue;
+
+    if (!oiAccum[skillCode]) {
+      oiAccum[skillCode] = {
+        skill_code: skillCode,
+        skill_name: tax.skill_name || skillCode,
+        domain_name: tax.domain_name || '',
+        subject_code: q.subject_code,
+        learnability: learnMap[skillCode] ?? 5,
+        rawSum: 0,
+        correct: 0,
+        total: 0,
+      };
+    }
+    oiAccum[skillCode].total += 1;
+    if (q.is_correct) {
+      oiAccum[skillCode].correct += 1;
+    } else {
+      // Wrong question → contributes to opportunity
+      const band = tax.score_band || 4;
+      const ease = EASE_WEIGHT[band] ?? 1.6;
+      const route = routeBySubject[q.subject_code] || 'easy';
+      const modWeight = route === 'hard'
+        ? (MODULE_WEIGHT_HARD[q.module_number] ?? 1.0)
+        : (MODULE_WEIGHT_EASY[q.module_number] ?? 1.0);
+      oiAccum[skillCode].rawSum += ease * modWeight;
+    }
+  }
+
+  const opportunity = Object.values(oiAccum)
+    .map(s => ({
+      skill_code: s.skill_code,
+      skill_name: s.skill_name,
+      domain_name: s.domain_name,
+      subject_code: s.subject_code,
+      learnability: s.learnability,
+      correct: s.correct,
+      total: s.total,
+      opportunity_index: Math.round(((s.learnability / 10) * s.rawSum) * 100) / 100,
+    }))
+    .filter(s => s.opportunity_index > 0)
+    .sort((a, b) => b.opportunity_index - a.opportunity_index);
+
   return NextResponse.json({
     attempt_id: attemptId,
     practice_test_id: attempt.practice_test_id,
@@ -368,5 +438,6 @@ export async function GET(_request, { params }) {
     sections,
     domains,
     questions: questionReview,
+    opportunity,
   });
 }

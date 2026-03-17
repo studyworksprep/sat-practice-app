@@ -783,6 +783,72 @@ export default function ResultsPage() {
         </div>
       )}
 
+      {/* ═══ OPPORTUNITY INDEX ═══ */}
+      {data.opportunity?.length > 0 && (
+        <div className="ptrvSection">
+          <h2 className="ptrvSectionH2">Opportunity Index</h2>
+          <p className="ptrvSectionSub">Skills ranked by potential score improvement — higher index = more actionable gains</p>
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <table className="adminTable" style={{ fontSize: 14 }}>
+              <thead>
+                <tr>
+                  <th style={{ paddingLeft: 16 }}>Skill</th>
+                  <th>Domain</th>
+                  <th style={{ width: 90, textAlign: 'center' }}>Accuracy</th>
+                  <th style={{ width: 80, textAlign: 'center' }}>Learnability</th>
+                  <th style={{ width: 100, textAlign: 'right', paddingRight: 16 }}>OI Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.opportunity.map((s, i) => {
+                  const acc = s.total ? Math.round((s.correct / s.total) * 100) : 0;
+                  const maxOI = data.opportunity[0]?.opportunity_index || 1;
+                  const barW = Math.max(4, (s.opportunity_index / maxOI) * 100);
+                  return (
+                    <tr key={s.skill_code}>
+                      <td style={{ paddingLeft: 16, fontWeight: i < 3 ? 600 : 400 }}>
+                        {s.skill_name}
+                      </td>
+                      <td className="muted small">{s.domain_name}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span style={{ color: pctColor(acc), fontWeight: 600 }}>{acc}%</span>
+                        <span className="muted small" style={{ marginLeft: 4 }}>{s.correct}/{s.total}</span>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span style={{
+                          display: 'inline-block', padding: '1px 6px', borderRadius: 4,
+                          fontSize: 12, fontWeight: 600, fontFamily: 'monospace',
+                          background: s.learnability >= 7 ? 'rgba(22,163,74,0.1)' : s.learnability >= 4 ? 'rgba(202,138,4,0.1)' : 'rgba(220,38,38,0.1)',
+                          color: s.learnability >= 7 ? '#16a34a' : s.learnability >= 4 ? '#ca8a04' : '#dc2626',
+                        }}>
+                          {s.learnability}
+                        </span>
+                      </td>
+                      <td style={{ paddingRight: 16 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+                          <div style={{
+                            flex: 1, height: 6, borderRadius: 3, background: 'var(--border, #e5e5e5)',
+                            overflow: 'hidden', maxWidth: 60,
+                          }}>
+                            <div style={{
+                              width: `${barW}%`, height: '100%', borderRadius: 3,
+                              background: i < 3 ? '#2563eb' : '#6b7280',
+                            }} />
+                          </div>
+                          <span style={{ fontWeight: 700, minWidth: 36, textAlign: 'right', fontFamily: 'monospace' }}>
+                            {s.opportunity_index.toFixed(1)}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* ═══ TIMING ANALYSIS ═══ */}
       {hasTimingData && (
         <div className="ptrvSection">

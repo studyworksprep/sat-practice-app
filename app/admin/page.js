@@ -68,6 +68,13 @@ export default function AdminPage() {
   // Bug reports
   const [recentBugs, setRecentBugs] = useState([]);
 
+  // Skill learnability state
+  const [showLearnability, setShowLearnability] = useState(false);
+  const [learnSkills, setLearnSkills] = useState([]);
+  const [learnLoading, setLearnLoading] = useState(false);
+  const [learnSaving, setLearnSaving] = useState(false);
+  const [learnDirty, setLearnDirty] = useState({});
+
   useEffect(() => {
     supabase
       .from('practice_tests')
@@ -343,6 +350,42 @@ export default function AdminPage() {
       const json = await res.json();
       if (res.ok) setRecentBugs(json.reports || []);
     } catch {}
+  }
+
+  async function fetchLearnability() {
+    setLearnLoading(true);
+    try {
+      const res = await fetch('/api/admin/skill-learnability');
+      const json = await res.json();
+      if (res.ok) { setLearnSkills(json.skills || []); setLearnDirty({}); }
+    } catch {}
+    setLearnLoading(false);
+  }
+
+  function handleLearnChange(skillCode, value) {
+    const v = Math.max(1, Math.min(10, parseInt(value, 10) || 1));
+    setLearnSkills(prev => prev.map(s => s.skill_code === skillCode ? { ...s, learnability: v } : s));
+    setLearnDirty(prev => ({ ...prev, [skillCode]: v }));
+  }
+
+  async function saveLearnability() {
+    const updates = Object.entries(learnDirty).map(([skill_code, learnability]) => ({ skill_code, learnability }));
+    if (!updates.length) return showToast('ok', 'No changes to save.');
+    setLearnSaving(true);
+    try {
+      const res = await fetch('/api/admin/skill-learnability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      showToast('ok', `Saved ${json.saved} learnability rating(s).`);
+      setLearnDirty({});
+    } catch (err) {
+      showToast('danger', err.message);
+    }
+    setLearnSaving(false);
   }
 
   async function handleSaveScores() {
@@ -835,6 +878,72 @@ export default function AdminPage() {
             <button className="btn" onClick={handleSaveScores} disabled={saving} style={{ marginTop: 8 }}>
               {saving ? 'Saving…' : 'Save Score Data'}
             </button>
+          </div>
+        )}
+      </section>
+
+      {/* ── Skill Learnability ──────────────────────────────── */}
+      <section style={{ marginTop: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h2 className="h2" style={{ margin: 0 }}>Skill Learnability</h2>
+          <button className="btn" onClick={() => { setShowLearnability(!showLearnability); if (!showLearnability && !learnSkills.length) fetchLearnability(); }}>
+            {showLearnability ? 'Close' : 'Manage Ratings'}
+          </button>
+        </div>
+        <p className="muted small" style={{ marginTop: -8, marginBottom: 12 }}>
+          Rate each skill from 1 (hardest to improve) to 10 (easiest to improve). Used to compute Opportunity Index on practice test reports.
+        </p>
+
+        {showLearnability && (
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            {learnLoading ? (
+              <p className="muted small" style={{ padding: 20 }}>Loading skills…</p>
+            ) : learnSkills.length === 0 ? (
+              <p className="muted small" style={{ padding: 20 }}>No skills found. Ensure question_taxonomy has data.</p>
+            ) : (
+              <>
+                <table className="adminTable">
+                  <thead>
+                    <tr>
+                      <th>Domain</th>
+                      <th>Skill</th>
+                      <th style={{ width: 120 }}>Learnability</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {learnSkills.map((s) => (
+                      <tr key={s.skill_code} style={learnDirty[s.skill_code] !== undefined ? { background: 'rgba(37,99,235,0.04)' } : undefined}>
+                        <td className="muted small">{s.domain_name || '—'}</td>
+                        <td>{s.skill_name || s.skill_code}</td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <input
+                              type="range"
+                              min="1"
+                              max="10"
+                              value={s.learnability}
+                              onChange={(e) => handleLearnChange(s.skill_code, e.target.value)}
+                              style={{ flex: 1 }}
+                            />
+                            <span style={{ fontWeight: 600, minWidth: 20, textAlign: 'center', fontFamily: 'monospace' }}>
+                              {s.learnability}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div style={{ padding: '12px 16px', display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid var(--border)' }}>
+                  <button className="btn" onClick={saveLearnability} disabled={learnSaving || !Object.keys(learnDirty).length}>
+                    {learnSaving ? 'Saving…' : `Save Changes${Object.keys(learnDirty).length ? ` (${Object.keys(learnDirty).length})` : ''}`}
+                  </button>
+                  {Object.keys(learnDirty).length > 0 && (
+                    <span className="muted small">{Object.keys(learnDirty).length} unsaved change(s)</span>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
       </section>
