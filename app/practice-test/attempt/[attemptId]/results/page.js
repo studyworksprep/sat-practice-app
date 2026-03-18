@@ -733,39 +733,80 @@ export default function ResultsPage() {
     const opportunity = data?.opportunity || [];
 
     const fmtDatePdf = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+    const fmtTimePdf = (ms) => {
+      if (!ms && ms !== 0) return '—';
+      const s = Math.round(ms / 1000);
+      if (s < 60) return `${s}s`;
+      const m = Math.floor(s / 60);
+      const rem = s % 60;
+      return rem > 0 ? `${m}m ${rem}s` : `${m}m`;
+    };
     const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'letter' });
     const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
     const marginL = 40;
     const marginR = 40;
     const contentW = pageW - marginL - marginR;
     let y = 40;
 
-    const ensureSpace = (needed) => { if (y + needed > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); y = 40; } };
+    const ensureSpace = (needed) => { if (y + needed > pageH - 50) { doc.addPage(); y = 40; } };
     const sectionTitle = (text) => { ensureSpace(60); y += 28; doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59); doc.text(text, marginL, y); y += 6; doc.setDrawColor(37, 99, 235); doc.setLineWidth(1.5); doc.line(marginL, y, pageW - marginR, y); y += 20; };
     const subTitle = (text) => { ensureSpace(36); y += 16; doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(51, 65, 85); doc.text(text, marginL, y); y += 14; };
 
+    // ─── LOGO ──────────────────────────────────────────────
+    try {
+      const logoImg = new Image();
+      logoImg.crossOrigin = 'anonymous';
+      await new Promise((resolve, reject) => {
+        logoImg.onload = resolve;
+        logoImg.onerror = reject;
+        logoImg.src = '/studyworks-logo.png';
+      });
+      const logoH = 36;
+      const logoW = (logoImg.naturalWidth / logoImg.naturalHeight) * logoH;
+      doc.addImage(logoImg, 'PNG', marginL, y, logoW, logoH);
+      y += logoH + 12;
+    } catch {
+      // Logo failed to load, skip
+    }
+
     // ─── TITLE ────────────────────────────────────────────
-    doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.setTextColor(30);
+    doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
     doc.text(data?.test_name || 'Practice Test', marginL, y);
     y += 16;
     doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
     doc.text('Score Report', marginL, y);
     if (data?.completed_at) { doc.text(fmtDatePdf(data.completed_at), pageW - marginR, y, { align: 'right' }); }
-    y += 20;
+    y += 24;
 
     // ─── STUDENT INFO ─────────────────────────────────────
     if (data?.student) {
-      const infoBoxH = data?.teacher ? 62 : 38;
+      const hasTeacher = !!data?.teacher;
+      const hasEmail = !!(data.student.email && data.student.name);
+      // Calculate box height dynamically
+      let infoBoxH = 14; // top padding
+      infoBoxH += 12;    // STUDENT label
+      infoBoxH += 14;    // Student name
+      if (hasEmail) infoBoxH += 14; // email line
+      if (hasTeacher) {
+        infoBoxH += 10;  // gap
+        infoBoxH += 12;  // TEACHER label
+        infoBoxH += 14;  // teacher name
+      }
+      infoBoxH += 10;    // bottom padding
+
       doc.setFillColor(248, 250, 252); doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.5);
       doc.roundedRect(marginL, y, contentW, infoBoxH, 4, 4, 'FD');
       // Left accent bar
       doc.setFillColor(37, 99, 235);
       doc.rect(marginL, y + 2, 3, infoBoxH - 4, 'F');
+
+      y += 14;
+      doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(140);
+      doc.text('STUDENT', marginL + 12, y);
       y += 12;
-      doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(120);
-      doc.text('STUDENT', marginL + 10, y); y += 10;
-      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30);
-      doc.text(data.student.name || data.student.email || '—', marginL + 10, y);
+      doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+      doc.text(data.student.name || data.student.email || '—', marginL + 12, y);
       // Right side details
       const detailParts = [];
       if (data.student.high_school) detailParts.push(data.student.high_school);
@@ -775,45 +816,52 @@ export default function ResultsPage() {
         doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
         doc.text(detailParts.join('  |  '), pageW - marginR - 10, y, { align: 'right' });
       }
-      y += 6;
-      if (data.student.email && data.student.name) {
+      y += 14;
+      if (hasEmail) {
         doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
-        doc.text(data.student.email, marginL + 10, y + 4); y += 8;
+        doc.text(data.student.email, marginL + 12, y);
+        y += 14;
       }
 
-      if (data?.teacher) {
+      if (hasTeacher) {
         y += 4;
-        doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(120);
-        doc.text('TEACHER', marginL + 10, y); y += 10;
+        doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(140);
+        doc.text('TEACHER', marginL + 12, y);
+        y += 12;
         doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(60);
         const teacherLine = [data.teacher.name, data.teacher.email].filter(Boolean).join(' — ');
-        doc.text(teacherLine || '—', marginL + 10, y);
+        doc.text(teacherLine || '—', marginL + 12, y);
+        y += 14;
       }
 
-      y += 18;
+      y += 12;
     }
 
     // ─── SCORES ───────────────────────────────────────────
     sectionTitle('Scores');
+    const scoreBoxH = 52;
     // Light blue background behind scores
     doc.setFillColor(239, 246, 255);
-    doc.roundedRect(marginL, y - 4, contentW, 48, 4, 4, 'F');
+    doc.roundedRect(marginL, y, contentW, scoreBoxH, 4, 4, 'F');
     const scoreBoxW = contentW / (sectionEntries.length + 1);
+    const scoreCenterY = y + scoreBoxH * 0.38;
+    const scoreLabelY = scoreCenterY + 16;
+    const scoreSubY = scoreLabelY + 10;
     // Composite
     doc.setFontSize(28); doc.setFont('helvetica', 'bold'); doc.setTextColor(37, 99, 235);
-    doc.text(String(data?.composite ?? '—'), marginL + scoreBoxW * 0.5, y + 8, { align: 'center' });
+    doc.text(String(data?.composite ?? '—'), marginL + scoreBoxW * 0.5, scoreCenterY, { align: 'center' });
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(71, 85, 105);
-    doc.text('Total Score', marginL + scoreBoxW * 0.5, y + 22, { align: 'center' });
+    doc.text('Total Score', marginL + scoreBoxW * 0.5, scoreLabelY, { align: 'center' });
     // Section scores
     sectionEntries.forEach(([subj, sec], i) => {
       const cx = marginL + scoreBoxW * (i + 1.5);
       doc.setFontSize(22); doc.setFont('helvetica', 'bold'); doc.setTextColor(37, 99, 235);
-      doc.text(String(sec.scaled), cx, y + 8, { align: 'center' });
+      doc.text(String(sec.scaled), cx, scoreCenterY, { align: 'center' });
       doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(71, 85, 105);
-      doc.text(SUBJECT_LABEL[subj] || subj, cx, y + 22, { align: 'center' });
-      doc.text(`${sec.correct}/${sec.total} correct`, cx, y + 32, { align: 'center' });
+      doc.text(SUBJECT_LABEL[subj] || subj, cx, scoreLabelY, { align: 'center' });
+      doc.text(`${sec.correct}/${sec.total} correct`, cx, scoreSubY, { align: 'center' });
     });
-    y += 56;
+    y += scoreBoxH + 8;
 
     // ─── DOMAIN BREAKDOWN ─────────────────────────────────
     const renderDomains = (domains, label) => {
@@ -832,7 +880,7 @@ export default function ResultsPage() {
             head: [['Skill', 'Score', 'Accuracy']],
             body: rows,
             styles: { fontSize: 9, cellPadding: 3, lineColor: [226, 232, 240], lineWidth: 0.5 },
-            headStyles: { fillColor: [241, 245, 249], textColor: [51, 65, 85], fontStyle: 'bold' },
+            headStyles: { fillColor: [219, 228, 240], textColor: [30, 41, 59], fontStyle: 'bold' },
             alternateRowStyles: { fillColor: [248, 250, 252] },
             theme: 'grid',
           });
@@ -846,6 +894,13 @@ export default function ResultsPage() {
     // ─── OPPORTUNITY INDEX ────────────────────────────────
     if (opportunity.length > 0) {
       sectionTitle('Opportunity Index — Top 5');
+      // Explanation text
+      doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 90, 100);
+      const oiExplain = 'The Opportunity Index highlights skills where you have the most room to grow. It combines how many questions you missed with how learnable the skill is — so the skills at the top of this list are your best bets for score improvement with focused practice.';
+      const oiLines = doc.splitTextToSize(oiExplain, contentW);
+      doc.text(oiLines, marginL, y);
+      y += oiLines.length * 11 + 8;
+
       const oiRows = opportunity.slice(0, 5).map(s => {
         const acc = s.total ? Math.round((s.correct / s.total) * 100) : 0;
         return [s.skill_name, s.domain_name, `${acc}% (${s.correct}/${s.total})`, String(s.learnability), s.opportunity_index.toFixed(1)];
@@ -887,21 +942,22 @@ export default function ResultsPage() {
           const yourAns = selectedOpt ? selectedOpt.label : (q.response_text || '—');
           const correctAns = correctOpt ? correctOpt.label : (correctCA?.correct_text || (correctCA?.correct_number != null ? String(correctCA.correct_number) : '—'));
           const result = q.is_correct ? 'Correct' : q.was_answered ? 'Incorrect' : 'Omitted';
-          return [String(q.ordinal), q.domain_name || '—', q.skill_name || '—', DIFF_LABEL[q.difficulty] || '—', yourAns, correctAns, result];
+          return [String(q.ordinal), q.domain_name || '—', q.skill_name || '—', DIFF_LABEL[q.difficulty] || '—', fmtTimePdf(q.time_spent_ms), yourAns, correctAns, result];
         });
         doc.autoTable({
           startY: y, margin: { left: marginL, right: marginR },
-          head: [['Q#', 'Domain', 'Skill', 'Difficulty', 'Your Answer', 'Correct', 'Result']],
+          head: [['Q#', 'Domain', 'Skill', 'Diff.', 'Time', 'Your Ans.', 'Correct', 'Result']],
           body: rows,
           styles: { fontSize: 8, cellPadding: 2.5, lineColor: [226, 232, 240], lineWidth: 0.5 },
-          headStyles: { fillColor: [241, 245, 249], textColor: [51, 65, 85], fontStyle: 'bold', fontSize: 7 },
+          headStyles: { fillColor: [219, 228, 240], textColor: [30, 41, 59], fontStyle: 'bold', fontSize: 7 },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           columnStyles: {
-            0: { cellWidth: 24 },
-            3: { cellWidth: 48 },
-            4: { cellWidth: 50 },
-            5: { cellWidth: 46 },
+            0: { cellWidth: 22 },
+            3: { cellWidth: 32 },
+            4: { cellWidth: 36, halign: 'right', fontStyle: 'normal', textColor: [100, 116, 139] },
+            5: { cellWidth: 44 },
             6: { cellWidth: 42 },
+            7: { cellWidth: 42 },
           },
           theme: 'grid',
           didParseCell: (hookData) => {
@@ -910,11 +966,11 @@ export default function ResultsPage() {
               if (hookData.column.index === 3) {
                 const v = hookData.cell.raw;
                 if (v === 'Easy') hookData.cell.styles.textColor = [22, 163, 74];
-                else if (v === 'Medium') hookData.cell.styles.textColor = [180, 83, 9];
+                else if (v === 'Medium') hookData.cell.styles.textColor = [202, 138, 4];
                 else if (v === 'Hard') hookData.cell.styles.textColor = [220, 38, 38];
               }
               // Result color
-              if (hookData.column.index === 6) {
+              if (hookData.column.index === 7) {
                 const v = hookData.cell.raw;
                 if (v === 'Correct') hookData.cell.styles.textColor = [22, 163, 74];
                 else if (v === 'Incorrect') hookData.cell.styles.textColor = [220, 38, 38];
@@ -926,6 +982,14 @@ export default function ResultsPage() {
         });
         y = doc.lastAutoTable.finalY + 12;
       }
+    }
+
+    // ─── PAGE NUMBERS ─────────────────────────────────────
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(160);
+      doc.text(`Page ${i} of ${totalPages}`, pageW / 2, pageH - 20, { align: 'center' });
     }
 
     // Download
