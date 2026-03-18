@@ -172,6 +172,19 @@ export async function GET(_request, { params }) {
     }
   }
 
+  // Fallback for standard SAT skill codes missing from the database
+  const SAT_SKILL_NAMES = {
+    WIC: 'Words in Context', TSP: 'Text Structure and Purpose', CTC: 'Cross-Text Connections',
+    CID: 'Central Ideas and Details', COE: 'Command of Evidence', INF: 'Inferences',
+    BOU: 'Boundaries', FSS: 'Form, Structure, and Sense', TRA: 'Transitions',
+    RHE: 'Rhetorical Synthesis',
+    ALG: 'Algebra', ATM: 'Advanced Math', PAM: 'Problem-Solving and Data Analysis',
+    GEO: 'Geometry and Trigonometry',
+  };
+  for (const [code, name] of Object.entries(SAT_SKILL_NAMES)) {
+    if (!skillCodeToName[code]) skillCodeToName[code] = name;
+  }
+
   const taxByQuestion = {};
   for (const t of taxonomy || []) {
     taxByQuestion[t.question_id] = t;
