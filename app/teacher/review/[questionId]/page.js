@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import Script from 'next/script';
 import Link from 'next/link';
 import HtmlBlock from '../../../../components/HtmlBlock';
 
@@ -44,6 +45,8 @@ export default function TeacherReviewPage() {
   const [total, setTotal] = useState(null);
   const [index1, setIndex1] = useState(null);
   const [showMap, setShowMap] = useState(false);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [showCalc, setShowCalc] = useState(false);
 
   // Read session IDs from localStorage
   function getSessionIds() {
@@ -79,6 +82,7 @@ export default function TeacherReviewPage() {
     if (!questionId || !studentId) return;
     setLoading(true);
     setError(null);
+    setShowAnswer(false);
     fetch(`/api/teacher/student/${studentId}/question/${questionId}`, { cache: 'no-store' })
       .then(r => r.json())
       .then(json => {
@@ -215,10 +219,12 @@ export default function TeacherReviewPage() {
           const isCorrect = String(opt.id) === String(correctOptionId);
 
           let cls = 'option';
-          if (isStudentSelected) cls += ' selected';
-          if (isStudentSelected && isCorrect) cls += ' correct';
-          if (isStudentSelected && !isCorrect) cls += ' incorrect';
-          if (!isStudentSelected && isCorrect) cls += ' revealCorrect';
+          if (showAnswer) {
+            if (isStudentSelected) cls += ' selected';
+            if (isStudentSelected && isCorrect) cls += ' correct';
+            if (isStudentSelected && !isCorrect) cls += ' incorrect';
+            if (!isStudentSelected && isCorrect) cls += ' revealCorrect';
+          }
 
           return (
             <div
@@ -250,7 +256,7 @@ export default function TeacherReviewPage() {
         ) : (
           <p className="muted small">No answer recorded.</p>
         )}
-        {accepted && (
+        {showAnswer && accepted && (
           <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <span className="pill">
               <span className="muted">Correct answer</span>{' '}
@@ -263,12 +269,36 @@ export default function TeacherReviewPage() {
   };
 
   const NavButtons = () => (
-    <div className="row" style={{ gap: 10, marginTop: 14 }}>
+    <div className="row" style={{ gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
       <button className="btn secondary" onClick={() => goToIndex(index1 - 1)} disabled={prevDisabled}>
         Prev
       </button>
       <button className="btn secondary" onClick={() => goToIndex(index1 + 1)} disabled={nextDisabled}>
         Next
+      </button>
+      <button
+        className={`btn ${showAnswer ? 'primary' : 'secondary'}`}
+        onClick={() => setShowAnswer((v) => !v)}
+        title={showAnswer ? 'Hide answer and explanation' : 'Show answer and explanation'}
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" style={{ verticalAlign: '-3px', marginRight: 4 }}>
+          {showAnswer ? (
+            <path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+          ) : (
+            <path fill="currentColor" d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+          )}
+        </svg>
+        {showAnswer ? 'Hide Answer' : 'Show Answer'}
+      </button>
+      <button
+        className="btn secondary"
+        onClick={() => setShowCalc((v) => !v)}
+        title="Open calculator"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" style={{ verticalAlign: '-3px', marginRight: 4 }}>
+          <path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM6.25 7.72h11.5v2.5H6.25zM6.25 12h2.5v5.5h-2.5zm4.25 0h2.5v5.5h-2.5zm4.25 0h2.5v5.5h-2.5z" />
+        </svg>
+        Calculator
       </button>
       <Link className="btn secondary" href={studentId ? `/teacher?selected=${studentId}` : '/teacher'}>
         Back to Student Dashboard
@@ -277,7 +307,7 @@ export default function TeacherReviewPage() {
   );
 
   const Explanation = () => {
-    if (!version?.rationale_html) return null;
+    if (!showAnswer || !version?.rationale_html) return null;
     return (
       <div className="card subcard" style={{ marginTop: 16 }}>
         <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 13, color: 'var(--muted)' }}>Explanation</div>
@@ -387,7 +417,7 @@ export default function TeacherReviewPage() {
             <span className="pill" style={{ background: 'var(--accent)', color: '#fff', fontWeight: 600 }}>
               Teacher Review
             </span>
-            <ResultBadge />
+            {showAnswer && <ResultBadge />}
           </div>
         </div>
 
@@ -457,6 +487,208 @@ export default function TeacherReviewPage() {
       )}
 
       <QuestionMapModal />
+      <DesmosPopup isOpen={showCalc} onClose={() => setShowCalc(false)} />
     </main>
+  );
+}
+
+/* ── Resizable Desmos Calculator Popup ── */
+function DesmosPopup({ isOpen, onClose }) {
+  const hostRef = useRef(null);
+  const calcRef = useRef(null);
+  const cardRef = useRef(null);
+  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
+  const posRef = useRef({ x: 0, y: 0 });
+  const resizeRef = useRef({ resizing: false, edge: null, startX: 0, startY: 0, origW: 0, origH: 0, origLeft: 0, origTop: 0 });
+  const sizeRef = useRef({ w: 560, h: 440 });
+
+  const [ready, setReady] = useState(false);
+  const [minimized, setMinimized] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Desmos) setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!ready || !isOpen || minimized) return;
+    if (!hostRef.current || calcRef.current) return;
+    calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
+      autosize: true, keypad: true, expressions: true,
+      settingsMenu: true, zoomButtons: true, degreeMode: true,
+      clearIntoDegreeMode: true, images: false, folders: false,
+      notes: false, links: false, restrictedFunctions: true,
+    });
+    return () => {
+      try { calcRef.current?.destroy?.(); } catch {}
+      calcRef.current = null;
+    };
+  }, [ready, isOpen, minimized]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    posRef.current = { x: 0, y: 0 };
+    sizeRef.current = { w: 560, h: 440 };
+    if (cardRef.current) {
+      cardRef.current.style.transform = '';
+      cardRef.current.style.width = '560px';
+      cardRef.current.style.height = '440px';
+    }
+  }, [isOpen]);
+
+  function onHeaderPointerDown(e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const card = cardRef.current;
+    if (!card) return;
+    dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: posRef.current.x, origY: posRef.current.y };
+    const onMove = (ev) => {
+      if (!dragRef.current.dragging) return;
+      const nx = dragRef.current.origX + (ev.clientX - dragRef.current.startX);
+      const ny = dragRef.current.origY + (ev.clientY - dragRef.current.startY);
+      posRef.current = { x: nx, y: ny };
+      card.style.transform = `translate(${nx}px, ${ny}px)`;
+    };
+    const onUp = () => {
+      dragRef.current.dragging = false;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
+  function onEdgePointerDown(e, edge) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const card = cardRef.current;
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    resizeRef.current = {
+      resizing: true, edge, startX: e.clientX, startY: e.clientY,
+      origW: rect.width, origH: rect.height,
+      origLeft: posRef.current.x, origTop: posRef.current.y,
+    };
+    const onMove = (ev) => {
+      if (!resizeRef.current.resizing) return;
+      const r = resizeRef.current;
+      const dx = ev.clientX - r.startX;
+      const dy = ev.clientY - r.startY;
+      let w = r.origW, h = r.origH, tx = r.origLeft, ty = r.origTop;
+      if (r.edge.includes('e')) w = Math.max(320, r.origW + dx);
+      if (r.edge.includes('w')) { w = Math.max(320, r.origW - dx); tx = r.origLeft + (r.origW - w); }
+      if (r.edge.includes('s')) h = Math.max(280, r.origH + dy);
+      if (r.edge.includes('n')) { h = Math.max(280, r.origH - dy); ty = r.origTop + (r.origH - h); }
+      sizeRef.current = { w, h };
+      posRef.current = { x: tx, y: ty };
+      card.style.width = w + 'px';
+      card.style.height = h + 'px';
+      card.style.transform = `translate(${tx}px, ${ty}px)`;
+    };
+    const onUp = () => {
+      resizeRef.current.resizing = false;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
+  if (!isOpen) return null;
+
+  const apiKey =
+    (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_DESMOS_API_KEY) ||
+    'bac289385bcd4778a682276b95f5f116';
+
+  const edgeStyle = (cursor) => ({
+    position: 'absolute', zIndex: 2,
+    ...(cursor === 'ew-resize' || cursor === 'ns-resize' || cursor === 'nwse-resize' || cursor === 'nesw-resize'
+      ? { cursor } : {}),
+  });
+
+  return (
+    <>
+      <Script
+        src={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${apiKey}`}
+        strategy="afterInteractive"
+        onLoad={() => setReady(true)}
+      />
+      <div
+        ref={cardRef}
+        style={{
+          position: 'fixed', right: 24, bottom: 24,
+          width: minimized ? 220 : 560,
+          height: minimized ? 'auto' : 440,
+          zIndex: 1000,
+          display: 'flex', flexDirection: 'column',
+          borderRadius: 8,
+          boxShadow: '0 8px 32px rgba(0,0,0,.28)',
+          background: 'var(--bg-card, #fff)',
+          border: '1px solid var(--border, #ddd)',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Resize edges (only when not minimized) */}
+        {!minimized && (
+          <>
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'n')}  style={{ ...edgeStyle('ns-resize'),   top: 0, left: 6, right: 6, height: 5 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 's')}  style={{ ...edgeStyle('ns-resize'),   bottom: 0, left: 6, right: 6, height: 5 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'w')}  style={{ ...edgeStyle('ew-resize'),   left: 0, top: 6, bottom: 6, width: 5 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'e')}  style={{ ...edgeStyle('ew-resize'),   right: 0, top: 6, bottom: 6, width: 5 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'nw')} style={{ ...edgeStyle('nwse-resize'), top: 0, left: 0, width: 10, height: 10 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'ne')} style={{ ...edgeStyle('nesw-resize'), top: 0, right: 0, width: 10, height: 10 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'sw')} style={{ ...edgeStyle('nesw-resize'), bottom: 0, left: 0, width: 10, height: 10 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'se')} style={{ ...edgeStyle('nwse-resize'), bottom: 0, right: 0, width: 10, height: 10 }} />
+          </>
+        )}
+
+        {/* Title bar */}
+        <div
+          onPointerDown={onHeaderPointerDown}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '6px 8px 6px 12px', cursor: 'grab', userSelect: 'none',
+            background: 'var(--bg-subtle, #f5f5f5)',
+            borderBottom: minimized ? 'none' : '1px solid var(--border, #ddd)',
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ fontWeight: 600, fontSize: 13 }}>Calculator</span>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button
+              type="button"
+              onClick={() => setMinimized((m) => !m)}
+              title={minimized ? 'Expand' : 'Minimize'}
+              style={{
+                width: 28, height: 28, border: 'none', borderRadius: 6,
+                background: 'transparent', cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', color: 'inherit',
+              }}
+            >
+              {minimized ? (
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M4 4h16v16H4z" fillOpacity=".08" stroke="currentColor" strokeWidth="2" /><rect fill="currentColor" x="4" y="11" width="16" height="2" /></svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="16" height="16"><rect fill="currentColor" x="4" y="18" width="16" height="2" rx="1" /></svg>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              title="Close"
+              style={{
+                width: 28, height: 28, border: 'none', borderRadius: 6,
+                background: 'transparent', cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', color: 'inherit',
+              }}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M18.3 5.7a1 1 0 00-1.4 0L12 10.6 7.1 5.7a1 1 0 00-1.4 1.4L10.6 12l-4.9 4.9a1 1 0 001.4 1.4L12 13.4l4.9 4.9a1 1 0 001.4-1.4L13.4 12l4.9-4.9a1 1 0 000-1.4z" /></svg>
+            </button>
+          </div>
+        </div>
+        {!minimized && (
+          <div ref={hostRef} style={{ flex: 1, minHeight: 0 }} />
+        )}
+      </div>
+    </>
   );
 }
