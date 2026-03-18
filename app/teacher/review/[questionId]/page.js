@@ -187,11 +187,11 @@ export default function TeacherReviewPage() {
         </div>
       ) : null}
       {version?.stem_html ? (
-        <div className="card subcard" style={{ marginBottom: mb, position: 'relative' }}>
-          <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}>
-            <QuestionNotes questionId={questionId} />
+        <div className="card subcard" style={{ marginBottom: mb, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <HtmlBlock className="prose" html={version.stem_html} />
           </div>
-          <HtmlBlock className="prose" html={version.stem_html} />
+          <QuestionNotes questionId={questionId} />
         </div>
       ) : null}
     </>
@@ -472,11 +472,11 @@ export default function TeacherReviewPage() {
           </div>
           <div className="twoColRight">
             {version?.stem_html ? (
-              <div className="card subcard" style={{ marginBottom: 12, position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}>
-                  <QuestionNotes questionId={questionId} />
+              <div className="card subcard" style={{ marginBottom: 12, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <HtmlBlock className="prose" html={version.stem_html} />
                 </div>
-                <HtmlBlock className="prose" html={version.stem_html} />
+                <QuestionNotes questionId={questionId} />
               </div>
             ) : null}
             {qType === 'mcq' ? <McqOptions /> : <SprAnswer />}

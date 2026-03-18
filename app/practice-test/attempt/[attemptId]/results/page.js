@@ -572,11 +572,11 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
             <HtmlBlock html={q.stimulus_html} className="prose" />
           </div>
         )}
-        <div className="ptrvDetailStem" style={{ position: 'relative' }}>
-          <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
-            <QuestionNotes questionId={q.question_id} />
+        <div className="ptrvDetailStem" style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <HtmlBlock html={q.stem_html} className="prose" />
           </div>
-          <HtmlBlock html={q.stem_html} className="prose" />
+          <QuestionNotes questionId={q.question_id} />
         </div>
 
         {q.options?.length > 0 && (

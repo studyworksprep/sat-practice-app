@@ -1423,12 +1423,12 @@ export default function PracticeQuestionPage() {
       ) : null}
 
       {version?.stem_html ? (
-        <div style={{ marginBottom: 12, position: 'relative' }}>
-          <div className="srOnly">Question</div>
-          <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
-            <QuestionNotes questionId={questionId} />
+        <div style={{ marginBottom: 12, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="srOnly">Question</div>
+            <HtmlBlock className="prose" html={version.stem_html} imgMaxWidth={360} />
           </div>
-          <HtmlBlock className="prose" html={version.stem_html} imgMaxWidth={360} />
+          <QuestionNotes questionId={questionId} />
         </div>
       ) : null}
     </>
@@ -1851,11 +1851,11 @@ export default function PracticeQuestionPage() {
               <div className="card subcard qaRightPanel">
                 {renderStatusPills()}
                 {version?.stem_html && (
-                  <div style={{ marginBottom: 12, position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
-                      <QuestionNotes questionId={questionId} />
+                  <div style={{ marginBottom: 12, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <HtmlBlock className="prose" html={version.stem_html} />
                     </div>
-                    <HtmlBlock className="prose" html={version.stem_html} />
+                    <QuestionNotes questionId={questionId} />
                   </div>
                 )}
                 {mcqOptionsArea}

@@ -905,11 +905,11 @@ export default function TestSessionPage() {
               <div className="qaRight">
                 {qNumRow}
                 {q.stem_html && (
-                  <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
-                      <QuestionNotes questionId={q.question_id} />
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <HtmlBlock className="prose" html={q.stem_html} />
                     </div>
-                    <HtmlBlock className="prose" html={q.stem_html} />
+                    <QuestionNotes questionId={q.question_id} />
                   </div>
                 )}
                 {answerArea}
@@ -927,11 +927,11 @@ export default function TestSessionPage() {
                 </div>
               )}
               {q.stem_html && (
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
-                    <QuestionNotes questionId={q.question_id} />
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <HtmlBlock className="prose" html={q.stem_html} />
                   </div>
-                  <HtmlBlock className="prose" html={q.stem_html} />
+                  <QuestionNotes questionId={q.question_id} />
                 </div>
               )}
               {answerArea}
@@ -947,11 +947,11 @@ export default function TestSessionPage() {
                   <HtmlBlock html={q.stimulus_html} />
                 </div>
               )}
-              <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
-                  <QuestionNotes questionId={q.question_id} />
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <HtmlBlock className="ptStem" html={q.stem_html} />
                 </div>
-                <HtmlBlock className="ptStem" html={q.stem_html} />
+                <QuestionNotes questionId={q.question_id} />
               </div>
               {answerArea}
             </div>
