@@ -741,8 +741,8 @@ export default function ResultsPage() {
     let y = 40;
 
     const ensureSpace = (needed) => { if (y + needed > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); y = 40; } };
-    const sectionTitle = (text) => { ensureSpace(60); y += 28; doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(30); doc.text(text, marginL, y); y += 6; doc.setDrawColor(50); doc.setLineWidth(1.5); doc.line(marginL, y, pageW - marginR, y); y += 20; };
-    const subTitle = (text) => { ensureSpace(36); y += 16; doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(80); doc.text(text, marginL, y); y += 14; };
+    const sectionTitle = (text) => { ensureSpace(60); y += 28; doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59); doc.text(text, marginL, y); y += 6; doc.setDrawColor(37, 99, 235); doc.setLineWidth(1.5); doc.line(marginL, y, pageW - marginR, y); y += 20; };
+    const subTitle = (text) => { ensureSpace(36); y += 16; doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(51, 65, 85); doc.text(text, marginL, y); y += 14; };
 
     // ─── TITLE ────────────────────────────────────────────
     doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.setTextColor(30);
@@ -755,8 +755,12 @@ export default function ResultsPage() {
 
     // ─── STUDENT INFO ─────────────────────────────────────
     if (data?.student) {
-      doc.setDrawColor(200); doc.setLineWidth(0.5);
-      doc.roundedRect(marginL, y, contentW, data?.teacher ? 62 : 38, 4, 4);
+      const infoBoxH = data?.teacher ? 62 : 38;
+      doc.setFillColor(248, 250, 252); doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.5);
+      doc.roundedRect(marginL, y, contentW, infoBoxH, 4, 4, 'FD');
+      // Left accent bar
+      doc.setFillColor(37, 99, 235);
+      doc.rect(marginL, y + 2, 3, infoBoxH - 4, 'F');
       y += 12;
       doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(120);
       doc.text('STUDENT', marginL + 10, y); y += 10;
@@ -791,22 +795,25 @@ export default function ResultsPage() {
 
     // ─── SCORES ───────────────────────────────────────────
     sectionTitle('Scores');
+    // Light blue background behind scores
+    doc.setFillColor(239, 246, 255);
+    doc.roundedRect(marginL, y - 4, contentW, 48, 4, 4, 'F');
     const scoreBoxW = contentW / (sectionEntries.length + 1);
     // Composite
     doc.setFontSize(28); doc.setFont('helvetica', 'bold'); doc.setTextColor(37, 99, 235);
-    doc.text(String(data?.composite ?? '—'), marginL + scoreBoxW * 0.5, y + 2, { align: 'center' });
-    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
-    doc.text('Total Score', marginL + scoreBoxW * 0.5, y + 16, { align: 'center' });
+    doc.text(String(data?.composite ?? '—'), marginL + scoreBoxW * 0.5, y + 8, { align: 'center' });
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(71, 85, 105);
+    doc.text('Total Score', marginL + scoreBoxW * 0.5, y + 22, { align: 'center' });
     // Section scores
     sectionEntries.forEach(([subj, sec], i) => {
       const cx = marginL + scoreBoxW * (i + 1.5);
       doc.setFontSize(22); doc.setFont('helvetica', 'bold'); doc.setTextColor(37, 99, 235);
-      doc.text(String(sec.scaled), cx, y + 2, { align: 'center' });
-      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
-      doc.text(SUBJECT_LABEL[subj] || subj, cx, y + 16, { align: 'center' });
-      doc.text(`${sec.correct}/${sec.total} correct`, cx, y + 26, { align: 'center' });
+      doc.text(String(sec.scaled), cx, y + 8, { align: 'center' });
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(71, 85, 105);
+      doc.text(SUBJECT_LABEL[subj] || subj, cx, y + 22, { align: 'center' });
+      doc.text(`${sec.correct}/${sec.total} correct`, cx, y + 32, { align: 'center' });
     });
-    y += 48;
+    y += 56;
 
     // ─── DOMAIN BREAKDOWN ─────────────────────────────────
     const renderDomains = (domains, label) => {
@@ -824,8 +831,9 @@ export default function ResultsPage() {
             startY: y, margin: { left: marginL, right: marginR },
             head: [['Skill', 'Score', 'Accuracy']],
             body: rows,
-            styles: { fontSize: 9, cellPadding: 3 },
-            headStyles: { fillColor: [240, 240, 240], textColor: [80, 80, 80], fontStyle: 'bold' },
+            styles: { fontSize: 9, cellPadding: 3, lineColor: [226, 232, 240], lineWidth: 0.5 },
+            headStyles: { fillColor: [241, 245, 249], textColor: [51, 65, 85], fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
             theme: 'grid',
           });
           y = doc.lastAutoTable.finalY + 10;
@@ -846,8 +854,9 @@ export default function ResultsPage() {
         startY: y, margin: { left: marginL, right: marginR },
         head: [['Skill', 'Domain', 'Accuracy', 'Learnability', 'OI Score']],
         body: oiRows,
-        styles: { fontSize: 9, cellPadding: 3 },
+        styles: { fontSize: 9, cellPadding: 3, lineColor: [226, 232, 240], lineWidth: 0.5 },
         headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
         theme: 'grid',
       });
       y = doc.lastAutoTable.finalY + 10;
@@ -884,8 +893,9 @@ export default function ResultsPage() {
           startY: y, margin: { left: marginL, right: marginR },
           head: [['Q#', 'Domain', 'Skill', 'Difficulty', 'Your Answer', 'Correct', 'Result']],
           body: rows,
-          styles: { fontSize: 8, cellPadding: 2.5 },
-          headStyles: { fillColor: [240, 240, 240], textColor: [80, 80, 80], fontStyle: 'bold', fontSize: 7 },
+          styles: { fontSize: 8, cellPadding: 2.5, lineColor: [226, 232, 240], lineWidth: 0.5 },
+          headStyles: { fillColor: [241, 245, 249], textColor: [51, 65, 85], fontStyle: 'bold', fontSize: 7 },
+          alternateRowStyles: { fillColor: [248, 250, 252] },
           columnStyles: {
             0: { cellWidth: 24 },
             3: { cellWidth: 48 },
@@ -895,12 +905,22 @@ export default function ResultsPage() {
           },
           theme: 'grid',
           didParseCell: (hookData) => {
-            if (hookData.section === 'body' && hookData.column.index === 6) {
-              const v = hookData.cell.raw;
-              if (v === 'Correct') hookData.cell.styles.textColor = [22, 163, 74];
-              else if (v === 'Incorrect') hookData.cell.styles.textColor = [220, 38, 38];
-              else hookData.cell.styles.textColor = [136, 136, 136];
-              hookData.cell.styles.fontStyle = 'bold';
+            if (hookData.section === 'body') {
+              // Difficulty color
+              if (hookData.column.index === 3) {
+                const v = hookData.cell.raw;
+                if (v === 'Easy') hookData.cell.styles.textColor = [22, 163, 74];
+                else if (v === 'Medium') hookData.cell.styles.textColor = [180, 83, 9];
+                else if (v === 'Hard') hookData.cell.styles.textColor = [220, 38, 38];
+              }
+              // Result color
+              if (hookData.column.index === 6) {
+                const v = hookData.cell.raw;
+                if (v === 'Correct') hookData.cell.styles.textColor = [22, 163, 74];
+                else if (v === 'Incorrect') hookData.cell.styles.textColor = [220, 38, 38];
+                else hookData.cell.styles.textColor = [136, 136, 136];
+                hookData.cell.styles.fontStyle = 'bold';
+              }
             }
           },
         });

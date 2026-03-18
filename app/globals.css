@@ -4339,50 +4339,125 @@ hr{
 
 .adminPanels{
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
 }
 @media (max-width: 640px){
   .adminPanels{ grid-template-columns: 1fr 1fr; }
 }
 
 .adminPanel{
-  padding: 24px;
+  padding: 16px;
   text-align: center;
+  transition: border-color 0.15s;
 }
-.adminPanelCount{ font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
-.adminPanelTitle{ font-weight: 600; font-size: var(--title-2); }
+.adminPanelActive{ }
+.adminPanelCount{ font-size: 28px; font-weight: 700; line-height: 1.1; margin-bottom: 2px; }
+.adminPanelTitle{ font-weight: 600; font-size: 13px; }
+
+/* ── Two-column grid ── */
+.adminGrid{
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 960px){
+  .adminGrid{ grid-template-columns: 1fr; }
+}
+.adminColMain{ min-width: 0; }
+.adminColSide{ min-width: 0; }
+
+.adminSection{ margin-bottom: 24px; }
+.adminSectionHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.adminSideTitle{
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+
+.adminAssignGridCompact{
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+@media (max-width: 520px){
+  .adminAssignGridCompact{ grid-template-columns: 1fr; }
+}
+
+/* ── Pagination ── */
+.adminPagination{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+}
+.adminPaginationBtns{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.adminPageBtn{
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text);
+}
+.adminPageBtn:disabled{
+  opacity: 0.35;
+  cursor: default;
+}
+.adminPageBtn:not(:disabled):hover{
+  background: rgba(17,24,39,0.04);
+}
 
 .adminTable{
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
 }
 .adminTable th{
   text-align: left;
-  padding: 10px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
   background: var(--surface, #f9fafb);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 .adminTable td{
-  padding: 10px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
 }
 .adminTable tbody tr:nth-child(even){ background: rgba(0,0,0,0.02); }
 .adminTable tbody tr:last-child td{ border-bottom: none; }
 .adminTable tbody tr:hover{ background: rgba(17,24,39,0.04); }
-.adminTableEmail{ font-weight: 500; }
+.adminTableEmail{ font-weight: 500; font-size: 13px; }
 
 .adminRoleSelect{
-  padding: 4px 8px;
+  padding: 3px 6px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   background: var(--card);
   cursor: pointer;
@@ -4393,7 +4468,7 @@ hr{
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
-.adminScoreDialog{ padding: 24px; margin-top: 4px; }
+.adminScoreDialog{ padding: 16px; margin-top: 4px; }
 
 .adminLabel{
   display: flex;
@@ -4406,10 +4481,10 @@ hr{
 
 .adminSelect,
 .adminInput{
-  padding: 8px 10px;
+  padding: 7px 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 14px;
   background: var(--card);
   color: var(--text);
   width: 100%;
@@ -4424,19 +4499,19 @@ hr{
 .adminFieldset{
   border: 1px solid var(--border);
   border-radius: 0;
-  padding: 16px;
-  margin: 16px 0 0 0;
+  padding: 12px;
+  margin: 12px 0 0 0;
 }
 .adminLegend{
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   padding: 0 6px;
 }
 
 .adminFieldRow{
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 @media (max-width: 520px){
   .adminFieldRow{ grid-template-columns: 1fr; }
@@ -6117,18 +6192,19 @@ hr{
 }
 
 .adminAssignTable th, .adminAssignTable td{
-  padding: 10px 14px;
+  padding: 8px 12px;
   text-align: left;
-  font-size: 14px;
+  font-size: 13px;
   border-bottom: 1px solid var(--border);
 }
 
 .adminAssignTable th{
   font-weight: 700;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  background: var(--surface, #f9fafb);
 }
 
 .adminAssignRemove{
@@ -6136,9 +6212,9 @@ hr{
   border: none;
   color: var(--danger);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 4px 8px;
+  padding: 3px 6px;
   border-radius: 6px;
   transition: background 0.12s;
 }

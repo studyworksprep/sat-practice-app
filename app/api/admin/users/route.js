@@ -24,7 +24,7 @@ export async function GET() {
 
   const { data: profiles, error } = await supabase
     .from('profiles')
-    .select('id, email, role, is_active, created_at')
+    .select('id, email, first_name, last_name, role, is_active, created_at')
     .order('created_at', { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });

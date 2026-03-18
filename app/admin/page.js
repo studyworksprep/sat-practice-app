@@ -14,9 +14,16 @@ const ROLE_COLOR = {
   practice: '#6b7280',
 };
 
+const USERS_PER_PAGE = 20;
+
 function formatDate(iso) {
   if (!iso) return '';
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function displayName(p) {
+  const name = [p.first_name, p.last_name].filter(Boolean).join(' ');
+  return name || null;
 }
 
 export default function AdminPage() {
@@ -63,7 +70,7 @@ export default function AdminPage() {
   const [inviteCodeLoading, setInviteCodeLoading] = useState({});
 
   // Delete confirmation state
-  const [deleteConfirm, setDeleteConfirm] = useState(null); // user id pending confirmation
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   // Bug reports
   const [recentBugs, setRecentBugs] = useState([]);
@@ -74,6 +81,13 @@ export default function AdminPage() {
   const [learnLoading, setLearnLoading] = useState(false);
   const [learnSaving, setLearnSaving] = useState(false);
   const [learnDirty, setLearnDirty] = useState({});
+
+  // Pagination
+  const [usersPage, setUsersPage] = useState(0);
+  const [usersRoleFilter, setUsersRoleFilter] = useState('all');
+  const [usersSearch, setUsersSearch] = useState('');
+  const [assignPage, setAssignPage] = useState(0);
+  const [mtAssignPage, setMtAssignPage] = useState(0);
 
   useEffect(() => {
     supabase
@@ -454,11 +468,39 @@ export default function AdminPage() {
     return g;
   }, [profiles]);
 
+  // Filtered users for the table
+  const filteredUsers = useMemo(() => {
+    let list = profiles;
+    if (usersRoleFilter !== 'all') list = list.filter(p => p.role === usersRoleFilter);
+    if (usersSearch.trim()) {
+      const q = usersSearch.toLowerCase();
+      list = list.filter(p =>
+        (p.email || '').toLowerCase().includes(q) ||
+        (p.first_name || '').toLowerCase().includes(q) ||
+        (p.last_name || '').toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [profiles, usersRoleFilter, usersSearch]);
+
+  const usersTotalPages = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
+  const usersSlice = filteredUsers.slice(usersPage * USERS_PER_PAGE, (usersPage + 1) * USERS_PER_PAGE);
+
+  // Reset page when filter changes
+  useEffect(() => { setUsersPage(0); }, [usersRoleFilter, usersSearch]);
+
   // Memoize filtered lists for assignment dropdowns
   const teacherProfiles = useMemo(() => profiles.filter(p => p.role === 'teacher' || p.role === 'manager' || p.role === 'admin'), [profiles]);
   const studentProfiles = useMemo(() => profiles.filter(p => p.role === 'student' || p.role === 'practice'), [profiles]);
   const managerProfiles = useMemo(() => profiles.filter(p => p.role === 'manager'), [profiles]);
   const teacherOnlyProfiles = useMemo(() => profiles.filter(p => p.role === 'teacher'), [profiles]);
+
+  // Assignment pagination
+  const ASSIGN_PER_PAGE = 10;
+  const assignTotalPages = Math.max(1, Math.ceil(assignments.length / ASSIGN_PER_PAGE));
+  const assignSlice = assignments.slice(assignPage * ASSIGN_PER_PAGE, (assignPage + 1) * ASSIGN_PER_PAGE);
+  const mtAssignTotalPages = Math.max(1, Math.ceil(mtAssignments.length / ASSIGN_PER_PAGE));
+  const mtAssignSlice = mtAssignments.slice(mtAssignPage * ASSIGN_PER_PAGE, (mtAssignPage + 1) * ASSIGN_PER_PAGE);
 
   if (loading) {
     return (
@@ -468,10 +510,24 @@ export default function AdminPage() {
     );
   }
 
+  function Pagination({ page, totalPages, setPage, totalItems, label }) {
+    if (totalPages <= 1) return null;
+    return (
+      <div className="adminPagination">
+        <span className="muted small">{totalItems} {label}</span>
+        <div className="adminPaginationBtns">
+          <button className="adminPageBtn" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Prev</button>
+          <span className="small" style={{ minWidth: 60, textAlign: 'center' }}>{page + 1} / {totalPages}</span>
+          <button className="adminPageBtn" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Next</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="container adminMain">
       <h1 className="h1" style={{ marginBottom: 4 }}>Admin</h1>
-      <p className="muted small" style={{ marginBottom: 28 }}>
+      <p className="muted small" style={{ marginBottom: 24 }}>
         Manage users, accounts, and score data.
       </p>
 
@@ -488,235 +544,228 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* ── User count panels ──────────────────────────────────── */}
+      {/* ── Role count panels ────────────────────────────────── */}
       <div className="adminPanels">
         {ROLE_ORDER.map((role) => (
-          <div className="card adminPanel" key={role}>
+          <button
+            className={`card adminPanel${usersRoleFilter === role ? ' adminPanelActive' : ''}`}
+            key={role}
+            onClick={() => setUsersRoleFilter(prev => prev === role ? 'all' : role)}
+            style={{ cursor: 'pointer', border: usersRoleFilter === role ? `2px solid ${ROLE_COLOR[role]}` : undefined }}
+          >
             <div className="adminPanelCount" style={{ color: ROLE_COLOR[role] }}>
               {grouped[role].length}
             </div>
             <div className="adminPanelTitle">{ROLE_LABEL[role]}s</div>
-          </div>
+          </button>
         ))}
       </div>
 
-      {/* ── Recent Bug Reports ───────────────────────────────── */}
-      <section style={{ marginTop: 28 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <h2 className="h2" style={{ margin: 0 }}>Recent Bug Reports</h2>
-          <Link href="/bugs" className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }}>
-            View All
-          </Link>
-        </div>
-        {recentBugs.length === 0 ? (
-          <p className="muted small">No bug reports yet.</p>
-        ) : (
-          <div className="adminBugGrid">
-            {recentBugs.map((bug) => (
-              <div key={bug.id} className="card adminBugCard">
-                <div className="adminBugCardHeader">
-                  <span className="adminBugTitle">{bug.title || 'Bug Report'}</span>
-                  <span className={`adminBugStatus adminBugStatus--${bug.status}`}>
-                    {bug.status === 'in_progress' ? 'In Progress' : bug.status?.charAt(0).toUpperCase() + bug.status?.slice(1)}
-                  </span>
-                </div>
-                <p className="adminBugDesc">{bug.description}</p>
-                <div className="adminBugMeta">
-                  <span>{formatDate(bug.created_at)}</span>
-                  {bug.created_by && <span>by {bug.created_by}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* ── User management ────────────────────────────────────── */}
-      <section style={{ marginTop: 32 }}>
-        <h2 className="h2" style={{ marginBottom: 16 }}>Users</h2>
-        {usersLoading ? (
-          <p className="muted small">Loading users…</p>
-        ) : profiles.length === 0 ? (
-          <p className="muted small">No profiles found. Run the migration to create the profiles table.</p>
-        ) : (
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <table className="adminTable">
-              <thead>
-                <tr>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Joined</th>
-                  <th style={{ width: 100 }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {profiles.map((p) => (
-                  <tr key={p.id} style={p.is_active === false ? { opacity: 0.55 } : undefined}>
-                    <td className="adminTableEmail">{p.email || '—'}</td>
-                    <td>
-                      <select
-                        className="adminRoleSelect"
-                        value={p.role}
-                        onChange={(e) => handleRoleChange(p.id, e.target.value)}
-                        style={{ color: ROLE_COLOR[p.role] || ROLE_COLOR.practice }}
-                      >
-                        {ROLE_ORDER.map((r) => (
-                          <option key={r} value={r}>{ROLE_LABEL[r]}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <button
-                        className="adminStatusToggle"
-                        onClick={() => handleToggleActive(p.id, p.is_active !== false)}
-                        style={{
-                          color: p.is_active !== false ? '#16a34a' : '#dc2626',
-                          background: p.is_active !== false ? 'rgba(22,163,74,0.08)' : 'rgba(220,38,38,0.08)',
-                          border: '1px solid',
-                          borderColor: p.is_active !== false ? 'rgba(22,163,74,0.25)' : 'rgba(220,38,38,0.25)',
-                          borderRadius: 6,
-                          padding: '2px 10px',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {p.is_active !== false ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="muted small">{formatDate(p.created_at)}</td>
-                    <td>
-                      {deleteConfirm === p.id ? (
-                        <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                          <button
-                            className="adminDeleteConfirmBtn"
-                            onClick={() => handleDeleteUser(p.id)}
-                            style={{
-                              background: '#dc2626',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: 4,
-                              padding: '2px 8px',
-                              fontSize: 11,
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Confirm
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirm(null)}
-                            style={{
-                              background: 'transparent',
-                              color: 'var(--muted)',
-                              border: '1px solid var(--border)',
-                              borderRadius: 4,
-                              padding: '2px 8px',
-                              fontSize: 11,
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => setDeleteConfirm(p.id)}
-                          style={{
-                            background: 'transparent',
-                            color: '#dc2626',
-                            border: '1px solid rgba(220,38,38,0.25)',
-                            borderRadius: 4,
-                            padding: '2px 8px',
-                            fontSize: 11,
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
-      {/* ── Teacher Codes ──────────────────────────────────────── */}
-      <section style={{ marginTop: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 className="h2" style={{ margin: 0 }}>Teacher Codes</h2>
-          <button className="btn" onClick={() => setShowTeacherCodes(!showTeacherCodes)}>
-            {showTeacherCodes ? 'Close' : 'Manage Codes'}
-          </button>
-        </div>
-
-        {showTeacherCodes && (
-          <div className="card" style={{ padding: 20 }}>
-            {/* Create new code */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 20, alignItems: 'flex-end' }}>
-              <label className="adminLabel" style={{ flex: 1 }}>
-                New Code (leave blank to auto-generate)
-                <input
-                  type="text"
-                  className="adminInput"
-                  placeholder="e.g. TEACHER2025"
-                  value={newCodeValue}
-                  onChange={(e) => setNewCodeValue(e.target.value.toUpperCase())}
-                  style={{ textTransform: 'uppercase' }}
-                />
-              </label>
-              <button className="btn" onClick={handleCreateCode} disabled={codeLoading} style={{ marginBottom: 2 }}>
-                {codeLoading ? 'Creating…' : 'Create Code'}
-              </button>
+      {/* ── Two-column layout ────────────────────────────────── */}
+      <div className="adminGrid">
+        {/* ══════════ LEFT COLUMN: Users + Bugs ══════════ */}
+        <div className="adminColMain">
+          {/* ── Users ────────────────────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h2 className="h2" style={{ margin: 0 }}>Users</h2>
+              <span className="muted small">{filteredUsers.length} {usersRoleFilter !== 'all' ? ROLE_LABEL[usersRoleFilter] + 's' : 'total'}</span>
             </div>
-
-            {/* Codes table */}
-            {teacherCodes.length === 0 ? (
-              <p className="muted small">No teacher codes yet.</p>
+            <div style={{ marginBottom: 12 }}>
+              <input
+                type="text"
+                className="adminInput"
+                placeholder="Search by name or email…"
+                value={usersSearch}
+                onChange={e => setUsersSearch(e.target.value)}
+                style={{ maxWidth: 320 }}
+              />
+            </div>
+            {usersLoading ? (
+              <p className="muted small">Loading users…</p>
+            ) : profiles.length === 0 ? (
+              <p className="muted small">No profiles found.</p>
             ) : (
-              <div style={{ overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border)' }}>
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <table className="adminTable">
                   <thead>
                     <tr>
-                      <th>Code</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
                       <th>Status</th>
-                      <th>Used By</th>
-                      <th>Created</th>
-                      <th style={{ width: 80 }} />
+                      <th>Joined</th>
+                      <th style={{ width: 100 }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {teacherCodes.map((tc) => {
-                      const usedByProfile = tc.used_by ? profiles.find(p => p.id === tc.used_by) : null;
-                      return (
-                        <tr key={tc.id}>
-                          <td style={{ fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.05em' }}>{tc.code}</td>
-                          <td>
-                            <span style={{
-                              display: 'inline-block',
-                              padding: '2px 8px',
-                              borderRadius: 4,
-                              fontSize: 11,
+                    {usersSlice.map((p) => (
+                      <tr key={p.id} style={p.is_active === false ? { opacity: 0.55 } : undefined}>
+                        <td style={{ fontWeight: 500, fontSize: 13 }}>{displayName(p) || <span className="muted">—</span>}</td>
+                        <td className="adminTableEmail">{p.email || '—'}</td>
+                        <td>
+                          <select
+                            className="adminRoleSelect"
+                            value={p.role}
+                            onChange={(e) => handleRoleChange(p.id, e.target.value)}
+                            style={{ color: ROLE_COLOR[p.role] || ROLE_COLOR.practice }}
+                          >
+                            {ROLE_ORDER.map((r) => (
+                              <option key={r} value={r}>{ROLE_LABEL[r]}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <button
+                            className="adminStatusToggle"
+                            onClick={() => handleToggleActive(p.id, p.is_active !== false)}
+                            style={{
+                              color: p.is_active !== false ? '#16a34a' : '#dc2626',
+                              background: p.is_active !== false ? 'rgba(22,163,74,0.08)' : 'rgba(220,38,38,0.08)',
+                              border: '1px solid',
+                              borderColor: p.is_active !== false ? 'rgba(22,163,74,0.25)' : 'rgba(220,38,38,0.25)',
+                              borderRadius: 6,
+                              padding: '2px 10px',
+                              fontSize: 12,
                               fontWeight: 600,
-                              background: tc.used_by ? 'rgba(107,114,128,0.1)' : 'rgba(22,163,74,0.1)',
-                              color: tc.used_by ? '#6b7280' : '#16a34a',
-                            }}>
-                              {tc.used_by ? 'Used' : 'Available'}
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {p.is_active !== false ? 'Active' : 'Inactive'}
+                          </button>
+                        </td>
+                        <td className="muted small">{formatDate(p.created_at)}</td>
+                        <td>
+                          {deleteConfirm === p.id ? (
+                            <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                              <button
+                                onClick={() => handleDeleteUser(p.id)}
+                                style={{
+                                  background: '#dc2626',
+                                  color: '#fff',
+                                  border: 'none',
+                                  borderRadius: 4,
+                                  padding: '2px 8px',
+                                  fontSize: 11,
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirm(null)}
+                                style={{
+                                  background: 'transparent',
+                                  color: 'var(--muted)',
+                                  border: '1px solid var(--border)',
+                                  borderRadius: 4,
+                                  padding: '2px 8px',
+                                  fontSize: 11,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Cancel
+                              </button>
                             </span>
-                          </td>
-                          <td className="muted small">{usedByProfile?.email || (tc.used_by ? tc.used_by : '—')}</td>
-                          <td className="muted small">{formatDate(tc.created_at)}</td>
-                          <td>
+                          ) : (
                             <button
-                              className="adminAssignRemove"
-                              onClick={() => handleRevokeCode(tc.id)}
+                              onClick={() => setDeleteConfirm(p.id)}
+                              style={{
+                                background: 'transparent',
+                                color: '#dc2626',
+                                border: '1px solid rgba(220,38,38,0.25)',
+                                borderRadius: 4,
+                                padding: '2px 8px',
+                                fontSize: 11,
+                                fontWeight: 500,
+                                cursor: 'pointer',
+                              }}
                             >
-                              Revoke
+                              Delete
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <Pagination page={usersPage} totalPages={usersTotalPages} setPage={setUsersPage} totalItems={filteredUsers.length} label="users" />
+              </div>
+            )}
+          </section>
+
+          {/* ── Recent Bug Reports ────────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h2 className="h2" style={{ margin: 0 }}>Recent Bug Reports</h2>
+              <Link href="/bugs" className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }}>
+                View All
+              </Link>
+            </div>
+            {recentBugs.length === 0 ? (
+              <p className="muted small">No bug reports yet.</p>
+            ) : (
+              <div className="adminBugGrid">
+                {recentBugs.map((bug) => (
+                  <div key={bug.id} className="card adminBugCard">
+                    <div className="adminBugCardHeader">
+                      <span className="adminBugTitle">{bug.title || 'Bug Report'}</span>
+                      <span className={`adminBugStatus adminBugStatus--${bug.status}`}>
+                        {bug.status === 'in_progress' ? 'In Progress' : bug.status?.charAt(0).toUpperCase() + bug.status?.slice(1)}
+                      </span>
+                    </div>
+                    <p className="adminBugDesc">{bug.description}</p>
+                    <div className="adminBugMeta">
+                      <span>{formatDate(bug.created_at)}</span>
+                      {bug.created_by && <span>by {bug.created_by}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* ══════════ RIGHT COLUMN: Codes, Assignments, Settings ══════════ */}
+        <div className="adminColSide">
+          {/* ── Teacher-Student Assignments ────────────── */}
+          <section className="adminSection">
+            <h3 className="adminSideTitle">Teacher-Student Assignments</h3>
+            <div className="adminAssignGridCompact">
+              <select className="adminSelect" value={assignTeacher} onChange={(e) => setAssignTeacher(e.target.value)}>
+                <option value="">Teacher…</option>
+                {teacherProfiles.map(p => (
+                  <option key={p.id} value={p.id}>{displayName(p) || p.email}</option>
+                ))}
+              </select>
+              <select className="adminSelect" value={assignStudent} onChange={(e) => setAssignStudent(e.target.value)}>
+                <option value="">Student…</option>
+                {studentProfiles.map(p => (
+                  <option key={p.id} value={p.id}>{displayName(p) || p.email}</option>
+                ))}
+              </select>
+              <button className="btn" onClick={handleAssign} disabled={assignLoading} style={{ fontSize: 12, padding: '6px 12px' }}>
+                {assignLoading ? '…' : 'Assign'}
+              </button>
+            </div>
+            {assignments.length > 0 && (
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <table className="adminAssignTable">
+                  <thead>
+                    <tr><th>Teacher</th><th>Student</th><th style={{ width: 60 }} /></tr>
+                  </thead>
+                  <tbody>
+                    {assignSlice.map((a) => {
+                      const teacher = profiles.find(p => p.id === a.teacher_id);
+                      const student = profiles.find(p => p.id === a.student_id);
+                      return (
+                        <tr key={`${a.teacher_id}-${a.student_id}`}>
+                          <td>{teacher ? (displayName(teacher) || teacher.email) : a.teacher_id}</td>
+                          <td>{student ? (displayName(student) || student.email) : a.student_id}</td>
+                          <td>
+                            <button className="adminAssignRemove" onClick={() => handleUnassign(a.teacher_id, a.student_id)}>
+                              Remove
                             </button>
                           </td>
                         </tr>
@@ -724,355 +773,354 @@ export default function AdminPage() {
                     })}
                   </tbody>
                 </table>
+                <Pagination page={assignPage} totalPages={assignTotalPages} setPage={setAssignPage} totalItems={assignments.length} label="assignments" />
               </div>
             )}
-          </div>
-        )}
-      </section>
+          </section>
 
-      {/* ── Teacher Invite Codes ─────────────────────────────── */}
-      <section style={{ marginTop: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 className="h2" style={{ margin: 0 }}>Teacher Invite Codes</h2>
-          <button className="btn" onClick={() => setShowInviteCodes(!showInviteCodes)}>
-            {showInviteCodes ? 'Close' : 'Manage Invite Codes'}
-          </button>
-        </div>
-        <p className="muted small" style={{ marginTop: -8, marginBottom: 12 }}>
-          Students can enter a teacher&apos;s invite code during sign-up to be automatically assigned.
-        </p>
-
-        {showInviteCodes && (
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            {inviteTeachers.length === 0 ? (
-              <p className="muted small" style={{ padding: 20 }}>No teachers found.</p>
-            ) : (
-              <table className="adminTable">
-                <thead>
-                  <tr>
-                    <th>Teacher</th>
-                    <th>Invite Code</th>
-                    <th style={{ width: 160 }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inviteTeachers.map((t) => (
-                    <tr key={t.id}>
-                      <td>
-                        {t.first_name || t.last_name
-                          ? `${t.first_name || ''} ${t.last_name || ''}`.trim()
-                          : t.email}
-                        {(t.first_name || t.last_name) && (
-                          <span className="muted small" style={{ marginLeft: 6 }}>{t.email}</span>
-                        )}
-                      </td>
-                      <td>
-                        {t.teacher_invite_code ? (
-                          <span style={{
-                            fontFamily: 'monospace',
-                            fontWeight: 600,
-                            letterSpacing: '0.08em',
-                            fontSize: 14,
-                            background: 'rgba(22,163,74,0.08)',
-                            color: '#16a34a',
-                            padding: '2px 10px',
-                            borderRadius: 4,
-                          }}>
-                            {t.teacher_invite_code}
-                          </span>
-                        ) : (
-                          <span className="muted small">None</span>
-                        )}
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <button
-                            className="btn"
-                            style={{ fontSize: 11, padding: '3px 10px' }}
-                            onClick={() => handleGenerateInviteCode(t.id)}
-                            disabled={inviteCodeLoading[t.id]}
-                          >
-                            {inviteCodeLoading[t.id] ? '…' : t.teacher_invite_code ? 'Regenerate' : 'Generate'}
-                          </button>
-                          {t.teacher_invite_code && (
-                            <button
-                              className="adminAssignRemove"
-                              onClick={() => handleRevokeInviteCode(t.id)}
-                              disabled={inviteCodeLoading[t.id]}
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
-      </section>
-
-      {/* ── Score Conversion Entry ──────────────────────────── */}
-      <section style={{ marginTop: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 className="h2" style={{ margin: 0 }}>Score Conversions</h2>
-          <button className="btn" onClick={() => setShowScoreDialog(!showScoreDialog)}>
-            {showScoreDialog ? 'Close' : 'Add Score Data'}
-          </button>
-        </div>
-
-        {showScoreDialog && (
-          <div className="card adminScoreDialog">
-            <label className="adminLabel">
-              Practice Test
-              <select
-                className="adminSelect"
-                value={selectedTestId}
-                onChange={(e) => setSelectedTestId(e.target.value)}
-              >
-                <option value="">Select a test…</option>
-                {tests.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
+          {/* ── Manager-Teacher Assignments ────────────── */}
+          <section className="adminSection">
+            <h3 className="adminSideTitle">Manager-Teacher Assignments</h3>
+            <div className="adminAssignGridCompact">
+              <select className="adminSelect" value={mtManager} onChange={(e) => setMtManager(e.target.value)}>
+                <option value="">Manager…</option>
+                {managerProfiles.map(p => (
+                  <option key={p.id} value={p.id}>{displayName(p) || p.email}</option>
                 ))}
               </select>
-            </label>
-
-            <fieldset className="adminFieldset">
-              <legend className="adminLegend">Reading & Writing</legend>
-              <div className="adminFieldRow">
-                <label className="adminLabel adminFieldSmall">
-                  Module 1 Correct
-                  <input type="number" min="0" className="adminInput" value={rwM1} onChange={(e) => setRwM1(e.target.value)} />
-                </label>
-                <label className="adminLabel adminFieldSmall">
-                  Module 2 Correct
-                  <input type="number" min="0" className="adminInput" value={rwM2} onChange={(e) => setRwM2(e.target.value)} />
-                </label>
-                <label className="adminLabel adminFieldSmall">
-                  Scale Score
-                  <input type="number" min="200" max="800" className="adminInput" value={rwScaled} onChange={(e) => setRwScaled(e.target.value)} />
-                </label>
-              </div>
-            </fieldset>
-
-            <fieldset className="adminFieldset">
-              <legend className="adminLegend">Math</legend>
-              <div className="adminFieldRow">
-                <label className="adminLabel adminFieldSmall">
-                  Module 1 Correct
-                  <input type="number" min="0" className="adminInput" value={mathM1} onChange={(e) => setMathM1(e.target.value)} />
-                </label>
-                <label className="adminLabel adminFieldSmall">
-                  Module 2 Correct
-                  <input type="number" min="0" className="adminInput" value={mathM2} onChange={(e) => setMathM2(e.target.value)} />
-                </label>
-                <label className="adminLabel adminFieldSmall">
-                  Scale Score
-                  <input type="number" min="200" max="800" className="adminInput" value={mathScaled} onChange={(e) => setMathScaled(e.target.value)} />
-                </label>
-              </div>
-            </fieldset>
-
-            <button className="btn" onClick={handleSaveScores} disabled={saving} style={{ marginTop: 8 }}>
-              {saving ? 'Saving…' : 'Save Score Data'}
-            </button>
-          </div>
-        )}
-      </section>
-
-      {/* ── Skill Learnability ──────────────────────────────── */}
-      <section style={{ marginTop: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 className="h2" style={{ margin: 0 }}>Skill Learnability</h2>
-          <button className="btn" onClick={() => { setShowLearnability(!showLearnability); if (!showLearnability && !learnSkills.length) fetchLearnability(); }}>
-            {showLearnability ? 'Close' : 'Manage Ratings'}
-          </button>
-        </div>
-        <p className="muted small" style={{ marginTop: -8, marginBottom: 12 }}>
-          Rate each skill from 1 (hardest to improve) to 10 (easiest to improve). Used to compute Opportunity Index on practice test reports.
-        </p>
-
-        {showLearnability && (
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            {learnLoading ? (
-              <p className="muted small" style={{ padding: 20 }}>Loading skills…</p>
-            ) : learnSkills.length === 0 ? (
-              <p className="muted small" style={{ padding: 20 }}>No skills found. Ensure question_taxonomy has data.</p>
-            ) : (
-              <>
-                <table className="adminTable">
+              <select className="adminSelect" value={mtTeacher} onChange={(e) => setMtTeacher(e.target.value)}>
+                <option value="">Teacher…</option>
+                {teacherOnlyProfiles.map(p => (
+                  <option key={p.id} value={p.id}>{displayName(p) || p.email}</option>
+                ))}
+              </select>
+              <button className="btn" onClick={handleMtAssign} disabled={mtLoading} style={{ fontSize: 12, padding: '6px 12px' }}>
+                {mtLoading ? '…' : 'Assign'}
+              </button>
+            </div>
+            {mtAssignments.length > 0 && (
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <table className="adminAssignTable">
                   <thead>
-                    <tr>
-                      <th>Domain</th>
-                      <th>Skill</th>
-                      <th style={{ width: 120 }}>Learnability</th>
-                    </tr>
+                    <tr><th>Manager</th><th>Teacher</th><th style={{ width: 60 }} /></tr>
                   </thead>
                   <tbody>
-                    {learnSkills.map((s) => (
-                      <tr key={s.skill_code} style={learnDirty[s.skill_code] !== undefined ? { background: 'rgba(37,99,235,0.04)' } : undefined}>
-                        <td className="muted small">{s.domain_name || '—'}</td>
-                        <td>{s.skill_name || s.skill_code}</td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <input
-                              type="range"
-                              min="1"
-                              max="10"
-                              value={s.learnability}
-                              onChange={(e) => handleLearnChange(s.skill_code, e.target.value)}
-                              style={{ flex: 1 }}
-                            />
-                            <span style={{ fontWeight: 600, minWidth: 20, textAlign: 'center', fontFamily: 'monospace' }}>
-                              {s.learnability}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {mtAssignSlice.map((a) => {
+                      const manager = profiles.find(p => p.id === a.manager_id);
+                      const teacher = profiles.find(p => p.id === a.teacher_id);
+                      return (
+                        <tr key={`${a.manager_id}-${a.teacher_id}`}>
+                          <td>{manager ? (displayName(manager) || manager.email) : a.manager_id}</td>
+                          <td>{teacher ? (displayName(teacher) || teacher.email) : a.teacher_id}</td>
+                          <td>
+                            <button className="adminAssignRemove" onClick={() => handleMtUnassign(a.manager_id, a.teacher_id)}>
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
-                <div style={{ padding: '12px 16px', display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid var(--border)' }}>
-                  <button className="btn" onClick={saveLearnability} disabled={learnSaving || !Object.keys(learnDirty).length}>
-                    {learnSaving ? 'Saving…' : `Save Changes${Object.keys(learnDirty).length ? ` (${Object.keys(learnDirty).length})` : ''}`}
-                  </button>
-                  {Object.keys(learnDirty).length > 0 && (
-                    <span className="muted small">{Object.keys(learnDirty).length} unsaved change(s)</span>
-                  )}
-                </div>
-              </>
+                <Pagination page={mtAssignPage} totalPages={mtAssignTotalPages} setPage={setMtAssignPage} totalItems={mtAssignments.length} label="assignments" />
+              </div>
             )}
-          </div>
-        )}
-      </section>
+          </section>
 
-      {/* ── Teacher-Student Assignments ────────────────────── */}
-      <section className="adminAssignSection">
-        <h2 className="h2" style={{ marginBottom: 16 }}>Teacher-Student Assignments</h2>
+          {/* ── Teacher Codes ────────────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h3 className="adminSideTitle" style={{ margin: 0 }}>Teacher Codes</h3>
+              <button className="btn secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => setShowTeacherCodes(!showTeacherCodes)}>
+                {showTeacherCodes ? 'Close' : 'Manage'}
+              </button>
+            </div>
 
-        <div className="adminAssignGrid">
-          <label className="adminLabel">
-            Teacher
-            <select className="adminSelect" value={assignTeacher} onChange={(e) => setAssignTeacher(e.target.value)}>
-              <option value="">Select teacher…</option>
-              {teacherProfiles.map(p => (
-                <option key={p.id} value={p.id}>{p.email}</option>
-              ))}
-            </select>
-          </label>
-          <label className="adminLabel">
-            Student
-            <select className="adminSelect" value={assignStudent} onChange={(e) => setAssignStudent(e.target.value)}>
-              <option value="">Select student…</option>
-              {studentProfiles.map(p => (
-                <option key={p.id} value={p.id}>{p.email}</option>
-              ))}
-            </select>
-          </label>
-          <button className="btn" onClick={handleAssign} disabled={assignLoading} style={{ marginBottom: 2 }}>
-            {assignLoading ? 'Assigning…' : 'Assign'}
-          </button>
+            {showTeacherCodes && (
+              <div className="card" style={{ padding: 16 }}>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'flex-end' }}>
+                  <label className="adminLabel" style={{ flex: 1 }}>
+                    New Code (blank = auto)
+                    <input
+                      type="text"
+                      className="adminInput"
+                      placeholder="e.g. TEACHER2025"
+                      value={newCodeValue}
+                      onChange={(e) => setNewCodeValue(e.target.value.toUpperCase())}
+                      style={{ textTransform: 'uppercase' }}
+                    />
+                  </label>
+                  <button className="btn" onClick={handleCreateCode} disabled={codeLoading} style={{ marginBottom: 2, fontSize: 12 }}>
+                    {codeLoading ? '…' : 'Create'}
+                  </button>
+                </div>
+
+                {teacherCodes.length === 0 ? (
+                  <p className="muted small">No teacher codes yet.</p>
+                ) : (
+                  <div style={{ overflow: 'hidden', borderRadius: 8, border: '1px solid var(--border)' }}>
+                    <table className="adminTable">
+                      <thead>
+                        <tr>
+                          <th>Code</th>
+                          <th>Status</th>
+                          <th>Used By</th>
+                          <th style={{ width: 60 }} />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {teacherCodes.map((tc) => {
+                          const usedByProfile = tc.used_by ? profiles.find(p => p.id === tc.used_by) : null;
+                          return (
+                            <tr key={tc.id}>
+                              <td style={{ fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.05em' }}>{tc.code}</td>
+                              <td>
+                                <span style={{
+                                  display: 'inline-block',
+                                  padding: '2px 8px',
+                                  borderRadius: 4,
+                                  fontSize: 11,
+                                  fontWeight: 600,
+                                  background: tc.used_by ? 'rgba(107,114,128,0.1)' : 'rgba(22,163,74,0.1)',
+                                  color: tc.used_by ? '#6b7280' : '#16a34a',
+                                }}>
+                                  {tc.used_by ? 'Used' : 'Available'}
+                                </span>
+                              </td>
+                              <td className="muted small">{usedByProfile?.email || (tc.used_by ? tc.used_by : '—')}</td>
+                              <td>
+                                <button className="adminAssignRemove" onClick={() => handleRevokeCode(tc.id)}>Revoke</button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ── Teacher Invite Codes ─────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h3 className="adminSideTitle" style={{ margin: 0 }}>Teacher Invite Codes</h3>
+              <button className="btn secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => setShowInviteCodes(!showInviteCodes)}>
+                {showInviteCodes ? 'Close' : 'Manage'}
+              </button>
+            </div>
+            <p className="muted small" style={{ marginTop: -4, marginBottom: 8, fontSize: 11 }}>
+              Students enter a teacher&apos;s invite code during sign-up to auto-assign.
+            </p>
+
+            {showInviteCodes && (
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                {inviteTeachers.length === 0 ? (
+                  <p className="muted small" style={{ padding: 16 }}>No teachers found.</p>
+                ) : (
+                  <table className="adminTable">
+                    <thead>
+                      <tr>
+                        <th>Teacher</th>
+                        <th>Code</th>
+                        <th style={{ width: 130 }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {inviteTeachers.map((t) => (
+                        <tr key={t.id}>
+                          <td style={{ fontSize: 13 }}>
+                            {t.first_name || t.last_name
+                              ? `${t.first_name || ''} ${t.last_name || ''}`.trim()
+                              : t.email}
+                          </td>
+                          <td>
+                            {t.teacher_invite_code ? (
+                              <span style={{
+                                fontFamily: 'monospace',
+                                fontWeight: 600,
+                                letterSpacing: '0.08em',
+                                fontSize: 13,
+                                background: 'rgba(22,163,74,0.08)',
+                                color: '#16a34a',
+                                padding: '2px 8px',
+                                borderRadius: 4,
+                              }}>
+                                {t.teacher_invite_code}
+                              </span>
+                            ) : (
+                              <span className="muted small">None</span>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              <button
+                                className="btn"
+                                style={{ fontSize: 10, padding: '2px 8px' }}
+                                onClick={() => handleGenerateInviteCode(t.id)}
+                                disabled={inviteCodeLoading[t.id]}
+                              >
+                                {inviteCodeLoading[t.id] ? '…' : t.teacher_invite_code ? 'Regen' : 'Generate'}
+                              </button>
+                              {t.teacher_invite_code && (
+                                <button
+                                  className="adminAssignRemove"
+                                  onClick={() => handleRevokeInviteCode(t.id)}
+                                  disabled={inviteCodeLoading[t.id]}
+                                  style={{ fontSize: 11 }}
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ── Score Conversions ─────────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h3 className="adminSideTitle" style={{ margin: 0 }}>Score Conversions</h3>
+              <button className="btn secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => setShowScoreDialog(!showScoreDialog)}>
+                {showScoreDialog ? 'Close' : 'Add Data'}
+              </button>
+            </div>
+
+            {showScoreDialog && (
+              <div className="card adminScoreDialog">
+                <label className="adminLabel">
+                  Practice Test
+                  <select
+                    className="adminSelect"
+                    value={selectedTestId}
+                    onChange={(e) => setSelectedTestId(e.target.value)}
+                  >
+                    <option value="">Select a test…</option>
+                    {tests.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <fieldset className="adminFieldset">
+                  <legend className="adminLegend">Reading & Writing</legend>
+                  <div className="adminFieldRow">
+                    <label className="adminLabel adminFieldSmall">
+                      Module 1 Correct
+                      <input type="number" min="0" className="adminInput" value={rwM1} onChange={(e) => setRwM1(e.target.value)} />
+                    </label>
+                    <label className="adminLabel adminFieldSmall">
+                      Module 2 Correct
+                      <input type="number" min="0" className="adminInput" value={rwM2} onChange={(e) => setRwM2(e.target.value)} />
+                    </label>
+                    <label className="adminLabel adminFieldSmall">
+                      Scale Score
+                      <input type="number" min="200" max="800" className="adminInput" value={rwScaled} onChange={(e) => setRwScaled(e.target.value)} />
+                    </label>
+                  </div>
+                </fieldset>
+
+                <fieldset className="adminFieldset">
+                  <legend className="adminLegend">Math</legend>
+                  <div className="adminFieldRow">
+                    <label className="adminLabel adminFieldSmall">
+                      Module 1 Correct
+                      <input type="number" min="0" className="adminInput" value={mathM1} onChange={(e) => setMathM1(e.target.value)} />
+                    </label>
+                    <label className="adminLabel adminFieldSmall">
+                      Module 2 Correct
+                      <input type="number" min="0" className="adminInput" value={mathM2} onChange={(e) => setMathM2(e.target.value)} />
+                    </label>
+                    <label className="adminLabel adminFieldSmall">
+                      Scale Score
+                      <input type="number" min="200" max="800" className="adminInput" value={mathScaled} onChange={(e) => setMathScaled(e.target.value)} />
+                    </label>
+                  </div>
+                </fieldset>
+
+                <button className="btn" onClick={handleSaveScores} disabled={saving} style={{ marginTop: 8 }}>
+                  {saving ? 'Saving…' : 'Save Score Data'}
+                </button>
+              </div>
+            )}
+          </section>
+
+          {/* ── Skill Learnability ────────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h3 className="adminSideTitle" style={{ margin: 0 }}>Skill Learnability</h3>
+              <button className="btn secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => { setShowLearnability(!showLearnability); if (!showLearnability && !learnSkills.length) fetchLearnability(); }}>
+                {showLearnability ? 'Close' : 'Manage'}
+              </button>
+            </div>
+            <p className="muted small" style={{ marginTop: -4, marginBottom: 8, fontSize: 11 }}>
+              Rate 1 (hardest) to 10 (easiest). Used for Opportunity Index.
+            </p>
+
+            {showLearnability && (
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                {learnLoading ? (
+                  <p className="muted small" style={{ padding: 16 }}>Loading skills…</p>
+                ) : learnSkills.length === 0 ? (
+                  <p className="muted small" style={{ padding: 16 }}>No skills found.</p>
+                ) : (
+                  <>
+                    <div style={{ maxHeight: 400, overflow: 'auto' }}>
+                      <table className="adminTable">
+                        <thead>
+                          <tr>
+                            <th>Domain</th>
+                            <th>Skill</th>
+                            <th style={{ width: 100 }}>Learnability</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {learnSkills.map((s) => (
+                            <tr key={s.skill_code} style={learnDirty[s.skill_code] !== undefined ? { background: 'rgba(37,99,235,0.04)' } : undefined}>
+                              <td className="muted small">{s.domain_name || '—'}</td>
+                              <td style={{ fontSize: 13 }}>{s.skill_name || s.skill_code}</td>
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <input
+                                    type="range"
+                                    min="1"
+                                    max="10"
+                                    value={s.learnability}
+                                    onChange={(e) => handleLearnChange(s.skill_code, e.target.value)}
+                                    style={{ flex: 1 }}
+                                  />
+                                  <span style={{ fontWeight: 600, minWidth: 18, textAlign: 'center', fontFamily: 'monospace', fontSize: 12 }}>
+                                    {s.learnability}
+                                  </span>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div style={{ padding: '10px 14px', display: 'flex', gap: 8, alignItems: 'center', borderTop: '1px solid var(--border)' }}>
+                      <button className="btn" onClick={saveLearnability} disabled={learnSaving || !Object.keys(learnDirty).length} style={{ fontSize: 12 }}>
+                        {learnSaving ? 'Saving…' : `Save${Object.keys(learnDirty).length ? ` (${Object.keys(learnDirty).length})` : ''}`}
+                      </button>
+                      {Object.keys(learnDirty).length > 0 && (
+                        <span className="muted small">{Object.keys(learnDirty).length} unsaved</span>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </section>
         </div>
-
-        {assignments.length > 0 && (
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <table className="adminAssignTable">
-              <thead>
-                <tr>
-                  <th>Teacher</th>
-                  <th>Student</th>
-                  <th style={{ width: 80 }} />
-                </tr>
-              </thead>
-              <tbody>
-                {assignments.map((a) => {
-                  const teacher = profiles.find(p => p.id === a.teacher_id);
-                  const student = profiles.find(p => p.id === a.student_id);
-                  return (
-                    <tr key={`${a.teacher_id}-${a.student_id}`}>
-                      <td>{teacher?.email || a.teacher_id}</td>
-                      <td>{student?.email || a.student_id}</td>
-                      <td>
-                        <button
-                          className="adminAssignRemove"
-                          onClick={() => handleUnassign(a.teacher_id, a.student_id)}
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
-      {/* ── Manager-Teacher Assignments ────────────────────── */}
-      <section className="adminAssignSection">
-        <h2 className="h2" style={{ marginBottom: 16 }}>Manager-Teacher Assignments</h2>
-
-        <div className="adminAssignGrid">
-          <label className="adminLabel">
-            Manager
-            <select className="adminSelect" value={mtManager} onChange={(e) => setMtManager(e.target.value)}>
-              <option value="">Select manager…</option>
-              {managerProfiles.map(p => (
-                <option key={p.id} value={p.id}>{p.email}</option>
-              ))}
-            </select>
-          </label>
-          <label className="adminLabel">
-            Teacher
-            <select className="adminSelect" value={mtTeacher} onChange={(e) => setMtTeacher(e.target.value)}>
-              <option value="">Select teacher…</option>
-              {teacherOnlyProfiles.map(p => (
-                <option key={p.id} value={p.id}>{p.email}</option>
-              ))}
-            </select>
-          </label>
-          <button className="btn" onClick={handleMtAssign} disabled={mtLoading} style={{ marginBottom: 2 }}>
-            {mtLoading ? 'Assigning…' : 'Assign'}
-          </button>
-        </div>
-
-        {mtAssignments.length > 0 && (
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <table className="adminAssignTable">
-              <thead>
-                <tr>
-                  <th>Manager</th>
-                  <th>Teacher</th>
-                  <th style={{ width: 80 }} />
-                </tr>
-              </thead>
-              <tbody>
-                {mtAssignments.map((a) => {
-                  const manager = profiles.find(p => p.id === a.manager_id);
-                  const teacher = profiles.find(p => p.id === a.teacher_id);
-                  return (
-                    <tr key={`${a.manager_id}-${a.teacher_id}`}>
-                      <td>{manager?.email || a.manager_id}</td>
-                      <td>{teacher?.email || a.teacher_id}</td>
-                      <td>
-                        <button
-                          className="adminAssignRemove"
-                          onClick={() => handleMtUnassign(a.manager_id, a.teacher_id)}
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      </div>
     </main>
   );
 }
