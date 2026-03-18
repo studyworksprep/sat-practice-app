@@ -278,6 +278,15 @@ export default function PracticeQuestionPage() {
   const [showCorrectModal, setShowCorrectModal] = useState(false);
   const [correctForm, setCorrectForm] = useState({});
   const [correctSubmitting, setCorrectSubmitting] = useState(false);
+  const [taxonomyOptions, setTaxonomyOptions] = useState(null);
+
+  useEffect(() => {
+    if (!showCorrectModal || taxonomyOptions) return;
+    fetch('/api/filters')
+      .then(r => r.json())
+      .then(d => { if (d.domains) setTaxonomyOptions(d); })
+      .catch(() => {});
+  }, [showCorrectModal]);
 
   const refCardRef = useRef(null);
   const refDrag = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
@@ -1007,8 +1016,8 @@ export default function PracticeQuestionPage() {
   function openBrokenFlow() {
     if (!data?.question_id) return;
 
-    if (userRole === 'admin') {
-      // Admin: open correction modal pre-populated with current content
+    if (userRole === 'admin' || userRole === 'manager') {
+      // Admin/Manager: open correction modal pre-populated with current content
       const opts = {};
       if (Array.isArray(data?.options)) {
         for (const opt of data.options) {
@@ -1019,6 +1028,12 @@ export default function PracticeQuestionPage() {
         stimulus_html: data?.version?.stimulus_html || '',
         stem_html: data?.version?.stem_html || '',
         options: opts,
+        difficulty: data?.taxonomy?.difficulty ?? '',
+        score_band: data?.taxonomy?.score_band ?? '',
+        domain_code: data?.taxonomy?.domain_code || '',
+        domain_name: data?.taxonomy?.domain_name || '',
+        skill_code: data?.taxonomy?.skill_code || '',
+        skill_name: data?.taxonomy?.skill_name || '',
       });
       setShowCorrectModal(true);
       return;
@@ -1036,7 +1051,7 @@ export default function PracticeQuestionPage() {
 
       setData((prev) => {
         if (!prev) return prev;
-        return { ...prev, is_broken: next };
+        return { ...prev, is_broken: next, broken_by: next ? 'You' : null, broken_at: next ? new Date().toISOString() : null };
       });
 
       const res = await fetch('/api/status', {
@@ -1049,7 +1064,7 @@ export default function PracticeQuestionPage() {
     } catch (e) {
       setData((prev) => {
         if (!prev) return prev;
-        return { ...prev, is_broken: !next };
+        return { ...prev, is_broken: !next, broken_by: !next ? prev.broken_by : null, broken_at: !next ? prev.broken_at : null };
       });
       setMsg({ kind: 'danger', text: e.message });
     }
@@ -1080,6 +1095,20 @@ export default function PracticeQuestionPage() {
         }
       }
       if (Object.keys(changedOpts).length > 0) body.options = changedOpts;
+
+      // Taxonomy changes
+      const taxChanges = {};
+      if (String(correctForm.difficulty) !== String(data?.taxonomy?.difficulty ?? '')) taxChanges.difficulty = correctForm.difficulty;
+      if (String(correctForm.score_band) !== String(data?.taxonomy?.score_band ?? '')) taxChanges.score_band = correctForm.score_band;
+      if (correctForm.domain_code !== (data?.taxonomy?.domain_code || '')) {
+        taxChanges.domain_code = correctForm.domain_code;
+        taxChanges.domain_name = correctForm.domain_name || null;
+      }
+      if (correctForm.skill_code !== (data?.taxonomy?.skill_code || '')) {
+        taxChanges.skill_code = correctForm.skill_code;
+        taxChanges.skill_name = correctForm.skill_name || null;
+      }
+      if (Object.keys(taxChanges).length > 0) body.taxonomy = taxChanges;
 
       const res = await fetch(`/api/questions/${data.question_id}/correct`, {
         method: 'POST',
@@ -1388,14 +1417,14 @@ export default function PracticeQuestionPage() {
       {htmlHasContent(version?.stimulus_html) ? (
         <div style={{ marginBottom: 12 }}>
           <div className="srOnly">Stimulus</div>
-          <HtmlBlock className="prose" html={version.stimulus_html} />
+          <HtmlBlock className="prose" html={version.stimulus_html} imgMaxWidth={360} />
         </div>
       ) : null}
 
       {version?.stem_html ? (
         <div style={{ marginBottom: 12 }}>
           <div className="srOnly">Question</div>
-          <HtmlBlock className="prose" html={version.stem_html} />
+          <HtmlBlock className="prose" html={version.stem_html} imgMaxWidth={360} />
         </div>
       ) : null}
     </>
@@ -1492,7 +1521,7 @@ export default function PracticeQuestionPage() {
             Next
           </button>
 
-          {(userRole === 'admin' || userRole === 'teacher') ? (
+          {(userRole === 'admin' || userRole === 'manager' || userRole === 'teacher') ? (
             <button
               type="button"
               className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
@@ -1606,7 +1635,7 @@ export default function PracticeQuestionPage() {
           Next
         </button>
 
-        {(userRole === 'admin' || userRole === 'teacher') ? (
+        {(userRole === 'admin' || userRole === 'manager' || userRole === 'teacher') ? (
           <button
             type="button"
             className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
@@ -1807,7 +1836,7 @@ export default function PracticeQuestionPage() {
             <div className="qaLeft">
               {htmlHasContent(version?.stimulus_html) && (
                 <div className="card subcard">
-                  <HtmlBlock className="prose" html={version.stimulus_html} />
+                  <HtmlBlock className="prose" html={version.stimulus_html} imgMaxWidth={360} />
                 </div>
               )}
             </div>
@@ -2106,6 +2135,13 @@ export default function PracticeQuestionPage() {
               <button className="btn secondary" onClick={() => setShowCorrectModal(false)}>Close</button>
             </div>
 
+            {data?.is_broken && data?.broken_by && (
+              <div style={{ background: 'rgba(217,119,117,0.10)', border: '1px solid var(--danger, #dc2626)', borderRadius: 8, padding: '10px 14px', marginTop: 4, fontSize: 14, color: 'var(--danger, #dc2626)' }}>
+                Flagged by <strong>{data.broken_by}</strong>
+                {data.broken_at && (<> on {new Date(data.broken_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(data.broken_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</>)}
+              </div>
+            )}
+
             <hr />
 
             <div className="correctFields">
@@ -2157,6 +2193,96 @@ export default function PracticeQuestionPage() {
                     );
                   })
               ) : null}
+            </div>
+
+            <hr />
+            <div className="correctFields">
+              <div className="h3" style={{ margin: '0 0 8px' }}>Taxonomy</div>
+              <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+                <label className="correctLabel" style={{ flex: '1 1 120px' }}>
+                  <span className="correctLabelText">Difficulty</span>
+                  <select
+                    className="input"
+                    value={correctForm.difficulty ?? ''}
+                    onChange={(e) => setCorrectForm((f) => ({ ...f, difficulty: e.target.value ? Number(e.target.value) : '' }))}
+                  >
+                    <option value="">—</option>
+                    <option value="1">1 – Easy</option>
+                    <option value="2">2 – Medium</option>
+                    <option value="3">3 – Hard</option>
+                  </select>
+                </label>
+                <label className="correctLabel" style={{ flex: '1 1 120px' }}>
+                  <span className="correctLabelText">Score Band</span>
+                  <select
+                    className="input"
+                    value={correctForm.score_band ?? ''}
+                    onChange={(e) => setCorrectForm((f) => ({ ...f, score_band: e.target.value ? Number(e.target.value) : '' }))}
+                  >
+                    <option value="">—</option>
+                    {[1, 2, 3, 4, 5, 6, 7].map((b) => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              {taxonomyOptions ? (() => {
+                const MATH_CODES = ['H', 'P', 'S', 'Q'];
+                const currentIsMath = MATH_CODES.includes(String(correctForm.domain_code).toUpperCase());
+                const relevantDomains = (taxonomyOptions.domains || []).filter(d => {
+                  const code = String(d.domain_code || '').toUpperCase();
+                  return currentIsMath ? MATH_CODES.includes(code) : !MATH_CODES.includes(code);
+                });
+                const selectedDomainTopics = (taxonomyOptions.topics || []).filter(
+                  t => t.domain_code === correctForm.domain_code || t.domain_name === correctForm.domain_name
+                );
+                return (
+                  <div className="row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+                    <label className="correctLabel" style={{ flex: '1 1 200px' }}>
+                      <span className="correctLabelText">Domain</span>
+                      <select
+                        className="input"
+                        value={correctForm.domain_code || ''}
+                        onChange={(e) => {
+                          const dom = relevantDomains.find(d => d.domain_code === e.target.value);
+                          setCorrectForm((f) => ({
+                            ...f,
+                            domain_code: e.target.value,
+                            domain_name: dom?.domain_name || '',
+                            skill_code: '',
+                            skill_name: '',
+                          }));
+                        }}
+                      >
+                        <option value="">—</option>
+                        {relevantDomains.map((d) => (
+                          <option key={d.domain_code} value={d.domain_code}>{d.domain_name}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="correctLabel" style={{ flex: '1 1 200px' }}>
+                      <span className="correctLabelText">Skill</span>
+                      <select
+                        className="input"
+                        value={correctForm.skill_code || ''}
+                        onChange={(e) => {
+                          const sk = selectedDomainTopics.find(t => (t.skill_code || t.skill_name) === e.target.value);
+                          setCorrectForm((f) => ({
+                            ...f,
+                            skill_code: e.target.value,
+                            skill_name: sk?.skill_name || '',
+                          }));
+                        }}
+                      >
+                        <option value="">—</option>
+                        {selectedDomainTopics.map((t) => (
+                          <option key={t.skill_code || t.skill_name} value={t.skill_code || t.skill_name}>{t.skill_name}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                );
+              })() : <p className="muted small">Loading taxonomy options…</p>}
             </div>
 
             <div className="row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end', flexWrap: 'wrap' }}>

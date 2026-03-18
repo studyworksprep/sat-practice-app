@@ -46,7 +46,7 @@ function cleanHtml(raw) {
   return s;
 }
 
-function HtmlBlockImpl({ html, className }) {
+function HtmlBlockImpl({ html, className, imgMaxWidth }) {
   const ref = useRef(null);
   const lastHtmlRef = useRef(null);
 
@@ -62,6 +62,14 @@ function HtmlBlockImpl({ html, className }) {
 
     // Set HTML once (this prevents React from overwriting MathJax output on unrelated rerenders)
     el.innerHTML = cleaned;
+
+    // Constrain images inline when requested (reliable regardless of CSS loading)
+    if (imgMaxWidth) {
+      for (const img of el.querySelectorAll('img')) {
+        img.style.maxWidth = typeof imgMaxWidth === 'number' ? `${imgMaxWidth}px` : imgMaxWidth;
+        img.style.height = 'auto';
+      }
+    }
 
     // Only typeset if MathML exists
      // If MathJax is disabled, stop here and let native MathML render
@@ -110,7 +118,7 @@ ensureMathJaxLoaded();
 // Prevent rerenders when props haven't changed
 const HtmlBlock = React.memo(
   HtmlBlockImpl,
-  (prev, next) => prev.html === next.html && prev.className === next.className
+  (prev, next) => prev.html === next.html && prev.className === next.className && prev.imgMaxWidth === next.imgMaxWidth
 );
 
 export default HtmlBlock;

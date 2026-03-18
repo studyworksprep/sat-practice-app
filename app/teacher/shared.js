@@ -38,13 +38,13 @@ export function displayName(s) {
 
 export function formatDate(iso) {
   if (!iso) return '';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export function formatDateTime(iso) {
   if (!iso) return '';
   const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
     ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
@@ -100,10 +100,11 @@ export function TestScoreBarChart({ testScores, onDelete }) {
   if (!testScores?.length) return null;
   const maxScore = 1600;
   const barHeight = 36;
+  const sorted = [...testScores].sort((a, b) => new Date(b.finished_at) - new Date(a.finished_at));
 
   return (
     <div className="tchBarChart">
-      {testScores.map((ts) => {
+      {sorted.map((ts) => {
         const rwSection = Object.entries(ts.sections || {}).find(([k]) => ['RW', 'rw'].includes(k));
         const mathSection = Object.entries(ts.sections || {}).find(([k]) => ['M', 'm', 'MATH', 'math', 'Math'].includes(k));
         const rwScore = rwSection?.[1]?.scaled || 0;
@@ -167,6 +168,50 @@ export function TestScoreBarChart({ testScores, onDelete }) {
       <div className="tchBarLegend">
         <span className="tchLegendDot" style={{ background: '#6b9bd2' }} /> R&W
         <span className="tchLegendDot" style={{ background: '#9b8ec4', marginLeft: 12 }} /> Math
+      </div>
+    </div>
+  );
+}
+
+// ─── Session card with delete ────────────────────────────
+function SessionCard({ session, index, questions, correct, total, p, onTileClick, onDelete }) {
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  return (
+    <div className="tchSessionCard">
+      <div className="tchSessionHeader">
+        <span className="tchSessionDate">{formatDateTime(session.startedAt)}</span>
+        <span className="tchSessionStats">
+          {correct}/{total}{p !== null && <span style={{ color: pctColor(p), fontWeight: 600 }}> ({p}%)</span>}
+        </span>
+        {onDelete && (
+          confirming ? (
+            <span style={{ display: 'inline-flex', gap: 4, marginLeft: 8 }}>
+              <button
+                className="btn"
+                style={{ background: 'var(--danger)', borderColor: 'var(--danger)', color: '#fff', padding: '2px 8px', fontSize: 11 }}
+                disabled={deleting}
+                onClick={() => { setDeleting(true); onDelete(index).finally(() => { setDeleting(false); setConfirming(false); }); }}
+              >
+                {deleting ? 'Deleting…' : 'Yes, delete'}
+              </button>
+              <button className="btn secondary" style={{ padding: '2px 8px', fontSize: 11 }} onClick={() => setConfirming(false)} disabled={deleting}>Cancel</button>
+            </span>
+          ) : (
+            <button
+              className="tchBarDeleteBtn"
+              title="Delete this session"
+              onClick={() => setConfirming(true)}
+              style={{ marginLeft: 8 }}
+            >
+              &times;
+            </button>
+          )
+        )}
+      </div>
+      <div className="dbSessionTiles">
+        {questions.map((q, qi) => <TchSessionTile key={qi} q={q} index={qi} onClick={() => onTileClick(qi)} />)}
       </div>
     </div>
   );
@@ -406,6 +451,7 @@ export function EditProfileModal({ student, studentId, onClose, onSaved }) {
     high_school: student.high_school || '',
     graduation_year: student.graduation_year || '',
     target_sat_score: student.target_sat_score || '',
+    start_date: student.start_date || '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -462,6 +508,10 @@ export function EditProfileModal({ student, studentId, onClose, onSaved }) {
               <input type="number" value={form.target_sat_score} onChange={handleChange('target_sat_score')} />
             </label>
           </div>
+          <label className="tchModalField">
+            <span className="tchModalLabel">Start Date</span>
+            <input type="date" value={form.start_date} onChange={handleChange('start_date')} />
+          </label>
           {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
           <div className="tchModalActions">
             <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
@@ -637,8 +687,6 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!selectedTestId) return setError('Select a practice test.');
-    if (!parsed) return setError('Upload and parse a Bluebook HTML file first.');
-    if (!parsed.questions.length) return setError('No questions were parsed from the uploaded file.');
     if (!rwScore || !mathScore) return setError('Enter both RW and Math scores.');
     const rw = parseInt(rwScore, 10);
     const math = parseInt(mathScore, 10);
@@ -657,8 +705,8 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
           rw_score: rw,
           math_score: math,
           test_date: testDate || null,
-          questions: parsed.questions,
-          correctCounts: parsed.correctCounts,
+          questions: parsed?.questions || null,
+          correctCounts: parsed?.correctCounts || null,
         }),
       });
       const data = await res.json();
@@ -689,7 +737,11 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
                 {' · '}
                 <span style={{ color: '#9b8ec4', fontWeight: 600 }}>Math {result.math_scaled}</span>
               </div>
-              <div className="muted small" style={{ marginTop: 8 }}>{result.questions_imported} questions imported</div>
+              {result.questions_imported ? (
+                <div className="muted small" style={{ marginTop: 8 }}>{result.questions_imported} questions imported</div>
+              ) : (
+                <div className="muted small" style={{ marginTop: 8 }}>Score recorded (no question details)</div>
+              )}
             </div>
             <div className="tchModalActions">
               <button className="btn primary" onClick={onClose}>Done</button>
@@ -708,8 +760,9 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
             </label>
 
             <label className="tchModalField">
-              <span className="tchModalLabel">Bluebook HTML File (.htm)</span>
+              <span className="tchModalLabel">Bluebook HTML File (.htm) <span className="muted" style={{ fontWeight: 400 }}>— optional</span></span>
               <input type="file" accept=".htm,.html" onChange={handleFileChange} style={{ fontSize: 13 }} />
+              {!file && !parsed && <span className="muted small" style={{ marginTop: 2 }}>Skip to record scores only, without question-level details.</span>}
             </label>
 
             {parseError && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{parseError}</p>}
@@ -759,7 +812,7 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
 
             <div className="tchModalActions">
               <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
-              <button type="submit" className="btn primary" disabled={saving || !parsed || !selectedTestId}>
+              <button type="submit" className="btn primary" disabled={saving || !selectedTestId || !rwScore || !mathScore}>
                 {saving ? 'Uploading...' : 'Upload Results'}
               </button>
             </div>
@@ -771,17 +824,19 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
 }
 
 // ─── Create assignment modal ──────────────────────────────
-export function CreateAssignmentModal({ students, onClose, onCreated }) {
+export function CreateAssignmentModal({ students, initialStudents, onClose, onCreated }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [selectedStudents, setSelectedStudents] = useState([]);
+  const [selectedStudents, setSelectedStudents] = useState(initialStudents || []);
   const [selectAll, setSelectAll] = useState(false);
-  const [domains, setDomains] = useState([]);
+  const [expandedDomains, setExpandedDomains] = useState([]);
   const [topics, setTopics] = useState([]);
-  const [difficulties, setDifficulties] = useState([1, 2, 3]);
+  const [difficulties, setDifficulties] = useState([]);
   const [scoreBands, setScoreBands] = useState([]);
   const [questionLimit, setQuestionLimit] = useState(20);
+  const [randomize, setRandomize] = useState(false);
+  const [undoneOnly, setUndoneOnly] = useState(false);
   const [filterData, setFilterData] = useState(null);
   const [filterLoading, setFilterLoading] = useState(true);
   const [dynamicCounts, setDynamicCounts] = useState(null);
@@ -816,8 +871,21 @@ export function CreateAssignmentModal({ students, onClose, onCreated }) {
     if (selectAll) { setSelectedStudents([]); } else { setSelectedStudents(students.map(s => s.id)); }
     setSelectAll(!selectAll);
   }
-  function toggleDomain(name) { setDomains(prev => prev.includes(name) ? prev.filter(d => d !== name) : [...prev, name]); setPreviewQuestions(null); }
-  function toggleTopic(name) { setTopics(prev => prev.includes(name) ? prev.filter(t => t !== name) : [...prev, name]); setPreviewQuestions(null); }
+  const topicsByDomain = {};
+  for (const t of filterData?.topics || []) {
+    if (!topicsByDomain[t.domain_name]) topicsByDomain[t.domain_name] = [];
+    topicsByDomain[t.domain_name].push(t);
+  }
+
+  function toggleExpandDomain(name) { setExpandedDomains(prev => prev.includes(name) ? prev.filter(d => d !== name) : [...prev, name]); }
+  function topicKey(t) { return t.skill_code || t.skill_name; }
+  function toggleTopic(key) { setTopics(prev => prev.includes(key) ? prev.filter(t => t !== key) : [...prev, key]); setPreviewQuestions(null); }
+  function toggleAllTopics(domainName) {
+    const domainTopicKeys = (topicsByDomain[domainName] || []).map(t => topicKey(t));
+    const allSelected = domainTopicKeys.every(k => topics.includes(k));
+    setTopics(prev => allSelected ? prev.filter(t => !domainTopicKeys.includes(t)) : [...new Set([...prev, ...domainTopicKeys])]);
+    setPreviewQuestions(null);
+  }
   function toggleDifficulty(d) { setDifficulties(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]); setPreviewQuestions(null); }
   function toggleScoreBand(b) { setScoreBands(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]); setPreviewQuestions(null); }
 
@@ -825,12 +893,14 @@ export function CreateAssignmentModal({ students, onClose, onCreated }) {
     setPreviewLoading(true);
     try {
       const params = new URLSearchParams();
-      if (domains.length) params.set('domains', domains.join(','));
       if (topics.length) params.set('topics', topics.join(','));
-      if (difficulties.length < 3) params.set('difficulties', difficulties.join(','));
+      if (difficulties.length > 0 && difficulties.length < 3) params.set('difficulties', difficulties.join(','));
       if (scoreBands.length > 0) params.set('score_bands', scoreBands.join(','));
-      params.set('limit', String(questionLimit));
+      params.set('limit', String(questionLimit || 9999));
       params.set('hide_broken', 'true');
+      if (undoneOnly && selectedStudents.length > 0) {
+        params.set('exclude_done_for', selectedStudents.join(','));
+      }
       const res = await fetch(`/api/questions?${params}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
@@ -852,9 +922,11 @@ export function CreateAssignmentModal({ students, onClose, onCreated }) {
           title: title.trim(),
           description: description.trim() || null,
           due_date: dueDate || null,
-          question_ids: previewQuestions.items.map(q => q.question_id),
+          question_ids: randomize
+            ? [...previewQuestions.items].sort(() => Math.random() - 0.5).map(q => q.question_id)
+            : previewQuestions.items.map(q => q.question_id),
           student_ids: selectedStudents,
-          filter_criteria: { domains, topics, difficulties, score_bands: scoreBands },
+          filter_criteria: { topics, difficulties, score_bands: scoreBands },
         }),
       });
       const json = await res.json();
@@ -862,12 +934,6 @@ export function CreateAssignmentModal({ students, onClose, onCreated }) {
       onCreated();
     } catch (e) { setError(e.message); }
     finally { setSaving(false); }
-  }
-
-  const topicsByDomain = {};
-  for (const t of filterData?.topics || []) {
-    if (!topicsByDomain[t.domain_name]) topicsByDomain[t.domain_name] = [];
-    topicsByDomain[t.domain_name].push(t);
   }
 
   return (
@@ -894,7 +960,7 @@ export function CreateAssignmentModal({ students, onClose, onCreated }) {
               </label>
               <label className="tchModalField">
                 <span className="tchModalLabel">Max Questions</span>
-                <input type="number" min={1} max={100} value={questionLimit} onChange={e => setQuestionLimit(Number(e.target.value) || 20)} />
+                <input type="text" inputMode="numeric" value={questionLimit} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setQuestionLimit(v === '' ? '' : Number(v)); }} />
               </label>
             </div>
             <div className="tchAssignSection">
@@ -921,27 +987,44 @@ export function CreateAssignmentModal({ students, onClose, onCreated }) {
                 ))}
               </div>
             </div>
+            <div className="tchAssignSection" style={{ display: 'flex', gap: 16 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+                <input type="checkbox" checked={randomize} onChange={e => setRandomize(e.target.checked)} />
+                Randomize question order
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+                <input type="checkbox" checked={undoneOnly} onChange={e => { setUndoneOnly(e.target.checked); setPreviewQuestions(null); }} />
+                Only undone questions
+              </label>
+            </div>
             {filterLoading ? <p className="muted small">Loading filters...</p> : (
               <div className="tchAssignSection">
                 <span className="tchModalLabel">Domains & Topics</span>
                 <div className="tchAssignDomainList">
                   {(filterData?.domains || []).map(d => {
-                    const isDomainSelected = domains.includes(d.domain_name);
-                    const domainTopics = topicsByDomain[d.domain_name] || [];
+                    const isExpanded = expandedDomains.includes(d.domain_name);
+                    const domainTopicList = topicsByDomain[d.domain_name] || [];
                     const counts = dynamicCounts || filterData?.counts;
                     const domainCount = counts?.[d.domain_name]?.count;
+                    const selectedCount = domainTopicList.filter(t => topics.includes(topicKey(t))).length;
+                    const allSelected = domainTopicList.length > 0 && selectedCount === domainTopicList.length;
                     return (
                       <div key={d.domain_name} className="tchAssignDomainBlock">
-                        <button type="button" className={`tchAssignChip${isDomainSelected ? ' active' : ''}`} onClick={() => toggleDomain(d.domain_name)}>
+                        <button type="button" className={`tchAssignChip${allSelected ? ' active' : selectedCount > 0 ? ' partial' : ''}`} onClick={() => toggleExpandDomain(d.domain_name)}>
                           {d.domain_name}
                           {domainCount != null && <span className="muted small" style={{ marginLeft: 4 }}>({domainCount})</span>}
+                          {selectedCount > 0 && !allSelected && <span className="muted small" style={{ marginLeft: 4 }}>[{selectedCount}/{domainTopicList.length}]</span>}
+                          <span style={{ marginLeft: 4, fontSize: 10 }}>{isExpanded ? '▾' : '▸'}</span>
                         </button>
-                        {isDomainSelected && domainTopics.length > 0 && (
+                        {isExpanded && domainTopicList.length > 0 && (
                           <div className="tchAssignTopicChips">
-                            {domainTopics.map(t => {
+                            <button type="button" className={`tchAssignChip small${allSelected ? ' active' : ''}`} onClick={() => toggleAllTopics(d.domain_name)} style={{ fontStyle: 'italic' }}>
+                              {allSelected ? 'Deselect All' : 'Select All'}
+                            </button>
+                            {domainTopicList.map(t => {
                               const topicCount = counts?.[d.domain_name]?.topics?.[t.skill_code || t.skill_name];
                               return (
-                                <button key={t.skill_name} type="button" className={`tchAssignChip small${topics.includes(t.skill_name) ? ' active' : ''}`} onClick={() => toggleTopic(t.skill_name)}>
+                                <button key={t.skill_name} type="button" className={`tchAssignChip small${topics.includes(topicKey(t)) ? ' active' : ''}`} onClick={() => toggleTopic(topicKey(t))}>
                                   {t.skill_name}{topicCount != null ? ` (${topicCount})` : ''}
                                 </button>
                               );
@@ -1147,6 +1230,7 @@ export function StudentDetail({ studentId, onBack }) {
   const [addRegOpen, setAddRegOpen] = useState(false);
   const [addScoreOpen, setAddScoreOpen] = useState(false);
   const [uploadBluebookOpen, setUploadBluebookOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true); setError(null);
@@ -1182,6 +1266,22 @@ export function StudentDetail({ studentId, onBack }) {
     }
   };
 
+  const deleteSession = async (sessionIndex) => {
+    const session = data.recentSessions[sessionIndex];
+    if (!session?.attemptIds?.length) return;
+    const res = await fetch(`/api/teacher/student/${studentId}/delete-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attemptIds: session.attemptIds }),
+    });
+    if (res.ok) {
+      setData(prev => ({
+        ...prev,
+        recentSessions: (prev.recentSessions || []).filter((_, i) => i !== sessionIndex),
+      }));
+    }
+  };
+
   if (loading) return <div className="tchDetailLoading"><p className="muted">Loading student data...</p></div>;
   if (error) return <div className="tchDetailError"><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
   if (!data) return null;
@@ -1203,113 +1303,159 @@ export function StudentDetail({ studentId, onBack }) {
       {addRegOpen && <AddRegistrationModal studentId={studentId} onClose={() => setAddRegOpen(false)} onSaved={(reg) => { setRegistrations(prev => [...prev, reg].sort((a, b) => new Date(a.test_date) - new Date(b.test_date))); setAddRegOpen(false); }} />}
       {addScoreOpen && <AddScoreModal studentId={studentId} onClose={() => setAddScoreOpen(false)} onSaved={(score) => { setOfficialScores(prev => [score, ...prev]); setAddScoreOpen(false); }} />}
       {uploadBluebookOpen && <UploadBluebookModal studentId={studentId} onClose={() => setUploadBluebookOpen(false)} onUploaded={() => { fetch(`/api/teacher/student/${studentId}/dashboard`).then(r => r.json()).then(d => { if (!d.error) setData(d); }); }} />}
-      <div className="card tchOverviewCard">
-        {(student.high_school || student.graduation_year || student.target_sat_score) && (
-          <div className="tchProfileRow">
-            {student.high_school && <div className="tchProfileItem"><span className="tchProfileLabel">School</span><span className="tchProfileValue">{student.high_school}</span></div>}
-            {student.graduation_year && <div className="tchProfileItem"><span className="tchProfileLabel">Graduation</span><span className="tchProfileValue">{student.graduation_year}</span></div>}
-            {student.target_sat_score && <div className="tchProfileItem"><span className="tchProfileLabel">Target Score</span><span className="tchProfileValue">{student.target_sat_score}</span></div>}
+      {assignOpen && <CreateAssignmentModal students={[student]} initialStudents={[studentId]} onClose={() => setAssignOpen(false)} onCreated={() => setAssignOpen(false)} />}
+      <div className="tchDetailGrid">
+        {/* ── Left column: stats + performance data ── */}
+        <div>
+          <div className="card tchSection">
+            <div className="tchStatsRow">
+              <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--accent)' }}>{data.highestTestScore ?? '—'}</div><div className="tchStatLabel">Highest Score</div></div>
+              <div className="tchStatCol"><div className="tchStatValue">{data.totalAttempted}</div><div className="tchStatLabel">Questions Done</div></div>
+              <div className="tchStatCol"><div className="tchStatValue" style={{ color: pctColor(data.recentAccuracy) }}>{data.recentAccuracy != null ? `${data.recentAccuracy}%` : '—'}</div><div className="tchStatLabel">Recent Accuracy</div></div>
+              <div className="tchStatCol"><div className="tchStatValue" style={{ color: pctColor(data.assignmentCompletionPct) }}>{data.assignmentCompletionPct != null ? `${data.assignmentCompletionPct}%` : '—'}</div><div className="tchStatLabel">Assignment Completion</div></div>
+              <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--danger)' }}>{data.weakest ? `${data.weakest.weightedPct}%` : '—'}</div><div className="tchStatLabel">{data.weakest ? data.weakest.skill_name : 'Weakest'}</div></div>
+            </div>
           </div>
-        )}
-        {(() => {
-          const now = new Date();
-          const upcoming = registrations.filter(r => new Date(r.test_date) > now);
-          const past = registrations.filter(r => new Date(r.test_date) <= now);
-          return (upcoming.length > 0 || past.length > 0) ? (
-            <div className="tchRegSection">
-              {upcoming.length > 0 && (
-                <div className="tchRegList">
-                  <span className="tchProfileLabel" style={{ marginBottom: 4 }}>Upcoming SATs</span>
-                  {upcoming.map(r => (
-                    <div key={r.id} className="tchRegItem">
-                      <span>{new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                      <button className="tchRegDelete" onClick={() => deleteRegistration(r.id)} title="Remove">&times;</button>
+          <div style={{ textAlign: 'center', margin: '4px 0 16px' }}>
+            <Link href={`/teacher/student/${studentId}/stats`} className="dbMoreStatsLink">More Statistics</Link>
+          </div>
+          <div className="card tchSection">
+            <h3 className="h2" style={{ marginBottom: 14 }}>Practice Test Results</h3>
+            {!data.testScores?.length ? <p className="muted small">No completed practice tests yet.</p> : <TestScoreBarChart testScores={data.testScores} onDelete={deleteTestAttempt} />}
+          </div>
+          <div className="card tchSection">
+            <h3 className="h2" style={{ marginBottom: 14 }}>Domain & Topic Performance</h3>
+            {!data.domainStats?.length ? <p className="muted small">No practice data yet.</p> : <DomainTable domainStats={data.domainStats} topicStats={data.topicStats} />}
+          </div>
+          <div className="card tchSection">
+            <h3 className="h2" style={{ marginBottom: 14 }}>Recent Practice Sessions</h3>
+            {!data.recentSessions?.length ? <p className="muted small">No recent practice sessions.</p> : (
+              <div className="tchSessionList">
+                {data.recentSessions.map((session, i) => {
+                  const questions = session.questions;
+                  const correct = questions.filter(q => q.is_correct).length;
+                  const total = questions.length;
+                  const p = pct(correct, total);
+                  function handleTileClick(qIndex) {
+                    const ids = questions.map(q => q.question_id);
+                    const sid = `teacher_review_${Date.now()}_${i}`;
+                    localStorage.setItem(`teacher_review_session_${sid}`, ids.join(','));
+                    localStorage.setItem(`teacher_review_meta_${sid}`, JSON.stringify(questions.map(q => ({ question_id: q.question_id, is_correct: q.is_correct, difficulty: q.difficulty, domain_name: q.domain_name || '', skill_name: q.skill_name || '' }))));
+                    router.push(`/teacher/review/${encodeURIComponent(questions[qIndex].question_id)}?studentId=${studentId}&sid=${sid}&t=${ids.length}&i=${qIndex + 1}`);
+                  }
+                  return (
+                    <SessionCard
+                      key={i}
+                      session={session}
+                      index={i}
+                      questions={questions}
+                      correct={correct}
+                      total={total}
+                      p={p}
+                      onTileClick={handleTileClick}
+                      onDelete={deleteSession}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+        {/* ── Right column: profile info + assignments ── */}
+        <div>
+          <div className="card tchOverviewCard">
+            {(student.high_school || student.graduation_year || student.target_sat_score || student.start_date) && (
+              <div className="tchProfileRow">
+                {student.high_school && <div className="tchProfileItem"><span className="tchProfileLabel">School</span><span className="tchProfileValue">{student.high_school}</span></div>}
+                {student.graduation_year && <div className="tchProfileItem"><span className="tchProfileLabel">Graduation</span><span className="tchProfileValue">{student.graduation_year}</span></div>}
+                {student.target_sat_score && <div className="tchProfileItem"><span className="tchProfileLabel">Target Score</span><span className="tchProfileValue">{student.target_sat_score}</span></div>}
+                {student.start_date && <div className="tchProfileItem"><span className="tchProfileLabel">Start Date</span><span className="tchProfileValue">{new Date(student.start_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></div>}
+              </div>
+            )}
+            {(() => {
+              const now = new Date();
+              const upcoming = registrations.filter(r => new Date(r.test_date) > now);
+              const past = registrations.filter(r => new Date(r.test_date) <= now);
+              return (upcoming.length > 0 || past.length > 0) ? (
+                <div className="tchRegSection">
+                  {upcoming.length > 0 && (
+                    <div className="tchRegList">
+                      <span className="tchProfileLabel" style={{ marginBottom: 4 }}>Upcoming SATs</span>
+                      {upcoming.map(r => (
+                        <div key={r.id} className="tchRegItem">
+                          <span>{new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <button className="tchRegDelete" onClick={() => deleteRegistration(r.id)} title="Remove">&times;</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {past.length > 0 && (
+                    <div className="tchRegList">
+                      <span className="tchProfileLabel" style={{ marginBottom: 4, color: 'var(--muted)' }}>Past SATs</span>
+                      {past.map(r => (
+                        <div key={r.id} className="tchRegItem past">
+                          <span>{new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <button className="tchRegDelete" onClick={() => deleteRegistration(r.id)} title="Remove">&times;</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : null;
+            })()}
+            {officialScores.length > 0 && (
+              <div className="tchScoresSection">
+                <span className="tchProfileLabel" style={{ marginBottom: 6 }}>Official SAT Scores</span>
+                <div className="tchScoresList">
+                  {officialScores.map(s => (
+                    <div key={s.id} className="tchScoreItem">
+                      <span className="tchScoreDate">{new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <span className="tchScoreComposite">{s.composite_score}</span>
+                      <span className="tchScoreBreakdown">R&W {s.rw_score} · Math {s.math_score}</span>
+                      <button className="tchRegDelete" onClick={() => deleteScore(s.id)} title="Remove">&times;</button>
                     </div>
                   ))}
                 </div>
-              )}
-              {past.length > 0 && (
-                <div className="tchRegList">
-                  <span className="tchProfileLabel" style={{ marginBottom: 4, color: 'var(--muted)' }}>Past SATs</span>
-                  {past.map(r => (
-                    <div key={r.id} className="tchRegItem past">
-                      <span>{new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                      <button className="tchRegDelete" onClick={() => deleteRegistration(r.id)} title="Remove">&times;</button>
+              </div>
+            )}
+            <div className="tchProfileActions">
+              <button className="btn secondary tchProfileActionBtn" onClick={() => setAddRegOpen(true)}>+ Test Registration</button>
+              <button className="btn secondary tchProfileActionBtn" onClick={() => setAddScoreOpen(true)}>+ Official Score</button>
+              <button className="btn primary tchProfileActionBtn" onClick={() => setUploadBluebookOpen(true)}>Upload Bluebook Results</button>
+            </div>
+          </div>
+          <div className="card tchSection">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <h3 className="h2" style={{ margin: 0 }}>Assignments</h3>
+              <button className="btn primary" style={{ padding: '4px 12px', fontSize: 13 }} onClick={() => setAssignOpen(true)}>+ New Assignment</button>
+            </div>
+            {!data.studentAssignments?.length ? <p className="muted small">No assignments yet.</p> : (
+              <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+                {data.studentAssignments.map(a => {
+                  const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
+                  const isOverdue = a.due_date && new Date(a.due_date) < new Date();
+                  return (
+                    <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{a.title}</div>
+                        <div className="muted small" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          <span>{a.completed_count}/{a.question_count} questions</span>
+                          {a.due_date && <span style={{ color: isOverdue ? 'var(--danger)' : undefined }}>Due {new Date(a.due_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{isOverdue ? ' (overdue)' : ''}</span>}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 100 }}>
+                        <div className="dbProgressBar" style={{ flex: 1, height: 6 }}>
+                          <div className="dbProgressFill" style={{ width: `${donePct}%`, background: pctColor(donePct) }} />
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: pctColor(donePct), minWidth: 36, textAlign: 'right' }}>{donePct}%</span>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : null;
-        })()}
-        {officialScores.length > 0 && (
-          <div className="tchScoresSection">
-            <span className="tchProfileLabel" style={{ marginBottom: 6 }}>Official SAT Scores</span>
-            <div className="tchScoresList">
-              {officialScores.map(s => (
-                <div key={s.id} className="tchScoreItem">
-                  <span className="tchScoreDate">{new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                  <span className="tchScoreComposite">{s.composite_score}</span>
-                  <span className="tchScoreBreakdown">R&W {s.rw_score} · Math {s.math_score}</span>
-                  <button className="tchRegDelete" onClick={() => deleteScore(s.id)} title="Remove">&times;</button>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
-        <div className="tchProfileActions">
-          <button className="btn secondary tchProfileActionBtn" onClick={() => setAddRegOpen(true)}>+ Test Registration</button>
-          <button className="btn secondary tchProfileActionBtn" onClick={() => setAddScoreOpen(true)}>+ Official Score</button>
-          <button className="btn primary tchProfileActionBtn" onClick={() => setUploadBluebookOpen(true)}>Upload Bluebook Results</button>
         </div>
-        <div className="tchStatsRow">
-          <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--accent)' }}>{data.highestTestScore ?? '—'}</div><div className="tchStatLabel">Highest Score</div></div>
-          <div className="tchStatCol"><div className="tchStatValue">{data.totalAttempted}</div><div className="tchStatLabel">Questions Done</div></div>
-          <div className="tchStatCol"><div className="tchStatValue" style={{ color: pctColor(data.recentAccuracy) }}>{data.recentAccuracy != null ? `${data.recentAccuracy}%` : '—'}</div><div className="tchStatLabel">Recent Accuracy</div></div>
-          <div className="tchStatCol"><div className="tchStatValue" style={{ color: 'var(--danger)' }}>{data.weakest ? `${data.weakest.weightedPct}%` : '—'}</div><div className="tchStatLabel">{data.weakest ? data.weakest.skill_name : 'Weakest'}</div></div>
-        </div>
-      </div>
-      <div style={{ textAlign: 'center', margin: '4px 0 16px' }}>
-        <Link href={`/teacher/student/${studentId}/stats`} className="dbMoreStatsLink">More Statistics</Link>
-      </div>
-      <div className="card tchSection">
-        <h3 className="h2" style={{ marginBottom: 14 }}>Practice Test Results</h3>
-        {!data.testScores?.length ? <p className="muted small">No completed practice tests yet.</p> : <TestScoreBarChart testScores={data.testScores} onDelete={deleteTestAttempt} />}
-      </div>
-      <div className="card tchSection">
-        <h3 className="h2" style={{ marginBottom: 14 }}>Domain & Topic Performance</h3>
-        {!data.domainStats?.length ? <p className="muted small">No practice data yet.</p> : <DomainTable domainStats={data.domainStats} topicStats={data.topicStats} />}
-      </div>
-      <div className="card tchSection">
-        <h3 className="h2" style={{ marginBottom: 14 }}>Recent Practice Sessions</h3>
-        {!data.recentSessions?.length ? <p className="muted small">No recent practice sessions.</p> : (
-          <div className="tchSessionList">
-            {data.recentSessions.map((session, i) => {
-              const questions = session.questions;
-              const correct = questions.filter(q => q.is_correct).length;
-              const total = questions.length;
-              const p = pct(correct, total);
-              function handleTileClick(qIndex) {
-                const ids = questions.map(q => q.question_id);
-                const sid = `teacher_review_${Date.now()}_${i}`;
-                localStorage.setItem(`teacher_review_session_${sid}`, ids.join(','));
-                localStorage.setItem(`teacher_review_meta_${sid}`, JSON.stringify(questions.map(q => ({ question_id: q.question_id, is_correct: q.is_correct, difficulty: q.difficulty, domain_name: q.domain_name || '', skill_name: q.skill_name || '' }))));
-                router.push(`/teacher/review/${encodeURIComponent(questions[qIndex].question_id)}?studentId=${studentId}&sid=${sid}&t=${ids.length}&i=${qIndex + 1}`);
-              }
-              return (
-                <div key={i} className="tchSessionCard">
-                  <div className="tchSessionHeader">
-                    <span className="tchSessionDate">{formatDateTime(session.startedAt)}</span>
-                    <span className="tchSessionStats">{correct}/{total}{p !== null && <span style={{ color: pctColor(p), fontWeight: 600 }}> ({p}%)</span>}</span>
-                  </div>
-                  <div className="dbSessionTiles">
-                    {questions.map((q, qi) => <TchSessionTile key={qi} q={q} index={qi} onClick={() => handleTileClick(qi)} />)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
     </div>
   );

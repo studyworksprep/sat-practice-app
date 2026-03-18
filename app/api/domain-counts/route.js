@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../lib/supabase/server';
 
 // GET /api/domain-counts
 // Params: difficulties, score_bands, wrong_only, marked_only, hide_broken
@@ -7,6 +7,7 @@ import { createClient } from '../../../lib/supabase/server';
 // Counts reflect non-domain/topic filters only, so callers can show how many
 // questions exist in each domain/topic under the current filter settings.
 export async function GET(request) {
+  try {
   const { searchParams } = new URL(request.url);
 
   const difficulties = (searchParams.get('difficulties') || '')
@@ -17,20 +18,23 @@ export async function GET(request) {
 
   const wrong_only   = searchParams.get('wrong_only')   === 'true';
   const marked_only  = searchParams.get('marked_only')  === 'true';
+  const undone_only  = searchParams.get('undone_only')  === 'true';
   const hide_broken  = searchParams.get('hide_broken')  === 'true';
   const only_broken  = searchParams.get('only_broken')  === 'true';
 
   const supabase = createClient();
 
-  // Run auth + all restriction queries + first taxonomy page in parallel
+  // Get user ID from middleware header (avoids stale-cookie auth issues)
+  const userId = request.headers.get('x-user-id') || null;
+
+  // Run restriction queries + first taxonomy page in parallel
   const restrictionQueries = [
-    // 0: auth
-    supabase.auth.getUser(),
-    // 1: first taxonomy page (always needed)
+    // 0: first taxonomy page (always needed)
     (() => {
       let q = supabase
         .from('question_taxonomy')
         .select('question_id, domain_name, skill_name, skill_code')
+        .order('question_id')
         .range(0, 999);
       if (difficulties.length > 0) q = q.in('difficulty', difficulties);
       if (score_bands.length > 0)  q = q.in('score_band', score_bands);
@@ -38,7 +42,7 @@ export async function GET(request) {
     })(),
   ];
 
-  // 2: broken IDs (if needed for hide_broken or only_broken)
+  // 1: broken IDs (if needed for hide_broken or only_broken)
   if (hide_broken || only_broken) {
     restrictionQueries.push(
       supabase.from('questions').select('id').eq('is_broken', true).limit(10000)
@@ -47,25 +51,37 @@ export async function GET(request) {
 
   const results = await Promise.all(restrictionQueries);
 
-  const { data: auth } = results[0];
-  const userId = auth?.user?.id ?? null;
+  // Use service client for user-specific queries to bypass RLS.
+  // The regular client may have stale auth cookies (middleware refreshes
+  // tokens on the response, but route handlers read the original request
+  // cookies). userId comes from the trusted middleware x-user-id header.
+  const svc = (marked_only || wrong_only || undone_only) && userId
+    ? createServiceClient() : null;
 
   // Now run user-specific queries in parallel (need userId)
   const userQueries = [];
   if (marked_only && userId) {
     userQueries.push(
-      supabase.from('question_status').select('question_id')
+      svc.from('question_status').select('question_id')
         .eq('user_id', userId).eq('marked_for_review', true).limit(10000)
     );
   }
   if (wrong_only && userId) {
     userQueries.push(
-      supabase.from('question_status').select('question_id')
+      svc.from('question_status').select('question_id')
         .eq('user_id', userId).eq('is_done', true).eq('last_is_correct', false).limit(10000)
     );
   }
+  if (undone_only && userId) {
+    userQueries.push(
+      svc.from('question_status').select('question_id')
+        .eq('user_id', userId).eq('is_done', true).limit(50000)
+    );
+  }
 
-  if ((marked_only || wrong_only) && !userId) return NextResponse.json({});
+  if ((marked_only || wrong_only || undone_only) && !userId) {
+    return NextResponse.json({ error: 'auth_required' }, { status: 401 });
+  }
 
   const userResults = userQueries.length > 0 ? await Promise.all(userQueries) : [];
 
@@ -86,12 +102,27 @@ export async function GET(request) {
     if (restrictIds.length === 0) return NextResponse.json({});
   }
 
+  // undone_only: exclude questions already done by the current user
+  let excludeDoneIds = null;
+  if (undone_only && userId) {
+    const doneIds = (userResults[userIdx++]?.data || []).map((r) => r.question_id).filter(Boolean);
+    if (doneIds.length > 0) {
+      if (restrictIds) {
+        const doneSet = new Set(doneIds);
+        restrictIds = restrictIds.filter((id) => !doneSet.has(id));
+        if (restrictIds.length === 0) return NextResponse.json({});
+      } else {
+        excludeDoneIds = new Set(doneIds);
+      }
+    }
+  }
+
   if (only_broken) {
-    const brokenIds = (results[2]?.data || []).map((r) => r.id).filter(Boolean);
+    const brokenIds = (results[1]?.data || []).map((r) => r.id).filter(Boolean);
     restrictIds = intersect(restrictIds, brokenIds);
     if (restrictIds.length === 0) return NextResponse.json({});
   } else if (hide_broken) {
-    const brokenIds = new Set((results[2]?.data || []).map((r) => r.id).filter(Boolean));
+    const brokenIds = new Set((results[1]?.data || []).map((r) => r.id).filter(Boolean));
     if (brokenIds.size > 0) {
       if (restrictIds) {
         restrictIds = restrictIds.filter((id) => !brokenIds.has(id));
@@ -103,7 +134,7 @@ export async function GET(request) {
   }
 
   // Process first taxonomy page (already fetched in parallel)
-  const firstTaxResult = results[1];
+  const firstTaxResult = results[0];
   if (firstTaxResult.error) return NextResponse.json({ error: firstTaxResult.error.message }, { status: 400 });
 
   let allTax = firstTaxResult.data || [];
@@ -115,6 +146,7 @@ export async function GET(request) {
       let q = supabase
         .from('question_taxonomy')
         .select('question_id, domain_name, skill_name, skill_code')
+        .order('question_id')
         .range(from, from + 999);
       if (difficulties.length > 0) q = q.in('difficulty', difficulties);
       if (score_bands.length > 0)  q = q.in('score_band', score_bands);
@@ -137,6 +169,11 @@ export async function GET(request) {
   // Exclude broken questions
   if (excludeBrokenIds) {
     allTax = allTax.filter((r) => !excludeBrokenIds.has(r.question_id));
+  }
+
+  // Exclude done questions
+  if (excludeDoneIds) {
+    allTax = allTax.filter((r) => !excludeDoneIds.has(r.question_id));
   }
 
   // Group by domain → topic, counting unique question_ids
@@ -165,6 +202,10 @@ export async function GET(request) {
   }
 
   return NextResponse.json(result);
+  } catch (e) {
+    console.error('[domain-counts]', e);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
 
 function intersect(existing, incoming) {

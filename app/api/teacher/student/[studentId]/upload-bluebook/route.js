@@ -56,12 +56,6 @@ export async function POST(request, { params }) {
   if (!practice_test_id) {
     return NextResponse.json({ error: 'practice_test_id is required' }, { status: 400 });
   }
-  if (!questions?.length) {
-    return NextResponse.json({ error: 'No questions provided. The Bluebook HTML file may not have been parsed successfully.' }, { status: 400 });
-  }
-  if (!correctCounts) {
-    return NextResponse.json({ error: 'correctCounts is required' }, { status: 400 });
-  }
 
   const rwScaled = parseInt(rw_score, 10) || null;
   const mathScaled = parseInt(math_score, 10) || null;
@@ -76,6 +70,48 @@ export async function POST(request, { params }) {
 
   if (testErr || !test) {
     return NextResponse.json({ error: 'Practice test not found' }, { status: 404 });
+  }
+
+  // ── Score-only mode (no Bluebook HTML uploaded) ──
+  // Creates only the practice_test_attempt for statistical tracking.
+  // No module attempts, item attempts, or score_conversion entries.
+  if (!questions?.length) {
+    const now = test_date ? new Date(test_date + 'T12:00:00Z').toISOString() : new Date().toISOString();
+
+    const { data: attempt, error: attemptErr } = await service
+      .from('practice_test_attempts')
+      .insert({
+        practice_test_id,
+        user_id: studentId,
+        status: 'completed',
+        started_at: now,
+        finished_at: now,
+        composite_score: composite || null,
+        rw_scaled: rwScaled,
+        math_scaled: mathScaled,
+        metadata: {
+          uploaded_by: user.id,
+          upload_source: 'score_only',
+        },
+      })
+      .select('id')
+      .single();
+
+    if (attemptErr) {
+      return NextResponse.json({ error: `Failed to create attempt: ${attemptErr.message}` }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      attempt_id: attempt.id,
+      composite_score: composite,
+      rw_scaled: rwScaled,
+      math_scaled: mathScaled,
+      questions_imported: 0,
+    });
+  }
+
+  if (!correctCounts) {
+    return NextResponse.json({ error: 'correctCounts is required' }, { status: 400 });
   }
 
   // Fetch all modules for this practice test

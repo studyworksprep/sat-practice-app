@@ -97,7 +97,7 @@ export async function GET(request) {
     { data: allCompletedTests },
   ] = await Promise.all([
     svc.from('profiles')
-      .select('id, email, first_name, last_name, created_at, target_sat_score')
+      .select('id, email, first_name, last_name, created_at, start_date, target_sat_score')
       .in('id', studentIds),
     svc.from('practice_test_attempts')
       .select('id, user_id, practice_test_id, status, metadata, started_at, finished_at, composite_score, rw_scaled, math_scaled')
@@ -234,7 +234,8 @@ export async function GET(request) {
   for (const [sid, tests] of Object.entries(testsByStudent)) {
     const sorted = [...tests].sort((a, b) => new Date(a.finished_at) - new Date(b.finished_at));
     const p = profileMap[sid];
-    const startDate = p?.created_at ? new Date(p.created_at) : null;
+    const startRaw = p?.start_date || p?.created_at;
+    const startDate = startRaw ? new Date(startRaw) : null;
 
     // Split tests before/after the student's start date
     const before = startDate ? sorted.filter(t => new Date(t.finished_at) < startDate) : [];
@@ -249,7 +250,7 @@ export async function GET(request) {
       student_id: sid,
       student_name: displayName(p),
       target_score: p?.target_sat_score || null,
-      start_date: p?.created_at || null,
+      start_date: p?.start_date || p?.created_at || null,
       test_count: sorted.length,
       first_score: first,
       latest_score: latest,

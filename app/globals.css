@@ -328,6 +328,14 @@ a{
   border-radius: 0;
 }
 
+/* Figures / reference images inside stimuli — keep compact like math graphs */
+.prose .stimulus_reference img{
+  display: block;
+  max-width: min(360px, 100%);
+  height: auto;
+  margin: 8px auto;
+}
+
 .prose table{
   width: auto !important;
   max-width: 100%;
@@ -681,7 +689,7 @@ label{
   padding: 9px 12px;
   border-radius: 0;
   border: none;
-  background: rgba(0,0,0,0.03);
+  background: transparent;
   cursor: pointer;
   user-select: none;
   width: 100%;
@@ -689,20 +697,15 @@ label{
   font-weight: 600;
   line-height: 1.3;
   color: var(--text);
-  transition: background 0.12s ease;
 }
 
-.domainChip.on{ background: var(--accent-soft); }
-
 /* Math domains = blue */
-.domainChip.math{ background: rgba(37,99,235,0.06); color: #1e3a8a; }
-.domainChip.math.on{ background: rgba(37,99,235,0.14); color: #1e3a8a; }
-.domainChip.math:not(.on):hover{ background: rgba(37,99,235,0.1); }
+.domainChip.math{ color: #1e3a8a; }
+.domainChip.math.on{ color: #1e3a8a; font-weight: 600; }
 
 /* R&W domains = orange */
-.domainChip.rw{ background: rgba(234,88,12,0.06); color: #9a3412; }
-.domainChip.rw.on{ background: rgba(234,88,12,0.14); color: #7c2d12; }
-.domainChip.rw:not(.on):hover{ background: rgba(234,88,12,0.1); }
+.domainChip.rw{ color: #9a3412; }
+.domainChip.rw.on{ color: #7c2d12; font-weight: 600; }
 
 .domainChip input{ accent-color: var(--accent); flex-shrink: 0; }
 
@@ -732,7 +735,7 @@ label{
   color: #1e3a8a;
 }
 .categoryChip.math.on{
-  background: rgba(37,99,235,0.17);
+  background: rgba(37,99,235,0.25);
   color: #1e3a8a;
 }
 .categoryChip.math:not(.on):hover{ background: rgba(37,99,235,0.13); }
@@ -744,7 +747,7 @@ label{
   color: #9a3412;
 }
 .categoryChip.rw.on{
-  background: rgba(234,88,12,0.16);
+  background: rgba(234,88,12,0.25);
   color: #7c2d12;
 }
 .categoryChip.rw:not(.on):hover{ background: rgba(234,88,12,0.12); }
@@ -780,7 +783,15 @@ label{
   display: flex;
   align-items: stretch;
   gap: 0;
+  background: rgba(0,0,0,0.03);
+  transition: background 0.12s ease;
 }
+.domainRow.math{ background: rgba(37,99,235,0.06); }
+.domainRow.math.on{ background: rgba(37,99,235,0.22); }
+.domainRow.math:not(.on):hover{ background: rgba(37,99,235,0.1); }
+.domainRow.rw{ background: rgba(234,88,12,0.06); }
+.domainRow.rw.on{ background: rgba(234,88,12,0.22); }
+.domainRow.rw:not(.on):hover{ background: rgba(234,88,12,0.1); }
 
 .domainRow .domainChip{
   flex: 1;
@@ -792,21 +803,21 @@ label{
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 0 10px;
+  padding: 0 12px;
   border: none;
-  background: rgba(0,0,0,0.04);
+  background: transparent;
   font-size: 11px;
   font-weight: 600;
   color: var(--muted);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.12s, color 0.12s;
+  transition: color 0.12s;
 }
-.domainSkillsBtn:hover{ background: rgba(0,0,0,0.08); color: var(--text); }
+.domainSkillsBtn:hover{ color: var(--text); }
 .domainSkillsBtn.math{ color: #3b82f6; }
-.domainSkillsBtn.math:hover{ background: rgba(37,99,235,0.1); }
+.domainSkillsBtn.math:hover{ color: #2563eb; }
 .domainSkillsBtn.rw{ color: #ea580c; }
-.domainSkillsBtn.rw:hover{ background: rgba(234,88,12,0.1); }
+.domainSkillsBtn.rw:hover{ color: #c2410c; }
 .domainSkillsBtn.hasSelection{ font-weight: 700; }
 .domainSkillsBtn svg{
   transition: transform 0.15s;
@@ -1138,6 +1149,14 @@ label{
 /* Options should be scan-efficient */
 .optionContent .prose p{ margin: 0; }
 .optionContent .prose p + p{ margin-top: 10px; }
+
+/* Graph / image answer choices — keep them compact */
+.option .optionContent .prose img{
+  display: block;
+  max-width: min(150px, 100%);
+  height: auto;
+  margin: 4px 0;
+}
 
 /* Math inside options */
 .optionContent .prose mjx-container{
@@ -2236,6 +2255,14 @@ hr{
 }
 
 .mathShell .prose img{
+  display: block;
+  max-width: min(360px, 100%);
+  height: auto;
+  margin: 8px auto;
+}
+
+/* Cap graph / figure images inside the right-side question panel */
+.qaRightPanel .prose img{
   display: block;
   max-width: min(360px, 100%);
   height: auto;
@@ -3989,6 +4016,321 @@ hr{
   line-height: 1.65;
 }
 
+/* ── Score header ── */
+.ptrvScoreHeader{
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.ptrvScoreRing{ flex-shrink: 0; }
+.ptrvSectionScores{
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+.ptrvSectionCard{
+  background: var(--surface, #f9fafb);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 28px;
+  text-align: center;
+  flex: 1;
+  min-width: 140px;
+}
+.ptrvSectionScore{
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent);
+}
+.ptrvSectionLabel{
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.ptrvSectionDetail{
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ── Domain analytics cards ── */
+.ptrvDomainRow{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+@media (max-width: 700px){
+  .ptrvDomainRow{ grid-template-columns: 1fr; }
+}
+.ptrvDomainCard{
+  padding: 24px 28px;
+}
+.ptrvDomainCardTitle{
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 4px;
+}
+.ptrvDomainCardSub{
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin: 0 0 20px;
+}
+.ptrvDomainBars{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ptrvDomainBarItem{}
+.ptrvDomainBarHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.ptrvDomainBarName{
+  font-size: 14px;
+  font-weight: 500;
+}
+.ptrvDomainBarPct{
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 12px;
+  min-width: 44px;
+  text-align: center;
+}
+.ptrvDomainBarTrack{
+  height: 8px;
+  background: #e8e8e8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ptrvDomainBarFill{
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* ── Section headers ── */
+.ptrvSection{
+  margin-bottom: 24px;
+}
+.ptrvSectionH2{
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.ptrvSectionSub{
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+
+/* ── Difficulty breakdown ── */
+.ptrvDiffGrid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 700px){
+  .ptrvDiffGrid{ grid-template-columns: 1fr; }
+}
+.ptrvDiffCard{
+  padding: 24px;
+  text-align: center;
+}
+.ptrvDiffTitle{
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 2px;
+}
+.ptrvDiffCount{
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+.ptrvDonut{
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.ptrvDiffLegend{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0 auto;
+  width: fit-content;
+}
+.ptrvDiffLegendItem{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.ptrvDiffDot{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Critical review areas ── */
+.ptrvCritGrid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 800px){
+  .ptrvCritGrid{ grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 500px){
+  .ptrvCritGrid{ grid-template-columns: 1fr; }
+}
+.ptrvCritCard{
+  padding: 16px 20px;
+}
+.ptrvCritHeader{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.ptrvCritName{
+  font-size: 14px;
+  font-weight: 600;
+}
+.ptrvCritPct{
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+}
+.ptrvCritDomain{
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.ptrvCritBar{
+  height: 6px;
+  background: #e8e8e8;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.ptrvCritBarFill{
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.ptrvCritDetail{
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ── Timing analysis ── */
+.ptrvTimingCard{
+  padding: 20px 24px;
+}
+.ptrvTimingRow{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.ptrvTimingRow:last-of-type{ margin-bottom: 12px; }
+.ptrvTimingLabel{
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 100px;
+  text-align: right;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.ptrvTimingBarWrap{
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ptrvTimingBar{
+  flex: 1;
+  display: flex;
+  height: 28px;
+  border-radius: 4px;
+  background: #e8e8e8;
+  position: relative;
+}
+.ptrvTimingSeg{
+  position: relative;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  min-width: 2px;
+}
+.ptrvTimingSeg:first-child{ border-radius: 4px 0 0 4px; }
+.ptrvTimingSeg:last-child{ border-radius: 0 4px 4px 0; border-right: none !important; }
+.ptrvTimingSeg:first-child:last-child{ border-radius: 4px; }
+.ptrvTimingSeg:hover{ opacity: 0.75; }
+.ptrvTimingSeg.correct{ background: var(--success, #22c55e); }
+.ptrvTimingSeg.incorrect{ background: #dc2626; }
+.ptrvTimingSeg.skipped{ background: #999; }
+.ptrvTimingTooltip{
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.ptrvTimingTooltip .correct{ color: #86efac; }
+.ptrvTimingTooltip .incorrect{ color: #fca5a5; }
+.ptrvTimingTooltip .skipped{ color: #ccc; }
+.ptrvTimingTotal{
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  min-width: 44px;
+  flex-shrink: 0;
+}
+.ptrvTimingLegend{
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--muted);
+  padding-top: 4px;
+}
+.ptrvTimingLegDot{
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.ptrvTimingLegDot.correct{ background: var(--success, #22c55e); }
+.ptrvTimingLegDot.incorrect{ background: #dc2626; }
+.ptrvTimingLegDot.skipped{ background: #999; }
+
 /* ===============================
    Admin Page
 ================================ */
@@ -3997,50 +4339,125 @@ hr{
 
 .adminPanels{
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
 }
 @media (max-width: 640px){
   .adminPanels{ grid-template-columns: 1fr 1fr; }
 }
 
 .adminPanel{
-  padding: 24px;
+  padding: 16px;
   text-align: center;
+  transition: border-color 0.15s;
 }
-.adminPanelCount{ font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
-.adminPanelTitle{ font-weight: 600; font-size: var(--title-2); }
+.adminPanelActive{ }
+.adminPanelCount{ font-size: 28px; font-weight: 700; line-height: 1.1; margin-bottom: 2px; }
+.adminPanelTitle{ font-weight: 600; font-size: 13px; }
+
+/* ── Two-column grid ── */
+.adminGrid{
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 960px){
+  .adminGrid{ grid-template-columns: 1fr; }
+}
+.adminColMain{ min-width: 0; }
+.adminColSide{ min-width: 0; }
+
+.adminSection{ margin-bottom: 24px; }
+.adminSectionHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.adminSideTitle{
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+
+.adminAssignGridCompact{
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+@media (max-width: 520px){
+  .adminAssignGridCompact{ grid-template-columns: 1fr; }
+}
+
+/* ── Pagination ── */
+.adminPagination{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+}
+.adminPaginationBtns{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.adminPageBtn{
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text);
+}
+.adminPageBtn:disabled{
+  opacity: 0.35;
+  cursor: default;
+}
+.adminPageBtn:not(:disabled):hover{
+  background: rgba(17,24,39,0.04);
+}
 
 .adminTable{
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
 }
 .adminTable th{
   text-align: left;
-  padding: 10px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
   background: var(--surface, #f9fafb);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 .adminTable td{
-  padding: 10px 16px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
 }
 .adminTable tbody tr:nth-child(even){ background: rgba(0,0,0,0.02); }
 .adminTable tbody tr:last-child td{ border-bottom: none; }
 .adminTable tbody tr:hover{ background: rgba(17,24,39,0.04); }
-.adminTableEmail{ font-weight: 500; }
+.adminTableEmail{ font-weight: 500; font-size: 13px; }
 
 .adminRoleSelect{
-  padding: 4px 8px;
+  padding: 3px 6px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   background: var(--card);
   cursor: pointer;
@@ -4051,7 +4468,7 @@ hr{
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
-.adminScoreDialog{ padding: 24px; margin-top: 4px; }
+.adminScoreDialog{ padding: 16px; margin-top: 4px; }
 
 .adminLabel{
   display: flex;
@@ -4064,10 +4481,10 @@ hr{
 
 .adminSelect,
 .adminInput{
-  padding: 8px 10px;
+  padding: 7px 10px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 14px;
   background: var(--card);
   color: var(--text);
   width: 100%;
@@ -4082,19 +4499,19 @@ hr{
 .adminFieldset{
   border: 1px solid var(--border);
   border-radius: 0;
-  padding: 16px;
-  margin: 16px 0 0 0;
+  padding: 12px;
+  margin: 12px 0 0 0;
 }
 .adminLegend{
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   padding: 0 6px;
 }
 
 .adminFieldRow{
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 @media (max-width: 520px){
   .adminFieldRow{ grid-template-columns: 1fr; }
@@ -4824,7 +5241,18 @@ hr{
 /* Student detail */
 
 .tchStudentDetail{
-  max-width: 860px;
+  max-width: 1200px;
+}
+
+.tchDetailGrid{
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px){
+  .tchDetailGrid{ grid-template-columns: 1fr; }
 }
 
 .tchStudentHeader{
@@ -4837,7 +5265,7 @@ hr{
 
 .tchOverviewCard{
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .tchProfileRow{
@@ -5040,11 +5468,14 @@ hr{
 
 .tchStatsRow{
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
 }
 
-@media (max-width: 700px){
+@media (max-width: 900px){
+  .tchStatsRow{ grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 500px){
   .tchStatsRow{ grid-template-columns: 1fr 1fr; }
 }
 
@@ -5761,18 +6192,19 @@ hr{
 }
 
 .adminAssignTable th, .adminAssignTable td{
-  padding: 10px 14px;
+  padding: 8px 12px;
   text-align: left;
-  font-size: 14px;
+  font-size: 13px;
   border-bottom: 1px solid var(--border);
 }
 
 .adminAssignTable th{
   font-weight: 700;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  background: var(--surface, #f9fafb);
 }
 
 .adminAssignRemove{
@@ -5780,9 +6212,9 @@ hr{
   border: none;
   color: var(--danger);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 4px 8px;
+  padding: 3px 6px;
   border-radius: 6px;
   transition: background 0.12s;
 }
@@ -6417,6 +6849,10 @@ hr{
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
+}
+.tchAssignChip.partial{
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .tchAssignChip.small{
   font-size: 11px;

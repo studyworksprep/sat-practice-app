@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../lib/supabase/server';
 
 // GET /api/questions
 // Params: difficulties=1,2,3 | score_bands=1,2 | domains=Algebra,... | topics=Linear+Functions,...
@@ -36,7 +36,14 @@ export async function GET(request) {
   const marked_only = searchParams.get('marked_only') === 'true';
   const hide_broken = searchParams.get('hide_broken') === 'true';
   const only_broken = searchParams.get('only_broken') === 'true';
+  const undone_only = searchParams.get('undone_only') === 'true';
   const qText = (searchParams.get('q') || '').trim();
+
+  // exclude_done_for: comma-separated student IDs — exclude questions done by ALL listed students
+  const excludeDoneFor = (searchParams.get('exclude_done_for') || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
 
   const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 5000);
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
@@ -118,6 +125,70 @@ export async function GET(request) {
     }
   }
 
+  // exclude_done_for — exclude questions already done by ALL listed students
+  let excludeDoneIds = null;
+  if (excludeDoneFor.length > 0 && userId) {
+    const svc = createServiceClient();
+    const { data: callerProfile } = await svc
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .maybeSingle();
+    if (callerProfile?.role === 'teacher' || callerProfile?.role === 'manager' || callerProfile?.role === 'admin') {
+      const { data: doneRows } = await svc
+        .from('question_status')
+        .select('question_id, user_id')
+        .in('user_id', excludeDoneFor)
+        .eq('is_done', true)
+        .limit(50000);
+      if (doneRows && doneRows.length > 0) {
+        const doneByStudent = {};
+        for (const r of doneRows) {
+          if (!doneByStudent[r.question_id]) doneByStudent[r.question_id] = new Set();
+          doneByStudent[r.question_id].add(r.user_id);
+        }
+        const toExclude = [];
+        for (const [qid, doneStudents] of Object.entries(doneByStudent)) {
+          if (excludeDoneFor.every(sid => doneStudents.has(sid))) {
+            toExclude.push(qid);
+          }
+        }
+        if (toExclude.length > 0) {
+          if (restrictIds) {
+            const excludeSet = new Set(toExclude);
+            restrictIds = restrictIds.filter(id => !excludeSet.has(id));
+            if (restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
+          } else {
+            excludeDoneIds = toExclude;
+          }
+        }
+      }
+    }
+  }
+
+  // undone_only — exclude questions the current user has already completed
+  if (undone_only && userId) {
+    const svc = createServiceClient();
+    const { data: doneRows } = await svc
+      .from('question_status')
+      .select('question_id')
+      .eq('user_id', userId)
+      .eq('is_done', true)
+      .limit(50000);
+    if (doneRows && doneRows.length > 0) {
+      const toExclude = doneRows.map(r => r.question_id);
+      if (restrictIds) {
+        const excludeSet = new Set(toExclude);
+        restrictIds = restrictIds.filter(id => !excludeSet.has(id));
+        if (restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });
+      } else {
+        excludeDoneIds = excludeDoneIds
+          ? [...new Set([...excludeDoneIds, ...toExclude])]
+          : toExclude;
+      }
+    }
+  }
+
   // hide_broken — handled in the main query via .eq('is_broken', false)
 
   // Main query
@@ -153,6 +224,11 @@ export async function GET(request) {
     .order('question_id', { ascending: true });
 
   if (restrictIds) q = q.in('id', restrictIds);
+  if (excludeDoneIds && excludeDoneIds.length > 0) {
+    // Supabase doesn't have a direct "not in" for the main table ID,
+    // so we use .not('id', 'in', `(${ids})`) syntax
+    q = q.not('id', 'in', `(${excludeDoneIds.join(',')})`);
+  }
 
   if (difficulties.length > 0) q = q.in('question_taxonomy.difficulty', difficulties);
   if (score_bands.length > 0) q = q.in('question_taxonomy.score_band', score_bands);

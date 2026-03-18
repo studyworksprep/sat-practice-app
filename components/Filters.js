@@ -9,6 +9,7 @@ const DEFAULTS = {
   topics: [],
   wrong_only: false,
   marked_only: false,
+  undone_only: false,
   show_broken: false,
 };
 
@@ -17,7 +18,7 @@ const RW_CODES    = new Set(['CAS', 'INI', 'EOI', 'SEC']);
 const MATH_ORDER  = ['H', 'P', 'Q', 'S'];
 const RW_ORDER    = ['INI', 'CAS', 'EOI', 'SEC'];
 
-export default function Filters({ initial = {}, onChange, onStartSession }) {
+export default function Filters({ initial = {}, onChange, onStartSession, userRole }) {
   const [state,     setState]     = useState({ ...DEFAULTS, ...initial });
   const [allDomains, setAllDomains] = useState([]);
   const [allTopics,  setAllTopics]  = useState([]);
@@ -71,6 +72,7 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
       state.score_bands.length  > 0 ||
       state.wrong_only ||
       state.marked_only ||
+      state.undone_only ||
       state.show_broken;
 
     if (!hasContextualFilter && initialCounts.current) {
@@ -85,18 +87,22 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
     if (state.score_bands.length)  p.set('score_bands',  state.score_bands.join(','));
     if (state.wrong_only)          p.set('wrong_only',   'true');
     if (state.marked_only)         p.set('marked_only',  'true');
+    if (state.undone_only)         p.set('undone_only',  'true');
     if (state.show_broken)          p.set('only_broken',  'true');
     else                            p.set('hide_broken',  'true');
 
     fetch('/api/domain-counts?' + p.toString(), { signal: controller.signal })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      })
       .then((data) => {
         if (data && !data.error && Object.keys(data).length > 0) setCounts(data);
       })
       .catch(() => {});
 
     return () => controller.abort();
-  }, [state.difficulties, state.score_bands, state.wrong_only, state.marked_only, state.show_broken]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state.difficulties, state.score_bands, state.wrong_only, state.marked_only, state.undone_only, state.show_broken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function set(k, v) { setState((prev) => ({ ...prev, [k]: v })); }
 
@@ -119,19 +125,22 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
 
   function toggleDomain(domainName, domainTopicCodes) {
     setState((prev) => {
-      const isDomainOn = prev.domains.includes(domainName);
-      if (isDomainOn) return { ...prev, domains: prev.domains.filter((d) => d !== domainName) };
+      const allSelected = domainTopicCodes.length > 0 &&
+        domainTopicCodes.every((t) => prev.topics.includes(t));
+      if (allSelected) {
+        // Deselect all skills for this domain
+        return { ...prev, topics: prev.topics.filter((t) => !domainTopicCodes.includes(t)) };
+      }
+      // Select all skills for this domain
       return {
         ...prev,
-        domains: [...prev.domains, domainName],
-        topics:  prev.topics.filter((t) => !domainTopicCodes.includes(t)),
+        topics: [...new Set([...prev.topics, ...domainTopicCodes])],
       };
     });
   }
 
   function toggleTopic(domainName, skillCode) {
     setState((prev) => {
-      if (prev.domains.includes(domainName)) return prev;
       const isOn = prev.topics.includes(skillCode);
       return { ...prev, topics: isOn ? prev.topics.filter((t) => t !== skillCode) : [...prev.topics, skillCode] };
     });
@@ -139,16 +148,14 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
 
   // Toggle all domains in a category (Math or R&W)
   function toggleCategory(domainList) {
-    const names     = domainList.map((d) => d.domain_name);
-    const allOn     = names.length > 0 && names.every((n) => state.domains.includes(n));
+    const allTopicCodes = domainList.flatMap((d) => d.topics.map((t) => t.skill_code || t.skill_name));
+    const allOn = allTopicCodes.length > 0 && allTopicCodes.every((t) => state.topics.includes(t));
     if (allOn) {
-      setState((prev) => ({ ...prev, domains: prev.domains.filter((d) => !names.includes(d)) }));
+      setState((prev) => ({ ...prev, topics: prev.topics.filter((t) => !allTopicCodes.includes(t)) }));
     } else {
-      const allTopicCodes = domainList.flatMap((d) => d.topics.map((t) => t.skill_code || t.skill_name));
       setState((prev) => ({
         ...prev,
-        domains: [...new Set([...prev.domains, ...names])],
-        topics:  prev.topics.filter((t) => !allTopicCodes.includes(t)),
+        topics: [...new Set([...prev.topics, ...allTopicCodes])],
       }));
     }
   }
@@ -188,13 +195,11 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   const hasFilter =
     state.difficulties.length > 0 ||
     state.score_bands.length  > 0 ||
-    state.domains.length      > 0 ||
     state.topics.length       > 0 ||
-    state.wrong_only || state.marked_only;
+    state.wrong_only || state.marked_only || state.undone_only;
 
   // Count how many skills are selected within a domain
   function selectedSkillCount(domain) {
-    if (state.domains.includes(domain.domain_name)) return domain.topics.length;
     return domain.topics.filter(t => state.topics.includes(t.skill_code || t.skill_name)).length;
   }
 
@@ -209,8 +214,8 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
   }
 
   function renderCategory(label, domainList, total, colorClass) {
-    const names = domainList.map((d) => d.domain_name);
-    const allOn = names.length > 0 && names.every((n) => state.domains.includes(n));
+    const allTopicCodes = domainList.flatMap((d) => d.topics.map((t) => t.skill_code || t.skill_name));
+    const allOn = allTopicCodes.length > 0 && allTopicCodes.every((t) => state.topics.includes(t));
     return (
       <label className={`categoryChip ${colorClass}${allOn ? ' on' : ''}`}>
         <input type="checkbox" checked={allOn} onChange={() => toggleCategory(domainList)} />
@@ -222,15 +227,15 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
 
   function renderDomain(domain) {
     const colorClass       = MATH_CODES.has(domain.domain_code) ? 'math' : 'rw';
-    const domainOn         = state.domains.includes(domain.domain_name);
     const domainTopicCodes = domain.topics.map((t) => t.skill_code || t.skill_name);
+    const domainOn         = domainTopicCodes.length > 0 && domainTopicCodes.every((t) => state.topics.includes(t));
     const domainCount      = counts[domain.domain_name]?.count;
     const skillsSel        = selectedSkillCount(domain);
     const isPopoverOpen    = openSkills === domain.domain_name;
 
     return (
       <div key={domain.domain_name} className={`domainGroup ${colorClass}`}>
-        <div className="domainRow">
+        <div className={`domainRow ${colorClass}${domainOn ? ' on' : ''}`}>
           <label className={`domainChip ${colorClass}${domainOn ? ' on' : ''}`}>
             <input
               type="checkbox"
@@ -243,13 +248,13 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
 
           {domain.topics.length > 0 && (
             <button
-              className={`domainSkillsBtn ${colorClass}${skillsSel > 0 && !domainOn ? ' hasSelection' : ''}`}
+              className={`domainSkillsBtn ${colorClass}${skillsSel > 0 ? ' hasSelection' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setOpenSkills(isPopoverOpen ? null : domain.domain_name);
               }}
             >
-              Skills{skillsSel > 0 && !domainOn ? ` (${skillsSel})` : ''}
+              Skills{skillsSel > 0 ? ` (${skillsSel})` : ''}
               <svg viewBox="0 0 16 16" width="12" height="12" className={isPopoverOpen ? 'open' : ''}>
                 <polyline points="4 6 8 10 12 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -263,18 +268,16 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
             <div className="skillsPopoverBody">
               {domain.topics.map((topic) => {
                 const topicKey   = topic.skill_code || topic.skill_name;
-                const topicOn    = domainOn || state.topics.includes(topicKey);
+                const topicOn    = state.topics.includes(topicKey);
                 const topicCount = counts[domain.domain_name]?.topics?.[topicKey];
                 return (
                   <label
                     key={topicKey}
                     className={`chip sm${topicOn ? ' on' : ''}`}
-                    style={domainOn ? { opacity: 0.6, cursor: 'default' } : undefined}
                   >
                     <input
                       type="checkbox"
                       checked={topicOn}
-                      disabled={domainOn}
                       onChange={() => toggleTopic(domain.domain_name, topicKey)}
                     />
                     <span>{topic.skill_name}</span>
@@ -315,7 +318,10 @@ export default function Filters({ initial = {}, onChange, onStartSession }) {
           {[
             ['marked_only', 'Only marked for review'],
             ['wrong_only',  'Only wrong answers'],
-            ['show_broken', 'Flagged as broken'],
+            ['undone_only', 'Only undone questions'],
+            ...(userRole === 'admin' || userRole === 'manager'
+              ? [['show_broken', 'Flagged as broken']]
+              : []),
           ].map(([key, label]) => (
             <label key={key} className="filterCheck">
               <input type="checkbox" checked={state[key]} onChange={(e) => set(key, e.target.checked)} />

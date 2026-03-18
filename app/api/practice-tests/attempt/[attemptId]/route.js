@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
 
 // DELETE /api/practice-tests/attempt/[attemptId]
 // Permanently deletes a completed practice test attempt and all related records.
@@ -36,9 +36,12 @@ export async function DELETE(_request, { params }) {
     return NextResponse.json({ error: 'Cannot delete an in-progress attempt. Abandon it first.' }, { status: 400 });
   }
 
+  // Use service client to bypass RLS for delete operations
+  const service = createServiceClient();
+
   // Delete linked records in order: item_attempts → module_attempts → attempt
   // 1. Get module attempt ids
-  const { data: moduleAttempts } = await supabase
+  const { data: moduleAttempts } = await service
     .from('practice_test_module_attempts')
     .select('id')
     .eq('practice_test_attempt_id', attemptId);
@@ -47,7 +50,7 @@ export async function DELETE(_request, { params }) {
 
   if (moduleAttemptIds.length > 0) {
     // 2. Get linked attempt ids from item_attempts before deleting
-    const { data: itemAttempts } = await supabase
+    const { data: itemAttempts } = await service
       .from('practice_test_item_attempts')
       .select('attempt_id')
       .in('practice_test_module_attempt_id', moduleAttemptIds);
@@ -55,37 +58,31 @@ export async function DELETE(_request, { params }) {
     const attemptIds = (itemAttempts || []).map((ia) => ia.attempt_id).filter(Boolean);
 
     // 3. Delete item_attempts
-    await supabase
+    await service
       .from('practice_test_item_attempts')
       .delete()
       .in('practice_test_module_attempt_id', moduleAttemptIds);
 
     // 4. Delete individual attempts rows
     if (attemptIds.length > 0) {
-      await supabase
+      await service
         .from('attempts')
         .delete()
         .in('id', attemptIds);
     }
 
     // 5. Delete module_attempts
-    await supabase
+    await service
       .from('practice_test_module_attempts')
       .delete()
       .eq('practice_test_attempt_id', attemptId);
   }
 
   // 6. Delete the practice test attempt itself
-  const delQuery = supabase
+  const { error: deleteErr } = await service
     .from('practice_test_attempts')
     .delete()
     .eq('id', attemptId);
-
-  if (!isTeacherOrAdmin) {
-    delQuery.eq('user_id', user.id);
-  }
-
-  const { error: deleteErr } = await delQuery;
 
   if (deleteErr) return NextResponse.json({ error: deleteErr.message }, { status: 500 });
 
