@@ -293,7 +293,7 @@ export async function GET(request) {
     })
     .filter(Boolean);
 
-  // Balanced mode: round-robin across topics so each domain/topic is represented evenly
+  // Balanced mode: randomly pick from topic buckets so each is represented evenly
   let items;
   if (balanced && allItems.length > limit) {
     const buckets = {};
@@ -311,20 +311,15 @@ export async function GET(request) {
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
     }
-    // Round-robin pick from each bucket
+    // Randomly pick a non-exhausted bucket for each slot
     const picked = [];
     const pointers = {};
     for (const key of bucketKeys) pointers[key] = 0;
     while (picked.length < limit) {
-      let added = false;
-      for (const key of bucketKeys) {
-        if (picked.length >= limit) break;
-        if (pointers[key] < buckets[key].length) {
-          picked.push(buckets[key][pointers[key]++]);
-          added = true;
-        }
-      }
-      if (!added) break; // all buckets exhausted
+      const available = bucketKeys.filter(k => pointers[k] < buckets[k].length);
+      if (available.length === 0) break;
+      const chosen = available[Math.floor(Math.random() * available.length)];
+      picked.push(buckets[chosen][pointers[chosen]++]);
     }
     items = picked;
   } else {

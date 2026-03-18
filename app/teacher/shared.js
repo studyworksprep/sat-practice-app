@@ -1441,7 +1441,7 @@ export function StudentDetail({ studentId, onBack }) {
                         <div style={{ fontWeight: 600, fontSize: 14 }}>{a.title}</div>
                         <div className="muted small" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                           <span>{a.completed_count}/{a.question_count} questions</span>
-                          {a.due_date && <span style={{ color: isOverdue ? 'var(--danger)' : undefined }}>Due {new Date(a.due_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{isOverdue ? ' (overdue)' : ''}</span>}
+                          {a.due_date && <span style={{ color: isOverdue ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{isOverdue ? ' (overdue)' : ''}</span>}
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 100 }}>
