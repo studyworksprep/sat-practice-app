@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Script from 'next/script';
 import Link from 'next/link';
 import HtmlBlock from '../../../../../components/HtmlBlock';
+import QuestionNotes from '../../../../../components/QuestionNotes';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
 const SUBJECT_LABEL_FULL = { rw: 'Reading and Writing', RW: 'Reading and Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
@@ -571,7 +572,10 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
             <HtmlBlock html={q.stimulus_html} className="prose" />
           </div>
         )}
-        <div className="ptrvDetailStem">
+        <div className="ptrvDetailStem" style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+            <QuestionNotes questionId={q.question_id} />
+          </div>
           <HtmlBlock html={q.stem_html} className="prose" />
         </div>
 

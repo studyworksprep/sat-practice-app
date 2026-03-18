@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Script from 'next/script';
 import Link from 'next/link';
 import HtmlBlock from '../../../../components/HtmlBlock';
+import QuestionNotes from '../../../../components/QuestionNotes';
 
 const htmlHasContent = (html) => {
   if (!html) return false;
@@ -186,7 +187,10 @@ export default function TeacherReviewPage() {
         </div>
       ) : null}
       {version?.stem_html ? (
-        <div className="card subcard" style={{ marginBottom: mb }}>
+        <div className="card subcard" style={{ marginBottom: mb, position: 'relative' }}>
+          <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}>
+            <QuestionNotes questionId={questionId} />
+          </div>
           <HtmlBlock className="prose" html={version.stem_html} />
         </div>
       ) : null}
@@ -468,7 +472,10 @@ export default function TeacherReviewPage() {
           </div>
           <div className="twoColRight">
             {version?.stem_html ? (
-              <div className="card subcard" style={{ marginBottom: 12 }}>
+              <div className="card subcard" style={{ marginBottom: 12, position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 10 }}>
+                  <QuestionNotes questionId={questionId} />
+                </div>
                 <HtmlBlock className="prose" html={version.stem_html} />
               </div>
             ) : null}

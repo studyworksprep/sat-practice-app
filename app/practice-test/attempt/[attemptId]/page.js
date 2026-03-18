@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Script from 'next/script';
 import { useRouter, useParams } from 'next/navigation';
 import HtmlBlock from '../../../../components/HtmlBlock';
+import QuestionNotes from '../../../../components/QuestionNotes';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', Math: 'Math', MATH: 'Math', m: 'Math', M: 'Math' };
 
@@ -903,7 +904,14 @@ export default function TestSessionPage() {
               />
               <div className="qaRight">
                 {qNumRow}
-                {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
+                {q.stem_html && (
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+                      <QuestionNotes questionId={q.question_id} />
+                    </div>
+                    <HtmlBlock className="prose" html={q.stem_html} />
+                  </div>
+                )}
                 {answerArea}
               </div>
             </div>
@@ -918,7 +926,14 @@ export default function TestSessionPage() {
                   <HtmlBlock className="prose" html={q.stimulus_html} />
                 </div>
               )}
-              {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
+              {q.stem_html && (
+                <div style={{ position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+                    <QuestionNotes questionId={q.question_id} />
+                  </div>
+                  <HtmlBlock className="prose" html={q.stem_html} />
+                </div>
+              )}
               {answerArea}
             </>
           );
@@ -932,7 +947,12 @@ export default function TestSessionPage() {
                   <HtmlBlock html={q.stimulus_html} />
                 </div>
               )}
-              <HtmlBlock className="ptStem" html={q.stem_html} />
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+                  <QuestionNotes questionId={q.question_id} />
+                </div>
+                <HtmlBlock className="ptStem" html={q.stem_html} />
+              </div>
               {answerArea}
             </div>
           );

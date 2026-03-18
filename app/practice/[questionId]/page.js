@@ -8,6 +8,7 @@ import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
 import SessionTimer from '../../../components/SessionTimer';
 import { useKeyboardShortcuts } from '../../../lib/useKeyboardShortcuts';
+import QuestionNotes from '../../../components/QuestionNotes';
 
 const htmlHasContent = (html) => {
   if (!html) return false;
@@ -1422,8 +1423,11 @@ export default function PracticeQuestionPage() {
       ) : null}
 
       {version?.stem_html ? (
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 12, position: 'relative' }}>
           <div className="srOnly">Question</div>
+          <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+            <QuestionNotes questionId={questionId} />
+          </div>
           <HtmlBlock className="prose" html={version.stem_html} imgMaxWidth={360} />
         </div>
       ) : null}
@@ -1847,7 +1851,10 @@ export default function PracticeQuestionPage() {
               <div className="card subcard qaRightPanel">
                 {renderStatusPills()}
                 {version?.stem_html && (
-                  <div style={{ marginBottom: 12 }}>
+                  <div style={{ marginBottom: 12, position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+                      <QuestionNotes questionId={questionId} />
+                    </div>
                     <HtmlBlock className="prose" html={version.stem_html} />
                   </div>
                 )}
