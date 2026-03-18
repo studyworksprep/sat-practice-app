@@ -493,14 +493,16 @@ export default function TeacherReviewPage() {
 }
 
 /* ── Resizable Desmos Calculator Popup ── */
+const DESMOS_INIT_W = 560;
+const DESMOS_INIT_H = 440;
+const DESMOS_MIN_W = 320;
+const DESMOS_MIN_H = 280;
+
 function DesmosPopup({ isOpen, onClose }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const cardRef = useRef(null);
-  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
-  const posRef = useRef({ x: 0, y: 0 });
-  const resizeRef = useRef({ resizing: false, edge: null, startX: 0, startY: 0, origW: 0, origH: 0, origLeft: 0, origTop: 0 });
-  const sizeRef = useRef({ w: 560, h: 440 });
+  const boundsRef = useRef({ left: 0, top: 0, w: DESMOS_INIT_W, h: DESMOS_INIT_H });
 
   const [ready, setReady] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -524,32 +526,39 @@ function DesmosPopup({ isOpen, onClose }) {
     };
   }, [ready, isOpen, minimized]);
 
+  // Reset position/size when opened
   useEffect(() => {
     if (!isOpen) return;
-    posRef.current = { x: 0, y: 0 };
-    sizeRef.current = { w: 560, h: 440 };
-    if (cardRef.current) {
-      cardRef.current.style.transform = '';
-      cardRef.current.style.width = '560px';
-      cardRef.current.style.height = '440px';
-    }
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const l = vw - DESMOS_INIT_W - 24;
+    const t = vh - DESMOS_INIT_H - 24;
+    boundsRef.current = { left: l, top: t, w: DESMOS_INIT_W, h: DESMOS_INIT_H };
+    applyBounds();
   }, [isOpen]);
+
+  function applyBounds() {
+    const card = cardRef.current;
+    if (!card) return;
+    const b = boundsRef.current;
+    card.style.left = b.left + 'px';
+    card.style.top = b.top + 'px';
+    card.style.width = b.w + 'px';
+    card.style.height = b.h + 'px';
+  }
 
   function onHeaderPointerDown(e) {
     if (e.button !== 0) return;
     e.preventDefault();
-    const card = cardRef.current;
-    if (!card) return;
-    dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: posRef.current.x, origY: posRef.current.y };
+    const b = boundsRef.current;
+    const startX = e.clientX, startY = e.clientY;
+    const origLeft = b.left, origTop = b.top;
     const onMove = (ev) => {
-      if (!dragRef.current.dragging) return;
-      const nx = dragRef.current.origX + (ev.clientX - dragRef.current.startX);
-      const ny = dragRef.current.origY + (ev.clientY - dragRef.current.startY);
-      posRef.current = { x: nx, y: ny };
-      card.style.transform = `translate(${nx}px, ${ny}px)`;
+      b.left = origLeft + (ev.clientX - startX);
+      b.top = origTop + (ev.clientY - startY);
+      applyBounds();
     };
     const onUp = () => {
-      dragRef.current.dragging = false;
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
@@ -561,32 +570,27 @@ function DesmosPopup({ isOpen, onClose }) {
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
-    const card = cardRef.current;
-    if (!card) return;
-    const rect = card.getBoundingClientRect();
-    resizeRef.current = {
-      resizing: true, edge, startX: e.clientX, startY: e.clientY,
-      origW: rect.width, origH: rect.height,
-      origLeft: posRef.current.x, origTop: posRef.current.y,
-    };
+    const b = boundsRef.current;
+    const startX = e.clientX, startY = e.clientY;
+    const origL = b.left, origT = b.top, origW = b.w, origH = b.h;
     const onMove = (ev) => {
-      if (!resizeRef.current.resizing) return;
-      const r = resizeRef.current;
-      const dx = ev.clientX - r.startX;
-      const dy = ev.clientY - r.startY;
-      let w = r.origW, h = r.origH, tx = r.origLeft, ty = r.origTop;
-      if (r.edge.includes('e')) w = Math.max(320, r.origW + dx);
-      if (r.edge.includes('w')) { w = Math.max(320, r.origW - dx); tx = r.origLeft + (r.origW - w); }
-      if (r.edge.includes('s')) h = Math.max(280, r.origH + dy);
-      if (r.edge.includes('n')) { h = Math.max(280, r.origH - dy); ty = r.origTop + (r.origH - h); }
-      sizeRef.current = { w, h };
-      posRef.current = { x: tx, y: ty };
-      card.style.width = w + 'px';
-      card.style.height = h + 'px';
-      card.style.transform = `translate(${tx}px, ${ty}px)`;
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      if (edge.includes('e')) { b.w = Math.max(DESMOS_MIN_W, origW + dx); }
+      if (edge.includes('w')) {
+        const nw = Math.max(DESMOS_MIN_W, origW - dx);
+        b.left = origL + (origW - nw);
+        b.w = nw;
+      }
+      if (edge.includes('s')) { b.h = Math.max(DESMOS_MIN_H, origH + dy); }
+      if (edge.includes('n')) {
+        const nh = Math.max(DESMOS_MIN_H, origH - dy);
+        b.top = origT + (origH - nh);
+        b.h = nh;
+      }
+      applyBounds();
     };
     const onUp = () => {
-      resizeRef.current.resizing = false;
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
@@ -600,11 +604,7 @@ function DesmosPopup({ isOpen, onClose }) {
     (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_DESMOS_API_KEY) ||
     'bac289385bcd4778a682276b95f5f116';
 
-  const edgeStyle = (cursor) => ({
-    position: 'absolute', zIndex: 2,
-    ...(cursor === 'ew-resize' || cursor === 'ns-resize' || cursor === 'nwse-resize' || cursor === 'nesw-resize'
-      ? { cursor } : {}),
-  });
+  const edgeStyle = (cursor) => ({ position: 'absolute', zIndex: 2, cursor });
 
   return (
     <>
@@ -616,9 +616,10 @@ function DesmosPopup({ isOpen, onClose }) {
       <div
         ref={cardRef}
         style={{
-          position: 'fixed', right: 24, bottom: 24,
-          width: minimized ? 220 : 560,
-          height: minimized ? 'auto' : 440,
+          position: 'fixed',
+          left: boundsRef.current.left, top: boundsRef.current.top,
+          width: minimized ? 220 : boundsRef.current.w,
+          height: minimized ? 'auto' : boundsRef.current.h,
           zIndex: 1000,
           display: 'flex', flexDirection: 'column',
           borderRadius: 8,
