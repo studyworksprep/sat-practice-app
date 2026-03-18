@@ -765,15 +765,15 @@ export default function ResultsPage() {
       const logoH = 36;
       const logoW = (logoImg.naturalWidth / logoImg.naturalHeight) * logoH;
       doc.addImage(logoImg, 'PNG', marginL, y, logoW, logoH);
-      y += logoH + 12;
+      y += logoH + 20;
     } catch {
       // Logo failed to load, skip
     }
 
     // ─── TITLE ────────────────────────────────────────────
-    doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
+    doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 41, 59);
     doc.text(data?.test_name || 'Practice Test', marginL, y);
-    y += 16;
+    y += 14;
     doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
     doc.text('Score Report', marginL, y);
     if (data?.completed_at) { doc.text(fmtDatePdf(data.completed_at), pageW - marginR, y, { align: 'right' }); }
@@ -839,24 +839,24 @@ export default function ResultsPage() {
 
     // ─── SCORES ───────────────────────────────────────────
     sectionTitle('Scores');
-    const scoreBoxH = 52;
+    const scoreBoxH = 68;
     // Light blue background behind scores
     doc.setFillColor(239, 246, 255);
     doc.roundedRect(marginL, y, contentW, scoreBoxH, 4, 4, 'F');
     const scoreBoxW = contentW / (sectionEntries.length + 1);
-    const scoreCenterY = y + scoreBoxH * 0.38;
-    const scoreLabelY = scoreCenterY + 16;
+    const scoreNumY = y + 30;
+    const scoreLabelY = scoreNumY + 16;
     const scoreSubY = scoreLabelY + 10;
     // Composite
     doc.setFontSize(28); doc.setFont('helvetica', 'bold'); doc.setTextColor(37, 99, 235);
-    doc.text(String(data?.composite ?? '—'), marginL + scoreBoxW * 0.5, scoreCenterY, { align: 'center' });
+    doc.text(String(data?.composite ?? '—'), marginL + scoreBoxW * 0.5, scoreNumY, { align: 'center' });
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(71, 85, 105);
     doc.text('Total Score', marginL + scoreBoxW * 0.5, scoreLabelY, { align: 'center' });
     // Section scores
     sectionEntries.forEach(([subj, sec], i) => {
       const cx = marginL + scoreBoxW * (i + 1.5);
       doc.setFontSize(22); doc.setFont('helvetica', 'bold'); doc.setTextColor(37, 99, 235);
-      doc.text(String(sec.scaled), cx, scoreCenterY, { align: 'center' });
+      doc.text(String(sec.scaled), cx, scoreNumY, { align: 'center' });
       doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(71, 85, 105);
       doc.text(SUBJECT_LABEL[subj] || subj, cx, scoreLabelY, { align: 'center' });
       doc.text(`${sec.correct}/${sec.total} correct`, cx, scoreSubY, { align: 'center' });
@@ -893,6 +893,7 @@ export default function ResultsPage() {
 
     // ─── OPPORTUNITY INDEX ────────────────────────────────
     if (opportunity.length > 0) {
+      doc.addPage(); y = 40;
       sectionTitle('Opportunity Index — Top 5');
       // Explanation text
       doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 90, 100);
@@ -922,6 +923,20 @@ export default function ResultsPage() {
     y = 40;
     sectionTitle('Full Question List');
 
+    // Build skill_code → skill_name lookup from domain data (which has resolved names)
+    const skillNameLookup = {};
+    for (const d of [...rwDomains, ...mathDomains]) {
+      for (const s of d.skills || []) {
+        if (s.skill_code && s.skill_name) skillNameLookup[s.skill_code] = s.skill_name;
+      }
+    }
+    const resolveSkill = (q) => {
+      // If skill_name looks like a code (all uppercase, <= 5 chars), try lookup
+      const sn = q.skill_name || '—';
+      if (/^[A-Z.]{2,6}$/.test(sn) && skillNameLookup[sn]) return skillNameLookup[sn];
+      return sn;
+    };
+
     const questionsByGroupPdf = {};
     for (const q of questions) {
       const key = `${q.subject_code}/${q.module_number}`;
@@ -935,33 +950,40 @@ export default function ResultsPage() {
         const qs = questionsByGroupPdf[key];
         if (!qs?.length) continue;
         subTitle(`${SUBJECT_LABEL[subj] || subj} · Module ${modNum}`);
+        const rowMeta = []; // track correct/incorrect per row
         const rows = qs.map(q => {
           const correctCA = q.correct_answer;
           const selectedOpt = q.options?.find(o => o.id === q.selected_option_id);
           const correctOpt = q.options?.find(o => o.id === correctCA?.correct_option_id || (correctCA?.correct_option_ids || []).includes(o.id));
           const yourAns = selectedOpt ? selectedOpt.label : (q.response_text || '—');
           const correctAns = correctOpt ? correctOpt.label : (correctCA?.correct_text || (correctCA?.correct_number != null ? String(correctCA.correct_number) : '—'));
-          const result = q.is_correct ? 'Correct' : q.was_answered ? 'Incorrect' : 'Omitted';
-          return [String(q.ordinal), q.domain_name || '—', q.skill_name || '—', DIFF_LABEL[q.difficulty] || '—', fmtTimePdf(q.time_spent_ms), yourAns, correctAns, result];
+          rowMeta.push({ isCorrect: q.is_correct, wasAnswered: q.was_answered });
+          return [String(q.ordinal), q.domain_name || '—', resolveSkill(q), DIFF_LABEL[q.difficulty] || '—', fmtTimePdf(q.time_spent_ms), yourAns, correctAns];
         });
         doc.autoTable({
           startY: y, margin: { left: marginL, right: marginR },
-          head: [['Q#', 'Domain', 'Skill', 'Diff.', 'Time', 'Your Ans.', 'Correct', 'Result']],
+          head: [['Q#', 'Domain', 'Skill', 'Difficulty', 'Time', 'Your Answer', 'Correct']],
           body: rows,
           styles: { fontSize: 8, cellPadding: 2.5, lineColor: [226, 232, 240], lineWidth: 0.5 },
           headStyles: { fillColor: [219, 228, 240], textColor: [30, 41, 59], fontStyle: 'bold', fontSize: 7 },
           alternateRowStyles: { fillColor: [248, 250, 252] },
           columnStyles: {
-            0: { cellWidth: 22 },
-            3: { cellWidth: 32 },
+            0: { cellWidth: 24, fontStyle: 'bold' },
+            3: { cellWidth: 48 },
             4: { cellWidth: 36, halign: 'right', fontStyle: 'normal', textColor: [100, 116, 139] },
-            5: { cellWidth: 44 },
-            6: { cellWidth: 42 },
-            7: { cellWidth: 42 },
+            5: { cellWidth: 50 },
+            6: { cellWidth: 46 },
           },
           theme: 'grid',
           didParseCell: (hookData) => {
             if (hookData.section === 'body') {
+              const meta = rowMeta[hookData.row.index];
+              // Color-code Q# column
+              if (hookData.column.index === 0 && meta) {
+                if (meta.isCorrect) hookData.cell.styles.textColor = [22, 163, 74];
+                else if (meta.wasAnswered) hookData.cell.styles.textColor = [220, 38, 38];
+                else hookData.cell.styles.textColor = [160, 160, 160];
+              }
               // Difficulty color
               if (hookData.column.index === 3) {
                 const v = hookData.cell.raw;
@@ -969,13 +991,11 @@ export default function ResultsPage() {
                 else if (v === 'Medium') hookData.cell.styles.textColor = [202, 138, 4];
                 else if (v === 'Hard') hookData.cell.styles.textColor = [220, 38, 38];
               }
-              // Result color
-              if (hookData.column.index === 7) {
-                const v = hookData.cell.raw;
-                if (v === 'Correct') hookData.cell.styles.textColor = [22, 163, 74];
-                else if (v === 'Incorrect') hookData.cell.styles.textColor = [220, 38, 38];
-                else hookData.cell.styles.textColor = [136, 136, 136];
-                hookData.cell.styles.fontStyle = 'bold';
+              // Color-code Your Answer column
+              if (hookData.column.index === 5 && meta) {
+                if (meta.isCorrect) { hookData.cell.styles.textColor = [22, 163, 74]; hookData.cell.styles.fontStyle = 'bold'; }
+                else if (meta.wasAnswered) { hookData.cell.styles.textColor = [220, 38, 38]; hookData.cell.styles.fontStyle = 'bold'; }
+                else hookData.cell.styles.textColor = [160, 160, 160];
               }
             }
           },
