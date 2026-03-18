@@ -82,10 +82,18 @@ export default function AdminPage() {
   const [learnSaving, setLearnSaving] = useState(false);
   const [learnDirty, setLearnDirty] = useState({});
 
-  // Pagination
+  // Pagination & sorting
   const [usersPage, setUsersPage] = useState(0);
   const [usersRoleFilter, setUsersRoleFilter] = useState('all');
   const [usersSearch, setUsersSearch] = useState('');
+  const [usersSort, setUsersSort] = useState('joined'); // 'name' | 'joined' | 'role'
+  const [usersSortDir, setUsersSortDir] = useState('asc'); // 'asc' | 'desc'
+
+  // Edit profile popup
+  const [editProfile, setEditProfile] = useState(null); // profile object being edited
+  const [editForm, setEditForm] = useState({});
+  const [editSaving, setEditSaving] = useState(false);
+
   const [assignPage, setAssignPage] = useState(0);
   const [mtAssignPage, setMtAssignPage] = useState(0);
 
@@ -273,6 +281,42 @@ export default function AdminPage() {
       showToast('ok', 'Account permanently deleted.');
     } catch (err) {
       showToast('danger', err.message);
+    }
+  }
+
+  function openEditProfile(profile) {
+    setEditProfile(profile);
+    setEditForm({
+      first_name: profile.first_name || '',
+      last_name: profile.last_name || '',
+      email: profile.email || '',
+      high_school: profile.high_school || '',
+      graduation_year: profile.graduation_year || '',
+      target_sat_score: profile.target_sat_score || '',
+      tutor_name: profile.tutor_name || '',
+    });
+  }
+
+  async function handleSaveProfile() {
+    if (!editProfile) return;
+    setEditSaving(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: editProfile.id, ...editForm }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setProfiles((prev) => prev.map((p) =>
+        p.id === editProfile.id ? { ...p, ...editForm } : p
+      ));
+      setEditProfile(null);
+      showToast('ok', 'Profile updated.');
+    } catch (err) {
+      showToast('danger', err.message);
+    } finally {
+      setEditSaving(false);
     }
   }
 
@@ -468,7 +512,7 @@ export default function AdminPage() {
     return g;
   }, [profiles]);
 
-  // Filtered users for the table
+  // Filtered and sorted users for the table
   const filteredUsers = useMemo(() => {
     let list = profiles;
     if (usersRoleFilter !== 'all') list = list.filter(p => p.role === usersRoleFilter);
@@ -480,14 +524,32 @@ export default function AdminPage() {
         (p.last_name || '').toLowerCase().includes(q)
       );
     }
+    // Sort
+    const dir = usersSortDir === 'asc' ? 1 : -1;
+    list = [...list].sort((a, b) => {
+      if (usersSort === 'name') {
+        const na = (displayName(a) || a.email || '').toLowerCase();
+        const nb = (displayName(b) || b.email || '').toLowerCase();
+        return na < nb ? -dir : na > nb ? dir : 0;
+      }
+      if (usersSort === 'role') {
+        const ra = ROLE_ORDER.indexOf(a.role);
+        const rb = ROLE_ORDER.indexOf(b.role);
+        return (ra - rb) * dir;
+      }
+      // Default: joined (created_at)
+      const da = a.created_at || '';
+      const db = b.created_at || '';
+      return da < db ? -dir : da > db ? dir : 0;
+    });
     return list;
-  }, [profiles, usersRoleFilter, usersSearch]);
+  }, [profiles, usersRoleFilter, usersSearch, usersSort, usersSortDir]);
 
   const usersTotalPages = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
   const usersSlice = filteredUsers.slice(usersPage * USERS_PER_PAGE, (usersPage + 1) * USERS_PER_PAGE);
 
-  // Reset page when filter changes
-  useEffect(() => { setUsersPage(0); }, [usersRoleFilter, usersSearch]);
+  // Reset page when filter/sort changes
+  useEffect(() => { setUsersPage(0); }, [usersRoleFilter, usersSearch, usersSort, usersSortDir]);
 
   // Memoize filtered lists for assignment dropdowns
   const teacherProfiles = useMemo(() => profiles.filter(p => p.role === 'teacher' || p.role === 'manager' || p.role === 'admin'), [profiles]);
@@ -590,12 +652,18 @@ export default function AdminPage() {
                 <table className="adminTable">
                   <thead>
                     <tr>
-                      <th>Name</th>
+                      <th style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => { if (usersSort === 'name') setUsersSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setUsersSort('name'); setUsersSortDir('asc'); } }}>
+                        Name {usersSort === 'name' ? (usersSortDir === 'asc' ? '▲' : '▼') : ''}
+                      </th>
                       <th>Email</th>
-                      <th>Role</th>
+                      <th style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => { if (usersSort === 'role') setUsersSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setUsersSort('role'); setUsersSortDir('asc'); } }}>
+                        Role {usersSort === 'role' ? (usersSortDir === 'asc' ? '▲' : '▼') : ''}
+                      </th>
                       <th>Status</th>
-                      <th>Joined</th>
-                      <th style={{ width: 100 }}>Actions</th>
+                      <th style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => { if (usersSort === 'joined') setUsersSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setUsersSort('joined'); setUsersSortDir('asc'); } }}>
+                        Joined {usersSort === 'joined' ? (usersSortDir === 'asc' ? '▲' : '▼') : ''}
+                      </th>
+                      <th style={{ width: 120 }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -636,6 +704,22 @@ export default function AdminPage() {
                         </td>
                         <td className="muted small">{formatDate(p.created_at)}</td>
                         <td>
+                          <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                          <button
+                            onClick={() => openEditProfile(p)}
+                            style={{
+                              background: 'transparent',
+                              color: 'var(--accent)',
+                              border: '1px solid rgba(79,124,224,0.25)',
+                              borderRadius: 4,
+                              padding: '2px 8px',
+                              fontSize: 11,
+                              fontWeight: 500,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Edit
+                          </button>
                           {deleteConfirm === p.id ? (
                             <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                               <button
@@ -685,6 +769,7 @@ export default function AdminPage() {
                               Delete
                             </button>
                           )}
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -1121,6 +1206,62 @@ export default function AdminPage() {
           </section>
         </div>
       </div>
+
+      {/* ── Edit Profile Modal ─────────────────────────────── */}
+      {editProfile && (
+        <div className="modalOverlay" onClick={() => setEditProfile(null)}>
+          <div className="modalCard" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div className="h2" style={{ margin: 0 }}>Edit Profile</div>
+              <button className="btn secondary" onClick={() => setEditProfile(null)} style={{ fontSize: 12, padding: '4px 10px' }}>Close</button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label className="small muted" style={{ display: 'block', marginBottom: 3 }}>First Name</label>
+                <input className="adminInput" value={editForm.first_name} onChange={(e) => setEditForm(f => ({ ...f, first_name: e.target.value }))} />
+              </div>
+              <div>
+                <label className="small muted" style={{ display: 'block', marginBottom: 3 }}>Last Name</label>
+                <input className="adminInput" value={editForm.last_name} onChange={(e) => setEditForm(f => ({ ...f, last_name: e.target.value }))} />
+              </div>
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              <label className="small muted" style={{ display: 'block', marginBottom: 3 }}>Email</label>
+              <input className="adminInput" value={editForm.email} onChange={(e) => setEditForm(f => ({ ...f, email: e.target.value }))} />
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              <label className="small muted" style={{ display: 'block', marginBottom: 3 }}>High School</label>
+              <input className="adminInput" value={editForm.high_school} onChange={(e) => setEditForm(f => ({ ...f, high_school: e.target.value }))} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+              <div>
+                <label className="small muted" style={{ display: 'block', marginBottom: 3 }}>Graduation Year</label>
+                <input className="adminInput" type="number" value={editForm.graduation_year} onChange={(e) => setEditForm(f => ({ ...f, graduation_year: e.target.value }))} />
+              </div>
+              <div>
+                <label className="small muted" style={{ display: 'block', marginBottom: 3 }}>Target SAT Score</label>
+                <input className="adminInput" type="number" value={editForm.target_sat_score} onChange={(e) => setEditForm(f => ({ ...f, target_sat_score: e.target.value }))} />
+              </div>
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              <label className="small muted" style={{ display: 'block', marginBottom: 3 }}>Tutor Name</label>
+              <input className="adminInput" value={editForm.tutor_name} onChange={(e) => setEditForm(f => ({ ...f, tutor_name: e.target.value }))} />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
+              <button className="btn secondary" onClick={() => setEditProfile(null)}>Cancel</button>
+              <button className="btn" onClick={handleSaveProfile} disabled={editSaving}>
+                {editSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
