@@ -47,6 +47,7 @@ export async function GET(request) {
 
   const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 5000);
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
+  const balanced = searchParams.get('balanced') === 'true';
 
   const supabase = createClient();
 
@@ -250,12 +251,14 @@ export async function GET(request) {
     q = q.in('question_taxonomy.skill_code', topicList);
   }
 
-  q = q.range(offset, offset + limit - 1);
+  // When balanced mode is on, fetch a larger pool so we can distribute across topics
+  const fetchLimit = balanced ? Math.min(limit * 5, 5000) : limit;
+  q = q.range(offset, offset + fetchLimit - 1);
 
   const { data, error, count } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  const items = (data || [])
+  const allItems = (data || [])
     .map((row) => {
       const tax = row.question_taxonomy?.[0] ?? row.question_taxonomy ?? null;
 
@@ -289,6 +292,44 @@ export async function GET(request) {
       };
     })
     .filter(Boolean);
+
+  // Balanced mode: round-robin across topics so each domain/topic is represented evenly
+  let items;
+  if (balanced && allItems.length > limit) {
+    const buckets = {};
+    for (const item of allItems) {
+      const key = item.skill_code || item.skill_name || item.domain_name || '_';
+      if (!buckets[key]) buckets[key] = [];
+      buckets[key].push(item);
+    }
+    const bucketKeys = Object.keys(buckets);
+    // Shuffle within each bucket for variety
+    for (const key of bucketKeys) {
+      const arr = buckets[key];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+    // Round-robin pick from each bucket
+    const picked = [];
+    const pointers = {};
+    for (const key of bucketKeys) pointers[key] = 0;
+    while (picked.length < limit) {
+      let added = false;
+      for (const key of bucketKeys) {
+        if (picked.length >= limit) break;
+        if (pointers[key] < buckets[key].length) {
+          picked.push(buckets[key][pointers[key]++]);
+          added = true;
+        }
+      }
+      if (!added) break; // all buckets exhausted
+    }
+    items = picked;
+  } else {
+    items = allItems.slice(0, limit);
+  }
 
   const totalCount = typeof count === 'number' ? count : 0;
 

@@ -898,6 +898,7 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
       if (scoreBands.length > 0) params.set('score_bands', scoreBands.join(','));
       params.set('limit', String(questionLimit || 9999));
       params.set('hide_broken', 'true');
+      params.set('balanced', 'true');
       if (undoneOnly && selectedStudents.length > 0) {
         params.set('exclude_done_for', selectedStudents.join(','));
       }
