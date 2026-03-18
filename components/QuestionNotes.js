@@ -162,7 +162,7 @@ export default function QuestionNotes({ questionId }) {
   const canDelete = (note) => isAdmin || note.author_id === userId;
 
   return (
-    <div className="qnotes-wrap" style={{ position: 'relative', display: 'inline-flex' }}>
+    <div className="qnotes-wrap" style={{ position: 'relative', display: 'inline-flex', marginTop: -4, marginRight: -4, flexShrink: 0 }}>
       <button
         type="button"
         className="qnotes-icon-btn"
