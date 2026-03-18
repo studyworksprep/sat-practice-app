@@ -923,20 +923,6 @@ export default function ResultsPage() {
     y = 40;
     sectionTitle('Full Question List');
 
-    // Build skill_code → skill_name lookup from domain data (which has resolved names)
-    const skillNameLookup = {};
-    for (const d of [...rwDomains, ...mathDomains]) {
-      for (const s of d.skills || []) {
-        if (s.skill_code && s.skill_name) skillNameLookup[s.skill_code] = s.skill_name;
-      }
-    }
-    const resolveSkill = (q) => {
-      // If skill_name looks like a code (all uppercase, <= 5 chars), try lookup
-      const sn = q.skill_name || '—';
-      if (/^[A-Z.]{2,6}$/.test(sn) && skillNameLookup[sn]) return skillNameLookup[sn];
-      return sn;
-    };
-
     const questionsByGroupPdf = {};
     for (const q of questions) {
       const key = `${q.subject_code}/${q.module_number}`;
@@ -958,7 +944,7 @@ export default function ResultsPage() {
           const yourAns = selectedOpt ? selectedOpt.label : (q.response_text || '—');
           const correctAns = correctOpt ? correctOpt.label : (correctCA?.correct_text || (correctCA?.correct_number != null ? String(correctCA.correct_number) : '—'));
           rowMeta.push({ isCorrect: q.is_correct, wasAnswered: q.was_answered });
-          return [String(q.ordinal), q.domain_name || '—', resolveSkill(q), DIFF_LABEL[q.difficulty] || '—', fmtTimePdf(q.time_spent_ms), yourAns, correctAns];
+          return [String(q.ordinal), q.domain_name || '—', q.skill_name || '—', DIFF_LABEL[q.difficulty] || '—', fmtTimePdf(q.time_spent_ms), yourAns, correctAns];
         });
         doc.autoTable({
           startY: y, margin: { left: marginL, right: marginR },

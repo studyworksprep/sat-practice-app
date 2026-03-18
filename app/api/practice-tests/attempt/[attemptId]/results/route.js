@@ -157,11 +157,24 @@ export async function GET(_request, { params }) {
     .select('question_id, domain_name, domain_code, skill_name, skill_code, difficulty, score_band')
     .in('question_id', questionIds);
 
+  // Build a global skill_code → skill_name lookup from ALL taxonomy rows (not just this attempt)
+  const skillCodes = [...new Set((taxonomy || []).map(t => t.skill_code).filter(Boolean))];
+  const skillCodeToName = {};
+  if (skillCodes.length > 0) {
+    const { data: allSkills } = await supabase
+      .from('question_taxonomy')
+      .select('skill_code, skill_name')
+      .in('skill_code', skillCodes)
+      .not('skill_name', 'is', null)
+      .limit(500);
+    for (const s of allSkills || []) {
+      if (s.skill_code && s.skill_name) skillCodeToName[s.skill_code] = s.skill_name;
+    }
+  }
+
   const taxByQuestion = {};
-  const skillCodeToName = {}; // skill_code → skill_name (best-effort lookup)
   for (const t of taxonomy || []) {
     taxByQuestion[t.question_id] = t;
-    if (t.skill_code && t.skill_name) skillCodeToName[t.skill_code] = t.skill_name;
   }
   // Helper: resolve a human-readable skill name from taxonomy row
   const resolveSkillName = (tax) => tax.skill_name || skillCodeToName[tax.skill_code] || tax.skill_code || 'Unknown';
