@@ -133,7 +133,7 @@ export default function DesmosStateButton({ questionId, getCalcState, setCalcSta
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
-            position: 'absolute', top: '100%', right: 0, zIndex: 600,
+            position: 'absolute', top: '100%', left: 0, zIndex: 600,
             background: 'var(--bg-card, #fff)',
             border: '1px solid var(--border, #ddd)',
             borderRadius: 8,
