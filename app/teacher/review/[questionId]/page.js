@@ -187,11 +187,8 @@ export default function TeacherReviewPage() {
         </div>
       ) : null}
       {version?.stem_html ? (
-        <div className="card subcard" style={{ marginBottom: mb, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <HtmlBlock className="prose" html={version.stem_html} />
-          </div>
-          <QuestionNotes questionId={questionId} />
+        <div className="card subcard" style={{ marginBottom: mb }}>
+          <HtmlBlock className="prose" html={version.stem_html} />
         </div>
       ) : null}
     </>
@@ -422,6 +419,7 @@ export default function TeacherReviewPage() {
               Teacher Review
             </span>
             {showAnswer && <ResultBadge />}
+            <QuestionNotes questionId={questionId} />
           </div>
         </div>
 
@@ -472,11 +470,8 @@ export default function TeacherReviewPage() {
           </div>
           <div className="twoColRight">
             {version?.stem_html ? (
-              <div className="card subcard" style={{ marginBottom: 12, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <HtmlBlock className="prose" html={version.stem_html} />
-                </div>
-                <QuestionNotes questionId={questionId} />
+              <div className="card subcard" style={{ marginBottom: 12 }}>
+                <HtmlBlock className="prose" html={version.stem_html} />
               </div>
             ) : null}
             {qType === 'mcq' ? <McqOptions /> : <SprAnswer />}

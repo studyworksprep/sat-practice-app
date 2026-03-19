@@ -882,6 +882,7 @@ export default function TestSessionPage() {
                 <IconBookmark filled={!!marked[q.question_version_id]} />
                 {marked[q.question_version_id] ? 'Marked for Review' : 'Mark for Review'}
               </button>
+              <QuestionNotes questionId={q.question_id} />
             </div>
           );
 
@@ -904,14 +905,7 @@ export default function TestSessionPage() {
               />
               <div className="qaRight">
                 {qNumRow}
-                {q.stem_html && (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <HtmlBlock className="prose" html={q.stem_html} />
-                    </div>
-                    <QuestionNotes questionId={q.question_id} />
-                  </div>
-                )}
+                {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
                 {answerArea}
               </div>
             </div>
@@ -926,14 +920,7 @@ export default function TestSessionPage() {
                   <HtmlBlock className="prose" html={q.stimulus_html} />
                 </div>
               )}
-              {q.stem_html && (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <HtmlBlock className="prose" html={q.stem_html} />
-                  </div>
-                  <QuestionNotes questionId={q.question_id} />
-                </div>
-              )}
+              {q.stem_html && <HtmlBlock className="prose" html={q.stem_html} />}
               {answerArea}
             </>
           );
@@ -947,12 +934,7 @@ export default function TestSessionPage() {
                   <HtmlBlock html={q.stimulus_html} />
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <HtmlBlock className="ptStem" html={q.stem_html} />
-                </div>
-                <QuestionNotes questionId={q.question_id} />
-              </div>
+              <HtmlBlock className="ptStem" html={q.stem_html} />
               {answerArea}
             </div>
           );

@@ -1368,6 +1368,7 @@ export default function PracticeQuestionPage() {
           </span>
           {status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
         </button>
+        <QuestionNotes questionId={questionId} />
       </div>
     </div>
   );
@@ -1423,12 +1424,9 @@ export default function PracticeQuestionPage() {
       ) : null}
 
       {version?.stem_html ? (
-        <div style={{ marginBottom: 12, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="srOnly">Question</div>
-            <HtmlBlock className="prose" html={version.stem_html} imgMaxWidth={360} />
-          </div>
-          <QuestionNotes questionId={questionId} />
+        <div style={{ marginBottom: 12 }}>
+          <div className="srOnly">Question</div>
+          <HtmlBlock className="prose" html={version.stem_html} imgMaxWidth={360} />
         </div>
       ) : null}
     </>
@@ -1851,11 +1849,8 @@ export default function PracticeQuestionPage() {
               <div className="card subcard qaRightPanel">
                 {renderStatusPills()}
                 {version?.stem_html && (
-                  <div style={{ marginBottom: 12, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <HtmlBlock className="prose" html={version.stem_html} />
-                    </div>
-                    <QuestionNotes questionId={questionId} />
+                  <div style={{ marginBottom: 12 }}>
+                    <HtmlBlock className="prose" html={version.stem_html} />
                   </div>
                 )}
                 {mcqOptionsArea}

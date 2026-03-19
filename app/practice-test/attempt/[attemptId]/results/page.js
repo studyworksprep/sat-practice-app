@@ -549,7 +549,7 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
             )}
           </div>
         </div>
-        <div className="ptrvDetailNav">
+        <div className="ptrvDetailNav" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <button
             className="btn secondary ptrvNavBtn"
             disabled={!hasPrev}
@@ -562,6 +562,7 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
             onClick={() => hasNext && onSelect(allQuestions[idx + 1])}
             aria-label="Next question"
           >→</button>
+          <QuestionNotes questionId={q.question_id} />
         </div>
       </div>
 
@@ -572,11 +573,8 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
             <HtmlBlock html={q.stimulus_html} className="prose" />
           </div>
         )}
-        <div className="ptrvDetailStem" style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <HtmlBlock html={q.stem_html} className="prose" />
-          </div>
-          <QuestionNotes questionId={q.question_id} />
+        <div className="ptrvDetailStem">
+          <HtmlBlock html={q.stem_html} className="prose" />
         </div>
 
         {q.options?.length > 0 && (
