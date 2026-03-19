@@ -116,7 +116,7 @@ export default function DesmosStateButton({ questionId, getCalcState, setCalcSta
             setOpen(v => !v);
           }
         }}
-        title={hasSaved ? 'Saved calculator state available' : (canSave ? 'Save calculator state' : 'No saved state')}
+        title={hasSaved ? 'Desmos solution available' : (canSave ? 'Save Desmos solution' : 'No saved solution')}
         style={{
           background: 'none', border: 'none', cursor: 'pointer', padding: 3,
           color: hasSaved ? '#c99a2e' : 'var(--muted, #999)',
@@ -125,7 +125,7 @@ export default function DesmosStateButton({ questionId, getCalcState, setCalcSta
         }}
       >
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-          <path d="M17 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+          <path d="M9 21c0 .5.4 1 1 1h4c.6 0 1-.5 1-1v-1H9v1zm3-19C8.1 2 5 5.1 5 9c0 2.4 1.2 4.5 3 5.7V17c0 .5.4 1 1 1h6c.6 0 1-.5 1-1v-2.3c1.8-1.3 3-3.4 3-5.7 0-3.9-3.1-7-7-7z"/>
         </svg>
       </button>
 
@@ -143,14 +143,14 @@ export default function DesmosStateButton({ questionId, getCalcState, setCalcSta
             display: 'flex', flexDirection: 'column', gap: 6,
           }}
         >
-          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 2 }}>Calculator State</div>
+          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 2 }}>Desmos Solution</div>
           <button
             className="btn primary"
             style={{ fontSize: 12, padding: '4px 10px', width: '100%' }}
             onClick={handleSave}
             disabled={saving}
           >
-            {saving ? 'Saving...' : hasSaved ? 'Overwrite Saved State' : 'Save Current State'}
+            {saving ? 'Saving...' : hasSaved ? 'Overwrite Solution' : 'Save Current State'}
           </button>
           {hasSaved && (
             <>
@@ -159,7 +159,7 @@ export default function DesmosStateButton({ questionId, getCalcState, setCalcSta
                 style={{ fontSize: 12, padding: '4px 10px', width: '100%' }}
                 onClick={handleLoad}
               >
-                Load Saved State
+                Load Solution
               </button>
               <button
                 className="btn secondary"
@@ -167,7 +167,7 @@ export default function DesmosStateButton({ questionId, getCalcState, setCalcSta
                 onClick={handleDelete}
                 disabled={saving}
               >
-                Delete Saved State
+                Delete Solution
               </button>
             </>
           )}

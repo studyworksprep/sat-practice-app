@@ -1571,17 +1571,17 @@ export default function PracticeQuestionPage() {
 
       {gotCorrect ? (
         <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-          <span className="pill">
-            <span className="muted">Result</span>{' '}
-            <span className="kbd">Correct</span>
+          <span className="pill" style={{ borderColor: '#15803d', background: '#f0fdf4' }}>
+            <span style={{ color: '#15803d' }}>Result</span>{' '}
+            <span className="kbd" style={{ color: '#15803d', fontWeight: 700 }}>Correct</span>
           </span>
         </div>
       ) : wrongTexts.length > 0 ? (
         <div style={{ marginTop: 8 }}>
           <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            <span className="pill">
-              <span className="muted">Result</span>{' '}
-              <span className="kbd">Incorrect</span>
+            <span className="pill" style={{ borderColor: 'var(--danger, #dc2626)', background: '#fee2e2' }}>
+              <span style={{ color: 'var(--danger, #dc2626)' }}>Result</span>{' '}
+              <span className="kbd" style={{ color: 'var(--danger, #dc2626)', fontWeight: 700 }}>Incorrect</span>
             </span>
           </div>
           {gaveUp && correctText ? (
