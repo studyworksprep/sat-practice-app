@@ -88,6 +88,9 @@ export default function AdminPage() {
   // Student performance stats
   const [perfStats, setPerfStats] = useState(null);
 
+  // Broken questions
+  const [brokenQs, setBrokenQs] = useState(null);
+
   // Pagination & sorting
   const [usersPage, setUsersPage] = useState(0);
   const [usersRoleFilter, setUsersRoleFilter] = useState('all');
@@ -121,6 +124,7 @@ export default function AdminPage() {
     fetchRecentBugs();
     fetchPlatformStats();
     fetchStudentPerformance();
+    fetchBrokenQuestions();
   }, []);
 
   async function fetchUsers() {
@@ -431,6 +435,14 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/student-performance');
       const json = await res.json();
       if (res.ok) setPerfStats(json);
+    } catch {}
+  }
+
+  async function fetchBrokenQuestions() {
+    try {
+      const res = await fetch('/api/admin/broken-questions');
+      const json = await res.json();
+      if (res.ok) setBrokenQs(json.questions || []);
     } catch {}
   }
 
@@ -936,6 +948,62 @@ export default function AdminPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* ── Broken / Flagged Questions ──────────────────────── */}
+      {brokenQs && brokenQs.length > 0 && (
+        <div className="card adminStatCard" style={{ marginBottom: 24 }}>
+          <div className="adminStatCardHeader">
+            <h3 className="adminStatTitle">Flagged Questions</h3>
+            <span className="adminStatBadge" style={{ background: '#fee2e2', color: '#991b1b' }}>
+              {brokenQs.length} broken
+            </span>
+          </div>
+          <div style={{ overflow: 'auto' }}>
+            <table className="adminTable" style={{ width: '100%' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', fontSize: 11, color: 'var(--muted)', fontWeight: 700, padding: '6px 8px' }}>Question</th>
+                  <th style={{ textAlign: 'left', fontSize: 11, color: 'var(--muted)', fontWeight: 700, padding: '6px 8px' }}>Domain</th>
+                  <th style={{ textAlign: 'left', fontSize: 11, color: 'var(--muted)', fontWeight: 700, padding: '6px 8px' }}>Skill</th>
+                  <th style={{ textAlign: 'center', fontSize: 11, color: 'var(--muted)', fontWeight: 700, padding: '6px 8px' }}>Diff.</th>
+                  <th style={{ textAlign: 'left', fontSize: 11, color: 'var(--muted)', fontWeight: 700, padding: '6px 8px' }}>Flagged By</th>
+                  <th style={{ textAlign: 'left', fontSize: 11, color: 'var(--muted)', fontWeight: 700, padding: '6px 8px' }}>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {brokenQs.map((q, i) => (
+                  <tr key={i} style={{ borderTop: '1px solid var(--border, #eee)' }}>
+                    <td style={{ padding: '6px 8px', fontFamily: "'SF Mono','Fira Code',monospace", fontSize: 11, color: 'var(--muted)' }}>
+                      <Link href={`/practice/${q.question_id}`} style={{ color: 'var(--link, #2563eb)', textDecoration: 'none' }}>
+                        {String(q.question_id).slice(0, 8)}
+                      </Link>
+                    </td>
+                    <td style={{ padding: '6px 8px', fontSize: 13 }}>{q.domain_name || '—'}</td>
+                    <td style={{ padding: '6px 8px', fontSize: 13 }}>{q.skill_name || '—'}</td>
+                    <td style={{ padding: '6px 8px', fontSize: 13, textAlign: 'center' }}>{q.difficulty ?? '—'}</td>
+                    <td style={{ padding: '6px 8px', fontSize: 13 }}>
+                      {q.flagged_by || '—'}
+                      {q.flagged_by_role && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 600, marginLeft: 6,
+                          padding: '1px 5px', borderRadius: 999,
+                          background: ROLE_COLOR[q.flagged_by_role] ? `${ROLE_COLOR[q.flagged_by_role]}18` : '#f3f4f6',
+                          color: ROLE_COLOR[q.flagged_by_role] || 'var(--muted)',
+                        }}>
+                          {ROLE_LABEL[q.flagged_by_role] || q.flagged_by_role}
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ padding: '6px 8px', fontSize: 12, color: 'var(--muted)' }}>
+                      {q.broken_at ? formatDate(q.broken_at) : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
       {/* ── Two-column layout ────────────────────────────────── */}
