@@ -171,7 +171,7 @@ function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
         folders: false,
         notes: false,
         links: false,
-        restrictedFunctions: true,
+        restrictedFunctions: false,
       });
 
       restoreState();

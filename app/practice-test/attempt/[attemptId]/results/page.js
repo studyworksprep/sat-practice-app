@@ -332,7 +332,7 @@ function DesmosPopup({ isOpen, onClose, questionId: qId }) {
       autosize: true, keypad: true, expressions: true,
       settingsMenu: true, zoomButtons: true, degreeMode: true,
       clearIntoDegreeMode: true, images: false, folders: false,
-      notes: false, links: false, restrictedFunctions: true,
+      notes: false, links: false, restrictedFunctions: false,
     });
     return () => {
       try { calcRef.current?.destroy?.(); } catch {}
