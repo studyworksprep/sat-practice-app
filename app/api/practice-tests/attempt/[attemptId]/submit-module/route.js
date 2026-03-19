@@ -100,6 +100,7 @@ export async function POST(request, { params }) {
   let correctCount = 0;
   const now = new Date().toISOString();
   const versionToAttemptId = {}; // question_version_id → attempts.id
+  const accuracyEntries = []; // for bulk accuracy counter update
 
   for (const item of moduleItems || []) {
     const ans = answerByVersion[item.question_version_id];
@@ -161,6 +162,14 @@ export async function POST(request, { params }) {
       .single();
 
     if (attemptRow?.id) versionToAttemptId[item.question_version_id] = attemptRow.id;
+    accuracyEntries.push({ version_id: item.question_version_id, is_correct });
+  }
+
+  // Bump global accuracy counters on question versions (fire-and-forget)
+  if (accuracyEntries.length > 0) {
+    supabase.rpc('increment_version_accuracy', {
+      entries: JSON.stringify(accuracyEntries),
+    }).catch(() => {});
   }
 
   // Insert one practice_test_module_attempts row for this module
