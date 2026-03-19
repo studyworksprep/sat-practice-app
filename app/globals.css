@@ -4415,6 +4415,49 @@ hr{
 .adminAdoptionVal{ font-size: 13px; font-weight: 700; min-width: 70px; text-align: right; }
 .adminAdoptionFooter{ margin-top: 4px; }
 
+/* Two-col variant for student performance */
+.adminStatsRow2{ grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 900px){ .adminStatsRow2{ grid-template-columns: 1fr; } }
+
+/* Score bar color */
+.adminScoreBarFill{ background: #8b5cf6; }
+
+/* Domain accuracy bars */
+.adminDomainBars{ display: flex; flex-direction: column; gap: 6px; }
+.adminDomainRow{ display: flex; align-items: center; gap: 8px; }
+.adminDomainLabel{ font-size: 12px; font-weight: 600; min-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adminDomainBarFill{ height: 100%; background: #3b82f6; border-radius: 4px; transition: width 0.3s; min-width: 2px; }
+.adminDomainVal{ font-size: 12px; font-weight: 700; min-width: 36px; text-align: right; }
+
+/* Question tables (hardest/easiest) */
+.adminQTable{ display: flex; flex-direction: column; gap: 0; font-size: 13px; }
+.adminQTableHeader{
+  display: grid; grid-template-columns: 80px 1fr 48px 40px; gap: 6px;
+  font-weight: 700; font-size: 11px; color: var(--muted); padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.adminQTableRow{
+  display: grid; grid-template-columns: 80px 1fr 48px 40px; gap: 6px;
+  padding: 5px 0; border-bottom: 1px solid var(--border, #f3f4f6);
+  align-items: center;
+}
+.adminQTableId{ font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; color: var(--muted); }
+.adminQTableSkill{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adminQTableAcc{ font-weight: 700; text-align: right; }
+.adminQTableN{ font-size: 11px; color: var(--muted); text-align: right; }
+
+/* Skill heatmap */
+.adminHeatmapGrid{
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.adminHeatCell{
+  padding: 6px 10px; border-radius: 6px; border: 1px solid;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  min-width: 80px;
+}
+.adminHeatLabel{ font-size: 11px; font-weight: 600; text-align: center; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adminHeatVal{ font-size: 14px; font-weight: 800; }
+
 /* ── Two-column grid ── */
 .adminGrid{
   display: grid;

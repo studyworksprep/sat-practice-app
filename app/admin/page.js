@@ -85,6 +85,9 @@ export default function AdminPage() {
   // Platform stats
   const [platformStats, setPlatformStats] = useState(null);
 
+  // Student performance stats
+  const [perfStats, setPerfStats] = useState(null);
+
   // Pagination & sorting
   const [usersPage, setUsersPage] = useState(0);
   const [usersRoleFilter, setUsersRoleFilter] = useState('all');
@@ -117,6 +120,7 @@ export default function AdminPage() {
     fetchInviteCodes();
     fetchRecentBugs();
     fetchPlatformStats();
+    fetchStudentPerformance();
   }, []);
 
   async function fetchUsers() {
@@ -419,6 +423,14 @@ export default function AdminPage() {
       const res = await fetch('/api/admin/platform-stats');
       const json = await res.json();
       if (res.ok) setPlatformStats(json);
+    } catch {}
+  }
+
+  async function fetchStudentPerformance() {
+    try {
+      const res = await fetch('/api/admin/student-performance');
+      const json = await res.json();
+      if (res.ok) setPerfStats(json);
     } catch {}
   }
 
@@ -738,6 +750,192 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Student Performance ───────────────────────────────── */}
+      {perfStats && (
+        <>
+          <div className="adminStatsRow adminStatsRow2">
+            {/* ── Overall Accuracy ── */}
+            <div className="card adminStatCard">
+              <div className="adminStatCardHeader">
+                <h3 className="adminStatTitle">Overall Accuracy</h3>
+                <span className="adminStatBadge" style={{ background: '#dbeafe', color: '#1d4ed8' }}>First attempts, 30d</span>
+              </div>
+              <div className="adminStatBigRow">
+                <div className="adminStatBig">
+                  <span className="adminStatBigNum" style={{
+                    color: perfStats.overallAccuracy.current >= 70 ? 'var(--success, #22c55e)'
+                      : perfStats.overallAccuracy.current >= 50 ? '#eab308'
+                      : 'var(--danger, #dc2626)'
+                  }}>
+                    {perfStats.overallAccuracy.current != null ? `${perfStats.overallAccuracy.current}%` : '—'}
+                  </span>
+                  <span className="adminStatBigLabel">Current</span>
+                </div>
+                <div className="adminStatBig">
+                  <span className="adminStatBigNum" style={{ fontSize: 22, color: 'var(--muted)' }}>
+                    {perfStats.overallAccuracy.previous != null ? `${perfStats.overallAccuracy.previous}%` : '—'}
+                  </span>
+                  <span className="adminStatBigLabel">Prior 30d</span>
+                </div>
+                <div className="adminStatBig">
+                  {(() => {
+                    const diff = perfStats.overallAccuracy.current != null && perfStats.overallAccuracy.previous != null
+                      ? perfStats.overallAccuracy.current - perfStats.overallAccuracy.previous : null;
+                    if (diff === null) return <span className="adminStatBigNum" style={{ fontSize: 22, color: 'var(--muted)' }}>—</span>;
+                    const color = diff > 0 ? 'var(--success, #22c55e)' : diff < 0 ? 'var(--danger, #dc2626)' : 'var(--muted)';
+                    return <span className="adminStatBigNum" style={{ fontSize: 22, color }}>{diff > 0 ? '+' : ''}{diff}%</span>;
+                  })()}
+                  <span className="adminStatBigLabel">Trend</span>
+                </div>
+              </div>
+              {perfStats.overallAccuracy.domains.length > 0 && (
+                <div className="adminDomainBars">
+                  {perfStats.overallAccuracy.domains.map(d => (
+                    <div key={d.domain_code} className="adminDomainRow">
+                      <span className="adminDomainLabel">{d.domain_name || d.domain_code}</span>
+                      <div className="adminAdoptionBarBg">
+                        <div className="adminDomainBarFill" style={{ width: `${d.accuracy}%` }} />
+                      </div>
+                      <span className="adminDomainVal">{d.accuracy}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="muted small">{perfStats.overallAccuracy.totalAttempts.toLocaleString()} first attempts</div>
+            </div>
+
+            {/* ── Score Distribution ── */}
+            <div className="card adminStatCard">
+              <div className="adminStatCardHeader">
+                <h3 className="adminStatTitle">Score Distribution</h3>
+                <span className="adminStatBadge" style={{ background: '#f3e8ff', color: '#7c3aed' }}>
+                  {perfStats.scoreDistribution.totalTests} test{perfStats.scoreDistribution.totalTests !== 1 ? 's' : ''}
+                </span>
+              </div>
+              {perfStats.scoreDistribution.totalTests > 0 ? (
+                <>
+                  <div className="adminStatBigRow">
+                    <div className="adminStatBig">
+                      <span className="adminStatBigNum">{perfStats.scoreDistribution.avgComposite ?? '—'}</span>
+                      <span className="adminStatBigLabel">Avg Composite</span>
+                    </div>
+                    <div className="adminStatBig">
+                      <span className="adminStatBigNum" style={{ fontSize: 22, color: '#2563eb' }}>{perfStats.scoreDistribution.avgRW ?? '—'}</span>
+                      <span className="adminStatBigLabel">Avg R&W</span>
+                    </div>
+                    <div className="adminStatBig">
+                      <span className="adminStatBigNum" style={{ fontSize: 22, color: '#7c3aed' }}>{perfStats.scoreDistribution.avgMath ?? '—'}</span>
+                      <span className="adminStatBigLabel">Avg Math</span>
+                    </div>
+                  </div>
+                  <div className="adminVolumeChart">
+                    {(() => {
+                      const bk = perfStats.scoreDistribution.buckets;
+                      const maxC = Math.max(...bk.map(b => b.count), 1);
+                      return bk.map((b, i) => (
+                        <div key={i} className="adminVolumeBar">
+                          <div className="adminVolumeBarStack">
+                            <div className="adminVolumeBarFill adminScoreBarFill" style={{ height: `${(b.count / maxC) * 100}%` }} title={`${b.count} test${b.count !== 1 ? 's' : ''}`} />
+                          </div>
+                          <div className="adminVolumeBarLabel">{b.range.split('-')[0]}</div>
+                          {b.count > 0 && <div className="adminVolumeBarCount">{b.count}</div>}
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </>
+              ) : (
+                <div className="muted small" style={{ textAlign: 'center', padding: 20 }}>No completed tests yet</div>
+              )}
+            </div>
+          </div>
+
+          <div className="adminStatsRow adminStatsRow2">
+            {/* ── Hardest Questions ── */}
+            <div className="card adminStatCard">
+              <div className="adminStatCardHeader">
+                <h3 className="adminStatTitle">Hardest Questions</h3>
+                <span className="adminStatBadge" style={{ background: '#fee2e2', color: '#991b1b' }}>Lowest accuracy</span>
+              </div>
+              {perfStats.hardestQuestions.length > 0 ? (
+                <div className="adminQTable">
+                  <div className="adminQTableHeader">
+                    <span>Question</span><span>Skill</span><span>Acc.</span><span>n</span>
+                  </div>
+                  {perfStats.hardestQuestions.map((q, i) => (
+                    <div key={i} className="adminQTableRow">
+                      <span className="adminQTableId" title={q.question_id}>
+                        {q.question_id?.slice(0, 8)}
+                      </span>
+                      <span className="adminQTableSkill">{q.skill_name || q.domain_name || '—'}</span>
+                      <span className="adminQTableAcc" style={{ color: 'var(--danger, #dc2626)' }}>{q.accuracy}%</span>
+                      <span className="adminQTableN">{q.attempt_count}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="muted small" style={{ textAlign: 'center', padding: 20 }}>Not enough data (min 5 attempts per question)</div>
+              )}
+            </div>
+
+            {/* ── Easiest Questions ── */}
+            <div className="card adminStatCard">
+              <div className="adminStatCardHeader">
+                <h3 className="adminStatTitle">Easiest Questions</h3>
+                <span className="adminStatBadge" style={{ background: '#dcfce7', color: '#166534' }}>Highest accuracy</span>
+              </div>
+              {perfStats.easiestQuestions.length > 0 ? (
+                <div className="adminQTable">
+                  <div className="adminQTableHeader">
+                    <span>Question</span><span>Skill</span><span>Acc.</span><span>n</span>
+                  </div>
+                  {perfStats.easiestQuestions.map((q, i) => (
+                    <div key={i} className="adminQTableRow">
+                      <span className="adminQTableId" title={q.question_id}>
+                        {q.question_id?.slice(0, 8)}
+                      </span>
+                      <span className="adminQTableSkill">{q.skill_name || q.domain_name || '—'}</span>
+                      <span className="adminQTableAcc" style={{ color: 'var(--success, #22c55e)' }}>{q.accuracy}%</span>
+                      <span className="adminQTableN">{q.attempt_count}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="muted small" style={{ textAlign: 'center', padding: 20 }}>Not enough data (min 5 attempts per question)</div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Skill Heatmap ── */}
+          {perfStats.skillHeatmap.length > 0 && (
+            <div className="card adminStatCard" style={{ marginBottom: 24 }}>
+              <div className="adminStatCardHeader">
+                <h3 className="adminStatTitle">Skill Accuracy Heatmap</h3>
+                <span className="adminStatBadge" style={{ background: '#fef3c7', color: '#92400e' }}>
+                  {perfStats.skillHeatmap.length} skill{perfStats.skillHeatmap.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="adminHeatmapGrid">
+                {perfStats.skillHeatmap.map(s => {
+                  const hue = Math.round((s.accuracy / 100) * 120); // 0=red, 60=yellow, 120=green
+                  return (
+                    <div
+                      key={s.skill_code}
+                      className="adminHeatCell"
+                      title={`${s.skill_name}: ${s.accuracy}% (${s.total} attempts)`}
+                      style={{ background: `hsl(${hue}, 70%, 92%)`, borderColor: `hsl(${hue}, 50%, 70%)` }}
+                    >
+                      <span className="adminHeatLabel">{s.skill_name}</span>
+                      <span className="adminHeatVal" style={{ color: `hsl(${hue}, 60%, 30%)` }}>{s.accuracy}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* ── Two-column layout ────────────────────────────────── */}
