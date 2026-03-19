@@ -4356,6 +4356,65 @@ hr{
 .adminPanelCount{ font-size: 28px; font-weight: 700; line-height: 1.1; margin-bottom: 2px; }
 .adminPanelTitle{ font-weight: 600; font-size: 13px; }
 
+/* ── Platform Stats Row ── */
+.adminStatsRow{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 1100px){
+  .adminStatsRow{ grid-template-columns: 1fr; }
+}
+.adminStatCard{ padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+.adminStatCardHeader{ display: flex; align-items: center; justify-content: space-between; }
+.adminStatTitle{ margin: 0; font-size: 15px; font-weight: 700; }
+.adminStatBadge{
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+}
+.adminStatBigRow{ display: flex; gap: 20px; }
+.adminStatBig{ display: flex; flex-direction: column; align-items: center; flex: 1; }
+.adminStatBigNum{ font-size: 30px; font-weight: 800; line-height: 1.1; }
+.adminStatBigLabel{ font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+.adminStatBreakdown{ display: flex; flex-wrap: wrap; gap: 6px; }
+.adminStatTag{
+  font-size: 11px; font-weight: 600; padding: 2px 8px;
+  border: 1.5px solid; border-radius: 999px;
+}
+
+/* Volume chart */
+.adminVolumeChart{
+  display: flex; gap: 4px; align-items: flex-end; height: 90px;
+}
+.adminVolumeBar{
+  flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0;
+}
+.adminVolumeBarStack{
+  width: 100%; display: flex; flex-direction: column-reverse; height: 60px;
+}
+.adminVolumeBarFill{ width: 100%; border-radius: 3px 3px 0 0; min-height: 0; transition: height 0.3s; }
+.adminVolumeBarPractice{ background: #3b82f6; }
+.adminVolumeBarTest{ background: #8b5cf6; border-radius: 3px 3px 0 0; }
+.adminVolumeBarLabel{ font-size: 10px; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.adminVolumeBarCount{ font-size: 11px; font-weight: 700; }
+.adminVolumeLegend{
+  display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--muted);
+}
+.adminLegDot{ display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 3px; vertical-align: middle; }
+
+/* Feature adoption */
+.adminAdoptionList{ display: flex; flex-direction: column; gap: 8px; }
+.adminAdoptionRow{ display: flex; align-items: center; gap: 8px; }
+.adminAdoptionLabel{ font-size: 13px; font-weight: 600; min-width: 110px; }
+.adminAdoptionBarBg{
+  flex: 1; height: 8px; background: var(--bg, #f3f4f6); border-radius: 4px; overflow: hidden;
+}
+.adminAdoptionBarFill{
+  height: 100%; background: #22c55e; border-radius: 4px; transition: width 0.3s; min-width: 2px;
+}
+.adminAdoptionVal{ font-size: 13px; font-weight: 700; min-width: 70px; text-align: right; }
+.adminAdoptionFooter{ margin-top: 4px; }
+
 /* ── Two-column grid ── */
 .adminGrid{
   display: grid;

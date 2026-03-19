@@ -82,6 +82,9 @@ export default function AdminPage() {
   const [learnSaving, setLearnSaving] = useState(false);
   const [learnDirty, setLearnDirty] = useState({});
 
+  // Platform stats
+  const [platformStats, setPlatformStats] = useState(null);
+
   // Pagination & sorting
   const [usersPage, setUsersPage] = useState(0);
   const [usersRoleFilter, setUsersRoleFilter] = useState('all');
@@ -113,6 +116,7 @@ export default function AdminPage() {
     fetchTeacherCodes();
     fetchInviteCodes();
     fetchRecentBugs();
+    fetchPlatformStats();
   }, []);
 
   async function fetchUsers() {
@@ -410,6 +414,14 @@ export default function AdminPage() {
     } catch {}
   }
 
+  async function fetchPlatformStats() {
+    try {
+      const res = await fetch('/api/admin/platform-stats');
+      const json = await res.json();
+      if (res.ok) setPlatformStats(json);
+    } catch {}
+  }
+
   async function fetchLearnability() {
     setLearnLoading(true);
     try {
@@ -622,6 +634,111 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
+
+      {/* ── Platform Activity & Health ───────────────────────── */}
+      {platformStats && (
+        <div className="adminStatsRow">
+          {/* ── Active Users ── */}
+          <div className="card adminStatCard">
+            <div className="adminStatCardHeader">
+              <h3 className="adminStatTitle">Active Users</h3>
+              <span className="adminStatBadge" style={{ background: '#dbeafe', color: '#1d4ed8' }}>Last 30 days</span>
+            </div>
+            <div className="adminStatBigRow">
+              <div className="adminStatBig">
+                <span className="adminStatBigNum">{platformStats.activeUsers.today}</span>
+                <span className="adminStatBigLabel">Today</span>
+              </div>
+              <div className="adminStatBig">
+                <span className="adminStatBigNum">{platformStats.activeUsers.d7}</span>
+                <span className="adminStatBigLabel">7 days</span>
+              </div>
+              <div className="adminStatBig">
+                <span className="adminStatBigNum">{platformStats.activeUsers.d30}</span>
+                <span className="adminStatBigLabel">30 days</span>
+              </div>
+            </div>
+            {platformStats.activeUsers.byRole && (
+              <div className="adminStatBreakdown">
+                {['student', 'teacher', 'manager', 'admin'].map(r => {
+                  const c = platformStats.activeUsers.byRole[r];
+                  if (!c) return null;
+                  return (
+                    <span key={r} className="adminStatTag" style={{ borderColor: ROLE_COLOR[r], color: ROLE_COLOR[r] }}>
+                      {c} {ROLE_LABEL[r]}{c !== 1 ? 's' : ''}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* ── Practice Volume ── */}
+          <div className="card adminStatCard">
+            <div className="adminStatCardHeader">
+              <h3 className="adminStatTitle">Practice Volume</h3>
+              <span className="adminStatBadge" style={{ background: '#fef3c7', color: '#92400e' }}>8 weeks</span>
+            </div>
+            <div className="adminVolumeChart">
+              {(() => {
+                const maxQ = Math.max(...platformStats.volumeWeeks.map(w => w.questions), 1);
+                return platformStats.volumeWeeks.map((w, i) => (
+                  <div key={i} className="adminVolumeBar">
+                    <div className="adminVolumeBarStack">
+                      <div
+                        className="adminVolumeBarFill adminVolumeBarPractice"
+                        style={{ height: `${((w.questions - w.testQuestions) / maxQ) * 100}%` }}
+                        title={`${w.questions - w.testQuestions} practice`}
+                      />
+                      <div
+                        className="adminVolumeBarFill adminVolumeBarTest"
+                        style={{ height: `${(w.testQuestions / maxQ) * 100}%` }}
+                        title={`${w.testQuestions} test`}
+                      />
+                    </div>
+                    <div className="adminVolumeBarLabel">{w.label}</div>
+                    <div className="adminVolumeBarCount">{w.questions}</div>
+                  </div>
+                ));
+              })()}
+            </div>
+            <div className="adminVolumeLegend">
+              <span><span className="adminLegDot" style={{ background: '#3b82f6' }} /> Practice</span>
+              <span><span className="adminLegDot" style={{ background: '#8b5cf6' }} /> Tests</span>
+              <span style={{ marginLeft: 'auto', fontWeight: 600 }}>
+                {platformStats.volumeWeeks.reduce((s, w) => s + w.testsCompleted, 0)} tests completed
+              </span>
+            </div>
+          </div>
+
+          {/* ── Feature Adoption ── */}
+          <div className="card adminStatCard">
+            <div className="adminStatCardHeader">
+              <h3 className="adminStatTitle">Feature Adoption</h3>
+              <span className="adminStatBadge" style={{ background: '#dcfce7', color: '#166534' }}>30 days</span>
+            </div>
+            <div className="adminAdoptionList">
+              {platformStats.featureAdoption.map(f => {
+                const pct = platformStats.totalStudents > 0
+                  ? Math.round((f.users / platformStats.totalStudents) * 100)
+                  : 0;
+                return (
+                  <div key={f.feature} className="adminAdoptionRow">
+                    <span className="adminAdoptionLabel">{f.feature}</span>
+                    <div className="adminAdoptionBarBg">
+                      <div className="adminAdoptionBarFill" style={{ width: `${Math.min(pct, 100)}%` }} />
+                    </div>
+                    <span className="adminAdoptionVal">{f.users} <span className="muted">({pct}%)</span></span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="adminAdoptionFooter muted small">
+              % of {platformStats.totalStudents} student{platformStats.totalStudents !== 1 ? 's' : ''}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Two-column layout ────────────────────────────────── */}
       <div className="adminGrid">
