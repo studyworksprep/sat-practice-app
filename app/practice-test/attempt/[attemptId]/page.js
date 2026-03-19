@@ -5,6 +5,7 @@ import Script from 'next/script';
 import { useRouter, useParams } from 'next/navigation';
 import HtmlBlock from '../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../components/QuestionNotes';
+import DesmosStateButton from '../../../../components/DesmosStateButton';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', Math: 'Math', MATH: 'Math', m: 'Math', M: 'Math' };
 
@@ -94,7 +95,7 @@ function IconBookmark({ filled = false }) {
 
 // ─── Desmos panel ─────────────────────────────────────────────────────────────
 
-function DesmosPanel({ isOpen, storageKey }) {
+function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const savedStateRef = useRef(null);
@@ -165,10 +166,12 @@ function DesmosPanel({ isOpen, storageKey }) {
       });
       restoreState();
       safeResize();
+      if (calcInstanceRef) calcInstanceRef.current = calcRef.current;
     }
 
     return () => {
       saveState();
+      if (calcInstanceRef) calcInstanceRef.current = null;
       try { calcRef.current?.destroy?.(); } catch {}
       calcRef.current = null;
       try { roRef.current?.disconnect?.(); } catch {}
@@ -340,6 +343,7 @@ export default function TestSessionPage() {
 
   // Math tools state
   const [calcMinimized, setCalcMinimized] = useState(false);
+  const calcInstanceRef = useRef(null);
   const [calcWidth, setCalcWidth] = useState(MIN_CALC_W);
   const [showRef, setShowRef] = useState(false);
   const [refPos, setRefPos] = useState({ x: 0, y: 0 });
@@ -787,7 +791,16 @@ export default function TestSessionPage() {
     >
       <aside className={`mathLeft ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
         <div className="mathLeftHeader">
-          <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+            {!calcMinimized && (
+              <DesmosStateButton
+                questionId={q.question_id}
+                getCalcState={() => { try { return calcInstanceRef.current?.getState?.(); } catch { return null; } }}
+                setCalcState={(st) => { try { calcInstanceRef.current?.setState?.(st, { allowUndo: false }); } catch {} }}
+              />
+            )}
+          </div>
           <button type="button" className="btn secondary" onClick={() => setCalcMinimized((m) => !m)}>
             {calcMinimized ? 'Expand' : 'Minimize'}
           </button>
@@ -796,6 +809,7 @@ export default function TestSessionPage() {
           <DesmosPanel
             isOpen={!calcMinimized}
             storageKey={`desmos:pt:${attemptId}:${q.question_version_id}`}
+            calcInstanceRef={calcInstanceRef}
           />
         </div>
         {calcMinimized ? <div className="calcMinBody" /> : null}

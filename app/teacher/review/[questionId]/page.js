@@ -6,6 +6,7 @@ import Script from 'next/script';
 import Link from 'next/link';
 import HtmlBlock from '../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../components/QuestionNotes';
+import DesmosStateButton from '../../../../components/DesmosStateButton';
 
 const htmlHasContent = (html) => {
   if (!html) return false;
@@ -489,7 +490,7 @@ export default function TeacherReviewPage() {
       )}
 
       <QuestionMapModal />
-      <DesmosPopup isOpen={showCalc} onClose={() => setShowCalc(false)} />
+      <DesmosPopup isOpen={showCalc} onClose={() => setShowCalc(false)} questionId={questionId} />
     </main>
   );
 }
@@ -500,7 +501,7 @@ const DESMOS_INIT_H = 440;
 const DESMOS_MIN_W = 320;
 const DESMOS_MIN_H = 280;
 
-function DesmosPopup({ isOpen, onClose }) {
+function DesmosPopup({ isOpen, onClose, questionId: qId }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const cardRef = useRef(null);
@@ -656,7 +657,14 @@ function DesmosPopup({ isOpen, onClose }) {
             flexShrink: 0,
           }}
         >
-          <span style={{ fontWeight: 600, fontSize: 13 }}>Calculator</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontWeight: 600, fontSize: 13 }}>Calculator</span>
+            <DesmosStateButton
+              questionId={qId}
+              getCalcState={() => { try { return calcRef.current?.getState?.(); } catch { return null; } }}
+              setCalcState={(st) => { try { calcRef.current?.setState?.(st, { allowUndo: false }); } catch {} }}
+            />
+          </div>
           <div style={{ display: 'flex', gap: 4 }}>
             <button
               type="button"

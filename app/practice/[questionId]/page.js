@@ -9,6 +9,7 @@ import HtmlBlock from '../../../components/HtmlBlock';
 import SessionTimer from '../../../components/SessionTimer';
 import { useKeyboardShortcuts } from '../../../lib/useKeyboardShortcuts';
 import QuestionNotes from '../../../components/QuestionNotes';
+import DesmosStateButton from '../../../components/DesmosStateButton';
 
 const htmlHasContent = (html) => {
   if (!html) return false;
@@ -93,7 +94,7 @@ function formatCorrectText(ct) {
  * - Uses ResizeObserver + a rAF "safeResize" to stabilize post-drag layout commits.
  * - Stores state in localStorage (per-question key).
  */
-function DesmosPanel({ isOpen, storageKey }) {
+function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const savedStateRef = useRef(null);
@@ -175,11 +176,13 @@ function DesmosPanel({ isOpen, storageKey }) {
 
       restoreState();
       safeResize();
+      if (calcInstanceRef) calcInstanceRef.current = calcRef.current;
     }
 
     return () => {
       // If the page unmounts, persist and destroy cleanly.
       saveState();
+      if (calcInstanceRef) calcInstanceRef.current = null;
       try {
         calcRef.current?.destroy?.();
       } catch {}
@@ -335,6 +338,7 @@ export default function PracticeQuestionPage() {
   const MAX_CALC_W = 1200;
 
   const [calcMinimized, setCalcMinimized] = useState(false);
+  const calcInstanceRef = useRef(null);
   const [calcWidth, setCalcWidth] = useState(MIN_CALC_W);
 
   // IMPORTANT: prevent flicker by avoiding React updates during drag
@@ -1721,7 +1725,16 @@ export default function PracticeQuestionPage() {
     >
       <aside className={`mathLeft ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
         <div className="mathLeftHeader">
-          <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+            {!calcMinimized && (
+              <DesmosStateButton
+                questionId={questionId}
+                getCalcState={() => { try { return calcInstanceRef.current?.getState?.(); } catch { return null; } }}
+                setCalcState={(st) => { try { calcInstanceRef.current?.setState?.(st, { allowUndo: false }); } catch {} }}
+              />
+            )}
+          </div>
           <button type="button" className="btn secondary" onClick={() => setCalcMinimized((m) => !m)}>
             {calcMinimized ? 'Expand' : 'Minimize'}
           </button>
@@ -1729,7 +1742,7 @@ export default function PracticeQuestionPage() {
 
         {/* Keep mounted; hide visually when minimized */}
         <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
-          <DesmosPanel isOpen={!calcMinimized} storageKey={questionId ? `desmos:${questionId}` : 'desmos:unknown'} />
+          <DesmosPanel isOpen={!calcMinimized} storageKey={questionId ? `desmos:${questionId}` : 'desmos:unknown'} calcInstanceRef={calcInstanceRef} />
         </div>
         {calcMinimized ? <div className="calcMinBody" /> : null}
       </aside>
