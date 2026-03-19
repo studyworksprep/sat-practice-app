@@ -165,12 +165,15 @@ export async function POST(request, { params }) {
     accuracyEntries.push({ version_id: item.question_version_id, is_correct });
   }
 
-  // Bump global accuracy counters on question versions (fire-and-forget)
-  if (accuracyEntries.length > 0) {
-    supabase.rpc('increment_version_accuracy', {
-      entries: JSON.stringify(accuracyEntries),
-    }).catch(() => {});
-  }
+  // Bump global accuracy counters on question versions (best-effort, non-blocking)
+  try {
+    if (accuracyEntries.length > 0) {
+      await supabase.rpc('increment_version_accuracy', {
+        entries: accuracyEntries,
+      });
+    }
+  } catch {}
+
 
   // Insert one practice_test_module_attempts row for this module
   const { data: moduleAttemptRow, error: maErr } = await supabase

@@ -175,9 +175,11 @@ export async function POST(request) {
 
     // Bump global accuracy counters on the question version (first attempt only)
     if ((st?.attempts_count ?? 0) === 0) {
-      supabase.rpc('increment_version_accuracy', {
-        entries: JSON.stringify([{ version_id: ver.id, is_correct }]),
-      }).catch(() => {});
+      try {
+        await supabase.rpc('increment_version_accuracy', {
+          entries: [{ version_id: ver.id, is_correct }],
+        });
+      } catch {}
     }
 
     return NextResponse.json({
