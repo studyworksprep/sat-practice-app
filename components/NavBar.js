@@ -178,13 +178,13 @@ export default function NavBar() {
             {user && (
               <div className="navLinks">
                 {!isPractice && !isTeacher && <Link href="/dashboard">Dashboard</Link>}
-                {isTeacher && <Link href="/teacher">Dashboard</Link>}
+                {isTeacher && !isAdmin && <Link href="/teacher">Dashboard</Link>}
+                {isAdmin && <Link href="/dashboard">Dashboard</Link>}
                 {isTeacher && <Link href="/teacher/students">Students</Link>}
                 {!isPractice && <Link href="/practice-test">Tests</Link>}
                 <Link href="/practice">Question Bank</Link>
                 {!isPractice && <Link href="/review">Review</Link>}
                 {(isAdmin || isManager) && <Link href="/teachers">Teachers</Link>}
-                {isAdmin && <Link href="/admin">Admin</Link>}
               </div>
             )}
           </div>
