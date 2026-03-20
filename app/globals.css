@@ -5389,6 +5389,13 @@ hr{
   align-items: center;
 }
 
+/* Roster mastery rows – match the 3-column header grid */
+.tchRosterMastery .tchTblRow{
+  grid-template-columns: 1.5fr 1fr 1.2fr;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
 @media (max-width: 700px){
   .tchHubSessionRow{ grid-template-columns: 1fr 1fr; }
   .tchHubTestRow{ grid-template-columns: 1fr 1fr; }
@@ -5913,6 +5920,7 @@ hr{
 
 .tmStudentTdNum{
   text-align: center;
+  justify-content: center;
   flex: 0.7;
   font-variant-numeric: tabular-nums;
   flex-direction: row;

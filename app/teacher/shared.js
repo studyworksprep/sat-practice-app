@@ -373,7 +373,7 @@ export function RosterMasteryTable({ domains, topics }) {
   }
 
   return (
-    <div>
+    <div className="tchRosterMastery">
       {[english, math].map(section => {
         if (!section.domains.length) return null;
         return (
