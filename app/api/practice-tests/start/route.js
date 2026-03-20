@@ -41,7 +41,7 @@ export async function POST(request) {
       user_id: user.id,
       status: 'in_progress',
       started_at: new Date().toISOString(),
-      metadata: Object.keys(metadata).length > 0 ? metadata : null,
+      metadata: Object.keys(metadata).length > 0 ? metadata : {},
     })
     .select('id')
     .single();
