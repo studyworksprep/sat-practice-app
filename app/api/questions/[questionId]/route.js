@@ -166,11 +166,12 @@ export async function GET(_request, { params }) {
     }
   }
 
-  // Correct answer key (only reveal for authed users AFTER they've completed the question)
+  // Correct answer key (only reveal for authed users AFTER they've completed the question,
+  // or immediately for privileged roles so Teacher Mode can show answers without answering)
   const { data: ca } = caResult;
   let correct_option_id = null;
   let correct_text = null;
-  if (user && status?.is_done) {
+  if (user && (status?.is_done || isPrivilegedRole)) {
     if (version?.question_type === 'mcq') correct_option_id = ca?.correct_option_id ?? null;
     if (version?.question_type === 'spr') correct_text = ca?.correct_text ?? null;
   }

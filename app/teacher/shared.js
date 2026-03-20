@@ -1244,7 +1244,7 @@ export function AssignmentsPanel({ students }) {
       cachedAt: new Date().toISOString(),
     }));
     window.open(
-      `/practice/${encodeURIComponent(questionIds[0])}?session=1&sid=${sid}&t=${questionIds.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(student.id)}`,
+      `/practice/${encodeURIComponent(questionIds[0])}?session=1&sid=${sid}&t=${questionIds.length}&o=0&p=0&i=1&tm=1`,
       '_blank'
     );
   }

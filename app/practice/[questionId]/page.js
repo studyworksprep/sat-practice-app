@@ -392,7 +392,6 @@ export default function PracticeQuestionPage() {
   const inSessionContext = sessionParams.get('session') === '1';
   const sidParam = searchParams.get('sid') || null;
   const isTeacherMode = searchParams.get('tm') === '1';
-  const viewAsStudentId = searchParams.get('view_as') || null;
 
   // Overlay for questions answered/marked in the current session, keyed by question_id
   // Persisted to sessionStorage so badges survive page remounts on navigation
@@ -531,10 +530,8 @@ export default function PracticeQuestionPage() {
     return null;
   }
 
-  // Build API URL with optional view_as param
   function questionApiUrl(qId) {
-    const url = `/api/questions/${qId}`;
-    return viewAsStudentId ? `${url}?view_as=${encodeURIComponent(viewAsStudentId)}` : url;
+    return `/api/questions/${qId}`;
   }
 
   // Prefetch a question by ID (fire-and-forget, stores result in cache)
@@ -562,15 +559,16 @@ export default function PracticeQuestionPage() {
         if (!res.ok) throw new Error(json?.error || 'Failed to load question');
       }
 
-      // In Teacher Mode (without view_as), strip status/history so the question appears fresh
-      if (isTeacherMode && !viewAsStudentId) {
-        json = { ...json, status: null, correct_option_id: null, correct_text: null };
+      // In Teacher Mode, strip status/history so the question appears fresh
+      // but keep correct_option_id and correct_text so teachers see answers immediately
+      if (isTeacherMode) {
+        json = { ...json, status: null };
       }
 
       setData(json);
       if (json?.user_role) setUserRole(json.user_role);
 
-      if (json?.question_id && (!isTeacherMode || viewAsStudentId)) {
+      if (json?.question_id && !isTeacherMode) {
         setSessionResults((prev) => ({
           ...prev,
           [String(json.question_id)]: {
@@ -583,7 +581,8 @@ export default function PracticeQuestionPage() {
 
       // Reset retry state for the new question
       setGotCorrect(false);
-      setGaveUp(false);
+      // In Teacher Mode, auto-reveal the correct answer and explanation
+      setGaveUp(isTeacherMode);
       setWrongOptionIds([]);
       setWrongTexts([]);
 
@@ -592,7 +591,7 @@ export default function PracticeQuestionPage() {
       setResponseText('');
 
       startedAtRef.current = Date.now();
-      setShowExplanation(false);
+      setShowExplanation(isTeacherMode);
       setShowErrorLog(false);
       setErrorLogText(json?.status?.notes || '');
       setErrorLogSaved(false);
@@ -1312,7 +1311,7 @@ export default function PracticeQuestionPage() {
 
       <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {isTeacherMode ? (
-          <span className="pill" style={{ background: '#7c3aed', color: '#fff', fontWeight: 700 }}>{viewAsStudentId ? 'Viewing Student' : 'Teacher Mode'}</span>
+          <span className="pill" style={{ background: '#7c3aed', color: '#fff', fontWeight: 700 }}>Teacher Mode</span>
         ) : (
           <span className="pill">
             <span className="muted">Done</span>{' '}
@@ -1599,6 +1598,13 @@ export default function PracticeQuestionPage() {
               </span>
             </div>
           ) : null}
+        </div>
+      ) : isTeacherMode && correctText ? (
+        <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+          <span className="pill">
+            <span className="muted">Correct answer</span>{' '}
+            <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+          </span>
         </div>
       ) : null}
 
