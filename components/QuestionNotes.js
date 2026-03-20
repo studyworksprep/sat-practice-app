@@ -55,8 +55,17 @@ export default function QuestionNotes({ questionId }) {
     if (!questionId) return;
     // Light check: fetch to know if notes exist (for icon color)
     fetch(`/api/question-notes?questionId=${questionId}`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) {
+          // Not a teacher/manager/admin — hide component
+          setHasNotes(false);
+          setLoaded(true);
+          return null;
+        }
+        return r.json();
+      })
       .then(json => {
+        if (!json) return;
         if (json.notes) {
           setHasNotes(json.notes.length > 0);
           setNotes(json.notes);
@@ -155,8 +164,8 @@ export default function QuestionNotes({ questionId }) {
     } catch {}
   }
 
-  // Don't render for non-teacher/manager/admin (if 401 was returned)
-  if (loaded && userId === null) return null;
+  // Don't render for non-teacher/manager/admin, or while still checking
+  if (!loaded || userId === null) return null;
 
   const canEdit = (note) => isAdmin || note.author_id === userId;
   const canDelete = (note) => isAdmin || note.author_id === userId;

@@ -72,13 +72,15 @@ export default function PracticePage() {
       .catch(() => {});
   }, []);
 
-  // Teacher Mode vs Training Mode toggle
+  // Teacher Mode vs Training Mode toggle (only effective for non-students)
+  const isPrivilegedRole = userRole && userRole !== 'student';
   const [teacherMode, setTeacherMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('sat_teacher_mode') === '1';
     }
     return false;
   });
+  const effectiveTeacherMode = isPrivilegedRole && teacherMode;
 
   function toggleTeacherMode() {
     setTeacherMode((prev) => {
@@ -145,7 +147,7 @@ export default function PracticePage() {
 
       // Navigate to the first question
       const firstId = ids[0];
-      const tmParam = teacherMode ? '&tm=1' : '';
+      const tmParam = effectiveTeacherMode ? '&tm=1' : '';
       router.push(
         `/practice/${encodeURIComponent(firstId)}?${sessionQs}&sid=${sid}&t=${ids.length}&o=0&p=0&i=1${tmParam}`
       );
@@ -261,15 +263,17 @@ export default function PracticePage() {
 
   return (
     <main className="container">
-      {/* Mode toggle */}
-      <div className="modeToggleBar">
-        <button
-          className={`modeToggleBtn ${teacherMode ? 'teacherActive' : 'trainingActive'}`}
-          onClick={toggleTeacherMode}
-        >
-          {teacherMode ? 'Teacher Mode' : 'Training Mode'}
-        </button>
-      </div>
+      {/* Mode toggle — only for teachers/managers/admins */}
+      {userRole && userRole !== 'student' && (
+        <div className="modeToggleBar">
+          <button
+            className={`modeToggleBtn ${teacherMode ? 'teacherActive' : 'trainingActive'}`}
+            onClick={toggleTeacherMode}
+          >
+            {teacherMode ? 'Teacher Mode' : 'Training Mode'}
+          </button>
+        </div>
+      )}
 
       {/* Full-width filter panel */}
       <Filters onChange={setFilters} onStartSession={handleStartSession} userRole={userRole} />
@@ -325,7 +329,7 @@ export default function PracticePage() {
                 const pos = idx;
                 const i = offset + pos + 1;
 
-                const tmQ = teacherMode ? '&tm=1' : '';
+                const tmQ = effectiveTeacherMode ? '&tm=1' : '';
                 const href = `/practice/${encodeURIComponent(qid)}?${sessionQueryString}&sid=${sessionId}&t=${totalCount}&o=${offset}&p=${pos}&i=${i}${tmQ}`;
 
                 const diffClass = q.difficulty === 1 ? ' easy' : q.difficulty === 2 ? ' medium' : q.difficulty === 3 ? ' hard' : '';
@@ -342,8 +346,8 @@ export default function PracticePage() {
                           {q.score_band != null && (
                             <span className="pill qPill">Score Band {q.score_band}</span>
                           )}
-                          {!teacherMode && <AttemptedBadge is_done={q.is_done} />}
-                          {!teacherMode && q.marked_for_review && (
+                          {!effectiveTeacherMode && <AttemptedBadge is_done={q.is_done} />}
+                          {!effectiveTeacherMode && q.marked_for_review && (
                             <span className="qMark" title="Marked for review">★</span>
                           )}
                         </div>
