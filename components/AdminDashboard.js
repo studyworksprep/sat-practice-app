@@ -91,6 +91,12 @@ export default function AdminDashboard() {
   // Broken questions
   const [brokenQs, setBrokenQs] = useState(null);
 
+  // Teacher effectiveness
+  const [teacherData, setTeacherData] = useState(null);
+
+  // Active tab
+  const [activeTab, setActiveTab] = useState('overview');
+
   // Pagination & sorting
   const [usersPage, setUsersPage] = useState(0);
   const [usersRoleFilter, setUsersRoleFilter] = useState('all');
@@ -125,6 +131,7 @@ export default function AdminDashboard() {
     fetchPlatformStats();
     fetchStudentPerformance();
     fetchBrokenQuestions();
+    fetchTeacherData();
   }, []);
 
   async function fetchUsers() {
@@ -446,6 +453,14 @@ export default function AdminDashboard() {
     } catch {}
   }
 
+  async function fetchTeacherData() {
+    try {
+      const res = await fetch('/api/admin/teacher-effectiveness');
+      const json = await res.json();
+      if (res.ok) setTeacherData(json.teachers || []);
+    } catch {}
+  }
+
   async function fetchLearnability() {
     setLearnLoading(true);
     try {
@@ -622,13 +637,16 @@ export default function AdminDashboard() {
     );
   }
 
+  const ADMIN_TABS = [
+    { key: 'overview', label: 'Site Overview', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0h4' },
+    { key: 'performance', label: 'Student Performance', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6m6 0h6m-6 0V9a2 2 0 012-2h2a2 2 0 012 2v10m6 0v-4a2 2 0 00-2-2h-2a2 2 0 00-2 2v4' },
+    { key: 'teachers', label: 'Teacher Data', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197' },
+    { key: 'users', label: 'User Management', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0' },
+    { key: 'content', label: 'Question Content', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+  ];
+
   return (
     <main className="container adminMain">
-      <h1 className="h1" style={{ marginBottom: 4 }}>Admin</h1>
-      <p className="muted small" style={{ marginBottom: 24 }}>
-        Manage users, accounts, and score data.
-      </p>
-
       {/* Toast */}
       {toast && (
         <div
@@ -642,22 +660,30 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ── Role count panels ────────────────────────────────── */}
-      <div className="adminPanels">
-        {ROLE_ORDER.map((role) => (
-          <button
-            className={`card adminPanel${usersRoleFilter === role ? ' adminPanelActive' : ''}`}
-            key={role}
-            onClick={() => setUsersRoleFilter(prev => prev === role ? 'all' : role)}
-            style={{ cursor: 'pointer', border: usersRoleFilter === role ? `2px solid ${ROLE_COLOR[role]}` : undefined }}
-          >
-            <div className="adminPanelCount" style={{ color: ROLE_COLOR[role] }}>
-              {grouped[role].length}
-            </div>
-            <div className="adminPanelTitle">{ROLE_LABEL[role]}s</div>
-          </button>
-        ))}
-      </div>
+      <div className="adminTabLayout">
+        {/* ── Side Menu ── */}
+        <nav className="adminSideNav">
+          <div className="adminSideNavTitle">Admin</div>
+          {ADMIN_TABS.map(tab => (
+            <button
+              key={tab.key}
+              className={`adminSideNavBtn${activeTab === tab.key ? ' active' : ''}`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d={tab.icon} />
+              </svg>
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {/* ── Tab Content ── */}
+        <div className="adminTabContent">
+
+      {/* ════════════ SITE OVERVIEW ════════════ */}
+      {activeTab === 'overview' && <>
+        <h2 className="h2" style={{ marginBottom: 16 }}>Site Overview</h2>
 
       {/* ── Platform Activity & Health ───────────────────────── */}
       {platformStats && (
@@ -764,7 +790,41 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ── Student Performance ───────────────────────────────── */}
+        {/* Bug Reports (in overview) */}
+        <section className="adminSection">
+          <div className="adminSectionHeader">
+            <h3 className="h2" style={{ margin: 0 }}>Recent Bug Reports</h3>
+            <Link href="/bugs" className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }}>
+              View All
+            </Link>
+          </div>
+          {recentBugs.length === 0 ? (
+            <p className="muted small">No bug reports yet.</p>
+          ) : (
+            <div className="adminBugGrid">
+              {recentBugs.map((bug) => (
+                <div key={bug.id} className="card adminBugCard">
+                  <div className="adminBugCardHeader">
+                    <span className="adminBugTitle">{bug.title || 'Bug Report'}</span>
+                    <span className={`adminBugStatus adminBugStatus--${bug.status}`}>
+                      {bug.status === 'in_progress' ? 'In Progress' : bug.status?.charAt(0).toUpperCase() + bug.status?.slice(1)}
+                    </span>
+                  </div>
+                  <p className="adminBugDesc">{bug.description}</p>
+                  <div className="adminBugMeta">
+                    <span>{formatDate(bug.created_at)}</span>
+                    {bug.created_by && <span>by {bug.created_by}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </>}
+
+      {/* ════════════ STUDENT PERFORMANCE ════════════ */}
+      {activeTab === 'performance' && <>
+        <h2 className="h2" style={{ marginBottom: 16 }}>Student Performance</h2>
       {perfStats && (
         <>
           <div className="adminStatsRow adminStatsRow2">
@@ -949,6 +1009,100 @@ export default function AdminDashboard() {
           )}
         </>
       )}
+      </>}
+
+      {/* ════════════ TEACHER DATA ════════════ */}
+      {activeTab === 'teachers' && <>
+        <h2 className="h2" style={{ marginBottom: 16 }}>Teacher Data</h2>
+        {teacherData && teacherData.length > 0 ? (
+          <div className="card" style={{ padding: 0, overflow: 'auto' }}>
+            <table className="adminTable" style={{ width: '100%', minWidth: 900 }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '8px 10px', fontSize: 12, fontWeight: 700 }}>Teacher</th>
+                  <th style={{ textAlign: 'center', padding: '8px 6px', fontSize: 11, fontWeight: 700 }}>Students</th>
+                  <th style={{ textAlign: 'center', padding: '8px 6px', fontSize: 11, fontWeight: 700 }}>Active (7d)</th>
+                  <th style={{ textAlign: 'center', padding: '8px 6px', fontSize: 11, fontWeight: 700 }}>Engagement</th>
+                  <th style={{ textAlign: 'center', padding: '8px 6px', fontSize: 11, fontWeight: 700 }}>Avg Accuracy</th>
+                  <th style={{ textAlign: 'center', padding: '8px 6px', fontSize: 11, fontWeight: 700 }}>Avg Q/wk</th>
+                  <th style={{ textAlign: 'center', padding: '8px 6px', fontSize: 11, fontWeight: 700 }}>Avg Best Score</th>
+                  <th style={{ textAlign: 'center', padding: '8px 6px', fontSize: 11, fontWeight: 700 }}>Tested</th>
+                  <th style={{ textAlign: 'center', padding: '8px 6px', fontSize: 11, fontWeight: 700 }}>Assigns</th>
+                  <th style={{ textAlign: 'center', padding: '8px 6px', fontSize: 11, fontWeight: 700 }}>Completion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teacherData.map(t => (
+                  <tr key={t.id} style={{ borderTop: '1px solid var(--border, #eee)' }}>
+                    <td style={{ padding: '8px 10px' }}>
+                      <div style={{ fontWeight: 600, fontSize: 13 }}>{t.name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--muted)' }}>{t.email}</div>
+                    </td>
+                    <td style={{ textAlign: 'center', fontSize: 14, fontWeight: 700, padding: '8px 6px' }}>{t.studentCount}</td>
+                    <td style={{ textAlign: 'center', fontSize: 13, padding: '8px 6px' }}>{t.activeStudents7d}</td>
+                    <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 600, padding: '8px 6px', color: t.engagementRate >= 70 ? 'var(--success)' : t.engagementRate >= 40 ? '#eab308' : 'var(--danger)' }}>
+                      {t.engagementRate != null ? `${t.engagementRate}%` : '—'}
+                    </td>
+                    <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 600, padding: '8px 6px', color: t.avgStudentAccuracy >= 70 ? 'var(--success)' : t.avgStudentAccuracy >= 50 ? '#eab308' : 'var(--danger)' }}>
+                      {t.avgStudentAccuracy != null ? `${t.avgStudentAccuracy}%` : '—'}
+                    </td>
+                    <td style={{ textAlign: 'center', fontSize: 13, padding: '8px 6px' }}>{t.avgQuestionsPerWeek}</td>
+                    <td style={{ textAlign: 'center', fontSize: 14, fontWeight: 700, padding: '8px 6px' }}>
+                      {t.avgBestTestScore ?? '—'}
+                    </td>
+                    <td style={{ textAlign: 'center', fontSize: 13, padding: '8px 6px' }}>
+                      {t.studentsTested}/{t.studentCount}
+                    </td>
+                    <td style={{ textAlign: 'center', fontSize: 13, padding: '8px 6px' }}>{t.assignmentsCreated}</td>
+                    <td style={{ textAlign: 'center', fontSize: 13, fontWeight: 600, padding: '8px 6px', color: t.assignmentCompletionRate >= 70 ? 'var(--success)' : t.assignmentCompletionRate >= 40 ? '#eab308' : 'var(--danger)' }}>
+                      {t.assignmentCompletionRate != null ? `${t.assignmentCompletionRate}%` : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : teacherData ? (
+          <p className="muted small">No teachers found.</p>
+        ) : (
+          <p className="muted small">Loading teacher data…</p>
+        )}
+        {teacherData && teacherData.length > 0 && (
+          <div className="adminTeacherLegend muted small" style={{ marginTop: 12 }}>
+            <strong>Engagement</strong> = % of students active in last 7 days &nbsp;|&nbsp;
+            <strong>Avg Accuracy</strong> = mean student accuracy (30d) &nbsp;|&nbsp;
+            <strong>Avg Q/wk</strong> = questions per student per week &nbsp;|&nbsp;
+            <strong>Avg Best Score</strong> = mean of each student{"'"}s highest test score &nbsp;|&nbsp;
+            <strong>Tested</strong> = students who took at least one test &nbsp;|&nbsp;
+            <strong>Completion</strong> = assignment completion rate
+          </div>
+        )}
+      </>}
+
+      {/* ════════════ USER MANAGEMENT ════════════ */}
+      {activeTab === 'users' && <>
+        <h2 className="h2" style={{ marginBottom: 16 }}>User Management</h2>
+
+        <div className="adminPanels" style={{ marginBottom: 20 }}>
+          {ROLE_ORDER.map((role) => (
+            <button
+              className={`card adminPanel${usersRoleFilter === role ? ' adminPanelActive' : ''}`}
+              key={role}
+              onClick={() => setUsersRoleFilter(prev => prev === role ? 'all' : role)}
+              style={{ cursor: 'pointer', border: usersRoleFilter === role ? `2px solid ${ROLE_COLOR[role]}` : undefined }}
+            >
+              <div className="adminPanelCount" style={{ color: ROLE_COLOR[role] }}>
+                {grouped[role].length}
+              </div>
+              <div className="adminPanelTitle">{ROLE_LABEL[role]}s</div>
+            </button>
+          ))}
+        </div>
+      </>}
+
+      {/* ════════════ QUESTION CONTENT ════════════ */}
+      {activeTab === 'content' && <>
+        <h2 className="h2" style={{ marginBottom: 16 }}>Question Content</h2>
 
       {/* ── Broken / Flagged Questions ──────────────────────── */}
       {brokenQs && brokenQs.length > 0 && (
@@ -1005,15 +1159,13 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+      </>}
 
-      {/* ── Two-column layout ────────────────────────────────── */}
-      <div className="adminGrid">
-        {/* ══════════ LEFT COLUMN: Users + Bugs ══════════ */}
-        <div className="adminColMain">
-          {/* ── Users ────────────────────────────────────── */}
+      {/* Users table — continued in User Management tab */}
+      {activeTab === 'users' && <>
           <section className="adminSection">
             <div className="adminSectionHeader">
-              <h2 className="h2" style={{ margin: 0 }}>Users</h2>
+              <h3 className="h2" style={{ margin: 0 }}>Users</h3>
               <span className="muted small">{filteredUsers.length} {usersRoleFilter !== 'all' ? ROLE_LABEL[usersRoleFilter] + 's' : 'total'}</span>
             </div>
             <div style={{ marginBottom: 12 }}>
@@ -1163,40 +1315,7 @@ export default function AdminDashboard() {
             )}
           </section>
 
-          {/* ── Recent Bug Reports ────────────────────────── */}
-          <section className="adminSection">
-            <div className="adminSectionHeader">
-              <h2 className="h2" style={{ margin: 0 }}>Recent Bug Reports</h2>
-              <Link href="/bugs" className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }}>
-                View All
-              </Link>
-            </div>
-            {recentBugs.length === 0 ? (
-              <p className="muted small">No bug reports yet.</p>
-            ) : (
-              <div className="adminBugGrid">
-                {recentBugs.map((bug) => (
-                  <div key={bug.id} className="card adminBugCard">
-                    <div className="adminBugCardHeader">
-                      <span className="adminBugTitle">{bug.title || 'Bug Report'}</span>
-                      <span className={`adminBugStatus adminBugStatus--${bug.status}`}>
-                        {bug.status === 'in_progress' ? 'In Progress' : bug.status?.charAt(0).toUpperCase() + bug.status?.slice(1)}
-                      </span>
-                    </div>
-                    <p className="adminBugDesc">{bug.description}</p>
-                    <div className="adminBugMeta">
-                      <span>{formatDate(bug.created_at)}</span>
-                      {bug.created_by && <span>by {bug.created_by}</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-
-        {/* ══════════ RIGHT COLUMN: Codes, Assignments, Settings ══════════ */}
-        <div className="adminColSide">
+        <div className="adminUserMgmtGrid">
           {/* ── Teacher-Student Assignments ────────────── */}
           <section className="adminSection">
             <h3 className="adminSideTitle">Teacher-Student Assignments</h3>
@@ -1452,6 +1571,11 @@ export default function AdminDashboard() {
             )}
           </section>
 
+        </div>
+      </>}
+
+      {/* Score Conversions & Learnability — continued in Question Content tab */}
+      {activeTab === 'content' && <>
           {/* ── Score Conversions ─────────────────────────── */}
           <section className="adminSection">
             <div className="adminSectionHeader">
@@ -1587,8 +1711,10 @@ export default function AdminDashboard() {
               </div>
             )}
           </section>
-        </div>
-      </div>
+      </>}
+
+        </div>{/* end adminTabContent */}
+      </div>{/* end adminTabLayout */}
 
       {/* ── Edit Profile Modal ─────────────────────────────── */}
       {editProfile && (
