@@ -1151,6 +1151,7 @@ export function AssignmentsPanel({ students }) {
           <p className="muted small">Assignments let you assign specific question sets by topic and difficulty to your students, with optional due dates.</p>
         </div>
       ) : (
+        <>
         <div style={{ display: 'grid', gap: 10 }}>
           {assignments.map(a => {
             const isExpanded = expandedId === a.id;
@@ -1245,6 +1246,7 @@ export function AssignmentsPanel({ students }) {
             </button>
           </div>
         )}
+        </>
       )}
     </div>
   );
