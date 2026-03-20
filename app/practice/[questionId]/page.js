@@ -559,8 +559,9 @@ export default function PracticeQuestionPage() {
         if (!res.ok) throw new Error(json?.error || 'Failed to load question');
       }
 
-      // In Teacher Mode, strip status/history so the question appears fresh
-      // but keep correct_option_id and correct_text so teachers see answers immediately
+      // In Teacher Mode, strip status/history so the question appears fresh.
+      // Keep correct_option_id/correct_text in data but don't auto-reveal —
+      // teachers click "Show Answer" to see the answer and explanation.
       if (isTeacherMode) {
         json = { ...json, status: null };
       }
@@ -581,8 +582,7 @@ export default function PracticeQuestionPage() {
 
       // Reset retry state for the new question
       setGotCorrect(false);
-      // In Teacher Mode, auto-reveal the correct answer and explanation
-      setGaveUp(isTeacherMode);
+      setGaveUp(false);
       setWrongOptionIds([]);
       setWrongTexts([]);
 
@@ -591,7 +591,7 @@ export default function PracticeQuestionPage() {
       setResponseText('');
 
       startedAtRef.current = Date.now();
-      setShowExplanation(isTeacherMode);
+      setShowExplanation(false);
       setShowErrorLog(false);
       setErrorLogText(json?.status?.notes || '');
       setErrorLogSaved(false);
@@ -1265,8 +1265,8 @@ export default function PracticeQuestionPage() {
   const version = data?.version || {};
   const options = Array.isArray(data?.options) ? data.options : [];
   const status = data?.status || {};
-  // Lock only when student got it right or gave up (clicked Show Explanation)
-  const locked = gotCorrect || gaveUp;
+  // Lock when student got it right, gave up, or in Teacher Mode (read-only)
+  const locked = gotCorrect || gaveUp || isTeacherMode;
   const correctOptionId = data?.correct_option_id || null;
   const correctText = data?.correct_text || null;
 
@@ -1495,19 +1495,25 @@ export default function PracticeQuestionPage() {
       </div>
 
       <div className="row" style={{ gap: 10, marginTop: 14 }}>
-        <div className="btnRow">
-          <button className="btn primary" onClick={submitAttempt} disabled={locked || submitting || !selected || wrongOptionIds.includes(selected)}>
-            {submitting ? 'Submitting…' : 'Submit'}
+        {isTeacherMode ? (
+          <button className="btn primary" onClick={() => { setGaveUp(true); setShowExplanation(true); }}>
+            {gaveUp ? 'Answer Revealed' : 'Show Answer'}
           </button>
-        </div>
+        ) : (
+          <div className="btnRow">
+            <button className="btn primary" onClick={submitAttempt} disabled={locked || submitting || !selected || wrongOptionIds.includes(selected)}>
+              {submitting ? 'Submitting…' : 'Submit'}
+            </button>
+          </div>
+        )}
 
-        {(locked || wrongOptionIds.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
+        {(!isTeacherMode || gaveUp) && (locked || wrongOptionIds.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
           <button className="btn secondary" onClick={() => { setGaveUp(true); setShowExplanation((s) => !s); }}>
             {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
           </button>
         ) : null}
 
-        {locked && (
+        {locked && !isTeacherMode && (
           <button
             className={`btn secondary${errorLogText.trim() ? ' errorLogHasNote' : ''}`}
             onClick={() => setShowErrorLog((s) => !s)}
@@ -1599,7 +1605,7 @@ export default function PracticeQuestionPage() {
             </div>
           ) : null}
         </div>
-      ) : isTeacherMode && correctText ? (
+      ) : isTeacherMode && gaveUp && correctText ? (
         <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
           <span className="pill">
             <span className="muted">Correct answer</span>{' '}
@@ -1619,17 +1625,23 @@ export default function PracticeQuestionPage() {
       />
 
       <div className="row" style={{ gap: 10, marginTop: 14 }}>
-        <button className="btn" onClick={submitAttempt} disabled={locked || submitting || !responseText.trim()}>
-          {submitting ? 'Submitting…' : 'Submit'}
-        </button>
+        {isTeacherMode ? (
+          <button className="btn primary" onClick={() => { setGaveUp(true); setShowExplanation(true); }}>
+            {gaveUp ? 'Answer Revealed' : 'Show Answer'}
+          </button>
+        ) : (
+          <button className="btn" onClick={submitAttempt} disabled={locked || submitting || !responseText.trim()}>
+            {submitting ? 'Submitting…' : 'Submit'}
+          </button>
+        )}
 
-        {(locked || wrongTexts.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
+        {(!isTeacherMode || gaveUp) && (locked || wrongTexts.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
           <button className="btn secondary" onClick={() => { setGaveUp(true); setShowExplanation((s) => !s); }}>
             {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
           </button>
         ) : null}
 
-        {locked && (
+        {locked && !isTeacherMode && (
           <button
             className={`btn secondary${errorLogText.trim() ? ' errorLogHasNote' : ''}`}
             onClick={() => setShowErrorLog((s) => !s)}
@@ -2102,7 +2114,7 @@ export default function PracticeQuestionPage() {
                     >
                       <span className="mapNum">{i}</span>
 
-                      {!isTeacherMode && showMark ? (
+                      {showMark ? (
                         <span className="mapIconCorner mapIconLeft" aria-hidden="true">
                           <span className="mapIconBadge mark" title="Marked for review">
                             <svg viewBox="0 0 24 24" width="14" height="14">
@@ -2112,7 +2124,7 @@ export default function PracticeQuestionPage() {
                         </span>
                       ) : null}
 
-                      {!isTeacherMode && (showCorrect || showIncorrect) ? (
+                      {showCorrect || showIncorrect ? (
                         <span className="mapIconCorner mapIconRight" aria-hidden="true">
                           {showCorrect ? (
                             <span className="mapIconBadge correct" title="Correct">
