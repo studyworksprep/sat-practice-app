@@ -21,7 +21,7 @@ export default function LaunchPanel({ tests }) {
   const preselectedTestId = searchParams.get('test') || '';
   const preselectedSections = searchParams.get('sections') || '';
 
-  const [testId, setTestId] = useState(preselectedTestId || tests[0]?.id ?? '');
+  const [testId, setTestId] = useState(preselectedTestId || (tests[0]?.id ?? ''));
   const [sections, setSections] = useState(SECTION_OPTIONS.some(o => o.value === preselectedSections) ? preselectedSections : 'both');
   const [factor, setFactor] = useState('1');
   const [loading, setLoading] = useState(false);
