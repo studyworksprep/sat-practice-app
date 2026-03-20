@@ -19,12 +19,21 @@ export async function GET(request, { params }) {
 
   if (!assigned) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  // Fetch assignment
-  const { data: assignment } = await supabase
+  // Fetch assignment (try with filter_criteria, fall back without)
+  let { data: assignment, error: aErr } = await supabase
     .from('question_assignments')
     .select('id, title, description, due_date, question_ids, teacher_id, created_at, filter_criteria')
     .eq('id', id)
     .single();
+
+  if (aErr && !assignment) {
+    const fb = await supabase
+      .from('question_assignments')
+      .select('id, title, description, due_date, question_ids, teacher_id, created_at')
+      .eq('id', id)
+      .single();
+    assignment = fb.data;
+  }
 
   if (!assignment) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 

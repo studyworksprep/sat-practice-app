@@ -13,15 +13,25 @@ export async function GET() {
     }
 
     // Get assignments for this student
-    const { data: assignmentRows, error: fetchErr } = await supabase
+    let { data: assignmentRows, error: fetchErr } = await supabase
       .from("question_assignment_students")
       .select(
         "assignment_id, question_assignments(id, title, description, due_date, question_ids, teacher_id, filter_criteria)"
       )
       .eq("student_id", user.id);
 
+    // Retry without filter_criteria if column doesn't exist yet
     if (fetchErr) {
-      return NextResponse.json({ error: fetchErr.message }, { status: 500 });
+      const fallback = await supabase
+        .from("question_assignment_students")
+        .select(
+          "assignment_id, question_assignments(id, title, description, due_date, question_ids, teacher_id)"
+        )
+        .eq("student_id", user.id);
+      if (fallback.error) {
+        return NextResponse.json({ error: fallback.error.message }, { status: 500 });
+      }
+      assignmentRows = fallback.data;
     }
 
     const validRows = (assignmentRows || []).filter(r => r.question_assignments);

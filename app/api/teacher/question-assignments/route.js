@@ -41,6 +41,7 @@ export async function GET(request) {
     const { count: totalCount } = await countQuery;
 
     // Fetch paginated assignments
+    // Try with new columns first; fall back if they don't exist yet (migration not run)
     let query = supabase
       .from("question_assignments")
       .select("id, title, description, due_date, question_ids, created_at, completed_at, filter_criteria")
@@ -51,10 +52,25 @@ export async function GET(request) {
       query = query.eq("teacher_id", user.id);
     }
 
-    const { data: assignments, error: assignErr } = await query;
+    let { data: assignments, error: assignErr } = await query;
 
     if (assignErr) {
-      return NextResponse.json({ error: assignErr.message }, { status: 500 });
+      // Retry without new columns if they don't exist yet
+      let fallbackQuery = supabase
+        .from("question_assignments")
+        .select("id, title, description, due_date, question_ids, created_at")
+        .order("created_at", { ascending: false })
+        .range(offset, offset + pageSize - 1);
+
+      if (profile.role !== "admin") {
+        fallbackQuery = fallbackQuery.eq("teacher_id", user.id);
+      }
+
+      const fallback = await fallbackQuery;
+      if (fallback.error) {
+        return NextResponse.json({ error: fallback.error.message }, { status: 500 });
+      }
+      assignments = fallback.data;
     }
 
     if (!assignments || assignments.length === 0) {
