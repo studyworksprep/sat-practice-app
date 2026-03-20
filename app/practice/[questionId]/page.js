@@ -392,6 +392,7 @@ export default function PracticeQuestionPage() {
   const inSessionContext = sessionParams.get('session') === '1';
   const sidParam = searchParams.get('sid') || null;
   const isTeacherMode = searchParams.get('tm') === '1';
+  const viewAsStudentId = searchParams.get('view_as') || null;
 
   // Overlay for questions answered/marked in the current session, keyed by question_id
   // Persisted to sessionStorage so badges survive page remounts on navigation
@@ -530,10 +531,16 @@ export default function PracticeQuestionPage() {
     return null;
   }
 
+  // Build API URL with optional view_as param
+  function questionApiUrl(qId) {
+    const url = `/api/questions/${qId}`;
+    return viewAsStudentId ? `${url}?view_as=${encodeURIComponent(viewAsStudentId)}` : url;
+  }
+
   // Prefetch a question by ID (fire-and-forget, stores result in cache)
   function prefetchQuestion(id) {
     if (!id || prefetchCache.current[String(id)]) return;
-    prefetchCache.current[String(id)] = fetch(`/api/questions/${id}`, { cache: 'no-store' })
+    prefetchCache.current[String(id)] = fetch(questionApiUrl(id), { cache: 'no-store' })
       .then((r) => r.ok ? r.json() : null)
       .catch(() => null);
   }
@@ -550,20 +557,20 @@ export default function PracticeQuestionPage() {
         json = await cached;
       }
       if (!json) {
-        const res = await fetch(`/api/questions/${questionId}`, { cache: 'no-store' });
+        const res = await fetch(questionApiUrl(questionId), { cache: 'no-store' });
         json = await res.json();
         if (!res.ok) throw new Error(json?.error || 'Failed to load question');
       }
 
-      // In Teacher Mode, strip status/history so the question appears fresh
-      if (isTeacherMode) {
+      // In Teacher Mode (without view_as), strip status/history so the question appears fresh
+      if (isTeacherMode && !viewAsStudentId) {
         json = { ...json, status: null, correct_option_id: null, correct_text: null };
       }
 
       setData(json);
       if (json?.user_role) setUserRole(json.user_role);
 
-      if (json?.question_id && !isTeacherMode) {
+      if (json?.question_id && (!isTeacherMode || viewAsStudentId)) {
         setSessionResults((prev) => ({
           ...prev,
           [String(json.question_id)]: {
@@ -1305,7 +1312,7 @@ export default function PracticeQuestionPage() {
 
       <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {isTeacherMode ? (
-          <span className="pill" style={{ background: '#7c3aed', color: '#fff', fontWeight: 700 }}>Teacher Mode</span>
+          <span className="pill" style={{ background: '#7c3aed', color: '#fff', fontWeight: 700 }}>{viewAsStudentId ? 'Viewing Student' : 'Teacher Mode'}</span>
         ) : (
           <span className="pill">
             <span className="muted">Done</span>{' '}

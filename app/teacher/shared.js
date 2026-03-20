@@ -1136,6 +1136,55 @@ export function AssignmentsPanel({ students }) {
     } catch (e) { alert(e.message); }
   }
 
+  async function toggleComplete(id, isCompleted) {
+    try {
+      const res = await fetch('/api/teacher/question-assignments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action: isCompleted ? 'reopen' : 'complete' }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      setAssignments(prev => prev.map(a => a.id === id ? { ...a, completed_at: isCompleted ? null : new Date().toISOString() } : a));
+    } catch (e) { alert(e.message); }
+  }
+
+  function openStudentAssignment(assignment, student, detail) {
+    const questionIds = detail?.assignment?.question_ids || assignment.question_ids || [];
+    if (!questionIds.length) return;
+    const questions = detail?.questions || [];
+    const statuses = student.question_statuses || [];
+    const statusMap = {};
+    for (const qs of statuses) { statusMap[qs.question_id] = qs; }
+
+    const sid = `tch_assign_${assignment.id}_${student.id}`;
+    localStorage.setItem(`practice_session_${sid}`, questionIds.join(','));
+    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+      questionIds.map(qid => {
+        const q = questions.find(x => x.question_id === qid) || {};
+        const qs = statusMap[qid] || {};
+        return {
+          question_id: qid,
+          difficulty: q.difficulty,
+          is_done: qs.is_done || false,
+          last_is_correct: qs.last_is_correct || false,
+          marked_for_review: qs.marked_for_review || false,
+          domain_name: q.domain_name || '',
+          skill_name: q.skill_name || '',
+        };
+      })
+    ));
+    localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
+      sessionQueryString: 'session=1',
+      totalCount: questionIds.length,
+      cachedCount: questionIds.length,
+      cachedAt: new Date().toISOString(),
+    }));
+    window.open(
+      `/practice/${encodeURIComponent(questionIds[0])}?session=1&sid=${sid}&t=${questionIds.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(student.id)}`,
+      '_blank'
+    );
+  }
+
   const isOverdue = (due) => due && new Date(due) < new Date();
 
   return (
@@ -1158,15 +1207,19 @@ export function AssignmentsPanel({ students }) {
             const detail = detailData[a.id];
             const dLoading = detailLoading[a.id];
             const overdue = isOverdue(a.due_date);
+            const isCompleted = !!a.completed_at;
             return (
-              <div key={a.id} className="card tchAssignCard">
+              <div key={a.id} className="card tchAssignCard" style={isCompleted ? { opacity: 0.7 } : undefined}>
                 <div className="tchAssignCardHeader" onClick={() => toggleExpand(a.id)} style={{ cursor: 'pointer' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 650, fontSize: 15 }}>{a.title}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontWeight: 650, fontSize: 15 }}>{a.title}</span>
+                      {isCompleted && <span className="pill" style={{ fontSize: 10, padding: '1px 8px', background: 'var(--success)', color: '#fff' }}>Complete</span>}
+                    </div>
                     <div className="muted small" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 2 }}>
                       <span>{a.question_count} questions</span>
                       <span>{a.student_count} student{a.student_count !== 1 ? 's' : ''}</span>
-                      {a.due_date && <span style={{ color: overdue ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{overdue ? ' (overdue)' : ''}</span>}
+                      {a.due_date && <span style={{ color: overdue && !isCompleted ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{overdue && !isCompleted ? ' (overdue)' : ''}</span>}
                       <span>Created {formatDate(a.created_at)}</span>
                     </div>
                   </div>
@@ -1197,7 +1250,13 @@ export function AssignmentsPanel({ students }) {
                           const donePct = s.total_questions > 0 ? Math.round((s.completed_count / s.total_questions) * 100) : 0;
                           const accPct = s.completed_count > 0 ? Math.round((s.correct_count / s.completed_count) * 100) : null;
                           return (
-                            <div key={s.id} className="tchAssignProgressRow">
+                            <div
+                              key={s.id}
+                              className="tchAssignProgressRow"
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => openStudentAssignment(a, s, detail)}
+                              title={`View ${displayName(s)}'s assignment`}
+                            >
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontWeight: 600, fontSize: 13 }}>{displayName(s)}</div>
                                 <div className="muted small">{s.email}</div>
@@ -1214,6 +1273,13 @@ export function AssignmentsPanel({ students }) {
                       </div>
                     ) : null}
                     <div style={{ marginTop: 10, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <button
+                        className="btn secondary"
+                        style={{ fontSize: 12 }}
+                        onClick={() => toggleComplete(a.id, isCompleted)}
+                      >
+                        {isCompleted ? 'Reopen' : 'Mark Complete'}
+                      </button>
                       <button className="btn secondary" style={{ fontSize: 12, color: 'var(--danger)' }} onClick={() => deleteAssignment(a.id)}>Delete</button>
                     </div>
                   </div>
@@ -1468,8 +1534,34 @@ export function StudentDetail({ studentId, onBack }) {
                 {data.studentAssignments.map(a => {
                   const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
                   const isOverdue = a.due_date && new Date(a.due_date) < new Date();
+                  function openAssignmentSession() {
+                    const qids = a.question_ids || [];
+                    if (!qids.length) return;
+                    const sid = `tch_assign_${a.id}_${studentId}`;
+                    localStorage.setItem(`practice_session_${sid}`, qids.join(','));
+                    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+                      qids.map(qid => ({ question_id: qid, is_done: false, last_is_correct: false, marked_for_review: false }))
+                    ));
+                    localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
+                      sessionQueryString: 'session=1',
+                      totalCount: qids.length,
+                      cachedCount: qids.length,
+                      cachedAt: new Date().toISOString(),
+                    }));
+                    window.open(
+                      `/practice/${encodeURIComponent(qids[0])}?session=1&sid=${sid}&t=${qids.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(studentId)}`,
+                      '_blank'
+                    );
+                  }
                   return (
-                    <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div
+                      key={a.id}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 4px', borderBottom: '1px solid var(--border)', cursor: 'pointer', borderRadius: 6, transition: 'background 0.1s' }}
+                      onClick={openAssignmentSession}
+                      title="View assignment as student"
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 600, fontSize: 14 }}>{a.title}</div>
                         <div className="muted small" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

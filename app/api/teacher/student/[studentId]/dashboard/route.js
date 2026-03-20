@@ -355,6 +355,7 @@ export async function GET(_request, { params }) {
         title: a.title,
         description: a.description,
         due_date: a.due_date,
+        question_ids: qids,
         question_count: qids.length,
         completed_count: completedCount,
         created_at: a.created_at,
