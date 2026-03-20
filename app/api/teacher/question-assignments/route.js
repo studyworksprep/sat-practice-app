@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../../lib/supabase/server";
 
-export async function GET() {
+export async function GET(request) {
   try {
     const supabase = createClient();
     const {
@@ -23,11 +23,29 @@ export async function GET() {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Fetch assignments
+    // Pagination params
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get("pageSize") || "10", 10)));
+    const offset = (page - 1) * pageSize;
+
+    // Get total count first
+    let countQuery = supabase
+      .from("question_assignments")
+      .select("id", { count: "exact", head: true });
+
+    if (profile.role !== "admin") {
+      countQuery = countQuery.eq("teacher_id", user.id);
+    }
+
+    const { count: totalCount } = await countQuery;
+
+    // Fetch paginated assignments
     let query = supabase
       .from("question_assignments")
       .select("id, title, description, due_date, question_ids, created_at")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(offset, offset + pageSize - 1);
 
     if (profile.role !== "admin") {
       query = query.eq("teacher_id", user.id);
@@ -39,58 +57,84 @@ export async function GET() {
       return NextResponse.json({ error: assignErr.message }, { status: 500 });
     }
 
-    // Build enriched assignment list
-    const enriched = [];
+    if (!assignments || assignments.length === 0) {
+      return NextResponse.json({ assignments: [], totalCount: totalCount || 0, page, pageSize });
+    }
 
-    for (const a of assignments) {
-      const questionCount = a.question_ids ? a.question_ids.length : 0;
+    // Batch: fetch all student assignments for this page's assignments in one query
+    const assignmentIds = assignments.map((a) => a.id);
+    const { data: allStudentAssigns } = await supabase
+      .from("question_assignment_students")
+      .select("assignment_id, student_id")
+      .in("assignment_id", assignmentIds);
 
-      // Count students
-      const { count: studentCount } = await supabase
-        .from("question_assignment_students")
-        .select("*", { count: "exact", head: true })
-        .eq("assignment_id", a.id);
+    // Group students by assignment
+    const studentsByAssignment = {};
+    for (const sa of allStudentAssigns || []) {
+      if (!studentsByAssignment[sa.assignment_id]) studentsByAssignment[sa.assignment_id] = [];
+      studentsByAssignment[sa.assignment_id].push(sa.student_id);
+    }
 
-      // Compute average completion
-      let avgCompletionPct = 0;
+    // Batch: collect all unique (student_id, question_id) pairs to query completion
+    const allStudentIds = [...new Set((allStudentAssigns || []).map((sa) => sa.student_id))];
+    const allQuestionIds = [...new Set(assignments.flatMap((a) => a.question_ids || []))];
 
-      if (studentCount > 0 && questionCount > 0) {
-        // Get all assigned student ids
-        const { data: studentRows } = await supabase
-          .from("question_assignment_students")
-          .select("student_id")
-          .eq("assignment_id", a.id);
-
-        const studentIds = studentRows.map((s) => s.student_id);
-
-        // Query question_status for these students and question_ids where is_done = true
-        const { count: doneCount } = await supabase
+    // Get done counts in batch (only if we have students and questions)
+    let doneByUserQuestion = {};
+    if (allStudentIds.length > 0 && allQuestionIds.length > 0) {
+      // Query in chunks if needed
+      for (let i = 0; i < allQuestionIds.length; i += 1000) {
+        const qChunk = allQuestionIds.slice(i, i + 1000);
+        const { data: doneStatuses } = await supabase
           .from("question_status")
-          .select("*", { count: "exact", head: true })
-          .in("user_id", studentIds)
-          .in("question_id", a.question_ids)
+          .select("user_id, question_id")
+          .in("user_id", allStudentIds)
+          .in("question_id", qChunk)
           .eq("is_done", true);
 
+        for (const s of doneStatuses || []) {
+          const key = `${s.user_id}:${s.question_id}`;
+          doneByUserQuestion[key] = true;
+        }
+      }
+    }
+
+    // Build enriched assignment list
+    const enriched = assignments.map((a) => {
+      const questionCount = a.question_ids ? a.question_ids.length : 0;
+      const studentIds = studentsByAssignment[a.id] || [];
+      const studentCount = studentIds.length;
+
+      let avgCompletionPct = 0;
+      if (studentCount > 0 && questionCount > 0) {
+        let doneCount = 0;
+        for (const sid of studentIds) {
+          for (const qid of a.question_ids) {
+            if (doneByUserQuestion[`${sid}:${qid}`]) doneCount++;
+          }
+        }
         const totalPossible = studentCount * questionCount;
-        avgCompletionPct =
-          totalPossible > 0
-            ? Math.round(((doneCount || 0) / totalPossible) * 100)
-            : 0;
+        avgCompletionPct = Math.round((doneCount / totalPossible) * 100);
       }
 
-      enriched.push({
+      return {
         id: a.id,
         title: a.title,
         description: a.description,
         due_date: a.due_date,
         question_count: questionCount,
-        student_count: studentCount || 0,
+        student_count: studentCount,
         avg_completion_pct: avgCompletionPct,
         created_at: a.created_at,
-      });
-    }
+      };
+    });
 
-    return NextResponse.json({ assignments: enriched });
+    return NextResponse.json({
+      assignments: enriched,
+      totalCount: totalCount || 0,
+      page,
+      pageSize,
+    });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

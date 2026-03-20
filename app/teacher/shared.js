@@ -1094,17 +1094,24 @@ export function AssignmentsPanel({ students }) {
   const [expandedId, setExpandedId] = useState(null);
   const [detailData, setDetailData] = useState({});
   const [detailLoading, setDetailLoading] = useState({});
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10;
 
-  function loadAssignments() {
+  function loadAssignments(p) {
+    const loadPage = p || page;
     setLoading(true);
-    fetch('/api/teacher/question-assignments')
+    fetch(`/api/teacher/question-assignments?page=${loadPage}&pageSize=${pageSize}`)
       .then(r => r.json())
-      .then(d => setAssignments(d.assignments || []))
+      .then(d => {
+        setAssignments(d.assignments || []);
+        setTotalCount(d.totalCount || 0);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { loadAssignments(); }, []);
+  useEffect(() => { loadAssignments(); }, [page]);
 
   function toggleExpand(id) {
     if (expandedId === id) { setExpandedId(null); return; }
@@ -1124,8 +1131,8 @@ export function AssignmentsPanel({ students }) {
     try {
       const res = await fetch('/api/teacher/question-assignments', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
       if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
-      setAssignments(prev => prev.filter(a => a.id !== id));
       if (expandedId === id) setExpandedId(null);
+      loadAssignments(page);
     } catch (e) { alert(e.message); }
   }
 
@@ -1137,7 +1144,7 @@ export function AssignmentsPanel({ students }) {
         <h3 className="h2" style={{ margin: 0 }}>Assignments</h3>
         <button className="btn primary" onClick={() => setShowCreate(true)}>+ New Assignment</button>
       </div>
-      {showCreate && <CreateAssignmentModal students={students} onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); loadAssignments(); }} />}
+      {showCreate && <CreateAssignmentModal students={students} onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); setPage(1); loadAssignments(1); }} />}
       {loading ? <p className="muted">Loading assignments...</p> : assignments.length === 0 ? (
         <div className="card" style={{ padding: 24 }}>
           <p className="muted">No assignments yet. Click &quot;+ New Assignment&quot; to create one.</p>
@@ -1214,6 +1221,30 @@ export function AssignmentsPanel({ students }) {
             );
           })}
         </div>
+        {/* Pagination controls */}
+        {totalCount > pageSize && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginTop: 16 }}>
+            <button
+              className="btn secondary"
+              style={{ padding: '4px 12px', fontSize: 13 }}
+              disabled={page <= 1}
+              onClick={() => { setExpandedId(null); setPage(p => p - 1); }}
+            >
+              Previous
+            </button>
+            <span className="muted" style={{ fontSize: 13 }}>
+              Page {page} of {Math.ceil(totalCount / pageSize)}
+            </span>
+            <button
+              className="btn secondary"
+              style={{ padding: '4px 12px', fontSize: 13 }}
+              disabled={page >= Math.ceil(totalCount / pageSize)}
+              onClick={() => { setExpandedId(null); setPage(p => p + 1); }}
+            >
+              Next
+            </button>
+          </div>
+        )}
       )}
     </div>
   );

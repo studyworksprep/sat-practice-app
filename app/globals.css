@@ -5885,7 +5885,7 @@ hr{
 }
 
 .tmStudentThNum{
-  text-align: right;
+  text-align: center;
   flex: 0.7;
 }
 
@@ -5912,7 +5912,7 @@ hr{
 }
 
 .tmStudentTdNum{
-  text-align: right;
+  text-align: center;
   flex: 0.7;
   font-variant-numeric: tabular-nums;
   flex-direction: row;
