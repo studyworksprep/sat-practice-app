@@ -1423,14 +1423,14 @@ export default function PracticeQuestionPage() {
       {htmlHasContent(version?.stimulus_html) ? (
         <div style={{ marginBottom: 12 }}>
           <div className="srOnly">Stimulus</div>
-          <HtmlBlock className="prose" html={version.stimulus_html} imgMaxWidth={360} />
+          <HtmlBlock className="prose" html={version.stimulus_html} imgMaxWidth={320} />
         </div>
       ) : null}
 
       {version?.stem_html ? (
         <div style={{ marginBottom: 12 }}>
           <div className="srOnly">Question</div>
-          <HtmlBlock className="prose" html={version.stem_html} imgMaxWidth={360} />
+          <HtmlBlock className="prose" html={version.stem_html} imgMaxWidth={320} />
         </div>
       ) : null}
     </>
@@ -1851,7 +1851,7 @@ export default function PracticeQuestionPage() {
             <div className="qaLeft">
               {htmlHasContent(version?.stimulus_html) && (
                 <div className="card subcard">
-                  <HtmlBlock className="prose" html={version.stimulus_html} imgMaxWidth={360} />
+                  <HtmlBlock className="prose" html={version.stimulus_html} imgMaxWidth={320} />
                 </div>
               )}
             </div>
