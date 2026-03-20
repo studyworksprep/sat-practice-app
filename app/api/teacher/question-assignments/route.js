@@ -43,7 +43,7 @@ export async function GET(request) {
     // Fetch paginated assignments
     let query = supabase
       .from("question_assignments")
-      .select("id, title, description, due_date, question_ids, created_at, completed_at")
+      .select("id, title, description, due_date, question_ids, created_at, completed_at, filter_criteria")
       .order("created_at", { ascending: false })
       .range(offset, offset + pageSize - 1);
 
@@ -117,6 +117,7 @@ export async function GET(request) {
         avgCompletionPct = Math.round((doneCount / totalPossible) * 100);
       }
 
+      const isPracticeTest = a.filter_criteria?.type === 'practice_test';
       return {
         id: a.id,
         title: a.title,
@@ -124,9 +125,11 @@ export async function GET(request) {
         due_date: a.due_date,
         question_count: questionCount,
         student_count: studentCount,
-        avg_completion_pct: avgCompletionPct,
+        avg_completion_pct: isPracticeTest ? null : avgCompletionPct,
         created_at: a.created_at,
         completed_at: a.completed_at || null,
+        practice_test_id: isPracticeTest ? a.filter_criteria.practice_test_id : null,
+        sections: isPracticeTest ? (a.filter_criteria.sections || 'both') : null,
       };
     });
 
@@ -170,7 +173,9 @@ export async function POST(request) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
     }
 
-    if (!question_ids || !Array.isArray(question_ids) || question_ids.length === 0) {
+    // Practice test assignments have empty question_ids; question assignments require them
+    const isPracticeTest = filter_criteria?.type === 'practice_test';
+    if (!isPracticeTest && (!question_ids || !Array.isArray(question_ids) || question_ids.length === 0)) {
       return NextResponse.json(
         { error: "question_ids must be a non-empty array" },
         { status: 400 }

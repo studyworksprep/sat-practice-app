@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '../../../../lib/supabase/server';
 
 // POST /api/practice-tests/start
-// Body: { practice_test_id }
+// Body: { practice_test_id, sections? }
+// sections: 'both' (default), 'rw', 'math'
 // Creates a new in_progress attempt and returns { attempt_id }
 export async function POST(request) {
   const supabase = createClient();
@@ -10,7 +11,7 @@ export async function POST(request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { practice_test_id } = await request.json();
+  const { practice_test_id, sections } = await request.json();
   if (!practice_test_id) {
     return NextResponse.json({ error: 'practice_test_id required' }, { status: 400 });
   }
@@ -27,6 +28,12 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Test not found' }, { status: 404 });
   }
 
+  // Store sections in metadata so the attempt flow knows which subjects to include
+  const metadata = {};
+  if (sections && sections !== 'both') {
+    metadata.sections = sections; // 'rw' or 'math'
+  }
+
   const { data: attempt, error: insertErr } = await supabase
     .from('practice_test_attempts')
     .insert({
@@ -34,6 +41,7 @@ export async function POST(request) {
       user_id: user.id,
       status: 'in_progress',
       started_at: new Date().toISOString(),
+      metadata: Object.keys(metadata).length > 0 ? metadata : null,
     })
     .select('id')
     .single();

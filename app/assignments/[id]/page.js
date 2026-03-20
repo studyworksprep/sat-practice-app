@@ -67,6 +67,13 @@ export default function AssignmentDetailPage() {
   if (!data) return null;
 
   const { assignment, questions } = data;
+
+  // Practice test assignments redirect to the launch page
+  if (assignment.practice_test_id) {
+    const ptUrl = `/practice-test?test=${encodeURIComponent(assignment.practice_test_id)}${assignment.sections && assignment.sections !== 'both' ? `&sections=${assignment.sections}` : ''}`;
+    router.push(ptUrl);
+    return <main className="container" style={{ padding: '40px 20px' }}><p className="muted">Redirecting to practice test...</p></main>;
+  }
   const done = questions.filter(q => q.is_done).length;
   const correct = questions.filter(q => q.is_done && q.last_is_correct).length;
   const total = questions.length;

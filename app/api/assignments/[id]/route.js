@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
   // Fetch assignment
   const { data: assignment } = await supabase
     .from('question_assignments')
-    .select('id, title, description, due_date, question_ids, teacher_id, created_at')
+    .select('id, title, description, due_date, question_ids, teacher_id, created_at, filter_criteria')
     .eq('id', id)
     .single();
 
@@ -76,6 +76,7 @@ export async function GET(request, { params }) {
     });
   }
 
+  const isPracticeTest = assignment.filter_criteria?.type === 'practice_test';
   return NextResponse.json({
     assignment: {
       id: assignment.id,
@@ -84,6 +85,8 @@ export async function GET(request, { params }) {
       due_date: assignment.due_date,
       teacher_name: teacherName,
       created_at: assignment.created_at,
+      practice_test_id: isPracticeTest ? assignment.filter_criteria.practice_test_id : null,
+      sections: isPracticeTest ? (assignment.filter_criteria.sections || 'both') : null,
     },
     questions,
   });

@@ -47,10 +47,18 @@ export async function POST(request, { params }) {
   // Derive unique subject codes — RW first, Math second (DB stores 'RW' and 'MATH')
   const allSubjects = new Set(allModules.map((m) => m.subject_code));
   const SUBJECT_PRIORITY = ['RW', 'rw', 'M', 'm', 'math', 'Math', 'MATH'];
-  const sortedSubjects = [
+  let sortedSubjects = [
     ...SUBJECT_PRIORITY.filter((s) => allSubjects.has(s)),
     ...[...allSubjects].filter((s) => !SUBJECT_PRIORITY.includes(s)).sort(),
   ];
+
+  // Filter subjects when running a section-only test
+  const sectionsMode = attempt.metadata?.sections; // 'rw', 'math', or undefined (both)
+  if (sectionsMode === 'rw') {
+    sortedSubjects = sortedSubjects.filter(s => ['RW', 'rw'].includes(s));
+  } else if (sectionsMode === 'math') {
+    sortedSubjects = sortedSubjects.filter(s => ['M', 'm', 'math', 'Math', 'MATH'].includes(s));
+  }
 
   // Name-based route field mapping (matches DB column semantics)
   const subjectRouteField = { RW: 'rw_route_code', rw: 'rw_route_code', M: 'm_route_code', m: 'm_route_code', math: 'm_route_code', Math: 'm_route_code', MATH: 'm_route_code' };
