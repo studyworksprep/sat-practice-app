@@ -127,6 +127,7 @@ export async function GET() {
     const sectionScores = {};
     let totalCorrect = 0;
     let totalQuestions = 0;
+    const sectionsMode = a.metadata?.sections; // 'rw', 'math', or undefined (both)
 
     for (const subj of subjects) {
       const m1 = modData[`${subj}/1`] || { correct: 0 };
@@ -145,11 +146,14 @@ export async function GET() {
       const correct = m1.correct + m2.correct;
       const total = (modData[`${subj}/1`]?.total || m1.correct) + (modData[`${subj}/2`]?.total || m2.correct);
       sectionScores[subj] = { correct, total, scaled };
-      composite = (composite || 0) + scaled;
+      // Only compute composite for full (both sections) tests
+      if (!sectionsMode) {
+        composite = (composite || 0) + scaled;
+      }
       totalCorrect += correct;
       totalQuestions += total;
     }
-    return { ...a, composite, sectionScores, totalCorrect, totalQuestions };
+    return { ...a, composite, sectionScores, sectionsMode, totalCorrect, totalQuestions };
   });
 
   return NextResponse.json({ tests, attempts });

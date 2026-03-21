@@ -234,6 +234,7 @@ export async function GET() {
       questionCount: s.questions.length,
       correct,
       accuracy: s.questions.length > 0 ? Math.round((correct / s.questions.length) * 100) : null,
+      questions: s.questions,
     };
   });
 

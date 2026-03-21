@@ -8,6 +8,8 @@ import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
 import SessionTimer from '../../../components/SessionTimer';
 import { useKeyboardShortcuts } from '../../../lib/useKeyboardShortcuts';
+import QuestionNotes from '../../../components/QuestionNotes';
+import DesmosStateButton from '../../../components/DesmosStateButton';
 
 const htmlHasContent = (html) => {
   if (!html) return false;
@@ -92,7 +94,7 @@ function formatCorrectText(ct) {
  * - Uses ResizeObserver + a rAF "safeResize" to stabilize post-drag layout commits.
  * - Stores state in localStorage (per-question key).
  */
-function DesmosPanel({ isOpen, storageKey }) {
+function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const savedStateRef = useRef(null);
@@ -169,16 +171,18 @@ function DesmosPanel({ isOpen, storageKey }) {
         folders: false,
         notes: false,
         links: false,
-        restrictedFunctions: true,
+        restrictedFunctions: false,
       });
 
       restoreState();
       safeResize();
+      if (calcInstanceRef) calcInstanceRef.current = calcRef.current;
     }
 
     return () => {
       // If the page unmounts, persist and destroy cleanly.
       saveState();
+      if (calcInstanceRef) calcInstanceRef.current = null;
       try {
         calcRef.current?.destroy?.();
       } catch {}
@@ -334,6 +338,7 @@ export default function PracticeQuestionPage() {
   const MAX_CALC_W = 1200;
 
   const [calcMinimized, setCalcMinimized] = useState(false);
+  const calcInstanceRef = useRef(null);
   const [calcWidth, setCalcWidth] = useState(MIN_CALC_W);
 
   // IMPORTANT: prevent flicker by avoiding React updates during drag
@@ -525,10 +530,14 @@ export default function PracticeQuestionPage() {
     return null;
   }
 
+  function questionApiUrl(qId) {
+    return `/api/questions/${qId}`;
+  }
+
   // Prefetch a question by ID (fire-and-forget, stores result in cache)
   function prefetchQuestion(id) {
     if (!id || prefetchCache.current[String(id)]) return;
-    prefetchCache.current[String(id)] = fetch(`/api/questions/${id}`, { cache: 'no-store' })
+    prefetchCache.current[String(id)] = fetch(questionApiUrl(id), { cache: 'no-store' })
       .then((r) => r.ok ? r.json() : null)
       .catch(() => null);
   }
@@ -545,14 +554,16 @@ export default function PracticeQuestionPage() {
         json = await cached;
       }
       if (!json) {
-        const res = await fetch(`/api/questions/${questionId}`, { cache: 'no-store' });
+        const res = await fetch(questionApiUrl(questionId), { cache: 'no-store' });
         json = await res.json();
         if (!res.ok) throw new Error(json?.error || 'Failed to load question');
       }
 
-      // In Teacher Mode, strip status/history so the question appears fresh
+      // In Teacher Mode, strip status/history so the question appears fresh.
+      // Keep correct_option_id/correct_text in data but don't auto-reveal —
+      // teachers click "Show Answer" to see the answer and explanation.
       if (isTeacherMode) {
-        json = { ...json, status: null, correct_option_id: null, correct_text: null };
+        json = { ...json, status: null };
       }
 
       setData(json);
@@ -1254,8 +1265,8 @@ export default function PracticeQuestionPage() {
   const version = data?.version || {};
   const options = Array.isArray(data?.options) ? data.options : [];
   const status = data?.status || {};
-  // Lock only when student got it right or gave up (clicked Show Explanation)
-  const locked = gotCorrect || gaveUp;
+  // Lock when student got it right, gave up, or in Teacher Mode (read-only)
+  const locked = gotCorrect || gaveUp || isTeacherMode;
   const correctOptionId = data?.correct_option_id || null;
   const correctText = data?.correct_text || null;
 
@@ -1367,6 +1378,7 @@ export default function PracticeQuestionPage() {
           </span>
           {status?.marked_for_review ? 'Marked for Review' : 'Mark for Review'}
         </button>
+        <QuestionNotes questionId={questionId} />
       </div>
     </div>
   );
@@ -1417,14 +1429,14 @@ export default function PracticeQuestionPage() {
       {htmlHasContent(version?.stimulus_html) ? (
         <div style={{ marginBottom: 12 }}>
           <div className="srOnly">Stimulus</div>
-          <HtmlBlock className="prose" html={version.stimulus_html} imgMaxWidth={360} />
+          <HtmlBlock className="prose" html={version.stimulus_html} imgMaxWidth={320} />
         </div>
       ) : null}
 
       {version?.stem_html ? (
         <div style={{ marginBottom: 12 }}>
           <div className="srOnly">Question</div>
-          <HtmlBlock className="prose" html={version.stem_html} imgMaxWidth={360} />
+          <HtmlBlock className="prose" html={version.stem_html} imgMaxWidth={320} />
         </div>
       ) : null}
     </>
@@ -1434,6 +1446,13 @@ export default function PracticeQuestionPage() {
   const mathToolRow = null;
 
   // ✅ MCQ options area (no "Answer choices" header)
+  const explanationArea = (version?.rationale_html || version?.explanation_html) && (locked || gaveUp) && showExplanation ? (
+    <div className="card explanation" style={{ marginTop: 14 }}>
+      <div className="sectionLabel">Explanation</div>
+      <HtmlBlock className="prose" html={version.rationale_html || version.explanation_html} />
+    </div>
+  ) : null;
+
   const mcqOptionsArea = (
     <>
       <div className="srOnly">Answer choices</div>
@@ -1483,19 +1502,25 @@ export default function PracticeQuestionPage() {
       </div>
 
       <div className="row" style={{ gap: 10, marginTop: 14 }}>
-        <div className="btnRow">
-          <button className="btn primary" onClick={submitAttempt} disabled={locked || submitting || !selected || wrongOptionIds.includes(selected)}>
-            {submitting ? 'Submitting…' : 'Submit'}
+        {isTeacherMode ? (
+          <button className="btn primary" onClick={() => { setGaveUp(true); setShowExplanation(true); }}>
+            {gaveUp ? 'Answer Revealed' : 'Show Answer'}
           </button>
-        </div>
+        ) : (
+          <div className="btnRow">
+            <button className="btn primary" onClick={submitAttempt} disabled={locked || submitting || !selected || wrongOptionIds.includes(selected)}>
+              {submitting ? 'Submitting…' : 'Submit'}
+            </button>
+          </div>
+        )}
 
-        {(locked || wrongOptionIds.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
+        {(!isTeacherMode || gaveUp) && (locked || wrongOptionIds.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
           <button className="btn secondary" onClick={() => { setGaveUp(true); setShowExplanation((s) => !s); }}>
             {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
           </button>
         ) : null}
 
-        {locked && (
+        {locked && !isTeacherMode && (
           <button
             className={`btn secondary${errorLogText.trim() ? ' errorLogHasNote' : ''}`}
             onClick={() => setShowErrorLog((s) => !s)}
@@ -1565,17 +1590,17 @@ export default function PracticeQuestionPage() {
 
       {gotCorrect ? (
         <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-          <span className="pill">
-            <span className="muted">Result</span>{' '}
-            <span className="kbd">Correct</span>
+          <span className="pill" style={{ borderColor: '#15803d', background: '#f0fdf4' }}>
+            <span style={{ color: '#15803d' }}>Result</span>{' '}
+            <span className="kbd" style={{ color: '#15803d', fontWeight: 700 }}>Correct</span>
           </span>
         </div>
       ) : wrongTexts.length > 0 ? (
         <div style={{ marginTop: 8 }}>
           <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-            <span className="pill">
-              <span className="muted">Result</span>{' '}
-              <span className="kbd">Incorrect</span>
+            <span className="pill" style={{ borderColor: 'var(--danger, #dc2626)', background: '#fee2e2' }}>
+              <span style={{ color: 'var(--danger, #dc2626)' }}>Result</span>{' '}
+              <span className="kbd" style={{ color: 'var(--danger, #dc2626)', fontWeight: 700 }}>Incorrect</span>
             </span>
           </div>
           {gaveUp && correctText ? (
@@ -1586,6 +1611,13 @@ export default function PracticeQuestionPage() {
               </span>
             </div>
           ) : null}
+        </div>
+      ) : isTeacherMode && gaveUp && correctText ? (
+        <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+          <span className="pill">
+            <span className="muted">Correct answer</span>{' '}
+            <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+          </span>
         </div>
       ) : null}
 
@@ -1600,17 +1632,23 @@ export default function PracticeQuestionPage() {
       />
 
       <div className="row" style={{ gap: 10, marginTop: 14 }}>
-        <button className="btn" onClick={submitAttempt} disabled={locked || submitting || !responseText.trim()}>
-          {submitting ? 'Submitting…' : 'Submit'}
-        </button>
+        {isTeacherMode ? (
+          <button className="btn primary" onClick={() => { setGaveUp(true); setShowExplanation(true); }}>
+            {gaveUp ? 'Answer Revealed' : 'Show Answer'}
+          </button>
+        ) : (
+          <button className="btn" onClick={submitAttempt} disabled={locked || submitting || !responseText.trim()}>
+            {submitting ? 'Submitting…' : 'Submit'}
+          </button>
+        )}
 
-        {(locked || wrongTexts.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
+        {(!isTeacherMode || gaveUp) && (locked || wrongTexts.length > 0) && (version?.rationale_html || version?.explanation_html) ? (
           <button className="btn secondary" onClick={() => { setGaveUp(true); setShowExplanation((s) => !s); }}>
             {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
           </button>
         ) : null}
 
-        {locked && (
+        {locked && !isTeacherMode && (
           <button
             className={`btn secondary${errorLogText.trim() ? ' errorLogHasNote' : ''}`}
             onClick={() => setShowErrorLog((s) => !s)}
@@ -1719,7 +1757,16 @@ export default function PracticeQuestionPage() {
     >
       <aside className={`mathLeft ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
         <div className="mathLeftHeader">
-          <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+            {!calcMinimized && (
+              <DesmosStateButton
+                questionId={questionId}
+                getCalcState={() => { try { return calcInstanceRef.current?.getState?.(); } catch { return null; } }}
+                setCalcState={(st) => { try { calcInstanceRef.current?.setState?.(st, { allowUndo: false }); } catch {} }}
+              />
+            )}
+          </div>
           <button type="button" className="btn secondary" onClick={() => setCalcMinimized((m) => !m)}>
             {calcMinimized ? 'Expand' : 'Minimize'}
           </button>
@@ -1727,7 +1774,7 @@ export default function PracticeQuestionPage() {
 
         {/* Keep mounted; hide visually when minimized */}
         <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
-          <DesmosPanel isOpen={!calcMinimized} storageKey={questionId ? `desmos:${questionId}` : 'desmos:unknown'} />
+          <DesmosPanel isOpen={!calcMinimized} storageKey={questionId ? `desmos:${questionId}` : 'desmos:unknown'} calcInstanceRef={calcInstanceRef} />
         </div>
         {calcMinimized ? <div className="calcMinBody" /> : null}
       </aside>
@@ -1762,9 +1809,17 @@ export default function PracticeQuestionPage() {
     <main className="container containerWide">
       <div className="questionTopBar">
         <div>
-          <Link className="btn secondary" href="/practice">
-            ← Back to list
-          </Link>
+{isTeacherMode ? (
+            <button className="btn secondary" onClick={() => {
+              if (window.history.length > 1) { router.back(); } else { window.close(); }
+            }}>
+              ← Back
+            </button>
+          ) : (
+            <Link className="btn secondary" href="/practice">
+              ← Back to list
+            </Link>
+          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -1836,7 +1891,7 @@ export default function PracticeQuestionPage() {
             <div className="qaLeft">
               {htmlHasContent(version?.stimulus_html) && (
                 <div className="card subcard">
-                  <HtmlBlock className="prose" html={version.stimulus_html} imgMaxWidth={360} />
+                  <HtmlBlock className="prose" html={version.stimulus_html} imgMaxWidth={320} />
                 </div>
               )}
             </div>
@@ -1852,6 +1907,7 @@ export default function PracticeQuestionPage() {
                   </div>
                 )}
                 {mcqOptionsArea}
+                {explanationArea}
               </div>
             </div>
           </div>
@@ -1863,6 +1919,7 @@ export default function PracticeQuestionPage() {
               {renderStatusPills()}
               {renderPromptBlocks()}
               {mcqOptionsArea}
+              {explanationArea}
             </div>
           </>)
         ) : (
@@ -1871,6 +1928,7 @@ export default function PracticeQuestionPage() {
             {renderStatusPills()}
             {renderPromptBlocks()}
             {mcqOptionsArea}
+            {explanationArea}
           </div>
         )
       ) : isMath ? (
@@ -1881,6 +1939,7 @@ export default function PracticeQuestionPage() {
             {renderStatusPills()}
             {renderPromptBlocks()}
             {sprAnswerArea}
+            {explanationArea}
           </div>
         </>)
       ) : (
@@ -1889,18 +1948,9 @@ export default function PracticeQuestionPage() {
           {renderStatusPills()}
           {renderPromptBlocks()}
           {sprAnswerArea}
+          {explanationArea}
         </div>
       )}
-
-      {(version?.rationale_html || version?.explanation_html) && (locked || gaveUp) && showExplanation ? (
-        <>
-          <hr />
-          <div className="card explanation" style={{ marginTop: 10 }}>
-            <div className="sectionLabel">Explanation</div>
-            <HtmlBlock className="prose" html={version.rationale_html || version.explanation_html} />
-          </div>
-        </>
-      ) : null}
 
       {showRef ? (
         <div
@@ -2074,7 +2124,7 @@ export default function PracticeQuestionPage() {
                     >
                       <span className="mapNum">{i}</span>
 
-                      {!isTeacherMode && showMark ? (
+                      {showMark ? (
                         <span className="mapIconCorner mapIconLeft" aria-hidden="true">
                           <span className="mapIconBadge mark" title="Marked for review">
                             <svg viewBox="0 0 24 24" width="14" height="14">
@@ -2084,7 +2134,7 @@ export default function PracticeQuestionPage() {
                         </span>
                       ) : null}
 
-                      {!isTeacherMode && (showCorrect || showIncorrect) ? (
+                      {showCorrect || showIncorrect ? (
                         <span className="mapIconCorner mapIconRight" aria-hidden="true">
                           {showCorrect ? (
                             <span className="mapIconBadge correct" title="Correct">

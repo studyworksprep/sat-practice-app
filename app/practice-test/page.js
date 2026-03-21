@@ -89,7 +89,10 @@ export default async function PracticeTestListPage() {
             {completed.map((a, i) => (
               <div key={a.id} className={`ptHistoryRow${i < completed.length - 1 ? ' ptHistoryRowBorder' : ''}`}>
                 <div className="ptHistoryLeft">
-                  <div className="ptHistoryName">{testNameById[a.practice_test_id] ?? 'Practice Test'}</div>
+                  <div className="ptHistoryName">
+                    {testNameById[a.practice_test_id] ?? 'Practice Test'}
+                    {a.sectionsMode && <span className="pill" style={{ fontSize: 10, padding: '1px 6px', marginLeft: 6, background: '#e0e7ff', color: '#3730a3' }}>{a.sectionsMode === 'rw' ? 'R&W Only' : 'Math Only'}</span>}
+                  </div>
                   <div className="muted small">{fmt(a.finished_at || a.started_at)}</div>
                 </div>
                 <div className="ptHistoryScores">
@@ -177,6 +180,7 @@ async function fetchData(supabase, userId) {
       const key = `${mod.subject_code}/${mod.module_number}`;
       moduleAttemptsByPta[ma.practice_test_attempt_id][key] = {
         correct: ma.correct_count || 0,
+        total: itemsByModule[ma.practice_test_module_id] || 0,
         routeCode: mod.route_code,
         subjectCode: mod.subject_code,
       };
@@ -205,8 +209,8 @@ async function fetchData(supabase, userId) {
     let composite = null;
 
     for (const subj of subjects) {
-      const m1 = modData[`${subj}/1`] || { correct: 0 };
-      const m2 = modData[`${subj}/2`] || { correct: 0, routeCode: null };
+      const m1 = modData[`${subj}/1`] || { correct: 0, total: 0 };
+      const m2 = modData[`${subj}/2`] || { correct: 0, total: 0, routeCode: null };
       const sectionName = subjToSection[subj] || 'math';
 
       let scaled;
@@ -225,14 +229,19 @@ async function fetchData(supabase, userId) {
         });
       }
 
-      sectionScores[subj] = { correct: m1.correct + m2.correct, total: m1.correct + m2.correct, scaled };
-      composite = (composite || 0) + scaled;
+      sectionScores[subj] = { correct: m1.correct + m2.correct, total: m1.total + m2.total, scaled };
+      // Only compute composite for full (both sections) tests
+      const sectionsMode = a.metadata?.sections;
+      if (!sectionsMode) {
+        composite = (composite || 0) + scaled;
+      }
     }
 
-    // Use the cached composite if available (most authoritative)
-    if (hasCached) composite = a.composite_score;
+    // Use the cached composite if available (most authoritative), only for full tests
+    const sectionsMode = a.metadata?.sections;
+    if (hasCached && !sectionsMode) composite = a.composite_score;
 
-    return { ...a, composite, sectionScores };
+    return { ...a, composite, sectionScores, sectionsMode };
   });
 
   return { tests, attempts };

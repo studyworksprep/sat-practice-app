@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation';
 import Script from 'next/script';
 import Link from 'next/link';
 import HtmlBlock from '../../../../../components/HtmlBlock';
+import QuestionNotes from '../../../../../components/QuestionNotes';
+import DesmosStateButton from '../../../../../components/DesmosStateButton';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
 const SUBJECT_LABEL_FULL = { rw: 'Reading and Writing', RW: 'Reading and Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
@@ -303,14 +305,18 @@ function TimingDetailPopup({ label, questions, onClose }) {
   );
 }
 
-// ─── Desmos popup (movable, minimizable) ──────────────────────────────────
+// ─── Desmos popup (movable, resizable) ────────────────────────────────────
 
-function DesmosPopup({ isOpen, onClose }) {
+const DESMOS_INIT_W = 560;
+const DESMOS_INIT_H = 440;
+const DESMOS_MIN_W = 320;
+const DESMOS_MIN_H = 280;
+
+function DesmosPopup({ isOpen, onClose, questionId: qId }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const cardRef = useRef(null);
-  const dragRef = useRef({ dragging: false, startX: 0, startY: 0, origX: 0, origY: 0 });
-  const posRef = useRef({ x: 0, y: 0 });
+  const boundsRef = useRef({ left: 0, top: 0, w: DESMOS_INIT_W, h: DESMOS_INIT_H });
 
   const [ready, setReady] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -326,7 +332,7 @@ function DesmosPopup({ isOpen, onClose }) {
       autosize: true, keypad: true, expressions: true,
       settingsMenu: true, zoomButtons: true, degreeMode: true,
       clearIntoDegreeMode: true, images: false, folders: false,
-      notes: false, links: false, restrictedFunctions: true,
+      notes: false, links: false, restrictedFunctions: false,
     });
     return () => {
       try { calcRef.current?.destroy?.(); } catch {}
@@ -334,27 +340,71 @@ function DesmosPopup({ isOpen, onClose }) {
     };
   }, [ready, isOpen, minimized]);
 
+  // Reset position/size when opened
   useEffect(() => {
     if (!isOpen) return;
-    posRef.current = { x: 0, y: 0 };
-    if (cardRef.current) cardRef.current.style.transform = '';
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const l = vw - DESMOS_INIT_W - 24;
+    const t = vh - DESMOS_INIT_H - 24;
+    boundsRef.current = { left: l, top: t, w: DESMOS_INIT_W, h: DESMOS_INIT_H };
+    applyBounds();
   }, [isOpen]);
+
+  function applyBounds() {
+    const card = cardRef.current;
+    if (!card) return;
+    const b = boundsRef.current;
+    card.style.left = b.left + 'px';
+    card.style.top = b.top + 'px';
+    card.style.width = b.w + 'px';
+    card.style.height = b.h + 'px';
+  }
 
   function onHeaderPointerDown(e) {
     if (e.button !== 0) return;
     e.preventDefault();
-    const card = cardRef.current;
-    if (!card) return;
-    dragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, origX: posRef.current.x, origY: posRef.current.y };
+    const b = boundsRef.current;
+    const startX = e.clientX, startY = e.clientY;
+    const origLeft = b.left, origTop = b.top;
     const onMove = (ev) => {
-      if (!dragRef.current.dragging) return;
-      const nx = dragRef.current.origX + (ev.clientX - dragRef.current.startX);
-      const ny = dragRef.current.origY + (ev.clientY - dragRef.current.startY);
-      posRef.current = { x: nx, y: ny };
-      card.style.transform = `translate(${nx}px, ${ny}px)`;
+      b.left = origLeft + (ev.clientX - startX);
+      b.top = origTop + (ev.clientY - startY);
+      applyBounds();
     };
     const onUp = () => {
-      dragRef.current.dragging = false;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
+
+  function onEdgePointerDown(e, edge) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const b = boundsRef.current;
+    const startX = e.clientX, startY = e.clientY;
+    const origL = b.left, origT = b.top, origW = b.w, origH = b.h;
+    const onMove = (ev) => {
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      if (edge.includes('e')) { b.w = Math.max(DESMOS_MIN_W, origW + dx); }
+      if (edge.includes('w')) {
+        const nw = Math.max(DESMOS_MIN_W, origW - dx);
+        b.left = origL + (origW - nw);
+        b.w = nw;
+      }
+      if (edge.includes('s')) { b.h = Math.max(DESMOS_MIN_H, origH + dy); }
+      if (edge.includes('n')) {
+        const nh = Math.max(DESMOS_MIN_H, origH - dy);
+        b.top = origT + (origH - nh);
+        b.h = nh;
+      }
+      applyBounds();
+    };
+    const onUp = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
@@ -368,6 +418,8 @@ function DesmosPopup({ isOpen, onClose }) {
     (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_DESMOS_API_KEY) ||
     'bac289385bcd4778a682276b95f5f116';
 
+  const edgeStyle = (cursor) => ({ position: 'absolute', zIndex: 2, cursor });
+
   return (
     <>
       <Script
@@ -379,45 +431,81 @@ function DesmosPopup({ isOpen, onClose }) {
         ref={cardRef}
         className="ptrvDesmosPopup"
         style={{
-          position: 'fixed', right: 24, bottom: 24,
-          width: minimized ? 200 : 540,
-          height: minimized ? 'auto' : 420,
+          position: 'fixed',
+          left: boundsRef.current.left, top: boundsRef.current.top,
+          width: minimized ? 220 : boundsRef.current.w,
+          height: minimized ? 'auto' : boundsRef.current.h,
           zIndex: 1000,
           display: 'flex', flexDirection: 'column',
-          borderRadius: 12,
-          boxShadow: '0 8px 32px rgba(0,0,0,.25)',
+          borderRadius: 8,
+          boxShadow: '0 8px 32px rgba(0,0,0,.28)',
           background: 'var(--bg-card, #fff)',
           border: '1px solid var(--border, #ddd)',
           overflow: 'hidden',
         }}
       >
+        {/* Resize edges */}
+        {!minimized && (
+          <>
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'n')}  style={{ ...edgeStyle('ns-resize'),   top: 0, left: 6, right: 6, height: 5 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 's')}  style={{ ...edgeStyle('ns-resize'),   bottom: 0, left: 6, right: 6, height: 5 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'w')}  style={{ ...edgeStyle('ew-resize'),   left: 0, top: 6, bottom: 6, width: 5 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'e')}  style={{ ...edgeStyle('ew-resize'),   right: 0, top: 6, bottom: 6, width: 5 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'nw')} style={{ ...edgeStyle('nwse-resize'), top: 0, left: 0, width: 10, height: 10 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'ne')} style={{ ...edgeStyle('nesw-resize'), top: 0, right: 0, width: 10, height: 10 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'sw')} style={{ ...edgeStyle('nesw-resize'), bottom: 0, left: 0, width: 10, height: 10 }} />
+            <div onPointerDown={(e) => onEdgePointerDown(e, 'se')} style={{ ...edgeStyle('nwse-resize'), bottom: 0, right: 0, width: 10, height: 10 }} />
+          </>
+        )}
+
+        {/* Title bar */}
         <div
           className="ptrvDesmosHeader"
           onPointerDown={onHeaderPointerDown}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '8px 12px', cursor: 'grab', userSelect: 'none',
+            padding: '6px 8px 6px 12px', cursor: 'grab', userSelect: 'none',
             background: 'var(--bg-subtle, #f5f5f5)',
             borderBottom: minimized ? 'none' : '1px solid var(--border, #ddd)',
+            flexShrink: 0,
           }}
         >
-          <span style={{ fontWeight: 600, fontSize: 13 }}>Calculator</span>
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontWeight: 600, fontSize: 13 }}>Calculator</span>
+            <DesmosStateButton
+              questionId={qId}
+              getCalcState={() => { try { return calcRef.current?.getState?.(); } catch { return null; } }}
+              setCalcState={(st) => { try { calcRef.current?.setState?.(st, { allowUndo: false }); } catch {} }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 4 }}>
             <button
               type="button"
-              className="btn secondary"
-              style={{ padding: '2px 8px', fontSize: 12 }}
               onClick={() => setMinimized((m) => !m)}
+              title={minimized ? 'Expand' : 'Minimize'}
+              style={{
+                width: 28, height: 28, border: 'none', borderRadius: 6,
+                background: 'transparent', cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', color: 'inherit',
+              }}
             >
-              {minimized ? 'Expand' : 'Minimize'}
+              {minimized ? (
+                <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M4 4h16v16H4z" fillOpacity=".08" stroke="currentColor" strokeWidth="2" /><rect fill="currentColor" x="4" y="11" width="16" height="2" /></svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="16" height="16"><rect fill="currentColor" x="4" y="18" width="16" height="2" rx="1" /></svg>
+              )}
             </button>
             <button
               type="button"
-              className="btn secondary"
-              style={{ padding: '2px 8px', fontSize: 12 }}
               onClick={onClose}
+              title="Close"
+              style={{
+                width: 28, height: 28, border: 'none', borderRadius: 6,
+                background: 'transparent', cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', color: 'inherit',
+              }}
             >
-              Close
+              <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M18.3 5.7a1 1 0 00-1.4 0L12 10.6 7.1 5.7a1 1 0 00-1.4 1.4L10.6 12l-4.9 4.9a1 1 0 001.4 1.4L12 13.4l4.9 4.9a1 1 0 001.4-1.4L13.4 12l4.9-4.9a1 1 0 000-1.4z" /></svg>
             </button>
           </div>
         </div>
@@ -469,7 +557,7 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
             )}
           </div>
         </div>
-        <div className="ptrvDetailNav">
+        <div className="ptrvDetailNav" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <button
             className="btn secondary ptrvNavBtn"
             disabled={!hasPrev}
@@ -482,6 +570,7 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
             onClick={() => hasNext && onSelect(allQuestions[idx + 1])}
             aria-label="Next question"
           >→</button>
+          <QuestionNotes questionId={q.question_id} />
         </div>
       </div>
 
@@ -1424,7 +1513,7 @@ export default function ResultsPage() {
       )}
 
       {/* Desmos popup */}
-      <DesmosPopup isOpen={showCalc} onClose={() => setShowCalc(false)} />
+      <DesmosPopup isOpen={showCalc} onClose={() => setShowCalc(false)} questionId={selectedQ?.question_id} />
 
       {/* Flashcard dialog */}
       {showFlashcardDialog && (

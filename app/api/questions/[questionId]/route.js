@@ -4,6 +4,8 @@ import { createClient } from '../../../../lib/supabase/server';
 // GET /api/questions/:questionId
 export async function GET(_request, { params }) {
   const questionId = params.questionId;
+  const { searchParams } = new URL(_request.url);
+  const viewAsStudentId = searchParams.get('view_as') || null;
   const supabase = createClient();
 
   // 1) Auth + version fetch in parallel (independent of each other)
@@ -52,12 +54,12 @@ export async function GET(_request, { params }) {
       .select('source_external_id, is_broken, broken_by, broken_at')
       .eq('id', questionId)
       .maybeSingle(),
-    // 3: status (per user) — null placeholder if no user
+    // 3: status (per user, or view_as student) — null placeholder if no user
     user
       ? supabase
           .from('question_status')
           .select('user_id, question_id, is_done, marked_for_review, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct, status_json, notes')
-          .eq('user_id', user.id)
+          .eq('user_id', viewAsStudentId || user.id)
           .eq('question_id', questionId)
           .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
@@ -107,8 +109,31 @@ export async function GET(_request, { params }) {
       || brokenProfile?.email || null;
   }
 
-  const { data: st, error: stErr } = stResult;
+  const userRole = profileResult.data?.role || (user ? 'practice' : null);
+
+  // Security: only teachers/managers/admins may use view_as
+  const isPrivilegedRole = ['teacher', 'manager', 'admin'].includes(userRole);
+  const effectiveViewAs = viewAsStudentId && isPrivilegedRole ? viewAsStudentId : null;
+
+  // If view_as was requested but caller isn't privileged, re-fetch status for the actual user
+  let stData = stResult.data;
+  let stError = stResult.error;
+  if (viewAsStudentId && !isPrivilegedRole && user) {
+    const refetch = await supabase
+      .from('question_status')
+      .select('user_id, question_id, is_done, marked_for_review, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct, status_json, notes')
+      .eq('user_id', user.id)
+      .eq('question_id', questionId)
+      .maybeSingle();
+    stData = refetch.data;
+    stError = refetch.error;
+  }
+
+  const { data: st, error: stErr } = { data: stData, error: stError };
   if (stErr) return NextResponse.json({ error: stErr.message }, { status: 400 });
+
+  // The user ID to look up attempts for (student being viewed, or the caller)
+  const statusUserId = effectiveViewAs || user?.id;
 
   // ✅ Fallback for older data: if status_json doesn't include restore fields,
   // look up the most recent attempt and inject them into the response.
@@ -122,7 +147,7 @@ export async function GET(_request, { params }) {
       const { data: lastAttempt, error: laErr } = await supabase
         .from('attempts')
         .select('selected_option_id, response_text, created_at')
-        .eq('user_id', user.id)
+        .eq('user_id', statusUserId)
         .eq('question_id', questionId)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -141,16 +166,15 @@ export async function GET(_request, { params }) {
     }
   }
 
-  // Correct answer key (only reveal for authed users AFTER they've completed the question)
+  // Correct answer key (only reveal for authed users AFTER they've completed the question,
+  // or immediately for privileged roles so Teacher Mode can show answers without answering)
   const { data: ca } = caResult;
   let correct_option_id = null;
   let correct_text = null;
-  if (user && status?.is_done) {
+  if (user && (status?.is_done || isPrivilegedRole)) {
     if (version?.question_type === 'mcq') correct_option_id = ca?.correct_option_id ?? null;
     if (version?.question_type === 'spr') correct_text = ca?.correct_text ?? null;
   }
-
-  const userRole = profileResult.data?.role || (user ? 'practice' : null);
 
   return NextResponse.json({
     question_id: questionId,

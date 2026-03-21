@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const TIME_OPTIONS = [
   { value: '1',   label: 'Standard (no extra time)' },
@@ -9,9 +9,20 @@ const TIME_OPTIONS = [
   { value: '2',   label: 'Extended Time (2×)' },
 ];
 
+const SECTION_OPTIONS = [
+  { value: 'both', label: 'Both Sections (Full Test)' },
+  { value: 'rw',   label: 'Reading & Writing Only' },
+  { value: 'math', label: 'Math Only' },
+];
+
 export default function LaunchPanel({ tests }) {
   const router = useRouter();
-  const [testId, setTestId] = useState(tests[0]?.id ?? '');
+  const searchParams = useSearchParams();
+  const preselectedTestId = searchParams.get('test') || '';
+  const preselectedSections = searchParams.get('sections') || '';
+
+  const [testId, setTestId] = useState(preselectedTestId || (tests[0]?.id ?? ''));
+  const [sections, setSections] = useState(SECTION_OPTIONS.some(o => o.value === preselectedSections) ? preselectedSections : 'both');
   const [factor, setFactor] = useState('1');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,7 +35,7 @@ export default function LaunchPanel({ tests }) {
       const res = await fetch('/api/practice-tests/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ practice_test_id: testId }),
+        body: JSON.stringify({ practice_test_id: testId, sections: sections || 'both' }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Failed to start test'); setLoading(false); return; }
@@ -59,6 +70,21 @@ export default function LaunchPanel({ tests }) {
         </div>
 
         <div className="ptLaunchField">
+          <label className="ptLaunchLabel" htmlFor="pt-sections">Sections</label>
+          <select
+            id="pt-sections"
+            className="ptLaunchSelect"
+            value={sections}
+            onChange={(e) => setSections(e.target.value)}
+            disabled={loading}
+          >
+            {SECTION_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="ptLaunchField">
           <label className="ptLaunchLabel" htmlFor="pt-time">Accommodations</label>
           <select
             id="pt-time"
@@ -77,7 +103,7 @@ export default function LaunchPanel({ tests }) {
       <div className="ptLaunchFooter">
         {error && <span className="ptLaunchError">{error}</span>}
         <button className="btn ptLaunchBtn" onClick={launch} disabled={loading || !testId}>
-          {loading ? 'Launching…' : 'Launch Test →'}
+          {loading ? 'Launching…' : sections === 'both' ? 'Launch Test →' : `Launch ${sections === 'rw' ? 'R&W' : 'Math'} Section →`}
         </button>
       </div>
     </div>

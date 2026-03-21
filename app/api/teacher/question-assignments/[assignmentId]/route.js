@@ -58,6 +58,23 @@ export async function GET(request, { params }) {
     const questionIds = assignment.question_ids || [];
     const totalQuestions = questionIds.length;
 
+    // Batch-fetch all question_status rows for all students at once
+    const allStudentIds = (studentRows || []).map(r => r.student_id);
+    let statusByStudentQuestion = {};
+    if (allStudentIds.length > 0 && totalQuestions > 0) {
+      for (let i = 0; i < questionIds.length; i += 1000) {
+        const qChunk = questionIds.slice(i, i + 1000);
+        const { data: statuses } = await supabase
+          .from("question_status")
+          .select("user_id, question_id, is_done, last_is_correct, marked_for_review, attempts_count")
+          .in("user_id", allStudentIds)
+          .in("question_id", qChunk);
+        for (const s of statuses || []) {
+          statusByStudentQuestion[`${s.user_id}:${s.question_id}`] = s;
+        }
+      }
+    }
+
     // Build per-student progress
     const students = [];
 
@@ -65,28 +82,21 @@ export async function GET(request, { params }) {
       const studentProfile = row.profiles;
       let completedCount = 0;
       let correctCount = 0;
+      const questionStatuses = [];
 
-      if (totalQuestions > 0) {
-        // Get done count
-        const { count: doneCount } = await supabase
-          .from("question_status")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", row.student_id)
-          .in("question_id", questionIds)
-          .eq("is_done", true);
-
-        completedCount = doneCount || 0;
-
-        // Get correct count
-        const { count: correctCnt } = await supabase
-          .from("question_status")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", row.student_id)
-          .in("question_id", questionIds)
-          .eq("is_done", true)
-          .eq("last_is_correct", true);
-
-        correctCount = correctCnt || 0;
+      for (const qid of questionIds) {
+        const qs = statusByStudentQuestion[`${row.student_id}:${qid}`];
+        if (qs?.is_done) {
+          completedCount++;
+          if (qs.last_is_correct) correctCount++;
+        }
+        questionStatuses.push({
+          question_id: qid,
+          is_done: qs?.is_done || false,
+          last_is_correct: qs?.last_is_correct || false,
+          marked_for_review: qs?.marked_for_review || false,
+          attempts_count: qs?.attempts_count || 0,
+        });
       }
 
       students.push({
@@ -97,6 +107,7 @@ export async function GET(request, { params }) {
         completed_count: completedCount,
         correct_count: correctCount,
         total_questions: totalQuestions,
+        question_statuses: questionStatuses,
       });
     }
 
@@ -105,7 +116,7 @@ export async function GET(request, { params }) {
 
     if (totalQuestions > 0) {
       const { data: questionData } = await supabase
-        .from("questions")
+        .from("question_taxonomy")
         .select("question_id, domain_name, skill_name, difficulty")
         .in("question_id", questionIds);
 

@@ -13,15 +13,25 @@ export async function GET() {
     }
 
     // Get assignments for this student
-    const { data: assignmentRows, error: fetchErr } = await supabase
+    let { data: assignmentRows, error: fetchErr } = await supabase
       .from("question_assignment_students")
       .select(
-        "assignment_id, question_assignments(id, title, description, due_date, question_ids, teacher_id)"
+        "assignment_id, question_assignments(id, title, description, due_date, question_ids, teacher_id, filter_criteria)"
       )
       .eq("student_id", user.id);
 
+    // Retry without filter_criteria if column doesn't exist yet
     if (fetchErr) {
-      return NextResponse.json({ error: fetchErr.message }, { status: 500 });
+      const fallback = await supabase
+        .from("question_assignment_students")
+        .select(
+          "assignment_id, question_assignments(id, title, description, due_date, question_ids, teacher_id)"
+        )
+        .eq("student_id", user.id);
+      if (fallback.error) {
+        return NextResponse.json({ error: fallback.error.message }, { status: 500 });
+      }
+      assignmentRows = fallback.data;
     }
 
     const validRows = (assignmentRows || []).filter(r => r.question_assignments);
@@ -80,6 +90,7 @@ export async function GET() {
       const completedCount = questionIds.filter(qid => doneSet.has(qid)).length;
       const correctCount = questionIds.filter(qid => correctSet.has(qid)).length;
 
+      const isPracticeTest = a.filter_criteria?.type === 'practice_test';
       return {
         id: a.id,
         title: a.title,
@@ -89,6 +100,8 @@ export async function GET() {
         question_count: questionIds.length,
         completed_count: completedCount,
         correct_count: correctCount,
+        practice_test_id: isPracticeTest ? a.filter_criteria.practice_test_id : null,
+        sections: isPracticeTest ? (a.filter_criteria.sections || 'both') : null,
       };
     });
 

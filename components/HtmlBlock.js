@@ -67,7 +67,9 @@ function HtmlBlockImpl({ html, className, imgMaxWidth }) {
     if (imgMaxWidth) {
       for (const img of el.querySelectorAll('img')) {
         img.style.maxWidth = typeof imgMaxWidth === 'number' ? `${imgMaxWidth}px` : imgMaxWidth;
+        img.style.maxHeight = typeof imgMaxWidth === 'number' ? `${imgMaxWidth}px` : imgMaxWidth;
         img.style.height = 'auto';
+        img.style.objectFit = 'contain';
       }
     }
 

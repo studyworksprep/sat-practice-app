@@ -173,6 +173,15 @@ export async function POST(request) {
     const { error: upErr } = upResult;
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 400 });
 
+    // Bump global accuracy counters on the question version (first attempt only)
+    if ((st?.attempts_count ?? 0) === 0) {
+      try {
+        await supabase.rpc('increment_version_accuracy', {
+          entries: [{ version_id: ver.id, is_correct }],
+        });
+      } catch {}
+    }
+
     return NextResponse.json({
       ok: true,
       is_correct,

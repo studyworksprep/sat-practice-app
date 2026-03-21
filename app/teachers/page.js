@@ -320,13 +320,13 @@ function TeacherTrainingSection({ training, teacherName }) {
               <span className="tmStudentTh tmStudentThNum">Math</span>
             </div>
             {practiceTests.map(t => (
-              <div key={t.id} className="tmStudentRow" style={{ cursor: 'default' }}>
+              <Link key={t.id} href={`/practice-test/attempt/${t.id}/results`} className="tmStudentRow" title="View test review">
                 <span className="tmStudentTd" style={{ flex: 2, fontWeight: 600, fontSize: 13 }}>{t.test_name}</span>
                 <span className="tmStudentTd muted small" style={{ flex: 1 }}>{formatDate(t.finished_at)}</span>
                 <span className="tmStudentTd tmStudentTdNum" style={{ fontWeight: 700 }}>{t.composite ?? '—'}</span>
                 <span className="tmStudentTd tmStudentTdNum" style={{ color: '#6b9bd2' }}>{t.rw_scaled ?? '—'}</span>
                 <span className="tmStudentTd tmStudentTdNum" style={{ color: '#9b8ec4' }}>{t.math_scaled ?? '—'}</span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

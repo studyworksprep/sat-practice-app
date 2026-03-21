@@ -322,10 +322,12 @@ export async function GET(_request, { params }) {
     lookupBySection[row.section].push(row);
   }
 
-  // Build section scores using per-module data + lookup table
-  // If the attempt already has cached scaled scores (e.g. from a Bluebook upload
-  // where the teacher entered the official scores), prefer those over recomputing.
-  const hasCachedScores = attempt.composite_score != null && (attempt.rw_scaled != null || attempt.math_scaled != null);
+  // Build section scores using per-module data + lookup table.
+  // Only trust cached scores from Bluebook uploads (teacher-entered official scores).
+  // For all other attempts, always recompute to pick up scoring fixes.
+  const uploadSource = attempt.metadata?.upload_source;
+  const isBluebookUpload = uploadSource === 'bluebook' || uploadSource === 'score_only';
+  const hasCachedScores = isBluebookUpload && attempt.composite_score != null && (attempt.rw_scaled != null || attempt.math_scaled != null);
 
   const sections = {};
   for (const [subj, stats] of Object.entries(sectionStats)) {
@@ -335,7 +337,7 @@ export async function GET(_request, { params }) {
 
     let scaled;
     if (hasCachedScores) {
-      // Use the cached score for this section (from upload or prior computation)
+      // Use the cached score for this section (from Bluebook upload)
       const isRW = sectionName === 'reading_writing';
       scaled = isRW ? attempt.rw_scaled : attempt.math_scaled;
     }
@@ -366,8 +368,9 @@ export async function GET(_request, { params }) {
     ? attempt.composite_score
     : Object.values(sections).reduce((s, sec) => s + sec.scaled, 0);
 
-  // Cache computed scores on the attempt row for faster dashboard queries
-  if (attempt.composite_score == null && composite > 0) {
+  // Cache computed scores on the attempt row for faster dashboard queries.
+  // Always update for non-Bluebook attempts to pick up scoring fixes.
+  if (!isBluebookUpload && composite > 0) {
     const rwScaled = sections['RW']?.scaled || sections['rw']?.scaled || null;
     const mathScaled = sections['M']?.scaled || sections['m']?.scaled || sections['MATH']?.scaled || sections['math']?.scaled || sections['Math']?.scaled || null;
     await supabase

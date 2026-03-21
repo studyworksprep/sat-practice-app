@@ -331,9 +331,11 @@ a{
 /* Figures / reference images inside stimuli — keep compact like math graphs */
 .prose .stimulus_reference img{
   display: block;
-  max-width: min(360px, 100%);
+  max-width: min(320px, 100%);
+  max-height: 320px;
   height: auto;
   margin: 8px auto;
+  object-fit: contain;
 }
 
 .prose table{
@@ -2272,9 +2274,11 @@ hr{
 /* Stimulus images in practice test math questions */
 .ptStimulus img{
   display: block;
-  max-width: min(360px, 100%);
+  max-width: min(320px, 100%);
+  max-height: 320px;
   height: auto;
   margin: 8px auto;
+  object-fit: contain;
 }
 
 /* Tighter display math spacing inside math questions */
@@ -4337,6 +4341,64 @@ hr{
 
 .adminMain{ padding-bottom: 48px; }
 
+/* ── Tabbed Layout ── */
+.adminTabLayout{
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 860px){
+  .adminTabLayout{ grid-template-columns: 1fr; }
+}
+.adminSideNav{
+  position: sticky; top: 20px;
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  padding: 10px 8px;
+}
+@media (max-width: 860px){
+  .adminSideNav{
+    position: static;
+    flex-direction: row; flex-wrap: wrap; gap: 4px;
+    padding: 8px;
+  }
+}
+.adminSideNavTitle{
+  font-size: 18px; font-weight: 800; padding: 6px 10px 10px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  margin-bottom: 4px;
+}
+@media (max-width: 860px){
+  .adminSideNavTitle{ display: none; }
+}
+.adminSideNavBtn{
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border: none; border-radius: 6px;
+  background: transparent; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--fg, #374151);
+  transition: background 0.1s, color 0.1s;
+  text-align: left; width: 100%;
+}
+.adminSideNavBtn:hover{ background: var(--bg, #f3f4f6); }
+.adminSideNavBtn.active{
+  background: var(--accent, #2563eb);
+  color: #fff;
+}
+.adminTabContent{ min-width: 0; }
+
+.adminUserMgmtGrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 16px;
+}
+@media (max-width: 960px){
+  .adminUserMgmtGrid{ grid-template-columns: 1fr; }
+}
+
 .adminPanels{
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -4355,6 +4417,108 @@ hr{
 .adminPanelActive{ }
 .adminPanelCount{ font-size: 28px; font-weight: 700; line-height: 1.1; margin-bottom: 2px; }
 .adminPanelTitle{ font-weight: 600; font-size: 13px; }
+
+/* ── Platform Stats Row ── */
+.adminStatsRow{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (max-width: 1100px){
+  .adminStatsRow{ grid-template-columns: 1fr; }
+}
+.adminStatCard{ padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+.adminStatCardHeader{ display: flex; align-items: center; justify-content: space-between; }
+.adminStatTitle{ margin: 0; font-size: 15px; font-weight: 700; }
+.adminStatBadge{
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+}
+.adminStatBigRow{ display: flex; gap: 20px; }
+.adminStatBig{ display: flex; flex-direction: column; align-items: center; flex: 1; }
+.adminStatBigNum{ font-size: 30px; font-weight: 800; line-height: 1.1; }
+.adminStatBigLabel{ font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+.adminStatBreakdown{ display: flex; flex-wrap: wrap; gap: 6px; }
+.adminStatTag{
+  font-size: 11px; font-weight: 600; padding: 2px 8px;
+  border: 1.5px solid; border-radius: 999px;
+}
+
+/* Volume chart */
+.adminVolumeChart{
+  display: flex; gap: 6px; align-items: flex-end; height: 120px;
+}
+.adminVolumeBar{
+  flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0;
+}
+.adminVolumeBarStack{
+  width: 100%; display: flex; flex-direction: column-reverse; height: 80px;
+}
+.adminVolumeBarFill{ width: 100%; border-radius: 3px 3px 0 0; min-height: 0; transition: height 0.3s; }
+.adminVolumeBarPractice{ background: #3b82f6; }
+.adminVolumeBarTest{ background: #8b5cf6; border-radius: 3px 3px 0 0; }
+.adminVolumeBarLabel{ font-size: 10px; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.adminVolumeBarCount{ font-size: 11px; font-weight: 700; }
+.adminVolumeLegend{
+  display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--muted);
+}
+.adminLegDot{ display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 3px; vertical-align: middle; }
+
+/* Feature adoption */
+.adminAdoptionList{ display: flex; flex-direction: column; gap: 8px; }
+.adminAdoptionRow{ display: flex; align-items: center; gap: 8px; }
+.adminAdoptionLabel{ font-size: 13px; font-weight: 600; min-width: 110px; }
+.adminAdoptionBarBg{
+  flex: 1; height: 8px; background: var(--bg, #f3f4f6); border-radius: 4px; overflow: hidden;
+}
+.adminAdoptionBarFill{
+  height: 100%; background: #22c55e; border-radius: 4px; transition: width 0.3s; min-width: 2px;
+}
+.adminAdoptionVal{ font-size: 13px; font-weight: 700; min-width: 70px; text-align: right; }
+.adminAdoptionFooter{ margin-top: 4px; }
+
+/* Two-col variant for student performance */
+.adminStatsRow2{ grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 900px){ .adminStatsRow2{ grid-template-columns: 1fr; } }
+
+/* Score bar color */
+.adminScoreBarFill{ background: #8b5cf6; }
+
+/* Domain accuracy bars */
+.adminDomainBars{ display: flex; flex-direction: column; gap: 6px; }
+.adminDomainRow{ display: flex; align-items: center; gap: 8px; }
+.adminDomainLabel{ font-size: 12px; font-weight: 600; min-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adminDomainBarFill{ height: 100%; background: #3b82f6; border-radius: 4px; transition: width 0.3s; min-width: 2px; }
+.adminDomainVal{ font-size: 12px; font-weight: 700; min-width: 36px; text-align: right; }
+
+/* Question tables (hardest/easiest) */
+.adminQTable{ display: flex; flex-direction: column; gap: 0; font-size: 13px; }
+.adminQTableHeader{
+  display: grid; grid-template-columns: 80px 1fr 48px 40px; gap: 6px;
+  font-weight: 700; font-size: 11px; color: var(--muted); padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.adminQTableRow{
+  display: grid; grid-template-columns: 80px 1fr 48px 40px; gap: 6px;
+  padding: 5px 0; border-bottom: 1px solid var(--border, #f3f4f6);
+  align-items: center;
+}
+.adminQTableId{ font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; color: var(--muted); }
+.adminQTableSkill{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adminQTableAcc{ font-weight: 700; text-align: right; }
+.adminQTableN{ font-size: 11px; color: var(--muted); text-align: right; }
+
+/* Skill heatmap */
+.adminHeatmapGrid{
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.adminHeatCell{
+  padding: 6px 10px; border-radius: 6px; border: 1px solid;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  min-width: 80px;
+}
+.adminHeatLabel{ font-size: 11px; font-weight: 600; text-align: center; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adminHeatVal{ font-size: 14px; font-weight: 800; }
 
 /* ── Two-column grid ── */
 .adminGrid{
@@ -5225,6 +5389,13 @@ hr{
   align-items: center;
 }
 
+/* Roster mastery rows – match the 3-column header grid */
+.tchRosterMastery .tchTblRow{
+  grid-template-columns: 1.5fr 1fr 1.2fr;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
 @media (max-width: 700px){
   .tchHubSessionRow{ grid-template-columns: 1fr 1fr; }
   .tchHubTestRow{ grid-template-columns: 1fr 1fr; }
@@ -5721,7 +5892,7 @@ hr{
 }
 
 .tmStudentThNum{
-  text-align: right;
+  text-align: center;
   flex: 0.7;
 }
 
@@ -5748,7 +5919,8 @@ hr{
 }
 
 .tmStudentTdNum{
-  text-align: right;
+  text-align: center;
+  justify-content: center;
   flex: 0.7;
   font-variant-numeric: tabular-nums;
   flex-direction: row;
@@ -6962,8 +7134,13 @@ hr{
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 0;
+  padding: 8px 4px;
   border-bottom: 1px solid var(--border);
+  border-radius: 6px;
+  transition: background 0.1s;
+}
+.tchAssignProgressRow:hover{
+  background: rgba(0,0,0,0.03);
 }
 .tchAssignProgressRow:last-child{
   border-bottom: none;

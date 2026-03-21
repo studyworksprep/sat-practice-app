@@ -372,24 +372,34 @@ const AssignmentsCard = memo(function AssignmentsCard({ assignments }) {
       ) : (
       <div className="dbAssignList">
         {assignments.map(a => {
+          const isPT = !!a.practice_test_id;
           const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
           const overdue = isOverdue(a.due_date);
+          const href = isPT
+            ? `/practice-test?test=${encodeURIComponent(a.practice_test_id)}${a.sections && a.sections !== 'both' ? `&sections=${a.sections}` : ''}`
+            : `/assignments/${a.id}`;
           return (
-            <Link key={a.id} href={`/assignments/${a.id}`} className="dbAssignItem">
+            <Link key={a.id} href={href} className="dbAssignItem">
               <div className="dbAssignItemInfo">
-                <div className="dbAssignItemTitle">{a.title}</div>
+                <div className="dbAssignItemTitle">
+                  {a.title}
+                  {isPT && <span className="pill" style={{ fontSize: 10, padding: '1px 6px', marginLeft: 6, background: '#7c3aed', color: '#fff' }}>Practice Test</span>}
+                  {isPT && a.sections && a.sections !== 'both' && <span className="pill" style={{ fontSize: 10, padding: '1px 6px', marginLeft: 4, background: '#e0e7ff', color: '#3730a3' }}>{a.sections === 'rw' ? 'R&W Only' : 'Math Only'}</span>}
+                </div>
                 <div className="dbAssignItemMeta">
-                  <span>{a.completed_count}/{a.question_count} questions</span>
+                  {!isPT && <span>{a.completed_count}/{a.question_count} questions</span>}
                   <span>by {a.teacher_name}</span>
                   {a.due_date && <span style={{ color: overdue ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{overdue ? ' (overdue)' : ''}</span>}
                 </div>
               </div>
-              <div className="dbAssignItemProgress">
-                <div className="dbProgressBar" style={{ flex: 1 }}>
-                  <div className="dbProgressFill" style={{ width: `${donePct}%`, background: pctColor(donePct) }} />
+              {!isPT && (
+                <div className="dbAssignItemProgress">
+                  <div className="dbProgressBar" style={{ flex: 1 }}>
+                    <div className="dbProgressFill" style={{ width: `${donePct}%`, background: pctColor(donePct) }} />
+                  </div>
+                  <span className="dbAssignItemPct" style={{ color: pctColor(donePct) }}>{donePct}%</span>
                 </div>
-                <span className="dbAssignItemPct" style={{ color: pctColor(donePct) }}>{donePct}%</span>
-              </div>
+              )}
             </Link>
           );
         })}

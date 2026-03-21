@@ -373,7 +373,7 @@ export function RosterMasteryTable({ domains, topics }) {
   }
 
   return (
-    <div>
+    <div className="tchRosterMastery">
       {[english, math].map(section => {
         if (!section.domains.length) return null;
         return (
@@ -825,11 +825,18 @@ export function UploadBluebookModal({ studentId, onClose, onUploaded }) {
 
 // ─── Create assignment modal ──────────────────────────────
 export function CreateAssignmentModal({ students, initialStudents, onClose, onCreated }) {
+  const [assignmentType, setAssignmentType] = useState('questions'); // 'questions' or 'practice_test'
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [selectedStudents, setSelectedStudents] = useState(initialStudents || []);
   const [selectAll, setSelectAll] = useState(false);
+  // Practice test fields
+  const [practiceTests, setPracticeTests] = useState([]);
+  const [selectedTestId, setSelectedTestId] = useState('');
+  const [sections, setSections] = useState('both');
+  const [ptLoading, setPtLoading] = useState(false);
+  // Question assignment fields
   const [expandedDomains, setExpandedDomains] = useState([]);
   const [topics, setTopics] = useState([]);
   const [difficulties, setDifficulties] = useState([]);
@@ -851,6 +858,17 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
       .then(d => setFilterData(d))
       .catch(() => {})
       .finally(() => setFilterLoading(false));
+    // Also fetch available practice tests
+    setPtLoading(true);
+    fetch('/api/practice-tests')
+      .then(r => r.json())
+      .then(d => {
+        const tests = (d.tests || []);
+        setPracticeTests(tests);
+        if (tests.length > 0) setSelectedTestId(tests[0].id);
+      })
+      .catch(() => {})
+      .finally(() => setPtLoading(false));
   }, []);
 
   useEffect(() => {
@@ -898,6 +916,7 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
       if (scoreBands.length > 0) params.set('score_bands', scoreBands.join(','));
       params.set('limit', String(questionLimit || 9999));
       params.set('hide_broken', 'true');
+      params.set('balanced', 'true');
       if (undoneOnly && selectedStudents.length > 0) {
         params.set('exclude_done_for', selectedStudents.join(','));
       }
@@ -911,23 +930,34 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
 
   async function handleCreate() {
     if (!title.trim()) { setError('Title is required'); return; }
-    if (!previewQuestions?.items?.length) { setError('Preview questions first'); return; }
     if (!selectedStudents.length) { setError('Select at least one student'); return; }
+    if (assignmentType === 'questions' && !previewQuestions?.items?.length) { setError('Preview questions first'); return; }
+    if (assignmentType === 'practice_test' && !selectedTestId) { setError('Select a practice test'); return; }
     setSaving(true); setError(null);
     try {
+      const body = {
+        title: title.trim(),
+        description: description.trim() || null,
+        due_date: dueDate || null,
+        student_ids: selectedStudents,
+      };
+      if (assignmentType === 'practice_test') {
+        body.question_ids = [];
+        body.filter_criteria = {
+          type: 'practice_test',
+          practice_test_id: selectedTestId,
+          sections: sections || 'both',
+        };
+      } else {
+        body.question_ids = randomize
+          ? [...previewQuestions.items].sort(() => Math.random() - 0.5).map(q => q.question_id)
+          : previewQuestions.items.map(q => q.question_id);
+        body.filter_criteria = { topics, difficulties, score_bands: scoreBands };
+      }
       const res = await fetch('/api/teacher/question-assignments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim() || null,
-          due_date: dueDate || null,
-          question_ids: randomize
-            ? [...previewQuestions.items].sort(() => Math.random() - 0.5).map(q => q.question_id)
-            : previewQuestions.items.map(q => q.question_id),
-          student_ids: selectedStudents,
-          filter_criteria: { topics, difficulties, score_bands: scoreBands },
-        }),
+        body: JSON.stringify(body),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed');
@@ -945,9 +975,20 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
         </div>
         <div className="tchAssignBody">
           <div className="tchAssignFilters">
+            <div className="tchAssignSection">
+              <span className="tchModalLabel">Assignment Type</span>
+              <div className="tchAssignChips">
+                <button type="button" className={`tchAssignChip${assignmentType === 'questions' ? ' active' : ''}`}
+                  style={{ borderColor: 'var(--accent)', color: assignmentType === 'questions' ? '#fff' : 'var(--accent)', background: assignmentType === 'questions' ? 'var(--accent)' : 'transparent' }}
+                  onClick={() => setAssignmentType('questions')}>Questions</button>
+                <button type="button" className={`tchAssignChip${assignmentType === 'practice_test' ? ' active' : ''}`}
+                  style={{ borderColor: '#7c3aed', color: assignmentType === 'practice_test' ? '#fff' : '#7c3aed', background: assignmentType === 'practice_test' ? '#7c3aed' : 'transparent' }}
+                  onClick={() => setAssignmentType('practice_test')}>Practice Test</button>
+              </div>
+            </div>
             <label className="tchModalField">
               <span className="tchModalLabel">Title *</span>
-              <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Algebra Review" />
+              <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder={assignmentType === 'practice_test' ? 'e.g. Practice Test 1' : 'e.g. Algebra Review'} />
             </label>
             <label className="tchModalField">
               <span className="tchModalLabel">Description</span>
@@ -958,11 +999,34 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
                 <span className="tchModalLabel">Due Date</span>
                 <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
               </label>
-              <label className="tchModalField">
-                <span className="tchModalLabel">Max Questions</span>
-                <input type="text" inputMode="numeric" value={questionLimit} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setQuestionLimit(v === '' ? '' : Number(v)); }} />
-              </label>
+              {assignmentType === 'questions' && (
+                <label className="tchModalField">
+                  <span className="tchModalLabel">Max Questions</span>
+                  <input type="text" inputMode="numeric" value={questionLimit} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); setQuestionLimit(v === '' ? '' : Number(v)); }} />
+                </label>
+              )}
             </div>
+            {assignmentType === 'practice_test' && (
+              <div className="tchAssignSection">
+                <label className="tchModalField">
+                  <span className="tchModalLabel">Practice Test *</span>
+                  {ptLoading ? <p className="muted small">Loading tests...</p> : practiceTests.length === 0 ? <p className="muted small">No published practice tests available.</p> : (
+                    <select value={selectedTestId} onChange={e => setSelectedTestId(e.target.value)} style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13 }}>
+                      {practiceTests.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                  )}
+                </label>
+                <label className="tchModalField" style={{ marginTop: 8 }}>
+                  <span className="tchModalLabel">Sections</span>
+                  <select value={sections} onChange={e => setSections(e.target.value)} style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13 }}>
+                    <option value="both">Both Sections (Full Test)</option>
+                    <option value="rw">Reading & Writing Only</option>
+                    <option value="math">Math Only</option>
+                  </select>
+                </label>
+              </div>
+            )}
+            {assignmentType === 'questions' && <>
             <div className="tchAssignSection">
               <span className="tchModalLabel">Difficulty</span>
               <div className="tchAssignChips">
@@ -1056,6 +1120,7 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
                 </div>
               </div>
             )}
+            </>}
           </div>
           <div className="tchAssignStudents">
             <span className="tchModalLabel">Assign to Students *</span>
@@ -1078,7 +1143,7 @@ export function CreateAssignmentModal({ students, initialStudents, onClose, onCr
         {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: '8px 0 0', padding: '0 20px' }}>{error}</p>}
         <div className="tchModalActions" style={{ padding: '12px 20px' }}>
           <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
-          <button type="button" className="btn primary" onClick={handleCreate} disabled={saving || !title.trim() || !previewQuestions?.items?.length || !selectedStudents.length}>{saving ? 'Creating...' : 'Create Assignment'}</button>
+          <button type="button" className="btn primary" onClick={handleCreate} disabled={saving || !title.trim() || !selectedStudents.length || (assignmentType === 'questions' && !previewQuestions?.items?.length) || (assignmentType === 'practice_test' && !selectedTestId)}>{saving ? 'Creating...' : 'Create Assignment'}</button>
         </div>
       </div>
     </div>
@@ -1093,17 +1158,24 @@ export function AssignmentsPanel({ students }) {
   const [expandedId, setExpandedId] = useState(null);
   const [detailData, setDetailData] = useState({});
   const [detailLoading, setDetailLoading] = useState({});
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 10;
 
-  function loadAssignments() {
+  function loadAssignments(p) {
+    const loadPage = p || page;
     setLoading(true);
-    fetch('/api/teacher/question-assignments')
+    fetch(`/api/teacher/question-assignments?page=${loadPage}&pageSize=${pageSize}`)
       .then(r => r.json())
-      .then(d => setAssignments(d.assignments || []))
+      .then(d => {
+        setAssignments(d.assignments || []);
+        setTotalCount(d.totalCount || 0);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { loadAssignments(); }, []);
+  useEffect(() => { loadAssignments(); }, [page]);
 
   function toggleExpand(id) {
     if (expandedId === id) { setExpandedId(null); return; }
@@ -1123,9 +1195,58 @@ export function AssignmentsPanel({ students }) {
     try {
       const res = await fetch('/api/teacher/question-assignments', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
       if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
-      setAssignments(prev => prev.filter(a => a.id !== id));
       if (expandedId === id) setExpandedId(null);
+      loadAssignments(page);
     } catch (e) { alert(e.message); }
+  }
+
+  async function toggleComplete(id, isCompleted) {
+    try {
+      const res = await fetch('/api/teacher/question-assignments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action: isCompleted ? 'reopen' : 'complete' }),
+      });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
+      setAssignments(prev => prev.map(a => a.id === id ? { ...a, completed_at: isCompleted ? null : new Date().toISOString() } : a));
+    } catch (e) { alert(e.message); }
+  }
+
+  function openStudentAssignment(assignment, student, detail) {
+    const questionIds = detail?.assignment?.question_ids || assignment.question_ids || [];
+    if (!questionIds.length) return;
+    const questions = detail?.questions || [];
+    const statuses = student.question_statuses || [];
+    const statusMap = {};
+    for (const qs of statuses) { statusMap[qs.question_id] = qs; }
+
+    const sid = `tch_assign_${assignment.id}_${student.id}`;
+    localStorage.setItem(`practice_session_${sid}`, questionIds.join(','));
+    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+      questionIds.map(qid => {
+        const q = questions.find(x => x.question_id === qid) || {};
+        const qs = statusMap[qid] || {};
+        return {
+          question_id: qid,
+          difficulty: q.difficulty,
+          is_done: qs.is_done || false,
+          last_is_correct: qs.last_is_correct || false,
+          marked_for_review: qs.marked_for_review || false,
+          domain_name: q.domain_name || '',
+          skill_name: q.skill_name || '',
+        };
+      })
+    ));
+    localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
+      sessionQueryString: 'session=1',
+      totalCount: questionIds.length,
+      cachedCount: questionIds.length,
+      cachedAt: new Date().toISOString(),
+    }));
+    window.open(
+      `/practice/${encodeURIComponent(questionIds[0])}?session=1&sid=${sid}&t=${questionIds.length}&o=0&p=0&i=1&tm=1`,
+      '_blank'
+    );
   }
 
   const isOverdue = (due) => due && new Date(due) < new Date();
@@ -1136,28 +1257,36 @@ export function AssignmentsPanel({ students }) {
         <h3 className="h2" style={{ margin: 0 }}>Assignments</h3>
         <button className="btn primary" onClick={() => setShowCreate(true)}>+ New Assignment</button>
       </div>
-      {showCreate && <CreateAssignmentModal students={students} onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); loadAssignments(); }} />}
+      {showCreate && <CreateAssignmentModal students={students} onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); setPage(1); loadAssignments(1); }} />}
       {loading ? <p className="muted">Loading assignments...</p> : assignments.length === 0 ? (
         <div className="card" style={{ padding: 24 }}>
           <p className="muted">No assignments yet. Click &quot;+ New Assignment&quot; to create one.</p>
           <p className="muted small">Assignments let you assign specific question sets by topic and difficulty to your students, with optional due dates.</p>
         </div>
       ) : (
+        <>
         <div style={{ display: 'grid', gap: 10 }}>
           {assignments.map(a => {
             const isExpanded = expandedId === a.id;
             const detail = detailData[a.id];
             const dLoading = detailLoading[a.id];
             const overdue = isOverdue(a.due_date);
+            const isCompleted = !!a.completed_at;
+            const isPT = !!a.practice_test_id;
             return (
-              <div key={a.id} className="card tchAssignCard">
+              <div key={a.id} className="card tchAssignCard" style={isCompleted ? { opacity: 0.7 } : undefined}>
                 <div className="tchAssignCardHeader" onClick={() => toggleExpand(a.id)} style={{ cursor: 'pointer' }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 650, fontSize: 15 }}>{a.title}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 650, fontSize: 15 }}>{a.title}</span>
+                      {isPT && <span className="pill" style={{ fontSize: 10, padding: '1px 6px', background: '#7c3aed', color: '#fff' }}>Practice Test</span>}
+                      {isPT && a.sections && a.sections !== 'both' && <span className="pill" style={{ fontSize: 10, padding: '1px 6px', background: '#e0e7ff', color: '#3730a3' }}>{a.sections === 'rw' ? 'R&W Only' : 'Math Only'}</span>}
+                      {isCompleted && <span className="pill" style={{ fontSize: 10, padding: '1px 8px', background: 'var(--success)', color: '#fff' }}>Complete</span>}
+                    </div>
                     <div className="muted small" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 2 }}>
-                      <span>{a.question_count} questions</span>
+                      {!isPT && <span>{a.question_count} questions</span>}
                       <span>{a.student_count} student{a.student_count !== 1 ? 's' : ''}</span>
-                      {a.due_date && <span style={{ color: overdue ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{overdue ? ' (overdue)' : ''}</span>}
+                      {a.due_date && <span style={{ color: overdue && !isCompleted ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{overdue && !isCompleted ? ' (overdue)' : ''}</span>}
                       <span>Created {formatDate(a.created_at)}</span>
                     </div>
                   </div>
@@ -1188,7 +1317,13 @@ export function AssignmentsPanel({ students }) {
                           const donePct = s.total_questions > 0 ? Math.round((s.completed_count / s.total_questions) * 100) : 0;
                           const accPct = s.completed_count > 0 ? Math.round((s.correct_count / s.completed_count) * 100) : null;
                           return (
-                            <div key={s.id} className="tchAssignProgressRow">
+                            <div
+                              key={s.id}
+                              className="tchAssignProgressRow"
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => openStudentAssignment(a, s, detail)}
+                              title={`View ${displayName(s)}'s assignment`}
+                            >
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontWeight: 600, fontSize: 13 }}>{displayName(s)}</div>
                                 <div className="muted small">{s.email}</div>
@@ -1205,6 +1340,13 @@ export function AssignmentsPanel({ students }) {
                       </div>
                     ) : null}
                     <div style={{ marginTop: 10, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <button
+                        className="btn secondary"
+                        style={{ fontSize: 12 }}
+                        onClick={() => toggleComplete(a.id, isCompleted)}
+                      >
+                        {isCompleted ? 'Reopen' : 'Mark Complete'}
+                      </button>
                       <button className="btn secondary" style={{ fontSize: 12, color: 'var(--danger)' }} onClick={() => deleteAssignment(a.id)}>Delete</button>
                     </div>
                   </div>
@@ -1213,6 +1355,31 @@ export function AssignmentsPanel({ students }) {
             );
           })}
         </div>
+        {/* Pagination controls */}
+        {totalCount > pageSize && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginTop: 16 }}>
+            <button
+              className="btn secondary"
+              style={{ padding: '4px 12px', fontSize: 13 }}
+              disabled={page <= 1}
+              onClick={() => { setExpandedId(null); setPage(p => p - 1); }}
+            >
+              Previous
+            </button>
+            <span className="muted" style={{ fontSize: 13 }}>
+              Page {page} of {Math.ceil(totalCount / pageSize)}
+            </span>
+            <button
+              className="btn secondary"
+              style={{ padding: '4px 12px', fontSize: 13 }}
+              disabled={page >= Math.ceil(totalCount / pageSize)}
+              onClick={() => { setExpandedId(null); setPage(p => p + 1); }}
+            >
+              Next
+            </button>
+          </div>
+        )}
+        </>
       )}
     </div>
   );
@@ -1434,13 +1601,53 @@ export function StudentDetail({ studentId, onBack }) {
                 {data.studentAssignments.map(a => {
                   const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
                   const isOverdue = a.due_date && new Date(a.due_date) < new Date();
+                  function openAssignmentSession() {
+                    const qids = a.question_ids || [];
+                    if (!qids.length) return;
+                    const statuses = a.question_statuses || [];
+                    const statusMap = {};
+                    for (const qs of statuses) { statusMap[qs.question_id] = qs; }
+                    const sid = `tch_assign_${a.id}_${studentId}`;
+                    localStorage.setItem(`practice_session_${sid}`, qids.join(','));
+                    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+                      qids.map(qid => {
+                        const qs = statusMap[qid] || {};
+                        return {
+                          question_id: qid,
+                          difficulty: qs.difficulty,
+                          is_done: qs.is_done || false,
+                          last_is_correct: qs.last_is_correct || false,
+                          marked_for_review: qs.marked_for_review || false,
+                          domain_name: qs.domain_name || '',
+                          skill_name: qs.skill_name || '',
+                        };
+                      })
+                    ));
+                    localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
+                      sessionQueryString: 'session=1',
+                      totalCount: qids.length,
+                      cachedCount: qids.length,
+                      cachedAt: new Date().toISOString(),
+                    }));
+                    window.open(
+                      `/practice/${encodeURIComponent(qids[0])}?session=1&sid=${sid}&t=${qids.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(studentId)}`,
+                      '_blank'
+                    );
+                  }
                   return (
-                    <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div
+                      key={a.id}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 4px', borderBottom: '1px solid var(--border)', cursor: 'pointer', borderRadius: 6, transition: 'background 0.1s' }}
+                      onClick={openAssignmentSession}
+                      title="View assignment as student"
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 600, fontSize: 14 }}>{a.title}</div>
                         <div className="muted small" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                           <span>{a.completed_count}/{a.question_count} questions</span>
-                          {a.due_date && <span style={{ color: isOverdue ? 'var(--danger)' : undefined }}>Due {new Date(a.due_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{isOverdue ? ' (overdue)' : ''}</span>}
+                          {a.due_date && <span style={{ color: isOverdue ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{isOverdue ? ' (overdue)' : ''}</span>}
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 100 }}>
