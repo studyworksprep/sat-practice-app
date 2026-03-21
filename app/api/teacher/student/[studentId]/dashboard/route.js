@@ -330,16 +330,32 @@ export async function GET(_request, { params }) {
       }
     }
 
-    const { data: doneStatusRows } = allAssignQids.length > 0
+    const { data: assignStatusRows } = allAssignQids.length > 0
       ? await supabase
           .from('question_status')
-          .select('question_id')
+          .select('question_id, is_done, last_is_correct, marked_for_review')
           .eq('user_id', studentId)
           .in('question_id', allAssignQids)
-          .eq('is_done', true)
       : { data: [] };
 
-    const doneSet = new Set((doneStatusRows || []).map(r => r.question_id));
+    const assignStatusMap = {};
+    const doneSet = new Set();
+    for (const r of (assignStatusRows || [])) {
+      assignStatusMap[r.question_id] = r;
+      if (r.is_done) doneSet.add(r.question_id);
+    }
+
+    // Fetch question metadata (difficulty, domain, skill) for assignment questions
+    let assignQuestionMeta = {};
+    if (allAssignQids.length > 0) {
+      const { data: qMetaRows } = await supabase
+        .from('questions')
+        .select('question_id, difficulty, domain_name, skill_name')
+        .in('question_id', allAssignQids);
+      for (const q of (qMetaRows || [])) {
+        assignQuestionMeta[q.question_id] = q;
+      }
+    }
 
     let totalAssignQuestions = 0;
     let totalAssignCompleted = 0;
@@ -359,6 +375,19 @@ export async function GET(_request, { params }) {
         question_count: qids.length,
         completed_count: completedCount,
         created_at: a.created_at,
+        question_statuses: qids.map(qid => {
+          const qs = assignStatusMap[qid] || {};
+          const meta = assignQuestionMeta[qid] || {};
+          return {
+            question_id: qid,
+            is_done: qs.is_done || false,
+            last_is_correct: qs.last_is_correct || false,
+            marked_for_review: qs.marked_for_review || false,
+            difficulty: meta.difficulty,
+            domain_name: meta.domain_name || '',
+            skill_name: meta.skill_name || '',
+          };
+        }),
       };
     }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 

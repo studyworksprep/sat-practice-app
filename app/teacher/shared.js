@@ -1604,10 +1604,24 @@ export function StudentDetail({ studentId, onBack }) {
                   function openAssignmentSession() {
                     const qids = a.question_ids || [];
                     if (!qids.length) return;
+                    const statuses = a.question_statuses || [];
+                    const statusMap = {};
+                    for (const qs of statuses) { statusMap[qs.question_id] = qs; }
                     const sid = `tch_assign_${a.id}_${studentId}`;
                     localStorage.setItem(`practice_session_${sid}`, qids.join(','));
                     localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
-                      qids.map(qid => ({ question_id: qid, is_done: false, last_is_correct: false, marked_for_review: false }))
+                      qids.map(qid => {
+                        const qs = statusMap[qid] || {};
+                        return {
+                          question_id: qid,
+                          difficulty: qs.difficulty,
+                          is_done: qs.is_done || false,
+                          last_is_correct: qs.last_is_correct || false,
+                          marked_for_review: qs.marked_for_review || false,
+                          domain_name: qs.domain_name || '',
+                          skill_name: qs.skill_name || '',
+                        };
+                      })
                     ));
                     localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
                       sessionQueryString: 'session=1',

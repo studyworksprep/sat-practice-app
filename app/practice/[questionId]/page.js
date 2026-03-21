@@ -1446,6 +1446,13 @@ export default function PracticeQuestionPage() {
   const mathToolRow = null;
 
   // ✅ MCQ options area (no "Answer choices" header)
+  const explanationArea = (version?.rationale_html || version?.explanation_html) && (locked || gaveUp) && showExplanation ? (
+    <div className="card explanation" style={{ marginTop: 14 }}>
+      <div className="sectionLabel">Explanation</div>
+      <HtmlBlock className="prose" html={version.rationale_html || version.explanation_html} />
+    </div>
+  ) : null;
+
   const mcqOptionsArea = (
     <>
       <div className="srOnly">Answer choices</div>
@@ -1892,6 +1899,7 @@ export default function PracticeQuestionPage() {
                   </div>
                 )}
                 {mcqOptionsArea}
+                {explanationArea}
               </div>
             </div>
           </div>
@@ -1903,6 +1911,7 @@ export default function PracticeQuestionPage() {
               {renderStatusPills()}
               {renderPromptBlocks()}
               {mcqOptionsArea}
+              {explanationArea}
             </div>
           </>)
         ) : (
@@ -1911,6 +1920,7 @@ export default function PracticeQuestionPage() {
             {renderStatusPills()}
             {renderPromptBlocks()}
             {mcqOptionsArea}
+            {explanationArea}
           </div>
         )
       ) : isMath ? (
@@ -1921,6 +1931,7 @@ export default function PracticeQuestionPage() {
             {renderStatusPills()}
             {renderPromptBlocks()}
             {sprAnswerArea}
+            {explanationArea}
           </div>
         </>)
       ) : (
@@ -1929,18 +1940,9 @@ export default function PracticeQuestionPage() {
           {renderStatusPills()}
           {renderPromptBlocks()}
           {sprAnswerArea}
+          {explanationArea}
         </div>
       )}
-
-      {(version?.rationale_html || version?.explanation_html) && (locked || gaveUp) && showExplanation ? (
-        <>
-          <hr />
-          <div className="card explanation" style={{ marginTop: 10 }}>
-            <div className="sectionLabel">Explanation</div>
-            <HtmlBlock className="prose" html={version.rationale_html || version.explanation_html} />
-          </div>
-        </>
-      ) : null}
 
       {showRef ? (
         <div
