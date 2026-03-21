@@ -148,18 +148,48 @@ function TeacherDashboard() {
                 <p className="muted small" style={{ padding: '12px 0' }}>No recent practice sessions.</p>
               ) : (
                 <div className="tchFeedList">
-                  {recentSessions.slice(0, 15).map((s, i) => (
-                    <button key={i} className="tchFeedRow" onClick={() => goToStudent(s.studentId)}>
-                      <span className="tchFeedAvatar">{(s.studentName || '?')[0].toUpperCase()}</span>
-                      <div className="tchFeedInfo">
-                        <span className="tchFeedName">{s.studentName}</span>
-                        <span className="tchFeedMeta">{s.questionCount} questions · {formatDateTime(s.startedAt)}</span>
-                      </div>
-                      <span className="tchFeedStat" style={{ color: pctColor(s.accuracy) }}>
-                        {s.accuracy != null ? `${s.accuracy}%` : '—'}
-                      </span>
-                    </button>
-                  ))}
+                  {recentSessions.slice(0, 15).map((s, i) => {
+                    function openSessionReview() {
+                      const questions = s.questions || [];
+                      if (!questions.length) { goToStudent(s.studentId); return; }
+                      const ids = questions.map(q => q.question_id);
+                      const sid = `tch_session_${Date.now()}_${i}`;
+                      localStorage.setItem(`practice_session_${sid}`, ids.join(','));
+                      localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+                        questions.map(q => ({
+                          question_id: q.question_id,
+                          difficulty: q.difficulty,
+                          is_done: true,
+                          last_is_correct: q.is_correct,
+                          marked_for_review: false,
+                          domain_name: q.domain_name || '',
+                          skill_name: q.skill_name || '',
+                        }))
+                      ));
+                      localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
+                        sessionQueryString: 'session=1',
+                        totalCount: ids.length,
+                        cachedCount: ids.length,
+                        cachedAt: new Date().toISOString(),
+                      }));
+                      window.open(
+                        `/practice/${encodeURIComponent(ids[0])}?session=1&sid=${sid}&t=${ids.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(s.studentId)}`,
+                        '_blank'
+                      );
+                    }
+                    return (
+                      <button key={i} className="tchFeedRow" onClick={openSessionReview}>
+                        <span className="tchFeedAvatar">{(s.studentName || '?')[0].toUpperCase()}</span>
+                        <div className="tchFeedInfo">
+                          <span className="tchFeedName">{s.studentName}</span>
+                          <span className="tchFeedMeta">{s.questionCount} questions · {formatDateTime(s.startedAt)}</span>
+                        </div>
+                        <span className="tchFeedStat" style={{ color: pctColor(s.accuracy) }}>
+                          {s.accuracy != null ? `${s.accuracy}%` : '—'}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
