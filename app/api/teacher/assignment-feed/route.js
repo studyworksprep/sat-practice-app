@@ -56,21 +56,36 @@ export async function GET() {
     studentMap[s.id] = `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.email || '—';
   }
 
-  // Batch fetch completion counts
+  // Batch fetch completion status per question
   const allQuestionIds = [...new Set(assignments.flatMap(a => a.question_ids || []))];
   const { data: statusRows } = allQuestionIds.length && studentIds.length
     ? await supabase
         .from('question_status')
-        .select('user_id, question_id')
+        .select('user_id, question_id, is_done, last_is_correct, marked_for_review')
         .in('user_id', studentIds)
         .in('question_id', allQuestionIds)
-        .eq('is_done', true)
     : { data: [] };
 
+  const statusByUserQuestion = {};
   const doneByStudent = {};
   for (const s of statusRows || []) {
-    if (!doneByStudent[s.user_id]) doneByStudent[s.user_id] = new Set();
-    doneByStudent[s.user_id].add(s.question_id);
+    statusByUserQuestion[`${s.user_id}:${s.question_id}`] = s;
+    if (s.is_done) {
+      if (!doneByStudent[s.user_id]) doneByStudent[s.user_id] = new Set();
+      doneByStudent[s.user_id].add(s.question_id);
+    }
+  }
+
+  // Fetch question metadata (difficulty, domain, skill)
+  let questionMeta = {};
+  if (allQuestionIds.length > 0) {
+    const { data: qMetaRows } = await supabase
+      .from('questions')
+      .select('question_id, difficulty, domain_name, skill_name')
+      .in('question_id', allQuestionIds);
+    for (const q of (qMetaRows || [])) {
+      questionMeta[q.question_id] = q;
+    }
   }
 
   // Build rows
@@ -85,9 +100,24 @@ export async function GET() {
       assignment_id: a.id,
       title: a.title,
       due_date: a.due_date,
+      question_ids: qids,
       question_count: qids.length,
       completed_count: completedCount,
+      student_id: sa.student_id,
       student_name: studentMap[sa.student_id] || '—',
+      question_statuses: qids.map(qid => {
+        const qs = statusByUserQuestion[`${sa.student_id}:${qid}`] || {};
+        const meta = questionMeta[qid] || {};
+        return {
+          question_id: qid,
+          is_done: qs.is_done || false,
+          last_is_correct: qs.last_is_correct || false,
+          marked_for_review: qs.marked_for_review || false,
+          difficulty: meta.difficulty,
+          domain_name: meta.domain_name || '',
+          skill_name: meta.skill_name || '',
+        };
+      }),
     };
   }).filter(Boolean);
 

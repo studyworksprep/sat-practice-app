@@ -242,12 +242,53 @@ function TeacherDashboard() {
                       {pageRows.map((r, i) => {
                         const isPastDue = r.due_date && new Date(r.due_date) < now;
                         const isComplete = r.question_count > 0 && r.completed_count >= r.question_count;
+                        function openAssignmentReview() {
+                          const qids = r.question_ids || [];
+                          if (!qids.length) return;
+                          const statuses = r.question_statuses || [];
+                          const statusMap = {};
+                          for (const qs of statuses) { statusMap[qs.question_id] = qs; }
+                          const sid = `tch_assign_${r.assignment_id}_${r.student_id}`;
+                          localStorage.setItem(`practice_session_${sid}`, qids.join(','));
+                          localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+                            qids.map(qid => {
+                              const qs = statusMap[qid] || {};
+                              return {
+                                question_id: qid,
+                                difficulty: qs.difficulty,
+                                is_done: qs.is_done || false,
+                                last_is_correct: qs.last_is_correct || false,
+                                marked_for_review: qs.marked_for_review || false,
+                                domain_name: qs.domain_name || '',
+                                skill_name: qs.skill_name || '',
+                              };
+                            })
+                          ));
+                          localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
+                            sessionQueryString: 'session=1',
+                            totalCount: qids.length,
+                            cachedCount: qids.length,
+                            cachedAt: new Date().toISOString(),
+                          }));
+                          window.open(
+                            `/practice/${encodeURIComponent(qids[0])}?session=1&sid=${sid}&t=${qids.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(r.student_id)}`,
+                            '_blank'
+                          );
+                        }
                         return (
                           <div key={`${r.assignment_id}-${r.student_name}-${i}`} style={{
-                            padding: '8px 0',
+                            padding: '8px 4px',
                             borderBottom: i < pageRows.length - 1 ? '1px solid var(--border, #eee)' : 'none',
                             opacity: isComplete ? 0.6 : 1,
-                          }}>
+                            cursor: 'pointer',
+                            borderRadius: 6,
+                            transition: 'background 0.1s',
+                          }}
+                          onClick={openAssignmentReview}
+                          title={`Review ${r.student_name}'s assignment: ${r.title}`}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                          >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
                               <span style={{ fontWeight: 600, fontSize: 13, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {r.student_name}
