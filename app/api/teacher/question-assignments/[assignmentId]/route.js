@@ -116,7 +116,7 @@ export async function GET(request, { params }) {
 
     if (totalQuestions > 0) {
       const { data: questionData } = await supabase
-        .from("questions")
+        .from("question_taxonomy")
         .select("question_id, domain_name, skill_name, difficulty")
         .in("question_id", questionIds);
 

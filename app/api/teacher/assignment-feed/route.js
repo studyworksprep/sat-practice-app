@@ -76,11 +76,11 @@ export async function GET() {
     }
   }
 
-  // Fetch question metadata (difficulty, domain, skill)
+  // Fetch question metadata (difficulty, domain, skill) from taxonomy table
   let questionMeta = {};
   if (allQuestionIds.length > 0) {
     const { data: qMetaRows } = await supabase
-      .from('questions')
+      .from('question_taxonomy')
       .select('question_id, difficulty, domain_name, skill_name')
       .in('question_id', allQuestionIds);
     for (const q of (qMetaRows || [])) {

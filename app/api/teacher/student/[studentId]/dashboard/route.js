@@ -345,11 +345,11 @@ export async function GET(_request, { params }) {
       if (r.is_done) doneSet.add(r.question_id);
     }
 
-    // Fetch question metadata (difficulty, domain, skill) for assignment questions
+    // Fetch question metadata (difficulty, domain, skill) from taxonomy table
     let assignQuestionMeta = {};
     if (allAssignQids.length > 0) {
       const { data: qMetaRows } = await supabase
-        .from('questions')
+        .from('question_taxonomy')
         .select('question_id, difficulty, domain_name, skill_name')
         .in('question_id', allAssignQids);
       for (const q of (qMetaRows || [])) {
