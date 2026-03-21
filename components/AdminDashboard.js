@@ -91,6 +91,13 @@ export default function AdminDashboard() {
   // Broken questions
   const [brokenQs, setBrokenQs] = useState(null);
 
+  // Concept tags
+  const [showConceptTags, setShowConceptTags] = useState(false);
+  const [conceptTags, setConceptTags] = useState([]);
+  const [conceptTagsLoading, setConceptTagsLoading] = useState(false);
+  const [editingTagId, setEditingTagId] = useState(null);
+  const [editingTagName, setEditingTagName] = useState('');
+
   // Teacher effectiveness
   const [teacherData, setTeacherData] = useState(null);
 
@@ -495,6 +502,49 @@ export default function AdminDashboard() {
       showToast('danger', err.message);
     }
     setLearnSaving(false);
+  }
+
+  async function fetchConceptTags() {
+    setConceptTagsLoading(true);
+    try {
+      const res = await fetch('/api/concept-tags');
+      const json = await res.json();
+      if (res.ok) setConceptTags(json.tags || []);
+    } catch {}
+    setConceptTagsLoading(false);
+  }
+
+  async function renameConceptTag(tagId, newName) {
+    if (!newName.trim()) return;
+    try {
+      const res = await fetch('/api/concept-tags', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tagId, name: newName.trim() }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setConceptTags(prev => prev.map(t => t.id === tagId ? { ...t, name: json.tag.name } : t));
+        showToast('ok', 'Tag renamed.');
+      }
+    } catch (err) { showToast('danger', err.message); }
+    setEditingTagId(null);
+    setEditingTagName('');
+  }
+
+  async function deleteConceptTag(tagId, tagName) {
+    if (!confirm(`Delete tag "${tagName}"? This will remove it from all questions.`)) return;
+    try {
+      const res = await fetch('/api/concept-tags', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tagId }),
+      });
+      if (res.ok) {
+        setConceptTags(prev => prev.filter(t => t.id !== tagId));
+        showToast('ok', 'Tag deleted.');
+      }
+    } catch (err) { showToast('danger', err.message); }
   }
 
   async function handleSaveScores() {
@@ -1736,6 +1786,87 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   </>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ── Concept Tags ────────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h3 className="adminSideTitle" style={{ margin: 0 }}>Concept Tags</h3>
+              <button className="btn secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => { setShowConceptTags(!showConceptTags); if (!showConceptTags && !conceptTags.length) fetchConceptTags(); }}>
+                {showConceptTags ? 'Close' : 'Manage'}
+              </button>
+            </div>
+            <p className="muted small" style={{ marginTop: -4, marginBottom: 8, fontSize: 11 }}>
+              Manage concept tags applied to questions. Rename or delete tags here.
+            </p>
+
+            {showConceptTags && (
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                {conceptTagsLoading ? (
+                  <p className="muted small" style={{ padding: 16 }}>Loading tags...</p>
+                ) : conceptTags.length === 0 ? (
+                  <p className="muted small" style={{ padding: 16 }}>No concept tags yet. Tags are created from the question page.</p>
+                ) : (
+                  <div style={{ maxHeight: 400, overflow: 'auto' }}>
+                    <table className="adminTable">
+                      <thead>
+                        <tr>
+                          <th>Tag Name</th>
+                          <th style={{ width: 140 }}>Created</th>
+                          <th style={{ width: 120 }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {conceptTags.map(tag => (
+                          <tr key={tag.id}>
+                            <td>
+                              {editingTagId === tag.id ? (
+                                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                  <input
+                                    className="adminInput"
+                                    value={editingTagName}
+                                    onChange={(e) => setEditingTagName(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') renameConceptTag(tag.id, editingTagName);
+                                      if (e.key === 'Escape') { setEditingTagId(null); setEditingTagName(''); }
+                                    }}
+                                    style={{ fontSize: 12, padding: '2px 6px', flex: 1 }}
+                                    autoFocus
+                                  />
+                                  <button className="btn primary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => renameConceptTag(tag.id, editingTagName)}>Save</button>
+                                  <button className="btn secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => { setEditingTagId(null); setEditingTagName(''); }}>Cancel</button>
+                                </div>
+                              ) : (
+                                <span style={{ fontSize: 13 }}>{tag.name}</span>
+                              )}
+                            </td>
+                            <td className="muted small">{formatDate(tag.created_at)}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: 6 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => { setEditingTagId(tag.id); setEditingTagName(tag.name); }}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--accent)', padding: 0, fontWeight: 500 }}
+                                >
+                                  Rename
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => deleteConceptTag(tag.id, tag.name)}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--danger, #dc2626)', padding: 0, fontWeight: 500 }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
             )}

@@ -10,6 +10,7 @@ import SessionTimer from '../../../components/SessionTimer';
 import { useKeyboardShortcuts } from '../../../lib/useKeyboardShortcuts';
 import QuestionNotes from '../../../components/QuestionNotes';
 import DesmosStateButton from '../../../components/DesmosStateButton';
+import ConceptTags from '../../../components/ConceptTags';
 
 const htmlHasContent = (html) => {
   if (!html) return false;
@@ -1453,6 +1454,10 @@ export default function PracticeQuestionPage() {
     </div>
   ) : null;
 
+  const conceptTagsArea = (userRole === 'admin' || userRole === 'manager') ? (
+    <ConceptTags questionId={questionId} userRole={userRole} />
+  ) : null;
+
   const mcqOptionsArea = (
     <>
       <div className="srOnly">Answer choices</div>
@@ -1908,6 +1913,7 @@ export default function PracticeQuestionPage() {
                 )}
                 {mcqOptionsArea}
                 {explanationArea}
+                {conceptTagsArea}
               </div>
             </div>
           </div>
@@ -1920,6 +1926,7 @@ export default function PracticeQuestionPage() {
               {renderPromptBlocks()}
               {mcqOptionsArea}
               {explanationArea}
+              {conceptTagsArea}
             </div>
           </>)
         ) : (
@@ -1929,6 +1936,7 @@ export default function PracticeQuestionPage() {
             {renderPromptBlocks()}
             {mcqOptionsArea}
             {explanationArea}
+            {conceptTagsArea}
           </div>
         )
       ) : isMath ? (
@@ -1940,6 +1948,7 @@ export default function PracticeQuestionPage() {
             {renderPromptBlocks()}
             {sprAnswerArea}
             {explanationArea}
+            {conceptTagsArea}
           </div>
         </>)
       ) : (
@@ -1949,6 +1958,7 @@ export default function PracticeQuestionPage() {
           {renderPromptBlocks()}
           {sprAnswerArea}
           {explanationArea}
+          {conceptTagsArea}
         </div>
       )}
 
