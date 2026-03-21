@@ -1809,9 +1809,17 @@ export default function PracticeQuestionPage() {
     <main className="container containerWide">
       <div className="questionTopBar">
         <div>
-          <Link className="btn secondary" href="/practice">
-            ← Back to list
-          </Link>
+{isTeacherMode ? (
+            <button className="btn secondary" onClick={() => {
+              if (window.history.length > 1) { router.back(); } else { window.close(); }
+            }}>
+              ← Back
+            </button>
+          ) : (
+            <Link className="btn secondary" href="/practice">
+              ← Back to list
+            </Link>
+          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
