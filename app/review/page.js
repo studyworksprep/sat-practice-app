@@ -720,6 +720,13 @@ export default function ReviewPage() {
                       {renderMasteryBar(s.avg_mastery, false)}
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <Link
+                        href={`/flashcards/${s.id}`}
+                        className="btn secondary"
+                        style={{ fontSize: 12, padding: '4px 12px', textDecoration: 'none' }}
+                      >
+                        View All
+                      </Link>
                       <button
                         className="btn secondary"
                         style={{ fontSize: 12, padding: '4px 12px' }}

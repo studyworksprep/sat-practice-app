@@ -59,15 +59,35 @@ export async function POST(req) {
   return NextResponse.json({ card: data });
 }
 
-// PATCH /api/flashcards — update mastery rating
+// PATCH /api/flashcards — update mastery rating and/or front/back text
 export async function PATCH(req) {
   const supabase = createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
-  const { card_id, mastery } = await req.json();
-  if (!card_id || mastery == null || mastery < 0 || mastery > 5) {
-    return NextResponse.json({ error: 'card_id and mastery (0-5) required' }, { status: 400 });
+  const body = await req.json();
+  const { card_id, mastery, front, back } = body;
+  if (!card_id) {
+    return NextResponse.json({ error: 'card_id required' }, { status: 400 });
+  }
+
+  // Build update payload
+  const updates = {};
+  if (mastery != null) {
+    if (mastery < 0 || mastery > 5) return NextResponse.json({ error: 'mastery must be 0-5' }, { status: 400 });
+    updates.mastery = mastery;
+    updates.reviewed_at = new Date().toISOString();
+  }
+  if (front !== undefined) {
+    if (!front?.trim()) return NextResponse.json({ error: 'front cannot be empty' }, { status: 400 });
+    updates.front = front.trim();
+  }
+  if (back !== undefined) {
+    if (!back?.trim()) return NextResponse.json({ error: 'back cannot be empty' }, { status: 400 });
+    updates.back = back.trim();
+  }
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
   }
 
   // Verify ownership through set
@@ -86,13 +106,15 @@ export async function PATCH(req) {
     .single();
   if (!set) return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from('flashcards')
-    .update({ mastery, reviewed_at: new Date().toISOString() })
-    .eq('id', card_id);
+    .update(updates)
+    .eq('id', card_id)
+    .select('id, front, back, mastery, created_at, reviewed_at')
+    .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, card: updated });
 }
 
 // DELETE /api/flashcards — delete a card
