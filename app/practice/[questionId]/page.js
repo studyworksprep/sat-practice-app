@@ -385,7 +385,7 @@ export default function PracticeQuestionPage() {
 
   // Keep the same session filter params for API calls + navigation
   const sessionParams = useMemo(() => {
-    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'hide_broken', 'q', 'session', 'replay', 'sid', 'tm'];
+    const keys = ['difficulties', 'score_bands', 'domains', 'topics', 'wrong_only', 'marked_only', 'hide_broken', 'q', 'session', 'replay', 'sid', 'tm', 'view_as'];
     const p = new URLSearchParams();
     for (const k of keys) {
       const v = searchParams.get(k);
@@ -572,7 +572,6 @@ export default function PracticeQuestionPage() {
       // to reveal correct answer (green) and student's wrong answer (red).
       if (isTeacherMode) {
         const sa = json.student_answer;
-        console.log('[TeacherMode] student_answer:', sa, 'debug:', json._student_answer_debug);
         setStudentSelectedOptionId(sa?.selected_option_id ?? null);
         setStudentResponseText(sa?.response_text ?? null);
         setStudentLastIsCorrect(sa?.is_correct ?? null);
