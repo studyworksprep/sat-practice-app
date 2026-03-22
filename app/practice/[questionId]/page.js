@@ -310,6 +310,11 @@ export default function PracticeQuestionPage() {
   const [errorLogSaving, setErrorLogSaving] = useState(false);
   const [errorLogSaved, setErrorLogSaved] = useState(false);
 
+  // Teacher mode: student's answer (when viewing via view_as)
+  const [studentSelectedOptionId, setStudentSelectedOptionId] = useState(null);
+  const [studentResponseText, setStudentResponseText] = useState(null);
+  const [studentLastIsCorrect, setStudentLastIsCorrect] = useState(null);
+
   // Flashcard state
   const [showFlashcardDialog, setShowFlashcardDialog] = useState(false);
   const [flashcardSets, setFlashcardSets] = useState([]);
@@ -532,6 +537,8 @@ export default function PracticeQuestionPage() {
   }
 
   function questionApiUrl(qId) {
+    const viewAs = searchParams.get('view_as');
+    if (viewAs) return `/api/questions/${qId}?view_as=${encodeURIComponent(viewAs)}`;
     return `/api/questions/${qId}`;
   }
 
@@ -560,11 +567,19 @@ export default function PracticeQuestionPage() {
         if (!res.ok) throw new Error(json?.error || 'Failed to load question');
       }
 
-      // In Teacher Mode, strip status/history so the question appears fresh.
-      // Keep correct_option_id/correct_text in data but don't auto-reveal —
-      // teachers click "Show Answer" to see the answer and explanation.
+      // In Teacher Mode, preserve student's answer for display, then strip
+      // status so the question appears fresh. Teachers click "Show Answer"
+      // to reveal correct answer (green) and student's wrong answer (red).
       if (isTeacherMode) {
+        const sJson = json.status?.status_json || {};
+        setStudentSelectedOptionId(sJson.last_selected_option_id ?? null);
+        setStudentResponseText(sJson.last_response_text ?? null);
+        setStudentLastIsCorrect(json.status?.last_is_correct ?? null);
         json = { ...json, status: null };
+      } else {
+        setStudentSelectedOptionId(null);
+        setStudentResponseText(null);
+        setStudentLastIsCorrect(null);
       }
 
       setData(json);
@@ -1470,6 +1485,9 @@ export default function PracticeQuestionPage() {
             const isSelected = selected === opt.id;
             const isWrong = wrongOptionIds.includes(opt.id);
             const isCorrect = String(opt.id) === String(correctOptionId);
+            // Teacher mode: highlight student's answer when revealed
+            const isStudentSelected = isTeacherMode && gaveUp && studentSelectedOptionId != null && String(opt.id) === String(studentSelectedOptionId);
+            const isStudentWrong = isStudentSelected && !isCorrect;
 
             return (
               <div
@@ -1479,6 +1497,11 @@ export default function PracticeQuestionPage() {
 
                   // Previously wrong attempts: always show red
                   if (isWrong) cls += ' incorrect';
+
+                  // Teacher mode: show student's incorrect answer in red
+                  if (isStudentWrong) cls += ' incorrect';
+                  // Teacher mode: show student's correct answer in green
+                  if (isStudentSelected && isCorrect) cls += ' correct';
 
                   if (locked) {
                     // When locked (correct or gave up): show correct answer green
@@ -1617,12 +1640,32 @@ export default function PracticeQuestionPage() {
             </div>
           ) : null}
         </div>
-      ) : isTeacherMode && gaveUp && correctText ? (
-        <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-          <span className="pill">
-            <span className="muted">Correct answer</span>{' '}
-            <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
-          </span>
+      ) : isTeacherMode && gaveUp ? (
+        <div style={{ marginTop: 8 }}>
+          {studentResponseText && studentLastIsCorrect === false && (
+            <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+              <span className="pill" style={{ borderColor: 'var(--danger, #dc2626)', background: '#fee2e2' }}>
+                <span style={{ color: 'var(--danger, #dc2626)' }}>Student answered</span>{' '}
+                <span className="kbd" style={{ color: 'var(--danger, #dc2626)', fontWeight: 700 }}>{studentResponseText}</span>
+              </span>
+            </div>
+          )}
+          {studentResponseText && studentLastIsCorrect === true && (
+            <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+              <span className="pill" style={{ borderColor: '#15803d', background: '#f0fdf4' }}>
+                <span style={{ color: '#15803d' }}>Student answered</span>{' '}
+                <span className="kbd" style={{ color: '#15803d', fontWeight: 700 }}>{studentResponseText}</span>
+              </span>
+            </div>
+          )}
+          {correctText && (
+            <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span className="pill">
+                <span className="muted">Correct answer</span>{' '}
+                <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
+              </span>
+            </div>
+          )}
         </div>
       ) : null}
 
