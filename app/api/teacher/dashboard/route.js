@@ -111,7 +111,6 @@ export async function GET() {
     { data: allAttempts },
     { data: completedTests },
     { data: flashcardData },
-    { data: allTax },
     { data: registrations },
   ] = await Promise.all([
     svc
@@ -137,10 +136,6 @@ export async function GET() {
       .select('id, user_id')
       .in('user_id', studentIds),
     svc
-      .from('question_taxonomy')
-      .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
-      .limit(50000),
-    svc
       .from('sat_test_registrations')
       .select('id, student_id, test_date')
       .in('student_id', studentIds)
@@ -148,6 +143,25 @@ export async function GET() {
       .order('test_date', { ascending: true })
       .limit(50),
   ]);
+
+  // Fetch taxonomy only for question IDs that appear in attempts (avoids 50k limit issues)
+  const attemptQids = [...new Set((allAttempts || []).map(a => a.question_id).filter(Boolean))];
+  let allTax = [];
+  if (attemptQids.length > 0) {
+    // Supabase .in() has a practical limit, so batch in chunks
+    const CHUNK = 1000;
+    const taxChunks = await Promise.all(
+      Array.from({ length: Math.ceil(attemptQids.length / CHUNK) }, (_, i) =>
+        svc
+          .from('question_taxonomy')
+          .select('question_id, domain_code, domain_name, skill_name, difficulty, score_band')
+          .in('question_id', attemptQids.slice(i * CHUNK, (i + 1) * CHUNK))
+      )
+    );
+    for (const { data } of taxChunks) {
+      if (data) allTax.push(...data);
+    }
+  }
 
   // Get flashcard counts per student
   const flashcardSetIds = (flashcardData || []).map(s => s.id);
