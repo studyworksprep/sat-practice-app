@@ -92,7 +92,7 @@ export async function GET() {
       .in('user_id', ids)
       .gte('created_at', cutoff90d)
       .order('created_at', { ascending: true })
-      .limit(10000),
+      .limit(50000),
     // Completed practice tests
     supabase
       .from('practice_test_attempts')
