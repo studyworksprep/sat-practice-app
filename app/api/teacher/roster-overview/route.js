@@ -85,11 +85,13 @@ export async function GET() {
   const svc = createServiceClient();
 
   // ── Batch queries in parallel ──
-  const [statusRes, testAttemptsRes] = await Promise.all([
-    // question_status: one row per user per question (no row-limit issues)
+  const cutoff90d = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [statusRes, testAttemptsRes, ...perStudentAttemptsRes] = await Promise.all([
+    // question_status: one row per user per question (for totals + last activity)
     svc
       .from('question_status')
-      .select('user_id, question_id, is_done, last_is_correct, last_attempt_at, attempts_count, correct_attempts_count')
+      .select('user_id, question_id, is_done, last_attempt_at')
       .in('user_id', ids)
       .eq('is_done', true),
     // Completed practice tests
@@ -99,10 +101,27 @@ export async function GET() {
       .in('user_id', ids)
       .eq('status', 'completed')
       .order('finished_at', { ascending: false }),
+    // Per-student first-attempt data (avoids shared row limit across all students)
+    ...ids.map(uid =>
+      svc
+        .from('attempts')
+        .select('user_id, question_id, is_correct, created_at')
+        .eq('user_id', uid)
+        .gte('created_at', cutoff90d)
+        .order('created_at', { ascending: true })
+        .limit(500)
+    ),
   ]);
 
   const allStatus = statusRes.data || [];
   const allTestAttempts = testAttemptsRes.data || [];
+
+  // Merge per-student attempts into a single map
+  const attemptsByUser = {};
+  for (let i = 0; i < ids.length; i++) {
+    const data = perStudentAttemptsRes[i]?.data || [];
+    if (data.length) attemptsByUser[ids[i]] = data;
+  }
 
   // Count total done per user and find last activity across all time
   const totalDoneByUser = {};
@@ -199,41 +218,38 @@ export async function GET() {
     }
   }
 
-  // ── Per-student: recent accuracy + trend from question_status ──
-  // Group status rows by user
-  const statusByUser = {};
-  for (const s of allStatus) {
-    if (!statusByUser[s.user_id]) statusByUser[s.user_id] = [];
-    statusByUser[s.user_id].push(s);
-  }
-
+  // ── Per-student: recent first-attempt accuracy + trend ──
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const students = ids.map(id => {
     const p = profileMap[id];
-    const userStatus = statusByUser[id] || [];
+    const userAttempts = attemptsByUser[id] || [];
 
-    // Sort by last_attempt_at descending for recency
-    const sorted = userStatus
-      .filter(s => s.last_attempt_at)
-      .sort((a, b) => new Date(b.last_attempt_at) - new Date(a.last_attempt_at));
+    // First attempt per question (ordered ascending, so first occurrence = first attempt)
+    const firstAttemptMap = {};
+    for (const a of userAttempts) {
+      if (!firstAttemptMap[a.question_id]) firstAttemptMap[a.question_id] = a;
+    }
+    // Sort descending by date for recency
+    const firstAttempts = Object.values(firstAttemptMap)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    // Recent = last 30 questions, Previous = next 30
-    const recent = sorted.slice(0, 30);
-    const previous = sorted.slice(30, 60);
+    // Recent = last 30 first-attempts, Previous = next 30
+    const recent = firstAttempts.slice(0, 30);
+    const previous = firstAttempts.slice(30, 60);
 
     const recentAccuracy = recent.length >= 3
-      ? Math.round((recent.filter(s => s.last_is_correct).length / recent.length) * 100)
+      ? Math.round((recent.filter(a => a.is_correct).length / recent.length) * 100)
       : null;
     const previousAccuracy = previous.length >= 3
-      ? Math.round((previous.filter(s => s.last_is_correct).length / previous.length) * 100)
+      ? Math.round((previous.filter(a => a.is_correct).length / previous.length) * 100)
       : null;
     const accuracyTrend = (recentAccuracy !== null && previousAccuracy !== null)
       ? recentAccuracy - previousAccuracy
       : null;
 
-    // Weekly activity count
-    const weeklyAttempts = sorted.filter(s => s.last_attempt_at >= weekAgo).length;
+    // Weekly attempts count
+    const weeklyAttempts = userAttempts.filter(a => a.created_at >= weekAgo).length;
 
     const scores = testScoreByUser[id] || {};
 
