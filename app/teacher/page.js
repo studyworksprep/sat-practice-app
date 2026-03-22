@@ -345,27 +345,25 @@ function TeacherDashboard() {
                                 {r.completed_count}/{r.question_count}
                               </span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                              <span className="muted" style={{ fontSize: 12, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                                {r.due_date && (
-                                  <span style={{
-                                    fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
-                                    color: isPastDue && !isComplete ? 'var(--danger)' : 'var(--muted)',
-                                  }}>
-                                    {isPastDue && !isComplete ? 'Past due · ' : ''}
-                                    {new Date(r.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                  </span>
-                                )}
-                                <button
-                                  className="btn secondary"
-                                  style={{ fontSize: 10, padding: '1px 6px', lineHeight: 1.4 }}
-                                  onClick={(e) => markAssignmentComplete(r.assignment_id, e)}
-                                  title="Mark assignment complete"
-                                >
-                                  ✓ Done
-                                </button>
-                              </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' }}>
+                              <span className="muted" style={{ fontSize: 12, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
+                              {r.due_date && (
+                                <span style={{
+                                  fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+                                  color: isPastDue && !isComplete ? 'var(--danger)' : 'var(--muted)',
+                                }}>
+                                  {isPastDue && !isComplete ? 'Past due · ' : ''}
+                                  {new Date(r.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </span>
+                              )}
+                              <button
+                                className="btn secondary"
+                                style={{ fontSize: 10, padding: '1px 6px', lineHeight: 1.4 }}
+                                onClick={(e) => markAssignmentComplete(r.assignment_id, e)}
+                                title="Mark assignment complete"
+                              >
+                                ✓ Done
+                              </button>
                             </div>
                           </div>
                         );

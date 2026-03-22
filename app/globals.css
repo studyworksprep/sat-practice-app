@@ -4691,7 +4691,6 @@ hr{
   max-width: 1280px;
   padding-top: 24px;
   padding-bottom: 48px;
-  overflow-x: hidden;
 }
 
 /* ── Dashboard overview ── */
@@ -4785,7 +4784,6 @@ hr{
   display: grid;
   gap: 16px;
   min-width: 0;
-  overflow: hidden;
 }
 
 .tchDashAlertsCol{
@@ -4793,7 +4791,6 @@ hr{
   gap: 14px;
   align-items: start;
   min-width: 0;
-  overflow: hidden;
 }
 
 .tchSectionHeader{
@@ -5072,6 +5069,8 @@ hr{
 
 .tchAlertCard{
   padding: 16px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .tchAlertTitle{
