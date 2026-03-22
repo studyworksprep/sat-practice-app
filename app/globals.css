@@ -4691,6 +4691,7 @@ hr{
   max-width: 1280px;
   padding-top: 24px;
   padding-bottom: 48px;
+  overflow-x: hidden;
 }
 
 /* ── Dashboard overview ── */
@@ -4751,9 +4752,10 @@ hr{
 
 .tchDashBody{
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr minmax(0, 300px);
   gap: 20px;
   align-items: start;
+  max-width: 100%;
 }
 
 @media (max-width: 960px){
@@ -4770,9 +4772,10 @@ hr{
 
 .tchDashGrid{
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr minmax(0, 320px);
   gap: 20px;
   align-items: start;
+  max-width: 100%;
 }
 @media (max-width: 960px){
   .tchDashGrid{ grid-template-columns: 1fr; }
@@ -4782,12 +4785,15 @@ hr{
   display: grid;
   gap: 16px;
   min-width: 0;
+  overflow: hidden;
 }
 
 .tchDashAlertsCol{
   display: grid;
   gap: 14px;
   align-items: start;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .tchSectionHeader{
@@ -5092,6 +5098,7 @@ hr{
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .tchAlertItem{
