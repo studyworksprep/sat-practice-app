@@ -22,7 +22,7 @@ export async function GET() {
   // Fetch assignments
   let query = supabase
     .from('question_assignments')
-    .select('id, title, due_date, question_ids');
+    .select('id, title, due_date, question_ids, completed_at');
 
   if (profile.role !== 'admin') {
     query = query.eq('teacher_id', user.id);
@@ -100,6 +100,7 @@ export async function GET() {
       assignment_id: a.id,
       title: a.title,
       due_date: a.due_date,
+      completed_at: a.completed_at || null,
       question_ids: qids,
       question_count: qids.length,
       completed_count: completedCount,

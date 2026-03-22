@@ -59,6 +59,24 @@ function TeacherDashboard() {
     router.push(`/teacher/students?selected=${studentId}`);
   }, [router]);
 
+  async function markAssignmentComplete(assignmentId, e) {
+    e.stopPropagation();
+    try {
+      const res = await fetch('/api/teacher/question-assignments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: assignmentId, action: 'complete' }),
+      });
+      if (!res.ok) return;
+      setAssignmentRows(prev => prev.map(r =>
+        r.assignment_id === assignmentId ? { ...r, completed_at: new Date().toISOString() } : r
+      ));
+    } catch {}
+  }
+
+  // Filter assignment rows: only show incomplete assignments on the dashboard
+  const activeAssignmentRows = assignmentRows.filter(r => !r.completed_at);
+
   if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading dashboard...</p></div>;
   if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
 
@@ -260,11 +278,11 @@ function TeacherDashboard() {
             {/* Assignments */}
             <div className="card tchAlertCard">
               <h3 className="tchAlertTitle" style={{ color: 'var(--accent)' }}>Assignments</h3>
-              {assignmentRows.length === 0 ? (
-                <p className="muted small" style={{ padding: '4px 0', margin: 0 }}>No assignments yet.</p>
+              {activeAssignmentRows.length === 0 ? (
+                <p className="muted small" style={{ padding: '4px 0', margin: 0 }}>{assignmentRows.length === 0 ? 'No assignments yet.' : 'All assignments marked complete.'}</p>
               ) : (() => {
-                const pageRows = assignmentRows.slice(assignmentPage * ASSIGNMENTS_PER_PAGE, (assignmentPage + 1) * ASSIGNMENTS_PER_PAGE);
-                const totalPages = Math.ceil(assignmentRows.length / ASSIGNMENTS_PER_PAGE);
+                const pageRows = activeAssignmentRows.slice(assignmentPage * ASSIGNMENTS_PER_PAGE, (assignmentPage + 1) * ASSIGNMENTS_PER_PAGE);
+                const totalPages = Math.ceil(activeAssignmentRows.length / ASSIGNMENTS_PER_PAGE);
                 const now = new Date();
                 return (
                   <>
@@ -327,17 +345,27 @@ function TeacherDashboard() {
                                 {r.completed_count}/{r.question_count}
                               </span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginTop: 2 }}>
-                              <span className="muted" style={{ fontSize: 12 }}>{r.title}</span>
-                              {r.due_date && (
-                                <span style={{
-                                  fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
-                                  color: isPastDue && !isComplete ? 'var(--danger)' : 'var(--muted)',
-                                }}>
-                                  {isPastDue && !isComplete ? 'Past due · ' : ''}
-                                  {new Date(r.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                </span>
-                              )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                              <span className="muted" style={{ fontSize: 12, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                                {r.due_date && (
+                                  <span style={{
+                                    fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+                                    color: isPastDue && !isComplete ? 'var(--danger)' : 'var(--muted)',
+                                  }}>
+                                    {isPastDue && !isComplete ? 'Past due · ' : ''}
+                                    {new Date(r.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </span>
+                                )}
+                                <button
+                                  className="btn secondary"
+                                  style={{ fontSize: 10, padding: '1px 6px', lineHeight: 1.4 }}
+                                  onClick={(e) => markAssignmentComplete(r.assignment_id, e)}
+                                  title="Mark assignment complete"
+                                >
+                                  ✓ Done
+                                </button>
+                              </div>
                             </div>
                           </div>
                         );

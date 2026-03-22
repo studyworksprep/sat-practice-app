@@ -29,6 +29,9 @@ export async function GET(request) {
     const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get("pageSize") || "10", 10)));
     const offset = (page - 1) * pageSize;
 
+    // Optional status filter: 'complete' or 'incomplete'
+    const statusFilter = searchParams.get("status");
+
     // Get total count first
     let countQuery = supabase
       .from("question_assignments")
@@ -36,6 +39,11 @@ export async function GET(request) {
 
     if (profile.role !== "admin") {
       countQuery = countQuery.eq("teacher_id", user.id);
+    }
+    if (statusFilter === "complete") {
+      countQuery = countQuery.not("completed_at", "is", null);
+    } else if (statusFilter === "incomplete") {
+      countQuery = countQuery.is("completed_at", null);
     }
 
     const { count: totalCount } = await countQuery;
@@ -50,6 +58,11 @@ export async function GET(request) {
 
     if (profile.role !== "admin") {
       query = query.eq("teacher_id", user.id);
+    }
+    if (statusFilter === "complete") {
+      query = query.not("completed_at", "is", null);
+    } else if (statusFilter === "incomplete") {
+      query = query.is("completed_at", null);
     }
 
     let { data: assignments, error: assignErr } = await query;
@@ -94,6 +107,18 @@ export async function GET(request) {
     // Batch: collect all unique (student_id, question_id) pairs to query completion
     const allStudentIds = [...new Set((allStudentAssigns || []).map((sa) => sa.student_id))];
     const allQuestionIds = [...new Set(assignments.flatMap((a) => a.question_ids || []))];
+
+    // Fetch student names for display
+    let studentNameMap = {};
+    if (allStudentIds.length > 0) {
+      const { data: studentProfiles } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, email")
+        .in("id", allStudentIds);
+      for (const s of studentProfiles || []) {
+        studentNameMap[s.id] = [s.first_name, s.last_name].filter(Boolean).join(" ") || s.email || "—";
+      }
+    }
 
     // Get done counts in batch (only if we have students and questions)
     let doneByUserQuestion = {};
@@ -141,6 +166,7 @@ export async function GET(request) {
         due_date: a.due_date,
         question_count: questionCount,
         student_count: studentCount,
+        student_names: studentIds.map(sid => studentNameMap[sid] || "—"),
         avg_completion_pct: isPracticeTest ? null : avgCompletionPct,
         created_at: a.created_at,
         completed_at: a.completed_at || null,
