@@ -571,10 +571,10 @@ export default function PracticeQuestionPage() {
       // status so the question appears fresh. Teachers click "Show Answer"
       // to reveal correct answer (green) and student's wrong answer (red).
       if (isTeacherMode) {
-        const sJson = json.status?.status_json || {};
-        setStudentSelectedOptionId(sJson.last_selected_option_id ?? null);
-        setStudentResponseText(sJson.last_response_text ?? null);
-        setStudentLastIsCorrect(json.status?.last_is_correct ?? null);
+        const sa = json.student_answer;
+        setStudentSelectedOptionId(sa?.selected_option_id ?? null);
+        setStudentResponseText(sa?.response_text ?? null);
+        setStudentLastIsCorrect(sa?.is_correct ?? null);
         json = { ...json, status: null };
       } else {
         setStudentSelectedOptionId(null);
@@ -1523,6 +1523,11 @@ export default function PracticeQuestionPage() {
                 <div className="optionBadge">{opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}</div>
                 <div className="optionContent">
                   <HtmlBlock className="prose" html={opt.content_html} />
+                  {isStudentSelected && (
+                    <div style={{ fontSize: 11, fontWeight: 600, marginTop: 4, color: isCorrect ? '#15803d' : '#b91c1c' }}>
+                      Student&apos;s answer{isCorrect ? ' (correct)' : ' (incorrect)'}
+                    </div>
+                  )}
                 </div>
               </div>
             );
