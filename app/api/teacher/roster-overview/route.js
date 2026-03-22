@@ -286,7 +286,7 @@ export async function GET() {
   const inactive = students
     .filter(s => {
       if (!s.last_activity) return true;
-      return (now - new Date(s.last_activity)) > 5 * 24 * 60 * 60 * 1000;
+      return (now - new Date(s.last_activity)) > 10 * 24 * 60 * 60 * 1000;
     })
     .map(s => ({
       id: s.id,

@@ -54,6 +54,7 @@ function TeacherDashboard() {
   }, [students]);
 
   const totalAlerts = alerts.inactive?.length || 0;
+  const [showAttentionModal, setShowAttentionModal] = useState(false);
 
   const goToStudent = useCallback((studentId) => {
     router.push(`/teacher/students?selected=${studentId}`);
@@ -137,7 +138,7 @@ function TeacherDashboard() {
               <span className="tchInfoStatLabel">Avg. accuracy (30-day)</span>
             </div>
             <div className="tchInfoDivider" />
-            <div className="tchInfoStat">
+            <div className="tchInfoStat" onClick={() => totalAlerts && setShowAttentionModal(true)} style={{ cursor: totalAlerts ? 'pointer' : 'default' }} title={totalAlerts ? 'Click to see details' : ''}>
               <span className="tchInfoStatValue" style={{ color: totalAlerts ? 'var(--danger)' : 'var(--success)' }}>{totalAlerts}</span>
               <span className="tchInfoStatLabel">Needs attention</span>
             </div>
@@ -426,6 +427,54 @@ function TeacherDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Needs Attention Modal */}
+      {showAttentionModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+        }} onClick={() => setShowAttentionModal(false)}>
+          <div className="card" style={{
+            maxWidth: 480, width: '90%', maxHeight: '80vh', overflow: 'auto',
+            padding: '24px 28px', position: 'relative',
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h2 className="h2" style={{ margin: 0 }}>Needs Attention</h2>
+              <button onClick={() => setShowAttentionModal(false)} style={{
+                background: 'none', border: 'none', fontSize: 22, cursor: 'pointer',
+                color: 'var(--muted)', lineHeight: 1, padding: 4,
+              }}>&times;</button>
+            </div>
+            <p className="muted small" style={{ margin: '0 0 16px' }}>
+              Students who haven&apos;t practiced in over 10 days, or who have never logged any activity.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {(alerts.inactive || []).map(a => {
+                const s = students.find(x => x.id === a.id);
+                if (!s) return null;
+                return (
+                  <button key={a.id} className="tchAlertItem" style={{
+                    cursor: 'pointer', background: 'none', border: 'none',
+                    width: '100%', textAlign: 'left', padding: '10px 8px',
+                    borderRadius: 6, transition: 'background 0.1s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => { setShowAttentionModal(false); goToStudent(a.id); }}
+                  >
+                    <div className="tchAlertItemInfo">
+                      <span className="tchAlertItemName">{displayName(s)}</span>
+                      <span className="tchAlertItemMeta" style={{ color: 'var(--danger)' }}>
+                        {a.days_inactive != null ? `Inactive for ${a.days_inactive} days` : 'No activity recorded'}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
