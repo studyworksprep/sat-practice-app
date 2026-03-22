@@ -178,25 +178,42 @@ export async function GET(_request, { params }) {
 
   // When a teacher is viewing as a student, fetch the student's most recent
   // attempt directly so we can show their selected answer on the question page.
-  // Uses service client to bypass RLS — the caller's privilege was already verified above.
   let studentAnswer = null;
+  let _studentAnswerDebug = null;
   if (effectiveViewAs) {
-    const svc = createServiceClient();
-    const { data: lastAttempt } = await svc
-      .from('attempts')
-      .select('selected_option_id, response_text, is_correct, created_at')
-      .eq('user_id', effectiveViewAs)
-      .eq('question_id', questionId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Try service client first (bypasses RLS)
+    try {
+      const svc = createServiceClient();
+      const { data: lastAttempt, error: saErr } = await svc
+        .from('attempts')
+        .select('*')
+        .eq('user_id', effectiveViewAs)
+        .eq('question_id', questionId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (lastAttempt) {
-      studentAnswer = {
-        selected_option_id: lastAttempt.selected_option_id ?? null,
-        response_text: lastAttempt.response_text ?? null,
-        is_correct: lastAttempt.is_correct ?? null,
+      _studentAnswerDebug = {
+        effectiveViewAs,
+        questionId,
+        error: saErr?.message || null,
+        attemptFound: !!lastAttempt,
+        attemptKeys: lastAttempt ? Object.keys(lastAttempt) : null,
+        selected_option_id: lastAttempt?.selected_option_id ?? null,
+        response_text: lastAttempt?.response_text ?? null,
+        is_correct: lastAttempt?.is_correct ?? null,
+        selected_answer: lastAttempt?.selected_answer ?? null,
       };
+
+      if (lastAttempt) {
+        studentAnswer = {
+          selected_option_id: lastAttempt.selected_option_id ?? null,
+          response_text: lastAttempt.response_text ?? null,
+          is_correct: lastAttempt.is_correct ?? null,
+        };
+      }
+    } catch (err) {
+      _studentAnswerDebug = { error: err.message, effectiveViewAs, questionId };
     }
   }
 
@@ -214,5 +231,6 @@ export async function GET(_request, { params }) {
     correct_option_id,
     correct_text,
     student_answer: studentAnswer,
+    _student_answer_debug: _studentAnswerDebug,
   });
 }

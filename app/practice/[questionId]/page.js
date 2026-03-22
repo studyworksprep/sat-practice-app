@@ -572,6 +572,7 @@ export default function PracticeQuestionPage() {
       // to reveal correct answer (green) and student's wrong answer (red).
       if (isTeacherMode) {
         const sa = json.student_answer;
+        console.log('[TeacherMode] student_answer:', sa, 'debug:', json._student_answer_debug);
         setStudentSelectedOptionId(sa?.selected_option_id ?? null);
         setStudentResponseText(sa?.response_text ?? null);
         setStudentLastIsCorrect(sa?.is_correct ?? null);
