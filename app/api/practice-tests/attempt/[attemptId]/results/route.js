@@ -214,7 +214,7 @@ export async function GET(_request, { params }) {
     if (!version) continue;
     const qid = version.question_id;
     const attempt_rec = latestAttempt[qid];
-    const was_answered = !!attempt_rec;
+    const was_answered = !!(attempt_rec?.selected_option_id || attempt_rec?.response_text);
     const tax = taxByQuestion[qid] || {};
     const ca = correctByVersion[item.question_version_id];
 

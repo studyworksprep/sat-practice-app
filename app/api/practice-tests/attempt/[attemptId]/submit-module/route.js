@@ -112,47 +112,49 @@ export async function POST(request, { params }) {
 
   for (const item of moduleItems || []) {
     const ans = answerByVersion[item.question_version_id];
-    if (!ans || (!ans.selected_option_id && !ans.response_text)) continue;
-
-    const ca = correctByVersion[item.question_version_id];
-    const questionId = ans.question_id || versionToQid[item.question_version_id];
+    const questionId = (ans && ans.question_id) || versionToQid[item.question_version_id];
     if (!questionId) continue;
 
+    const wasAnswered = !!(ans && (ans.selected_option_id || ans.response_text));
+
     let is_correct = false;
-    if (ca) {
-      if (ca.answer_type === 'mcq' || ca.answer_type === 'single') {
-        is_correct = ca.correct_option_id === ans.selected_option_id;
-      } else if (ca.answer_type === 'multi') {
-        const userSet = new Set([ans.selected_option_id].filter(Boolean));
-        const corrSet = new Set(ca.correct_option_ids || []);
-        is_correct = userSet.size === corrSet.size && [...userSet].every((id) => corrSet.has(id));
-      } else if (ca.answer_type === 'text') {
-        const norm = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
-        const toList = (ct) => {
-          if (!ct) return [];
-          const t = String(ct).trim();
-          if (t.startsWith('[') && t.endsWith(']')) {
-            try { const p = JSON.parse(t); if (Array.isArray(p)) return p.map(String); } catch {}
+    if (wasAnswered) {
+      const ca = correctByVersion[item.question_version_id];
+      if (ca) {
+        if (ca.answer_type === 'mcq' || ca.answer_type === 'single') {
+          is_correct = ca.correct_option_id === ans.selected_option_id;
+        } else if (ca.answer_type === 'multi') {
+          const userSet = new Set([ans.selected_option_id].filter(Boolean));
+          const corrSet = new Set(ca.correct_option_ids || []);
+          is_correct = userSet.size === corrSet.size && [...userSet].every((id) => corrSet.has(id));
+        } else if (ca.answer_type === 'text') {
+          const norm = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+          const toList = (ct) => {
+            if (!ct) return [];
+            const t = String(ct).trim();
+            if (t.startsWith('[') && t.endsWith(']')) {
+              try { const p = JSON.parse(t); if (Array.isArray(p)) return p.map(String); } catch {}
+            }
+            return [t];
+          };
+          is_correct = toList(ca.correct_text).some((a) => {
+            if (norm(a) === norm(ans.response_text)) return true;
+            const nA = parseFloat(a), nR = parseFloat(ans.response_text);
+            return !isNaN(nA) && !isNaN(nR) && nA === nR;
+          });
+        } else if (ca.answer_type === 'number') {
+          const parsed = parseFloat(ans.response_text);
+          if (!isNaN(parsed)) {
+            const tol = parseFloat(ca.numeric_tolerance) || 0;
+            is_correct = Math.abs(parsed - parseFloat(ca.correct_number)) <= tol;
           }
-          return [t];
-        };
-        is_correct = toList(ca.correct_text).some((a) => {
-          if (norm(a) === norm(ans.response_text)) return true;
-          const nA = parseFloat(a), nR = parseFloat(ans.response_text);
-          return !isNaN(nA) && !isNaN(nR) && nA === nR;
-        });
-      } else if (ca.answer_type === 'number') {
-        const parsed = parseFloat(ans.response_text);
-        if (!isNaN(parsed)) {
-          const tol = parseFloat(ca.numeric_tolerance) || 0;
-          is_correct = Math.abs(parsed - parseFloat(ca.correct_number)) <= tol;
         }
       }
     }
 
     if (is_correct) correctCount += 1;
 
-    const timeSpent = Number.isFinite(Number(ans.time_spent_ms)) ? Number(ans.time_spent_ms) : null;
+    const timeSpent = ans && Number.isFinite(Number(ans.time_spent_ms)) ? Number(ans.time_spent_ms) : null;
 
     const { data: attemptRow } = await supabase
       .from('attempts')
@@ -160,8 +162,8 @@ export async function POST(request, { params }) {
         user_id: user.id,
         question_id: questionId,
         is_correct,
-        selected_option_id: ans.selected_option_id || null,
-        response_text: ans.response_text || null,
+        selected_option_id: (ans && ans.selected_option_id) || null,
+        response_text: (ans && ans.response_text) || null,
         time_spent_ms: timeSpent,
         created_at: now,
         source: 'practice_test',
@@ -170,7 +172,10 @@ export async function POST(request, { params }) {
       .single();
 
     if (attemptRow?.id) versionToAttemptId[item.question_version_id] = attemptRow.id;
-    accuracyEntries.push({ version_id: item.question_version_id, is_correct });
+    // Only count answered questions toward global accuracy stats
+    if (wasAnswered) {
+      accuracyEntries.push({ version_id: item.question_version_id, is_correct });
+    }
   }
 
   // Bump global accuracy counters on question versions (best-effort, non-blocking)
