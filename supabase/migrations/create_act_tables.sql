@@ -3,7 +3,9 @@ create table if not exists act_questions (
   id uuid primary key default gen_random_uuid(),
   external_id text unique,
   section text not null check (section in ('english', 'math', 'reading', 'science')),
+  category_code text,
   category text not null,
+  subcategory_code text,
   subcategory text,
   is_modeling boolean not null default false,
   difficulty integer,
@@ -18,7 +20,8 @@ create table if not exists act_questions (
 );
 
 create index idx_act_questions_section on act_questions (section);
-create index idx_act_questions_category on act_questions (section, category);
+create index idx_act_questions_category on act_questions (section, category_code);
+create index idx_act_questions_subcategory on act_questions (section, category_code, subcategory_code);
 create index idx_act_questions_source on act_questions (source_test);
 
 -- Answer options keyed directly to question (no version indirection)
