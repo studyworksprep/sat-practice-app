@@ -148,6 +148,13 @@ export default function ActQuestionDetailPage() {
   const [elapsedMs, setElapsedMs] = useState(0);
   const timerRef = useRef(null);
 
+  // Broken / correction state
+  const [userRole, setUserRole] = useState(null);
+  const [showCorrectModal, setShowCorrectModal] = useState(false);
+  const [correctForm, setCorrectForm] = useState({});
+  const [correctSubmitting, setCorrectSubmitting] = useState(false);
+  const [filterData, setFilterData] = useState(null);
+
   // Calculator state
   const MIN_CALC_W = 550;
   const MAX_CALC_W = 1200;
@@ -167,6 +174,23 @@ export default function ActQuestionDetailPage() {
   useEffect(() => {
     if (testType === 'sat') router.replace('/practice');
   }, [testType, router]);
+
+  // Fetch user role
+  useEffect(() => {
+    fetch('/api/me')
+      .then(r => r.json())
+      .then(d => { if (d.role) setUserRole(d.role); })
+      .catch(() => {});
+  }, []);
+
+  // Lazy-load filter data when correction modal opens
+  useEffect(() => {
+    if (!showCorrectModal || filterData) return;
+    fetch('/api/act/filters')
+      .then(r => r.json())
+      .then(d => setFilterData(d))
+      .catch(() => {});
+  }, [showCorrectModal]);
 
   // Fetch question
   useEffect(() => {
@@ -346,6 +370,89 @@ export default function ActQuestionDetailPage() {
   function handleGiveUp() {
     setGaveUp(true);
     setShowRationale(true);
+  }
+
+  // Broken / correction flow
+  const isPrivileged = userRole === 'admin' || userRole === 'manager';
+  const canSeeBroken = isPrivileged || userRole === 'teacher';
+
+  function openBrokenFlow() {
+    if (!data?.question_id) return;
+    if (isPrivileged) {
+      const opts = {};
+      if (Array.isArray(data?.options)) {
+        for (const opt of data.options) opts[String(opt.id)] = opt.content_html || '';
+      }
+      setCorrectForm({
+        stimulus_html: data?.stimulus_html || '',
+        stem_html: data?.stem_html || '',
+        rationale_html: data?.rationale_html || '',
+        options: opts,
+        difficulty: data?.difficulty ?? '',
+        section: data?.section || '',
+        category_code: data?.category_code || '',
+        category: data?.category || '',
+        subcategory_code: data?.subcategory_code || '',
+        subcategory: data?.subcategory || '',
+        is_modeling: data?.is_modeling || false,
+      });
+      setShowCorrectModal(true);
+    }
+  }
+
+  async function submitCorrection(flagBroken) {
+    if (!data?.question_id) return;
+    setCorrectSubmitting(true);
+    try {
+      setMsg(null);
+      const body = { flag_broken: flagBroken };
+
+      if (correctForm.stimulus_html !== (data?.stimulus_html || '')) body.stimulus_html = correctForm.stimulus_html;
+      if (correctForm.stem_html !== (data?.stem_html || '')) body.stem_html = correctForm.stem_html;
+      if (correctForm.rationale_html !== (data?.rationale_html || '')) body.rationale_html = correctForm.rationale_html;
+
+      const changedOpts = {};
+      if (correctForm.options && Array.isArray(data?.options)) {
+        for (const opt of data.options) {
+          const newVal = correctForm.options[String(opt.id)];
+          if (newVal !== undefined && newVal !== (opt.content_html || '')) changedOpts[String(opt.id)] = newVal;
+        }
+      }
+      if (Object.keys(changedOpts).length > 0) body.options = changedOpts;
+
+      const taxChanges = {};
+      if (String(correctForm.difficulty) !== String(data?.difficulty ?? '')) taxChanges.difficulty = correctForm.difficulty;
+      if (correctForm.section !== (data?.section || '')) taxChanges.section = correctForm.section;
+      if (correctForm.category_code !== (data?.category_code || '')) {
+        taxChanges.category_code = correctForm.category_code;
+        taxChanges.category = correctForm.category || null;
+      }
+      if (correctForm.subcategory_code !== (data?.subcategory_code || '')) {
+        taxChanges.subcategory_code = correctForm.subcategory_code;
+        taxChanges.subcategory = correctForm.subcategory || null;
+      }
+      if (correctForm.is_modeling !== (data?.is_modeling || false)) taxChanges.is_modeling = correctForm.is_modeling;
+      if (Object.keys(taxChanges).length > 0) body.taxonomy = taxChanges;
+
+      const res = await fetch(`/api/act/questions/${data.question_id}/correct`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to submit correction');
+
+      setShowCorrectModal(false);
+      // Reload question
+      const reloadRes = await fetch(`/api/act/questions/${questionId}`, { cache: 'no-store' });
+      const reloadJson = await reloadRes.json();
+      if (!reloadJson.error) setData(reloadJson);
+      setMsg({ kind: 'success', text: flagBroken ? 'Saved and flagged as broken.' : 'Saved and marked as not broken.' });
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setCorrectSubmitting(false);
+    }
   }
 
   // Keyboard shortcuts
@@ -549,7 +656,22 @@ export default function ActQuestionDetailPage() {
           )}
           <span className="muted small">{formatElapsed(elapsedMs)}</span>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {canSeeBroken && (
+            <button
+              type="button"
+              className={`brokenBtn${data?.is_broken ? ' isBroken' : ''}`}
+              onClick={openBrokenFlow}
+              title={data?.is_broken ? 'Flagged as broken' : 'Flag as broken'}
+            >
+              <span className="brokenBtnIcon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                  <path fill="currentColor" d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              </span>
+              {data?.is_broken ? 'Broken' : 'Broken?'}
+            </button>
+          )}
           <button className="btn secondary" disabled={!hasPrev} onClick={goPrev}>Prev</button>
           <button className="btn secondary" disabled={!hasNext} onClick={goNext}>Next</button>
         </div>
@@ -575,6 +697,197 @@ export default function ActQuestionDetailPage() {
       ) : (
         // Default single-column
         questionContent
+      )}
+
+      {/* Correction modal */}
+      {showCorrectModal && (
+        <div className="modalOverlay" onClick={() => setShowCorrectModal(false)} role="dialog" aria-modal="true" aria-label="Correction form">
+          <div className="modalCard correctModal" onClick={(e) => e.stopPropagation()}>
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="h2" style={{ margin: 0 }}>Flag &amp; Correct Question</div>
+              <button className="btn secondary" onClick={() => setShowCorrectModal(false)}>Close</button>
+            </div>
+
+            {data?.is_broken && (
+              <div style={{ background: 'rgba(217,119,117,0.10)', border: '1px solid var(--danger, #dc2626)', borderRadius: 8, padding: '10px 14px', marginTop: 4, fontSize: 14, color: 'var(--danger, #dc2626)' }}>
+                Currently flagged as <strong>broken</strong>
+              </div>
+            )}
+
+            <hr />
+
+            <div className="correctFields">
+              <label className="correctLabel">
+                <span className="correctLabelText">Stimulus</span>
+                <textarea
+                  className="input correctTextarea"
+                  rows={5}
+                  value={correctForm.stimulus_html || ''}
+                  onChange={(e) => setCorrectForm(f => ({ ...f, stimulus_html: e.target.value }))}
+                  placeholder="Paste corrected stimulus HTML..."
+                />
+              </label>
+
+              <label className="correctLabel">
+                <span className="correctLabelText">Stem</span>
+                <textarea
+                  className="input correctTextarea"
+                  rows={4}
+                  value={correctForm.stem_html || ''}
+                  onChange={(e) => setCorrectForm(f => ({ ...f, stem_html: e.target.value }))}
+                  placeholder="Paste corrected stem HTML..."
+                />
+              </label>
+
+              {Array.isArray(data?.options) && data.options.length > 0 && (
+                data.options
+                  .slice()
+                  .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
+                  .map((opt) => (
+                    <label key={opt.id} className="correctLabel">
+                      <span className="correctLabelText">Answer Option {opt.label}</span>
+                      <textarea
+                        className="input correctTextarea"
+                        rows={3}
+                        value={correctForm.options?.[String(opt.id)] ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCorrectForm(f => ({ ...f, options: { ...(f.options || {}), [String(opt.id)]: val } }));
+                        }}
+                        placeholder={`Paste corrected Option ${opt.label} HTML...`}
+                      />
+                    </label>
+                  ))
+              )}
+
+              <label className="correctLabel">
+                <span className="correctLabelText">Rationale / Explanation</span>
+                <textarea
+                  className="input correctTextarea"
+                  rows={4}
+                  value={correctForm.rationale_html || ''}
+                  onChange={(e) => setCorrectForm(f => ({ ...f, rationale_html: e.target.value }))}
+                  placeholder="Paste corrected rationale HTML..."
+                />
+              </label>
+            </div>
+
+            <hr />
+            <div className="correctFields">
+              <div className="h3" style={{ margin: '0 0 8px' }}>Taxonomy</div>
+              <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+                <label className="correctLabel" style={{ flex: '1 1 120px' }}>
+                  <span className="correctLabelText">Section</span>
+                  <select
+                    className="input"
+                    value={correctForm.section || ''}
+                    onChange={(e) => setCorrectForm(f => ({ ...f, section: e.target.value }))}
+                  >
+                    <option value="">--</option>
+                    <option value="english">English</option>
+                    <option value="math">Math</option>
+                    <option value="reading">Reading</option>
+                    <option value="science">Science</option>
+                  </select>
+                </label>
+                <label className="correctLabel" style={{ flex: '1 1 120px' }}>
+                  <span className="correctLabelText">Difficulty</span>
+                  <select
+                    className="input"
+                    value={correctForm.difficulty ?? ''}
+                    onChange={(e) => setCorrectForm(f => ({ ...f, difficulty: e.target.value ? Number(e.target.value) : '' }))}
+                  >
+                    <option value="">--</option>
+                    <option value="1">1 - Easy</option>
+                    <option value="2">2 - Medium</option>
+                    <option value="3">3 - Hard</option>
+                  </select>
+                </label>
+                <label className="correctLabel" style={{ flex: '1 1 120px' }}>
+                  <span className="correctLabelText">Modeling</span>
+                  <select
+                    className="input"
+                    value={correctForm.is_modeling ? 'true' : 'false'}
+                    onChange={(e) => setCorrectForm(f => ({ ...f, is_modeling: e.target.value === 'true' }))}
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </label>
+              </div>
+
+              {/* Category / Subcategory dropdowns from filter data */}
+              {filterData?.categories ? (() => {
+                const sec = correctForm.section || data?.section;
+                const cats = filterData.categories[sec] || [];
+                const selectedCat = cats.find(c => (c.category_code || c.category) === correctForm.category_code);
+                const subs = selectedCat?.subcategories || [];
+                return (
+                  <div className="row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+                    <label className="correctLabel" style={{ flex: '1 1 200px' }}>
+                      <span className="correctLabelText">Category</span>
+                      <select
+                        className="input"
+                        value={correctForm.category_code || ''}
+                        onChange={(e) => {
+                          const cat = cats.find(c => (c.category_code || c.category) === e.target.value);
+                          setCorrectForm(f => ({
+                            ...f,
+                            category_code: e.target.value,
+                            category: cat?.category || '',
+                            subcategory_code: '',
+                            subcategory: '',
+                          }));
+                        }}
+                      >
+                        <option value="">--</option>
+                        {cats.map(c => (
+                          <option key={c.category_code || c.category} value={c.category_code || c.category}>
+                            {c.category}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="correctLabel" style={{ flex: '1 1 200px' }}>
+                      <span className="correctLabelText">Subcategory</span>
+                      <select
+                        className="input"
+                        value={correctForm.subcategory_code || ''}
+                        onChange={(e) => {
+                          const sub = subs.find(s => (s.subcategory_code || s.subcategory) === e.target.value);
+                          setCorrectForm(f => ({
+                            ...f,
+                            subcategory_code: e.target.value,
+                            subcategory: sub?.subcategory || '',
+                          }));
+                        }}
+                      >
+                        <option value="">--</option>
+                        {subs.map(s => (
+                          <option key={s.subcategory_code || s.subcategory} value={s.subcategory_code || s.subcategory}>
+                            {s.subcategory}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                );
+              })() : <p className="muted small">Loading taxonomy options...</p>}
+            </div>
+
+            <div className="row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+              <button className="btn secondary" onClick={() => setShowCorrectModal(false)} disabled={correctSubmitting}>
+                Cancel
+              </button>
+              <button className="btn primary" style={{ background: 'var(--color-success, #22c55e)' }} onClick={() => submitCorrection(false)} disabled={correctSubmitting}>
+                {correctSubmitting ? 'Saving...' : 'Mark Not Broken & Save'}
+              </button>
+              <button className="btn primary" onClick={() => submitCorrection(true)} disabled={correctSubmitting}>
+                {correctSubmitting ? 'Saving...' : 'Flag as Broken & Save'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
