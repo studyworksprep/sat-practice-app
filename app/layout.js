@@ -1,6 +1,7 @@
 import './globals.css';
 import NavBar from '../components/NavBar';
 import Script from 'next/script';
+import { TestTypeProvider } from '../lib/TestTypeContext';
 
 export const metadata = {
   title: 'SAT Practice',
@@ -44,8 +45,10 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <NavBar />
-        {children}
+        <TestTypeProvider>
+          <NavBar />
+          {children}
+        </TestTypeProvider>
       </body>
     </html>
   );

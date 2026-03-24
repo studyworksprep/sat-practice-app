@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Filters from '../../components/Filters';
 import Toast from '../../components/Toast';
+import { useTestType } from '../../lib/TestTypeContext';
 
 const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
 
@@ -53,6 +54,13 @@ function shuffleArray(arr) {
 
 export default function PracticePage() {
   const router = useRouter();
+  const { testType } = useTestType();
+
+  // Redirect to ACT practice when toggle is switched
+  useEffect(() => {
+    if (testType === 'act') router.replace('/act-practice');
+  }, [testType, router]);
+
   const [filters, setFilters] = useState({});
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);

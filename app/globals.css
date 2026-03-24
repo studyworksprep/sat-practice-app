@@ -530,6 +530,19 @@ label{
   background: rgba(0,0,0,0.04);
   font-size: 12px;
 }
+.pill.clickable{
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.pill.clickable:hover{
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.pill.clickable.selected{
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
 
 .chips{
   display: flex;
@@ -1376,6 +1389,33 @@ hr{
   border-radius: 6px;
   background: var(--accent-soft);
   color: var(--accent);
+}
+
+/* SAT / ACT toggle */
+.testTypeToggle{
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.testTypeBtn{
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 4px 14px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.testTypeBtn:hover{
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.testTypeBtn.testTypeActive{
+  background: var(--accent);
+  color: #fff;
 }
 
 /* ===============================
