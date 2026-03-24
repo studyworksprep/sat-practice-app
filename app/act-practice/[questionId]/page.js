@@ -464,9 +464,9 @@ export default function ActQuestionDetailPage() {
       if (e.key === 'ArrowRight' && hasNext) goNext();
       if (e.key === 'Enter' && !locked && selected) handleSubmit();
       if (['a', 'b', 'c', 'd', 'e'].includes(e.key.toLowerCase()) && !locked) {
-        const options = data?.options || [];
+        const sortedOpts = (data?.options || []).slice().sort((a, b) => (a.label || '').localeCompare(b.label || ''));
         const idx = e.key.toLowerCase().charCodeAt(0) - 97;
-        if (idx < options.length) setSelected(options[idx].id);
+        if (idx < sortedOpts.length) setSelected(sortedOpts[idx].id);
       }
     }
     window.addEventListener('keydown', onKeyDown);
@@ -480,7 +480,7 @@ export default function ActQuestionDetailPage() {
 
   if (loading) return <main className="container"><div className="muted" style={{ marginTop: 40 }}>Loading...</div></main>;
 
-  const options = data?.options || [];
+  const options = (data?.options || []).slice().sort((a, b) => (a.label || '').localeCompare(b.label || ''));
   const locked = gotCorrect || gaveUp;
   const correctOptionId = data?.correct_option_id || null;
   const isMath = data?.section === 'math';
