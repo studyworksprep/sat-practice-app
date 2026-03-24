@@ -172,15 +172,24 @@ export default function ActPracticePage() {
     });
   }
 
-  // Toggle all subcategories for a category (like SAT domain toggle)
+  // Toggle a category: adds/removes from categories array AND toggles all its subcategories
   function toggleCategory(catCode, subcatCodes) {
     setFilters(prev => {
-      const allSelected = subcatCodes.length > 0 &&
-        subcatCodes.every(sc => prev.subcategories.includes(sc));
-      if (allSelected) {
-        return { ...prev, subcategories: prev.subcategories.filter(sc => !subcatCodes.includes(sc)) };
+      const catOn = prev.categories.includes(catCode);
+      if (catOn) {
+        // Deselect category + all its subcategories
+        return {
+          ...prev,
+          categories: prev.categories.filter(c => c !== catCode),
+          subcategories: prev.subcategories.filter(sc => !subcatCodes.includes(sc)),
+        };
       }
-      return { ...prev, subcategories: [...new Set([...prev.subcategories, ...subcatCodes])] };
+      // Select category + all its subcategories
+      return {
+        ...prev,
+        categories: [...prev.categories, catCode],
+        subcategories: [...new Set([...prev.subcategories, ...subcatCodes])],
+      };
     });
   }
 
@@ -251,17 +260,17 @@ export default function ActPracticePage() {
               {visibleCategories.map(c => {
                 const catKey = c.category_code || c.category;
                 const subcatCodes = (c.subcategories || []).map(sc => sc.subcategory_code || sc.subcategory);
-                const allSubsSelected = subcatCodes.length > 0 && subcatCodes.every(sc => filters.subcategories.includes(sc));
+                const catOn = filters.categories.includes(catKey);
                 const selCount = selectedSubcatCount(c);
                 const isPopoverOpen = openSubcats === `${c.section}-${catKey}`;
 
                 return (
                   <div key={`${c.section}-${catKey}`} className="domainGroup math" style={{ position: 'relative' }}>
-                    <div className="domainRow math" style={{ gap: 4 }}>
-                      <label className={`domainChip math${allSubsSelected ? ' on' : ''}`}>
+                    <div className={`domainRow math${catOn ? ' on' : ''}`} style={{ gap: 4 }}>
+                      <label className={`domainChip math${catOn ? ' on' : ''}`}>
                         <input
                           type="checkbox"
-                          checked={allSubsSelected}
+                          checked={catOn}
                           onChange={() => toggleCategory(catKey, subcatCodes)}
                         />
                         <span style={{ flex: 1 }}>{c.category}</span>

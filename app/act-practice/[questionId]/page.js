@@ -420,15 +420,15 @@ export default function ActQuestionDetailPage() {
           }
 
           return (
-            <button
+            <div
               key={opt.id}
               className={cls}
-              onClick={() => !locked && setSelected(opt.id)}
-              disabled={locked || isWrong}
+              onClick={() => { if (!locked && !isWrong) setSelected(opt.id); }}
+              style={{ cursor: locked || isWrong ? 'default' : 'pointer' }}
             >
               <div className="optionBadge">{opt.label}</div>
               <div className="optionContent"><HtmlBlock className="prose" html={opt.content_html} /></div>
-            </button>
+            </div>
           );
         })}
       </div>

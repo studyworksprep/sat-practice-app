@@ -41,8 +41,18 @@ export async function GET(request) {
     .order('source_ordinal');
 
   if (sections.length > 0) q = q.in('section', sections);
-  if (categories.length > 0) q = q.in('category_code', categories);
-  if (subcategories.length > 0) q = q.in('subcategory_code', subcategories);
+
+  // Category/subcategory: OR logic when both present (like SAT domain/topic),
+  // so selecting a category picks up all its questions including those without subcategory_code
+  if (categories.length > 0 && subcategories.length > 0) {
+    const catCsv = categories.map(c => `"${c}"`).join(',');
+    const subCsv = subcategories.map(s => `"${s}"`).join(',');
+    q = q.or(`category_code.in.(${catCsv}),subcategory_code.in.(${subCsv})`);
+  } else if (categories.length > 0) {
+    q = q.in('category_code', categories);
+  } else if (subcategories.length > 0) {
+    q = q.in('subcategory_code', subcategories);
+  }
   if (difficulties.length > 0) q = q.in('difficulty', difficulties);
   if (hide_broken) q = q.eq('is_broken', false);
   if (modeling === 'true') q = q.eq('is_modeling', true);
