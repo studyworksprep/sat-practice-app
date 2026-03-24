@@ -21,6 +21,8 @@ function buildParams(filters, search, extra = {}) {
   if (filters.categories?.length) p.set('categories', filters.categories.join(','));
   if (filters.subcategories?.length) p.set('subcategories', filters.subcategories.join(','));
   if (filters.difficulties?.length) p.set('difficulties', filters.difficulties.join(','));
+  if (filters.modeling === true) p.set('modeling', 'true');
+  else if (filters.modeling === false) p.set('modeling', 'false');
   p.set('hide_broken', 'true');
   if (search.trim()) p.set('q', search.trim());
   for (const [k, v] of Object.entries(extra)) p.set(k, v);
@@ -39,7 +41,10 @@ function shuffleArray(arr) {
 export default function ActPracticePage() {
   const router = useRouter();
   const { testType } = useTestType();
-  const [filters, setFilters] = useState({ sections: [], categories: [], subcategories: [], difficulties: [] });
+  const [filters, setFilters] = useState({
+    sections: [], categories: [], subcategories: [], difficulties: [],
+    modeling: null, // null = all, true = only modeling, false = exclude modeling
+  });
   const [filterData, setFilterData] = useState(null);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -50,6 +55,8 @@ export default function ActPracticePage() {
   const [totalCount, setTotalCount] = useState(0);
   const loadIdRef = useRef(0);
   const [randomize, setRandomize] = useState(false);
+  const [openSubcats, setOpenSubcats] = useState(null); // category_code of open subcategory popover
+  const popoverRef = useRef(null);
 
   // Redirect to /practice if user switches back to SAT
   useEffect(() => {
@@ -63,6 +70,19 @@ export default function ActPracticePage() {
       .then(d => setFilterData(d))
       .catch(() => {});
   }, []);
+
+  // Close subcategory popover on outside click
+  useEffect(() => {
+    if (!openSubcats) return;
+    function handleClick(e) {
+      if (e.target.closest('.domainSkillsBtn')) return;
+      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+        setOpenSubcats(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [openSubcats]);
 
   // Debounce search
   useEffect(() => {
@@ -152,6 +172,44 @@ export default function ActPracticePage() {
     });
   }
 
+  // Toggle all subcategories for a category (like SAT domain toggle)
+  function toggleCategory(catCode, subcatCodes) {
+    setFilters(prev => {
+      const allSelected = subcatCodes.length > 0 &&
+        subcatCodes.every(sc => prev.subcategories.includes(sc));
+      if (allSelected) {
+        return { ...prev, subcategories: prev.subcategories.filter(sc => !subcatCodes.includes(sc)) };
+      }
+      return { ...prev, subcategories: [...new Set([...prev.subcategories, ...subcatCodes])] };
+    });
+  }
+
+  function toggleSubcategory(subcatCode) {
+    setFilters(prev => {
+      const isOn = prev.subcategories.includes(subcatCode);
+      return { ...prev, subcategories: isOn ? prev.subcategories.filter(sc => sc !== subcatCode) : [...prev.subcategories, subcatCode] };
+    });
+  }
+
+  // Count selected subcats for a category
+  function selectedSubcatCount(cat) {
+    return (cat.subcategories || []).filter(sc => {
+      const key = sc.subcategory_code || sc.subcategory;
+      return filters.subcategories.includes(key);
+    }).length;
+  }
+
+  // Build flat list of visible categories based on selected sections
+  const visibleCategories = useMemo(() => {
+    if (!filterData?.categories) return [];
+    const activeSections = filters.sections.length > 0
+      ? filters.sections
+      : Object.keys(filterData.categories);
+    return activeSections.flatMap(s =>
+      (filterData.categories[s] || []).map(c => ({ ...c, section: s }))
+    );
+  }, [filterData, filters.sections]);
+
   return (
     <main className="container">
       {/* ACT Filters */}
@@ -185,47 +243,117 @@ export default function ActPracticePage() {
           </div>
         </div>
 
-        {/* Category filter — show categories for selected sections (or all if none selected) */}
-        {filterData?.categories && (() => {
-          const activeSections = filters.sections.length > 0
-            ? filters.sections
-            : Object.keys(filterData.categories);
-          const cats = activeSections.flatMap(s => (filterData.categories[s] || []).map(c => ({ ...c, section: s })));
-          if (cats.length === 0) return null;
-          return (
-            <div style={{ marginBottom: 10 }}>
-              <div className="muted small" style={{ marginBottom: 4 }}>Category</div>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {cats.map(c => {
-                  const key = c.category_code || c.category;
-                  return (
-                    <button
-                      key={`${c.section}-${key}`}
-                      className={`pill clickable${filters.categories.includes(key) ? ' selected' : ''}`}
-                      onClick={() => toggleFilter('categories', key)}
-                    >
-                      {c.category} ({c.count})
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })()}
+        {/* Category filter with subcategory popovers */}
+        {visibleCategories.length > 0 && (
+          <div style={{ marginBottom: 10 }}>
+            <div className="muted small" style={{ marginBottom: 4 }}>Category</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {visibleCategories.map(c => {
+                const catKey = c.category_code || c.category;
+                const subcatCodes = (c.subcategories || []).map(sc => sc.subcategory_code || sc.subcategory);
+                const allSubsSelected = subcatCodes.length > 0 && subcatCodes.every(sc => filters.subcategories.includes(sc));
+                const selCount = selectedSubcatCount(c);
+                const isPopoverOpen = openSubcats === `${c.section}-${catKey}`;
 
-        {/* Difficulty filter */}
-        <div style={{ marginBottom: 10 }}>
-          <div className="muted small" style={{ marginBottom: 4 }}>Difficulty</div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {[1, 2, 3].map(d => (
+                return (
+                  <div key={`${c.section}-${catKey}`} className="domainGroup math" style={{ position: 'relative' }}>
+                    <div className="domainRow math" style={{ gap: 4 }}>
+                      <label className={`domainChip math${allSubsSelected ? ' on' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={allSubsSelected}
+                          onChange={() => toggleCategory(catKey, subcatCodes)}
+                        />
+                        <span style={{ flex: 1 }}>{c.category}</span>
+                        <span className="filterCount">{c.count}</span>
+                      </label>
+
+                      {c.subcategories && c.subcategories.length > 0 && (
+                        <button
+                          className={`domainSkillsBtn math${selCount > 0 ? ' hasSelection' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenSubcats(isPopoverOpen ? null : `${c.section}-${catKey}`);
+                          }}
+                        >
+                          Subs{selCount > 0 ? ` (${selCount})` : ''}
+                          <svg viewBox="0 0 16 16" width="12" height="12" className={isPopoverOpen ? 'open' : ''}>
+                            <polyline points="4 6 8 10 12 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Subcategory popover */}
+                    {isPopoverOpen && c.subcategories && c.subcategories.length > 0 && (
+                      <div className="skillsPopover math" ref={popoverRef}>
+                        <div className="skillsPopoverBody">
+                          {c.subcategories.map((sc) => {
+                            const scKey = sc.subcategory_code || sc.subcategory;
+                            const scOn = filters.subcategories.includes(scKey);
+                            return (
+                              <label key={scKey} className={`chip sm${scOn ? ' on' : ''}`}>
+                                <input
+                                  type="checkbox"
+                                  checked={scOn}
+                                  onChange={() => toggleSubcategory(scKey)}
+                                />
+                                <span>{sc.subcategory}</span>
+                                <span className="filterCount">{sc.count}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Difficulty + Modeling row */}
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+          <div>
+            <div className="muted small" style={{ marginBottom: 4 }}>Difficulty</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {[1, 2, 3].map(d => (
+                <button
+                  key={d}
+                  className={`pill clickable${filters.difficulties.includes(d) ? ' selected' : ''}`}
+                  onClick={() => toggleFilter('difficulties', d)}
+                >
+                  {DIFF_LABEL[d]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="muted small" style={{ marginBottom: 4 }}>
+              Modeling{filterData?.modelingCount ? ` (${filterData.modelingCount})` : ''}
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
               <button
-                key={d}
-                className={`pill clickable${filters.difficulties.includes(d) ? ' selected' : ''}`}
-                onClick={() => toggleFilter('difficulties', d)}
+                className={`pill clickable${filters.modeling === null ? ' selected' : ''}`}
+                onClick={() => setFilters(prev => ({ ...prev, modeling: null }))}
               >
-                {DIFF_LABEL[d]}
+                All
               </button>
-            ))}
+              <button
+                className={`pill clickable${filters.modeling === true ? ' selected' : ''}`}
+                onClick={() => setFilters(prev => ({ ...prev, modeling: prev.modeling === true ? null : true }))}
+              >
+                On
+              </button>
+              <button
+                className={`pill clickable${filters.modeling === false ? ' selected' : ''}`}
+                onClick={() => setFilters(prev => ({ ...prev, modeling: prev.modeling === false ? null : false }))}
+              >
+                Off
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -291,6 +419,7 @@ export default function ActPracticePage() {
                           {q.difficulty != null && (
                             <span className="pill qPill qDiffPill">{DIFF_LABEL[q.difficulty] ?? `D${q.difficulty}`}</span>
                           )}
+                          {q.is_modeling && <span className="pill qPill" style={{ background: '#fef3c7', color: '#92400e' }}>Modeling</span>}
                           <AttemptedBadge is_done={q.is_done} />
                         </div>
                       </div>

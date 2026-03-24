@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Script from 'next/script';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '../../../components/Toast';
 import HtmlBlock from '../../../components/HtmlBlock';
+import DesmosStateButton from '../../../components/DesmosStateButton';
 import { useTestType } from '../../../lib/TestTypeContext';
 
 const htmlHasContent = (html) => {
@@ -16,6 +18,116 @@ const htmlHasContent = (html) => {
 
 const SECTION_LABELS = { english: 'English', math: 'Math', reading: 'Reading', science: 'Science' };
 const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
+
+/**
+ * Desmos panel — identical to the SAT version.
+ * Creates a single GraphingCalculator instance, persists state in localStorage.
+ */
+function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
+  const hostRef = useRef(null);
+  const calcRef = useRef(null);
+  const savedStateRef = useRef(null);
+  const prevOpenRef = useRef(isOpen);
+  const roRef = useRef(null);
+  const rafRef = useRef(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.Desmos) setReady(true);
+  }, []);
+
+  const safeResize = () => {
+    if (!calcRef.current) return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      try { calcRef.current.resize(); } catch {}
+    });
+  };
+
+  const saveState = () => {
+    if (!calcRef.current) return;
+    try {
+      const st = calcRef.current.getState();
+      savedStateRef.current = st;
+      if (storageKey && typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(storageKey, JSON.stringify(st));
+      }
+    } catch {}
+  };
+
+  const restoreState = () => {
+    if (!calcRef.current) return;
+    let st = savedStateRef.current;
+    try {
+      if (!st && storageKey && typeof window !== 'undefined' && window.localStorage) {
+        const raw = window.localStorage.getItem(storageKey);
+        if (raw) st = JSON.parse(raw);
+      }
+    } catch {}
+    if (st) {
+      try { calcRef.current.setState(st, { allowUndo: false }); } catch {}
+    }
+  };
+
+  useEffect(() => {
+    if (!ready || !hostRef.current || !window.Desmos) return;
+    if (!calcRef.current) {
+      calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
+        autosize: true, keypad: true, expressions: true, settingsMenu: true,
+        zoomButtons: true, forceEnableGeometryFunctions: true, degreeMode: true,
+        clearIntoDegreeMode: true, images: false, folders: false, notes: false,
+        links: false, restrictedFunctions: false,
+      });
+      restoreState();
+      safeResize();
+      if (calcInstanceRef) calcInstanceRef.current = calcRef.current;
+    }
+    return () => {
+      saveState();
+      if (calcInstanceRef) calcInstanceRef.current = null;
+      try { calcRef.current?.destroy?.(); } catch {}
+      calcRef.current = null;
+      try { roRef.current?.disconnect?.(); } catch {}
+      roRef.current = null;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
+  useEffect(() => {
+    if (!ready || !hostRef.current || !calcRef.current) return;
+    if (typeof ResizeObserver === 'undefined') return;
+    try { roRef.current?.disconnect?.(); } catch {}
+    roRef.current = new ResizeObserver(() => safeResize());
+    roRef.current.observe(hostRef.current);
+    return () => { try { roRef.current?.disconnect?.(); } catch {} roRef.current = null; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
+  useEffect(() => {
+    const prev = prevOpenRef.current;
+    if (prev && !isOpen) saveState();
+    if (!prev && isOpen) { restoreState(); safeResize(); }
+    prevOpenRef.current = isOpen;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  const apiKey =
+    (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_DESMOS_API_KEY) ||
+    'bac289385bcd4778a682276b95f5f116';
+
+  return (
+    <>
+      <Script
+        src={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${apiKey}`}
+        strategy="afterInteractive"
+        onLoad={() => setReady(true)}
+      />
+      <div ref={hostRef} className="desmosHost" />
+    </>
+  );
+}
 
 export default function ActQuestionDetailPage() {
   const { questionId } = useParams();
@@ -35,6 +147,16 @@ export default function ActQuestionDetailPage() {
   const startedAtRef = useRef(Date.now());
   const [elapsedMs, setElapsedMs] = useState(0);
   const timerRef = useRef(null);
+
+  // Calculator state
+  const MIN_CALC_W = 550;
+  const MAX_CALC_W = 1200;
+  const [calcMinimized, setCalcMinimized] = useState(false);
+  const [calcWidth, setCalcWidth] = useState(MIN_CALC_W);
+  const calcInstanceRef = useRef(null);
+  const shellRef = useRef(null);
+  const liveWidthRef = useRef(MIN_CALC_W);
+  const dragRef = useRef({ dragging: false, startX: 0, startW: MIN_CALC_W, pendingW: MIN_CALC_W });
 
   // Session nav params
   const sid = searchParams.get('sid');
@@ -64,8 +186,6 @@ export default function ActQuestionDetailPage() {
       .then(json => {
         if (json.error) throw new Error(json.error);
         setData(json);
-
-        // If previously answered, restore state
         if (json.status?.is_done) {
           setGotCorrect(json.status.last_is_correct);
           if (json.status.last_selected_option_id) setSelected(json.status.last_selected_option_id);
@@ -89,6 +209,60 @@ export default function ActQuestionDetailPage() {
       timerRef.current = null;
     }
   }, [gotCorrect, gaveUp]);
+
+  // Calculator state persistence
+  useEffect(() => {
+    try {
+      const savedMin = localStorage.getItem('actCalcMinimized');
+      if (savedMin === '1') setCalcMinimized(true);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (!questionId) return;
+    const resetW = MIN_CALC_W;
+    setCalcWidth(resetW);
+    liveWidthRef.current = resetW;
+    dragRef.current.pendingW = resetW;
+    shellRef.current?.style.setProperty('--calcW', `${resetW}px`);
+  }, [questionId]);
+
+  useEffect(() => {
+    try { localStorage.setItem('actCalcMinimized', calcMinimized ? '1' : '0'); } catch {}
+  }, [calcMinimized]);
+
+  useEffect(() => {
+    liveWidthRef.current = calcWidth;
+  }, [calcWidth]);
+
+  // Divider drag handler
+  function onDividerPointerDown(e) {
+    if (calcMinimized) return;
+    e.preventDefault();
+    dragRef.current.dragging = true;
+    dragRef.current.startX = e.clientX;
+    dragRef.current.startW = liveWidthRef.current;
+    dragRef.current.pendingW = liveWidthRef.current;
+
+    const onMove = (ev) => {
+      if (!dragRef.current.dragging) return;
+      const dx = ev.clientX - dragRef.current.startX;
+      const next = Math.min(Math.max(dragRef.current.startW + dx, MIN_CALC_W), MAX_CALC_W);
+      dragRef.current.pendingW = next;
+      liveWidthRef.current = next;
+      shellRef.current?.style.setProperty('--calcW', `${next}px`);
+    };
+
+    const onUp = () => {
+      dragRef.current.dragging = false;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      setCalcWidth(dragRef.current.pendingW);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  }
 
   // Session navigation
   function getSessionIds() {
@@ -121,9 +295,7 @@ export default function ActQuestionDetailPage() {
   async function handleSubmit() {
     if (!selected || !data?.question_id) return;
 
-    // Retry on wrong: track wrong choice and let student try again
     if (data.status?.is_done || wrongOptionIds.length > 0) {
-      // Already answered — check if the retry is correct
       const correctId = data.correct_option_id;
       if (correctId && String(selected) === String(correctId)) {
         setGotCorrect(true);
@@ -204,13 +376,158 @@ export default function ActQuestionDetailPage() {
   const options = data?.options || [];
   const locked = gotCorrect || gaveUp;
   const correctOptionId = data?.correct_option_id || null;
-
-  // Determine if this is a reading-like section (english/reading have stimulus)
+  const isMath = data?.section === 'math';
   const hasStimulusContent = htmlHasContent(data?.stimulus_html);
-  const useTwoCol = hasStimulusContent;
+  // Reading/English/Science with stimulus = two-col layout; Math = calc + question
+  const useTwoCol = hasStimulusContent && !isMath;
+
+  // Question content JSX (shared between math and non-math layouts)
+  const questionContent = (
+    <div className="card" style={{ padding: 20 }}>
+      {/* Taxonomy breadcrumb */}
+      <div className="muted small" style={{ marginBottom: 8 }}>
+        {data?.category || ''}
+        {data?.subcategory ? ` > ${data.subcategory}` : ''}
+        {data?.external_id ? ` · ${data.external_id}` : ''}
+        {data?.is_modeling && <span style={{ marginLeft: 8, color: '#92400e', fontWeight: 600 }}>Modeling</span>}
+      </div>
+
+      {/* Stimulus (inline for math, since we use the calc for the second column) */}
+      {isMath && hasStimulusContent && (
+        <div style={{ marginBottom: 16 }}>
+          <HtmlBlock className="prose" html={data.stimulus_html} />
+        </div>
+      )}
+
+      {/* Stem */}
+      <div style={{ marginBottom: 16 }}>
+        <HtmlBlock className="prose" html={data?.stem_html} />
+      </div>
+
+      {/* Options */}
+      <div style={{ display: 'grid', gap: 8 }}>
+        {options.map((opt) => {
+          const isSelected = String(selected) === String(opt.id);
+          const isWrong = wrongOptionIds.includes(opt.id);
+          const isCorrect = locked && correctOptionId && String(opt.id) === String(correctOptionId);
+
+          let cls = 'option';
+          if (isSelected) cls += ' selected';
+          if (isWrong) cls += ' incorrect';
+          if (locked) {
+            if (isCorrect && (isSelected || gaveUp || gotCorrect)) cls += ' correct';
+            if (!isSelected && isCorrect && (gaveUp || gotCorrect)) cls += ' revealCorrect';
+          }
+
+          return (
+            <button
+              key={opt.id}
+              className={cls}
+              onClick={() => !locked && setSelected(opt.id)}
+              disabled={locked || isWrong}
+            >
+              <div className="optionBadge">{opt.label}</div>
+              <div className="optionContent"><HtmlBlock className="prose" html={opt.content_html} /></div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Action buttons */}
+      <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
+        {!locked && (
+          <>
+            <button
+              className="btn"
+              disabled={!selected || submitting}
+              onClick={handleSubmit}
+            >
+              {submitting ? 'Submitting...' : wrongOptionIds.length > 0 ? 'Retry' : 'Submit'}
+            </button>
+            <button className="btn secondary" onClick={handleGiveUp}>
+              Give Up
+            </button>
+          </>
+        )}
+        {locked && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {gotCorrect && <span style={{ color: 'var(--green)', fontWeight: 600 }}>Correct!</span>}
+            {gaveUp && <span style={{ color: 'var(--muted)', fontWeight: 600 }}>Answer revealed</span>}
+            {hasNext && (
+              <button className="btn" onClick={goNext}>Next Question</button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Rationale */}
+      {locked && htmlHasContent(data?.rationale_html) && (
+        <div style={{ marginTop: 16 }}>
+          <button
+            className="btn secondary"
+            style={{ fontSize: 12, marginBottom: 8 }}
+            onClick={() => setShowRationale(r => !r)}
+          >
+            {showRationale ? 'Hide Explanation' : 'Show Explanation'}
+          </button>
+          {showRationale && (
+            <div className="card" style={{ padding: 16, background: 'var(--bg)' }}>
+              <HtmlBlock html={data.rationale_html} />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  // Math layout: calculator left, question right (matches SAT pattern)
+  const mathShellJsx = (rightContent) => (
+    <div
+      ref={shellRef}
+      className={`mathShell ${calcMinimized ? 'min' : 'withCalc'}`}
+      style={{ '--calcW': `${calcMinimized ? 0 : calcWidth}px` }}
+    >
+      <aside className={`mathLeft ${calcMinimized ? 'min' : ''}`} aria-label="Calculator panel">
+        <div className="mathLeftHeader">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
+            {!calcMinimized && (
+              <DesmosStateButton
+                questionId={questionId}
+                getCalcState={() => { try { return calcInstanceRef.current?.getState?.(); } catch { return null; } }}
+                setCalcState={(st) => { try { calcInstanceRef.current?.setState?.(st, { allowUndo: false }); } catch {} }}
+              />
+            )}
+          </div>
+          <button type="button" className="btn secondary" onClick={() => setCalcMinimized(m => !m)}>
+            {calcMinimized ? 'Expand' : 'Minimize'}
+          </button>
+        </div>
+        <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
+          <DesmosPanel isOpen={!calcMinimized} storageKey={questionId ? `desmos:act:${questionId}` : 'desmos:act:unknown'} calcInstanceRef={calcInstanceRef} />
+        </div>
+        {calcMinimized ? <div className="calcMinBody" /> : null}
+      </aside>
+
+      {!calcMinimized ? (
+        <div
+          className="mathDivider"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize calculator panel"
+          onPointerDown={onDividerPointerDown}
+          title="Drag to resize"
+        />
+      ) : (
+        <div className="mathDivider min" aria-hidden="true" />
+      )}
+
+      <main className="mathRight">{rightContent}</main>
+    </div>
+  );
 
   return (
-    <main className="container" style={{ maxWidth: 1100 }}>
+    <main className="container containerWide">
       {msg && <Toast kind={msg?.kind} message={msg?.text} />}
 
       {/* Top bar */}
@@ -238,106 +555,27 @@ export default function ActQuestionDetailPage() {
         </div>
       </div>
 
-      {/* Question content */}
-      <div className={useTwoCol ? 'qaTwoCol' : ''}>
-        {/* Stimulus (left column or above) */}
-        {hasStimulusContent && (
-          <div className={useTwoCol ? 'qaLeft' : 'card'} style={!useTwoCol ? { marginBottom: 12, padding: 20 } : undefined}>
-            <HtmlBlock html={data.stimulus_html} />
+      {/* Main content area */}
+      {isMath ? (
+        // Math: calculator + question in mathShell
+        mathShellJsx(questionContent)
+      ) : useTwoCol ? (
+        // Reading/English/Science with stimulus: two-column layout
+        <div className="qaTwoCol">
+          <div className="qaLeft">
+            <div className="card subcard">
+              <HtmlBlock className="prose" html={data.stimulus_html} />
+            </div>
           </div>
-        )}
-
-        {/* Question + answers */}
-        <div className={useTwoCol ? 'qaRight' : ''}>
-          <div className="card" style={{ padding: 20 }}>
-            {/* Taxonomy breadcrumb */}
-            <div className="muted small" style={{ marginBottom: 8 }}>
-              {data?.category || ''}
-              {data?.subcategory ? ` > ${data.subcategory}` : ''}
-              {data?.external_id ? ` · ${data.external_id}` : ''}
-            </div>
-
-            {/* Stem */}
-            <div style={{ marginBottom: 16 }}>
-              <HtmlBlock html={data?.stem_html} />
-            </div>
-
-            {/* Options */}
-            <div style={{ display: 'grid', gap: 8 }}>
-              {options.map((opt) => {
-                const isSelected = String(selected) === String(opt.id);
-                const isWrong = wrongOptionIds.includes(opt.id);
-                const isCorrect = locked && correctOptionId && String(opt.id) === String(correctOptionId);
-
-                let cls = 'option';
-                if (isSelected) cls += ' selected';
-                if (isWrong) cls += ' incorrect';
-                if (locked) {
-                  if (isCorrect && (isSelected || gaveUp || gotCorrect)) cls += ' correct';
-                  if (!isSelected && isCorrect && (gaveUp || gotCorrect)) cls += ' revealCorrect';
-                } else if (isSelected && !isWrong) cls += '';
-
-                return (
-                  <button
-                    key={opt.id}
-                    className={cls}
-                    onClick={() => !locked && setSelected(opt.id)}
-                    disabled={locked || isWrong}
-                  >
-                    <div className="optionBadge">{opt.label}</div>
-                    <div className="optionContent"><HtmlBlock className="prose" html={opt.content_html} /></div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Action buttons */}
-            <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
-              {!locked && (
-                <>
-                  <button
-                    className="btn"
-                    disabled={!selected || submitting}
-                    onClick={handleSubmit}
-                  >
-                    {submitting ? 'Submitting...' : wrongOptionIds.length > 0 ? 'Retry' : 'Submit'}
-                  </button>
-                  <button className="btn secondary" onClick={handleGiveUp}>
-                    Give Up
-                  </button>
-                </>
-              )}
-              {locked && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  {gotCorrect && <span style={{ color: 'var(--green)', fontWeight: 600 }}>Correct!</span>}
-                  {gaveUp && <span style={{ color: 'var(--muted)', fontWeight: 600 }}>Answer revealed</span>}
-                  {hasNext && (
-                    <button className="btn" onClick={goNext}>Next Question</button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Rationale */}
-            {locked && htmlHasContent(data?.rationale_html) && (
-              <div style={{ marginTop: 16 }}>
-                <button
-                  className="btn secondary"
-                  style={{ fontSize: 12, marginBottom: 8 }}
-                  onClick={() => setShowRationale(r => !r)}
-                >
-                  {showRationale ? 'Hide Explanation' : 'Show Explanation'}
-                </button>
-                {showRationale && (
-                  <div className="card" style={{ padding: 16, background: 'var(--bg)' }}>
-                    <HtmlBlock html={data.rationale_html} />
-                  </div>
-                )}
-              </div>
-            )}
+          <div className="qaDivider" aria-hidden="true" />
+          <div className="qaRight">
+            {questionContent}
           </div>
         </div>
-      </div>
+      ) : (
+        // Default single-column
+        questionContent
+      )}
     </main>
   );
 }

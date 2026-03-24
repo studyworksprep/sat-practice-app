@@ -19,6 +19,7 @@ export async function GET(request) {
     .split(',').map(s => parseInt(s.trim(), 10)).filter(n => Number.isFinite(n));
 
   const hide_broken = searchParams.get('hide_broken') === 'true';
+  const modeling = searchParams.get('modeling'); // 'true' = only modeling, 'false' = exclude modeling
   const qText = (searchParams.get('q') || '').trim();
 
   const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 5000);
@@ -44,6 +45,8 @@ export async function GET(request) {
   if (subcategories.length > 0) q = q.in('subcategory_code', subcategories);
   if (difficulties.length > 0) q = q.in('difficulty', difficulties);
   if (hide_broken) q = q.eq('is_broken', false);
+  if (modeling === 'true') q = q.eq('is_modeling', true);
+  else if (modeling === 'false') q = q.eq('is_modeling', false);
 
   // Text search on external_id or stem_html
   if (qText) {

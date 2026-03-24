@@ -10,7 +10,7 @@ export async function GET() {
     // Fetch all distinct section + category + subcategory combos
     const { data: rows, error } = await supabase
       .from('act_questions')
-      .select('section, category_code, category, subcategory_code, subcategory')
+      .select('section, category_code, category, subcategory_code, subcategory, is_modeling')
       .order('section')
       .limit(10000);
 
@@ -20,12 +20,15 @@ export async function GET() {
     const sectionSet = new Set();
     const catMap = {}; // section -> { category_code -> { name, subcategories: [...] } }
     const countMap = {}; // section -> count
+    let modelingCount = 0;
 
     for (const r of rows || []) {
       sectionSet.add(r.section);
 
       if (!countMap[r.section]) countMap[r.section] = 0;
       countMap[r.section]++;
+
+      if (r.is_modeling) modelingCount++;
 
       const key = r.category_code || r.category;
       if (!catMap[r.section]) catMap[r.section] = {};
@@ -66,7 +69,7 @@ export async function GET() {
       }));
     }
 
-    return NextResponse.json({ sections, categories });
+    return NextResponse.json({ sections, categories, modelingCount });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 400 });
   }
