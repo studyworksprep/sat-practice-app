@@ -76,8 +76,8 @@ create policy "act_attempts_teacher_read" on act_attempts
   for select to authenticated
   using (
     exists (
-      select 1 from profiles p
-      where p.id = act_attempts.user_id
-        and p.teacher_id = auth.uid()
+      select 1 from teacher_student_assignments tsa
+      where tsa.student_id = act_attempts.user_id
+        and tsa.teacher_id = auth.uid()
     )
   );
