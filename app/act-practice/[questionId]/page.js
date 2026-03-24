@@ -502,13 +502,13 @@ export default function ActQuestionDetailPage() {
       {/* Stimulus (inline for math, since we use the calc for the second column) */}
       {isMath && hasStimulusContent && (
         <div style={{ marginBottom: 16 }}>
-          <HtmlBlock className="prose" html={data.stimulus_html} />
+          <HtmlBlock className="prose" html={data.stimulus_html} imgMaxWidth={320} />
         </div>
       )}
 
       {/* Stem */}
       <div style={{ marginBottom: 16 }}>
-        <HtmlBlock className="prose" html={data?.stem_html} />
+        <HtmlBlock className="prose" html={data?.stem_html} imgMaxWidth={320} />
       </div>
 
       {/* Options */}
@@ -686,7 +686,7 @@ export default function ActQuestionDetailPage() {
         <div className="qaTwoCol">
           <div className="qaLeft">
             <div className="card subcard">
-              <HtmlBlock className="prose" html={data.stimulus_html} />
+              <HtmlBlock className="prose" html={data.stimulus_html} imgMaxWidth={320} />
             </div>
           </div>
           <div className="qaDivider" aria-hidden="true" />
