@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '../../../../../lib/supabase/server';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
 
 // POST /api/act/questions/parse-pdf
 // Accepts two PDF files (questions + answer key), sends to Mathpix, then Claude
@@ -27,6 +29,11 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Both questions_pdf and answers_pdf files are required' }, { status: 400 });
   }
 
+  // Sanitize source_test for use as a directory name
+  const dirName = sourceTest
+    ? sourceTest.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_').toLowerCase()
+    : `import_${Date.now()}`;
+
   try {
     // Step 1: Send both PDFs to Mathpix for OCR
     const [questionsResult, answersResult] = await Promise.all([
@@ -34,10 +41,15 @@ export async function POST(request) {
       mathpixPdfToMmd(answersPdf),
     ]);
 
-    // Step 2: Send both OCR results to Claude for structured extraction
+    // Step 2: Download all images from Mathpix CDN and save locally
+    const imageDir = path.join(process.cwd(), 'public', 'images', dirName);
+    const questionsMmdLocal = await downloadAndRewriteImages(questionsResult, imageDir, dirName, 'q');
+    const answersMmdLocal = await downloadAndRewriteImages(answersResult, imageDir, dirName, 'a');
+
+    // Step 3: Send both OCR results to Claude for structured extraction
     const questions = await extractQuestionsWithClaude(
-      questionsResult,
-      answersResult,
+      questionsMmdLocal,
+      answersMmdLocal,
       sourceTest,
     );
 
@@ -46,6 +58,108 @@ export async function POST(request) {
     console.error('parse-pdf error:', e);
     return NextResponse.json({ error: e.message || 'Failed to parse PDFs' }, { status: 500 });
   }
+}
+
+// ---------------------------------------------------------------------------
+// Download images from Mathpix CDN and rewrite markdown references to local paths
+// ---------------------------------------------------------------------------
+async function downloadAndRewriteImages(mmdText, imageDir, dirName, prefix) {
+  // Match both markdown images ![...](url) and HTML <img src="url">
+  const mdImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  const htmlImageRegex = /<img\s[^>]*src=["']([^"']+)["'][^>]*>/gi;
+
+  // Collect all image URLs
+  const imageUrls = new Map(); // url -> local filename
+  let counter = 0;
+
+  let match;
+  while ((match = mdImageRegex.exec(mmdText)) !== null) {
+    const url = match[2];
+    if (!imageUrls.has(url)) {
+      counter++;
+      const ext = guessExtension(url);
+      imageUrls.set(url, `${prefix}_${String(counter).padStart(3, '0')}${ext}`);
+    }
+  }
+  while ((match = htmlImageRegex.exec(mmdText)) !== null) {
+    const url = match[1];
+    if (!imageUrls.has(url)) {
+      counter++;
+      const ext = guessExtension(url);
+      imageUrls.set(url, `${prefix}_${String(counter).padStart(3, '0')}${ext}`);
+    }
+  }
+
+  if (imageUrls.size === 0) return mmdText;
+
+  // Create the image directory
+  await mkdir(imageDir, { recursive: true });
+
+  // Download all images in parallel
+  const downloads = [];
+  for (const [url, filename] of imageUrls) {
+    downloads.push(
+      downloadImage(url, path.join(imageDir, filename))
+        .then(() => ({ url, filename, ok: true }))
+        .catch((err) => {
+          console.warn(`Failed to download image ${url}:`, err.message);
+          return { url, filename, ok: false };
+        })
+    );
+  }
+  const results = await Promise.all(downloads);
+
+  // Build URL -> local path map (only for successful downloads)
+  const urlToLocal = new Map();
+  for (const r of results) {
+    if (r.ok) {
+      urlToLocal.set(r.url, `/images/${dirName}/${r.filename}`);
+    }
+  }
+
+  // Rewrite markdown image references
+  let rewritten = mmdText.replace(mdImageRegex, (full, alt, url) => {
+    const local = urlToLocal.get(url);
+    if (local) return `![${alt}](${local})`;
+    return full;
+  });
+
+  // Rewrite HTML image references
+  rewritten = rewritten.replace(htmlImageRegex, (full, url) => {
+    const local = urlToLocal.get(url);
+    if (local) return full.replace(url, local);
+    return full;
+  });
+
+  return rewritten;
+}
+
+function guessExtension(url) {
+  try {
+    const pathname = new URL(url).pathname.toLowerCase();
+    if (pathname.endsWith('.svg')) return '.svg';
+    if (pathname.endsWith('.png')) return '.png';
+    if (pathname.endsWith('.jpg') || pathname.endsWith('.jpeg')) return '.jpg';
+    if (pathname.endsWith('.gif')) return '.gif';
+    if (pathname.endsWith('.webp')) return '.webp';
+  } catch {}
+  return '.png'; // default to png
+}
+
+async function downloadImage(url, destPath) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+  const contentType = res.headers.get('content-type') || '';
+  const buffer = Buffer.from(await res.arrayBuffer());
+
+  // If we got SVG content, save as-is even if extension was guessed wrong
+  if (contentType.includes('svg') && !destPath.endsWith('.svg')) {
+    destPath = destPath.replace(/\.[^.]+$/, '.svg');
+  }
+
+  await writeFile(destPath, buffer);
+  return destPath;
 }
 
 // ---------------------------------------------------------------------------
@@ -123,7 +237,7 @@ async function extractQuestionsWithClaude(questionsMmd, answersMmd, sourceTest) 
   const systemPrompt = `You are an expert at parsing ACT math test content that has been OCR'd from PDF.
 
 You will receive two documents:
-1. QUESTIONS DOCUMENT: Contains the math questions with their question numbers, stems, any diagrams/figures described, and answer options.
+1. QUESTIONS DOCUMENT: Contains the math questions with their question numbers, stems, any diagrams/figures, and answer options.
 2. ANSWER KEY DOCUMENT: Contains the correct answers AND taxonomy information (category, subcategory, etc.) for each question.
 
 Your task is to extract each question into a structured JSON object.
@@ -135,8 +249,16 @@ IMPORTANT RULES:
   - F→A, G→B, H→C, J→D, K→E
 - Some questions may have 5 options. We will handle reducing to 4 later — include all options you find.
 - Track the correct answer letter carefully. After normalizing F-K to A-E, the correct answer letter must correspond to the correct option content.
-- For any diagrams or figures: describe them in a placeholder like <p>[DIAGRAM: description of the figure]</p>. Note which question they belong to.
-- Diagrams typically appear BELOW the question text and ABOVE the answer options.
+
+IMAGES / DIAGRAMS:
+- The markdown contains images as ![alt](local_path) or <img src="local_path"> with local paths like /images/...
+- These images have already been downloaded and saved locally. PRESERVE the image references exactly as they appear.
+- When an image belongs to a question stem (typically appears below the question text, before the answer options), include it in stem_html as an <img> tag: <img src="/images/..." alt="..." />
+- When an image belongs to an answer option, include it in that option's content_html.
+- When an image is a shared stimulus/passage (e.g. a graph referenced by multiple questions), include it in stimulus_html.
+- Convert markdown image syntax ![alt](path) to HTML: <img src="path" alt="alt" />
+
+MATH AND HTML:
 - Wrap all math expressions in \\( ... \\) for inline or \\[ ... \\] for display.
 - Use HTML for all content fields (stem_html, option content_html, rationale_html, stimulus_html).
 - For difficulty: use the question's ordinal position mapped to difficulty 1-5 with even distribution across the total number of questions. For example, with 60 questions: 1-12→1, 13-24→2, 25-36→3, 37-48→4, 49-60→5.
