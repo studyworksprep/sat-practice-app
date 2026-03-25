@@ -22,6 +22,7 @@ export async function POST(request) {
   const questionsPdf = formData.get('questions_pdf');
   const answersPdf = formData.get('answers_pdf');
   const sourceTest = formData.get('source_test') || '';
+  const section = formData.get('section') || 'math'; // math | english
 
   if (!questionsPdf || !answersPdf) {
     return NextResponse.json({ error: 'Both questions_pdf and answers_pdf files are required' }, { status: 400 });
@@ -44,7 +45,8 @@ export async function POST(request) {
     const answersMmdLocal = await downloadAndRewriteImages(admin, answersResult, dirName, 'a');
 
     // Step 3: Send both OCR results to Claude for structured extraction
-    const questions = await extractQuestionsWithClaude(
+    const extractFn = section === 'english' ? extractEnglishWithClaude : extractQuestionsWithClaude;
+    const questions = await extractFn(
       questionsMmdLocal,
       answersMmdLocal,
       sourceTest,
@@ -390,6 +392,149 @@ Return ONLY the JSON array. No markdown fencing, no explanation.`;
       q.options.forEach((o, i) => {
         o.ordinal = i + 1;
         o.label = String.fromCharCode(65 + i);
+      });
+    }
+
+    return q;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Claude: extract structured ENGLISH questions from OCR'd passages
+// ---------------------------------------------------------------------------
+async function extractEnglishWithClaude(questionsMmd, answersMmd, sourceTest) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY env var is required');
+
+  const systemPrompt = `You are an expert at parsing ACT English test content that has been OCR'd from PDF.
+
+You will receive two documents:
+1. QUESTIONS DOCUMENT: Contains passages with numbered underlined segments and answer choices alongside or below the passage.
+2. ANSWER KEY DOCUMENT: Contains the correct answers AND taxonomy information for each question.
+
+ACT ENGLISH FORMAT:
+- The English section has 5 passages, each with ~15 questions (75 total).
+- Each passage is a prose text with numbered underlined segments. Each underline corresponds to a question.
+- Questions appear alongside the passage. Some questions ask about a specific underlined segment (replacement/grammar), others ask about the passage as a whole (rhetorical/organization).
+- Answer labels alternate between A-D (odd questions) and F-J (even questions). Normalize ALL to A-B-C-D:
+  - F→A, G→B, H→C, J→D
+
+PASSAGE EXTRACTION:
+For each passage, reconstruct the FULL passage text as HTML. This will be stored in stimulus_html and shared by all questions in that passage.
+
+CRITICAL — UNDERLINE MARKUP:
+- Each numbered underlined segment in the passage must be wrapped with: <span data-ref="N" class="passage-ref"><u>underlined text</u></span>
+  where N is the question number.
+- Paragraph numbers like [1], [2], [3] in the passage should be preserved as paragraph markers.
+- Insertion points marked [A], [B], [C], [D] should be preserved as-is in the passage.
+- Italicized words should use <em> tags.
+- The passage title should be wrapped in <strong> tags.
+
+QUESTION EXTRACTION:
+For each question:
+- "source_ordinal": the question number (1-75)
+- "section": "english"
+- "highlight_ref": the underline number this question refers to (same as source_ordinal for most questions). For questions about the passage as a whole (e.g., "Which of the following would best conclude this paragraph?"), set highlight_ref to null.
+- "stem_html": The question text. For simple replacement questions where the student just picks the best wording, use an empty string. For questions with an explicit prompt (e.g., "Which choice best supports..."), include the full question text.
+- "stimulus_html": The FULL passage HTML (same for every question in the passage).
+- "options": Array of 4 options. The first option is typically "NO CHANGE" for replacement questions.
+
+ACT ENGLISH CATEGORY HIERARCHY:
+1. "Production of Writing" (category_code: "POW") — subcategories:
+   - "Topic Development" (subcategory_code: "TD")
+   - "Organization, Unity, and Cohesion" (subcategory_code: "OUC")
+2. "Knowledge of Language" (category_code: "KOL") — subcategories:
+   - "Precision" (subcategory_code: "PR")
+   - "Concision" (subcategory_code: "CON")
+   - "Style and Tone" (subcategory_code: "ST")
+3. "Conventions of Standard English" (category_code: "CSE") — subcategories:
+   - "Sentence Structure and Formation" (subcategory_code: "SSF")
+   - "Punctuation" (subcategory_code: "PUN")
+   - "Usage" (subcategory_code: "USG")
+
+Map the answer key's taxonomy to the above. If the answer key uses different names, map to the closest match.
+
+DIFFICULTY:
+- Map question ordinal position within the entire section to difficulty 1-5 with even distribution.
+- For 75 questions: 1-15→1, 16-30→2, 31-45→3, 46-60→4, 61-75→5.
+
+Return a JSON array where each element has:
+{
+  "source_ordinal": <number>,
+  "section": "english",
+  "highlight_ref": <number or null>,
+  "category_code": "<POW, KOL, or CSE>",
+  "category": "<full category name>",
+  "subcategory_code": "<from answer key>",
+  "subcategory": "<full subcategory name>",
+  "difficulty": <1-5>,
+  "is_modeling": false,
+  "stimulus_html": "<FULL passage HTML with <span data-ref> underline markup>",
+  "stem_html": "<question text, or empty string for simple replacement>",
+  "rationale_html": "<explanation from answer key if available, or empty string>",
+  "options": [
+    { "ordinal": 1, "label": "A", "content_html": "...", "is_correct": <boolean> },
+    { "ordinal": 2, "label": "B", "content_html": "...", "is_correct": <boolean> },
+    { "ordinal": 3, "label": "C", "content_html": "...", "is_correct": <boolean> },
+    { "ordinal": 4, "label": "D", "content_html": "...", "is_correct": <boolean> }
+  ]
+}
+
+Return ONLY the JSON array. No markdown fencing, no explanation.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 64000,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: `## QUESTIONS DOCUMENT\n\n${questionsMmd}\n\n---\n\n## ANSWER KEY DOCUMENT\n\n${answersMmd}\n\nSource test identifier: "${sourceTest}"`,
+        },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Claude API error (${res.status}): ${text}`);
+  }
+
+  const data = await res.json();
+  const text = (data.content || []).find(c => c.type === 'text')?.text || '';
+
+  if (data.stop_reason === 'max_tokens') {
+    throw new Error('Claude response was truncated (hit max_tokens). Try importing one passage at a time for English sections.');
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('Claude did not return valid JSON.');
+    parsed = JSON.parse(match[0]);
+  }
+
+  if (!Array.isArray(parsed)) throw new Error('Expected an array of questions from Claude');
+
+  // Post-process: normalize labels, add source_test
+  return parsed.map((q) => {
+    q.source_test = sourceTest;
+    q.section = 'english';
+
+    // English always has 4 options, but normalize labels just in case
+    if (q.options) {
+      q.options.forEach((o, i) => {
+        o.ordinal = i + 1;
+        o.label = String.fromCharCode(65 + i); // A, B, C, D
       });
     }
 

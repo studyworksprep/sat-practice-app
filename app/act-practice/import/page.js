@@ -12,6 +12,7 @@ export default function ActImportPage() {
   const [questionsPdf, setQuestionsPdf] = useState(null);
   const [answersPdf, setAnswersPdf] = useState(null);
   const [sourceTest, setSourceTest] = useState('');
+  const [importSection, setImportSection] = useState('math'); // math | english
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState(null);
   const [questions, setQuestions] = useState(null); // parsed question array
@@ -52,6 +53,7 @@ export default function ActImportPage() {
       form.append('questions_pdf', questionsPdf);
       form.append('answers_pdf', answersPdf);
       form.append('source_test', sourceTest);
+      form.append('section', importSection);
 
       const res = await fetch('/api/act/questions/parse-pdf', {
         method: 'POST',
@@ -154,8 +156,26 @@ export default function ActImportPage() {
                 type="text"
                 value={sourceTest}
                 onChange={e => setSourceTest(e.target.value)}
-                placeholder="e.g. ACT-2024-June-Math"
+                placeholder="e.g. ACT-2024-June"
               />
+            </label>
+
+            <label className="correctLabel">
+              <span className="correctLabelText">Section</span>
+              <select
+                className="input"
+                value={importSection}
+                onChange={e => setImportSection(e.target.value)}
+                style={{ maxWidth: 200 }}
+              >
+                <option value="math">Math</option>
+                <option value="english">English</option>
+              </select>
+              <span className="muted small" style={{ marginTop: 4 }}>
+                {importSection === 'english'
+                  ? 'English: extracts passages with underlined segments + questions'
+                  : 'Math: extracts standalone questions with images'}
+              </span>
             </label>
 
             <label className="correctLabel">
@@ -348,6 +368,19 @@ export default function ActImportPage() {
                             placeholder="Explanation HTML..."
                           />
                         </label>
+
+                        {q.highlight_ref != null && (
+                          <label className="correctLabel">
+                            <span className="correctLabelText">Highlight Ref (underline # in passage)</span>
+                            <input
+                              className="input"
+                              type="number"
+                              value={q.highlight_ref ?? ''}
+                              onChange={e => updateQuestion(qIdx, 'highlight_ref', e.target.value ? Number(e.target.value) : null)}
+                              style={{ width: 100 }}
+                            />
+                          </label>
+                        )}
                       </div>
 
                       <hr />

@@ -71,6 +71,7 @@ export async function POST(request) {
         rationale_html: q.rationale_html || null,
         source_test: q.source_test || null,
         source_ordinal: q.source_ordinal || null,
+        highlight_ref: q.highlight_ref != null ? q.highlight_ref : null,
         is_broken: false,
       };
       if (external_id) questionRow.external_id = external_id;

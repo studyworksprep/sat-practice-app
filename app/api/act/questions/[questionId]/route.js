@@ -10,7 +10,7 @@ export async function GET(_request, { params }) {
     supabase.auth.getUser(),
     supabase
       .from('act_questions')
-      .select('id, external_id, section, category_code, category, subcategory_code, subcategory, difficulty, question_type, stimulus_html, stem_html, rationale_html, is_broken, is_modeling, source_test, source_ordinal')
+      .select('id, external_id, section, category_code, category, subcategory_code, subcategory, difficulty, question_type, stimulus_html, stem_html, rationale_html, is_broken, is_modeling, source_test, source_ordinal, highlight_ref')
       .eq('id', questionId)
       .maybeSingle(),
     supabase
