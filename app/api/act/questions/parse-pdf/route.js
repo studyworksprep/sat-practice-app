@@ -264,10 +264,23 @@ IMPORTANT RULES:
 - Some questions may have 5 options. We will handle reducing to 4 later — include all options you find.
 - Track the correct answer letter carefully. After normalizing F-K to A-E, the correct answer letter must correspond to the correct option content.
 
+ACT MATH CATEGORY HIERARCHY — YOU MUST USE THESE EXACT CATEGORIES:
+The ACT math section has exactly TWO top-level categories plus a cross-cutting flag:
+1. "Preparing for Higher Math" (category_code: "PHM") — with subcategories:
+   - "Number & Quantity" (subcategory_code: "NQ")
+   - "Algebra" (subcategory_code: "ALG")
+   - "Functions" (subcategory_code: "FUN")
+   - "Geometry" (subcategory_code: "GEO")
+   - "Statistics & Probability" (subcategory_code: "SP")
+2. "Integrating Essential Skills" (category_code: "IES") — NO subcategories
+3. "Modeling" is NOT a category. It is a cross-cutting flag (is_modeling: true/false) that applies to questions in EITHER category.
+
+CRITICAL: If the answer key shows a question's category as "Algebra", "Functions", "Geometry", "Number & Quantity", or "Statistics & Probability", those are SUBCATEGORIES. The category for all of them is "Preparing for Higher Math". Do NOT put subcategory names in the category field.
+
 IMAGES / DIAGRAMS:
-- The markdown contains images as ![alt](local_path) or <img src="local_path"> with local paths like /images/...
-- These images have already been downloaded and saved locally. PRESERVE the image references exactly as they appear.
-- When an image belongs to a question stem (typically appears below the question text, before the answer options), include it in stem_html as an <img> tag: <img src="/images/..." alt="..." />
+- The markdown contains images as ![alt](url) or <img src="url"> with URLs (either local paths or full URLs).
+- PRESERVE the image references exactly as they appear.
+- When an image belongs to a question stem (typically appears below the question text, before the answer options), include it in stem_html as an <img> tag.
 - When an image belongs to an answer option, include it in that option's content_html.
 - When an image is a shared stimulus/passage (e.g. a graph referenced by multiple questions), include it in stimulus_html.
 - Convert markdown image syntax ![alt](path) to HTML: <img src="path" alt="alt" />
@@ -281,10 +294,10 @@ Return a JSON array (no wrapping object, just the array) where each element has:
 {
   "source_ordinal": <number>,
   "section": "math",
-  "category_code": "<from answer key>",
-  "category": "<full category name from answer key>",
-  "subcategory_code": "<from answer key if available, else empty string>",
-  "subcategory": "<from answer key if available, else empty string>",
+  "category_code": "<PHM or IES>",
+  "category": "<Preparing for Higher Math or Integrating Essential Skills>",
+  "subcategory_code": "<NQ, ALG, FUN, GEO, SP, or empty string>",
+  "subcategory": "<full subcategory name, or empty string if IES>",
   "difficulty": <1-5>,
   "is_modeling": <boolean, from answer key if indicated>,
   "stimulus_html": "<any passage/context, or empty string>",

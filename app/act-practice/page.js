@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Toast from '../../components/Toast';
 import { useTestType } from '../../lib/TestTypeContext';
 
-const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
+const DIFF_LABELS = [1, 2, 3, 4, 5];
 const SECTION_LABELS = { english: 'English', math: 'Math', reading: 'Reading', science: 'Science' };
 
 function AttemptedBadge({ is_done }) {
@@ -327,13 +327,13 @@ export default function ActPracticePage() {
           <div>
             <div className="muted small" style={{ marginBottom: 4 }}>Difficulty</div>
             <div style={{ display: 'flex', gap: 6 }}>
-              {[1, 2, 3].map(d => (
+              {DIFF_LABELS.map(d => (
                 <button
                   key={d}
                   className={`pill clickable${filters.difficulties.includes(d) ? ' selected' : ''}`}
                   onClick={() => toggleFilter('difficulties', d)}
                 >
-                  {DIFF_LABEL[d]}
+                  {d}
                 </button>
               ))}
             </div>
@@ -426,7 +426,7 @@ export default function ActPracticePage() {
                         <div className="qBadges">
                           <span className="pill qPill">{SECTION_LABELS[q.section] || q.section}</span>
                           {q.difficulty != null && (
-                            <span className="pill qPill qDiffPill">{DIFF_LABEL[q.difficulty] ?? `D${q.difficulty}`}</span>
+                            <span className="pill qPill qDiffPill">D{q.difficulty}</span>
                           )}
                           {q.is_modeling && <span className="pill qPill" style={{ background: '#fef3c7', color: '#92400e' }}>Modeling</span>}
                           <AttemptedBadge is_done={q.is_done} />
