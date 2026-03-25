@@ -419,25 +419,51 @@ ACT ENGLISH FORMAT:
 - Answer labels alternate between A-D (odd questions) and F-J (even questions). Normalize ALL to A-B-C-D:
   - F→A, G→B, H→C, J→D
 
-PASSAGE EXTRACTION:
-For each passage, reconstruct the FULL passage text as HTML. This will be stored in stimulus_html and shared by all questions in that passage.
+OUTPUT FORMAT — IMPORTANT:
+To keep the output compact, return a JSON object with TWO keys:
+1. "passages": An array of 5 passage objects (one per passage).
+2. "questions": An array of 75 question objects, each referencing a passage by index.
 
-CRITICAL — UNDERLINE MARKUP:
-- Each numbered underlined segment in the passage must be wrapped with: <span data-ref="N" class="passage-ref"><u>underlined text</u></span>
-  where N is the question number.
-- Paragraph numbers like [1], [2], [3] in the passage should be preserved as paragraph markers.
-- Insertion points marked [A], [B], [C], [D] should be preserved as-is in the passage.
+Do NOT include the passage HTML inside each question — only include a "passage_index" (0-4) that references the passages array.
+
+PASSAGE OBJECT FORMAT:
+{
+  "passage_index": <0-4>,
+  "title": "<passage title>",
+  "html": "<full passage HTML with underline markup>"
+}
+
+PASSAGE HTML RULES:
+- Each numbered underlined segment must be wrapped with: <span data-ref="N" class="passage-ref"><u>underlined text</u></span> where N is the question number.
+- Paragraph numbers like [1], [2], [3] should be preserved as paragraph markers.
+- Insertion points marked [A], [B], [C], [D] should be preserved as-is.
 - Italicized words should use <em> tags.
-- The passage title should be wrapped in <strong> tags.
+- The passage title should be wrapped in <strong> tags at the top.
 
-QUESTION EXTRACTION:
-For each question:
-- "source_ordinal": the question number (1-75)
-- "section": "english"
-- "highlight_ref": the underline number this question refers to (same as source_ordinal for most questions). For questions about the passage as a whole (e.g., "Which of the following would best conclude this paragraph?"), set highlight_ref to null.
-- "stem_html": The question text. For simple replacement questions where the student just picks the best wording, use an empty string. For questions with an explicit prompt (e.g., "Which choice best supports..."), include the full question text.
-- "stimulus_html": The FULL passage HTML (same for every question in the passage).
-- "options": Array of 4 options. The first option is typically "NO CHANGE" for replacement questions.
+QUESTION OBJECT FORMAT:
+{
+  "source_ordinal": <1-75>,
+  "passage_index": <0-4>,
+  "highlight_ref": <question number or null for whole-passage questions>,
+  "section": "english",
+  "category_code": "<POW, KOL, or CSE>",
+  "category": "<full category name>",
+  "subcategory_code": "<from answer key>",
+  "subcategory": "<full subcategory name>",
+  "difficulty": <1-5>,
+  "is_modeling": false,
+  "stem_html": "<question text, or empty string for simple replacement questions>",
+  "rationale_html": "<explanation if available, or empty string>",
+  "options": [
+    { "ordinal": 1, "label": "A", "content_html": "...", "is_correct": <boolean> },
+    { "ordinal": 2, "label": "B", "content_html": "...", "is_correct": <boolean> },
+    { "ordinal": 3, "label": "C", "content_html": "...", "is_correct": <boolean> },
+    { "ordinal": 4, "label": "D", "content_html": "...", "is_correct": <boolean> }
+  ]
+}
+
+For simple replacement questions (pick best wording), stem_html should be empty string.
+For questions with an explicit prompt ("Which choice best supports..."), include the full question text.
 
 ACT ENGLISH CATEGORY HIERARCHY:
 1. "Production of Writing" (category_code: "POW") — subcategories:
@@ -458,29 +484,7 @@ DIFFICULTY:
 - Map question ordinal position within the entire section to difficulty 1-5 with even distribution.
 - For 75 questions: 1-15→1, 16-30→2, 31-45→3, 46-60→4, 61-75→5.
 
-Return a JSON array where each element has:
-{
-  "source_ordinal": <number>,
-  "section": "english",
-  "highlight_ref": <number or null>,
-  "category_code": "<POW, KOL, or CSE>",
-  "category": "<full category name>",
-  "subcategory_code": "<from answer key>",
-  "subcategory": "<full subcategory name>",
-  "difficulty": <1-5>,
-  "is_modeling": false,
-  "stimulus_html": "<FULL passage HTML with <span data-ref> underline markup>",
-  "stem_html": "<question text, or empty string for simple replacement>",
-  "rationale_html": "<explanation from answer key if available, or empty string>",
-  "options": [
-    { "ordinal": 1, "label": "A", "content_html": "...", "is_correct": <boolean> },
-    { "ordinal": 2, "label": "B", "content_html": "...", "is_correct": <boolean> },
-    { "ordinal": 3, "label": "C", "content_html": "...", "is_correct": <boolean> },
-    { "ordinal": 4, "label": "D", "content_html": "...", "is_correct": <boolean> }
-  ]
-}
-
-Return ONLY the JSON array. No markdown fencing, no explanation.`;
+Return ONLY the JSON object { "passages": [...], "questions": [...] }. No markdown fencing, no explanation.`;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -503,34 +507,43 @@ Return ONLY the JSON array. No markdown fencing, no explanation.`;
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Claude API error (${res.status}): ${text}`);
+    const errText = await res.text();
+    throw new Error(`Claude API error (${res.status}): ${errText}`);
   }
 
   const data = await res.json();
   const text = (data.content || []).find(c => c.type === 'text')?.text || '';
 
   if (data.stop_reason === 'max_tokens') {
-    throw new Error('Claude response was truncated (hit max_tokens). Try importing one passage at a time for English sections.');
+    throw new Error('Claude response was truncated (hit max_tokens). The English section may be too large.');
   }
 
   let parsed;
   try {
     parsed = JSON.parse(text);
   } catch {
-    const match = text.match(/\[[\s\S]*\]/);
-    if (!match) throw new Error('Claude did not return valid JSON.');
+    // Try extracting a JSON object from the response
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Claude did not return valid JSON for English extraction.');
     parsed = JSON.parse(match[0]);
   }
 
-  if (!Array.isArray(parsed)) throw new Error('Expected an array of questions from Claude');
+  const passages = parsed.passages;
+  const questions = parsed.questions;
 
-  // Post-process: normalize labels, add source_test
-  return parsed.map((q) => {
+  if (!Array.isArray(passages) || !Array.isArray(questions)) {
+    throw new Error('Expected { passages: [...], questions: [...] } from Claude');
+  }
+
+  // Stitch passage HTML into each question's stimulus_html
+  return questions.map((q) => {
+    const passage = passages[q.passage_index] || passages[0];
+    q.stimulus_html = passage?.html || '';
     q.source_test = sourceTest;
     q.section = 'english';
+    delete q.passage_index;
 
-    // English always has 4 options, but normalize labels just in case
+    // Normalize option labels
     if (q.options) {
       q.options.forEach((o, i) => {
         o.ordinal = i + 1;
