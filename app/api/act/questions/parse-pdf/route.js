@@ -323,7 +323,7 @@ Return ONLY the JSON array. No markdown fencing, no explanation.`;
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 16000,
+      max_tokens: 64000,
       system: systemPrompt,
       messages: [
         {
@@ -341,6 +341,11 @@ Return ONLY the JSON array. No markdown fencing, no explanation.`;
 
   const data = await res.json();
   const text = (data.content || []).find(c => c.type === 'text')?.text || '';
+
+  // Check if the response was truncated
+  if (data.stop_reason === 'max_tokens') {
+    throw new Error('Claude response was truncated (hit max_tokens). The PDF may be too large — try splitting into smaller sections.');
+  }
 
   // Parse the JSON from Claude's response
   let parsed;
