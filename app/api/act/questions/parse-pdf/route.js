@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '../../../../../lib/supabase/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 
 // POST /api/act/questions/parse-pdf
 // Accepts two PDF files (questions + answer key), sends to Mathpix, then Claude
@@ -41,10 +39,9 @@ export async function POST(request) {
       mathpixPdfToMmd(answersPdf),
     ]);
 
-    // Step 2: Download all images from Mathpix CDN and save locally
-    const imageDir = path.join(process.cwd(), 'public', 'images', dirName);
-    const questionsMmdLocal = await downloadAndRewriteImages(questionsResult, imageDir, dirName, 'q');
-    const answersMmdLocal = await downloadAndRewriteImages(answersResult, imageDir, dirName, 'a');
+    // Step 2: Download all images from Mathpix CDN and upload to Supabase Storage
+    const questionsMmdLocal = await downloadAndRewriteImages(admin, questionsResult, dirName, 'q');
+    const answersMmdLocal = await downloadAndRewriteImages(admin, answersResult, dirName, 'a');
 
     // Step 3: Send both OCR results to Claude for structured extraction
     const questions = await extractQuestionsWithClaude(
@@ -61,9 +58,11 @@ export async function POST(request) {
 }
 
 // ---------------------------------------------------------------------------
-// Download images from Mathpix CDN and rewrite markdown references to local paths
+// Download images from Mathpix CDN and upload to Supabase Storage
 // ---------------------------------------------------------------------------
-async function downloadAndRewriteImages(mmdText, imageDir, dirName, prefix) {
+const IMAGE_BUCKET = 'images';
+
+async function downloadAndRewriteImages(supabase, mmdText, dirName, prefix) {
   // Match both markdown images ![...](url) and HTML <img src="url">
   const mdImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
   const htmlImageRegex = /<img\s[^>]*src=["']([^"']+)["'][^>]*>/gi;
@@ -92,42 +91,40 @@ async function downloadAndRewriteImages(mmdText, imageDir, dirName, prefix) {
 
   if (imageUrls.size === 0) return mmdText;
 
-  // Create the image directory
-  await mkdir(imageDir, { recursive: true });
-
-  // Download all images in parallel
+  // Download and upload all images in parallel
   const downloads = [];
   for (const [url, filename] of imageUrls) {
+    const storagePath = `${dirName}/${filename}`;
     downloads.push(
-      downloadImage(url, path.join(imageDir, filename))
-        .then(() => ({ url, filename, ok: true }))
+      downloadAndUploadImage(supabase, url, storagePath)
+        .then((publicUrl) => ({ url, publicUrl, ok: true }))
         .catch((err) => {
-          console.warn(`Failed to download image ${url}:`, err.message);
-          return { url, filename, ok: false };
+          console.warn(`Failed to download/upload image ${url}:`, err.message);
+          return { url, publicUrl: null, ok: false };
         })
     );
   }
   const results = await Promise.all(downloads);
 
-  // Build URL -> local path map (only for successful downloads)
-  const urlToLocal = new Map();
+  // Build URL -> public URL map (only for successful uploads)
+  const urlToPublic = new Map();
   for (const r of results) {
     if (r.ok) {
-      urlToLocal.set(r.url, `/images/${dirName}/${r.filename}`);
+      urlToPublic.set(r.url, r.publicUrl);
     }
   }
 
   // Rewrite markdown image references
   let rewritten = mmdText.replace(mdImageRegex, (full, alt, url) => {
-    const local = urlToLocal.get(url);
-    if (local) return `![${alt}](${local})`;
+    const pub = urlToPublic.get(url);
+    if (pub) return `![${alt}](${pub})`;
     return full;
   });
 
   // Rewrite HTML image references
   rewritten = rewritten.replace(htmlImageRegex, (full, url) => {
-    const local = urlToLocal.get(url);
-    if (local) return full.replace(url, local);
+    const pub = urlToPublic.get(url);
+    if (pub) return full.replace(url, pub);
     return full;
   });
 
@@ -146,20 +143,37 @@ function guessExtension(url) {
   return '.png'; // default to png
 }
 
-async function downloadImage(url, destPath) {
+const CONTENT_TYPES = {
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+};
+
+async function downloadAndUploadImage(supabase, url, storagePath) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
   const contentType = res.headers.get('content-type') || '';
   const buffer = Buffer.from(await res.arrayBuffer());
 
-  // If we got SVG content, save as-is even if extension was guessed wrong
-  if (contentType.includes('svg') && !destPath.endsWith('.svg')) {
-    destPath = destPath.replace(/\.[^.]+$/, '.svg');
+  // If we got SVG content, fix the storage path extension
+  if (contentType.includes('svg') && !storagePath.endsWith('.svg')) {
+    storagePath = storagePath.replace(/\.[^.]+$/, '.svg');
   }
 
-  await writeFile(destPath, buffer);
-  return destPath;
+  const ext = storagePath.match(/\.[^.]+$/)?.[0] || '.png';
+  const mime = CONTENT_TYPES[ext] || 'application/octet-stream';
+
+  const { error } = await supabase.storage
+    .from(IMAGE_BUCKET)
+    .upload(storagePath, buffer, { contentType: mime, upsert: true });
+
+  if (error) throw new Error(`Supabase upload failed: ${error.message}`);
+
+  const { data } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(storagePath);
+  return data.publicUrl;
 }
 
 // ---------------------------------------------------------------------------
