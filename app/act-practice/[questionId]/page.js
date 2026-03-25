@@ -17,7 +17,7 @@ const htmlHasContent = (html) => {
 };
 
 const SECTION_LABELS = { english: 'English', math: 'Math', reading: 'Reading', science: 'Science' };
-const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
+const DIFF_LABEL = { 1: 'D1', 2: 'D2', 3: 'D3', 4: 'D4', 5: 'D5' };
 
 /**
  * Desmos panel — identical to the SAT version.
@@ -170,6 +170,14 @@ export default function ActQuestionDetailPage() {
   const totalFromUrl = parseInt(searchParams.get('t') || '0', 10);
   const indexFromUrl = parseInt(searchParams.get('i') || '0', 10);
 
+  // Question map state
+  const MAP_PAGE_SIZE = 100;
+  const [showMap, setShowMap] = useState(false);
+  const [mapOffset, setMapOffset] = useState(0);
+  const [mapIds, setMapIds] = useState([]);
+  const [mapLoading, setMapLoading] = useState(false);
+  const [jumpTo, setJumpTo] = useState('');
+
   // Redirect to SAT practice if user switches
   useEffect(() => {
     if (testType === 'sat') router.replace('/practice');
@@ -313,6 +321,49 @@ export default function ActQuestionDetailPage() {
   function goNext() {
     if (!hasNext) return;
     navigateTo(sessionIds[currentIdx + 1], indexFromUrl + 1);
+  }
+
+  // Question map helpers
+  function getSessionItems() {
+    if (!sid) return null;
+    try {
+      const raw = localStorage.getItem(`act_session_${sid}_items`);
+      if (raw) {
+        const items = JSON.parse(raw);
+        if (Array.isArray(items) && items.length > 0) return items;
+      }
+    } catch {}
+    // Fall back to IDs-only list
+    const idsRaw = localStorage.getItem(`act_session_${sid}`);
+    if (!idsRaw) return null;
+    return idsRaw.split(',').map(id => ({ question_id: id }));
+  }
+
+  function loadMapPage(offset) {
+    const items = getSessionItems();
+    if (!items) return;
+    const safe = Math.max(0, offset);
+    setMapIds(items.slice(safe, safe + MAP_PAGE_SIZE));
+    setMapOffset(safe);
+  }
+
+  function openMap() {
+    if (!sid) return;
+    setShowMap(true);
+    setJumpTo('');
+    const startOffset = Math.floor(Math.max(0, indexFromUrl - 1) / MAP_PAGE_SIZE) * MAP_PAGE_SIZE;
+    loadMapPage(startOffset);
+  }
+
+  function doJumpTo() {
+    const items = getSessionItems();
+    if (!items) return;
+    const n = parseInt(jumpTo, 10);
+    if (!Number.isFinite(n) || n < 1 || n > items.length) return;
+    const item = items[n - 1];
+    if (!item?.question_id) return;
+    setShowMap(false);
+    navigateTo(item.question_id, n);
   }
 
   // Submit answer
@@ -459,6 +510,8 @@ export default function ActQuestionDetailPage() {
   useEffect(() => {
     function onKeyDown(e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'Escape' && showMap) { setShowMap(false); return; }
+      if (e.key.toLowerCase() === 'm' && !showMap && sid) { openMap(); return; }
       const locked = gotCorrect || gaveUp;
       if (e.key === 'ArrowLeft' && hasPrev) goPrev();
       if (e.key === 'ArrowRight' && hasNext) goNext();
@@ -644,9 +697,18 @@ export default function ActQuestionDetailPage() {
             Back
           </Link>
           {sid && totalFromUrl > 0 && (
-            <span className="muted small">
-              Question {indexFromUrl} of {totalFromUrl}
-            </span>
+            <button
+              type="button"
+              className="qmapTrigger"
+              onClick={openMap}
+              title="Open question map (M)"
+              aria-label="Open question map"
+            >
+              <span className="qmapTriggerCount">
+                {indexFromUrl} / {totalFromUrl}
+              </span>
+              <span className="qmapTriggerChevron" aria-hidden="true">&#9662;</span>
+            </button>
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -698,6 +760,99 @@ export default function ActQuestionDetailPage() {
         // Default single-column
         questionContent
       )}
+
+      {/* Question map modal */}
+      {showMap && (() => {
+        const allItems = getSessionItems();
+        const totalItems = allItems?.length || totalFromUrl;
+        return (
+          <div className="modalOverlay" onClick={() => setShowMap(false)} role="dialog" aria-modal="true" aria-label="Question map">
+            <div className="modalCard" onClick={(e) => e.stopPropagation()}>
+              <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                <div style={{ display: 'grid', gap: 4 }}>
+                  <div className="h2" style={{ margin: 0 }}>Question Map</div>
+                  <div className="muted small">
+                    Showing <span className="kbd">{mapOffset + 1}</span>–<span className="kbd">{Math.min(mapOffset + MAP_PAGE_SIZE, totalItems)}</span> of{' '}
+                    <span className="kbd">{totalItems}</span>
+                  </div>
+                </div>
+                <div className="btnRow" style={{ alignItems: 'center' }}>
+                  <input
+                    className="input"
+                    style={{ width: 140 }}
+                    value={jumpTo}
+                    onChange={(e) => setJumpTo(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); doJumpTo(); } }}
+                    placeholder="Jump to #"
+                    inputMode="numeric"
+                  />
+                  <button className="btn primary" onClick={doJumpTo}>Go</button>
+                  <button className="btn secondary" onClick={() => setShowMap(false)}>Close</button>
+                </div>
+              </div>
+
+              <hr />
+
+              <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                <div className="btnRow">
+                  <button className="btn secondary" onClick={() => loadMapPage(mapOffset - MAP_PAGE_SIZE)} disabled={mapOffset <= 0}>Prev</button>
+                  <button className="btn secondary" onClick={() => loadMapPage(mapOffset + MAP_PAGE_SIZE)} disabled={mapOffset + MAP_PAGE_SIZE >= totalItems}>Next</button>
+                </div>
+                <div className="pill">
+                  <span className="muted">Current</span> <span className="kbd">{indexFromUrl || '—'}</span>
+                </div>
+              </div>
+
+              <div className="questionGrid" style={{ marginTop: 12 }}>
+                {mapIds.length === 0 ? (
+                  <div className="muted" style={{ gridColumn: '1 / -1' }}>No questions in this range.</div>
+                ) : mapIds.map((it, pos) => {
+                  const id = it.question_id;
+                  const i = mapOffset + pos + 1;
+                  const active = indexFromUrl === i;
+                  const diff = Number(it.difficulty);
+                  const diffClass = diff === 1 ? 'diffEasy' : diff === 2 ? 'diffMed' : diff === 3 ? 'diffHard' : diff === 4 ? 'diffVHard' : diff === 5 ? 'diffExtreme' : 'diffUnknown';
+                  const isDone = Boolean(it.is_done);
+                  const lastCorrect = it.last_is_correct;
+
+                  return (
+                    <button
+                      key={String(id)}
+                      type="button"
+                      className={`mapItem ${diffClass}${active ? ' active' : ''}`}
+                      onClick={() => {
+                        setShowMap(false);
+                        navigateTo(id, i);
+                      }}
+                      title={`Go to #${i}`}
+                    >
+                      <span className="mapNum">{i}</span>
+                      {isDone && (
+                        <span className="mapIconCorner mapIconRight" aria-hidden="true">
+                          {lastCorrect ? (
+                            <span className="mapIconBadge correct" title="Correct">
+                              <svg viewBox="0 0 24 24" width="14" height="14">
+                                <polyline points="4 12 10 18 20 6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </span>
+                          ) : (
+                            <span className="mapIconBadge incorrect" title="Incorrect">
+                              <svg viewBox="0 0 24 24" width="14" height="14">
+                                <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+                                <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+                              </svg>
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Correction modal */}
       {showCorrectModal && (
@@ -798,9 +953,11 @@ export default function ActQuestionDetailPage() {
                     onChange={(e) => setCorrectForm(f => ({ ...f, difficulty: e.target.value ? Number(e.target.value) : '' }))}
                   >
                     <option value="">--</option>
-                    <option value="1">1 - Easy</option>
-                    <option value="2">2 - Medium</option>
-                    <option value="3">3 - Hard</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
                   </select>
                 </label>
                 <label className="correctLabel" style={{ flex: '1 1 120px' }}>

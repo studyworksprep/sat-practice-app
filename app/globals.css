@@ -1597,6 +1597,14 @@ hr{
   background: #fee2e2; /* pale red */
   border-color: #fca5a5;
 }
+.mapItem.diffVHard{
+  background: #fce7f3; /* pale pink */
+  border-color: #f9a8d4;
+}
+.mapItem.diffExtreme{
+  background: #ede9fe; /* pale violet */
+  border-color: #c4b5fd;
+}
 .mapItem.diffUnknown{
   background: #f3f4f6;
   border-color: #e5e7eb;
