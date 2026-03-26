@@ -435,10 +435,12 @@ PASSAGE OBJECT FORMAT:
 
 PASSAGE HTML RULES:
 - Each numbered underlined segment must be wrapped with: <span data-ref="N" class="passage-ref"><u>underlined text</u></span> where N is the question number.
-- Paragraph numbers like [1], [2], [3] should be preserved as paragraph markers.
-- Insertion points marked [A], [B], [C], [D] should be preserved as-is.
+- CRITICAL: Wrap each paragraph in <p> tags. Paragraphs are separated by line breaks in the original text. Even if a paragraph is just one sentence, wrap it in <p>. This is essential for readability.
+- If the passage has numbered paragraph markers [1], [2], [3], include them as: <p class="para-marker">[1]</p> before the paragraph they label.
+- Most passages do NOT have numbered markers — they just have natural paragraph breaks (often indicated by indentation). Always split into <p> tags at each paragraph break.
+- Insertion points marked [A], [B], [C], [D] should be preserved inline as <span class="insertion-point">[A]</span>.
 - Italicized words should use <em> tags.
-- The passage title should be wrapped in <strong> tags at the top.
+- The passage title should be wrapped in <p><strong>title text</strong></p> at the top.
 
 QUESTION OBJECT FORMAT:
 {
