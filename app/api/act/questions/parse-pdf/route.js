@@ -35,10 +35,14 @@ export async function POST(request) {
 
   try {
     // Step 1: Send both PDFs to Mathpix for OCR
-    const [questionsResult, answersResult] = await Promise.all([
+    const [questionsResultRaw, answersResultRaw] = await Promise.all([
       mathpixPdfToMmd(questionsPdf),
       mathpixPdfToMmd(answersPdf),
     ]);
+
+    // Step 1b: Fix common OCR artifacts (em-dashes, etc.)
+    const questionsResult = fixOcrArtifacts(questionsResultRaw);
+    const answersResult = fixOcrArtifacts(answersResultRaw);
 
     // Step 2: Download all images from Mathpix CDN and upload to Supabase Storage
     const questionsMmdLocal = await downloadAndRewriteImages(admin, questionsResult, dirName, 'q');
@@ -179,6 +183,30 @@ async function downloadAndUploadImage(supabase, url, storagePath) {
 }
 
 // ---------------------------------------------------------------------------
+// Fix common OCR artifacts in Mathpix output
+// ---------------------------------------------------------------------------
+function fixOcrArtifacts(text) {
+  if (!text) return text;
+  let fixed = text;
+
+  // Restore em-dashes: OCR often converts — to -- or - surrounded by spaces
+  // Double hyphens (--) are almost always em-dashes in prose
+  fixed = fixed.replace(/--/g, '\u2014');
+  // A hyphen with spaces on both sides in prose is likely an em-dash
+  // (but not in math expressions or option labels)
+  fixed = fixed.replace(/(?<=[a-zA-Z,;]) - (?=[a-zA-Z])/g, '\u2014');
+
+  // Restore en-dashes in number ranges (e.g., "1890-1920" or "pages 10-15")
+  // Leave these as-is since Mathpix usually handles them okay
+
+  // Fix common smart quote issues
+  fixed = fixed.replace(/``/g, '\u201C'); // left double quote
+  fixed = fixed.replace(/''/g, '\u201D'); // right double quote
+
+  return fixed;
+}
+
+// ---------------------------------------------------------------------------
 // Mathpix: convert a PDF file to Mathpix Markdown (mmd)
 // ---------------------------------------------------------------------------
 async function mathpixPdfToMmd(file) {
@@ -290,6 +318,7 @@ IMAGES / DIAGRAMS:
 MATH AND HTML:
 - Wrap all math expressions in \\( ... \\) for inline or \\[ ... \\] for display.
 - Use HTML for all content fields (stem_html, option content_html, rationale_html, stimulus_html).
+- PRESERVE typographic punctuation: em-dashes (\u2014), en-dashes (\u2013), curly quotes (\u201C \u201D \u2018 \u2019). Do NOT replace them with hyphens or straight quotes.
 - For difficulty: use the question's ordinal position mapped to difficulty 1-5 with even distribution across the total number of questions. For example, with 60 questions: 1-12→1, 13-24→2, 25-36→3, 37-48→4, 49-60→5.
 
 Return a JSON array (no wrapping object, just the array) where each element has:
@@ -441,6 +470,7 @@ PASSAGE HTML RULES:
 - Insertion points marked [A], [B], [C], [D] should be preserved inline as <span class="insertion-point">[A]</span>.
 - Italicized words should use <em> tags.
 - The passage title should be wrapped in <p><strong>title text</strong></p> at the top.
+- PRESERVE typographic punctuation: em-dashes (\u2014), en-dashes (\u2013), curly quotes (\u201C \u201D \u2018 \u2019). Do NOT replace them with hyphens or straight quotes.
 
 QUESTION OBJECT FORMAT:
 {
