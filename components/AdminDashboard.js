@@ -591,6 +591,16 @@ export default function AdminDashboard() {
     setRoutingDirty(true);
   }
 
+  function addDefaultRules() {
+    setRoutingRules([
+      { subject_code: 'RW', from_module_number: 1, metric: 'correct_count', operator: '>=', threshold: 15, to_route_code: 'hard' },
+      { subject_code: 'RW', from_module_number: 1, metric: 'correct_count', operator: '<', threshold: 15, to_route_code: 'easy' },
+      { subject_code: 'MATH', from_module_number: 1, metric: 'correct_count', operator: '>=', threshold: 14, to_route_code: 'hard' },
+      { subject_code: 'MATH', from_module_number: 1, metric: 'correct_count', operator: '<', threshold: 14, to_route_code: 'easy' },
+    ]);
+    setRoutingDirty(true);
+  }
+
   function removeRoutingRule(idx) {
     setRoutingRules(prev => prev.filter((_, i) => i !== idx));
     setRoutingDirty(true);
@@ -1932,12 +1942,22 @@ export default function AdminDashboard() {
                     )}
 
                     {routingRules.length === 0 && (
-                      <p className="muted small" style={{ marginBottom: 12 }}>No routing rules. All Module 2 variants will use the default route.</p>
+                      <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(37,99,235,0.04)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                        <p className="muted small" style={{ margin: '0 0 8px' }}>
+                          No routing rules configured. The system will use <strong>default fallback thresholds</strong>: RW &ge; 15 correct &rarr; hard, MATH &ge; 14 correct &rarr; hard. Otherwise &rarr; easy.
+                        </p>
+                        <button className="btn secondary" onClick={addDefaultRules} style={{ fontSize: 12 }}>
+                          Populate Default Rules
+                        </button>
+                      </div>
                     )}
 
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                       <button className="btn secondary" onClick={addRoutingRule} style={{ fontSize: 12 }}>
                         + Add Rule
+                      </button>
+                      <button className="btn secondary" onClick={addDefaultRules} style={{ fontSize: 12 }}>
+                        Reset to Defaults
                       </button>
                       <button
                         className="btn"

@@ -241,12 +241,29 @@ export async function POST(request, { params }) {
       if (matches) { nextRouteCode = rule.to_route_code; break; }
     }
 
-    // If no routing rule matched, fall back to first available module-2 route for this subject
+    // If no routing rule matched, apply default adaptive routing thresholds.
+    // This ensures students who do well on Module 1 get the harder Module 2,
+    // even if an admin hasn't explicitly set up routing rules for this test.
     if (!nextRouteCode) {
-      const fallback = allModules.find(
-        (m) => m.subject_code === subject_code && m.module_number === 2
-      );
-      nextRouteCode = fallback?.route_code ?? null;
+      const mod2Routes = allModules
+        .filter(m => m.subject_code === subject_code && m.module_number === 2)
+        .map(m => m.route_code);
+
+      const hasHard = mod2Routes.some(r => r && r.toLowerCase() === 'hard');
+      const hasEasy = mod2Routes.some(r => r && r.toLowerCase() === 'easy');
+
+      if (hasHard && hasEasy) {
+        // Default thresholds: RW >= 15 → hard, MATH >= 14 → hard
+        const isRw = ['RW', 'rw'].includes(subject_code);
+        const defaultThreshold = isRw ? 15 : 14;
+        nextRouteCode = correctCount >= defaultThreshold ? 'hard' : 'easy';
+      } else {
+        // Only one Module 2 variant exists — use it
+        const fallback = allModules.find(
+          (m) => m.subject_code === subject_code && m.module_number === 2
+        );
+        nextRouteCode = fallback?.route_code ?? null;
+      }
     }
 
   }
