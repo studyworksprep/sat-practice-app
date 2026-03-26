@@ -98,6 +98,15 @@ export default function AdminDashboard() {
   const [editingTagId, setEditingTagId] = useState(null);
   const [editingTagName, setEditingTagName] = useState('');
 
+  // Routing rules
+  const [showRouting, setShowRouting] = useState(false);
+  const [routingTestId, setRoutingTestId] = useState('');
+  const [routingRules, setRoutingRules] = useState([]);
+  const [routingModules, setRoutingModules] = useState([]);
+  const [routingLoading, setRoutingLoading] = useState(false);
+  const [routingSaving, setRoutingSaving] = useState(false);
+  const [routingDirty, setRoutingDirty] = useState(false);
+
   // Teacher effectiveness
   const [teacherData, setTeacherData] = useState(null);
 
@@ -545,6 +554,76 @@ export default function AdminDashboard() {
         showToast('ok', 'Tag deleted.');
       }
     } catch (err) { showToast('danger', err.message); }
+  }
+
+  // Routing rules functions
+  async function fetchRoutingRules(testId) {
+    if (!testId) { setRoutingRules([]); setRoutingModules([]); return; }
+    setRoutingLoading(true);
+    try {
+      const res = await fetch(`/api/admin/routing-rules?practice_test_id=${testId}`);
+      const json = await res.json();
+      if (res.ok) {
+        setRoutingRules(json.rules || []);
+        setRoutingModules(json.modules || []);
+        setRoutingDirty(false);
+      } else {
+        showToast('danger', json.error || 'Failed to load rules');
+      }
+    } catch (err) { showToast('danger', err.message); }
+    setRoutingLoading(false);
+  }
+
+  function updateRoutingRule(idx, field, value) {
+    setRoutingRules(prev => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
+    setRoutingDirty(true);
+  }
+
+  function addRoutingRule() {
+    setRoutingRules(prev => [...prev, {
+      subject_code: 'RW',
+      from_module_number: 1,
+      metric: 'correct_count',
+      operator: '>=',
+      threshold: 0,
+      to_route_code: '',
+    }]);
+    setRoutingDirty(true);
+  }
+
+  function removeRoutingRule(idx) {
+    setRoutingRules(prev => prev.filter((_, i) => i !== idx));
+    setRoutingDirty(true);
+  }
+
+  async function saveRoutingRules() {
+    if (!routingTestId) return;
+    setRoutingSaving(true);
+    try {
+      const res = await fetch('/api/admin/routing-rules', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ practice_test_id: routingTestId, rules: routingRules }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        showToast('ok', `Saved ${json.count} routing rules.`);
+        setRoutingDirty(false);
+      } else {
+        showToast('danger', json.error || 'Failed to save');
+      }
+    } catch (err) { showToast('danger', err.message); }
+    setRoutingSaving(false);
+  }
+
+  // Get available route codes for a given subject from module data
+  function getRouteCodes(subjectCode) {
+    return [...new Set(
+      routingModules
+        .filter(m => m.subject_code.toUpperCase() === subjectCode.toUpperCase() && m.module_number === 2)
+        .map(m => m.route_code)
+        .filter(Boolean)
+    )];
   }
 
   async function handleSaveScores() {
@@ -1719,6 +1798,159 @@ export default function AdminDashboard() {
                 <button className="btn" onClick={handleSaveScores} disabled={saving} style={{ marginTop: 8 }}>
                   {saving ? 'Saving…' : 'Save Score Data'}
                 </button>
+              </div>
+            )}
+          </section>
+
+          {/* ── Routing Rules ─────────────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h3 className="adminSideTitle" style={{ margin: 0 }}>Routing Rules</h3>
+              <button className="btn secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => setShowRouting(!showRouting)}>
+                {showRouting ? 'Close' : 'Manage'}
+              </button>
+            </div>
+            <p className="muted small" style={{ marginTop: -4, marginBottom: 8, fontSize: 11 }}>
+              Define adaptive routing from Module 1 to Module 2 for each practice test.
+            </p>
+
+            {showRouting && (
+              <div className="card" style={{ padding: 16 }}>
+                <label className="adminLabel" style={{ marginBottom: 12 }}>
+                  Practice Test
+                  <select
+                    className="adminSelect"
+                    value={routingTestId}
+                    onChange={(e) => { setRoutingTestId(e.target.value); fetchRoutingRules(e.target.value); }}
+                  >
+                    <option value="">Select a test…</option>
+                    {tests.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name || t.code}</option>
+                    ))}
+                  </select>
+                </label>
+
+                {routingTestId && routingLoading && (
+                  <p className="muted small">Loading rules…</p>
+                )}
+
+                {routingTestId && !routingLoading && (
+                  <>
+                    {/* Module summary */}
+                    {routingModules.length > 0 && (
+                      <div style={{ marginBottom: 12, fontSize: 12 }}>
+                        <span className="muted">Modules: </span>
+                        {routingModules.map(m => (
+                          <span key={m.id} className="pill" style={{ fontSize: 11, marginRight: 4 }}>
+                            {m.subject_code} M{m.module_number}{m.route_code ? ` (${m.route_code})` : ''}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Rules table */}
+                    {routingRules.length > 0 && (
+                      <div style={{ overflow: 'auto', marginBottom: 12 }}>
+                        <table className="adminTable">
+                          <thead>
+                            <tr>
+                              <th>Subject</th>
+                              <th>Metric</th>
+                              <th>Operator</th>
+                              <th>Threshold</th>
+                              <th>Route To</th>
+                              <th style={{ width: 50 }}></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {routingRules.map((rule, idx) => (
+                              <tr key={idx}>
+                                <td>
+                                  <select className="adminSelect" value={rule.subject_code} onChange={e => updateRoutingRule(idx, 'subject_code', e.target.value)} style={{ fontSize: 12, minWidth: 70 }}>
+                                    <option value="RW">RW</option>
+                                    <option value="MATH">MATH</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <select className="adminSelect" value={rule.metric || 'correct_count'} onChange={e => updateRoutingRule(idx, 'metric', e.target.value)} style={{ fontSize: 12, minWidth: 110 }}>
+                                    <option value="correct_count">correct_count</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <select className="adminSelect" value={rule.operator} onChange={e => updateRoutingRule(idx, 'operator', e.target.value)} style={{ fontSize: 12, minWidth: 60 }}>
+                                    <option value=">=">&gt;=</option>
+                                    <option value=">">&gt;</option>
+                                    <option value="<=">&lt;=</option>
+                                    <option value="<">&lt;</option>
+                                    <option value="==">==</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <input
+                                    type="number"
+                                    className="adminInput"
+                                    value={rule.threshold}
+                                    onChange={e => updateRoutingRule(idx, 'threshold', Number(e.target.value))}
+                                    style={{ width: 70, fontSize: 12 }}
+                                  />
+                                </td>
+                                <td>
+                                  {(() => {
+                                    const codes = getRouteCodes(rule.subject_code);
+                                    return codes.length > 0 ? (
+                                      <select className="adminSelect" value={rule.to_route_code || ''} onChange={e => updateRoutingRule(idx, 'to_route_code', e.target.value)} style={{ fontSize: 12, minWidth: 80 }}>
+                                        <option value="">—</option>
+                                        {codes.map(c => <option key={c} value={c}>{c}</option>)}
+                                      </select>
+                                    ) : (
+                                      <input
+                                        type="text"
+                                        className="adminInput"
+                                        value={rule.to_route_code || ''}
+                                        onChange={e => updateRoutingRule(idx, 'to_route_code', e.target.value)}
+                                        placeholder="route code"
+                                        style={{ width: 90, fontSize: 12 }}
+                                      />
+                                    );
+                                  })()}
+                                </td>
+                                <td>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeRoutingRule(idx)}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger, #dc2626)', fontSize: 14, fontWeight: 700, padding: '0 4px' }}
+                                    title="Remove rule"
+                                  >
+                                    &times;
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {routingRules.length === 0 && (
+                      <p className="muted small" style={{ marginBottom: 12 }}>No routing rules. All Module 2 variants will use the default route.</p>
+                    )}
+
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <button className="btn secondary" onClick={addRoutingRule} style={{ fontSize: 12 }}>
+                        + Add Rule
+                      </button>
+                      <button
+                        className="btn"
+                        onClick={saveRoutingRules}
+                        disabled={routingSaving || !routingDirty}
+                        style={{ fontSize: 12 }}
+                      >
+                        {routingSaving ? 'Saving…' : 'Save Rules'}
+                      </button>
+                      {routingDirty && <span className="muted small">unsaved changes</span>}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </section>
