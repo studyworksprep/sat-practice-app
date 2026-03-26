@@ -122,6 +122,32 @@ a{
   scrollbar-gutter: stable;
 }
 
+/* English passage highlight for active question segment */
+.passage-ref {
+  transition: background-color 0.3s ease;
+  border-radius: 2px;
+}
+.passage-ref.active-highlight {
+  background-color: #fef08a; /* yellow-200 */
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.passage-ref u {
+  text-decoration-color: rgba(0,0,0,0.4);
+}
+/* Paragraph markers for numbered passages */
+.para-marker {
+  text-align: center;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 8px 0 2px;
+}
+/* Insertion points */
+.insertion-point {
+  font-weight: 700;
+  color: var(--muted);
+}
+
 .qaRight{
   padding-left: 20px;
   display: grid;

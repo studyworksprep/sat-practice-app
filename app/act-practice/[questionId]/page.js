@@ -164,6 +164,7 @@ export default function ActQuestionDetailPage() {
   const shellRef = useRef(null);
   const liveWidthRef = useRef(MIN_CALC_W);
   const dragRef = useRef({ dragging: false, startX: 0, startW: MIN_CALC_W, pendingW: MIN_CALC_W });
+  const passageRef = useRef(null);
 
   // Session nav params
   const sid = searchParams.get('sid');
@@ -241,6 +242,26 @@ export default function ActQuestionDetailPage() {
       timerRef.current = null;
     }
   }, [gotCorrect, gaveUp]);
+
+  // Highlight the active passage segment for English questions
+  useEffect(() => {
+    const el = passageRef.current;
+    if (!el) return;
+    // Clear all existing highlights
+    for (const span of el.querySelectorAll('.passage-ref.active-highlight')) {
+      span.classList.remove('active-highlight');
+    }
+    // Apply highlight to the matching ref
+    const ref = data?.highlight_ref;
+    if (ref != null) {
+      const target = el.querySelector(`[data-ref="${ref}"]`);
+      if (target) {
+        target.classList.add('active-highlight');
+        // Scroll the passage to bring the highlighted segment into view
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [data?.highlight_ref, questionId]);
 
   // Calculator state persistence
   useEffect(() => {
@@ -747,7 +768,7 @@ export default function ActQuestionDetailPage() {
         // Reading/English/Science with stimulus: two-column layout
         <div className="qaTwoCol">
           <div className="qaLeft">
-            <div className="card subcard">
+            <div className="card subcard" ref={passageRef}>
               <HtmlBlock className="prose" html={data.stimulus_html} imgMaxWidth={320} />
             </div>
           </div>
