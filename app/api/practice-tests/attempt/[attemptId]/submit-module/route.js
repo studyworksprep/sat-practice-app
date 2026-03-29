@@ -121,13 +121,19 @@ export async function POST(request, { params }) {
     if (wasAnswered) {
       const ca = correctByVersion[item.question_version_id];
       if (ca) {
-        if (ca.answer_type === 'mcq' || ca.answer_type === 'single') {
-          is_correct = ca.correct_option_id === ans.selected_option_id;
-        } else if (ca.answer_type === 'multi') {
-          const userSet = new Set([ans.selected_option_id].filter(Boolean));
-          const corrSet = new Set(ca.correct_option_ids || []);
-          is_correct = userSet.size === corrSet.size && [...userSet].every((id) => corrSet.has(id));
-        } else if (ca.answer_type === 'text') {
+        // Drive comparison by what data is present, not answer_type, so
+        // null/unexpected answer_type values don't cause correct answers
+        // to be graded as wrong. This matches the results page logic.
+        if (ans.selected_option_id) {
+          // MCQ-style: student picked an option
+          if (ca.correct_option_id) {
+            is_correct = ca.correct_option_id === ans.selected_option_id;
+          }
+          if (!is_correct && ca.correct_option_ids?.length) {
+            is_correct = ca.correct_option_ids.includes(ans.selected_option_id);
+          }
+        } else if (ans.response_text) {
+          // Free-response: compare text first, then numeric
           const norm = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
           const toList = (ct) => {
             if (!ct) return [];
@@ -137,16 +143,19 @@ export async function POST(request, { params }) {
             }
             return [t];
           };
-          is_correct = toList(ca.correct_text).some((a) => {
-            if (norm(a) === norm(ans.response_text)) return true;
-            const nA = parseFloat(a), nR = parseFloat(ans.response_text);
-            return !isNaN(nA) && !isNaN(nR) && nA === nR;
-          });
-        } else if (ca.answer_type === 'number') {
-          const parsed = parseFloat(ans.response_text);
-          if (!isNaN(parsed)) {
-            const tol = parseFloat(ca.numeric_tolerance) || 0;
-            is_correct = Math.abs(parsed - parseFloat(ca.correct_number)) <= tol;
+          if (ca.correct_text) {
+            is_correct = toList(ca.correct_text).some((a) => {
+              if (norm(a) === norm(ans.response_text)) return true;
+              const nA = parseFloat(a), nR = parseFloat(ans.response_text);
+              return !isNaN(nA) && !isNaN(nR) && nA === nR;
+            });
+          }
+          if (!is_correct && ca.correct_number != null) {
+            const parsed = parseFloat(ans.response_text);
+            if (!isNaN(parsed)) {
+              const tol = parseFloat(ca.numeric_tolerance) || 0;
+              is_correct = Math.abs(parsed - parseFloat(ca.correct_number)) <= tol;
+            }
           }
         }
       }
