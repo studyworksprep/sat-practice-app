@@ -56,15 +56,27 @@ export async function POST(request) {
     }
 
     // Step 3: Match each question to the database
+    // questions.question_id is the Collegeboard readable ID (text).
+    // question_versions.question_id is a UUID FK to questions.id — different field!
+    // So we match via the questions table first, then look up the version.
     const admin = createServiceClient();
     for (const q of questions) {
       if (!q.question_id) { q.matched = false; continue; }
 
-      // Look up by question_id text field
+      // Look up the question row by its Collegeboard readable ID
+      const { data: questionRow } = await admin
+        .from('questions')
+        .select('id, question_id, source_external_id')
+        .eq('question_id', q.question_id)
+        .maybeSingle();
+
+      if (!questionRow) { q.matched = false; continue; }
+
+      // Now look up the current version using questions.id (UUID)
       const { data: versions } = await admin
         .from('question_versions')
         .select('id, question_id, stem_html, stimulus_html, question_type')
-        .eq('question_id', q.question_id)
+        .eq('question_id', questionRow.id)
         .eq('is_current', true)
         .limit(1);
 
@@ -72,6 +84,7 @@ export async function POST(request) {
       if (ver) {
         q.matched = true;
         q.version_id = ver.id;
+        q.db_question_id = questionRow.id; // the UUID
         q.current_stem_html = ver.stem_html;
         q.current_stimulus_html = ver.stimulus_html;
         q.question_type = ver.question_type;

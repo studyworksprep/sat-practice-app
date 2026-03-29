@@ -105,6 +105,7 @@ export async function POST(request) {
         const updates = { question_id: questionId };
         if (!dbRow.source_external_id) updates.source_external_id = ibnClean;
 
+        // ONLY update the questions table — other tables join on questions.id (UUID), not question_id
         const { error } = await admin.from('questions').update(updates).eq('id', dbRow.id);
         if (error) {
           results.errors.push({ questionId, ibn: ibnClean, error: error.message });
@@ -113,21 +114,6 @@ export async function POST(request) {
           if (results.details.length < 50) {
             results.details.push({ questionId, action: 'fix_question_id', old: ibnClean, new: questionId });
           }
-          // Also update question_versions.question_id to keep them in sync
-          await admin
-            .from('question_versions')
-            .update({ question_id: questionId })
-            .eq('question_id', ibnClean);
-          // And question_taxonomy
-          await admin
-            .from('question_taxonomy')
-            .update({ question_id: questionId })
-            .eq('question_id', ibnClean);
-          // And question_status
-          await admin
-            .from('question_status')
-            .update({ question_id: questionId })
-            .eq('question_id', ibnClean);
         }
         continue;
       }
@@ -135,19 +121,15 @@ export async function POST(request) {
       // Strategy 3: source_external_id matches ibn — fix question_id
       dbRow = byExternalId.get(ibnClean);
       if (dbRow && dbRow.question_id !== questionId) {
-        const oldQid = dbRow.question_id;
+        // ONLY update the questions table
         const { error } = await admin.from('questions').update({ question_id: questionId }).eq('id', dbRow.id);
         if (error) {
           results.errors.push({ questionId, error: error.message });
         } else {
           results.updated_question_id++;
           if (results.details.length < 50) {
-            results.details.push({ questionId, action: 'fix_via_external_id', old: oldQid, new: questionId });
+            results.details.push({ questionId, action: 'fix_via_external_id', old: dbRow.question_id, new: questionId });
           }
-          // Update related tables
-          await admin.from('question_versions').update({ question_id: questionId }).eq('question_id', oldQid);
-          await admin.from('question_taxonomy').update({ question_id: questionId }).eq('question_id', oldQid);
-          await admin.from('question_status').update({ question_id: questionId }).eq('question_id', oldQid);
         }
         continue;
       }
