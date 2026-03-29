@@ -12,6 +12,11 @@ export default function BulkReOcrPage() {
   const [results, setResults] = useState([]); // accumulated across PDFs
   const [processedCount, setProcessedCount] = useState(0);
 
+  // Sync IDs state
+  const [syncFile, setSyncFile] = useState(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null);
+
   // Filter state
   const [filterMode, setFilterMode] = useState('all'); // all | matched | unmatched | ready | saved | skipped
 
@@ -21,6 +26,24 @@ export default function BulkReOcrPage() {
       .then(d => { if (d.role) setUserRole(d.role); })
       .catch(() => {});
   }, []);
+
+  async function syncQuestionIds() {
+    if (!syncFile) return;
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const form = new FormData();
+      form.append('file', syncFile);
+      const res = await fetch('/api/admin/sync-question-ids', { method: 'POST', body: form });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      setSyncResult(json);
+    } catch (e) {
+      setSyncResult({ error: e.message });
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   async function processPdf() {
     if (!pdfFile) return;
@@ -124,8 +147,76 @@ export default function BulkReOcrPage() {
         <h1 style={{ margin: 0, fontSize: 20 }}>Bulk Re-OCR Questions</h1>
       </div>
 
-      {/* Upload */}
+      {/* Step 0: Sync Question IDs */}
       <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+        <h2 style={{ fontSize: 16, margin: '0 0 8px' }}>Step 1: Sync Question IDs</h2>
+        <p className="muted small" style={{ marginBottom: 12 }}>
+          Upload the Collegeboard metadata JSON file. This fixes questions where the database has an IBN number
+          (e.g., &quot;070925-DC&quot;) instead of the correct Collegeboard hex ID (e.g., &quot;9912e19f&quot;).
+          Also backfills <code>source_external_id</code> from IBN numbers where available.
+        </p>
+
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <label style={{ display: 'grid', gap: 4 }}>
+            <span className="muted small">Metadata JSON File (.txt or .json)</span>
+            <input
+              type="file"
+              accept=".txt,.json"
+              onChange={e => setSyncFile(e.target.files?.[0] || null)}
+              className="input"
+            />
+          </label>
+          <button className="btn" disabled={!syncFile || syncing} onClick={syncQuestionIds}>
+            {syncing ? 'Syncing…' : 'Upload & Sync IDs'}
+          </button>
+        </div>
+
+        {syncResult && !syncResult.error && (
+          <div style={{ marginTop: 12, padding: 12, background: 'var(--bg)', borderRadius: 8, fontSize: 13 }}>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
+              <span><strong>{syncResult.total}</strong> entries</span>
+              <span style={{ color: 'var(--green, #22c55e)' }}><strong>{syncResult.already_correct}</strong> already correct</span>
+              <span style={{ color: 'var(--accent)' }}><strong>{syncResult.updated_question_id}</strong> IDs fixed</span>
+              <span className="muted"><strong>{syncResult.updated_external_id}</strong> IBN backfilled</span>
+              <span style={{ color: 'var(--danger)' }}><strong>{syncResult.not_found}</strong> not found</span>
+            </div>
+            {syncResult.details?.length > 0 && (
+              <details>
+                <summary className="muted small" style={{ cursor: 'pointer' }}>Show details ({syncResult.details.length})</summary>
+                <div style={{ maxHeight: 300, overflow: 'auto', marginTop: 8 }}>
+                  <table className="adminTable" style={{ fontSize: 12 }}>
+                    <thead>
+                      <tr><th>Question ID</th><th>Action</th><th>Old</th><th>New</th></tr>
+                    </thead>
+                    <tbody>
+                      {syncResult.details.map((d, i) => (
+                        <tr key={i}>
+                          <td style={{ fontFamily: 'monospace' }}>{d.questionId}</td>
+                          <td>{d.action}</td>
+                          <td style={{ fontFamily: 'monospace' }}>{d.old || d.ibn || '—'}</td>
+                          <td style={{ fontFamily: 'monospace' }}>{d.new || d.questionId}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            )}
+            {syncResult.errors?.length > 0 && (
+              <div style={{ marginTop: 8, color: 'var(--danger)', fontSize: 12 }}>
+                {syncResult.errors.length} errors — check console for details.
+              </div>
+            )}
+          </div>
+        )}
+        {syncResult?.error && (
+          <div style={{ marginTop: 12, color: 'var(--danger)', fontSize: 13 }}>{syncResult.error}</div>
+        )}
+      </div>
+
+      {/* Step 2: Bulk Re-OCR */}
+      <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+        <h2 style={{ fontSize: 16, margin: '0 0 8px' }}>Step 2: Bulk Re-OCR</h2>
         <p className="muted small" style={{ marginBottom: 12 }}>
           Upload a PDF containing SAT questions (one per page). Each page should include the question ID.
           The PDF will be sent through Mathpix OCR → Claude extraction, then matched against the database.
