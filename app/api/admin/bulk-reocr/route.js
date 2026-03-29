@@ -29,6 +29,32 @@ export async function POST(request) {
     // Step 2: Claude extraction
     const questions = await extractSatQuestionsWithClaude(mmdText);
 
+    // Step 2b: Post-process — try to recover missing IDs from raw OCR text.
+    // The OCR often contains "ID: XXXXXXXX" lines that Claude may have missed.
+    if (questions.some(q => !q.question_id)) {
+      // Split raw OCR by likely page boundaries and extract IDs
+      const pages = mmdText.split(/\n{3,}(?=ID:|\\#|---)/i);
+      const idPattern = /\bID:\s*([a-f0-9]{6,}(?:-[A-Z]{2})?)\b/gi;
+      const allIds = [];
+      let match;
+      while ((match = idPattern.exec(mmdText)) !== null) {
+        allIds.push(match[1]);
+      }
+      // Also try bare hex IDs at line starts
+      const bareIdPattern = /^([a-f0-9]{8})\b/gm;
+      while ((match = bareIdPattern.exec(mmdText)) !== null) {
+        if (!allIds.includes(match[1])) allIds.push(match[1]);
+      }
+      // Assign unmatched IDs to null-ID questions in order
+      let idIdx = 0;
+      for (const q of questions) {
+        if (!q.question_id && idIdx < allIds.length) {
+          q.question_id = allIds[idIdx];
+        }
+        idIdx++;
+      }
+    }
+
     // Step 3: Match each question to the database
     const admin = createServiceClient();
     for (const q of questions) {
@@ -188,15 +214,23 @@ async function extractSatQuestionsWithClaude(mmdText) {
 Each page of the PDF is one SAT question. The OCR text for all pages is concatenated with page breaks.
 
 For each question, extract:
-- The question ID (usually visible at the top or bottom of the page, formatted like "070925-DC", "a]4c5e2f", or similar alphanumeric codes)
+- The question ID
 - The stimulus/passage (if any — reading comprehension questions have passages)
 - The question stem (the actual question being asked)
 - The answer options (A, B, C, D) with their content
 - Whether it's MCQ (multiple choice) or SPR (student-produced response / fill-in-the-blank with no options)
 
+QUESTION ID — CRITICAL:
+- Every page has a question ID displayed near the top, typically in a dark banner/header area.
+- The format is "ID: XXXXXXXX" where XXXXXXXX is a hex string (e.g., "ID: 9912e19f", "ID: e10d8313").
+- Some pages may show it as just the hex string without "ID:" prefix.
+- Some IDs may have a different format like "070925-DC" (alphanumeric with hyphens).
+- You MUST extract this ID for every question. Look for it at the very beginning of each page's content.
+- If the OCR text shows something like "ID: 9912e19f" or just "9912e19f" at the top of a page, that is the question_id.
+- Do NOT return null for question_id unless the page truly has no identifiable ID anywhere.
+
 IMPORTANT RULES:
 - Each page is ONE question. Do not merge questions across pages.
-- The question ID is typically printed somewhere on the page — look for short alphanumeric codes.
 - For math content, use \\( ... \\) for inline math and \\[ ... \\] for display math.
 - Use clean HTML for all content: <p> for paragraphs, <em> for italics, <strong> for bold.
 - For tables, use proper <table> HTML.
@@ -208,7 +242,7 @@ IMPORTANT RULES:
 
 Return a JSON array where each element has:
 {
-  "question_id": "<the ID found on the page, or null if not identifiable>",
+  "question_id": "<the ID found on the page — NEVER null if you can see any ID text>",
   "stimulus_html": "<passage/context HTML, or null if no stimulus>",
   "stem_html": "<the question text as HTML>",
   "question_type": "mcq" or "spr",
