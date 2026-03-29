@@ -59,7 +59,7 @@ export async function GET(request) {
     const safe = qText.replace(/[%_]/g, '\\$&');
     const pattern = `%${safe}%`;
     step1.push(
-      supabase.from('questions').select('id, question_id').ilike('question_id', pattern).limit(2000),
+      supabase.from('questions').select('id, question_id').or(`question_id.ilike.${pattern},source_external_id.ilike.${pattern}`).limit(2000),
       supabase.from('question_versions').select('question_id, stem_html, stimulus_html')
         .eq('is_current', true).or(`stem_html.ilike.${pattern},stimulus_html.ilike.${pattern}`).limit(2000),
     );

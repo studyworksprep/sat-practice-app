@@ -107,6 +107,12 @@ export default function AdminDashboard() {
   const [routingSaving, setRoutingSaving] = useState(false);
   const [routingDirty, setRoutingDirty] = useState(false);
 
+  // Batch fix state
+  const [showBatchFix, setShowBatchFix] = useState(false);
+  const [batchFixFiles, setBatchFixFiles] = useState([]);
+  const [batchFixResults, setBatchFixResults] = useState([]); // { file, result, status, saving }
+  const [batchFixProcessing, setBatchFixProcessing] = useState(false);
+
   // Teacher effectiveness
   const [teacherData, setTeacherData] = useState(null);
 
@@ -634,6 +640,57 @@ export default function AdminDashboard() {
         .map(m => m.route_code)
         .filter(Boolean)
     )];
+  }
+
+  // Batch fix functions
+  async function processBatchFixImages() {
+    if (batchFixFiles.length === 0) return;
+    setBatchFixProcessing(true);
+    const results = [];
+
+    for (let i = 0; i < batchFixFiles.length; i++) {
+      const file = batchFixFiles[i];
+      try {
+        const form = new FormData();
+        form.append('image', file);
+        const res = await fetch('/api/admin/batch-fix', { method: 'POST', body: form });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed');
+        results.push({ file: file.name, result: json, status: json.found ? 'ready' : 'not_found', saving: false });
+      } catch (e) {
+        results.push({ file: file.name, result: null, status: 'error', error: e.message, saving: false });
+      }
+      setBatchFixResults([...results]);
+    }
+    setBatchFixProcessing(false);
+  }
+
+  async function saveBatchFixItem(idx) {
+    const item = batchFixResults[idx];
+    if (!item?.result?.version_id) return;
+    setBatchFixResults(prev => prev.map((r, i) => i === idx ? { ...r, saving: true } : r));
+    try {
+      const res = await fetch('/api/admin/batch-fix', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          version_id: item.result.version_id,
+          stem_html: item.result.stem_html,
+          stimulus_html: item.result.stimulus_html || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to save');
+      setBatchFixResults(prev => prev.map((r, i) => i === idx ? { ...r, status: 'saved', saving: false } : r));
+      showToast('ok', `Saved fix for ${item.result.external_id || item.result.version_id?.slice(0, 8)}`);
+    } catch (e) {
+      setBatchFixResults(prev => prev.map((r, i) => i === idx ? { ...r, saving: false } : r));
+      showToast('danger', e.message);
+    }
+  }
+
+  function skipBatchFixItem(idx) {
+    setBatchFixResults(prev => prev.map((r, i) => i === idx ? { ...r, status: 'skipped' } : r));
   }
 
   async function handleSaveScores() {
@@ -2038,6 +2095,104 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   </>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ── Batch Fix Questions ─────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h3 className="adminSideTitle" style={{ margin: 0 }}>Batch Fix Questions</h3>
+              <button className="btn secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => { setShowBatchFix(!showBatchFix); if (showBatchFix) { setBatchFixFiles([]); setBatchFixResults([]); } }}>
+                {showBatchFix ? 'Close' : 'Start'}
+              </button>
+            </div>
+            <p className="muted small" style={{ marginTop: -4, marginBottom: 8, fontSize: 11 }}>
+              Upload screenshots of badly formatted questions. Each screenshot must include the EID/VID labels visible on the question page.
+            </p>
+
+            {showBatchFix && (
+              <div className="card" style={{ padding: 16 }}>
+                {/* File upload */}
+                <label className="adminLabel" style={{ marginBottom: 12 }}>
+                  Upload Screenshots
+                  <input
+                    className="adminInput"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => { setBatchFixFiles(Array.from(e.target.files || [])); setBatchFixResults([]); }}
+                  />
+                  {batchFixFiles.length > 0 && (
+                    <span className="muted small">{batchFixFiles.length} image{batchFixFiles.length > 1 ? 's' : ''} selected</span>
+                  )}
+                </label>
+
+                <button
+                  className="btn"
+                  onClick={processBatchFixImages}
+                  disabled={batchFixFiles.length === 0 || batchFixProcessing}
+                  style={{ fontSize: 12, marginBottom: 16 }}
+                >
+                  {batchFixProcessing ? `Processing (${batchFixResults.length}/${batchFixFiles.length})…` : 'Process Images'}
+                </button>
+
+                {/* Results */}
+                {batchFixResults.length > 0 && (
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    {batchFixResults.map((item, idx) => (
+                      <div key={idx} className="card" style={{ padding: 12, border: item.status === 'saved' ? '1px solid var(--color-success, #22c55e)' : item.status === 'error' || item.status === 'not_found' ? '1px solid var(--danger, #dc2626)' : undefined }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                          <div>
+                            <strong style={{ fontSize: 13 }}>{item.file}</strong>
+                            {item.result?.external_id && <span className="pill" style={{ fontSize: 11, marginLeft: 6 }}>EID: {item.result.external_id}</span>}
+                            {item.result?.version_id && <span className="pill" style={{ fontSize: 11, marginLeft: 4 }}>VID: {item.result.version_id.slice(0, 8)}</span>}
+                          </div>
+                          <span className="pill" style={{ fontSize: 11, background: item.status === 'saved' ? 'rgba(34,197,94,0.1)' : item.status === 'skipped' ? 'rgba(156,163,175,0.2)' : item.status === 'error' || item.status === 'not_found' ? 'rgba(220,38,38,0.1)' : undefined }}>
+                            {item.status === 'ready' ? 'Ready' : item.status === 'saved' ? 'Saved' : item.status === 'skipped' ? 'Skipped' : item.status === 'not_found' ? 'Not Found' : 'Error'}
+                          </span>
+                        </div>
+
+                        {item.status === 'error' && (
+                          <p className="muted small" style={{ color: 'var(--danger)' }}>{item.error}</p>
+                        )}
+
+                        {item.status === 'not_found' && (
+                          <p className="muted small" style={{ color: 'var(--danger)' }}>Could not find this question in the database.</p>
+                        )}
+
+                        {item.status === 'ready' && item.result && (
+                          <>
+                            {/* Current vs New comparison */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                              <div>
+                                <div className="muted small" style={{ marginBottom: 4, fontWeight: 600 }}>Current</div>
+                                <div style={{ fontSize: 12, padding: 8, background: 'var(--bg)', borderRadius: 6, maxHeight: 200, overflow: 'auto' }}>
+                                  <div dangerouslySetInnerHTML={{ __html: item.result.current_stem_html || '<em>empty</em>' }} />
+                                </div>
+                              </div>
+                              <div>
+                                <div className="muted small" style={{ marginBottom: 4, fontWeight: 600 }}>New (from OCR)</div>
+                                <div style={{ fontSize: 12, padding: 8, background: 'rgba(34,197,94,0.05)', borderRadius: 6, maxHeight: 200, overflow: 'auto' }}>
+                                  <div dangerouslySetInnerHTML={{ __html: item.result.stem_html || '<em>empty</em>' }} />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              <button className="btn" onClick={() => saveBatchFixItem(idx)} disabled={item.saving} style={{ fontSize: 12 }}>
+                                {item.saving ? 'Saving…' : 'Apply Fix'}
+                              </button>
+                              <button className="btn secondary" onClick={() => skipBatchFixItem(idx)} style={{ fontSize: 12 }}>
+                                Skip
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
