@@ -1442,14 +1442,6 @@ export default function PracticeQuestionPage() {
   // ✅ No visible "Stimulus/Question" headers (keep srOnly for a11y)
   const renderPromptBlocks = () => (
     <>
-      {/* Temporary: show IDs for batch fix screenshots */}
-      {(data?.source_external_id || data?.version?.id) && (
-        <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--muted)', marginBottom: 8, userSelect: 'all' }}>
-          {data?.source_external_id && <span>EID: {data.source_external_id}</span>}
-          {data?.source_external_id && data?.version?.id && <span> · </span>}
-          {data?.version?.id && <span>VID: {data.version.id}</span>}
-        </div>
-      )}
       {htmlHasContent(version?.stimulus_html) ? (
         <div style={{ marginBottom: 12 }}>
           <div className="srOnly">Stimulus</div>
