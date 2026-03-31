@@ -91,6 +91,28 @@ export default function AdminDashboard() {
   // Broken questions
   const [brokenQs, setBrokenQs] = useState(null);
 
+  // Concept tags
+  const [showConceptTags, setShowConceptTags] = useState(false);
+  const [conceptTags, setConceptTags] = useState([]);
+  const [conceptTagsLoading, setConceptTagsLoading] = useState(false);
+  const [editingTagId, setEditingTagId] = useState(null);
+  const [editingTagName, setEditingTagName] = useState('');
+
+  // Routing rules
+  const [showRouting, setShowRouting] = useState(false);
+  const [routingTestId, setRoutingTestId] = useState('');
+  const [routingRules, setRoutingRules] = useState([]);
+  const [routingModules, setRoutingModules] = useState([]);
+  const [routingLoading, setRoutingLoading] = useState(false);
+  const [routingSaving, setRoutingSaving] = useState(false);
+  const [routingDirty, setRoutingDirty] = useState(false);
+
+  // Batch fix state
+  const [showBatchFix, setShowBatchFix] = useState(false);
+  const [batchFixFiles, setBatchFixFiles] = useState([]);
+  const [batchFixResults, setBatchFixResults] = useState([]); // { file, result, status, saving }
+  const [batchFixProcessing, setBatchFixProcessing] = useState(false);
+
   // Teacher effectiveness
   const [teacherData, setTeacherData] = useState(null);
 
@@ -495,6 +517,180 @@ export default function AdminDashboard() {
       showToast('danger', err.message);
     }
     setLearnSaving(false);
+  }
+
+  async function fetchConceptTags() {
+    setConceptTagsLoading(true);
+    try {
+      const res = await fetch('/api/concept-tags');
+      const json = await res.json();
+      if (res.ok) setConceptTags(json.tags || []);
+    } catch {}
+    setConceptTagsLoading(false);
+  }
+
+  async function renameConceptTag(tagId, newName) {
+    if (!newName.trim()) return;
+    try {
+      const res = await fetch('/api/concept-tags', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tagId, name: newName.trim() }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setConceptTags(prev => prev.map(t => t.id === tagId ? { ...t, name: json.tag.name } : t));
+        showToast('ok', 'Tag renamed.');
+      }
+    } catch (err) { showToast('danger', err.message); }
+    setEditingTagId(null);
+    setEditingTagName('');
+  }
+
+  async function deleteConceptTag(tagId, tagName) {
+    if (!confirm(`Delete tag "${tagName}"? This will remove it from all questions.`)) return;
+    try {
+      const res = await fetch('/api/concept-tags', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tagId }),
+      });
+      if (res.ok) {
+        setConceptTags(prev => prev.filter(t => t.id !== tagId));
+        showToast('ok', 'Tag deleted.');
+      }
+    } catch (err) { showToast('danger', err.message); }
+  }
+
+  // Routing rules functions
+  async function fetchRoutingRules(testId) {
+    if (!testId) { setRoutingRules([]); setRoutingModules([]); return; }
+    setRoutingLoading(true);
+    try {
+      const res = await fetch(`/api/admin/routing-rules?practice_test_id=${testId}`);
+      const json = await res.json();
+      if (res.ok) {
+        setRoutingRules(json.rules || []);
+        setRoutingModules(json.modules || []);
+        setRoutingDirty(false);
+      } else {
+        showToast('danger', json.error || 'Failed to load rules');
+      }
+    } catch (err) { showToast('danger', err.message); }
+    setRoutingLoading(false);
+  }
+
+  function updateRoutingRule(idx, field, value) {
+    setRoutingRules(prev => prev.map((r, i) => i === idx ? { ...r, [field]: value } : r));
+    setRoutingDirty(true);
+  }
+
+  function addRoutingRule() {
+    setRoutingRules(prev => [...prev, {
+      subject_code: 'RW',
+      from_module_number: 1,
+      metric: 'correct_count',
+      operator: '>=',
+      threshold: 0,
+      to_route_code: '',
+    }]);
+    setRoutingDirty(true);
+  }
+
+  function addDefaultRules() {
+    setRoutingRules([
+      { subject_code: 'RW', from_module_number: 1, metric: 'correct_count', operator: '>=', threshold: 15, to_route_code: 'hard' },
+      { subject_code: 'RW', from_module_number: 1, metric: 'correct_count', operator: '<', threshold: 15, to_route_code: 'easy' },
+      { subject_code: 'MATH', from_module_number: 1, metric: 'correct_count', operator: '>=', threshold: 14, to_route_code: 'hard' },
+      { subject_code: 'MATH', from_module_number: 1, metric: 'correct_count', operator: '<', threshold: 14, to_route_code: 'easy' },
+    ]);
+    setRoutingDirty(true);
+  }
+
+  function removeRoutingRule(idx) {
+    setRoutingRules(prev => prev.filter((_, i) => i !== idx));
+    setRoutingDirty(true);
+  }
+
+  async function saveRoutingRules() {
+    if (!routingTestId) return;
+    setRoutingSaving(true);
+    try {
+      const res = await fetch('/api/admin/routing-rules', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ practice_test_id: routingTestId, rules: routingRules }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        showToast('ok', `Saved ${json.count} routing rules.`);
+        setRoutingDirty(false);
+      } else {
+        showToast('danger', json.error || 'Failed to save');
+      }
+    } catch (err) { showToast('danger', err.message); }
+    setRoutingSaving(false);
+  }
+
+  // Get available route codes for a given subject from module data
+  function getRouteCodes(subjectCode) {
+    return [...new Set(
+      routingModules
+        .filter(m => m.subject_code.toUpperCase() === subjectCode.toUpperCase() && m.module_number === 2)
+        .map(m => m.route_code)
+        .filter(Boolean)
+    )];
+  }
+
+  // Batch fix functions
+  async function processBatchFixImages() {
+    if (batchFixFiles.length === 0) return;
+    setBatchFixProcessing(true);
+    const results = [];
+
+    for (let i = 0; i < batchFixFiles.length; i++) {
+      const file = batchFixFiles[i];
+      try {
+        const form = new FormData();
+        form.append('image', file);
+        const res = await fetch('/api/admin/batch-fix', { method: 'POST', body: form });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed');
+        results.push({ file: file.name, result: json, status: json.found ? 'ready' : 'not_found', saving: false });
+      } catch (e) {
+        results.push({ file: file.name, result: null, status: 'error', error: e.message, saving: false });
+      }
+      setBatchFixResults([...results]);
+    }
+    setBatchFixProcessing(false);
+  }
+
+  async function saveBatchFixItem(idx) {
+    const item = batchFixResults[idx];
+    if (!item?.result?.version_id) return;
+    setBatchFixResults(prev => prev.map((r, i) => i === idx ? { ...r, saving: true } : r));
+    try {
+      const res = await fetch('/api/admin/batch-fix', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          version_id: item.result.version_id,
+          stem_html: item.result.stem_html,
+          stimulus_html: item.result.stimulus_html || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to save');
+      setBatchFixResults(prev => prev.map((r, i) => i === idx ? { ...r, status: 'saved', saving: false } : r));
+      showToast('ok', `Saved fix for ${item.result.external_id || item.result.version_id?.slice(0, 8)}`);
+    } catch (e) {
+      setBatchFixResults(prev => prev.map((r, i) => i === idx ? { ...r, saving: false } : r));
+      showToast('danger', e.message);
+    }
+  }
+
+  function skipBatchFixItem(idx) {
+    setBatchFixResults(prev => prev.map((r, i) => i === idx ? { ...r, status: 'skipped' } : r));
   }
 
   async function handleSaveScores() {
@@ -1673,6 +1869,169 @@ export default function AdminDashboard() {
             )}
           </section>
 
+          {/* ── Routing Rules ─────────────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h3 className="adminSideTitle" style={{ margin: 0 }}>Routing Rules</h3>
+              <button className="btn secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => setShowRouting(!showRouting)}>
+                {showRouting ? 'Close' : 'Manage'}
+              </button>
+            </div>
+            <p className="muted small" style={{ marginTop: -4, marginBottom: 8, fontSize: 11 }}>
+              Define adaptive routing from Module 1 to Module 2 for each practice test.
+            </p>
+
+            {showRouting && (
+              <div className="card" style={{ padding: 16 }}>
+                <label className="adminLabel" style={{ marginBottom: 12 }}>
+                  Practice Test
+                  <select
+                    className="adminSelect"
+                    value={routingTestId}
+                    onChange={(e) => { setRoutingTestId(e.target.value); fetchRoutingRules(e.target.value); }}
+                  >
+                    <option value="">Select a test…</option>
+                    {tests.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name || t.code}</option>
+                    ))}
+                  </select>
+                </label>
+
+                {routingTestId && routingLoading && (
+                  <p className="muted small">Loading rules…</p>
+                )}
+
+                {routingTestId && !routingLoading && (
+                  <>
+                    {/* Module summary */}
+                    {routingModules.length > 0 && (
+                      <div style={{ marginBottom: 12, fontSize: 12 }}>
+                        <span className="muted">Modules: </span>
+                        {routingModules.map(m => (
+                          <span key={m.id} className="pill" style={{ fontSize: 11, marginRight: 4 }}>
+                            {m.subject_code} M{m.module_number}{m.route_code ? ` (${m.route_code})` : ''}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Rules table */}
+                    {routingRules.length > 0 && (
+                      <div style={{ overflow: 'auto', marginBottom: 12 }}>
+                        <table className="adminTable">
+                          <thead>
+                            <tr>
+                              <th>Subject</th>
+                              <th>Metric</th>
+                              <th>Operator</th>
+                              <th>Threshold</th>
+                              <th>Route To</th>
+                              <th style={{ width: 50 }}></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {routingRules.map((rule, idx) => (
+                              <tr key={idx}>
+                                <td>
+                                  <select className="adminSelect" value={rule.subject_code} onChange={e => updateRoutingRule(idx, 'subject_code', e.target.value)} style={{ fontSize: 12, minWidth: 70 }}>
+                                    <option value="RW">RW</option>
+                                    <option value="MATH">MATH</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <select className="adminSelect" value={rule.metric || 'correct_count'} onChange={e => updateRoutingRule(idx, 'metric', e.target.value)} style={{ fontSize: 12, minWidth: 110 }}>
+                                    <option value="correct_count">correct_count</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <select className="adminSelect" value={rule.operator} onChange={e => updateRoutingRule(idx, 'operator', e.target.value)} style={{ fontSize: 12, minWidth: 60 }}>
+                                    <option value=">=">&gt;=</option>
+                                    <option value=">">&gt;</option>
+                                    <option value="<=">&lt;=</option>
+                                    <option value="<">&lt;</option>
+                                    <option value="==">==</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <input
+                                    type="number"
+                                    className="adminInput"
+                                    value={rule.threshold}
+                                    onChange={e => updateRoutingRule(idx, 'threshold', Number(e.target.value))}
+                                    style={{ width: 70, fontSize: 12 }}
+                                  />
+                                </td>
+                                <td>
+                                  {(() => {
+                                    const codes = getRouteCodes(rule.subject_code);
+                                    return codes.length > 0 ? (
+                                      <select className="adminSelect" value={rule.to_route_code || ''} onChange={e => updateRoutingRule(idx, 'to_route_code', e.target.value)} style={{ fontSize: 12, minWidth: 80 }}>
+                                        <option value="">—</option>
+                                        {codes.map(c => <option key={c} value={c}>{c}</option>)}
+                                      </select>
+                                    ) : (
+                                      <input
+                                        type="text"
+                                        className="adminInput"
+                                        value={rule.to_route_code || ''}
+                                        onChange={e => updateRoutingRule(idx, 'to_route_code', e.target.value)}
+                                        placeholder="route code"
+                                        style={{ width: 90, fontSize: 12 }}
+                                      />
+                                    );
+                                  })()}
+                                </td>
+                                <td>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeRoutingRule(idx)}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger, #dc2626)', fontSize: 14, fontWeight: 700, padding: '0 4px' }}
+                                    title="Remove rule"
+                                  >
+                                    &times;
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {routingRules.length === 0 && (
+                      <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(37,99,235,0.04)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                        <p className="muted small" style={{ margin: '0 0 8px' }}>
+                          No routing rules configured. The system will use <strong>default fallback thresholds</strong>: RW &ge; 15 correct &rarr; hard, MATH &ge; 14 correct &rarr; hard. Otherwise &rarr; easy.
+                        </p>
+                        <button className="btn secondary" onClick={addDefaultRules} style={{ fontSize: 12 }}>
+                          Populate Default Rules
+                        </button>
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <button className="btn secondary" onClick={addRoutingRule} style={{ fontSize: 12 }}>
+                        + Add Rule
+                      </button>
+                      <button className="btn secondary" onClick={addDefaultRules} style={{ fontSize: 12 }}>
+                        Reset to Defaults
+                      </button>
+                      <button
+                        className="btn"
+                        onClick={saveRoutingRules}
+                        disabled={routingSaving || !routingDirty}
+                        style={{ fontSize: 12 }}
+                      >
+                        {routingSaving ? 'Saving…' : 'Save Rules'}
+                      </button>
+                      {routingDirty && <span className="muted small">unsaved changes</span>}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </section>
+
           {/* ── Skill Learnability ────────────────────────── */}
           <section className="adminSection">
             <div className="adminSectionHeader">
@@ -1736,6 +2095,185 @@ export default function AdminDashboard() {
                       )}
                     </div>
                   </>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ── Batch Fix Questions ─────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h3 className="adminSideTitle" style={{ margin: 0 }}>Batch Fix Questions</h3>
+              <button className="btn secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => { setShowBatchFix(!showBatchFix); if (showBatchFix) { setBatchFixFiles([]); setBatchFixResults([]); } }}>
+                {showBatchFix ? 'Close' : 'Start'}
+              </button>
+            </div>
+            <p className="muted small" style={{ marginTop: -4, marginBottom: 8, fontSize: 11 }}>
+              Upload screenshots of badly formatted questions. Each screenshot must include the EID/VID labels visible on the question page.
+            </p>
+
+            {showBatchFix && (
+              <div className="card" style={{ padding: 16 }}>
+                {/* File upload */}
+                <label className="adminLabel" style={{ marginBottom: 12 }}>
+                  Upload Screenshots
+                  <input
+                    className="adminInput"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => { setBatchFixFiles(Array.from(e.target.files || [])); setBatchFixResults([]); }}
+                  />
+                  {batchFixFiles.length > 0 && (
+                    <span className="muted small">{batchFixFiles.length} image{batchFixFiles.length > 1 ? 's' : ''} selected</span>
+                  )}
+                </label>
+
+                <button
+                  className="btn"
+                  onClick={processBatchFixImages}
+                  disabled={batchFixFiles.length === 0 || batchFixProcessing}
+                  style={{ fontSize: 12, marginBottom: 16 }}
+                >
+                  {batchFixProcessing ? `Processing (${batchFixResults.length}/${batchFixFiles.length})…` : 'Process Images'}
+                </button>
+
+                {/* Results */}
+                {batchFixResults.length > 0 && (
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    {batchFixResults.map((item, idx) => (
+                      <div key={idx} className="card" style={{ padding: 12, border: item.status === 'saved' ? '1px solid var(--color-success, #22c55e)' : item.status === 'error' || item.status === 'not_found' ? '1px solid var(--danger, #dc2626)' : undefined }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                          <div>
+                            <strong style={{ fontSize: 13 }}>{item.file}</strong>
+                            {item.result?.external_id && <span className="pill" style={{ fontSize: 11, marginLeft: 6 }}>EID: {item.result.external_id}</span>}
+                            {item.result?.version_id && <span className="pill" style={{ fontSize: 11, marginLeft: 4 }}>VID: {item.result.version_id.slice(0, 8)}</span>}
+                          </div>
+                          <span className="pill" style={{ fontSize: 11, background: item.status === 'saved' ? 'rgba(34,197,94,0.1)' : item.status === 'skipped' ? 'rgba(156,163,175,0.2)' : item.status === 'error' || item.status === 'not_found' ? 'rgba(220,38,38,0.1)' : undefined }}>
+                            {item.status === 'ready' ? 'Ready' : item.status === 'saved' ? 'Saved' : item.status === 'skipped' ? 'Skipped' : item.status === 'not_found' ? 'Not Found' : 'Error'}
+                          </span>
+                        </div>
+
+                        {item.status === 'error' && (
+                          <p className="muted small" style={{ color: 'var(--danger)' }}>{item.error}</p>
+                        )}
+
+                        {item.status === 'not_found' && (
+                          <p className="muted small" style={{ color: 'var(--danger)' }}>Could not find this question in the database.</p>
+                        )}
+
+                        {item.status === 'ready' && item.result && (
+                          <>
+                            {/* Current vs New comparison */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                              <div>
+                                <div className="muted small" style={{ marginBottom: 4, fontWeight: 600 }}>Current</div>
+                                <div style={{ fontSize: 12, padding: 8, background: 'var(--bg)', borderRadius: 6, maxHeight: 200, overflow: 'auto' }}>
+                                  <div dangerouslySetInnerHTML={{ __html: item.result.current_stem_html || '<em>empty</em>' }} />
+                                </div>
+                              </div>
+                              <div>
+                                <div className="muted small" style={{ marginBottom: 4, fontWeight: 600 }}>New (from OCR)</div>
+                                <div style={{ fontSize: 12, padding: 8, background: 'rgba(34,197,94,0.05)', borderRadius: 6, maxHeight: 200, overflow: 'auto' }}>
+                                  <div dangerouslySetInnerHTML={{ __html: item.result.stem_html || '<em>empty</em>' }} />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              <button className="btn" onClick={() => saveBatchFixItem(idx)} disabled={item.saving} style={{ fontSize: 12 }}>
+                                {item.saving ? 'Saving…' : 'Apply Fix'}
+                              </button>
+                              <button className="btn secondary" onClick={() => skipBatchFixItem(idx)} style={{ fontSize: 12 }}>
+                                Skip
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* ── Concept Tags ────────────────────────── */}
+          <section className="adminSection">
+            <div className="adminSectionHeader">
+              <h3 className="adminSideTitle" style={{ margin: 0 }}>Concept Tags</h3>
+              <button className="btn secondary" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => { setShowConceptTags(!showConceptTags); if (!showConceptTags && !conceptTags.length) fetchConceptTags(); }}>
+                {showConceptTags ? 'Close' : 'Manage'}
+              </button>
+            </div>
+            <p className="muted small" style={{ marginTop: -4, marginBottom: 8, fontSize: 11 }}>
+              Manage concept tags applied to questions. Rename or delete tags here.
+            </p>
+
+            {showConceptTags && (
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                {conceptTagsLoading ? (
+                  <p className="muted small" style={{ padding: 16 }}>Loading tags...</p>
+                ) : conceptTags.length === 0 ? (
+                  <p className="muted small" style={{ padding: 16 }}>No concept tags yet. Tags are created from the question page.</p>
+                ) : (
+                  <div style={{ maxHeight: 400, overflow: 'auto' }}>
+                    <table className="adminTable">
+                      <thead>
+                        <tr>
+                          <th>Tag Name</th>
+                          <th style={{ width: 140 }}>Created</th>
+                          <th style={{ width: 120 }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {conceptTags.map(tag => (
+                          <tr key={tag.id}>
+                            <td>
+                              {editingTagId === tag.id ? (
+                                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                  <input
+                                    className="adminInput"
+                                    value={editingTagName}
+                                    onChange={(e) => setEditingTagName(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') renameConceptTag(tag.id, editingTagName);
+                                      if (e.key === 'Escape') { setEditingTagId(null); setEditingTagName(''); }
+                                    }}
+                                    style={{ fontSize: 12, padding: '2px 6px', flex: 1 }}
+                                    autoFocus
+                                  />
+                                  <button className="btn primary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => renameConceptTag(tag.id, editingTagName)}>Save</button>
+                                  <button className="btn secondary" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => { setEditingTagId(null); setEditingTagName(''); }}>Cancel</button>
+                                </div>
+                              ) : (
+                                <span style={{ fontSize: 13 }}>{tag.name}</span>
+                              )}
+                            </td>
+                            <td className="muted small">{formatDate(tag.created_at)}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: 6 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => { setEditingTagId(tag.id); setEditingTagName(tag.name); }}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--accent)', padding: 0, fontWeight: 500 }}
+                                >
+                                  Rename
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => deleteConceptTag(tag.id, tag.name)}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--danger, #dc2626)', padding: 0, fontWeight: 500 }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
             )}

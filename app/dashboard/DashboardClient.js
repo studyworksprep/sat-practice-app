@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTestType } from '../../lib/TestTypeContext';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
 const SUBJECT_LABEL = { rw: 'R&W', RW: 'R&W', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
@@ -409,9 +410,254 @@ const AssignmentsCard = memo(function AssignmentsCard({ assignments }) {
   );
 });
 
+// ── ACT Section Performance Card ──
+const SECTION_LABELS = { english: 'English', math: 'Math', reading: 'Reading', science: 'Science' };
+
+const ActPerfSection = memo(function ActPerfSection({ sectionName, categories, loading: isLoading }) {
+  const [open, setOpen] = useState({});
+  const toggle = (name) => setOpen((prev) => ({ ...prev, [name]: !prev[name] }));
+
+  const sectionTotals = categories.reduce(
+    (acc, c) => ({ correct: acc.correct + c.correct, attempted: acc.attempted + c.attempted }),
+    { correct: 0, attempted: 0 }
+  );
+  const sectionPct = pct(sectionTotals.correct, sectionTotals.attempted);
+
+  return (
+    <div className="card dbPerfCard">
+      <div className="dbPerfCardHeader">
+        <span className="h2">{SECTION_LABELS[sectionName] || sectionName}</span>
+        {sectionPct !== null && (
+          <span className="dbSectionPct" style={{ color: pctColor(sectionPct) }}>{sectionPct}%</span>
+        )}
+      </div>
+      {isLoading ? (
+        <p className="muted small">Loading...</p>
+      ) : !categories.length ? (
+        <p className="muted small">No data yet — start practicing to see your stats.</p>
+      ) : (
+        <div className="dbDomainList">
+          {categories.map((cat) => {
+            const isOpen = open[cat.category];
+            const hasSubs = cat.subcategories && cat.subcategories.length > 0;
+            return (
+              <div key={cat.category} className="dbDomainBlock">
+                <div
+                  className="dbDomainRow"
+                  onClick={() => hasSubs && toggle(cat.category)}
+                  style={{ cursor: hasSubs ? 'pointer' : 'default' }}
+                >
+                  <div className="dbDomainLeft">
+                    <span className={`dbChevron${hasSubs ? '' : ' invisible'}${isOpen ? ' open' : ''}`}>
+                      <svg viewBox="0 0 16 16"><polyline points="6 4 10 8 6 12" /></svg>
+                    </span>
+                    <span className="dbDomainName">{cat.category}</span>
+                  </div>
+                  <span className="dbRowCount">{cat.correct}/{cat.attempted}</span>
+                  <div className="dbBarCell">
+                    <AccuracyBar correct={cat.correct} attempted={cat.attempted} />
+                  </div>
+                </div>
+                {isOpen && hasSubs && (
+                  <div className="dbTopicList">
+                    {cat.subcategories.map((sub) => (
+                      <div key={sub.subcategory} className="dbTopicRow">
+                        <span className="dbTopicName">{sub.subcategory}</span>
+                        <span className="dbRowCount">{sub.correct}/{sub.attempted}</span>
+                        <div className="dbBarCell">
+                          <AccuracyBar correct={sub.correct} attempted={sub.attempted} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+});
+
+// ── ACT Session Card ──
+const ActSessionCard = memo(function ActSessionCard({ session, index }) {
+  const router = useRouter();
+  const questions = session.questions;
+  const correct = questions.filter(q => q.is_correct).length;
+  const total = questions.length;
+  const p = pct(correct, total);
+
+  function handleTileClick(qIndex) {
+    const ids = questions.map(q => q.question_id);
+    const sid = `act_dashboard_${Date.now()}_${index}`;
+    localStorage.setItem(`act_session_${sid}`, ids.join(','));
+    localStorage.setItem(`act_session_${sid}_items`, JSON.stringify(
+      questions.map(q => ({
+        question_id: q.question_id,
+        difficulty: q.difficulty,
+        is_done: true,
+        last_is_correct: q.is_correct,
+        section: q.section,
+        category: q.category,
+      }))
+    ));
+
+    const qid = questions[qIndex].question_id;
+    router.push(
+      `/act-practice/${encodeURIComponent(qid)}?session=1&replay=1&sid=${sid}&t=${ids.length}&o=0&p=${qIndex}&i=${qIndex + 1}`
+    );
+  }
+
+  return (
+    <div className="card dbSessionCard">
+      <div className="dbSessionHeader">
+        <div className="dbSessionMeta">
+          <span className="dbSessionDate">{formatDateTime(session.startedAt)}</span>
+          <span className="dbSessionStats">
+            {correct}/{total}
+            {p !== null && <span style={{ color: pctColor(p), fontWeight: 600 }}> ({p}%)</span>}
+          </span>
+        </div>
+      </div>
+      <div className="dbSessionTiles">
+        {questions.map((q, i) => (
+          <SessionTile key={q.question_id} q={q} index={i} onClick={() => handleTileClick(i)} />
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// ── ACT Dashboard View ──
+function ActDashboardView({ email }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/act/dashboard')
+      .then(r => r.json())
+      .then(json => {
+        if (json.error) throw new Error(json.error);
+        setData(json);
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Group categories by section
+  const sectionCategories = useMemo(() => {
+    if (!data?.categoryStats) return {};
+    const grouped = {};
+    for (const cat of data.categoryStats) {
+      if (!grouped[cat.section]) grouped[cat.section] = [];
+      grouped[cat.section].push(cat);
+    }
+    return grouped;
+  }, [data?.categoryStats]);
+
+  const sectionOrder = ['english', 'math', 'reading', 'science'];
+  const activeSections = sectionOrder.filter(s => sectionCategories[s]?.length > 0);
+
+  return (
+    <main className="container dbMain">
+
+      {/* Banner */}
+      <div className="card dbBanner">
+        <div className="dbBannerText">
+          <div className="dbBannerGreeting">{timeGreeting()}, {displayName(email)}</div>
+          <p className="muted small" style={{ margin: 0 }}>
+            {data?.currentStreak > 0
+              ? `${data.currentStreak} day streak — keep it going!`
+              : 'Ready to practice ACT? Let\'s go.'}
+          </p>
+        </div>
+        <div className="dbBannerActions">
+          <Link href="/act-practice" className="btn primary">Continue Practicing</Link>
+        </div>
+      </div>
+
+      {/* Stats row */}
+      <div className="dbStatsRow">
+        <StreakCard streak={data?.currentStreak} practicedToday={data?.practicedToday} />
+        <div className="card dbStatCard">
+          <div className="dbStatValue" style={{ color: 'var(--accent)' }}>
+            {data?.totalAttempted ?? '—'}
+          </div>
+          <div className="dbStatLabel">Questions Attempted</div>
+        </div>
+        <div className="card dbStatCard">
+          <div className="dbStatValue" style={{ color: pctColor(data?.totalAttempted ? Math.round((data.totalCorrect / data.totalAttempted) * 100) : null) }}>
+            {data?.totalAttempted ? `${Math.round((data.totalCorrect / data.totalAttempted) * 100)}%` : '—'}
+          </div>
+          <div className="dbStatLabel">Overall Accuracy</div>
+        </div>
+        <div className="card dbStatCard">
+          <div className="dbStatValue" style={{ color: pctColor(data?.recentAccuracy) }}>
+            {data?.recentAccuracy != null ? `${data.recentAccuracy}%` : '—'}
+          </div>
+          <div className="dbStatLabel">Recent Accuracy</div>
+        </div>
+      </div>
+
+      {/* Section accuracy overview */}
+      {data?.sectionStats?.length > 0 && (
+        <div className="dbStatsRow">
+          {data.sectionStats.map(s => {
+            const p = s.attempted > 0 ? Math.round((s.correct / s.attempted) * 100) : null;
+            return (
+              <div key={s.section} className="card dbStatCard">
+                <div className="dbStatValue" style={{ color: pctColor(p) }}>
+                  {p != null ? `${p}%` : '—'}
+                </div>
+                <div className="dbStatLabel">{SECTION_LABELS[s.section] || s.section}</div>
+                <div className="muted" style={{ fontSize: 11, marginTop: 2 }}>{s.correct}/{s.attempted}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Performance: categories by section */}
+      {activeSections.length > 0 && (
+        <div className="dbPerfGrid" style={activeSections.length > 2 ? { gridTemplateColumns: 'repeat(2, 1fr)' } : undefined}>
+          {activeSections.map(sec => (
+            <ActPerfSection
+              key={sec}
+              sectionName={sec}
+              categories={sectionCategories[sec] || []}
+              loading={loading}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Recent practice */}
+      <div className="card dbActivityCard" style={{ marginTop: 12 }}>
+        <div className="h2" style={{ marginBottom: 12 }}>Recent ACT Practice</div>
+        {loading ? (
+          <p className="muted small">Loading...</p>
+        ) : error ? (
+          <p className="muted small">{error}</p>
+        ) : !data?.recentSessions?.length ? (
+          <p className="muted small">No ACT questions attempted yet.</p>
+        ) : (
+          <div className="dbSessionList">
+            {data.recentSessions.map((session, i) => (
+              <ActSessionCard key={i} session={session} index={i} />
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
+
 // ── Main ──
 
 export default function DashboardClient({ email }) {
+  const { testType } = useTestType();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -478,6 +724,9 @@ export default function DashboardClient({ email }) {
       </div>
     );
   }, [data?.targetScore, data?.highestTestScore, data?.goalProgress, data?.pointsToGoal, data?.weakTopics, data?.dailyActivity]);
+
+  // ACT mode: render dedicated ACT dashboard
+  if (testType === 'act') return <ActDashboardView email={email} />;
 
   return (
     <main className="container dbMain">

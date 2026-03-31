@@ -1160,12 +1160,14 @@ export function AssignmentsPanel({ students }) {
   const [detailLoading, setDetailLoading] = useState({});
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [statusTab, setStatusTab] = useState('incomplete');
   const pageSize = 10;
 
-  function loadAssignments(p) {
+  function loadAssignments(p, status) {
     const loadPage = p || page;
+    const s = status || statusTab;
     setLoading(true);
-    fetch(`/api/teacher/question-assignments?page=${loadPage}&pageSize=${pageSize}`)
+    fetch(`/api/teacher/question-assignments?page=${loadPage}&pageSize=${pageSize}&status=${s}`)
       .then(r => r.json())
       .then(d => {
         setAssignments(d.assignments || []);
@@ -1175,7 +1177,7 @@ export function AssignmentsPanel({ students }) {
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { loadAssignments(); }, [page]);
+  useEffect(() => { loadAssignments(); }, [page, statusTab]);
 
   function toggleExpand(id) {
     if (expandedId === id) { setExpandedId(null); return; }
@@ -1208,7 +1210,9 @@ export function AssignmentsPanel({ students }) {
         body: JSON.stringify({ id, action: isCompleted ? 'reopen' : 'complete' }),
       });
       if (!res.ok) { const j = await res.json(); throw new Error(j.error); }
-      setAssignments(prev => prev.map(a => a.id === id ? { ...a, completed_at: isCompleted ? null : new Date().toISOString() } : a));
+      // Remove from current list and refresh
+      setAssignments(prev => prev.filter(a => a.id !== id));
+      setTotalCount(prev => Math.max(0, prev - 1));
     } catch (e) { alert(e.message); }
   }
 
@@ -1244,7 +1248,7 @@ export function AssignmentsPanel({ students }) {
       cachedAt: new Date().toISOString(),
     }));
     window.open(
-      `/practice/${encodeURIComponent(questionIds[0])}?session=1&sid=${sid}&t=${questionIds.length}&o=0&p=0&i=1&tm=1`,
+      `/practice/${encodeURIComponent(questionIds[0])}?session=1&sid=${sid}&t=${questionIds.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(student.id)}`,
       '_blank'
     );
   }
@@ -1257,11 +1261,29 @@ export function AssignmentsPanel({ students }) {
         <h3 className="h2" style={{ margin: 0 }}>Assignments</h3>
         <button className="btn primary" onClick={() => setShowCreate(true)}>+ New Assignment</button>
       </div>
-      {showCreate && <CreateAssignmentModal students={students} onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); setPage(1); loadAssignments(1); }} />}
+      {/* Sub-tabs: Incomplete / Complete */}
+      <div style={{ display: 'flex', gap: 0, borderBottom: '2px solid var(--border, #eee)', marginBottom: 14 }}>
+        {[{ key: 'incomplete', label: 'Incomplete' }, { key: 'complete', label: 'Complete' }].map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => { setStatusTab(tab.key); setPage(1); setExpandedId(null); }}
+            style={{
+              padding: '8px 18px', fontSize: 13, fontWeight: 600,
+              background: 'none', border: 'none', cursor: 'pointer',
+              borderBottom: statusTab === tab.key ? '2px solid var(--accent)' : '2px solid transparent',
+              color: statusTab === tab.key ? 'var(--accent)' : 'var(--muted)',
+              marginBottom: -2,
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      {showCreate && <CreateAssignmentModal students={students} onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); setPage(1); loadAssignments(1, statusTab); }} />}
       {loading ? <p className="muted">Loading assignments...</p> : assignments.length === 0 ? (
         <div className="card" style={{ padding: 24 }}>
-          <p className="muted">No assignments yet. Click &quot;+ New Assignment&quot; to create one.</p>
-          <p className="muted small">Assignments let you assign specific question sets by topic and difficulty to your students, with optional due dates.</p>
+          <p className="muted">{statusTab === 'incomplete' ? 'No incomplete assignments.' : 'No completed assignments.'}</p>
+          {statusTab === 'incomplete' && <p className="muted small">Assignments let you assign specific question sets by topic and difficulty to your students, with optional due dates.</p>}
         </div>
       ) : (
         <>
@@ -1285,7 +1307,7 @@ export function AssignmentsPanel({ students }) {
                     </div>
                     <div className="muted small" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 2 }}>
                       {!isPT && <span>{a.question_count} questions</span>}
-                      <span>{a.student_count} student{a.student_count !== 1 ? 's' : ''}</span>
+                      <span>{(a.student_names || []).join(', ') || `${a.student_count} student${a.student_count !== 1 ? 's' : ''}`}</span>
                       {a.due_date && <span style={{ color: overdue && !isCompleted ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{overdue && !isCompleted ? ' (overdue)' : ''}</span>}
                       <span>Created {formatDate(a.created_at)}</span>
                     </div>
@@ -1398,6 +1420,42 @@ export function StudentDetail({ studentId, onBack }) {
   const [addScoreOpen, setAddScoreOpen] = useState(false);
   const [uploadBluebookOpen, setUploadBluebookOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
+
+  async function markStudentAssignmentComplete(assignmentId, e) {
+    e.stopPropagation();
+    try {
+      const res = await fetch('/api/teacher/question-assignments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: assignmentId, action: 'complete' }),
+      });
+      if (!res.ok) return;
+      setData(prev => ({
+        ...prev,
+        studentAssignments: (prev.studentAssignments || []).map(a =>
+          a.id === assignmentId ? { ...a, completed_at: new Date().toISOString() } : a
+        ),
+      }));
+    } catch {}
+  }
+
+  async function reopenStudentAssignment(assignmentId, e) {
+    e.stopPropagation();
+    try {
+      const res = await fetch('/api/teacher/question-assignments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: assignmentId, action: 'reopen' }),
+      });
+      if (!res.ok) return;
+      setData(prev => ({
+        ...prev,
+        studentAssignments: (prev.studentAssignments || []).map(a =>
+          a.id === assignmentId ? { ...a, completed_at: null } : a
+        ),
+      }));
+    } catch {}
+  }
 
   useEffect(() => {
     setLoading(true); setError(null);
@@ -1597,10 +1655,11 @@ export function StudentDetail({ studentId, onBack }) {
               <button className="btn primary" style={{ padding: '4px 12px', fontSize: 13 }} onClick={() => setAssignOpen(true)}>+ New Assignment</button>
             </div>
             {!data.studentAssignments?.length ? <p className="muted small">No assignments yet.</p> : (
-              <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+              <div style={{ maxHeight: 360, overflowY: 'auto' }}>
                 {data.studentAssignments.map(a => {
                   const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
                   const isOverdue = a.due_date && new Date(a.due_date) < new Date();
+                  const isMarkedComplete = !!a.completed_at;
                   function openAssignmentSession() {
                     const qids = a.question_ids || [];
                     if (!qids.length) return;
@@ -1637,24 +1696,35 @@ export function StudentDetail({ studentId, onBack }) {
                   return (
                     <div
                       key={a.id}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 4px', borderBottom: '1px solid var(--border)', cursor: 'pointer', borderRadius: 6, transition: 'background 0.1s' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 4px', borderBottom: '1px solid var(--border)', cursor: 'pointer', borderRadius: 6, transition: 'background 0.1s', opacity: isMarkedComplete ? 0.6 : 1 }}
                       onClick={openAssignmentSession}
                       title="View assignment as student"
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 600, fontSize: 14 }}>{a.title}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontWeight: 600, fontSize: 14 }}>{a.title}</span>
+                          {isMarkedComplete && <span className="pill" style={{ fontSize: 9, padding: '1px 6px', background: 'var(--success)', color: '#fff' }}>Complete</span>}
+                        </div>
                         <div className="muted small" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                           <span>{a.completed_count}/{a.question_count} questions</span>
-                          {a.due_date && <span style={{ color: isOverdue ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{isOverdue ? ' (overdue)' : ''}</span>}
+                          {a.due_date && <span style={{ color: isOverdue && !isMarkedComplete ? 'var(--danger)' : undefined }}>Due {formatDate(a.due_date)}{isOverdue && !isMarkedComplete ? ' (overdue)' : ''}</span>}
                         </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 100 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 130 }}>
                         <div className="dbProgressBar" style={{ flex: 1, height: 6 }}>
                           <div className="dbProgressFill" style={{ width: `${donePct}%`, background: pctColor(donePct) }} />
                         </div>
                         <span style={{ fontSize: 13, fontWeight: 600, color: pctColor(donePct), minWidth: 36, textAlign: 'right' }}>{donePct}%</span>
+                        <button
+                          className="btn secondary"
+                          style={{ fontSize: 10, padding: '1px 6px', lineHeight: 1.4, flexShrink: 0 }}
+                          onClick={(e) => isMarkedComplete ? reopenStudentAssignment(a.id, e) : markStudentAssignmentComplete(a.id, e)}
+                          title={isMarkedComplete ? 'Reopen assignment' : 'Mark assignment complete'}
+                        >
+                          {isMarkedComplete ? 'Reopen' : '✓ Done'}
+                        </button>
                       </div>
                     </div>
                   );

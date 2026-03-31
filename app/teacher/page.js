@@ -54,10 +54,29 @@ function TeacherDashboard() {
   }, [students]);
 
   const totalAlerts = alerts.inactive?.length || 0;
+  const [showAttentionModal, setShowAttentionModal] = useState(false);
 
   const goToStudent = useCallback((studentId) => {
     router.push(`/teacher/students?selected=${studentId}`);
   }, [router]);
+
+  async function markAssignmentComplete(assignmentId, e) {
+    e.stopPropagation();
+    try {
+      const res = await fetch('/api/teacher/question-assignments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: assignmentId, action: 'complete' }),
+      });
+      if (!res.ok) return;
+      setAssignmentRows(prev => prev.map(r =>
+        r.assignment_id === assignmentId ? { ...r, completed_at: new Date().toISOString() } : r
+      ));
+    } catch {}
+  }
+
+  // Filter assignment rows: only show incomplete assignments on the dashboard
+  const activeAssignmentRows = assignmentRows.filter(r => !r.completed_at);
 
   if (loading) return <div className="container" style={{ paddingTop: 48, textAlign: 'center' }}><p className="muted">Loading dashboard...</p></div>;
   if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
@@ -119,7 +138,7 @@ function TeacherDashboard() {
               <span className="tchInfoStatLabel">Avg. accuracy (30-day)</span>
             </div>
             <div className="tchInfoDivider" />
-            <div className="tchInfoStat">
+            <div className="tchInfoStat" onClick={() => totalAlerts && setShowAttentionModal(true)} style={{ cursor: totalAlerts ? 'pointer' : 'default' }} title={totalAlerts ? 'Click to see details' : ''}>
               <span className="tchInfoStatValue" style={{ color: totalAlerts ? 'var(--danger)' : 'var(--success)' }}>{totalAlerts}</span>
               <span className="tchInfoStatLabel">Needs attention</span>
             </div>
@@ -260,11 +279,11 @@ function TeacherDashboard() {
             {/* Assignments */}
             <div className="card tchAlertCard">
               <h3 className="tchAlertTitle" style={{ color: 'var(--accent)' }}>Assignments</h3>
-              {assignmentRows.length === 0 ? (
-                <p className="muted small" style={{ padding: '4px 0', margin: 0 }}>No assignments yet.</p>
+              {activeAssignmentRows.length === 0 ? (
+                <p className="muted small" style={{ padding: '4px 0', margin: 0 }}>{assignmentRows.length === 0 ? 'No assignments yet.' : 'All assignments marked complete.'}</p>
               ) : (() => {
-                const pageRows = assignmentRows.slice(assignmentPage * ASSIGNMENTS_PER_PAGE, (assignmentPage + 1) * ASSIGNMENTS_PER_PAGE);
-                const totalPages = Math.ceil(assignmentRows.length / ASSIGNMENTS_PER_PAGE);
+                const pageRows = activeAssignmentRows.slice(assignmentPage * ASSIGNMENTS_PER_PAGE, (assignmentPage + 1) * ASSIGNMENTS_PER_PAGE);
+                const totalPages = Math.ceil(activeAssignmentRows.length / ASSIGNMENTS_PER_PAGE);
                 const now = new Date();
                 return (
                   <>
@@ -327,8 +346,8 @@ function TeacherDashboard() {
                                 {r.completed_count}/{r.question_count}
                               </span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginTop: 2 }}>
-                              <span className="muted" style={{ fontSize: 12 }}>{r.title}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, flexWrap: 'wrap' }}>
+                              <span className="muted" style={{ fontSize: 12, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
                               {r.due_date && (
                                 <span style={{
                                   fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
@@ -338,6 +357,14 @@ function TeacherDashboard() {
                                   {new Date(r.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                 </span>
                               )}
+                              <button
+                                className="btn secondary"
+                                style={{ fontSize: 10, padding: '1px 6px', lineHeight: 1.4 }}
+                                onClick={(e) => markAssignmentComplete(r.assignment_id, e)}
+                                title="Mark assignment complete"
+                              >
+                                ✓ Done
+                              </button>
                             </div>
                           </div>
                         );
@@ -400,6 +427,54 @@ function TeacherDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Needs Attention Modal */}
+      {showAttentionModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+        }} onClick={() => setShowAttentionModal(false)}>
+          <div className="card" style={{
+            maxWidth: 480, width: '90%', maxHeight: '80vh', overflow: 'auto',
+            padding: '24px 28px', position: 'relative',
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h2 className="h2" style={{ margin: 0 }}>Needs Attention</h2>
+              <button onClick={() => setShowAttentionModal(false)} style={{
+                background: 'none', border: 'none', fontSize: 22, cursor: 'pointer',
+                color: 'var(--muted)', lineHeight: 1, padding: 4,
+              }}>&times;</button>
+            </div>
+            <p className="muted small" style={{ margin: '0 0 16px' }}>
+              Students who haven&apos;t practiced in over 10 days, or who have never logged any activity.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {(alerts.inactive || []).map(a => {
+                const s = students.find(x => x.id === a.id);
+                if (!s) return null;
+                return (
+                  <button key={a.id} className="tchAlertItem" style={{
+                    cursor: 'pointer', background: 'none', border: 'none',
+                    width: '100%', textAlign: 'left', padding: '10px 8px',
+                    borderRadius: 6, transition: 'background 0.1s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => { setShowAttentionModal(false); goToStudent(a.id); }}
+                  >
+                    <div className="tchAlertItemInfo">
+                      <span className="tchAlertItemName">{displayName(s)}</span>
+                      <span className="tchAlertItemMeta" style={{ color: 'var(--danger)' }}>
+                        {a.days_inactive != null ? `Inactive for ${a.days_inactive} days` : 'No activity recorded'}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import Script from 'next/script';
 import Link from 'next/link';
 import HtmlBlock from '../../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../../components/QuestionNotes';
+import ConceptTags from '../../../../../components/ConceptTags';
 import DesmosStateButton from '../../../../../components/DesmosStateButton';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
@@ -519,7 +520,7 @@ function DesmosPopup({ isOpen, onClose, questionId: qId }) {
 
 // ─── Question detail panel ─────────────────────────────────────────────────
 
-function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleErrorLog, errorLogActive }) {
+function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleErrorLog, errorLogActive, userRole }) {
   const [showAnswer, setShowAnswer] = useState(false);
 
   if (!q) {
@@ -554,6 +555,12 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
             {q.domain_name && <span className="ptrvDetailDomain">{q.domain_name}</span>}
             {q.skill_name && q.skill_name !== q.domain_name && (
               <span className="ptrvDetailSkill">{q.skill_name}</span>
+            )}
+            {q.time_spent_ms != null && (
+              <span className="ptrvDetailSkill" style={{ fontVariantNumeric: 'tabular-nums' }}>Time: {fmtTime(q.time_spent_ms)}</span>
+            )}
+            {q.difficulty != null && (
+              <span className="ptrvDetailSkill">Difficulty: {q.difficulty}</span>
             )}
           </div>
         </div>
@@ -680,6 +687,13 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
           {errorLogActive ? 'Hide Error Log' : 'Add to Error Log'}
         </button>
       </div>
+
+      {/* Concept tags (admin/manager only) */}
+      {(userRole === 'admin' || userRole === 'manager') && q.question_id && (
+        <div style={{ padding: '0 16px 12px' }}>
+          <ConceptTags questionId={q.question_id} userRole={userRole} />
+        </div>
+      )}
     </div>
   );
 }
@@ -692,6 +706,7 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedQ, setSelectedQ] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   // Desmos calculator popup
   const [showCalc, setShowCalc] = useState(false);
@@ -741,6 +756,14 @@ export default function ResultsPage() {
       })
       .catch(() => { setError('Failed to load results.'); setLoading(false); });
   }, [attemptId]);
+
+  // Fetch user role for conditional UI (concept tags)
+  useEffect(() => {
+    fetch('/api/me')
+      .then(r => r.json())
+      .then(d => { if (d.role) setUserRole(d.role); })
+      .catch(() => {});
+  }, []);
 
   // Reset error log when switching questions
   useEffect(() => {
@@ -1467,6 +1490,7 @@ export default function ResultsPage() {
             onMakeFlashcard={openFlashcardDialog}
             onToggleErrorLog={() => setShowErrorLog((s) => !s)}
             errorLogActive={showErrorLog}
+            userRole={userRole}
           />
 
           {showErrorLog && selectedQ && (

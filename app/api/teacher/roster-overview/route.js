@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../../lib/supabase/server';
 import { computeScaledScore } from '../../../../lib/scoreConversion';
 
 const subjToSection = {
@@ -81,41 +81,52 @@ export async function GET() {
   const ids = studentProfiles.map(s => s.id);
   const profileMap = Object.fromEntries(studentProfiles.map(s => [s.id, s]));
 
+  // Use service client for student data queries (bypasses RLS so teacher can read student attempts)
+  const svc = createServiceClient();
+
   // ── Batch queries in parallel ──
   const cutoff90d = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
 
-  const [attemptsRes, testAttemptsRes] = await Promise.all([
-    // Recent attempts (last 90 days) – oldest first for first-attempt dedup
-    supabase
-      .from('attempts')
-      .select('user_id, question_id, is_correct, created_at')
+  const [statusRes, testAttemptsRes, ...perStudentAttemptsRes] = await Promise.all([
+    // question_status: one row per user per question (for totals + last activity)
+    svc
+      .from('question_status')
+      .select('user_id, question_id, is_done, last_attempt_at')
       .in('user_id', ids)
-      .gte('created_at', cutoff90d)
-      .order('created_at', { ascending: true })
-      .limit(10000),
+      .eq('is_done', true),
     // Completed practice tests
-    supabase
+    svc
       .from('practice_test_attempts')
       .select('id, user_id, practice_test_id, status, finished_at')
       .in('user_id', ids)
       .eq('status', 'completed')
       .order('finished_at', { ascending: false }),
+    // Per-student first-attempt data (avoids shared row limit across all students)
+    ...ids.map(uid =>
+      svc
+        .from('attempts')
+        .select('user_id, question_id, is_correct, created_at')
+        .eq('user_id', uid)
+        .gte('created_at', cutoff90d)
+        .order('created_at', { ascending: true })
+        .limit(500)
+    ),
   ]);
 
-  const allAttempts = attemptsRes.data || [];
+  const allStatus = statusRes.data || [];
   const allTestAttempts = testAttemptsRes.data || [];
 
-  // ── Also fetch total question count from question_status for full history ──
-  const { data: statusAgg } = await supabase
-    .from('question_status')
-    .select('user_id, last_attempt_at')
-    .in('user_id', ids)
-    .eq('is_done', true);
+  // Merge per-student attempts into a single map
+  const attemptsByUser = {};
+  for (let i = 0; i < ids.length; i++) {
+    const data = perStudentAttemptsRes[i]?.data || [];
+    if (data.length) attemptsByUser[ids[i]] = data;
+  }
 
   // Count total done per user and find last activity across all time
   const totalDoneByUser = {};
   const lastActivityByUser = {};
-  for (const row of statusAgg || []) {
+  for (const row of allStatus) {
     totalDoneByUser[row.user_id] = (totalDoneByUser[row.user_id] || 0) + 1;
     if (!lastActivityByUser[row.user_id] || row.last_attempt_at > lastActivityByUser[row.user_id]) {
       lastActivityByUser[row.user_id] = row.last_attempt_at;
@@ -130,8 +141,8 @@ export async function GET() {
     const attemptIds = allTestAttempts.map(a => a.id);
 
     const [testsRes, moduleAttemptsRes] = await Promise.all([
-      supabase.from('practice_tests').select('id, name').in('id', testIds),
-      supabase.from('practice_test_module_attempts')
+      svc.from('practice_tests').select('id, name').in('id', testIds),
+      svc.from('practice_test_module_attempts')
         .select('practice_test_attempt_id, practice_test_module_id, correct_count')
         .in('practice_test_attempt_id', attemptIds),
     ]);
@@ -139,9 +150,9 @@ export async function GET() {
     const modIds = [...new Set((moduleAttemptsRes.data || []).map(ma => ma.practice_test_module_id))];
     const [modsRes, lookupRes] = await Promise.all([
       modIds.length
-        ? supabase.from('practice_test_modules').select('id, subject_code, module_number, route_code').in('id', modIds)
+        ? svc.from('practice_test_modules').select('id, subject_code, module_number, route_code').in('id', modIds)
         : { data: [] },
-      supabase.from('score_conversion')
+      svc.from('score_conversion')
         .select('test_id, section, module1_correct, module2_correct, scaled_score')
         .in('test_id', testIds),
     ]);
@@ -207,14 +218,7 @@ export async function GET() {
     }
   }
 
-  // ── Per-student: recent accuracy + trend from attempts ──
-  // Group attempts by user
-  const attemptsByUser = {};
-  for (const a of allAttempts) {
-    if (!attemptsByUser[a.user_id]) attemptsByUser[a.user_id] = [];
-    attemptsByUser[a.user_id].push(a);
-  }
-
+  // ── Per-student: recent first-attempt accuracy + trend ──
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const students = ids.map(id => {
@@ -282,7 +286,7 @@ export async function GET() {
   const inactive = students
     .filter(s => {
       if (!s.last_activity) return true;
-      return (now - new Date(s.last_activity)) > 5 * 24 * 60 * 60 * 1000;
+      return (now - new Date(s.last_activity)) > 10 * 24 * 60 * 60 * 1000;
     })
     .map(s => ({
       id: s.id,

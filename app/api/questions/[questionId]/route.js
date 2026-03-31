@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../../lib/supabase/server';
 
 // GET /api/questions/:questionId
 export async function GET(_request, { params }) {
@@ -176,6 +176,32 @@ export async function GET(_request, { params }) {
     if (version?.question_type === 'spr') correct_text = ca?.correct_text ?? null;
   }
 
+  // When a teacher is viewing as a student, fetch the student's most recent
+  // attempt directly so we can show their selected answer on the question page.
+  // Uses service client to bypass RLS — the caller's privilege was already verified above.
+  let studentAnswer = null;
+  if (effectiveViewAs) {
+    try {
+      const svc = createServiceClient();
+      const { data: lastAttempt } = await svc
+        .from('attempts')
+        .select('selected_option_id, response_text, is_correct')
+        .eq('user_id', effectiveViewAs)
+        .eq('question_id', questionId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (lastAttempt) {
+        studentAnswer = {
+          selected_option_id: lastAttempt.selected_option_id ?? null,
+          response_text: lastAttempt.response_text ?? null,
+          is_correct: lastAttempt.is_correct ?? null,
+        };
+      }
+    } catch {}
+  }
+
   return NextResponse.json({
     question_id: questionId,
     source_external_id: questionRow?.source_external_id ?? null,
@@ -189,5 +215,6 @@ export async function GET(_request, { params }) {
     status,
     correct_option_id,
     correct_text,
+    student_answer: studentAnswer,
   });
 }

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '../lib/supabase/browser';
+import { useTestType } from '../lib/TestTypeContext';
 
 function BugReportModal({ onClose }) {
   const [title, setTitle] = useState('');
@@ -124,6 +125,7 @@ export default function NavBar() {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [showBugModal, setShowBugModal] = useState(false);
+  const { testType, setTestType } = useTestType();
 
   async function fetchProfile(uid) {
     if (!uid) { setRole(null); return; }
@@ -174,6 +176,23 @@ export default function NavBar() {
                 className="logo"
               />
             </Link>
+
+            {user && (
+              <div className="testTypeToggle">
+                <button
+                  className={`testTypeBtn${testType === 'sat' ? ' testTypeActive' : ''}`}
+                  onClick={() => setTestType('sat')}
+                >
+                  SAT
+                </button>
+                <button
+                  className={`testTypeBtn${testType === 'act' ? ' testTypeActive' : ''}`}
+                  onClick={() => setTestType('act')}
+                >
+                  ACT
+                </button>
+              </div>
+            )}
 
             {user && (
               <div className="navLinks">

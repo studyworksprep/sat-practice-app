@@ -315,7 +315,7 @@ export async function GET(_request, { params }) {
   // ── Assignments for this student ──
   const { data: assignStudentRows } = await supabase
     .from('question_assignment_students')
-    .select('assignment_id, question_assignments(id, title, description, due_date, question_ids, created_at)')
+    .select('assignment_id, question_assignments(id, title, description, due_date, question_ids, created_at, completed_at)')
     .eq('student_id', studentId);
 
   const validAssignRows = (assignStudentRows || []).filter(r => r.question_assignments);
@@ -371,6 +371,7 @@ export async function GET(_request, { params }) {
         title: a.title,
         description: a.description,
         due_date: a.due_date,
+        completed_at: a.completed_at || null,
         question_ids: qids,
         question_count: qids.length,
         completed_count: completedCount,

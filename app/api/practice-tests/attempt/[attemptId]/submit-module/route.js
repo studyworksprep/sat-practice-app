@@ -112,47 +112,58 @@ export async function POST(request, { params }) {
 
   for (const item of moduleItems || []) {
     const ans = answerByVersion[item.question_version_id];
-    if (!ans || (!ans.selected_option_id && !ans.response_text)) continue;
-
-    const ca = correctByVersion[item.question_version_id];
-    const questionId = ans.question_id || versionToQid[item.question_version_id];
+    const questionId = (ans && ans.question_id) || versionToQid[item.question_version_id];
     if (!questionId) continue;
 
+    const wasAnswered = !!(ans && (ans.selected_option_id || ans.response_text));
+
     let is_correct = false;
-    if (ca) {
-      if (ca.answer_type === 'mcq' || ca.answer_type === 'single') {
-        is_correct = ca.correct_option_id === ans.selected_option_id;
-      } else if (ca.answer_type === 'multi') {
-        const userSet = new Set([ans.selected_option_id].filter(Boolean));
-        const corrSet = new Set(ca.correct_option_ids || []);
-        is_correct = userSet.size === corrSet.size && [...userSet].every((id) => corrSet.has(id));
-      } else if (ca.answer_type === 'text') {
-        const norm = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
-        const toList = (ct) => {
-          if (!ct) return [];
-          const t = String(ct).trim();
-          if (t.startsWith('[') && t.endsWith(']')) {
-            try { const p = JSON.parse(t); if (Array.isArray(p)) return p.map(String); } catch {}
+    if (wasAnswered) {
+      const ca = correctByVersion[item.question_version_id];
+      if (ca) {
+        // Drive comparison by what data is present, not answer_type, so
+        // null/unexpected answer_type values don't cause correct answers
+        // to be graded as wrong. This matches the results page logic.
+        if (ans.selected_option_id) {
+          // MCQ-style: student picked an option
+          if (ca.correct_option_id) {
+            is_correct = ca.correct_option_id === ans.selected_option_id;
           }
-          return [t];
-        };
-        is_correct = toList(ca.correct_text).some((a) => {
-          if (norm(a) === norm(ans.response_text)) return true;
-          const nA = parseFloat(a), nR = parseFloat(ans.response_text);
-          return !isNaN(nA) && !isNaN(nR) && nA === nR;
-        });
-      } else if (ca.answer_type === 'number') {
-        const parsed = parseFloat(ans.response_text);
-        if (!isNaN(parsed)) {
-          const tol = parseFloat(ca.numeric_tolerance) || 0;
-          is_correct = Math.abs(parsed - parseFloat(ca.correct_number)) <= tol;
+          if (!is_correct && ca.correct_option_ids?.length) {
+            is_correct = ca.correct_option_ids.includes(ans.selected_option_id);
+          }
+        } else if (ans.response_text) {
+          // Free-response: compare text first, then numeric
+          const norm = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+          const toList = (ct) => {
+            if (!ct) return [];
+            const t = String(ct).trim();
+            if (t.startsWith('[') && t.endsWith(']')) {
+              try { const p = JSON.parse(t); if (Array.isArray(p)) return p.map(String); } catch {}
+            }
+            return [t];
+          };
+          if (ca.correct_text) {
+            is_correct = toList(ca.correct_text).some((a) => {
+              if (norm(a) === norm(ans.response_text)) return true;
+              const nA = parseFloat(a), nR = parseFloat(ans.response_text);
+              return !isNaN(nA) && !isNaN(nR) && nA === nR;
+            });
+          }
+          if (!is_correct && ca.correct_number != null) {
+            const parsed = parseFloat(ans.response_text);
+            if (!isNaN(parsed)) {
+              const tol = parseFloat(ca.numeric_tolerance) || 0;
+              is_correct = Math.abs(parsed - parseFloat(ca.correct_number)) <= tol;
+            }
+          }
         }
       }
     }
 
     if (is_correct) correctCount += 1;
 
-    const timeSpent = Number.isFinite(Number(ans.time_spent_ms)) ? Number(ans.time_spent_ms) : null;
+    const timeSpent = ans && Number.isFinite(Number(ans.time_spent_ms)) ? Number(ans.time_spent_ms) : null;
 
     const { data: attemptRow } = await supabase
       .from('attempts')
@@ -160,8 +171,8 @@ export async function POST(request, { params }) {
         user_id: user.id,
         question_id: questionId,
         is_correct,
-        selected_option_id: ans.selected_option_id || null,
-        response_text: ans.response_text || null,
+        selected_option_id: (ans && ans.selected_option_id) || null,
+        response_text: (ans && ans.response_text) || null,
         time_spent_ms: timeSpent,
         created_at: now,
         source: 'practice_test',
@@ -170,7 +181,10 @@ export async function POST(request, { params }) {
       .single();
 
     if (attemptRow?.id) versionToAttemptId[item.question_version_id] = attemptRow.id;
-    accuracyEntries.push({ version_id: item.question_version_id, is_correct });
+    // Only count answered questions toward global accuracy stats
+    if (wasAnswered) {
+      accuracyEntries.push({ version_id: item.question_version_id, is_correct });
+    }
   }
 
   // Bump global accuracy counters on question versions (best-effort, non-blocking)
@@ -236,12 +250,29 @@ export async function POST(request, { params }) {
       if (matches) { nextRouteCode = rule.to_route_code; break; }
     }
 
-    // If no routing rule matched, fall back to first available module-2 route for this subject
+    // If no routing rule matched, apply default adaptive routing thresholds.
+    // This ensures students who do well on Module 1 get the harder Module 2,
+    // even if an admin hasn't explicitly set up routing rules for this test.
     if (!nextRouteCode) {
-      const fallback = allModules.find(
-        (m) => m.subject_code === subject_code && m.module_number === 2
-      );
-      nextRouteCode = fallback?.route_code ?? null;
+      const mod2Routes = allModules
+        .filter(m => m.subject_code === subject_code && m.module_number === 2)
+        .map(m => m.route_code);
+
+      const hasHard = mod2Routes.some(r => r && r.toLowerCase() === 'hard');
+      const hasEasy = mod2Routes.some(r => r && r.toLowerCase() === 'easy');
+
+      if (hasHard && hasEasy) {
+        // Default thresholds: RW >= 15 → hard, MATH >= 14 → hard
+        const isRw = ['RW', 'rw'].includes(subject_code);
+        const defaultThreshold = isRw ? 15 : 14;
+        nextRouteCode = correctCount >= defaultThreshold ? 'hard' : 'easy';
+      } else {
+        // Only one Module 2 variant exists — use it
+        const fallback = allModules.find(
+          (m) => m.subject_code === subject_code && m.module_number === 2
+        );
+        nextRouteCode = fallback?.route_code ?? null;
+      }
     }
 
   }
