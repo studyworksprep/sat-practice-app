@@ -158,7 +158,10 @@ export default function ActQuestionDetailPage() {
   // Calculator state
   const MIN_CALC_W = 550;
   const MAX_CALC_W = 1200;
-  const [calcMinimized, setCalcMinimized] = useState(false);
+  const [calcMinimized, setCalcMinimized] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 920) return true;
+    return false;
+  });
   const [calcWidth, setCalcWidth] = useState(MIN_CALC_W);
   const calcInstanceRef = useRef(null);
   const shellRef = useRef(null);
