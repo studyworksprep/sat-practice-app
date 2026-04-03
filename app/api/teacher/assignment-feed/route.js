@@ -57,14 +57,25 @@ export async function GET() {
   }
 
   // Batch fetch completion status per question
+  // Use .eq('is_done', true) to only fetch completed statuses, and add a generous limit
+  // to avoid Supabase's default 1000-row cap silently dropping data.
   const allQuestionIds = [...new Set(assignments.flatMap(a => a.question_ids || []))];
-  const { data: statusRows } = allQuestionIds.length && studentIds.length
-    ? await supabase
+  let statusRows = [];
+  if (allQuestionIds.length && studentIds.length) {
+    // Batch by student to avoid hitting row limits with large cross-products
+    const BATCH = 20;
+    for (let i = 0; i < studentIds.length; i += BATCH) {
+      const studentBatch = studentIds.slice(i, i + BATCH);
+      const { data } = await supabase
         .from('question_status')
         .select('user_id, question_id, is_done, last_is_correct, marked_for_review')
-        .in('user_id', studentIds)
+        .in('user_id', studentBatch)
         .in('question_id', allQuestionIds)
-    : { data: [] };
+        .eq('is_done', true)
+        .limit(10000);
+      if (data) statusRows.push(...data);
+    }
+  }
 
   const statusByUserQuestion = {};
   const doneByStudent = {};

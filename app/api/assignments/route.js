@@ -62,6 +62,7 @@ export async function GET() {
           .eq("user_id", user.id)
           .in("question_id", allQuestionIds)
           .eq("is_done", true)
+          .limit(5000)
       : Promise.resolve({ data: [] });
 
     const [{ data: teacherProfiles }, { data: statusRows }] = await Promise.all([
