@@ -294,7 +294,7 @@ export default function PracticePage() {
             className="input"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by question ID, stem, or stimulus…"
+            placeholder={isPrivilegedRole ? "Search by question ID, stem, stimulus, or tag…" : "Search by question ID, stem, or stimulus…"}
           />
           <button className="btn secondary" onClick={() => setSearch('')} disabled={!search}>
             Clear
