@@ -40,7 +40,8 @@ export async function GET() {
     const { data: allAttempts } = await supabase
       .from('attempts')
       .select('user_id, created_at')
-      .gte('created_at', d30.toISOString());
+      .gte('created_at', d30.toISOString())
+      .limit(50000);
 
     const users1 = new Set();
     const users7 = new Set();
@@ -60,7 +61,8 @@ export async function GET() {
   const { data: activeByRoleRows } = await supabase
     .from('attempts')
     .select('user_id')
-    .gte('created_at', d30.toISOString());
+    .gte('created_at', d30.toISOString())
+    .limit(50000);
 
   const activeUserIds30 = [...new Set((activeByRoleRows || []).map(r => r.user_id))];
   const activeByRole = { student: 0, teacher: 0, manager: 0, admin: 0, practice: 0 };
@@ -84,7 +86,8 @@ export async function GET() {
   const { data: volumeAttempts } = await supabase
     .from('attempts')
     .select('created_at, source')
-    .gte('created_at', d56.toISOString());
+    .gte('created_at', d56.toISOString())
+    .limit(50000);
 
   // Build weekly buckets
   const weeks = [];
@@ -120,7 +123,8 @@ export async function GET() {
     .from('practice_test_attempts')
     .select('finished_at')
     .eq('status', 'completed')
-    .gte('finished_at', d56.toISOString());
+    .gte('finished_at', d56.toISOString())
+    .limit(10000);
 
   const weeklyTests = weeks.map(w => ({ ...w, testsCompleted: 0 }));
   for (const t of completedTests || []) {
@@ -166,18 +170,18 @@ export async function GET() {
     officialScoreRes,
   ] = await Promise.all([
     // Student features
-    supabase.from('flashcard_sets').select('user_id').gte('created_at', d30.toISOString()),
-    supabase.from('sat_vocabulary_progress').select('user_id').gte('updated_at', d30.toISOString()),
-    supabase.from('lesson_progress').select('user_id').gte('updated_at', d30.toISOString()),
-    supabase.from('bug_reports').select('created_by').gte('created_at', d30.toISOString()),
-    supabase.from('practice_test_attempts').select('user_id').eq('status', 'completed').gte('finished_at', d30.toISOString()),
-    supabase.from('desmos_saved_states').select('saved_by').gte('created_at', d30.toISOString()),
+    supabase.from('flashcard_sets').select('user_id').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('sat_vocabulary_progress').select('user_id').gte('updated_at', d30.toISOString()).limit(10000),
+    supabase.from('lesson_progress').select('user_id').gte('updated_at', d30.toISOString()).limit(10000),
+    supabase.from('bug_reports').select('created_by').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('practice_test_attempts').select('user_id').eq('status', 'completed').gte('finished_at', d30.toISOString()).limit(10000),
+    supabase.from('desmos_saved_states').select('saved_by').gte('created_at', d30.toISOString()).limit(10000),
     // Teacher features
-    supabase.from('question_assignments').select('teacher_id').gte('created_at', d30.toISOString()),
-    supabase.from('question_notes').select('author_id').gte('created_at', d30.toISOString()),
-    supabase.from('lesson_assignments').select('teacher_id').gte('created_at', d30.toISOString()),
-    supabase.from('sat_test_registrations').select('created_by').gte('created_at', d30.toISOString()),
-    supabase.from('sat_official_scores').select('created_by').gte('created_at', d30.toISOString()),
+    supabase.from('question_assignments').select('teacher_id').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('question_notes').select('author_id').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('lesson_assignments').select('teacher_id').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('sat_test_registrations').select('created_by').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('sat_official_scores').select('created_by').gte('created_at', d30.toISOString()).limit(10000),
   ]);
 
   // Count distinct users filtered by role
