@@ -4,7 +4,15 @@ import { createServerClient } from '@supabase/ssr';
 // Routes that practice-only users cannot access
 const BLOCKED_FOR_PRACTICE = ['/dashboard', '/practice-test', '/admin', '/review'];
 
+// Routes that use their own auth (e.g. API-key) and skip session auth
+const EXTERNAL_API_PREFIX = '/api/external/';
+
 export async function middleware(request) {
+  // External API routes handle their own auth (API key) — skip session logic
+  if (request.nextUrl.pathname.startsWith(EXTERNAL_API_PREFIX)) {
+    return NextResponse.next();
+  }
+
   const requestHeaders = new Headers(request.headers);
 
   // We'll collect cookies set during auth refresh, then apply them to the final response
