@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
+import { syncStudentsToLessonworks } from '../../../../../../lib/lessonworksSync';
 
 // POST /api/practice-tests/attempt/[attemptId]/submit-module
 // Body: { subject_code, module_number, route_code, answers: [{question_version_id, question_id, selected_option_id?, response_text?, time_spent_ms?}] }
@@ -307,6 +308,12 @@ export async function POST(request, { params }) {
       .from('practice_test_attempts')
       .update({ status: 'completed', finished_at: now })
       .eq('id', attemptId);
+
+    // Fire-and-forget: sync this student's data to LessonWorks
+    if (process.env.LESSONWORKS_SYNC_KEY) {
+      syncStudentsToLessonworks([attempt.user_id]).catch(() => {});
+    }
+
     return NextResponse.json({ is_complete: true });
   }
 
