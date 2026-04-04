@@ -27,14 +27,16 @@ export async function GET() {
       .from('profiles')
       .select('id, email, first_name, last_name, created_at, is_active, role')
       .in('role', ['teacher', 'manager'])
-      .order('email', { ascending: true });
+      .order('email', { ascending: true })
+      .limit(1000);
     teachers = data || [];
   } else {
     // Managers see only their assigned teachers
     const { data: mta } = await svc
       .from('manager_teacher_assignments')
       .select('teacher_id')
-      .eq('manager_id', user.id);
+      .eq('manager_id', user.id)
+      .limit(500);
 
     const teacherIds = (mta || []).map(a => a.teacher_id);
     if (teacherIds.length === 0) {
@@ -45,7 +47,8 @@ export async function GET() {
       .from('profiles')
       .select('id, email, first_name, last_name, created_at, is_active, role')
       .in('id', teacherIds)
-      .order('email', { ascending: true });
+      .order('email', { ascending: true })
+      .limit(1000);
     teachers = data || [];
   }
 
@@ -56,6 +59,7 @@ export async function GET() {
         .from('teacher_student_assignments')
         .select('teacher_id, student_id')
         .in('teacher_id', teacherIds)
+        .limit(10000)
     : { data: [] };
 
   const assignmentsByTeacher = {};

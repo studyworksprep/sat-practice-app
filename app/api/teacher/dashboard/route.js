@@ -75,18 +75,21 @@ export async function GET() {
     const { data: assignments } = await supabase
       .from('teacher_student_assignments')
       .select('student_id')
-      .eq('teacher_id', user.id);
+      .eq('teacher_id', user.id)
+      .limit(5000);
     const { data: classes } = await supabase
       .from('classes')
       .select('id')
-      .eq('teacher_id', user.id);
+      .eq('teacher_id', user.id)
+      .limit(500);
     const classIds = (classes || []).map(c => c.id);
     let enrolledIds = [];
     if (classIds.length) {
       const { data: enrollments } = await supabase
         .from('class_enrollments')
         .select('student_id')
-        .in('class_id', classIds);
+        .in('class_id', classIds)
+        .limit(5000);
       enrolledIds = (enrollments || []).map(e => e.student_id);
     }
     const directIds = (assignments || []).map(a => a.student_id);
@@ -134,7 +137,8 @@ export async function GET() {
     svc
       .from('flashcard_sets')
       .select('id, user_id')
-      .in('user_id', studentIds),
+      .in('user_id', studentIds)
+      .limit(5000),
     svc
       .from('sat_test_registrations')
       .select('id, student_id, test_date')
@@ -170,7 +174,8 @@ export async function GET() {
     const { data: cards } = await svc
       .from('flashcards')
       .select('id, set_id')
-      .in('set_id', flashcardSetIds);
+      .in('set_id', flashcardSetIds)
+      .limit(10000);
     const setOwner = {};
     for (const s of (flashcardData || [])) setOwner[s.id] = s.user_id;
     for (const c of (cards || [])) {

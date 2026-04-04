@@ -82,6 +82,7 @@ export async function GET(_request, { params }) {
           .select('id, user_id')
           .in('user_id', studentIds)
           .eq('status', 'completed')
+          .limit(5000)
       : Promise.resolve({ data: [] }),
     svc
       .from('question_assignments')

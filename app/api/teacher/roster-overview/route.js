@@ -46,12 +46,14 @@ export async function GET() {
     const { data: assignments } = await supabase
       .from('teacher_student_assignments')
       .select('student_id')
-      .eq('teacher_id', user.id);
+      .eq('teacher_id', user.id)
+      .limit(5000);
 
     const { data: classes } = await supabase
       .from('classes')
       .select('id')
-      .eq('teacher_id', user.id);
+      .eq('teacher_id', user.id)
+      .limit(500);
 
     const classIds = (classes || []).map(c => c.id);
     let enrolledIds = [];
@@ -59,7 +61,8 @@ export async function GET() {
       const { data: enrollments } = await supabase
         .from('class_enrollments')
         .select('student_id')
-        .in('class_id', classIds);
+        .in('class_id', classIds)
+        .limit(5000);
       enrolledIds = (enrollments || []).map(e => e.student_id);
     }
 
@@ -93,14 +96,16 @@ export async function GET() {
       .from('question_status')
       .select('user_id, question_id, is_done, last_attempt_at')
       .in('user_id', ids)
-      .eq('is_done', true),
+      .eq('is_done', true)
+      .limit(50000),
     // Completed practice tests
     svc
       .from('practice_test_attempts')
       .select('id, user_id, practice_test_id, status, finished_at')
       .in('user_id', ids)
       .eq('status', 'completed')
-      .order('finished_at', { ascending: false }),
+      .order('finished_at', { ascending: false })
+      .limit(5000),
     // Per-student first-attempt data (avoids shared row limit across all students)
     ...ids.map(uid =>
       svc
