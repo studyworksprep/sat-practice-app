@@ -708,6 +708,11 @@ export default function ResultsPage() {
   const [selectedQ, setSelectedQ] = useState(null);
   const [userRole, setUserRole] = useState(null);
 
+  // Score recalculation dialog
+  const [showScoreDialog, setShowScoreDialog] = useState(false);
+  const [scoreForm, setScoreForm] = useState({ rw_scaled: '', math_scaled: '' });
+  const [scoreSaving, setScoreSaving] = useState(false);
+
   // Desmos calculator popup
   const [showCalc, setShowCalc] = useState(false);
   const isMathQuestion = selectedQ && MATH_CODES.has(selectedQ.subject_code);
@@ -775,6 +780,55 @@ export default function ResultsPage() {
       setErrorLogQid(selectedQ.question_id);
     }
   }, [selectedQ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function saveRecalculatedScore() {
+    if (!data?.attempt_id) return;
+    setScoreSaving(true);
+    try {
+      // Get module correct counts from the current data for score_conversion
+      const sections = data.sections || {};
+      const rwSec = sections['RW'] || sections['rw'] || {};
+      const mathSec = sections['MATH'] || sections['M'] || sections['m'] || sections['math'] || {};
+
+      const res = await fetch('/api/admin/recalculate-score', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attempt_id: data.attempt_id,
+          rw_scaled: scoreForm.rw_scaled,
+          math_scaled: scoreForm.math_scaled,
+          practice_test_id: data.practice_test_id,
+          rw_m1_correct: rwSec.m1Correct ?? null,
+          rw_m2_correct: rwSec.m2Correct ?? null,
+          math_m1_correct: mathSec.m1Correct ?? null,
+          math_m2_correct: mathSec.m2Correct ?? null,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to save');
+
+      // Update local data with new scores
+      setData(prev => ({
+        ...prev,
+        composite: json.composite,
+        sections: {
+          ...prev.sections,
+          ...(prev.sections?.RW ? { RW: { ...prev.sections.RW, scaled: json.rw_scaled } } : {}),
+          ...(prev.sections?.rw ? { rw: { ...prev.sections.rw, scaled: json.rw_scaled } } : {}),
+          ...(prev.sections?.MATH ? { MATH: { ...prev.sections.MATH, scaled: json.math_scaled } } : {}),
+          ...(prev.sections?.M ? { M: { ...prev.sections.M, scaled: json.math_scaled } } : {}),
+          ...(prev.sections?.m ? { m: { ...prev.sections.m, scaled: json.math_scaled } } : {}),
+          ...(prev.sections?.math ? { math: { ...prev.sections.math, scaled: json.math_scaled } } : {}),
+        },
+      }));
+      setShowScoreDialog(false);
+      setMsg({ kind: 'success', text: `Score updated: ${json.composite} (R&W ${json.rw_scaled}, Math ${json.math_scaled})` });
+    } catch (e) {
+      setMsg({ kind: 'danger', text: e.message });
+    } finally {
+      setScoreSaving(false);
+    }
+  }
 
   async function openFlashcardDialog(q) {
     setShowFlashcardDialog(true);
@@ -1193,6 +1247,21 @@ export default function ResultsPage() {
           </svg>
           Export PDF
         </button>
+        {['teacher', 'manager', 'admin'].includes(userRole) && (
+          <button
+            className="btn secondary"
+            onClick={() => {
+              const sections = data?.sections || {};
+              const rwSec = sections['RW'] || sections['rw'] || {};
+              const mathSec = sections['MATH'] || sections['M'] || sections['m'] || sections['math'] || {};
+              setScoreForm({ rw_scaled: rwSec.scaled || '', math_scaled: mathSec.scaled || '' });
+              setShowScoreDialog(true);
+            }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, marginTop: 4 }}
+          >
+            Recalculate Score
+          </button>
+        )}
       </div>
       <div style={{ marginBottom: 28 }} />
 
@@ -1538,6 +1607,66 @@ export default function ResultsPage() {
 
       {/* Desmos popup */}
       <DesmosPopup isOpen={showCalc} onClose={() => setShowCalc(false)} questionId={selectedQ?.question_id} />
+
+      {/* Score recalculation dialog */}
+      {showScoreDialog && (
+        <div className="modalOverlay" onClick={() => setShowScoreDialog(false)}>
+          <div className="modalCard" onClick={e => e.stopPropagation()} style={{ maxWidth: 400 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 className="h2" style={{ margin: 0 }}>Recalculate Score</h2>
+              <button className="btn secondary" onClick={() => setShowScoreDialog(false)} style={{ fontSize: 12, padding: '4px 10px' }}>Close</button>
+            </div>
+
+            <p className="muted small" style={{ marginBottom: 16 }}>
+              Enter the correct scaled scores for each section. This will update the student&apos;s score
+              and add the score mapping to the conversion table for future lookups.
+            </p>
+
+            <div style={{ display: 'grid', gap: 12 }}>
+              <label style={{ display: 'grid', gap: 4 }}>
+                <span className="muted small" style={{ fontWeight: 600 }}>Reading &amp; Writing (200-800)</span>
+                <input
+                  className="input"
+                  type="number"
+                  min="200"
+                  max="800"
+                  step="10"
+                  value={scoreForm.rw_scaled}
+                  onChange={e => setScoreForm(f => ({ ...f, rw_scaled: e.target.value }))}
+                />
+              </label>
+
+              <label style={{ display: 'grid', gap: 4 }}>
+                <span className="muted small" style={{ fontWeight: 600 }}>Math (200-800)</span>
+                <input
+                  className="input"
+                  type="number"
+                  min="200"
+                  max="800"
+                  step="10"
+                  value={scoreForm.math_scaled}
+                  onChange={e => setScoreForm(f => ({ ...f, math_scaled: e.target.value }))}
+                />
+              </label>
+
+              {scoreForm.rw_scaled && scoreForm.math_scaled && (
+                <div style={{ textAlign: 'center', fontSize: 18, fontWeight: 700, color: 'var(--accent)' }}>
+                  Composite: {(parseInt(scoreForm.rw_scaled) || 0) + (parseInt(scoreForm.math_scaled) || 0)}
+                </div>
+              )}
+
+              <button
+                className="btn primary"
+                disabled={scoreSaving || !scoreForm.rw_scaled || !scoreForm.math_scaled}
+                onClick={saveRecalculatedScore}
+                style={{ marginTop: 4 }}
+              >
+                {scoreSaving ? 'Saving...' : 'Save Score'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Flashcard dialog */}
       {showFlashcardDialog && (
