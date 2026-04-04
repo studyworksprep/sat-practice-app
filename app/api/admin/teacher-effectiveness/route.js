@@ -38,7 +38,8 @@ export async function GET() {
   const { data: assignments } = await supabase
     .from('teacher_student_assignments')
     .select('teacher_id, student_id')
-    .in('teacher_id', teacherIds);
+    .in('teacher_id', teacherIds)
+    .limit(10000);
 
   const teacherStudents = {}; // teacher_id -> Set of student_ids
   for (const a of assignments || []) {
@@ -63,7 +64,8 @@ export async function GET() {
         .from('attempts')
         .select('user_id, is_correct, created_at')
         .in('user_id', chunk)
-        .gte('created_at', d30.toISOString());
+        .gte('created_at', d30.toISOString())
+        .limit(50000);
 
       for (const a of attempts30 || []) {
         // 30-day counts
@@ -90,7 +92,8 @@ export async function GET() {
         .select('user_id, composite_score')
         .in('user_id', chunk)
         .eq('status', 'completed')
-        .not('composite_score', 'is', null);
+        .not('composite_score', 'is', null)
+        .limit(5000);
 
       for (const t of tests || []) {
         if (!studentTestScores[t.user_id]) studentTestScores[t.user_id] = [];
@@ -102,35 +105,96 @@ export async function GET() {
   // 6) Assignment completion rates per teacher
   const { data: qAssignments } = await supabase
     .from('question_assignments')
-    .select('id, created_by')
-    .in('created_by', teacherIds);
+    .select('id, teacher_id, question_ids, filter_criteria')
+    .in('teacher_id', teacherIds)
+    .limit(5000);
 
   const teacherAssignmentIds = {};
   for (const qa of qAssignments || []) {
-    if (!teacherAssignmentIds[qa.created_by]) teacherAssignmentIds[qa.created_by] = [];
-    teacherAssignmentIds[qa.created_by].push(qa.id);
+    if (!teacherAssignmentIds[qa.teacher_id]) teacherAssignmentIds[qa.teacher_id] = [];
+    teacherAssignmentIds[qa.teacher_id].push(qa);
   }
 
+  // Get student-assignment mappings
   const allAssignIds = (qAssignments || []).map(qa => qa.id);
-  const assignCompletionMap = {}; // assignment_id -> { total, completed }
+  const assignStudentsMap = {}; // assignment_id -> [student_id, ...]
   if (allAssignIds.length > 0) {
     for (let i = 0; i < allAssignIds.length; i += 300) {
       const chunk = allAssignIds.slice(i, i + 300);
-      const { data: studentAssigns } = await supabase
+      const { data: saRows } = await supabase
         .from('question_assignment_students')
-        .select('question_assignment_id, completed_count, question_count')
-        .in('question_assignment_id', chunk);
-
-      for (const sa of studentAssigns || []) {
-        if (!assignCompletionMap[sa.question_assignment_id]) {
-          assignCompletionMap[sa.question_assignment_id] = { total: 0, completed: 0 };
-        }
-        assignCompletionMap[sa.question_assignment_id].total++;
-        if (sa.completed_count >= sa.question_count) {
-          assignCompletionMap[sa.question_assignment_id].completed++;
-        }
+        .select('assignment_id, student_id')
+        .in('assignment_id', chunk)
+        .limit(10000);
+      for (const sa of saRows || []) {
+        if (!assignStudentsMap[sa.assignment_id]) assignStudentsMap[sa.assignment_id] = [];
+        assignStudentsMap[sa.assignment_id].push(sa.student_id);
       }
     }
+  }
+
+  // Get question completion status for all assignment questions
+  const allAssignQids = [...new Set((qAssignments || []).flatMap(qa => qa.question_ids || []))];
+  const assignDoneByStudent = {}; // student_id -> Set of done question_ids
+  if (allAssignQids.length > 0 && allStudentIds.length > 0) {
+    for (let i = 0; i < allStudentIds.length; i += 100) {
+      const chunk = allStudentIds.slice(i, i + 100);
+      const { data: statusRows } = await supabase
+        .from('question_status')
+        .select('user_id, question_id')
+        .in('user_id', chunk)
+        .in('question_id', allAssignQids)
+        .eq('is_done', true)
+        .limit(50000);
+      for (const s of statusRows || []) {
+        if (!assignDoneByStudent[s.user_id]) assignDoneByStudent[s.user_id] = new Set();
+        assignDoneByStudent[s.user_id].add(s.question_id);
+      }
+    }
+  }
+
+  // Also check practice test completion for PT assignments
+  const ptAssignTestIds = [...new Set(
+    (qAssignments || [])
+      .filter(qa => qa.filter_criteria?.type === 'practice_test')
+      .map(qa => qa.filter_criteria.practice_test_id)
+      .filter(Boolean)
+  )];
+  const ptDoneByStudent = {}; // student_id -> Set of completed practice_test_ids
+  if (ptAssignTestIds.length && allStudentIds.length) {
+    const { data: ptAttempts } = await supabase
+      .from('practice_test_attempts')
+      .select('user_id, practice_test_id')
+      .in('user_id', allStudentIds)
+      .in('practice_test_id', ptAssignTestIds)
+      .eq('status', 'completed')
+      .limit(5000);
+    for (const pt of ptAttempts || []) {
+      if (!ptDoneByStudent[pt.user_id]) ptDoneByStudent[pt.user_id] = new Set();
+      ptDoneByStudent[pt.user_id].add(pt.practice_test_id);
+    }
+  }
+
+  // Compute per-assignment completion
+  const assignCompletionMap = {}; // assignment_id -> { total, completed }
+  for (const qa of qAssignments || []) {
+    const students = assignStudentsMap[qa.id] || [];
+    const isPT = qa.filter_criteria?.type === 'practice_test';
+    let total = 0, completed = 0;
+
+    for (const sid of students) {
+      total++;
+      if (isPT) {
+        const testId = qa.filter_criteria.practice_test_id;
+        if (ptDoneByStudent[sid]?.has(testId)) completed++;
+      } else {
+        const qids = qa.question_ids || [];
+        const doneSet = assignDoneByStudent[sid] || new Set();
+        if (qids.length > 0 && qids.every(qid => doneSet.has(qid))) completed++;
+      }
+    }
+
+    assignCompletionMap[qa.id] = { total, completed };
   }
 
   // 7) Build per-teacher metrics
@@ -175,10 +239,10 @@ export async function GET() {
     const studentsTested = studentArr.filter(sid => (studentTestScores[sid]?.length || 0) > 0).length;
 
     // Assignment completion rate
-    const myAssignIds = teacherAssignmentIds[t.id] || [];
+    const myAssigns = teacherAssignmentIds[t.id] || [];
     let assignTotal = 0, assignCompleted = 0;
-    for (const aid of myAssignIds) {
-      const ac = assignCompletionMap[aid];
+    for (const qa of myAssigns) {
+      const ac = assignCompletionMap[qa.id];
       if (ac) {
         assignTotal += ac.total;
         assignCompleted += ac.completed;
@@ -203,7 +267,7 @@ export async function GET() {
       avgQuestionsPerWeek,
       avgBestTestScore,
       studentsTested,
-      assignmentsCreated: myAssignIds.length,
+      assignmentsCreated: myAssigns.length,
       assignmentCompletionRate,
     };
   });
