@@ -57,14 +57,25 @@ export async function GET() {
   }
 
   // Batch fetch completion status per question
+  // Use .eq('is_done', true) to only fetch completed statuses, and add a generous limit
+  // to avoid Supabase's default 1000-row cap silently dropping data.
   const allQuestionIds = [...new Set(assignments.flatMap(a => a.question_ids || []))];
-  const { data: statusRows } = allQuestionIds.length && studentIds.length
-    ? await supabase
+  let statusRows = [];
+  if (allQuestionIds.length && studentIds.length) {
+    // Batch by student to avoid hitting row limits with large cross-products
+    const BATCH = 20;
+    for (let i = 0; i < studentIds.length; i += BATCH) {
+      const studentBatch = studentIds.slice(i, i + BATCH);
+      const { data } = await supabase
         .from('question_status')
         .select('user_id, question_id, is_done, last_is_correct, marked_for_review')
-        .in('user_id', studentIds)
+        .in('user_id', studentBatch)
         .in('question_id', allQuestionIds)
-    : { data: [] };
+        .eq('is_done', true)
+        .limit(10000);
+      if (data) statusRows.push(...data);
+    }
+  }
 
   const statusByUserQuestion = {};
   const doneByStudent = {};
@@ -82,9 +93,38 @@ export async function GET() {
     const { data: qMetaRows } = await supabase
       .from('question_taxonomy')
       .select('question_id, difficulty, domain_name, skill_name')
-      .in('question_id', allQuestionIds);
+      .in('question_id', allQuestionIds)
+      .limit(10000);
     for (const q of (qMetaRows || [])) {
       questionMeta[q.question_id] = q;
+    }
+  }
+
+  // Fetch practice test completion for practice test assignments
+  const ptAssignments = assignments.filter(a => a.filter_criteria?.type === 'practice_test');
+  const ptTestIds = [...new Set(ptAssignments.map(a => a.filter_criteria?.practice_test_id).filter(Boolean))];
+  const ptCompletionByUserTest = {}; // `${user_id}:${test_id}` → { completed, score }
+
+  if (ptTestIds.length && studentIds.length) {
+    const { data: ptAttempts } = await supabase
+      .from('practice_test_attempts')
+      .select('user_id, practice_test_id, status, composite_score, rw_scaled, math_scaled')
+      .in('user_id', studentIds)
+      .in('practice_test_id', ptTestIds)
+      .eq('status', 'completed')
+      .limit(5000);
+
+    for (const pt of ptAttempts || []) {
+      const key = `${pt.user_id}:${pt.practice_test_id}`;
+      // Keep the best score if multiple completions
+      if (!ptCompletionByUserTest[key] || (pt.composite_score || 0) > (ptCompletionByUserTest[key].score || 0)) {
+        ptCompletionByUserTest[key] = {
+          completed: true,
+          score: pt.composite_score,
+          rw_scaled: pt.rw_scaled,
+          math_scaled: pt.math_scaled,
+        };
+      }
     }
   }
 
@@ -92,6 +132,33 @@ export async function GET() {
   const rows = studentAssignments.map(sa => {
     const a = assignmentMap[sa.assignment_id];
     if (!a) return null;
+
+    const isPracticeTest = a.filter_criteria?.type === 'practice_test';
+
+    if (isPracticeTest) {
+      const testId = a.filter_criteria?.practice_test_id;
+      const ptKey = `${sa.student_id}:${testId}`;
+      const ptResult = ptCompletionByUserTest[ptKey];
+
+      return {
+        assignment_id: a.id,
+        title: a.title,
+        due_date: a.due_date,
+        completed_at: a.completed_at || null,
+        question_ids: [],
+        question_count: 1, // Treat practice test as 1 "item"
+        completed_count: ptResult?.completed ? 1 : 0,
+        student_id: sa.student_id,
+        student_name: studentMap[sa.student_id] || '—',
+        is_practice_test: true,
+        practice_test_id: testId,
+        test_score: ptResult?.score || null,
+        rw_scaled: ptResult?.rw_scaled || null,
+        math_scaled: ptResult?.math_scaled || null,
+        question_statuses: [],
+      };
+    }
+
     const qids = a.question_ids || [];
     const doneSet = doneByStudent[sa.student_id] || new Set();
     const completedCount = qids.filter(qid => doneSet.has(qid)).length;

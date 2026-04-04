@@ -48,9 +48,11 @@ export async function GET(_request, { params }) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  const DOMAIN_COLS = 'domain_ini, domain_cas, domain_eoi, domain_sec, domain_alg, domain_atm, domain_pam, domain_geo';
+
   const { data: scores } = await supabase
     .from('sat_official_scores')
-    .select('id, test_date, rw_score, math_score, composite_score, created_at')
+    .select(`id, test_date, rw_score, math_score, composite_score, created_at, ${DOMAIN_COLS}`)
     .eq('student_id', studentId)
     .order('test_date', { ascending: false });
 
@@ -69,7 +71,9 @@ export async function POST(request, { params }) {
   }
 
   const body = await request.json();
-  const { test_date, rw_score, math_score } = body;
+  const { test_date, rw_score, math_score,
+    domain_ini, domain_cas, domain_eoi, domain_sec,
+    domain_alg, domain_atm, domain_pam, domain_geo } = body;
 
   if (!test_date || rw_score == null || math_score == null) {
     return NextResponse.json({ error: 'test_date, rw_score, and math_score are required' }, { status: 400 });
@@ -82,18 +86,30 @@ export async function POST(request, { params }) {
   }
 
   const composite = rw + math;
+  const parseDomain = (v) => { const n = parseInt(v, 10); return n >= 1 && n <= 7 ? n : null; };
 
+  const row = {
+    student_id: studentId,
+    test_date,
+    rw_score: rw,
+    math_score: math,
+    composite_score: composite,
+    created_by: user.id,
+    domain_ini: parseDomain(domain_ini),
+    domain_cas: parseDomain(domain_cas),
+    domain_eoi: parseDomain(domain_eoi),
+    domain_sec: parseDomain(domain_sec),
+    domain_alg: parseDomain(domain_alg),
+    domain_atm: parseDomain(domain_atm),
+    domain_pam: parseDomain(domain_pam),
+    domain_geo: parseDomain(domain_geo),
+  };
+
+  const DOMAIN_COLS = 'domain_ini, domain_cas, domain_eoi, domain_sec, domain_alg, domain_atm, domain_pam, domain_geo';
   const { data, error } = await supabase
     .from('sat_official_scores')
-    .insert({
-      student_id: studentId,
-      test_date,
-      rw_score: rw,
-      math_score: math,
-      composite_score: composite,
-      created_by: user.id,
-    })
-    .select('id, test_date, rw_score, math_score, composite_score, created_at')
+    .insert(row)
+    .select(`id, test_date, rw_score, math_score, composite_score, created_at, ${DOMAIN_COLS}`)
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

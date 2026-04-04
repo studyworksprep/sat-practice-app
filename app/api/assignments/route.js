@@ -62,6 +62,7 @@ export async function GET() {
           .eq("user_id", user.id)
           .in("question_id", allQuestionIds)
           .eq("is_done", true)
+          .limit(5000)
       : Promise.resolve({ data: [] });
 
     const [{ data: teacherProfiles }, { data: statusRows }] = await Promise.all([
@@ -83,21 +84,51 @@ export async function GET() {
       if (s.last_is_correct) correctSet.add(s.question_id);
     }
 
-    // Build assignments without any additional queries
+    // Check practice test completion for PT assignments
+    const ptTestIds = [...new Set(
+      validRows
+        .map(r => r.question_assignments?.filter_criteria?.practice_test_id)
+        .filter(Boolean)
+    )];
+    const ptCompletedSet = new Set();
+    if (ptTestIds.length) {
+      const { data: ptAttempts } = await supabase
+        .from('practice_test_attempts')
+        .select('practice_test_id')
+        .eq('user_id', user.id)
+        .in('practice_test_id', ptTestIds)
+        .eq('status', 'completed')
+        .limit(100);
+      for (const pt of ptAttempts || []) {
+        ptCompletedSet.add(pt.practice_test_id);
+      }
+    }
+
+    // Build assignments
     const assignments = validRows.map(row => {
       const a = row.question_assignments;
       const questionIds = a.question_ids || [];
-      const completedCount = questionIds.filter(qid => doneSet.has(qid)).length;
-      const correctCount = questionIds.filter(qid => correctSet.has(qid)).length;
-
       const isPracticeTest = a.filter_criteria?.type === 'practice_test';
+
+      let completedCount, correctCount, questionCount;
+      if (isPracticeTest) {
+        const testId = a.filter_criteria.practice_test_id;
+        questionCount = 1;
+        completedCount = ptCompletedSet.has(testId) ? 1 : 0;
+        correctCount = 0;
+      } else {
+        questionCount = questionIds.length;
+        completedCount = questionIds.filter(qid => doneSet.has(qid)).length;
+        correctCount = questionIds.filter(qid => correctSet.has(qid)).length;
+      }
+
       return {
         id: a.id,
         title: a.title,
         description: a.description,
         due_date: a.due_date,
         teacher_name: teacherMap[a.teacher_id] || "Unknown",
-        question_count: questionIds.length,
+        question_count: questionCount,
         completed_count: completedCount,
         correct_count: correctCount,
         practice_test_id: isPracticeTest ? a.filter_criteria.practice_test_id : null,

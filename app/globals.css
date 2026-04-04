@@ -102,6 +102,15 @@ a{
   justify-content: flex-end;
 }
 
+@media (max-width: 600px){
+  .questionTopBar{
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+}
+
 /* ===============================
    Two-column Reading layout
 ================================ */
@@ -210,6 +219,24 @@ a{
     padding-left: 0;
     border-top: 1px solid var(--border);
     padding-top: 14px;
+  }
+  .qaRightPanel{
+    padding: 16px;
+  }
+}
+@media (max-width: 500px){
+  .qaRightPanel{
+    padding: 12px;
+  }
+  .option{
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .optionBadge{
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    font-size: 12px;
   }
 }
 
@@ -1363,6 +1390,7 @@ hr{
   position: sticky;
   top: 0;
   z-index: 100;
+  overflow-x: hidden;
 }
 
 .navInner{
@@ -1372,29 +1400,36 @@ hr{
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .navLeft{
   display: flex;
   align-items: center;
   gap: 28px;
+  min-width: 0;
 }
 
 .logo{
   height: 34px;
   width: auto;
   display: block;
+  flex-shrink: 0;
 }
 
 .navLinks{
   display: flex;
   gap: 18px;
+  flex-wrap: wrap;
 }
 
 .navLinks a{
   font-weight: 500;
   color: var(--text);
   opacity: 0.85;
+  white-space: nowrap;
+  font-size: 14px;
 }
 
 .navLinks a:hover{
@@ -1411,6 +1446,43 @@ hr{
 .userEmail{
   font-size: 13px;
   color: var(--muted);
+}
+
+@media (max-width: 768px){
+  .navInner{
+    padding: 10px 16px;
+    gap: 6px;
+  }
+  .navLeft{
+    gap: 12px;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .navLinks{
+    gap: 10px;
+    width: 100%;
+    order: 3;
+  }
+  .navLinks a{
+    font-size: 13px;
+  }
+  .navRight{
+    gap: 8px;
+    margin-left: auto;
+  }
+  .userEmail{
+    display: none;
+  }
+  .testTypeToggle{
+    order: 2;
+    margin-left: auto;
+  }
+  .logo{
+    height: 28px;
+  }
+  .container{
+    padding: 16px;
+  }
 }
 
 .navRoleBadge{
@@ -2735,9 +2807,16 @@ hr{
     display: none;
   }
 
+  /* On mobile, show question FIRST, calculator BELOW */
   .mathLeft{
     position: relative;
     top: auto;
+    order: 2; /* calculator goes below */
+  }
+
+  .mathRight{
+    padding-left: 0;
+    order: 1; /* question goes above */
   }
 
   .mathShell.min .mathLeft{
@@ -2746,11 +2825,18 @@ hr{
 
   .desmosHost,
   .calcMinBody{
-    height: 420px;
+    height: 360px;
   }
 
-  .mathRight{
-    padding-left: 0;
+  .mathLeftHeader{
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 500px){
+  .desmosHost,
+  .calcMinBody{
+    height: 300px;
   }
 }
 

@@ -63,6 +63,15 @@ export async function GET(request) {
       supabase.from('question_versions').select('question_id, stem_html, stimulus_html')
         .eq('is_current', true).or(`stem_html.ilike.${pattern},stimulus_html.ilike.${pattern}`).limit(2000),
     );
+
+    // Tag search: find questions tagged with a matching concept tag (teacher/manager/admin only via RLS)
+    step1.push(
+      supabase
+        .from('concept_tags')
+        .select('id, name, question_concept_tags(question_id)')
+        .ilike('name', pattern)
+        .limit(100)
+    );
   }
 
   // NOTE: Domain/topic filtering is now handled directly in the main query's
@@ -91,6 +100,15 @@ export async function GET(request) {
     const { data: vrows, error: vErr } = step1Results[s1idx++];
     if (vErr) return NextResponse.json({ error: vErr.message }, { status: 400 });
     (vrows || []).forEach((r) => r?.question_id && ids.add(r.question_id));
+
+    // Tag search results (may be empty if user lacks RLS access)
+    const { data: tagRows } = step1Results[s1idx++];
+    for (const tag of tagRows || []) {
+      const junctions = Array.isArray(tag.question_concept_tags) ? tag.question_concept_tags : [];
+      for (const jct of junctions) {
+        if (jct?.question_id) ids.add(jct.question_id);
+      }
+    }
 
     restrictIds = Array.from(ids);
     if (restrictIds.length === 0) return NextResponse.json({ items: [], totalCount: 0 });

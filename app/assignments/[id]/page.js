@@ -25,11 +25,25 @@ export default function AssignmentDetailPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/assignments/${id}`)
+    fetch(`/api/assignments/${id}`, { cache: 'no-store' })
       .then(r => r.json())
       .then(d => { if (d.error) throw new Error(d.error); setData(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
+  }, [id]);
+
+  // Refetch when the page becomes visible again (e.g., returning from practice)
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.visibilityState === 'visible') {
+        fetch(`/api/assignments/${id}`, { cache: 'no-store' })
+          .then(r => r.json())
+          .then(d => { if (d.error) return; setData(d); })
+          .catch(() => {});
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [id]);
 
   function startPractice() {

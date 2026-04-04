@@ -40,7 +40,8 @@ export async function GET() {
     const { data: allAttempts } = await supabase
       .from('attempts')
       .select('user_id, created_at')
-      .gte('created_at', d30.toISOString());
+      .gte('created_at', d30.toISOString())
+      .limit(50000);
 
     const users1 = new Set();
     const users7 = new Set();
@@ -60,7 +61,8 @@ export async function GET() {
   const { data: activeByRoleRows } = await supabase
     .from('attempts')
     .select('user_id')
-    .gte('created_at', d30.toISOString());
+    .gte('created_at', d30.toISOString())
+    .limit(50000);
 
   const activeUserIds30 = [...new Set((activeByRoleRows || []).map(r => r.user_id))];
   const activeByRole = { student: 0, teacher: 0, manager: 0, admin: 0, practice: 0 };
@@ -84,7 +86,8 @@ export async function GET() {
   const { data: volumeAttempts } = await supabase
     .from('attempts')
     .select('created_at, source')
-    .gte('created_at', d56.toISOString());
+    .gte('created_at', d56.toISOString())
+    .limit(50000);
 
   // Build weekly buckets
   const weeks = [];
@@ -120,7 +123,8 @@ export async function GET() {
     .from('practice_test_attempts')
     .select('finished_at')
     .eq('status', 'completed')
-    .gte('finished_at', d56.toISOString());
+    .gte('finished_at', d56.toISOString())
+    .limit(10000);
 
   const weeklyTests = weeks.map(w => ({ ...w, testsCompleted: 0 }));
   for (const t of completedTests || []) {
@@ -141,7 +145,17 @@ export async function GET() {
   }));
 
   // ── 3) Feature Adoption (last 30 days) ─────────────────────────
-  // Count distinct users who used each feature, separated by role
+  // Count distinct users who used each feature, separated by role.
+  // First get role lookup for all users to filter correctly.
+  const { data: allProfiles } = await supabase
+    .from('profiles')
+    .select('id, role');
+  const roleById = {};
+  for (const p of allProfiles || []) roleById[p.id] = p.role;
+
+  const isStudentRole = (uid) => ['student', 'practice'].includes(roleById[uid]);
+  const isTeacherRole = (uid) => ['teacher', 'manager', 'admin'].includes(roleById[uid]);
+
   const [
     flashcardRes,
     vocabRes,
@@ -152,45 +166,43 @@ export async function GET() {
     assignmentRes,
     notesRes,
     lessonAssignRes,
-    bluebookRes,
     registrationRes,
     officialScoreRes,
   ] = await Promise.all([
     // Student features
-    supabase.from('flashcard_sets').select('user_id').gte('created_at', d30.toISOString()),
-    supabase.from('sat_vocabulary_progress').select('user_id').gte('updated_at', d30.toISOString()),
-    supabase.from('lesson_progress').select('user_id').gte('updated_at', d30.toISOString()),
-    supabase.from('bug_reports').select('created_by').gte('created_at', d30.toISOString()),
-    supabase.from('practice_test_attempts').select('user_id').eq('status', 'completed').gte('finished_at', d30.toISOString()),
-    supabase.from('desmos_saved_states').select('user_id').gte('created_at', d30.toISOString()),
+    supabase.from('flashcard_sets').select('user_id').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('sat_vocabulary_progress').select('user_id').gte('updated_at', d30.toISOString()).limit(10000),
+    supabase.from('lesson_progress').select('user_id').gte('updated_at', d30.toISOString()).limit(10000),
+    supabase.from('bug_reports').select('created_by').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('practice_test_attempts').select('user_id').eq('status', 'completed').gte('finished_at', d30.toISOString()).limit(10000),
+    supabase.from('desmos_saved_states').select('saved_by').gte('created_at', d30.toISOString()).limit(10000),
     // Teacher features
-    supabase.from('question_assignments').select('created_by').gte('created_at', d30.toISOString()),
-    supabase.from('question_notes').select('user_id').gte('created_at', d30.toISOString()),
-    supabase.from('lesson_assignments').select('teacher_id').gte('created_at', d30.toISOString()),
-    supabase.from('practice_test_attempts').select('user_id').eq('status', 'completed').not('upload_source', 'is', null).gte('finished_at', d30.toISOString()),
-    supabase.from('sat_test_registrations').select('created_by').gte('created_at', d30.toISOString()),
-    supabase.from('sat_official_scores').select('created_by').gte('created_at', d30.toISOString()),
+    supabase.from('question_assignments').select('teacher_id').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('question_notes').select('author_id').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('lesson_assignments').select('teacher_id').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('sat_test_registrations').select('created_by').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('sat_official_scores').select('created_by').gte('created_at', d30.toISOString()).limit(10000),
   ]);
 
-  const distinctUsers = (rows, field = 'user_id') =>
-    new Set((rows || []).map(r => r[field])).size;
+  // Count distinct users filtered by role
+  const distinctByRole = (rows, field, roleFn) =>
+    new Set((rows || []).map(r => r[field]).filter(uid => uid && roleFn(uid))).size;
 
   const studentAdoption = [
-    { feature: 'Practice Tests', users: distinctUsers(practiceTestRes.data) },
-    { feature: 'Flashcards', users: distinctUsers(flashcardRes.data) },
-    { feature: 'SAT Vocabulary', users: distinctUsers(vocabRes.data) },
-    { feature: 'Lessons', users: distinctUsers(lessonProgressRes.data) },
-    { feature: 'Desmos Calculator', users: distinctUsers(desmosRes.data) },
-    { feature: 'Bug Reports', users: distinctUsers(bugRes.data, 'created_by') },
+    { feature: 'Practice Tests', users: distinctByRole(practiceTestRes.data, 'user_id', isStudentRole) },
+    { feature: 'Flashcards', users: distinctByRole(flashcardRes.data, 'user_id', isStudentRole) },
+    { feature: 'SAT Vocabulary', users: distinctByRole(vocabRes.data, 'user_id', isStudentRole) },
+    { feature: 'Lessons', users: distinctByRole(lessonProgressRes.data, 'user_id', isStudentRole) },
+    { feature: 'Desmos Calculator', users: distinctByRole(desmosRes.data, 'saved_by', isTeacherRole) },
+    { feature: 'Bug Reports', users: distinctByRole(bugRes.data, 'created_by', isStudentRole) },
   ];
 
   const teacherAdoption = [
-    { feature: 'Assignments', users: distinctUsers(assignmentRes.data, 'created_by') },
-    { feature: 'Question Notes', users: distinctUsers(notesRes.data) },
-    { feature: 'Lesson Assignments', users: distinctUsers(lessonAssignRes.data, 'teacher_id') },
-    { feature: 'Bluebook Uploads', users: distinctUsers(bluebookRes.data) },
-    { feature: 'Test Registrations', users: distinctUsers(registrationRes.data, 'created_by') },
-    { feature: 'Official Scores', users: distinctUsers(officialScoreRes.data, 'created_by') },
+    { feature: 'Assignments', users: distinctByRole(assignmentRes.data, 'teacher_id', isTeacherRole) },
+    { feature: 'Question Notes', users: distinctByRole(notesRes.data, 'author_id', isTeacherRole) },
+    { feature: 'Lesson Assignments', users: distinctByRole(lessonAssignRes.data, 'teacher_id', isTeacherRole) },
+    { feature: 'Test Registrations', users: distinctByRole(registrationRes.data, 'created_by', isTeacherRole) },
+    { feature: 'Official Scores', users: distinctByRole(officialScoreRes.data, 'created_by', isTeacherRole) },
   ];
 
   // Total counts by role for adoption percentages

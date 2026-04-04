@@ -24,11 +24,13 @@ export async function GET() {
   // Question counts per test: aggregate through modules → module_items
   const { data: modulesRaw } = await supabase
     .from('practice_test_modules')
-    .select('id, practice_test_id, subject_code, module_number, route_code, time_limit_seconds');
+    .select('id, practice_test_id, subject_code, module_number, route_code, time_limit_seconds')
+    .limit(5000);
 
   const { data: moduleItemsRaw } = await supabase
     .from('practice_test_module_items')
-    .select('practice_test_module_id');
+    .select('practice_test_module_id')
+    .limit(50000);
 
   // Build per-test question count (module 1 only, deduplicated by question position)
   const itemsByModule = {};

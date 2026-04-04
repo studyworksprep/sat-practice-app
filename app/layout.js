@@ -8,6 +8,12 @@ export const metadata = {
   description: 'Practice SAT questions with Supabase + Next.js',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
