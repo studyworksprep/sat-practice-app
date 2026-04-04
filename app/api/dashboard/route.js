@@ -61,7 +61,7 @@ export async function GET() {
       .order('test_date', { ascending: true }),
     supabase
       .from('sat_official_scores')
-      .select('id, test_date, rw_score, math_score, composite_score')
+      .select('id, test_date, rw_score, math_score, composite_score, domain_ini, domain_cas, domain_eoi, domain_sec, domain_alg, domain_atm, domain_pam, domain_geo')
       .eq('student_id', user.id)
       .order('test_date', { ascending: false }),
   ]);

@@ -879,6 +879,86 @@ export default function DashboardClient({ email }) {
         </div>
       )}
 
+      {/* ── Official Domain Score Analysis ── */}
+      {data?.officialScores?.length > 0 && (() => {
+        // Use the most recent score that has domain data
+        const latest = data.officialScores.find(s =>
+          s.domain_ini != null || s.domain_cas != null || s.domain_eoi != null || s.domain_sec != null ||
+          s.domain_alg != null || s.domain_atm != null || s.domain_pam != null || s.domain_geo != null
+        );
+        if (!latest) return null;
+
+        const domainData = [
+          { key: 'domain_ini', label: 'Information & Ideas', section: 'rw', score: latest.domain_ini },
+          { key: 'domain_cas', label: 'Craft & Structure', section: 'rw', score: latest.domain_cas },
+          { key: 'domain_eoi', label: 'Expression of Ideas', section: 'rw', score: latest.domain_eoi },
+          { key: 'domain_sec', label: 'Standard English Conventions', section: 'rw', score: latest.domain_sec },
+          { key: 'domain_alg', label: 'Algebra', section: 'math', score: latest.domain_alg },
+          { key: 'domain_atm', label: 'Advanced Math', section: 'math', score: latest.domain_atm },
+          { key: 'domain_pam', label: 'Problem-Solving & Data', section: 'math', score: latest.domain_pam },
+          { key: 'domain_geo', label: 'Geometry & Trig', section: 'math', score: latest.domain_geo },
+        ].filter(d => d.score != null);
+
+        if (domainData.length === 0) return null;
+
+        const sorted = [...domainData].sort((a, b) => a.score - b.score);
+        const weakest = sorted.filter(d => d.score <= 4).slice(0, 3);
+        const strongest = sorted.filter(d => d.score >= 5).sort((a, b) => b.score - a.score).slice(0, 3);
+
+        const scoreColor = (s) => s >= 6 ? 'var(--success)' : s >= 4 ? 'var(--amber)' : 'var(--danger)';
+
+        return (
+          <div className="card" style={{ marginBottom: 16, padding: '16px 20px' }}>
+            <div className="h2" style={{ marginBottom: 4 }}>Official Test Domain Analysis</div>
+            <p className="muted small" style={{ marginBottom: 12 }}>
+              Based on most recent official score ({new Date(latest.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })})
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+              {/* All domains bar chart */}
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>All Domains</div>
+                {domainData.map(d => (
+                  <div key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <span style={{ fontSize: 12, minWidth: 140, color: d.section === 'rw' ? '#6b9bd2' : '#9b8ec4' }}>{d.label}</span>
+                    <div style={{ flex: 1, height: 14, background: 'rgba(0,0,0,0.06)', borderRadius: 7, overflow: 'hidden' }}>
+                      <div style={{ width: `${(d.score / 7) * 100}%`, height: '100%', background: scoreColor(d.score), borderRadius: 7, transition: 'width 0.3s' }} />
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 700, minWidth: 16, textAlign: 'right', color: scoreColor(d.score) }}>{d.score}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Strengths and weaknesses */}
+              <div>
+                {strongest.length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)', marginBottom: 6 }}>Strongest Domains</div>
+                    {strongest.map(d => (
+                      <div key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, fontSize: 13 }}>
+                        <span style={{ fontWeight: 700, color: 'var(--success)' }}>{d.score}/7</span>
+                        <span>{d.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {weakest.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--danger)', marginBottom: 6 }}>Areas to Improve</div>
+                    {weakest.map(d => (
+                      <div key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, fontSize: 13 }}>
+                        <span style={{ fontWeight: 700, color: 'var(--danger)' }}>{d.score}/7</span>
+                        <span>{d.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── Bottom row: Practice Tests + Recent Sessions ── */}
       <div className="dbBottomRow">
 

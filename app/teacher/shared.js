@@ -574,10 +574,24 @@ export function AddRegistrationModal({ studentId, onClose, onSaved }) {
 }
 
 // ─── Add Official Score modal ─────────────────────────────
+const DOMAIN_LABELS = {
+  domain_ini: 'Information and Ideas',
+  domain_cas: 'Craft and Structure',
+  domain_eoi: 'Expression of Ideas',
+  domain_sec: 'Standard English Conventions',
+  domain_alg: 'Algebra',
+  domain_atm: 'Advanced Math',
+  domain_pam: 'Problem-Solving & Data Analysis',
+  domain_geo: 'Geometry & Trigonometry',
+};
+const RW_DOMAINS = ['domain_ini', 'domain_cas', 'domain_eoi', 'domain_sec'];
+const MATH_DOMAINS = ['domain_alg', 'domain_atm', 'domain_pam', 'domain_geo'];
+
 export function AddScoreModal({ studentId, onClose, onSaved }) {
   const [form, setForm] = useState({ test_date: '', rw_score: '', math_score: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [showDomains, setShowDomains] = useState(false);
   const handleChange = (field) => (e) => setForm(prev => ({ ...prev, [field]: e.target.value }));
   const composite = (Number(form.rw_score) || 0) + (Number(form.math_score) || 0);
 
@@ -601,9 +615,25 @@ export function AddScoreModal({ studentId, onClose, onSaved }) {
     }
   };
 
+  const renderDomainSelect = (key) => (
+    <label key={key} className="tchModalField" style={{ flex: '1 1 200px' }}>
+      <span className="tchModalLabel" style={{ fontSize: 12 }}>{DOMAIN_LABELS[key]}</span>
+      <select
+        value={form[key] || ''}
+        onChange={handleChange(key)}
+        style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: '#fff' }}
+      >
+        <option value="">—</option>
+        {[1, 2, 3, 4, 5, 6, 7].map(n => (
+          <option key={n} value={n}>{n}</option>
+        ))}
+      </select>
+    </label>
+  );
+
   return (
     <div className="tchModalOverlay" onClick={onClose}>
-      <div className="card tchModal" onClick={(e) => e.stopPropagation()}>
+      <div className="card tchModal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
         <div className="tchModalHeader">
           <h3 className="h2" style={{ margin: 0 }}>Add Official SAT Score</h3>
           <button className="tchModalClose" onClick={onClose}>&times;</button>
@@ -628,6 +658,29 @@ export function AddScoreModal({ studentId, onClose, onSaved }) {
               Composite: {composite}
             </div>
           )}
+
+          {/* Domain scores toggle */}
+          <button type="button" className="btn secondary" style={{ fontSize: 12, alignSelf: 'flex-start' }} onClick={() => setShowDomains(!showDomains)}>
+            {showDomains ? 'Hide Domain Scores' : '+ Add Domain Scores (1-7)'}
+          </button>
+
+          {showDomains && (
+            <div style={{ display: 'grid', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#6b9bd2', marginBottom: 6 }}>Reading & Writing Domains</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {RW_DOMAINS.map(renderDomainSelect)}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#9b8ec4', marginBottom: 6 }}>Math Domains</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {MATH_DOMAINS.map(renderDomainSelect)}
+                </div>
+              </div>
+            </div>
+          )}
+
           {error && <p style={{ color: 'var(--danger)', fontSize: 13, margin: 0 }}>{error}</p>}
           <div className="tchModalActions">
             <button type="button" className="btn secondary" onClick={onClose}>Cancel</button>
