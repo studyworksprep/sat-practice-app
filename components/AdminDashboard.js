@@ -1216,16 +1216,23 @@ export default function AdminDashboard() {
               </div>
               <div className="adminHeatmapGrid">
                 {perfStats.skillHeatmap.map(s => {
-                  const hue = Math.round((s.accuracy / 100) * 120); // 0=red, 60=yellow, 120=green
+                  const pct = s.accuracy;
+                  // Red (0%) → Yellow (50%) → Green (100%), with increasing saturation and decreasing lightness
+                  const hue = Math.round((pct / 100) * 120); // 0=red, 60=yellow, 120=green
+                  const sat = Math.round(40 + (pct / 100) * 45); // 40% → 85%
+                  const light = Math.round(90 - (pct / 100) * 30); // 90% → 60%
+                  const borderSat = Math.round(30 + (pct / 100) * 40);
+                  const borderLight = Math.round(70 - (pct / 100) * 25);
+                  const textLight = Math.round(35 - (pct / 100) * 15);
                   return (
                     <div
                       key={s.skill_code}
                       className="adminHeatCell"
                       title={`${s.skill_name}: ${s.accuracy}% (${s.total} attempts)`}
-                      style={{ background: `hsl(${hue}, 70%, 92%)`, borderColor: `hsl(${hue}, 50%, 70%)` }}
+                      style={{ background: `hsl(${hue}, ${sat}%, ${light}%)`, borderColor: `hsl(${hue}, ${borderSat}%, ${borderLight}%)` }}
                     >
                       <span className="adminHeatLabel">{s.skill_name}</span>
-                      <span className="adminHeatVal" style={{ color: `hsl(${hue}, 60%, 30%)` }}>{s.accuracy}%</span>
+                      <span className="adminHeatVal" style={{ color: `hsl(${hue}, 60%, ${textLight}%)` }}>{s.accuracy}%</span>
                     </div>
                   );
                 })}
