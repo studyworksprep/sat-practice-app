@@ -1573,6 +1573,7 @@ export function StudentDetail({ studentId, onBack }) {
           <div>
             <h2 className="h1" style={{ margin: 0 }}>{displayName(student)}</h2>
             <p className="muted small" style={{ margin: 0 }}>{student.email}</p>
+            <p className="muted small" style={{ margin: 0, fontSize: 11 }}>ID: <code style={{ cursor: 'pointer', userSelect: 'all' }} title="Click to select full ID" onClick={(e) => { navigator.clipboard?.writeText(studentId); e.target.style.color = 'var(--accent)'; setTimeout(() => { e.target.style.color = ''; }, 1000); }}>{studentId}</code></p>
           </div>
         </div>
         <button className="btn secondary tchEditBtn" onClick={() => setEditOpen(true)}>Edit</button>

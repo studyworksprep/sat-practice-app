@@ -1416,6 +1416,7 @@ export default function AdminDashboard() {
                         Name {usersSort === 'name' ? (usersSortDir === 'asc' ? '▲' : '▼') : ''}
                       </th>
                       <th>Email</th>
+                      <th>ID</th>
                       <th style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => { if (usersSort === 'role') setUsersSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setUsersSort('role'); setUsersSortDir('asc'); } }}>
                         Role {usersSort === 'role' ? (usersSortDir === 'asc' ? '▲' : '▼') : ''}
                       </th>
@@ -1431,6 +1432,7 @@ export default function AdminDashboard() {
                       <tr key={p.id} style={p.is_active === false ? { opacity: 0.55 } : undefined}>
                         <td style={{ fontWeight: 500, fontSize: 13 }}>{displayName(p) || <span className="muted">—</span>}</td>
                         <td className="adminTableEmail">{p.email || '—'}</td>
+                        <td><code style={{ fontSize: 10, color: 'var(--muted)', cursor: 'pointer', userSelect: 'all' }} title="Click to select full ID">{p.id.slice(0, 8)}</code></td>
                         <td>
                           <select
                             className="adminRoleSelect"
