@@ -8,8 +8,8 @@ const BLOCKED_FOR_PRACTICE = ['/dashboard', '/practice-test', '/admin', '/review
 const EXTERNAL_API_PREFIX = '/api/external/';
 
 export async function middleware(request) {
-  // External API routes handle their own auth (API key) — skip session logic
-  if (request.nextUrl.pathname.startsWith(EXTERNAL_API_PREFIX)) {
+  // External/public API routes handle their own auth (API key) — skip session logic
+  if (request.nextUrl.pathname.startsWith(EXTERNAL_API_PREFIX) || request.nextUrl.pathname.startsWith('/api/public/')) {
     return NextResponse.next();
   }
 
