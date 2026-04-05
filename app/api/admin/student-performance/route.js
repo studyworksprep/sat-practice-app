@@ -107,7 +107,7 @@ export async function GET() {
   // Use attempt_count/correct_count on question_versions (min 5 attempts)
   const { data: qvRows } = await supabase
     .from('question_versions')
-    .select('id, question_id, attempt_count, correct_count')
+    .select('id, question_id, attempt_count, correct_count, questions!inner(question_id)')
     .eq('is_current', true)
     .gte('attempt_count', 5)
     .order('attempt_count', { ascending: false })
@@ -115,6 +115,7 @@ export async function GET() {
 
   const scored = (qvRows || []).map(qv => ({
     ...qv,
+    display_question_id: qv.questions?.question_id || null,
     accuracy: Math.round((qv.correct_count / qv.attempt_count) * 100),
   }));
 
@@ -136,7 +137,8 @@ export async function GET() {
   const enrichQ = (q) => {
     const tax = enrichTax[q.question_id] || {};
     return {
-      question_id: q.question_id,
+      question_id: q.display_question_id || q.question_id,
+      question_uuid: q.question_id,
       attempt_count: q.attempt_count,
       correct_count: q.correct_count,
       accuracy: q.accuracy,

@@ -1163,9 +1163,9 @@ export default function AdminDashboard() {
                   </div>
                   {perfStats.hardestQuestions.map((q, i) => (
                     <div key={i} className="adminQTableRow">
-                      <span className="adminQTableId" title={q.question_id}>
-                        {q.question_id?.slice(0, 8)}
-                      </span>
+                      <a className="adminQTableId" href={`/practice/${q.question_uuid || q.question_id}`} title={q.question_id} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        {q.question_id?.length > 12 ? q.question_id.slice(0, 8) : q.question_id || '—'}
+                      </a>
                       <span className="adminQTableSkill">{q.skill_name || q.domain_name || '—'}</span>
                       <span className="adminQTableAcc" style={{ color: 'var(--danger, #dc2626)' }}>{q.accuracy}%</span>
                       <span className="adminQTableN">{q.attempt_count}</span>
@@ -1190,9 +1190,9 @@ export default function AdminDashboard() {
                   </div>
                   {perfStats.easiestQuestions.map((q, i) => (
                     <div key={i} className="adminQTableRow">
-                      <span className="adminQTableId" title={q.question_id}>
-                        {q.question_id?.slice(0, 8)}
-                      </span>
+                      <a className="adminQTableId" href={`/practice/${q.question_uuid || q.question_id}`} title={q.question_id} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        {q.question_id?.length > 12 ? q.question_id.slice(0, 8) : q.question_id || '—'}
+                      </a>
                       <span className="adminQTableSkill">{q.skill_name || q.domain_name || '—'}</span>
                       <span className="adminQTableAcc" style={{ color: 'var(--success, #22c55e)' }}>{q.accuracy}%</span>
                       <span className="adminQTableN">{q.attempt_count}</span>
