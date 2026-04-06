@@ -639,10 +639,19 @@ export function AddScoreModal({ studentId, onClose, onSaved }) {
           <button className="tchModalClose" onClick={onClose}>&times;</button>
         </div>
         <form onSubmit={handleSubmit} className="tchModalForm">
-          <label className="tchModalField">
-            <span className="tchModalLabel">Test Date</span>
-            <input type="date" value={form.test_date} onChange={handleChange('test_date')} required />
-          </label>
+          <div className="tchModalRow">
+            <label className="tchModalField">
+              <span className="tchModalLabel">Test Date</span>
+              <input type="date" value={form.test_date} onChange={handleChange('test_date')} required />
+            </label>
+            <label className="tchModalField" style={{ flex: '0 0 120px' }}>
+              <span className="tchModalLabel">Test Type</span>
+              <select value={form.test_type || 'SAT'} onChange={handleChange('test_type')} style={{ padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: '#fff' }}>
+                <option value="SAT">SAT</option>
+                <option value="PSAT">PSAT</option>
+              </select>
+            </label>
+          </div>
           <div className="tchModalRow">
             <label className="tchModalField">
               <span className="tchModalLabel">Reading & Writing</span>
@@ -1684,16 +1693,37 @@ export function StudentDetail({ studentId, onBack }) {
             })()}
             {officialScores.length > 0 && (
               <div className="tchScoresSection">
-                <span className="tchProfileLabel" style={{ marginBottom: 6 }}>Official SAT Scores</span>
+                <span className="tchProfileLabel" style={{ marginBottom: 6 }}>Official Scores</span>
                 <div className="tchScoresList">
-                  {officialScores.map(s => (
-                    <div key={s.id} className="tchScoreItem">
-                      <span className="tchScoreDate">{new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                      <span className="tchScoreComposite">{s.composite_score}</span>
-                      <span className="tchScoreBreakdown">R&W {s.rw_score} · Math {s.math_score}</span>
-                      <button className="tchRegDelete" onClick={() => deleteScore(s.id)} title="Remove">&times;</button>
-                    </div>
-                  ))}
+                  {officialScores.map(s => {
+                    const hasDomains = RW_DOMAINS.some(k => s[k] != null) || MATH_DOMAINS.some(k => s[k] != null);
+                    return (
+                      <div key={s.id} style={{ marginBottom: hasDomains ? 12 : 0 }}>
+                        <div className="tchScoreItem">
+                          <span className="tchScoreDate">{new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <span className="tchScoreComposite">{s.composite_score}</span>
+                          <span className="tchScoreBreakdown">
+                            {s.test_type && s.test_type !== 'SAT' ? <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--accent)', marginRight: 4 }}>{s.test_type}</span> : null}
+                            R&W {s.rw_score} · Math {s.math_score}
+                          </span>
+                          <button className="tchRegDelete" onClick={() => deleteScore(s.id)} title="Remove">&times;</button>
+                        </div>
+                        {hasDomains && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 8px', paddingLeft: 4, marginTop: 4 }}>
+                            {[...RW_DOMAINS, ...MATH_DOMAINS].map(k => {
+                              if (s[k] == null) return null;
+                              const label = DOMAIN_LABELS[k].replace('Problem-Solving & Data Analysis', 'PS&DA').replace('Standard English Conventions', 'SEC').replace('Information and Ideas', 'Info').replace('Craft and Structure', 'C&S').replace('Expression of Ideas', 'Expr').replace('Geometry & Trigonometry', 'Geo').replace('Advanced Math', 'Adv');
+                              return (
+                                <span key={k} style={{ fontSize: 11, color: 'var(--muted)' }}>
+                                  {label} <strong style={{ color: 'var(--text)' }}>{s[k]}</strong>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

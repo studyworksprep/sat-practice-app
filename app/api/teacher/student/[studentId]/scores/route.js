@@ -52,7 +52,7 @@ export async function GET(_request, { params }) {
 
   const { data: scores } = await supabase
     .from('sat_official_scores')
-    .select(`id, test_date, rw_score, math_score, composite_score, created_at, ${DOMAIN_COLS}`)
+    .select(`id, test_date, rw_score, math_score, composite_score, created_at, test_type, ${DOMAIN_COLS}`)
     .eq('student_id', studentId)
     .order('test_date', { ascending: false });
 
@@ -71,7 +71,7 @@ export async function POST(request, { params }) {
   }
 
   const body = await request.json();
-  const { test_date, rw_score, math_score,
+  const { test_date, rw_score, math_score, test_type,
     domain_ini, domain_cas, domain_eoi, domain_sec,
     domain_alg, domain_atm, domain_pam, domain_geo } = body;
 
@@ -88,6 +88,7 @@ export async function POST(request, { params }) {
   const composite = rw + math;
   const parseDomain = (v) => { const n = parseInt(v, 10); return n >= 1 && n <= 7 ? n : null; };
 
+  const validTestTypes = ['SAT', 'PSAT'];
   const row = {
     student_id: studentId,
     test_date,
@@ -95,6 +96,7 @@ export async function POST(request, { params }) {
     math_score: math,
     composite_score: composite,
     created_by: user.id,
+    test_type: validTestTypes.includes(test_type) ? test_type : 'SAT',
     domain_ini: parseDomain(domain_ini),
     domain_cas: parseDomain(domain_cas),
     domain_eoi: parseDomain(domain_eoi),
@@ -109,7 +111,7 @@ export async function POST(request, { params }) {
   const { data, error } = await supabase
     .from('sat_official_scores')
     .insert(row)
-    .select(`id, test_date, rw_score, math_score, composite_score, created_at, ${DOMAIN_COLS}`)
+    .select(`id, test_date, rw_score, math_score, composite_score, created_at, test_type, ${DOMAIN_COLS}`)
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

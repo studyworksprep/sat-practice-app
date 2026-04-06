@@ -93,7 +93,7 @@ export async function GET(_request, { params }) {
       .order('test_date', { ascending: true }),
     supabase
       .from('sat_official_scores')
-      .select('id, test_date, rw_score, math_score, composite_score, created_at')
+      .select('id, test_date, rw_score, math_score, composite_score, created_at, test_type, domain_ini, domain_cas, domain_eoi, domain_sec, domain_alg, domain_atm, domain_pam, domain_geo')
       .eq('student_id', studentId)
       .order('test_date', { ascending: false }),
     // Fetch precomputed availability counts (replaces full taxonomy scan)
