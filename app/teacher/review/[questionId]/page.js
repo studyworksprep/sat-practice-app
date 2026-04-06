@@ -460,9 +460,6 @@ export default function TeacherReviewPage() {
         )}
       </div>
 
-      {/* Concept tags */}
-      <ConceptTags questionId={questionId} userRole={data?.viewer_role} />
-
       {/* Question content */}
       {useTwoColReading ? (
         <div className="twoCol">
@@ -482,6 +479,7 @@ export default function TeacherReviewPage() {
             {qType === 'mcq' ? <McqOptions /> : <SprAnswer />}
             <NavButtons />
             <Explanation />
+            <ConceptTags questionId={questionId} userRole={data?.viewer_role} />
           </div>
         </div>
       ) : (
@@ -490,6 +488,7 @@ export default function TeacherReviewPage() {
           {qType === 'mcq' ? <McqOptions /> : <SprAnswer />}
           <NavButtons />
           <Explanation />
+          <ConceptTags questionId={questionId} userRole={data?.viewer_role} />
         </div>
       )}
 
