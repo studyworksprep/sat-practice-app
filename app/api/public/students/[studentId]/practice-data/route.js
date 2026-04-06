@@ -37,6 +37,7 @@ export async function GET(request, { params }) {
 
   // Return just the data sections (without external_student_id wrapper)
   return NextResponse.json({
+    target_score: payload.target_score,
     practice_stats: payload.practice_stats,
     practice_tests: payload.practice_tests,
     domain_mastery: payload.domain_mastery,
