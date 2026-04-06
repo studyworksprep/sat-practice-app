@@ -6,6 +6,7 @@ import Script from 'next/script';
 import Link from 'next/link';
 import HtmlBlock from '../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../components/QuestionNotes';
+import ConceptTags from '../../../../components/ConceptTags';
 import DesmosStateButton from '../../../../components/DesmosStateButton';
 
 const htmlHasContent = (html) => {
@@ -458,6 +459,9 @@ export default function TeacherReviewPage() {
           <span className="pill"><span className="muted">External ID</span> <span className="kbd">{data.source_external_id}</span></span>
         )}
       </div>
+
+      {/* Concept tags */}
+      <ConceptTags questionId={questionId} userRole={data?.viewer_role} />
 
       {/* Question content */}
       {useTwoColReading ? (
