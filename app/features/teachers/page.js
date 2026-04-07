@@ -1,3 +1,5 @@
+'use client';
+
 const ACCENT = 'var(--accent, #4f7ce0)';
 
 const Icon = ({ children, color = ACCENT }) => (
