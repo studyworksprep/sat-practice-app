@@ -171,9 +171,8 @@ export async function GET() {
     avgMath = nM > 0 ? Math.round(sumM / nM) : null;
   }
 
-  // ── 3) Hardest/Easiest Questions (from roster attempts) ──
-  // Use question_versions accuracy counters filtered to questions the roster has attempted
-  const hardestEasiest = await getHardestEasiestFromRoster(svc, questionIds, taxMap);
+  // ── 3) Hardest/Easiest Questions (from roster's own attempts only) ──
+  const hardestEasiest = computeHardestEasiestFromAttempts(firstAttempts, taxMap);
 
   return NextResponse.json({
     overallAccuracy: { current: overallAccuracy, previous: prevAccuracy, totalAttempts: totalFirst, domains },
@@ -189,29 +188,26 @@ export async function GET() {
   });
 }
 
-async function getHardestEasiestFromRoster(svc, questionIds, taxMap) {
-  if (!questionIds.length) return { hardest: [], easiest: [] };
+function computeHardestEasiestFromAttempts(firstAttempts, taxMap) {
+  if (!firstAttempts.length) return { hardest: [], easiest: [] };
 
-  // Get accuracy data for questions the roster has attempted
-  const qvMap = {};
-  for (let i = 0; i < questionIds.length; i += 500) {
-    const chunk = questionIds.slice(i, i + 500);
-    const { data: qvRows } = await svc
-      .from('question_versions')
-      .select('id, question_id, attempt_count, correct_count, questions!inner(question_id)')
-      .eq('is_current', true)
-      .gte('attempt_count', 5)
-      .in('question_id', chunk);
-    for (const qv of (qvRows || [])) {
-      qvMap[qv.question_id] = qv;
-    }
+  // Aggregate per question from the roster's first attempts
+  const byQuestion = {};
+  for (const a of firstAttempts) {
+    if (!byQuestion[a.question_id]) byQuestion[a.question_id] = { total: 0, correct: 0 };
+    byQuestion[a.question_id].total++;
+    if (a.is_correct) byQuestion[a.question_id].correct++;
   }
 
-  const scored = Object.values(qvMap).map(qv => ({
-    ...qv,
-    display_question_id: qv.questions?.question_id || null,
-    accuracy: Math.round((qv.correct_count / qv.attempt_count) * 100),
-  }));
+  // Filter to questions with enough attempts, compute accuracy
+  const scored = Object.entries(byQuestion)
+    .filter(([, q]) => q.total >= 3)
+    .map(([qid, q]) => ({
+      question_id: qid,
+      attempt_count: q.total,
+      correct_count: q.correct,
+      accuracy: Math.round((q.correct / q.total) * 100),
+    }));
 
   scored.sort((a, b) => a.accuracy - b.accuracy);
   const hardest = scored.slice(0, 10);
@@ -220,7 +216,7 @@ async function getHardestEasiestFromRoster(svc, questionIds, taxMap) {
   const enrichQ = (q) => {
     const tax = taxMap[q.question_id] || {};
     return {
-      question_id: q.display_question_id || q.question_id,
+      question_id: q.question_id,
       question_uuid: q.question_id,
       attempt_count: q.attempt_count,
       correct_count: q.correct_count,
