@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 const ACCENT = 'var(--accent, #4f7ce0)';
 
 const Icon = ({ children, color = ACCENT }) => (
@@ -8,17 +10,12 @@ const Icon = ({ children, color = ACCENT }) => (
   </div>
 );
 
-const FeatureCard = ({ icon, title, desc, screenshot }) => (
+const FeatureCard = ({ icon, title, desc }) => (
   <div style={{ display: 'flex', gap: 16, padding: '24px', background: 'var(--card, #fff)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
     <Icon>{icon}</Icon>
     <div style={{ flex: 1, minWidth: 0 }}>
       <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>{title}</h3>
       <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>{desc}</p>
-      {screenshot && (
-        <div style={{ marginTop: 12, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', background: '#f8fafc' }}>
-          <img src={screenshot} alt={title} style={{ width: '100%', display: 'block' }} />
-        </div>
-      )}
     </div>
   </div>
 );
@@ -37,6 +34,25 @@ const CheckItem = ({ children }) => (
     <span>{children}</span>
   </li>
 );
+
+function Screenshot({ src, alt, caption }) {
+  const [visible, setVisible] = useState(true);
+  if (!visible) return null;
+  return (
+    <figure style={{ margin: '32px 0', padding: 0 }}>
+      <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)', background: '#f8fafc', padding: 2 }}>
+        <img src={src} alt={alt} style={{ width: '100%', display: 'block', borderRadius: 12 }}
+          onError={() => setVisible(false)}
+        />
+      </div>
+      {caption && (
+        <figcaption style={{ textAlign: 'center', fontSize: 13, color: 'var(--muted)', marginTop: 10, fontStyle: 'italic' }}>
+          {caption}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
 
 export default function StudentsFeaturePage() {
   return (
@@ -64,13 +80,6 @@ export default function StudentsFeaturePage() {
         </div>
       </div>
 
-      {/* Screenshot banner */}
-      <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)', marginBottom: 48, background: '#f8fafc', padding: 2 }}>
-        <img src="/screenshots/student-dashboard.png" alt="Student Dashboard" style={{ width: '100%', display: 'block', borderRadius: 12 }}
-          onError={(e) => { e.target.style.display = 'none'; }}
-        />
-      </div>
-
       {/* Practice Section */}
       <SectionHeader label="Practice" title="Every Question You Need" subtitle="Filter, practice, and review across the full SAT curriculum." />
       <div style={{ display: 'grid', gap: 14 }}>
@@ -96,6 +105,12 @@ export default function StudentsFeaturePage() {
         />
       </div>
 
+      <Screenshot
+        src="/screenshots/student-dashboard-1.png"
+        alt="Focus areas and accuracy by domain and skill"
+        caption="See your focus areas and accuracy broken down by every domain and skill"
+      />
+
       {/* Tests Section */}
       <SectionHeader label="Practice Tests" title="Simulate the Real Exam" subtitle="Full-length adaptive tests with detailed scoring and timing." />
       <div style={{ display: 'grid', gap: 14 }}>
@@ -116,6 +131,18 @@ export default function StudentsFeaturePage() {
         />
       </div>
 
+      <Screenshot
+        src="/screenshots/score-report-1.png"
+        alt="Score report with domain and skill performance"
+        caption="Detailed performance metrics for every domain and skill, with difficulty breakdowns"
+      />
+
+      <Screenshot
+        src="/screenshots/score-report-2.png"
+        alt="Opportunity Index and timing data"
+        caption="Critical review areas, Opportunity Index, and per-question timing data"
+      />
+
       {/* Analytics Section */}
       <SectionHeader label="Analytics" title="Know Exactly Where You Stand" subtitle="Data-driven insights that guide your study plan." />
       <div style={{ display: 'grid', gap: 14 }}>
@@ -131,12 +158,11 @@ export default function StudentsFeaturePage() {
         />
       </div>
 
-      {/* Screenshot banner 2 */}
-      <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)', margin: '40px 0', background: '#f8fafc', padding: 2 }}>
-        <img src="/screenshots/score-report.png" alt="Score Report" style={{ width: '100%', display: 'block', borderRadius: 12 }}
-          onError={(e) => { e.target.style.display = 'none'; }}
-        />
-      </div>
+      <Screenshot
+        src="/screenshots/student-dashboard-2.png"
+        alt="Practice sessions and practice test history"
+        caption="Track past practice sessions and practice test scores over time"
+      />
 
       {/* Pricing */}
       <div style={{ textAlign: 'center', marginBottom: 48 }}>
@@ -151,7 +177,7 @@ export default function StudentsFeaturePage() {
             <CheckItem>Score reports with Opportunity Index</CheckItem>
             <CheckItem>Performance tracking &amp; smart review</CheckItem>
             <CheckItem>Detailed timing analytics</CheckItem>
-            <CheckItem>Vocabulary flashcards</CheckItem>
+            <CheckItem>Error log &amp; vocabulary flashcards</CheckItem>
           </ul>
           <a href="/" className="btn primary" style={{ padding: '12px 40px', fontSize: 15, borderRadius: 10, width: '100%', display: 'block', textAlign: 'center' }}>Get Started</a>
         </div>
@@ -161,7 +187,7 @@ export default function StudentsFeaturePage() {
           <p style={{ fontSize: 13, color: '#15803d', margin: 0, lineHeight: 1.6 }}>
             Students enrolled with{' '}
             <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: '#166534' }}>Studyworks Prep</a>{' '}
-            get full platform access at no additional cost. Just enter your tutor's invite code when you sign up.
+            get full platform access at no additional cost. Just enter your tutor&rsquo;s invite code when you sign up.
           </p>
         </div>
       </div>

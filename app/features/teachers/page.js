@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 const ACCENT = 'var(--accent, #4f7ce0)';
 
 const Icon = ({ children, color = ACCENT }) => (
@@ -40,6 +42,25 @@ const StatBlock = ({ value, label }) => (
   </div>
 );
 
+function Screenshot({ src, alt, caption }) {
+  const [visible, setVisible] = useState(true);
+  if (!visible) return null;
+  return (
+    <figure style={{ margin: '32px 0', padding: 0 }}>
+      <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)', background: '#f8fafc', padding: 2 }}>
+        <img src={src} alt={alt} style={{ width: '100%', display: 'block', borderRadius: 12 }}
+          onError={() => setVisible(false)}
+        />
+      </div>
+      {caption && (
+        <figcaption style={{ textAlign: 'center', fontSize: 13, color: 'var(--muted)', marginTop: 10, fontStyle: 'italic' }}>
+          {caption}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+
 export default function TeachersFeaturePage() {
   return (
     <main style={{ maxWidth: 760, margin: '0 auto', padding: '40px 20px 80px' }}>
@@ -55,7 +76,7 @@ export default function TeachersFeaturePage() {
           The SAT Platform Built<br />for Serious Tutors
         </h1>
         <p style={{ fontSize: 17, color: 'var(--muted)', maxWidth: 540, margin: '0 auto', lineHeight: 1.6 }}>
-          Real-time visibility into every student's preparation. Tools that let you assign, track, and analyze with the precision your students deserve.
+          Real-time visibility into every student&rsquo;s preparation. Tools that let you assign, track, and analyze with the precision your students deserve.
         </p>
         <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center', gap: 12 }}>
           <a href="/" className="btn primary" style={{ padding: '12px 32px', fontSize: 15, borderRadius: 10 }}>Get Started</a>
@@ -72,13 +93,6 @@ export default function TeachersFeaturePage() {
         <StatBlock value="10+" label="Practice tests" />
         <StatBlock value="8" label="Domain breakdowns" />
         <StatBlock value="44" label="Skills tracked" />
-      </div>
-
-      {/* Screenshot banner */}
-      <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)', marginBottom: 48, background: '#f8fafc', padding: 2 }}>
-        <img src="/screenshots/teacher-dashboard.png" alt="Teacher Dashboard" style={{ width: '100%', display: 'block', borderRadius: 12 }}
-          onError={(e) => { e.target.style.display = 'none'; }}
-        />
       </div>
 
       {/* Student Management */}
@@ -100,6 +114,18 @@ export default function TeachersFeaturePage() {
           desc="Create targeted question sets by topic, difficulty, and score band. Assign to individuals or groups with due dates. Track completion and accuracy in real time."
         />
       </div>
+
+      <Screenshot
+        src="/screenshots/teacher-dashboard.png"
+        alt="Teacher dashboard with roster-wide performance"
+        caption="Roster-wide performance metrics, assignments, and class-level grouping"
+      />
+
+      <Screenshot
+        src="/screenshots/teacher-student-detail-1.png"
+        alt="Full student practice record"
+        caption="Complete record of all practice completed, with detailed performance statistics by domain and skill"
+      />
 
       {/* Testing & Scoring */}
       <SectionHeader label="Testing & Scoring" title="Tests, Scores, and Score Reports" subtitle="Full practice tests and official score tracking with deep analysis." />
@@ -159,21 +185,26 @@ export default function TeachersFeaturePage() {
         />
       </div>
 
+      <Screenshot
+        src="/screenshots/teacher-student-detail-2.png"
+        alt="Weighted performance metrics and topic mastery"
+        caption="Weighted performance metrics identify true strengths and weaknesses across every topic"
+      />
+
+      <Screenshot
+        src="/screenshots/teacher-student-detail-3.png"
+        alt="Score patterns and suggested review areas"
+        caption="Score pattern tracking, suggested review areas, and exportable data for family reports or integration with other platforms"
+      />
+
       {/* Training */}
       <SectionHeader label="Your Own Training" title="Stay Sharp" subtitle="Practice everything your students practice, with your own tracking." />
-      <div style={{ display: 'grid', gap: 14, marginBottom: 48 }}>
+      <div style={{ display: 'grid', gap: 14, marginBottom: 16 }}>
         <FeatureCard
           color="#d97706"
           icon={<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3 1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>}
           title="Full Platform Access"
           desc="Take every practice test, answer every question, and use every tool. Your own practice data is tracked separately in your Training profile, so your students' data stays clean."
-        />
-      </div>
-
-      {/* Screenshot banner */}
-      <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.06)', marginBottom: 48, background: '#f8fafc', padding: 2 }}>
-        <img src="/screenshots/teacher-student-detail.png" alt="Student Detail View" style={{ width: '100%', display: 'block', borderRadius: 12 }}
-          onError={(e) => { e.target.style.display = 'none'; }}
         />
       </div>
 
@@ -192,6 +223,7 @@ export default function TeachersFeaturePage() {
             <CheckItem>Bluebook results upload</CheckItem>
             <CheckItem>Concept tags &amp; Desmos solutions</CheckItem>
             <CheckItem>Session notes &amp; review tools</CheckItem>
+            <CheckItem>Exportable data &amp; family reports</CheckItem>
           </ul>
           <a href="/" className="btn primary" style={{ padding: '12px 40px', fontSize: 15, borderRadius: 10, width: '100%', display: 'block', textAlign: 'center' }}>Get Started</a>
         </div>
