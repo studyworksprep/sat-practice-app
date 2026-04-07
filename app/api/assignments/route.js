@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "../../../lib/supabase/server";
+import { createClient, createServiceClient } from "../../../lib/supabase/server";
 
 export async function GET() {
   try {
@@ -41,8 +41,11 @@ export async function GET() {
 
     // Batch fetch all teacher profiles at once
     const teacherIds = [...new Set(validRows.map(r => r.question_assignments.teacher_id).filter(Boolean))];
+    // Use service client to fetch teacher profiles — students can't read teacher
+    // profiles through RLS (profiles_select only allows teacher→student, not reverse)
+    const svc = createServiceClient();
     const teacherMapPromise = teacherIds.length > 0
-      ? supabase.from("profiles").select("id, first_name, last_name").in("id", teacherIds)
+      ? svc.from("profiles").select("id, first_name, last_name").in("id", teacherIds)
       : Promise.resolve({ data: [] });
 
     // Collect all question IDs across all assignments for batch status query

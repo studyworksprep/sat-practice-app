@@ -566,7 +566,7 @@ function ActDashboardView({ email }) {
       {/* Banner */}
       <div className="card dbBanner">
         <div className="dbBannerText">
-          <div className="dbBannerGreeting">{timeGreeting()}, {displayName(email)}</div>
+          <div className="dbBannerGreeting">{timeGreeting()}, {studentName || displayName(email)}</div>
           <p className="muted small" style={{ margin: 0 }}>
             {data?.currentStreak > 0
               ? `${data.currentStreak} day streak — keep it going!`
@@ -656,7 +656,7 @@ function ActDashboardView({ email }) {
 
 // ── Main ──
 
-export default function DashboardClient({ email }) {
+export default function DashboardClient({ email, studentName }) {
   const { testType } = useTestType();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -702,7 +702,7 @@ export default function DashboardClient({ email }) {
     const chips = [];
     if (sp.school) chips.push({ label: sp.school });
     if (sp.graduationYear) chips.push({ label: `Class of ${sp.graduationYear}` });
-    if (data.teacherName) chips.push({ label: `Teacher: ${data.teacherName}` });
+    // Teacher name now shown separately in the banner, not as a chip
     if (satCountdown) chips.push({ label: `SAT in ${satCountdown}`, accent: true });
     return chips.length ? chips : null;
   }, [data]);
@@ -734,7 +734,7 @@ export default function DashboardClient({ email }) {
       {/* ── Banner ── */}
       <div className="card dbBanner">
         <div className="dbBannerText">
-          <div className="dbBannerGreeting">{timeGreeting()}, {displayName(email)}</div>
+          <div className="dbBannerGreeting">{timeGreeting()}, {studentName || displayName(email)}</div>
           <p className="muted small" style={{ margin: 0 }}>
             {data?.currentStreak > 0
               ? `${data.currentStreak} day streak — keep it going!`
@@ -749,6 +749,42 @@ export default function DashboardClient({ email }) {
           )}
         </div>
         <div className="dbBannerActions">
+          {data?.teacherName && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: '50%',
+                background: 'var(--accent)', color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 16, fontWeight: 700, flexShrink: 0,
+                overflow: 'hidden',
+              }}>
+                {(() => {
+                  const name = data.teacherFirstName || data.teacherName;
+                  const baseName = data.teacherName.replace(/\s+/g, ' ').trim();
+                  const src = `/avatars/${baseName}.jpg`;
+                  return (
+                    <img
+                      src={src}
+                      alt={data.teacherName}
+                      style={{ width: 40, height: 40, objectFit: 'cover' }}
+                      onError={(e) => {
+                        if (e.target.src.endsWith('.jpg')) {
+                          e.target.src = `/avatars/${baseName}.png`;
+                        } else {
+                          e.target.style.display = 'none';
+                          e.target.parentElement.textContent = (name || '?')[0].toUpperCase();
+                        }
+                      }}
+                    />
+                  );
+                })()}
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 500 }}>Your Tutor</div>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>{data.teacherName}</div>
+              </div>
+            </div>
+          )}
           <Link href="/practice" className="btn primary">Continue Practicing</Link>
           <Link href="/practice-test" className="btn secondary">Take a Test</Link>
         </div>
