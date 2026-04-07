@@ -39,7 +39,7 @@ const slides = [
         src="/screenshots/teacher-dashboard.png"
         alt="Teacher dashboard"
         title="Your Command Center"
-        caption="Roster-wide performance metrics, assignments, and class-level grouping"
+        description="See your entire roster at a glance: who's been active, who's improving, and who needs attention. Performance metrics are groupable by class, so you can compare cohorts. Active assignments with real-time completion tracking keep you on top of every student's workload without chasing them down."
       />
     ),
   },
@@ -49,7 +49,7 @@ const slides = [
         src="/screenshots/teacher-student-detail-1.png"
         alt="Student practice record"
         title="Every Detail, One Click Away"
-        caption="Complete record of all practice completed, with detailed performance statistics by domain and skill"
+        description="Click any student to see their complete practice record. Domain-by-domain accuracy with difficulty breakdowns, total questions attempted, recent accuracy trends, and practice test history. You'll know more about your student's SAT readiness than they do, and you'll have the data to prove it."
       />
     ),
   },
@@ -87,7 +87,7 @@ const slides = [
         src="/screenshots/teacher-student-detail-2.png"
         alt="Topic mastery"
         title="Weighted Mastery Analysis"
-        caption="Weighted performance metrics identify true strengths and weaknesses across every topic"
+        description="Raw accuracy doesn't tell the full story. Our mastery algorithm weights each question by difficulty and score band, factors in practice volume and recency, and produces a true readiness score for every topic. This means you can confidently tell a student they've mastered Algebra but need more work on Geometry, backed by data, not guesswork."
       />
     ),
   },
@@ -97,7 +97,7 @@ const slides = [
         src="/screenshots/teacher-student-detail-3.png"
         alt="Score patterns and actionable data"
         title="Actionable, Exportable Data"
-        caption="Score pattern tracking, suggested review areas, and exportable data for family reports or integration with other platforms"
+        description="Track score patterns over time and see exactly which areas are improving and which are plateauing. The system suggests review areas based on where students have the most room to grow. All data is exportable, making it easy to create detailed progress reports for families or incorporate student performance data into other platforms you already use."
       />
     ),
   },

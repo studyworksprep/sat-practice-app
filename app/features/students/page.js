@@ -37,7 +37,7 @@ const slides = [
         src="/screenshots/student-dashboard-1.png"
         alt="Focus areas and accuracy"
         title="Know Your Strengths and Weaknesses"
-        caption="See your focus areas and accuracy broken down by every domain and skill"
+        description="Your dashboard breaks down accuracy by every SAT domain and skill, so you always know exactly where you stand. Color-coded mastery indicators make it easy to spot weak areas at a glance, and the system automatically identifies which topics will have the biggest impact on your score if you improve them."
       />
     ),
   },
@@ -60,7 +60,7 @@ const slides = [
         src="/screenshots/score-report-1.png"
         alt="Score report"
         title="Detailed Score Reports"
-        caption="Performance metrics for every domain and skill, with difficulty breakdowns"
+        description="After every practice test, you get a full score report that goes far beyond a single number. See your scaled scores, then dive into domain-by-domain and skill-by-skill breakdowns with difficulty-level analysis. Understand not just what you got wrong, but which difficulty bands are hurting your score the most."
       />
     ),
   },
@@ -70,7 +70,7 @@ const slides = [
         src="/screenshots/score-report-2.png"
         alt="Opportunity Index"
         title="Find Your Best Path to Improvement"
-        caption="Critical review areas, Opportunity Index, and per-question timing data"
+        description="The Opportunity Index is your secret weapon. It combines how many questions you missed in each skill with how learnable that skill is, then ranks them by potential score impact. The result: a prioritized list of exactly what to study next. You also get per-question timing data so you can see where you're spending too long and learn to pace yourself like test day."
       />
     ),
   },
@@ -80,7 +80,7 @@ const slides = [
         src="/screenshots/student-dashboard-2.png"
         alt="Practice history"
         title="Track Your Progress Over Time"
-        caption="Review past practice sessions and watch your practice test scores improve"
+        description="Every practice session and practice test is recorded and visualized. Watch your scores trend upward as you put in the work. Review past sessions to see what you practiced, how accurate you were, and which domains you focused on. It's the accountability and motivation you need to stay consistent."
       />
     ),
   },
