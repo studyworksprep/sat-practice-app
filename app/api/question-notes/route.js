@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../lib/supabase/server';
 
 const ALLOWED_ROLES = new Set(['teacher', 'manager', 'admin']);
 
@@ -24,6 +24,9 @@ export async function GET(request) {
   const questionId = request.nextUrl.searchParams.get('questionId');
   if (!questionId) return NextResponse.json({ error: 'questionId required' }, { status: 400 });
 
+  // Determine which authors this user can see notes from (org scoping)
+  const visibleAuthorIds = await getVisibleAuthorIds(auth.profile);
+
   const { data: notes, error } = await supabase
     .from('question_notes')
     .select('id, question_id, author_id, content, created_at, updated_at, profiles:author_id(first_name, last_name, email, role)')
@@ -32,8 +35,13 @@ export async function GET(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // Filter to visible notes (admins see all; others see org-scoped)
+  const filtered = visibleAuthorIds
+    ? (notes || []).filter(n => visibleAuthorIds.has(n.author_id))
+    : (notes || []);
+
   return NextResponse.json({
-    notes: (notes || []).map(n => ({
+    notes: filtered.map(n => ({
       id: n.id,
       question_id: n.question_id,
       author_id: n.author_id,
@@ -141,4 +149,49 @@ export async function DELETE(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
+}
+
+/**
+ * Determine which note authors are visible to the current user.
+ * - Admins: null (see all)
+ * - Managers: themselves + their assigned teachers + all admins
+ * - Teachers: themselves + their manager (if any) + sibling teachers under same manager + all admins
+ * - Teachers with no manager: only themselves + admins
+ */
+async function getVisibleAuthorIds(profile) {
+  if (profile.role === 'admin') return null; // see all
+
+  const svc = createServiceClient();
+  const ids = new Set([profile.id]);
+
+  // Always include admins
+  const { data: admins } = await svc.from('profiles').select('id').eq('role', 'admin');
+  for (const a of (admins || [])) ids.add(a.id);
+
+  if (profile.role === 'manager') {
+    // Manager sees notes from their assigned teachers
+    const { data: assignments } = await svc
+      .from('manager_teacher_assignments')
+      .select('teacher_id')
+      .eq('manager_id', profile.id);
+    for (const a of (assignments || [])) ids.add(a.teacher_id);
+  } else if (profile.role === 'teacher') {
+    // Teacher sees notes from their manager + sibling teachers under same manager
+    const { data: myManagers } = await svc
+      .from('manager_teacher_assignments')
+      .select('manager_id')
+      .eq('teacher_id', profile.id);
+
+    for (const m of (myManagers || [])) {
+      ids.add(m.manager_id);
+      // Get sibling teachers under same manager
+      const { data: siblings } = await svc
+        .from('manager_teacher_assignments')
+        .select('teacher_id')
+        .eq('manager_id', m.manager_id);
+      for (const s of (siblings || [])) ids.add(s.teacher_id);
+    }
+  }
+
+  return ids;
 }
