@@ -251,6 +251,59 @@ export async function GET(_request, { params }) {
     })).sort((a, b) => a.domain_name.localeCompare(b.domain_name));
   }
 
+  // ── Roster performance metrics (teacher impact) ──────────────────
+  let rosterScoreAvg = null;
+  let rosterScoreCount = 0;
+  let rosterBestScore = null;
+  if (studentIds.length) {
+    const { data: rosterTests } = await svc
+      .from('practice_test_attempts')
+      .select('user_id, composite_score')
+      .in('user_id', studentIds)
+      .eq('status', 'completed')
+      .not('composite_score', 'is', null)
+      .limit(5000);
+
+    if (rosterTests?.length) {
+      rosterScoreCount = rosterTests.length;
+      const sum = rosterTests.reduce((s, t) => s + t.composite_score, 0);
+      rosterScoreAvg = Math.round(sum / rosterTests.length);
+      rosterBestScore = Math.max(...rosterTests.map(t => t.composite_score));
+    }
+  }
+
+  // Official score data — for showing improvement over time
+  let officialScoreData = [];
+  if (studentIds.length) {
+    const { data: officialScores } = await svc
+      .from('sat_official_scores')
+      .select('student_id, test_date, composite_score, test_type')
+      .in('student_id', studentIds)
+      .order('test_date', { ascending: true })
+      .limit(1000);
+    officialScoreData = officialScores || [];
+  }
+
+  // Calculate score improvement: compare each student's first vs latest official score
+  let studentsWithImprovement = 0;
+  let totalImprovement = 0;
+  let improvementCount = 0;
+  const scoresByStudent = {};
+  for (const s of officialScoreData) {
+    if (!scoresByStudent[s.student_id]) scoresByStudent[s.student_id] = [];
+    scoresByStudent[s.student_id].push(s);
+  }
+  for (const [, scores] of Object.entries(scoresByStudent)) {
+    if (scores.length >= 2) {
+      const first = scores[0].composite_score;
+      const latest = scores[scores.length - 1].composite_score;
+      const diff = latest - first;
+      totalImprovement += diff;
+      improvementCount++;
+      if (diff > 0) studentsWithImprovement++;
+    }
+  }
+
   return NextResponse.json({
     teacher,
     students: studentsWithStats,
@@ -264,6 +317,15 @@ export async function GET(_request, { params }) {
       last30Days: totalLast30,
       testsCompleted: totalTestsCompleted,
       activeStudents,
+    },
+    rosterPerformance: {
+      avgPracticeScore: rosterScoreAvg,
+      bestPracticeScore: rosterBestScore,
+      practiceTestCount: rosterScoreCount,
+      avgOfficialImprovement: improvementCount > 0 ? Math.round(totalImprovement / improvementCount) : null,
+      studentsWithImprovement,
+      studentsWithMultipleScores: improvementCount,
+      officialScores: officialScoreData,
     },
     training: {
       practiceTests: teacherPracticeTests,

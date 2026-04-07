@@ -255,8 +255,79 @@ function TeacherDetail({ teacherId, onBack }) {
         </div>
       )}
 
+      {/* ── Roster Performance (Teacher Impact) ── */}
+      {data.rosterPerformance && <RosterPerformanceSection perf={data.rosterPerformance} studentCount={data.students.length} />}
+
       {/* ── Teacher Training Data ────────────────────────────── */}
       {data.training && <TeacherTrainingSection training={data.training} teacherName={displayName(teacher)} />}
+    </div>
+  );
+}
+
+// ─── Roster Performance (Teacher Impact) Section ─────────
+function RosterPerformanceSection({ perf, studentCount }) {
+  if (!perf) return null;
+  const hasScores = perf.practiceTestCount > 0 || perf.studentsWithMultipleScores > 0;
+  if (!hasScores && !studentCount) return null;
+
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <h3 className="h2" style={{ marginBottom: 14 }}>Roster Performance</h3>
+      <div className="tmStatGrid">
+        {perf.avgPracticeScore != null && (
+          <div className="tmStatItem">
+            <span className="tmStatValue" style={{ color: 'var(--accent)' }}>{perf.avgPracticeScore}</span>
+            <span className="tmStatLabel">Avg Practice Score</span>
+          </div>
+        )}
+        {perf.bestPracticeScore != null && (
+          <div className="tmStatItem">
+            <span className="tmStatValue">{perf.bestPracticeScore}</span>
+            <span className="tmStatLabel">Best Practice Score</span>
+          </div>
+        )}
+        {perf.practiceTestCount > 0 && (
+          <div className="tmStatItem">
+            <span className="tmStatValue">{perf.practiceTestCount}</span>
+            <span className="tmStatLabel">Practice Tests Taken</span>
+          </div>
+        )}
+        {perf.avgOfficialImprovement != null && (
+          <div className="tmStatItem">
+            <span className="tmStatValue" style={{ color: perf.avgOfficialImprovement > 0 ? 'var(--success)' : perf.avgOfficialImprovement < 0 ? 'var(--danger)' : undefined }}>
+              {perf.avgOfficialImprovement > 0 ? '+' : ''}{perf.avgOfficialImprovement}
+            </span>
+            <span className="tmStatLabel">Avg Official Score Change</span>
+          </div>
+        )}
+        {perf.studentsWithImprovement > 0 && (
+          <div className="tmStatItem">
+            <span className="tmStatValue" style={{ color: 'var(--success)' }}>{perf.studentsWithImprovement}/{perf.studentsWithMultipleScores}</span>
+            <span className="tmStatLabel">Students Improved</span>
+          </div>
+        )}
+      </div>
+
+      {/* Official score timeline */}
+      {perf.officialScores?.length > 0 && (
+        <div style={{ marginTop: 16 }}>
+          <div className="muted small" style={{ fontWeight: 600, marginBottom: 8 }}>Official Score History</div>
+          <div style={{ display: 'grid', gap: 4 }}>
+            <div style={{ display: 'flex', gap: 8, fontSize: 11, fontWeight: 600, color: 'var(--muted)', padding: '0 4px' }}>
+              <span style={{ width: 80 }}>Date</span>
+              <span style={{ flex: 1 }}>Type</span>
+              <span style={{ width: 60, textAlign: 'right' }}>Score</span>
+            </div>
+            {perf.officialScores.map((s, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, fontSize: 12, padding: '3px 4px', background: i % 2 === 0 ? 'var(--surface)' : 'transparent', borderRadius: 4 }}>
+                <span style={{ width: 80 }}>{formatDate(s.test_date)}</span>
+                <span style={{ flex: 1 }}>{s.test_type || 'SAT'}</span>
+                <span style={{ width: 60, textAlign: 'right', fontWeight: 700 }}>{s.composite_score}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -501,6 +572,78 @@ export default function TeachersPage() {
                   </button>
                 );
               })}
+            </div>
+          )}
+
+          {/* ── Roster Performance by Teacher ── */}
+          {filtered.some(t => t.rosterQuestionsDone > 0) && (
+            <div className="card" style={{ marginTop: 24 }}>
+              <h3 className="h2" style={{ marginBottom: 14 }}>Student Performance by Teacher</h3>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="adminTable" style={{ width: '100%', minWidth: 700 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left' }}>Teacher</th>
+                      <th style={{ textAlign: 'right' }}>Students</th>
+                      <th style={{ textAlign: 'right' }}>Questions Done</th>
+                      <th style={{ textAlign: 'right' }}>Roster Accuracy</th>
+                      <th style={{ textAlign: 'right' }}>Avg Score</th>
+                      <th style={{ textAlign: 'right' }}>Tests Taken</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.filter(t => t.student_count > 0).map(t => (
+                      <tr key={t.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedId(t.id)}>
+                        <td style={{ fontWeight: 600, fontSize: 13 }}>{displayName(t)}</td>
+                        <td style={{ textAlign: 'right' }}>{t.student_count}</td>
+                        <td style={{ textAlign: 'right' }}>{(t.rosterQuestionsDone || 0).toLocaleString()}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 700, color: pctColor(t.rosterAccuracy) }}>
+                          {t.rosterAccuracy != null ? `${t.rosterAccuracy}%` : '—'}
+                        </td>
+                        <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--accent)' }}>
+                          {t.rosterAvgScore || '—'}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>{t.rosterTestCount || 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ── Teacher Training Progress ── */}
+          {filtered.some(t => t.trainingQuestionsDone > 0) && (
+            <div className="card" style={{ marginTop: 16 }}>
+              <h3 className="h2" style={{ marginBottom: 14 }}>Teacher Training Progress</h3>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="adminTable" style={{ width: '100%', minWidth: 600 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left' }}>Teacher</th>
+                      <th style={{ textAlign: 'right' }}>Questions Done</th>
+                      <th style={{ textAlign: 'right' }}>Accuracy</th>
+                      <th style={{ textAlign: 'right' }}>Tests Completed</th>
+                      <th style={{ textAlign: 'right' }}>Best Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.filter(t => t.trainingQuestionsDone > 0).map(t => (
+                      <tr key={t.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedId(t.id)}>
+                        <td style={{ fontWeight: 600, fontSize: 13 }}>{displayName(t)}</td>
+                        <td style={{ textAlign: 'right' }}>{(t.trainingQuestionsDone || 0).toLocaleString()}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 700, color: pctColor(t.trainingAccuracy) }}>
+                          {t.trainingAccuracy != null ? `${t.trainingAccuracy}%` : '—'}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>{t.trainingTestCount || 0}</td>
+                        <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--accent)' }}>
+                          {t.trainingBestScore || '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </>
