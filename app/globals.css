@@ -1861,6 +1861,18 @@ hr{
   border-color: var(--accent);
   box-shadow: 0 2px 8px rgba(79,124,224,0.12);
 }
+.landingFeatureLinkLarge {
+  padding: 16px 20px;
+  border-radius: 14px;
+  border-width: 2px;
+}
+.landingFeatureLinkLarge:hover {
+  background: rgba(79,124,224,0.03);
+}
+.landingFeatureLinkIconLg {
+  width: 48px;
+  height: 48px;
+}
 .landingFeatureLinkIcon {
   width: 36px;
   height: 36px;

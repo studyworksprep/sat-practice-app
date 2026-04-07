@@ -134,23 +134,25 @@ export default function LandingClient() {
             . See how we use real-time performance data as part of our personalized tutoring process.
           </p>
           <div className="landingLinksRow">
-            <a href="/features/students" className="landingFeatureLink">
-              <span className="landingFeatureLinkIcon">
-                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <a href="/features/students" className="landingFeatureLink landingFeatureLinkLarge">
+              <span className="landingFeatureLinkIcon landingFeatureLinkIconLg">
+                <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
               </span>
               <span>
-                <strong>For Students</strong>
-                <span className="muted small" style={{ display: 'block' }}>Features &amp; pricing</span>
+                <strong style={{ fontSize: 16 }}>I&rsquo;m a Student</strong>
+                <span className="muted" style={{ display: 'block', fontSize: 13, marginTop: 2 }}>See how Studyworks helps you score higher</span>
               </span>
+              <svg viewBox="0 0 20 20" width="20" height="20" style={{ flexShrink: 0, color: 'var(--accent)', marginLeft: 'auto' }}><path fill="currentColor" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z"/></svg>
             </a>
-            <a href="/features/teachers" className="landingFeatureLink">
-              <span className="landingFeatureLinkIcon">
-                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3 1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+            <a href="/features/teachers" className="landingFeatureLink landingFeatureLinkLarge">
+              <span className="landingFeatureLinkIcon landingFeatureLinkIconLg">
+                <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3 1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
               </span>
               <span>
-                <strong>For Teachers</strong>
-                <span className="muted small" style={{ display: 'block' }}>Tools &amp; pricing</span>
+                <strong style={{ fontSize: 16 }}>I&rsquo;m a Teacher</strong>
+                <span className="muted" style={{ display: 'block', fontSize: 13, marginTop: 2 }}>Explore the tools that give you an edge</span>
               </span>
+              <svg viewBox="0 0 20 20" width="20" height="20" style={{ flexShrink: 0, color: 'var(--accent)', marginLeft: 'auto' }}><path fill="currentColor" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z"/></svg>
             </a>
           </div>
         </div>
@@ -223,7 +225,7 @@ export default function LandingClient() {
               <p className="landingSwitch">
                 Don&rsquo;t have an account?{' '}
                 <button type="button" className="landingLink" onClick={() => switchTab('signup')}>
-                  Sign up free
+                  Sign up
                 </button>
               </p>
             </form>

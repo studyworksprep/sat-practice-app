@@ -6,14 +6,13 @@ const I = (d) => <svg viewBox="0 0 24 24" width="20" height="20"><path fill="cur
 
 const slides = [
   {
-    content: (
+    content: ({ next }) => (
       <SlideHero
         title={<>SAT Practice That Actually<br/>Moves Your Score</>}
-        subtitle="Studyworks combines a massive question bank, adaptive practice tests, and detailed analytics to help you practice smarter and score higher."
-        ctaHref="/"
-        ctaText="Start Practicing"
-        altHref="/features/teachers"
-        altText="For teachers"
+        subtitle="Studyworks combines a massive question bank, adaptive practice tests, and detailed analytics to help you practice smarter and score higher. Use the arrows to see how it works."
+        ctaText="See What's Inside"
+        onCtaClick="next"
+        next={next}
       />
     ),
   },

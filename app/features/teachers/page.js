@@ -9,14 +9,13 @@ const AMBER = '#d97706';
 
 const slides = [
   {
-    content: (
+    content: ({ next }) => (
       <SlideHero
         title={<>The SAT Platform Built<br/>for Serious Tutors</>}
-        subtitle="Real-time visibility into every student's preparation. Tools that let you assign, track, and analyze with the precision your students deserve."
-        ctaHref="/"
-        ctaText="Get Started"
-        altHref="/features/students"
-        altText="For students"
+        subtitle="Real-time visibility into every student's preparation. Tools that let you assign, track, and analyze with the precision your students deserve. Use the arrows to explore."
+        ctaText="See the Tools"
+        onCtaClick="next"
+        next={next}
       />
     ),
   },

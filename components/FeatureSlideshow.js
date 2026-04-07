@@ -79,29 +79,31 @@ export default function FeatureSlideshow({ slides }) {
         </div>
       </div>
 
-      {/* Main area with side arrows */}
-      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {/* Left arrow */}
-        <button onClick={prev} disabled={!canPrev} style={{ ...arrowBtnStyle(canPrev), left: 12 }} aria-label="Previous slide">
-          <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-        </button>
+      {/* Main area with side arrows anchored to card */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 20px' }}>
+        <div style={{ position: 'relative', maxWidth: 920, width: '100%', display: 'flex', alignItems: 'center' }}>
+          {/* Left arrow — anchored to card */}
+          <button onClick={prev} disabled={!canPrev} style={{ ...arrowBtnStyle(canPrev), position: 'relative', left: 0, top: 0, transform: 'none', flexShrink: 0, marginRight: 12 }} aria-label="Previous slide">
+            <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+          </button>
 
-        {/* Slide content */}
-        <div
-          key={current}
-          style={{
-            flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-            padding: '24px 80px', maxWidth: 1000, margin: '0 auto', width: '100%', minHeight: 0,
-            animation: 'fsSlideIn 0.3s ease-out',
-          }}
-        >
-          {slide.content}
+          {/* Slide content */}
+          <div
+            key={current}
+            style={{
+              flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+              minHeight: 0, width: '100%',
+              animation: 'fsSlideIn 0.3s ease-out',
+            }}
+          >
+            {typeof slide.content === 'function' ? slide.content({ next, prev, go }) : slide.content}
+          </div>
+
+          {/* Right arrow — anchored to card */}
+          <button onClick={next} disabled={!canNext} style={{ ...arrowBtnStyle(canNext), position: 'relative', right: 0, top: 0, transform: 'none', flexShrink: 0, marginLeft: 12 }} aria-label="Next slide">
+            <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+          </button>
         </div>
-
-        {/* Right arrow */}
-        <button onClick={next} disabled={!canNext} style={{ ...arrowBtnStyle(canNext), right: 12 }} aria-label="Next slide">
-          <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-        </button>
       </div>
 
       {/* Bottom nav */}
@@ -136,15 +138,21 @@ export default function FeatureSlideshow({ slides }) {
 
 /* ─── Slide building blocks ─── */
 
-export function SlideHero({ title, subtitle, ctaHref, ctaText, altHref, altText }) {
+export function SlideHero({ title, subtitle, ctaHref, ctaText, altHref, altText, onCtaClick, next }) {
+  const handleCta = onCtaClick === 'next' && next ? (e) => { e.preventDefault(); next(); } : undefined;
   return (
     <div style={panelStyle}>
       <div style={{ textAlign: 'center' }}>
         <h1 style={{ fontSize: 40, fontWeight: 800, margin: '0 0 16px', color: 'var(--text)', lineHeight: 1.15 }}>{title}</h1>
         <p style={{ fontSize: 18, color: 'var(--muted)', maxWidth: 540, margin: '0 auto', lineHeight: 1.6 }}>{subtitle}</p>
-        {(ctaHref || altHref) && (
+        {(ctaHref || ctaText || altHref) && (
           <div style={{ marginTop: 28, display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-            {ctaHref && <a href={ctaHref} className="btn primary" style={{ padding: '12px 36px', fontSize: 16, borderRadius: 10 }}>{ctaText}</a>}
+            {(ctaHref || handleCta) && (
+              <a href={ctaHref || '#'} onClick={handleCta} className="btn primary" style={{ padding: '14px 40px', fontSize: 16, borderRadius: 10, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                {ctaText}
+                <svg viewBox="0 0 20 20" width="18" height="18"><path fill="currentColor" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z"/></svg>
+              </a>
+            )}
             {altHref && (
               <a href={altHref} style={{ padding: '12px 24px', fontSize: 14, color: ACCENT, fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
                 {altText}
