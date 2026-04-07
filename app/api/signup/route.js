@@ -65,6 +65,11 @@ export async function POST(request) {
     user_type: userType,
   };
 
+  // Teachers with a valid code and students with a teacher invite code are exempt from billing
+  if (userType === 'teacher' || (userType === 'student' && teacherProfileId)) {
+    metadata.subscription_exempt = true;
+  }
+
   if (userType === 'student') {
     if (highSchool) metadata.high_school = highSchool.trim();
     if (graduationYear) metadata.graduation_year = String(graduationYear);
