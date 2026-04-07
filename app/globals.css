@@ -1839,6 +1839,44 @@ hr{
   font-weight: 700;
 }
 
+.landingLinksRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+.landingFeatureLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--surface, #f8fafc);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text);
+  flex: 1;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.landingFeatureLink:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(79,124,224,0.12);
+}
+.landingFeatureLinkIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(79,124,224,0.1);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.landingFooter {
+  margin-top: 20px;
+  padding: 16px 0;
+}
+
 .landingCard {
   background: var(--card);
   border: 1px solid rgba(17,24,39,0.10);

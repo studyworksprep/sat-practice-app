@@ -126,12 +126,33 @@ export default function LandingClient() {
             Track your progress question by question, pinpoint your weak spots, and build the
             confidence you need on test day.
           </p>
-          <ul className="landingFeatures">
-            <li>Hundreds of real SAT-style questions across Math and Reading &amp; Writing</li>
-            <li>Instant feedback with detailed explanations</li>
-            <li>Performance tracking by domain and topic</li>
-            <li>Practice tests to simulate the full exam experience</li>
-          </ul>
+          <p className="landingSubtitle" style={{ fontSize: 13, marginTop: 8 }}>
+            Created by the test prep experts at{' '}
+            <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontWeight: 600 }}>
+              Studyworks Prep
+            </a>
+            . See how we use real-time performance data as part of our personalized tutoring process.
+          </p>
+          <div className="landingLinksRow">
+            <a href="/features/students" className="landingFeatureLink">
+              <span className="landingFeatureLinkIcon">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              </span>
+              <span>
+                <strong>For Students</strong>
+                <span className="muted small" style={{ display: 'block' }}>Features &amp; pricing</span>
+              </span>
+            </a>
+            <a href="/features/teachers" className="landingFeatureLink">
+              <span className="landingFeatureLinkIcon">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3 1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+              </span>
+              <span>
+                <strong>For Teachers</strong>
+                <span className="muted small" style={{ display: 'block' }}>Tools &amp; pricing</span>
+              </span>
+            </a>
+          </div>
         </div>
 
         {/* Auth card */}
@@ -353,6 +374,22 @@ export default function LandingClient() {
               </p>
             </form>
           )}
+        </div>
+
+        {/* Footer links */}
+        <div className="landingFooter">
+          <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center', margin: '0 0 8px' }}>
+            Students working with{' '}
+            <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontWeight: 600 }}>Studyworks Prep</a>{' '}
+            tutors get full access at no cost.
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--muted)', textAlign: 'center', margin: 0 }}>
+            Looking for a plan for your school or organization?{' '}
+            <a href="mailto:contact@studyworksprep.com?subject=Studyworks Organization Plan Inquiry" style={{ color: 'var(--accent)', fontWeight: 500 }}>
+              Contact us
+            </a>{' '}
+            to discuss a customized solution.
+          </p>
         </div>
 
       </div>
