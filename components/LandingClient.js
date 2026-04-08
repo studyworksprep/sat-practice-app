@@ -75,6 +75,10 @@ export default function LandingClient() {
     setLoginMsg({ kind: 'ok', text: 'Password reset email sent! Check your inbox.' });
   }
 
+  // Determine if current signup state will require a subscription
+  const willNeedSubscription = userType === 'student' && !teacherCode?.trim();
+  const isExploringType = userType === 'exploring';
+
   async function onSignup(e) {
     e.preventDefault();
     setSignupMsg(null);
@@ -105,7 +109,7 @@ export default function LandingClient() {
 
       const data = await res.json();
       if (!res.ok) return setSignupMsg({ kind: 'danger', text: data.error });
-      setSignupMsg({ kind: 'ok', text: 'Account created! You can now log in.' });
+      setSignupMsg({ kind: 'ok', text: 'Check your email to verify your account. Once confirmed, you can log in.' });
     } catch {
       setSignupMsg({ kind: 'danger', text: 'Something went wrong. Please try again.' });
     } finally {
@@ -364,8 +368,20 @@ export default function LandingClient() {
                 </>
               )}
 
+              {/* Trial info for students without a teacher code */}
+              {willNeedSubscription && !isExploringType && (
+                <div style={{
+                  padding: '12px 16px', borderRadius: 10, fontSize: 13, lineHeight: 1.5,
+                  background: 'rgba(79,124,224,0.06)', border: '1px solid rgba(79,124,224,0.15)',
+                  color: 'var(--text)', marginTop: 4,
+                }}>
+                  <strong style={{ color: 'var(--accent)' }}>7-day free trial</strong> — full access to the question bank, practice tests, and analytics.
+                  After your trial, it&rsquo;s $12.99/month. Cancel anytime. Have a teacher code? Enter it above for free access.
+                </div>
+              )}
+
               <button className="btn landingSubmit" type="submit" disabled={loading}>
-                {loading ? 'Creating account…' : 'Create account'}
+                {loading ? 'Creating account…' : willNeedSubscription ? 'Start 7-Day Free Trial' : 'Create account'}
               </button>
               <Toast kind={signupMsg?.kind} message={signupMsg?.text} />
               <p className="landingSwitch">
