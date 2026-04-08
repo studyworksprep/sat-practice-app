@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '../../../lib/supabase/server';
+import crypto from 'crypto';
+
+function generateInviteCode() {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.randomBytes(6);
+  return Array.from(bytes, b => chars[b % chars.length]).join('');
+}
 
 export async function POST(request) {
   const body = await request.json();
@@ -94,12 +101,19 @@ export async function POST(request) {
     return NextResponse.json({ error: authError.message }, { status: 400 });
   }
 
-  // Mark teacher registration code as used
+  // Mark teacher registration code as used + auto-generate invite code
   if (userType === 'teacher' && authData?.user?.id) {
     await svc
       .from('teacher_codes')
       .update({ used_by: authData.user.id, used_at: new Date().toISOString() })
       .eq('code', teacherCode.trim());
+
+    // Auto-generate a teacher invite code so students can connect
+    const inviteCode = generateInviteCode();
+    await svc
+      .from('profiles')
+      .update({ teacher_invite_code: inviteCode })
+      .eq('id', authData.user.id);
   }
 
   // Auto-assign student to teacher if they provided a valid invite code
