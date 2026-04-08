@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function SubscribePage() {
+function SubscribeContent() {
   const searchParams = useSearchParams();
   const canceled = searchParams.get('checkout') === 'canceled';
   const [loading, setLoading] = useState(null); // 'student' | 'teacher' | null
@@ -140,5 +140,13 @@ export default function SubscribePage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function SubscribePage() {
+  return (
+    <Suspense fallback={<main style={{ maxWidth: 700, margin: '0 auto', padding: '80px 20px', textAlign: 'center' }}><p className="muted">Loading...</p></main>}>
+      <SubscribeContent />
+    </Suspense>
   );
 }
