@@ -4,6 +4,12 @@ import { createServerClient } from '@supabase/ssr';
 // Routes that practice-only users cannot access
 const BLOCKED_FOR_PRACTICE = ['/dashboard', '/practice-test', '/admin', '/review'];
 
+// Routes that require an active subscription (or exemption)
+const SUBSCRIPTION_REQUIRED = ['/practice', '/practice-test', '/review', '/dashboard', '/teacher'];
+
+// Routes that are always accessible (no subscription check)
+const ALWAYS_ACCESSIBLE = ['/', '/login', '/subscribe', '/features', '/account', '/auth'];
+
 // Routes that use their own auth (e.g. API-key) and skip session auth
 const EXTERNAL_API_PREFIX = '/api/external/';
 
@@ -48,25 +54,46 @@ export async function middleware(request) {
     requestHeaders.set('x-user-id', user.id);
   }
 
-  // Role-based route protection for practice-only accounts
+  // Route protection for logged-in users
   if (user) {
     const pathname = request.nextUrl.pathname;
-    const isBlocked = BLOCKED_FOR_PRACTICE.some(
-      (route) => pathname === route || pathname.startsWith(route + '/')
-    );
 
-    if (isBlocked) {
+    // Only fetch profile once for both checks
+    const needsRoleCheck = BLOCKED_FOR_PRACTICE.some(r => pathname === r || pathname.startsWith(r + '/'));
+    const needsSubCheck = !pathname.startsWith('/api/') &&
+      SUBSCRIPTION_REQUIRED.some(r => pathname === r || pathname.startsWith(r + '/')) &&
+      !ALWAYS_ACCESSIBLE.some(r => pathname === r || pathname.startsWith(r + '/'));
+
+    if (needsRoleCheck || needsSubCheck) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, subscription_exempt')
         .eq('id', user.id)
         .maybeSingle();
       const role = profile?.role || 'practice';
 
-      if (role === 'practice') {
+      // Practice-only users can't access teacher/admin routes
+      if (needsRoleCheck && role === 'practice') {
         const url = request.nextUrl.clone();
         url.pathname = '/practice';
         return NextResponse.redirect(url);
+      }
+
+      // Subscription check: skip for exempt roles/users
+      if (needsSubCheck && !['admin', 'manager'].includes(role) && !profile?.subscription_exempt) {
+        // Check for active subscription
+        const { data: sub } = await supabase
+          .from('subscriptions')
+          .select('status')
+          .eq('user_id', user.id)
+          .in('status', ['active', 'trialing'])
+          .maybeSingle();
+
+        if (!sub) {
+          const url = request.nextUrl.clone();
+          url.pathname = '/subscribe';
+          return NextResponse.redirect(url);
+        }
       }
     }
   }
