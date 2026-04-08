@@ -5,6 +5,8 @@ import Script from 'next/script';
 import { useRouter, useParams } from 'next/navigation';
 import HtmlBlock from '../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../components/QuestionNotes';
+// QuestionNotes is imported but intentionally not rendered during active tests
+// to avoid showing tutor notes that could reveal answers.
 import DesmosStateButton from '../../../../components/DesmosStateButton';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', Math: 'Math', MATH: 'Math', m: 'Math', M: 'Math' };
@@ -372,13 +374,7 @@ export default function TestSessionPage() {
     card.style.transform = `translate(calc(-50% + ${x}px), ${y}px)`;
   }, [showRef]);
 
-  // Reset calculator width when question changes
-  useEffect(() => {
-    setCalcWidth(MIN_CALC_W);
-    liveWidthRef.current = MIN_CALC_W;
-    dragRef.current.pendingW = MIN_CALC_W;
-    shellRef.current?.style.setProperty('--calcW', `${MIN_CALC_W}px`);
-  }, [currentIdx]);
+  // Keep calculator width stable across question changes (don't reset)
 
   // ─── Per-question timing helpers ───────────────────────────────────────────
 
@@ -897,7 +893,7 @@ export default function TestSessionPage() {
                 <IconBookmark filled={!!marked[q.question_version_id]} />
                 {marked[q.question_version_id] ? 'Marked for Review' : 'Mark for Review'}
               </button>
-              <QuestionNotes questionId={q.question_id} />
+              {/* QuestionNotes hidden during active tests to avoid revealing answers */}
             </div>
           );
 

@@ -168,7 +168,7 @@ a{
 
 /* Unified right-column container for stem + answers + controls */
 .qaRightPanel{
-  padding: 20px 24px;
+  padding: 24px 24px;
 }
 
 /* Draggable divider between passage and question panels */
@@ -3613,6 +3613,7 @@ hr{
   align-items: center;
   gap: 10px;
   padding-bottom: 10px;
+  margin-bottom: 8px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -3664,6 +3665,7 @@ hr{
   font-size: 15px;
   line-height: 1.65;
   margin-bottom: 16px;
+  padding-top: 16px;
 }
 
 .ptOptions{

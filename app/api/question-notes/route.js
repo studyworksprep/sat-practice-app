@@ -27,7 +27,10 @@ export async function GET(request) {
   // Determine which authors this user can see notes from (org scoping)
   const visibleAuthorIds = await getVisibleAuthorIds(auth.profile);
 
-  const { data: notes, error } = await supabase
+  // Use service client for notes query to resolve all author names
+  // (teachers can't read manager profiles through RLS)
+  const svc = createServiceClient();
+  const { data: notes, error } = await svc
     .from('question_notes')
     .select('id, question_id, author_id, content, created_at, updated_at, profiles:author_id(first_name, last_name, email, role)')
     .eq('question_id', questionId)
