@@ -101,6 +101,15 @@ export async function POST(request) {
     return NextResponse.json({ error: authError.message }, { status: 400 });
   }
 
+  // admin.createUser doesn't send a verification email automatically.
+  // Use a regular (anon) client signUp call to trigger the email.
+  // Since the user already exists, this will just resend the confirmation.
+  {
+    const { createClient } = await import('../../../lib/supabase/server.js');
+    const anonClient = createClient();
+    await anonClient.auth.resend({ type: 'signup', email });
+  }
+
   // Mark teacher registration code as used + auto-generate invite code
   if (userType === 'teacher' && authData?.user?.id) {
     await svc
