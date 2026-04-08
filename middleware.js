@@ -64,6 +64,9 @@ export async function middleware(request) {
       SUBSCRIPTION_REQUIRED.some(r => pathname === r || pathname.startsWith(r + '/')) &&
       !ALWAYS_ACCESSIBLE.some(r => pathname === r || pathname.startsWith(r + '/'));
 
+    // Skip subscription check if user just completed checkout (webhook may not have arrived yet)
+    const justCheckedOut = request.nextUrl.searchParams.get('checkout') === 'success';
+
     if (needsRoleCheck || needsSubCheck) {
       const { data: profile } = await supabase
         .from('profiles')
@@ -79,8 +82,8 @@ export async function middleware(request) {
         return NextResponse.redirect(url);
       }
 
-      // Subscription check: skip for exempt roles/users
-      if (needsSubCheck && !['admin', 'manager'].includes(role) && !profile?.subscription_exempt) {
+      // Subscription check: skip for exempt roles/users and fresh checkout redirects
+      if (needsSubCheck && !justCheckedOut && !['admin', 'manager'].includes(role) && !profile?.subscription_exempt) {
         // Check for active subscription
         const { data: sub } = await supabase
           .from('subscriptions')
