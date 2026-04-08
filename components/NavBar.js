@@ -226,6 +226,11 @@ export default function NavBar() {
                 {role && (
                   <span className="navRoleBadge">{role}</span>
                 )}
+                {!isAdmin && !isManager && (
+                  <Link href="/account/billing" className="navBillingLink" title="Manage subscription">
+                    Account
+                  </Link>
+                )}
                 <button className="btn secondary" onClick={signOut}>
                   Sign out
                 </button>

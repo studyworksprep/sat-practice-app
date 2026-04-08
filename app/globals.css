@@ -1495,6 +1495,19 @@ hr{
   background: var(--accent-soft);
   color: var(--accent);
 }
+.navBillingLink{
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.navBillingLink:hover{
+  color: var(--accent);
+  background: var(--accent-soft, rgba(79,124,224,0.08));
+}
 
 /* SAT / ACT toggle */
 .testTypeToggle{
