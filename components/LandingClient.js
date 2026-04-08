@@ -7,7 +7,7 @@ import Toast from './Toast';
 const CURRENT_YEAR = new Date().getFullYear();
 const GRAD_YEARS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR + i);
 
-export default function LandingClient() {
+export default function LandingClient({ emailConfirmed }) {
   const supabase = createClient();
   const [tab, setTab] = useState('login');
 
@@ -163,6 +163,31 @@ export default function LandingClient() {
 
         {/* Auth card */}
         <div className="landingCard">
+          {emailConfirmed === true && (
+            <div style={{
+              padding: '14px 18px', marginBottom: 16, borderRadius: 10,
+              background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#166534', marginBottom: 2 }}>
+                Email confirmed!
+              </div>
+              <div style={{ fontSize: 13, color: '#15803d' }}>
+                Your account is verified. You can now log in below.
+              </div>
+            </div>
+          )}
+          {emailConfirmed === 'error' && (
+            <div style={{
+              padding: '14px 18px', marginBottom: 16, borderRadius: 10,
+              background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 14, color: '#991b1b' }}>
+                Email confirmation failed. The link may have expired. Try logging in or request a new link.
+              </div>
+            </div>
+          )}
           <div className="landingTabs">
             <button
               className={`landingTab${tab === 'login' ? ' active' : ''}`}
