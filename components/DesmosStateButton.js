@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
  *   getCalcState — () => object | null — returns the current Desmos state
  *   setCalcState — (state) => void — applies a state to the Desmos calculator
  */
-export default function DesmosStateButton({ questionId, getCalcState, setCalcState }) {
+export default function DesmosStateButton({ questionId, getCalcState, setCalcState, disableAutoLoad }) {
   const [hasSaved, setHasSaved] = useState(false);
   const [canSave, setCanSave] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -40,15 +40,15 @@ export default function DesmosStateButton({ questionId, getCalcState, setCalcSta
 
   useEffect(() => { fetchState(); }, [fetchState]);
 
-  // Auto-load for teachers (can't save = teacher)
+  // Auto-load for teachers (can't save = teacher), but not during practice tests
   useEffect(() => {
-    if (!loaded || autoLoaded) return;
+    if (!loaded || autoLoaded || disableAutoLoad) return;
     if (canSave) return; // manager/admin — don't auto-load
     if (savedState?.state_json && setCalcState) {
       setCalcState(savedState.state_json);
       setAutoLoaded(true);
     }
-  }, [loaded, savedState, canSave, setCalcState, autoLoaded]);
+  }, [loaded, savedState, canSave, setCalcState, autoLoaded, disableAutoLoad]);
 
   async function handleSave() {
     if (!getCalcState || saving) return;

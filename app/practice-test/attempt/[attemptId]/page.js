@@ -796,6 +796,7 @@ export default function TestSessionPage() {
             {!calcMinimized && (
               <DesmosStateButton
                 questionId={q.question_id}
+                disableAutoLoad
                 getCalcState={() => { try { return calcInstanceRef.current?.getState?.(); } catch { return null; } }}
                 setCalcState={(st) => { try { calcInstanceRef.current?.setState?.(st, { allowUndo: false }); } catch {} }}
               />
