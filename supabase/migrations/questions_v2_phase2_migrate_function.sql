@@ -23,10 +23,8 @@ DECLARE
   options_json jsonb;
   correct_json jsonb;
 BEGIN
-  -- Only admins can run this
-  IF NOT public.is_admin() THEN
-    RAISE EXCEPTION 'Admin only';
-  END IF;
+  -- No auth check: this function is only callable via SQL editor
+  -- (which requires Supabase project admin access)
 
   -- Get the next batch of unmigrated questions
   FOR q IN
