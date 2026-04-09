@@ -26,13 +26,17 @@ BEGIN
   -- No auth check: this function is only callable via SQL editor
   -- (which requires Supabase project admin access)
 
-  -- Get the next batch of unmigrated questions
+  -- Get the next batch of unmigrated questions.
+  -- NB: alias the source table as `qs` (not `q`) to avoid colliding with
+  -- the declared RECORD variable `q` — PL/pgSQL would otherwise resolve
+  -- `q.id` to the (not-yet-assigned) record variable and raise
+  -- "record \"q\" is not assigned yet".
   FOR q IN
-    SELECT q.id, q.question_id AS source_id, q.source_external_id, q.is_broken
-    FROM questions q
-    LEFT JOIN question_id_map m ON m.old_question_id = q.id
+    SELECT qs.id, qs.question_id AS source_id, qs.source_external_id, qs.is_broken
+    FROM questions qs
+    LEFT JOIN question_id_map m ON m.old_question_id = qs.id
     WHERE m.old_question_id IS NULL
-    ORDER BY q.id
+    ORDER BY qs.id
     LIMIT batch_size
   LOOP
     -- Get the current version for this question
@@ -63,17 +67,27 @@ BEGIN
     FROM answer_options
     WHERE question_version_id = v.id;
 
-    -- Build correct_answer JSON
+    -- Build correct_answer JSON.
+    -- Resolve option UUIDs → labels so the new schema is self-contained
+    -- (the options jsonb only carries {label, ordinal, content_html} and
+    -- does not preserve the old answer_options UUIDs).
     SELECT jsonb_build_object(
-      'option_id', correct_option_id,
-      'option_ids', correct_option_ids,
-      'text', correct_text,
-      'number', correct_number,
-      'tolerance', numeric_tolerance
+      'option_label', (
+        SELECT ao.label FROM answer_options ao
+        WHERE ao.id = ca.correct_option_id
+      ),
+      'option_labels', (
+        SELECT coalesce(jsonb_agg(ao.label ORDER BY ao.ordinal), NULL)
+        FROM answer_options ao
+        WHERE ao.id = ANY (ca.correct_option_ids)
+      ),
+      'text', ca.correct_text,
+      'number', ca.correct_number,
+      'tolerance', ca.numeric_tolerance
     )
     INTO correct_json
-    FROM correct_answers
-    WHERE question_version_id = v.id
+    FROM correct_answers ca
+    WHERE ca.question_version_id = v.id
     LIMIT 1;
 
     -- Insert into questions_v2
@@ -117,10 +131,12 @@ BEGIN
     migrated := migrated + 1;
   END LOOP;
 
-  -- Count how many questions still need migration
+  -- Count how many questions still need migration.
+  -- Same aliasing note as above: use `qs` to avoid colliding with the
+  -- declared RECORD variable `q`.
   SELECT COUNT(*) INTO remaining
-  FROM questions q
-  LEFT JOIN question_id_map m ON m.old_question_id = q.id
+  FROM questions qs
+  LEFT JOIN question_id_map m ON m.old_question_id = qs.id
   WHERE m.old_question_id IS NULL;
 
   RETURN QUERY SELECT migrated, remaining;
@@ -142,4 +158,91 @@ AS $$
     (SELECT COUNT(*) FROM question_id_map) AS migrated_questions,
     (SELECT COUNT(*) FROM questions q LEFT JOIN question_id_map m ON m.old_question_id = q.id WHERE m.old_question_id IS NULL) AS remaining_questions,
     (SELECT COUNT(*) FROM questions q WHERE NOT EXISTS (SELECT 1 FROM question_versions qv WHERE qv.question_id = q.id AND qv.is_current = true)) AS questions_without_current_version;
+$$;
+
+-- =========================================================
+-- Backfill: convert legacy correct_answer shape to labels
+-- =========================================================
+-- The first version of migrate_questions_batch() stored the correct
+-- MCQ answer as answer_options UUID(s) under keys `option_id` /
+-- `option_ids`.  The options jsonb on questions_v2 only carries
+-- {label, ordinal, content_html}, so those UUIDs can't be matched
+-- against the options array and the admin preview can't highlight
+-- the correct choice.
+--
+-- This one-shot backfill rewrites any row whose correct_answer still
+-- has the old shape into the new shape using `option_label` /
+-- `option_labels`, looking up labels in answer_options via the
+-- old_version_id preserved in question_id_map.
+--
+-- Safe to run multiple times: rows that already have `option_label`
+-- are skipped.  Returns the number of rows updated.
+--
+-- Usage:
+--   SELECT public.backfill_questions_v2_correct_labels();
+
+CREATE OR REPLACE FUNCTION public.backfill_questions_v2_correct_labels()
+RETURNS int
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+DECLARE
+  rec RECORD;
+  single_label text;
+  label_arr jsonb;
+  opt_id uuid;
+  updated_count int := 0;
+BEGIN
+  FOR rec IN
+    SELECT q2.id AS new_id, q2.correct_answer AS ca, m.old_version_id
+    FROM questions_v2 q2
+    JOIN question_id_map m ON m.new_question_id = q2.id
+    WHERE q2.question_type = 'mcq'
+      AND NOT (q2.correct_answer ? 'option_label')
+      AND (q2.correct_answer ? 'option_id' OR q2.correct_answer ? 'option_ids')
+  LOOP
+    single_label := NULL;
+    label_arr := NULL;
+
+    -- Resolve a single-answer option_id → label.
+    IF jsonb_typeof(rec.ca->'option_id') = 'string' THEN
+      BEGIN
+        opt_id := (rec.ca->>'option_id')::uuid;
+      EXCEPTION WHEN invalid_text_representation THEN
+        opt_id := NULL;
+      END;
+      IF opt_id IS NOT NULL THEN
+        SELECT ao.label INTO single_label
+        FROM answer_options ao
+        WHERE ao.question_version_id = rec.old_version_id
+          AND ao.id = opt_id
+        LIMIT 1;
+      END IF;
+    END IF;
+
+    -- Resolve a multi-answer option_ids jsonb array → label array.
+    IF jsonb_typeof(rec.ca->'option_ids') = 'array' THEN
+      SELECT coalesce(jsonb_agg(ao.label ORDER BY ao.ordinal), NULL)
+      INTO label_arr
+      FROM answer_options ao
+      WHERE ao.question_version_id = rec.old_version_id
+        AND ao.id IN (
+          SELECT (elem)::uuid
+          FROM jsonb_array_elements_text(rec.ca->'option_ids') AS elem
+        );
+    END IF;
+
+    UPDATE questions_v2
+    SET correct_answer =
+          (correct_answer - 'option_id' - 'option_ids')
+          || jsonb_build_object(
+               'option_label', single_label,
+               'option_labels', label_arr
+             )
+    WHERE id = rec.new_id;
+
+    updated_count := updated_count + 1;
+  END LOOP;
+
+  RETURN updated_count;
+END;
 $$;
