@@ -56,13 +56,13 @@ export async function GET() {
     studentMap[s.id] = `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.email || '—';
   }
 
-  // Batch fetch completion status per question
-  // Use .eq('is_done', true) to only fetch completed statuses, and add a generous limit
-  // to avoid Supabase's default 1000-row cap silently dropping data.
-  const allQuestionIds = [...new Set(assignments.flatMap(a => a.question_ids || []))];
+  // Batch fetch completion status
+  // Avoid filtering by question_id in the query — with many assignments the ID list
+  // can exceed PostgREST URL length limits and silently return empty results.
+  // Instead, fetch all done statuses per student batch and filter in JS.
+  const allQuestionIdSet = new Set(assignments.flatMap(a => a.question_ids || []));
   let statusRows = [];
-  if (allQuestionIds.length && studentIds.length) {
-    // Batch by student to avoid hitting row limits with large cross-products
+  if (allQuestionIdSet.size && studentIds.length) {
     const BATCH = 20;
     for (let i = 0; i < studentIds.length; i += BATCH) {
       const studentBatch = studentIds.slice(i, i + BATCH);
@@ -70,10 +70,13 @@ export async function GET() {
         .from('question_status')
         .select('user_id, question_id, is_done, last_is_correct, marked_for_review')
         .in('user_id', studentBatch)
-        .in('question_id', allQuestionIds)
         .eq('is_done', true)
-        .limit(10000);
-      if (data) statusRows.push(...data);
+        .limit(50000);
+      if (data) {
+        for (const row of data) {
+          if (allQuestionIdSet.has(row.question_id)) statusRows.push(row);
+        }
+      }
     }
   }
 
@@ -88,13 +91,28 @@ export async function GET() {
   }
 
   // Fetch question metadata (difficulty, domain, skill) from taxonomy table
+  const allQuestionIds = [...allQuestionIdSet];
   let questionMeta = {};
   if (allQuestionIds.length > 0) {
-    const { data: qMetaRows } = await supabase
-      .from('question_taxonomy')
-      .select('question_id, difficulty, domain_name, skill_name')
-      .in('question_id', allQuestionIds)
-      .limit(10000);
+    // Batch in chunks to avoid URL length limits with large question sets
+    const { data: qMetaRows } = allQuestionIds.length <= 500
+      ? await supabase
+          .from('question_taxonomy')
+          .select('question_id, difficulty, domain_name, skill_name')
+          .in('question_id', allQuestionIds)
+          .limit(10000)
+      : await (async () => {
+          const rows = [];
+          for (let i = 0; i < allQuestionIds.length; i += 500) {
+            const chunk = allQuestionIds.slice(i, i + 500);
+            const { data } = await supabase
+              .from('question_taxonomy')
+              .select('question_id, difficulty, domain_name, skill_name')
+              .in('question_id', chunk);
+            if (data) rows.push(...data);
+          }
+          return { data: rows };
+        })();
     for (const q of (qMetaRows || [])) {
       questionMeta[q.question_id] = q;
     }

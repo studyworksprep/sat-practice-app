@@ -168,7 +168,7 @@ a{
 
 /* Unified right-column container for stem + answers + controls */
 .qaRightPanel{
-  padding: 20px 24px;
+  padding: 24px 24px;
 }
 
 /* Draggable divider between passage and question panels */
@@ -1495,6 +1495,19 @@ hr{
   background: var(--accent-soft);
   color: var(--accent);
 }
+.navBillingLink{
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.navBillingLink:hover{
+  color: var(--accent);
+  background: var(--accent-soft, rgba(79,124,224,0.08));
+}
 
 /* SAT / ACT toggle */
 .testTypeToggle{
@@ -1837,6 +1850,56 @@ hr{
   left: 0;
   color: var(--accent);
   font-weight: 700;
+}
+
+.landingLinksRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+.landingFeatureLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--surface, #f8fafc);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text);
+  flex: 1;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.landingFeatureLink:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(79,124,224,0.12);
+}
+.landingFeatureLinkLarge {
+  padding: 16px 20px;
+  border-radius: 14px;
+  border-width: 2px;
+}
+.landingFeatureLinkLarge:hover {
+  background: rgba(79,124,224,0.03);
+}
+.landingFeatureLinkIconLg {
+  width: 48px;
+  height: 48px;
+}
+.landingFeatureLinkIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(79,124,224,0.1);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.landingFooter {
+  margin-top: 20px;
+  padding: 16px 0;
 }
 
 .landingCard {
@@ -3550,6 +3613,7 @@ hr{
   align-items: center;
   gap: 10px;
   padding-bottom: 10px;
+  margin-bottom: 8px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -3601,6 +3665,7 @@ hr{
   font-size: 15px;
   line-height: 1.65;
   margin-bottom: 16px;
+  padding-top: 16px;
 }
 
 .ptOptions{

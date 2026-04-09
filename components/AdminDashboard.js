@@ -1163,9 +1163,9 @@ export default function AdminDashboard() {
                   </div>
                   {perfStats.hardestQuestions.map((q, i) => (
                     <div key={i} className="adminQTableRow">
-                      <span className="adminQTableId" title={q.question_id}>
-                        {q.question_id?.slice(0, 8)}
-                      </span>
+                      <a className="adminQTableId" href={`/practice/${q.question_uuid || q.question_id}`} title={q.question_id} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        {q.question_id?.length > 12 ? q.question_id.slice(0, 8) : q.question_id || '—'}
+                      </a>
                       <span className="adminQTableSkill">{q.skill_name || q.domain_name || '—'}</span>
                       <span className="adminQTableAcc" style={{ color: 'var(--danger, #dc2626)' }}>{q.accuracy}%</span>
                       <span className="adminQTableN">{q.attempt_count}</span>
@@ -1190,9 +1190,9 @@ export default function AdminDashboard() {
                   </div>
                   {perfStats.easiestQuestions.map((q, i) => (
                     <div key={i} className="adminQTableRow">
-                      <span className="adminQTableId" title={q.question_id}>
-                        {q.question_id?.slice(0, 8)}
-                      </span>
+                      <a className="adminQTableId" href={`/practice/${q.question_uuid || q.question_id}`} title={q.question_id} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                        {q.question_id?.length > 12 ? q.question_id.slice(0, 8) : q.question_id || '—'}
+                      </a>
                       <span className="adminQTableSkill">{q.skill_name || q.domain_name || '—'}</span>
                       <span className="adminQTableAcc" style={{ color: 'var(--success, #22c55e)' }}>{q.accuracy}%</span>
                       <span className="adminQTableN">{q.attempt_count}</span>
@@ -1216,16 +1216,23 @@ export default function AdminDashboard() {
               </div>
               <div className="adminHeatmapGrid">
                 {perfStats.skillHeatmap.map(s => {
-                  const hue = Math.round((s.accuracy / 100) * 120); // 0=red, 60=yellow, 120=green
+                  const pct = s.accuracy;
+                  // Red (0%) → Yellow (50%) → Green (100%), with increasing saturation and decreasing lightness
+                  const hue = Math.round((pct / 100) * 120); // 0=red, 60=yellow, 120=green
+                  const sat = Math.round(40 + (pct / 100) * 45); // 40% → 85%
+                  const light = Math.round(90 - (pct / 100) * 30); // 90% → 60%
+                  const borderSat = Math.round(30 + (pct / 100) * 40);
+                  const borderLight = Math.round(70 - (pct / 100) * 25);
+                  const textLight = Math.round(35 - (pct / 100) * 15);
                   return (
                     <div
                       key={s.skill_code}
                       className="adminHeatCell"
                       title={`${s.skill_name}: ${s.accuracy}% (${s.total} attempts)`}
-                      style={{ background: `hsl(${hue}, 70%, 92%)`, borderColor: `hsl(${hue}, 50%, 70%)` }}
+                      style={{ background: `hsl(${hue}, ${sat}%, ${light}%)`, borderColor: `hsl(${hue}, ${borderSat}%, ${borderLight}%)` }}
                     >
                       <span className="adminHeatLabel">{s.skill_name}</span>
-                      <span className="adminHeatVal" style={{ color: `hsl(${hue}, 60%, 30%)` }}>{s.accuracy}%</span>
+                      <span className="adminHeatVal" style={{ color: `hsl(${hue}, 60%, ${textLight}%)` }}>{s.accuracy}%</span>
                     </div>
                   );
                 })}
@@ -1416,6 +1423,7 @@ export default function AdminDashboard() {
                         Name {usersSort === 'name' ? (usersSortDir === 'asc' ? '▲' : '▼') : ''}
                       </th>
                       <th>Email</th>
+                      <th>ID</th>
                       <th style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => { if (usersSort === 'role') setUsersSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setUsersSort('role'); setUsersSortDir('asc'); } }}>
                         Role {usersSort === 'role' ? (usersSortDir === 'asc' ? '▲' : '▼') : ''}
                       </th>
@@ -1431,6 +1439,7 @@ export default function AdminDashboard() {
                       <tr key={p.id} style={p.is_active === false ? { opacity: 0.55 } : undefined}>
                         <td style={{ fontWeight: 500, fontSize: 13 }}>{displayName(p) || <span className="muted">—</span>}</td>
                         <td className="adminTableEmail">{p.email || '—'}</td>
+                        <td><code style={{ fontSize: 10, color: 'var(--muted)', cursor: 'pointer', userSelect: 'all' }} title="Click to select full ID">{p.id.slice(0, 8)}</code></td>
                         <td>
                           <select
                             className="adminRoleSelect"

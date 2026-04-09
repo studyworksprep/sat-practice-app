@@ -59,7 +59,8 @@ export async function GET(request) {
     const safe = qText.replace(/[%_]/g, '\\$&');
     const pattern = `%${safe}%`;
     step1.push(
-      supabase.from('questions').select('id, question_id').or(`question_id.ilike.${pattern},source_external_id.ilike.${pattern}`).limit(2000),
+      supabase.from('questions').select('id, question_id').ilike('question_id', pattern).limit(2000),
+      supabase.from('questions').select('id, question_id').ilike('source_external_id', pattern).limit(2000),
       supabase.from('question_versions').select('question_id, stem_html, stimulus_html')
         .eq('is_current', true).or(`stem_html.ilike.${pattern},stimulus_html.ilike.${pattern}`).limit(2000),
     );
@@ -93,10 +94,17 @@ export async function GET(request) {
   // Search results
   if (qText) {
     const ids = new Set();
-    const { data: qrows, error: qErr } = step1Results[s1idx++];
-    if (qErr) return NextResponse.json({ error: qErr.message }, { status: 400 });
-    (qrows || []).forEach((r) => r?.id && ids.add(r.id));
+    // question_id matches
+    const { data: qidRows, error: qidErr } = step1Results[s1idx++];
+    if (qidErr) return NextResponse.json({ error: qidErr.message }, { status: 400 });
+    (qidRows || []).forEach((r) => r?.id && ids.add(r.id));
 
+    // source_external_id matches
+    const { data: seidRows, error: seidErr } = step1Results[s1idx++];
+    if (seidErr) return NextResponse.json({ error: seidErr.message }, { status: 400 });
+    (seidRows || []).forEach((r) => r?.id && ids.add(r.id));
+
+    // stem/stimulus matches
     const { data: vrows, error: vErr } = step1Results[s1idx++];
     if (vErr) return NextResponse.json({ error: vErr.message }, { status: 400 });
     (vrows || []).forEach((r) => r?.question_id && ids.add(r.question_id));
@@ -239,8 +247,7 @@ export async function GET(request) {
     `,
       { count: 'exact' }
     )
-    .order('created_at', { ascending: false })
-    .order('question_id', { ascending: true });
+    .order('id', { ascending: true });
 
   if (restrictIds) q = q.in('id', restrictIds);
   if (excludeDoneIds && excludeDoneIds.length > 0) {

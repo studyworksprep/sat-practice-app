@@ -101,7 +101,7 @@ export async function GET() {
     // Completed practice tests
     svc
       .from('practice_test_attempts')
-      .select('id, user_id, practice_test_id, status, finished_at')
+      .select('id, user_id, practice_test_id, status, finished_at, composite_score, rw_scaled, math_scaled')
       .in('user_id', ids)
       .eq('status', 'completed')
       .order('finished_at', { ascending: false })
@@ -185,29 +185,38 @@ export async function GET() {
       };
     }
 
-    // Compute scores per test attempt
+    // Compute scores per test attempt — use cached scores when available
     for (const ta of allTestAttempts) {
-      const modData = maByPta[ta.id] || {};
-      const subjects = [...new Set(Object.values(modData).map(d => d.subjectCode))];
-      const sections = {};
       let composite = null;
+      let sections = {};
 
-      for (const subj of subjects) {
-        const m1 = modData[`${subj}/1`] || { correct: 0 };
-        const m2 = modData[`${subj}/2`] || { correct: 0, routeCode: null };
-        const sectionName = subjToSection[subj] || 'math';
-        const lookupKey = `${ta.practice_test_id}/${sectionName}`;
+      if (ta.composite_score != null) {
+        // Use cached scores
+        composite = ta.composite_score;
+        if (ta.rw_scaled != null) sections.RW = { scaled: ta.rw_scaled };
+        if (ta.math_scaled != null) sections.M = { scaled: ta.math_scaled };
+      } else {
+        // Fall back to recomputation from module attempts
+        const modData = maByPta[ta.id] || {};
+        const subjects = [...new Set(Object.values(modData).map(d => d.subjectCode))];
 
-        const scaled = computeScaledScore({
-          section: sectionName,
-          m1Correct: m1.correct,
-          m2Correct: m2.correct,
-          routeCode: m2.routeCode,
-          lookupRows: lookupByTestSection[lookupKey] || [],
-        });
+        for (const subj of subjects) {
+          const m1 = modData[`${subj}/1`] || { correct: 0 };
+          const m2 = modData[`${subj}/2`] || { correct: 0, routeCode: null };
+          const sectionName = subjToSection[subj] || 'math';
+          const lookupKey = `${ta.practice_test_id}/${sectionName}`;
 
-        sections[subj] = { scaled };
-        composite = (composite || 0) + scaled;
+          const scaled = computeScaledScore({
+            section: sectionName,
+            m1Correct: m1.correct,
+            m2Correct: m2.correct,
+            routeCode: m2.routeCode,
+            lookupRows: lookupByTestSection[lookupKey] || [],
+          });
+
+          sections[subj] = { scaled };
+          composite = (composite || 0) + scaled;
+        }
       }
 
       if (composite == null) continue;

@@ -1,42 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
 import { computeTestScores } from '../../../../../../lib/testScoreHelper';
+import { computeMastery } from '../../../../../../lib/mastery';
 
 const BAND_WEIGHT = { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8, 6: 2.0, 7: 2.2 };
-
-// Mastery weights
-const DIFF_WEIGHT = { 1: 0.6, 2: 1.0, 3: 1.5 };
-const MASTERY_BAND_WEIGHT = { 1: 0.7, 2: 0.85, 3: 1.0, 4: 1.15, 5: 1.3, 6: 1.5, 7: 1.7 };
-const VOLUME_CURVE = 0.15;
-
-function computeMastery(attempts, taxMap) {
-  if (!attempts.length) return null;
-  let weightedCorrect = 0;
-  let weightedTotal = 0;
-  for (const a of attempts) {
-    const tax = taxMap[a.question_id];
-    const dw = DIFF_WEIGHT[tax?.difficulty] || 1.0;
-    const bw = MASTERY_BAND_WEIGHT[tax?.score_band] || 1.15;
-    const w = dw * bw;
-    weightedTotal += w;
-    if (a.is_correct) weightedCorrect += w;
-  }
-  const rawAccuracy = weightedTotal > 0 ? weightedCorrect / weightedTotal : 0;
-  const volumeFactor = 1 - Math.exp(-VOLUME_CURVE * attempts.length);
-  // Recency bonus: if recent (14-day) accuracy > 70% with 3+ questions, +5%
-  const now = Date.now();
-  const DAY = 86400000;
-  let recentCorrect = 0, recentTotal = 0;
-  for (const a of attempts) {
-    if (now - new Date(a.created_at).getTime() <= 14 * DAY) {
-      recentTotal++;
-      if (a.is_correct) recentCorrect++;
-    }
-  }
-  const recencyBonus = (recentTotal >= 3 && recentCorrect / recentTotal > 0.7) ? 0.05 : 0;
-  const mastery = rawAccuracy * volumeFactor * (1 + recencyBonus);
-  return Math.min(Math.round(mastery * 100), 100);
-}
 
 // GET /api/teacher/student/[studentId]/dashboard
 export async function GET(_request, { params }) {
@@ -126,7 +93,7 @@ export async function GET(_request, { params }) {
       .order('test_date', { ascending: true }),
     supabase
       .from('sat_official_scores')
-      .select('id, test_date, rw_score, math_score, composite_score, created_at')
+      .select('id, test_date, rw_score, math_score, composite_score, created_at, test_type, domain_ini, domain_cas, domain_eoi, domain_sec, domain_alg, domain_atm, domain_pam, domain_geo')
       .eq('student_id', studentId)
       .order('test_date', { ascending: false }),
     // Fetch precomputed availability counts (replaces full taxonomy scan)

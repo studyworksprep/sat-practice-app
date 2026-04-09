@@ -7,7 +7,7 @@ import Toast from './Toast';
 const CURRENT_YEAR = new Date().getFullYear();
 const GRAD_YEARS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR + i);
 
-export default function LandingClient() {
+export default function LandingClient({ emailConfirmed }) {
   const supabase = createClient();
   const [tab, setTab] = useState('login');
 
@@ -75,6 +75,10 @@ export default function LandingClient() {
     setLoginMsg({ kind: 'ok', text: 'Password reset email sent! Check your inbox.' });
   }
 
+  // Determine if current signup state will require a subscription
+  const willNeedSubscription = userType === 'student' && !teacherCode?.trim();
+  const isExploringType = userType === 'exploring';
+
   async function onSignup(e) {
     e.preventDefault();
     setSignupMsg(null);
@@ -105,7 +109,7 @@ export default function LandingClient() {
 
       const data = await res.json();
       if (!res.ok) return setSignupMsg({ kind: 'danger', text: data.error });
-      setSignupMsg({ kind: 'ok', text: 'Account created! You can now log in.' });
+      setSignupMsg({ kind: 'ok', text: 'Check your email to verify your account. Once confirmed, you can log in.' });
     } catch {
       setSignupMsg({ kind: 'danger', text: 'Something went wrong. Please try again.' });
     } finally {
@@ -126,16 +130,64 @@ export default function LandingClient() {
             Track your progress question by question, pinpoint your weak spots, and build the
             confidence you need on test day.
           </p>
-          <ul className="landingFeatures">
-            <li>Hundreds of real SAT-style questions across Math and Reading &amp; Writing</li>
-            <li>Instant feedback with detailed explanations</li>
-            <li>Performance tracking by domain and topic</li>
-            <li>Practice tests to simulate the full exam experience</li>
-          </ul>
+          <p className="landingSubtitle" style={{ fontSize: 13, marginTop: 8 }}>
+            Created by the test prep experts at{' '}
+            <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontWeight: 600 }}>
+              Studyworks Prep
+            </a>
+            . See how we use real-time performance data as part of our personalized tutoring process.
+          </p>
+          <div className="landingLinksRow">
+            <a href="/features/students" className="landingFeatureLink landingFeatureLinkLarge">
+              <span className="landingFeatureLinkIcon landingFeatureLinkIconLg">
+                <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              </span>
+              <span>
+                <strong style={{ fontSize: 16 }}>I&rsquo;m a Student</strong>
+                <span className="muted" style={{ display: 'block', fontSize: 13, marginTop: 2 }}>See how Studyworks helps you score higher</span>
+              </span>
+              <svg viewBox="0 0 20 20" width="20" height="20" style={{ flexShrink: 0, color: 'var(--accent)', marginLeft: 'auto' }}><path fill="currentColor" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z"/></svg>
+            </a>
+            <a href="/features/teachers" className="landingFeatureLink landingFeatureLinkLarge">
+              <span className="landingFeatureLinkIcon landingFeatureLinkIconLg">
+                <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3 1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+              </span>
+              <span>
+                <strong style={{ fontSize: 16 }}>I&rsquo;m a Teacher</strong>
+                <span className="muted" style={{ display: 'block', fontSize: 13, marginTop: 2 }}>Explore the tools that give you an edge</span>
+              </span>
+              <svg viewBox="0 0 20 20" width="20" height="20" style={{ flexShrink: 0, color: 'var(--accent)', marginLeft: 'auto' }}><path fill="currentColor" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z"/></svg>
+            </a>
+          </div>
         </div>
 
         {/* Auth card */}
         <div className="landingCard">
+          {emailConfirmed === true && (
+            <div style={{
+              padding: '14px 18px', marginBottom: 16, borderRadius: 10,
+              background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#166534', marginBottom: 2 }}>
+                Email confirmed!
+              </div>
+              <div style={{ fontSize: 13, color: '#15803d' }}>
+                Your account is verified. You can now log in below.
+              </div>
+            </div>
+          )}
+          {emailConfirmed === 'error' && (
+            <div style={{
+              padding: '14px 18px', marginBottom: 16, borderRadius: 10,
+              background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 14, color: '#991b1b' }}>
+                Email confirmation failed. The link may have expired. Try logging in or request a new link.
+              </div>
+            </div>
+          )}
           <div className="landingTabs">
             <button
               className={`landingTab${tab === 'login' ? ' active' : ''}`}
@@ -202,7 +254,7 @@ export default function LandingClient() {
               <p className="landingSwitch">
                 Don&rsquo;t have an account?{' '}
                 <button type="button" className="landingLink" onClick={() => switchTab('signup')}>
-                  Sign up free
+                  Sign up
                 </button>
               </p>
             </form>
@@ -341,8 +393,20 @@ export default function LandingClient() {
                 </>
               )}
 
+              {/* Trial info for students without a teacher code */}
+              {willNeedSubscription && !isExploringType && (
+                <div style={{
+                  padding: '12px 16px', borderRadius: 10, fontSize: 13, lineHeight: 1.5,
+                  background: 'rgba(79,124,224,0.06)', border: '1px solid rgba(79,124,224,0.15)',
+                  color: 'var(--text)', marginTop: 4,
+                }}>
+                  <strong style={{ color: 'var(--accent)' }}>7-day free trial</strong> — full access to the question bank, practice tests, and analytics.
+                  After your trial, it&rsquo;s $12.99/month. Cancel anytime. Have a teacher code? Enter it above for free access.
+                </div>
+              )}
+
               <button className="btn landingSubmit" type="submit" disabled={loading}>
-                {loading ? 'Creating account…' : 'Create account'}
+                {loading ? 'Creating account…' : willNeedSubscription ? 'Start 7-Day Free Trial' : 'Create account'}
               </button>
               <Toast kind={signupMsg?.kind} message={signupMsg?.text} />
               <p className="landingSwitch">
@@ -353,6 +417,22 @@ export default function LandingClient() {
               </p>
             </form>
           )}
+        </div>
+
+        {/* Footer links */}
+        <div className="landingFooter">
+          <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center', margin: '0 0 8px' }}>
+            Students working with{' '}
+            <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', fontWeight: 600 }}>Studyworks Prep</a>{' '}
+            tutors get full access at no cost.
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--muted)', textAlign: 'center', margin: 0 }}>
+            Looking for a plan for your school or organization?{' '}
+            <a href="mailto:contact@studyworksprep.com?subject=Studyworks Organization Plan Inquiry" style={{ color: 'var(--accent)', fontWeight: 500 }}>
+              Contact us
+            </a>{' '}
+            to discuss a customized solution.
+          </p>
         </div>
 
       </div>

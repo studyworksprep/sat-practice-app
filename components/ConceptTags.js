@@ -15,7 +15,7 @@ export default function ConceptTags({ questionId, userRole }) {
   const inputRef = useRef(null);
   const panelRef = useRef(null);
 
-  const isVisible = userRole === 'admin' || userRole === 'manager';
+  const isVisible = userRole === 'admin' || userRole === 'manager' || userRole === 'teacher';
 
   const fetchTags = useCallback(async () => {
     if (!questionId) return;

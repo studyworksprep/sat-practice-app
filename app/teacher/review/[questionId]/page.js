@@ -6,6 +6,7 @@ import Script from 'next/script';
 import Link from 'next/link';
 import HtmlBlock from '../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../components/QuestionNotes';
+import ConceptTags from '../../../../components/ConceptTags';
 import DesmosStateButton from '../../../../components/DesmosStateButton';
 
 const htmlHasContent = (html) => {
@@ -478,6 +479,7 @@ export default function TeacherReviewPage() {
             {qType === 'mcq' ? <McqOptions /> : <SprAnswer />}
             <NavButtons />
             <Explanation />
+            <ConceptTags questionId={questionId} userRole={data?.viewer_role} />
           </div>
         </div>
       ) : (
@@ -486,6 +488,7 @@ export default function TeacherReviewPage() {
           {qType === 'mcq' ? <McqOptions /> : <SprAnswer />}
           <NavButtons />
           <Explanation />
+          <ConceptTags questionId={questionId} userRole={data?.viewer_role} />
         </div>
       )}
 

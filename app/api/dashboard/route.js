@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { createClient, createServiceClient } from '../../../lib/supabase/server';
 import { computeTestScores } from '../../../lib/testScoreHelper';
 
 // Score-band weight: higher bands are harder questions
@@ -82,16 +82,20 @@ export async function GET() {
     for (const t of (taxRows || [])) taxMap[t.question_id] = t;
   }
 
-  // ── Teacher name (fetch in parallel with taxonomy if available) ──
+  // ── Teacher info ──
   let teacherName = null;
+  let teacherFirstName = null;
   if (tsa?.teacher_id) {
-    const { data: teacherProfile } = await supabase
+    // Use service client — students can't read teacher profiles through RLS
+    const svc = createServiceClient();
+    const { data: teacherProfile } = await svc
       .from('profiles')
       .select('first_name, last_name, email')
       .eq('id', tsa.teacher_id)
       .maybeSingle();
     if (teacherProfile) {
       teacherName = [teacherProfile.first_name, teacherProfile.last_name].filter(Boolean).join(' ') || teacherProfile.email?.split('@')[0] || null;
+      teacherFirstName = teacherProfile.first_name || null;
     }
   }
 
@@ -294,5 +298,6 @@ export async function GET() {
     },
     officialScores: satScores || [],
     teacherName,
+    teacherFirstName,
   });
 }

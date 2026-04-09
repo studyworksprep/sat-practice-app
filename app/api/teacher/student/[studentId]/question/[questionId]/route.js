@@ -149,5 +149,6 @@ export async function GET(_request, { params }) {
     correct_option_id,
     correct_text,
     student_attempt: firstAttempt || null,
+    viewer_role: profile.role,
   });
 }

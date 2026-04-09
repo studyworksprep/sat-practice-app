@@ -199,7 +199,8 @@ export default function NavBar() {
                 {!isPractice && !isTeacher && <Link href="/dashboard">Dashboard</Link>}
                 {isTeacher && !isAdmin && <Link href="/teacher">Dashboard</Link>}
                 {isAdmin && <Link href="/dashboard">Dashboard</Link>}
-                {isTeacher && <Link href="/teacher/students">Students</Link>}
+                {isTeacher && <Link href="/teacher/students">Roster</Link>}
+                {isTeacher && <Link href="/teacher/performance">Performance</Link>}
                 {!isPractice && <Link href="/practice-test">Tests</Link>}
                 <Link href="/practice">Question Bank</Link>
                 {!isPractice && <Link href="/review">Review</Link>}
@@ -224,6 +225,11 @@ export default function NavBar() {
                 <span className="userEmail">{user.email}</span>
                 {role && (
                   <span className="navRoleBadge">{role}</span>
+                )}
+                {!isAdmin && !isManager && (
+                  <Link href="/account/billing" className="navBillingLink" title="Manage subscription">
+                    Account
+                  </Link>
                 )}
                 <button className="btn secondary" onClick={signOut}>
                   Sign out
