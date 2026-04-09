@@ -47,7 +47,16 @@ export async function GET(req) {
        attempt_count, correct_count, created_at, last_fixed_at, last_fixed_by`,
       { count: 'exact' }
     )
-    .order('created_at', { ascending: false })
+    // Sort by display_code so the list follows the human-friendly
+    // section-ordinal numbering (M-00001, M-00002, …, RW-00001, …)
+    // and gaps in the index are easy to spot. display_code is unique,
+    // so this is also a deterministic total order — without this,
+    // rows tied on created_at would shuffle on every re-fetch (e.g.
+    // after saving a Claude fix). created_at + id are kept as
+    // tiebreakers for rows whose display_code is still null.
+    .order('display_code', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: true })
+    .order('id', { ascending: true })
     .range(offset, offset + limit - 1);
 
   if (type === 'mcq' || type === 'spr') query = query.eq('question_type', type);
