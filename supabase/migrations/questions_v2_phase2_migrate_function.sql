@@ -26,13 +26,17 @@ BEGIN
   -- No auth check: this function is only callable via SQL editor
   -- (which requires Supabase project admin access)
 
-  -- Get the next batch of unmigrated questions
+  -- Get the next batch of unmigrated questions.
+  -- NB: alias the source table as `qs` (not `q`) to avoid colliding with
+  -- the declared RECORD variable `q` — PL/pgSQL would otherwise resolve
+  -- `q.id` to the (not-yet-assigned) record variable and raise
+  -- "record \"q\" is not assigned yet".
   FOR q IN
-    SELECT q.id, q.question_id AS source_id, q.source_external_id, q.is_broken
-    FROM questions q
-    LEFT JOIN question_id_map m ON m.old_question_id = q.id
+    SELECT qs.id, qs.question_id AS source_id, qs.source_external_id, qs.is_broken
+    FROM questions qs
+    LEFT JOIN question_id_map m ON m.old_question_id = qs.id
     WHERE m.old_question_id IS NULL
-    ORDER BY q.id
+    ORDER BY qs.id
     LIMIT batch_size
   LOOP
     -- Get the current version for this question
@@ -117,10 +121,12 @@ BEGIN
     migrated := migrated + 1;
   END LOOP;
 
-  -- Count how many questions still need migration
+  -- Count how many questions still need migration.
+  -- Same aliasing note as above: use `qs` to avoid colliding with the
+  -- declared RECORD variable `q`.
   SELECT COUNT(*) INTO remaining
-  FROM questions q
-  LEFT JOIN question_id_map m ON m.old_question_id = q.id
+  FROM questions qs
+  LEFT JOIN question_id_map m ON m.old_question_id = qs.id
   WHERE m.old_question_id IS NULL;
 
   RETURN QUERY SELECT migrated, remaining;
