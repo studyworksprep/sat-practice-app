@@ -127,6 +127,15 @@ function QuestionV2Card({ question, index, onFix }) {
               Fixed
             </span>
           ) : null}
+          {question.approved_at ? (
+            <span
+              className="pill"
+              style={{ borderColor: '#15803d', background: '#f0fdf4', color: '#15803d' }}
+              title={`Approved on ${formatFixedAt(question.approved_at)}`}
+            >
+              ✓ Approved
+            </span>
+          ) : null}
           {question.source_id ? (
             <span className="pill">
               <span className="muted">ID</span>{' '}
@@ -487,6 +496,12 @@ export default function QuestionsV2Preview() {
   const [domain, setDomain] = useState('');
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [approvedFilter, setApprovedFilter] = useState('unapproved'); // 'unapproved' | 'approved' | 'all'
+
+  const [approvedCount, setApprovedCount] = useState(0);
+  const [unapprovedCount, setUnapprovedCount] = useState(0);
+  const [approving, setApproving] = useState(false);
+  const [jumpPageInput, setJumpPageInput] = useState('');
 
   const [fixingQuestion, setFixingQuestion] = useState(null);
 
@@ -499,6 +514,7 @@ export default function QuestionsV2Preview() {
     if (type) params.set('type', type);
     if (domain) params.set('domain', domain);
     if (search) params.set('q', search);
+    params.set('approved', approvedFilter);
     try {
       const res = await fetch(`/api/admin/questions-v2?${params.toString()}`);
       const json = await res.json();
@@ -506,6 +522,8 @@ export default function QuestionsV2Preview() {
       setQuestions(json.questions || []);
       setTotal(json.total || 0);
       setDomains(json.domains || []);
+      setApprovedCount(json.approvedCount || 0);
+      setUnapprovedCount(json.unapprovedCount || 0);
     } catch (e) {
       setError(e.message || String(e));
       setQuestions([]);
@@ -513,7 +531,7 @@ export default function QuestionsV2Preview() {
     } finally {
       setLoading(false);
     }
-  }, [limit, offset, type, domain, search]);
+  }, [limit, offset, type, domain, search, approvedFilter]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -536,9 +554,69 @@ export default function QuestionsV2Preview() {
 
   const filtersActive = useMemo(() => !!(type || domain || search), [type, domain, search]);
 
+  // Approve every question currently visible on the page. After
+  // approval, if the view is filtered to unapproved (the default), the
+  // re-fetch will drop the batch and the next page of unapproved rows
+  // will slide into place.
+  const approveBatch = useCallback(async () => {
+    if (!questions.length || approving) return;
+    const ids = questions.map((q) => q.id).filter(Boolean);
+    if (!ids.length) return;
+    setApproving(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/questions-v2/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to approve batch');
+      // When we're on the unapproved view and the current page was
+      // the last one, dropping it may leave us past the end of the
+      // new total — clamp offset back to the last valid page.
+      if (approvedFilter === 'unapproved') {
+        const newTotal = Math.max(0, total - ids.length);
+        const newLastOffset = Math.max(0, (Math.ceil(newTotal / limit) - 1) * limit);
+        if (offset > newLastOffset) setOffset(newLastOffset);
+      }
+      await load();
+    } catch (e) {
+      setError(e.message || String(e));
+    } finally {
+      setApproving(false);
+    }
+  }, [questions, approving, approvedFilter, total, limit, offset, load]);
+
+  const jumpToPage = useCallback(() => {
+    const n = parseInt(jumpPageInput, 10);
+    if (!Number.isFinite(n) || n < 1) return;
+    const maxPage = Math.max(1, Math.ceil(total / limit));
+    const clamped = Math.min(n, maxPage);
+    setOffset((clamped - 1) * limit);
+    setJumpPageInput('');
+  }, [jumpPageInput, total, limit]);
+
   return (
     <>
-      <h2 className="h2" style={{ marginBottom: 8 }}>Questions V2 Preview</h2>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 8 }}>
+        <h2 className="h2" style={{ margin: 0 }}>Questions V2 Preview</h2>
+        <div className="small" style={{ display: 'flex', gap: 14, alignItems: 'baseline' }}>
+          <span>
+            <span style={{ color: '#15803d', fontWeight: 700 }}>{approvedCount.toLocaleString()}</span>
+            <span className="muted"> approved</span>
+          </span>
+          <span>
+            <span style={{ color: '#b45309', fontWeight: 700 }}>{unapprovedCount.toLocaleString()}</span>
+            <span className="muted"> unapproved</span>
+          </span>
+          <span className="muted">
+            {approvedCount + unapprovedCount > 0
+              ? `${Math.round((approvedCount / (approvedCount + unapprovedCount)) * 100)}% done`
+              : ''}
+          </span>
+        </div>
+      </div>
       <p className="muted small" style={{ marginBottom: 16 }}>
         Preview of rows in the new <code>questions_v2</code> table, rendered the same way
         they appear to students in the practice app. Correct answers are highlighted so
@@ -599,6 +677,19 @@ export default function QuestionsV2Preview() {
         </label>
 
         <label className="small" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          Status
+          <select
+            className="input"
+            value={approvedFilter}
+            onChange={(e) => { setOffset(0); setApprovedFilter(e.target.value); }}
+          >
+            <option value="unapproved">Unapproved</option>
+            <option value="approved">Approved</option>
+            <option value="all">All</option>
+          </select>
+        </label>
+
+        <label className="small" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           Per page
           <select
             className="input"
@@ -617,7 +708,7 @@ export default function QuestionsV2Preview() {
         ) : null}
 
         <div style={{ marginLeft: 'auto' }} className="muted small">
-          {loading ? 'Loading…' : `${total.toLocaleString()} question${total === 1 ? '' : 's'}`}
+          {loading ? 'Loading…' : `${total.toLocaleString()} question${total === 1 ? '' : 's'} in view`}
         </div>
       </div>
 
@@ -630,9 +721,13 @@ export default function QuestionsV2Preview() {
       {!loading && total === 0 && !error ? (
         <div className="card">
           <p className="muted">
-            No questions found in <code>questions_v2</code>. Run
-            <code> SELECT * FROM migrate_questions_batch(100); </code>
-            in the Supabase SQL editor to populate it.
+            {approvedFilter === 'unapproved' && approvedCount > 0
+              ? <>Nothing left to review — all {approvedCount.toLocaleString()} question{approvedCount === 1 ? '' : 's'} in <code>questions_v2</code> have been approved.</>
+              : <>
+                  No questions found in <code>questions_v2</code>. Run
+                  <code> SELECT * FROM migrate_questions_batch(100); </code>
+                  in the Supabase SQL editor to populate it.
+                </>}
           </p>
         </div>
       ) : null}
@@ -646,16 +741,36 @@ export default function QuestionsV2Preview() {
         />
       ))}
 
-      {/* ── Pagination ── */}
-      {total > limit ? (
+      {/* ── Pagination + Approve batch ── */}
+      {questions.length > 0 ? (
         <div
           className="adminPagination"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: 8,
+            gap: 12,
+            flexWrap: 'wrap',
+          }}
         >
-          <span className="muted small">
-            Showing {offset + 1}–{Math.min(offset + questions.length, total)} of {total.toLocaleString()}
-          </span>
-          <div className="adminPaginationBtns" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <span className="muted small">
+              Showing {offset + 1}–{Math.min(offset + questions.length, total)} of {total.toLocaleString()}
+            </span>
+            <button
+              className="btn"
+              type="button"
+              onClick={approveBatch}
+              disabled={approving || loading || questions.length === 0}
+              title={`Mark every visible question (${questions.length}) as approved and hide them from the unapproved view`}
+              style={{ background: '#15803d', borderColor: '#15803d', color: '#fff' }}
+            >
+              {approving ? 'Approving…' : `Approve batch (${questions.length})`}
+            </button>
+          </div>
+
+          <div className="adminPaginationBtns" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <button
               className="adminPageBtn"
               disabled={offset === 0 || loading}
@@ -671,6 +786,25 @@ export default function QuestionsV2Preview() {
             >
               Next
             </button>
+            <form
+              onSubmit={(e) => { e.preventDefault(); jumpToPage(); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              <span className="small muted">Jump to</span>
+              <input
+                className="input"
+                type="number"
+                min={1}
+                max={totalPages}
+                value={jumpPageInput}
+                onChange={(e) => setJumpPageInput(e.target.value)}
+                placeholder={String(page)}
+                style={{ width: 70, padding: '4px 8px', fontSize: 12 }}
+              />
+              <button className="btn secondary" type="submit" disabled={!jumpPageInput || loading} style={{ fontSize: 11, padding: '4px 10px' }}>
+                Go
+              </button>
+            </form>
           </div>
         </div>
       ) : null}

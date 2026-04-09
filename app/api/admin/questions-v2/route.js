@@ -14,7 +14,9 @@ import { createClient } from '../../../../lib/supabase/server';
 //   offset      — row offset (default 0)
 //   type        — filter by question_type ('mcq' | 'spr')
 //   domain      — filter by domain_code
-//   q           — substring match on source_id / source_external_id
+//   q           — substring match on source_id / source_external_id / display_code
+//   approved    — 'unapproved' (default), 'approved', or 'all'. Filters
+//                 by the approved_at column (phase 5 audit field).
 export async function GET(req) {
   const supabase = createClient();
 
@@ -36,6 +38,7 @@ export async function GET(req) {
   const type = url.searchParams.get('type');
   const domain = url.searchParams.get('domain');
   const q = (url.searchParams.get('q') || '').trim();
+  const approvedParam = url.searchParams.get('approved') || 'unapproved';
 
   let query = supabase
     .from('questions_v2')
@@ -44,7 +47,8 @@ export async function GET(req) {
        options, correct_answer,
        domain_code, domain_name, skill_code, skill_name, difficulty, score_band,
        source, source_id, source_external_id, is_published, is_broken,
-       attempt_count, correct_count, created_at, last_fixed_at, last_fixed_by`,
+       attempt_count, correct_count, created_at, last_fixed_at, last_fixed_by,
+       approved_at, approved_by`,
       { count: 'exact' }
     )
     // Sort by display_code so the list follows the human-friendly
@@ -66,9 +70,31 @@ export async function GET(req) {
     const safe = q.replace(/[,()]/g, ' ');
     query = query.or(`source_id.ilike.%${safe}%,source_external_id.ilike.%${safe}%,display_code.ilike.%${safe}%`);
   }
+  if (approvedParam === 'unapproved') {
+    query = query.is('approved_at', null);
+  } else if (approvedParam === 'approved') {
+    query = query.not('approved_at', 'is', null);
+  }
+  // approvedParam === 'all' → no filter
 
   const { data, error, count } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Separate approved + unapproved counters so the UI can show
+  // "X unapproved • Y approved" regardless of the active filter.
+  // These counts ignore the type/domain/q filters on purpose — they
+  // represent the global review backlog, not the current page's
+  // filtered slice.
+  const [{ count: approvedCount }, { count: unapprovedCount }] = await Promise.all([
+    supabase
+      .from('questions_v2')
+      .select('id', { count: 'exact', head: true })
+      .not('approved_at', 'is', null),
+    supabase
+      .from('questions_v2')
+      .select('id', { count: 'exact', head: true })
+      .is('approved_at', null),
+  ]);
 
   // Also return the distinct domains so the UI can populate a filter dropdown.
   const { data: domainRows } = await supabase
@@ -89,6 +115,8 @@ export async function GET(req) {
   return NextResponse.json({
     questions: data || [],
     total: count ?? 0,
+    approvedCount: approvedCount ?? 0,
+    unapprovedCount: unapprovedCount ?? 0,
     limit,
     offset,
     domains,
