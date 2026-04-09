@@ -337,31 +337,18 @@ async function askClaudeToRewrite(row) {
     options,
   };
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
-      system: SYSTEM_PROMPT,
-      tools: [RETURN_FIXED_QUESTION_TOOL],
-      tool_choice: { type: 'tool', name: 'return_fixed_question' },
-      messages: [
-        { role: 'user', content: JSON.stringify(userPayload) },
-      ],
-    }),
+  const requestBody = JSON.stringify({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 4000,
+    system: SYSTEM_PROMPT,
+    tools: [RETURN_FIXED_QUESTION_TOOL],
+    tool_choice: { type: 'tool', name: 'return_fixed_question' },
+    messages: [
+      { role: 'user', content: JSON.stringify(userPayload) },
+    ],
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Claude API error (${res.status}): ${text}`);
-  }
-
-  const data = await res.json();
+  const data = await fetchClaudeWithRetry(apiKey, requestBody);
   const toolUse = (data.content || []).find(
     c => c.type === 'tool_use' && c.name === 'return_fixed_question'
   );
@@ -389,4 +376,72 @@ async function askClaudeToRewrite(row) {
         }))
       : options,
   };
+}
+
+// POSTs to the Anthropic messages endpoint with retry + backoff for
+// transient failures. Returns the parsed response body on success.
+//
+// Retry policy:
+//   - Up to 4 attempts total
+//   - Retries on HTTP 529 (overloaded_error), 503 (service_unavailable),
+//     408 (request_timeout), and network errors (fetch throws)
+//   - Backoff: 1s, 2s, 4s between attempts, each with ±250 ms of jitter
+//   - All other HTTP errors (400, 401, 403, 404, 429 real rate limits)
+//     fail fast on the first attempt
+async function fetchClaudeWithRetry(apiKey, requestBody) {
+  const MAX_ATTEMPTS = 4;
+  const RETRYABLE_STATUSES = new Set([408, 503, 529]);
+
+  let lastError;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    let res;
+    try {
+      res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: requestBody,
+      });
+    } catch (networkErr) {
+      // Fetch itself threw (DNS failure, connection reset, etc.) —
+      // always retry these.
+      lastError = new Error(`Claude API network error: ${networkErr.message || networkErr}`);
+      if (attempt < MAX_ATTEMPTS - 1) {
+        await sleep(backoffMs(attempt));
+        continue;
+      }
+      throw lastError;
+    }
+
+    if (res.ok) {
+      return await res.json();
+    }
+
+    const errText = await res.text();
+    if (RETRYABLE_STATUSES.has(res.status) && attempt < MAX_ATTEMPTS - 1) {
+      lastError = new Error(`Claude API error (${res.status}): ${errText}`);
+      await sleep(backoffMs(attempt));
+      continue;
+    }
+
+    // Non-retryable (or final) failure.
+    throw new Error(`Claude API error (${res.status}): ${errText}`);
+  }
+
+  // Should be unreachable, but keep the compiler / future-you happy.
+  throw lastError || new Error('Claude API request failed after retries');
+}
+
+function backoffMs(attempt) {
+  // attempt 0 → ~1s, 1 → ~2s, 2 → ~4s, with ±250 ms jitter
+  const base = 1000 * Math.pow(2, attempt);
+  const jitter = Math.floor((Math.random() - 0.5) * 500);
+  return Math.max(250, base + jitter);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
