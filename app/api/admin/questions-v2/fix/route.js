@@ -152,6 +152,11 @@ You MUST respond by calling the \`return_fixed_question\` tool exactly once with
 - Wrap every variable, expression, or numeric answer that appears inside running prose in \`\\( ... \\)\`. Single-letter variables that used to be \`<span class="italic">x</span>\` or \`<em>x</em>\` become \`\\(x\\)\`.
 - NEVER use Unicode math characters like \`×\`, \`÷\`, \`≤\`, \`≥\`, \`≠\`, \`π\`, \`θ\`, \`∑\`, \`√\`, \`∞\` directly. Always wrap them in LaTeX: \`\\(\\times\\)\`, \`\\(\\div\\)\`, \`\\(\\leq\\)\`, \`\\(\\geq\\)\`, \`\\(\\neq\\)\`, \`\\(\\pi\\)\`, \`\\(\\theta\\)\`, \`\\(\\sum\\)\`, \`\\(\\sqrt{\\cdot}\\)\`, \`\\(\\infty\\)\`.
 - Degree symbol: if it is adjacent to a numeral, pull the numeral INTO math mode with it — e.g. \`81°F\` becomes \`\\(81^\\circ\\text{F}\\)\`. If it stands alone in prose like "in degrees Fahrenheit (°F)", render as \`(\\(^\\circ\\)F)\`.
+- PRESERVE implied multiplication. Do NOT insert \`\\times\`, \`\\cdot\`, \`×\`, or \`*\` where the source expression used juxtaposition. A coefficient next to a variable, a variable next to another variable, or a fraction next to a variable renders as-is with only a space between tokens:
+  - \`(25/4)m = 95\` → \`\\(\\frac{25}{4} m = 95\\)\`  (NOT \`\\frac{25}{4} \\times m\`)
+  - \`2x\` → \`\\(2x\\)\`,  \`3xy\` → \`\\(3xy\\)\`,  \`-4ab^2\` → \`\\(-4ab^2\\)\`
+  - \`2(x+1)\` → \`\\(2(x+1)\\)\`  (NOT \`\\(2 \\times (x+1)\\)\`)
+  Only emit \`\\times\` or \`\\cdot\` if the source ACTUALLY contains an explicit multiplication symbol (\`×\`, \`*\`, or alt text that literally says "times" / "multiplied by" between two numeric factors like \`3 times 5\`).
 
 ## Image → LaTeX
 
