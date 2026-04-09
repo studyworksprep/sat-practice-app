@@ -8,6 +8,7 @@ import HtmlBlock from '../../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../../components/QuestionNotes';
 import ConceptTags from '../../../../../components/ConceptTags';
 import DesmosStateButton from '../../../../../components/DesmosStateButton';
+import FlashcardsModal from '../../../../../components/FlashcardsModal';
 
 const SUBJECT_LABEL = { rw: 'Reading & Writing', RW: 'Reading & Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
 const SUBJECT_LABEL_FULL = { rw: 'Reading and Writing', RW: 'Reading and Writing', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
@@ -520,7 +521,7 @@ function DesmosPopup({ isOpen, onClose, questionId: qId }) {
 
 // ─── Question detail panel ─────────────────────────────────────────────────
 
-function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleErrorLog, errorLogActive, userRole }) {
+function QuestionDetail({ q, allQuestions, onSelect, onOpenFlashcards, onToggleErrorLog, errorLogActive, userRole }) {
   const [showAnswer, setShowAnswer] = useState(false);
 
   if (!q) {
@@ -676,8 +677,8 @@ function QuestionDetail({ q, allQuestions, onSelect, onMakeFlashcard, onToggleEr
 
       {/* Action buttons */}
       <div className="ptrvActions" style={{ display: 'flex', gap: 8, padding: '12px 16px', flexWrap: 'wrap' }}>
-        <button className="btn secondary" style={{ fontSize: 13 }} onClick={() => onMakeFlashcard(q)}>
-          Make Flashcard
+        <button className="btn secondary" style={{ fontSize: 13 }} onClick={onOpenFlashcards}>
+          Flashcards
         </button>
         <button
           className={`btn secondary${errorLogActive ? ' errorLogHasNote' : ''}`}
@@ -732,13 +733,7 @@ export default function ResultsPage() {
   const [timingPopup, setTimingPopup] = useState(null); // { label, questions }
 
   // Flashcard state
-  const [showFlashcardDialog, setShowFlashcardDialog] = useState(false);
-  const [flashcardSets, setFlashcardSets] = useState([]);
-  const [flashcardSetId, setFlashcardSetId] = useState('');
-  const [flashcardFront, setFlashcardFront] = useState('');
-  const [flashcardBack, setFlashcardBack] = useState('');
-  const [flashcardSaving, setFlashcardSaving] = useState(false);
-  const [flashcardSaved, setFlashcardSaved] = useState(false);
+  const [showFlashcards, setShowFlashcards] = useState(false);
 
   // Error log state
   const [showErrorLog, setShowErrorLog] = useState(false);
@@ -827,43 +822,6 @@ export default function ResultsPage() {
       setMsg({ kind: 'danger', text: e.message });
     } finally {
       setScoreSaving(false);
-    }
-  }
-
-  async function openFlashcardDialog(q) {
-    setShowFlashcardDialog(true);
-    setFlashcardSaved(false);
-    setFlashcardFront('');
-    setFlashcardBack('');
-    try {
-      const res = await fetch('/api/flashcard-sets');
-      const json = await res.json();
-      if (res.ok && json.sets) {
-        setFlashcardSets(json.sets);
-        if (!flashcardSetId && json.sets.length) setFlashcardSetId(json.sets[0].id);
-      }
-    } catch {}
-  }
-
-  async function saveFlashcard() {
-    if (!flashcardSetId || !flashcardFront.trim() || !flashcardBack.trim()) return;
-    setFlashcardSaving(true);
-    try {
-      const res = await fetch('/api/flashcards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ set_id: flashcardSetId, front: flashcardFront.trim(), back: flashcardBack.trim() }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || 'Failed to save flashcard');
-      setFlashcardSaved(true);
-      setFlashcardFront('');
-      setFlashcardBack('');
-      setMsg({ kind: 'ok', text: 'Flashcard saved!' });
-    } catch (e) {
-      setMsg({ kind: 'danger', text: e.message });
-    } finally {
-      setFlashcardSaving(false);
     }
   }
 
@@ -1305,7 +1263,7 @@ export default function ResultsPage() {
             q={selectedQ}
             allQuestions={questions}
             onSelect={setSelectedQ}
-            onMakeFlashcard={openFlashcardDialog}
+            onOpenFlashcards={() => setShowFlashcards(true)}
             onToggleErrorLog={() => setShowErrorLog((s) => !s)}
             errorLogActive={showErrorLog}
             userRole={userRole}
@@ -1417,59 +1375,12 @@ export default function ResultsPage() {
         </div>
       )}
 
-      {/* Flashcard dialog */}
-      {showFlashcardDialog && (
-        <div className="modalOverlay" onClick={() => setShowFlashcardDialog(false)}>
-          <div className="modalCard" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 440 }}>
-            <div className="h2" style={{ marginBottom: 12 }}>Make Flashcard</div>
-
-            <label className="small muted" style={{ display: 'block', marginBottom: 4 }}>Set</label>
-            <select
-              className="input"
-              value={flashcardSetId}
-              onChange={(e) => setFlashcardSetId(e.target.value)}
-              style={{ marginBottom: 12 }}
-            >
-              {flashcardSets.map((s) => (
-                <option key={s.id} value={s.id}>{s.name} ({s.card_count})</option>
-              ))}
-            </select>
-
-            <label className="small muted" style={{ display: 'block', marginBottom: 4 }}>Front</label>
-            <textarea
-              className="input"
-              value={flashcardFront}
-              onChange={(e) => { setFlashcardFront(e.target.value); setFlashcardSaved(false); }}
-              placeholder="Term, question, or concept..."
-              rows={2}
-              style={{ marginBottom: 12 }}
-            />
-
-            <label className="small muted" style={{ display: 'block', marginBottom: 4 }}>Back</label>
-            <textarea
-              className="input"
-              value={flashcardBack}
-              onChange={(e) => { setFlashcardBack(e.target.value); setFlashcardSaved(false); }}
-              placeholder="Definition, answer, or explanation..."
-              rows={3}
-              style={{ marginBottom: 16 }}
-            />
-
-            <div className="row" style={{ gap: 8, justifyContent: 'flex-end' }}>
-              <button className="btn secondary" onClick={() => setShowFlashcardDialog(false)}>
-                Close
-              </button>
-              <button
-                className="btn primary"
-                onClick={saveFlashcard}
-                disabled={flashcardSaving || !flashcardFront.trim() || !flashcardBack.trim() || !flashcardSetId}
-              >
-                {flashcardSaving ? 'Saving...' : flashcardSaved ? 'Saved!' : 'Save Card'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Flashcards modal */}
+      <FlashcardsModal
+        open={showFlashcards}
+        onClose={() => setShowFlashcards(false)}
+        onMessage={setMsg}
+      />
 
       {/* Toast */}
       {msg && (
