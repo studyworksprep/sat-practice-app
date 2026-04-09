@@ -142,11 +142,10 @@ You will receive a JSON object describing ONE question:
   "options":       [{ "label": "A", "content_html": "..." }, ...]   // may be empty for SPR
 }
 
-Your job is to return a JSON object of the SAME shape, with each HTML field rewritten according to the rules below. Do NOT change the meaning, wording, or numerical values of the question — only the formatting.
+You MUST respond by calling the \`return_fixed_question\` tool exactly once with the cleaned-up fields. Do NOT emit any free-form text — all output goes through the tool call. Do NOT change the meaning, wording, or numerical values of the question — only the formatting.
 
 ## Global rules
 
-- Output MUST be a single JSON object. No markdown fencing, no prose, no \`\`\` code fences. Return only the JSON.
 - Preserve all text content exactly. Only fix formatting.
 - Decode HTML entities to real characters:  \`&rsquo;\` → \`'\`,  \`&lsquo;\` → \`'\`,  \`&ldquo;\` → \`"\`,  \`&rdquo;\` → \`"\`,  \`&mdash;\` → \`—\`,  \`&ndash;\` → \`–\`,  \`&nbsp;\` → regular space,  \`&deg;\` → \`°\`,  \`&amp;\` → \`&\`.
 - Literal US dollar amounts in prose MUST be escaped as \`\\$9.25\` (not \`$9.25\`) so MathJax does not treat the \`$\` as a math delimiter.
@@ -209,39 +208,89 @@ Return each option as the SHORTEST string that renders correctly:
 
 ## Examples
 
-INPUT:
-{
-  "question_type": "mcq",
-  "stimulus_html": null,
-  "stem_html": "<p class=\\"stem_paragraph \\">On January 1, 2015, a city&rsquo;s minimum hourly wage was $9.25. It will increase by $0.50 on the first day of the year for the next 5 years. Which of the following functions best models the minimum hourly wage, in dollars, <span class=\\"italic\\">x</span> years after January 1, 2015, where <img alt=\\"x equals the following five values: 1, 2, 3, 4, 5\\"> ?</p>",
-  "options": [
-    { "label": "A", "content_html": "<p class=\\"choice_paragraph \\"><img alt=\\"f of x equals, 9 point 2 5, minus 0 point 5 0 x\\"></p>" },
-    { "label": "B", "content_html": "<p class=\\"choice_paragraph \\"><img alt=\\"f of x equals, 9 point 2 5 x, minus 0 point 5 0\\"></p>" },
-    { "label": "C", "content_html": "<p class=\\"choice_paragraph \\"><img alt=\\"f of x equals, 9 point 2 5, plus 0 point 5 0 x\\"></p>" },
-    { "label": "D", "content_html": "<p class=\\"choice_paragraph \\"><img alt=\\"f of x equals, 9 point 2 5 x, plus 0 point 5 0\\"></p>" }
-  ]
-}
+The examples below are in a labelled field format, not JSON. Inside the tool call, each field's string value should contain the exact characters shown after the "→" arrow (e.g. a single backslash before "(", a single backslash before ")").
 
-OUTPUT:
-{"stimulus_html":null,"stem_html":"<p class=\\"stem_paragraph\\">On January 1, 2015, a city's minimum hourly wage was \\\\$9.25. It will increase by \\\\$0.50 on the first day of the year for the next 5 years. Which of the following functions best models the minimum hourly wage, in dollars, \\\\(x\\\\) years after January 1, 2015, where \\\\(x = 1, 2, 3, 4, 5\\\\)?</p>","options":[{"label":"A","content_html":"\\\\( f(x) = 9.25 - 0.50x \\\\)"},{"label":"B","content_html":"\\\\( f(x) = 9.25x - 0.50 \\\\)"},{"label":"C","content_html":"\\\\( f(x) = 9.25 + 0.50x \\\\)"},{"label":"D","content_html":"\\\\( f(x) = 9.25x + 0.50 \\\\)"}]}
+── Example 1 ──────────────────────────────────────────────
+INPUT
+  question_type: mcq
+  stimulus_html: (null)
+  stem_html: <p class="stem_paragraph ">On January 1, 2015, a city&rsquo;s minimum hourly wage was $9.25. It will increase by $0.50 on the first day of the year for the next 5 years. Which of the following functions best models the minimum hourly wage, in dollars, <span class="italic">x</span> years after January 1, 2015, where <img alt="x equals the following five values: 1, 2, 3, 4, 5"> ?</p>
+  option A: <p class="choice_paragraph "><img alt="f of x equals, 9 point 2 5, minus 0 point 5 0 x"></p>
+  option B: <p class="choice_paragraph "><img alt="f of x equals, 9 point 2 5 x, minus 0 point 5 0"></p>
+  option C: <p class="choice_paragraph "><img alt="f of x equals, 9 point 2 5, plus 0 point 5 0 x"></p>
+  option D: <p class="choice_paragraph "><img alt="f of x equals, 9 point 2 5 x, plus 0 point 5 0"></p>
 
-INPUT:
-{
-  "question_type": "mcq",
-  "stimulus_html": "<div class=\\"stimulus_reference \\"><div class=\\"passage \\"><div class=\\"prose style:1 \\"><p class=\\"passage_para \\">The high temperature, in degrees Fahrenheit (&deg;F), in a certain city was recorded for each of 5&nbsp;days. The data are shown below.</p><div class=\\"table_wrapper \\"><table class=\\"tcp-abc\\"><tbody><tr><td><table class=\\"table_WithBorder tcp-def\\"><tbody class=\\"tbody \\"><tr class=\\"row \\"><td class=\\"entry align:left colname:col1 \\">Day</td><td class=\\"entry align:center colname:col2 \\">1</td><td class=\\"entry align:center colname:col3 \\">2</td><td class=\\"entry align:center colname:col4 \\">3</td><td class=\\"entry align:center colname:col5 \\">4</td><td class=\\"entry align:center colname:col6 \\">5</td></tr><tr class=\\"row \\"><td class=\\"entry colname:col1 \\">High temperature (&deg;F)</td><td class=\\"entry align:center colname:col2 \\">81</td><td class=\\"entry align:center colname:col3 \\">80</td><td class=\\"entry align:center colname:col4 \\">81</td><td class=\\"entry align:center colname:col5 \\">81</td><td class=\\"entry align:center colname:col6 \\">82</td></tr></tbody></table></td></tr></tbody></table></div></div></div></div>",
-  "stem_html": "<p class=\\"stem_paragraph \\">Over this 5-day period, which of the following is NOT equal to 81&deg;F?</p>",
-  "options": [
-    { "label": "A", "content_html": "<p>Median of the high temperatures</p>" },
-    { "label": "B", "content_html": "<p>Mean of the high temperatures</p>" },
-    { "label": "C", "content_html": "<p>Mode of the high temperatures</p>" },
-    { "label": "D", "content_html": "<p>Range of the high temperatures</p>" }
-  ]
-}
+OUTPUT  (tool call arguments)
+  stimulus_html → null
+  stem_html     → <p class="stem_paragraph">On January 1, 2015, a city's minimum hourly wage was \\$9.25. It will increase by \\$0.50 on the first day of the year for the next 5 years. Which of the following functions best models the minimum hourly wage, in dollars, \\(x\\) years after January 1, 2015, where \\(x = 1, 2, 3, 4, 5\\)?</p>
+  option A → \\( f(x) = 9.25 - 0.50x \\)
+  option B → \\( f(x) = 9.25x - 0.50 \\)
+  option C → \\( f(x) = 9.25 + 0.50x \\)
+  option D → \\( f(x) = 9.25x + 0.50 \\)
 
-OUTPUT:
-{"stimulus_html":"<p class=\\"stimulus_paragraph\\">The high temperature, in degrees Fahrenheit (\\\\(^\\\\circ\\\\)F), in a certain city was recorded for each of 5 days. The data are shown below.</p><table class=\\"stimulus_table\\"><tr><th>Day</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr><tr><td>High temperature (\\\\(^\\\\circ\\\\)F)</td><td>81</td><td>80</td><td>81</td><td>81</td><td>82</td></tr></table>","stem_html":"<p class=\\"stem_paragraph\\">Over this 5-day period, which of the following is NOT equal to \\\\(81^\\\\circ\\\\text{F}\\\\)?</p>","options":[{"label":"A","content_html":"Median of the high temperatures"},{"label":"B","content_html":"Mean of the high temperatures"},{"label":"C","content_html":"Mode of the high temperatures"},{"label":"D","content_html":"Range of the high temperatures"}]}
+── Example 2 ──────────────────────────────────────────────
+INPUT
+  question_type: mcq
+  stimulus_html: <div class="stimulus_reference "><div class="passage "><div class="prose style:1 "><p class="passage_para ">The high temperature, in degrees Fahrenheit (&deg;F), in a certain city was recorded for each of 5&nbsp;days. The data are shown below.</p><div class="table_wrapper "><table class="tcp-abc"><tbody><tr><td><table class="table_WithBorder tcp-def"><tbody class="tbody "><tr class="row "><td class="entry align:left colname:col1 ">Day</td><td class="entry align:center colname:col2 ">1</td><td class="entry align:center colname:col3 ">2</td><td class="entry align:center colname:col4 ">3</td><td class="entry align:center colname:col5 ">4</td><td class="entry align:center colname:col6 ">5</td></tr><tr class="row "><td class="entry colname:col1 ">High temperature (&deg;F)</td><td class="entry align:center colname:col2 ">81</td><td class="entry align:center colname:col3 ">80</td><td class="entry align:center colname:col4 ">81</td><td class="entry align:center colname:col5 ">81</td><td class="entry align:center colname:col6 ">82</td></tr></tbody></table></td></tr></tbody></table></div></div></div></div>
+  stem_html:     <p class="stem_paragraph ">Over this 5-day period, which of the following is NOT equal to 81&deg;F?</p>
+  option A: <p>Median of the high temperatures</p>
+  option B: <p>Mean of the high temperatures</p>
+  option C: <p>Mode of the high temperatures</p>
+  option D: <p>Range of the high temperatures</p>
 
-Return ONLY the JSON object for the INPUT you are given. No fencing, no commentary.`;
+OUTPUT  (tool call arguments)
+  stimulus_html → <p class="stimulus_paragraph">The high temperature, in degrees Fahrenheit (\\(^\\circ\\)F), in a certain city was recorded for each of 5 days. The data are shown below.</p><table class="stimulus_table"><tr><th>Day</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr><tr><td>High temperature (\\(^\\circ\\)F)</td><td>81</td><td>80</td><td>81</td><td>81</td><td>82</td></tr></table>
+  stem_html     → <p class="stem_paragraph">Over this 5-day period, which of the following is NOT equal to \\(81^\\circ\\text{F}\\)?</p>
+  option A → Median of the high temperatures
+  option B → Mean of the high temperatures
+  option C → Mode of the high temperatures
+  option D → Range of the high temperatures
+
+Always respond by invoking return_fixed_question. Never emit free-form text.`;
+
+// Schema for the tool Claude must call. Using tool_use (not free-form
+// JSON in a text block) is critical: LaTeX backslashes round-trip
+// cleanly because the API properly escapes them in transit, so things
+// like \( \frac{1}{2} \) arrive as a single-backslash string instead
+// of breaking JSON.parse with "Bad escaped character".
+const RETURN_FIXED_QUESTION_TOOL = {
+  name: 'return_fixed_question',
+  description:
+    'Return the cleaned-up HTML fields for the question. Call this tool exactly once. Every string may contain single-backslash LaTeX such as \\( x \\).',
+  input_schema: {
+    type: 'object',
+    properties: {
+      stimulus_html: {
+        type: ['string', 'null'],
+        description:
+          'Cleaned stimulus HTML, or null if the original stimulus was empty/null.',
+      },
+      stem_html: {
+        type: 'string',
+        description:
+          'Cleaned stem HTML. Always wrapped in <p class="stem_paragraph">...</p>.',
+      },
+      options: {
+        type: 'array',
+        description:
+          'One entry per MCQ option, in the same order as the input. Empty array for SPR questions.',
+        items: {
+          type: 'object',
+          properties: {
+            label: { type: 'string', description: 'A / B / C / D (preserve the input label).' },
+            content_html: {
+              type: 'string',
+              description:
+                'Cleaned option content — bare LaTeX or bare text, not wrapped in any HTML tag.',
+            },
+          },
+          required: ['label', 'content_html'],
+        },
+      },
+    },
+    required: ['stem_html', 'options'],
+  },
+};
 
 async function askClaudeToRewrite(row) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -274,6 +323,8 @@ async function askClaudeToRewrite(row) {
       model: 'claude-sonnet-4-6',
       max_tokens: 4000,
       system: SYSTEM_PROMPT,
+      tools: [RETURN_FIXED_QUESTION_TOOL],
+      tool_choice: { type: 'tool', name: 'return_fixed_question' },
       messages: [
         { role: 'user', content: JSON.stringify(userPayload) },
       ],
@@ -286,16 +337,16 @@ async function askClaudeToRewrite(row) {
   }
 
   const data = await res.json();
-  const text = (data.content || []).find(c => c.type === 'text')?.text || '';
-
-  let parsed;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    const match = text.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('Claude did not return valid JSON.');
-    parsed = JSON.parse(match[0]);
+  const toolUse = (data.content || []).find(
+    c => c.type === 'tool_use' && c.name === 'return_fixed_question'
+  );
+  if (!toolUse) {
+    throw new Error('Claude did not call return_fixed_question.');
   }
+
+  // toolUse.input is already a parsed object — no JSON.parse of
+  // free-form text, no backslash escaping headaches.
+  const parsed = toolUse.input || {};
 
   // Minimal validation: stem_html must exist, options must be an array
   // if present. Anything missing falls back to the original row so the
