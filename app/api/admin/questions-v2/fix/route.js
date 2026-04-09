@@ -196,6 +196,7 @@ Also strip wrapping \`<div>\`s that exist only to carry a class (unwrap their ch
 Return each option as the SHORTEST string that renders correctly:
 
 - A math-only option becomes a bare \`\\( ... \\)\` expression (no \`<p>\` wrapper). Example: \`\\( f(x) = 9.25 - 0.50x \\)\`.
+- A bare numeric answer — even a single integer, decimal, fraction, or signed number — MUST also be wrapped in \`\\( ... \\)\`. Examples: \`42\` → \`\\(42\\)\`, \`-3.14\` → \`\\(-3.14\\)\`, \`1/2\` → \`\\(\\frac{1}{2}\\)\`, \`$9.25\` → \`\\(\\$9.25\\)\`.
 - A prose-only option stays as bare text. Example: \`Median of the high temperatures\`.
 - A mixed option stays as plain text with inline \`\\( ... \\)\` where appropriate.
 - Never wrap an option's \`content_html\` in \`<p>\`, \`<span>\`, or any class.
@@ -204,6 +205,7 @@ Return each option as the SHORTEST string that renders correctly:
 ## Stimulus and stem
 
 - \`stimulus_html\`: one or more \`<p class="stimulus_paragraph">\` blocks, optionally followed by a \`<table class="stimulus_table">\`. If the input stimulus is empty/null, return \`null\`.
+- If the ENTIRE stimulus is a standalone equation or mathematical expression (no surrounding prose — e.g. just \`\\(x^2 - x - 1 = 0\\)\`), put it inside \`<p class="stimulus_paragraph" align="Center">...</p>\` so it renders centered. Keep the \`align="Center"\` attribute exactly as shown, with capital C. Do NOT add \`align="Center"\` to stimulus paragraphs that contain prose around the equation.
 - \`stem_html\`: exactly one \`<p class="stem_paragraph">\` wrapping the question sentence.
 
 ## Examples
@@ -245,6 +247,24 @@ OUTPUT  (tool call arguments)
   option B → Mean of the high temperatures
   option C → Mode of the high temperatures
   option D → Range of the high temperatures
+
+── Example 3 (standalone equation stimulus + numeric answers) ─────
+INPUT
+  question_type: mcq
+  stimulus_html: <p><img alt="x squared minus x minus 1 equals 0"></p>
+  stem_html:     <p class="stem_paragraph ">What values satisfy the equation above?</p>
+  option A: <p>-1</p>
+  option B: <p>0</p>
+  option C: <p>1</p>
+  option D: <p>2</p>
+
+OUTPUT  (tool call arguments)
+  stimulus_html → <p class="stimulus_paragraph" align="Center">\\(x^2 - x - 1 = 0\\)</p>
+  stem_html     → <p class="stem_paragraph">What values satisfy the equation above?</p>
+  option A → \\(-1\\)
+  option B → \\(0\\)
+  option C → \\(1\\)
+  option D → \\(2\\)
 
 Always respond by invoking return_fixed_question. Never emit free-form text.`;
 
