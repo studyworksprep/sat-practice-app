@@ -68,8 +68,19 @@ function QuestionV2Card({ question, index }) {
           marginBottom: 12,
         }}
       >
-        <div className="qNumBadge" aria-label={`Preview question ${index + 1}`}>
-          {index + 1}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="qNumBadge" aria-label={`Preview question ${index + 1}`}>
+            {index + 1}
+          </div>
+          {question.display_code ? (
+            <span
+              className="kbd"
+              style={{ fontSize: 13, fontWeight: 700, padding: '4px 10px' }}
+              title="questions_v2 display code"
+            >
+              {question.display_code}
+            </span>
+          ) : null}
         </div>
         <div className="row" style={{ alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           <span className="pill">
@@ -287,8 +298,8 @@ export default function QuestionsV2Preview() {
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="source_id or external_id"
-              style={{ minWidth: 220 }}
+              placeholder="display code, source id, or external id"
+              style={{ minWidth: 260 }}
             />
           </label>
           <button className="btn" type="submit">Search</button>

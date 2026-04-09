@@ -40,7 +40,7 @@ export async function GET(req) {
   let query = supabase
     .from('questions_v2')
     .select(
-      `id, question_type, stem_html, stimulus_html, rationale_html,
+      `id, display_code, question_type, stem_html, stimulus_html, rationale_html,
        options, correct_answer,
        domain_code, domain_name, skill_code, skill_name, difficulty, score_band,
        source, source_id, source_external_id, is_published, is_broken,
@@ -55,7 +55,7 @@ export async function GET(req) {
   if (q) {
     // Escape PostgREST `or` reserved characters in user input
     const safe = q.replace(/[,()]/g, ' ');
-    query = query.or(`source_id.ilike.%${safe}%,source_external_id.ilike.%${safe}%`);
+    query = query.or(`source_id.ilike.%${safe}%,source_external_id.ilike.%${safe}%,display_code.ilike.%${safe}%`);
   }
 
   const { data, error, count } = await query;
