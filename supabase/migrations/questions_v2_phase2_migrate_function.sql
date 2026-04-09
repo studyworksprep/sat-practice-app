@@ -67,17 +67,27 @@ BEGIN
     FROM answer_options
     WHERE question_version_id = v.id;
 
-    -- Build correct_answer JSON
+    -- Build correct_answer JSON.
+    -- Resolve option UUIDs → labels so the new schema is self-contained
+    -- (the options jsonb only carries {label, ordinal, content_html} and
+    -- does not preserve the old answer_options UUIDs).
     SELECT jsonb_build_object(
-      'option_id', correct_option_id,
-      'option_ids', correct_option_ids,
-      'text', correct_text,
-      'number', correct_number,
-      'tolerance', numeric_tolerance
+      'option_label', (
+        SELECT ao.label FROM answer_options ao
+        WHERE ao.id = ca.correct_option_id
+      ),
+      'option_labels', (
+        SELECT coalesce(jsonb_agg(ao.label ORDER BY ao.ordinal), NULL)
+        FROM answer_options ao
+        WHERE ao.id = ANY (ca.correct_option_ids)
+      ),
+      'text', ca.correct_text,
+      'number', ca.correct_number,
+      'tolerance', ca.numeric_tolerance
     )
     INTO correct_json
-    FROM correct_answers
-    WHERE question_version_id = v.id
+    FROM correct_answers ca
+    WHERE ca.question_version_id = v.id
     LIMIT 1;
 
     -- Insert into questions_v2

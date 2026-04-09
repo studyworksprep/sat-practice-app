@@ -1,0 +1,397 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import HtmlBlock from './HtmlBlock';
+
+// Mirrors the helper in app/practice/[questionId]/page.js so the preview
+// renders free-response correct answers the same way as the real question
+// page.
+function formatCorrectText(ct) {
+  if (ct == null) return null;
+  if (Array.isArray(ct)) return ct;
+  if (typeof ct === 'string') {
+    const t = ct.trim();
+    if (!t) return null;
+    if (t.startsWith('[') && t.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(t);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    return [t];
+  }
+  return [String(ct)];
+}
+
+function htmlHasContent(html) {
+  if (!html) return false;
+  if (/<img\s/i.test(html)) return true;
+  const text = html.replace(/<[^>]+>/g, '').trim();
+  return text.length > 0 && text !== 'NULL';
+}
+
+// Render a single questions_v2 row using the same markup / CSS classes as
+// the main practice page so it visually matches what students see.
+function QuestionV2Card({ question, index }) {
+  const qType = String(question.question_type || '').toLowerCase();
+  const options = Array.isArray(question.options)
+    ? question.options.slice().sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
+    : [];
+  const correct = question.correct_answer || {};
+  const correctLabel = correct.option_label || null;
+  const correctLabels = Array.isArray(correct.option_labels) ? correct.option_labels : [];
+  const correctTextArr = formatCorrectText(correct.text);
+
+  const [showExplanation, setShowExplanation] = useState(false);
+
+  const isCorrectOption = useCallback(
+    (opt) => {
+      if (!opt) return false;
+      if (correctLabel && String(opt.label) === String(correctLabel)) return true;
+      if (correctLabels.length && correctLabels.map(String).includes(String(opt.label))) return true;
+      return false;
+    },
+    [correctLabel, correctLabels]
+  );
+
+  return (
+    <div className="card" style={{ marginBottom: 16 }}>
+      {/* ── Header: question # + taxonomy pills ── */}
+      <div
+        className="statusPillRow"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          flexWrap: 'wrap',
+          marginBottom: 12,
+        }}
+      >
+        <div className="qNumBadge" aria-label={`Preview question ${index + 1}`}>
+          {index + 1}
+        </div>
+        <div className="row" style={{ alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <span className="pill">
+            <span className="muted">Type</span>{' '}
+            <span className="kbd">{qType.toUpperCase() || '—'}</span>
+          </span>
+          {question.domain_name ? (
+            <span className="pill">
+              <span className="muted">Domain</span>{' '}
+              <span className="kbd">{question.domain_name}</span>
+            </span>
+          ) : null}
+          {question.skill_name ? (
+            <span className="pill">
+              <span className="muted">Skill</span>{' '}
+              <span className="kbd">{question.skill_name}</span>
+            </span>
+          ) : null}
+          {question.difficulty != null ? (
+            <span className="pill">
+              <span className="muted">Diff</span>{' '}
+              <span className="kbd">{question.difficulty}</span>
+            </span>
+          ) : null}
+          {question.is_broken ? (
+            <span className="pill" style={{ borderColor: '#dc2626', color: '#dc2626' }}>Broken</span>
+          ) : null}
+          {question.source_id ? (
+            <span className="pill">
+              <span className="muted">ID</span>{' '}
+              <span className="kbd" style={{ fontSize: 11 }}>{question.source_id}</span>
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      {/* ── Stimulus ── */}
+      {htmlHasContent(question.stimulus_html) ? (
+        <div style={{ marginBottom: 12 }}>
+          <div className="srOnly">Stimulus</div>
+          <HtmlBlock className="prose" html={question.stimulus_html} imgMaxWidth={320} />
+        </div>
+      ) : null}
+
+      {/* ── Stem ── */}
+      {question.stem_html ? (
+        <div style={{ marginBottom: 12 }}>
+          <div className="srOnly">Question</div>
+          <HtmlBlock className="prose" html={question.stem_html} imgMaxWidth={320} />
+        </div>
+      ) : null}
+
+      {/* ── Answer area ── */}
+      {qType === 'mcq' ? (
+        <>
+          <div className="srOnly">Answer choices</div>
+          <div className="optionList">
+            {options.map((opt, i) => {
+              const correctHere = isCorrectOption(opt);
+              // Use the same class structure as the practice page so the CSS
+              // for .option / .option.revealCorrect / .optionBadge / .optionContent
+              // applies identically. We always "reveal" the correct answer in the
+              // preview since this is an admin inspection view.
+              const cls = 'option' + (correctHere ? ' revealCorrect' : '');
+              return (
+                <div key={`${opt.label ?? ''}-${opt.ordinal ?? i}`} className={cls}>
+                  <div className="optionBadge">
+                    {opt.label || String.fromCharCode(65 + (opt.ordinal ?? i))}
+                  </div>
+                  <div className="optionContent">
+                    <HtmlBlock className="prose" html={opt.content_html} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {options.length === 0 ? (
+            <p className="muted small" style={{ marginTop: 8 }}>No options in this row.</p>
+          ) : null}
+        </>
+      ) : (
+        <>
+          <div className="srOnly">Correct answer</div>
+          <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 4 }}>
+            {correctTextArr && correctTextArr.length > 0 ? (
+              <span className="pill" style={{ borderColor: '#15803d', background: '#f0fdf4' }}>
+                <span style={{ color: '#15803d' }}>Correct answer</span>{' '}
+                <span className="kbd" style={{ color: '#15803d', fontWeight: 700 }}>
+                  {correctTextArr.join(' or ')}
+                </span>
+              </span>
+            ) : correct.number != null ? (
+              <span className="pill" style={{ borderColor: '#15803d', background: '#f0fdf4' }}>
+                <span style={{ color: '#15803d' }}>Correct answer</span>{' '}
+                <span className="kbd" style={{ color: '#15803d', fontWeight: 700 }}>
+                  {correct.number}
+                  {correct.tolerance ? ` (±${correct.tolerance})` : ''}
+                </span>
+              </span>
+            ) : (
+              <span className="muted small">No correct answer recorded.</span>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ── Explanation toggle ── */}
+      {question.rationale_html ? (
+        <div className="row" style={{ gap: 10, marginTop: 14 }}>
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => setShowExplanation((s) => !s)}
+          >
+            {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+          </button>
+        </div>
+      ) : null}
+
+      {showExplanation && question.rationale_html ? (
+        <div className="card explanation" style={{ marginTop: 14 }}>
+          <div className="sectionLabel">Explanation</div>
+          <HtmlBlock className="prose" html={question.rationale_html} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export default function QuestionsV2Preview() {
+  const [questions, setQuestions] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [domains, setDomains] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [limit, setLimit] = useState(10);
+  const [offset, setOffset] = useState(0);
+  const [type, setType] = useState('');
+  const [domain, setDomain] = useState('');
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const params = new URLSearchParams();
+    params.set('limit', String(limit));
+    params.set('offset', String(offset));
+    if (type) params.set('type', type);
+    if (domain) params.set('domain', domain);
+    if (search) params.set('q', search);
+    try {
+      const res = await fetch(`/api/admin/questions-v2?${params.toString()}`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to load');
+      setQuestions(json.questions || []);
+      setTotal(json.total || 0);
+      setDomains(json.domains || []);
+    } catch (e) {
+      setError(e.message || String(e));
+      setQuestions([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [limit, offset, type, domain, search]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const page = Math.floor(offset / limit) + 1;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  const onSubmitSearch = (e) => {
+    e.preventDefault();
+    setOffset(0);
+    setSearch(searchInput.trim());
+  };
+
+  const resetFilters = () => {
+    setType('');
+    setDomain('');
+    setSearch('');
+    setSearchInput('');
+    setOffset(0);
+  };
+
+  const filtersActive = useMemo(() => !!(type || domain || search), [type, domain, search]);
+
+  return (
+    <>
+      <h2 className="h2" style={{ marginBottom: 8 }}>Questions V2 Preview</h2>
+      <p className="muted small" style={{ marginBottom: 16 }}>
+        Preview of rows in the new <code>questions_v2</code> table, rendered the same way
+        they appear to students in the practice app. Correct answers are highlighted so
+        admins can verify the migration.
+      </p>
+
+      {/* ── Filter bar ── */}
+      <div
+        className="card"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 12,
+          alignItems: 'flex-end',
+          marginBottom: 16,
+        }}
+      >
+        <form onSubmit={onSubmitSearch} style={{ display: 'flex', gap: 8, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <label className="small" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            Search ID
+            <input
+              className="input"
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="source_id or external_id"
+              style={{ minWidth: 220 }}
+            />
+          </label>
+          <button className="btn" type="submit">Search</button>
+        </form>
+
+        <label className="small" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          Type
+          <select
+            className="input"
+            value={type}
+            onChange={(e) => { setOffset(0); setType(e.target.value); }}
+          >
+            <option value="">All</option>
+            <option value="mcq">MCQ</option>
+            <option value="spr">SPR</option>
+          </select>
+        </label>
+
+        <label className="small" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          Domain
+          <select
+            className="input"
+            value={domain}
+            onChange={(e) => { setOffset(0); setDomain(e.target.value); }}
+          >
+            <option value="">All</option>
+            {domains.map((d) => (
+              <option key={d.code} value={d.code}>{d.name}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="small" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          Per page
+          <select
+            className="input"
+            value={limit}
+            onChange={(e) => { setOffset(0); setLimit(parseInt(e.target.value, 10) || 10); }}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+          </select>
+        </label>
+
+        {filtersActive ? (
+          <button className="btn secondary" type="button" onClick={resetFilters}>Reset</button>
+        ) : null}
+
+        <div style={{ marginLeft: 'auto' }} className="muted small">
+          {loading ? 'Loading…' : `${total.toLocaleString()} question${total === 1 ? '' : 's'}`}
+        </div>
+      </div>
+
+      {error ? (
+        <div className="card" style={{ borderColor: '#dc2626', color: '#dc2626', marginBottom: 16 }}>
+          <strong>Error:</strong> {error}
+        </div>
+      ) : null}
+
+      {!loading && total === 0 && !error ? (
+        <div className="card">
+          <p className="muted">
+            No questions found in <code>questions_v2</code>. Run
+            <code> SELECT * FROM migrate_questions_batch(100); </code>
+            in the Supabase SQL editor to populate it.
+          </p>
+        </div>
+      ) : null}
+
+      {questions.map((q, i) => (
+        <QuestionV2Card key={q.id} question={q} index={offset + i} />
+      ))}
+
+      {/* ── Pagination ── */}
+      {total > limit ? (
+        <div
+          className="adminPagination"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}
+        >
+          <span className="muted small">
+            Showing {offset + 1}–{Math.min(offset + questions.length, total)} of {total.toLocaleString()}
+          </span>
+          <div className="adminPaginationBtns" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              className="adminPageBtn"
+              disabled={offset === 0 || loading}
+              onClick={() => setOffset(Math.max(0, offset - limit))}
+            >
+              Prev
+            </button>
+            <span className="small" style={{ minWidth: 60, textAlign: 'center' }}>{page} / {totalPages}</span>
+            <button
+              className="adminPageBtn"
+              disabled={offset + limit >= total || loading}
+              onClick={() => setOffset(offset + limit)}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
