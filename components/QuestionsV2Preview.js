@@ -30,9 +30,19 @@ function htmlHasContent(html) {
   return text.length > 0 && text !== 'NULL';
 }
 
+function formatFixedAt(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+  });
+}
+
 // Render a single questions_v2 row using the same markup / CSS classes as
 // the main practice page so it visually matches what students see.
-function QuestionV2Card({ question, index }) {
+function QuestionV2Card({ question, index, onFix }) {
   const qType = String(question.question_type || '').toLowerCase();
   const options = Array.isArray(question.options)
     ? question.options.slice().sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
@@ -108,12 +118,30 @@ function QuestionV2Card({ question, index }) {
           {question.is_broken ? (
             <span className="pill" style={{ borderColor: '#dc2626', color: '#dc2626' }}>Broken</span>
           ) : null}
+          {question.last_fixed_at ? (
+            <span
+              className="pill"
+              style={{ borderColor: '#15803d', color: '#15803d' }}
+              title={`Cleaned on ${formatFixedAt(question.last_fixed_at)}`}
+            >
+              Fixed
+            </span>
+          ) : null}
           {question.source_id ? (
             <span className="pill">
               <span className="muted">ID</span>{' '}
               <span className="kbd" style={{ fontSize: 11 }}>{question.source_id}</span>
             </span>
           ) : null}
+          <button
+            type="button"
+            className="btn secondary"
+            style={{ fontSize: 11, padding: '4px 10px' }}
+            onClick={() => onFix?.(question)}
+            title="Send this question to Claude for HTML cleanup"
+          >
+            Fix with Claude
+          </button>
         </div>
       </div>
 
@@ -210,6 +238,242 @@ function QuestionV2Card({ question, index }) {
   );
 }
 
+// =============================================================
+// FixWithClaudeModal
+// =============================================================
+// Lifecycle: once `question` is set, the modal POSTs to the fix
+// endpoint to fetch Claude's suggestion.  While waiting, it shows a
+// loading state.  Once the suggestion arrives, it renders three
+// editable sections (stimulus, stem, options) with a live preview
+// on the right of each.  Save PUTs the edited fields back, Cancel
+// discards.
+function FixWithClaudeModal({ question, onClose, onSaved }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const [stimulus, setStimulus] = useState('');
+  const [stem, setStem] = useState('');
+  const [options, setOptions] = useState([]); // [{label, content_html}]
+
+  // Fetch suggestion on open / re-open.
+  const regenerate = useCallback(async () => {
+    if (!question?.id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/questions-v2/fix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: question.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to call Claude');
+      const s = json.suggestion || {};
+      setStimulus(typeof s.stimulus_html === 'string' ? s.stimulus_html : (question.stimulus_html || ''));
+      setStem(typeof s.stem_html === 'string' ? s.stem_html : (question.stem_html || ''));
+      setOptions(Array.isArray(s.options) && s.options.length
+        ? s.options.map(o => ({ label: o.label, content_html: o.content_html || '' }))
+        : (Array.isArray(question.options)
+            ? question.options
+                .slice()
+                .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
+                .map(o => ({ label: o.label, content_html: o.content_html || '' }))
+            : []));
+    } catch (e) {
+      setError(e.message || String(e));
+    } finally {
+      setLoading(false);
+    }
+  }, [question]);
+
+  useEffect(() => { regenerate(); }, [regenerate]);
+
+  const save = useCallback(async () => {
+    if (!question?.id) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/questions-v2/fix', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: question.id,
+          stimulus_html: stimulus || null,
+          stem_html: stem,
+          options,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to save');
+      onSaved?.();
+      onClose?.();
+    } catch (e) {
+      setError(e.message || String(e));
+    } finally {
+      setSaving(false);
+    }
+  }, [question, stimulus, stem, options, onSaved, onClose]);
+
+  if (!question) return null;
+
+  const origOptions = Array.isArray(question.options)
+    ? question.options.slice().sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
+    : [];
+
+  return (
+    <div
+      className="modalOverlay"
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        zIndex: 100, overflowY: 'auto', padding: '24px 16px',
+      }}
+    >
+      <div
+        className="modalCard"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: '#fff', borderRadius: 12, width: '100%', maxWidth: 1100,
+          padding: 20, boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+          display: 'flex', flexDirection: 'column', gap: 14,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div>
+            <div className="h2" style={{ margin: 0 }}>Fix with Claude</div>
+            <div className="muted small" style={{ marginTop: 2 }}>
+              {question.display_code ? <code>{question.display_code}</code> : null}
+              {question.source_id ? <> · <code>{question.source_id}</code></> : null}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="button" className="btn secondary" onClick={regenerate} disabled={loading || saving}>
+              {loading ? 'Generating…' : 'Regenerate'}
+            </button>
+            <button type="button" className="btn secondary" onClick={onClose} disabled={saving}>
+              Cancel
+            </button>
+            <button type="button" className="btn primary" onClick={save} disabled={loading || saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+
+        {error ? (
+          <div className="card" style={{ borderColor: '#dc2626', color: '#dc2626' }}>
+            <strong>Error:</strong> {error}
+          </div>
+        ) : null}
+
+        {loading ? (
+          <div className="card" style={{ textAlign: 'center', padding: 30 }}>
+            <div className="muted">Asking Claude to clean this question…</div>
+          </div>
+        ) : (
+          <>
+            <FixSection
+              label="Stimulus"
+              originalHtml={question.stimulus_html || ''}
+              value={stimulus}
+              onChange={setStimulus}
+              placeholderEmpty="(no stimulus)"
+              rows={8}
+            />
+            <FixSection
+              label="Stem"
+              originalHtml={question.stem_html || ''}
+              value={stem}
+              onChange={setStem}
+              rows={5}
+            />
+            {options.length > 0 ? (
+              <div>
+                <div className="sectionLabel" style={{ marginBottom: 6 }}>Answer choices</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {options.map((opt, i) => (
+                    <FixSection
+                      key={`${opt.label}-${i}`}
+                      label={`Option ${opt.label}`}
+                      originalHtml={origOptions[i]?.content_html || ''}
+                      value={opt.content_html}
+                      onChange={(v) => {
+                        setOptions((arr) => {
+                          const next = arr.slice();
+                          next[i] = { ...next[i], content_html: v };
+                          return next;
+                        });
+                      }}
+                      rows={3}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// One labelled field with: original (read-only), editable textarea,
+// live preview. Used for stimulus / stem / each option inside the
+// Fix-with-Claude modal.
+function FixSection({ label, originalHtml, value, onChange, rows = 5, placeholderEmpty }) {
+  return (
+    <div className="card" style={{ padding: 12 }}>
+      <div className="sectionLabel" style={{ marginBottom: 8 }}>{label}</div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 12,
+          alignItems: 'stretch',
+        }}
+      >
+        <div>
+          <div className="small muted" style={{ marginBottom: 4 }}>Original</div>
+          <div
+            style={{
+              border: '1px solid #e5e7eb', borderRadius: 8, padding: 10,
+              minHeight: 60, maxHeight: 260, overflow: 'auto', background: '#f9fafb',
+            }}
+          >
+            {originalHtml
+              ? <HtmlBlock className="prose" html={originalHtml} imgMaxWidth={260} />
+              : <span className="muted small">{placeholderEmpty || '(empty)'}</span>}
+          </div>
+        </div>
+        <div>
+          <div className="small muted" style={{ marginBottom: 4 }}>Suggested (editable)</div>
+          <textarea
+            className="input"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            rows={rows}
+            style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, width: '100%' }}
+          />
+        </div>
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <div className="small muted" style={{ marginBottom: 4 }}>Live preview</div>
+        <div
+          style={{
+            border: '1px solid #bbf7d0', borderRadius: 8, padding: 10,
+            minHeight: 40, background: '#f0fdf4',
+          }}
+        >
+          {value
+            ? <HtmlBlock className="prose" html={value} />
+            : <span className="muted small">(empty)</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function QuestionsV2Preview() {
   const [questions, setQuestions] = useState([]);
   const [total, setTotal] = useState(0);
@@ -223,6 +487,8 @@ export default function QuestionsV2Preview() {
   const [domain, setDomain] = useState('');
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+
+  const [fixingQuestion, setFixingQuestion] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -372,7 +638,12 @@ export default function QuestionsV2Preview() {
       ) : null}
 
       {questions.map((q, i) => (
-        <QuestionV2Card key={q.id} question={q} index={offset + i} />
+        <QuestionV2Card
+          key={q.id}
+          question={q}
+          index={offset + i}
+          onFix={setFixingQuestion}
+        />
       ))}
 
       {/* ── Pagination ── */}
@@ -402,6 +673,14 @@ export default function QuestionsV2Preview() {
             </button>
           </div>
         </div>
+      ) : null}
+
+      {fixingQuestion ? (
+        <FixWithClaudeModal
+          question={fixingQuestion}
+          onClose={() => setFixingQuestion(null)}
+          onSaved={() => { load(); }}
+        />
       ) : null}
     </>
   );

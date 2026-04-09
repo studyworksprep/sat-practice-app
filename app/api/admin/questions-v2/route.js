@@ -44,7 +44,7 @@ export async function GET(req) {
        options, correct_answer,
        domain_code, domain_name, skill_code, skill_name, difficulty, score_band,
        source, source_id, source_external_id, is_published, is_broken,
-       attempt_count, correct_count, created_at`,
+       attempt_count, correct_count, created_at, last_fixed_at, last_fixed_by`,
       { count: 'exact' }
     )
     .order('created_at', { ascending: false })
