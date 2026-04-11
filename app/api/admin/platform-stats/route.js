@@ -25,8 +25,19 @@ export async function GET() {
 
   // ── 1) Active Users ─────────────────────────────────────────────
   // "Active" = has at least one attempt in the period. Counting
-  // distinct user_ids requires either an RPC (fast) or loading every
-  // attempt row (slow and risks truncation).
+  // distinct user_ids requires either an RPC (fast) or paging through
+  // every attempt row (slow, needs careful pagination).
+  //
+  // Root cause of the bug this replaces:
+  // The old code ran `.from('attempts').select(...).gte(...).limit(50000)`
+  // with NO `.order()` clause. Supabase hosted projects set PostgREST's
+  // `db-max-rows` to 1000 by default, so the `.limit(50000)` was silently
+  // capped at 1000 rows. Without an order clause PostgREST returned
+  // those 1000 rows in physical insertion order — effectively the
+  // OLDEST 1000 attempts in the queried window — and every attempt
+  // newer than that disappeared from the stats. This is why 294+340+366
+  // = exactly 1000 on the Practice Volume chart: the oldest 1000 rows
+  // spanned the first three weeks and the other 5 weeks came up empty.
   const [au1, au7, au30] = await Promise.all([
     supabase.rpc('count_distinct_users_since', { since: todayStart.toISOString() }),
     supabase.rpc('count_distinct_users_since', { since: d7.toISOString() }),
@@ -38,16 +49,14 @@ export async function GET() {
   let active30d   = au30?.error ? null : au30?.data ?? null;
 
   // Fallback: RPC is missing or errored. Page through attempts ordered
-  // by created_at DESC, dedup user_ids locally. The previous version
-  // used `.limit(50000)` WITHOUT `.order()`, which had PostgREST return
-  // the oldest 50k rows and silently truncate recent activity — so
-  // Active Users looked wrong once attempt volume passed 50k in the
-  // 30-day window. Ordered pagination fixes that: we always see the
-  // most recent rows first and can short-circuit once we've walked the
-  // full 30-day window.
+  // by created_at DESC using `.range()` so we can walk past the
+  // db-max-rows cap one page at a time. Page size is deliberately set
+  // below 1000 so we stay under the default cap even if a self-hosted
+  // instance has tightened it further. We keep paging while we're
+  // getting full pages; a short page means we've reached the end.
   if (activeToday === null || active7d === null || active30d === null) {
-    const PAGE = 1000;
-    const MAX_PAGES = 100; // 100k rows max; plenty for a single month
+    const PAGE = 500;
+    const MAX_PAGES = 200; // 100k rows max; plenty for a single month
     const users1 = new Set();
     const users7 = new Set();
     const users30 = new Set();
@@ -76,12 +85,14 @@ export async function GET() {
     active30d = users30.size;
   }
 
-  // Active users by role (last 30 days). Same ordered-pagination
-  // strategy so we don't silently drop recent users.
+  // Active users by role (last 30 days). Same ordered `.range()`
+  // pagination so we don't hit the db-max-rows cap and silently drop
+  // recent users the way the previous `.limit(50000)` without
+  // `.order()` did.
   const activeByRole = { student: 0, teacher: 0, manager: 0, admin: 0, practice: 0 };
   {
-    const PAGE = 1000;
-    const MAX_PAGES = 100;
+    const PAGE = 500;
+    const MAX_PAGES = 200;
     const userIds = new Set();
     let page = 0;
     let done = false;
@@ -115,14 +126,21 @@ export async function GET() {
   }
 
   // ── 2) Practice Volume (weekly, last 8 weeks) ──────────────────
-  // The previous version loaded every attempt in the 8-week window
-  // into JS with `.limit(50000)` and bucketed them in memory. With no
-  // `.order()` clause PostgREST returned the OLDEST 50k rows, which
-  // silently truncated recent weeks — Practice Volume showed zero for
-  // everything after the first ~3 weeks of data. Replaced with a
-  // per-bucket count-exact query so the numbers are computed in the
-  // database and the data transfer stays constant regardless of
-  // actual attempt volume.
+  // Previous version did `.select('created_at, source').gte(...).limit(50000)`
+  // without an `.order()` clause, then bucketed the returned rows in
+  // JS. The `.limit(50000)` was silently capped at PostgREST's
+  // `db-max-rows` (1000 on Supabase hosted), and since there was no
+  // order clause the 1000 rows were the OLDEST in the window. Once
+  // attempts_in_window crossed 1000 rows, everything after the first
+  // ~1000 vanished from the chart. The symptom: 294+340+366=1000
+  // questions across the first three weeks and zero across the other
+  // five, regardless of actual attempt volume.
+  //
+  // The replacement runs one `count: 'exact', head: true` query per
+  // week. Count queries are HEAD requests that return a single integer
+  // via the Content-Range header — no row data, so db-max-rows doesn't
+  // apply. 24 cheap HEAD requests (3 per week × 8 weeks) fire in
+  // parallel, and the database does all the aggregation.
   const weeks = [];
   for (let i = 7; i >= 0; i--) {
     const wStart = new Date(now);
