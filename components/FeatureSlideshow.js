@@ -289,3 +289,91 @@ export function SlideContact({ title, subtitle, email, subject, buttonText }) {
     </div>
   );
 }
+
+// Comprehensive feature rundown — used as the second-to-last slide in
+// each deck. Designed to fit a long flat list (15-25 items) without
+// looking like a wall of text by grouping into labeled sections and
+// using a 2-column grid with checkmark bullets.
+//
+// Props:
+//   title    — big headline at the top
+//   subtitle — optional one-liner under the title
+//   sections — array of { label, items } where each item is
+//              { title, desc? }. desc is optional; without it the
+//              row collapses to just the title for a tighter list.
+export function SlideFeatureRundown({ title, subtitle, sections }) {
+  return (
+    <div style={{ ...panelStyle, maxWidth: 940, padding: '28px 32px' }}>
+      <div style={{ textAlign: 'center', marginBottom: 18 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 800, margin: '0 0 6px', color: 'var(--text)' }}>{title}</h2>
+        {subtitle && (
+          <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, maxWidth: 580, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.5 }}>
+            {subtitle}
+          </p>
+        )}
+      </div>
+
+      <div style={{ display: 'grid', gap: 16 }}>
+        {sections.map((section, si) => (
+          <div key={si}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: ACCENT,
+                marginBottom: 8,
+                paddingBottom: 6,
+                borderBottom: '1px solid var(--border, #e2e8f0)',
+              }}
+            >
+              {section.label}
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '6px 18px',
+              }}
+            >
+              {section.items.map((item, ii) => (
+                <div
+                  key={ii}
+                  style={{
+                    display: 'flex',
+                    gap: 8,
+                    alignItems: 'flex-start',
+                    padding: '4px 0',
+                  }}
+                >
+                  <svg
+                    viewBox="0 0 20 20"
+                    width="16"
+                    height="16"
+                    style={{ flexShrink: 0, marginTop: 3, color: '#22c55e' }}
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z"
+                    />
+                  </svg>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text)', lineHeight: 1.4 }}>
+                      {item.title}
+                    </div>
+                    {item.desc && (
+                      <div style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.4, marginTop: 1 }}>
+                        {item.desc}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

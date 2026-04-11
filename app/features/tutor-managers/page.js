@@ -1,22 +1,42 @@
 'use client';
 
-import FeatureSlideshow, { SlideHero, SlideFeatures, SlideScreenshot, SlidePricing, SlideContact } from '../../../components/FeatureSlideshow';
-
-const I = (d) => <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d={d}/></svg>;
-const TEAL = '#0d9488';
-const INDIGO = '#4f46e5';
-const AMBER = '#d97706';
+import FeatureSlideshow, {
+  SlideHero,
+  SlideScreenshot,
+  SlideFeatureRundown,
+  SlidePricing,
+} from '../../../components/FeatureSlideshow';
 
 // Slide deck for the "Tutor Manager" persona — operators who oversee
 // a team of tutors and need visibility + accountability across
 // multiple classrooms at once. Mirrors the shape of
-// /features/students and /features/teachers.
+// /features/students and /features/teachers as of Apr 2026:
+// every content slide carries a screenshot, the second-to-last slide
+// is a comprehensive feature rundown, the last slide is pricing.
 //
-// Screenshots referenced here don't exist yet; the SlideScreenshot
-// component hides itself gracefully via onError when the src is
-// missing, so the deck still renders cleanly with the text panels
-// until you drop PNGs into public/screenshots/. See the README note
-// below the slides array for the shot list.
+// Removed:
+//   - the three icon-only "feature card" slides — those features now
+//     live in the rundown slide
+//   - the "Manager Access Starts at the Organization Level" contact
+//     slide — orgs contact us directly without needing a guided slide
+//
+// Added:
+//   - two reused teacher-deck screenshots (teacher-dashboard-1 and
+//     teacher-student-detail-2a) with manager-framed copy, since the
+//     manager pitch should make clear that managers get the full
+//     teacher feature set on top of the manager-only views
+//   - the comprehensive feature rundown
+//   - a pricing slide (the deck previously ended on the contact slide
+//     and had no pricing at all)
+//
+// The three manager-only screenshot URLs (manager-team-roster,
+// manager-tutor-activity, manager-cohort-reports) point at PNGs that
+// can be captured from the demo routes under
+// /features/tutor-managers/demo/{team-roster,tutor-activity,cohort-reports}
+// — which render the live templates with hypothetical data for a
+// 15-tutor / 100-student firm so the screenshots don't leak real
+// student names. SlideScreenshot's onError fallback hides the image
+// gracefully if the file isn't there yet.
 
 const slides = [
   {
@@ -32,39 +52,11 @@ const slides = [
   },
   {
     content: (
-      <SlideFeatures
-        label="Team Oversight"
-        title="Every Tutor, One Dashboard"
-        color={TEAL}
-        features={[
-          { icon: I('M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z'), title: 'Live Tutor Roster', desc: 'See every tutor on your staff with their assigned student count, recent activity, and team-wide accuracy at a glance.' },
-          { icon: I('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'), title: 'Direct Tutor Assignment', desc: 'Assign students to tutors from your manager dashboard so the right tutor always knows who they\u2019re responsible for.' },
-          { icon: I('M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z'), title: 'Team Performance Metrics', desc: 'Compare tutors by student outcomes: average score improvements, session volume, and assignment completion rates.' },
-        ]}
-      />
-    ),
-  },
-  {
-    content: (
       <SlideScreenshot
         src="/screenshots/manager-team-roster.png"
         alt="Manager team roster view"
         title="Your Entire Team at a Glance"
         description="The manager dashboard shows every tutor on your staff in one place: how many students each one is working with, how active they've been this week, and how their students are trending on practice tests. Spot the tutors who are thriving and the ones who need support before it becomes a problem."
-      />
-    ),
-  },
-  {
-    content: (
-      <SlideFeatures
-        label="Training & Quality"
-        title="Keep Your Tutors Sharp"
-        color={INDIGO}
-        features={[
-          { icon: I('M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3 1 9l11 6 9-4.91V17h2V9L12 3z'), title: 'Tutor Training Profiles', desc: 'Every tutor gets their own training account. They can take practice tests, work through question sets, and build familiarity with the material without mingling with student data.' },
-          { icon: I('M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-6h2v6zm0-8h-2V7h2v4z'), title: 'Practice Session Audit', desc: 'See which tutors are staying current with the question bank, which are falling behind, and which are passing best practices along to their students.' },
-          { icon: I('M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'), title: 'Concept-Tag Review', desc: 'Spot-check the concept tags and error-type tags your tutors apply to wrong answers. Ensure the whole team is using the same vocabulary to describe student mistakes.' },
-        ]}
       />
     ),
   },
@@ -80,20 +72,6 @@ const slides = [
   },
   {
     content: (
-      <SlideFeatures
-        label="Reporting"
-        title="Roll-Up Reports for Your Organization"
-        color={AMBER}
-        features={[
-          { icon: I('M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z'), title: 'Cohort Score Trends', desc: 'Track average score movement across every tutor\'s student group. See which cohorts are accelerating and which are plateauing.' },
-          { icon: I('M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z'), title: 'Exportable CSV Reports', desc: 'Export team-wide rosters, session logs, and score histories for parent reports, administrative review, or plug-in to your existing business tools.' },
-          { icon: I('M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z'), title: 'Opportunity Index by Team', desc: 'Which SAT domains are your students collectively struggling with? The Opportunity Index rolls up to the team level so you can shape group training sessions around real data.' },
-        ]}
-      />
-    ),
-  },
-  {
-    content: (
       <SlideScreenshot
         src="/screenshots/manager-cohort-reports.png"
         alt="Cohort reporting dashboard"
@@ -103,13 +81,93 @@ const slides = [
     ),
   },
   {
+    content: (
+      <SlideScreenshot
+        src="/screenshots/teacher-dashboard-1.png"
+        alt="Teacher dashboard — what your tutors see"
+        title="What Each of Your Tutors Sees"
+        description="Every tutor on your team gets the same command-center dashboard for their own student roster. As a manager, you can step into any tutor's view to see exactly the information they're acting on, audit their decisions, or drop in to help them prep for an upcoming session. There's no separate manager-only data layer — you're working off the same source of truth your team is."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideScreenshot
+        src="/screenshots/teacher-student-detail-2a.png"
+        alt="Mastery analysis — what tutors recommend from"
+        title="Trust the Numbers Behind Every Recommendation"
+        description="When a tutor on your team recommends a study focus, they're not guessing — they're working from this weighted mastery analysis. Difficulty- and recency-weighted readiness scores per domain and per skill, the same view across your whole team. You can verify any recommendation, audit any tutor's reasoning, and standardize how your team talks about student progress."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideFeatureRundown
+        title="Every Tool Studyworks Gives Tutor Managers"
+        subtitle="A complete rundown of what's included with a Studyworks manager account."
+        sections={[
+          {
+            label: 'Team Oversight',
+            items: [
+              { title: 'Live tutor roster', desc: 'Every tutor with their assigned student count, recent activity, and team-wide accuracy.' },
+              { title: 'Direct tutor assignment', desc: 'Pair students with tutors from your manager dashboard.' },
+              { title: 'Team performance metrics', desc: 'Compare tutors by student outcomes and engagement.' },
+              { title: 'Per-tutor engagement tracking', desc: 'See who\u2019s active, who\u2019s coasting, and who needs a check-in.' },
+            ],
+          },
+          {
+            label: 'Training & Quality',
+            items: [
+              { title: 'Tutor training profiles', desc: 'Each tutor practices and trains in a separate profile from their student data.' },
+              { title: 'Practice session audit', desc: 'See which tutors are staying current with the question bank.' },
+              { title: 'Concept-tag review', desc: 'Spot-check the tags your tutors apply to questions and wrong answers.' },
+              { title: 'Score audit by tutor', desc: 'Review every score report your tutors are working from.' },
+            ],
+          },
+          {
+            label: 'Reporting',
+            items: [
+              { title: 'Cohort score trends', desc: 'Average score movement across every tutor\u2019s student group.' },
+              { title: 'Exportable CSV reports', desc: 'Pipe team-wide rosters and outcomes into your existing tools.' },
+              { title: 'Opportunity Index by team', desc: 'Aggregate skill gaps to shape group training sessions.' },
+              { title: 'Per-tutor outcome analysis', desc: 'Side-by-side tutor comparisons by score growth, not session count.' },
+            ],
+          },
+          {
+            label: 'Plus Everything Tutors Get',
+            items: [
+              { title: 'Full teacher feature set', desc: 'Every roster, assignment, score-report, and analytics tool tutors use.' },
+              { title: 'All student-facing tools', desc: 'Question bank, adaptive practice tests, Desmos, vocabulary, error log.' },
+              { title: 'Drop into any tutor\u2019s view', desc: 'See exactly what your team sees when they sit down to plan a session.' },
+            ],
+          },
+        ]}
+      />
+    ),
+  },
+  {
     showCta: true,
     content: (
-      <SlideContact
-        title="Manager Access Starts at the Organization Level"
-        subtitle="Tutor-manager accounts are configured at the organization tier. Tell us about your team — how many tutors, how many students, what subjects — and we'll set you up with the right plan, dedicated onboarding, and training for your staff."
-        email="contact@studyworksprep.com"
-        subject="Studyworks Tutor Manager Inquiry"
+      <SlidePricing
+        price="$29.99"
+        period="per tutor / month"
+        items={[
+          'Everything in the Educator plan, per tutor',
+          'Manager dashboard with team roster',
+          'Tutor assignment and reassignment',
+          'Tutor training audit log',
+          'Cohort score-trend reporting',
+          'Exportable CSV reports across your whole team',
+          'Drop-in access to any tutor\u2019s view',
+        ]}
+        note={{
+          title: 'Studyworks Prep partner organizations',
+          text: <>Tutoring firms partnered with <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: '#0d9488' }}>Studyworks Prep</a> get manager access included for the whole staff. Reach out to set up an org account.</>,
+          bg: 'rgba(13,148,136,0.06)',
+          border: 'rgba(13,148,136,0.25)',
+          titleColor: '#0f766e',
+          textColor: '#0f766e',
+        }}
       />
     ),
   },
