@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import HtmlBlock from './HtmlBlock';
-import { isAlreadyClean } from '../lib/questionsV2Hygiene';
+import { isAlreadyClean, isMathQuestion } from '../lib/questionsV2Hygiene';
 
 // Mirrors the helper in app/practice/[questionId]/page.js so the preview
 // renders free-response correct answers the same way as the real question
@@ -53,6 +53,7 @@ function QuestionV2Card({ question, index, onFix }) {
   const correctLabels = Array.isArray(correct.option_labels) ? correct.option_labels : [];
   const correctTextArr = formatCorrectText(correct.text);
   const clean = useMemo(() => isAlreadyClean(question), [question]);
+  const isMath = useMemo(() => isMathQuestion(question), [question]);
 
   const [showExplanation, setShowExplanation] = useState(false);
 
@@ -144,7 +145,15 @@ function QuestionV2Card({ question, index, onFix }) {
               <span className="kbd" style={{ fontSize: 11 }}>{question.source_id}</span>
             </span>
           ) : null}
-          {clean ? (
+          {!isMath ? (
+            <span
+              className="pill"
+              style={{ borderColor: '#6b7280', background: '#f3f4f6', color: '#4b5563' }}
+              title="Reading & Writing questions are skipped by the fix flow — their italics are prose emphasis, not math variables."
+            >
+              Reading · skipped
+            </span>
+          ) : clean ? (
             <span
               className="pill"
               style={{ borderColor: '#15803d', background: '#f0fdf4', color: '#15803d' }}
@@ -159,13 +168,15 @@ function QuestionV2Card({ question, index, onFix }) {
             style={{
               fontSize: 11,
               padding: '4px 10px',
-              opacity: clean ? 0.55 : 1,
+              opacity: !isMath || clean ? 0.55 : 1,
             }}
             onClick={() => onFix?.(question)}
             title={
-              clean
-                ? 'This row looks clean already. Click to force a re-fix anyway.'
-                : 'Send this question to Claude for HTML cleanup'
+              !isMath
+                ? 'This is a Reading & Writing question. The fix flow is scoped to math only. Click to force a fix anyway.'
+                : clean
+                  ? 'This row looks clean already. Click to force a re-fix anyway.'
+                  : 'Send this question to Claude for HTML cleanup'
             }
           >
             Fix with Claude
