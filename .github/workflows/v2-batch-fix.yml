@@ -1,0 +1,132 @@
+name: Questions V2 Batch Fix
+
+# Manual-only workflow. Triggers one of the scripts in /scripts that
+# batch-process questions_v2 rows through Claude's Message Batches API
+# for HTML cleanup. Designed so an admin without terminal access can
+# run submit / collect from the GitHub Actions web UI.
+#
+# To use:
+#   1. Settings → Secrets and variables → Actions → New repository secret
+#      Add ANTHROPIC_API_KEY if it isn't already there.
+#      (SUPABASE_URL and SUPABASE_SERVICE_KEY are reused from the
+#      existing generate-graphs workflow.)
+#   2. Actions tab → "Questions V2 Batch Fix" → "Run workflow".
+#   3. Pick the action (submit / collect) and fill in the inputs.
+#   4. Watch the run log for batch id / result counts.
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'What to do'
+        required: true
+        type: choice
+        default: submit
+        options:
+          - submit
+          - collect
+      # ── submit inputs ────────────────────────────────────────────
+      limit:
+        description: '(submit) Max rows to submit. Leave blank for "all eligible".'
+        required: false
+        type: string
+      dry_run:
+        description: '(submit) Build and print the plan without actually submitting'
+        required: false
+        type: boolean
+        default: false
+      include_clean:
+        description: '(submit) Include rows that already look clean (default: skip them)'
+        required: false
+        type: boolean
+        default: false
+      include_approved:
+        description: '(submit) Also include rows already marked approved_at (default: only unapproved)'
+        required: false
+        type: boolean
+        default: false
+      # ── collect inputs ───────────────────────────────────────────
+      batch_id:
+        description: '(collect) Anthropic batch id to collect. Leave blank if collecting all pending.'
+        required: false
+        type: string
+      all_pending:
+        description: '(collect) Collect every batch id currently referenced by pending suggestions'
+        required: false
+        type: boolean
+        default: false
+      wait:
+        description: '(collect) Poll until the batch is finished before returning (up to the job timeout)'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    # Long enough to let --wait ride out a slow batch. Anthropic batches
+    # normally finish in minutes but can take up to 24 hours; this cap
+    # is well below that, so if --wait hits the timeout the admin just
+    # re-runs the workflow with the same batch id (no --wait).
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund @supabase/supabase-js
+
+      - name: Run submit
+        if: ${{ inputs.action == 'submit' }}
+        env:
+          # The scripts use the Next.js naming convention for these
+          # two, so we rename from the existing repo secrets.
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.limit }}" ]; then
+            ARGS="$ARGS --limit=${{ inputs.limit }}"
+          fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          if [ "${{ inputs.include_clean }}" = "true" ]; then
+            ARGS="$ARGS --include-clean"
+          fi
+          if [ "${{ inputs.include_approved }}" = "true" ]; then
+            ARGS="$ARGS --all"
+          fi
+          echo "Running: node scripts/v2-batch-fix-submit.mjs $ARGS"
+          node scripts/v2-batch-fix-submit.mjs $ARGS
+
+      - name: Run collect
+        if: ${{ inputs.action == 'collect' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.batch_id }}" ]; then
+            ARGS="$ARGS --batch-id=${{ inputs.batch_id }}"
+          fi
+          if [ "${{ inputs.all_pending }}" = "true" ]; then
+            ARGS="$ARGS --all-pending"
+          fi
+          if [ "${{ inputs.wait }}" = "true" ]; then
+            ARGS="$ARGS --wait"
+          fi
+          if [ -z "${{ inputs.batch_id }}" ] && [ "${{ inputs.all_pending }}" != "true" ]; then
+            echo "Error: either batch_id or all_pending must be provided for the collect action." >&2
+            exit 1
+          fi
+          echo "Running: node scripts/v2-batch-fix-collect.mjs $ARGS"
+          node scripts/v2-batch-fix-collect.mjs $ARGS
