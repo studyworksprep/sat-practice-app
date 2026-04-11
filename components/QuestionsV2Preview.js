@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import HtmlBlock from './HtmlBlock';
+import { isAlreadyClean } from '../lib/questionsV2Hygiene';
 
 // Mirrors the helper in app/practice/[questionId]/page.js so the preview
 // renders free-response correct answers the same way as the real question
@@ -51,6 +52,7 @@ function QuestionV2Card({ question, index, onFix }) {
   const correctLabel = correct.option_label || null;
   const correctLabels = Array.isArray(correct.option_labels) ? correct.option_labels : [];
   const correctTextArr = formatCorrectText(correct.text);
+  const clean = useMemo(() => isAlreadyClean(question), [question]);
 
   const [showExplanation, setShowExplanation] = useState(false);
 
@@ -142,12 +144,29 @@ function QuestionV2Card({ question, index, onFix }) {
               <span className="kbd" style={{ fontSize: 11 }}>{question.source_id}</span>
             </span>
           ) : null}
+          {clean ? (
+            <span
+              className="pill"
+              style={{ borderColor: '#15803d', background: '#f0fdf4', color: '#15803d' }}
+              title="No CollegeBoard formatting garbage detected — this row doesn't need a Claude fix."
+            >
+              ✓ Clean
+            </span>
+          ) : null}
           <button
             type="button"
             className="btn secondary"
-            style={{ fontSize: 11, padding: '4px 10px' }}
+            style={{
+              fontSize: 11,
+              padding: '4px 10px',
+              opacity: clean ? 0.55 : 1,
+            }}
             onClick={() => onFix?.(question)}
-            title="Send this question to Claude for HTML cleanup"
+            title={
+              clean
+                ? 'This row looks clean already. Click to force a re-fix anyway.'
+                : 'Send this question to Claude for HTML cleanup'
+            }
           >
             Fix with Claude
           </button>
@@ -497,6 +516,7 @@ export default function QuestionsV2Preview() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [approvedFilter, setApprovedFilter] = useState('unapproved'); // 'unapproved' | 'approved' | 'all'
+  const [hideClean, setHideClean] = useState(false);
 
   const [approvedCount, setApprovedCount] = useState(0);
   const [unapprovedCount, setUnapprovedCount] = useState(0);
@@ -534,6 +554,16 @@ export default function QuestionsV2Preview() {
   }, [limit, offset, type, domain, search, approvedFilter]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Client-side filter: hide rows that already look clean when the
+  // toggle is on. We filter after the server fetch (rather than sending
+  // a query param) so pagination totals stay honest — the user is
+  // opting to temporarily hide rows from view, not requesting a
+  // different query.
+  const visibleQuestions = useMemo(
+    () => (hideClean ? questions.filter((q) => !isAlreadyClean(q)) : questions),
+    [questions, hideClean]
+  );
 
   const page = Math.floor(offset / limit) + 1;
   const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -703,6 +733,19 @@ export default function QuestionsV2Preview() {
           </select>
         </label>
 
+        <label
+          className="small"
+          style={{ display: 'flex', alignItems: 'center', gap: 6, alignSelf: 'flex-end', paddingBottom: 6 }}
+          title="Hide rows that already have clean HTML (no entities, no CollegeBoard classes, no img alt) from the visible list"
+        >
+          <input
+            type="checkbox"
+            checked={hideClean}
+            onChange={(e) => setHideClean(e.target.checked)}
+          />
+          Hide clean
+        </label>
+
         {filtersActive ? (
           <button className="btn secondary" type="button" onClick={resetFilters}>Reset</button>
         ) : null}
@@ -732,7 +775,7 @@ export default function QuestionsV2Preview() {
         </div>
       ) : null}
 
-      {questions.map((q, i) => (
+      {visibleQuestions.map((q, i) => (
         <QuestionV2Card
           key={q.id}
           question={q}
@@ -740,6 +783,21 @@ export default function QuestionsV2Preview() {
           onFix={setFixingQuestion}
         />
       ))}
+
+      {hideClean && !loading && questions.length > 0 && visibleQuestions.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center' }}>
+          <p className="muted small">
+            Every row on this page looks clean — hidden by the filter.
+            Turn off <strong>Hide clean</strong> to see them, or go to the next page.
+          </p>
+        </div>
+      ) : null}
+
+      {hideClean && visibleQuestions.length > 0 && visibleQuestions.length < questions.length ? (
+        <p className="muted small" style={{ textAlign: 'center', margin: '0 0 12px' }}>
+          Hiding {questions.length - visibleQuestions.length} clean row{questions.length - visibleQuestions.length === 1 ? '' : 's'} on this page.
+        </p>
+      ) : null}
 
       {/* ── Pagination + Approve batch ── */}
       {questions.length > 0 ? (
