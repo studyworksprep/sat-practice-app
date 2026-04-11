@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Filters from '../../components/Filters';
 import Toast from '../../components/Toast';
 import { useTestType } from '../../lib/TestTypeContext';
+import { savePracticeSession } from '../../lib/practiceSessionStorage';
 
 const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
 
@@ -140,18 +141,16 @@ export default function PracticePage() {
       for (let i = 0; i < sessionQs.length; i++) h = ((h << 5) + h) ^ sessionQs.charCodeAt(i);
       const sid = (h >>> 0).toString(36);
 
-      // Cache question IDs + full item metadata in localStorage for prev/next navigation + map
-      localStorage.setItem(`practice_session_${sid}`, ids.join(','));
-      localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(items));
-      localStorage.setItem(
-        `practice_session_${sid}_meta`,
-        JSON.stringify({
-          sessionQueryString: sessionQs,
-          totalCount: ids.length,
-          cachedCount: ids.length,
-          cachedAt: new Date().toISOString(),
-        })
-      );
+      // Cache question IDs + trimmed item metadata in localStorage for
+      // prev/next navigation + map. savePracticeSession trims fields,
+      // does LRU eviction, and recovers from quota errors. Returns
+      // false on hard failure but never throws — the session still
+      // launches, it just won't have a cached map.
+      savePracticeSession(sid, ids, items, {
+        sessionQueryString: sessionQs,
+        totalCount: ids.length,
+        cachedCount: ids.length,
+      });
 
       // Navigate to the first question
       const firstId = ids[0];
@@ -232,17 +231,11 @@ export default function PracticePage() {
 
               const allItems = (j2.items || []).filter((q) => q?.question_id);
               const all = allItems.map((q) => q.question_id);
-              localStorage.setItem(fullKey, all.join(','));
-              localStorage.setItem(`${fullKey}_items`, JSON.stringify(allItems));
-              localStorage.setItem(
-                metaKey,
-                JSON.stringify({
-                  sessionQueryString,
-                  totalCount: Number(json.totalCount || 0),
-                  cachedCount: all.length,
-                  cachedAt: new Date().toISOString(),
-                })
-              );
+              savePracticeSession(sessionId, all, allItems, {
+                sessionQueryString,
+                totalCount: Number(json.totalCount || 0),
+                cachedCount: all.length,
+              });
             } catch {
               // ignore caching errors; app falls back to neighbour scheme
             }

@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTestType } from '../../lib/TestTypeContext';
+import { savePracticeSession } from '../../lib/practiceSessionStorage';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
 const SUBJECT_LABEL = { rw: 'R&W', RW: 'R&W', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
@@ -317,8 +318,9 @@ const SessionCard = memo(function SessionCard({ session, index }) {
   function handleTileClick(qIndex) {
     const ids = questions.map(q => q.question_id);
     const sid = `dashboard_${Date.now()}_${index}`;
-    localStorage.setItem(`practice_session_${sid}`, ids.join(','));
-    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+    savePracticeSession(
+      sid,
+      ids,
       questions.map(q => ({
         question_id: q.question_id,
         difficulty: q.difficulty,
@@ -327,14 +329,13 @@ const SessionCard = memo(function SessionCard({ session, index }) {
         marked_for_review: false,
         domain_name: q.domain_name,
         skill_name: q.skill_name,
-      }))
-    ));
-    localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
-      sessionQueryString: `session=1&replay=1`,
-      totalCount: ids.length,
-      cachedCount: ids.length,
-      cachedAt: new Date().toISOString(),
-    }));
+      })),
+      {
+        sessionQueryString: `session=1&replay=1`,
+        totalCount: ids.length,
+        cachedCount: ids.length,
+      }
+    );
 
     const qid = questions[qIndex].question_id;
     router.push(
