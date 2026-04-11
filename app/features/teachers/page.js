@@ -5,7 +5,6 @@ import FeatureSlideshow, { SlideHero, SlideFeatures, SlideScreenshot, SlidePrici
 const I = (d) => <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d={d}/></svg>;
 const PURPLE = '#7c3aed';
 const GREEN = '#059669';
-const AMBER = '#d97706';
 
 const slides = [
   {
@@ -127,18 +126,6 @@ const slides = [
         alt="Score patterns and actionable data"
         title="Actionable, Exportable Data"
         description="Track score patterns over time and see exactly which areas are improving and which are plateauing. The system suggests review areas based on where students have the most room to grow. All data is exportable, making it easy to create detailed progress reports for families or incorporate student performance data into other platforms you already use."
-      />
-    ),
-  },
-  {
-    content: (
-      <SlideFeatures
-        label="Your Own Training"
-        title="Stay Sharp"
-        color={AMBER}
-        features={[
-          { icon: I('M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3 1 9l11 6 9-4.91V17h2V9L12 3z'), title: 'Full Platform Access', desc: 'Take every test, answer every question. Your own data is tracked separately in your Training profile.' },
-        ]}
       />
     ),
   },
