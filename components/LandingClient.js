@@ -158,6 +158,16 @@ export default function LandingClient({ emailConfirmed }) {
               </span>
               <svg viewBox="0 0 20 20" width="20" height="20" style={{ flexShrink: 0, color: 'var(--accent)', marginLeft: 'auto' }}><path fill="currentColor" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z"/></svg>
             </a>
+            <a href="/features/tutor-managers" className="landingFeatureLink landingFeatureLinkLarge">
+              <span className="landingFeatureLinkIcon landingFeatureLinkIconLg">
+                <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+              </span>
+              <span>
+                <strong style={{ fontSize: 16 }}>I&rsquo;m a Tutor Manager</strong>
+                <span className="muted" style={{ display: 'block', fontSize: 13, marginTop: 2 }}>Run a tutoring team with real-time visibility</span>
+              </span>
+              <svg viewBox="0 0 20 20" width="20" height="20" style={{ flexShrink: 0, color: 'var(--accent)', marginLeft: 'auto' }}><path fill="currentColor" d="M7.3 14.7a1 1 0 010-1.4L10.6 10 7.3 6.7a1 1 0 011.4-1.4l4 4a1 1 0 010 1.4l-4 4a1 1 0 01-1.4 0z"/></svg>
+            </a>
           </div>
         </div>
 

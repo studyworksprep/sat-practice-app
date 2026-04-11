@@ -26,6 +26,13 @@ const panelStyle = {
   width: '100%',
 };
 
+// Every SlideScreenshot renders its image inside this same
+// fixed-size frame so consecutive slides don't jump in height when
+// the underlying screenshots have different aspect ratios. The
+// source PNGs range from 0.64 (tall portrait) to 2.0 (wide short),
+// which made the panel bounce by nearly 3x without a frame.
+const SCREENSHOT_FRAME_HEIGHT = 480;
+
 export default function FeatureSlideshow({ slides }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -200,10 +207,36 @@ export function SlideScreenshot({ src, alt, title, description }) {
           {title && <h2 style={{ fontSize: 26, fontWeight: 800, margin: '0 0 10px', color: 'var(--text)' }}>{title}</h2>}
           {description && <p style={{ fontSize: 15, color: 'var(--muted)', margin: 0, lineHeight: 1.7 }}>{description}</p>}
         </div>
-        {/* Image */}
+        {/* Image — fixed-height frame + object-fit: contain so wide
+            and tall screenshots letterbox into the same visual box
+            and the slideshow doesn't jump in height between slides. */}
         {visible && (
-          <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.07)', background: '#f8fafc', padding: 2 }}>
-            <img src={src} alt={alt} style={{ width: '100%', display: 'block', borderRadius: 10 }}
+          <div
+            style={{
+              borderRadius: 12,
+              overflow: 'hidden',
+              border: '1px solid var(--border)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.07)',
+              background: 'linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)',
+              padding: 2,
+              height: SCREENSHOT_FRAME_HEIGHT,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <img
+              src={src}
+              alt={alt}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '100%',
+                width: 'auto',
+                height: 'auto',
+                display: 'block',
+                borderRadius: 10,
+                objectFit: 'contain',
+              }}
               onError={() => setVisible(false)}
             />
           </div>

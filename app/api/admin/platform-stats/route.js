@@ -24,72 +24,105 @@ export async function GET() {
   const d30 = new Date(now); d30.setDate(d30.getDate() - 30);
 
   // ── 1) Active Users ─────────────────────────────────────────────
-  // "Active" = has at least one attempt in the period
+  // "Active" = has at least one attempt in the period. Counting
+  // distinct user_ids requires either an RPC (fast) or loading every
+  // attempt row (slow and risks truncation).
   const [au1, au7, au30] = await Promise.all([
     supabase.rpc('count_distinct_users_since', { since: todayStart.toISOString() }),
     supabase.rpc('count_distinct_users_since', { since: d7.toISOString() }),
     supabase.rpc('count_distinct_users_since', { since: d30.toISOString() }),
   ]);
 
-  // Fallback: if RPC doesn't exist, query directly
-  let activeToday = au1?.data ?? null;
-  let active7d = au7?.data ?? null;
-  let active30d = au30?.data ?? null;
+  let activeToday = au1?.error ? null : au1?.data ?? null;
+  let active7d    = au7?.error ? null : au7?.data ?? null;
+  let active30d   = au30?.error ? null : au30?.data ?? null;
 
+  // Fallback: RPC is missing or errored. Page through attempts ordered
+  // by created_at DESC, dedup user_ids locally. The previous version
+  // used `.limit(50000)` WITHOUT `.order()`, which had PostgREST return
+  // the oldest 50k rows and silently truncate recent activity — so
+  // Active Users looked wrong once attempt volume passed 50k in the
+  // 30-day window. Ordered pagination fixes that: we always see the
+  // most recent rows first and can short-circuit once we've walked the
+  // full 30-day window.
   if (activeToday === null || active7d === null || active30d === null) {
-    const { data: allAttempts } = await supabase
-      .from('attempts')
-      .select('user_id, created_at')
-      .gte('created_at', d30.toISOString())
-      .limit(50000);
-
+    const PAGE = 1000;
+    const MAX_PAGES = 100; // 100k rows max; plenty for a single month
     const users1 = new Set();
     const users7 = new Set();
     const users30 = new Set();
-    for (const a of allAttempts || []) {
-      const t = new Date(a.created_at);
-      users30.add(a.user_id);
-      if (t >= d7) users7.add(a.user_id);
-      if (t >= todayStart) users1.add(a.user_id);
+    let page = 0;
+    let done = false;
+    while (!done && page < MAX_PAGES) {
+      const from = page * PAGE;
+      const { data: rows, error } = await supabase
+        .from('attempts')
+        .select('user_id, created_at')
+        .gte('created_at', d30.toISOString())
+        .order('created_at', { ascending: false })
+        .range(from, from + PAGE - 1);
+      if (error || !rows || rows.length === 0) break;
+      for (const a of rows) {
+        const t = new Date(a.created_at);
+        users30.add(a.user_id);
+        if (t >= d7) users7.add(a.user_id);
+        if (t >= todayStart) users1.add(a.user_id);
+      }
+      if (rows.length < PAGE) done = true;
+      page++;
     }
     activeToday = users1.size;
     active7d = users7.size;
     active30d = users30.size;
   }
 
-  // Active users by role (last 30 days)
-  const { data: activeByRoleRows } = await supabase
-    .from('attempts')
-    .select('user_id')
-    .gte('created_at', d30.toISOString())
-    .limit(50000);
-
-  const activeUserIds30 = [...new Set((activeByRoleRows || []).map(r => r.user_id))];
+  // Active users by role (last 30 days). Same ordered-pagination
+  // strategy so we don't silently drop recent users.
   const activeByRole = { student: 0, teacher: 0, manager: 0, admin: 0, practice: 0 };
+  {
+    const PAGE = 1000;
+    const MAX_PAGES = 100;
+    const userIds = new Set();
+    let page = 0;
+    let done = false;
+    while (!done && page < MAX_PAGES) {
+      const from = page * PAGE;
+      const { data: rows, error } = await supabase
+        .from('attempts')
+        .select('user_id')
+        .gte('created_at', d30.toISOString())
+        .order('created_at', { ascending: false })
+        .range(from, from + PAGE - 1);
+      if (error || !rows || rows.length === 0) break;
+      for (const r of rows) if (r.user_id) userIds.add(r.user_id);
+      if (rows.length < PAGE) done = true;
+      page++;
+    }
 
-  if (activeUserIds30.length > 0) {
-    // Batch lookup in chunks of 200
-    for (let i = 0; i < activeUserIds30.length; i += 200) {
-      const chunk = activeUserIds30.slice(i, i + 200);
-      const { data: profs } = await supabase
-        .from('profiles')
-        .select('role')
-        .in('id', chunk);
-      for (const p of profs || []) {
-        if (activeByRole[p.role] !== undefined) activeByRole[p.role]++;
+    const activeUserIds30 = [...userIds];
+    if (activeUserIds30.length > 0) {
+      for (let i = 0; i < activeUserIds30.length; i += 200) {
+        const chunk = activeUserIds30.slice(i, i + 200);
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('role')
+          .in('id', chunk);
+        for (const p of profs || []) {
+          if (activeByRole[p.role] !== undefined) activeByRole[p.role]++;
+        }
       }
     }
   }
 
   // ── 2) Practice Volume (weekly, last 8 weeks) ──────────────────
-  const d56 = new Date(now); d56.setDate(d56.getDate() - 56);
-  const { data: volumeAttempts } = await supabase
-    .from('attempts')
-    .select('created_at, source')
-    .gte('created_at', d56.toISOString())
-    .limit(50000);
-
-  // Build weekly buckets
+  // The previous version loaded every attempt in the 8-week window
+  // into JS with `.limit(50000)` and bucketed them in memory. With no
+  // `.order()` clause PostgREST returned the OLDEST 50k rows, which
+  // silently truncated recent weeks — Practice Volume showed zero for
+  // everything after the first ~3 weeks of data. Replaced with a
+  // per-bucket count-exact query so the numbers are computed in the
+  // database and the data transfer stays constant regardless of
+  // actual attempt volume.
   const weeks = [];
   for (let i = 7; i >= 0; i--) {
     const wStart = new Date(now);
@@ -102,47 +135,50 @@ export async function GET() {
       label: wStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       start: wStart,
       end: wEnd,
-      questions: 0,
-      testQuestions: 0,
     });
   }
 
-  for (const a of volumeAttempts || []) {
-    const t = new Date(a.created_at);
-    for (const w of weeks) {
-      if (t >= w.start && t < w.end) {
-        w.questions++;
-        if (a.source === 'practice_test') w.testQuestions++;
-        break;
-      }
-    }
-  }
+  // For each week, fire three parallel count queries:
+  //   - total attempts
+  //   - attempts from a practice test
+  //   - completed practice tests finished in that week
+  // All use `count: 'exact', head: true` so only the count is
+  // transferred, no row data.
+  const weekCountPromises = weeks.flatMap((w) => {
+    const startIso = w.start.toISOString();
+    const endIso = w.end.toISOString();
+    return [
+      supabase
+        .from('attempts')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', startIso)
+        .lt('created_at', endIso),
+      supabase
+        .from('attempts')
+        .select('id', { count: 'exact', head: true })
+        .eq('source', 'practice_test')
+        .gte('created_at', startIso)
+        .lt('created_at', endIso),
+      supabase
+        .from('practice_test_attempts')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'completed')
+        .gte('finished_at', startIso)
+        .lt('finished_at', endIso),
+    ];
+  });
 
-  // Also count completed practice tests
-  const { data: completedTests } = await supabase
-    .from('practice_test_attempts')
-    .select('finished_at')
-    .eq('status', 'completed')
-    .gte('finished_at', d56.toISOString())
-    .limit(10000);
+  const weekCountResults = await Promise.all(weekCountPromises);
 
-  const weeklyTests = weeks.map(w => ({ ...w, testsCompleted: 0 }));
-  for (const t of completedTests || []) {
-    const dt = new Date(t.finished_at);
-    for (const w of weeklyTests) {
-      if (dt >= w.start && dt < w.end) {
-        w.testsCompleted++;
-        break;
-      }
-    }
-  }
-
-  const volumeWeeks = weeklyTests.map(w => ({
-    label: w.label,
-    questions: w.questions,
-    testQuestions: w.testQuestions,
-    testsCompleted: w.testsCompleted,
-  }));
+  const volumeWeeks = weeks.map((w, i) => {
+    const [totalRes, testQRes, testsRes] = weekCountResults.slice(i * 3, i * 3 + 3);
+    return {
+      label: w.label,
+      questions: totalRes?.count ?? 0,
+      testQuestions: testQRes?.count ?? 0,
+      testsCompleted: testsRes?.count ?? 0,
+    };
+  });
 
   // ── 3) Feature Adoption (last 30 days) ─────────────────────────
   // Count distinct users who used each feature, separated by role.
