@@ -8098,3 +8098,126 @@ hr{
   color: var(--muted);
   margin-top: auto;
 }
+
+/* ═══════════════════════════════════════════════════════
+   Answer-choice tags — hover-revealed wrong-answer tags
+   for teachers/managers/admins. Hidden from students.
+   Hidden by default so teachers screen-sharing a question
+   don't accidentally reveal the wrong-answer analysis.
+   ═══════════════════════════════════════════════════════ */
+.option,
+.ptrvReviewOption{
+  position: relative;
+}
+
+.acTagsWrap{
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+}
+.option:hover .acTagsWrap,
+.ptrvReviewOption:hover .acTagsWrap,
+.acTagsWrap.open{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.acTagsRow{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+  max-width: 260px;
+}
+
+.acTagChip{
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.acTagChipRemove{
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #b91c1c;
+  font-size: 13px;
+  padding: 0 0 0 2px;
+  line-height: 1;
+  opacity: 0.7;
+}
+.acTagChipRemove:hover{ opacity: 1; }
+
+.acTagAddBtn{
+  background: rgba(17, 24, 39, 0.04);
+  border: 1px dashed rgba(17, 24, 39, 0.25);
+  color: rgba(17, 24, 39, 0.6);
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.acTagAddBtn:hover{
+  background: rgba(17, 24, 39, 0.08);
+  border-color: rgba(17, 24, 39, 0.45);
+  color: rgba(17, 24, 39, 0.85);
+}
+
+.acTagPopover{
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 260px;
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  z-index: 20;
+}
+
+.acTagSuggestions{
+  max-height: 180px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border, #eee);
+  padding-top: 4px;
+}
+
+.acTagSuggestion{
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 8px;
+  font-size: 13px;
+  border-radius: 4px;
+  color: var(--text, #333);
+}
+.acTagSuggestion:hover{
+  background: rgba(17, 24, 39, 0.05);
+}
+.acTagSuggestionCreate{
+  color: var(--accent, #4f7ce0);
+  font-weight: 500;
+}

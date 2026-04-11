@@ -7,6 +7,7 @@ import Link from 'next/link';
 import HtmlBlock from '../../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../../components/QuestionNotes';
 import ConceptTags from '../../../../../components/ConceptTags';
+import AnswerChoiceTags from '../../../../../components/AnswerChoiceTags';
 import DesmosStateButton from '../../../../../components/DesmosStateButton';
 import FlashcardsModal from '../../../../../components/FlashcardsModal';
 
@@ -595,14 +596,24 @@ function QuestionDetail({ q, allQuestions, onSelect, onOpenFlashcards, onToggleE
 
         {q.options?.length > 0 && (
           <div className="optionList ptrvOptionList">
-            {q.options.map((opt) => (
-              <div key={opt.id} className="option ptrvReviewOption">
-                <span className="optionBadge">{opt.label}</span>
-                <div className="optionContent">
-                  <HtmlBlock html={opt.content_html || ''} className="prose" />
+            {q.options.map((opt) => {
+              const optIsCorrect =
+                opt.id === correctOptionId || correctOptionIds.includes(opt.id);
+              return (
+                <div key={opt.id} className="option ptrvReviewOption">
+                  <span className="optionBadge">{opt.label}</span>
+                  <div className="optionContent">
+                    <HtmlBlock html={opt.content_html || ''} className="prose" />
+                  </div>
+                  <AnswerChoiceTags
+                    questionId={q.question_id}
+                    optionLabel={opt.label}
+                    isCorrect={optIsCorrect}
+                    userRole={userRole}
+                  />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
