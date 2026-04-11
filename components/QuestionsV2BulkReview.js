@@ -110,6 +110,41 @@ export default function QuestionsV2BulkReview() {
     }
   }
 
+  // Bulk-reject every collected suggestion in the current classification
+  // filter (across all pages, not just the visible page). Confirms first
+  // because it's irreversible.
+  async function rejectAllInFilter() {
+    if (!classification) return;
+    const count = counts[classification] || 0;
+    if (count === 0) return;
+    const ok = window.confirm(
+      `Reject all ${count} "${classification}" suggestion${count === 1 ? '' : 's'} across every page?\n\n` +
+        `This cannot be undone. The corresponding questions will become eligible for a new batch submission.`
+    );
+    if (!ok) return;
+
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/admin/questions-v2/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject_by_filter', classification }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to reject');
+      setMessage({
+        kind: 'ok',
+        text: `Rejected ${json.rejected} ${classification} suggestion${json.rejected === 1 ? '' : 's'}.`,
+      });
+      await load();
+    } catch (e) {
+      setMessage({ kind: 'err', text: e.message || String(e) });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const applySelected = () => doAction('apply', Array.from(selected));
   const rejectSelected = () => doAction('reject', Array.from(selected));
   const applyAllOnPage = () => doAction('apply', suggestions.map((s) => s.id));
@@ -219,6 +254,23 @@ export default function QuestionsV2BulkReview() {
             disabled={busy || selected.size === 0}
           >
             Reject selected ({selected.size})
+          </button>
+          <button
+            className="btn secondary"
+            type="button"
+            onClick={rejectAllInFilter}
+            disabled={busy || !classification || (counts[classification] || 0) === 0}
+            title={
+              classification
+                ? `Reject every ${classification} suggestion across all pages. Useful for wiping a bad batch after a prompt fix.`
+                : 'Pick a classification filter first'
+            }
+            style={{
+              borderColor: '#b91c1c',
+              color: '#b91c1c',
+            }}
+          >
+            Reject all {classification ? counts[classification] || 0 : 0} {classification || ''}
           </button>
         </div>
       </div>

@@ -128,10 +128,37 @@ function normalizeOptions(opts) {
     }));
 }
 
-// Classify the diff between source and suggestion. Three buckets:
+// Strip HTML tags + decode common entities + normalize whitespace so
+// two strings can be compared on "visible text" alone, independent of
+// markup and formatting.
+function reduce(s) {
+  return String(s || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&(?:rsquo|lsquo);/g, "'")
+    .replace(/&(?:ldquo|rdquo);/g, '"')
+    .replace(/&(?:mdash|ndash);/g, '-')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&deg;/g, '°')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+// Maximum fraction of the source's visible text that a suggestion is
+// allowed to drop before we flag it as a content-drop error. Set
+// deliberately tight because Claude's cleanup should only ever be
+// dropping HTML markup, not text the user would actually see.
+const MAX_CONTENT_DROP_RATIO = 0.15;
+
+// Classify the diff between source and suggestion. Four buckets:
 //   - identical:   the suggestion is bit-for-bit the source
 //   - trivial:     only whitespace / entity / class-attribute changes
-//   - non_trivial: everything else (structural, math, content shifts)
+//   - non_trivial: structural rewrites, math changes, etc.
+//   - error:       the suggestion dropped too much visible text OR
+//                  shows a different option count than the source
+// Returns { classification, errorMessage } — errorMessage is non-null
+// only for the 'error' bucket so the admin can see why it was flagged.
 function classifyDiff(source, suggestion) {
   const srcStem = (source.stem_html || '').trim();
   const sugStem = (suggestion.stem_html || '').trim();
@@ -140,41 +167,57 @@ function classifyDiff(source, suggestion) {
   const srcOpts = normalizeOptions(source.options || []);
   const sugOpts = normalizeOptions(suggestion.options || []);
 
+  // Option-count mismatch is always an error: Claude dropped or
+  // invented an answer choice.
+  if (srcOpts.length !== sugOpts.length && srcOpts.length > 0) {
+    return {
+      classification: 'error',
+      errorMessage: `Option count changed from ${srcOpts.length} to ${sugOpts.length}`,
+    };
+  }
+
+  // Content-drop check. Compare the TOTAL visible text on each side;
+  // if the suggestion's visible text is more than MAX_CONTENT_DROP_RATIO
+  // shorter than the source's, something got dropped. This catches
+  // table captions, data rows, paragraph chunks, etc. that the model
+  // silently deleted — the kind of bug that would otherwise land as
+  // an innocent-looking "non_trivial" row.
+  const srcText =
+    reduce(srcStem) + ' ' + reduce(srcStim) + ' ' + srcOpts.map((o) => reduce(o.content_html)).join(' ');
+  const sugText =
+    reduce(sugStem) + ' ' + reduce(sugStim) + ' ' + sugOpts.map((o) => reduce(o.content_html)).join(' ');
+
+  if (srcText.length > 0) {
+    const dropRatio = 1 - sugText.length / srcText.length;
+    if (dropRatio > MAX_CONTENT_DROP_RATIO) {
+      return {
+        classification: 'error',
+        errorMessage: `Suggestion dropped ${Math.round(dropRatio * 100)}% of visible text (${srcText.length}→${sugText.length} chars)`,
+      };
+    }
+  }
+
   if (
     srcStem === sugStem &&
     srcStim === sugStim &&
     JSON.stringify(srcOpts) === JSON.stringify(sugOpts)
   ) {
-    return 'identical';
+    return { classification: 'identical', errorMessage: null };
   }
 
-  // Reduce each side to a "semantic shape": lowercase, strip all HTML
-  // tags, collapse whitespace, decode common entities. If the two
-  // shapes match the diff is purely cosmetic — trivial.
-  const reduce = (s) =>
-    String(s || '')
-      .replace(/<[^>]+>/g, '')
-      .replace(/&(?:rsquo|lsquo);/g, "'")
-      .replace(/&(?:ldquo|rdquo);/g, '"')
-      .replace(/&(?:mdash|ndash);/g, '-')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&deg;/g, '°')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
-
+  // "Trivial" means the reduced (tag-stripped, entity-decoded,
+  // whitespace-collapsed, lowercased) shapes are identical — only
+  // cosmetic changes.
   const srcShape = reduce(srcStem) + '|' + reduce(srcStim);
   const sugShape = reduce(sugStem) + '|' + reduce(sugStim);
-
   const srcOptShape = srcOpts.map((o) => reduce(o.content_html)).join('|');
   const sugOptShape = sugOpts.map((o) => reduce(o.content_html)).join('|');
 
   if (srcShape === sugShape && srcOptShape === sugOptShape) {
-    return 'trivial';
+    return { classification: 'trivial', errorMessage: null };
   }
 
-  return 'non_trivial';
+  return { classification: 'non_trivial', errorMessage: null };
 }
 
 async function collect(batchId) {
@@ -285,13 +328,20 @@ async function collect(batchId) {
       options: row.source_options,
     };
 
-    const classification = classifyDiff(source, suggestion);
+    const { classification, errorMessage } = classifyDiff(source, suggestion);
+
+    // Suggestions that fail our sanity checks (content dropped, option
+    // count changed) land as 'failed' with the reason in error_message,
+    // NOT as 'collected' + non_trivial. This keeps the Bulk Review UI
+    // from ever surfacing a broken suggestion as if it were reviewable.
+    const isErr = classification === 'error';
 
     await supabase
       .from('questions_v2_fix_suggestions')
       .update({
-        status: 'collected',
+        status: isErr ? 'failed' : 'collected',
         diff_classification: classification,
+        error_message: errorMessage,
         suggested_stimulus_html: suggestion.stimulus_html,
         suggested_stem_html: suggestion.stem_html,
         suggested_options: suggestion.options,
@@ -299,16 +349,21 @@ async function collect(batchId) {
       })
       .eq('id', row.id);
 
-    counts.collected++;
+    if (isErr) {
+      counts.failed++;
+    } else {
+      counts.collected++;
+    }
     counts[classification] = (counts[classification] || 0) + 1;
   }
 
   console.log(`\n✓ Batch ${batchId} collected.`);
   console.log(`  collected:   ${counts.collected}`);
   console.log(`  failed:      ${counts.failed}`);
-  console.log(`  identical:   ${counts.identical}`);
-  console.log(`  trivial:     ${counts.trivial}`);
-  console.log(`  non_trivial: ${counts.non_trivial}`);
+  console.log(`  identical:   ${counts.identical || 0}`);
+  console.log(`  trivial:     ${counts.trivial || 0}`);
+  console.log(`  non_trivial: ${counts.non_trivial || 0}`);
+  console.log(`  error:       ${counts.error || 0}  (sanity-check failures — dropped content or option-count mismatch)`);
   if (counts.missing > 0) {
     console.log(`  missing:     ${counts.missing}  (results without a matching pending row — probably submitted before this script was run)`);
   }

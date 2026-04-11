@@ -90,15 +90,48 @@ export async function POST(request) {
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
-  const { action, ids } = body || {};
-  if (!action || !Array.isArray(ids) || ids.length === 0) {
-    return NextResponse.json(
-      { error: 'action and ids (non-empty array) required' },
-      { status: 400 }
-    );
+  const { action, ids, classification } = body || {};
+  if (!action) {
+    return NextResponse.json({ error: 'action required' }, { status: 400 });
   }
 
   const admin = createServiceClient();
+
+  // Bulk reject every collected suggestion matching a classification
+  // filter. Used for "the prompt was buggy, nuke the N bad rows so I
+  // can re-submit" workflows. Does NOT require an ids array — the
+  // filter is the target.
+  if (action === 'reject_by_filter') {
+    if (!classification) {
+      return NextResponse.json(
+        { error: 'classification required for reject_by_filter' },
+        { status: 400 }
+      );
+    }
+    const nowIso = new Date().toISOString();
+    const { error, count } = await admin
+      .from('questions_v2_fix_suggestions')
+      .update(
+        {
+          status: 'rejected',
+          reviewed_by: user.id,
+          reviewed_at: nowIso,
+        },
+        { count: 'exact' }
+      )
+      .eq('status', 'collected')
+      .eq('diff_classification', classification);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true, rejected: count || 0, classification });
+  }
+
+  // All remaining actions require an ids array.
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return NextResponse.json(
+      { error: 'ids (non-empty array) required for this action' },
+      { status: 400 }
+    );
+  }
 
   if (action === 'reject') {
     const { error } = await admin
