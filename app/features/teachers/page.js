@@ -35,20 +35,40 @@ const slides = [
   {
     content: (
       <SlideScreenshot
-        src="/screenshots/teacher-dashboard.png"
-        alt="Teacher dashboard"
+        src="/screenshots/teacher-dashboard-1.png"
+        alt="Teacher dashboard — roster overview"
         title="Your Command Center"
-        description="See your entire roster at a glance: who's been active, who's improving, and who needs attention. Performance metrics are groupable by class, so you can compare cohorts. Active assignments with real-time completion tracking keep you on top of every student's workload without chasing them down."
+        description="See your entire roster at a glance: who's been active, who's improving, and who needs attention. Performance metrics are groupable by class, so you can compare cohorts and spot the trends that matter before they become problems."
       />
     ),
   },
   {
     content: (
       <SlideScreenshot
-        src="/screenshots/teacher-student-detail-1.png"
-        alt="Student practice record"
-        title="Every Detail, One Click Away"
-        description="Click any student to see their complete practice record. Domain-by-domain accuracy with difficulty breakdowns, total questions attempted, recent accuracy trends, and practice test history. You'll know more about your student's SAT readiness than they do, and you'll have the data to prove it."
+        src="/screenshots/teacher-dashboard-2.png"
+        alt="Teacher dashboard — assignments and activity"
+        title="Assignments and Activity, Live"
+        description="Scroll down on the same dashboard and you get real-time completion tracking for every active assignment, recent session activity across your whole roster, and a running tally of practice volume. No more chasing students down for updates — the data comes to you."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideScreenshot
+        src="/screenshots/teacher-student-detail-1a.png"
+        alt="Student detail — overview header"
+        title="Every Student, Fully Visible"
+        description="Click any student to open their profile. The header gives you their vitals at a glance: target score, most recent test, active assignments, and recent activity. Everything you need to walk into a session already knowing where to start."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideScreenshot
+        src="/screenshots/teacher-student-detail-1b.png"
+        alt="Student detail — practice record"
+        title="The Complete Practice Record"
+        description="Below the header, the full practice record: domain-by-domain accuracy with difficulty breakdowns, total questions attempted, recent accuracy trends, and practice test history. You'll know more about your student's SAT readiness than they do, and you'll have the data to prove it."
       />
     ),
   },
@@ -83,10 +103,20 @@ const slides = [
   {
     content: (
       <SlideScreenshot
-        src="/screenshots/teacher-student-detail-2.png"
-        alt="Topic mastery"
+        src="/screenshots/teacher-student-detail-2a.png"
+        alt="Topic mastery — domain overview"
         title="Weighted Mastery Analysis"
-        description="Raw accuracy doesn't tell the full story. Our mastery algorithm weights each question by difficulty and score band, factors in practice volume and recency, and produces a true readiness score for every topic. This means you can confidently tell a student they've mastered Algebra but need more work on Geometry, backed by data, not guesswork."
+        description="Raw accuracy doesn't tell the full story. Our mastery algorithm weights each question by difficulty and score band, factors in practice volume and recency, and produces a true readiness score for every SAT domain — not just the percentage right."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideScreenshot
+        src="/screenshots/teacher-student-detail-2b.png"
+        alt="Topic mastery — per-skill drill-down"
+        title="Pinpoint What to Work On"
+        description="Drill deeper and every domain expands into a per-skill breakdown. You'll see exactly which skills are pulling the mastery score down, confidently tell a student they've nailed linear equations but need more work on systems, and make every session's focus decision backed by data instead of guesswork."
       />
     ),
   },

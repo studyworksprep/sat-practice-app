@@ -56,8 +56,8 @@ const slides = [
   {
     content: (
       <SlideScreenshot
-        src="/screenshots/score-report-1.png"
-        alt="Score report"
+        src="/screenshots/score-report-introview.png"
+        alt="Score report overview"
         title="Detailed Score Reports"
         description="After every practice test, you get a full score report that goes far beyond a single number. See your scaled scores, then dive into domain-by-domain and skill-by-skill breakdowns with difficulty-level analysis. Understand not just what you got wrong, but which difficulty bands are hurting your score the most."
       />
@@ -66,9 +66,9 @@ const slides = [
   {
     content: (
       <SlideScreenshot
-        src="/screenshots/score-report-2.png"
-        alt="Opportunity Index"
-        title="Find Your Best Path to Improvement"
+        src="/screenshots/score-report-bestview.png"
+        alt="Opportunity Index and advanced metrics"
+        title="Metrics You Won't Find Anywhere Else"
         description="The Opportunity Index is your secret weapon. It combines how many questions you missed in each skill with how learnable that skill is, then ranks them by potential score impact. The result: a prioritized list of exactly what to study next. You also get per-question timing data so you can see where you're spending too long and learn to pace yourself like test day."
       />
     ),
