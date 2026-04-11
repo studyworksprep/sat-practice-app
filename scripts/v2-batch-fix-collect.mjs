@@ -151,6 +151,44 @@ function reduce(s) {
 // dropping HTML markup, not text the user would actually see.
 const MAX_CONTENT_DROP_RATIO = 0.15;
 
+// Count every "math signal" in a string: \( … \), \[ … \], <math>,
+// and <img alt="…">. Claude's cleanup may convert <img alt> into LaTeX
+// (one signal out, one signal in) but should never reduce the total
+// count — that would mean an equation got dropped rather than
+// rewritten. Used as a drop-detection sanity check.
+function countMathSignals(text) {
+  if (!text) return 0;
+  const s = String(text);
+  const inline = (s.match(/\\\(/g) || []).length;
+  const display = (s.match(/\\\[/g) || []).length;
+  const mathTags = (s.match(/<math\b/gi) || []).length;
+  const imgAlt = (s.match(/<img\b[^>]*\balt=/gi) || []).length;
+  return inline + display + mathTags + imgAlt;
+}
+
+// Detect LaTeX environments that are not inside math-mode delimiters.
+// Bare "\begin{aligned}" (without a surrounding \[ … \] or \( … \))
+// renders as literal text in MathJax — always a bug. This walks every
+// \begin{…} occurrence in the string and checks whether it sits
+// inside an open \[ … \] or \( … \) delimiter pair.
+function hasUnwrappedEnvironment(text) {
+  if (!text || !text.includes('\\begin{')) return false;
+  for (const match of String(text).matchAll(/\\begin\{/g)) {
+    const before = String(text).slice(0, match.index);
+    const openDisplay = (before.match(/\\\[/g) || []).length;
+    const closeDisplay = (before.match(/\\\]/g) || []).length;
+    const openInline = (before.match(/\\\(/g) || []).length;
+    const closeInline = (before.match(/\\\)/g) || []).length;
+    // If we're inside an open display-math block, we're safe.
+    if (openDisplay > closeDisplay) continue;
+    // If we're inside an open inline-math block, we're safe.
+    if (openInline > closeInline) continue;
+    // Otherwise the \begin{…} is outside math mode — bug.
+    return true;
+  }
+  return false;
+}
+
 // Classify the diff between source and suggestion. Four buckets:
 //   - identical:   the suggestion is bit-for-bit the source
 //   - trivial:     only whitespace / entity / class-attribute changes
@@ -195,6 +233,57 @@ function classifyDiff(source, suggestion) {
         errorMessage: `Suggestion dropped ${Math.round(dropRatio * 100)}% of visible text (${srcText.length}→${sugText.length} chars)`,
       };
     }
+  }
+
+  // Math-signal preservation check. Catches the case where math
+  // content gets dropped (e.g. "\[ ax + by = b \]" in the source stem
+  // deleted from the suggestion) even though the raw text length is
+  // still within tolerance. Two separate checks because they catch
+  // different failure modes:
+  //
+  //   (a) STRICT display-math count: sugDisplay >= srcDisplay.
+  //       Catches the "display equation silently dropped" bug. We don't
+  //       allow any slop here because display equations are almost
+  //       always visually important content ("the equation above").
+  //       False positives from legit display→inline conversions are
+  //       rare and cheaply rejected by the admin.
+  //
+  //   (b) TOTAL math-signal count: sugMath >= srcMath - 1.
+  //       Broader safety net for inline math, <math> blocks, and
+  //       <img alt=> tags. The -1 slop covers the legitimate case
+  //       where two adjacent short expressions get merged into one.
+  const srcRaw =
+    (srcStim || '') + '\n' + (srcStem || '') + '\n' + srcOpts.map((o) => o.content_html || '').join('\n');
+  const sugRaw =
+    (sugStim || '') + '\n' + (sugStem || '') + '\n' + sugOpts.map((o) => o.content_html || '').join('\n');
+
+  const srcDisplay = (srcRaw.match(/\\\[/g) || []).length;
+  const sugDisplay = (sugRaw.match(/\\\[/g) || []).length;
+  if (sugDisplay < srcDisplay) {
+    return {
+      classification: 'error',
+      errorMessage: `Display equations dropped: source had ${srcDisplay} \\[…\\] block(s), suggestion has ${sugDisplay}`,
+    };
+  }
+
+  const srcMath = countMathSignals(srcRaw);
+  const sugMath = countMathSignals(sugRaw);
+  if (sugMath < srcMath - 1) {
+    return {
+      classification: 'error',
+      errorMessage: `Math content dropped: source had ${srcMath} math signals, suggestion has ${sugMath}`,
+    };
+  }
+
+  // Raw-environment check. \begin{aligned}, \begin{cases}, etc. MUST
+  // be inside \[ … \] or \( … \) — otherwise MathJax renders them as
+  // plain text. This caught a batch of "system of equations" options
+  // that were emitted as bare \begin{aligned} blocks.
+  if (hasUnwrappedEnvironment(sugRaw)) {
+    return {
+      classification: 'error',
+      errorMessage: 'Suggestion contains a \\begin{…} environment outside math-mode delimiters (would render as raw text)',
+    };
   }
 
   if (

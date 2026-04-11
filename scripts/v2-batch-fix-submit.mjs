@@ -28,7 +28,7 @@
 // ─────────────────────────────────────────────────────────────────────
 
 import { createClient } from '@supabase/supabase-js';
-import { pickModel, isAlreadyClean } from '../lib/questionsV2Hygiene.js';
+import { pickModel, isAlreadyClean, isMathQuestion } from '../lib/questionsV2Hygiene.js';
 import {
   SYSTEM_PROMPT,
   RETURN_FIXED_QUESTION_TOOL,
@@ -79,7 +79,7 @@ console.log('→ Loading candidate rows from questions_v2…');
 
 let query = supabase
   .from('questions_v2')
-  .select('id, question_type, stimulus_html, stem_html, options, display_code, approved_at')
+  .select('id, question_type, stimulus_html, stem_html, options, display_code, approved_at, domain_name')
   .order('created_at', { ascending: true });
 
 if (!ALL) query = query.is('approved_at', null);
@@ -103,14 +103,24 @@ if (penErr) {
 }
 const pendingSet = new Set((pending || []).map((r) => r.question_id));
 
-// ─── Filter out clean rows unless --include-clean ──────────────────
+// ─── Keep only math questions ──────────────────────────────────────
+// Reading & Writing questions render fine as-is and the rewrite rules
+// (italic-variable wrapping, dollar escaping, etc.) were designed for
+// math. Running them on RW prose mangles titles and emphasized words.
 let candidates = rows.filter((r) => !pendingSet.has(r.id));
+const beforePending = candidates.length;
+const beforeMath = candidates.length;
+candidates = candidates.filter((r) => isMathQuestion(r));
+const afterMath = candidates.length;
+
+// ─── Filter out clean rows unless --include-clean ──────────────────
 const beforeClean = candidates.length;
 if (!INCLUDE_CLEAN) {
   candidates = candidates.filter((r) => !isAlreadyClean(r));
 }
 const afterClean = candidates.length;
-console.log(`  after pending filter: ${beforeClean}`);
+console.log(`  after pending filter: ${beforePending}`);
+console.log(`  after math filter:    ${afterMath}  (dropped ${beforeMath - afterMath} non-math rows)`);
 console.log(`  after clean filter:   ${afterClean}  (dropped ${beforeClean - afterClean} clean rows)`);
 
 if (LIMIT && candidates.length > LIMIT) {

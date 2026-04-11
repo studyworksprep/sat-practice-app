@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
-import { isAlreadyClean, pickModel } from '../../../../../lib/questionsV2Hygiene';
+import { isAlreadyClean, isMathQuestion, pickModel } from '../../../../../lib/questionsV2Hygiene';
 import {
   SYSTEM_PROMPT,
   RETURN_FIXED_QUESTION_TOOL,
@@ -57,16 +57,40 @@ export async function POST(request) {
   const admin = createServiceClient();
   const { data: row, error: loadErr } = await admin
     .from('questions_v2')
-    .select('id, question_type, stimulus_html, stem_html, options, display_code')
+    .select('id, question_type, stimulus_html, stem_html, options, display_code, domain_name')
     .eq('id', id)
     .maybeSingle();
   if (loadErr) return NextResponse.json({ error: loadErr.message }, { status: 500 });
   if (!row) return NextResponse.json({ error: 'question not found' }, { status: 404 });
 
+  const force = body?.force === true;
+
+  // Scope gate: Reading and Writing questions are off-limits. Their
+  // italic formatting is prose emphasis (quoted titles, stressed
+  // words), not math variables, and the rewrite rules would mangle
+  // them with no visible upside. Admins can still force a fix with
+  // `{ force: true }` if they really want to.
+  if (!force && !isMathQuestion(row)) {
+    return NextResponse.json({
+      ok: true,
+      skipped: true,
+      reason: 'not_math',
+      suggestion: {
+        stimulus_html: row.stimulus_html || null,
+        stem_html: row.stem_html || '',
+        options: Array.isArray(row.options)
+          ? row.options
+              .slice()
+              .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
+              .map((o) => ({ label: o.label, content_html: o.content_html || '' }))
+          : [],
+      },
+    });
+  }
+
   // Fast path: if the row has no detectable CollegeBoard garbage,
   // don't burn a Claude call on it. Return the fields unchanged so
   // the UI can show "no fix needed" without round-tripping the API.
-  const force = body?.force === true;
   if (!force && isAlreadyClean(row)) {
     return NextResponse.json({
       ok: true,
