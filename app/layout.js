@@ -1,5 +1,6 @@
 import './globals.css';
 import NavBar from '../components/NavBar';
+import StorageHygiene from '../components/StorageHygiene';
 import Script from 'next/script';
 import { TestTypeProvider } from '../lib/TestTypeContext';
 
@@ -52,6 +53,10 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <TestTypeProvider>
+          {/* Mounts before NavBar so the practice_session_* LRU
+              cleanup runs before any of the legacy quota-prone
+              setItem paths can fire on the next page load. */}
+          <StorageHygiene />
           <NavBar />
           {children}
         </TestTypeProvider>
