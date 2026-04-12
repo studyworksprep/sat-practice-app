@@ -18,6 +18,12 @@ import { createClient, createServiceClient } from '../../../../../lib/supabase/s
 //   POST   { action: 'reject', ids: [uuid, uuid, ...] }
 //          → mark the suggestions as 'rejected' without touching
 //            questions_v2
+//
+//   POST   { action: 'update', id, stimulus_html?, stem_html?, options? }
+//          → patch a single collected suggestion's suggested_* fields
+//            so the admin can hand-edit a Claude output before applying.
+//            Does not touch questions_v2; the row stays in 'collected'
+//            until the admin explicitly Applies it.
 
 async function requireAdmin() {
   const supabase = createClient();
@@ -96,6 +102,70 @@ export async function POST(request) {
   }
 
   const admin = createServiceClient();
+
+  // Update a single collected suggestion in-place. Used by the Bulk
+  // Review UI's inline edit flow so an admin can tweak Claude's HTML
+  // output before applying it — e.g. fix a stray character, add a
+  // missing italic, rewrite a confusing cell in a table. The row stays
+  // in 'collected' status afterward; Apply is still a separate action.
+  //
+  // Body shape: { action: 'update', id, stimulus_html?, stem_html?, options? }
+  // Any field that's undefined is left alone; passing null explicitly
+  // clears stimulus_html (the only field that's legitimately nullable).
+  if (action === 'update') {
+    const { id, stimulus_html, stem_html, options } = body || {};
+    if (!id) {
+      return NextResponse.json(
+        { error: 'id required for update' },
+        { status: 400 }
+      );
+    }
+
+    const update = {};
+    if (stimulus_html !== undefined) update.suggested_stimulus_html = stimulus_html;
+    if (stem_html !== undefined) {
+      if (typeof stem_html !== 'string' || !stem_html.trim()) {
+        return NextResponse.json(
+          { error: 'stem_html cannot be empty' },
+          { status: 400 }
+        );
+      }
+      update.suggested_stem_html = stem_html;
+    }
+    if (options !== undefined) {
+      if (!Array.isArray(options)) {
+        return NextResponse.json(
+          { error: 'options must be an array' },
+          { status: 400 }
+        );
+      }
+      // Normalize to { label, content_html } shape and strip anything else.
+      update.suggested_options = options.map((o, i) => ({
+        label: o?.label ?? String.fromCharCode(65 + i),
+        content_html: typeof o?.content_html === 'string' ? o.content_html : '',
+      }));
+    }
+
+    if (Object.keys(update).length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+    }
+
+    const { data: updated, error } = await admin
+      .from('questions_v2_fix_suggestions')
+      .update(update)
+      .eq('id', id)
+      .eq('status', 'collected')
+      .select('id, suggested_stimulus_html, suggested_stem_html, suggested_options')
+      .maybeSingle();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!updated) {
+      return NextResponse.json(
+        { error: 'Suggestion not found or not in collected status' },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json({ ok: true, suggestion: updated });
+  }
 
   // Bulk reject every collected suggestion matching a classification
   // filter. Used for "the prompt was buggy, nuke the N bad rows so I
