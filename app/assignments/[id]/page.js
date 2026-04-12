@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
+import { savePracticeSession } from '../../../lib/practiceSessionStorage';
 
 const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
 const DIFF_COLORS = { 1: '#4caf50', 2: '#f0a830', 3: '#e05252' };
@@ -53,10 +54,9 @@ export default function AssignmentDetailPage() {
     const toStart = incomplete.length > 0 ? incomplete : data.questions;
     const ids = toStart.map(q => q.question_id);
     const sid = `assignment_${id}_${Date.now()}`;
-    // Store comma-separated IDs (expected by getSessionIds in practice page)
-    localStorage.setItem(`practice_session_${sid}`, ids.join(','));
-    // Store item metadata so the question map uses assignment questions, not the full DB
-    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+    savePracticeSession(
+      sid,
+      ids,
       toStart.map(q => ({
         question_id: q.question_id,
         difficulty: q.difficulty,
@@ -65,14 +65,13 @@ export default function AssignmentDetailPage() {
         marked_for_review: false,
         domain_name: q.domain_name || '',
         skill_name: q.skill_name || '',
-      }))
-    ));
-    localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
-      sessionQueryString: `session=1`,
-      totalCount: ids.length,
-      cachedCount: ids.length,
-      cachedAt: new Date().toISOString(),
-    }));
+      })),
+      {
+        sessionQueryString: `session=1`,
+        totalCount: ids.length,
+        cachedCount: ids.length,
+      }
+    );
     router.push(`/practice/${encodeURIComponent(ids[0])}?session=1&sid=${sid}&t=${ids.length}&o=0&p=0&i=1`);
   }
 
@@ -149,8 +148,9 @@ export default function AssignmentDetailPage() {
             const clickSid = `assignment_${id}_click`;
             function handleQuestionClick() {
               const allIds = questions.map(x => x.question_id);
-              localStorage.setItem(`practice_session_${clickSid}`, allIds.join(','));
-              localStorage.setItem(`practice_session_${clickSid}_items`, JSON.stringify(
+              savePracticeSession(
+                clickSid,
+                allIds,
                 questions.map(x => ({
                   question_id: x.question_id,
                   difficulty: x.difficulty,
@@ -159,14 +159,13 @@ export default function AssignmentDetailPage() {
                   marked_for_review: false,
                   domain_name: x.domain_name || '',
                   skill_name: x.skill_name || '',
-                }))
-              ));
-              localStorage.setItem(`practice_session_${clickSid}_meta`, JSON.stringify({
-                sessionQueryString: `session=1`,
-                totalCount: allIds.length,
-                cachedCount: allIds.length,
-                cachedAt: new Date().toISOString(),
-              }));
+                })),
+                {
+                  sessionQueryString: `session=1`,
+                  totalCount: allIds.length,
+                  cachedCount: allIds.length,
+                }
+              );
             }
             return (
             <Link

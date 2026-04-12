@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { savePracticeSession } from '../../lib/practiceSessionStorage';
 
 // ─── Constants ────────────────────────────────────────────
 export const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
@@ -1287,8 +1288,9 @@ export function AssignmentsPanel({ students }) {
     for (const qs of statuses) { statusMap[qs.question_id] = qs; }
 
     const sid = `tch_assign_${assignment.id}_${student.id}`;
-    localStorage.setItem(`practice_session_${sid}`, questionIds.join(','));
-    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+    savePracticeSession(
+      sid,
+      questionIds,
       questionIds.map(qid => {
         const q = questions.find(x => x.question_id === qid) || {};
         const qs = statusMap[qid] || {};
@@ -1301,14 +1303,13 @@ export function AssignmentsPanel({ students }) {
           domain_name: q.domain_name || '',
           skill_name: q.skill_name || '',
         };
-      })
-    ));
-    localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
-      sessionQueryString: 'session=1',
-      totalCount: questionIds.length,
-      cachedCount: questionIds.length,
-      cachedAt: new Date().toISOString(),
-    }));
+      }),
+      {
+        sessionQueryString: 'session=1',
+        totalCount: questionIds.length,
+        cachedCount: questionIds.length,
+      }
+    );
     window.open(
       `/practice/${encodeURIComponent(questionIds[0])}?session=1&sid=${sid}&t=${questionIds.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(student.id)}`,
       '_blank'
@@ -1751,8 +1752,9 @@ export function StudentDetail({ studentId, onBack }) {
                     const statusMap = {};
                     for (const qs of statuses) { statusMap[qs.question_id] = qs; }
                     const sid = `tch_assign_${a.id}_${studentId}`;
-                    localStorage.setItem(`practice_session_${sid}`, qids.join(','));
-                    localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+                    savePracticeSession(
+                      sid,
+                      qids,
                       qids.map(qid => {
                         const qs = statusMap[qid] || {};
                         return {
@@ -1764,14 +1766,13 @@ export function StudentDetail({ studentId, onBack }) {
                           domain_name: qs.domain_name || '',
                           skill_name: qs.skill_name || '',
                         };
-                      })
-                    ));
-                    localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
-                      sessionQueryString: 'session=1',
-                      totalCount: qids.length,
-                      cachedCount: qids.length,
-                      cachedAt: new Date().toISOString(),
-                    }));
+                      }),
+                      {
+                        sessionQueryString: 'session=1',
+                        totalCount: qids.length,
+                        cachedCount: qids.length,
+                      }
+                    );
                     window.open(
                       `/practice/${encodeURIComponent(qids[0])}?session=1&sid=${sid}&t=${qids.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(studentId)}`,
                       '_blank'

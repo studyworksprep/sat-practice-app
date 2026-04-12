@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { displayName, formatDate, formatDateTime, relativeTime, pct, pctColor, TrendIndicator } from './shared';
+import { savePracticeSession } from '../../lib/practiceSessionStorage';
 
 // ─── Main teacher dashboard page ─────────────────────────
 export default function TeacherDashboardPage() {
@@ -173,8 +174,9 @@ function TeacherDashboard() {
                       if (!questions.length) { goToStudent(s.studentId); return; }
                       const ids = questions.map(q => q.question_id);
                       const sid = `tch_session_${Date.now()}_${i}`;
-                      localStorage.setItem(`practice_session_${sid}`, ids.join(','));
-                      localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+                      savePracticeSession(
+                        sid,
+                        ids,
                         questions.map(q => ({
                           question_id: q.question_id,
                           difficulty: q.difficulty,
@@ -183,14 +185,13 @@ function TeacherDashboard() {
                           marked_for_review: false,
                           domain_name: q.domain_name || '',
                           skill_name: q.skill_name || '',
-                        }))
-                      ));
-                      localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
-                        sessionQueryString: 'session=1',
-                        totalCount: ids.length,
-                        cachedCount: ids.length,
-                        cachedAt: new Date().toISOString(),
-                      }));
+                        })),
+                        {
+                          sessionQueryString: 'session=1',
+                          totalCount: ids.length,
+                          cachedCount: ids.length,
+                        }
+                      );
                       window.open(
                         `/practice/${encodeURIComponent(ids[0])}?session=1&sid=${sid}&t=${ids.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(s.studentId)}`,
                         '_blank'
@@ -298,8 +299,9 @@ function TeacherDashboard() {
                           const statusMap = {};
                           for (const qs of statuses) { statusMap[qs.question_id] = qs; }
                           const sid = `tch_assign_${r.assignment_id}_${r.student_id}`;
-                          localStorage.setItem(`practice_session_${sid}`, qids.join(','));
-                          localStorage.setItem(`practice_session_${sid}_items`, JSON.stringify(
+                          savePracticeSession(
+                            sid,
+                            qids,
                             qids.map(qid => {
                               const qs = statusMap[qid] || {};
                               return {
@@ -311,14 +313,13 @@ function TeacherDashboard() {
                                 domain_name: qs.domain_name || '',
                                 skill_name: qs.skill_name || '',
                               };
-                            })
-                          ));
-                          localStorage.setItem(`practice_session_${sid}_meta`, JSON.stringify({
-                            sessionQueryString: 'session=1',
-                            totalCount: qids.length,
-                            cachedCount: qids.length,
-                            cachedAt: new Date().toISOString(),
-                          }));
+                            }),
+                            {
+                              sessionQueryString: 'session=1',
+                              totalCount: qids.length,
+                              cachedCount: qids.length,
+                            }
+                          );
                           window.open(
                             `/practice/${encodeURIComponent(qids[0])}?session=1&sid=${sid}&t=${qids.length}&o=0&p=0&i=1&tm=1&view_as=${encodeURIComponent(r.student_id)}`,
                             '_blank'
