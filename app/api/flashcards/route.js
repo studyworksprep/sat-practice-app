@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
 
-// GET /api/flashcards?set_id=xxx — list cards in a set
+// GET /api/flashcards?set_id=xxx&page=1&page_size=25 — list cards in a set
+//
+// Paginated. If page/page_size are omitted, defaults are page=1,
+// page_size=25. page_size is clamped to a max of 100 so a misbehaving
+// client can't ask for 10,000 cards at once. Returns { cards, total,
+// page, pageSize, hasMore } so the caller can render a paginator.
 export async function GET(req) {
   const supabase = createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
@@ -9,6 +14,16 @@ export async function GET(req) {
 
   const setId = req.nextUrl.searchParams.get('set_id');
   if (!setId) return NextResponse.json({ error: 'set_id required' }, { status: 400 });
+
+  // Parse + clamp pagination params
+  const rawPage = Number(req.nextUrl.searchParams.get('page'));
+  const rawSize = Number(req.nextUrl.searchParams.get('page_size'));
+  const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
+  const pageSize = Number.isFinite(rawSize) && rawSize > 0
+    ? Math.min(100, Math.floor(rawSize))
+    : 25;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
 
   // Verify ownership
   const { data: set } = await supabase
@@ -19,14 +34,23 @@ export async function GET(req) {
     .single();
   if (!set) return NextResponse.json({ error: 'Set not found' }, { status: 404 });
 
-  const { data: cards, error } = await supabase
+  const { data: cards, error, count } = await supabase
     .from('flashcards')
-    .select('id, front, back, mastery, created_at, reviewed_at')
+    .select('id, front, back, mastery, created_at, reviewed_at', { count: 'exact' })
     .eq('set_id', setId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(from, to);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ cards: cards || [] });
+
+  const total = count ?? 0;
+  return NextResponse.json({
+    cards: cards || [],
+    total,
+    page,
+    pageSize,
+    hasMore: from + (cards?.length || 0) < total,
+  });
 }
 
 // POST /api/flashcards — create a new flashcard
