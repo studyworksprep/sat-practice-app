@@ -68,6 +68,16 @@ const slides = [
   },
   {
     content: (
+      <SlideScreenshot
+        src="/screenshots/review-hub.png"
+        alt="The Review area — Smart Review, Error Log, and Flashcards"
+        title="Turn Your Mistakes Into Mastery"
+        description="The Review area turns your practice history into real preparation. Smart Review surfaces the questions that matter most — weighted by recency, accuracy, and learnability — so the targeted review great tutors run with their students in the days before the test becomes something the system just hands you. The Error Log captures every mistake you've made with space to write down why it happened and how you'll prevent it next time. And flashcards let you take notes on any concept, formula, or pattern worth remembering — not just vocabulary, anything that stuck with you from a question."
+      />
+    ),
+  },
+  {
+    content: (
       <SlideFeatureRundown
         title="Everything You Get"
         subtitle="A complete rundown of what's included with a Studyworks student account."
@@ -77,10 +87,17 @@ const slides = [
             items: [
               { title: 'Targeted question bank', desc: 'Filter by topic, difficulty, and score band.' },
               { title: 'Detailed explanations', desc: 'Every question has a worked solution.' },
-              { title: 'Smart Review queue', desc: 'Surfaces the questions you should revisit, weighted by recency and learnability.' },
               { title: 'Mark for Review', desc: 'Flag any question to come back to it later.' },
-              { title: 'Error Log', desc: 'Every mistake is tracked automatically with notes you can add.' },
               { title: 'Concept tags', desc: 'Browse questions by concept across the entire bank.' },
+            ],
+          },
+          {
+            label: 'Review',
+            items: [
+              { title: 'Smart Review', desc: 'Revisit the questions that matter most, weighted by recency, accuracy, and learnability — exactly the targeted review tutors run in the days before the test.' },
+              { title: 'Error Log', desc: 'Every mistake you make, with space to write down why and how to prevent it.' },
+              { title: 'Flashcards', desc: 'Take notes on any concept, term, or formula worth remembering. Not just vocabulary — anything that stuck with you from a question.' },
+              { title: 'Common SAT Words', desc: '10 curated vocabulary sets, ready to study.' },
             ],
           },
           {
@@ -97,8 +114,6 @@ const slides = [
             label: 'Tools',
             items: [
               { title: 'Integrated Desmos calculator', desc: 'The same calculator you\u2019ll use on test day.' },
-              { title: 'Vocabulary flashcards', desc: 'Build your own decks for terms you keep missing.' },
-              { title: 'Common SAT Words', desc: '10 curated vocabulary sets, ready to study.' },
             ],
           },
           {
@@ -123,9 +138,9 @@ const slides = [
           'Full question bank with explanations',
           'Unlimited adaptive practice tests',
           'Score reports with Opportunity Index',
-          'Performance tracking & smart review',
+          'Smart Review, Error Log & Flashcards',
           'Detailed timing analytics',
-          'Error log & vocabulary flashcards',
+          'Progress tracking & domain mastery',
         ]}
         note={{
           title: 'Working with a Studyworks Prep tutor?',

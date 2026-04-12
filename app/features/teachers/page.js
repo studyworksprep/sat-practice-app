@@ -118,6 +118,16 @@ const slides = [
   {
     content: (
       <SlideScreenshot
+        src="/screenshots/review-hub.png"
+        alt="The Review area — Smart Review, Error Log, and Flashcards"
+        title="A Structured Way for Students to Review"
+        description="Every gap you spot in a student's practice is addressable through one place: the Review area. Smart Review rebuilds the 'revisit past wrong answers in the days before the test' playbook every great tutor runs with their students — except now it's concrete, continuously updated, and one click away. The Error Log gives students structured space to codify prevention methods for their own mistakes. Flashcards let them take notes on any concept, term, or formula you want them to remember. You direct; the Review area is where it actually happens."
+      />
+    ),
+  },
+  {
+    content: (
+      <SlideScreenshot
         src="/screenshots/teacher-student-detail-3.png"
         alt="Score patterns and actionable data"
         title="Actionable, Exportable Data"
@@ -170,11 +180,18 @@ const slides = [
             ],
           },
           {
+            label: 'Review & Retention',
+            items: [
+              { title: 'Smart Review', desc: 'Direct any student to targeted review of their most urgent past wrongs — the playbook every great tutor runs in the days before the test, now one click away.' },
+              { title: 'Error Log', desc: 'Students capture why they missed each question and how they\u2019ll prevent it next time; you see every entry.' },
+              { title: 'Flashcards', desc: 'Students can take notes on any concept, term, or formula you want them to remember — not just vocabulary. You can spot-check that they\u2019re actually doing it.' },
+              { title: 'Per-question notes', desc: 'Leave notes on any question for yourself or your students.' },
+            ],
+          },
+          {
             label: 'Tools & Workflow',
             items: [
               { title: 'Pre-loaded Desmos solutions', desc: 'One-click graphing solutions on most math questions.' },
-              { title: 'Per-question notes', desc: 'Leave notes on any question for yourself or your students.' },
-              { title: 'Error log review', desc: 'See exactly what each student got wrong and why.' },
               { title: 'Exportable CSV reports', desc: 'Pipe Studyworks data into the rest of your stack.' },
             ],
           },
