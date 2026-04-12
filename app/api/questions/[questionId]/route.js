@@ -176,27 +176,33 @@ export async function GET(_request, { params }) {
     if (version?.question_type === 'spr') correct_text = ca?.correct_text ?? null;
   }
 
-  // When a teacher is viewing as a student, fetch the student's most recent
-  // attempt directly so we can show their selected answer on the question page.
-  // Uses service client to bypass RLS — the caller's privilege was already verified above.
+  // When a teacher is viewing as a student, fetch the student's FIRST
+  // attempt directly so we can show the original answer they gave —
+  // not the corrected one from a retry. Teachers reviewing assignments
+  // need to see what the student actually did on their own, so if a
+  // student got a question wrong on attempt 1 and right on attempt 2,
+  // the teacher view should show the attempt-1 wrong answer.
+  //
+  // Uses service client to bypass RLS — the caller's privilege was
+  // already verified above.
   let studentAnswer = null;
   if (effectiveViewAs) {
     try {
       const svc = createServiceClient();
-      const { data: lastAttempt } = await svc
+      const { data: firstAttempt } = await svc
         .from('attempts')
         .select('selected_option_id, response_text, is_correct')
         .eq('user_id', effectiveViewAs)
         .eq('question_id', questionId)
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: true })
         .limit(1)
         .maybeSingle();
 
-      if (lastAttempt) {
+      if (firstAttempt) {
         studentAnswer = {
-          selected_option_id: lastAttempt.selected_option_id ?? null,
-          response_text: lastAttempt.response_text ?? null,
-          is_correct: lastAttempt.is_correct ?? null,
+          selected_option_id: firstAttempt.selected_option_id ?? null,
+          response_text: firstAttempt.response_text ?? null,
+          is_correct: firstAttempt.is_correct ?? null,
         };
       }
     } catch {}
