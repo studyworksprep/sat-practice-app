@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '../lib/supabase/browser';
 import { useTestType } from '../lib/TestTypeContext';
@@ -121,6 +122,7 @@ function BugReportModal({ onClose }) {
 }
 
 export default function NavBar() {
+  const pathname = usePathname();
   const supabase = createClient();
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
@@ -150,6 +152,15 @@ export default function NavBar() {
     });
     return () => sub?.subscription?.unsubscribe?.();
   }, []);
+
+  // Slideshow routes under /features/* render their own self-contained
+  // top bar (logo + Get Started + Home) inside FeatureSlideshow. Rendering
+  // the global nav on top of that caused a visual doubling, so we skip
+  // the global nav entirely on those routes. This check MUST come after
+  // every hook call above, otherwise React's Rules of Hooks will throw
+  // when a user navigates away from a /features/* page and the hook
+  // count jumps.
+  if (pathname && pathname.startsWith('/features/')) return null;
 
   async function signOut() {
     await supabase.auth.signOut();
