@@ -49,9 +49,9 @@ const slides = [
     content: (
       <SlideScreenshot
         src="/screenshots/teacher-dashboard-2.png"
-        alt="Teacher dashboard — assignments and activity"
-        title="Assignments and Activity, Live"
-        description="Scroll down on the same dashboard and you get real-time completion tracking for every active assignment, recent session activity across your whole roster, and a running tally of practice volume. No more chasing students down for updates — the data comes to you."
+        alt="Teacher dashboard — roster-wide performance patterns"
+        title="See What's Landing — and What Isn't"
+        description="Below the roster itself, the dashboard surfaces the patterns across your whole class: the hardest questions, the easiest ones, and a heat map of accuracy across every SAT domain. When the same question trips up five students in a row, you know to revisit it in the next group session. When a domain glows red across the board, you know the way you've been teaching it needs a rethink. It's feedback on your own teaching, not just on your students."
       />
     ),
   },
