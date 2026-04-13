@@ -4,7 +4,7 @@ import FeatureSlideshow, {
   SlideHero,
   SlideScreenshot,
   SlideFeatureRundown,
-  SlidePricing,
+  SlideTieredPricing,
 } from '../../../components/FeatureSlideshow';
 
 // Slide deck for the "Tutor Manager" persona.
@@ -145,21 +145,45 @@ const slides = [
   {
     showCta: true,
     content: (
-      <SlidePricing
-        price="$29.99"
-        period="per tutor / month"
+      <SlideTieredPricing
+        title="Team Pricing That Scales With You"
+        subtitle="Per-tutor pricing that drops as your team grows. Every tier unlocks the full manager toolkit and the full educator toolkit for every tutor on your staff."
+        tiers={[
+          {
+            name: 'Solo',
+            range: '1 tutor',
+            price: '$29.99',
+            period: 'per tutor / month',
+          },
+          {
+            name: 'Team',
+            range: '2\u201310 tutors',
+            price: '$24.99',
+            period: 'per tutor / month',
+            savings: 'Save 17%',
+            highlight: true,
+          },
+          {
+            name: 'Firm',
+            range: '11+ tutors',
+            price: '$19.99',
+            period: 'per tutor / month',
+            savings: 'Save 33%',
+          },
+        ]}
         items={[
-          'Everything in the Educator plan, per tutor',
-          'Manager dashboard with team training roster',
+          'Full educator toolkit for every tutor',
+          'Manager dashboard & team training roster',
           'Assign practice questions and tests to tutors',
           'Per-tutor mastery and practice test tracking',
-          'Student-tutor assignment and reassignment',
+          'Student\u2013tutor assignment and reassignment',
           'Team-wide reporting and exportable CSVs',
           'Drop-in access to any tutor\u2019s student view',
+          'All student-facing practice tools',
         ]}
         note={{
-          title: 'Studyworks Prep partner organizations',
-          text: <>Tutoring firms partnered with <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: '#0d9488' }}>Studyworks Prep</a> get manager access included for the whole staff. Reach out to set up an org account.</>,
+          title: 'Running a larger organization?',
+          text: <>Tutoring firms with 30+ tutors, school districts, and partners of <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: '#0f766e' }}>Studyworks Prep</a> get custom pricing and onboarding. Reach out to set up an org account.</>,
           bg: 'rgba(13,148,136,0.06)',
           border: 'rgba(13,148,136,0.25)',
           titleColor: '#0f766e',

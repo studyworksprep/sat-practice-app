@@ -276,6 +276,147 @@ export function SlidePricing({ price, period, items, ctaHref, ctaText, note }) {
   );
 }
 
+// Tiered version of SlidePricing — used by decks where the per-seat
+// price varies with team size. The layout is:
+//   1. Three tier cards in a 3-column grid (the middle one is highlighted)
+//   2. A shared feature bullet list underneath ("everything includes…")
+//   3. Optional note block (e.g. enterprise contact callout)
+//
+// Each tier in the `tiers` array is:
+//   { name, range, price, period, savings?, highlight? }
+// `highlight: true` draws the accent border + "Most popular" ribbon.
+export function SlideTieredPricing({
+  title = 'Team Pricing',
+  subtitle,
+  tiers,
+  items,
+  ctaHref,
+  ctaText,
+  note,
+}) {
+  return (
+    <div style={{ ...panelStyle, maxWidth: 900, padding: '28px 32px' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: ACCENT, marginBottom: 6 }}>Pricing</div>
+        <h2 style={{ fontSize: 26, fontWeight: 800, margin: '0 0 6px', color: 'var(--text)' }}>{title}</h2>
+        {subtitle && (
+          <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 auto', maxWidth: 580, lineHeight: 1.5 }}>{subtitle}</p>
+        )}
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${tiers.length}, minmax(0, 1fr))`,
+            gap: 14,
+            margin: '20px 0 8px',
+          }}
+        >
+          {tiers.map((tier, i) => (
+            <div
+              key={i}
+              style={{
+                position: 'relative',
+                padding: '20px 14px 18px',
+                border: tier.highlight ? '2px solid var(--accent)' : '1px solid var(--border, #e2e8f0)',
+                borderRadius: 14,
+                background: tier.highlight ? 'rgba(79,124,224,0.05)' : 'var(--surface, #f8fafc)',
+                textAlign: 'center',
+              }}
+            >
+              {tier.highlight && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: -10,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: ACCENT,
+                    color: '#fff',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    padding: '3px 10px',
+                    borderRadius: 999,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Most popular
+                </div>
+              )}
+              <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: ACCENT }}>
+                {tier.name}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 3, minHeight: 16 }}>{tier.range}</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--text)', marginTop: 10, lineHeight: 1 }}>
+                {tier.price}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 3 }}>{tier.period}</div>
+              <div style={{ fontSize: 11, color: '#16a34a', fontWeight: 700, marginTop: 8, minHeight: 14 }}>
+                {tier.savings || '\u00A0'}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {items && items.length > 0 && (
+          <>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', margin: '18px 0 10px' }}>
+              Every tier includes
+            </div>
+            <ul
+              style={{
+                listStyle: 'none',
+                padding: 0,
+                margin: '0 auto',
+                maxWidth: 620,
+                textAlign: 'left',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                gap: '5px 20px',
+              }}
+            >
+              {items.map((item, i) => (
+                <li key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13, color: 'var(--text)' }}>
+                  <svg viewBox="0 0 20 20" width="14" height="14" style={{ flexShrink: 0 }}>
+                    <path fill="#22c55e" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" />
+                  </svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        <a
+          href={ctaHref || '/'}
+          className="btn primary"
+          style={{ padding: '12px 40px', fontSize: 15, borderRadius: 10, display: 'inline-block', marginTop: 18 }}
+        >
+          {ctaText || 'Get Started'}
+        </a>
+
+        {note && (
+          <div
+            style={{
+              marginTop: 18,
+              padding: '14px 22px',
+              background: note.bg || 'rgba(22,163,74,0.06)',
+              border: `1px solid ${note.border || 'rgba(22,163,74,0.2)'}`,
+              borderRadius: 12,
+              maxWidth: 520,
+              margin: '18px auto 0',
+            }}
+          >
+            <p style={{ fontSize: 14, fontWeight: 700, color: note.titleColor || '#166534', margin: '0 0 4px' }}>{note.title}</p>
+            <p style={{ fontSize: 13, color: note.textColor || '#15803d', margin: 0, lineHeight: 1.6 }}>{note.text}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function SlideContact({ title, subtitle, email, subject, buttonText }) {
   return (
     <div style={panelStyle}>
