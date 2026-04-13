@@ -23,7 +23,7 @@ The top five concrete findings from the audit:
 4. **Schema drift from migrations:** the `practice_test_*` tables and the `get_question_neighbors` RPC both exist in the production database but are not defined in any committed migration file. A fresh database built from `supabase/migrations/` would be missing the entire practice test feature.
 5. **Seven source files over 1,000 lines** (two over 2,000) that do too many unrelated things in one place, making blast-radius analysis impossible when something breaks.
 
-The rebuild is not a big-bang rewrite. It's five phases, each independently shippable, each producing immediately visible improvements. Total duration depends on velocity, but none of the phases require taking the site down or pausing feature work.
+The rebuild is not a big-bang rewrite. It's six phases, each independently shippable, each producing immediately visible improvements. The entire plan runs alongside the live product under the parallel-build discipline described in §3.6: a new `app/(next)/` route tree is built next to the existing tree, a `profiles.ui_version` flag routes users individually, and a `feature_flags` kill switch pins everyone back to `legacy` instantly if anything goes wrong. No phase before Phase 6 changes what a production user sees unless we deliberately flip their flag. Total duration depends on velocity, but none of the phases require taking the site down, pausing feature work, or risking a visible regression.
 
 ---
 
@@ -204,7 +204,7 @@ Six principles that every piece of the rebuild should be tested against:
 - **Drop the v1 question tables** (`questions`, `question_versions`, `answer_options`, `correct_answers`, `question_taxonomy`) once `questions_v2` is the only read/write target. The `question_id_map` bridge table can stay for as long as legacy attempts reference old IDs, then be archived.
 - **Normalize `questions_v2.options`.** Move options into a child `question_options` table keyed by `(question_id, option_label)`. Keep the JSON path only for `correct_answer` metadata (text/number/tolerance for SPR) because that's genuinely variant-shape. Options are uniform and deserve SQL typing so indexes, tag joins (the `option_answer_choice_tags` we added last week), and search all work naturally.
 - **Define the `practice_test_*` schema in migrations.** Seven tables, all the RLS policies, all the indexes. This is mandatory foundational work — nothing else is safe until the production schema matches the migration history.
-- **Unify the assignment model** into one `assignments` table with a polymorphic `target_type` (`question_set` | `lesson` | `practice_test`) and a single `assignment_students` junction. Drop the four current assignment tables. This removes about 30% of the teacher-route complexity.
+- **Unify the SAT assignment model** into one `assignments` table with a polymorphic `target_type` (`question_set` | `lesson` | `practice_test`) and a single `assignment_students` junction. Drop the four current SAT assignment tables. This removes about 30% of the teacher-route complexity on the SAT side. **ACT keeps its own parallel `act_assignments` + `act_assignment_students` pair** — the ACT assignment model is passage-based and doesn't share the SAT's question-set shape well enough to be worth forcing into a single schema (see §3.6 on ACT separation). Cross-test reporting happens through the rollup layer described in §3.8, not by merging the tables.
 - **Standardize audit columns on every table:** `created_at`, `created_by`, `updated_at`, `updated_by`, `deleted_at` (soft delete). A single trigger per table maintains `updated_at`. `deleted_at IS NULL` becomes the default filter in every read query and in every RLS policy.
 
 **RLS discipline:**
@@ -269,7 +269,7 @@ The `db-max-rows` silent-truncation bug becomes structurally impossible because 
 /api/questions/[id]/attempts
 ```
 
-Test-type (SAT vs ACT) becomes a query parameter on `/api/questions` and `/api/practice-tests` rather than a parallel `/api/act/*` tree. One set of handlers, one set of bug fixes, no more drift.
+SAT and ACT endpoints remain parallel trees (`/api/questions/*` and `/api/act/questions/*`, `/api/practice-tests/*` and `/api/act/practice-tests/*`) because the content shape, assignment model, scoring rules, and test structure differ fundamentally — ACT tests have no module routing, no adaptive logic, and a passage-based assignment model that doesn't compress cleanly into the SAT's question-set shape. What both trees do share is the helper layer defined above: same `requireRole()`, same `paginate()`, same `ok()`/`fail()`, same rate limiting, same logging. Cross-cutting bugs get fixed once. Test-specific logic stays isolated. A dedicated `/api/me/activity` rollup endpoint reads from both trees and returns unified counts (total attempts, total practice tests, assignment completion percentages) so dashboards and managerial reporting can aggregate across the two without merging schemas.
 
 **Standard route skeleton.** Every new route looks like this:
 
@@ -324,15 +324,59 @@ The hook handles the `json.ok` convention from §3.3, reads the standard error s
 
 The `<QuestionRenderer>` is the biggest win. All three current implementations compute option state, handle MCQ vs SPR, render the stimulus/stem/options/rationale, integrate Desmos and flashcards and concept tags — they should be one component with a `mode` prop and a small set of slots for teacher-only elements.
 
-**URL-driven state, not localStorage-driven.** The `practice_session_*`, `teacher_review_session_*`, `act_session_*` localStorage caches all exist to compensate for a frontend that doesn't have server-rendered pagination. Once pages fetch from the server with real pagination (via the `paginate()` helper), the session state is just URL params — and URL params survive reloads, share cleanly, and don't accumulate until they bust a storage quota. The shared `<QuestionRenderer>` gets `prev`/`next` links from the server, not from JS-parsing a localStorage CSV.
+**Server-side session state, not localStorage.** The `practice_session_*`, `teacher_review_session_*`, `act_session_*` localStorage caches all exist to compensate for a frontend that doesn't have server-rendered pagination. In the rebuild, session state (current question list, position, timers, draft answers) moves into a server-side `practice_sessions` table keyed by an opaque `sessionId` (see §3.7). The client only knows its session id; the server looks up everything else. URL params survive reloads, share cleanly, and don't leak question content; `localStorage` stops being a privacy surface entirely.
 
-The only legitimate uses of localStorage in the rebuild:
+The only legitimate use of localStorage in the rebuild is per-question timer recovery (`{qid}_elapsed`), and even that could move to session storage or the URL hash. Both client-side toggles from the legacy tree (`studyworks_test_type` and `sat_teacher_mode`) are removed — see the navigation model below. Everything else goes away.
 
-- `studyworks_test_type` — user UI preference (SAT vs ACT tab)
-- `sat_teacher_mode` — user UI preference (teacher toggle)
-- Small per-question timer state for mid-session recovery (`{qid}_elapsed`) — and even this could move to session storage or the URL hash
+**Navigation tree, not toggles.** The legacy product uses two client-side toggles that mutate UI context: `studyworks_test_type` (SAT vs ACT) and `sat_teacher_mode` (privileged-user view mode). Both disappear in the rebuild. A user's experience is determined entirely by their role and the URL they're on — no flags to sync, no state to persist, no "why am I seeing this" confusion.
 
-Everything else goes away.
+The new top-level route tree:
+
+```
+app/(next)/
+  (student)/                          — student role only
+    dashboard/
+    practice/s/[sessionId]/[position] — opaque session URLs (§3.7)
+    review/
+    practice-test/
+  (tutor)/                            — tutor, manager, admin
+    tutor/
+      dashboard/
+      training/                       — tutor's own private practice
+      training/review/                — tutor's own review of their own attempts
+      students/                       — list of assigned students
+      students/[id]/                  — student activity, scores, attempts
+      browse/                         — curriculum-planning browse, full metadata
+  (manager)/
+    manager/
+      dashboard/
+      teachers/                       — list of assigned tutors
+      teachers/[id]/                  — tutor's training + their students
+      teachers/[id]/students/[id]/
+  (admin)/
+    admin/
+  act/                                — fully parallel ACT tree
+    (student)/
+      dashboard/
+      practice/s/[sessionId]/[position]
+      review/
+      practice-test/
+    (tutor)/
+      tutor/
+        training/
+        students/
+        ...
+    (manager)/
+      manager/
+        ...
+```
+
+Key consequences:
+
+- **`/tutor/training` looks and feels exactly like the student practice and review UIs.** That's the whole point — tutors experience what their students experience. The shared `<QuestionRenderer>` and the shared practice-session flow serve both audiences with zero divergence in rendering. The only difference is the data filter: on `/tutor/training`, the queries are `where user_id = auth.uid()`, and RLS via `can_view` (§3.8) protects the row regardless. There is no "teacher mode" toggle, no inline `isTeacherMode` branch in the renderer, no way for the two experiences to drift.
+- **`/act/*` is a complete parallel tree.** ACT dashboards, practice, practice tests (no module routing), passage-based assignments, review, and tutor training all live under the ACT path. The SAT and ACT trees share backend helpers (auth, pagination, rate limiting, response envelopes, the watermarking helper from §3.7) and share UI primitives (`<Button>`, `<Card>`, `<Modal>`, `<QuestionRenderer>`), but not data schema or navigation state. Cross-test reporting lives in a dedicated `user_activity_rollup` view and the `/api/me/activity` endpoint, so a dashboard that wants to show "total attempts across SAT + ACT" or "practice tests completed, both tests" can do so with a single query.
+- **There are no test-type or teacher-mode toggles to forget to render, debug, or sync.** The URL is the mode.
+- **Login lands the user on their default test type.** A new `profiles.default_test_type` column (`sat` | `act`, default `sat`) decides whether a fresh login redirects to `/dashboard` or `/act/dashboard`. Users navigate between the two freely through a top-level nav item; the last-visited tree is remembered per-session for return visits.
 
 **Error boundaries on every route segment.** Each of the following gets an `error.js` that captures the actual error, shows a recovery button, and surfaces the stack to support (following the pattern from `app/dashboard/error.js`):
 
@@ -368,11 +412,121 @@ These don't have to catch every bug — they have to catch "is the whole platfor
 
 **A shared design-token file.** Extract from `globals.css` into `app/design-tokens.css` or CSS variables on `:root`. Everything else consumes tokens. Long-term, `globals.css` shrinks from 8,223 lines to maybe 500 of actual global rules plus the tokens.
 
+### 3.6 Parallel-safe rebuild strategy
+
+Nothing in this rebuild is allowed to change the experience of a real student or tutor until we flip them over explicitly. The entire plan runs alongside the live product, not inside it. Five rules enforce this:
+
+**1. New code lives in a parallel route tree.** A new top-level group `app/(next)/` contains every rebuilt page. The existing routes (`app/practice`, `app/dashboard`, `app/teacher`, `app/act-practice`, etc.) stay exactly as they are and keep serving production traffic throughout Phases 1–5. Builds produce both trees. Nobody reaches the new tree unless middleware routes them to it.
+
+**2. A per-user `ui_version` flag.** A new column `profiles.ui_version` (`legacy` | `next`, default `legacy`) determines which tree each user sees. Next.js middleware reads the flag on every request and rewrites the URL into the chosen tree. Rollout is a single UPDATE per cohort — internal accounts first, then a handful of opt-in tutors, then a beta cohort of friendly students, then new signups, then everyone. Rollback for any individual user is one SQL statement.
+
+**3. A `feature_flags` table as the kill switch.** One row, one key (`force_ui_version`), one nullable value (`legacy` | `next` | `null`). Middleware consults it before the per-user flag. If anything goes wrong in production, `update feature_flags set value = 'legacy' where key = 'force_ui_version'` pins every user back to the old tree instantly — no redeploy, no env-var change, no git commit. The flag is cached server-side for at most 5 seconds, so the blast radius of a flip is bounded to that window. The same mechanism supports the inverse flip (`force = 'next'`) for final cut-over verification.
+
+**4. Database changes are additive-only through Phase 5.** New tables and columns appear; old ones stay untouched. Views and triggers bridge shapes where two code paths need to coexist. Any table being replaced (the unified `assignments` table, the new `practice_sessions` server-state table, the normalized `question_options` child table) uses dual-write during the transition: the legacy code path keeps writing to the old shape, a trigger or app-level helper forwards the write to the new shape, and the `(next)` code path reads only from the new shape. No data migration is irreversible until Phase 6.
+
+**5. Every PR runs tests on both trees.** The Playwright integration suite from §3.5 runs twice on every pull request — once with `ui_version=legacy` forced, once with `next` forced. A regression in either tree blocks merge. This keeps the legacy tree maintainable as a rollback target for as long as we carry it.
+
+This discipline stretches calendar time slightly — we carry duplication through several phases — but the alternative is a big-bang cut-over, which is the single largest incident risk the rebuild could take on. Phase 6 (Decommission) is where the duplication is finally paid down.
+
+### 3.7 Content protection
+
+**Threat model.** The risk we're defending against is *bulk automated extraction* of question content, not individual student curiosity. Students are encouraged to see metadata — difficulty, score band, domain, skill, concept tags, rationale after submission — because it's part of the product's value: the feeling that Studyworks is a sneak peek at how the SAT actually works. The goal is to raise the cost of scraping enough that it stops being practical at scale, without degrading the honest student experience in any way.
+
+**Today's exposure** (audited April 2026):
+
+- `/api/questions/[id]` returns full `stimulus_html`, `stem_html`, and `options[].content_html` as JSON on every load. An authenticated attacker can iterate sequential question IDs and dump the content bank.
+- `correct_option_id` and `correct_text` are correctly guarded (only after submission, or for privileged roles). Good.
+- `rationale_html` and `explanation_html` are not in the initial response. Good.
+- `localStorage` under `practice_session_*` stores question IDs and trimmed metadata, but not content. Good.
+- There is no rate limiting on content endpoints, no scraper detection, no watermarking, no session gating.
+
+**Defenses to add**, in order of payoff:
+
+- **Server-rendered question content.** The practice page under `app/(next)/` is a React Server Component. Question HTML is rendered on the server and streamed as rendered markup, not as a JSON payload containing raw `stem_html`. DevTools shows formatted HTML for a single question — not a scrapable object, not an array. A determined attacker can still parse the DOM, but the friction is orders of magnitude higher than a JSON endpoint, and the attacker loses the ability to pattern-match on stable JSON field names.
+
+- **Opaque session-position URLs.** Instead of `/practice/[questionId]` (where iterating IDs reveals content), the new URL is `/practice/s/[sessionId]/[position]`. The server maps `(sessionId, position) → questionId` via the `practice_sessions` table, scoped to the authenticated user. URL manipulation reveals nothing. Starting a real session is rate-limited and audited. An attacker would have to start a real session and burn their rate-limit budget to scrape even a handful of questions.
+
+- **Server-side session state.** Replace every `practice_session_*` localStorage entry with rows in `practice_sessions` (session id, owner, question list, current position, timers, draft answers, TTL). The client only knows its session id. This kills the localStorage quota-crash class of bugs as a side effect, and it removes the "scrape from DevTools > Application > Local Storage" attack surface entirely.
+
+- **Per-endpoint rate limiting.** Upstash Redis (free tier covers our first ~100k users) fronts `/api/questions/*`, `/api/practice-tests/*`, `/api/sessions/*`, and the ACT equivalents. Normal students don't issue 60 requests per minute; scrapers do. Tiered response: soft throttle → hard throttle → role-specific lockout → Sentry alert. Rate-limit thresholds are calibrated against the 99.9th-percentile of observed real-student cadence from production logs, with a 10x headroom.
+
+- **Behavioral scraper detection.** A small `lib/api/scraperSignals.js` helper watches per-session request cadence. A real student spends 30–180 seconds per question and interacts with the page (option selection, rationale view, Desmos, keyboard events). A scraper issues sequential requests with millisecond spacing and no DOM interaction. Unambiguous patterns escalate to a lockout. The helper starts in shadow mode (logs only, no blocks) for a week before enforcement, to rule out false positives against edge cases like keyboard-driven power users.
+
+- **Per-user HTML watermarking.** A `lib/content/watermark.js` helper injects a zero-width character pattern derived from `user_id` into rendered question HTML. The pattern is invisible to normal rendering, preserved across copy-paste, and decodable from any leaked text. If question content appears publicly — a dumped Discord channel, a sold answer key, a public GitHub repo — we can trace the source account. Cheap to implement and a meaningful deterrent against insider leaks by students, tutors, or compromised sessions.
+
+- **Server-gated rationale delivery.** `/api/questions/[id]/rationale` checks that an `attempts` row exists for the current user and question before returning the explanation. No client-side flag can bypass this check. The same rule applies to the ACT rationale endpoint.
+
+- **Metadata stays visible to students.** Concept tags, difficulty, score band, domain, and skill are part of the honest student experience and the filter UI. The rate limiter, session gating, server rendering, and watermarking carry the anti-scrape load — metadata visibility is unrelated to that threat.
+
+None of these is disruptive to real users. They all land in the `(next)` tree and stay dark until a cohort is flipped over. The shadow-mode phase for scraper detection and rate limiting means we observe without enforcing for long enough to calibrate against real traffic.
+
+### 3.8 Unified visibility model
+
+The current RLS implementation re-derives "can this user see this row" independently on every user-owned table. `teacher_can_view_student()` is called from seven migration files; manager visibility has needed three separate `fix_manager_*_visibility.sql` patches to chase drift; the cross-tier `manager → teacher → student` path is implemented differently in each policy that needs it.
+
+This is unnecessary. Every supervisory relationship is structurally the same: a parent tier can see its direct children AND everything its children can see. The whole thing collapses into one SQL function.
+
+**`can_view(target_user_id)` — one function, one source of truth:**
+
+```sql
+create or replace function public.can_view(target uuid)
+  returns boolean
+  language sql
+  stable
+  security definer
+as $$
+  select
+    auth.uid() = target                              -- self
+    or is_admin()                                    -- admin sees all
+    or exists (                                      -- tutor → student
+      select 1 from teacher_student_assignments
+      where teacher_id = auth.uid() and student_id = target
+    )
+    or exists (                                      -- manager → tutor
+      select 1 from manager_teacher_assignments
+      where manager_id = auth.uid() and teacher_id = target
+    )
+    or exists (                                      -- manager → student via tutor
+      select 1
+      from manager_teacher_assignments mta
+      join teacher_student_assignments tsa using (teacher_id)
+      where mta.manager_id = auth.uid() and tsa.student_id = target
+    );
+$$;
+```
+
+Every RLS policy on user-owned data — SAT and ACT — collapses to a one-liner:
+
+```sql
+create policy visible_rows on attempts                  for select using (can_view(user_id));
+create policy visible_rows on lesson_progress           for select using (can_view(user_id));
+create policy visible_rows on question_assignment_students
+                                                        for select using (can_view(student_id));
+create policy visible_rows on practice_test_attempts    for select using (can_view(user_id));
+create policy visible_rows on act_attempts              for select using (can_view(user_id));
+create policy visible_rows on act_assignment_students   for select using (can_view(student_id));
+-- ...and so on for every table where a row belongs to a user
+```
+
+**Consequences:**
+
+1. **One place to change the hierarchy.** Adding a district-admin tier above manager means editing `can_view` once. Every policy inherits the change automatically. No hunt through migrations. No repeat of the three `fix_manager_*_visibility` incidents.
+2. **Manager visibility stops drifting.** The three existing fix migrations exist precisely because manager→student was re-derived per table. With `can_view`, there is nowhere for drift to hide.
+3. **Tutor training requires no extra plumbing.** The `/tutor/training` page queries `attempts where user_id = auth.uid()`, which passes `can_view` via the self clause. The same RLS policy that protects students' attempts protects tutors' training attempts. Tutors never see their own training rows in their "my students" view because that query filters by `user_id in (list_visible_users('student'))`, not by `can_view` alone. Role is the filter; `can_view` is the gate.
+4. **Companion helper `list_visible_users(role_filter)`** returns the set of ids the current user can see, optionally filtered to a specific role (e.g. `'student'` for the tutor's student list, `'teacher'` for the manager's tutor list). Drives every list-my-people page with a single query.
+5. **Cross-test aggregation is trivial.** The `user_activity_rollup` view from §3.3 queries SAT and ACT tables under RLS and unions the results. A manager's dashboard sees the aggregate of everyone `can_view` allows, across both test types, in one SELECT.
+
+**Closure table — defer.** If a manager ever ends up with tens of thousands of transitively-visible students, we materialize a `user_visibility (viewer_id, target_id)` closure table maintained by triggers and redirect `can_view` to read from it. Not needed at current scale; the direct-query implementation handles thousands per manager comfortably.
+
+**Audit back-test.** Before any RLS policy is rewritten to use `can_view`, a one-off script runs during Phase 1 that compares the result of `can_view(x)` against the current helper-function decisions for every (viewer, target) pair that exists in production. Zero diffs is the precondition for switching the policies over in Phase 2. This is a read-only check and does not touch production RLS.
+
 ---
 
 ## 4. Migration Plan
 
-Five phases, each independently shippable, each producing visible improvement. Nothing in this plan requires pausing feature work or taking the site down.
+Six phases, each independently shippable, each producing visible improvement. Nothing before Phase 6 changes what a production user sees without a deliberate `ui_version` flip. Nothing in this plan requires pausing feature work or taking the site down.
+
+**Parallel-build discipline (applies to every phase).** Per §3.6, all new code from Phase 1 onward lands in `app/(next)/` and in new database tables/columns. Legacy routes and legacy tables stay untouched until Phase 6. Phases 2–5 read "refactor" as "write the `(next)` version alongside the existing one", not "edit the existing one in place". Playwright runs both trees on every PR. The `feature_flags.force_ui_version` kill switch is the single-statement rollback path at every step.
 
 ### Phase 0 — Questions V2 Completion (prerequisite)
 
@@ -390,8 +544,13 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 6. **Add a `.github/workflows/ci.yml`** that runs lint + build on every PR.
 7. **Wire up Sentry (or equivalent)** on both server and client. Every API route gets a catch-all wrapper that forwards to Sentry.
 8. **Write the four shared helpers** in `lib/api/`: `auth.js`, `response.js`, `paginate.js`, `logger.js`. Plus `lib/stripe.js` and `lib/anthropic.js` as the canonical lazy-init SDK getters.
+9. **Stand up the parallel-build machinery** from §3.6. Create the empty `app/(next)/` route tree. Add the `profiles.ui_version` column (default `legacy`). Create the `feature_flags` table and seed the `force_ui_version` row (initially `legacy` because the next tree is empty). Write the middleware that consults both flags and rewrites the URL. Add a one-screen `/admin/feature-flags` panel (in the legacy tree, admin-only) for flipping the kill switch without touching SQL.
+10. **Create the `practice_sessions` server-state table** from §3.7, dormant. Columns: `id`, `user_id`, `test_type`, `question_ids jsonb`, `current_position int`, `draft_answers jsonb`, `created_at`, `expires_at`. RLS: `user_id = auth.uid()`. Nothing reads or writes it yet; this is forward-wiring.
+11. **Write the content-protection helpers** as pure modules: `lib/api/rateLimit.js` (Upstash Redis wrapper), `lib/api/scraperSignals.js` (per-session cadence tracker, shadow mode only), `lib/content/watermark.js` (zero-width-character injector keyed by user id). All three are unused at the end of Phase 1; they're ready to be imported in Phase 2.
+12. **Write the `can_view(target)` SQL function and `list_visible_users(role_filter)` companion** from §3.8 as new migrations. Do not wire any existing policy to them yet. Run the audit back-test: a one-off script that enumerates every (viewer, target) pair in production and confirms `can_view(target)` returns the same answer as the current helper stack. The script runs against the dev Supabase project (which is seeded from prod). Zero diffs is the precondition for Phase 2's RLS rewrites.
+13. **Extend the Playwright suite (initial)** to run each test twice: once against `app/` (legacy, via middleware override) and once against `app/(next)/` (which is still a stub, so the next-tree pass is expected to fail with "route not found" for most suites until Phase 2 fills it in). This establishes the dual-tree CI pattern before the `(next)` tree has any content to test.
 
-**Exit criteria:** Fresh database rebuildable from migrations. CI blocks broken PRs. Errors show up in Sentry. The helpers exist but aren't used yet.
+**Exit criteria:** Fresh database rebuildable from migrations. CI blocks broken PRs on both trees. Errors show up in Sentry. The helpers exist but aren't used yet. The parallel-build infrastructure is live but dark — `force_ui_version='legacy'`, `(next)` tree is an empty shell, and no production user reaches a single line of new code. Flipping an internal account to `ui_version='next'` returns a placeholder page and nothing else. Everything is ready for Phase 2 to start writing the new tree's contents.
 
 ### Phase 2 — Backend consolidation
 
@@ -412,7 +571,7 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 
 1. **Drop the v1 question tables** (`questions`, `question_versions`, `answer_options`, `correct_answers`, `question_taxonomy`). Archive to a `_legacy` schema for 90 days, then drop. `question_id_map` stays for attempts referencing old IDs.
 2. **Normalize `questions_v2.options`** into a `question_options` child table. Migrate the JSONB payload into rows. Update `question_concept_tags` and `option_answer_choice_tags` to FK the new table.
-3. **Unify the assignment model.** One `assignments` + `assignment_students` replacing `question_assignments` + `question_assignment_students` + `lesson_assignments` + `lesson_assignment_students`. Data-migrate existing rows. Update the teacher UI to point at the unified routes.
+3. **Unify the SAT assignment model** per §3.2. One `assignments` + `assignment_students` pair replacing `question_assignments` + `question_assignment_students` + `lesson_assignments` + `lesson_assignment_students` on the SAT side. Dual-write during the transition; the legacy tree reads the old shape, the `(next)` tree reads the new one. **ACT gets its own `act_assignments` + `act_assignment_students` pair** — new tables, not a rename of anything existing, because today ACT has no dedicated assignment system. The ACT assignment model is passage-based and distinct.
 4. **Standardize audit columns.** Every table gets `created_at`, `created_by`, `updated_at`, `updated_by`, `deleted_at`. Soft-delete becomes the default. RLS policies on every table add `deleted_at IS NULL` filter.
 5. **Delete or implement `question_availability`.** My bet is delete.
 6. **Add the missing indexes** for common RLS join patterns (`teacher_student_assignments (teacher_id, student_id)`, `lesson_assignments (student_id)`, etc.).
@@ -426,7 +585,7 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 1. **Build the shared component primitives** from §3.4: `<Button>`, `<Card>`, `<Modal>`, `<Table>`, `<Pagination>`, `<Avatar>`, `<ScoreCard>`, `<DomainMasteryBar>`. Each is a few dozen lines; most replace dozens of inline instances.
 2. **Build `<QuestionRenderer>`** and migrate the three question pages onto it one at a time. Start with `/teacher/review/[questionId]` because it's the smallest and has the fewest side effects. `/practice/[questionId]` comes last because it's the most complex and most production-critical.
 3. **Convert pages to server components for initial data.** Start with the static-ish ones: `/dashboard`, `/teachers`, `/admin`, `/practice-test`. Each conversion eliminates 3-5 `useEffect+fetch` blocks and typically shrinks the file by 30%.
-4. **Replace localStorage caches with URL state.** The `practice_session_*` and `teacher_review_session_*` caches come out; session progress is in the URL, fetched from the server per-question. The recent `lib/practiceSessionStorage.js` LRU helper can be deleted once nothing writes to those keys.
+4. **Replace localStorage caches with server-side session state.** The `practice_session_*` and `teacher_review_session_*` caches come out; per §3.7, session progress lives in the `practice_sessions` server table and the URL only carries an opaque `sessionId` + `position`. The client never caches question content or metadata locally. The recent `lib/practiceSessionStorage.js` LRU helper can be deleted once nothing writes to those keys.
 5. **Decompose the 7 files over 1,000 lines.** The target is: every file under 500 lines unless there's an explicit reason. The usual split is extracting tab panels, widget cards, and modals into their own files.
 6. **Add error boundaries** (`error.js`) for every top-level route segment per §3.4.
 
@@ -443,6 +602,22 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 5. **Publish a runbook.** Short `docs/runbook.md` covering: how to apply a migration, how to roll back a deploy, how to find out why a student is seeing an error, how to bypass RLS safely in a one-off script, how to seed a dev database. The stuff that's currently tribal knowledge.
 
 **Exit criteria:** A new developer can find any bug in under 10 minutes by following the runbook. Deploys are boring. Feature work happens on top of a stable base.
+
+### Phase 6 — Decommission
+
+**Goal:** retire the legacy tree, collect on the simplifications the rebuild has been carrying dual costs for, and turn the plan from "an in-progress migration" into "the platform".
+
+**Precondition:** 100% of production users on `ui_version='next'` for at least 30 consecutive days with no reported regressions. `feature_flags.force_ui_version = 'next'` for a verification window of 7 days, during which the legacy tree is unreachable even via direct URL. Playwright dual-tree CI has been green for the full window.
+
+1. **Delete `app/(legacy)/` and the old route files.** Every page under `app/practice`, `app/act-practice`, `app/teacher/...` (except any route that has no `(next)` replacement and is genuinely still used), `app/dashboard` (legacy version), and the rest of the legacy tree. Cross-reference `(next)` before each delete to confirm nothing unique is being lost.
+2. **Remove dual-write triggers** from the tables that were being fed from both trees during the parallel period.
+3. **Archive the v1 question tables and legacy SAT assignment tables** (`questions`, `question_versions`, `answer_options`, `correct_answers`, `question_taxonomy`, `question_assignments`, `question_assignment_students`) to a `_legacy` schema. Keep for 90 days, then drop.
+4. **Drop the `sat_teacher_mode` and `studyworks_test_type` localStorage keys** with a one-time cleanup snippet served on the next login for any lingering browser state.
+5. **Remove `profiles.ui_version`** and the `feature_flags.force_ui_version` row. Everyone is on `next` by definition; the flag is dead weight. Keep the `feature_flags` table itself — it's useful infrastructure for future rollouts.
+6. **Remove the Playwright dual-tree CI pattern.** Tests now run once against the single tree.
+7. **Final cleanup pass.** Re-run the "files over 1000 lines", "routes with inline role checks", "`fetch+useEffect` blocks", "distinct localStorage prefixes", and "parallel question renderers" counts from §2. Every number should match the targets in §6.
+
+**Exit criteria:** No legacy code path anywhere. Schema is single-source. Every metric in §6 hits target. The rebuild is finished. Future development is net-new feature work on a stable base, not structural debt repayment.
 
 ---
 
@@ -465,16 +640,24 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 | Auth patterns in API routes | 5+ | 1 |
 | Inline role checks | ~51 | 0 |
 | Bare `fetch+useEffect` | ~79 | <20 |
-| Distinct localStorage key prefixes | 16 | ~3 |
+| Distinct localStorage key prefixes | 16 | 1 (just `{qid}_elapsed`) |
+| Client-side test-type toggles (`studyworks_test_type`) | 1 | 0 (dedicated `/act/*` path tree) |
+| Client-side teacher-mode toggles (`sat_teacher_mode`) | 1 | 0 (role + URL determine mode) |
 | Files over 1,000 lines | 7 | 0 |
 | Error boundaries | 1 | 6+ |
-| Question renderer implementations | 3 | 1 |
-| Assignment system tables | 4 | 2 |
-| Question schemas in use | 2 | 1 |
+| Question renderer implementations | 3 | 1 (shared across SAT + ACT) |
+| SAT assignment system tables | 4 | 2 (`assignments` + `assignment_students`) |
+| ACT assignment system tables | 0 (today ACT has no dedicated assignments) | 2 (`act_assignments` + `act_assignment_students`, passage-based) |
+| Question schemas in use | 2 | 1 (SAT `questions_v2`, separate ACT `act_questions_v2`) |
 | Schemas missing from migrations | 2 (practice_test_*, get_question_neighbors) | 0 |
+| Places in RLS where hierarchy visibility is re-derived | 7+ | 1 (`can_view()`) |
 | RLS policies that query `profiles` directly | many | 0 |
+| Content endpoints with rate limiting | 0 | all (SAT + ACT) |
+| Watermarked rendered question HTML | no | yes (per user) |
+| Server-side practice session state | no (localStorage only) | yes (`practice_sessions` table) |
+| Parallel-build / rollback infrastructure | none | `ui_version` + `feature_flags` kill switch |
 | Shared UI primitives | ~6 | ~12 |
-| CI pipeline | none | one |
+| CI pipeline | none | one, dual-tree until Phase 6 |
 | Error monitoring | none | Sentry (or equivalent) |
 | Automated tests | 0 | ~5 integration + growing unit |
 | Dev environment | ad-hoc | documented `supabase db reset` |
@@ -503,7 +686,22 @@ Mitigation: every helper in §3.3/§3.4 replaces a measured number of existing i
 Mitigation: Sentry's free tier covers thousands of events per month, which is enough for the first year. If volume outgrows the free tier, the cost at that point is a known quantity and can be budgeted against the value it's delivering. Alternatively, a self-hosted option (Glitchtip, self-hosted Sentry) is available if cost ever becomes prohibitive.
 
 **Risk: RLS hardening breaks a student-facing query mid-production.**
-Mitigation: every RLS change in phase 2 lands first on the dev Supabase project from phase 1, gets exercised by the four integration tests, then promotes to production. No RLS change is deployed blind.
+Mitigation: every RLS change in phase 2 lands first on the dev Supabase project from phase 1, gets exercised by the four integration tests, then promotes to production. No RLS change is deployed blind. The `can_view()` rewrite specifically is gated on the Phase 1 back-test script returning zero diffs against the current helper stack.
+
+**Risk: Carrying dual code paths in Phases 2–5 slows down feature work.**
+Mitigation: new features after Phase 1 land only in the `(next)` tree by default. If a feature must also ship to `legacy` users mid-rebuild, it's authored once in a shared module and imported from both trees — but the default is next-only, on the theory that legacy's days are numbered and the cost of back-porting usually exceeds the value of serving it to a shrinking user pool. Feature owners are encouraged to push the launch into the next cohort's flip window rather than dual-write.
+
+**Risk: The `(next)` tree ships with subtle regressions that aren't caught until a cohort is flipped.**
+Mitigation: the Playwright suite runs against both trees on every PR from Phase 1 onward. The rollout sequence starts with 2–3 internal accounts for at least a week before any external user sees the new tree, then opt-in tutors, then a small beta cohort of friendly students, and only then broader rollout. Every flip is reversible via the `feature_flags.force_ui_version` kill switch in under a minute.
+
+**Risk: Content protection (rate limiter, scraper detection) accidentally locks out real students.**
+Mitigation: rate-limit thresholds are set based on the observed 99.9th-percentile student request cadence in production logs, with a 10x headroom. The scraper-detection helper runs in shadow mode (logs only, no blocks) for a week before enforcement — the first sign of over-triggering is visible in the logs before any student is inconvenienced. Every lockout fires a Sentry alert, not a silent block. Support has a one-click unlock path for any false-positive case that slips through.
+
+**Risk: Watermarking rendered HTML breaks screen readers or copy-paste for legitimate accessibility use.**
+Mitigation: the zero-width character pattern is inserted only in non-semantic positions (between tags, inside whitespace runs, never inside `alt` text, `aria-label`, or any screen-reader-visible attribute). A separate accessibility audit runs against the watermarked output in the Playwright suite before watermarking ships to any cohort. If a conflict surfaces, watermarking is disabled per-page via a feature flag rather than ripped out wholesale.
+
+**Risk: The full parallel ACT tree doubles the frontend surface area.**
+Mitigation: the trees share everything they can — shared UI primitives (`<Button>`, `<Card>`, `<QuestionRenderer>`), shared helper modules (`requireRole`, `paginate`, `useApi`), and shared design tokens — so the duplication is limited to navigation, routing, and the handful of places where SAT and ACT genuinely differ (module routing, adaptive logic, scoring conversion). The duplication is the right trade-off for content/format independence: a bug in ACT assignment routing can never regress SAT practice, and vice versa.
 
 ---
 
@@ -563,6 +761,18 @@ Phase 1 — Foundation
   [ ] Write lib/api/logger.js (structured logs with request id)
   [ ] Write lib/stripe.js, lib/anthropic.js (lazy getters)
   [ ] Commit docs/database.md and docs/runbook.md (initial draft)
+  [ ] Create empty app/(next)/ route tree
+  [ ] Add profiles.ui_version column (default 'legacy')
+  [ ] Create feature_flags table + seed force_ui_version row ('legacy')
+  [ ] Write middleware that consults feature_flags then profiles.ui_version
+  [ ] Add /admin/feature-flags panel (legacy tree, admin only)
+  [ ] Create practice_sessions server-state table (dormant)
+  [ ] Write lib/api/rateLimit.js (Upstash wrapper, not yet called)
+  [ ] Write lib/api/scraperSignals.js (shadow mode only, not yet called)
+  [ ] Write lib/content/watermark.js (zero-width injector, not yet called)
+  [ ] Write can_view(target) SQL function + list_visible_users(role) helper
+  [ ] Run can_view back-test script against prod snapshot; require zero diffs
+  [ ] Extend Playwright harness to dual-tree mode (legacy + next)
 
 Phase 2 — Backend consolidation
   [ ] Refactor /api/admin/* to use auth helpers
@@ -615,6 +825,19 @@ Phase 5 — Hardening
   [ ] Audit observability — does every past incident produce a signal now?
   [ ] Final runbook in docs/runbook.md
   [ ] Retrospective: what didn't we need?
+
+Phase 6 — Decommission
+  [ ] Verify 100% of users on ui_version='next' for 30+ days
+  [ ] Force feature_flags.force_ui_version='next' for 7-day window
+  [ ] Delete app/(legacy) route files (everything under old paths with a next equivalent)
+  [ ] Remove dual-write triggers from replaced tables
+  [ ] Archive v1 question tables + legacy SAT assignment tables to _legacy schema
+  [ ] Drop _legacy schema after 90 days of stability
+  [ ] Cleanup snippet to clear sat_teacher_mode / studyworks_test_type from lingering browsers
+  [ ] Drop profiles.ui_version column
+  [ ] Drop feature_flags.force_ui_version row (keep the table itself)
+  [ ] Remove Playwright dual-tree mode; tests run once against the single tree
+  [ ] Re-run §2 audit metrics; verify every §6 target is hit
 ```
 
 
