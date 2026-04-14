@@ -211,9 +211,9 @@ function DomainAnalyticsCard({ title, subtitle, domains }) {
 // ─── Timing bar (one per module) ──────────────────────────────────────────
 
 function TimingBar({ label, questions, onBarClick }) {
+  const [hoveredIdx, setHoveredIdx] = useState(null);
   const totalTime = questions.reduce((s, q) => s + (q.time_spent_ms || 0), 0);
   if (!totalTime) return null;
-  const [hoveredIdx, setHoveredIdx] = useState(null);
 
   return (
     <div className="ptrvTimingRow">

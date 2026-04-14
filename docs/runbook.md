@@ -34,9 +34,9 @@ update public.feature_flags set value = 'next'   where key = 'force_ui_version';
 update public.feature_flags set value = null     where key = 'force_ui_version';
 ```
 
-The middleware caches the flag for ~5 seconds per function instance.
-Worst-case lag from a flip to user-visible effect is ~5 seconds plus
-any cold-start time.
+The Next.js proxy (formerly middleware, renamed in Next 16) caches the
+flag for ~5 seconds per function instance. Worst-case lag from a flip
+to user-visible effect is ~5 seconds plus any cold-start time.
 
 ## Finding a bug report
 

@@ -1559,7 +1559,7 @@ export default function PracticeQuestionPage() {
             >
               <span className="brokenBtnIcon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="14" height="14">
-                  <path fill="currentColor" d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  <path d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                 </svg>
               </span>
               {data?.is_broken ? 'Broken' : 'Broken?'}
