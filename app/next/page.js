@@ -2,7 +2,7 @@
 // middleware (ui_version='next') see this page until Phase 2 fills in
 // the rebuilt root. See docs/architecture-plan.md §3.6.
 
-export default function NextTreeRootPlaceholder() {
+export default async function NextTreeRootPlaceholder() {
   return (
     <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
       <h1>Studyworks (rebuild preview)</h1>

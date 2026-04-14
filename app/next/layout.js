@@ -15,6 +15,6 @@ export const metadata = {
   title: 'Studyworks',
 };
 
-export default function NextTreeLayout({ children }) {
+export default async function NextTreeLayout({ children }) {
   return children;
 }

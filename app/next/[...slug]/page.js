@@ -8,8 +8,11 @@
 // genuinely-missing routes. By Phase 6 it's deleted along with the rest
 // of the parallel-build infrastructure.
 
-export default function NextTreeCatchAllPlaceholder({ params }) {
-  const path = Array.isArray(params?.slug) ? '/' + params.slug.join('/') : '/';
+export default async function NextTreeCatchAllPlaceholder({ params }) {
+  // Forward-compatible: `await params` is a no-op on Next 14 (plain object)
+  // and required on Next 16 (Promise). See docs/architecture-plan.md §1.5.6.
+  const resolvedParams = await params;
+  const path = Array.isArray(resolvedParams?.slug) ? '/' + resolvedParams.slug.join('/') : '/';
   return (
     <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
       <h1>Rebuild tree — not yet wired up</h1>

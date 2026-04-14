@@ -221,6 +221,16 @@ Six principles that every piece of the rebuild should be tested against:
 
 ### 3.3 Server layer (API)
 
+**Server Components and Server Actions are the primary technique; route handlers are the secondary one.** Per §3.9, any page in the `app/next/*` tree is an `async` Server Component that reads its initial data directly (no HTTP round-trip, no `/api/*` call, no JSON envelope). Any mutation originating from a form or button is a Server Action imported from a `'use server'` module. The `/api/*` tree continues to exist for three specific cases:
+
+1. **External callers** — `/api/external/*`, `/api/public/*`, `/api/webhooks/*` and any endpoint a non-browser client (the LessonWorks sync, Stripe, a partner integration) needs to hit. These stay as traditional route handlers.
+2. **Client-initiated fetches where Server Actions don't fit** — live polling, long-running batch jobs, anything whose shape demands a stable REST contract.
+3. **Bulk data endpoints** — admin exports, background jobs, places where the volume makes Server Actions awkward.
+
+Most of the current ~100 routes fall into none of those cases — they exist because a form or a `useEffect` needed to talk to the database. About 30 of them collapse into Server Actions in Phase 2; another ~40 collapse into Server Component data fetching and disappear entirely. The rest stay as route handlers and get refactored onto the shared helpers below.
+
+**The shared helpers work in both contexts.** `requireUser()`, `requireRole()`, `requireServiceRole('reason')` from `lib/api/auth.js` are callable from route handlers AND from Server Actions — both run server-side and both use `cookies()` for session reading. The only difference is the return shape: route handlers call `ok()`/`fail()` to build a `NextResponse`; Server Actions call `actionOk()`/`actionFail()` to return plain objects that React's Action machinery can consume. Both are exported from `lib/api/response.js`.
+
 **One auth helper module.** `lib/api/auth.js` exports:
 
 ```js
@@ -295,18 +305,71 @@ That's the maximum amount of boilerplate per route. Everything above is mechanic
 
 ### 3.4 Client layer
 
-**Server components for initial data.** Most pages under `app/` are converted to server components that fetch their initial data via `lib/db.js` directly (no HTTP round-trip, no `useEffect`, no client-side loading state). The page renders on the server, streams HTML, and hydrates only the parts that need interactivity. The 79 `fetch+useEffect` pattern becomes maybe 10, reserved for genuinely interactive things (live polling of assignment completion, mid-session stats updates).
+**Server Components are the default; client components are the exception.** Per §3.9 the entire `app/next/*` tree is built with async Server Components for initial data. A page fetches its data directly inline, renders HTML on the server, streams it, and hydrates only the parts that need interactivity. The 79 `fetch+useEffect` pattern goes to near-zero — not because we refactored it 79 times, but because the architecture no longer needs it.
 
-**Client components only where interaction happens.** A page like `/dashboard` is a server component that hands data to a small `<DashboardInteractive>` child which owns the click handlers and state. Component decomposition enforces this naturally: if a file is over 500 lines, it's trying to do both, and the first refactor is splitting it.
+**Client components only where interaction happens.** A page like `/dashboard` is a Server Component that hands data to a small `<DashboardInteractive>` child which owns the click handlers and any transient state. Component decomposition enforces this naturally: if a file is over 500 lines, it's probably trying to do both, and the first refactor is splitting it along the server/client boundary.
 
-**Shared data-fetching hook for the remaining client-side cases.** For the real cases where the client needs to fetch (mid-session updates, form submissions that reload data), one hook:
+**Forms are Server Actions, not fetch handlers.** Every form in the new tree uses `<form action={serverAction}>` with `useActionState` for pending/error state and `useOptimistic` for instant feedback on mutations. There is no client-side `fetch('/api/...', { method: 'POST' })` pattern in Phase 2 code — if a form used to need one of those, it becomes an imported Server Action instead.
+
+```jsx
+// app/next/(student)/dashboard/page.js — Server Component
+import { requireRole } from '@/lib/api/auth';
+import { updateTargetScore } from './actions';
+import { DashboardInteractive } from './DashboardInteractive';
+
+export default async function DashboardPage() {
+  const { user, profile, supabase } = await requireRole(['student']);
+  const { data: stats } = await supabase.rpc('get_dashboard_stats', { user_id: user.id });
+  return <DashboardInteractive profile={profile} stats={stats} updateTargetScore={updateTargetScore} />;
+}
+```
+
+```jsx
+// app/next/(student)/dashboard/actions.js — Server Actions
+'use server';
+import { requireRole } from '@/lib/api/auth';
+import { actionOk, actionFail } from '@/lib/api/response';
+import { refresh } from 'next/cache';
+
+export async function updateTargetScore(prevState, formData) {
+  const { user, supabase } = await requireRole(['student']);
+  const target = Number(formData.get('target'));
+  if (!Number.isFinite(target) || target < 400 || target > 1600) {
+    return actionFail('Target must be between 400 and 1600');
+  }
+  await supabase.from('profiles').update({ target_sat_score: target }).eq('id', user.id);
+  refresh();
+  return actionOk(null);
+}
+```
+
+```jsx
+// app/next/(student)/dashboard/DashboardInteractive.js — Client Component
+'use client';
+import { useActionState } from 'react';
+
+export function DashboardInteractive({ profile, stats, updateTargetScore }) {
+  const [state, submit, pending] = useActionState(updateTargetScore, null);
+  return (
+    <form action={submit}>
+      <input name="target" defaultValue={profile.target_sat_score} />
+      <button disabled={pending}>Save</button>
+      {state && !state.ok && <p>{state.error}</p>}
+    </form>
+  );
+}
+```
+
+That's the whole Phase 2 page shape. Three small files, shared auth helpers, Server Action for mutation, no route handler, no client-side fetch, no manual pending state. The legacy equivalent is ~200 lines spread across a page, a client hook, a fetch wrapper, and an API route handler.
+
+**For the rare cases where the client still needs to fetch** — live polling of assignment completion status, mid-session stats updates, any genuinely interactive data stream — a small shared hook exists:
 
 ```js
 useApi(url, { params })
   → { data, error, isLoading, refetch }
 ```
 
-The hook handles the `json.ok` convention from §3.3, reads the standard error shape, deduplicates in-flight requests to the same URL, and can optionally cache for the session. It's a dozen lines; the win is consistency.
+The hook handles the `json.ok` convention from §3.3, reads the standard error shape, deduplicates in-flight requests to the same URL, and can optionally cache for the session. It's a dozen lines, used in under 10 places across the new tree, and reserved for cases where Server Components + Server Actions genuinely don't fit.
 
 **Shared component primitives.** A small, focused set that gets imported everywhere:
 
@@ -442,7 +505,7 @@ This discipline stretches calendar time slightly — we carry duplication throug
 
 **Defenses to add**, in order of payoff:
 
-- **Server-rendered question content.** The practice page under `app/(next)/` is a React Server Component. Question HTML is rendered on the server and streamed as rendered markup, not as a JSON payload containing raw `stem_html`. DevTools shows formatted HTML for a single question — not a scrapable object, not an array. A determined attacker can still parse the DOM, but the friction is orders of magnitude higher than a JSON endpoint, and the attacker loses the ability to pattern-match on stable JSON field names.
+- **Server-rendered question content.** The practice page under `app/next/*` is a React Server Component — per §3.9 this is the default for the whole new tree, not a custom anti-scraping mechanism. Question HTML is rendered on the server and streamed as rendered markup, not as a JSON payload containing raw `stem_html`. The anti-scraping benefit comes for free: DevTools shows formatted HTML for a single question, not a scrapable object or array, and an attacker loses the ability to pattern-match on stable JSON field names. A determined scraper can still parse the DOM, but the friction is orders of magnitude higher than a JSON endpoint. Because this is now framework behavior, the content protection story shrinks to just the rate limiting, session URLs, watermarking, and scraper-signal work; the rendering itself is no longer custom.
 
 - **Opaque session-position URLs.** Instead of `/practice/[questionId]` (where iterating IDs reveals content), the new URL is `/practice/s/[sessionId]/[position]`. The server maps `(sessionId, position) → questionId` via the `practice_sessions` table, scoped to the authenticated user. URL manipulation reveals nothing. Starting a real session is rate-limited and audited. An attacker would have to start a real session and burn their rate-limit budget to scrape even a handful of questions.
 
@@ -520,6 +583,44 @@ create policy visible_rows on act_assignment_students   for select using (can_vi
 
 **Audit back-test.** Before any RLS policy is rewritten to use `can_view`, a one-off script runs during Phase 1 that compares the result of `can_view(x)` against the current helper-function decisions for every (viewer, target) pair that exists in production. Zero diffs is the precondition for switching the policies over in Phase 2. This is a read-only check and does not touch production RLS.
 
+### 3.9 React 19 / Next 16 feature adoption policy
+
+Phase 1.5 brings the platform up to Next 16 + React 19.2. A handful of the new capabilities materially change how we'd build Phase 2 and beyond. This section is the explicit list of what we adopt, what we defer, and what we don't touch.
+
+**Adopt — first-class techniques in the `app/next/*` tree:**
+
+- **Server Components.** The default. Every page under `app/next/*` is an `async` Server Component that fetches its initial data via `lib/db.js` (or the Supabase server client) directly, without an HTTP round-trip. This is how the audit's "79 `fetch()` in `useEffect`" pain point gets fixed at the architecture level instead of being refactored case by case. Client components exist only where genuine interactivity requires them, and they get their initial data as props from the server component above them.
+- **Server Actions.** For any mutation that originates from a `<form>` or a button click, the handler is an `async function` with the `'use server'` directive, imported into the client component and passed as the `action` prop of the form. This replaces ~30 of our current `/api/*` routes that exist only to receive form submits. The shared auth helpers (`requireUser`, `requireRole` from `lib/api/auth.js`) work unchanged inside Server Actions because both run server-side and both use `cookies()`.
+- **`useActionState`** (from `react`). The canonical hook for tracking form state — pending, error, last-result. Every form in `app/next/*` uses it. Replaces the manual `useState` triple (pending/error/data) we have scattered across the legacy tree.
+- **`useOptimistic`** (from `react`). For any mutation where the user expects instant feedback — submitting an answer, toggling a flashcard mastery level, marking an assignment complete. The UI updates immediately, the Server Action runs, React reconciles. No manual state management.
+- **`useFormStatus`** (from `react-dom`). For shared button/input components that need to know the surrounding form's submission state without prop-drilling.
+- **`use()` hook** (from `react`). For passing promises from server components to client components and unwrapping them with Suspense. Useful for secondary data that the page can render without but wants to stream in progressively.
+- **React Compiler** (stable, opt-in via `reactCompiler: true` in `next.config.js`). Enabled the moment the Phase 1.5 upgrade PR lands. Automatic memoization reduces re-renders across the large legacy-tree files (AdminDashboard, practice page, DashboardClient) without touching the code — this is the biggest perceived-performance win we can get before Phase 5 decomposes those files.
+- **Document metadata in components** (`<title>`, `<meta>`, `<link>`). Rendered inline wherever the metadata is known, hoisted to `<head>` automatically by React. Replaces any future need for the legacy `generateMetadata` export dance.
+- **Async `<script>` auto-dedupe** and the `preload` / `preinit` / `prefetchDNS` / `preconnect` APIs from `react-dom`. Used to control Desmos, MathJax, KaTeX, and jsPDF loading on the practice page. The audit flagged eager loading of these as a cold-start issue; with React 19 we can declare them inside the components that depend on them and let React dedupe and hoist.
+- **`updateTag()`** (from `next/cache`, Server Actions only). For read-your-writes semantics after teacher/admin mutations. When a teacher updates a student note, calling `updateTag(\`note-${id}\`)` expires the cache and the teacher sees their edit on the same request — no stale-while-revalidate window.
+- **`refresh()`** (from `next/cache`). One call to refresh the client router after a Server Action without manual `router.refresh()` choreography.
+- **`<Activity mode="hidden">`** (React 19.2). Used in two specific places: (a) pre-rendering the next question in a practice session while the student is on the current one, so "next" is instant; (b) preserving client state when navigating away from a partially-answered question, so returning restores the draft without a round-trip to `practice_sessions`. The server-side `practice_sessions` table still exists for anti-scraping and true persistence, but `draft_answers` can become thinner because most drafts live in React state.
+- **`useEffectEvent`** (React 19.2). Wherever effects currently disable the lint rule to exclude a dependency (analytics callbacks that reference theme/user id, etc.).
+- **`ref` as a prop** (React 19). New components accept `ref` directly, no `forwardRef` wrapper. The audit found zero existing `forwardRef` usages so this is a policy for new code only.
+
+**Adopt cautiously — measure before committing:**
+
+- **React Performance Tracks in Chrome DevTools** (React 19.2). Pure observability; flip on for profiling when investigating specific issues. Not a build-time change.
+- **Stylesheets with `precedence`** (React 19). Useful when Phase 4 unifies the three question renderer implementations and the CSS layering becomes a design concern. Until then, our global CSS strategy is unchanged.
+- **`next typegen`** (Next 16). Auto-generates `PageProps` / `LayoutProps` / `RouteContext` types. Enable when Phase 5 adopts TypeScript; not useful today.
+
+**Defer indefinitely or never:**
+
+- **Cache Components / `cacheComponents: true` (partial prerendering).** Studyworks pages are overwhelmingly dynamic — every real page reads per-user auth state. PPR is most valuable for pages that are mostly static with small dynamic holes, which isn't the shape of our app. Revisit only if a specific high-traffic static page surfaces.
+- **Build Adapters API** (Next 16 alpha). For deployment platforms and custom integrations. We're on Vercel; not our problem.
+- **`cacheSignal`** (React 19.2). Only useful if we're building our own RSC framework. Next.js handles this for us.
+- **Next.js DevTools MCP for AI-assisted migration.** Interesting but orthogonal — this session is already AI-assisted through Claude Code.
+
+**Consequences for the rest of §3 and §4:**
+
+The three sections that change meaningfully as a result of this policy are §3.3 (Server layer), §3.4 (Client layer), and §3.7 (Content protection). Phase 2 in §4 restructures around Server Components as the primary technique. Those updates follow in this document.
+
 ---
 
 ## 4. Migration Plan
@@ -550,7 +651,12 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 12. **Write the `can_view(target)` SQL function and `list_visible_users(role_filter)` companion** from §3.8 as new migrations. Do not wire any existing policy to them yet. Run the audit back-test: a one-off script that enumerates every (viewer, target) pair in production and confirms `can_view(target)` returns the same answer as the current helper stack. The script runs against the dev Supabase project (which is seeded from prod). Zero diffs is the precondition for Phase 2's RLS rewrites.
 13. **Extend the Playwright suite (initial)** to run each test twice: once against `app/` (legacy, via middleware override) and once against `app/(next)/` (which is still a stub, so the next-tree pass is expected to fail with "route not found" for most suites until Phase 2 fills it in). This establishes the dual-tree CI pattern before the `(next)` tree has any content to test.
 
-**Exit criteria:** Fresh database rebuildable from migrations. CI blocks broken PRs on both trees. Errors show up in Sentry. The helpers exist but aren't used yet. The parallel-build infrastructure is live but dark — `force_ui_version='legacy'`, `(next)` tree is an empty shell, and no production user reaches a single line of new code. Flipping an internal account to `ui_version='next'` returns a placeholder page and nothing else. Everything is ready for Phase 1.5 to land the dependency upgrade before Phase 2 writes new code.
+**Follow-up additions landing alongside Phase 1.5 (tiny, kept here for traceability):**
+
+- Add `actionOk()` / `actionFail()` helpers to `lib/api/response.js` so Server Actions have a plain-object return shape that matches the `NextResponse`-returning `ok()` / `fail()` used by route handlers. See §3.3 and §3.9.
+- Update the `app/next/` stub pages (`layout.js`, `page.js`, `[...slug]/page.js`) to use `async function` signatures so the forward-compatible coding style from §1.5.6 applies from day one.
+
+**Exit criteria:** Fresh database rebuildable from migrations. CI blocks broken PRs on both trees. Errors show up in Sentry. The helpers exist (including the action-shape follow-ups above) but aren't used yet. The parallel-build infrastructure is live but dark — `force_ui_version='legacy'`, `(next)` tree is an empty shell, and no production user reaches a single line of new code. Flipping an internal account to `ui_version='next'` returns a placeholder page and nothing else. Everything is ready for Phase 1.5 to land the dependency upgrade before Phase 2 writes new code.
 
 ### Phase 1.5 — Dependency upgrade (prerequisite for Phase 2)
 
@@ -652,7 +758,7 @@ After all four codemods run, these items need hand-editing:
 3. **`docs/architecture-plan.md` §3.6** — search/replace `middleware.js` → `proxy.js` in the parallel-build strategy section so the doc matches reality.
 4. **`docs/runbook.md`** — same rename in the operator instructions.
 5. **`package.json`** — bump `"engines": { "node": ">=20.9.0" }` (currently unspecified; Next 16 requires 20.9+). Verify Vercel's runtime is on Node 20+ in the project settings before merging.
-6. **`next.config.js`** — optionally add `reactCompiler: true` to opt into the now-stable React Compiler's automatic memoization. Not required for the upgrade itself; defer if the upgrade PR is feeling crowded.
+6. **`next.config.js`** — enable `reactCompiler: true` as part of the upgrade PR, not as a follow-up. The React Compiler is stable in Next 16 and is the highest-leverage perceived-performance win available for our large legacy-tree files (AdminDashboard at 2,366 lines, practice page at 2,391 lines, DashboardClient at 1,070 lines) before Phase 5 decomposes them. Measure build-time impact in the upgrade PR; keep it on unless the hit is severe (the upgrade guide notes compile times can be higher with the compiler enabled).
 7. **`tsconfig.json`** — no changes required for JS-only code, but verify that the `"module"` / `"moduleResolution"` settings still match Next 16 expectations (we use `"bundler"` which is current).
 
 #### 1.5.6 Forward-compatible coding rules for Phase 2
@@ -688,7 +794,7 @@ These rules also apply to any legacy-tree file that gets substantially touched b
 
 - Audit and tune caching defaults on any route that shows a stale-data regression.
 - Adopt React 19 Actions / `useActionState` patterns in Phase 2 code as natural fits appear.
-- Optionally enable `reactCompiler: true` in `next.config.js` after measuring baseline build times.
+- Fine-tune the React Compiler if the baseline build-time impact measured in the upgrade PR needs follow-up adjustment.
 - Re-run the Playwright dual-tree suite once it exists (Phase 5 deliverable).
 
 #### 1.5.8 Verification without local terminal access
@@ -744,22 +850,32 @@ Mitigation: the upgrade PR has a firm fallback. If after a day of work the PR is
 - Five manual smoke-tests pass on preview
 - Kill-switch rehearsal passes on preview
 - `docs/architecture-plan.md` §3.6 and `docs/runbook.md` updated to reference `proxy.js` instead of `middleware.js`
+- `reactCompiler: true` enabled in `next.config.js` and build-time impact measured
 - PR merged back to `claude/plan-architecture-migration-vXR3k`
 
-Once Phase 1.5 is complete, Phase 2 is cleared to start writing real content under `app/next/*`.
+Once Phase 1.5 is complete, Phase 2 is cleared to start writing real content under `app/next/*` — Server Components, Server Actions, `useActionState`, `useOptimistic`, and all the other React 19 / Next 16 primitives from §3.9 are available for use from day one.
 
-### Phase 2 — Backend consolidation
+### Phase 2 — Server Components, Server Actions, and backend consolidation
 
-**Goal:** eliminate the auth-pattern and response-shape drift.
+**Goal:** build out the `app/next/*` tree as the real product, using Server Components and Server Actions as the primary technique per §3.9. Simultaneously, consolidate the subset of `/api/*` routes that still need to exist under the shared helpers from Phase 1.
 
-1. **Refactor every API route** to use `requireUser()` / `requireRole()` / `requireServiceRole()` from §3.3. Batch by route tree (`/api/admin/*`, `/api/teacher/*`, `/api/practice-tests/*`, etc.). Each batch is a PR.
-2. **Standardize response envelopes** via `ok()` / `fail()`. Update the few client fetch sites that care about the shape (most can stay on `json.error` fallback during the transition).
-3. **Replace every `.limit(N)` with `paginate(...)`.** The grep pattern is one-line; the refactor is mechanical; the payoff is permanent immunity to the db-max-rows class of bugs.
-4. **Collapse duplicate routes.** `/api/dashboard/stats` merges into `/api/dashboard`. `/api/act/*` becomes query-parameterized on `/api/*`. Delete the orphaned duplicates.
-5. **Audit every `createServiceClient()` call.** For each: either (a) document the reason in a comment and wrap via `requireServiceRole('reason')`, or (b) convert to an RLS-scoped client if the role check is sufficient. Target: cut service-role usage in half.
-6. **Fix the RLS drift.** Rewrite every policy that still does `exists (select 1 from profiles)` to use the JWT-based helpers. Add migrations for the tables where RLS was enabled-without-policies (`question_availability`) or is missing entirely.
+**Working mental model:** every user-facing page we rebuild in Phase 2 is a Server Component that fetches its data inline and mutates via Server Actions. The refactor of the legacy `/api/*` routes is the secondary work, not the primary one — for roughly half of those routes, the right answer in Phase 2 is "delete it because the calling page became a Server Component and the calling form became a Server Action."
 
-**Exit criteria:** Zero inline role checks. Zero `setItem`-style unbounded writes. One auth code path. The platform-stats bug class is structurally impossible.
+1. **Build the first Server Component pages in `app/next/*`.** Start with low-complexity, high-value targets:
+   - `app/next/(student)/dashboard/page.js` — server component + small client island for interactive widgets. Drops the legacy `/api/dashboard` and `/api/dashboard/stats` routes once the legacy tree is retired in Phase 6.
+   - `app/next/(tutor)/tutor/dashboard/page.js` — same shape, different role gate.
+   - `app/next/(admin)/admin/page.js` — server component for the stats overview, client island for the interactive admin tabs. Eventually breaks up the 2,366-line `AdminDashboard.js`.
+2. **Build the first Server Actions** in each of those page directories, co-located with the page that uses them. Form handlers become `'use server'` modules; the `/api/*` routes that existed only to receive form submits (`/api/signup`, `/api/error-log`, `/api/question-notes`, most of `/api/teacher/*` for mutations) become dead code scheduled for Phase 6 decommission.
+3. **Port the shared helpers to work inside Server Actions.** `requireUser` / `requireRole` / `requireServiceRole` already work without modification. `lib/api/response.js` gains `actionOk()` / `actionFail()` (landed as a Phase 1.5 follow-up) so Server Actions have a consistent return shape. `paginate()` and `countExact()` are unchanged — they operate on query builders, which is the same in both contexts.
+4. **Wire up `useActionState` / `useFormStatus` / `useOptimistic`** in the Phase 2 client islands. Every form in the new tree uses this pattern from day one; there is no "legacy form handling" variant in `app/next/*`.
+5. **Enable `updateTag()` and `refresh()` for mutations that need read-your-writes.** Teacher flows especially: creating/editing assignments, updating student notes, recording scores. The teacher sees their edit immediately on the same request, no stale-while-revalidate window.
+6. **Refactor the surviving `/api/*` routes** to use `requireRole()` / `ok()` / `fail()` / `paginate()`. This is the original Phase 2 plan, but scoped down to only the ~30–40 routes that actually need to exist after Server Actions absorb the rest. Categories that survive: external/public/webhook endpoints, live-polling endpoints, bulk data exports, admin analytics that aggregate across users.
+7. **Collapse duplicate routes among the survivors.** `/api/dashboard/stats` merges into `/api/dashboard` (though both may ultimately be deleted if the dashboard is a Server Component). Legacy `/api/act/*` tree remains because SAT and ACT stay schema-parallel per §3.2.
+8. **Audit every remaining `createServiceClient()` call** after the Server Action migration. Many of the legacy service-role bypasses exist because a route needed to do something the client couldn't do via RLS — with Server Actions, the caller's identity is still `auth.uid()`, so most of those bypasses can become RLS-scoped. Target: cut service-role usage by more than half.
+9. **Fix the RLS drift using `can_view()`.** Rewrite every policy that still does `exists (select 1 from profiles)` to use the JWT-based `is_admin()` / `is_teacher()` helpers or the new unified `can_view()` function from §3.8. Gate this on the Phase 1 back-test returning zero diffs. Add migrations for the tables where RLS was enabled-without-policies (`question_availability` — probably just drop it) or is missing entirely.
+10. **Enable the React Compiler** via `reactCompiler: true` in `next.config.js` if it wasn't already turned on during Phase 1.5. Measure build time impact; keep it on unless the hit is severe.
+
+**Exit criteria:** The first student-facing and tutor-facing pages exist in `app/next/*` as Server Components with Server Action forms. Zero inline role checks in those new pages. Zero `fetch+useEffect` in the new tree. Shared helpers work uniformly across routes and Server Actions. RLS policies use `can_view()` or JWT helpers, never `select from profiles`. Internal accounts flipped to `ui_version='next'` can exercise the new dashboard and at least one forms-heavy flow end-to-end without hitting the legacy tree.
 
 ### Phase 3 — Schema simplification
 
