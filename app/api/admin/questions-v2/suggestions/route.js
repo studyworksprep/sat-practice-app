@@ -26,7 +26,7 @@ import { createClient, createServiceClient } from '../../../../../lib/supabase/s
 //            until the admin explicitly Applies it.
 
 async function requireAdmin() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: NextResponse.json({ error: 'Not authenticated' }, { status: 401 }) };
 

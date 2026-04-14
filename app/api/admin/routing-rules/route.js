@@ -5,7 +5,7 @@ import { createServiceClient } from '../../../../lib/supabase/server';
 // GET /api/admin/routing-rules?practice_test_id=xxx
 // Returns routing rules for a specific practice test
 export async function GET(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
@@ -51,7 +51,7 @@ export async function GET(request) {
 // Replaces all routing rules for a practice test
 // Body: { practice_test_id, rules: [...] }
 export async function PUT(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

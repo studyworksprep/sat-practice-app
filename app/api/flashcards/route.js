@@ -8,7 +8,7 @@ import { createClient } from '../../../lib/supabase/server';
 // client can't ask for 10,000 cards at once. Returns { cards, total,
 // page, pageSize, hasMore } so the caller can render a paginator.
 export async function GET(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
@@ -55,7 +55,7 @@ export async function GET(req) {
 
 // POST /api/flashcards — create a new flashcard
 export async function POST(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
@@ -85,7 +85,7 @@ export async function POST(req) {
 
 // PATCH /api/flashcards — update mastery rating and/or front/back text
 export async function PATCH(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
@@ -143,7 +143,7 @@ export async function PATCH(req) {
 
 // DELETE /api/flashcards — delete a card
 export async function DELETE(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

@@ -20,9 +20,10 @@ import { computeScaledScore, isHardRoute } from '../../../../../../lib/scoreConv
 //  2. practice_test_module_attempts
 //  3. attempts + practice_test_item_attempts for each question
 //  4. Score conversion data entries (if scores provided)
-export async function POST(request, { params }) {
+export async function POST(request, props) {
+  const params = await props.params;
   const { studentId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
   const service = createServiceClient();
 
   // Authenticate the caller

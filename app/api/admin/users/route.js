@@ -18,7 +18,7 @@ async function requireAdmin(supabase) {
 // GET /api/admin/users
 // Returns all profiles grouped by role
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -35,7 +35,7 @@ export async function GET() {
 // PATCH /api/admin/users
 // Body: { user_id, role?, is_active?, first_name?, last_name?, email?, high_school?, graduation_year?, target_sat_score?, tutor_name? }
 export async function PATCH(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -84,7 +84,7 @@ export async function PATCH(request) {
 // Body: { user_id }
 // Permanently deletes the user's auth account and profile (cascade)
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 

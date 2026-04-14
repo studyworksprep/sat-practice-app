@@ -17,7 +17,7 @@ const PRICE_IDS = {
 // Creates a Stripe Checkout session for the authenticated user.
 // Body: { plan: 'student' | 'teacher' }
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

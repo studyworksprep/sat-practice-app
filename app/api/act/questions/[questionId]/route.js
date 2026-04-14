@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../lib/supabase/server';
 
 // GET /api/act/questions/:questionId
-export async function GET(_request, { params }) {
+export async function GET(_request, props) {
+  const params = await props.params;
   const questionId = params.questionId;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const [authResult, questionResult, optionsResult] = await Promise.all([
     supabase.auth.getUser(),

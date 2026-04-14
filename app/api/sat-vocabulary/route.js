@@ -3,7 +3,7 @@ import { createClient } from '../../../lib/supabase/server';
 
 // GET /api/sat-vocabulary?set_number=1 — list vocabulary cards for a set, with user progress
 export async function GET(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
@@ -100,7 +100,7 @@ export async function GET(req) {
 
 // PATCH /api/sat-vocabulary — update mastery for a vocabulary card
 export async function PATCH(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

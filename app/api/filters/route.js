@@ -31,7 +31,7 @@ async function fetchAll(supabase, table, select, buildQuery, orderCol) {
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get('domain');
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     if (!domain) {

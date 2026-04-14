@@ -49,7 +49,7 @@ export async function GET(request) {
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
   const balanced = searchParams.get('balanced') === 'true';
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Step 1: Auth + search + user-specific restriction queries in parallel
   const step1 = [supabase.auth.getUser()];

@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { createClient } from '../../../../lib/supabase/server';
 
 // GET /api/lessons/[lessonId] — get a single lesson with blocks and topics
-export async function GET(request, { params }) {
+export async function GET(request, props) {
+  const params = await props.params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -44,9 +45,10 @@ export async function GET(request, { params }) {
 }
 
 // PUT /api/lessons/[lessonId] — update lesson metadata + topics
-export async function PUT(request, { params }) {
+export async function PUT(request, props) {
+  const params = await props.params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -87,9 +89,10 @@ export async function PUT(request, { params }) {
 }
 
 // DELETE /api/lessons/[lessonId] — delete a lesson
-export async function DELETE(request, { params }) {
+export async function DELETE(request, props) {
+  const params = await props.params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

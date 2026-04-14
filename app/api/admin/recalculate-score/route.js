@@ -7,7 +7,7 @@ import { createClient, createServiceClient } from '../../../../lib/supabase/serv
 // Saves corrected section scores to practice_test_attempts and
 // inserts corresponding score_conversion entries if not already present.
 export async function PUT(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

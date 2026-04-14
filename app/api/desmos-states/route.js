@@ -18,7 +18,7 @@ async function getAuthedUser(supabase) {
 
 // GET /api/desmos-states?questionId=<uuid>
 export async function GET(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -41,7 +41,7 @@ export async function GET(request) {
 
 // POST /api/desmos-states  { questionId, stateJson }
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!CAN_SAVE_ROLES.has(auth.profile.role)) {
@@ -74,7 +74,7 @@ export async function POST(request) {
 
 // DELETE /api/desmos-states  { questionId }
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!CAN_SAVE_ROLES.has(auth.profile.role)) {

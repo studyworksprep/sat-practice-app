@@ -11,7 +11,7 @@ function getStripe() {
 // POST /api/billing/create-portal
 // Creates a Stripe Customer Portal session for subscription management.
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

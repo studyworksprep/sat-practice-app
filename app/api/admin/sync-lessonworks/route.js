@@ -12,7 +12,7 @@ export async function POST(request) {
   const isCron = cronSecret && cronSecret === process.env.CRON_SECRET;
 
   if (!isCron) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

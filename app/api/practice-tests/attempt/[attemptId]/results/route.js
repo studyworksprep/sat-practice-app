@@ -4,9 +4,10 @@ import { computeScaledScore, toScaledScore, isHardRoute } from '../../../../../.
 
 // GET /api/practice-tests/attempt/[attemptId]/results
 // Returns full results including scores, domain breakdown, and question review.
-export async function GET(_request, { params }) {
+export async function GET(_request, props) {
+  const params = await props.params;
   const { attemptId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

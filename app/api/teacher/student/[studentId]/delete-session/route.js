@@ -4,9 +4,10 @@ import { createClient, createServiceClient } from '../../../../../../lib/supabas
 // POST /api/teacher/student/[studentId]/delete-session
 // Body: { attemptIds: [uuid, ...] }
 // Deletes practice session attempt records for a student.
-export async function POST(request, { params }) {
+export async function POST(request, props) {
+  const params = await props.params;
   const { studentId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
   const service = createServiceClient();
 
   const { data: { user } } = await supabase.auth.getUser();

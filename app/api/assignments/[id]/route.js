@@ -3,7 +3,7 @@ import { createClient } from '../../../../lib/supabase/server';
 
 // GET /api/assignments/[id] — student-facing: get assignment detail with question progress
 export async function GET(request, { params }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

@@ -4,7 +4,7 @@ import { createClient } from '../../../../lib/supabase/server';
 // POST /api/act/submit
 // Body: { question_id, selected_option_id, time_spent_ms? }
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) {

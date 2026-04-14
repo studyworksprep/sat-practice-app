@@ -7,7 +7,7 @@ export async function POST(request) {
   const { question_id, patch } = body || {};
   if (!question_id) return NextResponse.json({ error: 'question_id required' }, { status: 400 });
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   const user = auth.user;

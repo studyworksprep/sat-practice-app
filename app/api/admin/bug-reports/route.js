@@ -17,7 +17,7 @@ async function requireAdmin(supabase) {
 
 // GET /api/admin/bug-reports — list all bug reports
 export async function GET(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -37,7 +37,7 @@ export async function GET(request) {
 
 // POST /api/admin/bug-reports — create a new bug report
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -69,7 +69,7 @@ export async function POST(request) {
 
 // PATCH /api/admin/bug-reports — update status
 export async function PATCH(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -92,7 +92,7 @@ export async function PATCH(request) {
 
 // DELETE /api/admin/bug-reports — delete a bug report
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 

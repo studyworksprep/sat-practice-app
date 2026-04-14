@@ -4,7 +4,7 @@ import { createClient } from '../../../../lib/supabase/server';
 // GET /api/admin/score-conversion?test_id=...
 // Returns existing score_conversion rows for a given test
 export async function GET(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const testId = searchParams.get('test_id');
 
@@ -25,7 +25,7 @@ export async function GET(request) {
 // POST /api/admin/score-conversion
 // Body: { test_id, test_name, entries: [{ section, module1_correct, module2_correct, scaled_score }] }
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const body = await request.json();
   const { test_id, test_name, entries } = body;
 

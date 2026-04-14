@@ -18,7 +18,7 @@ import { createClient } from '../../../../lib/supabase/server';
 //   approved    — 'unapproved' (default), 'approved', or 'all'. Filters
 //                 by the approved_at column (phase 5 audit field).
 export async function GET(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

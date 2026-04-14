@@ -4,7 +4,7 @@ import { createClient } from '../../../../lib/supabase/server';
 // GET /api/admin/student-performance
 // Returns aggregate student performance data for the admin dashboard.
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

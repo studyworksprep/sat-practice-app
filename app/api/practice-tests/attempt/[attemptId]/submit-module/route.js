@@ -5,9 +5,10 @@ import { syncStudentsToLessonworks } from '../../../../../../lib/lessonworksSync
 // POST /api/practice-tests/attempt/[attemptId]/submit-module
 // Body: { subject_code, module_number, route_code, answers: [{question_version_id, question_id, selected_option_id?, response_text?, time_spent_ms?}] }
 // Grades answers, records attempt_items, applies routing rules, advances attempt state.
-export async function POST(request, { params }) {
+export async function POST(request, props) {
+  const params = await props.params;
   const { attemptId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

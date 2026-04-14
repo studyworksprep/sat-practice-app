@@ -5,7 +5,7 @@ import { createClient } from '../../../lib/supabase/server';
 // Query params: domain, skill, search, status, author_id
 export async function GET(request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -142,7 +142,7 @@ export async function GET(request) {
 // POST /api/lessons — create a new lesson (teacher+)
 export async function POST(request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

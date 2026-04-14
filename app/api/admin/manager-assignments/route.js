@@ -3,7 +3,7 @@ import { createClient } from '../../../../lib/supabase/server';
 
 // GET — list all manager-teacher assignments
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -27,7 +27,7 @@ export async function GET() {
 
 // POST — assign a teacher to a manager { manager_id, teacher_id }
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -56,7 +56,7 @@ export async function POST(request) {
 
 // DELETE — remove a teacher-manager assignment { manager_id, teacher_id }
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

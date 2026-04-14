@@ -18,7 +18,7 @@ async function getAuthedUser(supabase) {
 // GET /api/concept-tags?questionId=<uuid>  — returns all tags + which are on this question
 // GET /api/concept-tags                    — returns all tags (for admin management)
 export async function GET(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -52,7 +52,7 @@ export async function GET(request) {
 // POST /api/concept-tags  { questionId, tagName }
 // Adds a tag to a question. Creates the tag if it doesn't exist.
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -100,7 +100,7 @@ export async function POST(request) {
 // If questionId provided: remove tag from question only
 // If no questionId: delete the tag entirely (admin only)
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -137,7 +137,7 @@ export async function DELETE(request) {
 // PATCH /api/concept-tags  { tagId, name }
 // Rename a tag — admin only
 export async function PATCH(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

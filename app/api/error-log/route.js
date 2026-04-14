@@ -3,7 +3,7 @@ import { createClient } from '../../../lib/supabase/server';
 
 // GET /api/error-log — fetch all questions with notes (error log entries)
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   const user = auth.user;

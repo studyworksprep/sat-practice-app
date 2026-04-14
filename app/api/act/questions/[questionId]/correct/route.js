@@ -3,7 +3,8 @@ import { createServiceClient } from '../../../../../../lib/supabase/server';
 
 // POST /api/act/questions/:questionId/correct
 // Admin/Manager: update ACT question content & taxonomy fields, flag as broken.
-export async function POST(request, { params }) {
+export async function POST(request, props) {
+  const params = await props.params;
   const questionId = params.questionId;
 
   const userId = request.headers.get('x-user-id');

@@ -5,7 +5,7 @@ import { createClient } from '../../../../lib/supabase/server';
 // Body: { cards: [{ front, back }], set_id }
 // Inserts multiple flashcards into a set at once
 export async function POST(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

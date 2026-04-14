@@ -5,7 +5,7 @@ import { createClient, createServiceClient } from '../../../../lib/supabase/serv
 // Returns aggregate student performance stats scoped to the teacher's roster.
 // Same shape as the admin student-performance endpoint but filtered to assigned students.
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

@@ -7,7 +7,8 @@ import { buildStudentPayload } from '../../../../../../lib/lessonworksSync';
 // Returns practice_stats, practice_tests, and domain_mastery for a student.
 // Same payload format as the push sync to LessonWorks.
 // Authenticated via x-api-key header.
-export async function GET(request, { params }) {
+export async function GET(request, props) {
+  const params = await props.params;
   if (!validateExternalApiKey(request)) {
     return NextResponse.json({ error: 'Invalid or missing API key' }, { status: 401 });
   }

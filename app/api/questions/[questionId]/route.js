@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '../../../../lib/supabase/server';
 
 // GET /api/questions/:questionId
-export async function GET(_request, { params }) {
+export async function GET(_request, props) {
+  const params = await props.params;
   const questionId = params.questionId;
   const { searchParams } = new URL(_request.url);
   const viewAsStudentId = searchParams.get('view_as') || null;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // 1) Auth + version fetch in parallel (independent of each other)
   // Fetch both current and newest version in one query (prefer is_current=true)

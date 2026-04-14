@@ -11,7 +11,7 @@ export async function POST(request) {
     const VALID_SOURCES = ['practice', 'practice_test', 'review'];
     const attemptSource = VALID_SOURCES.includes(source) ? source : 'practice';
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // 1) Auth + version fetch in parallel
     const [authResult, verResult] = await Promise.all([

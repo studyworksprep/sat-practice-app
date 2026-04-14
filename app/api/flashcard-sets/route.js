@@ -23,7 +23,7 @@ async function ensureDefaults(supabase, userId) {
 
 // GET /api/flashcard-sets — list all user-created sets with card counts and mastery averages
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
@@ -65,7 +65,7 @@ export async function GET() {
 
 // POST /api/flashcard-sets — create a new custom set
 export async function POST(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

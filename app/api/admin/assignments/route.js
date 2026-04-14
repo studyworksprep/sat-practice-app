@@ -15,7 +15,7 @@ async function requireAdmin(supabase) {
 
 // GET /api/admin/assignments — list all teacher-student assignments
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -31,7 +31,7 @@ export async function GET() {
 // POST /api/admin/assignments — assign student to teacher
 // Body: { teacher_id, student_id }
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -57,7 +57,7 @@ export async function POST(request) {
 // DELETE /api/admin/assignments — remove assignment
 // Body: { teacher_id, student_id }
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 

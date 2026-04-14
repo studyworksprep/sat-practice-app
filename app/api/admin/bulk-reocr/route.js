@@ -5,7 +5,7 @@ import { createClient, createServiceClient } from '../../../../lib/supabase/serv
 // Accepts a PDF file (one question per page), sends to Mathpix OCR, then Claude.
 // Returns array of { question_id, stem_html, stimulus_html, options[], matched, current } for preview.
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
@@ -112,7 +112,7 @@ export async function POST(request) {
 // Applies corrections to a single question version + its options
 // Body: { version_id, stem_html, stimulus_html?, options?: [{ id, content_html }] }
 export async function PUT(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

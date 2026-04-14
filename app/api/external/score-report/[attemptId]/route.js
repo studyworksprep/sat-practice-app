@@ -7,7 +7,8 @@ import { generateScoreReportPdf } from '../../../../../lib/generateScoreReportPd
 // GET /api/external/score-report/[attemptId]
 // Returns the practice-test score report PDF for a completed attempt.
 // Authenticated via x-api-key header.
-export async function GET(request, { params }) {
+export async function GET(request, props) {
+  const params = await props.params;
   if (!validateExternalApiKey(request)) {
     return NextResponse.json({ error: 'Invalid or missing API key' }, { status: 401 });
   }

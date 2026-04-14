@@ -10,7 +10,7 @@ export async function GET(request) {
   const next = searchParams.get('next');
 
   if (code) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       // If a specific next URL was requested (e.g. password reset), go there

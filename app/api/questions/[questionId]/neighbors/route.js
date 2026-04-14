@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../lib/supabase/server';
 
-export async function GET(req, { params }) {
-  const supabase = createClient();
+export async function GET(req, props) {
+  const params = await props.params;
+  const supabase = await createClient();
 
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) {
@@ -45,6 +46,4 @@ export async function GET(req, { params }) {
     prev_id: row?.prev_id ?? null,
     next_id: row?.next_id ?? null,
   });
-
-
 }

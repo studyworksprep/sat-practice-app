@@ -17,7 +17,7 @@ async function getAuthedUser(supabase) {
 
 // GET /api/question-notes?questionId=<uuid>
 export async function GET(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -61,7 +61,7 @@ export async function GET(request) {
 
 // POST /api/question-notes  { questionId, content }
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -90,7 +90,7 @@ export async function POST(request) {
 
 // PATCH /api/question-notes  { noteId, content }
 export async function PATCH(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -125,7 +125,7 @@ export async function PATCH(request) {
 
 // DELETE /api/question-notes  { noteId }
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

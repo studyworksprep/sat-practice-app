@@ -9,7 +9,7 @@ import { createClient, createServiceClient } from '../../../../lib/supabase/serv
 //
 // Returns { matched, updated, skipped, not_found, errors }
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

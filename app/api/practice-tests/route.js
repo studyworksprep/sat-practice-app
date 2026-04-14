@@ -7,7 +7,7 @@ import { computeScaledScore, toScaledScore } from '../../../lib/scoreConversion'
 //   tests   — all published practice tests with question counts
 //   attempts — user's attempts newest-first, with scores for completed ones
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

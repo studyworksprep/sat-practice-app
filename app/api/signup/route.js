@@ -106,7 +106,7 @@ export async function POST(request) {
   // Since the user already exists, this will just resend the confirmation.
   {
     const { createClient } = await import('../../../lib/supabase/server.js');
-    const anonClient = createClient();
+    const anonClient = await createClient();
     await anonClient.auth.resend({ type: 'signup', email });
   }
 

@@ -53,7 +53,7 @@ async function getCorrectOptionLabel(supabase, questionId) {
 // GET /api/answer-choice-tags
 //   Returns tag vocabulary only (for admin management screens).
 export async function GET(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase, VIEW_ROLES);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -87,7 +87,7 @@ export async function GET(request) {
 // Adds a tag to a specific wrong-answer option. Creates the tag if it
 // doesn't exist. Rejects if optionLabel refers to the correct answer.
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase, WRITE_ROLES);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -151,7 +151,7 @@ export async function POST(request) {
 //   Without those: deletes the tag from the vocabulary entirely.
 // Both paths are admin-only.
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase, WRITE_ROLES);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (auth.profile.role !== 'admin') {
@@ -184,7 +184,7 @@ export async function DELETE(request) {
 // PATCH /api/answer-choice-tags  { tagId, name }
 // Rename a tag. Admin only.
 export async function PATCH(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await getAuthedUser(supabase, WRITE_ROLES);
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (auth.profile.role !== 'admin') {

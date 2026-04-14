@@ -3,9 +3,10 @@ import { createClient } from '../../../../../../lib/supabase/server';
 
 // POST /api/practice-tests/attempt/[attemptId]/abandon
 // Marks an in-progress attempt as abandoned.
-export async function POST(_request, { params }) {
+export async function POST(_request, props) {
+  const params = await props.params;
   const { attemptId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

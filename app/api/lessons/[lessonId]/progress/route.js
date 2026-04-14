@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../lib/supabase/server';
 
 // GET /api/lessons/[lessonId]/progress — get student's progress on this lesson
-export async function GET(request, { params }) {
+export async function GET(request, props) {
+  const params = await props.params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -25,9 +26,10 @@ export async function GET(request, { params }) {
 
 // POST /api/lessons/[lessonId]/progress — update progress
 // Body: { block_id, check_answer?: { selected, correct } , mark_complete?: boolean }
-export async function POST(request, { params }) {
+export async function POST(request, props) {
+  const params = await props.params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
