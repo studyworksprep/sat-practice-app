@@ -2,6 +2,7 @@ import './globals.css';
 import NavBar from '../components/NavBar';
 import StorageHygiene from '../components/StorageHygiene';
 import Script from 'next/script';
+import { Analytics } from '@vercel/analytics/next';
 import { TestTypeProvider } from '../lib/TestTypeContext';
 
 export const metadata = {
@@ -60,6 +61,10 @@ export default function RootLayout({ children }) {
           <NavBar />
           {children}
         </TestTypeProvider>
+        {/* Vercel Analytics — tracks page views across both the legacy
+            tree and app/next/*. Used for the browser-support audit
+            (Phase 1.5 item 13) and for long-term traffic observability. */}
+        <Analytics />
       </body>
     </html>
   );
