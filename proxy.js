@@ -83,7 +83,7 @@ async function resolveUiTree(supabase, user) {
   return 'legacy';
 }
 
-export async function middleware(request) {
+export async function proxy(request) {
   // External/public API routes and webhooks handle their own auth — skip session logic
   if (
     request.nextUrl.pathname.startsWith(EXTERNAL_API_PREFIX) ||
