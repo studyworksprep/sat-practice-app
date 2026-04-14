@@ -1,10 +1,10 @@
 -- =========================================================
 -- get_question_neighbors RPC — backfilled from production
 -- =========================================================
--- The `get_question_neighbors` function is called from
--- app/api/questions/[questionId]/neighbors/route.js but has
--- never been committed as a migration. It exists only in the
--- production database.
+-- Previously-uncommitted function referenced by
+-- app/api/questions/[questionId]/neighbors/route.js. This file
+-- matches the production function body as dumped via
+-- pg_get_functiondef() on April 2026.
 --
 -- Call signature (from the route):
 --   supabase.rpc('get_question_neighbors', {
@@ -20,60 +20,89 @@
 -- Returns:
 --   (prev_id uuid, next_id uuid)
 --
--- This migration defines a placeholder that returns NULL for
--- both neighbors and logs a notice. A replay-from-scratch dev
--- database will be able to call the function (so routes won't
--- crash), but prev/next navigation will be no-ops until the
--- real body is pasted in.
+-- Semantics:
+--   Given a current question and a filter set, return the
+--   "previous" and "next" questions in the filtered list
+--   ordered by `created_at`. Note that "prev" means the
+--   question with a LATER created_at (newer), and "next"
+--   means the question with an EARLIER created_at (older) —
+--   the UI walks the list backwards through history.
 --
--- ACTION REQUIRED BEFORE RELYING ON THIS FUNCTION IN DEV:
---   1) Connect to the production Supabase database (psql or
---      the SQL editor in the Supabase dashboard).
---   2) Run:
---         select pg_get_functiondef(
---           'public.get_question_neighbors(uuid, uuid, text, int, int[], text, text, boolean)'::regprocedure
---         );
---      (If the argument types differ, replace them with the
---      actual signature from `\df public.get_question_neighbors`.)
---   3) Paste the returned function body into this file,
---      replacing the placeholder below. Preserve the
---      `CREATE OR REPLACE FUNCTION ... SECURITY DEFINER ...`
---      header so replay works cleanly.
---   4) Commit the updated migration. A fresh `supabase db
---      reset` against dev should then reproduce the prod
---      behavior of the neighbors endpoint.
+-- References the v1 question tables (`questions`,
+-- `question_taxonomy`, `question_status`). Phase 3 of the
+-- rebuild migrates this to questions_v2 along with the rest
+-- of the v1 teardown.
 --
--- This file uses the YYYYMMDDHHMMSS_*.sql Supabase CLI naming
--- convention so it sorts predictably alongside the rest of
--- the soon-to-be-renormalized migration directory.
+-- LANGUAGE sql STABLE (not SECURITY DEFINER) — runs as the
+-- calling user, which matches production. Permission grants
+-- are not dumped from pg_get_functiondef; if production has
+-- specific grants beyond the Supabase defaults we can add
+-- them in a follow-up migration.
 -- =========================================================
 
 create or replace function public.get_question_neighbors(
   current_question_id uuid,
   p_user_id           uuid,
-  p_program           text default 'SAT',
-  p_difficulty        integer default null,
-  p_score_bands       integer[] default null,
-  p_domain_name       text default null,
-  p_skill_name        text default null,
+  p_program           text default 'SAT'::text,
+  p_difficulty        integer default null::integer,
+  p_score_bands       integer[] default null::integer[],
+  p_domain_name       text default null::text,
+  p_skill_name        text default null::text,
   p_marked_only       boolean default false
 )
 returns table (prev_id uuid, next_id uuid)
-language plpgsql
+language sql
 stable
-security definer
-set search_path = public
-as $$
-begin
-  -- PLACEHOLDER: return no neighbors. Replace this body with
-  -- the real implementation dumped from production via
-  -- pg_get_functiondef() — see header comment.
-  raise notice
-    'get_question_neighbors placeholder invoked; install real body from prod';
-  return query select null::uuid as prev_id, null::uuid as next_id;
-end;
-$$;
-
-revoke all on function public.get_question_neighbors(uuid, uuid, text, integer, integer[], text, text, boolean) from public;
-revoke all on function public.get_question_neighbors(uuid, uuid, text, integer, integer[], text, text, boolean) from anon;
-grant execute on function public.get_question_neighbors(uuid, uuid, text, integer, integer[], text, text, boolean) to authenticated;
+as $function$
+with me as (
+  select
+    q.id,
+    q.created_at
+  from questions q
+  where q.id = current_question_id
+  limit 1
+),
+eligible as (
+  select
+    q.id,
+    q.created_at
+  from questions q
+  join question_taxonomy qt on qt.question_id = q.id
+  where (p_program is null or qt.program = p_program)
+    and (p_difficulty is null or qt.difficulty = p_difficulty)
+    and (p_score_bands is null or qt.score_band = any(p_score_bands))
+    and (p_domain_name is null or qt.domain_name = p_domain_name)
+    and (p_skill_name is null or qt.skill_name = p_skill_name)
+    and (
+      p_marked_only = false
+      or exists (
+        select 1
+        from question_status qs
+        where qs.question_id = q.id
+          and qs.user_id = p_user_id
+          and qs.marked_for_review = true
+      )
+    )
+),
+prev_row as (
+  select e.id
+  from eligible e
+  join me on true
+  where (e.created_at > me.created_at)
+     or (e.created_at = me.created_at and e.id > me.id)
+  order by e.created_at asc, e.id asc
+  limit 1
+),
+next_row as (
+  select e.id
+  from eligible e
+  join me on true
+  where (e.created_at < me.created_at)
+     or (e.created_at = me.created_at and e.id < me.id)
+  order by e.created_at desc, e.id desc
+  limit 1
+)
+select
+  (select id from prev_row) as prev_id,
+  (select id from next_row) as next_id;
+$function$;

@@ -8,17 +8,31 @@
 -- to these tables go through new migration files, not edits
 -- to this one.
 --
--- RLS policies are NOT defined here. They exist in production
--- but have never been captured as migration files — the same
--- drift problem this file fixes for the schema itself. A
--- follow-up migration will dump the current policies from
--- prod (via `select * from pg_policies where schemaname =
--- 'public' and tablename like 'practice_test%'`) and commit
--- them as `YYYYMMDDHHMMSS_create_practice_tests_rls.sql`. In
--- the meantime, `alter table ... enable row level security`
--- is called so a fresh replay never leaves these tables
--- briefly wide-open; Phase 2 fills in the policies before
--- any route under `app/next/*` reads from them.
+-- RLS note: the only practice_test_* table with RLS policies
+-- in production is `practice_test_attempts`, which gets three
+-- policies (`pta_insert_self`, `pta_select`, `pta_update_self`)
+-- created by the pre-existing non-timestamped migrations:
+--
+--   - add_teacher_student_assignments.sql creates the initial
+--     three policies (owner + teacher_can_view_student).
+--   - fix_manager_practice_test_visibility.sql replaces
+--     `pta_select` with the expanded three-branch version that
+--     adds manager→teacher and manager→student visibility.
+--
+-- Both of those files sort alphabetically after this timestamped
+-- file, so a fresh `supabase db reset` replays in the correct
+-- order: create table first, then add policies. `ENABLE ROW
+-- LEVEL SECURITY` is called here for every table so no table is
+-- briefly wide-open between creation and policy attachment.
+--
+-- The other six practice_test_* tables (practice_tests,
+-- practice_test_modules, practice_test_module_items,
+-- practice_test_module_attempts, practice_test_item_attempts,
+-- practice_test_routing_rules) have NO policies in production.
+-- They rely on service-role access from the API via
+-- createServiceClient(). Phase 2 of the rebuild will audit each
+-- of these and decide whether to add least-privilege policies
+-- or keep them as service-role-only intentionally.
 --
 -- This file uses the YYYYMMDDHHMMSS_*.sql Supabase CLI naming
 -- convention so it sorts before existing migrations (e.g.
