@@ -112,7 +112,7 @@ export default async function PracticeQuestionPage({ params }) {
       .maybeSingle(),
     supabase
       .from('attempts')
-      .select('id, is_correct, selected_option_id, created_at')
+      .select('id, is_correct, selected_option_id, response_text, created_at')
       .eq('user_id', user.id)
       .eq('question_id', questionId)
       .order('created_at', { ascending: false })
@@ -159,6 +159,7 @@ export default async function PracticeQuestionPage({ params }) {
     ? {
         isCorrect: lastAttempt.is_correct,
         selectedOptionId: lastAttempt.selected_option_id,
+        responseText: lastAttempt.response_text,
         submittedAt: lastAttempt.created_at,
       }
     : null;

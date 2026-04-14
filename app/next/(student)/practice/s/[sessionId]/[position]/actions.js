@@ -30,13 +30,14 @@ import { applyWatermark } from '@/lib/content/watermark';
 
 /**
  * Submit an answer for the current question in a practice session.
+ * Handles both MCQ (optionId) and SPR (responseText) question types.
  *
  * @param {string} sessionId
  * @param {number} position
- * @param {string|null} selectedOptionId
+ * @param {{ optionId?: string|null, responseText?: string|null }} answer
  * @returns {Promise<{ok, data?, error?}>}
  */
-export async function submitAnswer(sessionId, position, selectedOptionId) {
+export async function submitAnswer(sessionId, position, answer) {
   let ctx;
   try {
     ctx = await requireUser();
@@ -55,6 +56,9 @@ export async function submitAnswer(sessionId, position, selectedOptionId) {
   if (!rl.ok) {
     return actionFail('Too many submissions. Please slow down.');
   }
+
+  const selectedOptionId = answer?.optionId ?? null;
+  const responseText = (answer?.responseText ?? '').toString().trim();
 
   // Load the session and verify ownership + position.
   const { data: session, error: sessionErr } = await supabase
@@ -89,9 +93,19 @@ export async function submitAnswer(sessionId, position, selectedOptionId) {
     .maybeSingle();
   if (!correctAnswer) return actionFail('Answer key not found');
 
-  // Grade. MCQ only in this first commit; SPR follows in a subsequent PR.
+  const isSpr = version.question_type === 'spr';
+  if (isSpr && !responseText) {
+    return actionFail('Please enter an answer before submitting.');
+  }
+  if (!isSpr && !selectedOptionId) {
+    return actionFail('Please select an option before submitting.');
+  }
+
+  // Grade the submission.
   let isCorrect = false;
-  if (selectedOptionId) {
+  if (isSpr) {
+    isCorrect = gradeSprAnswer(responseText, correctAnswer);
+  } else if (selectedOptionId) {
     if (correctAnswer.correct_option_id) {
       isCorrect = correctAnswer.correct_option_id === selectedOptionId;
     }
@@ -107,6 +121,7 @@ export async function submitAnswer(sessionId, position, selectedOptionId) {
     question_id: questionId,
     is_correct: isCorrect,
     selected_option_id: selectedOptionId || null,
+    response_text: isSpr ? responseText : null,
     source: 'practice',
   });
   if (insertErr) {
@@ -134,11 +149,93 @@ export async function submitAnswer(sessionId, position, selectedOptionId) {
 
   return actionOk({
     isCorrect,
+    questionType: version.question_type,
     correctOptionId: correctAnswer.correct_option_id ?? null,
+    // For SPR questions, the display string shown in the reviewed
+    // state ("The correct answer was: 12.5 or 25/2"). For MCQ this
+    // is null — the UI highlights the correct option radio instead.
+    correctAnswerDisplay: isSpr ? formatSprCorrectAnswer(correctAnswer) : null,
     // Watermark the rationale too. This is the only place rationale
     // ever crosses the wire to the client.
     rationaleHtml: applyWatermark(version.rationale_html, user.id),
   });
+}
+
+// ──────────────────────────────────────────────────────────────
+// SPR grading helpers
+// ──────────────────────────────────────────────────────────────
+//
+// SPR (student-produced response) answers are compared in two ways,
+// in order:
+//
+//   1) Text comparison. `correct_text` may be a plain string or a
+//      JSON array of acceptable answers (e.g. "12.5", "25/2", "0.5").
+//      The student's response is normalized (lowercased,
+//      whitespace-collapsed, trimmed) and compared against each
+//      acceptable form.
+//
+//   2) Numeric comparison. If text comparison fails and both the
+//      student's response and `correct_number` parse as floats, they
+//      are compared with `numeric_tolerance` (defaulting to 0).
+//
+// This matches the existing grading logic in the legacy submit-module
+// route handler.
+
+function normalizeText(s) {
+  return (s ?? '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function parseCorrectTextList(raw) {
+  if (raw == null) return [];
+  const s = String(raw).trim();
+  if (!s) return [];
+  if (s.startsWith('[') && s.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(s);
+      if (Array.isArray(parsed)) return parsed.map((x) => String(x));
+    } catch {
+      // fall through
+    }
+  }
+  return [s];
+}
+
+function gradeSprAnswer(responseText, correctAnswer) {
+  // Text match first
+  const acceptable = parseCorrectTextList(correctAnswer.correct_text);
+  const normalized = normalizeText(responseText);
+  if (acceptable.some((a) => normalizeText(a) === normalized)) {
+    return true;
+  }
+  // Numeric fallback
+  const responseNum = parseFloat(responseText);
+  if (Number.isFinite(responseNum) && correctAnswer.correct_number != null) {
+    const tol = parseFloat(correctAnswer.numeric_tolerance) || 0;
+    const correctNum = parseFloat(correctAnswer.correct_number);
+    if (Number.isFinite(correctNum) && Math.abs(responseNum - correctNum) <= tol) {
+      return true;
+    }
+  }
+  // Also allow a numeric match against any acceptable text entry
+  // (e.g. correct_text = ["12.5", "25/2"] — 12.5 should match).
+  if (Number.isFinite(responseNum)) {
+    for (const entry of acceptable) {
+      const entryNum = parseFloat(entry);
+      if (Number.isFinite(entryNum) && entryNum === responseNum) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function formatSprCorrectAnswer(correctAnswer) {
+  const list = parseCorrectTextList(correctAnswer.correct_text);
+  if (list.length > 0) return list.join(' or ');
+  if (correctAnswer.correct_number != null) {
+    return String(correctAnswer.correct_number);
+  }
+  return '—';
 }
 
 /**
