@@ -1,28 +1,39 @@
-// Practice session start page. See docs/architecture-plan.md §3.7.
+// Tutor training start page. See docs/architecture-plan.md §3.4.
 //
-// Lightweight filter form that hands off to createSession Server
-// Action. The action builds a practice_sessions row with a random-
-// ordered slice of matching question ids, then redirects the user to
-// /practice/s/[sessionId]/0 — the opaque session-position URL
-// pattern from §3.7. URL manipulation after that point reveals
-// nothing; the server maps (sessionId, position) → questionId.
+// Tutors experience the exact same start-session UI as students —
+// same filter form, same domain list, same resume banner — because
+// the whole point of training mode is for tutors to see what their
+// students see. The only differences from the student flow are:
+//
+//   - role gate allows teacher/manager/admin (not student/practice)
+//   - createSession uses mode='training' so the rows can be
+//     distinguished from real student practice sessions later
+//   - resume link and post-create redirect point at /tutor/training
+//     instead of /practice
+//
+// The shared StartInteractive client island handles both via the
+// `basePath` prop. No UI divergence, no teacher-mode toggle, no
+// client branching on role.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { createSession } from './actions';
+import { createTrainingSession } from './actions';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PracticeStartPage() {
+export default async function TutorTrainingStartPage() {
   const { user, profile, supabase } = await requireUser();
 
-  if (profile.role === 'admin') redirect('/admin');
-  if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
-  if (profile.role === 'practice') redirect('/subscribe');
+  // Role gate — inverse of the student practice page.
+  if (profile.role === 'student' || profile.role === 'practice') {
+    redirect('/practice/start');
+  }
+  if (!['teacher', 'manager', 'admin'].includes(profile.role)) {
+    redirect('/');
+  }
 
-  // Fetch the filter options inline — domain list, difficulty options.
-  // Small catalog data; RLS on question_taxonomy allows student reads.
+  // Same taxonomy query as the student start page.
   const { data: taxonomyRows } = await supabase
     .from('question_taxonomy')
     .select('domain_name, skill_name, difficulty')
@@ -30,7 +41,6 @@ export default async function PracticeStartPage() {
     .not('domain_name', 'is', null)
     .limit(5000);
 
-  // Build { domain: Set<skill> } and difficulty options from the rows.
   const domainMap = {};
   for (const row of taxonomyRows ?? []) {
     if (!row.domain_name) continue;
@@ -41,15 +51,13 @@ export default async function PracticeStartPage() {
     .sort()
     .map((name) => ({ name, skills: Array.from(domainMap[name]).sort() }));
 
-  // Is there an active practice-mode session we can offer to resume?
-  // Tutors see their own training-mode session via /tutor/training;
-  // this query is filtered to mode='practice' so the student flow
-  // never offers to resume a tutor's training session and vice versa.
+  // Active training session to resume? Filter by mode='training' so
+  // the training flow never offers a lingering practice-mode session.
   const { data: activeSession } = await supabase
     .from('practice_sessions')
     .select('id, current_position, question_ids, last_activity_at')
     .eq('user_id', user.id)
-    .eq('mode', 'practice')
+    .eq('mode', 'training')
     .gt('expires_at', new Date().toISOString())
     .order('last_activity_at', { ascending: false })
     .limit(1)
@@ -70,8 +78,8 @@ export default async function PracticeStartPage() {
     <StartInteractive
       domains={domains}
       resumeInfo={resumeInfo}
-      createSessionAction={createSession}
-      basePath="/practice"
+      createSessionAction={createTrainingSession}
+      basePath="/tutor/training"
     />
   );
 }

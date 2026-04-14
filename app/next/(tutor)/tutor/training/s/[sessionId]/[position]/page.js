@@ -1,26 +1,22 @@
-// Practice session question page — the core of the Server-Component-
-// based content-protection story from docs/architecture-plan.md §3.7.
+// Tutor training session page — pixel-identical UX to the student
+// practice page. Tutors experience exactly what their students see,
+// including the watermarking, the server-rendered question content,
+// and the §3.7 opaque-URL pattern. See docs/architecture-plan.md §3.4.
 //
-// URL shape: /practice/s/[sessionId]/[position]
-//   - sessionId is an opaque uuid keyed to a practice_sessions row
-//   - position is the 0-indexed offset into the session's question_ids
+// The logic here is deliberately the same as
+// app/next/(student)/practice/s/[sessionId]/[position]/page.js.
+// The only differences are:
 //
-// The server resolves (sessionId, position) → question_id on every
-// request. The client never sees the full question_ids array; URL
-// manipulation reveals nothing. RLS on practice_sessions ensures only
-// the owning user can read the row.
+//   - role gate (teacher/manager/admin, not student)
+//   - the practice_sessions row is filtered to mode='training' so a
+//     stray practice-mode session id won't accidentally render here
+//   - PracticeInteractive is called with basePath='/tutor/training'
+//     and sessionCompleteHref='/tutor/dashboard?training_complete=1'
 //
-// Question content is rendered as HTML on the server — stimulus_html,
-// stem_html, and each option's content_html — via dangerouslySetInnerHTML
-// in the JSX below. No JSON payload is sent to the client. An attacker
-// hitting /practice/s/*/0 sees formatted HTML, not a scrapable object.
-// Watermarking is applied via lib/content/watermark.js before
-// rendering, keying off the authenticated user id.
-//
-// The correct answer and rationale are NOT fetched in this page. They
-// are delivered via the submitAnswer Server Action only after the
-// student has submitted, server-gated on the existence of an attempts
-// row. See actions.js in this directory.
+// submitAnswer is imported from lib/practice/session-actions — the
+// same function the student page uses. Shared grading, shared
+// watermark injection, shared attempts-row insert. One canonical
+// answer per question (§3.1).
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
@@ -30,44 +26,46 @@ import { PracticeInteractive } from '@/lib/practice/PracticeInteractive';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PracticeQuestionPage({ params }) {
+export default async function TutorTrainingQuestionPage({ params }) {
   const { sessionId, position: positionStr } = await params;
   const { user, profile, supabase } = await requireUser();
 
-  if (profile.role === 'admin') redirect('/admin');
-  if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
-  if (profile.role === 'practice') redirect('/subscribe');
+  // Role gate — inverse of the student practice page.
+  if (profile.role === 'student' || profile.role === 'practice') {
+    redirect('/practice/start');
+  }
+  if (!['teacher', 'manager', 'admin'].includes(profile.role)) {
+    redirect('/');
+  }
 
   const position = Number(positionStr);
   if (!Number.isInteger(position) || position < 0) notFound();
 
-  // 1) Load the session. RLS pins this to the owning user.
+  // 1) Load the session, pinned to the caller and to training mode.
   const { data: session, error: sessionErr } = await supabase
     .from('practice_sessions')
     .select('id, user_id, question_ids, current_position, test_type, mode, expires_at')
     .eq('id', sessionId)
+    .eq('mode', 'training')
     .maybeSingle();
 
   if (sessionErr || !session) notFound();
   if (session.user_id !== user.id) notFound();
   if (new Date(session.expires_at) < new Date()) {
-    redirect('/practice/start?expired=1');
+    redirect('/tutor/training/start?expired=1');
   }
 
   const questionIds = Array.isArray(session.question_ids) ? session.question_ids : [];
   if (questionIds.length === 0) notFound();
   if (position >= questionIds.length) {
-    // Ran off the end — send them to the dashboard for now. A proper
-    // summary page lands in a follow-up commit.
-    redirect('/dashboard?session_complete=1');
+    redirect('/tutor/dashboard?training_complete=1');
   }
 
   const questionId = questionIds[position];
 
-  // 2) Advance the persisted cursor if the student is moving forward.
-  //    Non-blocking: a failure here doesn't break the render.
+  // 2) Advance the persisted cursor if the tutor is moving forward.
+  //    Fire-and-forget — failure doesn't break the render.
   if (position !== session.current_position) {
-    // Fire-and-forget. Don't await — the update isn't on the critical path.
     supabase
       .from('practice_sessions')
       .update({
@@ -78,14 +76,8 @@ export default async function PracticeQuestionPage({ params }) {
       .then(() => {}, () => {});
   }
 
-  // 3) Load the question content. Uses v1 tables (questions,
-  //    question_versions, answer_options, question_taxonomy). Phase 3
-  //    migrates to questions_v2.
-  //
-  //    question_versions → answer_options is a FK relation, so we
-  //    pull them together via a nested Supabase select. That leaves
-  //    just three parallel queries: question row, version+options,
-  //    taxonomy, and the student's most recent attempt.
+  // 3) Load question content. Uses v1 tables; Phase 3 migrates to v2.
+  //    Same nested-select pattern as the student page.
   const [
     { data: question },
     { data: version },
@@ -122,9 +114,9 @@ export default async function PracticeQuestionPage({ params }) {
 
   if (!question || !version) notFound();
 
-  // 4) Apply per-user watermarking to all HTML content before
-  //    embedding. Invisible to real students, decodable from leaked
-  //    text via watermarkTag(userId). See §3.7.
+  // 4) Watermark all HTML before it crosses the wire. Keyed on the
+  //    tutor's own user id so a leaked training-mode question is
+  //    traceable the same way a leaked student-mode one would be.
   const stimulusHtml = applyWatermark(version.stimulus_html, user.id);
   const stemHtml = applyWatermark(version.stem_html, user.id);
   const rawOptions = Array.isArray(version.answer_options) ? version.answer_options : [];
@@ -138,10 +130,6 @@ export default async function PracticeQuestionPage({ params }) {
       content_html: applyWatermark(opt.content_html, user.id),
     }));
 
-  // 5) Build the view-model handed to the client island. The client
-  //    sees rendered HTML strings for the server-rendered regions
-  //    and opaque option ids for interaction — never the correct
-  //    answer, never the rationale, until the student has submitted.
   const questionVM = {
     questionId: question.id,
     externalId: question.source_external_id,
@@ -152,9 +140,6 @@ export default async function PracticeQuestionPage({ params }) {
     taxonomy: taxonomy ?? null,
   };
 
-  // If the student has already submitted this question, we reveal the
-  // previous outcome on initial render. The Server Action will still
-  // re-gate rationale delivery if they submit again.
   const initialAttempt = lastAttempt
     ? {
         isCorrect: lastAttempt.is_correct,
@@ -177,8 +162,8 @@ export default async function PracticeQuestionPage({ params }) {
       session={sessionVM}
       initialAttempt={initialAttempt}
       submitAnswerAction={submitAnswer}
-      basePath="/practice"
-      sessionCompleteHref="/dashboard?session_complete=1"
+      basePath="/tutor/training"
+      sessionCompleteHref="/tutor/dashboard?training_complete=1"
     />
   );
 }
