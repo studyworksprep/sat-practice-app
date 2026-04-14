@@ -524,7 +524,7 @@ create policy visible_rows on act_assignment_students   for select using (can_vi
 
 ## 4. Migration Plan
 
-Six phases, each independently shippable, each producing visible improvement. Nothing before Phase 6 changes what a production user sees without a deliberate `ui_version` flip. Nothing in this plan requires pausing feature work or taking the site down.
+Six phases plus a 1.5 interlude, each independently shippable, each producing visible improvement. Nothing before Phase 6 changes what a production user sees without a deliberate `ui_version` flip. Nothing in this plan requires pausing feature work or taking the site down. Phase 1.5 is the Next.js 16 / React 19.2 dependency upgrade that lands between Phase 1 (foundation) and Phase 2 (backend consolidation), so Phase 2 code is written against current APIs from day one.
 
 **Parallel-build discipline (applies to every phase).** Per §3.6, all new code from Phase 1 onward lands in `app/(next)/` and in new database tables/columns. Legacy routes and legacy tables stay untouched until Phase 6. Phases 2–5 read "refactor" as "write the `(next)` version alongside the existing one", not "edit the existing one in place". Playwright runs both trees on every PR. The `feature_flags.force_ui_version` kill switch is the single-statement rollback path at every step.
 
@@ -550,7 +550,203 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 12. **Write the `can_view(target)` SQL function and `list_visible_users(role_filter)` companion** from §3.8 as new migrations. Do not wire any existing policy to them yet. Run the audit back-test: a one-off script that enumerates every (viewer, target) pair in production and confirms `can_view(target)` returns the same answer as the current helper stack. The script runs against the dev Supabase project (which is seeded from prod). Zero diffs is the precondition for Phase 2's RLS rewrites.
 13. **Extend the Playwright suite (initial)** to run each test twice: once against `app/` (legacy, via middleware override) and once against `app/(next)/` (which is still a stub, so the next-tree pass is expected to fail with "route not found" for most suites until Phase 2 fills it in). This establishes the dual-tree CI pattern before the `(next)` tree has any content to test.
 
-**Exit criteria:** Fresh database rebuildable from migrations. CI blocks broken PRs on both trees. Errors show up in Sentry. The helpers exist but aren't used yet. The parallel-build infrastructure is live but dark — `force_ui_version='legacy'`, `(next)` tree is an empty shell, and no production user reaches a single line of new code. Flipping an internal account to `ui_version='next'` returns a placeholder page and nothing else. Everything is ready for Phase 2 to start writing the new tree's contents.
+**Exit criteria:** Fresh database rebuildable from migrations. CI blocks broken PRs on both trees. Errors show up in Sentry. The helpers exist but aren't used yet. The parallel-build infrastructure is live but dark — `force_ui_version='legacy'`, `(next)` tree is an empty shell, and no production user reaches a single line of new code. Flipping an internal account to `ui_version='next'` returns a placeholder page and nothing else. Everything is ready for Phase 1.5 to land the dependency upgrade before Phase 2 writes new code.
+
+### Phase 1.5 — Dependency upgrade (prerequisite for Phase 2)
+
+**Goal:** land Next.js 16 + React 19.2 + current `@supabase/ssr` before Phase 2 starts filling in the `(next)` tree, so every new file is written against current APIs from day one and the eventual upgrade cost is paid once instead of retrofitted across everything we build in Phase 2–5.
+
+**Source material:** the authoritative upstream upgrade guides live in `docs/upgrades/` — `nextjs-16-upgrade-guide.md`, `nextjs-15-upgrade-guide.md` (the intermediate step, because we're on 14.2.5), `react-19-upgrade-guide.md`, `react-19-release-notes.md`, and `react-19-2-release-notes.md`. Read those before running the upgrade; this section is the Studyworks-specific plan of what applies to our codebase.
+
+**Starting point:** Next.js 14.2.5, React 18.3.1, @supabase/ssr 0.5.2, @supabase/supabase-js 2.45.4, stripe 22. Eighteen months old across the board.
+
+#### 1.5.1 Audit findings — what our codebase actually needs
+
+Full repo scan against every breaking change from Next 15 + Next 16 + React 19:
+
+| Change | Our codebase | Action |
+|---|---|---|
+| Async `params` / `searchParams` in page/layout/route | 41 occurrences in 30 files | Codemod |
+| Async `cookies()` | 1 file (`lib/supabase/server.js`), cascades to ~100 call sites | Hand-edit + mechanical await-everywhere |
+| `middleware.js` → `proxy.js` rename | 1 file (our Phase 1 tree resolver) | Hand-edit: file + function rename |
+| `next lint` removal | 1 script in `package.json`, 1 line in `.github/workflows/ci.yml` | Codemod + small hand-edit |
+| React 19 `forwardRef` removal | 0 | — |
+| React 19 `propTypes` / `defaultProps` removal | 0 | — |
+| React 19 `useFormState` → `useActionState` | 0 | — |
+| React 19 `useRef()` requires argument | 0 | — |
+| React 19 legacy context / string refs / `createFactory` | 0 | — |
+| React 19 `ReactDOM.render` / `hydrate` / `findDOMNode` / `unmountComponentAtNode` | 0 | — |
+| React 19 `react-dom/test-utils` | 0 | — |
+| `next/legacy/image` | 0 | — |
+| `@next/font` → `next/font` | 0 | — |
+| `NextRequest.geo` / `NextRequest.ip` | 0 | — |
+| `images.domains` / `images.remotePatterns` config | 0 (5-line `next.config.js`) | — |
+| `experimental.serverComponentsExternalPackages` | 0 | — |
+| `experimental.bundlePagesExternals` | 0 | — |
+| `experimental.turbopack` | 0 | — |
+| `experimental.dynamicIO` → `cacheComponents` | 0 (not using PPR) | — |
+| AMP configuration | 0 | — |
+| `serverRuntimeConfig` / `publicRuntimeConfig` | 0 | — |
+| Parallel routes `default.js` requirement | 0 (no parallel routes) | — |
+| Custom webpack config | 0 | — |
+| `revalidateTag` second-argument requirement | 0 (not using) | — |
+
+The React 19 half is almost entirely a no-op — the codemod will run with zero changes across our entire codebase. The Next.js half is three things: the async-params codemod across 30 files, the `middleware` → `proxy` rename, and the supabase cookies cascade. Everything else on the breaking-changes list simply doesn't apply.
+
+#### 1.5.2 Interaction with the Phase 1 middleware work
+
+In Phase 1 we extensively refactored `middleware.js` to add the `ui_version` tree resolver (reading from the JWT), the `feature_flags.force_ui_version` kill-switch cache, and the URL rewriter to `/next/*`. In Next 16 that whole file needs to be renamed to `proxy.js` and the exported function renamed to `proxy`. This is a Next 16-only feature — `proxy.js` doesn't exist in Next 14 — so the rename cannot ship as an isolated PR. It must land inside the upgrade PR.
+
+Beyond the filename, the practical consequence is the runtime change. The `middleware` API in Next 14 defaulted to the **edge** runtime; the `proxy` API in Next 16 runs only on the **nodejs** runtime and cannot be configured. Our current middleware doesn't declare an explicit runtime, so it was running on edge. After the rename:
+
+- Cold-start latency on Vercel moves from edge's ~10–30 ms to nodejs's ~50–150 ms per function instance. Warm invocations are indistinguishable.
+- Full Node.js API surface becomes available (we don't currently need any).
+- The module-scoped `killSwitchCache` object still persists across warm invocations within a single instance, exactly as it does on edge.
+- `@supabase/ssr` and `createServerClient` work identically in both runtimes.
+- If the nodejs cold-start regression turns out to be user-visible (unlikely at our scale), Next 16 still supports the legacy `middleware.js` filename for the edge runtime per the upgrade guide. That's the escape hatch.
+
+The Next 16 codemod handles the file rename, the function rename, and config flag renames (`skipMiddlewareUrlNormalize` → `skipProxyUrlNormalize`, etc.). Our Phase 1 tree-resolver logic — `readKillSwitch`, `userTreeFromJwt`, `resolveUiTree`, the URL rewrite — is all internal helper code that doesn't interact with the middleware/proxy API surface, so it survives the rename untouched. Only the entry-point export changes.
+
+#### 1.5.3 The supabase cookies cascade
+
+`lib/supabase/server.js:6` currently does `const cookieStore = cookies()` synchronously. In Next 15+ `cookies()` returns a Promise, so the function becomes:
+
+```js
+export async function createClient() {
+  const cookieStore = await cookies()
+  // ...
+}
+```
+
+And every caller of `createClient()` becomes `await createClient()`. The codebase-wide grep found **152 `createClient()` occurrences across 101 files**, but most of those are the browser-side client from `lib/supabase/browser.js` (which is unaffected — browsers don't have `next/headers`). The server-side call sites that actually need the await are the ~80 API route handlers and the handful of server components that import from `lib/supabase/server`.
+
+Two paths forward:
+
+1. **Await everywhere.** Convert every server-side `const supabase = createClient()` to `const supabase = await createClient()`. Mechanical, touches 80-ish files, zero thinking required.
+2. **Upgrade to @supabase/ssr 1.x and use the current cookies accessor pattern.** Newer versions of the SSR helper accept an async cookies object directly, which can hide the async-ness from the caller and leave `createClient()` synchronous. This would reduce blast radius to `lib/supabase/server.js` alone.
+
+I don't know for certain what the current `@supabase/ssr` API looks like as of April 2026 — my training data covers through 0.5.x. **Before starting the upgrade PR, read the `@supabase/ssr` README and CHANGELOG on GitHub** and decide between path 1 and path 2. Fall back to path 1 if path 2 isn't available or adds complexity. Either way, it's a single focused change to one file plus the optional cascade.
+
+Every server-side route handler touched by this is also touched by the async-params codemod — two mechanical transformations applied to the same ~80 files. The codemods can run in either order; I'd run async-params first, then the cookies cascade.
+
+#### 1.5.4 Codemods to run
+
+All four live inside a single upgrade PR, applied in order:
+
+1. **`npx @next/codemod@canary upgrade latest`** — runs the top-level Next 16 upgrade recipe. Handles the `middleware` → `proxy` rename, the Turbopack config move, PPR config flag removal, `unstable_` prefix stripping on stabilized APIs, and the `next lint` → ESLint CLI migration.
+
+2. **`npx @next/codemod@canary next-async-request-api`** — converts every sync `cookies()`/`headers()`/`draftMode()` call and every `{ params }`/`{ searchParams }` destructure in page/layout/route files to the async pattern. This is the big mechanical pass for 41 occurrences across 30 files.
+
+3. **`npx codemod@latest react/19/migration-recipe`** — runs the React 19 recipe (replace-reactdom-render, replace-string-ref, replace-act-import, replace-use-form-state, prop-types-typescript). Expected to be a complete no-op on our codebase; running it produces a clean diff that confirms there's nothing to change.
+
+4. **`npx @next/codemod@canary next-lint-to-eslint-cli .`** — swaps the `next lint` invocation in `package.json` and `.github/workflows/ci.yml` for a direct ESLint CLI call. Only runs if the top-level recipe in step 1 hasn't already done it.
+
+Each codemod produces a focused diff. Review each diff before committing so nothing slips in unnoticed.
+
+#### 1.5.5 Manual changes the codemods won't catch
+
+After all four codemods run, these items need hand-editing:
+
+1. **`lib/supabase/server.js`** — confirm the async `createClient()` wrapper matches what the current `@supabase/ssr` version expects. If using the legacy 0.5.x shape, also update every server-side caller to `await createClient()` (sed pass on the ~80 files matching `import.*from.*lib/supabase/server`).
+2. **`middleware.js` → `proxy.js`** — verify the codemod's rename preserves the full Phase 1 tree-resolver body (the `readKillSwitch` cache, `userTreeFromJwt`, `resolveUiTree`, and the rewrite logic). If the codemod is conservative and leaves any vestigial `middleware` references, clean them up.
+3. **`docs/architecture-plan.md` §3.6** — search/replace `middleware.js` → `proxy.js` in the parallel-build strategy section so the doc matches reality.
+4. **`docs/runbook.md`** — same rename in the operator instructions.
+5. **`package.json`** — bump `"engines": { "node": ">=20.9.0" }` (currently unspecified; Next 16 requires 20.9+). Verify Vercel's runtime is on Node 20+ in the project settings before merging.
+6. **`next.config.js`** — optionally add `reactCompiler: true` to opt into the now-stable React Compiler's automatic memoization. Not required for the upgrade itself; defer if the upgrade PR is feeling crowded.
+7. **`tsconfig.json`** — no changes required for JS-only code, but verify that the `"module"` / `"moduleResolution"` settings still match Next 16 expectations (we use `"bundler"` which is current).
+
+#### 1.5.6 Forward-compatible coding rules for Phase 2
+
+If we decide to start Phase 2 **before** the upgrade PR lands (e.g., working in parallel), any new code in `app/next/*` or in the shared helpers should follow these rules so the codemod is a no-op on new files and the eventual upgrade doesn't have to touch them:
+
+1. Every page, layout, and route handler is declared `async`, even when it doesn't technically need to be on Next 14.
+2. `params` and `searchParams` are always destructured via `await`: `const { id } = await params`. This is a no-op on Next 14 (awaiting a plain object just returns it) and required on Next 16.
+3. `cookies()` and `headers()` are always `await`ed: `const cookieStore = await cookies()`. Same rationale.
+4. Every route handler that reads auth state exports `export const dynamic = 'force-dynamic'` explicitly, rather than relying on default caching behavior (which flipped in Next 15).
+5. Every raw `fetch()` call to an external service explicitly declares cache behavior: `fetch(url, { cache: 'no-store' })` unless caching is the deliberate intent. Five routes under `/api` currently call external services (Mathpix, Anthropic); audit them in the upgrade PR.
+6. No new `forwardRef` in new components — use `ref` as a regular prop, which works in React 19 and is still supported in React 18.
+7. No new `useFormState` — use `useActionState` from `react-dom`.
+8. New client components that need form state use React 19 patterns (Actions, `useOptimistic`, `useActionState`, `use()`) where appropriate. See `docs/upgrades/react-19-release-notes.md` for the full feature set.
+
+These rules also apply to any legacy-tree file that gets substantially touched before the upgrade lands.
+
+#### 1.5.7 PR sequence
+
+**One focused PR, "Upgrade to Next 16 / React 19.2":**
+
+1. Bump `package.json`: `next@^16`, `react@^19`, `react-dom@^19`, `@supabase/ssr@latest`, `@supabase/supabase-js@latest`, `eslint-config-next@^16`. Bump `@types/react` / `@types/react-dom` if we ever add TypeScript.
+2. Bump Node engine constraint and verify Vercel project settings.
+3. Run the four codemods from §1.5.4 in order.
+4. Hand-edit the items from §1.5.5.
+5. Push to a dedicated branch off `claude/plan-architecture-migration-vXR3k`.
+6. Wait for CI (`lint + build + node --check scripts`) to pass.
+7. Wait for Vercel preview deployment.
+8. Smoke-test the five critical flows on the preview URL (§1.5.8).
+9. Merge back into the rebuild branch.
+
+**Follow-up PRs after the upgrade merges:**
+
+- Audit and tune caching defaults on any route that shows a stale-data regression.
+- Adopt React 19 Actions / `useActionState` patterns in Phase 2 code as natural fits appear.
+- Optionally enable `reactCompiler: true` in `next.config.js` after measuring baseline build times.
+- Re-run the Playwright dual-tree suite once it exists (Phase 5 deliverable).
+
+#### 1.5.8 Verification without local terminal access
+
+Three layers of gates before the upgrade merges:
+
+1. **CI on every push.** The `.github/workflows/ci.yml` workflow from Phase 1 runs `npm ci && next lint && next build && node --check scripts/*.{js,mjs}` against both the legacy and the `(next)` tree. Every compile-time regression surfaces here before a human looks at it.
+2. **Vercel preview deployment.** Every push to the upgrade branch produces a preview URL. This is where runtime regressions surface — the caching flip, the middleware/proxy runtime change, the supabase cookies cascade. Watch the Vercel build logs and the preview's response behavior before proceeding.
+3. **Manual smoke-tests** of the five critical flows from §3.5 on the preview URL:
+   - Student logs in → dashboard loads → starts a practice session → answers a question → sees result
+   - Student takes a full practice test → sees score report with scaled scores
+   - Teacher logs in → opens a student profile → reviews a wrong answer with rationale
+   - Admin logs in → opens Questions V2 preview → approves a question
+   - Stripe checkout → webhook processes → subscription shows active
+4. **Kill-switch rehearsal** before merging. On the preview environment, flip `feature_flags.force_ui_version = 'legacy'` and confirm every user is pinned back to the legacy tree within 5 seconds, then flip it back to `null` and confirm normal routing resumes. This proves the Phase 1 rollback path survives the upgrade.
+
+The whole verification loop is CI + Vercel + five manual flows + kill-switch rehearsal. No local `next build` needed, no local `supabase db reset` needed.
+
+#### 1.5.9 Risks and mitigations
+
+**Risk: The `@supabase/ssr` cookies interface has changed shape between 0.5 and current, breaking our `lib/supabase/server.js` in a way the codemod doesn't catch.**
+Mitigation: Read the current `@supabase/ssr` README and CHANGELOG on GitHub before starting the upgrade PR. If the shape has changed, adjust `createClient()` accordingly. Worst case, pin to the highest 0.5.x patch version and defer the SSR upgrade to a follow-up PR — the Next 16 side doesn't require it.
+
+**Risk: The `middleware` → `proxy` runtime change causes a cold-start or behavioral regression on Vercel.**
+Mitigation: the nodejs runtime is Vercel's default for most functions and is well-tested. The cold-start delta is <200 ms worst case, unlikely to be user-visible. If Vercel previews show any surprising behavior (e.g. supabase cookies not being read correctly from the proxy), the Next 16 upgrade guide notes that the legacy `middleware.js` filename is still supported for apps that need the edge runtime — we can fall back to that and revisit the proxy migration in a dedicated follow-up.
+
+**Risk: The async cookies cascade touches ~80 server-side routes and introduces a missed `await` somewhere, silently breaking auth checks in a single route.**
+Mitigation: the cascade is a purely mechanical `createClient()` → `await createClient()` replacement. A sed pass handles it uniformly. Every touched route is then exercised by the CI build step (TypeScript would catch missed awaits; we don't have TS today, but build errors and runtime errors in the preview deploy will surface them). For belt-and-suspenders coverage, grep for any remaining synchronous `createClient()` calls after the pass and verify each one is genuinely in a browser context.
+
+**Risk: Turbopack's default behavior in `next build` diverges from webpack's, breaking the build or producing subtly different output.**
+Mitigation: we have no custom webpack config, so the risk is minimal. If the build breaks, Next 16 still supports `next build --webpack` as an opt-out — we can fall back temporarily while reporting the issue. The upgrade guide explicitly documents this escape hatch.
+
+**Risk: Caching default flip bites a route that implicitly relied on cached `fetch()` behavior.**
+Mitigation: our codebase uses Supabase for nearly all data access, which doesn't go through Next's fetch cache at all. The 5 routes that call external services with raw `fetch()` (Mathpix, Anthropic, etc.) are all POSTs to uncacheable endpoints — they don't rely on caching today. We'll audit each one during the upgrade PR to confirm.
+
+**Risk: Browser support tightens to Chrome 111+, Edge 111+, Firefox 111+, Safari 16.4+. Older student devices (iOS 15-, Android with stock browsers on older phones) may break after the upgrade.**
+Mitigation: audit Vercel Analytics or equivalent for the current browser distribution before merging. Chrome 111 is from March 2023, Safari 16.4 from the same month — three years old at the time of the upgrade, which should cover >99% of students. If the analytics show a meaningful tail on older versions, add a browser-support banner to the login page pointing people at upgrade instructions. This is a Phase 1.5 deliverable only if the analytics show a real problem; skip it otherwise.
+
+**Risk: No test coverage to catch regressions that the compiler accepts but that break at runtime.**
+Mitigation: this is the largest risk, and it's not specific to this upgrade — the whole rebuild inherits it. The five manual smoke-tests cover the critical user paths. The Phase 5 Playwright suite is the real long-term answer but isn't landing until later. During Phase 1.5, accept that the first cohort flipped to `ui_version='next'` (internal accounts only) serves as a human test suite for the upgraded codebase. If anything breaks, the kill switch flips every user back within 5 seconds.
+
+**Risk: Timeline slips — the upgrade takes longer than expected because codemods need hand-correction or the supabase migration turns out harder than the audit suggests.**
+Mitigation: the upgrade PR has a firm fallback. If after a day of work the PR isn't passing CI and smoke-tests, park the branch, revert to Next 14 for the main branch, and move forward with Phase 2 under the forward-compatibility rules in §1.5.6. The upgrade then gets rescheduled as its own dedicated phase between Phase 5 and Phase 6 — still before Phase 6 decommission, so the benefits still accrue before the rebuild is complete.
+
+#### 1.5.10 Exit criteria
+
+- `package.json` on `next@^16`, `react@^19`, `react-dom@^19`, `@supabase/ssr@current`, `@supabase/supabase-js@current`
+- `middleware.js` renamed to `proxy.js` with the exported function renamed to `proxy`
+- `lib/supabase/server.js` is async and uses the current `@supabase/ssr` cookies pattern
+- Every `{ params }` destructure in page/layout/route files converted to `await params`
+- CI `lint + build` green on the upgrade branch
+- Vercel preview deployment successful
+- Five manual smoke-tests pass on preview
+- Kill-switch rehearsal passes on preview
+- `docs/architecture-plan.md` §3.6 and `docs/runbook.md` updated to reference `proxy.js` instead of `middleware.js`
+- PR merged back to `claude/plan-architecture-migration-vXR3k`
+
+Once Phase 1.5 is complete, Phase 2 is cleared to start writing real content under `app/next/*`.
 
 ### Phase 2 — Backend consolidation
 
@@ -662,6 +858,11 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 | Automated tests | 0 | ~5 integration + growing unit |
 | Dev environment | ad-hoc | documented `supabase db reset` |
 | Typescript coverage | 0% | steadily growing, starting with `lib/` |
+| Next.js version | 14.2.5 (mid-2024) | 16.x (current) |
+| React version | 18.3.1 (mid-2024) | 19.2 (current) |
+| `@supabase/ssr` version | 0.5.2 | current |
+| `middleware.js` (edge runtime) | present | replaced by `proxy.js` (nodejs runtime) |
+| Async request APIs compliance | synchronous (deprecated) | async throughout |
 
 ---
 
@@ -773,6 +974,26 @@ Phase 1 — Foundation
   [ ] Write can_view(target) SQL function + list_visible_users(role) helper
   [ ] Run can_view back-test script against prod snapshot; require zero diffs
   [ ] Extend Playwright harness to dual-tree mode (legacy + next)
+
+Phase 1.5 — Dependency upgrade
+  [ ] Read docs/upgrades/nextjs-16-upgrade-guide.md, nextjs-15-upgrade-guide.md, react-19-upgrade-guide.md
+  [ ] Read current @supabase/ssr README and CHANGELOG; decide sync-wrapper vs await-everywhere
+  [ ] Bump package.json: next@^16, react@^19, react-dom@^19, @supabase/ssr@latest, @supabase/supabase-js@latest, eslint-config-next@^16
+  [ ] Bump Node engines to >=20.9.0; verify Vercel project runtime
+  [ ] Run npx @next/codemod@canary upgrade latest
+  [ ] Run npx @next/codemod@canary next-async-request-api
+  [ ] Run npx codemod@latest react/19/migration-recipe (expected no-op)
+  [ ] Hand-edit lib/supabase/server.js for async cookies pattern
+  [ ] Cascade await createClient() to server-side callers if needed
+  [ ] Verify middleware.js → proxy.js rename preserves Phase 1 tree-resolver logic
+  [ ] Update docs/architecture-plan.md §3.6 references: middleware → proxy
+  [ ] Update docs/runbook.md references: middleware → proxy
+  [ ] Audit 5 routes with raw fetch() calls to external services for caching regressions
+  [ ] CI lint + build green on upgrade branch
+  [ ] Vercel preview deploy successful
+  [ ] Run 5 manual smoke-tests on preview URL
+  [ ] Rehearse kill switch: force_ui_version='legacy' → 'null' on preview
+  [ ] Merge upgrade PR back into claude/plan-architecture-migration-vXR3k
 
 Phase 2 — Backend consolidation
   [ ] Refactor /api/admin/* to use auth helpers
