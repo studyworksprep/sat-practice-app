@@ -1,18 +1,18 @@
-// Tutor dashboard — first Phase 2 page that exercises can_view() /
-// list_visible_users() from §3.8 for real.
+// Tutor dashboard — exercises the §3.8 unified hierarchy model for
+// real via a single RPC round-trip.
 //
-// Lists the tutor's assigned students with basic activity stats.
-// Uses the Phase 1 list_visible_users('student') RPC to fetch the
-// visible set, then joins with profiles and aggregates attempts in
-// JS.  RLS on attempts is already manager-aware via the existing
-// fix_manager_practice_test_visibility migration — the query returns
-// rows for every student the caller can see, matching the set we
-// got from list_visible_users.
+// Uses get_visible_students_with_stats() from Phase 2 migration
+// 20240101000005. The RPC runs as SECURITY DEFINER so it bypasses
+// the narrower profiles/attempts RLS and returns the full student
+// set the caller should see — including transitive manager → tutor →
+// student visibility that profiles RLS doesn't cover directly. See
+// the migration file's header comment for the full rationale and
+// the eventual Phase 2 step 9 / Phase 6 cleanup path.
 //
 // Read-only on this first commit — no client island, no Server
-// Actions. Sorting / filtering / assignment creation land in follow-
-// ups.  Per the Phase 2 pattern: a Server Component is the whole
-// file when there's no interactivity.
+// Actions. Sorting / filtering / assignment creation land in
+// follow-ups. Per the Phase 2 pattern: a Server Component is the
+// whole file when there's no interactivity.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
@@ -20,12 +20,11 @@ import { requireUser } from '@/lib/api/auth';
 export const dynamic = 'force-dynamic';
 
 const STUDENT_LIMIT = 100;
-const ATTEMPT_LIMIT = 20000;
 
 export default async function TutorDashboardPage() {
   const { user, profile, supabase } = await requireUser();
 
-  // Role gate.  Only tutors (teacher/manager role) and admins land
+  // Role gate. Only tutors (teacher/manager role) and admins land
   // here; students get bounced to their own dashboard.
   if (profile.role === 'student' || profile.role === 'practice') {
     redirect('/dashboard');
@@ -34,12 +33,9 @@ export default async function TutorDashboardPage() {
     redirect('/');
   }
 
-  // 1) Visible students via the unified hierarchy helper.
-  //    list_visible_users is security-definer and returns every user
-  //    the caller can see under the can_view() rules from §3.8.
-  const { data: visibleRaw, error: rpcErr } = await supabase.rpc(
-    'list_visible_users',
-    { role_filter: 'student' },
+  // One RPC call, one round trip, no RLS interference.
+  const { data: rows, error: rpcErr } = await supabase.rpc(
+    'get_visible_students_with_stats',
   );
 
   if (rpcErr) {
@@ -51,92 +47,43 @@ export default async function TutorDashboardPage() {
     );
   }
 
-  const studentIds = (visibleRaw ?? [])
-    .map((row) => row.user_id)
-    .slice(0, STUDENT_LIMIT);
-
-  if (studentIds.length === 0) {
+  const rawStudents = rows ?? [];
+  if (rawStudents.length === 0) {
     return (
       <EmptyState tutorName={profile.first_name ?? user.email} />
     );
   }
 
-  // 2) Profile detail + 3) recent attempts in parallel.
-  const [{ data: profiles }, { data: attemptRows }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('id, email, first_name, last_name, target_sat_score, high_school, graduation_year, created_at')
-      .in('id', studentIds),
-    supabase
-      .from('attempts')
-      .select('user_id, is_correct, created_at')
-      .in('user_id', studentIds)
-      .eq('source', 'practice')
-      .order('created_at', { ascending: false })
-      .limit(ATTEMPT_LIMIT),
-  ]);
+  // Map the RPC rows to the view-model the table renders.
+  // get_visible_students_with_stats() already orders by
+  // last_activity_at desc nulls last, so we don't re-sort here.
+  const students = rawStudents.slice(0, STUDENT_LIMIT).map((row) => ({
+    id: row.user_id,
+    name:
+      [row.first_name, row.last_name].filter(Boolean).join(' ') ||
+      row.email ||
+      '—',
+    email: row.email,
+    targetScore: row.target_sat_score,
+    highSchool: row.high_school,
+    graduationYear: row.graduation_year,
+    totalAttempts: Number(row.total_attempts ?? 0),
+    weekAttempts: Number(row.week_attempts ?? 0),
+    accuracy:
+      Number(row.total_attempts ?? 0) > 0
+        ? Math.round(
+            (Number(row.correct_attempts ?? 0) /
+              Number(row.total_attempts ?? 0)) *
+              100,
+          )
+        : null,
+    lastActivityAt: row.last_activity_at,
+  }));
 
-  // 4) Aggregate attempts per student into a flat map.
-  //    Server Component — Date.now() is fine here because the whole
-  //    function runs fresh on every request. The react-hooks/purity
-  //    rule can't tell Server Components from Client Components so
-  //    we silence it on this one line.
-  const statsByStudent = {};
-  // eslint-disable-next-line react-hooks/purity
-  const weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  for (const row of attemptRows ?? []) {
-    const s = statsByStudent[row.user_id] || {
-      total: 0,
-      correct: 0,
-      lastAt: null,
-      weekTotal: 0,
-    };
-    s.total += 1;
-    if (row.is_correct) s.correct += 1;
-    const ts = row.created_at ? new Date(row.created_at).getTime() : 0;
-    if (ts > (s.lastAt ? new Date(s.lastAt).getTime() : 0)) {
-      s.lastAt = row.created_at;
-    }
-    if (ts >= weekAgoMs) s.weekTotal += 1;
-    statsByStudent[row.user_id] = s;
-  }
-
-  // 5) Build the view-model: one row per student, sorted by most
-  //    recent activity (desc).  Students with no activity sink to
-  //    the bottom.
-  const students = (profiles ?? [])
-    .map((p) => {
-      const s = statsByStudent[p.id] || {
-        total: 0,
-        correct: 0,
-        lastAt: null,
-        weekTotal: 0,
-      };
-      return {
-        id: p.id,
-        name:
-          [p.first_name, p.last_name].filter(Boolean).join(' ') ||
-          p.email ||
-          '—',
-        email: p.email,
-        targetScore: p.target_sat_score,
-        highSchool: p.high_school,
-        graduationYear: p.graduation_year,
-        totalAttempts: s.total,
-        weekAttempts: s.weekTotal,
-        accuracy: s.total > 0 ? Math.round((s.correct / s.total) * 100) : null,
-        lastActivityAt: s.lastAt,
-      };
-    })
-    .sort((a, b) => {
-      const at = a.lastActivityAt ? new Date(a.lastActivityAt).getTime() : 0;
-      const bt = b.lastActivityAt ? new Date(b.lastActivityAt).getTime() : 0;
-      return bt - at;
-    });
-
-  // 6) Summary stats across the visible cohort.
+  // Cohort summary.
   const cohort = {
     total: students.length,
+    visible: rawStudents.length,
     activeThisWeek: students.filter((s) => s.weekAttempts > 0).length,
     totalAttemptsThisWeek: students.reduce((acc, s) => acc + s.weekAttempts, 0),
   };
@@ -192,10 +139,10 @@ export default async function TutorDashboardPage() {
             </tbody>
           </table>
         </div>
-        {cohort.total >= STUDENT_LIMIT && (
+        {cohort.visible > STUDENT_LIMIT && (
           <p style={S.footnote}>
-            Showing the first {STUDENT_LIMIT} students. Filtering and pagination
-            arrive in a follow-up.
+            Showing the first {STUDENT_LIMIT} of {cohort.visible} students.
+            Filtering and pagination arrive in a follow-up.
           </p>
         )}
       </section>
