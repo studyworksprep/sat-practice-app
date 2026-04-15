@@ -2,6 +2,32 @@ import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../../lib/supabase/server';
 import { computeScaledScore, toScaledScore, isHardRoute } from '../../../../../../lib/scoreConversion';
 
+// Standard SAT domain names by section. Used as the authoritative
+// source for a domain's subject_code when building the domain
+// breakdown, since the Bluebook-upload path can write a metadata
+// `submitted_modules` entry whose prefix doesn't line up with the
+// actual questions it describes (e.g. a parser fallback that tags
+// every row "RW"). Deriving subject_code from the SAT domain name
+// instead is robust to any upstream drift — these eight names are
+// fixed by College Board. Mirrors the set in lib/lessonworksSync.js.
+const SAT_MATH_DOMAINS = new Set([
+  'Algebra',
+  'Advanced Math',
+  'Problem-Solving and Data Analysis',
+  'Geometry and Trigonometry',
+]);
+const SAT_RW_DOMAINS = new Set([
+  'Craft and Structure',
+  'Information and Ideas',
+  'Standard English Conventions',
+  'Expression of Ideas',
+]);
+function domainSubjectCode(domainName, fallback) {
+  if (SAT_MATH_DOMAINS.has(domainName)) return 'MATH';
+  if (SAT_RW_DOMAINS.has(domainName)) return 'RW';
+  return fallback;
+}
+
 // GET /api/practice-tests/attempt/[attemptId]/results
 // Returns full results including scores, domain breakdown, and question review.
 export async function GET(_request, { params }) {
@@ -257,13 +283,16 @@ export async function GET(_request, { params }) {
     moduleStats[modKey].total += 1;
     if (is_correct) moduleStats[modKey].correct += 1;
 
-    // Domain stats
+    // Domain stats. subject_code is looked up from the standard SAT
+    // domain name first so mis-tagged bluebook uploads still render
+    // under the right section; falls back to the module-derived subj
+    // only for non-standard domain names.
     const domainKey = tax.domain_name || 'Unknown';
     if (!domainStats[domainKey]) {
       domainStats[domainKey] = {
         domain_name: domainKey,
         domain_code: tax.domain_code || null,
-        subject_code: subj,
+        subject_code: domainSubjectCode(domainKey, subj),
         correct: 0,
         total: 0,
         skills: {},

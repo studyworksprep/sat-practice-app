@@ -4,6 +4,29 @@ import { validateExternalApiKey } from '../../../../../lib/externalAuth';
 import { computeScaledScore, isHardRoute } from '../../../../../lib/scoreConversion';
 import { generateScoreReportPdf } from '../../../../../lib/generateScoreReportPdf';
 
+// Standard SAT domain → section mapping. Used when building the
+// domain breakdown so that mis-tagged Bluebook uploads (where the
+// submitted_modules metadata prefix doesn't line up with the real
+// section of the question) still render under the right panel.
+// Mirrors the copy in app/api/practice-tests/attempt/[attemptId]/results/route.js.
+const SAT_MATH_DOMAINS = new Set([
+  'Algebra',
+  'Advanced Math',
+  'Problem-Solving and Data Analysis',
+  'Geometry and Trigonometry',
+]);
+const SAT_RW_DOMAINS = new Set([
+  'Craft and Structure',
+  'Information and Ideas',
+  'Standard English Conventions',
+  'Expression of Ideas',
+]);
+function domainSubjectCode(domainName, fallback) {
+  if (SAT_MATH_DOMAINS.has(domainName)) return 'MATH';
+  if (SAT_RW_DOMAINS.has(domainName)) return 'RW';
+  return fallback;
+}
+
 // GET /api/external/score-report/[attemptId]
 // Returns the practice-test score report PDF for a completed attempt.
 // Authenticated via x-api-key header.
@@ -228,16 +251,21 @@ async function buildResultsPayload(supabase, attempt) {
     composite = (composite || 0) + scaled;
   }
 
-  // Build domain breakdown
+  // Build domain breakdown. subject_code is derived from the SAT
+  // domain name so mis-tagged bluebook uploads still land in the
+  // correct panel; falls back to q.subject_code only for unknown
+  // domain names.
   const domainAccum = {};
   for (const q of questionReview) {
     const tax = taxByQuestion[q.question_id] || {};
-    const dk = `${q.subject_code}/${tax.domain_code || 'unknown'}`;
+    const domainName = tax.domain_name || 'Unknown';
+    const resolvedSubject = domainSubjectCode(domainName, q.subject_code);
+    const dk = `${resolvedSubject}/${tax.domain_code || 'unknown'}`;
     if (!domainAccum[dk]) {
       domainAccum[dk] = {
-        domain_name: tax.domain_name || 'Unknown',
+        domain_name: domainName,
         domain_code: tax.domain_code || '',
-        subject_code: q.subject_code,
+        subject_code: resolvedSubject,
         correct: 0, total: 0, skills: {},
       };
     }
