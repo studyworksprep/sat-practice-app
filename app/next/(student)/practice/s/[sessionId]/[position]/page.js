@@ -26,6 +26,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { applyWatermark } from '@/lib/content/watermark';
 import { submitAnswer } from '@/lib/practice/session-actions';
+import { loadReviewData } from '@/lib/practice/load-review-data';
 import { PracticeInteractive } from '@/lib/practice/PracticeInteractive';
 
 export const dynamic = 'force-dynamic';
@@ -152,15 +153,31 @@ export default async function PracticeQuestionPage({ params }) {
     taxonomy: taxonomy ?? null,
   };
 
-  // If the student has already submitted this question, we reveal the
-  // previous outcome on initial render. The Server Action will still
-  // re-gate rationale delivery if they submit again.
+  // If the student has already submitted this question, eagerly load
+  // the rationale and correct answer so the page renders directly in
+  // the reviewed state. Avoids forcing the student to re-submit just
+  // to see the rationale on a question they've already answered. The
+  // submitAnswer Server Action still server-gates the same data on
+  // any re-submission.
+  let reviewData = null;
+  if (lastAttempt) {
+    reviewData = await loadReviewData({
+      supabase,
+      userId: user.id,
+      questionId,
+      questionVersionId: version.id,
+    });
+  }
+
   const initialAttempt = lastAttempt
     ? {
         isCorrect: lastAttempt.is_correct,
         selectedOptionId: lastAttempt.selected_option_id,
         responseText: lastAttempt.response_text,
         submittedAt: lastAttempt.created_at,
+        correctOptionId: reviewData?.correctOptionId ?? null,
+        correctAnswerDisplay: reviewData?.correctAnswerDisplay ?? null,
+        rationaleHtml: reviewData?.rationaleHtml ?? null,
       }
     : null;
 
@@ -171,6 +188,14 @@ export default async function PracticeQuestionPage({ params }) {
     mode: session.mode,
   };
 
+  // Review-mode sessions exit back to the review list; practice-mode
+  // sessions exit to the student dashboard. Same page handles both
+  // because the only difference is where the student lands at the end.
+  const sessionCompleteHref =
+    session.mode === 'review'
+      ? '/review?complete=1'
+      : '/dashboard?session_complete=1';
+
   return (
     <PracticeInteractive
       question={questionVM}
@@ -178,7 +203,7 @@ export default async function PracticeQuestionPage({ params }) {
       initialAttempt={initialAttempt}
       submitAnswerAction={submitAnswer}
       basePath="/practice"
-      sessionCompleteHref="/dashboard?session_complete=1"
+      sessionCompleteHref={sessionCompleteHref}
     />
   );
 }

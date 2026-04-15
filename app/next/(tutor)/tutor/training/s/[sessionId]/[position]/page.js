@@ -22,6 +22,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { applyWatermark } from '@/lib/content/watermark';
 import { submitAnswer } from '@/lib/practice/session-actions';
+import { loadReviewData } from '@/lib/practice/load-review-data';
 import { PracticeInteractive } from '@/lib/practice/PracticeInteractive';
 
 export const dynamic = 'force-dynamic';
@@ -140,12 +141,28 @@ export default async function TutorTrainingQuestionPage({ params }) {
     taxonomy: taxonomy ?? null,
   };
 
+  // Eager-reveal on revisit: same as the student practice page.
+  // A tutor practicing in training mode who returns to a question
+  // they already answered sees the rationale immediately.
+  let reviewData = null;
+  if (lastAttempt) {
+    reviewData = await loadReviewData({
+      supabase,
+      userId: user.id,
+      questionId,
+      questionVersionId: version.id,
+    });
+  }
+
   const initialAttempt = lastAttempt
     ? {
         isCorrect: lastAttempt.is_correct,
         selectedOptionId: lastAttempt.selected_option_id,
         responseText: lastAttempt.response_text,
         submittedAt: lastAttempt.created_at,
+        correctOptionId: reviewData?.correctOptionId ?? null,
+        correctAnswerDisplay: reviewData?.correctAnswerDisplay ?? null,
+        rationaleHtml: reviewData?.rationaleHtml ?? null,
       }
     : null;
 
