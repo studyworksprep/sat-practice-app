@@ -2,18 +2,21 @@
 //
 // Called from the tutor dashboard via a "View" link on each row.
 // Shows the student's profile + practice stats + recent attempt
-// history. Gated on can_view() via the get_visible_student_by_id
-// RPC — if the caller can't see the student, the RPC returns an
-// empty result and the page 404s.
+// history. All three queries go through security-definer RPCs that
+// delegate visibility to can_view(), because the direct profiles
+// and attempts RLS policies on this database don't cover the
+// transitive manager → tutor → student path.
 //
-// Uses two queries:
-//   1) get_visible_student_by_id RPC — profile + aggregated stats,
-//      security-definer so it bypasses profiles RLS.
-//   2) attempts table direct query — recent attempts. RLS on
-//      attempts is already manager-aware via the existing
-//      fix_manager_practice_test_visibility migration, so this
-//      returns exactly the rows the tutor should see, with no
-//      service-role bypass.
+// Two RPC round-trips:
+//   1) get_visible_student_by_id — profile + aggregated stats
+//   2) get_visible_student_attempts — last N individual attempts
+//
+// Both are gated on can_view() internally. If the caller can't see
+// the student, both return empty and the page 404s.
+//
+// Phase 2 step 9 rewrites the profiles and attempts RLS to use
+// can_view() directly, at which point both RPCs become redundant
+// and the page can go back to plain supabase queries.
 //
 // Read-only on this first commit. Mutations (assigning work,
 // messaging, editing) land in follow-up commits.
@@ -37,12 +40,19 @@ export default async function TutorStudentDetailPage({ params }) {
     redirect('/');
   }
 
-  // 1) Load the student's profile + stats in one RPC round-trip.
-  //    Empty result → caller can't see this student → 404.
-  const { data: studentRows, error: rpcErr } = await supabase.rpc(
-    'get_visible_student_by_id',
-    { target_id: studentId },
-  );
+  // 1) Load profile + stats and 2) recent attempts in parallel.
+  //    Both go through security-definer RPCs that gate on can_view().
+  //    Empty result on #1 → caller can't see this student → 404.
+  const [
+    { data: studentRows, error: rpcErr },
+    { data: attemptRows, error: attemptsErr },
+  ] = await Promise.all([
+    supabase.rpc('get_visible_student_by_id', { target_id: studentId }),
+    supabase.rpc('get_visible_student_attempts', {
+      target_id: studentId,
+      p_limit: RECENT_ATTEMPTS_LIMIT,
+    }),
+  ]);
 
   if (rpcErr) {
     return (
@@ -77,15 +87,7 @@ export default async function TutorStudentDetailPage({ params }) {
     lastActivityAt: row.last_activity_at,
   };
 
-  // 2) Recent attempts via plain RLS-scoped query. The attempts
-  //    SELECT policy already includes the manager → tutor →
-  //    student transitive path, so this works without another RPC.
-  const { data: recentAttempts } = await supabase
-    .from('attempts')
-    .select('id, question_id, is_correct, selected_option_id, response_text, time_spent_ms, source, created_at')
-    .eq('user_id', studentId)
-    .order('created_at', { ascending: false })
-    .limit(RECENT_ATTEMPTS_LIMIT);
+  const recentAttempts = attemptsErr ? [] : (attemptRows ?? []);
 
   return (
     <main style={S.main}>
