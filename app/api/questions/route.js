@@ -63,6 +63,16 @@ export async function GET(request) {
       supabase.from('questions').select('id, question_id').ilike('source_external_id', pattern).limit(2000),
       supabase.from('question_versions').select('question_id, stem_html, stimulus_html')
         .eq('is_current', true).or(`stem_html.ilike.${pattern},stimulus_html.ilike.${pattern}`).limit(2000),
+      // Answer-option text search. Uses PostgREST embedding to inner-join
+      // question_versions → answer_options so we can apply the ilike at
+      // the child level and filter is_current at the parent level in one
+      // round trip. Returns one row per current-version question that has
+      // at least one answer option whose content_html matches.
+      supabase.from('question_versions')
+        .select('question_id, answer_options!inner(id)')
+        .eq('is_current', true)
+        .ilike('answer_options.content_html', pattern)
+        .limit(2000),
     );
 
     // Tag search: find questions tagged with a matching concept tag (teacher/manager/admin only via RLS)
@@ -108,6 +118,11 @@ export async function GET(request) {
     const { data: vrows, error: vErr } = step1Results[s1idx++];
     if (vErr) return NextResponse.json({ error: vErr.message }, { status: 400 });
     (vrows || []).forEach((r) => r?.question_id && ids.add(r.question_id));
+
+    // answer_options.content_html matches
+    const { data: aoRows, error: aoErr } = step1Results[s1idx++];
+    if (aoErr) return NextResponse.json({ error: aoErr.message }, { status: 400 });
+    (aoRows || []).forEach((r) => r?.question_id && ids.add(r.question_id));
 
     // Tag search results (may be empty if user lacks RLS access)
     const { data: tagRows } = step1Results[s1idx++];
