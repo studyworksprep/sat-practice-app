@@ -119,7 +119,9 @@ export default async function TutorDashboardPage() {
               {students.map((s) => (
                 <tr key={s.id}>
                   <td style={S.td}>
-                    <div style={S.nameMain}>{s.name}</div>
+                    <a href={`/tutor/students/${s.id}`} style={S.nameLink}>
+                      <div style={S.nameMain}>{s.name}</div>
+                    </a>
                     {s.highSchool && (
                       <div style={S.nameSub}>
                         {s.highSchool}
@@ -220,7 +222,8 @@ const S = {
     borderBottom: '1px solid #f3f4f6',
     verticalAlign: 'top',
   },
-  nameMain: { fontWeight: 600, color: '#111827' },
+  nameLink: { textDecoration: 'none', color: 'inherit' },
+  nameMain: { fontWeight: 600, color: '#2563eb' },
   nameSub: { fontSize: '0.8rem', color: '#9ca3af' },
   emptyCard: {
     padding: '1.25rem',
