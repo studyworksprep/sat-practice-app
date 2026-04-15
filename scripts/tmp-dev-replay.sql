@@ -1006,6 +1006,333 @@ create policy "act_attempts_teacher_read" on act_attempts
 
 
 -- ============================================================
+-- supabase/migrations/20230101000021_create_flashcards.sql
+-- ============================================================
+-- Flashcard sets: each student has their own sets
+create table if not exists public.flashcard_sets (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  name text not null,
+  is_default boolean not null default false,
+  created_at timestamptz default now()
+);
+
+create index if not exists fs_user_idx on public.flashcard_sets(user_id);
+
+-- Flashcards: belong to a set
+create table if not exists public.flashcards (
+  id uuid primary key default gen_random_uuid(),
+  set_id uuid not null references public.flashcard_sets(id) on delete cascade,
+  front text not null,
+  back text not null,
+  mastery integer not null default 0 check (mastery >= 0 and mastery <= 5),
+  created_at timestamptz default now(),
+  reviewed_at timestamptz
+);
+
+create index if not exists fc_set_idx on public.flashcards(set_id);
+
+-- RLS
+alter table public.flashcard_sets enable row level security;
+alter table public.flashcards enable row level security;
+
+-- Users manage their own sets
+create policy "Users manage own flashcard sets" on public.flashcard_sets
+  for all using (user_id = auth.uid());
+
+-- Users manage cards in their own sets
+create policy "Users manage own flashcards" on public.flashcards
+  for all using (
+    exists (select 1 from public.flashcard_sets where id = flashcards.set_id and user_id = auth.uid())
+  );
+
+
+-- ============================================================
+-- supabase/migrations/20230101000022_create_question_assignments.sql
+-- ============================================================
+-- Question assignments: teacher creates an assignment with a set of questions for students
+create table if not exists public.question_assignments (
+  id uuid primary key default gen_random_uuid(),
+  teacher_id uuid not null references public.profiles(id) on delete cascade,
+  title text not null,
+  description text,
+  due_date timestamptz,
+  filter_criteria jsonb, -- { domains, topics, difficulties, score_bands } used to generate question set
+  question_ids text[] not null default '{}', -- array of question UUIDs as text
+  created_at timestamptz default now()
+);
+
+create index if not exists qa_teacher_idx on public.question_assignments(teacher_id);
+
+-- Which students are assigned to each assignment
+create table if not exists public.question_assignment_students (
+  assignment_id uuid not null references public.question_assignments(id) on delete cascade,
+  student_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz default now(),
+  primary key (assignment_id, student_id)
+);
+
+create index if not exists qas_student_idx on public.question_assignment_students(student_id);
+create index if not exists qas_assignment_idx on public.question_assignment_students(assignment_id);
+
+-- RLS
+alter table public.question_assignments enable row level security;
+alter table public.question_assignment_students enable row level security;
+
+-- Teachers can manage their own assignments; admins can manage all
+create policy "Teachers manage own assignments" on public.question_assignments
+  for all using (
+    teacher_id = auth.uid()
+    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+-- Helpers to break RLS circular dependency between question_assignments
+-- and question_assignment_students (each policy references the other table).
+-- SECURITY DEFINER functions run as the owner and bypass RLS.
+
+-- Used by question_assignments policy to check student membership
+create or replace function public.is_student_assigned(p_assignment_id uuid, p_student_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.question_assignment_students
+    where assignment_id = p_assignment_id and student_id = p_student_id
+  );
+$$;
+
+-- Used by question_assignment_students policies to check teacher ownership
+create or replace function public.is_assignment_teacher(p_assignment_id uuid, p_teacher_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from public.question_assignments
+    where id = p_assignment_id and teacher_id = p_teacher_id
+  );
+$$;
+
+-- Students can view assignments they are assigned to
+create policy "Students view assigned assignments" on public.question_assignments
+  for select using (
+    public.is_student_assigned(id, auth.uid())
+  );
+
+-- Students can view assignments they're assigned to; teachers/admins see theirs
+create policy "View assignment students" on public.question_assignment_students
+  for select using (
+    student_id = auth.uid()
+    or public.is_assignment_teacher(assignment_id, auth.uid())
+    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+-- Teachers and admins can insert/delete assignment students
+create policy "Teachers manage assignment students" on public.question_assignment_students
+  for all using (
+    public.is_assignment_teacher(assignment_id, auth.uid())
+    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+
+-- ============================================================
+-- supabase/migrations/20230101000023_create_sat_registrations_and_scores.sql
+-- ============================================================
+-- SAT test registrations (multiple per student)
+CREATE TABLE IF NOT EXISTS public.sat_test_registrations (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  student_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  test_date timestamptz NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  created_by uuid REFERENCES auth.users(id)
+);
+
+ALTER TABLE public.sat_test_registrations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can view own registrations"
+  ON public.sat_test_registrations FOR SELECT
+  USING (auth.uid() = student_id);
+
+CREATE POLICY "Teachers can view assigned student registrations"
+  ON public.sat_test_registrations FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.teacher_student_assignments tsa
+      WHERE tsa.teacher_id = auth.uid() AND tsa.student_id = sat_test_registrations.student_id
+    )
+  );
+
+CREATE POLICY "Teachers can insert registrations for assigned students"
+  ON public.sat_test_registrations FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'admin')
+    )
+  );
+
+CREATE POLICY "Teachers can delete registrations for assigned students"
+  ON public.sat_test_registrations FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'admin')
+    )
+  );
+
+-- Official SAT test scores
+CREATE TABLE IF NOT EXISTS public.sat_official_scores (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  student_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  test_date date NOT NULL,
+  rw_score integer NOT NULL,
+  math_score integer NOT NULL,
+  composite_score integer NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  created_by uuid REFERENCES auth.users(id)
+);
+
+ALTER TABLE public.sat_official_scores ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Students can view own scores"
+  ON public.sat_official_scores FOR SELECT
+  USING (auth.uid() = student_id);
+
+CREATE POLICY "Teachers can view assigned student scores"
+  ON public.sat_official_scores FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.teacher_student_assignments tsa
+      WHERE tsa.teacher_id = auth.uid() AND tsa.student_id = sat_official_scores.student_id
+    )
+  );
+
+CREATE POLICY "Teachers can insert scores for assigned students"
+  ON public.sat_official_scores FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'admin')
+    )
+  );
+
+CREATE POLICY "Teachers can delete scores"
+  ON public.sat_official_scores FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'admin')
+    )
+  );
+
+
+-- ============================================================
+-- supabase/migrations/20230101000024_create_concept_tags.sql
+-- ============================================================
+-- Concept tags: a global list of reusable tags
+create table if not exists public.concept_tags (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users(id),
+  updated_at timestamptz not null default now()
+);
+
+-- Junction table: many-to-many between questions and concept_tags
+create table if not exists public.question_concept_tags (
+  id uuid primary key default gen_random_uuid(),
+  question_id uuid not null references public.questions(id) on delete cascade,
+  tag_id uuid not null references public.concept_tags(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  created_by uuid references auth.users(id),
+  unique(question_id, tag_id)
+);
+
+-- Indexes
+create index if not exists idx_question_concept_tags_question on public.question_concept_tags(question_id);
+create index if not exists idx_question_concept_tags_tag on public.question_concept_tags(tag_id);
+create index if not exists idx_concept_tags_name on public.concept_tags(name);
+
+-- RLS
+alter table public.concept_tags enable row level security;
+alter table public.question_concept_tags enable row level security;
+
+-- concept_tags: managers and admins can read
+create policy "concept_tags_select" on public.concept_tags
+  for select using (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid()
+        and profiles.role in ('manager', 'admin')
+    )
+  );
+
+-- concept_tags: managers and admins can insert
+create policy "concept_tags_insert" on public.concept_tags
+  for insert with check (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid()
+        and profiles.role in ('manager', 'admin')
+    )
+  );
+
+-- concept_tags: only admins can update
+create policy "concept_tags_update" on public.concept_tags
+  for update using (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid()
+        and profiles.role = 'admin'
+    )
+  );
+
+-- concept_tags: only admins can delete
+create policy "concept_tags_delete" on public.concept_tags
+  for delete using (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid()
+        and profiles.role = 'admin'
+    )
+  );
+
+-- question_concept_tags: managers and admins can read
+create policy "question_concept_tags_select" on public.question_concept_tags
+  for select using (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid()
+        and profiles.role in ('manager', 'admin')
+    )
+  );
+
+-- question_concept_tags: managers and admins can insert
+create policy "question_concept_tags_insert" on public.question_concept_tags
+  for insert with check (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid()
+        and profiles.role in ('manager', 'admin')
+    )
+  );
+
+-- question_concept_tags: admins can delete (remove tag from question)
+create policy "question_concept_tags_delete" on public.question_concept_tags
+  for delete using (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid()
+        and profiles.role = 'admin'
+    )
+  );
+
+-- updated_at trigger for concept_tags
+create trigger set_concept_tags_updated_at
+  before update on public.concept_tags
+  for each row execute function public.set_updated_at();
+
+
+-- ============================================================
 -- supabase/migrations/20240101000000_create_practice_tests_schema.sql
 -- ============================================================
 -- =========================================================
@@ -2788,113 +3115,6 @@ create policy "Admins can do everything on bug_reports"
 
 
 -- ============================================================
--- supabase/migrations/create_concept_tags.sql
--- ============================================================
--- Concept tags: a global list of reusable tags
-create table if not exists public.concept_tags (
-  id uuid primary key default gen_random_uuid(),
-  name text not null unique,
-  created_at timestamptz not null default now(),
-  created_by uuid references auth.users(id),
-  updated_at timestamptz not null default now()
-);
-
--- Junction table: many-to-many between questions and concept_tags
-create table if not exists public.question_concept_tags (
-  id uuid primary key default gen_random_uuid(),
-  question_id uuid not null references public.questions(id) on delete cascade,
-  tag_id uuid not null references public.concept_tags(id) on delete cascade,
-  created_at timestamptz not null default now(),
-  created_by uuid references auth.users(id),
-  unique(question_id, tag_id)
-);
-
--- Indexes
-create index if not exists idx_question_concept_tags_question on public.question_concept_tags(question_id);
-create index if not exists idx_question_concept_tags_tag on public.question_concept_tags(tag_id);
-create index if not exists idx_concept_tags_name on public.concept_tags(name);
-
--- RLS
-alter table public.concept_tags enable row level security;
-alter table public.question_concept_tags enable row level security;
-
--- concept_tags: managers and admins can read
-create policy "concept_tags_select" on public.concept_tags
-  for select using (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid()
-        and profiles.role in ('manager', 'admin')
-    )
-  );
-
--- concept_tags: managers and admins can insert
-create policy "concept_tags_insert" on public.concept_tags
-  for insert with check (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid()
-        and profiles.role in ('manager', 'admin')
-    )
-  );
-
--- concept_tags: only admins can update
-create policy "concept_tags_update" on public.concept_tags
-  for update using (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid()
-        and profiles.role = 'admin'
-    )
-  );
-
--- concept_tags: only admins can delete
-create policy "concept_tags_delete" on public.concept_tags
-  for delete using (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid()
-        and profiles.role = 'admin'
-    )
-  );
-
--- question_concept_tags: managers and admins can read
-create policy "question_concept_tags_select" on public.question_concept_tags
-  for select using (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid()
-        and profiles.role in ('manager', 'admin')
-    )
-  );
-
--- question_concept_tags: managers and admins can insert
-create policy "question_concept_tags_insert" on public.question_concept_tags
-  for insert with check (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid()
-        and profiles.role in ('manager', 'admin')
-    )
-  );
-
--- question_concept_tags: admins can delete (remove tag from question)
-create policy "question_concept_tags_delete" on public.question_concept_tags
-  for delete using (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid()
-        and profiles.role = 'admin'
-    )
-  );
-
--- updated_at trigger for concept_tags
-create trigger set_concept_tags_updated_at
-  before update on public.concept_tags
-  for each row execute function public.set_updated_at();
-
-
--- ============================================================
 -- supabase/migrations/create_desmos_saved_states.sql
 -- ============================================================
 -- =========================================================
@@ -2946,48 +3166,6 @@ create policy desmos_saved_states_delete on public.desmos_saved_states
       select 1 from public.profiles
       where id = auth.uid() and role in ('manager', 'admin')
     )
-  );
-
-
--- ============================================================
--- supabase/migrations/create_flashcards.sql
--- ============================================================
--- Flashcard sets: each student has their own sets
-create table if not exists public.flashcard_sets (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references public.profiles(id) on delete cascade,
-  name text not null,
-  is_default boolean not null default false,
-  created_at timestamptz default now()
-);
-
-create index if not exists fs_user_idx on public.flashcard_sets(user_id);
-
--- Flashcards: belong to a set
-create table if not exists public.flashcards (
-  id uuid primary key default gen_random_uuid(),
-  set_id uuid not null references public.flashcard_sets(id) on delete cascade,
-  front text not null,
-  back text not null,
-  mastery integer not null default 0 check (mastery >= 0 and mastery <= 5),
-  created_at timestamptz default now(),
-  reviewed_at timestamptz
-);
-
-create index if not exists fc_set_idx on public.flashcards(set_id);
-
--- RLS
-alter table public.flashcard_sets enable row level security;
-alter table public.flashcards enable row level security;
-
--- Users manage their own sets
-create policy "Users manage own flashcard sets" on public.flashcard_sets
-  for all using (user_id = auth.uid());
-
--- Users manage cards in their own sets
-create policy "Users manage own flashcards" on public.flashcards
-  for all using (
-    exists (select 1 from public.flashcard_sets where id = flashcards.set_id and user_id = auth.uid())
   );
 
 
@@ -3326,97 +3504,6 @@ grant execute on function public.count_distinct_users_since(timestamptz) to auth
 
 
 -- ============================================================
--- supabase/migrations/create_question_assignments.sql
--- ============================================================
--- Question assignments: teacher creates an assignment with a set of questions for students
-create table if not exists public.question_assignments (
-  id uuid primary key default gen_random_uuid(),
-  teacher_id uuid not null references public.profiles(id) on delete cascade,
-  title text not null,
-  description text,
-  due_date timestamptz,
-  filter_criteria jsonb, -- { domains, topics, difficulties, score_bands } used to generate question set
-  question_ids text[] not null default '{}', -- array of question UUIDs as text
-  created_at timestamptz default now()
-);
-
-create index if not exists qa_teacher_idx on public.question_assignments(teacher_id);
-
--- Which students are assigned to each assignment
-create table if not exists public.question_assignment_students (
-  assignment_id uuid not null references public.question_assignments(id) on delete cascade,
-  student_id uuid not null references public.profiles(id) on delete cascade,
-  created_at timestamptz default now(),
-  primary key (assignment_id, student_id)
-);
-
-create index if not exists qas_student_idx on public.question_assignment_students(student_id);
-create index if not exists qas_assignment_idx on public.question_assignment_students(assignment_id);
-
--- RLS
-alter table public.question_assignments enable row level security;
-alter table public.question_assignment_students enable row level security;
-
--- Teachers can manage their own assignments; admins can manage all
-create policy "Teachers manage own assignments" on public.question_assignments
-  for all using (
-    teacher_id = auth.uid()
-    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
-  );
-
--- Helpers to break RLS circular dependency between question_assignments
--- and question_assignment_students (each policy references the other table).
--- SECURITY DEFINER functions run as the owner and bypass RLS.
-
--- Used by question_assignments policy to check student membership
-create or replace function public.is_student_assigned(p_assignment_id uuid, p_student_id uuid)
-returns boolean
-language sql
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1 from public.question_assignment_students
-    where assignment_id = p_assignment_id and student_id = p_student_id
-  );
-$$;
-
--- Used by question_assignment_students policies to check teacher ownership
-create or replace function public.is_assignment_teacher(p_assignment_id uuid, p_teacher_id uuid)
-returns boolean
-language sql
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1 from public.question_assignments
-    where id = p_assignment_id and teacher_id = p_teacher_id
-  );
-$$;
-
--- Students can view assignments they are assigned to
-create policy "Students view assigned assignments" on public.question_assignments
-  for select using (
-    public.is_student_assigned(id, auth.uid())
-  );
-
--- Students can view assignments they're assigned to; teachers/admins see theirs
-create policy "View assignment students" on public.question_assignment_students
-  for select using (
-    student_id = auth.uid()
-    or public.is_assignment_teacher(assignment_id, auth.uid())
-    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
-  );
-
--- Teachers and admins can insert/delete assignment students
-create policy "Teachers manage assignment students" on public.question_assignment_students
-  for all using (
-    public.is_assignment_teacher(assignment_id, auth.uid())
-    or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
-  );
-
-
--- ============================================================
 -- supabase/migrations/create_question_notes.sql
 -- ============================================================
 -- =========================================================
@@ -3455,227 +3542,6 @@ create policy question_notes_update on public.question_notes
 create policy question_notes_delete on public.question_notes
   for delete using (
     auth.uid() = author_id or public.is_admin()
-  );
-
-
--- ============================================================
--- supabase/migrations/create_questions_v2_fix_suggestions.sql
--- ============================================================
--- Staging table for Claude-generated HTML cleanup suggestions on
--- questions_v2 rows. Populated by the async batch scripts in
--- scripts/v2-batch-fix-*.mjs and drained by the Bulk Review panel in
--- the admin dashboard. Nothing in this table is ever read by the live
--- practice flow — it exists purely to separate "Claude thinks you
--- should change X" from "questions_v2 actually contains X".
---
--- Keeping suggestions in their own table (instead of writing directly
--- to questions_v2) means:
---   - admins can review, bulk-accept, or reject without ever touching
---     the canonical row
---   - we keep a full snapshot of the row at submit time so we can
---     diff after the fact and roll back if needed
---   - we can store the batch_id from Anthropic's Batches API and poll
---     it asynchronously instead of holding an HTTP connection open
---
--- Apply with:  supabase sql < supabase/migrations/create_questions_v2_fix_suggestions.sql
--- (or paste into the SQL editor on the dev project).
-
-create table if not exists public.questions_v2_fix_suggestions (
-  id uuid primary key default gen_random_uuid(),
-  question_id uuid not null references public.questions_v2(id) on delete cascade,
-
-  -- Anthropic Batches API metadata. batch_id + custom_id together
-  -- identify the individual request inside a submitted batch.
-  batch_id text,
-  custom_id text,
-
-  -- Lifecycle:
-  --   pending    — submitted to Anthropic, waiting on batch completion
-  --   collected  — results downloaded, ready for admin review
-  --   applied    — suggestion merged into questions_v2 by an admin
-  --   rejected   — admin marked the suggestion as not worth applying
-  --   failed     — Claude errored or returned malformed output
-  --   superseded — a newer suggestion exists for the same question
-  status text not null default 'pending'
-    check (status in ('pending', 'collected', 'applied', 'rejected', 'failed', 'superseded')),
-
-  -- Which model produced this suggestion. Useful for debugging cost
-  -- and quality differences between Haiku and Sonnet runs.
-  model text,
-
-  -- Snapshot of the source row at submit time. These three columns
-  -- let us diff against whatever questions_v2 looks like when the
-  -- admin eventually reviews the suggestion — so even if the row was
-  -- edited in the meantime, the review UI can tell the difference
-  -- between "the source moved" and "Claude changed something".
-  source_stimulus_html text,
-  source_stem_html text,
-  source_options jsonb,
-
-  -- Claude's proposed output.
-  suggested_stimulus_html text,
-  suggested_stem_html text,
-  suggested_options jsonb,
-
-  -- Classification computed by the collect script:
-  --   identical    — Claude returned the same thing we sent
-  --   trivial      — only whitespace / entity / class changes
-  --   non_trivial  — math rewriting, table restructuring, content shifts
-  --   error        — Claude failed or returned unusable output
-  -- The Bulk Review UI filters on this so admins can one-click-accept
-  -- all trivial changes and focus their attention on the non-trivial
-  -- ones.
-  diff_classification text
-    check (diff_classification in ('identical', 'trivial', 'non_trivial', 'error')),
-  error_message text,
-
-  -- Audit
-  submitted_at timestamptz not null default now(),
-  collected_at timestamptz,
-  reviewed_by uuid references auth.users(id),
-  reviewed_at timestamptz
-);
-
-create index if not exists idx_qv2_fix_suggestions_question
-  on public.questions_v2_fix_suggestions(question_id);
-create index if not exists idx_qv2_fix_suggestions_status
-  on public.questions_v2_fix_suggestions(status);
-create index if not exists idx_qv2_fix_suggestions_batch
-  on public.questions_v2_fix_suggestions(batch_id);
-create index if not exists idx_qv2_fix_suggestions_classification
-  on public.questions_v2_fix_suggestions(diff_classification);
-
--- RLS: admin-only, top to bottom. No teacher, manager, or student
--- should ever see this table — it's infrastructure for the migration
--- cleanup, not user-facing content.
-alter table public.questions_v2_fix_suggestions enable row level security;
-
-create policy "qv2_fix_suggestions_admin_select"
-  on public.questions_v2_fix_suggestions
-  for select using (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid() and profiles.role = 'admin'
-    )
-  );
-
-create policy "qv2_fix_suggestions_admin_insert"
-  on public.questions_v2_fix_suggestions
-  for insert with check (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid() and profiles.role = 'admin'
-    )
-  );
-
-create policy "qv2_fix_suggestions_admin_update"
-  on public.questions_v2_fix_suggestions
-  for update using (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid() and profiles.role = 'admin'
-    )
-  );
-
-create policy "qv2_fix_suggestions_admin_delete"
-  on public.questions_v2_fix_suggestions
-  for delete using (
-    exists (
-      select 1 from profiles
-      where profiles.id = auth.uid() and profiles.role = 'admin'
-    )
-  );
-
--- The batch scripts use the service role key and bypass RLS anyway,
--- but these policies keep the UI-facing API honest: only admins can
--- call /api/admin/questions-v2/suggestions even if someone wires it
--- up without the right role check.
-
-
--- ============================================================
--- supabase/migrations/create_sat_registrations_and_scores.sql
--- ============================================================
--- SAT test registrations (multiple per student)
-CREATE TABLE IF NOT EXISTS public.sat_test_registrations (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  student_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  test_date timestamptz NOT NULL,
-  created_at timestamptz DEFAULT now(),
-  created_by uuid REFERENCES auth.users(id)
-);
-
-ALTER TABLE public.sat_test_registrations ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Students can view own registrations"
-  ON public.sat_test_registrations FOR SELECT
-  USING (auth.uid() = student_id);
-
-CREATE POLICY "Teachers can view assigned student registrations"
-  ON public.sat_test_registrations FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.teacher_student_assignments tsa
-      WHERE tsa.teacher_id = auth.uid() AND tsa.student_id = sat_test_registrations.student_id
-    )
-  );
-
-CREATE POLICY "Teachers can insert registrations for assigned students"
-  ON public.sat_test_registrations FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'admin')
-    )
-  );
-
-CREATE POLICY "Teachers can delete registrations for assigned students"
-  ON public.sat_test_registrations FOR DELETE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'admin')
-    )
-  );
-
--- Official SAT test scores
-CREATE TABLE IF NOT EXISTS public.sat_official_scores (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  student_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  test_date date NOT NULL,
-  rw_score integer NOT NULL,
-  math_score integer NOT NULL,
-  composite_score integer NOT NULL,
-  created_at timestamptz DEFAULT now(),
-  created_by uuid REFERENCES auth.users(id)
-);
-
-ALTER TABLE public.sat_official_scores ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Students can view own scores"
-  ON public.sat_official_scores FOR SELECT
-  USING (auth.uid() = student_id);
-
-CREATE POLICY "Teachers can view assigned student scores"
-  ON public.sat_official_scores FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.teacher_student_assignments tsa
-      WHERE tsa.teacher_id = auth.uid() AND tsa.student_id = sat_official_scores.student_id
-    )
-  );
-
-CREATE POLICY "Teachers can insert scores for assigned students"
-  ON public.sat_official_scores FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'admin')
-    )
-  );
-
-CREATE POLICY "Teachers can delete scores"
-  ON public.sat_official_scores FOR DELETE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role IN ('teacher', 'admin')
-    )
   );
 
 
@@ -4651,4 +4517,138 @@ COMMENT ON COLUMN public.questions_v2.approved_by IS
 CREATE INDEX IF NOT EXISTS idx_questions_v2_unapproved
   ON public.questions_v2 (display_code)
   WHERE approved_at IS NULL;
+
+
+-- ============================================================
+-- supabase/migrations/questions_v2_phase6_fix_suggestions.sql
+-- ============================================================
+-- Staging table for Claude-generated HTML cleanup suggestions on
+-- questions_v2 rows. Populated by the async batch scripts in
+-- scripts/v2-batch-fix-*.mjs and drained by the Bulk Review panel in
+-- the admin dashboard. Nothing in this table is ever read by the live
+-- practice flow — it exists purely to separate "Claude thinks you
+-- should change X" from "questions_v2 actually contains X".
+--
+-- Keeping suggestions in their own table (instead of writing directly
+-- to questions_v2) means:
+--   - admins can review, bulk-accept, or reject without ever touching
+--     the canonical row
+--   - we keep a full snapshot of the row at submit time so we can
+--     diff after the fact and roll back if needed
+--   - we can store the batch_id from Anthropic's Batches API and poll
+--     it asynchronously instead of holding an HTTP connection open
+--
+-- Apply with:  supabase sql < supabase/migrations/create_questions_v2_fix_suggestions.sql
+-- (or paste into the SQL editor on the dev project).
+
+create table if not exists public.questions_v2_fix_suggestions (
+  id uuid primary key default gen_random_uuid(),
+  question_id uuid not null references public.questions_v2(id) on delete cascade,
+
+  -- Anthropic Batches API metadata. batch_id + custom_id together
+  -- identify the individual request inside a submitted batch.
+  batch_id text,
+  custom_id text,
+
+  -- Lifecycle:
+  --   pending    — submitted to Anthropic, waiting on batch completion
+  --   collected  — results downloaded, ready for admin review
+  --   applied    — suggestion merged into questions_v2 by an admin
+  --   rejected   — admin marked the suggestion as not worth applying
+  --   failed     — Claude errored or returned malformed output
+  --   superseded — a newer suggestion exists for the same question
+  status text not null default 'pending'
+    check (status in ('pending', 'collected', 'applied', 'rejected', 'failed', 'superseded')),
+
+  -- Which model produced this suggestion. Useful for debugging cost
+  -- and quality differences between Haiku and Sonnet runs.
+  model text,
+
+  -- Snapshot of the source row at submit time. These three columns
+  -- let us diff against whatever questions_v2 looks like when the
+  -- admin eventually reviews the suggestion — so even if the row was
+  -- edited in the meantime, the review UI can tell the difference
+  -- between "the source moved" and "Claude changed something".
+  source_stimulus_html text,
+  source_stem_html text,
+  source_options jsonb,
+
+  -- Claude's proposed output.
+  suggested_stimulus_html text,
+  suggested_stem_html text,
+  suggested_options jsonb,
+
+  -- Classification computed by the collect script:
+  --   identical    — Claude returned the same thing we sent
+  --   trivial      — only whitespace / entity / class changes
+  --   non_trivial  — math rewriting, table restructuring, content shifts
+  --   error        — Claude failed or returned unusable output
+  -- The Bulk Review UI filters on this so admins can one-click-accept
+  -- all trivial changes and focus their attention on the non-trivial
+  -- ones.
+  diff_classification text
+    check (diff_classification in ('identical', 'trivial', 'non_trivial', 'error')),
+  error_message text,
+
+  -- Audit
+  submitted_at timestamptz not null default now(),
+  collected_at timestamptz,
+  reviewed_by uuid references auth.users(id),
+  reviewed_at timestamptz
+);
+
+create index if not exists idx_qv2_fix_suggestions_question
+  on public.questions_v2_fix_suggestions(question_id);
+create index if not exists idx_qv2_fix_suggestions_status
+  on public.questions_v2_fix_suggestions(status);
+create index if not exists idx_qv2_fix_suggestions_batch
+  on public.questions_v2_fix_suggestions(batch_id);
+create index if not exists idx_qv2_fix_suggestions_classification
+  on public.questions_v2_fix_suggestions(diff_classification);
+
+-- RLS: admin-only, top to bottom. No teacher, manager, or student
+-- should ever see this table — it's infrastructure for the migration
+-- cleanup, not user-facing content.
+alter table public.questions_v2_fix_suggestions enable row level security;
+
+create policy "qv2_fix_suggestions_admin_select"
+  on public.questions_v2_fix_suggestions
+  for select using (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid() and profiles.role = 'admin'
+    )
+  );
+
+create policy "qv2_fix_suggestions_admin_insert"
+  on public.questions_v2_fix_suggestions
+  for insert with check (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid() and profiles.role = 'admin'
+    )
+  );
+
+create policy "qv2_fix_suggestions_admin_update"
+  on public.questions_v2_fix_suggestions
+  for update using (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid() and profiles.role = 'admin'
+    )
+  );
+
+create policy "qv2_fix_suggestions_admin_delete"
+  on public.questions_v2_fix_suggestions
+  for delete using (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid() and profiles.role = 'admin'
+    )
+  );
+
+-- The batch scripts use the service role key and bypass RLS anyway,
+-- but these policies keep the UI-facing API honest: only admins can
+-- call /api/admin/questions-v2/suggestions even if someone wires it
+-- up without the right role check.
 
