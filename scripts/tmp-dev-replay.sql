@@ -486,6 +486,102 @@ create policy qs_delete_self on public.question_status
 
 
 -- ============================================================
+-- supabase/migrations/20230101000002_add_teacher_student_assignments.sql
+-- ============================================================
+-- =========================================================
+-- Direct teacher-student assignments
+-- Simpler than class-based enrollments for admin-managed assignments
+-- =========================================================
+
+create table if not exists public.teacher_student_assignments (
+  teacher_id uuid not null references public.profiles(id) on delete cascade,
+  student_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz default now(),
+  primary key (teacher_id, student_id)
+);
+
+create index if not exists tsa_teacher_idx on public.teacher_student_assignments(teacher_id);
+create index if not exists tsa_student_idx on public.teacher_student_assignments(student_id);
+
+alter table public.teacher_student_assignments enable row level security;
+
+-- Admins can do everything; teachers can view their own assignments
+drop policy if exists tsa_select on public.teacher_student_assignments;
+create policy tsa_select on public.teacher_student_assignments
+  for select using (
+    public.is_admin()
+    or teacher_id = auth.uid()
+    or student_id = auth.uid()
+  );
+
+drop policy if exists tsa_insert on public.teacher_student_assignments;
+create policy tsa_insert on public.teacher_student_assignments
+  for insert with check (public.is_admin());
+
+drop policy if exists tsa_delete on public.teacher_student_assignments;
+create policy tsa_delete on public.teacher_student_assignments
+  for delete using (public.is_admin());
+
+-- Update teacher_can_view_student to also check direct assignments
+create or replace function public.teacher_can_view_student(target_student_id uuid)
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select public.is_admin()
+      or exists (
+           select 1 from public.class_enrollments ce
+           join public.classes c on c.id = ce.class_id
+           where ce.student_id = target_student_id
+             and c.teacher_id = auth.uid()
+         )
+      or exists (
+           select 1 from public.teacher_student_assignments tsa
+           where tsa.student_id = target_student_id
+             and tsa.teacher_id = auth.uid()
+         );
+$$;
+
+-- Note: the practice_test_attempts policies that originally lived
+-- in this file have been split out to
+-- 20240101000010_add_practice_test_attempts_base_policies.sql,
+-- because this file now sorts EARLIER than the migration that
+-- creates the practice_test_attempts table. See
+-- docs/architecture-plan.md Phase 1 §2.1 on schema drift.
+
+
+-- ============================================================
+-- supabase/migrations/20230101000003_create_manager_teacher_assignments.sql
+-- ============================================================
+-- Manager-teacher assignments: managers oversee specific groups of teachers
+-- Mirrors the teacher_student_assignments pattern
+
+CREATE TABLE IF NOT EXISTS public.manager_teacher_assignments (
+  manager_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  teacher_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT manager_teacher_assignments_pkey PRIMARY KEY (manager_id, teacher_id)
+);
+
+CREATE INDEX IF NOT EXISTS mta_manager_idx ON public.manager_teacher_assignments(manager_id);
+CREATE INDEX IF NOT EXISTS mta_teacher_idx ON public.manager_teacher_assignments(teacher_id);
+
+-- RLS
+ALTER TABLE public.manager_teacher_assignments ENABLE ROW LEVEL SECURITY;
+
+-- Admins can do anything
+CREATE POLICY "Admins manage all manager-teacher assignments"
+  ON public.manager_teacher_assignments
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- Managers can view their own assignments
+CREATE POLICY "Managers can view own assignments"
+  ON public.manager_teacher_assignments
+  FOR SELECT USING (manager_id = auth.uid());
+
+
+-- ============================================================
 -- supabase/migrations/20240101000000_create_practice_tests_schema.sql
 -- ============================================================
 -- =========================================================
@@ -1672,6 +1768,47 @@ grant execute on function public.get_visible_student_attempts(uuid, integer) to 
 
 
 -- ============================================================
+-- supabase/migrations/20240101000010_add_practice_test_attempts_base_policies.sql
+-- ============================================================
+-- =========================================================
+-- Base SELECT/INSERT/UPDATE policies on practice_test_attempts
+-- =========================================================
+-- Originally part of add_teacher_student_assignments.sql, split
+-- out into this file when that migration was renamed to
+-- 20230101000002 to fix the dev-replay ordering. The policies
+-- below were written against practice_test_attempts, which in
+-- the ordered replay gets created by
+-- 20240101000000_create_practice_tests_schema.sql — so the
+-- policy file has to sort AFTER that schema file.
+--
+-- The pta_select policy defined here is later replaced by
+-- fix_manager_practice_test_visibility.sql (legacy alphabetic
+-- migration, sorts later) with a more permissive version that
+-- also covers the manager → tutor → student transitive chain.
+-- Both DROP POLICY IF EXISTS + CREATE POLICY, so the final
+-- state matches production.
+
+alter table public.practice_test_attempts enable row level security;
+
+drop policy if exists pta_select on public.practice_test_attempts;
+create policy pta_select on public.practice_test_attempts
+  for select using (
+    user_id = auth.uid()
+    or public.teacher_can_view_student(user_id)
+  );
+
+drop policy if exists pta_insert_self on public.practice_test_attempts;
+create policy pta_insert_self on public.practice_test_attempts
+  for insert with check (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists pta_update_self on public.practice_test_attempts;
+create policy pta_update_self on public.practice_test_attempts
+  for update
+  using  (user_id = auth.uid() or public.is_admin())
+  with check (user_id = auth.uid() or public.is_admin());
+
+
+-- ============================================================
 -- supabase/migrations/add_act_questions_code_columns.sql
 -- ============================================================
 -- Add category_code and subcategory_code to act_questions
@@ -2255,83 +2392,6 @@ ALTER TABLE public.profiles
 CREATE INDEX IF NOT EXISTS idx_profiles_teacher_invite_code
   ON public.profiles (teacher_invite_code)
   WHERE teacher_invite_code IS NOT NULL;
-
-
--- ============================================================
--- supabase/migrations/add_teacher_student_assignments.sql
--- ============================================================
--- =========================================================
--- Direct teacher-student assignments
--- Simpler than class-based enrollments for admin-managed assignments
--- =========================================================
-
-create table if not exists public.teacher_student_assignments (
-  teacher_id uuid not null references public.profiles(id) on delete cascade,
-  student_id uuid not null references public.profiles(id) on delete cascade,
-  created_at timestamptz default now(),
-  primary key (teacher_id, student_id)
-);
-
-create index if not exists tsa_teacher_idx on public.teacher_student_assignments(teacher_id);
-create index if not exists tsa_student_idx on public.teacher_student_assignments(student_id);
-
-alter table public.teacher_student_assignments enable row level security;
-
--- Admins can do everything; teachers can view their own assignments
-drop policy if exists tsa_select on public.teacher_student_assignments;
-create policy tsa_select on public.teacher_student_assignments
-  for select using (
-    public.is_admin()
-    or teacher_id = auth.uid()
-    or student_id = auth.uid()
-  );
-
-drop policy if exists tsa_insert on public.teacher_student_assignments;
-create policy tsa_insert on public.teacher_student_assignments
-  for insert with check (public.is_admin());
-
-drop policy if exists tsa_delete on public.teacher_student_assignments;
-create policy tsa_delete on public.teacher_student_assignments
-  for delete using (public.is_admin());
-
--- Update teacher_can_view_student to also check direct assignments
-create or replace function public.teacher_can_view_student(target_student_id uuid)
-returns boolean
-language sql stable security definer set search_path = public
-as $$
-  select public.is_admin()
-      or exists (
-           select 1 from public.class_enrollments ce
-           join public.classes c on c.id = ce.class_id
-           where ce.student_id = target_student_id
-             and c.teacher_id = auth.uid()
-         )
-      or exists (
-           select 1 from public.teacher_student_assignments tsa
-           where tsa.student_id = target_student_id
-             and tsa.teacher_id = auth.uid()
-         );
-$$;
-
--- Allow teachers to view practice_test_attempts for their students
-alter table public.practice_test_attempts enable row level security;
-
-drop policy if exists pta_select on public.practice_test_attempts;
-create policy pta_select on public.practice_test_attempts
-  for select using (
-    user_id = auth.uid()
-    or public.teacher_can_view_student(user_id)
-  );
-
-drop policy if exists pta_insert_self on public.practice_test_attempts;
-create policy pta_insert_self on public.practice_test_attempts
-  for insert with check (user_id = auth.uid() or public.is_admin());
-
-drop policy if exists pta_update_self on public.practice_test_attempts;
-create policy pta_update_self on public.practice_test_attempts
-  for update
-  using  (user_id = auth.uid() or public.is_admin())
-  with check (user_id = auth.uid() or public.is_admin());
 
 
 -- ============================================================
@@ -3188,38 +3248,6 @@ create policy lesson_progress_update on public.lesson_progress
   for update
   using  (student_id = auth.uid())
   with check (student_id = auth.uid());
-
-
--- ============================================================
--- supabase/migrations/create_manager_teacher_assignments.sql
--- ============================================================
--- Manager-teacher assignments: managers oversee specific groups of teachers
--- Mirrors the teacher_student_assignments pattern
-
-CREATE TABLE IF NOT EXISTS public.manager_teacher_assignments (
-  manager_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  teacher_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT manager_teacher_assignments_pkey PRIMARY KEY (manager_id, teacher_id)
-);
-
-CREATE INDEX IF NOT EXISTS mta_manager_idx ON public.manager_teacher_assignments(manager_id);
-CREATE INDEX IF NOT EXISTS mta_teacher_idx ON public.manager_teacher_assignments(teacher_id);
-
--- RLS
-ALTER TABLE public.manager_teacher_assignments ENABLE ROW LEVEL SECURITY;
-
--- Admins can do anything
-CREATE POLICY "Admins manage all manager-teacher assignments"
-  ON public.manager_teacher_assignments
-  FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-
--- Managers can view their own assignments
-CREATE POLICY "Managers can view own assignments"
-  ON public.manager_teacher_assignments
-  FOR SELECT USING (manager_id = auth.uid());
 
 
 -- ============================================================
