@@ -1,7 +1,5 @@
--- ============================================================
 -- TEMPORARY ARTIFACT — DO NOT MERGE TO MAIN
 -- DEV PROJECT REPLAY — wipes public schema, runs all migrations
--- ============================================================
 
 drop schema if exists public cascade;
 create schema public;
@@ -579,6 +577,307 @@ CREATE POLICY "Admins manage all manager-teacher assignments"
 CREATE POLICY "Managers can view own assignments"
   ON public.manager_teacher_assignments
   FOR SELECT USING (manager_id = auth.uid());
+
+
+-- ============================================================
+-- supabase/migrations/20230101000010_add_signup_profile_fields.sql
+-- ============================================================
+-- =========================================================
+-- Extended signup fields on profiles + teacher registration codes
+-- =========================================================
+
+-- 1) Add new columns to profiles
+alter table public.profiles
+  add column if not exists first_name text,
+  add column if not exists last_name text,
+  add column if not exists user_type text check (user_type in ('student','teacher','exploring')),
+  add column if not exists high_school text,
+  add column if not exists graduation_year int,
+  add column if not exists target_sat_score int,
+  add column if not exists tutor_name text;
+
+-- 2) Teacher registration codes (one-time use)
+create table if not exists public.teacher_codes (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,
+  used_by uuid references public.profiles(id),
+  used_at timestamptz,
+  created_at timestamptz default now()
+);
+
+alter table public.teacher_codes enable row level security;
+
+-- Only admins can manage teacher codes
+create policy teacher_codes_admin_all on public.teacher_codes
+  for all using (public.is_admin());
+
+-- 3) Update handle_new_user to pull metadata from auth signup
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_meta jsonb;
+  v_user_type text;
+  v_role text;
+begin
+  v_meta := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+  v_user_type := v_meta->>'user_type';
+
+  -- Map user_type to role
+  case v_user_type
+    when 'student' then v_role := 'student';
+    when 'teacher' then v_role := 'teacher';
+    else v_role := 'practice';
+  end case;
+
+  insert into public.profiles (
+    id, email, role, first_name, last_name, user_type,
+    high_school, graduation_year, target_sat_score, tutor_name
+  )
+  values (
+    new.id,
+    new.email,
+    v_role,
+    v_meta->>'first_name',
+    v_meta->>'last_name',
+    v_user_type,
+    v_meta->>'high_school',
+    (v_meta->>'graduation_year')::int,
+    (v_meta->>'target_sat_score')::int,
+    v_meta->>'tutor_name'
+  )
+  on conflict (id) do update set
+    email = excluded.email,
+    role = coalesce(excluded.role, profiles.role),
+    first_name = coalesce(excluded.first_name, profiles.first_name),
+    last_name = coalesce(excluded.last_name, profiles.last_name),
+    user_type = coalesce(excluded.user_type, profiles.user_type),
+    high_school = coalesce(excluded.high_school, profiles.high_school),
+    graduation_year = coalesce(excluded.graduation_year, profiles.graduation_year),
+    target_sat_score = coalesce(excluded.target_sat_score, profiles.target_sat_score),
+    tutor_name = coalesce(excluded.tutor_name, profiles.tutor_name);
+
+  return new;
+end;
+$$;
+
+
+-- ============================================================
+-- supabase/migrations/20230101000011_add_is_active_to_profiles.sql
+-- ============================================================
+-- Add is_active flag to profiles (defaults to true)
+-- Inactive students still have access but are hidden from the teacher panel.
+
+alter table public.profiles
+  add column if not exists is_active boolean not null default true;
+
+
+-- ============================================================
+-- supabase/migrations/20230101000012_add_sat_test_date.sql
+-- ============================================================
+-- Add sat_test_date column to profiles for upcoming registered SAT date
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS sat_test_date timestamptz;
+
+
+-- ============================================================
+-- supabase/migrations/20230101000013_add_teacher_invite_code.sql
+-- ============================================================
+-- Add a unique invite code to teacher profiles.
+-- Students can enter this code during signup to be auto-assigned to the teacher.
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS teacher_invite_code text UNIQUE;
+
+-- Index for fast lookup during student signup
+CREATE INDEX IF NOT EXISTS idx_profiles_teacher_invite_code
+  ON public.profiles (teacher_invite_code)
+  WHERE teacher_invite_code IS NOT NULL;
+
+
+-- ============================================================
+-- supabase/migrations/20230101000014_add_subscription_system.sql
+-- ============================================================
+-- Phase 1: Subscription database setup
+-- Creates the subscriptions table, adds subscription_exempt to profiles,
+-- grandfathers all existing users, and updates signup trigger logic.
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 1. Subscriptions table
+-- ═══════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS public.subscriptions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  stripe_customer_id text NOT NULL,
+  stripe_subscription_id text UNIQUE,
+  plan text NOT NULL DEFAULT 'free',
+  status text NOT NULL DEFAULT 'trialing',
+  current_period_start timestamptz,
+  current_period_end timestamptz,
+  trial_end timestamptz,
+  cancel_at_period_end boolean DEFAULT false,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  CONSTRAINT valid_plan CHECK (plan IN ('free', 'student', 'teacher', 'school')),
+  CONSTRAINT valid_status CHECK (status IN ('trialing', 'active', 'past_due', 'canceled', 'unpaid'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_customer_id ON subscriptions(stripe_customer_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);
+
+-- RLS: users can read their own subscription
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "subscriptions_select_own" ON public.subscriptions
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Service role handles all writes (via webhook handler), no user write policies needed.
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 2. Add subscription_exempt to profiles
+-- ═══════════════════════════════════════════════════════════════════
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS subscription_exempt boolean NOT NULL DEFAULT false;
+
+-- Grandfather all existing users
+UPDATE public.profiles SET subscription_exempt = true WHERE subscription_exempt = false;
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 3. Update handle_new_user trigger to set subscription_exempt
+--    Teachers (via teacher code) and students (via teacher invite code)
+--    are exempt. The signup API route sets a metadata flag.
+-- ═══════════════════════════════════════════════════════════════════
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+DECLARE
+  v_meta jsonb;
+  v_user_type text;
+  v_role text;
+  v_exempt boolean;
+BEGIN
+  v_meta := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+  v_user_type := v_meta->>'user_type';
+  v_exempt := coalesce((v_meta->>'subscription_exempt')::boolean, false);
+
+  -- Map user_type to role
+  CASE v_user_type
+    WHEN 'student' THEN v_role := 'student';
+    WHEN 'teacher' THEN v_role := 'teacher';
+    ELSE v_role := 'practice';
+  END CASE;
+
+  INSERT INTO public.profiles (
+    id, email, role, first_name, last_name, user_type,
+    high_school, graduation_year, target_sat_score, tutor_name,
+    subscription_exempt
+  )
+  VALUES (
+    new.id,
+    new.email,
+    v_role,
+    v_meta->>'first_name',
+    v_meta->>'last_name',
+    v_user_type,
+    v_meta->>'high_school',
+    (v_meta->>'graduation_year')::int,
+    (v_meta->>'target_sat_score')::int,
+    v_meta->>'tutor_name',
+    v_exempt
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = excluded.email,
+    role = coalesce(excluded.role, profiles.role),
+    first_name = coalesce(excluded.first_name, profiles.first_name),
+    last_name = coalesce(excluded.last_name, profiles.last_name),
+    user_type = coalesce(excluded.user_type, profiles.user_type),
+    high_school = coalesce(excluded.high_school, profiles.high_school),
+    graduation_year = coalesce(excluded.graduation_year, profiles.graduation_year),
+    target_sat_score = coalesce(excluded.target_sat_score, profiles.target_sat_score),
+    tutor_name = coalesce(excluded.tutor_name, profiles.tutor_name),
+    subscription_exempt = coalesce(excluded.subscription_exempt, profiles.subscription_exempt);
+
+  RETURN new;
+END;
+$$;
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 4. Auto-exempt students when assigned to an exempt teacher
+-- ═══════════════════════════════════════════════════════════════════
+CREATE OR REPLACE FUNCTION public.exempt_student_on_teacher_assignment()
+RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  -- If the teacher is exempt, make the student exempt too
+  IF EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = NEW.teacher_id AND subscription_exempt = true
+  ) THEN
+    UPDATE public.profiles
+    SET subscription_exempt = true
+    WHERE id = NEW.student_id AND subscription_exempt = false;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_exempt_student_on_assignment ON public.teacher_student_assignments;
+CREATE TRIGGER trg_exempt_student_on_assignment
+  AFTER INSERT ON public.teacher_student_assignments
+  FOR EACH ROW EXECUTE FUNCTION public.exempt_student_on_teacher_assignment();
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 5. Updated_at trigger for subscriptions
+-- ═══════════════════════════════════════════════════════════════════
+CREATE TRIGGER set_subscriptions_updated_at
+  BEFORE UPDATE ON public.subscriptions
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+-- ============================================================
+-- supabase/migrations/20230101000015_add_manager_role.sql
+-- ============================================================
+-- Add 'manager' to the profiles role check constraint
+-- Manager has Teacher permissions + access to the Teachers tab
+
+-- The constraint may be named profiles_role_check or use the ANY(ARRAY[...]) syntax.
+-- Drop whichever exists, then recreate.
+DO $$
+BEGIN
+  -- Try dropping named constraint first
+  BEGIN
+    ALTER TABLE public.profiles DROP CONSTRAINT profiles_role_check;
+  EXCEPTION WHEN undefined_object THEN
+    NULL; -- constraint doesn't exist by this name
+  END;
+
+  -- Try dropping the auto-generated check constraint name
+  BEGIN
+    ALTER TABLE public.profiles DROP CONSTRAINT profiles_role_check1;
+  EXCEPTION WHEN undefined_object THEN
+    NULL;
+  END;
+END$$;
+
+-- Drop any remaining check constraints on role column and recreate
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_role_check
+  CHECK (role = ANY (ARRAY['practice'::text, 'student'::text, 'teacher'::text, 'manager'::text, 'admin'::text]));
+
+-- Update the is_teacher() helper function to include manager
+CREATE OR REPLACE FUNCTION public.is_teacher()
+RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.id = auth.uid() AND p.role IN ('teacher', 'manager', 'admin')
+  );
+$$;
 
 
 -- ============================================================
@@ -1916,65 +2215,12 @@ alter table act_questions add column if not exists highlight_ref integer;
 
 
 -- ============================================================
--- supabase/migrations/add_is_active_to_profiles.sql
--- ============================================================
--- Add is_active flag to profiles (defaults to true)
--- Inactive students still have access but are hidden from the teacher panel.
-
-alter table public.profiles
-  add column if not exists is_active boolean not null default true;
-
-
--- ============================================================
 -- supabase/migrations/add_is_broken_to_question_status.sql
 -- ============================================================
 -- Add is_broken flag to question_status
 -- Run this in the Supabase SQL editor or via the Supabase CLI.
 alter table question_status
   add column if not exists is_broken boolean not null default false;
-
-
--- ============================================================
--- supabase/migrations/add_manager_role.sql
--- ============================================================
--- Add 'manager' to the profiles role check constraint
--- Manager has Teacher permissions + access to the Teachers tab
-
--- The constraint may be named profiles_role_check or use the ANY(ARRAY[...]) syntax.
--- Drop whichever exists, then recreate.
-DO $$
-BEGIN
-  -- Try dropping named constraint first
-  BEGIN
-    ALTER TABLE public.profiles DROP CONSTRAINT profiles_role_check;
-  EXCEPTION WHEN undefined_object THEN
-    NULL; -- constraint doesn't exist by this name
-  END;
-
-  -- Try dropping the auto-generated check constraint name
-  BEGIN
-    ALTER TABLE public.profiles DROP CONSTRAINT profiles_role_check1;
-  EXCEPTION WHEN undefined_object THEN
-    NULL;
-  END;
-END$$;
-
--- Drop any remaining check constraints on role column and recreate
-ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
-
-ALTER TABLE public.profiles ADD CONSTRAINT profiles_role_check
-  CHECK (role = ANY (ARRAY['practice'::text, 'student'::text, 'teacher'::text, 'manager'::text, 'admin'::text]));
-
--- Update the is_teacher() helper function to include manager
-CREATE OR REPLACE FUNCTION public.is_teacher()
-RETURNS boolean
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.id = auth.uid() AND p.role IN ('teacher', 'manager', 'admin')
-  );
-$$;
 
 
 -- ============================================================
@@ -2069,14 +2315,6 @@ alter table question_versions
 
 
 -- ============================================================
--- supabase/migrations/add_sat_test_date.sql
--- ============================================================
--- Add sat_test_date column to profiles for upcoming registered SAT date
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS sat_test_date timestamptz;
-
-
--- ============================================================
 -- supabase/migrations/add_set_question_broken_rpc.sql
 -- ============================================================
 -- RPC function to set is_broken on a question, bypassing RLS.
@@ -2102,90 +2340,6 @@ begin
   update questions
      set is_broken = broken
    where id = question_uuid;
-end;
-$$;
-
-
--- ============================================================
--- supabase/migrations/add_signup_profile_fields.sql
--- ============================================================
--- =========================================================
--- Extended signup fields on profiles + teacher registration codes
--- =========================================================
-
--- 1) Add new columns to profiles
-alter table public.profiles
-  add column if not exists first_name text,
-  add column if not exists last_name text,
-  add column if not exists user_type text check (user_type in ('student','teacher','exploring')),
-  add column if not exists high_school text,
-  add column if not exists graduation_year int,
-  add column if not exists target_sat_score int,
-  add column if not exists tutor_name text;
-
--- 2) Teacher registration codes (one-time use)
-create table if not exists public.teacher_codes (
-  id uuid primary key default gen_random_uuid(),
-  code text not null unique,
-  used_by uuid references public.profiles(id),
-  used_at timestamptz,
-  created_at timestamptz default now()
-);
-
-alter table public.teacher_codes enable row level security;
-
--- Only admins can manage teacher codes
-create policy teacher_codes_admin_all on public.teacher_codes
-  for all using (public.is_admin());
-
--- 3) Update handle_new_user to pull metadata from auth signup
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql security definer set search_path = public
-as $$
-declare
-  v_meta jsonb;
-  v_user_type text;
-  v_role text;
-begin
-  v_meta := coalesce(new.raw_user_meta_data, '{}'::jsonb);
-  v_user_type := v_meta->>'user_type';
-
-  -- Map user_type to role
-  case v_user_type
-    when 'student' then v_role := 'student';
-    when 'teacher' then v_role := 'teacher';
-    else v_role := 'practice';
-  end case;
-
-  insert into public.profiles (
-    id, email, role, first_name, last_name, user_type,
-    high_school, graduation_year, target_sat_score, tutor_name
-  )
-  values (
-    new.id,
-    new.email,
-    v_role,
-    v_meta->>'first_name',
-    v_meta->>'last_name',
-    v_user_type,
-    v_meta->>'high_school',
-    (v_meta->>'graduation_year')::int,
-    (v_meta->>'target_sat_score')::int,
-    v_meta->>'tutor_name'
-  )
-  on conflict (id) do update set
-    email = excluded.email,
-    role = coalesce(excluded.role, profiles.role),
-    first_name = coalesce(excluded.first_name, profiles.first_name),
-    last_name = coalesce(excluded.last_name, profiles.last_name),
-    user_type = coalesce(excluded.user_type, profiles.user_type),
-    high_school = coalesce(excluded.high_school, profiles.high_school),
-    graduation_year = coalesce(excluded.graduation_year, profiles.graduation_year),
-    target_sat_score = coalesce(excluded.target_sat_score, profiles.target_sat_score),
-    tutor_name = coalesce(excluded.tutor_name, profiles.tutor_name);
-
-  return new;
 end;
 $$;
 
@@ -2230,168 +2384,12 @@ alter table public.attempts
 
 
 -- ============================================================
--- supabase/migrations/add_subscription_system.sql
--- ============================================================
--- Phase 1: Subscription database setup
--- Creates the subscriptions table, adds subscription_exempt to profiles,
--- grandfathers all existing users, and updates signup trigger logic.
-
--- ═══════════════════════════════════════════════════════════════════
--- 1. Subscriptions table
--- ═══════════════════════════════════════════════════════════════════
-CREATE TABLE IF NOT EXISTS public.subscriptions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  stripe_customer_id text NOT NULL,
-  stripe_subscription_id text UNIQUE,
-  plan text NOT NULL DEFAULT 'free',
-  status text NOT NULL DEFAULT 'trialing',
-  current_period_start timestamptz,
-  current_period_end timestamptz,
-  trial_end timestamptz,
-  cancel_at_period_end boolean DEFAULT false,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now(),
-  CONSTRAINT valid_plan CHECK (plan IN ('free', 'student', 'teacher', 'school')),
-  CONSTRAINT valid_status CHECK (status IN ('trialing', 'active', 'past_due', 'canceled', 'unpaid'))
-);
-
-CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_customer_id ON subscriptions(stripe_customer_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);
-
--- RLS: users can read their own subscription
-ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "subscriptions_select_own" ON public.subscriptions
-  FOR SELECT USING (auth.uid() = user_id);
-
--- Service role handles all writes (via webhook handler), no user write policies needed.
-
--- ═══════════════════════════════════════════════════════════════════
--- 2. Add subscription_exempt to profiles
--- ═══════════════════════════════════════════════════════════════════
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS subscription_exempt boolean NOT NULL DEFAULT false;
-
--- Grandfather all existing users
-UPDATE public.profiles SET subscription_exempt = true WHERE subscription_exempt = false;
-
--- ═══════════════════════════════════════════════════════════════════
--- 3. Update handle_new_user trigger to set subscription_exempt
---    Teachers (via teacher code) and students (via teacher invite code)
---    are exempt. The signup API route sets a metadata flag.
--- ═══════════════════════════════════════════════════════════════════
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
-AS $$
-DECLARE
-  v_meta jsonb;
-  v_user_type text;
-  v_role text;
-  v_exempt boolean;
-BEGIN
-  v_meta := coalesce(new.raw_user_meta_data, '{}'::jsonb);
-  v_user_type := v_meta->>'user_type';
-  v_exempt := coalesce((v_meta->>'subscription_exempt')::boolean, false);
-
-  -- Map user_type to role
-  CASE v_user_type
-    WHEN 'student' THEN v_role := 'student';
-    WHEN 'teacher' THEN v_role := 'teacher';
-    ELSE v_role := 'practice';
-  END CASE;
-
-  INSERT INTO public.profiles (
-    id, email, role, first_name, last_name, user_type,
-    high_school, graduation_year, target_sat_score, tutor_name,
-    subscription_exempt
-  )
-  VALUES (
-    new.id,
-    new.email,
-    v_role,
-    v_meta->>'first_name',
-    v_meta->>'last_name',
-    v_user_type,
-    v_meta->>'high_school',
-    (v_meta->>'graduation_year')::int,
-    (v_meta->>'target_sat_score')::int,
-    v_meta->>'tutor_name',
-    v_exempt
-  )
-  ON CONFLICT (id) DO UPDATE SET
-    email = excluded.email,
-    role = coalesce(excluded.role, profiles.role),
-    first_name = coalesce(excluded.first_name, profiles.first_name),
-    last_name = coalesce(excluded.last_name, profiles.last_name),
-    user_type = coalesce(excluded.user_type, profiles.user_type),
-    high_school = coalesce(excluded.high_school, profiles.high_school),
-    graduation_year = coalesce(excluded.graduation_year, profiles.graduation_year),
-    target_sat_score = coalesce(excluded.target_sat_score, profiles.target_sat_score),
-    tutor_name = coalesce(excluded.tutor_name, profiles.tutor_name),
-    subscription_exempt = coalesce(excluded.subscription_exempt, profiles.subscription_exempt);
-
-  RETURN new;
-END;
-$$;
-
--- ═══════════════════════════════════════════════════════════════════
--- 4. Auto-exempt students when assigned to an exempt teacher
--- ═══════════════════════════════════════════════════════════════════
-CREATE OR REPLACE FUNCTION public.exempt_student_on_teacher_assignment()
-RETURNS trigger
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
-AS $$
-BEGIN
-  -- If the teacher is exempt, make the student exempt too
-  IF EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = NEW.teacher_id AND subscription_exempt = true
-  ) THEN
-    UPDATE public.profiles
-    SET subscription_exempt = true
-    WHERE id = NEW.student_id AND subscription_exempt = false;
-  END IF;
-  RETURN NEW;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS trg_exempt_student_on_assignment ON public.teacher_student_assignments;
-CREATE TRIGGER trg_exempt_student_on_assignment
-  AFTER INSERT ON public.teacher_student_assignments
-  FOR EACH ROW EXECUTE FUNCTION public.exempt_student_on_teacher_assignment();
-
--- ═══════════════════════════════════════════════════════════════════
--- 5. Updated_at trigger for subscriptions
--- ═══════════════════════════════════════════════════════════════════
-CREATE TRIGGER set_subscriptions_updated_at
-  BEFORE UPDATE ON public.subscriptions
-  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
--- ============================================================
 -- supabase/migrations/add_subscriptions_user_id_unique.sql
 -- ============================================================
 -- Add unique constraint on user_id for subscriptions table
 -- Required for upsert operations in the webhook handler
 ALTER TABLE public.subscriptions
   ADD CONSTRAINT subscriptions_user_id_unique UNIQUE (user_id);
-
-
--- ============================================================
--- supabase/migrations/add_teacher_invite_code.sql
--- ============================================================
--- Add a unique invite code to teacher profiles.
--- Students can enter this code during signup to be auto-assigned to the teacher.
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS teacher_invite_code text UNIQUE;
-
--- Index for fast lookup during student signup
-CREATE INDEX IF NOT EXISTS idx_profiles_teacher_invite_code
-  ON public.profiles (teacher_invite_code)
-  WHERE teacher_invite_code IS NOT NULL;
 
 
 -- ============================================================
