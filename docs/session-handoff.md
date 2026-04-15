@@ -7,6 +7,13 @@ network allowlist.
 stable and the Phase 2 step 9 RLS rewrite is in. It's a handoff
 crumb, not a long-lived doc.
 
+**Before reading further:** `CLAUDE.md` at the repo root auto-loaded
+at session start and contains the big-picture motivation for the
+rebuild plus the "flag before acting if a change would contradict
+the five findings" directive. This handoff doc assumes you've
+already internalized that frame; it only covers the tactical
+in-flight state.
+
 ---
 
 ## TL;DR
