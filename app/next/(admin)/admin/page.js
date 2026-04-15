@@ -57,6 +57,7 @@ export default async function AdminLandingPage() {
     { count: recentSignups },
     { count: attempts30d },
     { count: practiceTests30d },
+    { data: volumeWeeks },
   ] = await Promise.all([
     supabase.rpc('count_distinct_users_since', { since: todayStart.toISOString() }),
     supabase.rpc('count_distinct_users_since', { since: d7.toISOString() }),
@@ -83,6 +84,11 @@ export default async function AdminLandingPage() {
       .select('id', { count: 'exact', head: true })
       .eq('status', 'completed')
       .gte('finished_at', d30.toISOString()),
+    // 8-week volume chart data via the Phase 2 RPC. Generates
+    // empty weeks as zero rows so the chart never silently drops
+    // blank weeks — matches the legacy AdminDashboard chart
+    // semantics but without the db-max-rows truncation bug.
+    supabase.rpc('get_practice_volume_by_week', { weeks: 8 }),
   ]);
 
   const activeUsers = {
@@ -90,6 +96,18 @@ export default async function AdminLandingPage() {
     d7: au7?.error ? null : au7?.data ?? null,
     d30: au30?.error ? null : au30?.data ?? null,
   };
+
+  // Chart view-model: one bar per week, with practice + test
+  // segmented stacks. Max height computed from the tallest bar
+  // so every bar fits inside the fixed chart height.
+  const weekBars = (volumeWeeks ?? []).map((w) => ({
+    label: formatWeekLabel(w.week_start),
+    practice: Number(w.practice_count ?? 0),
+    test: Number(w.test_count ?? 0),
+    total: Number(w.practice_count ?? 0) + Number(w.test_count ?? 0),
+  }));
+  const maxTotal = Math.max(1, ...weekBars.map((b) => b.total));
+  const totalTestsCompleted = weekBars.reduce((s, b) => s + b.test, 0);
 
   // Tally roles in JS (small dataset, single query).
   const usersByRole = { practice: 0, student: 0, teacher: 0, manager: 0, admin: 0 };
@@ -111,6 +129,55 @@ export default async function AdminLandingPage() {
           specific areas.
         </p>
       </header>
+
+      <section>
+        <h2 style={S.h2}>Practice volume (8 weeks)</h2>
+        {weekBars.length === 0 ? (
+          <p style={S.empty}>No activity data yet.</p>
+        ) : (
+          <div style={S.chartWrap}>
+            <div style={S.chart}>
+              {weekBars.map((b, i) => {
+                const practiceH = (b.practice / maxTotal) * 100;
+                const testH = (b.test / maxTotal) * 100;
+                return (
+                  <div key={i} style={S.barColumn}>
+                    <div style={S.barStack} title={`${b.practice} practice · ${b.test} test`}>
+                      <div
+                        style={{
+                          ...S.barSegment,
+                          background: '#8b5cf6',
+                          height: `${testH}%`,
+                        }}
+                      />
+                      <div
+                        style={{
+                          ...S.barSegment,
+                          background: '#3b82f6',
+                          height: `${practiceH}%`,
+                        }}
+                      />
+                    </div>
+                    <div style={S.barLabel}>{b.label}</div>
+                    <div style={S.barCount}>{b.total}</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={S.legend}>
+              <span style={S.legendItem}>
+                <span style={{ ...S.legendDot, background: '#3b82f6' }} /> Practice
+              </span>
+              <span style={S.legendItem}>
+                <span style={{ ...S.legendDot, background: '#8b5cf6' }} /> Practice tests
+              </span>
+              <span style={{ ...S.legendItem, marginLeft: 'auto', fontWeight: 600 }}>
+                {totalTestsCompleted} test{totalTestsCompleted === 1 ? '' : 's'} completed
+              </span>
+            </div>
+          </div>
+        )}
+      </section>
 
       <section>
         <h2 style={S.h2}>Active users</h2>
@@ -182,6 +249,14 @@ function NavCard({ href, title, desc }) {
   );
 }
 
+function formatWeekLabel(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  // Short month/day; covers 8 weeks without overflowing the bar.
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
 const S = {
   main: { maxWidth: 1100, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
   header: { marginBottom: '2rem' },
@@ -224,4 +299,52 @@ const S = {
   },
   navTitle: { fontWeight: 600, color: '#111827', marginBottom: '0.25rem' },
   navDesc: { fontSize: '0.85rem', color: '#6b7280' },
+  empty: { color: '#9ca3af', fontStyle: 'italic' },
+  chartWrap: {
+    padding: '1rem',
+    background: '#f9fafb',
+    border: '1px solid #e5e7eb',
+    borderRadius: 8,
+  },
+  chart: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    gap: '0.5rem',
+    height: 180,
+    padding: '0.5rem 0',
+  },
+  barColumn: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '0.25rem',
+    minWidth: 0,
+  },
+  barStack: {
+    width: '100%',
+    maxWidth: 48,
+    height: 140,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    background: '#f3f4f6',
+    borderRadius: '4px 4px 0 0',
+    overflow: 'hidden',
+  },
+  barSegment: { width: '100%', transition: 'height 120ms' },
+  barLabel: { fontSize: '0.7rem', color: '#6b7280', whiteSpace: 'nowrap' },
+  barCount: { fontSize: '0.75rem', color: '#111827', fontWeight: 600 },
+  legend: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    marginTop: '0.75rem',
+    paddingTop: '0.75rem',
+    borderTop: '1px solid #e5e7eb',
+    fontSize: '0.85rem',
+    color: '#4b5563',
+  },
+  legendItem: { display: 'inline-flex', alignItems: 'center', gap: '0.375rem' },
+  legendDot: { display: 'inline-block', width: 10, height: 10, borderRadius: 2 },
 };
