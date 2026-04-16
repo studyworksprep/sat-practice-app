@@ -1788,6 +1788,7 @@ export default function PracticeQuestionPage() {
                 questionId={questionId}
                 getCalcState={() => { try { return calcInstanceRef.current?.getState?.(); } catch { return null; } }}
                 setCalcState={(st) => { try { calcInstanceRef.current?.setState?.(st, { allowUndo: false }); } catch {} }}
+                disableAutoLoad={userRole === 'teacher'}
               />
             )}
           </div>
