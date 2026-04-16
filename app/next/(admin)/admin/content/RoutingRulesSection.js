@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { saveRoutingRules } from './actions';
 
 const DEFAULTS = [
@@ -11,6 +12,8 @@ const DEFAULTS = [
 ];
 
 export function RoutingRulesSection({ tests, selectedTestId, rules: initialRules, modules }) {
+  const router = useRouter();
+  const [isLoading, startTransition] = useTransition();
   const [rules, setRules] = useState(initialRules);
   const [dirty, setDirty] = useState(false);
   const [state, formAction, pending] = useActionState(saveRoutingRules, null);
@@ -20,6 +23,17 @@ export function RoutingRulesSection({ tests, selectedTestId, rules: initialRules
     setRules(initialRules);
     setDirty(false);
   }, [initialRules, selectedTestId]);
+
+  function selectTest(nextId) {
+    const url = nextId
+      ? `/admin/content?routing_test=${encodeURIComponent(nextId)}`
+      : '/admin/content';
+    startTransition(() => {
+      // scroll: false keeps the user where they are — the page is long
+      // and the routing section sits well below the fold.
+      router.replace(url, { scroll: false });
+    });
+  }
 
   const routeCodes = (subject) => [
     ...new Set(
@@ -52,18 +66,23 @@ export function RoutingRulesSection({ tests, selectedTestId, rules: initialRules
 
   return (
     <>
-      <form method="GET" action="/admin/content" style={S.selectorRow}>
+      <div style={S.selectorRow}>
         <label style={S.field}>
           <span style={S.fieldLabel}>Practice test</span>
-          <select name="routing_test" defaultValue={selectedTestId ?? ''} style={S.select}>
+          <select
+            value={selectedTestId ?? ''}
+            onChange={(e) => selectTest(e.target.value)}
+            disabled={isLoading}
+            style={S.select}
+          >
             <option value="">Select a test…</option>
             {tests.map((t) => (
               <option key={t.id} value={t.id}>{t.name ?? t.code}</option>
             ))}
           </select>
         </label>
-        <button type="submit" style={S.btnSecondary}>Load</button>
-      </form>
+        {isLoading && <span style={S.hint}>Loading…</span>}
+      </div>
 
       {!selectedTestId && (
         <p style={S.hint}>Pick a test to view and edit its routing rules.</p>
