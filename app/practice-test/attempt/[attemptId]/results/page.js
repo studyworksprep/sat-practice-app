@@ -333,8 +333,8 @@ function DesmosPopup({ isOpen, onClose, questionId: qId }) {
     if (!hostRef.current || calcRef.current) return;
     calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
       autosize: true, keypad: true, expressions: true,
-      settingsMenu: true, zoomButtons: true, degreeMode: true,
-      clearIntoDegreeMode: true, images: false, folders: false,
+      settingsMenu: true, zoomButtons: true, degreeMode: false,
+      clearIntoDegreeMode: false, images: false, folders: false,
       notes: false, links: false, restrictedFunctions: false,
     });
     return () => {

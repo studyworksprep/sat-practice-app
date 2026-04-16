@@ -74,8 +74,8 @@ function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
     if (!calcRef.current) {
       calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
         autosize: true, keypad: true, expressions: true, settingsMenu: true,
-        zoomButtons: true, forceEnableGeometryFunctions: true, degreeMode: true,
-        clearIntoDegreeMode: true, images: false, folders: false, notes: false,
+        zoomButtons: true, forceEnableGeometryFunctions: true, degreeMode: false,
+        clearIntoDegreeMode: false, images: false, folders: false, notes: false,
         links: false, restrictedFunctions: false,
       });
       restoreState();
