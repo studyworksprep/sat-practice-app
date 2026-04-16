@@ -15,6 +15,7 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,12 +33,15 @@ export default async function TutorStudentDetailPage({ params }) {
     redirect('/');
   }
 
-  // 1) Load profile + stats and 2) recent attempts in parallel.
+  // 1) Load profile + stats, 2) recent attempts, and 3) import flag
+  //    + a count of v1 practice-test attempts (for the import button).
   //    RLS uses can_view() on both underlying tables.
   //    Empty result on #1 → caller can't see this student → 404.
   const [
     { data: studentRows, error: rpcErr },
     { data: attemptRows, error: attemptsErr },
+    { data: profileRow },
+    { count: v1AttemptCount },
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -49,6 +53,15 @@ export default async function TutorStudentDetailPage({ params }) {
       .eq('user_id', studentId)
       .order('created_at', { ascending: false })
       .limit(RECENT_ATTEMPTS_LIMIT),
+    supabase
+      .from('profiles')
+      .select('practice_test_v2_imported_at')
+      .eq('id', studentId)
+      .maybeSingle(),
+    supabase
+      .from('practice_test_attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', studentId),
   ]);
 
   if (rpcErr) {
@@ -127,6 +140,15 @@ export default async function TutorStudentDetailPage({ params }) {
             />
           )}
         </div>
+      </section>
+
+      <section>
+        <h2 style={S.h2}>Practice history v2 import</h2>
+        <ImportPracticeHistoryButton
+          studentId={student.id}
+          importedAt={profileRow?.practice_test_v2_imported_at ?? null}
+          hasV1History={(v1AttemptCount ?? 0) > 0}
+        />
       </section>
 
       <section>
