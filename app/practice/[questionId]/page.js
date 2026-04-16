@@ -1783,7 +1783,7 @@ export default function PracticeQuestionPage() {
         <div className="mathLeftHeader">
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
-            {!calcMinimized && (
+            {!calcMinimized && !(userRole === 'teacher' && !isTeacherMode) && (
               <DesmosStateButton
                 questionId={questionId}
                 getCalcState={() => { try { return calcInstanceRef.current?.getState?.(); } catch { return null; } }}

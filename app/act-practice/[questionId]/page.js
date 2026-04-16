@@ -675,7 +675,7 @@ export default function ActQuestionDetailPage() {
         <div className="mathLeftHeader">
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div className="mathToolTitle">{calcMinimized ? 'Calc' : 'Calculator'}</div>
-            {!calcMinimized && (
+            {!calcMinimized && userRole !== 'teacher' && (
               <DesmosStateButton
                 questionId={questionId}
                 getCalcState={() => { try { return calcInstanceRef.current?.getState?.(); } catch { return null; } }}
