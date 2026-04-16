@@ -2,21 +2,13 @@
 //
 // Called from the tutor dashboard via a "View" link on each row.
 // Shows the student's profile + practice stats + recent attempt
-// history. All three queries go through security-definer RPCs that
-// delegate visibility to can_view(), because the direct profiles
-// and attempts RLS policies on this database don't cover the
-// transitive manager → tutor → student path.
+// history. Two plain queries:
+//   1) student_practice_stats view — profile + aggregated stats
+//   2) attempts table — last N individual attempts
 //
-// Two RPC round-trips:
-//   1) get_visible_student_by_id — profile + aggregated stats
-//   2) get_visible_student_attempts — last N individual attempts
-//
-// Both are gated on can_view() internally. If the caller can't see
-// the student, both return empty and the page 404s.
-//
-// Phase 2 step 9 rewrites the profiles and attempts RLS to use
-// can_view() directly, at which point both RPCs become redundant
-// and the page can go back to plain supabase queries.
+// RLS on the underlying tables uses can_view(), so visibility is
+// automatic. If the caller can't see the student, both return
+// empty and the page 404s.
 //
 // Read-only on this first commit. Mutations (assigning work,
 // messaging, editing) land in follow-up commits.
@@ -41,17 +33,22 @@ export default async function TutorStudentDetailPage({ params }) {
   }
 
   // 1) Load profile + stats and 2) recent attempts in parallel.
-  //    Both go through security-definer RPCs that gate on can_view().
+  //    RLS uses can_view() on both underlying tables.
   //    Empty result on #1 → caller can't see this student → 404.
   const [
     { data: studentRows, error: rpcErr },
     { data: attemptRows, error: attemptsErr },
   ] = await Promise.all([
-    supabase.rpc('get_visible_student_by_id', { target_id: studentId }),
-    supabase.rpc('get_visible_student_attempts', {
-      target_id: studentId,
-      p_limit: RECENT_ATTEMPTS_LIMIT,
-    }),
+    supabase
+      .from('student_practice_stats')
+      .select('*')
+      .eq('user_id', studentId),
+    supabase
+      .from('attempts')
+      .select('id, question_id, is_correct, selected_option_id, response_text, time_spent_ms, source, created_at')
+      .eq('user_id', studentId)
+      .order('created_at', { ascending: false })
+      .limit(RECENT_ATTEMPTS_LIMIT),
   ]);
 
   if (rpcErr) {

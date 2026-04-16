@@ -1,13 +1,9 @@
-// Tutor dashboard — exercises the §3.8 unified hierarchy model for
-// real via a single RPC round-trip.
+// Tutor dashboard — exercises the §3.8 unified hierarchy model.
 //
-// Uses get_visible_students_with_stats() from Phase 2 migration
-// 20240101000005. The RPC runs as SECURITY DEFINER so it bypasses
-// the narrower profiles/attempts RLS and returns the full student
-// set the caller should see — including transitive manager → tutor →
-// student visibility that profiles RLS doesn't cover directly. See
-// the migration file's header comment for the full rationale and
-// the eventual Phase 2 step 9 / Phase 6 cleanup path.
+// Queries the student_practice_stats view, which aggregates profile
+// fields + attempt stats. RLS on the underlying profiles and attempts
+// tables uses can_view(), so the view automatically returns only the
+// students the caller is allowed to see.
 //
 // Read-only on this first commit — no client island, no Server
 // Actions. Sorting / filtering / assignment creation land in
@@ -33,10 +29,12 @@ export default async function TutorDashboardPage() {
     redirect('/');
   }
 
-  // One RPC call, one round trip, no RLS interference.
-  const { data: rows, error: rpcErr } = await supabase.rpc(
-    'get_visible_students_with_stats',
-  );
+  // One query against the student_practice_stats view. RLS on the
+  // underlying tables uses can_view(), so visibility is automatic.
+  const { data: rows, error: rpcErr } = await supabase
+    .from('student_practice_stats')
+    .select('*')
+    .order('last_activity_at', { ascending: false, nullsFirst: false });
 
   if (rpcErr) {
     return (
@@ -54,9 +52,7 @@ export default async function TutorDashboardPage() {
     );
   }
 
-  // Map the RPC rows to the view-model the table renders.
-  // get_visible_students_with_stats() already orders by
-  // last_activity_at desc nulls last, so we don't re-sort here.
+  // Map the view rows to the view-model the table renders.
   const students = rawStudents.slice(0, STUDENT_LIMIT).map((row) => ({
     id: row.user_id,
     name:
