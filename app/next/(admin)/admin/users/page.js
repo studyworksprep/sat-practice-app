@@ -1,19 +1,17 @@
-// Admin users tab — second carve-out from the legacy 2,366-line
-// AdminDashboard.js. See docs/architecture-plan.md §3.4 and Phase 2
-// in §4.
-//
-// Read-only on this first commit: list of users with search by
-// email/name + role filter + recent signups. Editing roles,
-// creating users, and assigning users land in follow-up commits.
+// Admin users — list page. Browse, search, filter; click a name
+// to open the detail page where editing happens. Bulk relationship
+// wiring is at /admin/users/relationships; signup codes at
+// /admin/users/codes.
 //
 // URL query params drive the filter: ?role=student, ?q=alice, etc.
-// The client island is a tiny form that just submits the params via
-// <form action> and lets the Server Component do the heavy lifting.
-// No client-side fetching.
+// The client island (UsersFilter) is a tiny form that submits the
+// params via <form method="GET">; the Server Component re-runs with
+// the new filter. No client-side fetching.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { UsersFilter } from './UsersFilter';
+import { UsersNav } from './UsersNav';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,10 +88,13 @@ export default async function AdminUsersPage({ searchParams }) {
       <header style={S.header}>
         <h1 style={S.h1}>User management</h1>
         <p style={S.sub}>
-          Browse platform users, filter by role, search by name or email.
-          Editing roles and creating users land in follow-up commits.
+          Browse and edit platform users. Click a name to open their detail
+          page. Use Relationships for bulk assignments and Codes for
+          signup/invite tokens.
         </p>
       </header>
+
+      <UsersNav current="list" />
 
       <section style={S.filterSection}>
         <UsersFilter currentRole={roleFilter} currentQuery={query} roleTally={roleTally} />
@@ -119,10 +120,12 @@ export default async function AdminUsersPage({ searchParams }) {
             <tbody>
               {rows.map((u) => {
                 const name =
-                  [u.first_name, u.last_name].filter(Boolean).join(' ') || '—';
+                  [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email || '—';
                 return (
                   <tr key={u.id}>
-                    <td style={S.td}>{name}</td>
+                    <td style={S.td}>
+                      <a href={`/admin/users/${u.id}`} style={S.nameLink}>{name}</a>
+                    </td>
                     <td style={S.td}>{u.email ?? '—'}</td>
                     <td style={S.td}>
                       <span style={{ ...S.roleTag, ...roleTagColor(u.role) }}>
@@ -224,6 +227,7 @@ const S = {
     letterSpacing: '0.025em',
   },
   td: { padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6' },
+  nameLink: { color: '#2563eb', fontWeight: 600, textDecoration: 'none' },
   roleTag: {
     display: 'inline-block',
     padding: '0.125rem 0.5rem',
