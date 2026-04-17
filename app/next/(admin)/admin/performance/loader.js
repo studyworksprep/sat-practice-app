@@ -116,53 +116,40 @@ async function fetchTaxonomy(supabase, questionIds) {
   for (let i = 0; i < questionIds.length; i += 500) {
     const chunk = questionIds.slice(i, i + 500);
     const { data } = await supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_code, domain_name, skill_code, skill_name, difficulty')
-      .in('question_id', chunk);
-    for (const t of data ?? []) taxMap[t.question_id] = t;
+      .from('questions_v2')
+      .select('id, domain_code, domain_name, skill_code, skill_name, difficulty')
+      .in('id', chunk);
+    for (const t of data ?? []) taxMap[t.id] = t;
   }
   return taxMap;
 }
 
 async function loadHardestEasiest(supabase) {
-  const { data: qvRows } = await supabase
-    .from('question_versions')
-    .select('id, question_id, attempt_count, correct_count, questions!inner(question_id)')
-    .eq('is_current', true)
+  const { data: rows } = await supabase
+    .from('questions_v2')
+    .select('id, display_code, attempt_count, correct_count, domain_name, skill_name, difficulty')
+    .eq('is_published', true)
+    .eq('is_broken', false)
     .gte('attempt_count', MIN_ATTEMPTS_FOR_RANKING)
     .order('attempt_count', { ascending: false })
     .limit(2000);
 
-  const scored = (qvRows ?? []).map((qv) => ({
-    question_id: qv.question_id,
-    display_question_id: qv.questions?.question_id ?? null,
-    attempt_count: qv.attempt_count,
-    correct_count: qv.correct_count,
-    accuracy: Math.round((qv.correct_count / qv.attempt_count) * 100),
+  const scored = (rows ?? []).map((q) => ({
+    question_id: q.display_code ?? q.id,
+    question_uuid: q.id,
+    attempt_count: q.attempt_count,
+    correct_count: q.correct_count,
+    accuracy: Math.round((q.correct_count / q.attempt_count) * 100),
+    domain_name: q.domain_name,
+    skill_name: q.skill_name,
+    difficulty: q.difficulty,
   }));
   scored.sort((a, b) => a.accuracy - b.accuracy);
 
-  const hardestSlice = scored.slice(0, 10);
-  const easiestSlice = scored.slice(-10).reverse();
-
-  const enrichIds = [...new Set([...hardestSlice, ...easiestSlice].map((q) => q.question_id))];
-  const enrichTax = await fetchTaxonomy(supabase, enrichIds);
-
-  const enrich = (q) => {
-    const tax = enrichTax[q.question_id] ?? {};
-    return {
-      question_id: q.display_question_id ?? q.question_id,
-      question_uuid: q.question_id,
-      attempt_count: q.attempt_count,
-      correct_count: q.correct_count,
-      accuracy: q.accuracy,
-      domain_name: tax.domain_name ?? null,
-      skill_name: tax.skill_name ?? null,
-      difficulty: tax.difficulty ?? null,
-    };
+  return {
+    hardest: scored.slice(0, 10),
+    easiest: scored.slice(-10).reverse(),
   };
-
-  return { hardest: hardestSlice.map(enrich), easiest: easiestSlice.map(enrich) };
 }
 
 async function loadScoreDistribution(supabase) {
