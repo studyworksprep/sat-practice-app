@@ -76,10 +76,11 @@ export async function deleteScoreConversion(prevOrFD, maybeFD) {
 }
 
 // ────────────────────────────────────────────────────────────────
-// Routing rules — full-replace per practice test
+// Adaptive thresholds — v2 schema stores these as columns on
+// practice_tests_v2, not in a separate routing_rules table.
 // ────────────────────────────────────────────────────────────────
 
-export async function saveRoutingRules(_prev, formData) {
+export async function updateTestThresholds(_prev, formData) {
   let ctx;
   try {
     ctx = await adminCtx();
@@ -89,51 +90,36 @@ export async function saveRoutingRules(_prev, formData) {
   }
 
   const testId = formData.get('practice_test_id');
-  const rulesJson = formData.get('rules_json');
-
   if (typeof testId !== 'string' || !testId) return actionFail('practice_test_id required');
-  if (typeof rulesJson !== 'string') return actionFail('rules_json required');
 
-  let rules;
-  try {
-    rules = JSON.parse(rulesJson);
-  } catch {
-    return actionFail('rules_json must be valid JSON');
+  const rwRaw = formData.get('rw_threshold');
+  const mathRaw = formData.get('math_threshold');
+
+  const updates = {};
+  if (typeof rwRaw === 'string' && rwRaw.trim() !== '') {
+    const n = Number(rwRaw);
+    if (!Number.isInteger(n) || n < 0 || n > 50) return actionFail('R&W threshold must be 0–50');
+    updates.rw_route_threshold = n;
+  } else {
+    updates.rw_route_threshold = null;
   }
-  if (!Array.isArray(rules)) return actionFail('rules must be an array');
-
-  for (const r of rules) {
-    if (!['RW', 'MATH'].includes(r.subject_code)) return actionFail(`Invalid subject: ${r.subject_code}`);
-    if (!['>=', '>', '<=', '<', '=='].includes(r.operator)) return actionFail(`Invalid operator: ${r.operator}`);
-    if (!Number.isFinite(r.threshold)) return actionFail('Threshold must be a number');
-    if (typeof r.to_route_code !== 'string' || !r.to_route_code) return actionFail('Each rule needs a target route code');
+  if (typeof mathRaw === 'string' && mathRaw.trim() !== '') {
+    const n = Number(mathRaw);
+    if (!Number.isInteger(n) || n < 0 || n > 50) return actionFail('Math threshold must be 0–50');
+    updates.math_route_threshold = n;
+  } else {
+    updates.math_route_threshold = null;
   }
 
-  // Replace: delete existing, insert new.
-  const { error: delErr } = await ctx.supabase
-    .from('practice_test_routing_rules')
-    .delete()
-    .eq('practice_test_id', testId);
-  if (delErr) return actionFail(`Delete failed: ${delErr.message}`);
+  const { error } = await ctx.supabase
+    .from('practice_tests_v2')
+    .update(updates)
+    .eq('id', testId);
 
-  if (rules.length > 0) {
-    const rows = rules.map((r) => ({
-      practice_test_id: testId,
-      subject_code: r.subject_code,
-      from_module_number: r.from_module_number || 1,
-      metric: r.metric || 'correct_count',
-      operator: r.operator,
-      threshold: r.threshold,
-      to_route_code: r.to_route_code,
-    }));
-    const { error: insErr } = await ctx.supabase
-      .from('practice_test_routing_rules')
-      .insert(rows);
-    if (insErr) return actionFail(`Insert failed: ${insErr.message}`);
-  }
+  if (error) return actionFail(`Failed: ${error.message}`);
 
   revalidatePath('/admin/content');
-  return actionOk({ count: rules.length });
+  return actionOk(updates);
 }
 
 // ────────────────────────────────────────────────────────────────

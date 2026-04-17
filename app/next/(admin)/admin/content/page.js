@@ -13,7 +13,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { ScoreConversionSection } from './ScoreConversionSection';
-import { RoutingRulesSection } from './RoutingRulesSection';
+import { TestThresholdsSection } from './TestThresholdsSection';
 import { LearnabilitySection } from './LearnabilitySection';
 
 export const dynamic = 'force-dynamic';
@@ -35,19 +35,15 @@ export default async function AdminContentPage({ searchParams }) {
     { data: tests },
     { data: conversions },
     { data: skills },
-    { data: routingRules },
-    { data: routingModules },
+    { data: selectedTest },
   ] = await Promise.all([
     loadFlagged(supabase),
-    supabase.from('practice_tests').select('id, code, name').order('created_at').limit(200),
+    supabase.from('practice_tests_v2').select('id, code, name, is_adaptive, rw_route_threshold, math_route_threshold').is('deleted_at', null).order('created_at').limit(200),
     supabase.from('score_conversion').select('id, test_id, test_name, section, module1_correct, module2_correct, scaled_score').order('test_name').order('section').order('scaled_score', { ascending: false }).limit(2000),
     loadLearnability(supabase),
     routingTestId
-      ? supabase.from('practice_test_routing_rules').select('*').eq('practice_test_id', routingTestId).order('subject_code').order('threshold')
-      : Promise.resolve({ data: [] }),
-    routingTestId
-      ? supabase.from('practice_test_modules').select('id, subject_code, module_number, route_code').eq('practice_test_id', routingTestId).order('subject_code').order('module_number')
-      : Promise.resolve({ data: [] }),
+      ? supabase.from('practice_tests_v2').select('id, is_adaptive, rw_route_threshold, math_route_threshold').eq('id', routingTestId).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   return (
@@ -116,12 +112,12 @@ export default async function AdminContentPage({ searchParams }) {
         <ScoreConversionSection tests={tests ?? []} conversions={conversions ?? []} />
       </Section>
 
-      <Section title="Adaptive routing rules">
-        <RoutingRulesSection
+      <Section title="Adaptive routing thresholds">
+        <TestThresholdsSection
           tests={tests ?? []}
           selectedTestId={routingTestId}
-          rules={routingRules ?? []}
-          modules={routingModules ?? []}
+          currentRW={selectedTest?.rw_route_threshold ?? null}
+          currentMath={selectedTest?.math_route_threshold ?? null}
         />
       </Section>
 
@@ -133,60 +129,41 @@ export default async function AdminContentPage({ searchParams }) {
 }
 
 async function loadFlagged(supabase) {
+  // v2 questions have domain/skill/difficulty inline — no taxonomy join.
+  // questions_v2 doesn't have broken_by/broken_at columns (v1-only),
+  // so we just list what's flagged without who flagged it.
   const { data: rows } = await supabase
-    .from('questions')
-    .select('id, question_id, is_broken, broken_by, broken_at')
+    .from('questions_v2')
+    .select('id, display_code, domain_name, skill_name, difficulty, updated_at')
     .eq('is_broken', true)
-    .order('broken_at', { ascending: false });
-
-  if (!rows || rows.length === 0) return { data: [] };
-
-  const qIds = rows.map((r) => r.id);
-  const flaggerIds = [...new Set(rows.map((r) => r.broken_by).filter(Boolean))];
-
-  const [{ data: tax }, { data: flaggers }] = await Promise.all([
-    supabase
-      .from('question_taxonomy')
-      .select('question_id, domain_name, skill_name, difficulty')
-      .in('question_id', qIds),
-    flaggerIds.length > 0
-      ? supabase.from('profiles').select('id, first_name, last_name, email, role').in('id', flaggerIds)
-      : Promise.resolve({ data: [] }),
-  ]);
-
-  const taxMap = Object.fromEntries((tax ?? []).map((t) => [t.question_id, t]));
-  const flaggerMap = Object.fromEntries((flaggers ?? []).map((f) => [f.id, f]));
+    .order('updated_at', { ascending: false });
 
   return {
-    data: rows.map((r) => {
-      const t = taxMap[r.id] ?? {};
-      const f = r.broken_by ? flaggerMap[r.broken_by] : null;
-      return {
-        id: r.id,
-        question_id: r.question_id,
-        broken_at: r.broken_at,
-        domain_name: t.domain_name ?? null,
-        skill_name: t.skill_name ?? null,
-        difficulty: t.difficulty ?? null,
-        flagged_by_name: f ? ([f.first_name, f.last_name].filter(Boolean).join(' ') || f.email) : null,
-        flagged_by_role: f?.role ?? null,
-      };
-    }),
+    data: (rows ?? []).map((r) => ({
+      id: r.id,
+      question_id: r.display_code ?? r.id,
+      broken_at: r.updated_at,
+      domain_name: r.domain_name,
+      skill_name: r.skill_name,
+      difficulty: r.difficulty,
+      flagged_by_name: null,
+      flagged_by_role: null,
+    })),
   };
 }
 
 async function loadLearnability(supabase) {
-  // Join learnability ratings with taxonomy skill names/domains.
-  const [{ data: ratings }, { data: skills }] = await Promise.all([
+  // Pull distinct skills from questions_v2 (v2 has taxonomy inline).
+  const [{ data: ratings }, { data: questions }] = await Promise.all([
     supabase.from('skill_learnability').select('skill_code, learnability'),
-    supabase.from('question_taxonomy').select('skill_code, skill_name, domain_name').not('skill_code', 'is', null).limit(5000),
+    supabase.from('questions_v2').select('skill_code, skill_name, domain_name').not('skill_code', 'is', null).limit(5000),
   ]);
 
   const skillMap = new Map();
-  for (const s of skills ?? []) {
-    if (!s.skill_code) continue;
-    if (!skillMap.has(s.skill_code)) {
-      skillMap.set(s.skill_code, { skill_code: s.skill_code, skill_name: s.skill_name, domain_name: s.domain_name });
+  for (const q of questions ?? []) {
+    if (!q.skill_code) continue;
+    if (!skillMap.has(q.skill_code)) {
+      skillMap.set(q.skill_code, { skill_code: q.skill_code, skill_name: q.skill_name, domain_name: q.domain_name });
     }
   }
   const ratingMap = Object.fromEntries((ratings ?? []).map((r) => [r.skill_code, r.learnability]));
