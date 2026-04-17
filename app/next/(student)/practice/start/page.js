@@ -21,18 +21,20 @@ export default async function PracticeStartPage() {
   if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
 
-  // Fetch the filter options inline — domain list, difficulty options.
-  // Small catalog data; RLS on question_taxonomy allows student reads.
-  const { data: taxonomyRows } = await supabase
-    .from('question_taxonomy')
-    .select('domain_name, skill_name, difficulty')
-    .eq('program', 'SAT')
+  // Fetch the filter options inline — domain list + skills per domain,
+  // drawn from questions_v2 (the v2 schema has taxonomy inline, no
+  // separate question_taxonomy join needed).
+  const { data: questionRows } = await supabase
+    .from('questions_v2')
+    .select('domain_name, skill_name')
+    .eq('is_published', true)
+    .eq('is_broken', false)
     .not('domain_name', 'is', null)
     .limit(5000);
 
-  // Build { domain: Set<skill> } and difficulty options from the rows.
+  // Build { domain: Set<skill> } from the rows.
   const domainMap = {};
-  for (const row of taxonomyRows ?? []) {
+  for (const row of questionRows ?? []) {
     if (!row.domain_name) continue;
     if (!domainMap[row.domain_name]) domainMap[row.domain_name] = new Set();
     if (row.skill_name) domainMap[row.domain_name].add(row.skill_name);

@@ -79,37 +79,20 @@ export default async function PracticeQuestionPage({ params }) {
       .then(() => {}, () => {});
   }
 
-  // 3) Load the question content. Uses v1 tables (questions,
-  //    question_versions, answer_options, question_taxonomy). Phase 3
-  //    migrates to questions_v2.
-  //
-  //    question_versions → answer_options is a FK relation, so we
-  //    pull them together via a nested Supabase select. That leaves
-  //    just three parallel queries: question row, version+options,
-  //    taxonomy, and the student's most recent attempt.
+  // 3) Load the question content from questions_v2. The v2 row has
+  //    stem/stimulus/rationale + options (jsonb) + correct_answer
+  //    (jsonb) + taxonomy fields all inline. One query.
   const [
     { data: question },
-    { data: version },
-    { data: taxonomy },
     { data: lastAttempt },
   ] = await Promise.all([
     supabase
-      .from('questions')
-      .select('id, source_external_id, is_broken')
-      .eq('id', questionId)
-      .maybeSingle(),
-    supabase
-      .from('question_versions')
+      .from('questions_v2')
       .select(
-        'id, question_type, stimulus_html, stem_html, answer_options(id, ordinal, label, content_html)',
+        'id, question_type, stimulus_html, stem_html, options, domain_name, skill_name, difficulty, score_band, display_code, is_broken',
       )
-      .eq('question_id', questionId)
-      .eq('is_current', true)
-      .maybeSingle(),
-    supabase
-      .from('question_taxonomy')
-      .select('domain_name, skill_name, difficulty, score_band')
-      .eq('question_id', questionId)
+      .eq('id', questionId)
+      .eq('is_published', true)
       .maybeSingle(),
     supabase
       .from('attempts')
@@ -121,23 +104,24 @@ export default async function PracticeQuestionPage({ params }) {
       .maybeSingle(),
   ]);
 
-  if (!question || !version) notFound();
+  if (!question) notFound();
 
   // 4) Apply per-user watermarking to all HTML content before
   //    embedding. Invisible to real students, decodable from leaked
   //    text via watermarkTag(userId). See §3.7.
-  const stimulusHtml = applyWatermark(version.stimulus_html, user.id);
-  const stemHtml = applyWatermark(version.stem_html, user.id);
-  const rawOptions = Array.isArray(version.answer_options) ? version.answer_options : [];
-  const wmOptions = rawOptions
-    .slice()
-    .sort((a, b) => (a.ordinal ?? 0) - (b.ordinal ?? 0))
-    .map((opt) => ({
-      id: opt.id,
-      ordinal: opt.ordinal,
-      label: opt.label,
-      content_html: applyWatermark(opt.content_html, user.id),
-    }));
+  const stimulusHtml = applyWatermark(question.stimulus_html, user.id);
+  const stemHtml = applyWatermark(question.stem_html, user.id);
+
+  // v2 options are a jsonb array of {id, text} objects. The id is
+  // the option letter ("A"/"B"/"C"/"D") — not a uuid. The client
+  // passes this back in submitAnswer as optionId.
+  const rawOptions = Array.isArray(question.options) ? question.options : [];
+  const wmOptions = rawOptions.map((opt, idx) => ({
+    id: opt.id ?? String.fromCharCode(65 + idx),
+    ordinal: idx,
+    label: opt.id ?? String.fromCharCode(65 + idx),
+    content_html: applyWatermark(opt.text ?? '', user.id),
+  }));
 
   // 5) Build the view-model handed to the client island. The client
   //    sees rendered HTML strings for the server-rendered regions
@@ -145,12 +129,17 @@ export default async function PracticeQuestionPage({ params }) {
   //    answer, never the rationale, until the student has submitted.
   const questionVM = {
     questionId: question.id,
-    externalId: question.source_external_id,
-    questionType: version.question_type,
+    externalId: question.display_code,
+    questionType: question.question_type,
     stimulusHtml,
     stemHtml,
     options: wmOptions,
-    taxonomy: taxonomy ?? null,
+    taxonomy: {
+      domain_name: question.domain_name,
+      skill_name: question.skill_name,
+      difficulty: question.difficulty,
+      score_band: question.score_band,
+    },
   };
 
   // If the student has already submitted this question, eagerly load
@@ -165,7 +154,6 @@ export default async function PracticeQuestionPage({ params }) {
       supabase,
       userId: user.id,
       questionId,
-      questionVersionId: version.id,
     });
   }
 

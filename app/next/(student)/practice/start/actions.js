@@ -55,33 +55,30 @@ export async function createSession(_prevState, formData) {
     .getAll('difficulty')
     .map((d) => Number(d))
     .filter(Number.isFinite);
+  const scoreBands = formData
+    .getAll('score_band')
+    .map((b) => Number(b))
+    .filter(Number.isFinite);
   const skills = formData.getAll('skill').filter(Boolean).map(String);
+  const unansweredOnly = formData.get('unanswered_only') === '1';
   const rawSize = Number(formData.get('size') ?? 10);
   const size = Math.min(
     Math.max(Number.isFinite(rawSize) ? Math.floor(rawSize) : 10, 1),
     MAX_SESSION_SIZE,
   );
 
-  // Build the candidate pool. Query v1 question_taxonomy joined with
-  // the questions table so we can gate on is_test_only / is_broken
-  // from the question row. Phase 3 migrates this to questions_v2.
+  // Build the candidate pool from questions_v2 directly — taxonomy
+  // is inline on the v2 row, no join needed.
   let query = supabase
-    .from('question_taxonomy')
-    .select('question_id, questions!inner(id, is_broken, is_test_only, status)')
-    .eq('program', 'SAT')
-    .eq('questions.is_broken', false)
-    .eq('questions.is_test_only', false)
-    .eq('questions.status', 'active');
+    .from('questions_v2')
+    .select('id')
+    .eq('is_published', true)
+    .eq('is_broken', false);
 
-  if (domains.length) {
-    query = query.in('domain_name', domains);
-  }
-  if (difficulties.length) {
-    query = query.in('difficulty', difficulties);
-  }
-  if (skills.length) {
-    query = query.in('skill_name', skills);
-  }
+  if (domains.length) query = query.in('domain_name', domains);
+  if (difficulties.length) query = query.in('difficulty', difficulties);
+  if (scoreBands.length) query = query.in('score_band', scoreBands);
+  if (skills.length) query = query.in('skill_name', skills);
 
   const { data: candidates, error: candErr } = await query.limit(2000);
   if (candErr) {
@@ -91,8 +88,26 @@ export async function createSession(_prevState, formData) {
     return actionFail('No questions match those filters. Try a broader selection.');
   }
 
+  let candidateIds = candidates.map((row) => row.id);
+
+  if (unansweredOnly && candidateIds.length > 0) {
+    // Filter out questions the student has already answered. question_status
+    // has attempts_count > 0 for any question they've attempted.
+    const { data: answered } = await supabase
+      .from('question_status')
+      .select('question_id')
+      .eq('user_id', user.id)
+      .gt('attempts_count', 0)
+      .in('question_id', candidateIds);
+    const answeredSet = new Set((answered ?? []).map((r) => r.question_id));
+    candidateIds = candidateIds.filter((id) => !answeredSet.has(id));
+    if (candidateIds.length === 0) {
+      return actionFail('You\'ve already answered every question matching those filters. Try broader filters or uncheck "unanswered only".');
+    }
+  }
+
   // Shuffle and cap. Fisher-Yates — a single pass, no bias.
-  const ids = candidates.map((row) => row.question_id);
+  const ids = candidateIds;
   for (let i = ids.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [ids[i], ids[j]] = [ids[j], ids[i]];
@@ -112,7 +127,9 @@ export async function createSession(_prevState, formData) {
       filter_criteria: {
         domains,
         difficulties,
+        scoreBands,
         skills,
+        unansweredOnly,
         size,
       },
     })
