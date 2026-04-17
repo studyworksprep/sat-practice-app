@@ -80,6 +80,30 @@ where id in (
   '44444444-4444-4444-4444-444444444444'
 );
 
+-- GoTrue requires auth.identities rows to resolve email+password sign-in.
+-- Without these, login returns "Database error querying schema."
+insert into auth.identities (
+  id, user_id, provider_id, provider, identity_data,
+  last_sign_in_at, created_at, updated_at
+)
+select
+  u.id, u.id, u.id::text, 'email',
+  jsonb_build_object(
+    'sub', u.id::text,
+    'email', u.email,
+    'email_verified', true,
+    'phone_verified', false
+  ),
+  now(), now(), now()
+from auth.users u
+where u.id in (
+  '11111111-1111-1111-1111-111111111111',
+  '22222222-2222-2222-2222-222222222222',
+  '33333333-3333-3333-3333-333333333333',
+  '44444444-4444-4444-4444-444444444444'
+)
+on conflict (id) do nothing;
+
 -- Teacher gets student1 (not student2).
 insert into public.teacher_student_assignments (teacher_id, student_id)
 values ('22222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333')
