@@ -55,7 +55,8 @@ export async function addScoreConversions(_prev, formData) {
   return actionOk({ inserted: rows.length });
 }
 
-export async function deleteScoreConversion(_prev, formData) {
+export async function deleteScoreConversion(prevOrFD, maybeFD) {
+  const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
   let ctx;
   try {
     ctx = await adminCtx();

@@ -208,7 +208,8 @@ export async function deleteUser(_prev, formData) {
  * editor on the user-detail page. Either id may be the page subject;
  * the form passes both explicitly.
  */
-export async function assignTeacherStudent(_prev, formData) {
+export async function assignTeacherStudent(prevOrFD, maybeFD) {
+  const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
   let ctx;
   try {
     ctx = await requireRole(['admin']);
@@ -234,7 +235,8 @@ export async function assignTeacherStudent(_prev, formData) {
   return actionOk({});
 }
 
-export async function unassignTeacherStudent(_prev, formData) {
+export async function unassignTeacherStudent(prevOrFD, maybeFD) {
+  const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
   let ctx;
   try {
     ctx = await requireRole(['admin']);
@@ -262,7 +264,8 @@ export async function unassignTeacherStudent(_prev, formData) {
   return actionOk({});
 }
 
-export async function assignManagerTeacher(_prev, formData) {
+export async function assignManagerTeacher(prevOrFD, maybeFD) {
+  const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
   let ctx;
   try {
     ctx = await requireRole(['admin']);
@@ -288,7 +291,8 @@ export async function assignManagerTeacher(_prev, formData) {
   return actionOk({});
 }
 
-export async function unassignManagerTeacher(_prev, formData) {
+export async function unassignManagerTeacher(prevOrFD, maybeFD) {
+  const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
   let ctx;
   try {
     ctx = await requireRole(['admin']);

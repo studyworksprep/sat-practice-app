@@ -16,7 +16,8 @@ async function adminCtx() {
   return requireRole(['admin']);
 }
 
-export async function createTeacherCode(_prev, formData) {
+export async function createTeacherCode(prevOrFD, maybeFD) {
+  const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
   try {
     const ctx = await adminCtx();
     const raw = formData.get('code');
@@ -41,7 +42,8 @@ export async function createTeacherCode(_prev, formData) {
   }
 }
 
-export async function revokeTeacherCode(_prev, formData) {
+export async function revokeTeacherCode(prevOrFD, maybeFD) {
+  const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
   try {
     const ctx = await adminCtx();
     const id = formData.get('id');
@@ -61,7 +63,8 @@ export async function revokeTeacherCode(_prev, formData) {
   }
 }
 
-export async function setTeacherInviteCode(_prev, formData) {
+export async function setTeacherInviteCode(prevOrFD, maybeFD) {
+  const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
   try {
     const ctx = await adminCtx();
     const teacherId = formData.get('teacher_id');
@@ -95,7 +98,8 @@ export async function setTeacherInviteCode(_prev, formData) {
   }
 }
 
-export async function clearTeacherInviteCode(_prev, formData) {
+export async function clearTeacherInviteCode(prevOrFD, maybeFD) {
+  const formData = maybeFD instanceof FormData ? maybeFD : prevOrFD;
   try {
     const ctx = await adminCtx();
     const teacherId = formData.get('teacher_id');
