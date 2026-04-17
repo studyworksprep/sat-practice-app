@@ -175,6 +175,7 @@ export default async function TutorTrainingQuestionPage({ params }) {
 
   return (
     <PracticeInteractive
+      key={`${sessionId}-${position}`}
       question={questionVM}
       session={sessionVM}
       initialAttempt={initialAttempt}

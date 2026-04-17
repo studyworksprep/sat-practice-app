@@ -186,6 +186,7 @@ export default async function PracticeQuestionPage({ params }) {
 
   return (
     <PracticeInteractive
+      key={`${sessionId}-${position}`}
       question={questionVM}
       session={sessionVM}
       initialAttempt={initialAttempt}
