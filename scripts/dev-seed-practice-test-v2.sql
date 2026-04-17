@@ -47,15 +47,17 @@ insert into auth.users (
 on conflict (id) do nothing;
 
 -- Profiles are auto-created by trigger when auth.users rows land.
--- Upsert to set the shape we want for tests.
+-- Upsert to set the shape we want for tests. ui_version='next'
+-- routes these users to the new-tree pages.
 insert into public.profiles (
   id, role, email, first_name, last_name,
-  is_active, target_sat_score, high_school, graduation_year
+  is_active, target_sat_score, high_school, graduation_year,
+  ui_version
 ) values
-  ('11111111-1111-1111-1111-111111111111', 'admin',   'admin@test.studyworks',    'Test', 'Admin',   true, null, null, null),
-  ('22222222-2222-2222-2222-222222222222', 'teacher', 'teacher@test.studyworks',  'Test', 'Teacher', true, null, null, null),
-  ('33333333-3333-3333-3333-333333333333', 'student', 'student1@test.studyworks', 'Stu',  'One',     true, 1400, 'Test High', 2026),
-  ('44444444-4444-4444-4444-444444444444', 'student', 'student2@test.studyworks', 'Stu',  'Two',     true, 1200, 'Test High', 2025)
+  ('11111111-1111-1111-1111-111111111111', 'admin',   'admin@test.studyworks',    'Test', 'Admin',   true, null, null, null, 'next'),
+  ('22222222-2222-2222-2222-222222222222', 'teacher', 'teacher@test.studyworks',  'Test', 'Teacher', true, null, null, null, 'next'),
+  ('33333333-3333-3333-3333-333333333333', 'student', 'student1@test.studyworks', 'Stu',  'One',     true, 1400, 'Test High', 2026, 'next'),
+  ('44444444-4444-4444-4444-444444444444', 'student', 'student2@test.studyworks', 'Stu',  'Two',     true, 1200, 'Test High', 2025, 'next')
 on conflict (id) do update set
   role             = excluded.role,
   email            = excluded.email,
@@ -64,7 +66,19 @@ on conflict (id) do update set
   is_active        = excluded.is_active,
   target_sat_score = excluded.target_sat_score,
   high_school      = excluded.high_school,
-  graduation_year  = excluded.graduation_year;
+  graduation_year  = excluded.graduation_year,
+  ui_version       = excluded.ui_version;
+
+-- Set a real bcrypt password hash so these users can sign in.
+-- Password: devseed123  (intentionally weak — dev-only credentials).
+update auth.users
+set encrypted_password = crypt('devseed123', gen_salt('bf', 10))
+where id in (
+  '11111111-1111-1111-1111-111111111111',
+  '22222222-2222-2222-2222-222222222222',
+  '33333333-3333-3333-3333-333333333333',
+  '44444444-4444-4444-4444-444444444444'
+);
 
 -- Teacher gets student1 (not student2).
 insert into public.teacher_student_assignments (teacher_id, student_id)
