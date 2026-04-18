@@ -49,6 +49,7 @@ export default async function StudentDashboardPage() {
     { count: totalAttempts },
     { count: correctAttempts },
     { data: lastActivity },
+    { data: assignmentRows },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -73,6 +74,20 @@ export default async function StudentDashboardPage() {
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    // Dashboard assignments panel. Same query shape as the full
+    // /assignments page but capped at 5 non-completed rows.
+    supabase
+      .from('assignment_students_v2')
+      .select(`
+        completed_at,
+        assignment:assignments_v2 (
+          id, assignment_type, title, due_date, archived_at, deleted_at,
+          question_ids,
+          lesson:lessons (title),
+          practice_test:practice_tests_v2 (name)
+        )
+      `)
+      .eq('student_id', user.id),
   ]);
 
   // Derived view-model. Kept in the Server Component so the client
@@ -92,9 +107,32 @@ export default async function StudentDashboardPage() {
     lastActivityAt: lastActivity?.created_at ?? null,
   };
 
+  // Shape the assignments panel data: drop soft-deleted/archived,
+  // exclude already-completed, sort by due-date (nulls last), cap at 5.
+  const assignments = (assignmentRows ?? [])
+    .map((r) => ({ ...r.assignment, student_completed_at: r.completed_at }))
+    .filter((a) => a && a.id && !a.deleted_at && !a.archived_at && a.student_completed_at == null)
+    .sort((a, b) => {
+      const aDue = a.due_date ? Date.parse(a.due_date) : Number.POSITIVE_INFINITY;
+      const bDue = b.due_date ? Date.parse(b.due_date) : Number.POSITIVE_INFINITY;
+      return aDue - bDue;
+    })
+    .slice(0, 5)
+    .map((a) => ({
+      id: a.id,
+      assignment_type: a.assignment_type,
+      title: a.title
+        ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
+        ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
+        ?? 'Assignment',
+      due_date: a.due_date,
+      n_questions: Array.isArray(a.question_ids) ? a.question_ids.length : null,
+    }));
+
   return (
     <DashboardInteractive
       stats={stats}
+      assignments={assignments}
       updateTargetScoreAction={updateTargetScore}
     />
   );

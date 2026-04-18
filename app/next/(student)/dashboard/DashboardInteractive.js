@@ -12,6 +12,7 @@
 
 'use client';
 
+import Link from 'next/link';
 import { useActionState, useOptimistic } from 'react';
 
 /**
@@ -19,7 +20,7 @@ import { useActionState, useOptimistic } from 'react';
  * @param {object} props.stats - server-rendered dashboard stats
  * @param {Function} props.updateTargetScoreAction - Server Action reference
  */
-export function DashboardInteractive({ stats, updateTargetScoreAction }) {
+export function DashboardInteractive({ stats, assignments = [], updateTargetScoreAction }) {
   // useOptimistic: while the Server Action is in flight, show the
   // new target immediately. React reconciles back to the real value
   // from the server on resolution (or on error).
@@ -80,6 +81,49 @@ export function DashboardInteractive({ stats, updateTargetScoreAction }) {
             label="Days to test date"
             value={daysToTest < 0 ? 'Past' : daysToTest}
           />
+        )}
+      </section>
+
+      <section style={{ marginTop: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem' }}>
+          <h2 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Assignments</h2>
+          <Link href="/assignments" style={{ fontSize: '0.875rem', color: '#2563eb' }}>
+            View all
+          </Link>
+        </div>
+        {assignments.length === 0 ? (
+          <p style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+            You&apos;re all caught up.
+          </p>
+        ) : (
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0 0 0', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            {assignments.map((a) => (
+              <li key={a.id}>
+                <Link
+                  href={`/assignments/${a.id}`}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.5rem 0.75rem',
+                    border: '1px solid #e5e7eb', borderRadius: 6,
+                    textDecoration: 'none', color: '#111827',
+                  }}
+                >
+                  <AssignmentTypeBadge type={a.assignment_type} />
+                  <span style={{ flex: 1, minWidth: 0, fontSize: '0.9rem', fontWeight: 500 }}>
+                    {a.title}
+                  </span>
+                  {a.due_date && (
+                    <span style={{
+                      fontSize: '0.75rem',
+                      color: isOverdue(a.due_date) ? '#b91c1c' : '#6b7280',
+                    }}>
+                      Due {formatShortDate(a.due_date)}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 
@@ -158,6 +202,32 @@ function StatCard({ label, value }) {
       </div>
     </div>
   );
+}
+
+function AssignmentTypeBadge({ type }) {
+  const c = {
+    questions:     { bg: '#eef2ff', fg: '#4338ca', label: 'Q' },
+    lesson:        { bg: '#ecfdf5', fg: '#047857', label: 'L' },
+    practice_test: { bg: '#fff7ed', fg: '#c2410c', label: 'PT' },
+  }[type] ?? { bg: '#f3f4f6', fg: '#374151', label: '?' };
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      width: 28, height: 20, borderRadius: 4,
+      fontSize: '0.7rem', fontWeight: 700,
+      background: c.bg, color: c.fg, flexShrink: 0,
+    }}>
+      {c.label}
+    </span>
+  );
+}
+
+function isOverdue(iso) {
+  return Date.parse(iso) < Date.now();
+}
+
+function formatShortDate(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function daysUntil(iso) {
