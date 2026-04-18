@@ -89,38 +89,48 @@ export default async function AssignmentDetailPage({ params }) {
   if (!assignment || assignment.deleted_at) notFound();
   if (!enrolled) notFound();
 
-  // For 'questions' assignments, fetch taxonomy + per-student status
-  // for each question in parallel. Done here (not in a sub-component)
-  // so the page matches the codebase convention of fetching in the
-  // top-level async page function.
+  // For 'questions' assignments, fetch taxonomy + the student's
+  // attempt history for each question in parallel. Done here (not
+  // in a sub-component) so the page matches the codebase convention
+  // of fetching in the top-level async page function.
+  //
+  // We read per-question state from `attempts` directly rather than
+  // `question_status` — the legacy RPC that maintains question_status
+  // may not exist in every environment, and attempts is the
+  // authoritative source. Client-side reduction picks the most
+  // recent attempt per question for the ✓/✗ display.
   let questionRows = null;
   if (assignment.assignment_type === 'questions') {
     const questionIds = Array.isArray(assignment.question_ids) ? assignment.question_ids : [];
     if (questionIds.length > 0) {
-      const [qRes, sRes] = await Promise.all([
+      const [qRes, aRes] = await Promise.all([
         supabase
           .from('questions_v2')
           .select('id, domain_name, skill_name, difficulty')
           .in('id', questionIds),
         supabase
-          .from('question_status')
-          .select('question_id, attempts_count, last_is_correct')
+          .from('attempts')
+          .select('question_id, is_correct, created_at')
           .eq('user_id', user.id)
-          .in('question_id', questionIds),
+          .in('question_id', questionIds)
+          .order('created_at', { ascending: false }),
       ]);
       const byId = new Map((qRes.data ?? []).map((q) => [q.id, q]));
-      const statusById = new Map((sRes.data ?? []).map((s) => [s.question_id, s]));
+      const latestByQ = new Map();
+      for (const a of aRes.data ?? []) {
+        if (!latestByQ.has(a.question_id)) latestByQ.set(a.question_id, a);
+      }
       questionRows = questionIds.map((qid, i) => {
         const q = byId.get(qid) ?? { id: qid };
-        const s = statusById.get(qid) ?? null;
+        const latest = latestByQ.get(qid) ?? null;
         return {
           ordinal: i + 1,
           question_id: qid,
           domain_name: q.domain_name ?? null,
           skill_name: q.skill_name ?? null,
           difficulty: q.difficulty ?? null,
-          is_done: (s?.attempts_count ?? 0) > 0,
-          is_correct: s?.last_is_correct ?? null,
+          is_done: latest != null,
+          is_correct: latest?.is_correct ?? null,
         };
       });
     } else {

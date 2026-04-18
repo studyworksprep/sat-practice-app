@@ -46,30 +46,36 @@ export default async function TutorAssignmentDetailPage({ params }) {
 
   if (!assignment || assignment.deleted_at) notFound();
 
-  // For 'questions' assignments, compute per-student progress by
-  // joining attempts against the assignment's question_ids.
+  // For 'questions' assignments, compute per-student progress from
+  // the attempts table directly (not question_status, which the new
+  // tree doesn't reliably maintain). Reduce client-side: per (user,
+  // question) pair, the most recent attempt wins for the correct flag.
   const questionIds =
     assignment.assignment_type === 'questions' && Array.isArray(assignment.question_ids)
       ? assignment.question_ids
       : [];
   const studentIds = (junctionRows ?? []).map((r) => r.student_id);
 
-  let statusRows = [];
+  let attemptRows = [];
   if (questionIds.length > 0 && studentIds.length > 0) {
     const { data } = await supabase
-      .from('question_status')
-      .select('user_id, question_id, attempts_count, last_is_correct')
+      .from('attempts')
+      .select('user_id, question_id, is_correct, created_at')
       .in('user_id', studentIds)
       .in('question_id', questionIds)
-      .gt('attempts_count', 0);
-    statusRows = data ?? [];
+      .order('created_at', { ascending: false });
+    attemptRows = data ?? [];
   }
 
   const statusByStudent = new Map();
-  for (const r of statusRows) {
+  const seenPairs = new Set();
+  for (const r of attemptRows) {
+    const key = `${r.user_id}::${r.question_id}`;
+    if (seenPairs.has(key)) continue; // older attempts for same pair
+    seenPairs.add(key);
     const s = statusByStudent.get(r.user_id) ?? { done: 0, correct: 0 };
     s.done += 1;
-    if (r.last_is_correct) s.correct += 1;
+    if (r.is_correct) s.correct += 1;
     statusByStudent.set(r.user_id, s);
   }
 
