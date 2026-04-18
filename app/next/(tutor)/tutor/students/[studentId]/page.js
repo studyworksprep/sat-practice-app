@@ -42,6 +42,7 @@ export default async function TutorStudentDetailPage({ params }) {
     { data: attemptRows, error: attemptsErr },
     { data: profileRow },
     { count: v1AttemptCount },
+    { data: assignmentJunctions },
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -62,6 +63,20 @@ export default async function TutorStudentDetailPage({ params }) {
       .from('practice_test_attempts')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', studentId),
+    // Assignments this student is on, visible via the junction's
+    // SELECT policy (caller can see the student + their teacher).
+    supabase
+      .from('assignment_students_v2')
+      .select(`
+        completed_at,
+        assignment:assignments_v2 (
+          id, assignment_type, title, due_date, archived_at, deleted_at,
+          question_ids,
+          lesson:lessons (title),
+          practice_test:practice_tests_v2 (name)
+        )
+      `)
+      .eq('student_id', studentId),
   ]);
 
   if (rpcErr) {
@@ -98,6 +113,19 @@ export default async function TutorStudentDetailPage({ params }) {
   };
 
   const recentAttempts = attemptsErr ? [] : (attemptRows ?? []);
+
+  // Shape the student's assignments, active first, archived dropped.
+  const assignments = (assignmentJunctions ?? [])
+    .map((j) => ({ ...j.assignment, completed_at: j.completed_at }))
+    .filter((a) => a && a.id && !a.deleted_at && !a.archived_at)
+    .sort((a, b) => {
+      const aDone = a.completed_at != null;
+      const bDone = b.completed_at != null;
+      if (aDone !== bDone) return aDone ? 1 : -1;
+      const aDue = a.due_date ? Date.parse(a.due_date) : Number.POSITIVE_INFINITY;
+      const bDue = b.due_date ? Date.parse(b.due_date) : Number.POSITIVE_INFINITY;
+      return aDue - bDue;
+    });
 
   return (
     <main style={S.main}>
@@ -140,6 +168,55 @@ export default async function TutorStudentDetailPage({ params }) {
             />
           )}
         </div>
+      </section>
+
+      <section>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <h2 style={S.h2}>Assignments</h2>
+          <a href={`/tutor/assignments/new`} style={{ fontSize: '0.85rem', color: '#2563eb' }}>
+            + New assignment
+          </a>
+        </div>
+        {assignments.length === 0 ? (
+          <p style={S.empty}>This student has no assignments.</p>
+        ) : (
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+            {assignments.map((a) => {
+              const title = a.title
+                ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
+                ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
+                ?? 'Assignment';
+              const n = Array.isArray(a.question_ids) ? a.question_ids.length : null;
+              return (
+                <li key={a.id}>
+                  <a
+                    href={`/tutor/assignments/${a.id}`}
+                    style={{
+                      display: 'flex', gap: '0.75rem', alignItems: 'center',
+                      padding: '0.5rem 0.75rem', border: '1px solid #e5e7eb', borderRadius: 6,
+                      textDecoration: 'none', color: '#111827',
+                      background: a.completed_at ? '#f9fafb' : '#ffffff',
+                    }}
+                  >
+                    <AssignmentTypeLabel type={a.assignment_type} />
+                    <span style={{ flex: 1, minWidth: 0, fontSize: '0.9rem', fontWeight: 500 }}>
+                      {title}
+                      {n != null && <span style={{ color: '#6b7280', fontWeight: 400, marginLeft: '0.5rem' }}>({n} Qs)</span>}
+                    </span>
+                    {a.due_date && (
+                      <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                        Due {new Date(a.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </span>
+                    )}
+                    {a.completed_at && (
+                      <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 600 }}>Completed</span>
+                    )}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
 
       <section>
@@ -189,6 +266,23 @@ export default async function TutorStudentDetailPage({ params }) {
         )}
       </section>
     </main>
+  );
+}
+
+function AssignmentTypeLabel({ type }) {
+  const c = {
+    questions:     { bg: '#eef2ff', fg: '#4338ca', label: 'Q' },
+    lesson:        { bg: '#ecfdf5', fg: '#047857', label: 'L' },
+    practice_test: { bg: '#fff7ed', fg: '#c2410c', label: 'PT' },
+  }[type] ?? { bg: '#f3f4f6', fg: '#374151', label: '?' };
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      width: 28, height: 20, borderRadius: 4, fontSize: '0.7rem', fontWeight: 700,
+      background: c.bg, color: c.fg, flexShrink: 0,
+    }}>
+      {c.label}
+    </span>
   );
 }
 

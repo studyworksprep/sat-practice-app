@@ -87,14 +87,27 @@ export default async function TutorDashboardPage() {
   return (
     <main style={S.main}>
       <header style={S.header}>
-        <h1 style={S.h1}>
-          {profile.first_name ? `Hi, ${profile.first_name}` : 'Tutor dashboard'}
-        </h1>
-        <p style={S.sub}>
-          {cohort.total} student{cohort.total === 1 ? '' : 's'} visible ·{' '}
-          {cohort.activeThisWeek} active this week ·{' '}
-          {cohort.totalAttemptsThisWeek} practice attempts in the last 7 days
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h1 style={S.h1}>
+              {profile.first_name ? `Hi, ${profile.first_name}` : 'Tutor dashboard'}
+            </h1>
+            <p style={S.sub}>
+              {cohort.total} student{cohort.total === 1 ? '' : 's'} visible ·{' '}
+              {cohort.activeThisWeek} active this week ·{' '}
+              {cohort.totalAttemptsThisWeek} practice attempts in the last 7 days
+            </p>
+          </div>
+          <a
+            href="/tutor/assignments"
+            style={{
+              padding: '0.5rem 1rem', background: '#2563eb', color: 'white',
+              borderRadius: 6, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600,
+            }}
+          >
+            Assignments
+          </a>
+        </div>
       </header>
 
       <section>
