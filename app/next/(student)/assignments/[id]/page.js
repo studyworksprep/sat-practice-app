@@ -31,6 +31,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
+import { Button } from '@/lib/ui/Button';
 import { startAssignmentPractice } from './actions';
 import { StartAssignmentButton } from './AssignmentInteractive';
 
@@ -287,20 +288,13 @@ function PracticeTestView({ assignment }) {
           Section: {sections.toUpperCase()} only
         </div>
       )}
-      <a
+      <Button
         href={`/practice-test?${qs.toString()}`}
-        style={{
-          alignSelf: 'flex-start',
-          padding: '0.5rem 1rem',
-          background: '#2563eb',
-          color: 'white',
-          borderRadius: 6,
-          fontSize: '0.95rem',
-          textDecoration: 'none',
-        }}
+        external
+        style={{ alignSelf: 'flex-start' }}
       >
         Launch practice test
-      </a>
+      </Button>
     </section>
   );
 }
@@ -319,20 +313,13 @@ function LessonView({ assignment }) {
         <p style={{ color: '#4b5563', margin: 0 }}>{lesson.description}</p>
       )}
       {assignment.lesson_id && (
-        <a
+        <Button
           href={`/lessons/${assignment.lesson_id}`}
-          style={{
-            alignSelf: 'flex-start',
-            padding: '0.5rem 1rem',
-            background: '#2563eb',
-            color: 'white',
-            borderRadius: 6,
-            fontSize: '0.95rem',
-            textDecoration: 'none',
-          }}
+          external
+          style={{ alignSelf: 'flex-start' }}
         >
           Open lesson
-        </a>
+        </Button>
       )}
     </section>
   );

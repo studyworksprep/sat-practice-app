@@ -8,6 +8,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import { Button } from '@/lib/ui/Button';
 
 export function StartAssignmentButton({ assignmentId, label, disabled, startAction }) {
   const [state, submitAction, isPending] = useActionState(startAction, null);
@@ -15,21 +16,9 @@ export function StartAssignmentButton({ assignmentId, label, disabled, startActi
   return (
     <form action={submitAction} style={{ display: 'inline' }}>
       <input type="hidden" name="assignment_id" value={assignmentId} />
-      <button
-        type="submit"
-        disabled={disabled || isPending}
-        style={{
-          padding: '0.5rem 1rem',
-          background: disabled ? '#9ca3af' : (isPending ? '#6b7280' : '#2563eb'),
-          color: 'white',
-          border: 'none',
-          borderRadius: 6,
-          fontSize: '0.95rem',
-          cursor: disabled || isPending ? 'not-allowed' : 'pointer',
-        }}
-      >
+      <Button type="submit" disabled={disabled || isPending}>
         {isPending ? 'Starting…' : label}
-      </button>
+      </Button>
       {state && !state.ok && (
         <span role="alert" style={{ color: '#b91c1c', marginLeft: '0.75rem', fontSize: '0.875rem' }}>
           {state.error}

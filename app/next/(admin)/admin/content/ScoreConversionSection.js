@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import { Button } from '@/lib/ui/Button';
 import { addScoreConversions, deleteScoreConversion } from './actions';
 
 export function ScoreConversionSection({ tests, conversions }) {
@@ -47,9 +48,9 @@ export function ScoreConversionSection({ tests, conversions }) {
         </Fieldset>
 
         <div style={S.submitRow}>
-          <button type="submit" disabled={pending || !selectedTestId} style={S.btn}>
+          <Button type="submit" disabled={pending || !selectedTestId}>
             {pending ? 'Saving…' : 'Add rows'}
-          </button>
+          </Button>
           {state?.ok && !pending && <span style={S.ok}>Added {state.data.inserted} row(s).</span>}
           {state?.ok === false && !pending && <span style={S.err}>{state.error}</span>}
         </div>
@@ -80,7 +81,7 @@ export function ScoreConversionSection({ tests, conversions }) {
                   <td style={S.td}>
                     <form action={deleteScoreConversion}>
                       <input type="hidden" name="id" value={c.id} />
-                      <button type="submit" style={S.removeBtn}>Delete</button>
+                      <Button type="submit" variant="remove" size="sm">Delete</Button>
                     </form>
                   </td>
                 </tr>
@@ -121,7 +122,6 @@ const S = {
   fieldset: { border: '1px solid #e5e7eb', borderRadius: 6, padding: '0.75rem 1rem' },
   legend: { fontSize: '0.8rem', fontWeight: 600, color: '#374151', padding: '0 0.35rem' },
   submitRow: { display: 'flex', gap: '0.75rem', alignItems: 'center' },
-  btn: { padding: '0.5rem 1rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' },
   ok: { color: '#166534', fontSize: '0.85rem' },
   err: { color: '#991b1b', fontSize: '0.85rem' },
   subhead: { fontSize: '0.85rem', fontWeight: 600, color: '#374151', margin: '1rem 0 0.5rem' },
@@ -131,5 +131,4 @@ const S = {
   th: { textAlign: 'left', padding: '0.4rem 0.7rem', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', fontSize: '0.7rem', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.025em' },
   td: { padding: '0.4rem 0.7rem', borderBottom: '1px solid #f3f4f6' },
   tdNum: { padding: '0.4rem 0.7rem', borderBottom: '1px solid #f3f4f6', fontVariantNumeric: 'tabular-nums' },
-  removeBtn: { padding: '0.2rem 0.55rem', background: 'transparent', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: 4, fontSize: '0.7rem', cursor: 'pointer' },
 };

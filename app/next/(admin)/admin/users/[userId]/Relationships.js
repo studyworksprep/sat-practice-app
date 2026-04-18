@@ -9,6 +9,7 @@ import {
   assignManagerTeacher,
   unassignManagerTeacher,
 } from './actions';
+import { Button } from '@/lib/ui/Button';
 
 export async function Relationships({ supabase, subject }) {
   const { id, role } = subject;
@@ -60,7 +61,7 @@ async function StudentRelationships({ supabase, subject }) {
               <input type="hidden" name="teacher_id" value={row.teacher_id} />
               <input type="hidden" name="student_id" value={subject.id} />
               <input type="hidden" name="subject_id" value={subject.id} />
-              <button type="submit" style={S.removeBtn}>Remove</button>
+              <Button type="submit" variant="remove" size="sm">Remove</Button>
             </form>
           </li>
         ))}
@@ -78,7 +79,7 @@ async function StudentRelationships({ supabase, subject }) {
             </option>
           ))}
         </select>
-        <button type="submit" style={S.addBtn}>Assign</button>
+        <Button type="submit" variant="primary" size="sm">Assign</Button>
       </form>
     </div>
   );
@@ -125,7 +126,7 @@ async function TeacherRelationships({ supabase, subject }) {
                 <input type="hidden" name="teacher_id" value={subject.id} />
                 <input type="hidden" name="student_id" value={row.student_id} />
                 <input type="hidden" name="subject_id" value={subject.id} />
-                <button type="submit" style={S.removeBtn}>Remove</button>
+                <Button type="submit" variant="remove" size="sm">Remove</Button>
               </form>
             </li>
           ))}
@@ -140,7 +141,7 @@ async function TeacherRelationships({ supabase, subject }) {
               <option key={s.id} value={s.id}>{displayName(s) || s.email}</option>
             ))}
           </select>
-          <button type="submit" style={S.addBtn}>Assign</button>
+          <Button type="submit" variant="primary" size="sm">Assign</Button>
         </form>
       </div>
 
@@ -154,7 +155,7 @@ async function TeacherRelationships({ supabase, subject }) {
                 <input type="hidden" name="manager_id" value={row.manager_id} />
                 <input type="hidden" name="teacher_id" value={subject.id} />
                 <input type="hidden" name="subject_id" value={subject.id} />
-                <button type="submit" style={S.removeBtn}>Remove</button>
+                <Button type="submit" variant="remove" size="sm">Remove</Button>
               </form>
             </li>
           ))}
@@ -169,7 +170,7 @@ async function TeacherRelationships({ supabase, subject }) {
               <option key={m.id} value={m.id}>{displayName(m) || m.email}</option>
             ))}
           </select>
-          <button type="submit" style={S.addBtn}>Assign</button>
+          <Button type="submit" variant="primary" size="sm">Assign</Button>
         </form>
       </div>
     </>
@@ -204,7 +205,7 @@ async function ManagerRelationships({ supabase, subject }) {
               <input type="hidden" name="manager_id" value={subject.id} />
               <input type="hidden" name="teacher_id" value={row.teacher_id} />
               <input type="hidden" name="subject_id" value={subject.id} />
-              <button type="submit" style={S.removeBtn}>Remove</button>
+              <Button type="submit" variant="remove" size="sm">Remove</Button>
             </form>
           </li>
         ))}
@@ -220,7 +221,7 @@ async function ManagerRelationships({ supabase, subject }) {
             <option key={t.id} value={t.id}>{displayName(t) || t.email}</option>
           ))}
         </select>
-        <button type="submit" style={S.addBtn}>Assign</button>
+        <Button type="submit" variant="primary" size="sm">Assign</Button>
       </form>
     </div>
   );
@@ -237,8 +238,6 @@ const S = {
   list: { listStyle: 'none', padding: 0, margin: 0, border: '1px solid #e5e7eb', borderRadius: 8, background: 'white' },
   listRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6', fontSize: '0.9rem' },
   empty: { padding: '0.75rem', color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem' },
-  removeBtn: { padding: '0.25rem 0.6rem', background: 'transparent', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: 4, fontSize: '0.75rem', cursor: 'pointer' },
   addRow: { display: 'flex', gap: '0.5rem', marginTop: '0.5rem', alignItems: 'center' },
   select: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.85rem', background: 'white', flex: 1, maxWidth: 360 },
-  addBtn: { padding: '0.4rem 0.85rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' },
 };

@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/lib/ui/Button';
 import { updateTestThresholds } from './actions';
 
 export function TestThresholdsSection({ tests, selectedTestId, currentRW, currentMath }) {
@@ -97,9 +98,9 @@ export function TestThresholdsSection({ tests, selectedTestId, currentRW, curren
                 />
               </label>
 
-              <button type="submit" disabled={pending} style={S.btn}>
+              <Button type="submit" disabled={pending} size="sm">
                 {pending ? 'Saving…' : 'Save thresholds'}
-              </button>
+              </Button>
             </div>
 
             {state?.ok && !pending && <span style={S.ok}>Saved.</span>}
@@ -121,7 +122,6 @@ const S = {
   infoCard: { padding: '0.75rem 1rem', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 8, marginBottom: '1rem', fontSize: '0.85rem', color: '#92400e' },
   form: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
   row: { display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' },
-  btn: { padding: '0.45rem 0.9rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' },
   ok: { color: '#166534', fontSize: '0.85rem' },
   err: { color: '#991b1b', fontSize: '0.85rem' },
 };

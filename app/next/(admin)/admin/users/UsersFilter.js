@@ -8,6 +8,8 @@
 
 'use client';
 
+import { Button } from '@/lib/ui/Button';
+
 export function UsersFilter({ currentRole, currentQuery, roleTally }) {
   const totalUsers = Object.values(roleTally).reduce((acc, n) => acc + n, 0);
 
@@ -41,9 +43,7 @@ export function UsersFilter({ currentRole, currentQuery, roleTally }) {
         </select>
       </div>
 
-      <button type="submit" style={S.submitBtn}>
-        Apply
-      </button>
+      <Button type="submit">Apply</Button>
       <a href="/admin/users" style={S.resetLink}>
         Reset
       </a>
@@ -78,16 +78,6 @@ const S = {
     fontSize: '0.9rem',
     background: 'white',
     minWidth: 160,
-  },
-  submitBtn: {
-    padding: '0.5rem 1rem',
-    background: '#2563eb',
-    color: 'white',
-    border: 'none',
-    borderRadius: 6,
-    fontSize: '0.9rem',
-    fontWeight: 600,
-    cursor: 'pointer',
   },
   resetLink: {
     color: '#6b7280',

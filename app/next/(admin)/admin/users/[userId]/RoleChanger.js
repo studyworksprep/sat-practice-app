@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
+import { Button } from '@/lib/ui/Button';
 import { changeRole } from './actions';
 
 const ROLES = [
@@ -41,16 +42,22 @@ export function RoleChanger({ userId, currentRole }) {
               Promoting to Admin grants full platform access. Click Save to confirm.
             </span>
           )}
-          <button type="submit" disabled={pending} style={isPromotion ? S.btnDanger : S.btn}>
+          <Button
+            type="submit"
+            disabled={pending}
+            variant={isPromotion ? 'danger' : 'primary'}
+            size="sm"
+          >
             {pending ? 'Saving…' : isPromotion ? 'Confirm promotion' : 'Save role'}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={() => setSelected(currentRole)}
-            style={S.cancel}
           >
             Cancel
-          </button>
+          </Button>
         </>
       )}
 
@@ -63,9 +70,6 @@ export function RoleChanger({ userId, currentRole }) {
 const S = {
   form: { display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' },
   select: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.9rem', background: 'white' },
-  btn: { padding: '0.4rem 0.85rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' },
-  btnDanger: { padding: '0.4rem 0.85rem', background: '#b45309', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' },
-  cancel: { padding: '0.4rem 0.85rem', background: 'transparent', color: '#6b7280', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.85rem', cursor: 'pointer' },
   warn: { fontSize: '0.8rem', color: '#92400e', flexBasis: '100%' },
   ok: { color: '#166534', fontSize: '0.85rem' },
   err: { color: '#991b1b', fontSize: '0.85rem' },

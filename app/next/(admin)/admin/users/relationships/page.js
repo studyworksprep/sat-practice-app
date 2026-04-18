@@ -9,6 +9,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { UsersNav } from '../UsersNav';
+import { Button } from '@/lib/ui/Button';
 import {
   assignTeacherStudent,
   unassignTeacherStudent,
@@ -79,7 +80,7 @@ export default async function AdminUserRelationshipsPage() {
               <option key={s.id} value={s.id}>{displayName(s) || s.email}</option>
             ))}
           </select>
-          <button type="submit" style={S.addBtn}>Assign</button>
+          <Button type="submit" variant="primary" size="sm">Assign</Button>
         </form>
 
         <AssignmentTable
@@ -92,7 +93,7 @@ export default async function AdminUserRelationshipsPage() {
             <form action={unassignTeacherStudent}>
               <input type="hidden" name="teacher_id" value={r.teacher_id} />
               <input type="hidden" name="student_id" value={r.student_id} />
-              <button type="submit" style={S.removeBtn}>Remove</button>
+              <Button type="submit" variant="remove" size="sm">Remove</Button>
             </form>
           )}
           rowKey={(r) => `${r.teacher_id}-${r.student_id}`}
@@ -114,7 +115,7 @@ export default async function AdminUserRelationshipsPage() {
               <option key={t.id} value={t.id}>{displayName(t) || t.email}</option>
             ))}
           </select>
-          <button type="submit" style={S.addBtn}>Assign</button>
+          <Button type="submit" variant="primary" size="sm">Assign</Button>
         </form>
 
         <AssignmentTable
@@ -127,7 +128,7 @@ export default async function AdminUserRelationshipsPage() {
             <form action={unassignManagerTeacher}>
               <input type="hidden" name="manager_id" value={r.manager_id} />
               <input type="hidden" name="teacher_id" value={r.teacher_id} />
-              <button type="submit" style={S.removeBtn}>Remove</button>
+              <Button type="submit" variant="remove" size="sm">Remove</Button>
             </form>
           )}
           rowKey={(r) => `${r.manager_id}-${r.teacher_id}`}
@@ -196,12 +197,10 @@ const S = {
   h2: { fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem', color: '#111827' },
   addRow: { display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' },
   select: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.85rem', background: 'white', minWidth: 200 },
-  addBtn: { padding: '0.4rem 0.85rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' },
   tableWrap: { overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' },
   th: { textAlign: 'left', padding: '0.5rem 0.75rem', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', fontSize: '0.75rem', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.025em' },
   td: { padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6' },
   userLink: { color: '#2563eb', textDecoration: 'none' },
-  removeBtn: { padding: '0.25rem 0.6rem', background: 'transparent', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: 4, fontSize: '0.75rem', cursor: 'pointer' },
   empty: { color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem', padding: '0.75rem 0' },
 };

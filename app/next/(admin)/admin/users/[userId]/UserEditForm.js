@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import { Button } from '@/lib/ui/Button';
 import { updateProfileFields } from './actions';
 
 export function UserEditForm({ userId, initial }) {
@@ -21,9 +22,9 @@ export function UserEditForm({ userId, initial }) {
       </div>
 
       <div style={S.actions}>
-        <button type="submit" disabled={pending} style={S.btn}>
+        <Button type="submit" disabled={pending}>
           {pending ? 'Saving…' : 'Save changes'}
-        </button>
+        </Button>
         {state?.ok && !pending && <span style={S.ok}>Saved.</span>}
         {state?.ok === false && !pending && <span style={S.err}>{state.error}</span>}
       </div>
@@ -56,16 +57,6 @@ const S = {
   labelText: { fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.025em' },
   input: { padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.9rem' },
   actions: { display: 'flex', gap: '0.75rem', alignItems: 'center' },
-  btn: {
-    padding: '0.5rem 1rem',
-    background: '#2563eb',
-    color: 'white',
-    border: 'none',
-    borderRadius: 6,
-    fontSize: '0.9rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
   ok: { color: '#166534', fontSize: '0.85rem' },
   err: { color: '#991b1b', fontSize: '0.85rem' },
 };

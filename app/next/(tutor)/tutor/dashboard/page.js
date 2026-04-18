@@ -13,6 +13,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
+import { Button } from '@/lib/ui/Button';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,15 +100,7 @@ export default async function TutorDashboardPage() {
               {cohort.totalAttemptsThisWeek} practice attempts in the last 7 days
             </p>
           </div>
-          <a
-            href="/tutor/assignments"
-            style={{
-              padding: '0.5rem 1rem', background: '#2563eb', color: 'white',
-              borderRadius: 6, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600,
-            }}
-          >
-            Assignments
-          </a>
+          <Button href="/tutor/assignments">Assignments</Button>
         </div>
       </header>
 

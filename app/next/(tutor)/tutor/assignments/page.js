@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
+import { Button } from '@/lib/ui/Button';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,15 +71,7 @@ export default async function TutorAssignmentsPage() {
             {assignments.length} active, {archived.length} archived
           </p>
         </div>
-        <Link
-          href="/tutor/assignments/new"
-          style={{
-            padding: '0.5rem 1rem', background: '#2563eb', color: 'white',
-            borderRadius: 6, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600,
-          }}
-        >
-          + New assignment
-        </Link>
+        <Button href="/tutor/assignments/new">+ New assignment</Button>
       </div>
 
       <section style={{ marginTop: '1.5rem' }}>

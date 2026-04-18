@@ -13,6 +13,7 @@
 'use client';
 
 import { useActionState, useMemo, useState } from 'react';
+import { Button } from '@/lib/ui/Button';
 
 export function NewAssignmentInteractive({
   students,
@@ -234,13 +235,9 @@ export function NewAssignmentInteractive({
 
       {/* Submit */}
       <div style={S.submitRow}>
-        <button
-          type="submit"
-          disabled={isPending}
-          style={{ ...S.submit, opacity: isPending ? 0.6 : 1 }}
-        >
+        <Button type="submit" disabled={isPending}>
           {isPending ? 'Creating…' : 'Create assignment'}
-        </button>
+        </Button>
         {state && !state.ok && (
           <span role="alert" style={S.error}>{state.error}</span>
         )}
@@ -270,15 +267,5 @@ const S = {
   helpText: { color: '#6b7280', fontSize: '0.85rem', margin: '0 0 0.75rem 0' },
   empty: { color: '#9ca3af', fontStyle: 'italic', margin: 0 },
   submitRow: { display: 'flex', alignItems: 'center', gap: '1rem' },
-  submit: {
-    padding: '0.625rem 1.25rem',
-    background: '#2563eb',
-    color: 'white',
-    border: 'none',
-    borderRadius: 6,
-    fontSize: '0.95rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
   error: { color: '#b91c1c', fontSize: '0.875rem' },
 };

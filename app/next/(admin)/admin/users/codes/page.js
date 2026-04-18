@@ -10,6 +10,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
+import { Button } from '@/lib/ui/Button';
 import { UsersNav } from '../UsersNav';
 import {
   createTeacherCode,
@@ -75,7 +76,7 @@ export default async function AdminUserCodesPage() {
               style={{ ...S.input, textTransform: 'uppercase' }}
             />
           </label>
-          <button type="submit" style={S.addBtn}>Create</button>
+          <Button type="submit" variant="primary" size="sm">Create</Button>
         </form>
 
         {(codes ?? []).length === 0 ? (
@@ -116,7 +117,7 @@ export default async function AdminUserCodesPage() {
                     <td style={S.td}>
                       <form action={revokeTeacherCode}>
                         <input type="hidden" name="id" value={c.id} />
-                        <button type="submit" style={S.removeBtn}>Revoke</button>
+                        <Button type="submit" variant="remove" size="sm">Revoke</Button>
                       </form>
                     </td>
                   </tr>
@@ -163,16 +164,16 @@ export default async function AdminUserCodesPage() {
                         placeholder={t.teacher_invite_code ? 'New code or blank to rotate' : 'Code or blank for auto'}
                         style={{ ...S.input, textTransform: 'uppercase', fontSize: '0.8rem', maxWidth: 200 }}
                       />
-                      <button type="submit" style={S.addBtnSmall}>
+                      <Button type="submit" variant="primary" size="sm">
                         {t.teacher_invite_code ? 'Change' : 'Generate'}
-                      </button>
+                      </Button>
                     </form>
                   </td>
                   <td style={S.td}>
                     {t.teacher_invite_code && (
                       <form action={clearTeacherInviteCode}>
                         <input type="hidden" name="teacher_id" value={t.id} />
-                        <button type="submit" style={S.removeBtn}>Clear</button>
+                        <Button type="submit" variant="remove" size="sm">Clear</Button>
                       </form>
                     )}
                   </td>
@@ -221,9 +222,6 @@ const S = {
   label: { display: 'flex', flexDirection: 'column', gap: '0.25rem' },
   labelText: { fontSize: '0.7rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.025em' },
   input: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.9rem', minWidth: 220 },
-  addBtn: { padding: '0.4rem 0.85rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' },
-  addBtnSmall: { padding: '0.3rem 0.65rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' },
-  removeBtn: { padding: '0.25rem 0.6rem', background: 'transparent', color: '#b91c1c', border: '1px solid #fecaca', borderRadius: 4, fontSize: '0.75rem', cursor: 'pointer' },
   tableWrap: { overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' },
   th: { textAlign: 'left', padding: '0.5rem 0.75rem', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', fontSize: '0.75rem', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.025em' },

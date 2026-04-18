@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useMemo, useState } from 'react';
+import { Button } from '@/lib/ui/Button';
 import { saveSkillLearnability } from './actions';
 
 export function LearnabilitySection({ skills }) {
@@ -73,9 +74,9 @@ export function LearnabilitySection({ skills }) {
             changed.map((s) => ({ skill_code: s.skill_code, learnability: values[s.skill_code] })),
           )}
         />
-        <button type="submit" disabled={pending || changed.length === 0} style={S.btn}>
+        <Button type="submit" disabled={pending || changed.length === 0} size="sm">
           {pending ? 'Saving…' : `Save${changed.length ? ` (${changed.length})` : ''}`}
-        </button>
+        </Button>
         {changed.length > 0 && <span style={S.hint}>{changed.length} unsaved</span>}
         {state?.ok && !pending && changed.length === 0 && (
           <span style={S.ok}>Saved.</span>
@@ -99,7 +100,6 @@ const S = {
   sliderVal: { fontFamily: 'monospace', fontWeight: 600, minWidth: 18, textAlign: 'right' },
   empty: { padding: '1rem', textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' },
   saveRow: { display: 'flex', gap: '0.5rem', alignItems: 'center' },
-  btn: { padding: '0.45rem 0.9rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' },
   ok: { color: '#166534', fontSize: '0.85rem' },
   err: { color: '#991b1b', fontSize: '0.85rem' },
 };

@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { formatDate } from '@/lib/formatters';
+import { Button } from '@/lib/ui/Button';
 import { importStudentPracticeHistory } from './actions';
 
 export function ImportPracticeHistoryButton({ studentId, importedAt, hasV1History }) {
@@ -35,9 +36,9 @@ export function ImportPracticeHistoryButton({ studentId, importedAt, hasV1Histor
         v2 schema. One-time, idempotent.
       </p>
       <div style={S.row}>
-        <button type="submit" disabled={pending} style={S.btn}>
+        <Button type="submit" disabled={pending}>
           {pending ? 'Importing…' : 'Import practice history'}
-        </button>
+        </Button>
         {state?.ok && !pending && state.data && !state.data.alreadyImported && (
           <span style={S.ok}>
             Copied {state.data.attempts_copied} attempt{state.data.attempts_copied === 1 ? '' : 's'},{' '}
@@ -56,7 +57,6 @@ const S = {
   form: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
   help: { fontSize: '0.85rem', color: '#4b5563', margin: 0 },
   row: { display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' },
-  btn: { padding: '0.5rem 1rem', background: '#2563eb', color: 'white', border: 'none', borderRadius: 6, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' },
   done: { fontSize: '0.85rem', color: '#166534', margin: 0 },
   muted: { fontSize: '0.85rem', color: '#9ca3af', fontStyle: 'italic', margin: 0 },
   ok: { color: '#166534', fontSize: '0.85rem' },
