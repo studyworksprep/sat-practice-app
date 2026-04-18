@@ -14,6 +14,9 @@
 
 import Link from 'next/link';
 import { useActionState, useOptimistic } from 'react';
+import { StatCard } from '@/lib/ui/StatCard';
+import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
+import { formatRelativeShort } from '@/lib/formatters';
 
 /**
  * @param {object} props
@@ -74,7 +77,7 @@ export function DashboardInteractive({ stats, assignments = [], updateTargetScor
         />
         <StatCard
           label="Last activity"
-          value={formatRelative(stats.lastActivityAt) ?? 'No activity yet'}
+          value={formatRelativeShort(stats.lastActivityAt) ?? 'No activity yet'}
         />
         {daysToTest != null && (
           <StatCard
@@ -108,7 +111,7 @@ export function DashboardInteractive({ stats, assignments = [], updateTargetScor
                     textDecoration: 'none', color: '#111827',
                   }}
                 >
-                  <AssignmentTypeBadge type={a.assignment_type} />
+                  <AssignmentTypeBadge type={a.assignment_type} variant="compact" />
                   <span style={{ flex: 1, minWidth: 0, fontSize: '0.9rem', fontWeight: 500 }}>
                     {a.title}
                   </span>
@@ -184,44 +187,6 @@ export function DashboardInteractive({ stats, assignments = [], updateTargetScor
   );
 }
 
-function StatCard({ label, value }) {
-  return (
-    <div
-      style={{
-        padding: '1rem',
-        background: '#f9fafb',
-        border: '1px solid #e5e7eb',
-        borderRadius: 8,
-      }}
-    >
-      <div style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-        {label}
-      </div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#111827' }}>
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function AssignmentTypeBadge({ type }) {
-  const c = {
-    questions:     { bg: '#eef2ff', fg: '#4338ca', label: 'Q' },
-    lesson:        { bg: '#ecfdf5', fg: '#047857', label: 'L' },
-    practice_test: { bg: '#fff7ed', fg: '#c2410c', label: 'PT' },
-  }[type] ?? { bg: '#f3f4f6', fg: '#374151', label: '?' };
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      width: 28, height: 20, borderRadius: 4,
-      fontSize: '0.7rem', fontWeight: 700,
-      background: c.bg, color: c.fg, flexShrink: 0,
-    }}>
-      {c.label}
-    </span>
-  );
-}
-
 function isOverdue(iso) {
   return Date.parse(iso) < Date.now();
 }
@@ -237,19 +202,4 @@ function daysUntil(iso) {
   const now = new Date();
   const ms = d.getTime() - now.getTime();
   return Math.round(ms / (1000 * 60 * 60 * 24));
-}
-
-function formatRelative(iso) {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  const diffMs = Date.now() - d.getTime();
-  const minutes = Math.round(diffMs / 60000);
-  if (minutes < 1) return 'Just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return d.toLocaleDateString();
 }

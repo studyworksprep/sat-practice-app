@@ -12,6 +12,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { formatDate } from '@/lib/formatters';
 import { ScoreConversionSection } from './ScoreConversionSection';
 import { TestThresholdsSection } from './TestThresholdsSection';
 import { LearnabilitySection } from './LearnabilitySection';
@@ -99,7 +100,7 @@ export default async function AdminContentPage({ searchParams }) {
                         </span>
                       )}
                     </td>
-                    <td style={S.tdMuted}>{formatDate(q.broken_at)}</td>
+                    <td style={S.tdMuted}>{formatDate(q.broken_at) || '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -187,12 +188,6 @@ function Section({ title, badge, badgeStyle, children }) {
   );
 }
 
-function formatDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString();
-}
 
 function roleColor(role) {
   switch (role) {

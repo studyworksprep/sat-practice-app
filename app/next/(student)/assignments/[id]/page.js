@@ -30,6 +30,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { formatDate } from '@/lib/formatters';
 import { startAssignmentPractice } from './actions';
 import { StartAssignmentButton } from './AssignmentInteractive';
 
@@ -351,10 +352,6 @@ function displayTitle(a) {
   if (a.assignment_type === 'lesson') return a.lesson?.title ?? 'Lesson';
   if (a.assignment_type === 'practice_test') return a.practice_test?.name ?? 'Practice Test';
   return 'Assignment';
-}
-
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function difficultyLabel(d) {

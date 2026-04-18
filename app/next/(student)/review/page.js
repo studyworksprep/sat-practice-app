@@ -24,6 +24,8 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { StatCard } from '@/lib/ui/StatCard';
+import { formatRelativeShort } from '@/lib/formatters';
 import { createReviewSession } from './actions';
 import { ReviewLauncher } from './ReviewLauncher';
 
@@ -77,12 +79,12 @@ export default async function StudentReviewPage({ searchParams }) {
       )}
 
       <section style={S.summary}>
-        <SummaryCard label="Wrong answers" value={wrongCount} />
-        <SummaryCard label="Marked for review" value={markedCount} />
-        <SummaryCard label="Total reviewable" value={totalReviewable} />
-        <SummaryCard
+        <StatCard label="Wrong answers" value={wrongCount} />
+        <StatCard label="Marked for review" value={markedCount} />
+        <StatCard label="Total reviewable" value={totalReviewable} />
+        <StatCard
           label="Last activity"
-          value={formatRelative(lastReviewedAt)}
+          value={formatRelativeShort(lastReviewedAt) ?? '—'}
           small
         />
       </section>
@@ -102,30 +104,6 @@ export default async function StudentReviewPage({ searchParams }) {
       )}
     </main>
   );
-}
-
-function SummaryCard({ label, value, small = false }) {
-  return (
-    <div style={S.card}>
-      <div style={S.cardLabel}>{label}</div>
-      <div style={small ? S.cardValueSmall : S.cardValue}>{value ?? '—'}</div>
-    </div>
-  );
-}
-
-function formatRelative(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  const diffMs = Date.now() - d.getTime();
-  const minutes = Math.round(diffMs / 60_000);
-  if (minutes < 1) return 'Just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return d.toLocaleDateString();
 }
 
 const S = {
@@ -148,15 +126,6 @@ const S = {
     gap: '1rem',
     marginBottom: '1.5rem',
   },
-  card: {
-    padding: '1rem',
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
-    borderRadius: 8,
-  },
-  cardLabel: { fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.25rem' },
-  cardValue: { fontSize: '1.5rem', fontWeight: 600, color: '#111827' },
-  cardValueSmall: { fontSize: '1rem', fontWeight: 500, color: '#374151' },
   emptyCard: {
     padding: '1.25rem',
     background: '#f9fafb',

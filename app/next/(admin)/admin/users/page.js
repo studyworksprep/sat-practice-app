@@ -10,6 +10,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { formatDate } from '@/lib/formatters';
 import { UsersFilter } from './UsersFilter';
 import { UsersNav } from './UsersNav';
 
@@ -142,7 +143,7 @@ export default async function AdminUsersPage({ searchParams }) {
                         '—'
                       )}
                     </td>
-                    <td style={S.td}>{formatDate(u.created_at)}</td>
+                    <td style={S.td}>{formatDate(u.created_at) || '—'}</td>
                     <td style={S.td}>
                       {!u.is_active ? (
                         <span style={S.inactive}>Inactive</span>
@@ -183,12 +184,6 @@ function ErrorState({ message }) {
   );
 }
 
-function formatDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString();
-}
 
 function roleTagColor(role) {
   switch (role) {

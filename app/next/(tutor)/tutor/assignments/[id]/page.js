@@ -9,6 +9,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { StatCard } from '@/lib/ui/StatCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -191,15 +192,6 @@ export default async function TutorAssignmentDetailPage({ params }) {
         )}
       </section>
     </main>
-  );
-}
-
-function StatCard({ label, value }) {
-  return (
-    <div style={{ padding: '0.75rem', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8 }}>
-      <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{label}</div>
-      <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>{value}</div>
-    </div>
   );
 }
 

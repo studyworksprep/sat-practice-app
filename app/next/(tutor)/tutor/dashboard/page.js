@@ -12,6 +12,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { formatRelativeShort } from '@/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -144,7 +145,7 @@ export default async function TutorDashboardPage() {
                     {s.accuracy != null ? `${s.accuracy}%` : '—'}
                   </td>
                   <td style={S.td}>{s.weekAttempts}</td>
-                  <td style={S.td}>{formatRelative(s.lastActivityAt)}</td>
+                  <td style={S.td}>{formatRelativeShort(s.lastActivityAt) ?? '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -193,20 +194,6 @@ function ErrorState({ tutorName, message }) {
   );
 }
 
-function formatRelative(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  const diffMs = Date.now() - d.getTime();
-  const minutes = Math.round(diffMs / 60_000);
-  if (minutes < 1) return 'Just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return d.toLocaleDateString();
-}
 
 const S = {
   main: { maxWidth: 1100, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },

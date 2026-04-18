@@ -9,6 +9,8 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
+import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
+import { formatDate } from '@/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -130,7 +132,7 @@ function AssignmentCard({ row }) {
       }}
     >
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'baseline' }}>
-        <TypeBadge type={row.assignment_type} />
+        <AssignmentTypeBadge type={row.assignment_type} />
         <div style={{ fontWeight: 600, fontSize: '1rem', flex: 1, minWidth: 0 }}>
           {title}
         </div>
@@ -157,28 +159,6 @@ function AssignmentCard({ row }) {
   );
 }
 
-function TypeBadge({ type }) {
-  const colors = {
-    questions:     { bg: '#eef2ff', fg: '#4338ca', label: 'Questions' },
-    lesson:        { bg: '#ecfdf5', fg: '#047857', label: 'Lesson' },
-    practice_test: { bg: '#fff7ed', fg: '#c2410c', label: 'Practice Test' },
-  };
-  const c = colors[type] ?? { bg: '#f3f4f6', fg: '#374151', label: type };
-  return (
-    <span style={{
-      display: 'inline-block',
-      padding: '0.125rem 0.5rem',
-      borderRadius: 999,
-      fontSize: '0.7rem',
-      fontWeight: 600,
-      background: c.bg,
-      color: c.fg,
-    }}>
-      {c.label}
-    </span>
-  );
-}
-
 function displayTitle(row) {
   if (row.title) return row.title;
   if (row.assignment_type === 'lesson') return row.lesson?.title ?? 'Lesson';
@@ -198,8 +178,4 @@ function displaySubtitle(row) {
     return null;
   }
   return null;
-}
-
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }

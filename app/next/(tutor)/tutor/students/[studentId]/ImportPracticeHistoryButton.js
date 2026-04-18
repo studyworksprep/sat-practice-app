@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import { formatDate } from '@/lib/formatters';
 import { importStudentPracticeHistory } from './actions';
 
 export function ImportPracticeHistoryButton({ studentId, importedAt, hasV1History }) {
@@ -13,7 +14,7 @@ export function ImportPracticeHistoryButton({ studentId, importedAt, hasV1Histor
   if (effectiveImportedAt) {
     return (
       <p style={S.done}>
-        Practice history imported on {formatDate(effectiveImportedAt)}.
+        Practice history imported on {formatDate(effectiveImportedAt) || '—'}.
       </p>
     );
   }
@@ -50,12 +51,6 @@ export function ImportPracticeHistoryButton({ studentId, importedAt, hasV1Histor
   );
 }
 
-function formatDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString();
-}
 
 const S = {
   form: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },

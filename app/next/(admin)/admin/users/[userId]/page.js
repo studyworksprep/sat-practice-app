@@ -8,6 +8,7 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { formatDate } from '@/lib/formatters';
 import { UserEditForm } from './UserEditForm';
 import { RoleChanger } from './RoleChanger';
 import { StatusActions } from './StatusActions';
@@ -53,7 +54,7 @@ export default async function AdminUserDetailPage({ params }) {
           <span style={{ ...S.roleTag, ...roleColor(subject.role) }}>{subject.role}</span>
           <StatusBadge active={subject.is_active} exempt={subject.subscription_exempt} />
           {subject.email && <span style={S.email}>{subject.email}</span>}
-          <span style={S.muted}>Joined {formatDate(subject.created_at)}</span>
+          <span style={S.muted}>Joined {formatDate(subject.created_at) || '—'}</span>
           <span style={S.muted}>UI: {subject.ui_version ?? 'legacy'}</span>
         </div>
       </header>
@@ -123,12 +124,6 @@ function ErrorState({ message }) {
   );
 }
 
-function formatDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString();
-}
 
 function roleColor(role) {
   switch (role) {

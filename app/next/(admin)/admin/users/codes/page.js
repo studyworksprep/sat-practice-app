@@ -9,6 +9,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { formatDate } from '@/lib/formatters';
 import { UsersNav } from '../UsersNav';
 import {
   createTeacherCode,
@@ -111,7 +112,7 @@ export default async function AdminUserCodesPage() {
                         '—'
                       )}
                     </td>
-                    <td style={S.tdMuted}>{formatDate(c.created_at)}</td>
+                    <td style={S.tdMuted}>{formatDate(c.created_at) || '—'}</td>
                     <td style={S.td}>
                       <form action={revokeTeacherCode}>
                         <input type="hidden" name="id" value={c.id} />
@@ -204,12 +205,6 @@ function displayName(p) {
   return [p.first_name, p.last_name].filter(Boolean).join(' ');
 }
 
-function formatDate(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString();
-}
 
 const S = {
   main: { maxWidth: 1100, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },

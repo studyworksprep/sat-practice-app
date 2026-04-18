@@ -21,6 +21,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { StatCard } from '@/lib/ui/StatCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -231,15 +232,6 @@ export default async function AdminLandingPage() {
   );
 }
 
-function StatCard({ label, value }) {
-  return (
-    <div style={S.card}>
-      <div style={S.cardLabel}>{label}</div>
-      <div style={S.cardValue}>{value ?? '—'}</div>
-    </div>
-  );
-}
-
 function NavCard({ href, title, desc }) {
   return (
     <a href={href} style={S.navCard}>
@@ -274,14 +266,6 @@ const S = {
     gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
     gap: '1rem',
   },
-  card: {
-    padding: '1rem',
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
-    borderRadius: 8,
-  },
-  cardLabel: { fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.25rem' },
-  cardValue: { fontSize: '1.5rem', fontWeight: 600, color: '#111827' },
   navGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',

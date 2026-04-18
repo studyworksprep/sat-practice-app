@@ -15,6 +15,9 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { StatCard } from '@/lib/ui/StatCard';
+import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
+import { formatRelativeShort } from '@/lib/formatters';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 
 export const dynamic = 'force-dynamic';
@@ -159,7 +162,7 @@ export default async function TutorStudentDetailPage({ params }) {
             value={student.accuracy != null ? `${student.accuracy}%` : '—'}
           />
           <StatCard label="Last 7 days" value={student.weekAttempts} />
-          <StatCard label="Last activity" value={formatRelative(student.lastActivityAt)} small />
+          <StatCard label="Last activity" value={formatRelativeShort(student.lastActivityAt)} small />
           {student.satTestDate && (
             <StatCard
               label="Test date"
@@ -198,7 +201,7 @@ export default async function TutorStudentDetailPage({ params }) {
                       background: a.completed_at ? '#f9fafb' : '#ffffff',
                     }}
                   >
-                    <AssignmentTypeLabel type={a.assignment_type} />
+                    <AssignmentTypeBadge type={a.assignment_type} variant="compact" />
                     <span style={{ flex: 1, minWidth: 0, fontSize: '0.9rem', fontWeight: 500 }}>
                       {title}
                       {n != null && <span style={{ color: '#6b7280', fontWeight: 400, marginLeft: '0.5rem' }}>({n} Qs)</span>}
@@ -247,7 +250,7 @@ export default async function TutorStudentDetailPage({ params }) {
               <tbody>
                 {recentAttempts.map((a) => (
                   <tr key={a.id}>
-                    <td style={S.td}>{formatRelative(a.created_at)}</td>
+                    <td style={S.td}>{formatRelativeShort(a.created_at) ?? '—'}</td>
                     <td style={S.td}>{a.source}</td>
                     <td style={{ ...S.td, color: a.is_correct ? '#166534' : '#991b1b' }}>
                       {a.is_correct ? '✓ Correct' : '✗ Incorrect'}
@@ -269,32 +272,6 @@ export default async function TutorStudentDetailPage({ params }) {
   );
 }
 
-function AssignmentTypeLabel({ type }) {
-  const c = {
-    questions:     { bg: '#eef2ff', fg: '#4338ca', label: 'Q' },
-    lesson:        { bg: '#ecfdf5', fg: '#047857', label: 'L' },
-    practice_test: { bg: '#fff7ed', fg: '#c2410c', label: 'PT' },
-  }[type] ?? { bg: '#f3f4f6', fg: '#374151', label: '?' };
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      width: 28, height: 20, borderRadius: 4, fontSize: '0.7rem', fontWeight: 700,
-      background: c.bg, color: c.fg, flexShrink: 0,
-    }}>
-      {c.label}
-    </span>
-  );
-}
-
-function StatCard({ label, value, small = false }) {
-  return (
-    <div style={S.card}>
-      <div style={S.cardLabel}>{label}</div>
-      <div style={small ? S.cardValueSmall : S.cardValue}>{value ?? '—'}</div>
-    </div>
-  );
-}
-
 function ErrorState({ message }) {
   return (
     <main style={S.main}>
@@ -307,21 +284,6 @@ function ErrorState({ message }) {
       </section>
     </main>
   );
-}
-
-function formatRelative(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  const diffMs = Date.now() - d.getTime();
-  const minutes = Math.round(diffMs / 60_000);
-  if (minutes < 1) return 'Just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return d.toLocaleDateString();
 }
 
 const S = {
@@ -337,15 +299,6 @@ const S = {
     gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
     gap: '1rem',
   },
-  card: {
-    padding: '1rem',
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
-    borderRadius: 8,
-  },
-  cardLabel: { fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.25rem' },
-  cardValue: { fontSize: '1.5rem', fontWeight: 600, color: '#111827' },
-  cardValueSmall: { fontSize: '1rem', fontWeight: 500, color: '#374151' },
   empty: { color: '#9ca3af', fontStyle: 'italic' },
   tableWrap: { overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' },

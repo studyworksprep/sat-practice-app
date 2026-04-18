@@ -8,6 +8,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,7 +119,7 @@ function AssignmentList({ rows, stats }) {
                 textDecoration: 'none', color: '#111827',
               }}
             >
-              <TypeBadge type={a.assignment_type} />
+              <AssignmentTypeBadge type={a.assignment_type} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 600 }}>{title}</div>
                 {a.description && (
@@ -140,22 +141,6 @@ function AssignmentList({ rows, stats }) {
         );
       })}
     </ul>
-  );
-}
-
-function TypeBadge({ type }) {
-  const c = {
-    questions:     { bg: '#eef2ff', fg: '#4338ca', label: 'Questions' },
-    lesson:        { bg: '#ecfdf5', fg: '#047857', label: 'Lesson' },
-    practice_test: { bg: '#fff7ed', fg: '#c2410c', label: 'Practice Test' },
-  }[type] ?? { bg: '#f3f4f6', fg: '#374151', label: type };
-  return (
-    <span style={{
-      display: 'inline-block', padding: '0.125rem 0.5rem', borderRadius: 999,
-      fontSize: '0.7rem', fontWeight: 600, background: c.bg, color: c.fg, flexShrink: 0,
-    }}>
-      {c.label}
-    </span>
   );
 }
 
