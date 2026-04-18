@@ -10,6 +10,8 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { StatCard } from '@/lib/ui/StatCard';
+import { Table, Th, Td } from '@/lib/ui/Table';
+import { formatDate } from '@/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -120,7 +122,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
         <div style={{ display: 'flex', gap: '1rem', fontSize: '0.875rem', color: '#6b7280', marginTop: '0.5rem', flexWrap: 'wrap' }}>
           <span>Type: {typeLabel(assignment.assignment_type)}</span>
           {assignment.due_date && (
-            <span>Due {new Date(assignment.due_date).toLocaleDateString()}</span>
+            <span>Due {formatDate(assignment.due_date)}</span>
           )}
           {assignment.archived_at && <span style={{ color: '#b91c1c' }}>Archived</span>}
         </div>
@@ -144,51 +146,49 @@ export default async function TutorAssignmentDetailPage({ params }) {
         {students.length === 0 ? (
           <p style={{ color: '#9ca3af', fontStyle: 'italic' }}>No students assigned.</p>
         ) : (
-          <div style={{ overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+          <Table>
               <thead>
                 <tr>
-                  <th style={S.th}>Student</th>
+                  <Th>Student</Th>
                   {assignment.assignment_type === 'questions' && (
                     <>
-                      <th style={S.th}>Done</th>
-                      <th style={S.th}>Accuracy</th>
+                      <Th>Done</Th>
+                      <Th>Accuracy</Th>
                     </>
                   )}
-                  <th style={S.th}>Completed</th>
+                  <Th>Completed</Th>
                 </tr>
               </thead>
               <tbody>
                 {students.map((s) => (
                   <tr key={s.id}>
-                    <td style={S.td}>
+                    <Td>
                       <Link href={`/tutor/students/${s.id}`} style={{ color: '#2563eb', textDecoration: 'none' }}>
                         {s.name}
                       </Link>
                       {s.email && (
                         <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{s.email}</div>
                       )}
-                    </td>
+                    </Td>
                     {assignment.assignment_type === 'questions' && (
                       <>
-                        <td style={S.td}>
+                        <Td>
                           {s.done}/{totalQuestions}
-                        </td>
-                        <td style={S.td}>
+                        </Td>
+                        <Td>
                           {s.done > 0 ? `${Math.round((s.correct / s.done) * 100)}%` : '—'}
-                        </td>
+                        </Td>
                       </>
                     )}
-                    <td style={S.td}>
+                    <Td>
                       {s.completed_at
-                        ? new Date(s.completed_at).toLocaleDateString()
+                        ? formatDate(s.completed_at)
                         : <span style={{ color: '#9ca3af' }}>—</span>}
-                    </td>
+                    </Td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+          </Table>
         )}
       </section>
     </main>
@@ -199,11 +199,3 @@ function typeLabel(t) {
   return { questions: 'Questions', lesson: 'Lesson', practice_test: 'Practice Test' }[t] ?? t;
 }
 
-const S = {
-  th: {
-    textAlign: 'left', padding: '0.5rem 0.75rem', background: '#f9fafb',
-    borderBottom: '1px solid #e5e7eb', fontSize: '0.75rem',
-    textTransform: 'uppercase', color: '#6b7280',
-  },
-  td: { padding: '0.625rem 0.75rem', borderBottom: '1px solid #f3f4f6' },
-};

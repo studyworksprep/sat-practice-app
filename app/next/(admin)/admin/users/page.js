@@ -11,6 +11,8 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
+import { Card } from '@/lib/ui/Card';
+import { Table, Th, Td } from '@/lib/ui/Table';
 import { UsersFilter } from './UsersFilter';
 import { UsersNav } from './UsersNav';
 
@@ -106,16 +108,15 @@ export default async function AdminUsersPage({ searchParams }) {
           {rows.length} result{rows.length === 1 ? '' : 's'}
           {rows.length >= USER_LIMIT && ` (first ${USER_LIMIT})`}
         </h2>
-        <div style={S.tableWrap}>
-          <table style={S.table}>
+        <Table>
             <thead>
               <tr>
-                <th style={S.th}>Name</th>
-                <th style={S.th}>Email</th>
-                <th style={S.th}>Role</th>
-                <th style={S.th}>School</th>
-                <th style={S.th}>Created</th>
-                <th style={S.th}>Status</th>
+                <Th>Name</Th>
+                <Th>Email</Th>
+                <Th>Role</Th>
+                <Th>School</Th>
+                <Th>Created</Th>
+                <Th>Status</Th>
               </tr>
             </thead>
             <tbody>
@@ -124,16 +125,16 @@ export default async function AdminUsersPage({ searchParams }) {
                   [u.first_name, u.last_name].filter(Boolean).join(' ') || u.email || '—';
                 return (
                   <tr key={u.id}>
-                    <td style={S.td}>
+                    <Td>
                       <a href={`/admin/users/${u.id}`} style={S.nameLink}>{name}</a>
-                    </td>
-                    <td style={S.td}>{u.email ?? '—'}</td>
-                    <td style={S.td}>
+                    </Td>
+                    <Td>{u.email ?? '—'}</Td>
+                    <Td>
                       <span style={{ ...S.roleTag, ...roleTagColor(u.role) }}>
                         {u.role}
                       </span>
-                    </td>
-                    <td style={S.td}>
+                    </Td>
+                    <Td>
                       {u.high_school ? (
                         <>
                           {u.high_school}
@@ -142,9 +143,9 @@ export default async function AdminUsersPage({ searchParams }) {
                       ) : (
                         '—'
                       )}
-                    </td>
-                    <td style={S.td}>{formatDate(u.created_at) || '—'}</td>
-                    <td style={S.td}>
+                    </Td>
+                    <Td>{formatDate(u.created_at) || '—'}</Td>
+                    <Td>
                       {!u.is_active ? (
                         <span style={S.inactive}>Inactive</span>
                       ) : u.subscription_exempt ? (
@@ -152,20 +153,19 @@ export default async function AdminUsersPage({ searchParams }) {
                       ) : (
                         <span style={S.active}>Active</span>
                       )}
-                    </td>
+                    </Td>
                   </tr>
                 );
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={S.emptyRow}>
+                  <Td colSpan={6} style={{ padding: '1.5rem', textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' }}>
                     No users match those filters.
-                  </td>
+                  </Td>
                 </tr>
               )}
             </tbody>
-          </table>
-        </div>
+        </Table>
       </section>
     </main>
   );
@@ -177,9 +177,9 @@ function ErrorState({ message }) {
       <header style={S.header}>
         <h1 style={S.h1}>User management</h1>
       </header>
-      <section style={S.errorCard}>
+      <Card tone="danger" style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
         <p style={{ margin: 0 }}>{message}</p>
-      </section>
+      </Card>
     </main>
   );
 }
@@ -209,19 +209,6 @@ const S = {
   sub: { color: '#4b5563', marginTop: 0 },
   filterSection: { marginBottom: '1.5rem' },
   h2: { fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', color: '#374151' },
-  tableWrap: { overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' },
-  th: {
-    textAlign: 'left',
-    padding: '0.5rem 0.75rem',
-    background: '#f9fafb',
-    borderBottom: '1px solid #e5e7eb',
-    fontSize: '0.75rem',
-    textTransform: 'uppercase',
-    color: '#6b7280',
-    letterSpacing: '0.025em',
-  },
-  td: { padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6' },
   nameLink: { color: '#2563eb', fontWeight: 600, textDecoration: 'none' },
   roleTag: {
     display: 'inline-block',
@@ -233,14 +220,4 @@ const S = {
   active: { color: '#166534', fontSize: '0.8rem' },
   inactive: { color: '#991b1b', fontSize: '0.8rem' },
   exempt: { color: '#92400e', fontSize: '0.8rem' },
-  emptyRow: { padding: '1.5rem', textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' },
-  errorCard: {
-    padding: '1rem',
-    background: '#fef2f2',
-    border: '1px solid #fecaca',
-    borderRadius: 8,
-    color: '#991b1b',
-    fontFamily: 'monospace',
-    fontSize: '0.9rem',
-  },
 };

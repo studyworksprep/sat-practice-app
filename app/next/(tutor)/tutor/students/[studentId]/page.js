@@ -16,8 +16,10 @@
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { StatCard } from '@/lib/ui/StatCard';
+import { Card } from '@/lib/ui/Card';
+import { Table, Th, Td } from '@/lib/ui/Table';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
-import { formatRelativeShort } from '@/lib/formatters';
+import { formatDate, formatShortDate, formatRelativeShort } from '@/lib/formatters';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 
 export const dynamic = 'force-dynamic';
@@ -166,7 +168,7 @@ export default async function TutorStudentDetailPage({ params }) {
           {student.satTestDate && (
             <StatCard
               label="Test date"
-              value={new Date(student.satTestDate).toLocaleDateString()}
+              value={formatDate(student.satTestDate) || '—'}
               small
             />
           )}
@@ -208,7 +210,7 @@ export default async function TutorStudentDetailPage({ params }) {
                     </span>
                     {a.due_date && (
                       <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                        Due {new Date(a.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        Due {formatShortDate(a.due_date)}
                       </span>
                     )}
                     {a.completed_at && (
@@ -236,36 +238,34 @@ export default async function TutorStudentDetailPage({ params }) {
         {(!recentAttempts || recentAttempts.length === 0) ? (
           <p style={S.empty}>No attempts yet.</p>
         ) : (
-          <div style={S.tableWrap}>
-            <table style={S.table}>
+          <Table>
               <thead>
                 <tr>
-                  <th style={S.th}>When</th>
-                  <th style={S.th}>Source</th>
-                  <th style={S.th}>Result</th>
-                  <th style={S.th}>Time</th>
-                  <th style={S.th}>Question</th>
+                  <Th>When</Th>
+                  <Th>Source</Th>
+                  <Th>Result</Th>
+                  <Th>Time</Th>
+                  <Th>Question</Th>
                 </tr>
               </thead>
               <tbody>
                 {recentAttempts.map((a) => (
                   <tr key={a.id}>
-                    <td style={S.td}>{formatRelativeShort(a.created_at) ?? '—'}</td>
-                    <td style={S.td}>{a.source}</td>
-                    <td style={{ ...S.td, color: a.is_correct ? '#166534' : '#991b1b' }}>
+                    <Td>{formatRelativeShort(a.created_at) ?? '—'}</Td>
+                    <Td>{a.source}</Td>
+                    <Td style={{ color: a.is_correct ? '#166534' : '#991b1b' }}>
                       {a.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                    </td>
-                    <td style={S.td}>
+                    </Td>
+                    <Td>
                       {a.time_spent_ms != null ? `${Math.round(a.time_spent_ms / 1000)}s` : '—'}
-                    </td>
-                    <td style={S.tdCode}>
+                    </Td>
+                    <Td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#6b7280' }}>
                       <code>{a.question_id.slice(0, 8)}…</code>
-                    </td>
+                    </Td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+          </Table>
         )}
       </section>
     </main>
@@ -279,9 +279,9 @@ function ErrorState({ message }) {
         <h1 style={S.h1}>Student detail</h1>
         <p style={S.sub}>Something went wrong loading this student.</p>
       </header>
-      <section style={S.errorCard}>
+      <Card tone="danger" style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
         <p style={{ margin: 0 }}>{message}</p>
-      </section>
+      </Card>
     </main>
   );
 }
@@ -300,27 +300,4 @@ const S = {
     gap: '1rem',
   },
   empty: { color: '#9ca3af', fontStyle: 'italic' },
-  tableWrap: { overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' },
-  th: {
-    textAlign: 'left',
-    padding: '0.5rem 0.75rem',
-    background: '#f9fafb',
-    borderBottom: '1px solid #e5e7eb',
-    fontSize: '0.75rem',
-    textTransform: 'uppercase',
-    color: '#6b7280',
-    letterSpacing: '0.025em',
-  },
-  td: { padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6' },
-  tdCode: { padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6', fontFamily: 'monospace', fontSize: '0.8rem', color: '#6b7280' },
-  errorCard: {
-    padding: '1rem',
-    background: '#fef2f2',
-    border: '1px solid #fecaca',
-    borderRadius: 8,
-    color: '#991b1b',
-    fontFamily: 'monospace',
-    fontSize: '0.9rem',
-  },
 };

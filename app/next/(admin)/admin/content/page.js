@@ -13,6 +13,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
+import { Table, Th, Td } from '@/lib/ui/Table';
 import { ScoreConversionSection } from './ScoreConversionSection';
 import { TestThresholdsSection } from './TestThresholdsSection';
 import { LearnabilitySection } from './LearnabilitySection';
@@ -69,43 +70,41 @@ export default async function AdminContentPage({ searchParams }) {
         {(!flagged || flagged.length === 0) ? (
           <p style={S.empty}>No flagged questions.</p>
         ) : (
-          <div style={S.tableWrap}>
-            <table style={S.table}>
+          <Table style={{ fontSize: '0.85rem' }}>
               <thead>
                 <tr>
-                  <th style={S.th}>Question</th>
-                  <th style={S.th}>Domain</th>
-                  <th style={S.th}>Skill</th>
-                  <th style={S.th}>Difficulty</th>
-                  <th style={S.th}>Flagged by</th>
-                  <th style={S.th}>Date</th>
+                  <Th>Question</Th>
+                  <Th>Domain</Th>
+                  <Th>Skill</Th>
+                  <Th>Difficulty</Th>
+                  <Th>Flagged by</Th>
+                  <Th>Date</Th>
                 </tr>
               </thead>
               <tbody>
                 {flagged.map((q) => (
                   <tr key={q.id}>
-                    <td style={S.tdCode}>
+                    <Td style={{ fontFamily: 'monospace' }}>
                       <a href={`/practice/${q.question_id}`} style={S.link}>
                         {String(q.question_id).slice(0, 8)}
                       </a>
-                    </td>
-                    <td style={S.td}>{q.domain_name ?? '—'}</td>
-                    <td style={S.td}>{q.skill_name ?? '—'}</td>
-                    <td style={S.tdCenter}>{q.difficulty ?? '—'}</td>
-                    <td style={S.td}>
+                    </Td>
+                    <Td>{q.domain_name ?? '—'}</Td>
+                    <Td>{q.skill_name ?? '—'}</Td>
+                    <Td style={{ textAlign: 'center' }}>{q.difficulty ?? '—'}</Td>
+                    <Td>
                       {q.flagged_by_name ?? '—'}
                       {q.flagged_by_role && (
                         <span style={{ ...S.rolePill, ...roleColor(q.flagged_by_role) }}>
                           {q.flagged_by_role}
                         </span>
                       )}
-                    </td>
-                    <td style={S.tdMuted}>{formatDate(q.broken_at) || '—'}</td>
+                    </Td>
+                    <Td style={{ color: '#6b7280', fontSize: '0.8rem' }}>{formatDate(q.broken_at) || '—'}</Td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+          </Table>
         )}
       </Section>
 
@@ -213,13 +212,6 @@ const S = {
   badge: { padding: '0.15rem 0.55rem', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600 },
   badgeRed: { background: '#fee2e2', color: '#991b1b' },
 
-  tableWrap: { overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' },
-  th: { textAlign: 'left', padding: '0.4rem 0.7rem', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', fontSize: '0.7rem', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.025em' },
-  td: { padding: '0.4rem 0.7rem', borderBottom: '1px solid #f3f4f6' },
-  tdCode: { padding: '0.4rem 0.7rem', borderBottom: '1px solid #f3f4f6', fontFamily: 'monospace' },
-  tdCenter: { padding: '0.4rem 0.7rem', borderBottom: '1px solid #f3f4f6', textAlign: 'center' },
-  tdMuted: { padding: '0.4rem 0.7rem', borderBottom: '1px solid #f3f4f6', color: '#6b7280', fontSize: '0.8rem' },
   link: { color: '#2563eb', textDecoration: 'none' },
   rolePill: { display: 'inline-block', marginLeft: '0.4rem', padding: '0.05rem 0.4rem', borderRadius: 999, fontSize: '0.65rem', fontWeight: 600 },
   empty: { color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem', padding: '0.5rem 0', margin: 0 },

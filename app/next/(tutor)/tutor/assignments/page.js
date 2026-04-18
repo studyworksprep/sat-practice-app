@@ -10,6 +10,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { Button } from '@/lib/ui/Button';
+import { formatShortDate } from '@/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -126,7 +127,7 @@ function AssignmentList({ rows, stats }) {
               </div>
               {a.due_date && (
                 <div style={{ fontSize: '0.85rem', color: '#6b7280', whiteSpace: 'nowrap' }}>
-                  Due {new Date(a.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  Due {formatShortDate(a.due_date)}
                 </div>
               )}
             </Link>

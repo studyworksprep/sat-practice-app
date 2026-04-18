@@ -25,6 +25,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { StatCard } from '@/lib/ui/StatCard';
+import { Card } from '@/lib/ui/Card';
 import { formatRelativeShort } from '@/lib/formatters';
 import { createReviewSession } from './actions';
 import { ReviewLauncher } from './ReviewLauncher';
@@ -73,9 +74,13 @@ export default async function StudentReviewPage({ searchParams }) {
       </header>
 
       {completed && (
-        <div style={S.completedBanner} role="status">
+        <Card
+          tone="success"
+          style={{ padding: '0.75rem 1rem', marginBottom: '1.25rem', fontSize: '0.95rem' }}
+          role="status"
+        >
           Review session complete. Pick another set below to keep going.
-        </div>
+        </Card>
       )}
 
       <section style={S.summary}>
@@ -90,12 +95,12 @@ export default async function StudentReviewPage({ searchParams }) {
       </section>
 
       {totalReviewable === 0 ? (
-        <section style={S.emptyCard}>
+        <Card style={{ padding: '1.25rem', color: '#4b5563' }}>
           <p style={{ margin: 0 }}>
             Nothing to review yet. Practice some questions first, and
             anything you get wrong (or mark for review) will show up here.
           </p>
-        </section>
+        </Card>
       ) : (
         <ReviewLauncher
           counts={{ wrong: wrongCount, marked: markedCount, total: totalReviewable }}
@@ -111,26 +116,10 @@ const S = {
   header: { marginBottom: '1.5rem' },
   h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' },
   sub: { color: '#4b5563', marginTop: 0 },
-  completedBanner: {
-    padding: '0.75rem 1rem',
-    background: '#dcfce7',
-    border: '1px solid #bbf7d0',
-    borderRadius: 8,
-    color: '#166534',
-    marginBottom: '1.25rem',
-    fontSize: '0.95rem',
-  },
   summary: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
     gap: '1rem',
     marginBottom: '1.5rem',
-  },
-  emptyCard: {
-    padding: '1.25rem',
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
-    borderRadius: 8,
-    color: '#4b5563',
   },
 };

@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/lib/ui/Button';
+import { Card } from '@/lib/ui/Card';
 import { updateTestThresholds } from './actions';
 
 export function TestThresholdsSection({ tests, selectedTestId, currentRW, currentMath }) {
@@ -55,10 +56,10 @@ export function TestThresholdsSection({ tests, selectedTestId, currentRW, curren
       {selectedTestId && (
         <>
           {!selectedTest?.is_adaptive && (
-            <p style={S.infoCard}>
+            <Card tone="warn" style={{ padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem' }}>
               This test is not marked as adaptive. Thresholds are stored but only
               used when <code>is_adaptive</code> is true.
-            </p>
+            </Card>
           )}
 
           <p style={S.hint}>
@@ -119,7 +120,6 @@ const S = {
   select: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.9rem', background: 'white', minWidth: 260 },
   input: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.9rem', width: 120 },
   hint: { fontSize: '0.8rem', color: '#6b7280', marginTop: 0, marginBottom: '0.75rem' },
-  infoCard: { padding: '0.75rem 1rem', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 8, marginBottom: '1rem', fontSize: '0.85rem', color: '#92400e' },
   form: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
   row: { display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' },
   ok: { color: '#166534', fontSize: '0.85rem' },

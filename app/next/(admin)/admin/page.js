@@ -22,6 +22,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { StatCard } from '@/lib/ui/StatCard';
+import { formatShortDate } from '@/lib/formatters';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,7 +103,7 @@ export default async function AdminLandingPage() {
   // segmented stacks. Max height computed from the tallest bar
   // so every bar fits inside the fixed chart height.
   const weekBars = (volumeWeeks ?? []).map((w) => ({
-    label: formatWeekLabel(w.week_start),
+    label: formatShortDate(w.week_start),
     practice: Number(w.practice_count ?? 0),
     test: Number(w.test_count ?? 0),
     total: Number(w.practice_count ?? 0) + Number(w.test_count ?? 0),
@@ -239,14 +240,6 @@ function NavCard({ href, title, desc }) {
       <div style={S.navDesc}>{desc}</div>
     </a>
   );
-}
-
-function formatWeekLabel(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  // Short month/day; covers 8 weeks without overflowing the bar.
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 const S = {

@@ -11,6 +11,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
 import { Button } from '@/lib/ui/Button';
+import { Table, Th, Td } from '@/lib/ui/Table';
 import { UsersNav } from '../UsersNav';
 import {
   createTeacherCode,
@@ -82,29 +83,28 @@ export default async function AdminUserCodesPage() {
         {(codes ?? []).length === 0 ? (
           <p style={S.empty}>No teacher codes yet.</p>
         ) : (
-          <div style={S.tableWrap}>
-            <table style={S.table}>
+          <Table>
               <thead>
                 <tr>
-                  <th style={S.th}>Code</th>
-                  <th style={S.th}>Status</th>
-                  <th style={S.th}>Used by</th>
-                  <th style={S.th}>Created</th>
-                  <th style={{ ...S.th, width: 80 }} />
+                  <Th>Code</Th>
+                  <Th>Status</Th>
+                  <Th>Used by</Th>
+                  <Th>Created</Th>
+                  <Th style={{ width: 80 }} />
                 </tr>
               </thead>
               <tbody>
                 {(codes ?? []).map((c) => (
                   <tr key={c.id}>
-                    <td style={S.tdCode}>{c.code}</td>
-                    <td style={S.td}>
+                    <Td style={{ fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.05em' }}>{c.code}</Td>
+                    <Td>
                       {c.used_by ? (
                         <span style={S.badgeUsed}>Used</span>
                       ) : (
                         <span style={S.badgeAvail}>Available</span>
                       )}
-                    </td>
-                    <td style={S.td}>
+                    </Td>
+                    <Td>
                       {c.used_by ? (
                         <a href={`/admin/users/${c.used_by}`} style={S.userLink}>
                           {displayName(c.used_by_profile) || c.used_by_profile?.email || c.used_by.slice(0, 8)}
@@ -112,19 +112,18 @@ export default async function AdminUserCodesPage() {
                       ) : (
                         '—'
                       )}
-                    </td>
-                    <td style={S.tdMuted}>{formatDate(c.created_at) || '—'}</td>
-                    <td style={S.td}>
+                    </Td>
+                    <Td style={{ color: '#6b7280', fontSize: '0.85rem' }}>{formatDate(c.created_at) || '—'}</Td>
+                    <Td>
                       <form action={revokeTeacherCode}>
                         <input type="hidden" name="id" value={c.id} />
                         <Button type="submit" variant="remove" size="sm">Revoke</Button>
                       </form>
-                    </td>
+                    </Td>
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+          </Table>
         )}
       </Section>
 
@@ -134,28 +133,27 @@ export default async function AdminUserCodesPage() {
           submitting an empty value.
         </p>
 
-        <div style={S.tableWrap}>
-          <table style={S.table}>
+        <Table>
             <thead>
               <tr>
-                <th style={S.th}>Teacher</th>
-                <th style={S.th}>Current code</th>
-                <th style={S.th}>Set / regenerate</th>
-                <th style={{ ...S.th, width: 80 }} />
+                <Th>Teacher</Th>
+                <Th>Current code</Th>
+                <Th>Set / regenerate</Th>
+                <Th style={{ width: 80 }} />
               </tr>
             </thead>
             <tbody>
               {(teachers ?? []).map((t) => (
                 <tr key={t.id}>
-                  <td style={S.td}>
+                  <Td>
                     <a href={`/admin/users/${t.id}`} style={S.userLink}>
                       {displayName(t) || t.email}
                     </a>
-                  </td>
-                  <td style={S.tdCode}>
+                  </Td>
+                  <Td style={{ fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.05em' }}>
                     {t.teacher_invite_code ?? <span style={{ color: '#9ca3af' }}>—</span>}
-                  </td>
-                  <td style={S.td}>
+                  </Td>
+                  <Td>
                     <form action={setTeacherInviteCode} style={S.inlineForm}>
                       <input type="hidden" name="teacher_id" value={t.id} />
                       <input
@@ -168,25 +166,24 @@ export default async function AdminUserCodesPage() {
                         {t.teacher_invite_code ? 'Change' : 'Generate'}
                       </Button>
                     </form>
-                  </td>
-                  <td style={S.td}>
+                  </Td>
+                  <Td>
                     {t.teacher_invite_code && (
                       <form action={clearTeacherInviteCode}>
                         <input type="hidden" name="teacher_id" value={t.id} />
                         <Button type="submit" variant="remove" size="sm">Clear</Button>
                       </form>
                     )}
-                  </td>
+                  </Td>
                 </tr>
               ))}
               {(teachers ?? []).length === 0 && (
                 <tr>
-                  <td colSpan={4} style={S.empty}>No teachers found.</td>
+                  <Td colSpan={4} style={S.empty}>No teachers found.</Td>
                 </tr>
               )}
             </tbody>
-          </table>
-        </div>
+        </Table>
       </Section>
     </main>
   );
@@ -222,12 +219,6 @@ const S = {
   label: { display: 'flex', flexDirection: 'column', gap: '0.25rem' },
   labelText: { fontSize: '0.7rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.025em' },
   input: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.9rem', minWidth: 220 },
-  tableWrap: { overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' },
-  th: { textAlign: 'left', padding: '0.5rem 0.75rem', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', fontSize: '0.75rem', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.025em' },
-  td: { padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6' },
-  tdCode: { padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6', fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.05em' },
-  tdMuted: { padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6', color: '#6b7280', fontSize: '0.85rem' },
   userLink: { color: '#2563eb', textDecoration: 'none' },
   badgeAvail: { padding: '0.125rem 0.5rem', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600, background: '#dcfce7', color: '#166534' },
   badgeUsed:  { padding: '0.125rem 0.5rem', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600, background: '#f3f4f6', color: '#6b7280' },

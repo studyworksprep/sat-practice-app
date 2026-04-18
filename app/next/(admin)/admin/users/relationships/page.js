@@ -10,6 +10,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { UsersNav } from '../UsersNav';
 import { Button } from '@/lib/ui/Button';
+import { Table, Th, Td } from '@/lib/ui/Table';
 import {
   assignTeacherStudent,
   unassignTeacherStudent,
@@ -153,26 +154,24 @@ function AssignmentTable({ rows, colA, colB, renderA, renderB, renderRemove, row
     return <p style={S.empty}>{emptyText}</p>;
   }
   return (
-    <div style={S.tableWrap}>
-      <table style={S.table}>
+    <Table>
         <thead>
           <tr>
-            <th style={S.th}>{colA}</th>
-            <th style={S.th}>{colB}</th>
-            <th style={{ ...S.th, width: 80 }} />
+            <Th>{colA}</Th>
+            <Th>{colB}</Th>
+            <Th style={{ width: 80 }} />
           </tr>
         </thead>
         <tbody>
           {rows.map((r) => (
             <tr key={rowKey(r)}>
-              <td style={S.td}>{renderA(r)}</td>
-              <td style={S.td}>{renderB(r)}</td>
-              <td style={S.td}>{renderRemove(r)}</td>
+              <Td>{renderA(r)}</Td>
+              <Td>{renderB(r)}</Td>
+              <Td>{renderRemove(r)}</Td>
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
+    </Table>
   );
 }
 
@@ -197,10 +196,6 @@ const S = {
   h2: { fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem', color: '#111827' },
   addRow: { display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' },
   select: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.85rem', background: 'white', minWidth: 200 },
-  tableWrap: { overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' },
-  th: { textAlign: 'left', padding: '0.5rem 0.75rem', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', fontSize: '0.75rem', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.025em' },
-  td: { padding: '0.5rem 0.75rem', borderBottom: '1px solid #f3f4f6' },
   userLink: { color: '#2563eb', textDecoration: 'none' },
   empty: { color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem', padding: '0.75rem 0' },
 };

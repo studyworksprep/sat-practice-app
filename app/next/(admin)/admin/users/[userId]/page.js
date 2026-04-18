@@ -9,6 +9,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
+import { Card } from '@/lib/ui/Card';
 import { UserEditForm } from './UserEditForm';
 import { RoleChanger } from './RoleChanger';
 import { StatusActions } from './StatusActions';
@@ -117,9 +118,9 @@ function ErrorState({ message }) {
       <header style={S.header}>
         <h1 style={S.h1}>User detail</h1>
       </header>
-      <section style={S.errorCard}>
+      <Card tone="danger" style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
         <p style={{ margin: 0 }}>{message}</p>
-      </section>
+      </Card>
     </main>
   );
 }
@@ -151,5 +152,4 @@ const S = {
   section: { marginBottom: '1.5rem', padding: '1.25rem', background: 'white', border: '1px solid #e5e7eb', borderRadius: 10 },
   h2: { fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem', color: '#111827' },
   h2Danger: { fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem', color: '#991b1b' },
-  errorCard: { padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, color: '#991b1b', fontFamily: 'monospace', fontSize: '0.9rem' },
 };

@@ -16,7 +16,7 @@ import Link from 'next/link';
 import { useActionState, useOptimistic } from 'react';
 import { StatCard } from '@/lib/ui/StatCard';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
-import { formatRelativeShort } from '@/lib/formatters';
+import { formatRelativeShort, formatShortDate } from '@/lib/formatters';
 
 /**
  * @param {object} props
@@ -191,9 +191,6 @@ function isOverdue(iso) {
   return Date.parse(iso) < Date.now();
 }
 
-function formatShortDate(iso) {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
 
 function daysUntil(iso) {
   if (!iso) return null;

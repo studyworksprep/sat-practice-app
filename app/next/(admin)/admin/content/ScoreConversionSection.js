@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from 'react';
 import { Button } from '@/lib/ui/Button';
+import { Table, Th, Td } from '@/lib/ui/Table';
 import { addScoreConversions, deleteScoreConversion } from './actions';
 
 export function ScoreConversionSection({ tests, conversions }) {
@@ -60,35 +61,33 @@ export function ScoreConversionSection({ tests, conversions }) {
       {conversions.length === 0 ? (
         <p style={S.empty}>No conversion data saved yet.</p>
       ) : (
-        <div style={S.tableWrap}>
-          <table style={S.table}>
+        <Table style={{ fontSize: '0.85rem' }}>
             <thead>
               <tr>
-                <th style={S.th}>Test</th>
-                <th style={S.th}>Section</th>
-                <th style={S.th}>M1 / M2</th>
-                <th style={S.th}>Scaled</th>
-                <th style={{ ...S.th, width: 60 }} />
+                <Th>Test</Th>
+                <Th>Section</Th>
+                <Th>M1 / M2</Th>
+                <Th>Scaled</Th>
+                <Th style={{ width: 60 }} />
               </tr>
             </thead>
             <tbody>
               {conversions.map((c) => (
                 <tr key={c.id}>
-                  <td style={S.td}>{c.test_name ?? c.test_id}</td>
-                  <td style={S.td}>{c.section}</td>
-                  <td style={S.tdNum}>{c.module1_correct} / {c.module2_correct}</td>
-                  <td style={{ ...S.tdNum, fontWeight: 600 }}>{c.scaled_score}</td>
-                  <td style={S.td}>
+                  <Td>{c.test_name ?? c.test_id}</Td>
+                  <Td>{c.section}</Td>
+                  <Td style={{ fontVariantNumeric: 'tabular-nums' }}>{c.module1_correct} / {c.module2_correct}</Td>
+                  <Td style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{c.scaled_score}</Td>
+                  <Td>
                     <form action={deleteScoreConversion}>
                       <input type="hidden" name="id" value={c.id} />
                       <Button type="submit" variant="remove" size="sm">Delete</Button>
                     </form>
-                  </td>
+                  </Td>
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+        </Table>
       )}
     </>
   );
@@ -126,9 +125,4 @@ const S = {
   err: { color: '#991b1b', fontSize: '0.85rem' },
   subhead: { fontSize: '0.85rem', fontWeight: 600, color: '#374151', margin: '1rem 0 0.5rem' },
   empty: { color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem', padding: '0.5rem 0' },
-  tableWrap: { overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' },
-  th: { textAlign: 'left', padding: '0.4rem 0.7rem', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', fontSize: '0.7rem', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.025em' },
-  td: { padding: '0.4rem 0.7rem', borderBottom: '1px solid #f3f4f6' },
-  tdNum: { padding: '0.4rem 0.7rem', borderBottom: '1px solid #f3f4f6', fontVariantNumeric: 'tabular-nums' },
 };

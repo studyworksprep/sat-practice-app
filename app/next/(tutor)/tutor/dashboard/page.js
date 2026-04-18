@@ -14,6 +14,8 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
 import { Button } from '@/lib/ui/Button';
+import { Card } from '@/lib/ui/Card';
+import { Table, Th, Td } from '@/lib/ui/Table';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,22 +108,21 @@ export default async function TutorDashboardPage() {
 
       <section>
         <h2 style={S.h2}>Your students</h2>
-        <div style={S.tableWrap}>
-          <table style={S.table}>
+        <Table style={{ fontSize: '0.95rem' }}>
             <thead>
               <tr>
-                <th style={S.th}>Name</th>
-                <th style={S.th}>Target</th>
-                <th style={S.th}>Attempts</th>
-                <th style={S.th}>Accuracy</th>
-                <th style={S.th}>7-day</th>
-                <th style={S.th}>Last activity</th>
+                <Th>Name</Th>
+                <Th>Target</Th>
+                <Th>Attempts</Th>
+                <Th>Accuracy</Th>
+                <Th>7-day</Th>
+                <Th>Last activity</Th>
               </tr>
             </thead>
             <tbody>
               {students.map((s) => (
                 <tr key={s.id}>
-                  <td style={S.td}>
+                  <Td style={{ verticalAlign: 'top' }}>
                     <a href={`/tutor/students/${s.id}`} style={S.nameLink}>
                       <div style={S.nameMain}>{s.name}</div>
                     </a>
@@ -131,19 +132,18 @@ export default async function TutorDashboardPage() {
                         {s.graduationYear ? ` · class of ${s.graduationYear}` : ''}
                       </div>
                     )}
-                  </td>
-                  <td style={S.td}>{s.targetScore ?? '—'}</td>
-                  <td style={S.td}>{s.totalAttempts}</td>
-                  <td style={S.td}>
+                  </Td>
+                  <Td>{s.targetScore ?? '—'}</Td>
+                  <Td>{s.totalAttempts}</Td>
+                  <Td>
                     {s.accuracy != null ? `${s.accuracy}%` : '—'}
-                  </td>
-                  <td style={S.td}>{s.weekAttempts}</td>
-                  <td style={S.td}>{formatRelativeShort(s.lastActivityAt) ?? '—'}</td>
+                  </Td>
+                  <Td>{s.weekAttempts}</Td>
+                  <Td>{formatRelativeShort(s.lastActivityAt) ?? '—'}</Td>
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+        </Table>
         {cohort.visible > STUDENT_LIMIT && (
           <p style={S.footnote}>
             Showing the first {STUDENT_LIMIT} of {cohort.visible} students.
@@ -162,13 +162,13 @@ function EmptyState({ tutorName }) {
         <h1 style={S.h1}>{tutorName ? `Hi, ${tutorName}` : 'Tutor dashboard'}</h1>
         <p style={S.sub}>You don&apos;t have any students assigned yet.</p>
       </header>
-      <section style={S.emptyCard}>
+      <Card>
         <p style={{ margin: 0 }}>
           Your students will appear here once an admin assigns them to you.
           If you expected to see a student already, double-check the
           assignment in the admin panel.
         </p>
-      </section>
+      </Card>
     </main>
   );
 }
@@ -180,9 +180,9 @@ function ErrorState({ tutorName, message }) {
         <h1 style={S.h1}>{tutorName ? `Hi, ${tutorName}` : 'Tutor dashboard'}</h1>
         <p style={S.sub}>Something went wrong loading your students.</p>
       </header>
-      <section style={S.errorCard}>
+      <Card tone="danger" style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
         <p style={{ margin: 0 }}>{message}</p>
-      </section>
+      </Card>
     </main>
   );
 }
@@ -194,42 +194,9 @@ const S = {
   h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' },
   sub: { color: '#4b5563', marginTop: 0 },
   h2: { fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.75rem' },
-  tableWrap: { overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' },
-  th: {
-    textAlign: 'left',
-    padding: '0.625rem 0.75rem',
-    background: '#f9fafb',
-    borderBottom: '1px solid #e5e7eb',
-    fontSize: '0.8rem',
-    textTransform: 'uppercase',
-    color: '#6b7280',
-    letterSpacing: '0.025em',
-  },
-  td: {
-    padding: '0.75rem',
-    borderBottom: '1px solid #f3f4f6',
-    verticalAlign: 'top',
-  },
   nameLink: { textDecoration: 'none', color: 'inherit' },
   nameMain: { fontWeight: 600, color: '#2563eb' },
   nameSub: { fontSize: '0.8rem', color: '#9ca3af' },
-  emptyCard: {
-    padding: '1.25rem',
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
-    borderRadius: 8,
-    color: '#4b5563',
-  },
-  errorCard: {
-    padding: '1rem',
-    background: '#fef2f2',
-    border: '1px solid #fecaca',
-    borderRadius: 8,
-    color: '#991b1b',
-    fontFamily: 'monospace',
-    fontSize: '0.9rem',
-  },
   footnote: {
     marginTop: '0.75rem',
     fontSize: '0.85rem',
