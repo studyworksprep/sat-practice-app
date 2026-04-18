@@ -50,6 +50,5 @@ measured in users.
 ## Further reading
 
 - `docs/architecture-plan.md` — master plan (§3.8 visibility, §4 phases)
-- `docs/session-handoff.md` — **read first if present** (temporary mid-work handoff, deleted at end of Phase 2)
-- `docs/runbook.md` — operational
+- `docs/runbook.md` — operational (includes parked deploy plan for Phase 2 step 9)
 - `docs/database.md` — schema overview
