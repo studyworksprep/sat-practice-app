@@ -85,7 +85,7 @@ export default async function AdminContentPage({ searchParams }) {
                 {flagged.map((q) => (
                   <tr key={q.id}>
                     <Td style={{ fontFamily: 'monospace' }}>
-                      <a href={`/practice/${q.question_id}`} style={S.link}>
+                      <a href={`/tutor/review/${q.id}`} style={S.link}>
                         {String(q.question_id).slice(0, 8)}
                       </a>
                     </Td>
