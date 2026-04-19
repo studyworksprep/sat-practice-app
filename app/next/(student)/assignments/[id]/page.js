@@ -58,6 +58,7 @@ export default async function AssignmentDetailPage({ params }) {
       .from('assignments_v2')
       .select(`
         id,
+        teacher_id,
         assignment_type,
         title,
         description,
@@ -68,10 +69,6 @@ export default async function AssignmentDetailPage({ params }) {
         filter_criteria,
         lesson_id,
         practice_test_id,
-        teacher:profiles!assignments_v2_teacher_id_fkey (
-          first_name,
-          last_name
-        ),
         lesson:lessons (id, title, description),
         practice_test:practice_tests_v2 (id, code, name)
       `)
@@ -90,6 +87,15 @@ export default async function AssignmentDetailPage({ params }) {
 
   if (!assignment || assignment.deleted_at) notFound();
   if (!enrolled) notFound();
+
+  // Teacher name via profile_cards (students can't SELECT profiles
+  // directly — the forward can_view policy is downward only).
+  const { data: teacherCard } = await supabase
+    .from('profile_cards')
+    .select('first_name, last_name')
+    .eq('id', assignment.teacher_id)
+    .maybeSingle();
+  assignment.teacher = teacherCard ?? null;
 
   // For 'questions' assignments, fetch taxonomy + the student's
   // attempt history for each question in parallel. Done here (not

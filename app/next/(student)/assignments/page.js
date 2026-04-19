@@ -48,20 +48,25 @@ export default async function StudentAssignmentsPage() {
 }
 
 // ──────────────────────────────────────────────────────────────
-// Data loader. RLS on assignments_v2 + assignment_students_v2 is
-// what actually scopes the result to "assignments I'm a student of":
-//   - assignment_students_v2 SELECT allows student_id = auth.uid()
-//   - assignments_v2 SELECT allows is_v2_assignment_student(id, auth.uid())
-// so reading via the child table and foreign-table joining to the
-// parent gives us exactly the rows the student can see.
+// Data loader. Three round-trips, all parallel:
+//   1) assignment_students_v2 → assignments_v2 (the caller's rows).
+//      RLS via is_v2_assignment_student + can_view_from gates both
+//      tables, so we get exactly what this student is on.
+//   2) profile_cards, IN (teacher_ids). Students can't read
+//      profiles directly (can_view is downward only); profile_cards
+//      exposes a minimal public-within-hierarchy subset (§4 primitive).
+//   3) attempts, IN (all question_ids from questions-type rows),
+//      filtered to the caller — used to compute "X of Y done" per row
+//      without a separate request per assignment.
 // ──────────────────────────────────────────────────────────────
 async function loadStudentAssignments(supabase, userId) {
-  const { data } = await supabase
+  const { data: junctionRows } = await supabase
     .from('assignment_students_v2')
     .select(`
       completed_at,
       assignment:assignments_v2 (
         id,
+        teacher_id,
         assignment_type,
         title,
         description,
@@ -72,24 +77,55 @@ async function loadStudentAssignments(supabase, userId) {
         lesson_id,
         practice_test_id,
         filter_criteria,
-        teacher:profiles!assignments_v2_teacher_id_fkey (
-          first_name,
-          last_name
-        ),
         lesson:lessons (title),
         practice_test:practice_tests_v2 (name, code)
       )
     `)
     .eq('student_id', userId);
 
-  const rows = (data ?? [])
+  const rows = (junctionRows ?? [])
     .map((r) => ({ ...r.assignment, student_completed_at: r.completed_at }))
-    // Drop rows whose parent joined to NULL (shouldn't happen with
-    // the FK but defensive) or that are soft-deleted/archived.
     .filter((a) => a && a.id && !a.deleted_at && !a.archived_at);
 
-  // Sort: not-completed first (by due_date asc, nulls last), then
-  // completed at the end.
+  // Collect distinct teacher + question ids for the follow-up queries.
+  const teacherIds = Array.from(new Set(rows.map((r) => r.teacher_id).filter(Boolean)));
+  const allQuestionIds = Array.from(
+    new Set(
+      rows
+        .filter((r) => r.assignment_type === 'questions')
+        .flatMap((r) => (Array.isArray(r.question_ids) ? r.question_ids : [])),
+    ),
+  );
+
+  const [teachersRes, attemptsRes] = await Promise.all([
+    teacherIds.length
+      ? supabase
+          .from('profile_cards')
+          .select('id, first_name, last_name')
+          .in('id', teacherIds)
+      : Promise.resolve({ data: [] }),
+    allQuestionIds.length
+      ? supabase
+          .from('attempts')
+          .select('question_id')
+          .eq('user_id', userId)
+          .in('question_id', allQuestionIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const teacherById = new Map((teachersRes.data ?? []).map((t) => [t.id, t]));
+  const attemptedIds = new Set((attemptsRes.data ?? []).map((a) => a.question_id));
+
+  // Enrich rows: attach teacher card and (for questions type) done_count.
+  for (const r of rows) {
+    r.teacher = teacherById.get(r.teacher_id) ?? null;
+    if (r.assignment_type === 'questions') {
+      const qs = Array.isArray(r.question_ids) ? r.question_ids : [];
+      r.done_count = qs.filter((qid) => attemptedIds.has(qid)).length;
+      r.total_count = qs.length;
+    }
+  }
+
   rows.sort((a, b) => {
     const aDone = a.student_completed_at != null;
     const bDone = b.student_completed_at != null;
@@ -149,6 +185,9 @@ function AssignmentCard({ row }) {
       )}
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem', fontSize: '0.8rem', color: '#6b7280' }}>
         {teacher && <span>Assigned by {teacher}</span>}
+        {!done && row.assignment_type === 'questions' && row.total_count > 0 && (
+          <span>{row.done_count} of {row.total_count} done</span>
+        )}
         {dueLabel && (
           <span style={{ color: isOverdue ? '#b91c1c' : undefined }}>
             Due {dueLabel}{isOverdue ? ' (overdue)' : ''}
