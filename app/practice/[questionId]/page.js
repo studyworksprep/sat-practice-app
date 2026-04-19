@@ -11,7 +11,6 @@ import { useKeyboardShortcuts } from '../../../lib/useKeyboardShortcuts';
 import QuestionNotes from '../../../components/QuestionNotes';
 import DesmosStateButton from '../../../components/DesmosStateButton';
 import ConceptTags from '../../../components/ConceptTags';
-import AnswerChoiceTags from '../../../components/AnswerChoiceTags';
 import FlashcardsModal from '../../../components/FlashcardsModal';
 
 const htmlHasContent = (html) => {
@@ -1494,12 +1493,6 @@ export default function PracticeQuestionPage() {
                     </div>
                   )}
                 </div>
-                <AnswerChoiceTags
-                  questionId={data?.question_id}
-                  optionLabel={opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
-                  isCorrect={isCorrect}
-                  userRole={userRole}
-                />
               </div>
             );
           })}

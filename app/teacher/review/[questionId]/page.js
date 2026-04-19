@@ -7,7 +7,6 @@ import Link from 'next/link';
 import HtmlBlock from '../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../components/QuestionNotes';
 import ConceptTags from '../../../../components/ConceptTags';
-import AnswerChoiceTags from '../../../../components/AnswerChoiceTags';
 import DesmosStateButton from '../../../../components/DesmosStateButton';
 
 const htmlHasContent = (html) => {
@@ -240,12 +239,6 @@ export default function TeacherReviewPage() {
               <div className="optionContent">
                 <HtmlBlock className="prose" html={opt.content_html} />
               </div>
-              <AnswerChoiceTags
-                questionId={questionId}
-                optionLabel={opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
-                isCorrect={isCorrect}
-                userRole={data?.viewer_role}
-              />
             </div>
           );
         })}
