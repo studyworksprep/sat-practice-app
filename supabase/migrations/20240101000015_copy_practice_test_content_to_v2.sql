@@ -90,9 +90,11 @@ begin
 
   -- ----------------------------------------------------------
   -- 2. practice_test_modules → practice_test_modules_v2
-  --    Preserve UUIDs. Filter route_code to the CHECK-allowed set;
-  --    anything outside ('easy', 'hard', 'std') is renamed 'std' as
-  --    a safe default rather than failing the migration.
+  --    Preserve UUIDs. v1 stores route_code as uppercase tokens
+  --    (EASY/HARD/BASE) with some lowercase variants mixed in; v2's
+  --    CHECK constraint expects lowercase (easy/hard/std). Normalize
+  --    case and map 'base' to 'std'; anything else falls through to
+  --    'std' as a safe default.
   -- ----------------------------------------------------------
   insert into public.practice_test_modules_v2 (
     id, practice_test_id, subject_code, module_number,
@@ -103,7 +105,11 @@ begin
     ptm.practice_test_id,
     ptm.subject_code,
     ptm.module_number,
-    case when ptm.route_code in ('easy', 'hard', 'std') then ptm.route_code else 'std' end,
+    case lower(coalesce(ptm.route_code, ''))
+      when 'easy' then 'easy'
+      when 'hard' then 'hard'
+      else 'std'
+    end,
     ptm.time_limit_seconds,
     ptm.created_at
   from public.practice_test_modules ptm
