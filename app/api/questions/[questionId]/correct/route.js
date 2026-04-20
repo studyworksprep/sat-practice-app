@@ -3,7 +3,8 @@ import { createServiceClient } from '../../../../../lib/supabase/server';
 
 // POST /api/questions/:questionId/correct
 // Admin/Manager: update question content & taxonomy fields, flag as broken.
-export async function POST(request, { params }) {
+export async function POST(request, props) {
+  const params = await props.params;
   const questionId = params.questionId;
 
   // Prefer middleware-provided user ID (avoids stale-cookie auth issues)

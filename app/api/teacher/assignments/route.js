@@ -3,7 +3,7 @@ import { createClient } from '../../../../lib/supabase/server';
 
 // GET /api/teacher/assignments — list teacher's student assignments with details
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -92,7 +92,7 @@ export async function GET() {
 
 // POST /api/teacher/assignments — admin-only: assign a student to a teacher
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -149,7 +149,7 @@ export async function POST(request) {
 
 // DELETE /api/teacher/assignments — admin-only: remove a student from a teacher
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

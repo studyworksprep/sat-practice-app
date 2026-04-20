@@ -4,9 +4,10 @@ import { createClient } from '../../../../../../lib/supabase/server';
 const ALLOWED_FIELDS = ['first_name', 'last_name', 'high_school', 'teacher_invite_code'];
 
 // PATCH /api/admin/teachers/[teacherId]/profile
-export async function PATCH(request, { params }) {
+export async function PATCH(request, props) {
+  const params = await props.params;
   const { teacherId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

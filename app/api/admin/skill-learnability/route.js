@@ -20,7 +20,7 @@ async function requireAdminOrManager(supabase) {
 // GET /api/admin/skill-learnability
 // Returns all skills (from question_taxonomy) with their learnability ratings.
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdminOrManager(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -63,7 +63,7 @@ export async function GET() {
 // POST /api/admin/skill-learnability
 // Body: { updates: [{ skill_code, learnability }] }
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdminOrManager(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 

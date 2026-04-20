@@ -22,7 +22,7 @@ export async function GET(request) {
   const hide_broken  = searchParams.get('hide_broken')  === 'true';
   const only_broken  = searchParams.get('only_broken')  === 'true';
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Get user ID from middleware header (avoids stale-cookie auth issues)
   const userId = request.headers.get('x-user-id') || null;

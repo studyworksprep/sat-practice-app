@@ -5,7 +5,7 @@ import { createClient, createServiceClient } from '../../../../lib/supabase/serv
 // Accepts an image file, sends to Mathpix OCR, then Claude for extraction.
 // Returns { external_id, version_id, stem_html, stimulus_html } for preview.
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 
@@ -86,7 +86,7 @@ export async function POST(request) {
 // Saves corrected HTML to the question version
 // Body: { version_id, stem_html, stimulus_html? }
 export async function PUT(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

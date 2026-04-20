@@ -4,7 +4,7 @@ import { createClient } from '../../../../lib/supabase/server';
 // GET /api/act/dashboard
 // Returns ACT-specific dashboard data: section/category stats, recent accuracy, sessions, streak
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   const userId = auth.user.id;

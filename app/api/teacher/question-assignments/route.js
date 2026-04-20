@@ -3,7 +3,7 @@ import { createClient } from "../../../../lib/supabase/server";
 
 export async function GET(request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -188,7 +188,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -266,7 +266,7 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -323,7 +323,7 @@ export async function DELETE(request) {
 
 export async function PATCH(request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

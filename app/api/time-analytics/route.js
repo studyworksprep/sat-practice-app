@@ -3,7 +3,7 @@ import { createClient } from '../../../lib/supabase/server';
 
 // GET /api/time-analytics — per-question time analytics
 export async function GET(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   const user = auth.user;

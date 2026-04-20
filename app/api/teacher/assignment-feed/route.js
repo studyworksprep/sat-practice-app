@@ -5,7 +5,7 @@ import { createClient } from '../../../../lib/supabase/server';
 // Returns per-student assignment rows for the teacher dashboard panel.
 // Each row = one (assignment, student) pair, sorted by due_date ascending (past-due first).
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

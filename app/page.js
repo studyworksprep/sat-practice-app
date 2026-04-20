@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation';
 import { getUserWithProfile } from '../lib/db';
 import LandingClient from '../components/LandingClient';
 
-export default async function HomePage({ searchParams }) {
+export default async function HomePage(props) {
+  const searchParams = await props.searchParams;
   const confirmed = searchParams?.confirmed;
   const { user, profile } = await getUserWithProfile();
 

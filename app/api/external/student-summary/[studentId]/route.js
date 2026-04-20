@@ -9,7 +9,8 @@ const DOMAIN_COLS = 'domain_ini, domain_cas, domain_eoi, domain_sec, domain_alg,
 // GET /api/external/student-summary/[studentId]
 // Service-to-service endpoint for Lessonworks to fetch student performance data.
 // Authenticated via x-api-key header (shared secret).
-export async function GET(request, { params }) {
+export async function GET(request, props) {
+  const params = await props.params;
   if (!validateExternalApiKey(request)) {
     return NextResponse.json({ error: 'Invalid or missing API key' }, { status: 401 });
   }

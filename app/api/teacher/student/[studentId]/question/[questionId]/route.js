@@ -3,9 +3,10 @@ import { createClient } from '../../../../../../../lib/supabase/server';
 
 // GET /api/teacher/student/[studentId]/question/[questionId]
 // Returns question data with the STUDENT's attempt status (read-only for teacher view)
-export async function GET(_request, { params }) {
+export async function GET(_request, props) {
+  const params = await props.params;
   const { studentId, questionId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

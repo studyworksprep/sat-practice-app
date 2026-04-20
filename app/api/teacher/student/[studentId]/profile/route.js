@@ -4,7 +4,8 @@ import { createClient, createServiceClient } from '../../../../../../lib/supabas
 const ALLOWED_FIELDS = ['first_name', 'last_name', 'high_school', 'graduation_year', 'target_sat_score', 'start_date'];
 
 // PATCH /api/teacher/student/[studentId]/profile
-export async function PATCH(request, { params }) {
+export async function PATCH(request, props) {
+  const params = await props.params;
   const { studentId } = params;
 
   // Prefer middleware-provided user ID (avoids stale-cookie auth issues)

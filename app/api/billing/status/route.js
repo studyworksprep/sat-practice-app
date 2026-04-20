@@ -5,7 +5,7 @@ import { userHasAccess } from '../../../../lib/subscription';
 // GET /api/billing/status
 // Returns the current user's subscription/access status.
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

@@ -23,7 +23,7 @@ function ScoreBadge({ score, label }) {
 const SUBJECT_LABELS = { rw: 'R&W', RW: 'R&W', math: 'Math', m: 'Math', M: 'Math' };
 
 export default async function PracticeTestListPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/');
 

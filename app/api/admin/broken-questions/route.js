@@ -4,7 +4,7 @@ import { createClient } from '../../../../lib/supabase/server';
 // GET /api/admin/broken-questions
 // Returns all questions flagged as broken, with who flagged them and taxonomy info.
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

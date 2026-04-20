@@ -1,0 +1,50 @@
+# Supabase CLI configuration — local/dev environment for studyworks.
+#
+# Usage:
+#   supabase init                    # already done; this file committed
+#   supabase start                   # boot a local Postgres + Auth + Storage
+#   supabase db reset                # drop & recreate from supabase/migrations
+#   supabase db push                 # apply pending migrations to linked project
+#   supabase migration new <name>    # scaffold a new timestamped migration
+#
+# The linked remote project is configured via `supabase link` and lives
+# outside of this file (in `.supabase/` which is gitignored). Do not commit
+# project-ref or credentials here.
+
+project_id = "studyworks-local"
+
+[api]
+enabled = true
+port = 54321
+# The schemas the REST API exposes. `public` is the app; `auth` and `storage`
+# are managed by Supabase itself.
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+# Hard cap on row count per request. Keeps accidental full-table scans from
+# a misbehaving client from OOM-ing the API.
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false

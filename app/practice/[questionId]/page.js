@@ -11,7 +11,6 @@ import { useKeyboardShortcuts } from '../../../lib/useKeyboardShortcuts';
 import QuestionNotes from '../../../components/QuestionNotes';
 import DesmosStateButton from '../../../components/DesmosStateButton';
 import ConceptTags from '../../../components/ConceptTags';
-import AnswerChoiceTags from '../../../components/AnswerChoiceTags';
 import FlashcardsModal from '../../../components/FlashcardsModal';
 
 const htmlHasContent = (html) => {
@@ -1494,12 +1493,6 @@ export default function PracticeQuestionPage() {
                     </div>
                   )}
                 </div>
-                <AnswerChoiceTags
-                  questionId={data?.question_id}
-                  optionLabel={opt.label || String.fromCharCode(65 + (opt.ordinal ?? 0))}
-                  isCorrect={isCorrect}
-                  userRole={userRole}
-                />
               </div>
             );
           })}
@@ -1559,7 +1552,7 @@ export default function PracticeQuestionPage() {
             >
               <span className="brokenBtnIcon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="14" height="14">
-                  <path fill="currentColor" d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  <path d="M5 3v18M5 3h14l-4 6 4 6H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                 </svg>
               </span>
               {data?.is_broken ? 'Broken' : 'Broken?'}

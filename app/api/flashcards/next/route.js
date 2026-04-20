@@ -5,7 +5,7 @@ import { createClient } from '../../../../lib/supabase/server';
 // Returns a single card, weighted inversely by mastery (lower mastery = more likely).
 // exclude_id prevents showing the same card twice in a row.
 export async function GET(req) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: auth, error: authErr } = await supabase.auth.getUser();
   if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
 

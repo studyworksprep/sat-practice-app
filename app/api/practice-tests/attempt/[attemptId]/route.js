@@ -3,9 +3,10 @@ import { createClient, createServiceClient } from '../../../../../lib/supabase/s
 
 // DELETE /api/practice-tests/attempt/[attemptId]
 // Permanently deletes a completed practice test attempt and all related records.
-export async function DELETE(_request, { params }) {
+export async function DELETE(_request, props) {
+  const params = await props.params;
   const { attemptId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -94,9 +95,10 @@ export async function DELETE(_request, { params }) {
 // "Active" = first module (in subject/module order) with no submitted practice_test_attempt_items.
 // Fetches all practice_test_modules in one query to avoid .single() failures
 // and redundant round-trips.
-export async function GET(_request, { params }) {
+export async function GET(_request, props) {
+  const params = await props.params;
   const { attemptId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

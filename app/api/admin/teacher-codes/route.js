@@ -15,7 +15,7 @@ async function requireAdmin(supabase) {
 
 // GET /api/admin/teacher-codes — list all teacher codes
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -31,7 +31,7 @@ export async function GET() {
 // POST /api/admin/teacher-codes — create a new teacher code
 // Body: { code } (optional — auto-generates if omitted)
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
@@ -61,7 +61,7 @@ export async function POST(request) {
 // DELETE /api/admin/teacher-codes — revoke (delete) a teacher code
 // Body: { id }
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const auth = await requireAdmin(supabase);
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 

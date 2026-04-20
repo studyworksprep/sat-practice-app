@@ -51,22 +51,9 @@ as $$
          );
 $$;
 
--- Allow teachers to view practice_test_attempts for their students
-alter table public.practice_test_attempts enable row level security;
-
-drop policy if exists pta_select on public.practice_test_attempts;
-create policy pta_select on public.practice_test_attempts
-  for select using (
-    user_id = auth.uid()
-    or public.teacher_can_view_student(user_id)
-  );
-
-drop policy if exists pta_insert_self on public.practice_test_attempts;
-create policy pta_insert_self on public.practice_test_attempts
-  for insert with check (user_id = auth.uid() or public.is_admin());
-
-drop policy if exists pta_update_self on public.practice_test_attempts;
-create policy pta_update_self on public.practice_test_attempts
-  for update
-  using  (user_id = auth.uid() or public.is_admin())
-  with check (user_id = auth.uid() or public.is_admin());
+-- Note: the practice_test_attempts policies that originally lived
+-- in this file have been split out to
+-- 20240101000010_add_practice_test_attempts_base_policies.sql,
+-- because this file now sorts EARLIER than the migration that
+-- creates the practice_test_attempts table. See
+-- docs/architecture-plan.md Phase 1 §2.1 on schema drift.

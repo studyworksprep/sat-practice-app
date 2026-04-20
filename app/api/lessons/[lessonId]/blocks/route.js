@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../lib/supabase/server';
 
 // GET /api/lessons/[lessonId]/blocks — get ordered blocks
-export async function GET(request, { params }) {
+export async function GET(request, props) {
+  const params = await props.params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -26,9 +27,10 @@ export async function GET(request, { params }) {
 
 // PUT /api/lessons/[lessonId]/blocks — replace all blocks (full save)
 // Body: { blocks: [{ block_type, content, sort_order }, ...] }
-export async function PUT(request, { params }) {
+export async function PUT(request, props) {
+  const params = await props.params;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

@@ -1,0 +1,125 @@
+// Student review page. See docs/architecture-plan.md §3.4.
+//
+// The review entry point. Lists the questions the student should
+// review (wrong answers + items marked for review) and lets them
+// start a review-mode session. The session itself is served by the
+// existing /practice/s/[sessionId]/[position] page — review-mode
+// sessions look almost identical to practice sessions, with two
+// differences:
+//
+//   - practice_sessions.mode = 'review' so the rows are
+//     distinguishable later
+//   - the session-complete redirect goes back here instead of to
+//     the dashboard (handled in the practice page via mode-aware
+//     sessionCompleteHref)
+//
+// The student session page also pre-loads rationale + correct
+// answer when there's a prior attempt, so review-mode sessions
+// land directly in the reviewed state without forcing a
+// re-submission. See lib/practice/load-review-data.js.
+//
+// No client island on this first commit — read-only list with two
+// "start session" buttons. Filtering, sorting, and per-question
+// drill-down land in follow-ups.
+
+import { redirect } from 'next/navigation';
+import { requireUser } from '@/lib/api/auth';
+import { StatCard } from '@/lib/ui/StatCard';
+import { Card } from '@/lib/ui/Card';
+import { formatRelativeShort } from '@/lib/formatters';
+import { createReviewSession } from './actions';
+import { ReviewLauncher } from './ReviewLauncher';
+
+export const dynamic = 'force-dynamic';
+
+export default async function StudentReviewPage({ searchParams }) {
+  const sp = await searchParams;
+  const completed = sp?.complete === '1';
+
+  const { user, profile, supabase } = await requireUser();
+
+  if (profile.role === 'admin') redirect('/admin');
+  if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
+  if (profile.role === 'practice') redirect('/subscribe');
+
+  // Reviewable items: anything the student got wrong on their last
+  // attempt, OR anything they marked for review. Includes light
+  // metadata so the page header can show counts and the most recent
+  // activity. RLS pins this to user_id = auth.uid().
+  const { data: statusRows } = await supabase
+    .from('question_status')
+    .select('question_id, last_is_correct, marked_for_review, last_attempt_at')
+    .eq('user_id', user.id)
+    .or('last_is_correct.eq.false,marked_for_review.eq.true')
+    .order('last_attempt_at', { ascending: false })
+    .limit(2000);
+
+  const wrongCount = (statusRows ?? []).filter(
+    (r) => r.last_is_correct === false,
+  ).length;
+  const markedCount = (statusRows ?? []).filter((r) => r.marked_for_review === true).length;
+  const totalReviewable = (statusRows ?? []).length;
+
+  const lastReviewedAt = (statusRows ?? [])[0]?.last_attempt_at ?? null;
+
+  return (
+    <main style={S.main}>
+      <header style={S.header}>
+        <h1 style={S.h1}>Review</h1>
+        <p style={S.sub}>
+          Revisit questions you got wrong or saved for later. Each review
+          session shows the correct answer and rationale immediately —
+          no re-submission required.
+        </p>
+      </header>
+
+      {completed && (
+        <Card
+          tone="success"
+          style={{ padding: '0.75rem 1rem', marginBottom: '1.25rem', fontSize: '0.95rem' }}
+          role="status"
+        >
+          Review session complete. Pick another set below to keep going.
+        </Card>
+      )}
+
+      <section style={S.summary}>
+        <StatCard label="Wrong answers" value={wrongCount} />
+        <StatCard label="Marked for review" value={markedCount} />
+        <StatCard label="Total reviewable" value={totalReviewable} />
+        <StatCard
+          label="Last activity"
+          value={formatRelativeShort(lastReviewedAt) ?? '—'}
+          small
+        />
+      </section>
+
+      {totalReviewable === 0 ? (
+        <Card style={{ padding: '1.25rem', color: '#4b5563' }}>
+          <p style={{ margin: 0 }}>
+            Nothing to review yet. Practice some questions first, and
+            anything you get wrong (or mark for review) will show up here.
+          </p>
+        </Card>
+      ) : (
+        <ReviewLauncher
+          counts={{ wrong: wrongCount, marked: markedCount, total: totalReviewable }}
+          createReviewSessionAction={createReviewSession}
+        />
+      )}
+    </main>
+  );
+}
+
+const S = {
+  main: { maxWidth: 860, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
+  header: { marginBottom: '1.5rem' },
+  h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' },
+  sub: { color: '#4b5563', marginTop: 0 },
+  summary: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+    gap: '1rem',
+    marginBottom: '1.5rem',
+  },
+};

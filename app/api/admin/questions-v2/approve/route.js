@@ -18,7 +18,7 @@ import { createClient, createServiceClient } from '../../../../../lib/supabase/s
 // Body: { ids: string[] }  — clears approved_at/approved_by on the
 // listed rows. Used by an admin un-approving a question.
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -55,7 +55,7 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

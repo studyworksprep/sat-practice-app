@@ -43,12 +43,22 @@ create index if not exists lesson_blocks_lesson_idx on public.lesson_blocks(less
 --   question_link: { "question_id": "abc-123" }
 
 -- 3) LESSON TOPICS — many-to-many tagging by SAT domain/skill
+-- Uses a surrogate uuid primary key plus a unique index over
+-- the (lesson_id, domain_name, coalesce(skill_code, '')) expression.
+-- PostgreSQL doesn't allow function expressions in a PRIMARY KEY
+-- constraint (only bare column names are legal), but a UNIQUE
+-- INDEX can use expressions, which gives us the desired semantics:
+-- NULL and empty-string skill_code are treated as equivalent, so a
+-- single lesson can't be tagged twice with the same domain + skill.
 create table if not exists public.lesson_topics (
+  id          uuid primary key default gen_random_uuid(),
   lesson_id   uuid not null references public.lessons(id) on delete cascade,
   domain_name text not null,
-  skill_code  text,  -- null = domain-level tag only
-  primary key (lesson_id, domain_name, coalesce(skill_code, ''))
+  skill_code  text  -- null = domain-level tag only
 );
+
+create unique index if not exists lesson_topics_unique_idx
+  on public.lesson_topics (lesson_id, domain_name, coalesce(skill_code, ''));
 
 create index if not exists lesson_topics_domain_idx on public.lesson_topics(domain_name);
 

@@ -7,7 +7,6 @@ import Link from 'next/link';
 import HtmlBlock from '../../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../../components/QuestionNotes';
 import ConceptTags from '../../../../../components/ConceptTags';
-import AnswerChoiceTags from '../../../../../components/AnswerChoiceTags';
 import DesmosStateButton from '../../../../../components/DesmosStateButton';
 import FlashcardsModal from '../../../../../components/FlashcardsModal';
 
@@ -211,9 +210,9 @@ function DomainAnalyticsCard({ title, subtitle, domains }) {
 // ─── Timing bar (one per module) ──────────────────────────────────────────
 
 function TimingBar({ label, questions, onBarClick }) {
+  const [hoveredIdx, setHoveredIdx] = useState(null);
   const totalTime = questions.reduce((s, q) => s + (q.time_spent_ms || 0), 0);
   if (!totalTime) return null;
-  const [hoveredIdx, setHoveredIdx] = useState(null);
 
   return (
     <div className="ptrvTimingRow">
@@ -605,12 +604,6 @@ function QuestionDetail({ q, allQuestions, onSelect, onOpenFlashcards, onToggleE
                   <div className="optionContent">
                     <HtmlBlock html={opt.content_html || ''} className="prose" />
                   </div>
-                  <AnswerChoiceTags
-                    questionId={q.question_id}
-                    optionLabel={opt.label}
-                    isCorrect={optIsCorrect}
-                    userRole={userRole}
-                  />
                 </div>
               );
             })}

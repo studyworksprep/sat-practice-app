@@ -4,7 +4,7 @@ import { createClient } from '../../../../lib/supabase/server';
 // GET /api/act/filters
 // Returns { sections, categories } for ACT filter UI
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   try {
     // Fetch all distinct section + category + subcategory combos

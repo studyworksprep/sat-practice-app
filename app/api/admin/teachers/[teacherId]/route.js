@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
 
 // GET /api/admin/teachers/[teacherId] — teacher detail with assigned students and their activity
-export async function GET(_request, { params }) {
+export async function GET(_request, props) {
+  const params = await props.params;
   const { teacherId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

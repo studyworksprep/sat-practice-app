@@ -5,7 +5,7 @@ import { createClient, createServiceClient } from '../../../../lib/supabase/serv
 // Allows teachers to upload score conversion data (same as admin endpoint).
 // Body: { test_id, test_name, entries: [{ section, module1_correct, module2_correct, scaled_score }] }
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

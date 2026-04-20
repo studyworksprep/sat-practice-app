@@ -25,7 +25,7 @@ export async function GET(request) {
   const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 5000);
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Auth
   const { data: auth, error: authErr } = await supabase.auth.getUser();

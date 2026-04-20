@@ -38,9 +38,10 @@ async function verifyTeacherAccess(supabase, userId, studentId) {
 }
 
 // GET /api/teacher/student/[studentId]/registrations
-export async function GET(_request, { params }) {
+export async function GET(_request, props) {
+  const params = await props.params;
   const { studentId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -58,9 +59,10 @@ export async function GET(_request, { params }) {
 }
 
 // POST /api/teacher/student/[studentId]/registrations
-export async function POST(request, { params }) {
+export async function POST(request, props) {
+  const params = await props.params;
   const { studentId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -84,9 +86,10 @@ export async function POST(request, { params }) {
 }
 
 // DELETE /api/teacher/student/[studentId]/registrations
-export async function DELETE(request, { params }) {
+export async function DELETE(request, props) {
+  const params = await props.params;
   const { studentId } = params;
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

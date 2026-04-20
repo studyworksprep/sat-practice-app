@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Syntax-check standalone scripts
+        # node --check verifies each script parses without executing it.
+        # This catches the class of bugs where a .mjs/.js script has a silent
+        # syntax error that only surfaces at runtime.
+        run: |
+          shopt -s nullglob
+          for f in scripts/*.js scripts/*.mjs; do
+            node --check "$f"
+          done
+
+      - name: Build
+        run: npm run build
+        env:
+          # Placeholder values so `next build` can run without secrets.
+          # Real environment variables come from Vercel at deploy time.
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role
+          STRIPE_SECRET_KEY: sk_test_placeholder
+          STRIPE_WEBHOOK_SECRET: whsec_placeholder

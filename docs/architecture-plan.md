@@ -23,7 +23,7 @@ The top five concrete findings from the audit:
 4. **Schema drift from migrations:** the `practice_test_*` tables and the `get_question_neighbors` RPC both exist in the production database but are not defined in any committed migration file. A fresh database built from `supabase/migrations/` would be missing the entire practice test feature.
 5. **Seven source files over 1,000 lines** (two over 2,000) that do too many unrelated things in one place, making blast-radius analysis impossible when something breaks.
 
-The rebuild is not a big-bang rewrite. It's five phases, each independently shippable, each producing immediately visible improvements. Total duration depends on velocity, but none of the phases require taking the site down or pausing feature work.
+The rebuild is not a big-bang rewrite. It's six phases, each independently shippable, each producing immediately visible improvements. The entire plan runs alongside the live product under the parallel-build discipline described in §3.6: a new `app/(next)/` route tree is built next to the existing tree, a `profiles.ui_version` flag routes users individually, and a `feature_flags` kill switch pins everyone back to `legacy` instantly if anything goes wrong. No phase before Phase 6 changes what a production user sees unless we deliberately flip their flag. Total duration depends on velocity, but none of the phases require taking the site down, pausing feature work, or risking a visible regression.
 
 ---
 
@@ -204,7 +204,7 @@ Six principles that every piece of the rebuild should be tested against:
 - **Drop the v1 question tables** (`questions`, `question_versions`, `answer_options`, `correct_answers`, `question_taxonomy`) once `questions_v2` is the only read/write target. The `question_id_map` bridge table can stay for as long as legacy attempts reference old IDs, then be archived.
 - **Normalize `questions_v2.options`.** Move options into a child `question_options` table keyed by `(question_id, option_label)`. Keep the JSON path only for `correct_answer` metadata (text/number/tolerance for SPR) because that's genuinely variant-shape. Options are uniform and deserve SQL typing so indexes, tag joins (the `option_answer_choice_tags` we added last week), and search all work naturally.
 - **Define the `practice_test_*` schema in migrations.** Seven tables, all the RLS policies, all the indexes. This is mandatory foundational work — nothing else is safe until the production schema matches the migration history.
-- **Unify the assignment model** into one `assignments` table with a polymorphic `target_type` (`question_set` | `lesson` | `practice_test`) and a single `assignment_students` junction. Drop the four current assignment tables. This removes about 30% of the teacher-route complexity.
+- **Unify the SAT assignment model** into one `assignments` table with a polymorphic `target_type` (`question_set` | `lesson` | `practice_test`) and a single `assignment_students` junction. Drop the four current SAT assignment tables. This removes about 30% of the teacher-route complexity on the SAT side. **ACT keeps its own parallel `act_assignments` + `act_assignment_students` pair** — the ACT assignment model is passage-based and doesn't share the SAT's question-set shape well enough to be worth forcing into a single schema (see §3.6 on ACT separation). Cross-test reporting happens through the rollup layer described in §3.8, not by merging the tables.
 - **Standardize audit columns on every table:** `created_at`, `created_by`, `updated_at`, `updated_by`, `deleted_at` (soft delete). A single trigger per table maintains `updated_at`. `deleted_at IS NULL` becomes the default filter in every read query and in every RLS policy.
 
 **RLS discipline:**
@@ -220,6 +220,16 @@ Six principles that every piece of the rebuild should be tested against:
 - `pgaudit` or similar for admin-critical tables (`profiles` role changes, `subscriptions`, `teacher_student_assignments`).
 
 ### 3.3 Server layer (API)
+
+**Server Components and Server Actions are the primary technique; route handlers are the secondary one.** Per §3.9, any page in the `app/next/*` tree is an `async` Server Component that reads its initial data directly (no HTTP round-trip, no `/api/*` call, no JSON envelope). Any mutation originating from a form or button is a Server Action imported from a `'use server'` module. The `/api/*` tree continues to exist for three specific cases:
+
+1. **External callers** — `/api/external/*`, `/api/public/*`, `/api/webhooks/*` and any endpoint a non-browser client (the LessonWorks sync, Stripe, a partner integration) needs to hit. These stay as traditional route handlers.
+2. **Client-initiated fetches where Server Actions don't fit** — live polling, long-running batch jobs, anything whose shape demands a stable REST contract.
+3. **Bulk data endpoints** — admin exports, background jobs, places where the volume makes Server Actions awkward.
+
+Most of the current ~100 routes fall into none of those cases — they exist because a form or a `useEffect` needed to talk to the database. About 30 of them collapse into Server Actions in Phase 2; another ~40 collapse into Server Component data fetching and disappear entirely. The rest stay as route handlers and get refactored onto the shared helpers below.
+
+**The shared helpers work in both contexts.** `requireUser()`, `requireRole()`, `requireServiceRole('reason')` from `lib/api/auth.js` are callable from route handlers AND from Server Actions — both run server-side and both use `cookies()` for session reading. The only difference is the return shape: route handlers call `ok()`/`fail()` to build a `NextResponse`; Server Actions call `actionOk()`/`actionFail()` to return plain objects that React's Action machinery can consume. Both are exported from `lib/api/response.js`.
 
 **One auth helper module.** `lib/api/auth.js` exports:
 
@@ -269,7 +279,7 @@ The `db-max-rows` silent-truncation bug becomes structurally impossible because 
 /api/questions/[id]/attempts
 ```
 
-Test-type (SAT vs ACT) becomes a query parameter on `/api/questions` and `/api/practice-tests` rather than a parallel `/api/act/*` tree. One set of handlers, one set of bug fixes, no more drift.
+SAT and ACT endpoints remain parallel trees (`/api/questions/*` and `/api/act/questions/*`, `/api/practice-tests/*` and `/api/act/practice-tests/*`) because the content shape, assignment model, scoring rules, and test structure differ fundamentally — ACT tests have no module routing, no adaptive logic, and a passage-based assignment model that doesn't compress cleanly into the SAT's question-set shape. What both trees do share is the helper layer defined above: same `requireRole()`, same `paginate()`, same `ok()`/`fail()`, same rate limiting, same logging. Cross-cutting bugs get fixed once. Test-specific logic stays isolated. A dedicated `/api/me/activity` rollup endpoint reads from both trees and returns unified counts (total attempts, total practice tests, assignment completion percentages) so dashboards and managerial reporting can aggregate across the two without merging schemas.
 
 **Standard route skeleton.** Every new route looks like this:
 
@@ -295,18 +305,71 @@ That's the maximum amount of boilerplate per route. Everything above is mechanic
 
 ### 3.4 Client layer
 
-**Server components for initial data.** Most pages under `app/` are converted to server components that fetch their initial data via `lib/db.js` directly (no HTTP round-trip, no `useEffect`, no client-side loading state). The page renders on the server, streams HTML, and hydrates only the parts that need interactivity. The 79 `fetch+useEffect` pattern becomes maybe 10, reserved for genuinely interactive things (live polling of assignment completion, mid-session stats updates).
+**Server Components are the default; client components are the exception.** Per §3.9 the entire `app/next/*` tree is built with async Server Components for initial data. A page fetches its data directly inline, renders HTML on the server, streams it, and hydrates only the parts that need interactivity. The 79 `fetch+useEffect` pattern goes to near-zero — not because we refactored it 79 times, but because the architecture no longer needs it.
 
-**Client components only where interaction happens.** A page like `/dashboard` is a server component that hands data to a small `<DashboardInteractive>` child which owns the click handlers and state. Component decomposition enforces this naturally: if a file is over 500 lines, it's trying to do both, and the first refactor is splitting it.
+**Client components only where interaction happens.** A page like `/dashboard` is a Server Component that hands data to a small `<DashboardInteractive>` child which owns the click handlers and any transient state. Component decomposition enforces this naturally: if a file is over 500 lines, it's probably trying to do both, and the first refactor is splitting it along the server/client boundary.
 
-**Shared data-fetching hook for the remaining client-side cases.** For the real cases where the client needs to fetch (mid-session updates, form submissions that reload data), one hook:
+**Forms are Server Actions, not fetch handlers.** Every form in the new tree uses `<form action={serverAction}>` with `useActionState` for pending/error state and `useOptimistic` for instant feedback on mutations. There is no client-side `fetch('/api/...', { method: 'POST' })` pattern in Phase 2 code — if a form used to need one of those, it becomes an imported Server Action instead.
+
+```jsx
+// app/next/(student)/dashboard/page.js — Server Component
+import { requireRole } from '@/lib/api/auth';
+import { updateTargetScore } from './actions';
+import { DashboardInteractive } from './DashboardInteractive';
+
+export default async function DashboardPage() {
+  const { user, profile, supabase } = await requireRole(['student']);
+  const { data: stats } = await supabase.rpc('get_dashboard_stats', { user_id: user.id });
+  return <DashboardInteractive profile={profile} stats={stats} updateTargetScore={updateTargetScore} />;
+}
+```
+
+```jsx
+// app/next/(student)/dashboard/actions.js — Server Actions
+'use server';
+import { requireRole } from '@/lib/api/auth';
+import { actionOk, actionFail } from '@/lib/api/response';
+import { refresh } from 'next/cache';
+
+export async function updateTargetScore(prevState, formData) {
+  const { user, supabase } = await requireRole(['student']);
+  const target = Number(formData.get('target'));
+  if (!Number.isFinite(target) || target < 400 || target > 1600) {
+    return actionFail('Target must be between 400 and 1600');
+  }
+  await supabase.from('profiles').update({ target_sat_score: target }).eq('id', user.id);
+  refresh();
+  return actionOk(null);
+}
+```
+
+```jsx
+// app/next/(student)/dashboard/DashboardInteractive.js — Client Component
+'use client';
+import { useActionState } from 'react';
+
+export function DashboardInteractive({ profile, stats, updateTargetScore }) {
+  const [state, submit, pending] = useActionState(updateTargetScore, null);
+  return (
+    <form action={submit}>
+      <input name="target" defaultValue={profile.target_sat_score} />
+      <button disabled={pending}>Save</button>
+      {state && !state.ok && <p>{state.error}</p>}
+    </form>
+  );
+}
+```
+
+That's the whole Phase 2 page shape. Three small files, shared auth helpers, Server Action for mutation, no route handler, no client-side fetch, no manual pending state. The legacy equivalent is ~200 lines spread across a page, a client hook, a fetch wrapper, and an API route handler.
+
+**For the rare cases where the client still needs to fetch** — live polling of assignment completion status, mid-session stats updates, any genuinely interactive data stream — a small shared hook exists:
 
 ```js
 useApi(url, { params })
   → { data, error, isLoading, refetch }
 ```
 
-The hook handles the `json.ok` convention from §3.3, reads the standard error shape, deduplicates in-flight requests to the same URL, and can optionally cache for the session. It's a dozen lines; the win is consistency.
+The hook handles the `json.ok` convention from §3.3, reads the standard error shape, deduplicates in-flight requests to the same URL, and can optionally cache for the session. It's a dozen lines, used in under 10 places across the new tree, and reserved for cases where Server Components + Server Actions genuinely don't fit.
 
 **Shared component primitives.** A small, focused set that gets imported everywhere:
 
@@ -324,15 +387,59 @@ The hook handles the `json.ok` convention from §3.3, reads the standard error s
 
 The `<QuestionRenderer>` is the biggest win. All three current implementations compute option state, handle MCQ vs SPR, render the stimulus/stem/options/rationale, integrate Desmos and flashcards and concept tags — they should be one component with a `mode` prop and a small set of slots for teacher-only elements.
 
-**URL-driven state, not localStorage-driven.** The `practice_session_*`, `teacher_review_session_*`, `act_session_*` localStorage caches all exist to compensate for a frontend that doesn't have server-rendered pagination. Once pages fetch from the server with real pagination (via the `paginate()` helper), the session state is just URL params — and URL params survive reloads, share cleanly, and don't accumulate until they bust a storage quota. The shared `<QuestionRenderer>` gets `prev`/`next` links from the server, not from JS-parsing a localStorage CSV.
+**Server-side session state, not localStorage.** The `practice_session_*`, `teacher_review_session_*`, `act_session_*` localStorage caches all exist to compensate for a frontend that doesn't have server-rendered pagination. In the rebuild, session state (current question list, position, timers, draft answers) moves into a server-side `practice_sessions` table keyed by an opaque `sessionId` (see §3.7). The client only knows its session id; the server looks up everything else. URL params survive reloads, share cleanly, and don't leak question content; `localStorage` stops being a privacy surface entirely.
 
-The only legitimate uses of localStorage in the rebuild:
+The only legitimate use of localStorage in the rebuild is per-question timer recovery (`{qid}_elapsed`), and even that could move to session storage or the URL hash. Both client-side toggles from the legacy tree (`studyworks_test_type` and `sat_teacher_mode`) are removed — see the navigation model below. Everything else goes away.
 
-- `studyworks_test_type` — user UI preference (SAT vs ACT tab)
-- `sat_teacher_mode` — user UI preference (teacher toggle)
-- Small per-question timer state for mid-session recovery (`{qid}_elapsed`) — and even this could move to session storage or the URL hash
+**Navigation tree, not toggles.** The legacy product uses two client-side toggles that mutate UI context: `studyworks_test_type` (SAT vs ACT) and `sat_teacher_mode` (privileged-user view mode). Both disappear in the rebuild. A user's experience is determined entirely by their role and the URL they're on — no flags to sync, no state to persist, no "why am I seeing this" confusion.
 
-Everything else goes away.
+The new top-level route tree:
+
+```
+app/(next)/
+  (student)/                          — student role only
+    dashboard/
+    practice/s/[sessionId]/[position] — opaque session URLs (§3.7)
+    review/
+    practice-test/
+  (tutor)/                            — tutor, manager, admin
+    tutor/
+      dashboard/
+      training/                       — tutor's own private practice
+      training/review/                — tutor's own review of their own attempts
+      students/                       — list of assigned students
+      students/[id]/                  — student activity, scores, attempts
+      browse/                         — curriculum-planning browse, full metadata
+  (manager)/
+    manager/
+      dashboard/
+      teachers/                       — list of assigned tutors
+      teachers/[id]/                  — tutor's training + their students
+      teachers/[id]/students/[id]/
+  (admin)/
+    admin/
+  act/                                — fully parallel ACT tree
+    (student)/
+      dashboard/
+      practice/s/[sessionId]/[position]
+      review/
+      practice-test/
+    (tutor)/
+      tutor/
+        training/
+        students/
+        ...
+    (manager)/
+      manager/
+        ...
+```
+
+Key consequences:
+
+- **`/tutor/training` looks and feels exactly like the student practice and review UIs.** That's the whole point — tutors experience what their students experience. The shared `<QuestionRenderer>` and the shared practice-session flow serve both audiences with zero divergence in rendering. The only difference is the data filter: on `/tutor/training`, the queries are `where user_id = auth.uid()`, and RLS via `can_view` (§3.8) protects the row regardless. There is no "teacher mode" toggle, no inline `isTeacherMode` branch in the renderer, no way for the two experiences to drift.
+- **`/act/*` is a complete parallel tree.** ACT dashboards, practice, practice tests (no module routing), passage-based assignments, review, and tutor training all live under the ACT path. The SAT and ACT trees share backend helpers (auth, pagination, rate limiting, response envelopes, the watermarking helper from §3.7) and share UI primitives (`<Button>`, `<Card>`, `<Modal>`, `<QuestionRenderer>`), but not data schema or navigation state. Cross-test reporting lives in a dedicated `user_activity_rollup` view and the `/api/me/activity` endpoint, so a dashboard that wants to show "total attempts across SAT + ACT" or "practice tests completed, both tests" can do so with a single query.
+- **There are no test-type or teacher-mode toggles to forget to render, debug, or sync.** The URL is the mode.
+- **Login lands the user on their default test type.** A new `profiles.default_test_type` column (`sat` | `act`, default `sat`) decides whether a fresh login redirects to `/dashboard` or `/act/dashboard`. Users navigate between the two freely through a top-level nav item; the last-visited tree is remembered per-session for return visits.
 
 **Error boundaries on every route segment.** Each of the following gets an `error.js` that captures the actual error, shows a recovery button, and surfaces the stack to support (following the pattern from `app/dashboard/error.js`):
 
@@ -368,11 +475,159 @@ These don't have to catch every bug — they have to catch "is the whole platfor
 
 **A shared design-token file.** Extract from `globals.css` into `app/design-tokens.css` or CSS variables on `:root`. Everything else consumes tokens. Long-term, `globals.css` shrinks from 8,223 lines to maybe 500 of actual global rules plus the tokens.
 
+### 3.6 Parallel-safe rebuild strategy
+
+Nothing in this rebuild is allowed to change the experience of a real student or tutor until we flip them over explicitly. The entire plan runs alongside the live product, not inside it. Five rules enforce this:
+
+**1. New code lives in a parallel route tree.** A new top-level group `app/(next)/` contains every rebuilt page. The existing routes (`app/practice`, `app/dashboard`, `app/teacher`, `app/act-practice`, etc.) stay exactly as they are and keep serving production traffic throughout Phases 1–5. Builds produce both trees. Nobody reaches the new tree unless middleware routes them to it.
+
+**2. A per-user `ui_version` flag.** A new column `profiles.ui_version` (`legacy` | `next`, default `legacy`) determines which tree each user sees. Next.js middleware reads the flag on every request and rewrites the URL into the chosen tree. Rollout is a single UPDATE per cohort — internal accounts first, then a handful of opt-in tutors, then a beta cohort of friendly students, then new signups, then everyone. Rollback for any individual user is one SQL statement.
+
+**3. A `feature_flags` table as the kill switch.** One row, one key (`force_ui_version`), one nullable value (`legacy` | `next` | `null`). Middleware consults it before the per-user flag. If anything goes wrong in production, `update feature_flags set value = 'legacy' where key = 'force_ui_version'` pins every user back to the old tree instantly — no redeploy, no env-var change, no git commit. The flag is cached server-side for at most 5 seconds, so the blast radius of a flip is bounded to that window. The same mechanism supports the inverse flip (`force = 'next'`) for final cut-over verification.
+
+**4. Database changes are additive-only through Phase 5.** New tables and columns appear; old ones stay untouched. Views and triggers bridge shapes where two code paths need to coexist. Any table being replaced (the unified `assignments` table, the new `practice_sessions` server-state table, the normalized `question_options` child table) uses dual-write during the transition: the legacy code path keeps writing to the old shape, a trigger or app-level helper forwards the write to the new shape, and the `(next)` code path reads only from the new shape. No data migration is irreversible until Phase 6.
+
+**5. Every PR runs tests on both trees.** The Playwright integration suite from §3.5 runs twice on every pull request — once with `ui_version=legacy` forced, once with `next` forced. A regression in either tree blocks merge. This keeps the legacy tree maintainable as a rollback target for as long as we carry it.
+
+This discipline stretches calendar time slightly — we carry duplication through several phases — but the alternative is a big-bang cut-over, which is the single largest incident risk the rebuild could take on. Phase 6 (Decommission) is where the duplication is finally paid down.
+
+### 3.7 Content protection
+
+**Threat model.** The risk we're defending against is *bulk automated extraction* of question content, not individual student curiosity. Students are encouraged to see metadata — difficulty, score band, domain, skill, concept tags, rationale after submission — because it's part of the product's value: the feeling that Studyworks is a sneak peek at how the SAT actually works. The goal is to raise the cost of scraping enough that it stops being practical at scale, without degrading the honest student experience in any way.
+
+**Today's exposure** (audited April 2026):
+
+- `/api/questions/[id]` returns full `stimulus_html`, `stem_html`, and `options[].content_html` as JSON on every load. An authenticated attacker can iterate sequential question IDs and dump the content bank.
+- `correct_option_id` and `correct_text` are correctly guarded (only after submission, or for privileged roles). Good.
+- `rationale_html` and `explanation_html` are not in the initial response. Good.
+- `localStorage` under `practice_session_*` stores question IDs and trimmed metadata, but not content. Good.
+- There is no rate limiting on content endpoints, no scraper detection, no watermarking, no session gating.
+
+**Defenses to add**, in order of payoff:
+
+- **Server-rendered question content.** The practice page under `app/next/*` is a React Server Component — per §3.9 this is the default for the whole new tree, not a custom anti-scraping mechanism. Question HTML is rendered on the server and streamed as rendered markup, not as a JSON payload containing raw `stem_html`. The anti-scraping benefit comes for free: DevTools shows formatted HTML for a single question, not a scrapable object or array, and an attacker loses the ability to pattern-match on stable JSON field names. A determined scraper can still parse the DOM, but the friction is orders of magnitude higher than a JSON endpoint. Because this is now framework behavior, the content protection story shrinks to just the rate limiting, session URLs, watermarking, and scraper-signal work; the rendering itself is no longer custom.
+
+- **Opaque session-position URLs.** Instead of `/practice/[questionId]` (where iterating IDs reveals content), the new URL is `/practice/s/[sessionId]/[position]`. The server maps `(sessionId, position) → questionId` via the `practice_sessions` table, scoped to the authenticated user. URL manipulation reveals nothing. Starting a real session is rate-limited and audited. An attacker would have to start a real session and burn their rate-limit budget to scrape even a handful of questions.
+
+- **Server-side session state.** Replace every `practice_session_*` localStorage entry with rows in `practice_sessions` (session id, owner, question list, current position, timers, draft answers, TTL). The client only knows its session id. This kills the localStorage quota-crash class of bugs as a side effect, and it removes the "scrape from DevTools > Application > Local Storage" attack surface entirely.
+
+- **Per-endpoint rate limiting.** Upstash Redis (free tier covers our first ~100k users) fronts `/api/questions/*`, `/api/practice-tests/*`, `/api/sessions/*`, and the ACT equivalents. Normal students don't issue 60 requests per minute; scrapers do. Tiered response: soft throttle → hard throttle → role-specific lockout → Sentry alert. Rate-limit thresholds are calibrated against the 99.9th-percentile of observed real-student cadence from production logs, with a 10x headroom.
+
+- **Behavioral scraper detection.** A small `lib/api/scraperSignals.js` helper watches per-session request cadence. A real student spends 30–180 seconds per question and interacts with the page (option selection, rationale view, Desmos, keyboard events). A scraper issues sequential requests with millisecond spacing and no DOM interaction. Unambiguous patterns escalate to a lockout. The helper starts in shadow mode (logs only, no blocks) for a week before enforcement, to rule out false positives against edge cases like keyboard-driven power users.
+
+- **Per-user HTML watermarking.** A `lib/content/watermark.js` helper injects a zero-width character pattern derived from `user_id` into rendered question HTML. The pattern is invisible to normal rendering, preserved across copy-paste, and decodable from any leaked text. If question content appears publicly — a dumped Discord channel, a sold answer key, a public GitHub repo — we can trace the source account. Cheap to implement and a meaningful deterrent against insider leaks by students, tutors, or compromised sessions.
+
+- **Server-gated rationale delivery.** `/api/questions/[id]/rationale` checks that an `attempts` row exists for the current user and question before returning the explanation. No client-side flag can bypass this check. The same rule applies to the ACT rationale endpoint.
+
+- **Metadata stays visible to students.** Concept tags, difficulty, score band, domain, and skill are part of the honest student experience and the filter UI. The rate limiter, session gating, server rendering, and watermarking carry the anti-scrape load — metadata visibility is unrelated to that threat.
+
+None of these is disruptive to real users. They all land in the `(next)` tree and stay dark until a cohort is flipped over. The shadow-mode phase for scraper detection and rate limiting means we observe without enforcing for long enough to calibrate against real traffic.
+
+### 3.8 Unified visibility model
+
+The current RLS implementation re-derives "can this user see this row" independently on every user-owned table. `teacher_can_view_student()` is called from seven migration files; manager visibility has needed three separate `fix_manager_*_visibility.sql` patches to chase drift; the cross-tier `manager → teacher → student` path is implemented differently in each policy that needs it.
+
+This is unnecessary. Every supervisory relationship is structurally the same: a parent tier can see its direct children AND everything its children can see. The whole thing collapses into one SQL function.
+
+**`can_view(target_user_id)` — one function, one source of truth:**
+
+```sql
+create or replace function public.can_view(target uuid)
+  returns boolean
+  language sql
+  stable
+  security definer
+as $$
+  select
+    auth.uid() = target                              -- self
+    or is_admin()                                    -- admin sees all
+    or exists (                                      -- tutor → student
+      select 1 from teacher_student_assignments
+      where teacher_id = auth.uid() and student_id = target
+    )
+    or exists (                                      -- manager → tutor
+      select 1 from manager_teacher_assignments
+      where manager_id = auth.uid() and teacher_id = target
+    )
+    or exists (                                      -- manager → student via tutor
+      select 1
+      from manager_teacher_assignments mta
+      join teacher_student_assignments tsa using (teacher_id)
+      where mta.manager_id = auth.uid() and tsa.student_id = target
+    );
+$$;
+```
+
+Every RLS policy on user-owned data — SAT and ACT — collapses to a one-liner:
+
+```sql
+create policy visible_rows on attempts                  for select using (can_view(user_id));
+create policy visible_rows on lesson_progress           for select using (can_view(user_id));
+create policy visible_rows on question_assignment_students
+                                                        for select using (can_view(student_id));
+create policy visible_rows on practice_test_attempts    for select using (can_view(user_id));
+create policy visible_rows on act_attempts              for select using (can_view(user_id));
+create policy visible_rows on act_assignment_students   for select using (can_view(student_id));
+-- ...and so on for every table where a row belongs to a user
+```
+
+**Consequences:**
+
+1. **One place to change the hierarchy.** Adding a district-admin tier above manager means editing `can_view` once. Every policy inherits the change automatically. No hunt through migrations. No repeat of the three `fix_manager_*_visibility` incidents.
+2. **Manager visibility stops drifting.** The three existing fix migrations exist precisely because manager→student was re-derived per table. With `can_view`, there is nowhere for drift to hide.
+3. **Tutor training requires no extra plumbing.** The `/tutor/training` page queries `attempts where user_id = auth.uid()`, which passes `can_view` via the self clause. The same RLS policy that protects students' attempts protects tutors' training attempts. Tutors never see their own training rows in their "my students" view because that query filters by `user_id in (list_visible_users('student'))`, not by `can_view` alone. Role is the filter; `can_view` is the gate.
+4. **Companion helper `list_visible_users(role_filter)`** returns the set of ids the current user can see, optionally filtered to a specific role (e.g. `'student'` for the tutor's student list, `'teacher'` for the manager's tutor list). Drives every list-my-people page with a single query.
+5. **Cross-test aggregation is trivial.** The `user_activity_rollup` view from §3.3 queries SAT and ACT tables under RLS and unions the results. A manager's dashboard sees the aggregate of everyone `can_view` allows, across both test types, in one SELECT.
+
+**Closure table — defer.** If a manager ever ends up with tens of thousands of transitively-visible students, we materialize a `user_visibility (viewer_id, target_id)` closure table maintained by triggers and redirect `can_view` to read from it. Not needed at current scale; the direct-query implementation handles thousands per manager comfortably.
+
+**Audit back-test.** Before any RLS policy is rewritten to use `can_view`, a one-off script runs during Phase 1 that compares the result of `can_view(x)` against the current helper-function decisions for every (viewer, target) pair that exists in production. Zero diffs is the precondition for switching the policies over in Phase 2. This is a read-only check and does not touch production RLS.
+
+### 3.9 React 19 / Next 16 feature adoption policy
+
+Phase 1.5 brings the platform up to Next 16 + React 19.2. A handful of the new capabilities materially change how we'd build Phase 2 and beyond. This section is the explicit list of what we adopt, what we defer, and what we don't touch.
+
+**Adopt — first-class techniques in the `app/next/*` tree:**
+
+- **Server Components.** The default. Every page under `app/next/*` is an `async` Server Component that fetches its initial data via `lib/db.js` (or the Supabase server client) directly, without an HTTP round-trip. This is how the audit's "79 `fetch()` in `useEffect`" pain point gets fixed at the architecture level instead of being refactored case by case. Client components exist only where genuine interactivity requires them, and they get their initial data as props from the server component above them.
+- **Server Actions.** For any mutation that originates from a `<form>` or a button click, the handler is an `async function` with the `'use server'` directive, imported into the client component and passed as the `action` prop of the form. This replaces ~30 of our current `/api/*` routes that exist only to receive form submits. The shared auth helpers (`requireUser`, `requireRole` from `lib/api/auth.js`) work unchanged inside Server Actions because both run server-side and both use `cookies()`.
+- **`useActionState`** (from `react`). The canonical hook for tracking form state — pending, error, last-result. Every form in `app/next/*` uses it. Replaces the manual `useState` triple (pending/error/data) we have scattered across the legacy tree.
+- **`useOptimistic`** (from `react`). For any mutation where the user expects instant feedback — submitting an answer, toggling a flashcard mastery level, marking an assignment complete. The UI updates immediately, the Server Action runs, React reconciles. No manual state management.
+- **`useFormStatus`** (from `react-dom`). For shared button/input components that need to know the surrounding form's submission state without prop-drilling.
+- **`use()` hook** (from `react`). For passing promises from server components to client components and unwrapping them with Suspense. Useful for secondary data that the page can render without but wants to stream in progressively.
+- **React Compiler** (stable, opt-in via `reactCompiler: true` in `next.config.js`). Enabled the moment the Phase 1.5 upgrade PR lands. Automatic memoization reduces re-renders across the large legacy-tree files (AdminDashboard, practice page, DashboardClient) without touching the code — this is the biggest perceived-performance win we can get before Phase 5 decomposes those files.
+- **Document metadata in components** (`<title>`, `<meta>`, `<link>`). Rendered inline wherever the metadata is known, hoisted to `<head>` automatically by React. Replaces any future need for the legacy `generateMetadata` export dance.
+- **Async `<script>` auto-dedupe** and the `preload` / `preinit` / `prefetchDNS` / `preconnect` APIs from `react-dom`. Used to control Desmos, MathJax, KaTeX, and jsPDF loading on the practice page. The audit flagged eager loading of these as a cold-start issue; with React 19 we can declare them inside the components that depend on them and let React dedupe and hoist.
+- **`updateTag()`** (from `next/cache`, Server Actions only). For read-your-writes semantics after teacher/admin mutations. When a teacher updates a student note, calling `updateTag(\`note-${id}\`)` expires the cache and the teacher sees their edit on the same request — no stale-while-revalidate window.
+- **`refresh()`** (from `next/cache`). One call to refresh the client router after a Server Action without manual `router.refresh()` choreography.
+- **`<Activity mode="hidden">`** (React 19.2). Used in two specific places: (a) pre-rendering the next question in a practice session while the student is on the current one, so "next" is instant; (b) preserving client state when navigating away from a partially-answered question, so returning restores the draft without a round-trip to `practice_sessions`. The server-side `practice_sessions` table still exists for anti-scraping and true persistence, but `draft_answers` can become thinner because most drafts live in React state.
+- **`useEffectEvent`** (React 19.2). Wherever effects currently disable the lint rule to exclude a dependency (analytics callbacks that reference theme/user id, etc.).
+- **`ref` as a prop** (React 19). New components accept `ref` directly, no `forwardRef` wrapper. The audit found zero existing `forwardRef` usages so this is a policy for new code only.
+
+**Adopt cautiously — measure before committing:**
+
+- **React Performance Tracks in Chrome DevTools** (React 19.2). Pure observability; flip on for profiling when investigating specific issues. Not a build-time change.
+- **Stylesheets with `precedence`** (React 19). Useful when Phase 4 unifies the three question renderer implementations and the CSS layering becomes a design concern. Until then, our global CSS strategy is unchanged.
+- **`next typegen`** (Next 16). Auto-generates `PageProps` / `LayoutProps` / `RouteContext` types. Enable when Phase 5 adopts TypeScript; not useful today.
+
+**Defer indefinitely or never:**
+
+- **Cache Components / `cacheComponents: true` (partial prerendering).** Studyworks pages are overwhelmingly dynamic — every real page reads per-user auth state. PPR is most valuable for pages that are mostly static with small dynamic holes, which isn't the shape of our app. Revisit only if a specific high-traffic static page surfaces.
+- **Build Adapters API** (Next 16 alpha). For deployment platforms and custom integrations. We're on Vercel; not our problem.
+- **`cacheSignal`** (React 19.2). Only useful if we're building our own RSC framework. Next.js handles this for us.
+- **Next.js DevTools MCP for AI-assisted migration.** Interesting but orthogonal — this session is already AI-assisted through Claude Code.
+
+**Consequences for the rest of §3 and §4:**
+
+The three sections that change meaningfully as a result of this policy are §3.3 (Server layer), §3.4 (Client layer), and §3.7 (Content protection). Phase 2 in §4 restructures around Server Components as the primary technique. Those updates follow in this document.
+
 ---
 
 ## 4. Migration Plan
 
-Five phases, each independently shippable, each producing visible improvement. Nothing in this plan requires pausing feature work or taking the site down.
+Six phases plus a 1.5 interlude, each independently shippable, each producing visible improvement. Nothing before Phase 6 changes what a production user sees without a deliberate `ui_version` flip. Nothing in this plan requires pausing feature work or taking the site down. Phase 1.5 is the Next.js 16 / React 19.2 dependency upgrade that lands between Phase 1 (foundation) and Phase 2 (backend consolidation), so Phase 2 code is written against current APIs from day one.
+
+**Parallel-build discipline (applies to every phase).** Per §3.6, all new code from Phase 1 onward lands in `app/(next)/` and in new database tables/columns. Legacy routes and legacy tables stay untouched until Phase 6. Phases 2–5 read "refactor" as "write the `(next)` version alongside the existing one", not "edit the existing one in place". Playwright runs both trees on every PR. The `feature_flags.force_ui_version` kill switch is the single-statement rollback path at every step.
 
 ### Phase 0 — Questions V2 Completion (prerequisite)
 
@@ -390,21 +645,237 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 6. **Add a `.github/workflows/ci.yml`** that runs lint + build on every PR.
 7. **Wire up Sentry (or equivalent)** on both server and client. Every API route gets a catch-all wrapper that forwards to Sentry.
 8. **Write the four shared helpers** in `lib/api/`: `auth.js`, `response.js`, `paginate.js`, `logger.js`. Plus `lib/stripe.js` and `lib/anthropic.js` as the canonical lazy-init SDK getters.
+9. **Stand up the parallel-build machinery** from §3.6. Create the empty `app/(next)/` route tree. Add the `profiles.ui_version` column (default `legacy`). Create the `feature_flags` table and seed the `force_ui_version` row (initially `legacy` because the next tree is empty). Write the middleware that consults both flags and rewrites the URL. Add a one-screen `/admin/feature-flags` panel (in the legacy tree, admin-only) for flipping the kill switch without touching SQL.
+10. **Create the `practice_sessions` server-state table** from §3.7, dormant. Columns: `id`, `user_id`, `test_type`, `question_ids jsonb`, `current_position int`, `draft_answers jsonb`, `created_at`, `expires_at`. RLS: `user_id = auth.uid()`. Nothing reads or writes it yet; this is forward-wiring.
+11. **Write the content-protection helpers** as pure modules: `lib/api/rateLimit.js` (Upstash Redis wrapper), `lib/api/scraperSignals.js` (per-session cadence tracker, shadow mode only), `lib/content/watermark.js` (zero-width-character injector keyed by user id). All three are unused at the end of Phase 1; they're ready to be imported in Phase 2.
+12. **Write the `can_view(target)` SQL function and `list_visible_users(role_filter)` companion** from §3.8 as new migrations. Do not wire any existing policy to them yet. Run the audit back-test: a one-off script that enumerates every (viewer, target) pair in production and confirms `can_view(target)` returns the same answer as the current helper stack. The script runs against the dev Supabase project (which is seeded from prod). Zero diffs is the precondition for Phase 2's RLS rewrites.
+13. **Extend the Playwright suite (initial)** to run each test twice: once against `app/` (legacy, via middleware override) and once against `app/(next)/` (which is still a stub, so the next-tree pass is expected to fail with "route not found" for most suites until Phase 2 fills it in). This establishes the dual-tree CI pattern before the `(next)` tree has any content to test.
 
-**Exit criteria:** Fresh database rebuildable from migrations. CI blocks broken PRs. Errors show up in Sentry. The helpers exist but aren't used yet.
+**Follow-up additions landing alongside Phase 1.5 (tiny, kept here for traceability):**
 
-### Phase 2 — Backend consolidation
+- Add `actionOk()` / `actionFail()` helpers to `lib/api/response.js` so Server Actions have a plain-object return shape that matches the `NextResponse`-returning `ok()` / `fail()` used by route handlers. See §3.3 and §3.9.
+- Update the `app/next/` stub pages (`layout.js`, `page.js`, `[...slug]/page.js`) to use `async function` signatures so the forward-compatible coding style from §1.5.6 applies from day one.
 
-**Goal:** eliminate the auth-pattern and response-shape drift.
+**Exit criteria:** Fresh database rebuildable from migrations. CI blocks broken PRs on both trees. Errors show up in Sentry. The helpers exist (including the action-shape follow-ups above) but aren't used yet. The parallel-build infrastructure is live but dark — `force_ui_version='legacy'`, `(next)` tree is an empty shell, and no production user reaches a single line of new code. Flipping an internal account to `ui_version='next'` returns a placeholder page and nothing else. Everything is ready for Phase 1.5 to land the dependency upgrade before Phase 2 writes new code.
 
-1. **Refactor every API route** to use `requireUser()` / `requireRole()` / `requireServiceRole()` from §3.3. Batch by route tree (`/api/admin/*`, `/api/teacher/*`, `/api/practice-tests/*`, etc.). Each batch is a PR.
-2. **Standardize response envelopes** via `ok()` / `fail()`. Update the few client fetch sites that care about the shape (most can stay on `json.error` fallback during the transition).
-3. **Replace every `.limit(N)` with `paginate(...)`.** The grep pattern is one-line; the refactor is mechanical; the payoff is permanent immunity to the db-max-rows class of bugs.
-4. **Collapse duplicate routes.** `/api/dashboard/stats` merges into `/api/dashboard`. `/api/act/*` becomes query-parameterized on `/api/*`. Delete the orphaned duplicates.
-5. **Audit every `createServiceClient()` call.** For each: either (a) document the reason in a comment and wrap via `requireServiceRole('reason')`, or (b) convert to an RLS-scoped client if the role check is sufficient. Target: cut service-role usage in half.
-6. **Fix the RLS drift.** Rewrite every policy that still does `exists (select 1 from profiles)` to use the JWT-based helpers. Add migrations for the tables where RLS was enabled-without-policies (`question_availability`) or is missing entirely.
+### Phase 1.5 — Dependency upgrade (prerequisite for Phase 2)
 
-**Exit criteria:** Zero inline role checks. Zero `setItem`-style unbounded writes. One auth code path. The platform-stats bug class is structurally impossible.
+**Goal:** land Next.js 16 + React 19.2 + current `@supabase/ssr` before Phase 2 starts filling in the `(next)` tree, so every new file is written against current APIs from day one and the eventual upgrade cost is paid once instead of retrofitted across everything we build in Phase 2–5.
+
+**Source material:** the authoritative upstream upgrade guides live in `docs/upgrades/` — `nextjs-16-upgrade-guide.md`, `nextjs-15-upgrade-guide.md` (the intermediate step, because we're on 14.2.5), `react-19-upgrade-guide.md`, `react-19-release-notes.md`, and `react-19-2-release-notes.md`. Read those before running the upgrade; this section is the Studyworks-specific plan of what applies to our codebase.
+
+**Starting point:** Next.js 14.2.5, React 18.3.1, @supabase/ssr 0.5.2, @supabase/supabase-js 2.45.4, stripe 22. Eighteen months old across the board.
+
+#### 1.5.1 Audit findings — what our codebase actually needs
+
+Full repo scan against every breaking change from Next 15 + Next 16 + React 19:
+
+| Change | Our codebase | Action |
+|---|---|---|
+| Async `params` / `searchParams` in page/layout/route | 41 occurrences in 30 files | Codemod |
+| Async `cookies()` | 1 file (`lib/supabase/server.js`), cascades to ~100 call sites | Hand-edit + mechanical await-everywhere |
+| `middleware.js` → `proxy.js` rename | 1 file (our Phase 1 tree resolver) | Hand-edit: file + function rename |
+| `next lint` removal | 1 script in `package.json`, 1 line in `.github/workflows/ci.yml` | Codemod + small hand-edit |
+| React 19 `forwardRef` removal | 0 | — |
+| React 19 `propTypes` / `defaultProps` removal | 0 | — |
+| React 19 `useFormState` → `useActionState` | 0 | — |
+| React 19 `useRef()` requires argument | 0 | — |
+| React 19 legacy context / string refs / `createFactory` | 0 | — |
+| React 19 `ReactDOM.render` / `hydrate` / `findDOMNode` / `unmountComponentAtNode` | 0 | — |
+| React 19 `react-dom/test-utils` | 0 | — |
+| `next/legacy/image` | 0 | — |
+| `@next/font` → `next/font` | 0 | — |
+| `NextRequest.geo` / `NextRequest.ip` | 0 | — |
+| `images.domains` / `images.remotePatterns` config | 0 (5-line `next.config.js`) | — |
+| `experimental.serverComponentsExternalPackages` | 0 | — |
+| `experimental.bundlePagesExternals` | 0 | — |
+| `experimental.turbopack` | 0 | — |
+| `experimental.dynamicIO` → `cacheComponents` | 0 (not using PPR) | — |
+| AMP configuration | 0 | — |
+| `serverRuntimeConfig` / `publicRuntimeConfig` | 0 | — |
+| Parallel routes `default.js` requirement | 0 (no parallel routes) | — |
+| Custom webpack config | 0 | — |
+| `revalidateTag` second-argument requirement | 0 (not using) | — |
+
+The React 19 half is almost entirely a no-op — the codemod will run with zero changes across our entire codebase. The Next.js half is three things: the async-params codemod across 30 files, the `middleware` → `proxy` rename, and the supabase cookies cascade. Everything else on the breaking-changes list simply doesn't apply.
+
+#### 1.5.2 Interaction with the Phase 1 middleware work
+
+In Phase 1 we extensively refactored `middleware.js` to add the `ui_version` tree resolver (reading from the JWT), the `feature_flags.force_ui_version` kill-switch cache, and the URL rewriter to `/next/*`. In Next 16 that whole file needs to be renamed to `proxy.js` and the exported function renamed to `proxy`. This is a Next 16-only feature — `proxy.js` doesn't exist in Next 14 — so the rename cannot ship as an isolated PR. It must land inside the upgrade PR.
+
+Beyond the filename, the practical consequence is the runtime change. The `middleware` API in Next 14 defaulted to the **edge** runtime; the `proxy` API in Next 16 runs only on the **nodejs** runtime and cannot be configured. Our current middleware doesn't declare an explicit runtime, so it was running on edge. After the rename:
+
+- Cold-start latency on Vercel moves from edge's ~10–30 ms to nodejs's ~50–150 ms per function instance. Warm invocations are indistinguishable.
+- Full Node.js API surface becomes available (we don't currently need any).
+- The module-scoped `killSwitchCache` object still persists across warm invocations within a single instance, exactly as it does on edge.
+- `@supabase/ssr` and `createServerClient` work identically in both runtimes.
+- If the nodejs cold-start regression turns out to be user-visible (unlikely at our scale), Next 16 still supports the legacy `middleware.js` filename for the edge runtime per the upgrade guide. That's the escape hatch.
+
+The Next 16 codemod handles the file rename, the function rename, and config flag renames (`skipMiddlewareUrlNormalize` → `skipProxyUrlNormalize`, etc.). Our Phase 1 tree-resolver logic — `readKillSwitch`, `userTreeFromJwt`, `resolveUiTree`, the URL rewrite — is all internal helper code that doesn't interact with the middleware/proxy API surface, so it survives the rename untouched. Only the entry-point export changes.
+
+#### 1.5.3 The supabase cookies cascade
+
+`lib/supabase/server.js:6` currently does `const cookieStore = cookies()` synchronously. In Next 15+ `cookies()` returns a Promise, so the function becomes:
+
+```js
+export async function createClient() {
+  const cookieStore = await cookies()
+  // ...
+}
+```
+
+And every caller of `createClient()` becomes `await createClient()`. The codebase-wide grep found **152 `createClient()` occurrences across 101 files**, but most of those are the browser-side client from `lib/supabase/browser.js` (which is unaffected — browsers don't have `next/headers`). The server-side call sites that actually need the await are the ~80 API route handlers and the handful of server components that import from `lib/supabase/server`.
+
+Two paths forward:
+
+1. **Await everywhere.** Convert every server-side `const supabase = createClient()` to `const supabase = await createClient()`. Mechanical, touches 80-ish files, zero thinking required.
+2. **Upgrade to @supabase/ssr 1.x and use the current cookies accessor pattern.** Newer versions of the SSR helper accept an async cookies object directly, which can hide the async-ness from the caller and leave `createClient()` synchronous. This would reduce blast radius to `lib/supabase/server.js` alone.
+
+I don't know for certain what the current `@supabase/ssr` API looks like as of April 2026 — my training data covers through 0.5.x. **Before starting the upgrade PR, read the `@supabase/ssr` README and CHANGELOG on GitHub** and decide between path 1 and path 2. Fall back to path 1 if path 2 isn't available or adds complexity. Either way, it's a single focused change to one file plus the optional cascade.
+
+Every server-side route handler touched by this is also touched by the async-params codemod — two mechanical transformations applied to the same ~80 files. The codemods can run in either order; I'd run async-params first, then the cookies cascade.
+
+#### 1.5.4 Codemods to run
+
+All four live inside a single upgrade PR, applied in order:
+
+1. **`npx @next/codemod@canary upgrade latest`** — runs the top-level Next 16 upgrade recipe. Handles the `middleware` → `proxy` rename, the Turbopack config move, PPR config flag removal, `unstable_` prefix stripping on stabilized APIs, and the `next lint` → ESLint CLI migration.
+
+2. **`npx @next/codemod@canary next-async-request-api`** — converts every sync `cookies()`/`headers()`/`draftMode()` call and every `{ params }`/`{ searchParams }` destructure in page/layout/route files to the async pattern. This is the big mechanical pass for 41 occurrences across 30 files.
+
+3. **`npx codemod@latest react/19/migration-recipe`** — runs the React 19 recipe (replace-reactdom-render, replace-string-ref, replace-act-import, replace-use-form-state, prop-types-typescript). Expected to be a complete no-op on our codebase; running it produces a clean diff that confirms there's nothing to change.
+
+4. **`npx @next/codemod@canary next-lint-to-eslint-cli .`** — swaps the `next lint` invocation in `package.json` and `.github/workflows/ci.yml` for a direct ESLint CLI call. Only runs if the top-level recipe in step 1 hasn't already done it.
+
+Each codemod produces a focused diff. Review each diff before committing so nothing slips in unnoticed.
+
+#### 1.5.5 Manual changes the codemods won't catch
+
+After all four codemods run, these items need hand-editing:
+
+1. **`lib/supabase/server.js`** — confirm the async `createClient()` wrapper matches what the current `@supabase/ssr` version expects. If using the legacy 0.5.x shape, also update every server-side caller to `await createClient()` (sed pass on the ~80 files matching `import.*from.*lib/supabase/server`).
+2. **`middleware.js` → `proxy.js`** — verify the codemod's rename preserves the full Phase 1 tree-resolver body (the `readKillSwitch` cache, `userTreeFromJwt`, `resolveUiTree`, and the rewrite logic). If the codemod is conservative and leaves any vestigial `middleware` references, clean them up.
+3. **`docs/architecture-plan.md` §3.6** — search/replace `middleware.js` → `proxy.js` in the parallel-build strategy section so the doc matches reality.
+4. **`docs/runbook.md`** — same rename in the operator instructions.
+5. **`package.json`** — bump `"engines": { "node": ">=20.9.0" }` (currently unspecified; Next 16 requires 20.9+). Verify Vercel's runtime is on Node 20+ in the project settings before merging.
+6. **`next.config.js`** — enable `reactCompiler: true` as part of the upgrade PR, not as a follow-up. The React Compiler is stable in Next 16 and is the highest-leverage perceived-performance win available for our large legacy-tree files (AdminDashboard at 2,366 lines, practice page at 2,391 lines, DashboardClient at 1,070 lines) before Phase 5 decomposes them. Measure build-time impact in the upgrade PR; keep it on unless the hit is severe (the upgrade guide notes compile times can be higher with the compiler enabled).
+7. **`tsconfig.json`** — no changes required for JS-only code, but verify that the `"module"` / `"moduleResolution"` settings still match Next 16 expectations (we use `"bundler"` which is current).
+
+#### 1.5.6 Forward-compatible coding rules for Phase 2
+
+If we decide to start Phase 2 **before** the upgrade PR lands (e.g., working in parallel), any new code in `app/next/*` or in the shared helpers should follow these rules so the codemod is a no-op on new files and the eventual upgrade doesn't have to touch them:
+
+1. Every page, layout, and route handler is declared `async`, even when it doesn't technically need to be on Next 14.
+2. `params` and `searchParams` are always destructured via `await`: `const { id } = await params`. This is a no-op on Next 14 (awaiting a plain object just returns it) and required on Next 16.
+3. `cookies()` and `headers()` are always `await`ed: `const cookieStore = await cookies()`. Same rationale.
+4. Every route handler that reads auth state exports `export const dynamic = 'force-dynamic'` explicitly, rather than relying on default caching behavior (which flipped in Next 15).
+5. Every raw `fetch()` call to an external service explicitly declares cache behavior: `fetch(url, { cache: 'no-store' })` unless caching is the deliberate intent. Five routes under `/api` currently call external services (Mathpix, Anthropic); audit them in the upgrade PR.
+6. No new `forwardRef` in new components — use `ref` as a regular prop, which works in React 19 and is still supported in React 18.
+7. No new `useFormState` — use `useActionState` from `react-dom`.
+8. New client components that need form state use React 19 patterns (Actions, `useOptimistic`, `useActionState`, `use()`) where appropriate. See `docs/upgrades/react-19-release-notes.md` for the full feature set.
+
+These rules also apply to any legacy-tree file that gets substantially touched before the upgrade lands.
+
+#### 1.5.7 PR sequence
+
+**One focused PR, "Upgrade to Next 16 / React 19.2":**
+
+1. Bump `package.json`: `next@^16`, `react@^19`, `react-dom@^19`, `@supabase/ssr@latest`, `@supabase/supabase-js@latest`, `eslint-config-next@^16`. Bump `@types/react` / `@types/react-dom` if we ever add TypeScript.
+2. Bump Node engine constraint and verify Vercel project settings.
+3. Run the four codemods from §1.5.4 in order.
+4. Hand-edit the items from §1.5.5.
+5. Push to a dedicated branch off `claude/plan-architecture-migration-vXR3k`.
+6. Wait for CI (`lint + build + node --check scripts`) to pass.
+7. Wait for Vercel preview deployment.
+8. Smoke-test the five critical flows on the preview URL (§1.5.8).
+9. Merge back into the rebuild branch.
+
+**Follow-up PRs after the upgrade merges:**
+
+- Audit and tune caching defaults on any route that shows a stale-data regression.
+- Adopt React 19 Actions / `useActionState` patterns in Phase 2 code as natural fits appear.
+- Fine-tune the React Compiler if the baseline build-time impact measured in the upgrade PR needs follow-up adjustment.
+- Re-run the Playwright dual-tree suite once it exists (Phase 5 deliverable).
+
+#### 1.5.8 Verification without local terminal access
+
+Three layers of gates before the upgrade merges:
+
+1. **CI on every push.** The `.github/workflows/ci.yml` workflow from Phase 1 runs `npm ci && next lint && next build && node --check scripts/*.{js,mjs}` against both the legacy and the `(next)` tree. Every compile-time regression surfaces here before a human looks at it.
+2. **Vercel preview deployment.** Every push to the upgrade branch produces a preview URL. This is where runtime regressions surface — the caching flip, the middleware/proxy runtime change, the supabase cookies cascade. Watch the Vercel build logs and the preview's response behavior before proceeding.
+3. **Manual smoke-tests** of the five critical flows from §3.5 on the preview URL:
+   - Student logs in → dashboard loads → starts a practice session → answers a question → sees result
+   - Student takes a full practice test → sees score report with scaled scores
+   - Teacher logs in → opens a student profile → reviews a wrong answer with rationale
+   - Admin logs in → opens Questions V2 preview → approves a question
+   - Stripe checkout → webhook processes → subscription shows active
+4. **Kill-switch rehearsal** before merging. On the preview environment, flip `feature_flags.force_ui_version = 'legacy'` and confirm every user is pinned back to the legacy tree within 5 seconds, then flip it back to `null` and confirm normal routing resumes. This proves the Phase 1 rollback path survives the upgrade.
+
+The whole verification loop is CI + Vercel + five manual flows + kill-switch rehearsal. No local `next build` needed, no local `supabase db reset` needed.
+
+#### 1.5.9 Risks and mitigations
+
+**Risk: The `@supabase/ssr` cookies interface has changed shape between 0.5 and current, breaking our `lib/supabase/server.js` in a way the codemod doesn't catch.**
+Mitigation: Read the current `@supabase/ssr` README and CHANGELOG on GitHub before starting the upgrade PR. If the shape has changed, adjust `createClient()` accordingly. Worst case, pin to the highest 0.5.x patch version and defer the SSR upgrade to a follow-up PR — the Next 16 side doesn't require it.
+
+**Risk: The `middleware` → `proxy` runtime change causes a cold-start or behavioral regression on Vercel.**
+Mitigation: the nodejs runtime is Vercel's default for most functions and is well-tested. The cold-start delta is <200 ms worst case, unlikely to be user-visible. If Vercel previews show any surprising behavior (e.g. supabase cookies not being read correctly from the proxy), the Next 16 upgrade guide notes that the legacy `middleware.js` filename is still supported for apps that need the edge runtime — we can fall back to that and revisit the proxy migration in a dedicated follow-up.
+
+**Risk: The async cookies cascade touches ~80 server-side routes and introduces a missed `await` somewhere, silently breaking auth checks in a single route.**
+Mitigation: the cascade is a purely mechanical `createClient()` → `await createClient()` replacement. A sed pass handles it uniformly. Every touched route is then exercised by the CI build step (TypeScript would catch missed awaits; we don't have TS today, but build errors and runtime errors in the preview deploy will surface them). For belt-and-suspenders coverage, grep for any remaining synchronous `createClient()` calls after the pass and verify each one is genuinely in a browser context.
+
+**Risk: Turbopack's default behavior in `next build` diverges from webpack's, breaking the build or producing subtly different output.**
+Mitigation: we have no custom webpack config, so the risk is minimal. If the build breaks, Next 16 still supports `next build --webpack` as an opt-out — we can fall back temporarily while reporting the issue. The upgrade guide explicitly documents this escape hatch.
+
+**Risk: Caching default flip bites a route that implicitly relied on cached `fetch()` behavior.**
+Mitigation: our codebase uses Supabase for nearly all data access, which doesn't go through Next's fetch cache at all. The 5 routes that call external services with raw `fetch()` (Mathpix, Anthropic, etc.) are all POSTs to uncacheable endpoints — they don't rely on caching today. We'll audit each one during the upgrade PR to confirm.
+
+**Risk: Browser support tightens to Chrome 111+, Edge 111+, Firefox 111+, Safari 16.4+. Older student devices (iOS 15-, Android with stock browsers on older phones) may break after the upgrade.**
+Mitigation: audit Vercel Analytics or equivalent for the current browser distribution before merging. Chrome 111 is from March 2023, Safari 16.4 from the same month — three years old at the time of the upgrade, which should cover >99% of students. If the analytics show a meaningful tail on older versions, add a browser-support banner to the login page pointing people at upgrade instructions. This is a Phase 1.5 deliverable only if the analytics show a real problem; skip it otherwise.
+
+**Risk: No test coverage to catch regressions that the compiler accepts but that break at runtime.**
+Mitigation: this is the largest risk, and it's not specific to this upgrade — the whole rebuild inherits it. The five manual smoke-tests cover the critical user paths. The Phase 5 Playwright suite is the real long-term answer but isn't landing until later. During Phase 1.5, accept that the first cohort flipped to `ui_version='next'` (internal accounts only) serves as a human test suite for the upgraded codebase. If anything breaks, the kill switch flips every user back within 5 seconds.
+
+**Risk: Timeline slips — the upgrade takes longer than expected because codemods need hand-correction or the supabase migration turns out harder than the audit suggests.**
+Mitigation: the upgrade PR has a firm fallback. If after a day of work the PR isn't passing CI and smoke-tests, park the branch, revert to Next 14 for the main branch, and move forward with Phase 2 under the forward-compatibility rules in §1.5.6. The upgrade then gets rescheduled as its own dedicated phase between Phase 5 and Phase 6 — still before Phase 6 decommission, so the benefits still accrue before the rebuild is complete.
+
+#### 1.5.10 Exit criteria
+
+- `package.json` on `next@^16`, `react@^19`, `react-dom@^19`, `@supabase/ssr@current`, `@supabase/supabase-js@current`
+- `middleware.js` renamed to `proxy.js` with the exported function renamed to `proxy`
+- `lib/supabase/server.js` is async and uses the current `@supabase/ssr` cookies pattern
+- Every `{ params }` destructure in page/layout/route files converted to `await params`
+- CI `lint + build` green on the upgrade branch
+- Vercel preview deployment successful
+- Five manual smoke-tests pass on preview
+- Kill-switch rehearsal passes on preview
+- `docs/architecture-plan.md` §3.6 and `docs/runbook.md` updated to reference `proxy.js` instead of `middleware.js`
+- `reactCompiler: true` enabled in `next.config.js` and build-time impact measured
+- PR merged back to `claude/plan-architecture-migration-vXR3k`
+
+Once Phase 1.5 is complete, Phase 2 is cleared to start writing real content under `app/next/*` — Server Components, Server Actions, `useActionState`, `useOptimistic`, and all the other React 19 / Next 16 primitives from §3.9 are available for use from day one.
+
+### Phase 2 — Server Components, Server Actions, and backend consolidation
+
+**Goal:** build out the `app/next/*` tree as the real product, using Server Components and Server Actions as the primary technique per §3.9. Simultaneously, consolidate the subset of `/api/*` routes that still need to exist under the shared helpers from Phase 1.
+
+**Working mental model:** every user-facing page we rebuild in Phase 2 is a Server Component that fetches its data inline and mutates via Server Actions. The refactor of the legacy `/api/*` routes is the secondary work, not the primary one — for roughly half of those routes, the right answer in Phase 2 is "delete it because the calling page became a Server Component and the calling form became a Server Action."
+
+1. **Build the first Server Component pages in `app/next/*`.** Start with low-complexity, high-value targets:
+   - `app/next/(student)/dashboard/page.js` — server component + small client island for interactive widgets. Drops the legacy `/api/dashboard` and `/api/dashboard/stats` routes once the legacy tree is retired in Phase 6.
+   - `app/next/(tutor)/tutor/dashboard/page.js` — same shape, different role gate.
+   - `app/next/(admin)/admin/page.js` — server component for the stats overview, client island for the interactive admin tabs. Eventually breaks up the 2,366-line `AdminDashboard.js`.
+2. **Build the first Server Actions** in each of those page directories, co-located with the page that uses them. Form handlers become `'use server'` modules; the `/api/*` routes that existed only to receive form submits (`/api/signup`, `/api/error-log`, `/api/question-notes`, most of `/api/teacher/*` for mutations) become dead code scheduled for Phase 6 decommission.
+3. **Port the shared helpers to work inside Server Actions.** `requireUser` / `requireRole` / `requireServiceRole` already work without modification. `lib/api/response.js` gains `actionOk()` / `actionFail()` (landed as a Phase 1.5 follow-up) so Server Actions have a consistent return shape. `paginate()` and `countExact()` are unchanged — they operate on query builders, which is the same in both contexts.
+4. **Wire up `useActionState` / `useFormStatus` / `useOptimistic`** in the Phase 2 client islands. Every form in the new tree uses this pattern from day one; there is no "legacy form handling" variant in `app/next/*`.
+5. **Enable `updateTag()` and `refresh()` for mutations that need read-your-writes.** Teacher flows especially: creating/editing assignments, updating student notes, recording scores. The teacher sees their edit immediately on the same request, no stale-while-revalidate window.
+6. **Refactor the surviving `/api/*` routes** to use `requireRole()` / `ok()` / `fail()` / `paginate()`. This is the original Phase 2 plan, but scoped down to only the ~30–40 routes that actually need to exist after Server Actions absorb the rest. Categories that survive: external/public/webhook endpoints, live-polling endpoints, bulk data exports, admin analytics that aggregate across users.
+7. **Collapse duplicate routes among the survivors.** `/api/dashboard/stats` merges into `/api/dashboard` (though both may ultimately be deleted if the dashboard is a Server Component). Legacy `/api/act/*` tree remains because SAT and ACT stay schema-parallel per §3.2.
+8. **Audit every remaining `createServiceClient()` call** after the Server Action migration. Many of the legacy service-role bypasses exist because a route needed to do something the client couldn't do via RLS — with Server Actions, the caller's identity is still `auth.uid()`, so most of those bypasses can become RLS-scoped. Target: cut service-role usage by more than half.
+9. **Fix the RLS drift using `can_view()`.** Rewrite every policy that still does `exists (select 1 from profiles)` to use the JWT-based `is_admin()` / `is_teacher()` helpers or the new unified `can_view()` function from §3.8. Gate this on the Phase 1 back-test returning zero diffs. Add migrations for the tables where RLS was enabled-without-policies (`question_availability` — probably just drop it) or is missing entirely.
+10. **Enable the React Compiler** via `reactCompiler: true` in `next.config.js` if it wasn't already turned on during Phase 1.5. Measure build time impact; keep it on unless the hit is severe.
+
+**Exit criteria:** The first student-facing and tutor-facing pages exist in `app/next/*` as Server Components with Server Action forms. Zero inline role checks in those new pages. Zero `fetch+useEffect` in the new tree. Shared helpers work uniformly across routes and Server Actions. RLS policies use `can_view()` or JWT helpers, never `select from profiles`. Internal accounts flipped to `ui_version='next'` can exercise the new dashboard and at least one forms-heavy flow end-to-end without hitting the legacy tree.
 
 ### Phase 3 — Schema simplification
 
@@ -412,7 +883,7 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 
 1. **Drop the v1 question tables** (`questions`, `question_versions`, `answer_options`, `correct_answers`, `question_taxonomy`). Archive to a `_legacy` schema for 90 days, then drop. `question_id_map` stays for attempts referencing old IDs.
 2. **Normalize `questions_v2.options`** into a `question_options` child table. Migrate the JSONB payload into rows. Update `question_concept_tags` and `option_answer_choice_tags` to FK the new table.
-3. **Unify the assignment model.** One `assignments` + `assignment_students` replacing `question_assignments` + `question_assignment_students` + `lesson_assignments` + `lesson_assignment_students`. Data-migrate existing rows. Update the teacher UI to point at the unified routes.
+3. **Unify the SAT assignment model** per §3.2. One `assignments` + `assignment_students` pair replacing `question_assignments` + `question_assignment_students` + `lesson_assignments` + `lesson_assignment_students` on the SAT side. Dual-write during the transition; the legacy tree reads the old shape, the `(next)` tree reads the new one. **ACT gets its own `act_assignments` + `act_assignment_students` pair** — new tables, not a rename of anything existing, because today ACT has no dedicated assignment system. The ACT assignment model is passage-based and distinct.
 4. **Standardize audit columns.** Every table gets `created_at`, `created_by`, `updated_at`, `updated_by`, `deleted_at`. Soft-delete becomes the default. RLS policies on every table add `deleted_at IS NULL` filter.
 5. **Delete or implement `question_availability`.** My bet is delete.
 6. **Add the missing indexes** for common RLS join patterns (`teacher_student_assignments (teacher_id, student_id)`, `lesson_assignments (student_id)`, etc.).
@@ -426,7 +897,7 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 1. **Build the shared component primitives** from §3.4: `<Button>`, `<Card>`, `<Modal>`, `<Table>`, `<Pagination>`, `<Avatar>`, `<ScoreCard>`, `<DomainMasteryBar>`. Each is a few dozen lines; most replace dozens of inline instances.
 2. **Build `<QuestionRenderer>`** and migrate the three question pages onto it one at a time. Start with `/teacher/review/[questionId]` because it's the smallest and has the fewest side effects. `/practice/[questionId]` comes last because it's the most complex and most production-critical.
 3. **Convert pages to server components for initial data.** Start with the static-ish ones: `/dashboard`, `/teachers`, `/admin`, `/practice-test`. Each conversion eliminates 3-5 `useEffect+fetch` blocks and typically shrinks the file by 30%.
-4. **Replace localStorage caches with URL state.** The `practice_session_*` and `teacher_review_session_*` caches come out; session progress is in the URL, fetched from the server per-question. The recent `lib/practiceSessionStorage.js` LRU helper can be deleted once nothing writes to those keys.
+4. **Replace localStorage caches with server-side session state.** The `practice_session_*` and `teacher_review_session_*` caches come out; per §3.7, session progress lives in the `practice_sessions` server table and the URL only carries an opaque `sessionId` + `position`. The client never caches question content or metadata locally. The recent `lib/practiceSessionStorage.js` LRU helper can be deleted once nothing writes to those keys.
 5. **Decompose the 7 files over 1,000 lines.** The target is: every file under 500 lines unless there's an explicit reason. The usual split is extracting tab panels, widget cards, and modals into their own files.
 6. **Add error boundaries** (`error.js`) for every top-level route segment per §3.4.
 
@@ -443,6 +914,22 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 5. **Publish a runbook.** Short `docs/runbook.md` covering: how to apply a migration, how to roll back a deploy, how to find out why a student is seeing an error, how to bypass RLS safely in a one-off script, how to seed a dev database. The stuff that's currently tribal knowledge.
 
 **Exit criteria:** A new developer can find any bug in under 10 minutes by following the runbook. Deploys are boring. Feature work happens on top of a stable base.
+
+### Phase 6 — Decommission
+
+**Goal:** retire the legacy tree, collect on the simplifications the rebuild has been carrying dual costs for, and turn the plan from "an in-progress migration" into "the platform".
+
+**Precondition:** 100% of production users on `ui_version='next'` for at least 30 consecutive days with no reported regressions. `feature_flags.force_ui_version = 'next'` for a verification window of 7 days, during which the legacy tree is unreachable even via direct URL. Playwright dual-tree CI has been green for the full window.
+
+1. **Delete `app/(legacy)/` and the old route files.** Every page under `app/practice`, `app/act-practice`, `app/teacher/...` (except any route that has no `(next)` replacement and is genuinely still used), `app/dashboard` (legacy version), and the rest of the legacy tree. Cross-reference `(next)` before each delete to confirm nothing unique is being lost.
+2. **Remove dual-write triggers** from the tables that were being fed from both trees during the parallel period.
+3. **Archive the v1 question tables and legacy SAT assignment tables** (`questions`, `question_versions`, `answer_options`, `correct_answers`, `question_taxonomy`, `question_assignments`, `question_assignment_students`) to a `_legacy` schema. Keep for 90 days, then drop.
+4. **Drop the `sat_teacher_mode` and `studyworks_test_type` localStorage keys** with a one-time cleanup snippet served on the next login for any lingering browser state.
+5. **Remove `profiles.ui_version`** and the `feature_flags.force_ui_version` row. Everyone is on `next` by definition; the flag is dead weight. Keep the `feature_flags` table itself — it's useful infrastructure for future rollouts.
+6. **Remove the Playwright dual-tree CI pattern.** Tests now run once against the single tree.
+7. **Final cleanup pass.** Re-run the "files over 1000 lines", "routes with inline role checks", "`fetch+useEffect` blocks", "distinct localStorage prefixes", and "parallel question renderers" counts from §2. Every number should match the targets in §6.
+
+**Exit criteria:** No legacy code path anywhere. Schema is single-source. Every metric in §6 hits target. The rebuild is finished. Future development is net-new feature work on a stable base, not structural debt repayment.
 
 ---
 
@@ -465,20 +952,33 @@ Not part of this rebuild, but must land first. The last few v1→v2 batches fini
 | Auth patterns in API routes | 5+ | 1 |
 | Inline role checks | ~51 | 0 |
 | Bare `fetch+useEffect` | ~79 | <20 |
-| Distinct localStorage key prefixes | 16 | ~3 |
+| Distinct localStorage key prefixes | 16 | 1 (just `{qid}_elapsed`) |
+| Client-side test-type toggles (`studyworks_test_type`) | 1 | 0 (dedicated `/act/*` path tree) |
+| Client-side teacher-mode toggles (`sat_teacher_mode`) | 1 | 0 (role + URL determine mode) |
 | Files over 1,000 lines | 7 | 0 |
 | Error boundaries | 1 | 6+ |
-| Question renderer implementations | 3 | 1 |
-| Assignment system tables | 4 | 2 |
-| Question schemas in use | 2 | 1 |
+| Question renderer implementations | 3 | 1 (shared across SAT + ACT) |
+| SAT assignment system tables | 4 | 2 (`assignments` + `assignment_students`) |
+| ACT assignment system tables | 0 (today ACT has no dedicated assignments) | 2 (`act_assignments` + `act_assignment_students`, passage-based) |
+| Question schemas in use | 2 | 1 (SAT `questions_v2`, separate ACT `act_questions_v2`) |
 | Schemas missing from migrations | 2 (practice_test_*, get_question_neighbors) | 0 |
+| Places in RLS where hierarchy visibility is re-derived | 7+ | 1 (`can_view()`) |
 | RLS policies that query `profiles` directly | many | 0 |
+| Content endpoints with rate limiting | 0 | all (SAT + ACT) |
+| Watermarked rendered question HTML | no | yes (per user) |
+| Server-side practice session state | no (localStorage only) | yes (`practice_sessions` table) |
+| Parallel-build / rollback infrastructure | none | `ui_version` + `feature_flags` kill switch |
 | Shared UI primitives | ~6 | ~12 |
-| CI pipeline | none | one |
+| CI pipeline | none | one, dual-tree until Phase 6 |
 | Error monitoring | none | Sentry (or equivalent) |
 | Automated tests | 0 | ~5 integration + growing unit |
 | Dev environment | ad-hoc | documented `supabase db reset` |
 | Typescript coverage | 0% | steadily growing, starting with `lib/` |
+| Next.js version | 14.2.5 (mid-2024) | 16.x (current) |
+| React version | 18.3.1 (mid-2024) | 19.2 (current) |
+| `@supabase/ssr` version | 0.5.2 | current |
+| `middleware.js` (edge runtime) | present | replaced by `proxy.js` (nodejs runtime) |
+| Async request APIs compliance | synchronous (deprecated) | async throughout |
 
 ---
 
@@ -503,7 +1003,22 @@ Mitigation: every helper in §3.3/§3.4 replaces a measured number of existing i
 Mitigation: Sentry's free tier covers thousands of events per month, which is enough for the first year. If volume outgrows the free tier, the cost at that point is a known quantity and can be budgeted against the value it's delivering. Alternatively, a self-hosted option (Glitchtip, self-hosted Sentry) is available if cost ever becomes prohibitive.
 
 **Risk: RLS hardening breaks a student-facing query mid-production.**
-Mitigation: every RLS change in phase 2 lands first on the dev Supabase project from phase 1, gets exercised by the four integration tests, then promotes to production. No RLS change is deployed blind.
+Mitigation: every RLS change in phase 2 lands first on the dev Supabase project from phase 1, gets exercised by the four integration tests, then promotes to production. No RLS change is deployed blind. The `can_view()` rewrite specifically is gated on the Phase 1 back-test script returning zero diffs against the current helper stack.
+
+**Risk: Carrying dual code paths in Phases 2–5 slows down feature work.**
+Mitigation: new features after Phase 1 land only in the `(next)` tree by default. If a feature must also ship to `legacy` users mid-rebuild, it's authored once in a shared module and imported from both trees — but the default is next-only, on the theory that legacy's days are numbered and the cost of back-porting usually exceeds the value of serving it to a shrinking user pool. Feature owners are encouraged to push the launch into the next cohort's flip window rather than dual-write.
+
+**Risk: The `(next)` tree ships with subtle regressions that aren't caught until a cohort is flipped.**
+Mitigation: the Playwright suite runs against both trees on every PR from Phase 1 onward. The rollout sequence starts with 2–3 internal accounts for at least a week before any external user sees the new tree, then opt-in tutors, then a small beta cohort of friendly students, and only then broader rollout. Every flip is reversible via the `feature_flags.force_ui_version` kill switch in under a minute.
+
+**Risk: Content protection (rate limiter, scraper detection) accidentally locks out real students.**
+Mitigation: rate-limit thresholds are set based on the observed 99.9th-percentile student request cadence in production logs, with a 10x headroom. The scraper-detection helper runs in shadow mode (logs only, no blocks) for a week before enforcement — the first sign of over-triggering is visible in the logs before any student is inconvenienced. Every lockout fires a Sentry alert, not a silent block. Support has a one-click unlock path for any false-positive case that slips through.
+
+**Risk: Watermarking rendered HTML breaks screen readers or copy-paste for legitimate accessibility use.**
+Mitigation: the zero-width character pattern is inserted only in non-semantic positions (between tags, inside whitespace runs, never inside `alt` text, `aria-label`, or any screen-reader-visible attribute). A separate accessibility audit runs against the watermarked output in the Playwright suite before watermarking ships to any cohort. If a conflict surfaces, watermarking is disabled per-page via a feature flag rather than ripped out wholesale.
+
+**Risk: The full parallel ACT tree doubles the frontend surface area.**
+Mitigation: the trees share everything they can — shared UI primitives (`<Button>`, `<Card>`, `<QuestionRenderer>`), shared helper modules (`requireRole`, `paginate`, `useApi`), and shared design tokens — so the duplication is limited to navigation, routing, and the handful of places where SAT and ACT genuinely differ (module routing, adaptive logic, scoring conversion). The duplication is the right trade-off for content/format independence: a bug in ACT assignment routing can never regress SAT practice, and vice versa.
 
 ---
 
@@ -563,6 +1078,38 @@ Phase 1 — Foundation
   [ ] Write lib/api/logger.js (structured logs with request id)
   [ ] Write lib/stripe.js, lib/anthropic.js (lazy getters)
   [ ] Commit docs/database.md and docs/runbook.md (initial draft)
+  [ ] Create empty app/(next)/ route tree
+  [ ] Add profiles.ui_version column (default 'legacy')
+  [ ] Create feature_flags table + seed force_ui_version row ('legacy')
+  [ ] Write middleware that consults feature_flags then profiles.ui_version
+  [ ] Add /admin/feature-flags panel (legacy tree, admin only)
+  [ ] Create practice_sessions server-state table (dormant)
+  [ ] Write lib/api/rateLimit.js (Upstash wrapper, not yet called)
+  [ ] Write lib/api/scraperSignals.js (shadow mode only, not yet called)
+  [ ] Write lib/content/watermark.js (zero-width injector, not yet called)
+  [ ] Write can_view(target) SQL function + list_visible_users(role) helper
+  [ ] Run can_view back-test script against prod snapshot; require zero diffs
+  [ ] Extend Playwright harness to dual-tree mode (legacy + next)
+
+Phase 1.5 — Dependency upgrade
+  [ ] Read docs/upgrades/nextjs-16-upgrade-guide.md, nextjs-15-upgrade-guide.md, react-19-upgrade-guide.md
+  [ ] Read current @supabase/ssr README and CHANGELOG; decide sync-wrapper vs await-everywhere
+  [ ] Bump package.json: next@^16, react@^19, react-dom@^19, @supabase/ssr@latest, @supabase/supabase-js@latest, eslint-config-next@^16
+  [ ] Bump Node engines to >=20.9.0; verify Vercel project runtime
+  [ ] Run npx @next/codemod@canary upgrade latest
+  [ ] Run npx @next/codemod@canary next-async-request-api
+  [ ] Run npx codemod@latest react/19/migration-recipe (expected no-op)
+  [ ] Hand-edit lib/supabase/server.js for async cookies pattern
+  [ ] Cascade await createClient() to server-side callers if needed
+  [ ] Verify middleware.js → proxy.js rename preserves Phase 1 tree-resolver logic
+  [ ] Update docs/architecture-plan.md §3.6 references: middleware → proxy
+  [ ] Update docs/runbook.md references: middleware → proxy
+  [ ] Audit 5 routes with raw fetch() calls to external services for caching regressions
+  [ ] CI lint + build green on upgrade branch
+  [ ] Vercel preview deploy successful
+  [ ] Run 5 manual smoke-tests on preview URL
+  [ ] Rehearse kill switch: force_ui_version='legacy' → 'null' on preview
+  [ ] Merge upgrade PR back into claude/plan-architecture-migration-vXR3k
 
 Phase 2 — Backend consolidation
   [ ] Refactor /api/admin/* to use auth helpers
@@ -615,6 +1162,19 @@ Phase 5 — Hardening
   [ ] Audit observability — does every past incident produce a signal now?
   [ ] Final runbook in docs/runbook.md
   [ ] Retrospective: what didn't we need?
+
+Phase 6 — Decommission
+  [ ] Verify 100% of users on ui_version='next' for 30+ days
+  [ ] Force feature_flags.force_ui_version='next' for 7-day window
+  [ ] Delete app/(legacy) route files (everything under old paths with a next equivalent)
+  [ ] Remove dual-write triggers from replaced tables
+  [ ] Archive v1 question tables + legacy SAT assignment tables to _legacy schema
+  [ ] Drop _legacy schema after 90 days of stability
+  [ ] Cleanup snippet to clear sat_teacher_mode / studyworks_test_type from lingering browsers
+  [ ] Drop profiles.ui_version column
+  [ ] Drop feature_flags.force_ui_version row (keep the table itself)
+  [ ] Remove Playwright dual-tree mode; tests run once against the single tree
+  [ ] Re-run §2 audit metrics; verify every §6 target is hit
 ```
 
 

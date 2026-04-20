@@ -27,7 +27,7 @@ import {
 // app/api/admin/batch-fix/route.js.
 
 async function requireAdmin() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: NextResponse.json({ error: 'Not authenticated' }, { status: 401 }) };
 

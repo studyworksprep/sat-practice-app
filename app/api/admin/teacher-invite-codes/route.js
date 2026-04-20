@@ -12,7 +12,7 @@ function generateCode() {
 // GET /api/admin/teacher-invite-codes
 // Returns all teachers with their invite codes
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -53,7 +53,7 @@ export async function GET() {
 // Generate or set an invite code for a teacher
 // Body: { teacher_id, code? } — if code is omitted, one is auto-generated
 export async function POST(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -103,7 +103,7 @@ export async function POST(request) {
 // Remove a teacher's invite code
 // Body: { teacher_id }
 export async function DELETE(request) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
