@@ -62,50 +62,40 @@ If the bug is content-related (a bad question, a broken rationale), the
 fix is in the database, not the deploy. Don't roll back the build unless
 the issue is code.
 
-## Deploying the Phase 2 step 9 branch (parked)
+## Phase 2 step 9 branch deploy — DONE
 
-The branch `claude/continue-architecture-migration-BETbL` carries five
-commits' worth of RLS work from Phase 2 step 9. It's safe to merge but
-has not been deployed yet pending a decision on rollout timing.
+The RLS-refactor branch (plus everything that accumulated on top:
+Phase 3 assignment unification, Phase 4 primitives, profile_cards
+view) was deployed to production on Monday. Migrations 000011
+through 000024 are applied; `main` holds the merged code. The
+`app/next/` parallel tree is live behind `ui_version`.
 
-What's on it (all already applied to dev DB):
+Post-deploy hotfixes, same day:
+- **000015 route_code case mapping** — v1's `practice_test_modules`
+  stores route codes as `EASY / HARD / BASE`; the original CASE in
+  000015 compared against lowercase literals and collapsed every
+  source row to `'std'`, colliding on the unique key. Fixed by
+  lower-casing + explicit base→std mapping.
+- **000024 restore question_status FK** — 000017 dropped
+  `question_status_question_id_fkey` on the premise that the column
+  might carry v2 UUIDs. In prod the column holds v1 UUIDs
+  exclusively (3210/3210), so the drop was defensively over-eager
+  and broke PostgREST's ability to resolve embedded
+  `question_status!left(...)` selects in legacy routes. Restored
+  the FK.
 
-| Commit | Change | Risk |
-|---|---|---|
-| Type B | 30 role checks `profiles` → JWT helpers (`is_admin`/`is_manager`/`is_teacher`) | Low — no behavior change |
-| Type A | 7 tables: visibility SELECT policies → `can_view()` | Low — expansion only, no one loses access |
-| Bridge RPCs + stats view | Drops 3 RPCs, adds `student_practice_stats` view, reverts tutor pages to plain queries | Low — no callers for dropped RPCs |
-| Temp cleanup | Deletes `scripts/tmp-dev-replay.sql` and `docs/session-handoff.md` | None |
-| Dev-db-query cleanup | Deletes `scripts/dev-db-query.mjs` | None |
+If you need to roll back any of these selectively, the kill switch
+(`feature_flags.force_ui_version = 'legacy'`) pins everyone to
+the legacy tree but does NOT undo schema changes — those need
+targeted `drop policy` / `drop constraint` reverts.
 
-Not on this branch (intentionally deferred):
-- Enabling RLS on the existing `practice_test_*` and v1 question tables.
-  The plan is to create new v2 tables with RLS designed in, copy data,
-  and let the legacy tree keep using the old tables until the whole
-  legacy tree is retired. See the §3.6 parallel-build discipline
-  extended to the schema layer.
-
-Deploy mechanics:
-- Migrations: `supabase db push` from a dev machine linked to prod.
-- Frontend: Vercel auto-deploys on merge to `main`.
-- CI: lint + build only; no RLS regression tests.
-
-Service-role footprint shrinks the blast radius: 41 files use
-`createServiceClient()` and bypass RLS entirely. The code paths that
-actually feel RLS changes are the server components, the client-side
-AdminDashboard, and 8 API routes that use the user-session client.
-
-Recommended rollout when unparking:
-1. Run `supabase db push` from a linked dev machine to apply migrations
-   000011, 000012, 000013 to production.
-2. Open a PR from `claude/continue-architecture-migration-BETbL` to
-   `main`. CI runs (lint + build only).
-3. Merge. Vercel deploys. Code finds the DB in the state it expects.
-4. Spot-check: manager sees their teachers' students (intended
-   expansion); student completes a practice test; admin dashboard
-   loads.
-5. If anything breaks, the kill switch above pins everyone to `legacy`
-   and a targeted `drop policy`/`create policy` reverts the RLS bit.
+Remaining parked-for-Phase-6 items (not part of this deploy):
+- Enabling RLS on the legacy `practice_test_*` and v1 question
+  tables. The plan is to let them retire with the rest of the
+  legacy tree. See §3.6 parallel-build discipline extended to the
+  schema layer.
+- Retiring `question_status`, its restored FK, and the
+  `upsert_question_status_after_attempt` RPC. All legacy-only.
 
 ## Applying a hotfix migration
 

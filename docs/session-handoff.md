@@ -1,185 +1,201 @@
-# Session handoff — Phase 3 schema simplification
+# Session handoff — post-prod-deploy, continuing Phase 4
 
-**For:** the next Claude Code session continuing this work.
-**From:** the sessions that completed Phases 2 and 3.
-**Delete this file** when the remaining follow-ups below are
-either done or re-scoped into a new handoff.
+**For:** the next Claude Code session.
+**From:** the session that shipped Phase 2 + Phase 3 + most of Phase 4
+to production on Monday.
+**Delete this file** when the "what's in flight" list below is
+either done or re-scoped into a newer handoff.
 
 ---
 
 ## TL;DR
 
-Phase 2 is done. Phase 3 is substantively complete: indexes,
-audit columns, grants parity, tag-table cleanup, and the
-assignment-model unification are all landed and deployed to
-the Vercel preview.
+The parked Phase 2 branch landed on production this morning. Along
+with it went everything that accumulated on the working branch
+since — all of Phase 3 (assignment unification, auto-completion,
+grants parity) and most of Phase 4 (primitives, QuestionRenderer,
+error boundaries, profile_cards view). Two post-deploy hotfixes
+landed same-day: migration 000015's route_code case-mapping bug and
+migration 000024 restoring the question_status → questions FK that
+000017 dropped. Prod is healthy and the owner has eyes on it.
 
-What's left on Phase 3 is small-UX follow-up (archive toggle,
-auto-completion), not schema work. Phase 4 can start whenever.
+Current branch: `claude/continue-architecture-migration-SikEX`.
+Working tree clean. 25+ commits beyond what was on `main` at start
+of the prior session; everything is now merged to main.
 
----
-
-## Branch
-
-`claude/continue-architecture-migration-SikEX` — all changes
-pushed. Predecessor branch: `claude/continue-architecture-
-migration-BETbL`.
-
----
-
-## What's done in Phase 3
-
-### Schema simplification
-- **Indexes**: `profiles(role)`, `attempts(user_id, question_id)`,
-  `question_status(question_id)` — migration 000019
-- **Audit columns**: `created_by`, `updated_by`, `deleted_at`,
-  `updated_at` (with auto-trigger) on `practice_tests_v2`,
-  `practice_test_modules_v2`, `practice_test_module_items_v2`,
-  `questions_v2` — migration 000019
-- **`answer_choice_tags` + `option_answer_choice_tags`**: dropped
-  (migration 000020).
-- **Grants parity**: migration 000018.
-- **`question_availability`**: marked for Phase 6 deletion.
-- **Options normalization**: skipped (small, bounded, always read
-  with parent). Documented in migration 000020's commit.
-
-### Assignment-model unification (this session)
-- **Schema**: migration 000021 — `assignments_v2` +
-  `assignment_students_v2`, type-discriminated (`questions`,
-  `lesson`, `practice_test`). Partial CHECK per type requires
-  the matching payload column non-null; RLS uses `can_view()`
-  plus SECURITY DEFINER bridges to break the parent↔child
-  cycle; `archived_at` on parent for teacher-side hiding;
-  per-student `completed_at` on child.
-- **Content copy**: migration 000022 — v1 `question_assignments`
-  + `lesson_assignments` + junctions copied in. Practice-test
-  rows (jerry-rigged in v1 via `filter_criteria.type =
-  'practice_test'`) are translated to `assignment_type =
-  'practice_test'` with `practice_test_id` pulled out of the
-  json. V1 `completed_at` on the parent maps to `archived_at`
-  on the v2 parent. V1 UUIDs are preserved; `ON CONFLICT (id)
-  DO NOTHING` makes the migration idempotent.
-- **Student UI**: `/assignments` (list), `/assignments/[id]`
-  (detail, branches on type). Dashboard gets an Assignments
-  panel. Start/Continue button creates a `practice_sessions`
-  row with the assignment's `question_ids` and redirects to
-  `/practice/s/<sid>/0`.
-- **Teacher UI**: `/tutor/assignments` (list with per-
-  assignment completion rollup), `/tutor/assignments/new`
-  (one form, three type-specific field groups),
-  `/tutor/assignments/[id]` (per-student progress table).
-  `createAssignment` Server Action handles all three types.
-- **Tutor student-detail wiring**: each student's page now
-  shows their active assignments with a shortcut to `/new`.
+The near-term work target the user named: **question-rendering
+quality upgrades** in the new tree (math rendering, two-column
+reading layout, Desmos calculator). Groundwork is in place
+(`<QuestionRenderer>` extracted); the missing pieces are porting /
+upgrading the concrete render features.
 
 ---
 
-## What's left (Phase 3 tail)
+## What's on prod after today's deploy
 
-Not blocking; can land as one-off commits or roll into Phase 4:
+### Migrations applied (in order)
+| # | What |
+|---|---|
+| 000011 | Role checks → JWT helpers (`is_admin`/`is_teacher`/`is_manager`) |
+| 000012 | Visibility policies → `can_view()` on 7 tables |
+| 000013 | Drop 3 bridge RPCs, add `student_practice_stats` view |
+| 000014 | `practice_tests_v2` schema |
+| 000015 | Copy v1 practice-test content → v2 (**fixed** post-deploy) |
+| 000016 | Per-student v1→v2 history import RPC |
+| 000017 | Drop v1 attempts FKs |
+| 000018 | Grants parity for `authenticated` (no-op on prod) |
+| 000019 | Phase 3 indexes + audit columns |
+| 000020 | Drop `answer_choice_tags` + legacy UI that referenced them |
+| 000021 | `assignments_v2` schema |
+| 000022 | Copy v1 assignments → v2 |
+| 000023 | `profile_cards` view + parameterized `can_view_from` |
+| 000024 | Restore `question_status_question_id_fkey` (hotfix) |
 
-1. **Auto-set per-student `completed_at`**. Today it's never
-   set: the student panel treats null completed_at as "not
-   done", and the teacher's progress rollup likewise. For
-   `questions` assignments, set `completed_at` when all
-   question IDs have a corresponding attempt (could live on
-   the Server Action that submits an answer, or a Postgres
-   trigger). For `practice_test` it would fire when the
-   attempt is marked `status='completed'`. Lessons: when
-   the lesson player exists.
-2. **Teacher archive/un-archive UI**. The column and RLS are
-   in place; just needs a button on
-   `/tutor/assignments/[id]` and the Server Action to flip
-   it. One-shot.
-3. **Student completed-assignment view**. Today completed
-   assignments sink to the bottom of the list but there's no
-   separate section. Nice-to-have.
-4. **Legacy `question_assignments` / `lesson_assignments`
-   are not touched yet**. They'll drop in Phase 6 along with
-   the rest of the legacy tree. Until then, the legacy app
-   continues to read/write them; v2 reads only. Future
-   teacher-side creation flows in legacy should be
-   considered frozen — if the legacy tree ever re-enables
-   assignment creation, it should dual-write to v2 or we
-   accept drift.
+### New-tree code now live (behind `ui_version='next'`)
+- `app/next/` parallel tree — student, tutor, admin trees all wired
+  to v2 tables.
+- Phase 4 primitives: `lib/ui/{StatCard, AssignmentTypeBadge,
+  Button, Card, Table, QuestionRenderer, ErrorScreen}`.
+- Error boundaries at every top-level app/next segment.
+- `/tutor/review/[questionId]` as the first consumer of
+  `<QuestionRenderer mode="teacher">`.
 
----
-
-## Other pending items (not Phase 3)
-
-- **Deploy to production**: Phase 2 RLS changes are parked.
-  Deploy plan is in `docs/runbook.md` under "Deploying the
-  Phase 2 step 9 branch (parked)." User will decide timing.
-- **Performance page score distribution**: still reads from
-  v1 `practice_test_attempts` (historical data). Will read
-  from both v1 + v2 once v2 practice tests have completed
-  attempts.
+### Verified on prod
+- Migrations 000011–000013 policies resolved correctly
+  (7 visibility policies use `can_view()`; 0 inline role subqueries
+  left; 3 bridge RPCs dropped; `student_practice_stats` view exists).
+- Manager profile visibility expanded via `can_view()` transitive
+  path (000012 expansion).
+- `profile_cards` view returns name + role with symmetric
+  visibility (student ↔ teacher).
 
 ---
 
-## Known limitations to flag for users
+## What's in flight
 
-- **Practice-test launch for `ui_version='next'` users**
-  still lives at `/practice-test` in the legacy tree. For
-  users on the new tree, launching from an assignment hits
-  the `[...slug]` catch-all. Internal testers only right
-  now, so acceptable — but moving the practice-test flow to
-  the new tree is a precondition for flipping more users to
-  `next`.
-- **Lesson player for `ui_version='next'` users** likewise
-  lives at `/lessons/[id]` in the legacy tree — same
-  caveat. Lessons aren't shipped yet so this is theoretical.
+### Immediate priority — question-rendering quality
+The user's stated goal: match prod's quality for math/reading, with
+two-column layout and Desmos minimize behavior. Current
+`<QuestionRenderer>` renders stim/stem/options/rationale in a single
+column with no math rendering.
+
+Gap, ordered by impact:
+
+**Tier 1 (real blockers):**
+1. Math rendering. Prod uses client-side MathJax via
+   `components/HtmlBlock.js`. Architectural upgrade worth pursuing:
+   pre-render math with KaTeX at content-authoring time, store the
+   rendered HTML on questions_v2 — zero client math bundle. See
+   the §3.4 / Tier 3 discussion in the prior session's transcript.
+2. Two-column reading layout (passage left, stem+options right)
+   for domains `EOI / INI / CAS / SEC`.
+3. Desmos panel on the left for math domains (`H / P / S / Q`).
+   Port `DesmosPanel` from `app/practice/[questionId]/page.js` into
+   its own `lib/ui/DesmosPanel.js` client island.
+
+**Tier 2:** reference sheet modal, image max-width wrapper, concept
+tag chips.
+
+**Tier 3 (policy calls):** flashcards modal, question notes,
+retry-until-correct semantics.
+
+Architectural nudges from the prior conversation:
+- Build `<RichContent html={...} />` in `lib/ui/` as the single
+  primitive that handles HTML rendering + math + image sizing +
+  (future) watermarking.
+- Make two-column layout a shell component (`<QuestionLayout
+  mode="reading|math|single">`) rather than embedded in
+  QuestionRenderer. Keeps the renderer layout-neutral.
+- Desmos stays its own client island — don't fold it into
+  QuestionRenderer.
+
+### Deferred but known
+
+- **Manager access to 6 legacy `/api/teacher/student/[studentId]/*`
+  routes returns Forbidden.** These pre-RLS access checks special-
+  case teachers+managers and do a direct
+  `teacher_student_assignments(teacher_id=me)` lookup that managers
+  can never satisfy. Two fix options: replace with a `can_view` RPC
+  call (~2 lines each, 6 files) OR move managers to
+  `ui_version='next'` where the new-tree pages work. User said it's
+  acceptable for a few days; flagged for cleanup.
+
+- **Assignment archive toggle** (teacher-side "hide completed
+  assignments") — schema has `archived_at`; UI to set it hasn't been
+  built.
+
+- **`upsert_question_status_after_attempt` RPC** — legacy-only,
+  new tree doesn't call it, missing on dev. Remove when the legacy
+  tree retires in Phase 6.
+
+- **`question_status` as a legacy-only concept** — the FK restored
+  in 000024 is load-bearing for legacy PostgREST embeds; the table
+  and its FK retire in Phase 6. New tree reads per-question state
+  from `attempts` directly. See the prior session's
+  "Where will v2 store status info?" discussion — the long-term
+  shape is: derived state from `attempts`; a new small
+  `question_flags_v2` only for user-authored flags (marked-for-
+  review, notes).
 
 ---
 
 ## Dev environment
 
 - **Supabase dev project**: `ikzhizgsawzjpuuznfid` (studyworks-dev)
-- **Access**: via Supabase MCP connector (NOT direct curl — the
-  sandbox network allowlist blocks api.supabase.com)
-- **Seed data**: 4 users (admin/teacher/student1/student2), 8
-  questions_v2, 1 practice test v2, 6 attempts. Seed script at
-  `scripts/dev-seed-practice-test-v2.sql`.
-- **Auth credentials**: all `devseed123`. Emails:
-  admin@test.studyworks, teacher@test.studyworks,
-  student1@test.studyworks, student2@test.studyworks
-- **Vercel preview**: pointed at dev DB. Redeploy triggers on push.
-- **Known dev-DB quirk**: auth.users rows need token columns
-  set to empty strings (not NULL) and auth.identities rows created
-  manually. The seed script handles this but document it for
-  anyone adding new test users.
+- **Supabase prod project**: `noqtadytxyslkoetchrs` (SAT Question Bank)
+- **MCP access**: both projects are in the MCP list. For prod:
+  read-only SELECTs only unless explicitly told otherwise; no
+  `apply_migration`/INSERT/UPDATE without a specific green light.
+  Data is real (students, teachers, their practice history).
+- **Seed scripts**:
+  - `scripts/dev-seed-practice-test-v2.sql` — base seed (users,
+    questions, 1 practice test).
+  - `scripts/dev-seed-ui-preview.sql` — Phase 4 preview content
+    (5 students, 5 assignments, lesson, attempts, score conversion,
+    learnability, teacher codes, flagged questions).
+- **Auth credentials** (dev only): all passwords `devseed123`.
+  Emails `{admin,teacher,student1..5}@test.studyworks`.
+- **Vercel preview** points at dev DB; redeploys on push.
+- **The kill switch**: `feature_flags.force_ui_version = 'legacy'`
+  pins everyone to the legacy tree in ~5s. Does NOT undo schema
+  changes; those need targeted policy/function reverts.
+
+---
+
+## Pattern reminders for the next session
+
+These patterns came up repeatedly this session; next session can
+start with them rather than re-deriving.
+
+- **Inspecting prod under RLS**: impersonate a role in a dev
+  transaction with `PERFORM set_config('request.jwt.claims', ...)`
+  then `SET LOCAL ROLE authenticated`, run SELECTs, `ROLLBACK`. In
+  prod, just set the JWT claims and read — no transaction wrapper
+  needed for read-only checks.
+- **Verifying a migration landed**: queries against `pg_policies`,
+  `pg_proc`, `pg_constraint`, and `information_schema.columns`
+  together catch ~all shapes of "did the policy/helper/view/FK
+  actually land."
+- **Content-copy verification**: seed synthetic v1 rows in a
+  transaction, run the INSERT, SELECT the v2 shape, `ROLLBACK`.
+  Validates the mapping without polluting the DB.
+- **PostgREST nudge after schema change**: `NOTIFY pgrst, 'reload
+  schema';` inside the migration. Supabase PostgREST listens.
 
 ---
 
 ## Key files
 
-- `docs/architecture-plan.md` — master plan, Phase 3 in §4
-- `docs/runbook.md` — operational, includes deploy plan
-- `CLAUDE.md` — auto-loaded framing
-- `supabase/migrations/20240101000014-000022` — Phases 2+3
-- `scripts/dev-seed-practice-test-v2.sql` — dev DB seed
-- `app/next/(admin)/admin/` — admin carve-outs
-- `app/next/(student)/practice/` — v2-wired practice flow
-- `app/next/(student)/assignments/` — student assignments UI (new)
-- `app/next/(tutor)/tutor/` — tutor dashboard + student detail
-- `app/next/(tutor)/tutor/assignments/` — teacher assignments UI (new)
-- `lib/practice/` — shared practice components + actions
-
----
-
-## Technique notes from this session
-
-- **RLS test pattern**: impersonate a role in a transaction with
-  `PERFORM set_config('request.jwt.claims', ...)` then
-  `SET LOCAL ROLE authenticated`, run SELECTs, `ROLLBACK`.
-  Useful for verifying RLS end-to-end without a real session.
-  See the `BEGIN ... ROLLBACK` blocks in this session's
-  transcripts for examples.
-- **Schema-test pattern**: exercise a CHECK constraint by
-  wrapping the INSERT in `BEGIN ... EXCEPTION WHEN
-  check_violation THEN RAISE NOTICE ... END;` inside a DO
-  block, then cleanup. See the partial-CHECK verification
-  run after migration 000021.
-- **Content-copy verification**: seed synthetic v1 rows in
-  a transaction, run the copy INSERTs, SELECT the v2 shape,
-  `ROLLBACK`. Validates the mapping without polluting dev.
+- `docs/architecture-plan.md` — master plan; §3.8 (visibility)
+  and §4 (phase plan) are the hot paths.
+- `docs/runbook.md` — operational; updated this session to reflect
+  the Phase 2 branch deploy being done.
+- `CLAUDE.md` — auto-loaded framing.
+- `supabase/migrations/20240101000011…000024` — the deployed set.
+- `scripts/dev-seed-*.sql` — dev seed scripts.
+- `lib/ui/` — Phase 4 primitives.
+- `lib/practice/PracticeInteractive.js` — session-shell that
+  delegates rendering to QuestionRenderer.
+- `app/next/(tutor)/tutor/review/[questionId]/page.js` — first
+  QuestionRenderer teacher-mode consumer; pattern reference for
+  future review/inspection pages.
