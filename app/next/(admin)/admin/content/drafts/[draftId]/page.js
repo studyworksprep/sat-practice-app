@@ -25,6 +25,7 @@ import {
   extractMcqCorrectId,
   formatSprCorrect,
 } from '@/lib/practice/correct-answer';
+import { OptionsEditor } from './OptionsEditor';
 import { saveDraft, promoteDraft, rejectDraft } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -152,13 +153,7 @@ function DraftEditor({ draft }) {
         <Field label="stem_html" name="stem_html" value={draft.stem_html} />
         <Field label="stimulus_html" name="stimulus_html" value={draft.stimulus_html} />
         <Field label="rationale_html" name="rationale_html" value={draft.rationale_html} />
-        <Field
-          label="options (JSON array of { label, ordinal, content_html })"
-          name="options"
-          value={draft.options == null ? '' : JSON.stringify(draft.options, null, 2)}
-          rows={8}
-          mono
-        />
+        <OptionsEditor initialOptions={draft.options} name="options" />
         <Field label="notes" name="notes" value={draft.notes} rows={3} />
         <label style={S.label}>
           status
