@@ -26,6 +26,7 @@ import {
   formatSprCorrect,
 } from '@/lib/practice/correct-answer';
 import { OptionsEditor } from './OptionsEditor';
+import { FieldWithUpload } from './FieldWithUpload';
 import { saveDraft, promoteDraft, rejectDraft } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -150,9 +151,9 @@ function DraftEditor({ draft }) {
     <section style={{ marginTop: '1.5rem' }}>
       <form action={saveBound} style={S.form}>
         <h2 style={S.paneTitle}>Edit</h2>
-        <Field label="stem_html" name="stem_html" value={draft.stem_html} />
-        <Field label="stimulus_html" name="stimulus_html" value={draft.stimulus_html} />
-        <Field label="rationale_html" name="rationale_html" value={draft.rationale_html} />
+        <FieldWithUpload label="stem_html" name="stem_html" defaultValue={draft.stem_html ?? ''} />
+        <FieldWithUpload label="stimulus_html" name="stimulus_html" defaultValue={draft.stimulus_html ?? ''} />
+        <FieldWithUpload label="rationale_html" name="rationale_html" defaultValue={draft.rationale_html ?? ''} />
         <OptionsEditor initialOptions={draft.options} name="options" />
         <Field label="notes" name="notes" value={draft.notes} rows={3} />
         <label style={S.label}>
