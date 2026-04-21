@@ -89,7 +89,7 @@ export default async function PracticeQuestionPage({ params }) {
     supabase
       .from('questions_v2')
       .select(
-        'id, question_type, stimulus_html, stem_html, options, domain_name, skill_name, difficulty, score_band, display_code, is_broken',
+        'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_name, skill_name, difficulty, score_band, display_code, is_broken',
       )
       .eq('id', questionId)
       .eq('is_published', true)
@@ -108,20 +108,38 @@ export default async function PracticeQuestionPage({ params }) {
 
   // 4) Apply per-user watermarking to all HTML content before
   //    embedding. Invisible to real students, decodable from leaked
-  //    text via watermarkTag(userId). See §3.7.
-  const stimulusHtml = applyWatermark(question.stimulus_html, user.id);
-  const stemHtml = applyWatermark(question.stem_html, user.id);
+  //    text via watermarkTag(userId). See §3.7. We watermark the
+  //    pre-rendered HTML when present — the watermark injects between
+  //    tags at the first non-accessibility-attr boundary, which still
+  //    lands cleanly inside the rendered output's wrapper tags.
+  const stimulusHtml = applyWatermark(
+    question.stimulus_rendered ?? question.stimulus_html,
+    user.id,
+  );
+  const stemHtml = applyWatermark(
+    question.stem_rendered ?? question.stem_html,
+    user.id,
+  );
 
-  // v2 options are a jsonb array of {id, text} objects. The id is
-  // the option letter ("A"/"B"/"C"/"D") — not a uuid. The client
-  // passes this back in submitAnswer as optionId.
-  const rawOptions = Array.isArray(question.options) ? question.options : [];
-  const wmOptions = rawOptions.map((opt, idx) => ({
-    id: opt.id ?? String.fromCharCode(65 + idx),
-    ordinal: idx,
-    label: opt.id ?? String.fromCharCode(65 + idx),
-    content_html: applyWatermark(opt.text ?? '', user.id),
-  }));
+  // v2 options are a jsonb array of {label, ordinal, content_html}
+  // objects (dev-seed rows still use the older {id, text} shape — the
+  // fallbacks below accept either). The option letter is returned to
+  // the server as `optionId` when the student submits.
+  const optionsSource = Array.isArray(question.options_rendered)
+    ? question.options_rendered
+    : Array.isArray(question.options)
+      ? question.options
+      : [];
+  const wmOptions = optionsSource.map((opt, idx) => {
+    const label = opt.label ?? opt.id ?? String.fromCharCode(65 + idx);
+    const content = opt.content_html_rendered ?? opt.content_html ?? opt.text ?? '';
+    return {
+      id: label,
+      ordinal: idx,
+      label,
+      content_html: applyWatermark(content, user.id),
+    };
+  });
 
   // 5) Build the view-model handed to the client island. The client
   //    sees rendered HTML strings for the server-rendered regions

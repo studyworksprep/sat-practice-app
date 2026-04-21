@@ -21,6 +21,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { Card } from '@/lib/ui/Card';
+import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,12 +36,16 @@ export default async function TutorReviewQuestionPage({ params }) {
     redirect('/');
   }
 
-  // Single query — v2 rows have everything inline.
+  // Single query — v2 rows have everything inline. Pre-rendered
+  // columns (stem_rendered etc.) carry the SVG-embedded math; we
+  // prefer them when populated and fall back to raw HTML for rows
+  // the renderer hasn't reached yet.
   const { data: question } = await supabase
     .from('questions_v2')
     .select(`
       id, question_type, display_code,
       stimulus_html, stem_html, options, correct_answer, rationale_html,
+      stimulus_rendered, stem_rendered, options_rendered, rationale_rendered,
       domain_name, skill_name, difficulty, score_band, source,
       is_published, is_broken, deleted_at
     `)
@@ -51,18 +56,26 @@ export default async function TutorReviewQuestionPage({ params }) {
 
   // Shape options identically to how the student practice page does,
   // but without the per-user watermark (teachers see the raw content).
-  const rawOptions = Array.isArray(question.options) ? question.options : [];
-  const wmOptions = rawOptions.map((opt, idx) => ({
-    id: opt.id ?? String.fromCharCode(65 + idx),
-    label: opt.id ?? String.fromCharCode(65 + idx),
-    content_html: opt.text ?? '',
-  }));
+  const optionsSource = Array.isArray(question.options_rendered)
+    ? question.options_rendered
+    : Array.isArray(question.options)
+      ? question.options
+      : [];
+  const wmOptions = optionsSource.map((opt, idx) => {
+    const label = opt.label ?? opt.id ?? String.fromCharCode(65 + idx);
+    return {
+      id: label,
+      label,
+      content_html:
+        opt.content_html_rendered ?? opt.content_html ?? opt.text ?? '',
+    };
+  });
 
   const questionVM = {
     questionId: question.id,
     questionType: question.question_type,
-    stimulusHtml: question.stimulus_html,
-    stemHtml: question.stem_html,
+    stimulusHtml: question.stimulus_rendered ?? question.stimulus_html,
+    stemHtml: question.stem_rendered ?? question.stem_html,
     options: wmOptions,
     taxonomy: {
       domain_name: question.domain_name,
@@ -79,7 +92,7 @@ export default async function TutorReviewQuestionPage({ params }) {
   const resultVM = {
     correctOptionId: !isSpr ? extractMcqCorrectId(question.correct_answer) : null,
     correctAnswerDisplay: isSpr ? formatSprCorrect(question.correct_answer) : null,
-    rationaleHtml: question.rationale_html,
+    rationaleHtml: question.rationale_rendered ?? question.rationale_html,
   };
 
   return (
@@ -128,23 +141,8 @@ export default async function TutorReviewQuestionPage({ params }) {
   );
 }
 
-// ──────────────────────────────────────────────────────────────
-// Correct-answer helpers — parallel to lib/practice/load-review-data.js
-// but without the watermarking (teachers get raw content).
-// ──────────────────────────────────────────────────────────────
-
-function extractMcqCorrectId(raw) {
-  if (raw == null) return null;
-  if (typeof raw === 'string') return raw;
-  if (Array.isArray(raw) && raw.length > 0) return String(raw[0]);
-  return null;
-}
-
-function formatSprCorrect(raw) {
-  if (raw == null) return '—';
-  if (Array.isArray(raw)) return raw.map(String).join(' or ');
-  return String(raw);
-}
+// Correct-answer extractors live in lib/practice/correct-answer.js
+// — shared with the student reveal path.
 
 function Pill({ tone, children }) {
   const colors = {

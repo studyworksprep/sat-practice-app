@@ -60,6 +60,10 @@ export default async function AdminContentPage({ searchParams }) {
           Flagged items, scoring curves, adaptive routing, and skill
           learnability ratings — the content-operations surface.
         </p>
+        <p style={S.sub}>
+          <a href="/admin/content/drafts" style={S.link}>→ Content drafts</a>
+          {' '}— staged fixes for questions_v2 rows, side-by-side review + promote.
+        </p>
       </header>
 
       <Section
