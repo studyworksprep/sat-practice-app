@@ -65,25 +65,41 @@ let errored = 0;
 const t0 = Date.now();
 
 /**
- * Fetch the next batch of rows that might need rendering. We can't
- * filter on "hash mismatch" directly in a single SQL predicate
- * (the expected hash is a client-side computation), so we select
- * on the simpler index-friendly condition rendered_at IS NULL,
- * then ALSO include a broader "hash may be stale" pass at the end
- * for rows that were rendered before a content edit. For the
- * initial backfill this first pass is the dominant workload.
+ * Fetch the next batch of rows that might need rendering.
+ *
+ * Exclusions:
+ * - deleted_at IS NOT NULL  — soft-deleted rows
+ * - is_broken = true        — admin-flagged as broken
+ * - any content field contains "TRIMMED" — ingest truncation
+ *   sentinel; those rows are handled via the drafts workflow
+ *   (question_content_drafts) rather than bulk rendering.
+ *
+ * Returns { rows, lastSqlId }. rows is the filtered set the
+ * caller should render; lastSqlId is the last id returned by SQL
+ * (pre-filter), which is what the cursor needs to advance past
+ * so a batch that's entirely filtered out doesn't stall the loop.
  */
 async function nextBatch(cursor) {
   const { data, error } = await supabase
     .from('questions_v2')
-    .select('id, stem_html, stimulus_html, rationale_html, options, rendered_source_hash')
+    .select('id, stem_html, stimulus_html, rationale_html, options, rendered_source_hash, is_broken')
     .is('deleted_at', null)
     .is('rendered_at', null)
+    .not('is_broken', 'is', true)
     .order('id')
     .gt('id', cursor)
     .limit(batchSize);
   if (error) throw new Error(`SELECT failed: ${error.message}`);
-  return data ?? [];
+  const raw = data ?? [];
+  // TRIMMED check is hard to express as a Postgres NOT LIKE over
+  // four jsonb/text fields that may be NULL — easier client-side.
+  const rows = raw.filter((row) => {
+    const blob =
+      (row.stem_html ?? '') + (row.stimulus_html ?? '') +
+      (row.rationale_html ?? '') + (row.options == null ? '' : JSON.stringify(row.options));
+    return !blob.includes('TRIMMED');
+  });
+  return { rows, lastSqlId: raw.length > 0 ? raw[raw.length - 1].id : null };
 }
 
 async function applyRow(row, rendered) {
@@ -107,9 +123,10 @@ async function applyRow(row, rendered) {
 
 let cursor = '00000000-0000-0000-0000-000000000000';
 while (processed < limit) {
-  const rows = await nextBatch(cursor);
-  if (rows.length === 0) break;
-  cursor = rows[rows.length - 1].id;
+  const { rows, lastSqlId } = await nextBatch(cursor);
+  if (lastSqlId == null) break;  // no more rows from SQL at all
+  cursor = lastSqlId;              // advance past even filtered-out rows
+  if (rows.length === 0) continue; // whole batch was filtered — keep going
 
   for (const row of rows) {
     if (processed >= limit) break;
