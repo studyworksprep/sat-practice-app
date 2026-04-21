@@ -1,0 +1,76 @@
+name: Backfill questions_v2 rendered math
+
+# Pre-render the math in questions_v2 rows whose rendered columns
+# are null or stale, writing the SVG-embedded HTML back so the new
+# tree serves typeset math with no client-side MathJax bundle.
+# Designed as a one-shot with manual re-runs as content ingest
+# produces new rows — it's the durable home for the sandbox
+# backfills that were done via MCP during development.
+#
+# Env:
+#   SUPABASE_URL                — project URL
+#   SUPABASE_SERVICE_ROLE_KEY   — service role (bypasses RLS; lets
+#                                  this run end-to-end without a
+#                                  per-user session)
+#
+# Flags (workflow inputs):
+#   dry-run     — true = report, write nothing (default)
+#   batch-size  — rows per SELECT + UPDATE loop (default 50)
+#   limit       — stop after this many rows, blank = all
+#
+# Run dry-run first. Expected output: "Processed N, written 0,
+# skipped 0, errored 0" with a plausible N. Then re-trigger with
+# dry-run=false. A full backfill of ~3,400 rows takes a few
+# minutes at ~10 rows/s.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run (true = no writes, just report)"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      batch-size:
+        description: "Rows per batch"
+        required: false
+        default: "50"
+        type: string
+      limit:
+        description: "Total row limit (blank = all)"
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: render-math-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run backfill
+        run: |
+          ARGS=()
+          if [ "${{ inputs.dry-run }}" = "true" ]; then ARGS+=("--dry-run"); fi
+          if [ -n "${{ inputs.batch-size }}" ]; then ARGS+=("--batch=${{ inputs.batch-size }}"); fi
+          if [ -n "${{ inputs.limit }}" ]; then ARGS+=("--limit=${{ inputs.limit }}"); fi
+          node scripts/backfill-render-math.mjs "${ARGS[@]}"
