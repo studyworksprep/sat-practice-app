@@ -30,6 +30,16 @@
 // this long-term, a thin wrapper connects to Postgres directly.
 
 import { createHash } from 'node:crypto';
+// Preload the full HTML-entity decoding table. MathJax otherwise
+// async-loads per-letter tables (mathjax-full/js/util/entities/<c>.js)
+// on first entity encountered; with the sync liteAdaptor + sync
+// doc.render() path we use here, those async loads resolve too
+// late and the handler state degrades. Importing 'all' forces
+// every entity table to be available up front, which keeps render
+// fully synchronous and keeps the handler healthy across
+// consecutive documents. Cost is ~100KB of tables in memory —
+// negligible for a CLI renderer.
+import 'mathjax-full/js/util/entities/all.js';
 import { mathjax } from 'mathjax-full/js/mathjax.js';
 import { TeX } from 'mathjax-full/js/input/tex.js';
 import { MathML } from 'mathjax-full/js/input/mathml.js';
@@ -57,26 +67,20 @@ const svg = new SVG({ fontCache: 'none' });
 /**
  * Render all math (TeX delimiters + MathML) inside an HTML blob.
  * Returns the HTML with every math node replaced by inline SVG.
+ *
+ * Single document with both input jaxes — MathJax's findMath() runs
+ * each input jax against the DOM and unions the matches, so both
+ * TeX delimiters and <math> elements are caught in one pass without
+ * needing to re-parse the intermediate HTML.
  */
 function renderHtml(html) {
   if (html == null || html === '') return html;
-
-  // Two-pass: TeX first (leaves <math> alone), then MathML on the
-  // result (consumes <math> nodes). Order matters — doing MathML
-  // first would leave rendered SVG nodes that still contain \( \)
-  // sequences inside their aria-labels, and the TeX pass would
-  // mis-match against those.
-  let current = html;
-
-  const texDoc = mathjax.document(current, { InputJax: tex, OutputJax: svg });
-  texDoc.render();
-  current = adaptor.innerHTML(adaptor.body(texDoc.document));
-
-  const mmlDoc = mathjax.document(current, { InputJax: mml, OutputJax: svg });
-  mmlDoc.render();
-  current = adaptor.innerHTML(adaptor.body(mmlDoc.document));
-
-  return current;
+  const doc = mathjax.document(html, {
+    InputJax: [tex, mml],
+    OutputJax: svg,
+  });
+  doc.render();
+  return adaptor.innerHTML(adaptor.body(doc.document));
 }
 
 /** Same as renderHtml but swallows + logs errors, falls back to input. */
