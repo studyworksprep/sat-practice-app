@@ -1,0 +1,65 @@
+name: Migrate /public images to Supabase Storage
+
+# Manual one-off migration (workflow_dispatch only). Picks up every
+# questions_v2 HTML reference of the form <img src="/images/…"> or
+# <img src="/graphs/…">, uploads the corresponding file from
+# public/<path> into the question-figures bucket with a
+# content-addressed name (sha256(bytes) + .ext), and rewrites every
+# row's HTML so each reference points at the bucket's public URL.
+#
+# Env:
+#   SUPABASE_URL                — project URL
+#                                  (https://<ref>.supabase.co)
+#   SUPABASE_SERVICE_ROLE_KEY   — service role key (bypasses RLS;
+#                                  required to write to any row and
+#                                  any bucket)
+#
+# Modes:
+#   dry-run=true (default)  — report what would change, mutate
+#                              nothing
+#   dry-run=false           — mutate prod
+#
+# Run dry-run first, read the output, then re-trigger with
+# dry-run=false.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run (true = no writes, just report)"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+concurrency:
+  group: migrate-public-images
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run migration
+        run: |
+          if [ "${{ inputs.dry-run }}" = "true" ]; then
+            node scripts/migrate-public-images.mjs --dry-run
+          else
+            node scripts/migrate-public-images.mjs
+          fi
