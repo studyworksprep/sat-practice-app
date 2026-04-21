@@ -21,6 +21,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { Card } from '@/lib/ui/Card';
+import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 
 export const dynamic = 'force-dynamic';
 
@@ -140,23 +141,8 @@ export default async function TutorReviewQuestionPage({ params }) {
   );
 }
 
-// ──────────────────────────────────────────────────────────────
-// Correct-answer helpers — parallel to lib/practice/load-review-data.js
-// but without the watermarking (teachers get raw content).
-// ──────────────────────────────────────────────────────────────
-
-function extractMcqCorrectId(raw) {
-  if (raw == null) return null;
-  if (typeof raw === 'string') return raw;
-  if (Array.isArray(raw) && raw.length > 0) return String(raw[0]);
-  return null;
-}
-
-function formatSprCorrect(raw) {
-  if (raw == null) return '—';
-  if (Array.isArray(raw)) return raw.map(String).join(' or ');
-  return String(raw);
-}
+// Correct-answer extractors live in lib/practice/correct-answer.js
+// — shared with the student reveal path.
 
 function Pill({ tone, children }) {
   const colors = {
