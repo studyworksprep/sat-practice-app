@@ -140,7 +140,7 @@ export function DesmosPanel({ isOpen, storageKey }) {
       <aside
         aria-label="Graphing calculator"
         aria-hidden={!isOpen}
-        style={{ ...S.panel, ...(isOpen ? S.panelOpen : S.panelClosed) }}
+        style={S.panel}
       >
         <div ref={hostRef} style={S.host} />
       </aside>
@@ -148,22 +148,20 @@ export function DesmosPanel({ isOpen, storageKey }) {
   );
 }
 
+// DesmosPanel is meant to fill whatever slot it's placed in. The
+// host div takes all available space inside the aside; the aside
+// itself is flex-column so the host gets the full height. When
+// the parent collapses to zero width (e.g. the leftSlotCollapsed
+// case in QuestionRenderer), this whole tree goes with it.
 const S = {
   panel: {
-    position: 'fixed',
-    top: 0, left: 0, bottom: 0,
-    width: 'min(52vw, 720px)',
     background: 'white',
-    borderRight: '1px solid #e5e7eb',
-    boxShadow: '2px 0 12px rgba(0, 0, 0, 0.06)',
-    zIndex: 50,
-    transition: 'transform 180ms ease-out',
     display: 'flex', flexDirection: 'column',
+    width: '100%', height: '100%',
+    minHeight: 420,
   },
-  panelOpen:   { transform: 'translateX(0)' },
-  panelClosed: { transform: 'translateX(-100%)', pointerEvents: 'none' },
   host: {
     flex: 1,
-    minHeight: 0,  // important: lets Desmos honor the flex container's height
+    minHeight: 0,
   },
 };
