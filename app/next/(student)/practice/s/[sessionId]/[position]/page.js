@@ -30,6 +30,7 @@ import { submitAnswer } from '@/lib/practice/session-actions';
 import { loadReviewData } from '@/lib/practice/load-review-data';
 import { PracticeInteractive } from '@/lib/practice/PracticeInteractive';
 import { QuestionMap } from '@/lib/practice/QuestionMap';
+import { inferLayoutMode } from '@/lib/ui/question-layout';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,7 +95,7 @@ export default async function PracticeQuestionPage({ params }) {
     supabase
       .from('questions_v2')
       .select(
-        'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_name, skill_name, difficulty, score_band, display_code, is_broken, is_published, deleted_at',
+        'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_code, domain_name, skill_name, difficulty, score_band, display_code, is_broken, is_published, deleted_at',
       )
       .eq('id', questionId)
       .maybeSingle(),
@@ -207,6 +208,12 @@ export default async function PracticeQuestionPage({ params }) {
     stimulusHtml,
     stemHtml,
     options: wmOptions,
+    // Layout preference from domain_code: reading-section domains
+    // (CAS/EOI/INI/SEC) → two-column (passage on the left, stem +
+    // options on the right); math domains render single-column.
+    // The renderer also falls back to single-column if there's no
+    // stimulus or the viewport is narrow.
+    layout: inferLayoutMode(question.domain_code),
     taxonomy: {
       domain_name: question.domain_name,
       skill_name: question.skill_name,
