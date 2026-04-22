@@ -14,6 +14,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { createSession, countAvailable } from './actions';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
+import { domainSection } from '@/lib/ui/question-layout';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,10 +27,12 @@ export default async function PracticeStartPage() {
 
   // Domain / skill lookup. v2 has taxonomy inline on questions_v2
   // so no separate taxonomy table join; one SELECT covers all the
-  // filter UI needs.
+  // filter UI needs. domain_code is pulled alongside domain_name
+  // so the client can split the 8 domains into the design kit's
+  // Math / R&W columns (via domainSection).
   const { data: questionRows } = await supabase
     .from('questions_v2')
-    .select('domain_name, skill_name, score_band')
+    .select('domain_name, domain_code, skill_name, score_band')
     .eq('is_published', true)
     .eq('is_broken', false)
     .is('deleted_at', null)
@@ -40,14 +43,30 @@ export default async function PracticeStartPage() {
   const scoreBandSet = new Set();
   for (const row of questionRows ?? []) {
     if (row.domain_name) {
-      if (!domainMap.has(row.domain_name)) domainMap.set(row.domain_name, new Set());
-      if (row.skill_name) domainMap.get(row.domain_name).add(row.skill_name);
+      let entry = domainMap.get(row.domain_name);
+      if (!entry) {
+        entry = { code: row.domain_code ?? null, skills: new Set(), total: 0 };
+        domainMap.set(row.domain_name, entry);
+      }
+      entry.total += 1;
+      if (row.domain_code && !entry.code) entry.code = row.domain_code;
+      if (row.skill_name) entry.skills.add(row.skill_name);
     }
     if (row.score_band != null) scoreBandSet.add(row.score_band);
   }
-  const domains = Array.from(domainMap.keys())
-    .sort()
-    .map((name) => ({ name, skills: Array.from(domainMap.get(name)).sort() }));
+  const domains = Array.from(domainMap.entries())
+    .map(([name, e]) => ({
+      name,
+      code: e.code,
+      section: domainSection(e.code),
+      skills: Array.from(e.skills).sort(),
+      total: e.total,
+    }))
+    .sort((a, b) => {
+      // Math section first, then alphabetical within each section.
+      if (a.section !== b.section) return a.section === 'math' ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
   const scoreBands = Array.from(scoreBandSet).sort((a, b) => a - b);
 
   // Active practice-mode session to offer resume. Filter to

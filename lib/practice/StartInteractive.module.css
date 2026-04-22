@@ -1,34 +1,76 @@
 /* =============================================================
-   StartInteractive — practice-start filter form. Tokens resolved
-   from [data-tree="next"].
+   StartInteractive — practice-start filter form, styled after the
+   design-kit FilterBar / QuestionBank page. Tokens resolved from
+   [data-tree="next"].
+
+   Layout: one main filter .card with the "Start · N questions"
+   CTA baked into the header, then a two-column domain grid
+   (Math on the left, R&W on the right), chip rows for difficulty
+   / score-band / status, a collapsible Skills panel, and a small
+   secondary row for session size + order.
 ============================================================= */
 
-.main {
-  max-width: 720px;
-  margin: var(--s7) auto;
-  padding: 0 var(--s5);
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
   font-family: var(--font-sans);
   color: var(--fg1);
 }
 
 .h1 {
-  font-size: var(--app-title-1);
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--fg1);
+  margin: 0;
+}
+
+.h2 {
+  font-family: var(--font-sans);
+  font-size: 16px;
   font-weight: 700;
-  margin: 0 0 var(--s1);
+  letter-spacing: -0.003em;
+  line-height: 1.3;
+  color: var(--fg1);
+  margin: 0;
 }
 
 .sub {
-  color: var(--fg2);
-  margin-top: 0;
+  color: var(--fg3);
+  font-size: 13px;
+  margin: 0;
 }
 
-/* Resume-session callout. Card owns the tone; these classes add
-   layout (side-by-side) and the link color. */
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+  margin: 0 0 var(--s3);
+}
+
+/* ---------- Card ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+
+/* ---------- Resume-session callout ---------- */
+
 .resumeCard {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: var(--s4);
 }
 
 .resumeLink {
@@ -37,90 +79,286 @@
   font-weight: 600;
 }
 
-/* ---------- Form ---------- */
+/* ---------- Filter card header ---------- */
 
-.form {
-  margin-top: var(--s5);
+.filterCardHeader {
   display: flex;
-  flex-direction: column;
-  gap: var(--s5);
-}
-
-.fieldset {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--s4);
-  margin: 0;
-}
-
-.legend {
-  font-weight: 600;
-  padding: 0 var(--s2);
-  color: var(--fg1);
-}
-
-.checkList {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s4);
   gap: var(--s3);
 }
 
-.checkItem {
+/* Primary CTA baked into the header. Matches design kit .btn.primary —
+   navy fill, white text, navy border. Count lives inside with a
+   lighter divider so "Start · 24 questions" reads as one button. */
+.startBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s1);
+  padding: var(--s2) var(--s4);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: #fff;
+  background: var(--color-app-accent);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+}
+
+.startBtn:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+
+.startBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.startBtnCount {
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+/* ---------- Domain grid ---------- */
+
+.filterDomainCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media (max-width: 720px) {
+  .filterDomainCols { grid-template-columns: 1fr; }
+}
+
+.filterSectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+  margin: 0 0 var(--s2);
+}
+
+.domainGroup {
+  display: grid;
+  gap: 6px;
+}
+
+.domainRow {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.domainRow:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+}
+
+.domainRow:hover { border-color: var(--color-slate-400); }
+
+.domainRowMath.on {
+  border-color: #93c5fd;
+  background: rgba(37, 99, 235, 0.04);
+}
+
+.domainRowRw.on {
+  border-color: #fdba74;
+  background: rgba(234, 88, 12, 0.04);
+}
+
+.domainChip {
   display: flex;
   align-items: center;
-  gap: var(--s2);
-  cursor: pointer;
-  font-size: 14px;
+  gap: var(--s3);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--fg1);
+  cursor: pointer;
+  margin: 0;
 }
 
-/* Used for the "Order" label that sits below the unanswered-only
-   checkbox inside the Options fieldset. */
-.checkItemSpaced {
-  margin-top: var(--s2);
+.domainChip input {
+  margin: 0;
+  accent-color: var(--color-app-accent);
 }
 
-.emptyNote {
+.domainRowMath.on .domainChip { color: #1e40af; }
+.domainRowRw.on   .domainChip { color: #9a3412; }
+
+.filterCount {
+  font-size: 11px;
+  color: var(--fg3);
+  font-weight: 600;
+  margin-left: auto;
+}
+
+/* ---------- Chip row (difficulty / score-band / status) ---------- */
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  align-items: center;
+  margin-top: var(--s4);
+}
+
+.chipRowLabel {
+  font-size: 11px;
+  color: var(--fg3);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-right: var(--s2);
+}
+
+.chipRowSpacer { width: 20px; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-white);
+  color: var(--fg2);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-std);
+  font-family: inherit;
+}
+
+.chip:hover { border-color: var(--color-slate-400); }
+
+.chip.on {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent-hover);
+}
+
+.chipDiffEasy.on {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-diff-easy-fg);
+}
+
+.chipDiffMed.on {
+  background: rgba(194, 153, 62, 0.12);
+  border-color: var(--color-amber);
+  color: var(--color-diff-med-fg);
+}
+
+.chipDiffHard.on {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  color: var(--color-diff-hard-fg);
+}
+
+/* ---------- Skills panel (collapsible) ---------- */
+
+.skillsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--s4);
+}
+
+.skillsToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  cursor: pointer;
+}
+
+.skillsToggle:hover { text-decoration: underline; }
+
+.skillsPanel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  margin-top: var(--s3);
+}
+
+.skillsEmpty {
+  font-size: 12px;
   color: var(--fg3);
   font-style: italic;
   margin: 0;
 }
 
-.select {
-  padding: var(--s1) var(--s2);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  color: var(--fg1);
-  background: var(--bg-white);
-  font-family: inherit;
+/* ---------- Secondary row (size + order) ---------- */
+
+.secondaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s4);
+  margin-top: var(--s4);
+  padding-top: var(--s4);
+  border-top: 1px dashed var(--border);
 }
 
-.sizeInput {
-  width: 80px;
-  padding: var(--s2) var(--s3);
+.secondaryField {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.secondaryField input,
+.secondaryField select {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--fg1);
+  background: var(--bg-white);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
-  font-size: 16px;
+  padding: var(--s1) var(--s2);
+}
+
+.secondaryField input[type="number"] {
+  width: 68px;
   font-family: var(--font-mono);
 }
 
+/* ---------- Count line + error ---------- */
+
 .countLine {
-  margin-top: var(--s2);
-  font-size: 14px;
-  color: var(--fg1);
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: var(--s3);
 }
 
-/* Sub-spans inside .countLine colored by the JS match-state. */
 .countShort { color: var(--color-diff-med-fg); }
-.countOk    { color: var(--fg3); }
-.countError { color: var(--color-diff-hard-fg); }
 
 .error {
   color: var(--color-diff-hard-fg);
-  margin-top: var(--s2);
-}
-
-.submit {
-  align-self: flex-start;
+  margin: var(--s2) 0 0;
+  font-size: 13px;
 }
