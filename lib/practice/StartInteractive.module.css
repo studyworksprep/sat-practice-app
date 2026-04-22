@@ -1,0 +1,126 @@
+/* =============================================================
+   StartInteractive — practice-start filter form. Tokens resolved
+   from [data-tree="next"].
+============================================================= */
+
+.main {
+  max-width: 720px;
+  margin: var(--s7) auto;
+  padding: 0 var(--s5);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.h1 {
+  font-size: var(--app-title-1);
+  font-weight: 700;
+  margin: 0 0 var(--s1);
+}
+
+.sub {
+  color: var(--fg2);
+  margin-top: 0;
+}
+
+/* Resume-session callout. Card owns the tone; these classes add
+   layout (side-by-side) and the link color. */
+.resumeCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--s4);
+}
+
+.resumeLink {
+  color: var(--color-app-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* ---------- Form ---------- */
+
+.form {
+  margin-top: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+}
+
+.fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--s4);
+  margin: 0;
+}
+
+.legend {
+  font-weight: 600;
+  padding: 0 var(--s2);
+  color: var(--fg1);
+}
+
+.checkList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3);
+}
+
+.checkItem {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--fg1);
+}
+
+/* Used for the "Order" label that sits below the unanswered-only
+   checkbox inside the Options fieldset. */
+.checkItemSpaced {
+  margin-top: var(--s2);
+}
+
+.emptyNote {
+  color: var(--fg3);
+  font-style: italic;
+  margin: 0;
+}
+
+.select {
+  padding: var(--s1) var(--s2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--fg1);
+  background: var(--bg-white);
+  font-family: inherit;
+}
+
+.sizeInput {
+  width: 80px;
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-family: var(--font-mono);
+}
+
+.countLine {
+  margin-top: var(--s2);
+  font-size: 14px;
+  color: var(--fg1);
+}
+
+/* Sub-spans inside .countLine colored by the JS match-state. */
+.countShort { color: var(--color-diff-med-fg); }
+.countOk    { color: var(--fg3); }
+.countError { color: var(--color-diff-hard-fg); }
+
+.error {
+  color: var(--color-diff-hard-fg);
+  margin-top: var(--s2);
+}
+
+.submit {
+  align-self: flex-start;
+}
