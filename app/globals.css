@@ -8221,3 +8221,29 @@ hr{
   color: var(--accent, #4f7ce0);
   font-weight: 500;
 }
+
+/* =============================================================
+   New-tree practice-page option content normalization
+   (class prefixed sw- to scope to app/next/* — legacy pages
+   never emit this className, so these rules are no-ops there)
+============================================================= */
+
+/* Zero out paragraph margins inside answer-choice cards so the
+   first line of text aligns with the badge instead of sitting
+   an em below it. Same for the legacy choice_paragraph wrapper. */
+.sw-option-content > p,
+.sw-option-content > p.choice_paragraph,
+.sw-option-content p.choice_paragraph {
+  margin: 0;
+}
+.sw-option-content > p + p {
+  margin-top: 8px;
+}
+
+/* Normalize inline math baseline inside options so one option
+   with a fraction and another with a bare number have the same
+   line-box height, instead of different vertical-align metrics
+   cascading into different card heights. */
+.sw-option-content mjx-container {
+  vertical-align: middle;
+}
