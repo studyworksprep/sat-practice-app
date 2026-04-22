@@ -108,3 +108,16 @@
   font-size: 14px;
   margin: 0;
 }
+
+/* Submit / error / next-question cluster rendered inside the
+   QuestionRenderer via the controlsNode slot. Sits at the bottom
+   of the right pane in the two-column layout so the action lives
+   with the answer choices rather than below the whole two-pane
+   card. */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  align-items: flex-start;
+  margin-top: var(--s2);
+}

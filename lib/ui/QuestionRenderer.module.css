@@ -83,10 +83,15 @@
   }
 }
 
-/* ---------- Slot variant (Desmos-style collapsible left pane) ---------- */
+/* ---------- Slot variant (Desmos-style collapsible left pane) ----------
 
-.slotCollapsed,
-.slotOpen {
+   The transition is gated by the .slotAnimated flag so the initial
+   mount — which may restore a saved-open state from localStorage —
+   doesn't run the grid-track animation. After the user clicks the
+   calculator button, the caller flips slotAnimate on and subsequent
+   toggles animate normally. */
+
+.slotAnimated {
   transition: grid-template-columns var(--dur-slow) var(--ease-std);
 }
 
