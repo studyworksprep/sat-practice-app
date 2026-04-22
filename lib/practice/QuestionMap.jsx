@@ -96,12 +96,18 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items }) {
 
 function Pill({ item, isCurrent, href }) {
   const tone = STATUS_TONES[item.status] ?? STATUS_TONES.unanswered;
+  // Current position is indicated with an accent outline outside
+  // the pill rather than by recoloring its fill, so the student
+  // can still tell at a glance which questions they got right /
+  // wrong even on the active one.
   const style = {
     ...S.pill,
-    background: isCurrent ? tone.currentBg : tone.bg,
-    color: isCurrent ? tone.currentFg : tone.fg,
-    border: isCurrent ? `2px solid ${tone.currentBorder}` : `1px solid ${tone.border}`,
-    fontWeight: isCurrent ? 700 : 500,
+    background: tone.bg,
+    color: tone.fg,
+    border: `1px solid ${tone.border}`,
+    fontWeight: isCurrent ? 700 : 600,
+    outline: isCurrent ? `2px solid ${colors.accent}` : 'none',
+    outlineOffset: isCurrent ? 2 : 0,
   };
   return (
     <a role="listitem" href={href} style={style} aria-current={isCurrent ? 'step' : undefined}>
@@ -115,73 +121,94 @@ function Pill({ item, isCurrent, href }) {
 
 // ──────────────────────────────────────────────────────────────
 
+import { colors, fonts, radius, shadow, space } from '@/lib/ui/tokens';
+
+// Muted semantic tones — sage/coral/amber from the design kit,
+// slate for unanswered/removed. Current position is indicated
+// with an outer accent outline per the design kit's .mapItem.active
+// rule, keeping the inner fill stable so status stays readable.
 const STATUS_TONES = {
-  unanswered: { bg: 'white',   fg: '#374151', border: '#d1d5db', currentBg: '#eff6ff', currentFg: '#1e40af', currentBorder: '#2563eb' },
-  correct:    { bg: '#dcfce7', fg: '#166534', border: '#86efac', currentBg: '#bbf7d0', currentFg: '#14532d', currentBorder: '#16a34a' },
-  incorrect:  { bg: '#fee2e2', fg: '#991b1b', border: '#fca5a5', currentBg: '#fecaca', currentFg: '#7f1d1d', currentBorder: '#dc2626' },
-  removed:    { bg: '#f3f4f6', fg: '#9ca3af', border: '#e5e7eb', currentBg: '#e5e7eb', currentFg: '#6b7280', currentBorder: '#9ca3af' },
+  unanswered: { bg: colors.card,           fg: colors.fg1,       border: colors.borderStrong },
+  correct:    { bg: 'rgba(91,168,118,0.14)',  fg: '#166534',     border: colors.success },
+  incorrect:  { bg: 'rgba(217,119,117,0.14)', fg: '#991b1b',     border: colors.danger },
+  removed:    { bg: colors.slate[100],     fg: colors.fg3,       border: colors.border },
 };
 
 const S = {
   footerWide: {
     position: 'sticky', bottom: 0, left: 0, right: 0,
-    display: 'flex', alignItems: 'center', gap: '0.75rem',
-    padding: '0.625rem 1rem',
-    background: 'white',
-    borderTop: '1px solid #e5e7eb',
-    boxShadow: '0 -2px 8px rgba(0,0,0,0.03)',
-    fontFamily: 'system-ui, sans-serif',
+    display: 'flex', alignItems: 'center', gap: space[3],
+    padding: `${space[3]} ${space[4]}`,
+    background: colors.card,
+    borderTop: `1px solid ${colors.border}`,
+    boxShadow: '0 -2px 8px rgba(16,42,67,0.04)',
+    fontFamily: fonts.sans,
     overflowX: 'auto',
     zIndex: 10,
   },
   footerNarrow: {
     position: 'sticky', bottom: 0, left: 0, right: 0,
     display: 'flex', justifyContent: 'center',
-    padding: '0.625rem 1rem',
-    background: 'white',
-    borderTop: '1px solid #e5e7eb',
-    boxShadow: '0 -2px 8px rgba(0,0,0,0.03)',
+    padding: `${space[3]} ${space[4]}`,
+    background: colors.card,
+    borderTop: `1px solid ${colors.border}`,
+    boxShadow: '0 -2px 8px rgba(16,42,67,0.04)',
     zIndex: 10,
   },
-  stripLabel: { fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, flexShrink: 0 },
+  stripLabel: {
+    fontSize: 11, color: colors.fg3, textTransform: 'uppercase',
+    letterSpacing: '0.08em', fontWeight: 700, flexShrink: 0,
+  },
   mapBtn: {
-    padding: '0.4rem 1rem',
-    background: '#2563eb', color: 'white',
-    border: 'none', borderRadius: 6,
-    fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem',
+    display: 'inline-flex', alignItems: 'center', gap: space[2],
+    padding: `${space[2]} ${space[4]}`,
+    background: colors.slate[50],
+    color: colors.fg1,
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.pill,
+    fontWeight: 700, fontSize: 13, cursor: 'pointer',
+    fontFamily: fonts.sans,
   },
   grid: {
-    display: 'flex', flexWrap: 'wrap', gap: '0.25rem',
+    display: 'flex', flexWrap: 'wrap', gap: space[1],
     alignItems: 'center',
   },
   pill: {
-    display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
-    minWidth: '2rem', padding: '0.2rem 0.45rem',
-    borderRadius: 6,
-    fontSize: '0.85rem',
+    display: 'inline-flex', alignItems: 'center', gap: 3,
+    minWidth: 32, padding: `${space[1]} ${space[2]}`,
+    borderRadius: radius.md,
+    fontSize: 12, fontWeight: 600,
     textDecoration: 'none',
     lineHeight: 1,
     whiteSpace: 'nowrap',
+    fontFamily: fonts.sans,
+    transition: 'transform 120ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 120ms',
   },
-  statusMark: { fontSize: '0.75rem', opacity: 0.85 },
+  statusMark: { fontSize: 11, opacity: 0.85 },
   overlay: {
-    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+    position: 'fixed', inset: 0, background: 'rgba(16,42,67,0.35)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 100, padding: '1rem',
+    zIndex: 100, padding: space[4],
   },
   modal: {
-    background: 'white', borderRadius: 10, padding: '1rem',
-    maxWidth: 480, width: '100%', maxHeight: '80vh', overflowY: 'auto',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+    background: colors.card,
+    borderRadius: radius.xl,
+    padding: space[4],
+    maxWidth: 520, width: '100%', maxHeight: '80vh', overflowY: 'auto',
+    boxShadow: shadow.lg,
+    fontFamily: fonts.sans,
   },
   modalHeader: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    marginBottom: '0.75rem',
+    marginBottom: space[3],
+    color: colors.fg1,
   },
   closeBtn: {
-    padding: '0.25rem 0.625rem',
-    background: 'white', color: '#374151',
-    border: '1px solid #d1d5db', borderRadius: 6,
-    fontSize: '0.85rem', cursor: 'pointer',
+    padding: `${space[1]} ${space[3]}`,
+    background: colors.card,
+    color: colors.fg1,
+    border: `1px solid ${colors.borderStrong}`,
+    borderRadius: radius.md,
+    fontSize: 13, fontWeight: 600, cursor: 'pointer',
   },
 };
