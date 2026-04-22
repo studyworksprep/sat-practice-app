@@ -1,0 +1,110 @@
+/* =============================================================
+   PracticeInteractive — session chrome around QuestionRenderer.
+   Header (questionTopBar pattern), navigation buttons, layout
+   container. Tokens resolved from [data-tree="next"].
+============================================================= */
+
+.main {
+  max-width: 860px;
+  margin: var(--s5) auto;
+  padding: 0 var(--s5);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+/* Wide container when the question uses a two-pane layout —
+   reading passages or math-with-Desmos both need the room. */
+.mainWide {
+  max-width: 1280px;
+}
+
+/* ---------- questionTopBar ---------- */
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s3) var(--s4);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--s4);
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.progress {
+  font-size: 13px;
+  color: var(--fg1);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.meta {
+  font-size: 11px;
+  color: var(--fg3);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerCenter { justify-self: center; }
+.headerRight  { display: flex; gap: var(--s2); justify-content: flex-end; }
+
+/* Secondary button (nav / calculator toggle). */
+.navBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s1);
+  padding: var(--s2) var(--s4);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.navBtn:hover:not(:disabled) {
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
+.navBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Toggled-on state for the calculator button. */
+.navBtnActive {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
+/* ---------- Form / error ---------- */
+
+.article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: 14px;
+  margin: 0;
+}

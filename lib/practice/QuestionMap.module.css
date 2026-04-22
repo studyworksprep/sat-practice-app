@@ -1,0 +1,174 @@
+/* =============================================================
+   QuestionMap — persistent footer strip with modal fallback on
+   narrow viewports. Tokens resolved from [data-tree="next"].
+
+   The wide-viewport strip and the narrow-viewport button are both
+   rendered; CSS @media decides which is visible, replacing the
+   old useMatchMedia hook.
+============================================================= */
+
+/* ---------- Footer containers ---------- */
+
+.footerWide,
+.footerNarrow {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--s3) var(--s4);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -2px 8px rgba(16, 42, 67, 0.04);
+  font-family: var(--font-sans);
+  z-index: 10;
+}
+
+.footerWide {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  overflow-x: auto;
+}
+
+.footerNarrow {
+  display: none;
+  justify-content: center;
+}
+
+/* Flip visibility on narrow viewports. 720px matches the tutor
+   breakpoint used elsewhere. */
+@media (max-width: 720px) {
+  .footerWide  { display: none; }
+  .footerNarrow { display: flex; }
+}
+
+.stripLabel {
+  font-size: 11px;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.mapBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s4);
+  background: var(--color-slate-50);
+  color: var(--fg1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+/* ---------- Pill grid ---------- */
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1);
+  align-items: center;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 32px;
+  padding: var(--s1) var(--s2);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  transition: transform var(--dur-fast) var(--ease-std),
+              box-shadow var(--dur-fast) var(--ease-std);
+  background: var(--card);
+  color: var(--fg1);
+  border: 1px solid var(--border-strong);
+}
+
+.pill:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.pillCorrect {
+  background: var(--color-success-bg);
+  color: var(--color-diff-easy-fg);
+  border-color: var(--color-success);
+}
+
+.pillIncorrect {
+  background: var(--color-danger-bg);
+  color: var(--color-diff-hard-fg);
+  border-color: var(--color-danger);
+}
+
+.pillRemoved {
+  background: var(--color-slate-100);
+  color: var(--fg3);
+  border-color: var(--border);
+}
+
+.pillCurrent {
+  font-weight: 700;
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+}
+
+.statusMark {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+/* ---------- Modal ---------- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 42, 67, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: var(--s4);
+}
+
+.modal {
+  background: var(--card);
+  border-radius: var(--radius-xl);
+  padding: var(--s4);
+  max-width: 520px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-sans);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s3);
+  color: var(--fg1);
+}
+
+.closeBtn {
+  padding: var(--s1) var(--s3);
+  background: var(--card);
+  color: var(--fg1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}

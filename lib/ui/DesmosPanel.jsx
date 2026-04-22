@@ -23,6 +23,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
+import s from './DesmosPanel.module.css';
 
 const DESMOS_API_KEY =
   process.env.NEXT_PUBLIC_DESMOS_API_KEY ||
@@ -140,28 +141,10 @@ export function DesmosPanel({ isOpen, storageKey }) {
       <aside
         aria-label="Graphing calculator"
         aria-hidden={!isOpen}
-        style={S.panel}
+        className={s.panel}
       >
-        <div ref={hostRef} style={S.host} />
+        <div ref={hostRef} className={s.host} />
       </aside>
     </>
   );
 }
-
-// DesmosPanel is meant to fill whatever slot it's placed in. The
-// host div takes all available space inside the aside; the aside
-// itself is flex-column so the host gets the full height. When
-// the parent collapses to zero width (e.g. the leftSlotCollapsed
-// case in QuestionRenderer), this whole tree goes with it.
-const S = {
-  panel: {
-    background: 'white',
-    display: 'flex', flexDirection: 'column',
-    width: '100%', height: '100%',
-    minHeight: 420,
-  },
-  host: {
-    flex: 1,
-    minHeight: 0,
-  },
-};

@@ -1,0 +1,62 @@
+/* =============================================================
+   New-tree prose + injected-HTML rules.
+
+   These can't live in CSS Modules because question content is
+   delivered through dangerouslySetInnerHTML — the injected
+   elements (<p>, <ul>, <strong>, <mjx-container>, etc.) can't
+   carry module-scoped class names.
+
+   Scoping instead relies on sw-*-prefixed class names attached
+   by the React code to the WRAPPING element. Descendants are
+   targeted via child combinators. The prefix also doubles as
+   a "this is new-tree only" sigil so a legacy refactor can't
+   accidentally stomp the rules.
+============================================================= */
+
+/* ----- .sw-option-content — answer-choice card inner wrapper ----- */
+
+/* User-agent default <p> margins push the first line of text down
+   a whole em below the badge. Zero them so the first line aligns
+   with the answer letter. 8px gap between sibling paragraphs for
+   multi-line answer bodies. */
+.sw-option-content > p,
+.sw-option-content > p.choice_paragraph,
+.sw-option-content p.choice_paragraph {
+  margin: 0;
+}
+.sw-option-content > p + p {
+  margin-top: 8px;
+}
+
+/* Normalize inline math baseline so an option with a fraction and
+   an option with a bare number have the same line-box height. */
+.sw-option-content mjx-container {
+  vertical-align: middle;
+}
+
+/* ----- .sw-prose — generic injected question text (stimulus,
+       stem, rationale) ----- */
+
+.sw-prose {
+  font-size: var(--prose-size);
+  line-height: var(--prose-lh);
+  color: var(--color-slate-700);
+}
+.sw-prose > p {
+  margin: 0 0 12px;
+}
+.sw-prose > p:last-child {
+  margin-bottom: 0;
+}
+.sw-prose strong { color: var(--fg1); font-weight: 700; }
+.sw-prose em     { font-style: italic; }
+.sw-prose ul, .sw-prose ol { margin: 8px 0 12px; padding-left: 1.25em; }
+.sw-prose li { margin: 4px 0; }
+.sw-prose table { border-collapse: collapse; margin: 12px 0; }
+.sw-prose th, .sw-prose td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+}
+.sw-prose img { max-width: 100%; height: auto; }
+.sw-prose svg { max-width: 100%; height: auto; }
+.sw-prose mjx-container { vertical-align: middle; }
