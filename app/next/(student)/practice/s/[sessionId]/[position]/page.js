@@ -215,6 +215,7 @@ export default async function PracticeQuestionPage({ params }) {
     // stimulus or the viewport is narrow.
     layout: inferLayoutMode(question.domain_code),
     taxonomy: {
+      domain_code: question.domain_code,
       domain_name: question.domain_name,
       skill_name: question.skill_name,
       difficulty: question.difficulty,
