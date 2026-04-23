@@ -353,6 +353,7 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess }) {
   const [progressiveHintHtml, setProgressiveHintHtml] = useState('');
   const [solutionHtml, setSolutionHtml] = useState('');
   const [attempts, setAttempts] = useState(0);
+  const [desmosMountError, setDesmosMountError] = useState(false);
 
   let content = null;
   let contentError = null;
@@ -365,24 +366,49 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess }) {
 
   useEffect(() => {
     if (!content || !hostRef.current) return undefined;
-    if (typeof window === 'undefined' || !window.Desmos?.GraphingCalculator) {
-      return undefined;
-    }
+    if (typeof window === 'undefined') return undefined;
 
-    const calculator = window.Desmos.GraphingCalculator(hostRef.current, {
-      expressions: content.calculator_options?.expressions ?? true,
-      lockViewport: content.calculator_options?.lockViewport ?? false,
-      sliders: content.calculator_options?.sliders ?? true,
-    });
-    calculatorRef.current = calculator;
+    let cancelled = false;
+    let intervalId = null;
+    let timeoutId = null;
 
-    for (const expr of content.initial_expressions || []) {
-      if (expr?.latex) calculator.setExpression({ id: expr.id, latex: expr.latex });
+    const tryMount = () => {
+      if (cancelled || calculatorRef.current) return;
+      if (!window.Desmos?.GraphingCalculator) return;
+
+      const calculator = window.Desmos.GraphingCalculator(hostRef.current, {
+        expressions: content.calculator_options?.expressions ?? true,
+        lockViewport: content.calculator_options?.lockViewport ?? false,
+        sliders: content.calculator_options?.sliders ?? true,
+      });
+      calculatorRef.current = calculator;
+      setDesmosMountError(false);
+
+      for (const expr of content.initial_expressions || []) {
+        if (expr?.latex) calculator.setExpression({ id: expr.id, latex: expr.latex });
+      }
+
+      if (intervalId) clearInterval(intervalId);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+
+    tryMount();
+    if (!calculatorRef.current) {
+      intervalId = setInterval(tryMount, 200);
+      timeoutId = setTimeout(() => {
+        if (!calculatorRef.current) setDesmosMountError(true);
+        if (intervalId) clearInterval(intervalId);
+      }, 5000);
     }
 
     return () => {
-      calculator.destroy();
-      calculatorRef.current = null;
+      cancelled = true;
+      if (intervalId) clearInterval(intervalId);
+      if (timeoutId) clearTimeout(timeoutId);
+      if (calculatorRef.current) {
+        calculatorRef.current.destroy();
+        calculatorRef.current = null;
+      }
     };
   }, [content]);
 
@@ -474,7 +500,7 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess }) {
       {content.caption_html && (
         <HtmlBlock className="prose muted" html={content.caption_html} />
       )}
-      {(typeof window !== 'undefined' && !window.Desmos?.GraphingCalculator) && (
+      {desmosMountError && (
         <p style={{ color: 'var(--danger)', fontSize: 13 }}>Desmos failed to load. Refresh and try again.</p>
       )}
 
