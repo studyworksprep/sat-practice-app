@@ -57,6 +57,19 @@
   border: 1px solid var(--border);
   padding: 6px 10px;
 }
-.sw-prose img { max-width: 100%; height: auto; }
-.sw-prose svg { max-width: 100%; height: auto; }
+/* Question-content figures. Cap the height so a tall graph
+   doesn't overwhelm the question card on a wide screen, keep
+   the natural aspect ratio, and center if the natural width is
+   under the container. Bluebook-style sizing — figures are
+   informational, not the focal point. */
+.sw-prose img,
+.sw-prose svg {
+  display: block;
+  max-width: 100%;
+  max-height: 360px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin: 12px auto;
+}
 .sw-prose mjx-container { vertical-align: middle; }

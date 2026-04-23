@@ -4,6 +4,14 @@
    app/styles/next-tokens.css.
 ============================================================= */
 
+/* Root wrapper that hosts the math-typeset effect's ref. Uses
+   display: contents so the wrapping div doesn't appear in the
+   layout tree — descendants flow into the parent's flex/grid as
+   if the wrapper weren't there. */
+.typesetRoot {
+  display: contents;
+}
+
 /* ---------- Taxonomy strip (teacher mode) ---------- */
 
 .taxonomy {
