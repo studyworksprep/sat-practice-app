@@ -75,14 +75,14 @@ export default async function StudentDashboardPage() {
       .eq('user_id', user.id)
       .eq('source', 'practice')
       .gte('created_at', sevenDaysAgo),
-    // Per-domain accuracy via embedded join. The !inner join means
-    // attempts on questions that were since deleted from v2 are
-    // dropped from the aggregate, which is what we want — a
-    // student's performance breakdown shouldn't include rows we
-    // can no longer attribute to a domain.
+    // Per-domain accuracy. attempts.question_id has no FK to
+    // questions_v2 (legacy FK points at v1 public.questions), so
+    // PostgREST can't resolve an embedded join. We fetch the
+    // attempts window first and, below, look up questions_v2 by
+    // id for just those rows — two queries, joined in memory.
     supabase
       .from('attempts')
-      .select('is_correct, questions_v2!inner(domain_code, domain_name)')
+      .select('is_correct, question_id')
       .eq('user_id', user.id)
       .eq('source', 'practice')
       .gte('created_at', lookbackStart)
@@ -138,9 +138,22 @@ export default async function StudentDashboardPage() {
 
   // Performance: bucket attempts by domain_name, splitting into
   // Math vs Reading & Writing via domainSection(domain_code).
-  // Section accuracy is the weighted average across that section's
-  // domains (i.e. correct/total across all attempts in section).
-  const performance = aggregatePerformance(perfRows ?? []);
+  // Two-step: collect distinct question_ids from the attempts
+  // window, fetch their domain metadata from questions_v2, then
+  // aggregate in memory. (Can't embed-join because attempts has
+  // no declared FK to questions_v2.)
+  const questionIds = Array.from(
+    new Set((perfRows ?? []).map((r) => r.question_id).filter(Boolean)),
+  );
+  let questionMeta = new Map();
+  if (questionIds.length > 0) {
+    const { data: qRows } = await supabase
+      .from('questions_v2')
+      .select('id, domain_code, domain_name')
+      .in('id', questionIds);
+    questionMeta = new Map((qRows ?? []).map((q) => [q.id, q]));
+  }
+  const performance = aggregatePerformance(perfRows ?? [], questionMeta);
 
   // Resume info for the banner.
   const resumeInfo = activeSession && Array.isArray(activeSession.question_ids) && activeSession.question_ids.length > 0
@@ -204,10 +217,10 @@ export default async function StudentDashboardPage() {
 // Aggregation helpers.
 // ──────────────────────────────────────────────────────────────
 
-function aggregatePerformance(rows) {
+function aggregatePerformance(rows, questionMeta) {
   const byDomain = new Map();
   for (const r of rows) {
-    const q = r.questions_v2;
+    const q = questionMeta.get(r.question_id);
     if (!q || !q.domain_name) continue;
     const key = q.domain_name;
     let entry = byDomain.get(key);
