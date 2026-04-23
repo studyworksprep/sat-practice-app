@@ -76,13 +76,16 @@ export function AppNav({ user, links, rightExtras = null }) {
 
 // Active-link matcher. A link is active when its href is an exact
 // pathname match, when the pathname starts with `${href}/` (so a
-// nested route like /practice/s/abc/0 still highlights the
-// "Question Bank" link), or when the link supplies a custom
-// match function (used by entries that don't follow the prefix
-// pattern, e.g. linking to /practice/start while owning every
-// /practice/* URL).
+// nested route like /practice/s/abc/0 highlights its parent), or
+// when the link supplies a matchPrefix string that the pathname
+// starts with. matchPrefix exists because the layout is a Server
+// Component and can't pass a function across the boundary —
+// strings it is.
 function isActive(pathname, link) {
-  if (typeof link.match === 'function') return link.match(pathname);
+  if (typeof link.matchPrefix === 'string' && link.matchPrefix) {
+    if (pathname === link.matchPrefix) return true;
+    if (pathname.startsWith(`${link.matchPrefix}/`)) return true;
+  }
   if (pathname === link.href) return true;
   if (pathname.startsWith(`${link.href}/`)) return true;
   return false;

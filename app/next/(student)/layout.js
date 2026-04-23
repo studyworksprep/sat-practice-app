@@ -18,13 +18,13 @@ const STUDENT_LINKS = [
   { href: '/dashboard',         label: 'Dashboard' },
   // "Practice" now covers both the session generator (question
   // bank filter) and the per-test runner — unified under one tab.
-  // The matcher highlights the link for every /practice/* route
-  // including the test flow under /practice/test/*.
-  {
-    href: '/practice/start',
-    label: 'Practice',
-    match: (path) => path.startsWith('/practice'),
-  },
+  // matchPrefix is a string instead of a function because the
+  // layout is a Server Component and can't pass functions across
+  // the boundary into the client AppNav. The client treats
+  // matchPrefix as "highlight this link for any URL under that
+  // prefix", so /practice/test/... and /practice/history both
+  // keep the Practice tab active.
+  { href: '/practice/start',    label: 'Practice', matchPrefix: '/practice' },
   { href: '/assignments',       label: 'Assignments' },
   { href: '/review',            label: 'Review' },
 ];
