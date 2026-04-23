@@ -1,0 +1,264 @@
+/* =============================================================
+   Student Review tab. Tokens from [data-tree="next"].
+
+   Three stacked cards: Practice sessions · Practice tests ·
+   Practice your weak questions.
+============================================================= */
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s5) var(--s7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.header { padding: var(--s2) 0; }
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s1);
+}
+
+.sub {
+  color: var(--fg3);
+  font-size: 14px;
+  margin: 0;
+}
+
+.toast {
+  padding: var(--s3) var(--s4);
+  background: var(--color-diff-easy-bg);
+  border: 1px solid var(--color-diff-easy-bd);
+  color: var(--color-diff-easy-fg);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Card scaffolding ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--s3);
+  gap: var(--s3);
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.cardHeaderLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+}
+.cardHeaderLink:hover { text-decoration: underline; }
+
+.empty {
+  color: var(--fg2);
+  font-size: 13px;
+  margin: 0;
+}
+
+.inlineLink {
+  color: var(--color-app-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.inlineLink:hover { text-decoration: underline; }
+
+/* ---------- Row list ---------- */
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  padding: 12px 14px;
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.row:hover {
+  background: var(--bg-white);
+  border-color: var(--border);
+}
+
+.rowLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.rowTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.rowMeta {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.rowCode {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.partialTag {
+  color: var(--color-diff-med-fg);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* ---------- Buttons ---------- */
+
+.reviewBtn,
+.resumeBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std);
+}
+
+.reviewBtn {
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+}
+.reviewBtn:hover {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+
+.resumeBtn {
+  background: var(--bg-white);
+  color: var(--fg1);
+  border: 1px solid var(--border-strong);
+}
+.resumeBtn:hover {
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
+/* ---------- Test-specific row right cluster ---------- */
+
+.testRowRight {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s4);
+  flex-shrink: 0;
+}
+
+.scoreCluster {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.scoreBadge { text-align: center; }
+
+.scoreBadgeNum {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg1);
+}
+
+.scoreRw   { color: #ea580c; }
+.scoreMath { color: #2563eb; }
+
+.scoreBadgeLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+@media (max-width: 640px) {
+  .row { flex-direction: column; align-items: flex-start; }
+  .testRowRight { width: 100%; justify-content: space-between; }
+}
+
+/* ---------- Weak-questions pool stats ---------- */
+
+.poolStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--s3);
+  margin-bottom: var(--s4);
+}
+
+.poolStat {
+  padding: var(--s3);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+
+.poolStatValue {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+}
+
+.poolStatLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}

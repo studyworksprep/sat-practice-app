@@ -65,7 +65,13 @@ export function TestRunnerInteractive({
   useEffect(() => {
     if (!desmosEligible) return;
     if (typeof window === 'undefined' || !window.localStorage) return;
-    setDesmosOpen(window.localStorage.getItem(DESMOS_TOGGLE_KEY) === '1');
+    // Default-on for practice tests: if the student has never
+    // explicitly toggled the calculator, start it open. An
+    // explicit '0' in storage (student closed it) still wins, so
+    // a student who prefers the calculator hidden keeps that
+    // preference across questions and modules.
+    const stored = window.localStorage.getItem(DESMOS_TOGGLE_KEY);
+    setDesmosOpen(stored == null ? true : stored === '1');
   }, [desmosEligible]);
   const toggleDesmos = useCallback(() => {
     // Animation is gated behind the first user interaction. Before
