@@ -3,6 +3,13 @@
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  DESMOS_INTERACTIVE_EXAMPLE_CONTENT,
+  DESMOS_INTERACTIVE_GRAPH_COMPARE_EXAMPLE,
+  DESMOS_INTERACTIVE_SLIDER_MOVE_EXAMPLE,
+  DESMOS_INTERACTIVE_SLIDER_SETUP_EXAMPLE,
+  parseDesmosInteractiveContent,
+} from '../../../../lib/lesson/desmos-interactive.mjs';
 
 export default function LessonEditorPage() {
   return <Suspense><LessonEditor /></Suspense>;
@@ -14,6 +21,7 @@ const BLOCK_TYPES = [
   { type: 'video', label: 'Video', icon: '▶' },
   { type: 'check', label: 'Knowledge Check', icon: '?' },
   { type: 'question_link', label: 'Question Link', icon: '#' },
+  { type: 'desmos_interactive', label: 'Desmos Interactive', icon: '∿' },
 ];
 
 function emptyBlock(type) {
@@ -22,6 +30,17 @@ function emptyBlock(type) {
     video: { url: '', caption: '' },
     check: { prompt: '', choices: ['', ''], correct_index: 0, explanation: '' },
     question_link: { question_id: '' },
+    desmos_interactive: {
+      title: DESMOS_INTERACTIVE_EXAMPLE_CONTENT.title,
+      instructions_html: DESMOS_INTERACTIVE_EXAMPLE_CONTENT.instructions_html,
+      caption_html: DESMOS_INTERACTIVE_EXAMPLE_CONTENT.caption_html,
+      initial_expressions: DESMOS_INTERACTIVE_EXAMPLE_CONTENT.initial_expressions,
+      calculator_options: DESMOS_INTERACTIVE_EXAMPLE_CONTENT.calculator_options,
+      goal: DESMOS_INTERACTIVE_EXAMPLE_CONTENT.goal,
+      validation: DESMOS_INTERACTIVE_EXAMPLE_CONTENT.validation,
+      feedback: DESMOS_INTERACTIVE_EXAMPLE_CONTENT.feedback,
+      progression: DESMOS_INTERACTIVE_EXAMPLE_CONTENT.progression,
+    },
   };
   return { block_type: type, content: content[type] || {}, _key: Math.random().toString(36).slice(2) };
 }
@@ -340,6 +359,9 @@ function BlockEditor({ block, index, total, onChange, onRemove, onMove }) {
         {block.block_type === 'question_link' && (
           <QuestionLinkEditor content={block.content} onChange={c => onChange({ content: c })} />
         )}
+        {block.block_type === 'desmos_interactive' && (
+          <DesmosInteractiveEditor content={block.content} onChange={c => onChange({ content: c })} />
+        )}
       </div>
     </div>
   );
@@ -548,6 +570,336 @@ function QuestionLinkEditor({ content, onChange }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function DesmosInteractiveEditor({ content, onChange }) {
+  let parsedError = null;
+  try {
+    parseDesmosInteractiveContent(content);
+  } catch (err) {
+    parsedError = err.message;
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: 8 }}>
+      <input
+        type="text"
+        value={content.title || ''}
+        onChange={(e) => onChange({ ...content, title: e.target.value })}
+        placeholder="Optional title"
+        style={{ width: '100%', fontSize: 14, padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <textarea
+        value={content.instructions_html || ''}
+        onChange={(e) => onChange({ ...content, instructions_html: e.target.value })}
+        rows={3}
+        placeholder="Instructions HTML"
+        style={{ width: '100%', fontSize: 13, fontFamily: 'monospace', padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <textarea
+        value={content.caption_html || ''}
+        onChange={(e) => onChange({ ...content, caption_html: e.target.value })}
+        rows={2}
+        placeholder="Caption HTML (optional)"
+        style={{ width: '100%', fontSize: 13, fontFamily: 'monospace', padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <select
+          value={content.goal?.type || 'enter_expression'}
+          onChange={(e) => onChange({ ...content, goal: { ...(content.goal || {}), type: e.target.value } })}
+          style={{ width: 200, fontSize: 13, padding: 6, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+        >
+          <option value="enter_expression">enter_expression</option>
+          <option value="multi_expression">multi_expression</option>
+        </select>
+        <input
+          type="number"
+          min={1}
+          value={content.goal?.required_count ?? 1}
+          onChange={(e) => onChange({
+            ...content,
+            goal: { ...(content.goal || {}), required_count: Number(e.target.value || 1) },
+          })}
+          placeholder="required count"
+          style={{ width: 140, fontSize: 13, padding: 6, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+        />
+      </div>
+      <input
+        type="text"
+        value={(content.validation?.expected || []).join(' | ')}
+        onChange={(e) => onChange({
+          ...content,
+          validation: {
+            ...(content.validation || {}),
+            expected: e.target.value.split('|').map((x) => x.trim()).filter(Boolean),
+          },
+        })}
+        placeholder="Expected expressions, separated by |"
+        style={{ width: '100%', fontSize: 13, padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <select
+        value={content.validation?.mode || 'equivalent'}
+        onChange={(e) => onChange({ ...content, validation: { ...(content.validation || {}), mode: e.target.value } })}
+        style={{ width: 180, fontSize: 13, padding: 6, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      >
+        <option value="equivalent">equivalent</option>
+        <option value="normalized">normalized</option>
+        <option value="state">state</option>
+        <option value="compare_expressions">compare_expressions</option>
+      </select>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <input
+          type="number"
+          min={0}
+          value={content.validation?.state_rules?.min_expressions ?? ''}
+          onChange={(e) => onChange({
+            ...content,
+            validation: {
+              ...(content.validation || {}),
+              state_rules: {
+                ...(content.validation?.state_rules || {}),
+                min_expressions: e.target.value === '' ? undefined : Number(e.target.value),
+              },
+            },
+          })}
+          placeholder="min expressions"
+          style={{ width: 140, fontSize: 13, padding: 6, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+        />
+        <input
+          type="number"
+          min={0}
+          value={content.validation?.state_rules?.max_expressions ?? ''}
+          onChange={(e) => onChange({
+            ...content,
+            validation: {
+              ...(content.validation || {}),
+              state_rules: {
+                ...(content.validation?.state_rules || {}),
+                max_expressions: e.target.value === '' ? undefined : Number(e.target.value),
+              },
+            },
+          })}
+          placeholder="max expressions"
+          style={{ width: 140, fontSize: 13, padding: 6, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+        />
+        <label style={{ fontSize: 12 }}>
+          <input
+            type="checkbox"
+            checked={Boolean(content.validation?.state_rules?.require_visible_only)}
+            onChange={(e) => onChange({
+              ...content,
+              validation: {
+                ...(content.validation || {}),
+                state_rules: {
+                  ...(content.validation?.state_rules || {}),
+                  require_visible_only: e.target.checked,
+                },
+              },
+            })}
+          />
+          {' '}count visible only
+        </label>
+      </div>
+      <input
+        type="text"
+        value={(content.validation?.state_rules?.must_include_variables || []).join(' | ')}
+        onChange={(e) => onChange({
+          ...content,
+          validation: {
+            ...(content.validation || {}),
+            state_rules: {
+              ...(content.validation?.state_rules || {}),
+              must_include_variables: e.target.value.split('|').map((x) => x.trim()).filter(Boolean),
+            },
+          },
+        })}
+        placeholder="Required variables, separated by | (example: X | Y)"
+        style={{ width: '100%', fontSize: 13, padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <input
+        type="text"
+        value={(content.validation?.state_rules?.must_not_include_variables || []).join(' | ')}
+        onChange={(e) => onChange({
+          ...content,
+          validation: {
+            ...(content.validation || {}),
+            state_rules: {
+              ...(content.validation?.state_rules || {}),
+              must_not_include_variables: e.target.value.split('|').map((x) => x.trim()).filter(Boolean),
+            },
+          },
+        })}
+        placeholder="Forbidden variables, separated by | (example: x | y)"
+        style={{ width: '100%', fontSize: 13, padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <input
+        type="text"
+        value={(content.validation?.state_rules?.required_sliders || []).join(' | ')}
+        onChange={(e) => onChange({
+          ...content,
+          validation: {
+            ...(content.validation || {}),
+            state_rules: {
+              ...(content.validation?.state_rules || {}),
+              required_sliders: e.target.value.split('|').map((x) => x.trim()).filter(Boolean),
+            },
+          },
+        })}
+        placeholder="Required sliders, separated by | (example: X | Y)"
+        style={{ width: '100%', fontSize: 13, padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <label style={{ fontSize: 12 }}>
+          <input
+            type="checkbox"
+            checked={Boolean(content.validation?.state_rules?.require_slider_creation)}
+            onChange={(e) => onChange({
+              ...content,
+              validation: {
+                ...(content.validation || {}),
+                state_rules: {
+                  ...(content.validation?.state_rules || {}),
+                  require_slider_creation: e.target.checked,
+                },
+              },
+            })}
+          />
+          {' '}require slider creation
+        </label>
+        <label style={{ fontSize: 12 }}>
+          <input
+            type="checkbox"
+            checked={Boolean(content.validation?.state_rules?.require_slider_movement)}
+            onChange={(e) => onChange({
+              ...content,
+              validation: {
+                ...(content.validation || {}),
+                state_rules: {
+                  ...(content.validation?.state_rules || {}),
+                  require_slider_movement: e.target.checked,
+                },
+              },
+            })}
+          />
+          {' '}require slider movement
+        </label>
+        <label style={{ fontSize: 12 }}>
+          <input
+            type="checkbox"
+            checked={Boolean(content.validation?.state_rules?.forbid_default_slider_values_on_submit)}
+            onChange={(e) => onChange({
+              ...content,
+              validation: {
+                ...(content.validation || {}),
+                state_rules: {
+                  ...(content.validation?.state_rules || {}),
+                  forbid_default_slider_values_on_submit: e.target.checked,
+                },
+              },
+            })}
+          />
+          {' '}forbid all-default slider submit
+        </label>
+      </div>
+      <textarea
+        value={JSON.stringify(content.validation?.state_rules?.slider_initial_values || {}, null, 2)}
+        onChange={(e) => {
+          try {
+            const parsed = JSON.parse(e.target.value);
+            onChange({
+              ...content,
+              validation: {
+                ...(content.validation || {}),
+                state_rules: {
+                  ...(content.validation?.state_rules || {}),
+                  slider_initial_values: parsed,
+                },
+              },
+            });
+          } catch {
+            // Keep current value while temporarily invalid JSON is being typed.
+          }
+        }}
+        rows={4}
+        placeholder='Slider initial values JSON: {"X":1,"Y":1}'
+        style={{ width: '100%', fontSize: 12, fontFamily: 'monospace', padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <textarea
+        value={JSON.stringify(content.feedback?.targeted_hints || [], null, 2)}
+        onChange={(e) => {
+          try {
+            const parsed = JSON.parse(e.target.value);
+            onChange({ ...content, feedback: { ...(content.feedback || {}), targeted_hints: parsed } });
+          } catch {
+            // Keep current value while the JSON is temporarily invalid during editing.
+          }
+        }}
+        rows={5}
+        placeholder='Targeted hints JSON: [{"trigger":"missing_y_equals","message_html":"<p>...</p>"}]'
+        style={{ width: '100%', fontSize: 12, fontFamily: 'monospace', padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <textarea
+        value={JSON.stringify(content.feedback?.attempt_based_hints || [], null, 2)}
+        onChange={(e) => {
+          try {
+            const parsed = JSON.parse(e.target.value);
+            onChange({ ...content, feedback: { ...(content.feedback || {}), attempt_based_hints: parsed } });
+          } catch {
+            // Keep current value while temporary invalid JSON is being typed.
+          }
+        }}
+        rows={4}
+        placeholder='Attempt hints JSON: [{"min_attempts":2,"message_html":"<p>...</p>"}]'
+        style={{ width: '100%', fontSize: 12, fontFamily: 'monospace', padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <input
+          type="number"
+          min={1}
+          value={content.feedback?.reveal_solution_after_attempts ?? ''}
+          onChange={(e) => onChange({
+            ...content,
+            feedback: {
+              ...(content.feedback || {}),
+              reveal_solution_after_attempts: e.target.value === '' ? undefined : Number(e.target.value),
+            },
+          })}
+          placeholder="Reveal solution after attempts"
+          style={{ width: 220, fontSize: 13, padding: 6, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+        />
+      </div>
+      <textarea
+        value={content.feedback?.solution_html || ''}
+        onChange={(e) => onChange({ ...content, feedback: { ...(content.feedback || {}), solution_html: e.target.value } })}
+        rows={3}
+        placeholder="solution_html (optional)"
+        style={{ width: '100%', fontSize: 12, fontFamily: 'monospace', padding: 8, borderRadius: 6, border: '1px solid var(--border, #ddd)' }}
+      />
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button className="btn secondary" type="button" style={{ fontSize: 12 }} onClick={() => onChange(structuredClone(DESMOS_INTERACTIVE_EXAMPLE_CONTENT))}>
+          Load Example Base
+        </button>
+        <button className="btn secondary" type="button" style={{ fontSize: 12 }} onClick={() => onChange(structuredClone(DESMOS_INTERACTIVE_GRAPH_COMPARE_EXAMPLE))}>
+          Load Graph Compare
+        </button>
+        <button className="btn secondary" type="button" style={{ fontSize: 12 }} onClick={() => onChange(structuredClone(DESMOS_INTERACTIVE_SLIDER_SETUP_EXAMPLE))}>
+          Load Slider Setup
+        </button>
+        <button className="btn secondary" type="button" style={{ fontSize: 12 }} onClick={() => onChange(structuredClone(DESMOS_INTERACTIVE_SLIDER_MOVE_EXAMPLE))}>
+          Load Slider Move
+        </button>
+      </div>
+      <label style={{ fontSize: 13 }}>
+        <input
+          type="checkbox"
+          checked={Boolean(content.progression?.require_success)}
+          onChange={(e) => onChange({ ...content, progression: { ...(content.progression || {}), require_success: e.target.checked } })}
+        />
+        {' '}Require success before lesson completion
+      </label>
+      {parsedError && <p style={{ margin: 0, color: 'var(--danger)', fontSize: 12 }}>Schema warning: {parsedError}</p>}
     </div>
   );
 }

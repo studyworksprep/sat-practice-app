@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../lib/supabase/server';
+import { parseDesmosInteractiveContent } from '../../../../../lib/lesson/desmos-interactive.mjs';
 
 // GET /api/lessons/[lessonId]/blocks — get ordered blocks
 export async function GET(request, props) {
@@ -40,6 +41,19 @@ export async function PUT(request, props) {
 
     if (!Array.isArray(blocks)) {
       return NextResponse.json({ error: 'blocks must be an array' }, { status: 400 });
+    }
+
+    for (const block of blocks) {
+      if (!block?.block_type) {
+        return NextResponse.json({ error: 'Each block requires block_type' }, { status: 400 });
+      }
+      if (block.block_type === 'desmos_interactive') {
+        try {
+          parseDesmosInteractiveContent(block.content || {});
+        } catch (err) {
+          return NextResponse.json({ error: err.message }, { status: 400 });
+        }
+      }
     }
 
     // Verify the user can edit this lesson (author or admin)

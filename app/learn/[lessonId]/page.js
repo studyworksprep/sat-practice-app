@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useRef, useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import HtmlBlock from '../../../components/HtmlBlock';
+import { isLessonCompletionLocked, parseDesmosInteractiveContent, validateDesmosSubmission } from '../../../lib/lesson/desmos-interactive.mjs';
 
 export default function LessonViewerPage() {
   return <Suspense><LessonViewer /></Suspense>;
@@ -57,6 +58,19 @@ function LessonViewer() {
       body: JSON.stringify({
         block_id: blockId,
         check_answer: { selected: selectedIndex, correct: isCorrect },
+      }),
+    });
+    const data = await res.json();
+    if (data.progress) setProgress(data.progress);
+  }
+
+  async function submitDesmosResult(blockId, isCorrect) {
+    const res = await fetch(`/api/lessons/${lessonId}/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        block_id: blockId,
+        check_answer: { selected: null, correct: isCorrect, type: 'desmos_interactive' },
       }),
     });
     const data = await res.json();
@@ -143,13 +157,25 @@ function LessonViewer() {
           {block.block_type === 'question_link' && (
             <QuestionLinkBlock block={block} isComplete={completedBlocks.has(block.id)} />
           )}
+          {block.block_type === 'desmos_interactive' && (
+            <DesmosInteractiveBlock
+              block={block}
+              previousAnswer={checkAnswers[block.id]}
+              onSuccess={() => submitDesmosResult(block.id, true)}
+            />
+          )}
         </div>
       ))}
 
       {/* Complete button */}
       {blocks.length > 0 && !isComplete && (
         <div style={{ textAlign: 'center', marginTop: 32 }}>
-          <button className="btn primary" onClick={markComplete} style={{ fontSize: 15, padding: '10px 32px' }}>
+          <button
+            className="btn primary"
+            onClick={markComplete}
+            disabled={isLessonCompletionLocked(blocks, [...completedBlocks])}
+            style={{ fontSize: 15, padding: '10px 32px' }}
+          >
             Mark Lesson Complete
           </button>
         </div>
@@ -315,6 +341,167 @@ function QuestionLinkBlock({ block, isComplete }) {
           {isComplete ? 'Review' : 'Practice'} &rarr;
         </Link>
       </div>
+    </div>
+  );
+}
+
+function DesmosInteractiveBlock({ block, previousAnswer, onSuccess }) {
+  const hostRef = useRef(null);
+  const calculatorRef = useRef(null);
+  const [feedbackState, setFeedbackState] = useState(previousAnswer?.correct ? 'success' : 'idle');
+  const [feedbackHtml, setFeedbackHtml] = useState('');
+  const [progressiveHintHtml, setProgressiveHintHtml] = useState('');
+  const [solutionHtml, setSolutionHtml] = useState('');
+  const [attempts, setAttempts] = useState(0);
+
+  let content = null;
+  let contentError = null;
+  try {
+    content = parseDesmosInteractiveContent(block.content || {});
+  } catch (err) {
+    content = null;
+    contentError = err.message;
+  }
+
+  useEffect(() => {
+    if (!content || !hostRef.current) return undefined;
+    if (typeof window === 'undefined' || !window.Desmos?.GraphingCalculator) {
+      return undefined;
+    }
+
+    const calculator = window.Desmos.GraphingCalculator(hostRef.current, {
+      expressions: content.calculator_options?.expressions ?? true,
+      lockViewport: content.calculator_options?.lockViewport ?? false,
+      sliders: content.calculator_options?.sliders ?? true,
+    });
+    calculatorRef.current = calculator;
+
+    for (const expr of content.initial_expressions || []) {
+      if (expr?.latex) calculator.setExpression({ id: expr.id, latex: expr.latex });
+    }
+
+    return () => {
+      calculator.destroy();
+      calculatorRef.current = null;
+    };
+  }, [content]);
+
+  function extractStudentExpressions(calculator) {
+    const expressionList = calculator?.getExpressions?.() || [];
+    const stateList = calculator?.getState?.()?.expressions?.list || [];
+    const byId = new Map(stateList.map((row) => [row.id, row]));
+
+    return expressionList
+      .map((expr) => ({
+        latex: expr?.latex || '',
+        hidden: Boolean(expr?.hidden),
+        type: expr?.type || 'expression',
+        sliderBounds: expr?.sliderBounds || byId.get(expr?.id)?.sliderBounds || null,
+      }))
+      .filter((expr) => expr.latex);
+  }
+
+  function toEvaluableExpression(raw) {
+    const value = String(raw || '').trim();
+    if (!value) return '';
+    const eqIndex = value.indexOf('=');
+    return eqIndex >= 0 ? value.slice(eqIndex + 1).trim() : value;
+  }
+
+  function evaluateWithDesmos(rawExpression, x) {
+    const calculator = calculatorRef.current;
+    if (!calculator || !calculator.HelperExpression) return NaN;
+
+    const expression = toEvaluableExpression(rawExpression);
+    if (!expression) return NaN;
+
+    try {
+      const helper = calculator.HelperExpression({ latex: expression, variables: { x } });
+      const value = helper.numericValue;
+      helper?.destroy?.();
+      return Number.isFinite(value) ? value : NaN;
+    } catch {
+      return NaN;
+    }
+  }
+
+  function handleCheck() {
+    if (!content || !calculatorRef.current) return;
+    const nextAttempts = attempts + 1;
+    setAttempts(nextAttempts);
+
+    const entered = extractStudentExpressions(calculatorRef.current);
+    const result = validateDesmosSubmission({
+      content,
+      studentExpressions: entered,
+      evaluateAtX: evaluateWithDesmos,
+      attempts: nextAttempts,
+    });
+
+    if (result.success) {
+      setFeedbackState('success');
+      setFeedbackHtml(result.feedbackHtml || content.feedback.success_message_html);
+      setProgressiveHintHtml(result.progressiveHintHtml || '');
+      setSolutionHtml(result.solutionHtml || '');
+      onSuccess();
+    } else {
+      setFeedbackState('retry');
+      setFeedbackHtml(result.feedbackHtml || content.feedback.retry_message_html);
+      setProgressiveHintHtml(result.progressiveHintHtml || '');
+      setSolutionHtml(result.solutionHtml || '');
+    }
+  }
+
+  if (contentError) {
+    return (
+      <div className="card" style={{ padding: '20px 24px' }}>
+        <p style={{ color: 'var(--danger)' }}>Invalid desmos_interactive block: {contentError}</p>
+      </div>
+    );
+  }
+
+  if (!content) return null;
+
+  return (
+    <div className="card" style={{ padding: '20px 24px' }}>
+      {content.title && <h3 style={{ margin: '0 0 10px', fontSize: 18 }}>{content.title}</h3>}
+      <HtmlBlock className="prose" html={content.instructions_html} />
+      <div
+        ref={hostRef}
+        className="desmosHost"
+        style={{ minHeight: 320, marginTop: 12, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border, #ddd)' }}
+      />
+      {content.caption_html && (
+        <HtmlBlock className="prose muted" html={content.caption_html} />
+      )}
+      {(typeof window !== 'undefined' && !window.Desmos?.GraphingCalculator) && (
+        <p style={{ color: 'var(--danger)', fontSize: 13 }}>Desmos failed to load. Refresh and try again.</p>
+      )}
+
+      <button className="btn primary" onClick={handleCheck} style={{ marginTop: 10, fontSize: 13 }}>
+        Check Answer
+      </button>
+
+      {feedbackState === 'success' && (
+        <div role="status" aria-live="polite" style={{ marginTop: 12, color: 'var(--success)' }}>
+          <HtmlBlock html={feedbackHtml || content.feedback.success_message_html} />
+        </div>
+      )}
+      {feedbackState === 'retry' && (
+        <div role="status" aria-live="polite" style={{ marginTop: 12, color: 'var(--danger)' }}>
+          <HtmlBlock html={feedbackHtml || content.feedback.retry_message_html} />
+        </div>
+      )}
+      {progressiveHintHtml && (
+        <div aria-live="polite" style={{ marginTop: 8, color: 'var(--muted)', fontSize: 13 }}>
+          <HtmlBlock html={progressiveHintHtml} />
+        </div>
+      )}
+      {solutionHtml && (
+        <div aria-live="polite" style={{ marginTop: 8, borderTop: '1px solid var(--border, #ddd)', paddingTop: 8, color: 'var(--accent)' }}>
+          <HtmlBlock html={solutionHtml} />
+        </div>
+      )}
     </div>
   );
 }
