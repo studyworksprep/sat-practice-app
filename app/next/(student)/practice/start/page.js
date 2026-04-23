@@ -69,17 +69,39 @@ export default async function PracticeStartPage() {
     });
   const scoreBands = Array.from(scoreBandSet).sort((a, b) => a - b);
 
-  // Active practice-mode session to offer resume. Filter to
-  // mode='practice' so tutor training sessions don't bleed in.
-  const { data: activeSession } = await supabase
-    .from('practice_sessions')
-    .select('id, current_position, question_ids, last_activity_at')
-    .eq('user_id', user.id)
-    .eq('mode', 'practice')
-    .gt('expires_at', new Date().toISOString())
-    .order('last_activity_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // Parallel loads for the rest of the page:
+  //   - active practice session (Resume card)
+  //   - in-progress test attempt (Resume-test card)
+  //   - published practice tests (Tests section)
+  const [
+    { data: activeSession },
+    { data: inProgressTestAttempt },
+    { data: publishedTests },
+  ] = await Promise.all([
+    supabase
+      .from('practice_sessions')
+      .select('id, current_position, question_ids, last_activity_at')
+      .eq('user_id', user.id)
+      .eq('mode', 'practice')
+      .gt('expires_at', new Date().toISOString())
+      .order('last_activity_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('practice_test_attempts_v2')
+      .select('id, practice_test_id, started_at, practice_test:practice_tests_v2(name, code)')
+      .eq('user_id', user.id)
+      .eq('status', 'in_progress')
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('practice_tests_v2')
+      .select('id, code, name, is_adaptive')
+      .eq('is_published', true)
+      .is('deleted_at', null)
+      .order('code', { ascending: true }),
+  ]);
 
   const resumeInfo = activeSession
     ? {
@@ -92,11 +114,29 @@ export default async function PracticeStartPage() {
       }
     : null;
 
+  const resumeTest = inProgressTestAttempt
+    ? {
+        attemptId: inProgressTestAttempt.id,
+        testId:    inProgressTestAttempt.practice_test_id,
+        testName:  inProgressTestAttempt.practice_test?.name ?? 'Practice test',
+        startedAt: inProgressTestAttempt.started_at,
+      }
+    : null;
+
+  const tests = (publishedTests ?? []).map((t) => ({
+    id:          t.id,
+    code:        t.code,
+    name:        t.name,
+    isAdaptive:  t.is_adaptive,
+  }));
+
   return (
     <StartInteractive
       domains={domains}
       scoreBands={scoreBands}
       resumeInfo={resumeInfo}
+      resumeTest={resumeTest}
+      tests={tests}
       createSessionAction={createSession}
       countAvailableAction={countAvailable}
       basePath="/practice"

@@ -16,14 +16,13 @@ import { AppNav } from '@/lib/ui/AppNav';
 
 const STUDENT_LINKS = [
   { href: '/dashboard',         label: 'Dashboard' },
-  // Question Bank is the design-kit name for the
-  // filter / generate-session surface (our /practice/start). The
-  // custom matcher highlights the link for every /practice/*
-  // route — runner, history, review report — so a student deep
-  // inside a session still sees the Question Bank tab as active.
+  // "Practice" now covers both the session generator (question
+  // bank filter) and the per-test runner — unified under one tab.
+  // The matcher highlights the link for every /practice/* route
+  // including the test flow under /practice/test/*.
   {
     href: '/practice/start',
-    label: 'Question Bank',
+    label: 'Practice',
     match: (path) => path.startsWith('/practice'),
   },
   { href: '/assignments',       label: 'Assignments' },
