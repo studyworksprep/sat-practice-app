@@ -34,12 +34,24 @@
 
 /* ---------- Floating panel ---------- */
 
+/* Default position is the bottom-right corner. Once the user
+   drags the panel, FloatingCalculator.jsx switches to inline
+   top/left + bottom/right: auto so the drag state wins.
+
+   resize: both turns on the native browser resize grip at the
+   bottom-right corner. It needs overflow != visible to render,
+   so the panel is overflow: hidden and .body scrolls on its own
+   if the Desmos instance ever overflows. */
 .panel {
   position: fixed;
   bottom: 24px;
   right: 24px;
   width: min(460px, calc(100vw - 48px));
   height: min(560px, calc(100vh - 120px));
+  min-width: 320px;
+  min-height: 360px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -48,6 +60,7 @@
   flex-direction: column;
   z-index: 50;
   overflow: hidden;
+  resize: both;
 }
 
 .header {
@@ -57,7 +70,10 @@
   padding: 10px 14px;
   border-bottom: 1px solid var(--border);
   background: var(--color-slate-50);
-  cursor: default;
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
 
 .title {
@@ -87,13 +103,15 @@
   flex-direction: column;
 }
 
-/* Narrow viewports: reduce size further so the panel doesn't
-   overwhelm the screen. */
+/* Narrow viewports: shrink the default size + min-width so the
+   panel fits phones without clipping. User can still drag + grow
+   from there. */
 @media (max-width: 520px) {
   .panel {
     bottom: 12px;
     right: 12px;
     width: calc(100vw - 24px);
     height: 70vh;
+    min-width: 280px;
   }
 }
