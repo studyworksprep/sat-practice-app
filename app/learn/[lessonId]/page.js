@@ -16,6 +16,7 @@ function LessonViewer() {
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     Promise.all([
@@ -101,6 +102,22 @@ function LessonViewer() {
     ? Math.round((completedBlocks.size / blocks.length) * 100)
     : 0;
 
+  const currentBlock = blocks[currentIndex] || null;
+  const currentIsLocked = Boolean(
+    currentBlock
+      && currentBlock.block_type === 'desmos_interactive'
+      && currentBlock.content?.progression?.require_success
+      && !completedBlocks.has(currentBlock.id)
+  );
+
+  function goNext() {
+    setCurrentIndex((prev) => Math.min(prev + 1, Math.max(blocks.length - 1, 0)));
+  }
+
+  function goPrev() {
+    setCurrentIndex((prev) => Math.max(prev - 1, 0));
+  }
+
   return (
     <div className="container" style={{ paddingTop: 24, maxWidth: 800, paddingBottom: 80 }}>
       {/* Header */}
@@ -138,37 +155,57 @@ function LessonViewer() {
         </div>
       </div>
 
-      {/* Blocks */}
-      {blocks.map((block) => (
-        <div key={block.id} style={{ marginBottom: 24 }}>
-          {block.block_type === 'text' && (
-            <TextBlock block={block} isRead={completedBlocks.has(block.id)} onRead={() => markBlockComplete(block.id)} />
+      {/* Block slideshow */}
+      {currentBlock && (
+        <div key={currentBlock.id} style={{ marginBottom: 16 }}>
+          {currentBlock.block_type === 'text' && (
+            <TextBlock block={currentBlock} isRead={completedBlocks.has(currentBlock.id)} onRead={() => markBlockComplete(currentBlock.id)} />
           )}
-          {block.block_type === 'video' && (
-            <VideoBlock block={block} isWatched={completedBlocks.has(block.id)} onWatched={() => markBlockComplete(block.id)} />
+          {currentBlock.block_type === 'video' && (
+            <VideoBlock block={currentBlock} isWatched={completedBlocks.has(currentBlock.id)} onWatched={() => markBlockComplete(currentBlock.id)} />
           )}
-          {block.block_type === 'check' && (
+          {currentBlock.block_type === 'check' && (
             <CheckBlock
-              block={block}
-              previousAnswer={checkAnswers[block.id]}
-              onSubmit={(selected, correct) => submitCheck(block.id, selected, correct)}
+              block={currentBlock}
+              previousAnswer={checkAnswers[currentBlock.id]}
+              onSubmit={(selected, correct) => {
+                submitCheck(currentBlock.id, selected, correct);
+                if (correct) goNext();
+              }}
             />
           )}
-          {block.block_type === 'question_link' && (
-            <QuestionLinkBlock block={block} isComplete={completedBlocks.has(block.id)} />
+          {currentBlock.block_type === 'question_link' && (
+            <QuestionLinkBlock block={currentBlock} isComplete={completedBlocks.has(currentBlock.id)} />
           )}
-          {block.block_type === 'desmos_interactive' && (
+          {currentBlock.block_type === 'desmos_interactive' && (
             <DesmosInteractiveBlock
-              block={block}
-              previousAnswer={checkAnswers[block.id]}
-              onSuccess={() => submitDesmosResult(block.id, true)}
+              block={currentBlock}
+              previousAnswer={checkAnswers[currentBlock.id]}
+              onSuccess={() => {
+                submitDesmosResult(currentBlock.id, true);
+                goNext();
+              }}
             />
           )}
         </div>
-      ))}
+      )}
+
+      {blocks.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          <button className="btn secondary" onClick={goPrev} disabled={currentIndex === 0}>
+            Previous
+          </button>
+          <span className="muted" style={{ fontSize: 12 }}>
+            Block {Math.min(currentIndex + 1, blocks.length)} of {blocks.length}
+          </span>
+          <button className="btn secondary" onClick={goNext} disabled={currentIndex >= blocks.length - 1 || currentIsLocked}>
+            Continue
+          </button>
+        </div>
+      )}
 
       {/* Complete button */}
-      {blocks.length > 0 && !isComplete && (
+      {blocks.length > 0 && !isComplete && currentIndex >= blocks.length - 1 && (
         <div style={{ textAlign: 'center', marginTop: 32 }}>
           <button
             className="btn primary"
