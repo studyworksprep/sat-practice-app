@@ -2,20 +2,21 @@
    PracticeInteractive — session chrome around QuestionRenderer.
    Header (questionTopBar pattern), navigation buttons, layout
    container. Tokens resolved from [data-tree="next"].
+
+   Full-width layout matches the practice-test runner: no
+   max-width on the main, no margin, flat edge-to-edge top bar,
+   comfortable padding inside the form. Reading passages + math
+   with Desmos both get the room they want on wide screens; the
+   sticky QuestionMap footer lives under .article.
 ============================================================= */
 
 .main {
-  max-width: 860px;
-  margin: var(--s5) auto;
-  padding: 0 var(--s5);
+  margin: 0;
+  padding: 0;
   font-family: var(--font-sans);
   color: var(--fg1);
-}
-
-/* Wide container when the question uses a two-pane layout —
-   reading passages or math-with-Desmos both need the room. */
-.mainWide {
-  max-width: 1280px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ---------- questionTopBar ---------- */
@@ -25,12 +26,9 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: var(--s4);
-  padding: var(--s3) var(--s4);
+  padding: var(--s3) var(--s5);
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  margin-bottom: var(--s4);
+  border-bottom: 1px solid var(--border);
 }
 
 .headerLeft {
@@ -138,6 +136,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--s5);
+  padding: var(--s5) var(--s6);
 }
 
 .error {

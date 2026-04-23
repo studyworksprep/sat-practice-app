@@ -29,15 +29,13 @@
   gap: 4px;
 }
 
-/* Inner row mirrors the practice runner's content max-width so
-   the strip aligns with the question card above it instead of
-   stretching the full viewport. The outer sticky bar still spans
-   edge-to-edge visually (background + border + shadow) — only the
-   content within the bar is constrained. */
+/* Full-width inner row. The practice runner's main is also
+   full-width now, so constraining the strip would just re-
+   introduce the misalignment we just fixed. Left-aligned label,
+   pills in the middle, Submit button pushes to the right via
+   margin-left: auto. */
 .footerInner {
-  max-width: 1280px;
   width: 100%;
-  margin: 0 auto;
   display: flex;
   align-items: center;
   gap: var(--s3);
@@ -49,8 +47,6 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--s3);
-  max-width: 1280px;
-  margin: 0 auto;
   width: 100%;
 }
 
@@ -222,8 +218,6 @@
 }
 
 .submitError {
-  max-width: 1280px;
-  margin: 0 auto;
   width: 100%;
   color: var(--color-diff-hard-fg);
   font-size: 12px;
