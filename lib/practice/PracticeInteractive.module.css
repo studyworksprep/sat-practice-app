@@ -61,16 +61,38 @@
 .headerCenter { justify-self: center; }
 .headerRight  { display: flex; gap: var(--s2); justify-content: flex-end; }
 
-/* Secondary button (nav / calculator toggle). */
+/* Center-slot progress pill — a visual anchor between the left-
+   aligned metadata and the right-aligned tool buttons. Matches
+   the design-kit .qmapTrigger look but is non-interactive for
+   now; the QuestionMap footer already handles click navigation
+   on wide viewports and the narrow-viewport Map button mirrors
+   it there. */
+.progressPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 6px 14px;
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pill-shaped nav / tool button, matching the design-kit's
+   markReviewTopBtn + qmapTrigger vocabulary. */
 .navBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--s1);
-  padding: var(--s2) var(--s4);
-  background: var(--card);
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-white);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
+  font-family: inherit;
   font-size: 13px;
   font-weight: 600;
   color: var(--fg1);
@@ -81,6 +103,7 @@
 .navBtn:hover:not(:disabled) {
   border-color: var(--color-app-accent);
   color: var(--color-app-accent);
+  background: var(--color-app-accent-soft);
 }
 
 .navBtn:disabled {
@@ -88,8 +111,22 @@
   cursor: not-allowed;
 }
 
-/* Toggled-on state for the calculator button. */
+/* Compact icon-only variant used for Prev / Next. The full pill
+   buttons look heavy when they only carry an arrow, so a square
+   pill with tighter padding keeps the right cluster breathing. */
+.navBtnIcon {
+  padding: 8px 10px;
+  min-width: 36px;
+}
+
+/* Toggled-on state for the calculator button. Uses the softer
+   app-accent tint per the design kit. */
 .navBtnActive {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+.navBtnActive:hover:not(:disabled) {
   background: var(--color-app-accent-soft);
   border-color: var(--color-app-accent);
   color: var(--color-app-accent);
