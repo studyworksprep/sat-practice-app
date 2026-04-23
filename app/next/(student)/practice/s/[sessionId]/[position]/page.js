@@ -61,9 +61,13 @@ export default async function PracticeQuestionPage({ params }) {
   const questionIds = Array.isArray(session.question_ids) ? session.question_ids : [];
   if (questionIds.length === 0) notFound();
   if (position >= questionIds.length) {
-    // Ran off the end — send them to the dashboard for now. A proper
-    // summary page lands in a follow-up commit.
-    redirect('/dashboard?session_complete=1');
+    // Ran off the end — land students on the per-session review
+    // report. Review-mode sessions bounce back to the review list.
+    redirect(
+      session.mode === 'review'
+        ? '/review?complete=1'
+        : `/practice/review/${sessionId}`,
+    );
   }
 
   const questionId = questionIds[position];
@@ -257,13 +261,14 @@ export default async function PracticeQuestionPage({ params }) {
     mode: session.mode,
   };
 
-  // Review-mode sessions exit back to the review list; practice-mode
-  // sessions exit to the student dashboard. Same page handles both
-  // because the only difference is where the student lands at the end.
+  // Review-mode sessions exit back to the review pool list;
+  // practice-mode sessions exit to the per-session report. Same
+  // page handles both because the only difference is where the
+  // student lands at the end.
   const sessionCompleteHref =
     session.mode === 'review'
       ? '/review?complete=1'
-      : '/dashboard?session_complete=1';
+      : `/practice/review/${sessionId}`;
 
   return (
     <>
