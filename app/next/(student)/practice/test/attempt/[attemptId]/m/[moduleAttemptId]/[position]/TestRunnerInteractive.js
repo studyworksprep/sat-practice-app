@@ -120,6 +120,25 @@ export function TestRunnerInteractive({
     return () => clearInterval(id);
   }, [moduleInfo.startedAt, moduleInfo.timeLimitSeconds]);
 
+  // ── Per-question stopwatch ─────────────────────────────────
+  // lastSaveTimeRef tracks the last time we synced time to the
+  // server. Every save (answer or time-only) sends the delta
+  // since then and resets the ref, so the server's
+  // attempts.time_spent_ms is the sum of all deltas across
+  // visits. Resets when moduleItemId changes so question-level
+  // timing is independent of navigation.
+  const lastSaveTimeRef = useRef(Date.now());
+  useEffect(() => {
+    lastSaveTimeRef.current = Date.now();
+  }, [moduleItemId]);
+
+  function consumeElapsedMs() {
+    const now = Date.now();
+    const delta = now - lastSaveTimeRef.current;
+    lastSaveTimeRef.current = now;
+    return delta > 0 ? delta : 0;
+  }
+
   // ── Answer save (debounced for SPR, immediate for MCQ) ────
   const saveTimer = useRef(null);
   const pendingSaveRef = useRef(null);
@@ -133,6 +152,8 @@ export function TestRunnerInteractive({
     } else if (answer.selectedOptionId) {
       fd.set('optionId', answer.selectedOptionId);
     }
+    const deltaMs = consumeElapsedMs();
+    if (deltaMs > 0) fd.set('timeSpentMs', String(deltaMs));
     try {
       const res = await recordItemAnswerAction(null, fd);
       if (!res?.ok) setSaveError(res?.error ?? 'Could not save');
@@ -140,6 +161,7 @@ export function TestRunnerInteractive({
     } catch (err) {
       setSaveError(err.message ?? String(err));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleAttemptId, moduleItemId, question.questionType, recordItemAnswerAction]);
 
   function scheduleSave(next) {
@@ -186,13 +208,26 @@ export function TestRunnerInteractive({
   // trip. The user already saw the answer selected; if the save
   // fails, the next page will refetch the last-saved answer from
   // the server. Keeping navigation snappy is the priority.
+  //
+  // Also flushes elapsed time as a time-only save so questions the
+  // student only looked at still get attempts.time_spent_ms
+  // credit. The time-only path insert a placeholder attempts row
+  // if one doesn't exist yet — same shape mark-for-review uses.
   function flushSavePendingInBackground() {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     if (pendingSaveRef.current) {
       const payload = pendingSaveRef.current;
       pendingSaveRef.current = null;
       flushSave(payload).catch(() => {});
+      return;
     }
+    const deltaMs = consumeElapsedMs();
+    if (deltaMs < 500) return;
+    const fd = new FormData();
+    fd.set('moduleAttemptId', moduleAttemptId);
+    fd.set('moduleItemId', moduleItemId);
+    fd.set('timeSpentMs', String(deltaMs));
+    recordItemAnswerAction(null, fd).catch(() => {});
   }
 
   const goToPosition = useCallback((newPosition) => {

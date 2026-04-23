@@ -160,9 +160,49 @@ export function TestResultsInteractive({
         <section className={s.card}>
           <div className={s.cardHeader}>
             <div className={s.sectionLabel}>Timing</div>
+            <div className={s.cardHeaderHint}>
+              Wall-clock time per module above; average time per
+              question below comes from active answer time, not
+              review-page dwell.
+            </div>
           </div>
+
+          {/* Top stat row: total + per-section averages. */}
+          <div className={s.timingStatsRow}>
+            <TimingStat
+              label="Total time"
+              value={formatDuration(timing.totalWallMs || timing.totalAnswerMs)}
+              subtitle={timing.totalWallMs > 0 ? 'across both sections' : null}
+            />
+            <TimingStat
+              label="RW avg per question"
+              value={formatDuration(timing.bySubject.RW.avgMs)}
+              subtitle={timing.bySubject.RW.count > 0
+                ? `${timing.bySubject.RW.count} answered`
+                : 'no data'}
+              tone="rw"
+            />
+            <TimingStat
+              label="Math avg per question"
+              value={formatDuration(timing.bySubject.MATH.avgMs)}
+              subtitle={timing.bySubject.MATH.count > 0
+                ? `${timing.bySubject.MATH.count} answered`
+                : 'no data'}
+              tone="math"
+            />
+          </div>
+
+          {/* Module-by-module usage against its allotted time. */}
+          {timing.byModule.length > 0 && (
+            <div className={s.moduleTimingList}>
+              {timing.byModule.map((m, i) => (
+                <ModuleTimingRow key={i} entry={m} />
+              ))}
+            </div>
+          )}
+
+          {/* Existing slowest-5 lists */}
           <div className={s.timingGrid}>
-            <TimingTile label="Total time spent" value={formatDuration(timing.totalMs)} />
             <TimingTile
               label="RW · slowest 5"
               rows={timing.slowestRw}
@@ -174,6 +214,15 @@ export function TestResultsInteractive({
               onJump={setSelectedOrdinal}
             />
           </div>
+
+          {/* Optional: by-difficulty breakdown if we have enough data. */}
+          {timing.byDifficulty.length > 0 && timing.byDifficulty.some((d) => d.count >= 2) && (
+            <div className={s.diffTimingRow}>
+              {timing.byDifficulty.map((d) => (
+                <DifficultyTimingTile key={d.difficulty} entry={d} />
+              ))}
+            </div>
+          )}
         </section>
       )}
 
@@ -423,6 +472,78 @@ function TimingTile({ label, value, rows, onJump }) {
       {rows && rows.length === 0 && (
         <div className={s.timingEmpty}>No timing data</div>
       )}
+    </div>
+  );
+}
+
+function TimingStat({ label, value, subtitle, tone }) {
+  const cls = [
+    s.timingStat,
+    tone === 'rw'   ? s.timingStatRw   : null,
+    tone === 'math' ? s.timingStatMath : null,
+  ].filter(Boolean).join(' ');
+  return (
+    <div className={cls}>
+      <div className={s.timingStatLabel}>{label}</div>
+      <div className={s.timingStatValue}>{value}</div>
+      {subtitle && <div className={s.timingStatSub}>{subtitle}</div>}
+    </div>
+  );
+}
+
+const SUBJECT_FULL = { RW: 'Reading & Writing', MATH: 'Math' };
+
+function ModuleTimingRow({ entry }) {
+  const pct = entry.usedMs != null && entry.allottedMs > 0
+    ? Math.min(100, Math.round((entry.usedMs / entry.allottedMs) * 100))
+    : null;
+  // Tone by how much time was used: gold ≥ 90%, neutral otherwise.
+  // Students finishing with lots of time left see a neutral bar;
+  // those who went to the wire get a warning tint.
+  const barCls = [s.modTimingFill, pct != null && pct >= 90 ? s.modTimingFillTight : null]
+    .filter(Boolean).join(' ');
+  return (
+    <div className={s.modTimingRow}>
+      <div className={s.modTimingLabel}>
+        <span className={s.modTimingName}>
+          {SUBJECT_FULL[entry.subject] ?? entry.subject} · Module {entry.moduleNumber}
+        </span>
+        <span className={s.modTimingMeta}>
+          {entry.usedMs != null
+            ? `${formatDuration(entry.usedMs)} used`
+            : 'not finished'}
+          {entry.allottedMs != null && ` of ${formatDuration(entry.allottedMs)}`}
+        </span>
+      </div>
+      <div className={s.modTimingBar}>
+        {pct != null && (
+          <div className={barCls} style={{ width: `${pct}%` }} />
+        )}
+      </div>
+      <div className={s.modTimingPct}>
+        {pct != null ? `${pct}%` : '—'}
+      </div>
+    </div>
+  );
+}
+
+const DIFF_NAMES = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Very hard', 5: 'Extreme' };
+const DIFF_TONE = {
+  1: 'diffEasy', 2: 'diffMed', 3: 'diffHard', 4: 'diffVHard', 5: 'diffExtreme',
+};
+
+function DifficultyTimingTile({ entry }) {
+  const toneCls = DIFF_TONE[entry.difficulty];
+  const cls = [s.diffTimingTile, toneCls ? s[toneCls] : null].filter(Boolean).join(' ');
+  return (
+    <div className={cls}>
+      <div className={s.diffTimingLabel}>
+        {DIFF_NAMES[entry.difficulty] ?? `Difficulty ${entry.difficulty}`}
+      </div>
+      <div className={s.diffTimingValue}>{formatDuration(entry.avgMs)}</div>
+      <div className={s.diffTimingSub}>
+        avg · {entry.count} q{entry.count === 1 ? '' : 's'}
+      </div>
     </div>
   );
 }

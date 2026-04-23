@@ -247,7 +247,7 @@ export default async function PracticeTestResultsPage({ params }) {
   const opportunity = buildOpportunity(reviewItems, sections, learnMap);
 
   // 8) Timing summary.
-  const timing = buildTiming(reviewItems);
+  const timing = buildTiming(reviewItems, moduleAttemptList);
 
   // 9) Teacher profile for the PDF header.
   let teacher = null;
@@ -427,26 +427,98 @@ function isHardRoute(routeCode) {
   return routeCode === 'hard';
 }
 
-function buildTiming(items) {
+function buildTiming(items, moduleAttempts) {
+  // Per-question time from attempts.time_spent_ms — the "active
+  // answering time" each question took. Aggregated per section +
+  // per difficulty so the report can show averages and a tempo
+  // breakdown.
   const rwTimed = [];
   const mathTimed = [];
-  let totalMs = 0;
-  let anyTimed = false;
+  const bySubject = {
+    RW:   { totalMs: 0, count: 0 },
+    MATH: { totalMs: 0, count: 0 },
+  };
+  const byDifficulty = new Map();
+  let totalAnswerMs = 0;
+  let answerCount = 0;
   for (const it of items) {
     if (it.missing) continue;
     const ms = it.studentAnswer?.timeSpentMs;
     if (ms != null && ms > 0) {
-      anyTimed = true;
-      totalMs += ms;
+      totalAnswerMs += ms;
+      answerCount += 1;
+      if (bySubject[it.subject]) {
+        bySubject[it.subject].totalMs += ms;
+        bySubject[it.subject].count += 1;
+      }
+      const diff = it.taxonomy?.difficulty;
+      if (diff != null) {
+        const entry = byDifficulty.get(diff) ?? { totalMs: 0, count: 0 };
+        entry.totalMs += ms;
+        entry.count += 1;
+        byDifficulty.set(diff, entry);
+      }
       if (it.subject === 'RW') rwTimed.push({ ordinal: it.ordinal, ms });
       else if (it.subject === 'MATH') mathTimed.push({ ordinal: it.ordinal, ms });
     }
   }
   rwTimed.sort((a, b) => b.ms - a.ms);
   mathTimed.sort((a, b) => b.ms - a.ms);
+
+  // Per-module wall-clock: how much of the allotted time each
+  // module consumed (start → finish), from the module-attempt
+  // timestamps. Different metric from per-question time — this
+  // includes navigation + review-page time too.
+  const moduleRows = [];
+  let totalWallMs = 0;
+  for (const ma of moduleAttempts ?? []) {
+    const m = ma.practice_test_module;
+    if (!m) continue;
+    const startMs = ma.started_at ? new Date(ma.started_at).getTime() : null;
+    const endMs   = ma.finished_at ? new Date(ma.finished_at).getTime() : null;
+    const usedMs  = (startMs != null && endMs != null && endMs > startMs)
+      ? endMs - startMs
+      : null;
+    if (usedMs != null) totalWallMs += usedMs;
+    moduleRows.push({
+      subject: m.subject_code,
+      moduleNumber: m.module_number,
+      routeCode: m.route_code,
+      usedMs,
+      allottedMs: m.time_limit_seconds != null ? m.time_limit_seconds * 1000 : null,
+    });
+  }
+
+  const diffRows = Array.from(byDifficulty.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([difficulty, v]) => ({
+      difficulty,
+      count: v.count,
+      totalMs: v.totalMs,
+      avgMs: v.count > 0 ? Math.round(v.totalMs / v.count) : null,
+    }));
+
   return {
-    anyTimed,
-    totalMs,
+    anyTimed: answerCount > 0 || moduleRows.some((m) => m.usedMs != null),
+    totalAnswerMs,
+    totalWallMs,
+    answerCount,
+    bySubject: {
+      RW: {
+        ...bySubject.RW,
+        avgMs: bySubject.RW.count > 0
+          ? Math.round(bySubject.RW.totalMs / bySubject.RW.count)
+          : null,
+      },
+      MATH: {
+        ...bySubject.MATH,
+        avgMs: bySubject.MATH.count > 0
+          ? Math.round(bySubject.MATH.totalMs / bySubject.MATH.count)
+          : null,
+      },
+    },
+    byDifficulty: diffRows,
+    byModule: moduleRows,
     slowestRw:   rwTimed.slice(0, 5),
     slowestMath: mathTimed.slice(0, 5),
   };

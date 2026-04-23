@@ -161,6 +161,21 @@ export async function recordItemAnswer(_prev, formData) {
   const responseText    = (formData.get('responseText') ?? '').toString().trim();
   if (!moduleAttemptId || !moduleItemId) return actionFail('Missing ids');
 
+  // Time delta (ms) the client has ticked since its last save.
+  // Clamp to sane bounds so a rogue client can't backfill an hour
+  // of time onto one question. The server accumulates across
+  // saves so partial progress isn't lost.
+  const rawDelta = Number(formData.get('timeSpentMs') ?? 0);
+  const timeDelta = Number.isFinite(rawDelta) && rawDelta > 0
+    ? Math.min(Math.round(rawDelta), 3_600_000)
+    : 0;
+
+  const hasAnswer = (optionId != null && optionId !== '') ||
+                    (responseText != null && responseText !== '');
+  if (!hasAnswer && timeDelta === 0) {
+    return actionFail('Nothing to record');
+  }
+
   const { data: moduleAttempt } = await supabase
     .from('practice_test_module_attempts_v2')
     .select(`
@@ -194,7 +209,9 @@ export async function recordItemAnswer(_prev, formData) {
     .maybeSingle();
   if (!moduleItem || !moduleItem.question) return actionFail('Question not found');
 
-  const isCorrect = gradeAnswer(moduleItem.question, { optionId, responseText });
+  const isCorrect = hasAnswer
+    ? gradeAnswer(moduleItem.question, { optionId, responseText })
+    : false;
 
   // Check for an existing item-attempt so we can update in place
   // rather than stack new rows when the student changes their mind.
@@ -205,29 +222,58 @@ export async function recordItemAnswer(_prev, formData) {
     .eq('practice_test_module_item_id', moduleItemId)
     .maybeSingle();
 
-  const attemptPatch = {
-    is_correct: isCorrect,
-    selected_option_id: null,
-    response_text: moduleItem.question.question_type === 'spr' ? responseText : (optionId ?? null),
-    source: 'practice_test',
-  };
-
-  if (existingItem) {
-    // Update the linked attempts row in place.
-    await supabase
-      .from('attempts')
-      .update(attemptPatch)
-      .eq('id', existingItem.attempt_id);
-    return { ok: true, isCorrect, itemAttemptId: existingItem.id };
+  // Build the patch — answer fields only if an answer was sent,
+  // so a time-only save doesn't blank out a student's previously
+  // selected option.
+  const attemptPatch = {};
+  if (hasAnswer) {
+    attemptPatch.is_correct = isCorrect;
+    attemptPatch.selected_option_id = null;
+    attemptPatch.response_text = moduleItem.question.question_type === 'spr'
+      ? responseText
+      : (optionId ?? null);
+    attemptPatch.source = 'practice_test';
   }
 
-  // Fresh answer — insert the attempts row, then link it.
+  if (existingItem) {
+    // Accumulate time_spent_ms by reading the current value and
+    // adding the client-reported delta. Two queries instead of
+    // one, but keeps the semantics clear — UPDATE … SET x = x + n
+    // isn't available through PostgREST without an RPC.
+    if (timeDelta > 0) {
+      const { data: currentAttempt } = await supabase
+        .from('attempts')
+        .select('time_spent_ms')
+        .eq('id', existingItem.attempt_id)
+        .maybeSingle();
+      attemptPatch.time_spent_ms = (currentAttempt?.time_spent_ms ?? 0) + timeDelta;
+    }
+    if (Object.keys(attemptPatch).length > 0) {
+      await supabase
+        .from('attempts')
+        .update(attemptPatch)
+        .eq('id', existingItem.attempt_id);
+    }
+    return { ok: true, isCorrect: hasAnswer ? isCorrect : null, itemAttemptId: existingItem.id };
+  }
+
+  // No existing item row yet. Either a fresh answer or a time-only
+  // save on a question the student hasn't touched — in both cases
+  // we insert an attempts row + item-attempt link. Placeholder
+  // fields for the time-only case match the mark-for-review path.
   const { data: attemptRow, error: attemptInsertErr } = await supabase
     .from('attempts')
     .insert({
       ...attemptPatch,
       user_id: user.id,
       question_id: moduleItem.question.id,
+      ...(hasAnswer ? {} : {
+        is_correct: false,
+        selected_option_id: null,
+        response_text: null,
+        source: 'practice_test',
+      }),
+      ...(timeDelta > 0 ? { time_spent_ms: timeDelta } : {}),
     })
     .select('id')
     .single();
@@ -244,7 +290,7 @@ export async function recordItemAnswer(_prev, formData) {
     .single();
   if (itemInsertErr || !itemRow) return actionFail(`Record failed: ${itemInsertErr?.message}`);
 
-  return { ok: true, isCorrect, itemAttemptId: itemRow.id };
+  return { ok: true, isCorrect: hasAnswer ? isCorrect : null, itemAttemptId: itemRow.id };
 }
 
 // ──────────────────────────────────────────────────────────────
