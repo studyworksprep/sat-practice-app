@@ -25,6 +25,20 @@
 
 .footerWide {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Inner row mirrors the practice runner's content max-width so
+   the strip aligns with the question card above it instead of
+   stretching the full viewport. The outer sticky bar still spans
+   edge-to-edge visually (background + border + shadow) — only the
+   content within the bar is constrained. */
+.footerInner {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
   align-items: center;
   gap: var(--s3);
   overflow-x: auto;
@@ -32,7 +46,12 @@
 
 .footerNarrow {
   display: none;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* Flip visibility on narrow viewports. 720px matches the tutor
@@ -171,4 +190,47 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+}
+
+/* ---------- Submit Set button (end of strip + modal) ---------- */
+
+.submitBtn {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submitError {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+  color: var(--color-diff-hard-fg);
+  font-size: 12px;
+}
+
+.modalSubmit {
+  margin-top: var(--s3);
+  display: flex;
+  justify-content: flex-end;
 }

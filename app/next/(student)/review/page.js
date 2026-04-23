@@ -18,7 +18,12 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
 import { createReviewSession } from './actions';
+import {
+  submitPracticeSession,
+  abandonPracticeSession,
+} from '@/lib/practice/session-actions';
 import { ReviewLauncher } from './ReviewLauncher';
+import { SessionLifecycleButtons } from './SessionLifecycleButtons';
 import s from './Review.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -43,9 +48,10 @@ export default async function StudentReviewPage({ searchParams }) {
   ] = await Promise.all([
     supabase
       .from('practice_sessions')
-      .select('id, created_at, question_ids, current_position')
+      .select('id, created_at, question_ids, current_position, status')
       .eq('user_id', user.id)
       .eq('mode', 'practice')
+      .neq('status', 'abandoned')
       .order('created_at', { ascending: false })
       .limit(RECENT_SESSIONS_CAP),
     supabase
@@ -72,12 +78,11 @@ export default async function StudentReviewPage({ searchParams }) {
     .filter((r) => Array.isArray(r.question_ids) && r.question_ids.length > 0)
     .map((r) => {
       const total = r.question_ids.length;
-      const completed = (r.current_position ?? 0) >= total;
       return {
         id: r.id,
         createdAt: r.created_at,
         total,
-        completed,
+        completed: r.status === 'completed',
         resumePosition: Math.min(Math.max(r.current_position ?? 0, 0), Math.max(total - 1, 0)),
       };
     });
@@ -151,9 +156,12 @@ export default async function StudentReviewPage({ searchParams }) {
                     Review →
                   </Link>
                 ) : (
-                  <Link href={`/practice/s/${r.id}/${r.resumePosition}`} className={s.resumeBtn}>
-                    Resume →
-                  </Link>
+                  <SessionLifecycleButtons
+                    sessionId={r.id}
+                    resumeHref={`/practice/s/${r.id}/${r.resumePosition}`}
+                    submitAction={submitPracticeSession}
+                    abandonAction={abandonPracticeSession}
+                  />
                 )}
               </li>
             ))}

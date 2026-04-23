@@ -90,11 +90,15 @@ export default async function StudentDashboardPage() {
     // Recent practice sessions. We pull a few extra rows so we can
     // skip ones with empty question_ids (manual seed runs, etc.)
     // and still surface the requested cap.
+    // Recent sessions panel shows completed practice sessions
+    // only — in-progress / abandoned ones belong in the Review
+    // tab's "in progress" list instead.
     supabase
       .from('practice_sessions')
-      .select('id, created_at, question_ids, current_position, mode')
+      .select('id, created_at, question_ids, current_position, mode, status')
       .eq('user_id', user.id)
       .eq('mode', 'practice')
+      .eq('status', 'completed')
       .order('created_at', { ascending: false })
       .limit(RECENT_SESSIONS_LOOKUP_LIMIT),
     // Assignments panel — same query the prior dashboard used.
@@ -110,12 +114,16 @@ export default async function StudentDashboardPage() {
         )
       `)
       .eq('student_id', user.id),
-    // Active session, if any, to power the Resume CTA.
+    // Active session, if any, to power the Resume CTA. Only
+    // in-progress sessions show up — completed + abandoned are
+    // filtered out so the banner doesn't keep offering a resume
+    // for something already closed out.
     supabase
       .from('practice_sessions')
       .select('id, current_position, question_ids, last_activity_at')
       .eq('user_id', user.id)
       .eq('mode', 'practice')
+      .eq('status', 'in_progress')
       .gt('expires_at', new Date().toISOString())
       .order('last_activity_at', { ascending: false })
       .limit(1)

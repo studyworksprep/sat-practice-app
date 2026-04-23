@@ -83,6 +83,7 @@ export default async function PracticeStartPage() {
       .select('id, current_position, question_ids, last_activity_at')
       .eq('user_id', user.id)
       .eq('mode', 'practice')
+      .eq('status', 'in_progress')
       .gt('expires_at', new Date().toISOString())
       .order('last_activity_at', { ascending: false })
       .limit(1)

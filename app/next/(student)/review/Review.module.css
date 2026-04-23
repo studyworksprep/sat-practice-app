@@ -189,6 +189,60 @@
   color: var(--color-app-accent);
 }
 
+/* ---------- Session lifecycle cluster (Resume / Submit / Abandon) ---------- */
+
+.lifecycleGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.lifecycleSubmit,
+.lifecycleAbandon {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std);
+}
+
+.lifecycleSubmit {
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+}
+.lifecycleSubmit:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+.lifecycleSubmit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.lifecycleAbandon {
+  background: transparent;
+  color: var(--color-diff-hard-fg);
+  border: 1px solid transparent;
+}
+.lifecycleAbandon:hover:not(:disabled) {
+  border-color: var(--color-diff-hard-bd);
+  background: var(--color-diff-hard-bg);
+}
+.lifecycleAbandon:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.lifecycleErr {
+  color: var(--color-diff-hard-fg);
+  font-size: 12px;
+  margin-right: var(--s2);
+}
+
 /* ---------- Test-specific row right cluster ---------- */
 
 .testRowRight {

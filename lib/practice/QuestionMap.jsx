@@ -15,8 +15,15 @@
 // attempts rows) rather than fetched client-side, so the strip
 // renders server-side and stays in sync with the reveal state
 // the student sees.
+//
+// Submit Set. The strip ends with a primary "Submit Set" button
+// that closes out the session (even mid-set, leaving unanswered
+// questions marked Unanswered on the review report). The server
+// action is idempotent so a double-click is safe.
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { submitPracticeSession } from './session-actions';
 import s from './QuestionMap.module.css';
 
 /**
@@ -28,9 +35,36 @@ import s from './QuestionMap.module.css';
  *   position: number,
  *   status: 'unanswered' | 'correct' | 'incorrect' | 'removed'
  * }>} props.items
+ * @param {boolean} [props.canSubmit=true] — hide the Submit button
+ *   when the page doesn't own the session (review mode), etc.
  */
-export function QuestionMap({ basePath, sessionId, currentPosition, items }) {
+export function QuestionMap({ basePath, sessionId, currentPosition, items, canSubmit = true }) {
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [submitError, setSubmitError] = useState(null);
+
+  function handleSubmitSet() {
+    setSubmitError(null);
+    const ok = typeof window !== 'undefined'
+      ? window.confirm('Submit this set? Any unanswered questions will be marked as skipped.')
+      : true;
+    if (!ok) return;
+    startTransition(async () => {
+      const fd = new FormData();
+      fd.set('sessionId', sessionId);
+      try {
+        const res = await submitPracticeSession(null, fd);
+        if (!res?.ok) {
+          setSubmitError(res?.error ?? 'Could not submit');
+          return;
+        }
+        router.push(`/practice/review/${sessionId}`);
+      } catch (err) {
+        setSubmitError(err.message ?? String(err));
+      }
+    });
+  }
 
   const grid = (
     <div className={s.grid} role="list">
@@ -45,17 +79,34 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items }) {
     </div>
   );
 
+  const submitBtn = canSubmit ? (
+    <button
+      type="button"
+      onClick={handleSubmitSet}
+      disabled={isPending}
+      className={s.submitBtn}
+      title="Submit this set and see the report"
+    >
+      {isPending ? 'Submitting…' : 'Submit Set'}
+    </button>
+  ) : null;
+
   return (
     <>
       <nav aria-label="Question navigation" className={s.footerWide}>
-        <span className={s.stripLabel}>Questions</span>
-        {grid}
+        <div className={s.footerInner}>
+          <span className={s.stripLabel}>Questions</span>
+          {grid}
+          {submitBtn}
+        </div>
+        {submitError && <div className={s.submitError} role="alert">{submitError}</div>}
       </nav>
 
       <div className={s.footerNarrow}>
         <button type="button" onClick={() => setModalOpen(true)} className={s.mapBtn}>
           Map ({currentPosition + 1}/{items.length})
         </button>
+        {submitBtn}
       </div>
 
       {modalOpen && (
@@ -74,6 +125,7 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items }) {
               </button>
             </header>
             {grid}
+            {submitBtn && <div className={s.modalSubmit}>{submitBtn}</div>}
           </div>
         </div>
       )}

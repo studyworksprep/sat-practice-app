@@ -48,7 +48,7 @@ export default async function PracticeQuestionPage({ params }) {
   // 1) Load the session. RLS pins this to the owning user.
   const { data: session, error: sessionErr } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, current_position, test_type, mode, expires_at')
+    .select('id, user_id, question_ids, current_position, test_type, mode, expires_at, status')
     .eq('id', sessionId)
     .maybeSingle();
 
@@ -58,11 +58,32 @@ export default async function PracticeQuestionPage({ params }) {
     redirect('/practice/start?expired=1');
   }
 
+  // Completed / abandoned sessions don't allow further question
+  // navigation — they live on the review report instead.
+  if (session.status === 'completed') {
+    redirect(
+      session.mode === 'review'
+        ? '/review?complete=1'
+        : `/practice/review/${sessionId}`,
+    );
+  }
+  if (session.status === 'abandoned') {
+    redirect('/practice/start?abandoned=1');
+  }
+
   const questionIds = Array.isArray(session.question_ids) ? session.question_ids : [];
   if (questionIds.length === 0) notFound();
   if (position >= questionIds.length) {
-    // Ran off the end — land students on the per-session review
-    // report. Review-mode sessions bounce back to the review list.
+    // Ran off the end — close the session and land on the report.
+    // Guarded by status = 'in_progress' so the flip is idempotent.
+    await supabase
+      .from('practice_sessions')
+      .update({
+        status: 'completed',
+        last_activity_at: new Date().toISOString(),
+      })
+      .eq('id', sessionId)
+      .eq('status', 'in_progress');
     redirect(
       session.mode === 'review'
         ? '/review?complete=1'
@@ -286,6 +307,7 @@ export default async function PracticeQuestionPage({ params }) {
         sessionId={sessionId}
         currentPosition={position}
         items={mapItems}
+        canSubmit={session.mode === 'practice'}
       />
     </>
   );

@@ -17,6 +17,11 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
+import {
+  submitPracticeSession,
+  abandonPracticeSession,
+} from '@/lib/practice/session-actions';
+import { SessionLifecycleButtons } from '../../review/SessionLifecycleButtons';
 import s from './page.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -35,9 +40,10 @@ export default async function PracticeHistoryPage() {
   //    belt-and-suspenders / makes the query intent explicit.
   const { data: sessions } = await supabase
     .from('practice_sessions')
-    .select('id, created_at, question_ids, current_position, mode, filter_criteria')
+    .select('id, created_at, question_ids, current_position, mode, filter_criteria, status')
     .eq('user_id', user.id)
     .eq('mode', 'practice')
+    .neq('status', 'abandoned')
     .order('created_at', { ascending: false })
     .limit(PAGE_SIZE);
 
@@ -119,12 +125,12 @@ export default async function PracticeHistoryPage() {
                 ) : (
                   <>
                     <span className={s.partialBadge}>In progress</span>
-                    <Link
-                      href={`/practice/s/${r.id}/${r.resumePosition}`}
-                      className={s.resumeBtn}
-                    >
-                      Resume →
-                    </Link>
+                    <SessionLifecycleButtons
+                      sessionId={r.id}
+                      resumeHref={`/practice/s/${r.id}/${r.resumePosition}`}
+                      submitAction={submitPracticeSession}
+                      abandonAction={abandonPracticeSession}
+                    />
                   </>
                 )}
               </div>
@@ -165,7 +171,13 @@ function buildRow(session, allAttempts) {
   let correct = 0;
   for (const a of firstByQid.values()) if (a.is_correct) correct += 1;
 
-  const completed = total > 0 && attempted === total;
+  // Completion is driven by the session.status column, which is
+  // flipped to 'completed' by the Submit Set action (or the
+  // runner redirect when a student walks off the end). We still
+  // compute attempted + correct in memory so completed sessions
+  // can show an accuracy pill, even ones that were submitted
+  // with unanswered questions.
+  const completed = session.status === 'completed';
   const accuracyPct = attempted > 0
     ? Math.round((correct / attempted) * 100)
     : null;
