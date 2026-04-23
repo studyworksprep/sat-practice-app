@@ -116,14 +116,18 @@ export default async function PracticeTestRunnerPage({ params }) {
 
   // Pre-build per-item navigation pills so the bottom bar can show
   // answered / flagged status without any additional client-side
-  // fetches.
-  const navItems = moduleItems.map((it) => {
+  // fetches. `position` is the array index (0-indexed) — not the
+  // raw `ordinal` field, which may be 1-indexed depending on how
+  // the test was seeded. The URL / runner uses array-index
+  // semantics via `moduleItems[position]`, so this keeps the
+  // navigator and the URL in sync.
+  const navItems = moduleItems.map((it, idx) => {
     const ia = itemAttemptsByItemId.get(it.id);
     const answered = ia?.attempt != null
       && (ia.attempt.response_text != null || ia.attempt.selected_option_id != null);
     return {
       moduleItemId: it.id,
-      position: it.ordinal,
+      position: idx,
       answered,
       marked: !!ia?.marked_for_review,
     };

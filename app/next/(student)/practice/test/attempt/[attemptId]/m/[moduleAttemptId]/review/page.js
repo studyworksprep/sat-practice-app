@@ -63,11 +63,16 @@ export default async function ModuleReviewPage({ params }) {
     itemAttemptsByItemId.set(ia.practice_test_module_item_id, ia);
   }
 
-  const items = (moduleItems ?? []).map((it) => {
+  // `position` is the 0-indexed array index, not the raw ordinal,
+  // because the runner's URL parses position as an array offset
+  // (`moduleItems[position]`). If we used ordinal here and the
+  // seed data was 1-indexed, the bubbles would link to the wrong
+  // URLs.
+  const items = (moduleItems ?? []).map((it, idx) => {
     const ia = itemAttemptsByItemId.get(it.id);
     const answered = ia?.attempt?.response_text != null && ia.attempt.response_text !== '';
     return {
-      position: it.ordinal,
+      position: idx,
       moduleItemId: it.id,
       answered,
       marked: !!ia?.marked_for_review,

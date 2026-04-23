@@ -17,7 +17,7 @@
 
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import s from './TestRunner.module.css';
@@ -46,6 +46,27 @@ export function TestRunnerInteractive({
   const [markedForReview, setMarkedForReview] = useState(!!initialAnswer.markedForReview);
   const [saveError, setSaveError] = useState(null);
   const [navOpen, setNavOpen] = useState(false);
+  // useTransition lets us render a "pending" state on the Next/Back
+  // buttons while the server fetches the next question. Without
+  // this, router.push appears to do nothing until the new page is
+  // ready — exactly the "it's unresponsive, click it again" trap
+  // the user ran into.
+  const [isNavPending, startNav] = useTransition();
+
+  // Prefetch the neighbor question + review pages. Next.js App
+  // Router's prefetch loads the RSC payload and hydrates on arrival
+  // so Next/Back become near-instant. Runs on mount + whenever
+  // position changes.
+  useEffect(() => {
+    if (position > 0) {
+      router.prefetch(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/${position - 1}`);
+    }
+    if (position + 1 < total) {
+      router.prefetch(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/${position + 1}`);
+    } else {
+      router.prefetch(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/review`);
+    }
+  }, [attemptId, moduleAttemptId, position, total, router]);
 
   // ── Timer ─────────────────────────────────────────────────
   const [secondsRemaining, setSecondsRemaining] = useState(() =>
@@ -121,48 +142,69 @@ export function TestRunnerInteractive({
     }
   }
 
-  async function flushBeforeNavigate() {
+  // Fire any pending save without awaiting — Server Actions run on
+  // their own and we don't need to block navigation on the round-
+  // trip. The user already saw the answer selected; if the save
+  // fails, the next page will refetch the last-saved answer from
+  // the server. Keeping navigation snappy is the priority.
+  function flushSavePendingInBackground() {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     if (pendingSaveRef.current) {
-      await flushSave(pendingSaveRef.current);
+      const payload = pendingSaveRef.current;
       pendingSaveRef.current = null;
+      flushSave(payload).catch(() => {});
     }
   }
 
-  const goToPosition = useCallback(async (newPosition) => {
-    await flushBeforeNavigate();
+  const goToPosition = useCallback((newPosition) => {
+    flushSavePendingInBackground();
     setNavOpen(false);
-    router.push(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/${newPosition}`);
+    startNav(() => {
+      router.push(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/${newPosition}`);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attemptId, moduleAttemptId, router]);
 
-  async function goNext() {
+  function goNext() {
     if (position + 1 >= total) {
-      await flushBeforeNavigate();
-      router.push(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/review`);
+      flushSavePendingInBackground();
+      setNavOpen(false);
+      startNav(() => {
+        router.push(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/review`);
+      });
       return;
     }
-    await goToPosition(position + 1);
+    goToPosition(position + 1);
   }
 
-  async function goPrev() {
+  function goPrev() {
     if (position === 0) return;
-    await goToPosition(position - 1);
+    goToPosition(position - 1);
   }
 
-  async function goToReview() {
-    await flushBeforeNavigate();
-    router.push(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/review`);
+  function goToReview() {
+    flushSavePendingInBackground();
+    setNavOpen(false);
+    startNav(() => {
+      router.push(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/review`);
+    });
   }
 
-  // Auto-submit on timeout.
+  // Auto-submit on timeout. We DO await the pending save here
+  // (unlike user-driven navigation) because the module is closing
+  // and we want the last answer durably recorded before the
+  // server-side finishModule counts correct answers.
   const autoSubmitRef = useRef(false);
   useEffect(() => {
     if (secondsRemaining > 0) return;
     if (autoSubmitRef.current) return;
     autoSubmitRef.current = true;
     (async () => {
-      await flushBeforeNavigate();
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      if (pendingSaveRef.current) {
+        try { await flushSave(pendingSaveRef.current); } catch {}
+        pendingSaveRef.current = null;
+      }
       const fd = new FormData();
       fd.set('moduleAttemptId', moduleAttemptId);
       try {
@@ -240,16 +282,7 @@ export function TestRunnerInteractive({
 
       {/* Bottom bar ———————————————————————— */}
       <div className={s.bottomBar}>
-        <div className={s.bottomBarLeft}>
-          <button
-            type="button"
-            className={s.navBtnSecondary}
-            onClick={goPrev}
-            disabled={position === 0}
-          >
-            Back
-          </button>
-        </div>
+        <div className={s.bottomBarLeft} />
         <div className={s.bottomBarCenter}>
           <NavPopover
             open={navOpen}
@@ -273,13 +306,27 @@ export function TestRunnerInteractive({
         <div className={s.bottomBarRight}>
           <button
             type="button"
-            className={s.navBtnPrimary}
+            className={`${s.navBtnSecondary} ${isNavPending ? s.navBtnBusy : ''}`}
+            onClick={goPrev}
+            disabled={position === 0 || isNavPending}
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            className={`${s.navBtnPrimary} ${isNavPending ? s.navBtnBusy : ''}`}
             onClick={goNext}
+            disabled={isNavPending}
           >
             Next
           </button>
         </div>
       </div>
+
+      {/* Top-of-viewport progress strip while nav is pending.
+          Gives the student an instant "something is happening"
+          cue even while the server fetches the next question. */}
+      {isNavPending && <div className={s.navProgress} aria-hidden="true" />}
     </div>
   );
 }

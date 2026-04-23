@@ -164,7 +164,11 @@
 
 .bottomBarLeft   { justify-self: flex-start; }
 .bottomBarCenter { justify-self: center; position: relative; }
-.bottomBarRight  { justify-self: flex-end; }
+.bottomBarRight  {
+  justify-self: flex-end;
+  display: inline-flex;
+  gap: var(--s2);
+}
 
 .reviewTrigger {
   display: inline-flex;
@@ -201,7 +205,10 @@
   font-weight: 700;
   border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: all var(--dur-fast) var(--ease-std);
+  transition: background 80ms var(--ease-std),
+              border-color 80ms var(--ease-std),
+              color 80ms var(--ease-std),
+              transform 80ms var(--ease-std);
 }
 
 .navBtnSecondary {
@@ -222,9 +229,62 @@
   color: #fff;
   border: 1px solid var(--color-app-accent);
 }
-.navBtnPrimary:hover {
+.navBtnPrimary:hover:not(:disabled) {
   background: var(--color-app-accent-hover);
   border-color: var(--color-app-accent-hover);
+}
+
+/* Press feedback — mirrors Bluebook's "tap-flash" where the
+   button briefly goes white before the next question renders.
+   Fires on every pointer-down so the user gets instant feedback
+   the click registered, even while the next page is still
+   fetching. */
+.navBtnPrimary:active {
+  background: var(--bg-white);
+  color: var(--color-app-accent);
+  transform: scale(0.98);
+}
+
+.navBtnSecondary:active:not(:disabled) {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+  transform: scale(0.98);
+}
+
+/* Dimmed state while a navigation is pending. Prevents the
+   double-click reflex the user ran into without making the
+   button invisible. */
+.navBtnBusy {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Indeterminate progress strip at the top of the viewport
+   whenever a navigation is in flight. Gives instant visual
+   feedback that the click registered. */
+.navProgress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-app-accent) 50%,
+    transparent 100%
+  );
+  background-size: 40% 100%;
+  background-repeat: no-repeat;
+  animation: navProgressSlide 800ms linear infinite;
+  z-index: 100;
+  pointer-events: none;
+}
+
+@keyframes navProgressSlide {
+  0%   { background-position: -40% 0; }
+  100% { background-position: 140% 0; }
 }
 
 /* ---------- Navigator popover ---------- */
