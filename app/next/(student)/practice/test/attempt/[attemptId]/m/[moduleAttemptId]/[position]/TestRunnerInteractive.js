@@ -121,29 +121,64 @@ export function TestRunnerInteractive({
   }, [moduleInfo.startedAt, moduleInfo.timeLimitSeconds]);
 
   // ── Per-question stopwatch ─────────────────────────────────
-  // lastSaveTimeRef tracks the last time we synced time to the
-  // server. Every save (answer or time-only) sends the delta
-  // since then and resets the ref, so the server's
-  // attempts.time_spent_ms is the sum of all deltas across
-  // visits. Resets when moduleItemId changes so question-level
-  // timing is independent of navigation.
+  // lastSaveTimeRef tracks the last moment we successfully synced
+  // time to the server. Every save sends the delta since then.
+  // The ref only advances AFTER a save returns 200 — on failure
+  // or exception, the delta stays pending and rolls into the
+  // next attempt. Resets when moduleItemId changes so question-
+  // level timing is independent of navigation.
   const lastSaveTimeRef = useRef(Date.now());
   useEffect(() => {
     lastSaveTimeRef.current = Date.now();
   }, [moduleItemId]);
 
-  function consumeElapsedMs() {
-    const now = Date.now();
-    const delta = now - lastSaveTimeRef.current;
-    lastSaveTimeRef.current = now;
-    return delta > 0 ? delta : 0;
-  }
+  // Beacon on visibilitychange / beforeunload so time spent on the
+  // current question lands durably even if the student closes the
+  // tab, puts the browser to sleep, etc. Uses navigator.sendBeacon
+  // against /api/practice-test/time-ping (a regular POST route),
+  // since Server Actions can't be addressed by sendBeacon.
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    function fireBeacon() {
+      const now = Date.now();
+      const deltaMs = Math.max(0, now - lastSaveTimeRef.current);
+      if (deltaMs < 500) return;
+      try {
+        const payload = JSON.stringify({
+          moduleAttemptId,
+          moduleItemId,
+          timeSpentMs: deltaMs,
+        });
+        const blob = new Blob([payload], { type: 'application/json' });
+        // sendBeacon returns false if the user agent can't queue
+        // it (payload too large / quota hit). We don't retry —
+        // visibilitychange fires earlier than unload on most
+        // browsers, so there's usually a second chance.
+        const ok = navigator.sendBeacon('/api/practice-test/time-ping', blob);
+        if (ok) lastSaveTimeRef.current = now;
+      } catch { /* sendBeacon unsupported — ignore */ }
+    }
+
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') fireBeacon();
+    }
+
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', fireBeacon);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', fireBeacon);
+    };
+  }, [moduleAttemptId, moduleItemId]);
 
   // ── Answer save (debounced for SPR, immediate for MCQ) ────
   const saveTimer = useRef(null);
   const pendingSaveRef = useRef(null);
 
   const flushSave = useCallback(async (answer) => {
+    const now = Date.now();
+    const deltaMs = Math.max(0, now - lastSaveTimeRef.current);
     const fd = new FormData();
     fd.set('moduleAttemptId', moduleAttemptId);
     fd.set('moduleItemId', moduleItemId);
@@ -152,14 +187,20 @@ export function TestRunnerInteractive({
     } else if (answer.selectedOptionId) {
       fd.set('optionId', answer.selectedOptionId);
     }
-    const deltaMs = consumeElapsedMs();
     if (deltaMs > 0) fd.set('timeSpentMs', String(deltaMs));
     try {
       const res = await recordItemAnswerAction(null, fd);
-      if (!res?.ok) setSaveError(res?.error ?? 'Could not save');
-      else setSaveError(null);
+      if (!res?.ok) {
+        setSaveError(res?.error ?? 'Could not save');
+        // Keep the delta pending — next save attempts to re-send.
+        return;
+      }
+      setSaveError(null);
+      lastSaveTimeRef.current = now;
     } catch (err) {
       setSaveError(err.message ?? String(err));
+      // Same fallback: leave lastSaveTimeRef alone so the delta
+      // survives the failure.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleAttemptId, moduleItemId, question.questionType, recordItemAnswerAction]);
@@ -213,6 +254,8 @@ export function TestRunnerInteractive({
   // student only looked at still get attempts.time_spent_ms
   // credit. The time-only path insert a placeholder attempts row
   // if one doesn't exist yet — same shape mark-for-review uses.
+  // Only advances lastSaveTimeRef on successful delivery so a
+  // failed beacon doesn't lose the elapsed time.
   function flushSavePendingInBackground() {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     if (pendingSaveRef.current) {
@@ -221,13 +264,19 @@ export function TestRunnerInteractive({
       flushSave(payload).catch(() => {});
       return;
     }
-    const deltaMs = consumeElapsedMs();
+    const now = Date.now();
+    const deltaMs = Math.max(0, now - lastSaveTimeRef.current);
     if (deltaMs < 500) return;
     const fd = new FormData();
     fd.set('moduleAttemptId', moduleAttemptId);
     fd.set('moduleItemId', moduleItemId);
     fd.set('timeSpentMs', String(deltaMs));
-    recordItemAnswerAction(null, fd).catch(() => {});
+    (async () => {
+      try {
+        const res = await recordItemAnswerAction(null, fd);
+        if (res?.ok) lastSaveTimeRef.current = now;
+      } catch { /* leave the ref alone; next save retries */ }
+    })();
   }
 
   const goToPosition = useCallback((newPosition) => {
