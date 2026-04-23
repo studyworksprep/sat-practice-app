@@ -19,7 +19,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
+import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import s from './ReviewInteractive.module.css';
+
+// Same math-domain set the practice runner uses — only math
+// items get the floating calculator button.
+const CALCULATOR_DOMAINS = new Set(['H', 'P', 'Q', 'S']);
 
 /**
  * @param {object} props
@@ -183,6 +188,11 @@ export function ReviewInteractive({ sessionMeta, items, metrics }) {
                     ?? '—'}
                 </strong>
               </span>
+            )}
+            {CALCULATOR_DOMAINS.has(selected?.taxonomy?.domain_code ?? '') && (
+              <FloatingCalculator
+                storageKey={`desmos:review:session:${sessionMeta.sessionId}`}
+              />
             )}
             {!isRevealed && !selected.missing && (
               <button
