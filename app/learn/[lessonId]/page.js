@@ -456,9 +456,9 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess }) {
 
     return expressionList
       .map((expr) => ({
-        latex: expr?.latex || '',
-        hidden: Boolean(expr?.hidden),
-        type: expr?.type || 'expression',
+        latex: expr?.latex || byId.get(expr?.id)?.latex || '',
+        hidden: Boolean(expr?.hidden ?? byId.get(expr?.id)?.hidden),
+        type: expr?.type || byId.get(expr?.id)?.type || 'expression',
         sliderBounds: expr?.sliderBounds || byId.get(expr?.id)?.sliderBounds || null,
       }))
       .filter((expr) => expr.latex);
