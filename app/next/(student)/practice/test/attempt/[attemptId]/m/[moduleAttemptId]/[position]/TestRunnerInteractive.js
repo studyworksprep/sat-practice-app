@@ -20,10 +20,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
+import { DesmosPanel } from '@/lib/ui/DesmosPanel';
+import { BookmarkIcon, CalculatorIcon } from '@/lib/ui/icons';
 import s from './TestRunner.module.css';
 
 const WARNING_REMAINING_SECONDS = 5 * 60;
 const CRITICAL_REMAINING_SECONDS = 60;
+
+// Desmos visibility is sticky across questions within a test
+// module (and across modules — students who opened it once tend
+// to want it open next time too). localStorage key is shared with
+// the practice-session runner so the student's preference follows
+// them between surfaces.
+const DESMOS_TOGGLE_KEY = 'sw:desmos-open';
 
 export function TestRunnerInteractive({
   attemptId,
@@ -46,6 +55,30 @@ export function TestRunnerInteractive({
   const [markedForReview, setMarkedForReview] = useState(!!initialAnswer.markedForReview);
   const [saveError, setSaveError] = useState(null);
   const [navOpen, setNavOpen] = useState(false);
+
+  // Desmos — shown during Math modules only. The initial state is
+  // read from localStorage in a post-mount effect so server + first
+  // client render agree (otherwise a reload flickers the panel).
+  const desmosEligible = moduleInfo.subject === 'MATH';
+  const [desmosOpen, setDesmosOpen] = useState(false);
+  const [desmosAnimate, setDesmosAnimate] = useState(false);
+  useEffect(() => {
+    if (!desmosEligible) return;
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    setDesmosOpen(window.localStorage.getItem(DESMOS_TOGGLE_KEY) === '1');
+  }, [desmosEligible]);
+  const toggleDesmos = useCallback(() => {
+    // Animation is gated behind the first user interaction. Before
+    // that, opening/closing happens statically; after, subsequent
+    // toggles glide. Same pattern as the practice-session runner.
+    setDesmosAnimate(true);
+    setDesmosOpen((prev) => {
+      const next = !prev;
+      try { window.localStorage.setItem(DESMOS_TOGGLE_KEY, next ? '1' : '0'); } catch {}
+      return next;
+    });
+  }, []);
+  const desmosVisible = desmosEligible && desmosOpen;
   // useTransition lets us render a "pending" state on the Next/Back
   // buttons while the server fetches the next question. Without
   // this, router.push appears to do nothing until the new page is
@@ -226,19 +259,24 @@ export function TestRunnerInteractive({
   const subjectName = moduleInfo.subject === 'RW' ? 'Reading and Writing' : 'Math';
   const moduleLabel = `Section ${moduleInfo.subject === 'RW' ? 1 : 2}, Module ${moduleInfo.moduleNumber}: ${subjectName}`;
 
-  // Build the question header passed into QuestionRenderer.
+  // Build the question header passed into QuestionRenderer. The
+  // Mark-for-Review pill's background doesn't change on toggle —
+  // only the bookmark glyph tints gold when marked. That keeps the
+  // header chrome stable and echoes the same gold-flag treatment
+  // the navigator bubbles use.
   const headerNode = (
     <div className={s.questionHeader}>
       <span className={s.questionNumChip}>{position + 1}</span>
       <button
         type="button"
         onClick={handleToggleMark}
-        className={markedForReview ? `${s.markBtn} ${s.markBtnActive}` : s.markBtn}
+        className={s.markBtn}
         aria-pressed={markedForReview}
       >
-        <span aria-hidden="true" className={s.markIcon}>
-          {markedForReview ? '🔖' : '🔖'}
-        </span>
+        <BookmarkIcon
+          filled={markedForReview}
+          className={markedForReview ? s.markIconActive : s.markIconInactive}
+        />
         Mark for Review
       </button>
     </div>
@@ -258,7 +296,18 @@ export function TestRunnerInteractive({
           </div>
         </div>
         <div className={s.topBarRight}>
-          {/* Empty for now — Annotate / More tools land as a follow-up. */}
+          {desmosEligible && (
+            <button
+              type="button"
+              onClick={toggleDesmos}
+              aria-pressed={desmosOpen}
+              className={desmosOpen ? `${s.calcBtn} ${s.calcBtnActive}` : s.calcBtn}
+              title={desmosOpen ? 'Hide calculator' : 'Show calculator'}
+            >
+              <CalculatorIcon />
+              Calculator
+            </button>
+          )}
         </div>
       </div>
 
@@ -274,6 +323,20 @@ export function TestRunnerInteractive({
           onResponseText={handleResponseText}
           result={null}
           headerNode={headerNode}
+          leftSlot={
+            desmosEligible ? (
+              <DesmosPanel
+                isOpen={desmosVisible}
+                // Module-scoped storage so the student's graphing
+                // work persists across questions within a module
+                // (matches Bluebook behavior) but resets between
+                // modules.
+                storageKey={`desmos:test:${moduleAttemptId}`}
+              />
+            ) : null
+          }
+          leftSlotCollapsed={desmosEligible && !desmosVisible}
+          slotAnimate={desmosAnimate}
         />
         {saveError && (
           <p role="alert" className={s.saveError}>{saveError}</p>
@@ -374,15 +437,15 @@ function NavPopover({ open, onClose, moduleLabel, navItems, currentPosition, onJ
       </div>
       <div className={s.navPopLegend}>
         <span className={s.legendItem}>
-          <span className={`${s.legendSwatch} ${s.swatchCurrent}`} aria-hidden="true">📍</span>
+          <span className={s.legendCurrentPin} aria-hidden="true" />
           Current
         </span>
         <span className={s.legendItem}>
-          <span className={`${s.legendSwatch} ${s.swatchUnanswered}`} />
+          <span className={`${s.legendSwatch} ${s.swatchUnanswered}`} aria-hidden="true" />
           Unanswered
         </span>
         <span className={s.legendItem}>
-          <span className={`${s.legendSwatch} ${s.swatchFlagged}`} aria-hidden="true">🚩</span>
+          <BookmarkIcon filled size={14} className={s.legendFlag} />
           For Review
         </span>
       </div>
@@ -402,9 +465,11 @@ function NavPopover({ open, onClose, moduleLabel, navItems, currentPosition, onJ
               onClick={() => onJump(it.position)}
               aria-current={isCurrent ? 'true' : undefined}
             >
-              {isCurrent && <span className={s.bubblePin} aria-hidden="true">📍</span>}
+              {isCurrent && <span className={s.bubblePin} aria-hidden="true" />}
               <span className={s.bubbleNum}>{it.position + 1}</span>
-              {it.marked && <span className={s.bubbleFlag} aria-hidden="true">🚩</span>}
+              {it.marked && (
+                <BookmarkIcon filled size={12} className={s.bubbleFlag} />
+              )}
             </button>
           );
         })}

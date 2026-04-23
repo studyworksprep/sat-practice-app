@@ -36,7 +36,36 @@
 }
 
 .topBarCenter { justify-self: center; }
-.topBarRight  { display: flex; justify-content: flex-end; }
+.topBarRight  { display: flex; justify-content: flex-end; gap: var(--s2); }
+
+/* ---------- Calculator toggle ---------- */
+
+.calcBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+}
+
+.calcBtn:hover { background: var(--color-slate-100); }
+
+.calcBtnActive {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+.calcBtnActive:hover { background: var(--color-app-accent-soft); }
 
 .moduleLabel {
   font-size: 16px;
@@ -129,22 +158,19 @@
   color: var(--fg1);
   cursor: pointer;
   border-radius: var(--radius-md);
-  transition: all var(--dur-fast) var(--ease-std);
+  transition: background var(--dur-fast) var(--ease-std);
 }
 
 .markBtn:hover {
-  background: rgba(194, 153, 62, 0.08);
-  color: var(--color-diff-med-fg);
+  background: var(--color-slate-100);
 }
 
-.markBtnActive {
-  background: rgba(194, 153, 62, 0.14);
-  color: var(--color-diff-med-fg);
-}
-
-.markBtnActive .markIcon { filter: saturate(1.3); }
-
-.markIcon { font-size: 14px; line-height: 1; }
+/* Icon-only color change on toggle — text + background stay
+   stable so the header doesn't shift visually. Inactive is a
+   hollow outline in the neutral foreground; active is a filled
+   gold glyph that echoes the bubble flag and legend. */
+.markIconInactive { color: var(--fg2); }
+.markIconActive   { color: var(--color-gold-500); }
 
 /* ---------- Bottom bar ---------- */
 
@@ -371,27 +397,36 @@
   width: 18px;
   height: 18px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-strong);
+  border: 1.5px solid var(--color-app-accent);
   background: var(--bg-white);
-  font-size: 10px;
-}
-
-.swatchCurrent {
-  background: transparent;
-  border: none;
-  font-size: 14px;
 }
 
 .swatchUnanswered {
   border-style: dashed;
-  background: var(--bg-white);
 }
 
-.swatchFlagged {
-  border: none;
-  background: transparent;
-  font-size: 14px;
+/* "Current" legend swatch — a small pin dot (same vocabulary as
+   the bubble's own current indicator). */
+.legendCurrentPin {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--fg1);
+  display: inline-block;
+  position: relative;
 }
+.legendCurrentPin::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--fg1);
+}
+
+.legendFlag { color: var(--color-gold-500); }
 
 .navPopGrid {
   display: grid;
@@ -434,25 +469,43 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Current position doesn't change the bubble fill — it stamps a
-   pin icon above it. Keeps the answered/unanswered state legible
-   on the current bubble. */
-.navBubbleCurrent .bubblePin {
+/* Current position doesn't change the bubble fill — a pin dot
+   sits above it so the answered / unanswered state stays legible
+   on the current bubble. Drawn in pure CSS (circle with a small
+   triangle below) rather than an emoji or an icon so it scales
+   cleanly and tints with currentColor. */
+.bubblePin {
   position: absolute;
   top: -14px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 12px;
-  color: var(--fg1);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fg1);
+}
+.bubblePin::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-top: 4px solid var(--fg1);
 }
 
 .bubbleNum { line-height: 1; }
 
+/* Gold bookmark flag sitting in the top-right corner of the
+   bubble when that question is marked for review. Same visual
+   vocabulary as the question header's active Mark pill so a
+   student's eye catches the correlation. */
 .bubbleFlag {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  font-size: 10px;
+  top: -3px;
+  right: -3px;
+  color: var(--color-gold-500);
 }
 
 .reviewPageBtn {

@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { BookmarkIcon } from '@/lib/ui/icons';
 import { routeAfterFinish } from '../[position]/TestRunnerInteractive';
 import s from './ModuleReview.module.css';
 
@@ -126,7 +127,7 @@ export function ModuleReviewInteractive({
             Answered
           </span>
           <span className={s.legendItem}>
-            <span className={`${s.legendSwatch} ${s.swatchFlagged}`} />
+            <BookmarkIcon filled size={14} className={s.legendFlag} />
             Flagged
           </span>
           <span className={s.legendItem}>
@@ -152,7 +153,7 @@ export function ModuleReviewInteractive({
               >
                 <span className={s.bubbleNum}>{it.position + 1}</span>
                 {it.marked && (
-                  <span className={s.bubbleFlag} aria-hidden="true">★</span>
+                  <BookmarkIcon filled size={12} className={s.bubbleFlag} />
                 )}
               </button>
             );

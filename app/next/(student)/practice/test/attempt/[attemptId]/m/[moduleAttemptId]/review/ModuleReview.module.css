@@ -167,8 +167,10 @@
 }
 
 .swatchAnswered   { background: var(--color-app-accent-soft); border-color: var(--color-app-accent); }
-.swatchFlagged    { background: rgba(194, 153, 62, 0.14);     border-color: var(--color-amber); }
-.swatchUnanswered { background: var(--bg-white);              border-color: var(--border-strong); }
+.swatchUnanswered { background: var(--bg-white);              border-color: var(--border-strong); border-style: dashed; }
+
+/* Gold flag glyph used in the legend for the "Flagged" category. */
+.legendFlag { color: var(--color-gold-500); }
 
 /* ---------- Bubble grid ---------- */
 
@@ -226,10 +228,9 @@
 
 .bubbleFlag {
   position: absolute;
-  top: 2px;
-  right: 4px;
-  font-size: 10px;
-  color: var(--color-amber);
+  top: -3px;
+  right: -3px;
+  color: var(--color-gold-500);
 }
 
 /* ---------- Bottom bar ---------- */
