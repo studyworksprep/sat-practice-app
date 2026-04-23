@@ -22,6 +22,14 @@ export function LaunchInteractive({
   const [error, setError] = useState(null);
   const [confirmed, setConfirmed] = useState(false);
 
+  // Extra-time accommodation. Off by default (multiplier = 1.0).
+  // When enabled, the student picks between 1.5× (standard
+  // extended time) and 2× (double time). The multiplier ships
+  // to startTestAttempt and is stored on the attempt so every
+  // module inherits it.
+  const [accommodationOn, setAccommodationOn] = useState(false);
+  const [multiplier, setMultiplier] = useState(1.5);
+
   // If the student already has an in-progress test attempt, make
   // them confirm before starting — our Server Action will abandon
   // the old one, and we'd rather surface that explicitly.
@@ -39,6 +47,9 @@ export function LaunchInteractive({
     setError(null);
     const fd = new FormData();
     fd.set('testId', test.id);
+    if (accommodationOn && multiplier > 1) {
+      fd.set('timeMultiplier', String(multiplier));
+    }
     try {
       const res = await startTestAttemptAction(null, fd);
       if (!res?.ok) {
@@ -112,6 +123,44 @@ export function LaunchInteractive({
             </li>
           ))}
         </ol>
+      </section>
+
+      <section className={s.card}>
+        <div className={s.sectionLabel}>Accommodations</div>
+        <label className={s.accomRow}>
+          <input
+            type="checkbox"
+            checked={accommodationOn}
+            onChange={(e) => setAccommodationOn(e.target.checked)}
+          />
+          <span>I have an approved extra-time accommodation</span>
+        </label>
+        {accommodationOn && (
+          <div className={s.accomOptions}>
+            <label className={s.radioRow}>
+              <input
+                type="radio"
+                name="multiplier"
+                checked={multiplier === 1.5}
+                onChange={() => setMultiplier(1.5)}
+              />
+              <span>
+                <strong>1.5× time</strong> — Standard extended time
+              </span>
+            </label>
+            <label className={s.radioRow}>
+              <input
+                type="radio"
+                name="multiplier"
+                checked={multiplier === 2}
+                onChange={() => setMultiplier(2)}
+              />
+              <span>
+                <strong>2× time</strong> — Double time
+              </span>
+            </label>
+          </div>
+        )}
       </section>
 
       {inProgress && (

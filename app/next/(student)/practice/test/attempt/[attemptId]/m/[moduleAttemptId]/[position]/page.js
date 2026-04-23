@@ -49,7 +49,7 @@ export default async function PracticeTestRunnerPage({ params }) {
         id, subject_code, module_number, route_code, time_limit_seconds,
         practice_test:practice_tests_v2(id, name, code)
       ),
-      practice_test_attempt:practice_test_attempts_v2(user_id, status, practice_test_id)
+      practice_test_attempt:practice_test_attempts_v2(user_id, status, practice_test_id, time_multiplier)
     `)
     .eq('id', moduleAttemptId)
     .maybeSingle();
@@ -184,11 +184,13 @@ export default async function PracticeTestRunnerPage({ params }) {
   };
 
   const mod = moduleAttempt.practice_test_module;
+  const mult = Number(moduleAttempt.practice_test_attempt.time_multiplier) || 1;
   const moduleInfo = {
     subject: mod.subject_code,
     moduleNumber: mod.module_number,
     routeCode: mod.route_code,
-    timeLimitSeconds: mod.time_limit_seconds,
+    timeLimitSeconds: Math.round(mod.time_limit_seconds * mult),
+    timeMultiplier: mult,
     startedAt: moduleAttempt.started_at,
     testName: mod.practice_test?.name ?? 'Practice test',
   };

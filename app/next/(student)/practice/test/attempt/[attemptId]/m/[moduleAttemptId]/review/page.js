@@ -31,7 +31,7 @@ export default async function ModuleReviewPage({ params }) {
         id, subject_code, module_number, time_limit_seconds,
         practice_test:practice_tests_v2(name)
       ),
-      practice_test_attempt:practice_test_attempts_v2(user_id, status)
+      practice_test_attempt:practice_test_attempts_v2(user_id, status, time_multiplier)
     `)
     .eq('id', moduleAttemptId)
     .maybeSingle();
@@ -75,10 +75,11 @@ export default async function ModuleReviewPage({ params }) {
   });
 
   const mod = moduleAttempt.practice_test_module;
+  const mult = Number(moduleAttempt.practice_test_attempt.time_multiplier) || 1;
   const moduleInfo = {
     subject: mod.subject_code,
     moduleNumber: mod.module_number,
-    timeLimitSeconds: mod.time_limit_seconds,
+    timeLimitSeconds: Math.round(mod.time_limit_seconds * mult),
     startedAt: moduleAttempt.started_at,
     testName: mod.practice_test?.name ?? 'Practice test',
   };

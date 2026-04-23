@@ -1,15 +1,19 @@
-// Practice-test runner client island. Bluebook-style per-module
-// runner: top bar with test name + module + timer, middle area
-// with the question (via the shared QuestionRenderer in practice
-// mode, no reveal), and a footer bar with Back / current position
-// / mark-for-review / Next.
+// Practice-test runner client island — Bluebook-style shell.
 //
-// Timer is derived from moduleInfo.startedAt (the server-side
-// timestamp when the module began) + time_limit_seconds. This
-// means reload doesn't reset the clock and the display always
-// matches the server's view. When the timer hits zero, we call
-// finishModule() — the server happily accepts a late submission
-// within the GRACE_SECONDS window.
+// Top bar: "Section N, Module M: Subject" on the left, countdown
+// timer in the center. Mark-for-Review is not here — it lives
+// inside the question header (see headerNode passed to
+// QuestionRenderer) so it sits next to the question number
+// exactly like Bluebook shows.
+//
+// Bottom bar: a centered "Question N of M ▾" pill that opens the
+// navigator popup (grid of question bubbles + "Go to Review Page"
+// button). Next / Back are on the right.
+//
+// Timer derives from moduleInfo.startedAt + timeLimitSeconds;
+// timeLimitSeconds arrives already multiplied by the student's
+// time-accommodation on the parent attempt, so no client-side
+// multiplication here.
 
 'use client';
 
@@ -18,8 +22,8 @@ import { useRouter } from 'next/navigation';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import s from './TestRunner.module.css';
 
-const WARNING_REMAINING_SECONDS = 5 * 60;   // under 5 min → warning tint
-const CRITICAL_REMAINING_SECONDS = 60;      // under 1 min → critical tint
+const WARNING_REMAINING_SECONDS = 5 * 60;
+const CRITICAL_REMAINING_SECONDS = 60;
 
 export function TestRunnerInteractive({
   attemptId,
@@ -41,9 +45,9 @@ export function TestRunnerInteractive({
   const [responseText, setResponseText] = useState(initialAnswer.responseText ?? '');
   const [markedForReview, setMarkedForReview] = useState(!!initialAnswer.markedForReview);
   const [saveError, setSaveError] = useState(null);
+  const [navOpen, setNavOpen] = useState(false);
 
-  // Countdown timer. Computed every second from moduleInfo.startedAt
-  // so a reload or navigation preserves the true remaining time.
+  // ── Timer ─────────────────────────────────────────────────
   const [secondsRemaining, setSecondsRemaining] = useState(() =>
     computeRemaining(moduleInfo.startedAt, moduleInfo.timeLimitSeconds),
   );
@@ -56,9 +60,7 @@ export function TestRunnerInteractive({
     return () => clearInterval(id);
   }, [moduleInfo.startedAt, moduleInfo.timeLimitSeconds]);
 
-  // Debounced saver. Fires recordItemAnswer after the student
-  // pauses input — keeps chatty keystrokes off the wire for SPR
-  // but still catches every final answer.
+  // ── Answer save (debounced for SPR, immediate for MCQ) ────
   const saveTimer = useRef(null);
   const pendingSaveRef = useRef(null);
 
@@ -83,8 +85,6 @@ export function TestRunnerInteractive({
   function scheduleSave(next) {
     pendingSaveRef.current = next;
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    // MCQ answers save immediately — one radio click = one save.
-    // SPR answers debounce so we don't fire on every keystroke.
     const delay = question.questionType === 'spr' ? 600 : 0;
     saveTimer.current = setTimeout(() => {
       flushSave(pendingSaveRef.current);
@@ -112,7 +112,6 @@ export function TestRunnerInteractive({
       if (res?.ok && typeof res.marked === 'boolean') {
         setMarkedForReview(res.marked);
       } else if (!res?.ok) {
-        // Roll back the optimistic flip.
         setMarkedForReview(!optimistic);
         setSaveError(res?.error ?? 'Could not flag question');
       }
@@ -122,8 +121,6 @@ export function TestRunnerInteractive({
     }
   }
 
-  // Navigation. On Next/Prev we flush any pending save first so
-  // the answer always lands before the URL changes.
   async function flushBeforeNavigate() {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     if (pendingSaveRef.current) {
@@ -134,13 +131,13 @@ export function TestRunnerInteractive({
 
   const goToPosition = useCallback(async (newPosition) => {
     await flushBeforeNavigate();
+    setNavOpen(false);
     router.push(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/${newPosition}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attemptId, moduleAttemptId, router]);
 
   async function goNext() {
     if (position + 1 >= total) {
-      // Last question — jump straight to review.
       await flushBeforeNavigate();
       router.push(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/review`);
       return;
@@ -158,9 +155,7 @@ export function TestRunnerInteractive({
     router.push(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/review`);
   }
 
-  // Timer auto-submit. Once remaining hits 0 we fire finishModule
-  // and let the server route us forward. Guard with a ref so the
-  // interval-driven tick doesn't fire the action more than once.
+  // Auto-submit on timeout.
   const autoSubmitRef = useRef(false);
   useEffect(() => {
     if (secondsRemaining > 0) return;
@@ -186,16 +181,34 @@ export function TestRunnerInteractive({
     return s.timer;
   }, [secondsRemaining]);
 
-  const subjectName = moduleInfo.subject === 'RW' ? 'Reading & Writing' : 'Math';
-  const moduleLabel = `${subjectName} · Module ${moduleInfo.moduleNumber}`;
+  const subjectName = moduleInfo.subject === 'RW' ? 'Reading and Writing' : 'Math';
+  const moduleLabel = `Section ${moduleInfo.subject === 'RW' ? 1 : 2}, Module ${moduleInfo.moduleNumber}: ${subjectName}`;
+
+  // Build the question header passed into QuestionRenderer.
+  const headerNode = (
+    <div className={s.questionHeader}>
+      <span className={s.questionNumChip}>{position + 1}</span>
+      <button
+        type="button"
+        onClick={handleToggleMark}
+        className={markedForReview ? `${s.markBtn} ${s.markBtnActive}` : s.markBtn}
+        aria-pressed={markedForReview}
+      >
+        <span aria-hidden="true" className={s.markIcon}>
+          {markedForReview ? '🔖' : '🔖'}
+        </span>
+        Mark for Review
+      </button>
+    </div>
+  );
 
   return (
     <div className={s.shell}>
-      {/* Top bar ———————————————————————————————— */}
+      {/* Top bar ———————————————————————————— */}
       <div className={s.topBar}>
         <div className={s.topBarLeft}>
-          <div className={s.testName}>{moduleInfo.testName}</div>
           <div className={s.moduleLabel}>{moduleLabel}</div>
+          <div className={s.testName}>{moduleInfo.testName}</div>
         </div>
         <div className={s.topBarCenter}>
           <div className={timerClass} aria-live="off">
@@ -203,19 +216,11 @@ export function TestRunnerInteractive({
           </div>
         </div>
         <div className={s.topBarRight}>
-          <button
-            type="button"
-            onClick={handleToggleMark}
-            className={markedForReview ? `${s.markBtn} ${s.markBtnActive}` : s.markBtn}
-            aria-pressed={markedForReview}
-          >
-            <span aria-hidden="true" className={s.markIcon}>★</span>
-            Mark for review
-          </button>
+          {/* Empty for now — Annotate / More tools land as a follow-up. */}
         </div>
       </div>
 
-      {/* Question body ———————————————————————— */}
+      {/* Question body ————————————————————— */}
       <main className={s.main}>
         <QuestionRenderer
           mode="practice"
@@ -226,40 +231,146 @@ export function TestRunnerInteractive({
           responseText={responseText}
           onResponseText={handleResponseText}
           result={null}
+          headerNode={headerNode}
         />
         {saveError && (
           <p role="alert" className={s.saveError}>{saveError}</p>
         )}
       </main>
 
-      {/* Bottom bar ———————————————————————————— */}
+      {/* Bottom bar ———————————————————————— */}
       <div className={s.bottomBar}>
-        <button
-          type="button"
-          className={s.navBtnSecondary}
-          onClick={goPrev}
-          disabled={position === 0}
-        >
-          ← Back
-        </button>
-        <button
-          type="button"
-          className={s.reviewTrigger}
-          onClick={goToReview}
-        >
-          Question {position + 1} of {total} ▾
-        </button>
-        <button
-          type="button"
-          className={s.navBtnPrimary}
-          onClick={goNext}
-        >
-          {position + 1 >= total ? 'Review →' : 'Next →'}
-        </button>
+        <div className={s.bottomBarLeft}>
+          <button
+            type="button"
+            className={s.navBtnSecondary}
+            onClick={goPrev}
+            disabled={position === 0}
+          >
+            Back
+          </button>
+        </div>
+        <div className={s.bottomBarCenter}>
+          <NavPopover
+            open={navOpen}
+            onClose={() => setNavOpen(false)}
+            moduleLabel={moduleLabel}
+            navItems={navItems}
+            currentPosition={position}
+            onJump={(p) => goToPosition(p)}
+            onReview={goToReview}
+          />
+          <button
+            type="button"
+            className={s.reviewTrigger}
+            onClick={() => setNavOpen((v) => !v)}
+            aria-expanded={navOpen}
+          >
+            Question {position + 1} of {total}
+            <span className={s.reviewTriggerChevron} aria-hidden="true">▾</span>
+          </button>
+        </div>
+        <div className={s.bottomBarRight}>
+          <button
+            type="button"
+            className={s.navBtnPrimary}
+            onClick={goNext}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
 }
+
+// ──────────────────────────────────────────────────────────────
+// Navigator popover
+// ──────────────────────────────────────────────────────────────
+
+function NavPopover({ open, onClose, moduleLabel, navItems, currentPosition, onJump, onReview }) {
+  const popRef = useRef(null);
+
+  // Close on click-outside + Escape.
+  useEffect(() => {
+    if (!open) return undefined;
+    function onDocClick(e) {
+      if (popRef.current && !popRef.current.contains(e.target)) {
+        onClose();
+      }
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') onClose();
+    }
+    // Defer attaching the click handler one tick so the click that
+    // opened the popover doesn't immediately close it.
+    const t = setTimeout(() => {
+      document.addEventListener('mousedown', onDocClick);
+      document.addEventListener('keydown', onKey);
+    }, 0);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div ref={popRef} className={s.navPop} role="dialog" aria-modal="true" aria-label="Navigate questions">
+      <div className={s.navPopHeader}>
+        <div className={s.navPopTitle}>{moduleLabel} Questions</div>
+        <button type="button" className={s.navPopClose} onClick={onClose} aria-label="Close">
+          ✕
+        </button>
+      </div>
+      <div className={s.navPopLegend}>
+        <span className={s.legendItem}>
+          <span className={`${s.legendSwatch} ${s.swatchCurrent}`} aria-hidden="true">📍</span>
+          Current
+        </span>
+        <span className={s.legendItem}>
+          <span className={`${s.legendSwatch} ${s.swatchUnanswered}`} />
+          Unanswered
+        </span>
+        <span className={s.legendItem}>
+          <span className={`${s.legendSwatch} ${s.swatchFlagged}`} aria-hidden="true">🚩</span>
+          For Review
+        </span>
+      </div>
+      <div className={s.navPopGrid} role="list">
+        {navItems.map((it) => {
+          const isCurrent = it.position === currentPosition;
+          const cls = [
+            s.navBubble,
+            it.answered ? s.navBubbleAnswered : s.navBubbleUnanswered,
+            isCurrent ? s.navBubbleCurrent : null,
+          ].filter(Boolean).join(' ');
+          return (
+            <button
+              key={it.position}
+              type="button"
+              className={cls}
+              onClick={() => onJump(it.position)}
+              aria-current={isCurrent ? 'true' : undefined}
+            >
+              {isCurrent && <span className={s.bubblePin} aria-hidden="true">📍</span>}
+              <span className={s.bubbleNum}>{it.position + 1}</span>
+              {it.marked && <span className={s.bubbleFlag} aria-hidden="true">🚩</span>}
+            </button>
+          );
+        })}
+      </div>
+      <button type="button" className={s.reviewPageBtn} onClick={onReview}>
+        Go to Review Page
+      </button>
+      <div className={s.navPopTail} aria-hidden="true" />
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
 
 function computeRemaining(startedAtIso, timeLimitSeconds) {
   const start = new Date(startedAtIso).getTime();
@@ -273,8 +384,6 @@ function formatClock(seconds) {
   return `${m}:${String(sec).padStart(2, '0')}`;
 }
 
-// Route the client forward based on what finishModule returned.
-// Exported pattern so the module-review page can share logic.
 export function routeAfterFinish(res, router, attemptId) {
   if (!res?.ok) return;
   if (res.step === 'next-module' && res.nextModuleAttemptId) {
@@ -282,7 +391,6 @@ export function routeAfterFinish(res, router, attemptId) {
     return;
   }
   if (res.step === 'section-break' && res.nextModuleAttemptId) {
-    // V1: no break screen — jump straight into Math module 1.
     router.push(`/practice/test/attempt/${attemptId}/m/${res.nextModuleAttemptId}/0`);
     return;
   }

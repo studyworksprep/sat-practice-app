@@ -1,10 +1,10 @@
 /* =============================================================
-   Practice-test runner — Bluebook-style full-screen shell.
+   Practice-test runner — Bluebook-style full-width shell.
    Tokens from [data-tree="next"].
 
-   Layout: vertical stack taking the full viewport beneath the
-   AppNav. Top bar + main body + bottom bar, bottom sticks to the
-   bottom of the viewport so the Next button is always reachable.
+   Layout: top bar + full-width main + bottom bar. Main has NO
+   max-width so passages and question cards can spread across the
+   full viewport, matching the Bluebook feel on wide screens.
 ============================================================= */
 
 .shell {
@@ -36,25 +36,18 @@
 }
 
 .topBarCenter { justify-self: center; }
+.topBarRight  { display: flex; justify-content: flex-end; }
 
-.topBarRight {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--s2);
+.moduleLabel {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg1);
+  letter-spacing: -0.003em;
 }
 
 .testName {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--fg1);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.moduleLabel {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--fg3);
@@ -74,54 +67,18 @@
               color var(--dur-fast) var(--ease-std);
 }
 
-.timerWarn {
-  background: var(--color-diff-med-bg);
-  color: var(--color-diff-med-fg);
-}
-
-.timerCritical {
-  background: var(--color-diff-hard-bg);
-  color: var(--color-diff-hard-fg);
-}
-
-.markBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  background: var(--bg-white);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-pill);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--fg1);
-  cursor: pointer;
-  transition: all var(--dur-fast) var(--ease-std);
-}
-
-.markBtn:hover {
-  background: rgba(194, 153, 62, 0.06);
-  border-color: var(--color-amber);
-  color: var(--color-diff-med-fg);
-}
-
-.markBtnActive {
-  background: rgba(194, 153, 62, 0.14);
-  border-color: var(--color-amber);
-  color: var(--color-diff-med-fg);
-}
-
-.markIcon { color: var(--color-amber); }
+.timerWarn     { background: var(--color-diff-med-bg);  color: var(--color-diff-med-fg); }
+.timerCritical { background: var(--color-diff-hard-bg); color: var(--color-diff-hard-fg); }
 
 /* ---------- Main question area ---------- */
 
+/* Use the full viewport width with modest side padding so reading
+   passages and option cards get all the room they can, matching
+   Bluebook's feel on wide screens. */
 .main {
   flex: 1;
-  padding: var(--s5) var(--s5);
-  max-width: 1280px;
+  padding: var(--s5) var(--s6);
   width: 100%;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--s4);
@@ -132,6 +89,62 @@
   font-size: 13px;
   margin: 0;
 }
+
+/* ---------- Question header (inside the right pane) ---------- */
+
+.questionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-bottom: var(--s4);
+  padding-bottom: var(--s3);
+  border-bottom: 1px dashed var(--fg1);
+}
+
+.questionNumChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--color-navy-900);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: var(--radius-sm);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.markBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.markBtn:hover {
+  background: rgba(194, 153, 62, 0.08);
+  color: var(--color-diff-med-fg);
+}
+
+.markBtnActive {
+  background: rgba(194, 153, 62, 0.14);
+  color: var(--color-diff-med-fg);
+}
+
+.markBtnActive .markIcon { filter: saturate(1.3); }
+
+.markIcon { font-size: 14px; line-height: 1; }
 
 /* ---------- Bottom bar ---------- */
 
@@ -146,41 +159,47 @@
   background: var(--card);
   border-top: 1px solid var(--border);
   box-shadow: 0 -2px 8px rgba(16, 42, 67, 0.04);
+  z-index: 20;
 }
 
-.bottomBar > *:nth-child(1) { justify-self: flex-start; }
-.bottomBar > *:nth-child(2) { justify-self: center; }
-.bottomBar > *:nth-child(3) { justify-self: flex-end; }
+.bottomBarLeft   { justify-self: flex-start; }
+.bottomBarCenter { justify-self: center; position: relative; }
+.bottomBarRight  { justify-self: flex-end; }
 
 .reviewTrigger {
   display: inline-flex;
   align-items: center;
   gap: var(--s2);
-  padding: 8px 18px;
-  background: var(--color-slate-50);
-  border: 1px solid var(--border);
+  padding: 10px 22px;
+  background: var(--color-navy-900);
+  border: 1px solid var(--color-navy-900);
   border-radius: var(--radius-pill);
   font-family: inherit;
   font-weight: 700;
   font-size: 13px;
-  color: var(--fg1);
+  color: #fff;
   cursor: pointer;
   font-variant-numeric: tabular-nums;
   transition: all var(--dur-fast) var(--ease-std);
 }
 
-.reviewTrigger:hover { border-color: var(--color-slate-400); }
+.reviewTrigger:hover { background: var(--color-navy-800); }
+
+.reviewTriggerChevron {
+  font-size: 10px;
+  opacity: 0.85;
+}
 
 .navBtnSecondary,
 .navBtnPrimary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 22px;
+  padding: 10px 28px;
   font-family: inherit;
   font-size: 13px;
   font-weight: 700;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease-std);
 }
@@ -191,7 +210,6 @@
   border: 1px solid var(--border-strong);
 }
 .navBtnSecondary:hover:not(:disabled) {
-  border-color: var(--color-slate-400);
   background: var(--color-slate-50);
 }
 .navBtnSecondary:disabled {
@@ -207,4 +225,192 @@
 .navBtnPrimary:hover {
   background: var(--color-app-accent-hover);
   border-color: var(--color-app-accent-hover);
+}
+
+/* ---------- Navigator popover ---------- */
+
+.navPop {
+  position: absolute;
+  bottom: calc(100% + var(--s3));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, 90vw);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--s4) var(--s5);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+/* Triangle tail pointing down at the trigger button. */
+.navPopTail {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 16px;
+  height: 16px;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.navPopHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--border);
+}
+
+.navPopTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg1);
+  line-height: 1.35;
+  padding-right: var(--s3);
+}
+
+.navPopClose {
+  background: transparent;
+  border: none;
+  color: var(--fg3);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.navPopClose:hover { color: var(--fg1); }
+
+.navPopLegend {
+  display: flex;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: var(--s2) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--fg2);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legendSwatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-white);
+  font-size: 10px;
+}
+
+.swatchCurrent {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+}
+
+.swatchUnanswered {
+  border-style: dashed;
+  background: var(--bg-white);
+}
+
+.swatchFlagged {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+}
+
+.navPopGrid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 520px) {
+  .navPopGrid { grid-template-columns: repeat(6, 1fr); }
+}
+
+.navBubble {
+  position: relative;
+  aspect-ratio: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.navBubbleAnswered {
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+}
+
+.navBubbleUnanswered {
+  background: var(--bg-white);
+  color: var(--color-app-accent);
+  border: 1.5px dashed var(--color-app-accent);
+}
+
+.navBubble:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Current position doesn't change the bubble fill — it stamps a
+   pin icon above it. Keeps the answered/unanswered state legible
+   on the current bubble. */
+.navBubbleCurrent .bubblePin {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--fg1);
+}
+
+.bubbleNum { line-height: 1; }
+
+.bubbleFlag {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 10px;
+}
+
+.reviewPageBtn {
+  align-self: center;
+  padding: 8px 22px;
+  background: transparent;
+  border: 1.5px solid var(--color-app-accent);
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-app-accent);
+  cursor: pointer;
+  margin-top: var(--s2);
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.reviewPageBtn:hover {
+  background: var(--color-app-accent);
+  color: #fff;
 }

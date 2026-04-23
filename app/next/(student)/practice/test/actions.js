@@ -64,6 +64,14 @@ export async function startTestAttempt(_prev, formData) {
   const testId = String(formData.get('testId') ?? '');
   if (!testId) return actionFail('testId required');
 
+  // Optional time-accommodation multiplier. Clamped to the same
+  // [1.0, 3.0] range the DB check enforces so a malformed client
+  // value doesn't reach the insert.
+  const rawMultiplier = Number(formData.get('timeMultiplier') ?? 1);
+  const timeMultiplier = Number.isFinite(rawMultiplier)
+    ? Math.max(1, Math.min(3, Math.round(rawMultiplier * 100) / 100))
+    : 1;
+
   // Rate limit: at most 10 test starts per hour. A student might
   // restart a test after a false start, but 10/hour is far above
   // any legitimate pattern.
@@ -111,6 +119,7 @@ export async function startTestAttempt(_prev, formData) {
       practice_test_id: testId,
       status: 'in_progress',
       source: 'app',
+      time_multiplier: timeMultiplier,
     })
     .select('id')
     .single();
@@ -158,7 +167,7 @@ export async function recordItemAnswer(_prev, formData) {
       id, finished_at, started_at,
       practice_test_attempt_id,
       practice_test_module:practice_test_modules_v2(time_limit_seconds),
-      practice_test_attempt:practice_test_attempts_v2(user_id, status)
+      practice_test_attempt:practice_test_attempts_v2(user_id, status, time_multiplier)
     `)
     .eq('id', moduleAttemptId)
     .maybeSingle();
@@ -169,9 +178,11 @@ export async function recordItemAnswer(_prev, formData) {
     return actionFail('Test is not in progress');
   }
 
-  // Timer check — reject writes past the grace period.
+  // Timer check — reject writes past the grace period. Applies the
+  // student's accommodation multiplier to the base time limit.
+  const mult = Number(moduleAttempt.practice_test_attempt.time_multiplier) || 1;
   const elapsed = (Date.now() - new Date(moduleAttempt.started_at).getTime()) / 1000;
-  const limit   = moduleAttempt.practice_test_module.time_limit_seconds + GRACE_SECONDS;
+  const limit   = moduleAttempt.practice_test_module.time_limit_seconds * mult + GRACE_SECONDS;
   if (elapsed > limit) return actionFail('Time is up for this module');
 
   // Look up the question via the module-item row. The join gives

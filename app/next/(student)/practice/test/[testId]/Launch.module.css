@@ -167,6 +167,41 @@
 
 .confirmRow input { accent-color: var(--color-app-accent); }
 
+.accomRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 14px;
+  color: var(--fg1);
+  cursor: pointer;
+}
+
+.accomRow input { accent-color: var(--color-app-accent); }
+
+.accomOptions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  margin: var(--s3) 0 0;
+  padding: var(--s3);
+  background: var(--color-slate-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.radioRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 13px;
+  color: var(--fg1);
+  cursor: pointer;
+}
+
+.radioRow input { accent-color: var(--color-app-accent); }
+
+.radioRow strong { color: var(--fg1); }
+
 .actions {
   display: flex;
   justify-content: space-between;
