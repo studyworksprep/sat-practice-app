@@ -1,0 +1,210 @@
+/* =============================================================
+   Practice-test runner — Bluebook-style full-screen shell.
+   Tokens from [data-tree="next"].
+
+   Layout: vertical stack taking the full viewport beneath the
+   AppNav. Top bar + main body + bottom bar, bottom sticks to the
+   bottom of the viewport so the Next button is always reachable.
+============================================================= */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 48px);
+  background: var(--bg);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+/* ---------- Top bar ---------- */
+
+.topBar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s3) var(--s5);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.topBarLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.topBarCenter { justify-self: center; }
+
+.topBarRight {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s2);
+}
+
+.testName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.moduleLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.timer {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg1);
+  background: var(--color-slate-100);
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std);
+}
+
+.timerWarn {
+  background: var(--color-diff-med-bg);
+  color: var(--color-diff-med-fg);
+}
+
+.timerCritical {
+  background: var(--color-diff-hard-bg);
+  color: var(--color-diff-hard-fg);
+}
+
+.markBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.markBtn:hover {
+  background: rgba(194, 153, 62, 0.06);
+  border-color: var(--color-amber);
+  color: var(--color-diff-med-fg);
+}
+
+.markBtnActive {
+  background: rgba(194, 153, 62, 0.14);
+  border-color: var(--color-amber);
+  color: var(--color-diff-med-fg);
+}
+
+.markIcon { color: var(--color-amber); }
+
+/* ---------- Main question area ---------- */
+
+.main {
+  flex: 1;
+  padding: var(--s5) var(--s5);
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.saveError {
+  color: var(--color-diff-hard-fg);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ---------- Bottom bar ---------- */
+
+.bottomBar {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) var(--s5);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -2px 8px rgba(16, 42, 67, 0.04);
+}
+
+.bottomBar > *:nth-child(1) { justify-self: flex-start; }
+.bottomBar > *:nth-child(2) { justify-self: center; }
+.bottomBar > *:nth-child(3) { justify-self: flex-end; }
+
+.reviewTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 8px 18px;
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--fg1);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.reviewTrigger:hover { border-color: var(--color-slate-400); }
+
+.navBtnSecondary,
+.navBtnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 22px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.navBtnSecondary {
+  background: var(--bg-white);
+  color: var(--fg1);
+  border: 1px solid var(--border-strong);
+}
+.navBtnSecondary:hover:not(:disabled) {
+  border-color: var(--color-slate-400);
+  background: var(--color-slate-50);
+}
+.navBtnSecondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.navBtnPrimary {
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+}
+.navBtnPrimary:hover {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}

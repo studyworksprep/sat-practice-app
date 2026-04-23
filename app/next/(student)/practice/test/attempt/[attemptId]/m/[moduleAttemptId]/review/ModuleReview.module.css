@@ -1,0 +1,298 @@
+/* =============================================================
+   Module-end review screen. Same shell vocabulary as the runner
+   (top bar + main + bottom bar). Tokens from [data-tree="next"].
+============================================================= */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 48px);
+  background: var(--bg);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+/* Top bar — mirrors the runner's top bar so the transition
+   between question + review feels seamless. */
+
+.topBar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s3) var(--s5);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.topBarLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.topBarCenter { justify-self: center; }
+.topBarRight  { display: flex; justify-content: flex-end; }
+
+.testName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg1);
+}
+
+.moduleLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.timer {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg1);
+  background: var(--color-slate-100);
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.timerWarn {
+  background: var(--color-diff-med-bg);
+  color: var(--color-diff-med-fg);
+}
+
+.timerCritical {
+  background: var(--color-diff-hard-bg);
+  color: var(--color-diff-hard-fg);
+}
+
+/* ---------- Main ---------- */
+
+.main {
+  flex: 1;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--s6) var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+}
+
+.header { padding: 0; }
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+
+.sub {
+  color: var(--fg2);
+  font-size: 14px;
+  margin: 0;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s3);
+}
+
+.summaryTile {
+  padding: var(--s4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryTileOk   { border-color: var(--color-diff-easy-bd);    background: var(--color-diff-easy-bg); }
+.summaryTileWarn { border-color: var(--color-diff-med-bd);     background: var(--color-diff-med-bg); }
+.summaryTileBad  { border-color: var(--color-diff-hard-bd);    background: var(--color-diff-hard-bg); }
+
+.summaryValue {
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+}
+
+.summaryTotal {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--fg3);
+}
+
+.summaryLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+/* ---------- Legend ---------- */
+
+.legend {
+  display: flex;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendSwatch {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  display: inline-block;
+}
+
+.swatchAnswered   { background: var(--color-app-accent-soft); border-color: var(--color-app-accent); }
+.swatchFlagged    { background: rgba(194, 153, 62, 0.14);     border-color: var(--color-amber); }
+.swatchUnanswered { background: var(--bg-white);              border-color: var(--border-strong); }
+
+/* ---------- Bubble grid ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: 8px;
+}
+
+.bubble {
+  position: relative;
+  aspect-ratio: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-white);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--fg1);
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-app-accent);
+}
+
+.bubbleAnswered {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
+.bubbleUnanswered {
+  background: var(--bg-white);
+  border-color: var(--border-strong);
+  color: var(--fg2);
+}
+
+.bubbleFlagged {
+  border-color: var(--color-amber);
+  background: rgba(194, 153, 62, 0.14);
+  color: var(--color-diff-med-fg);
+}
+
+.bubbleNum {
+  display: block;
+  line-height: 1;
+}
+
+.bubbleFlag {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 10px;
+  color: var(--color-amber);
+}
+
+/* ---------- Bottom bar ---------- */
+
+.bottomBar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) var(--s5);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -2px 8px rgba(16, 42, 67, 0.04);
+}
+
+.navBtnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 22px;
+  background: var(--bg-white);
+  color: var(--fg1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.navBtnSecondary:hover {
+  border-color: var(--color-slate-400);
+  background: var(--color-slate-50);
+}
+
+.submitBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.submitBtn:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--color-diff-hard-fg);
+  font-size: 13px;
+  margin: 0;
+}
