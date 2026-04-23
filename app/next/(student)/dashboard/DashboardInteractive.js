@@ -1,41 +1,30 @@
-// Student dashboard client island. See docs/architecture-plan.md
-// §3.4 and §3.9.
+// Student dashboard client island. Renders the design-kit
+// dashboard layout (banner, stats row, performance grid, recent
+// sessions + assignments) from server-side data passed in as
+// props. The only interactive bits are the target-score editor
+// and the optimistic update around it.
 //
-// This is the only 'use client' file in the dashboard. It receives
-// its initial data as props from the Server Component in page.js and
-// the Server Action references for mutations. No fetch, no useEffect,
-// no local state for anything that came from the server.
-//
-// Forms use React 19's useActionState to handle pending/error state
-// natively, and useOptimistic to show the user their edit instantly
-// while the Server Action round-trips.
+// Phase 2 §3.4 / §3.9 pattern: page.js loads, this island
+// renders. No fetch, no useEffect, no local copies of server data.
 
 'use client';
 
 import Link from 'next/link';
 import { useActionState, useOptimistic } from 'react';
-import { StatCard } from '@/lib/ui/StatCard';
-import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
-import { formatRelativeShort, formatShortDate } from '@/lib/formatters';
+import s from './Dashboard.module.css';
 
-/**
- * @param {object} props
- * @param {object} props.stats - server-rendered dashboard stats
- * @param {Function} props.updateTargetScoreAction - Server Action reference
- */
-export function DashboardInteractive({ stats, assignments = [], updateTargetScoreAction }) {
-  // useOptimistic: while the Server Action is in flight, show the
-  // new target immediately. React reconciles back to the real value
-  // from the server on resolution (or on error).
+export function DashboardInteractive({
+  stats,
+  performance,
+  recentSessions,
+  assignments,
+  resumeInfo,
+  updateTargetScoreAction,
+}) {
   const [optimisticTarget, setOptimisticTarget] = useOptimistic(
     stats.targetScore,
     (_current, next) => next,
   );
-
-  // useActionState: wraps the Server Action so we get pending + last
-  // result without any manual useState choreography. The wrapper
-  // function sets the optimistic value before awaiting the action so
-  // the input reflects the pending state even before the server responds.
   const [state, submitAction, isPending] = useActionState(
     async (prevState, formData) => {
       const next = Number(formData.get('target'));
@@ -45,100 +34,151 @@ export function DashboardInteractive({ stats, assignments = [], updateTargetScor
     null,
   );
 
-  const greeting = stats.firstName ? `Hi, ${stats.firstName}` : 'Welcome back';
+  const greeting = stats.firstName
+    ? `Welcome back, ${stats.firstName}.`
+    : 'Welcome back.';
   const daysToTest = daysUntil(stats.satTestDate);
 
   return (
-    <main style={{ maxWidth: 960, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' }}>
-      <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-        {greeting}
-      </h1>
-      <p style={{ color: '#4b5563', marginTop: 0 }}>
-        Welcome to the rebuild preview. Your dashboard is rendering from a
-        Next.js Server Component — no client-side fetching on load.
-      </p>
-
-      <section
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '1rem',
-          marginTop: '1.5rem',
-        }}
-      >
-        <StatCard label="Practice attempts" value={stats.totalAttempts} />
-        <StatCard
-          label="Correct"
-          value={`${stats.correctAttempts} (${stats.accuracy ?? '—'}${stats.accuracy != null ? '%' : ''})`}
-        />
-        <StatCard
-          label="Target SAT score"
-          value={optimisticTarget ?? 'Not set'}
-        />
-        <StatCard
-          label="Last activity"
-          value={formatRelativeShort(stats.lastActivityAt) ?? 'No activity yet'}
-        />
-        {daysToTest != null && (
-          <StatCard
-            label="Days to test date"
-            value={daysToTest < 0 ? 'Past' : daysToTest}
-          />
-        )}
-      </section>
-
-      <section style={{ marginTop: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem' }}>
-          <h2 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Assignments</h2>
-          <Link href="/assignments" style={{ fontSize: '0.875rem', color: '#2563eb' }}>
-            View all
+    <main className={s.main}>
+      {/* ---------- Banner ---------- */}
+      <section className={s.banner}>
+        <div className={s.bannerText}>
+          <div className={s.bannerGreeting}>{greeting}</div>
+          <div className={s.bannerSub}>
+            {bannerStatusLine(stats, daysToTest)}
+          </div>
+          <div className={s.bannerChips}>
+            <span className={`${s.bannerChip} ${s.bannerChipAccent}`}>
+              Target · {optimisticTarget ?? 'Not set'}
+            </span>
+            {stats.accuracy != null && (
+              <span className={s.bannerChip}>
+                Accuracy · {stats.accuracy}%
+              </span>
+            )}
+            {daysToTest != null && (
+              <span className={s.bannerChip}>
+                {daysToTest < 0 ? 'Test passed' : `${daysToTest} days to test day`}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className={s.bannerActions}>
+          {resumeInfo && (
+            <Link
+              href={`/practice/s/${resumeInfo.sessionId}/${resumeInfo.position}`}
+              className={s.btnSecondary}
+            >
+              Resume session
+            </Link>
+          )}
+          <Link href="/practice/start" className={s.btnPrimary}>
+            Start practice
           </Link>
         </div>
-        {assignments.length === 0 ? (
-          <p style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-            You&apos;re all caught up.
-          </p>
-        ) : (
-          <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0 0 0', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            {assignments.map((a) => (
-              <li key={a.id}>
-                <Link
-                  href={`/assignments/${a.id}`}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '0.75rem',
-                    padding: '0.5rem 0.75rem',
-                    border: '1px solid #e5e7eb', borderRadius: 6,
-                    textDecoration: 'none', color: '#111827',
-                  }}
-                >
-                  <AssignmentTypeBadge type={a.assignment_type} variant="compact" />
-                  <span style={{ flex: 1, minWidth: 0, fontSize: '0.9rem', fontWeight: 500 }}>
-                    {a.title}
-                  </span>
-                  {a.due_date && (
-                    <span style={{
-                      fontSize: '0.75rem',
-                      color: isOverdue(a.due_date) ? '#b91c1c' : '#6b7280',
-                    }}>
-                      Due {formatShortDate(a.due_date)}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
       </section>
 
-      <section style={{ marginTop: '2rem' }}>
-        <h2 style={{ fontSize: '1.125rem', fontWeight: 600 }}>
-          Update target score
-        </h2>
-        <form
-          action={submitAction}
-          style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', marginTop: '0.5rem' }}
-        >
-          <label htmlFor="target" style={{ display: 'none' }}>Target SAT score</label>
+      {/* ---------- Stats row ---------- */}
+      <section className={s.statsRow}>
+        <StatTile
+          value={formatInt(stats.totalAttempts)}
+          label="Questions attempted"
+        />
+        <StatTile
+          value={stats.accuracy == null ? '—' : `${stats.accuracy}%`}
+          label="Overall accuracy"
+        />
+        <StatTile
+          value={formatInt(stats.weekAttempts)}
+          label="This week"
+        />
+        <StatTile
+          value={daysToTest == null ? '—' : daysToTest < 0 ? 'Past' : daysToTest}
+          label={daysToTest == null
+            ? 'Set test date'
+            : daysToTest < 0 ? 'Test date'  : 'Days to test'}
+        />
+      </section>
+
+      {/* ---------- Performance grid ---------- */}
+      <section className={s.perfGrid}>
+        <PerformanceCard title="Math" tone="math" data={performance.math} />
+        <PerformanceCard title="Reading & Writing" tone="rw" data={performance.rw} />
+      </section>
+
+      {/* ---------- Bottom row: Recent sessions + Assignments ---------- */}
+      <section className={s.bottomRow}>
+        <div className={s.card}>
+          <div className={s.cardHeader}>
+            <div className={s.sectionLabel}>Recent practice sessions</div>
+            <Link href="/practice/history" className={s.cardHeaderLink}>
+              All sessions →
+            </Link>
+          </div>
+          {recentSessions.length === 0 ? (
+            <p className={s.empty}>
+              No practice sessions yet.{' '}
+              <Link href="/practice/start" className={s.inlineLink}>
+                Start one →
+              </Link>
+            </p>
+          ) : (
+            <div className={s.sessionList}>
+              {recentSessions.map((row) => (
+                <Link
+                  key={row.id}
+                  href={`/practice/review/${row.id}`}
+                  className={s.sessionRow}
+                >
+                  <div className={s.sessionRowLeft}>
+                    <div className={s.sessionRowDate}>
+                      {formatRowDate(row.createdAt)}
+                    </div>
+                    <div className={s.sessionRowMeta}>
+                      {row.total} question{row.total === 1 ? '' : 's'}
+                    </div>
+                  </div>
+                  <span className={s.sessionRowChevron} aria-hidden="true">→</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className={s.card}>
+          <div className={s.cardHeader}>
+            <div className={s.sectionLabel}>Assignments</div>
+            <Link href="/assignments" className={s.cardHeaderLink}>
+              View all →
+            </Link>
+          </div>
+          {assignments.length === 0 ? (
+            <p className={s.empty}>You&apos;re all caught up.</p>
+          ) : (
+            <ul className={s.assignmentList}>
+              {assignments.map((a) => (
+                <li key={a.id}>
+                  <Link href={`/assignments/${a.id}`} className={s.assignmentRow}>
+                    <span className={s.assignmentTitle}>{a.title}</span>
+                    {a.due_date && (
+                      <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
+                        Due {formatRowDate(a.due_date)}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+
+      {/* ---------- Target score editor ---------- */}
+      <section className={s.targetCard}>
+        <div className={s.sectionLabel}>Target SAT score</div>
+        <form action={submitAction} className={s.targetForm}>
+          <label htmlFor="target" className={s.srOnly}>Target SAT score</label>
           <input
             id="target"
             name="target"
@@ -148,49 +188,102 @@ export function DashboardInteractive({ stats, assignments = [], updateTargetScor
             step="10"
             defaultValue={optimisticTarget ?? ''}
             disabled={isPending}
-            style={{
-              padding: '0.5rem 0.75rem',
-              border: '1px solid #d1d5db',
-              borderRadius: 6,
-              width: 120,
-              fontSize: '1rem',
-            }}
+            className={s.targetInput}
           />
           <button
             type="submit"
             disabled={isPending}
-            style={{
-              padding: '0.5rem 1rem',
-              background: isPending ? '#9ca3af' : '#2563eb',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              fontSize: '0.95rem',
-              cursor: isPending ? 'wait' : 'pointer',
-            }}
+            className={s.targetBtn}
           >
             {isPending ? 'Saving…' : 'Save'}
           </button>
+          {state && !state.ok && (
+            <span role="alert" className={s.targetError}>{state.error}</span>
+          )}
+          {state && state.ok && (
+            <span className={s.targetOk}>Saved</span>
+          )}
         </form>
-        {state && !state.ok && (
-          <p role="alert" style={{ color: '#b91c1c', marginTop: '0.5rem', fontSize: '0.9rem' }}>
-            {state.error}
-          </p>
-        )}
-        {state && state.ok && (
-          <p style={{ color: '#15803d', marginTop: '0.5rem', fontSize: '0.9rem' }}>
-            Saved.
-          </p>
-        )}
       </section>
     </main>
   );
 }
 
+// ──────────────────────────────────────────────────────────────
+
+function StatTile({ value, label }) {
+  return (
+    <div className={s.statCard}>
+      <div className={s.statValue}>{value}</div>
+      <div className={s.statLabel}>{label}</div>
+    </div>
+  );
+}
+
+function PerformanceCard({ title, tone, data }) {
+  const toneCls = tone === 'rw' ? s.perfToneRw : s.perfToneMath;
+  const pct = data.pct;
+  const noData = data.domains.length === 0;
+  return (
+    <div className={`${s.perfCard} ${toneCls}`}>
+      <div className={s.perfCardHeader}>
+        <div className={s.perfTitle}>{title}</div>
+        <div className={s.perfPct}>
+          {pct == null ? '—' : `${pct}%`}
+        </div>
+      </div>
+      {noData ? (
+        <p className={s.empty}>
+          No attempts yet. Practice some {title.toLowerCase()} questions to see your accuracy here.
+        </p>
+      ) : (
+        <div className={s.domainList}>
+          {data.domains.map((d) => (
+            <DomainRow key={d.name} domain={d} tone={tone} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DomainRow({ domain, tone }) {
+  const pct = domain.total > 0 ? Math.round((domain.correct / domain.total) * 100) : 0;
+  const fillCls = tone === 'rw' ? s.barFillRw : s.barFillMath;
+  return (
+    <div className={s.domainRow}>
+      <div className={s.domainName}>{domain.name}</div>
+      <div className={s.domainCount}>{domain.total}</div>
+      <div className={s.domainBar}>
+        <div className={s.bar}>
+          <div className={fillCls} style={{ width: `${pct}%` }} />
+        </div>
+        <span className={s.barPct}>{pct}%</span>
+      </div>
+    </div>
+  );
+}
+
+function bannerStatusLine(stats, daysToTest) {
+  const bits = [];
+  if (stats.weekAttempts > 0) {
+    bits.push(`${stats.weekAttempts} attempt${stats.weekAttempts === 1 ? '' : 's'} this week`);
+  }
+  if (stats.totalAttempts > 0 && stats.accuracy != null) {
+    bits.push(`${stats.accuracy}% accuracy overall`);
+  }
+  if (bits.length === 0) {
+    return 'Start your first practice session to see your stats here.';
+  }
+  if (daysToTest != null && daysToTest >= 0 && daysToTest <= 60) {
+    bits.push(`${daysToTest} day${daysToTest === 1 ? '' : 's'} to test day`);
+  }
+  return bits.join(' · ');
+}
+
 function isOverdue(iso) {
   return Date.parse(iso) < Date.now();
 }
-
 
 function daysUntil(iso) {
   if (!iso) return null;
@@ -199,4 +292,23 @@ function daysUntil(iso) {
   const now = new Date();
   const ms = d.getTime() - now.getTime();
   return Math.round(ms / (1000 * 60 * 60 * 24));
+}
+
+function formatInt(n) {
+  if (n == null) return '0';
+  return n.toLocaleString();
+}
+
+function formatRowDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const isYesterday = d.toDateString() === yesterday.toDateString();
+  if (sameDay) return `Today, ${d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
+  if (isYesterday) return 'Yesterday';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }

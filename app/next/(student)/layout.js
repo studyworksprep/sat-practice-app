@@ -1,0 +1,65 @@
+// Student-tree shared shell. Mounts the AppNav at the top of every
+// student-facing page in the new tree (dashboard, practice runner,
+// review, history, assignments). See docs/architecture-plan.md
+// §3.6 — the new tree owns its own layouts independently of the
+// legacy tree, so adding a sticky nav here doesn't touch a single
+// legacy page.
+//
+// requireUser() runs once per request to populate the nav. It also
+// double-gates role: an admin or teacher who somehow lands on a
+// /next/(student) URL gets redirected to their own tree before
+// the nav even renders.
+
+import { redirect } from 'next/navigation';
+import { requireUser } from '@/lib/api/auth';
+import { AppNav } from '@/lib/ui/AppNav';
+
+const STUDENT_LINKS = [
+  { href: '/dashboard',         label: 'Dashboard' },
+  // Question Bank is the design-kit name for the
+  // filter / generate-session surface (our /practice/start). The
+  // custom matcher highlights the link for every /practice/*
+  // route — runner, history, review report — so a student deep
+  // inside a session still sees the Question Bank tab as active.
+  {
+    href: '/practice/start',
+    label: 'Question Bank',
+    match: (path) => path.startsWith('/practice'),
+  },
+  { href: '/assignments',       label: 'Assignments' },
+  { href: '/review',            label: 'Review' },
+];
+
+export default async function StudentTreeLayout({ children }) {
+  const { user, profile, supabase } = await requireUser();
+
+  // Bounce non-students out of this tree. Same gates the individual
+  // page.js files apply, but lifted here so the AppNav doesn't
+  // momentarily flash as a student before we redirect.
+  if (profile.role === 'admin') redirect('/admin');
+  if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
+  if (profile.role === 'practice') redirect('/subscribe');
+
+  // First name for the nav greeting. Best-effort; fall back to the
+  // raw email if the row is missing or the column was never set.
+  // The default profile fetch in requireUser doesn't include
+  // first_name to keep the auth payload minimal.
+  const { data: nameRow } = await supabase
+    .from('profiles')
+    .select('first_name')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const navUser = {
+    email: user.email,
+    role: profile.role ?? 'student',
+    firstName: nameRow?.first_name ?? null,
+  };
+
+  return (
+    <>
+      <AppNav user={navUser} links={STUDENT_LINKS} />
+      {children}
+    </>
+  );
+}
