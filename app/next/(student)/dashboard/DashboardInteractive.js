@@ -16,7 +16,7 @@ import s from './Dashboard.module.css';
 export function DashboardInteractive({
   stats,
   performance,
-  recentSessions,
+  recentlyFinished,
   assignments,
   resumeInfo,
   updateTargetScoreAction,
@@ -101,77 +101,96 @@ export function DashboardInteractive({
         />
       </section>
 
+      {/* ---------- Recently finished ---------- */}
+      <section className={s.card}>
+        <div className={s.cardHeader}>
+          <div>
+            <div className={s.sectionLabel}>Recently finished</div>
+            <div className={s.cardSub}>
+              The work you&apos;ve closed out most recently — click to
+              jump to its report.
+            </div>
+          </div>
+        </div>
+        {recentlyFinished.length === 0 ? (
+          <p className={s.empty}>
+            Nothing here yet.{' '}
+            <Link href="/practice/start" className={s.inlineLink}>
+              Start a practice session →
+            </Link>
+          </p>
+        ) : (
+          <ul className={s.finishedList}>
+            {recentlyFinished.map((row) => (
+              <li key={`${row.kind}-${row.id}`}>
+                <Link href={row.href} className={s.finishedRow}>
+                  <span className={`${s.typeBadge} ${s[`typeBadge_${row.kind}`]}`}>
+                    {kindLabel(row.kind)}
+                  </span>
+                  <div className={s.finishedMain}>
+                    <div className={s.finishedTitle}>
+                      {row.title}
+                      {row.subtitle && (
+                        <span className={s.finishedSubtitle}>
+                          {' '}· {row.subtitle}
+                        </span>
+                      )}
+                    </div>
+                    <div className={s.finishedMeta}>
+                      <span className={`${s.finishedMetric} ${s[`metricTone_${row.tone}`]}`}>
+                        {row.metric}
+                      </span>
+                      <span className={s.finishedDot}>·</span>
+                      <span className={s.finishedDate}>
+                        {formatRowDate(row.finishedAt)}
+                      </span>
+                    </div>
+                  </div>
+                  <span className={s.finishedChevron} aria-hidden="true">→</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       {/* ---------- Performance grid ---------- */}
       <section className={s.perfGrid}>
         <PerformanceCard title="Math" tone="math" data={performance.math} />
         <PerformanceCard title="Reading & Writing" tone="rw" data={performance.rw} />
       </section>
 
-      {/* ---------- Bottom row: Recent sessions + Assignments ---------- */}
-      <section className={s.bottomRow}>
-        <div className={s.card}>
-          <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>Recent practice sessions</div>
-            <Link href="/practice/history" className={s.cardHeaderLink}>
-              All sessions →
-            </Link>
-          </div>
-          {recentSessions.length === 0 ? (
-            <p className={s.empty}>
-              No practice sessions yet.{' '}
-              <Link href="/practice/start" className={s.inlineLink}>
-                Start one →
-              </Link>
-            </p>
-          ) : (
-            <div className={s.sessionList}>
-              {recentSessions.map((row) => (
-                <Link
-                  key={row.id}
-                  href={`/practice/review/${row.id}`}
-                  className={s.sessionRow}
-                >
-                  <div className={s.sessionRowLeft}>
-                    <div className={s.sessionRowDate}>
-                      {formatRowDate(row.createdAt)}
-                    </div>
-                    <div className={s.sessionRowMeta}>
-                      {row.total} question{row.total === 1 ? '' : 's'}
-                    </div>
-                  </div>
-                  <span className={s.sessionRowChevron} aria-hidden="true">→</span>
-                </Link>
-              ))}
+      {/* ---------- Pending assignments ---------- */}
+      <section className={s.card}>
+        <div className={s.cardHeader}>
+          <div>
+            <div className={s.sectionLabel}>Pending assignments</div>
+            <div className={s.cardSub}>
+              {assignments.length === 0
+                ? "You're all caught up."
+                : 'What your tutor has assigned you, soonest first.'}
             </div>
-          )}
-        </div>
-
-        <div className={s.card}>
-          <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>Assignments</div>
-            <Link href="/assignments" className={s.cardHeaderLink}>
-              View all →
-            </Link>
           </div>
-          {assignments.length === 0 ? (
-            <p className={s.empty}>You&apos;re all caught up.</p>
-          ) : (
-            <ul className={s.assignmentList}>
-              {assignments.map((a) => (
-                <li key={a.id}>
-                  <Link href={`/assignments/${a.id}`} className={s.assignmentRow}>
-                    <span className={s.assignmentTitle}>{a.title}</span>
-                    {a.due_date && (
-                      <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
-                        Due {formatRowDate(a.due_date)}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          <Link href="/assignments" className={s.cardHeaderLink}>
+            View all →
+          </Link>
         </div>
+        {assignments.length > 0 && (
+          <ul className={s.assignmentList}>
+            {assignments.map((a) => (
+              <li key={a.id}>
+                <Link href={`/assignments/${a.id}`} className={s.assignmentRow}>
+                  <span className={s.assignmentTitle}>{a.title}</span>
+                  {a.due_date && (
+                    <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
+                      Due {formatRowDate(a.due_date)}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {/* ---------- Target score editor ---------- */}
@@ -262,6 +281,13 @@ function DomainRow({ domain, tone }) {
       </div>
     </div>
   );
+}
+
+function kindLabel(kind) {
+  if (kind === 'assignment') return 'Assignment';
+  if (kind === 'test') return 'Practice test';
+  if (kind === 'session') return 'Practice';
+  return kind;
 }
 
 function bannerStatusLine(stats, daysToTest) {
