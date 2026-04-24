@@ -1,0 +1,88 @@
+/* =============================================================
+   TestLauncher — dropdown + accommodations + Launch link.
+   Tokens from [data-tree="next"]. Visual vocabulary matches the
+   student practice-start page.
+============================================================= */
+
+.launcher {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s3);
+}
+
+.label {
+  flex: 1 1 320px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--fg1);
+  background: var(--bg-white);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--fg2);
+  padding-bottom: 8px;
+}
+
+.multiplier {
+  padding: 7px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--fg1);
+  background: var(--bg-white);
+  margin-bottom: 2px;
+}
+
+.launchBtn {
+  padding: 10px 20px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  background: var(--color-app-accent);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.launchBtn:hover {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+  color: #fff;
+}
+.launchBtn[aria-disabled="true"] {
+  opacity: 0.55;
+  pointer-events: none;
+}
