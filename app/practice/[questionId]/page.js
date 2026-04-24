@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Script from 'next/script';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -94,9 +94,13 @@ function formatCorrectText(ct) {
  * - Creates a single GraphingCalculator instance (no re-init on re-render).
  * - Persists calculator state across minimize/expand and across resizes.
  * - Uses ResizeObserver + a rAF "safeResize" to stabilize post-drag layout commits.
- * - Stores state in localStorage (per-question key).
+ * - When `disableLocalStorage` is true (e.g. students), the per-question
+ *   calc state is NOT read from or written to localStorage — the
+ *   calculator opens fresh every time. On mount we also clear any
+ *   residual key so a student who previously played with the calc
+ *   stops seeing yesterday's graph.
  */
-function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
+function DesmosPanel({ isOpen, storageKey, calcInstanceRef, disableLocalStorage = false }) {
   const hostRef = useRef(null);
   const calcRef = useRef(null);
   const savedStateRef = useRef(null);
@@ -111,6 +115,15 @@ function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Desmos) setReady(true);
   }, []);
+
+  // Clean up any pre-existing key for this question when the student
+  // lands here. One-time per mount; safe no-op on subsequent resizes.
+  useEffect(() => {
+    if (!disableLocalStorage) return;
+    if (!storageKey) return;
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try { window.localStorage.removeItem(storageKey); } catch {}
+  }, [disableLocalStorage, storageKey]);
 
   const safeResize = () => {
     if (!calcRef.current) return;
@@ -127,7 +140,7 @@ function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
     try {
       const st = calcRef.current.getState();
       savedStateRef.current = st;
-      if (storageKey && typeof window !== 'undefined' && window.localStorage) {
+      if (!disableLocalStorage && storageKey && typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.setItem(storageKey, JSON.stringify(st));
       }
     } catch {}
@@ -139,7 +152,7 @@ function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
     let st = savedStateRef.current;
 
     try {
-      if (!st && storageKey && typeof window !== 'undefined' && window.localStorage) {
+      if (!st && !disableLocalStorage && storageKey && typeof window !== 'undefined' && window.localStorage) {
         const raw = window.localStorage.getItem(storageKey);
         if (raw) st = JSON.parse(raw);
       }
@@ -397,6 +410,23 @@ export default function PracticeQuestionPage() {
   const inSessionContext = sessionParams.get('session') === '1';
   const sidParam = searchParams.get('sid') || null;
   const isTeacherMode = searchParams.get('tm') === '1';
+
+  // Exit Teacher Mode in-flow: strip the tm=1 URL param and also
+  // clear the sat_teacher_mode localStorage flag the question-bank
+  // list page reads so the toggle there reflects the change next
+  // time. Kept as a replace (not push) so Back still works.
+  const exitTeacherMode = useCallback(() => {
+    if (!isTeacherMode) return;
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('sat_teacher_mode', '0');
+      }
+    } catch {}
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete('tm');
+    const qs = next.toString();
+    router.replace(qs ? `?${qs}` : '?', { scroll: false });
+  }, [isTeacherMode, router, searchParams]);
 
   // Overlay for questions answered/marked in the current session, keyed by question_id
   // Persisted to sessionStorage so badges survive page remounts on navigation
@@ -1291,7 +1321,15 @@ export default function PracticeQuestionPage() {
 
       <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {isTeacherMode ? (
-          <span className="pill" style={{ background: '#7c3aed', color: '#fff', fontWeight: 700 }}>Teacher Mode</span>
+          <button
+            type="button"
+            className="pill"
+            onClick={exitTeacherMode}
+            title="Click to switch to Training Mode — attempts will be recorded"
+            style={{ background: '#7c3aed', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }}
+          >
+            Teacher Mode · exit →
+          </button>
         ) : (
           <span className="pill">
             <span className="muted">Done</span>{' '}
@@ -1789,9 +1827,24 @@ export default function PracticeQuestionPage() {
           </button>
         </div>
 
-        {/* Keep mounted; hide visually when minimized */}
+        {/* Keep mounted; hide visually when minimized.
+            Students / practice accounts get a fresh calculator on every
+            visit — no cross-session residue from localStorage. We only
+            gate when we *know* the role isn't privileged; while userRole
+            is still null we keep persistence on to avoid clobbering a
+            teacher's work before the role fetch resolves. */}
         <div className={`calcBody ${calcMinimized ? 'hidden' : ''}`}>
-          <DesmosPanel isOpen={!calcMinimized} storageKey={questionId ? `desmos:${questionId}` : 'desmos:unknown'} calcInstanceRef={calcInstanceRef} />
+          <DesmosPanel
+            isOpen={!calcMinimized}
+            storageKey={questionId ? `desmos:${questionId}` : 'desmos:unknown'}
+            calcInstanceRef={calcInstanceRef}
+            disableLocalStorage={
+              userRole != null &&
+              userRole !== 'teacher' &&
+              userRole !== 'manager' &&
+              userRole !== 'admin'
+            }
+          />
         </div>
         {calcMinimized ? <div className="calcMinBody" /> : null}
       </aside>
