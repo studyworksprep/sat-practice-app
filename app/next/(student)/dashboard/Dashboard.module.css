@@ -1,0 +1,515 @@
+/* =============================================================
+   Student dashboard. Tokens from [data-tree="next"].
+
+   Layout: vertical stack inside .main —
+     - banner (greeting + chips + CTAs)
+     - statsRow (4 stat cards)
+     - perfGrid (Math + R&W performance cards)
+     - bottomRow (Recent sessions + Assignments)
+     - targetCard (target-score editor)
+============================================================= */
+
+.main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Banner ---------- */
+
+.banner {
+  background: linear-gradient(135deg, #fff 0%, #f7f4ec 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s5);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.banner::before {
+  content: "";
+  position: absolute;
+  left: 28px;
+  top: 26px;
+  width: 40px;
+  height: 3px;
+  background: var(--color-gold-500);
+  border-radius: 2px;
+}
+
+.bannerText {
+  display: grid;
+  gap: 6px;
+  padding-top: 14px;
+  min-width: 0;
+}
+
+.bannerGreeting {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--color-navy-900);
+}
+
+.bannerSub {
+  color: var(--fg3);
+  font-size: 13px;
+}
+
+.bannerChips {
+  display: flex;
+  gap: var(--s2);
+  margin-top: var(--s2);
+  flex-wrap: wrap;
+}
+
+.bannerChip {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg2);
+}
+
+.bannerChipAccent {
+  background: var(--color-app-highlight-soft);
+  border-color: transparent;
+  color: var(--color-gold-700);
+}
+
+.bannerActions {
+  display: flex;
+  gap: var(--s2);
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Buttons used in the banner. Reused below as well. */
+.btnPrimary,
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+  border: 1px solid transparent;
+}
+
+.btnPrimary {
+  background: var(--color-app-accent);
+  color: #fff;
+  border-color: var(--color-app-accent);
+}
+.btnPrimary:hover {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+
+.btnSecondary {
+  background: var(--bg-white);
+  color: var(--fg1);
+  border-color: var(--border-strong);
+}
+.btnSecondary:hover {
+  background: var(--color-slate-50);
+  border-color: var(--border-strong);
+}
+
+/* ---------- Stats row ---------- */
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s3);
+}
+
+@media (max-width: 720px) {
+  .statsRow { grid-template-columns: repeat(2, 1fr); }
+}
+
+.statCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statValue {
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- Performance grid ---------- */
+
+.perfGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+}
+
+@media (max-width: 820px) {
+  .perfGrid { grid-template-columns: 1fr; }
+}
+
+.perfCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+
+.perfCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s3);
+}
+
+.perfTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg1);
+  letter-spacing: -0.003em;
+}
+
+.perfPct {
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+/* Section tints — Math = blue, RW = orange. */
+.perfToneMath .perfPct  { color: #2563eb; }
+.perfToneRw   .perfPct  { color: #ea580c; }
+.perfToneMath .barFillMath { background: #2563eb; }
+.perfToneRw   .barFillRw   { background: #ea580c; }
+
+.domainList {
+  display: grid;
+  gap: var(--s2);
+}
+
+.domainRow {
+  display: grid;
+  grid-template-columns: 1fr auto 160px;
+  align-items: center;
+  gap: var(--s3);
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.domainRow:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.domainName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.domainCount {
+  font-size: 11px;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+}
+
+.domainBar {
+  display: grid;
+  grid-template-columns: 1fr 36px;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.bar {
+  height: 6px;
+  background: var(--color-slate-200);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.barFillMath,
+.barFillRw {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-app-accent);
+  transition: width var(--dur-slow) var(--ease-std);
+}
+
+.barPct {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg1);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Bottom row ---------- */
+
+.bottomRow {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--s3);
+}
+
+@media (max-width: 820px) {
+  .bottomRow { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--s3);
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.cardHeaderLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+}
+
+.cardHeaderLink:hover { text-decoration: underline; }
+
+.empty {
+  color: var(--fg3);
+  font-size: 13px;
+  margin: 0;
+}
+
+.inlineLink {
+  color: var(--color-app-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.inlineLink:hover { text-decoration: underline; }
+
+/* Recent practice session list */
+
+.sessionList {
+  display: grid;
+  gap: 6px;
+}
+
+.sessionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  color: inherit;
+  text-decoration: none;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.sessionRow:hover {
+  border-color: var(--border);
+  background: var(--bg-white);
+  color: inherit;
+}
+
+.sessionRowLeft {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sessionRowDate {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.sessionRowMeta {
+  font-size: 11px;
+  color: var(--fg3);
+}
+
+.sessionRowChevron {
+  color: var(--fg3);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Assignment list */
+
+.assignmentList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.assignmentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+
+.assignmentRow:hover { background: var(--color-slate-50); }
+
+.assignmentTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.due {
+  font-size: 11px;
+  color: var(--fg3);
+}
+
+.dueOverdue {
+  font-size: 11px;
+  color: var(--color-diff-hard-fg);
+  font-weight: 700;
+}
+
+/* ---------- Target score editor ---------- */
+
+.targetCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 20px;
+}
+
+.targetForm {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-top: var(--s2);
+  flex-wrap: wrap;
+}
+
+.targetInput {
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-mono);
+  width: 100px;
+  color: var(--fg1);
+  background: var(--bg-white);
+}
+
+.targetInput:focus-visible {
+  outline: none;
+  border-color: var(--color-app-accent);
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.targetBtn {
+  padding: 6px 14px;
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.targetBtn:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+
+.targetBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.targetError {
+  color: var(--color-diff-hard-fg);
+  font-size: 12px;
+}
+
+.targetOk {
+  color: var(--color-diff-easy-fg);
+  font-size: 12px;
+}

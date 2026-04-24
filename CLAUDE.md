@@ -47,6 +47,23 @@ When in doubt, stop and ask. The cost of a pause-and-confirm is
 seconds; the cost of a silent violation that ends up in prod is
 measured in users.
 
+## TypeScript policy
+
+The new tree is in incremental TypeScript adoption. Rules:
+
+- New files default to `.ts` / `.tsx`. Existing `.js` files keep
+  working untouched (the tsconfig has `allowJs: true`,
+  `checkJs: false`).
+- Touched files don't have to convert — only when you're already
+  doing a substantial refactor of one.
+- Shared types live in `lib/types/`. Import via the barrel:
+  `import type { Row, ActionResult, SubjectCode } from '@/lib/types'`.
+- Database row types come from `lib/types/database.ts`, which is
+  auto-generated. Regenerate after every migration via the
+  Supabase MCP `generate_typescript_types` tool (or
+  `supabase gen types typescript`).
+- `npm run typecheck` runs `tsc --noEmit`; CI should run it too.
+
 ## Further reading
 
 - `docs/architecture-plan.md` — master plan (§3.8 visibility, §4 phases)

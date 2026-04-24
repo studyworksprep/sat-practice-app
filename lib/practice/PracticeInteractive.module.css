@@ -1,0 +1,159 @@
+/* =============================================================
+   PracticeInteractive — session chrome around QuestionRenderer.
+   Header (questionTopBar pattern), navigation buttons, layout
+   container. Tokens resolved from [data-tree="next"].
+
+   Full-width layout matches the practice-test runner: no
+   max-width on the main, no margin, flat edge-to-edge top bar,
+   comfortable padding inside the form. Reading passages + math
+   with Desmos both get the room they want on wide screens; the
+   sticky QuestionMap footer lives under .article.
+============================================================= */
+
+.main {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  color: var(--fg1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- questionTopBar ---------- */
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s3) var(--s5);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.progress {
+  font-size: 13px;
+  color: var(--fg1);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.meta {
+  font-size: 11px;
+  color: var(--fg3);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerCenter { justify-self: center; }
+.headerRight  { display: flex; gap: var(--s2); justify-content: flex-end; }
+
+/* Center-slot progress pill — a visual anchor between the left-
+   aligned metadata and the right-aligned tool buttons. Matches
+   the design-kit .qmapTrigger look but is non-interactive for
+   now; the QuestionMap footer already handles click navigation
+   on wide viewports and the narrow-viewport Map button mirrors
+   it there. */
+.progressPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 6px 14px;
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pill-shaped nav / tool button, matching the design-kit's
+   markReviewTopBtn + qmapTrigger vocabulary. */
+.navBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.navBtn:hover:not(:disabled) {
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+  background: var(--color-app-accent-soft);
+}
+
+.navBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Compact icon-only variant used for Prev / Next. The full pill
+   buttons look heavy when they only carry an arrow, so a square
+   pill with tighter padding keeps the right cluster breathing. */
+.navBtnIcon {
+  padding: 8px 10px;
+  min-width: 36px;
+}
+
+/* Toggled-on state for the calculator button. Uses the softer
+   app-accent tint per the design kit. */
+.navBtnActive {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+.navBtnActive:hover:not(:disabled) {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
+/* ---------- Form / error ---------- */
+
+.article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  padding: var(--s5) var(--s6);
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Submit / error / next-question cluster rendered inside the
+   QuestionRenderer via the controlsNode slot. Sits at the bottom
+   of the right pane in the two-column layout so the action lives
+   with the answer choices rather than below the whole two-pane
+   card. */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  align-items: flex-start;
+  margin-top: var(--s2);
+}
