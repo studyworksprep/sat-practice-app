@@ -1,16 +1,20 @@
-// Teacher's assignments list. Shows every assignment the caller is
-// teacher of (RLS filters via can_view), with student progress
-// aggregates: how many assigned, how many completed.
+// Tutor → assignments list. Same design-kit vocabulary as the
+// student /assignments hub: eyebrow + serif H1, stats strip,
+// active section, archived section.
 //
-// Separate from the student panel: that page shows a student what
-// they're on; this page shows a teacher what they've assigned.
+// Per-row aggregates come from the assignment_students_v2 join
+// (one query, fanned out in memory). The "average accuracy"
+// stat across active assignments is computed from a single
+// attempts read scoped to active question-type assignments —
+// that lets the tutor see at a glance how the cohort is doing
+// on what they've assigned.
 
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
-import { Button } from '@/lib/ui/Button';
 import { formatShortDate } from '@/lib/formatters';
+import s from './AssignmentsList.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,9 +30,7 @@ export default async function TutorAssignmentsPage() {
 
   // Teacher's own rows. Managers/admins see these too via can_view
   // on the teacher_id; this page focuses on what the caller has
-  // created (teacher_id = auth.uid()). For managers wanting to see
-  // their tutors' assignments, a /tutor/team-assignments could be
-  // added later — out of scope here.
+  // created.
   const { data: rows } = await supabase
     .from('assignments_v2')
     .select(`
@@ -41,11 +43,11 @@ export default async function TutorAssignmentsPage() {
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
-  const assignments = (rows ?? []).filter((a) => !a.archived_at);
-  const archived = (rows ?? []).filter((a) => a.archived_at);
+  const allAssignments = rows ?? [];
+  const active = allAssignments.filter((a) => !a.archived_at);
+  const archived = allAssignments.filter((a) => a.archived_at);
 
-  // Fetch the student-progress aggregates in one query, then fan out.
-  const assignmentIds = (rows ?? []).map((a) => a.id);
+  const assignmentIds = allAssignments.map((a) => a.id);
   const { data: junctionRows } = assignmentIds.length
     ? await supabase
         .from('assignment_students_v2')
@@ -55,89 +57,196 @@ export default async function TutorAssignmentsPage() {
 
   const statsByAssignment = new Map();
   for (const r of junctionRows ?? []) {
-    const s = statsByAssignment.get(r.assignment_id) ?? { total: 0, completed: 0 };
-    s.total += 1;
-    if (r.completed_at) s.completed += 1;
-    statsByAssignment.set(r.assignment_id, s);
+    const t = statsByAssignment.get(r.assignment_id) ?? { total: 0, completed: 0 };
+    t.total += 1;
+    if (r.completed_at) t.completed += 1;
+    statsByAssignment.set(r.assignment_id, t);
   }
 
+  // Cohort-wide stats — flat numbers across the active set.
+  const totalAssignedRows = (junctionRows ?? []).filter((r) =>
+    active.some((a) => a.id === r.assignment_id),
+  );
+  const totalAssignments = totalAssignedRows.length;
+  const totalCompletions = totalAssignedRows.filter((r) => r.completed_at).length;
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+  const overdueCount = active.filter(
+    (a) => a.due_date && Date.parse(a.due_date) < nowMs,
+  ).length;
+
   return (
-    <main style={{ maxWidth: 1100, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-            Your assignments
-          </h1>
-          <p style={{ color: '#4b5563', marginTop: 0 }}>
-            {assignments.length} active, {archived.length} archived
+    <main className={s.container}>
+      <header className={s.header}>
+        <div className={s.headerLeft}>
+          <div className={s.eyebrow}>Tutor · Assignments</div>
+          <h1 className={s.h1}>Your assignments</h1>
+          <p className={s.sub}>
+            Everything you&apos;ve assigned, with progress across each
+            student. Click an assignment for the per-student detail.
           </p>
         </div>
-        <Button href="/tutor/assignments/new">+ New assignment</Button>
+        <Link href="/tutor/assignments/new" className={s.newBtn}>
+          + New assignment
+        </Link>
+      </header>
+
+      <div className={s.statsStrip}>
+        <StatTile
+          label="Active assignments"
+          value={active.length}
+          sub={archived.length > 0 ? `${archived.length} archived` : 'Nothing archived'}
+        />
+        <StatTile
+          label="Student assignments"
+          value={totalAssignments}
+          sub={
+            totalAssignments === 0
+              ? 'No active assignments yet'
+              : `Across ${active.length} active assignment${active.length === 1 ? '' : 's'}`
+          }
+        />
+        <StatTile
+          label="Completed"
+          value={totalCompletions}
+          sub={
+            totalAssignments === 0
+              ? 'Waiting on first completion'
+              : `${Math.round((totalCompletions / totalAssignments) * 100)}% of assigned`
+          }
+          tone="good"
+        />
+        <StatTile
+          label="Overdue"
+          value={overdueCount}
+          sub={overdueCount === 0 ? 'Cohort is on schedule' : 'Active, past due date'}
+          tone={overdueCount > 0 ? 'warn' : 'neutral'}
+        />
       </div>
 
-      <section style={{ marginTop: '1.5rem' }}>
-        <h2 style={S.h2}>Active</h2>
-        <AssignmentList rows={assignments} stats={statsByAssignment} />
+      <section className={s.section}>
+        <div className={s.sectionHead}>
+          <h2 className={s.sectionTitle}>Active</h2>
+          <span className={s.sectionCount}>
+            {active.length} open
+          </span>
+        </div>
+        {active.length === 0 ? (
+          <EmptyCard
+            title="Nothing active right now."
+            body="Click + New assignment to send your first one."
+          />
+        ) : (
+          <ul className={s.cardList}>
+            {active.map((a) => (
+              <li key={a.id}>
+                <AssignmentRow
+                  row={a}
+                  stats={statsByAssignment.get(a.id) ?? { total: 0, completed: 0 }}
+                  nowMs={nowMs}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {archived.length > 0 && (
-        <section style={{ marginTop: '2rem' }}>
-          <h2 style={S.h2}>Archived</h2>
-          <AssignmentList rows={archived} stats={statsByAssignment} />
+        <section className={s.section}>
+          <div className={s.sectionHead}>
+            <h2 className={s.sectionTitle}>Archived</h2>
+            <span className={s.sectionCount}>
+              {archived.length} stored
+            </span>
+          </div>
+          <ul className={s.cardList}>
+            {archived.map((a) => (
+              <li key={a.id}>
+                <AssignmentRow
+                  row={a}
+                  stats={statsByAssignment.get(a.id) ?? { total: 0, completed: 0 }}
+                  nowMs={nowMs}
+                  archived
+                />
+              </li>
+            ))}
+          </ul>
         </section>
       )}
     </main>
   );
 }
 
-function AssignmentList({ rows, stats }) {
-  if (rows.length === 0) {
-    return <p style={{ color: '#9ca3af', fontStyle: 'italic' }}>None yet.</p>;
-  }
+// ──────────────────────────────────────────────────────────────
+
+function StatTile({ label, value, sub, tone = 'neutral' }) {
   return (
-    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-      {rows.map((a) => {
-        const s = stats.get(a.id) ?? { total: 0, completed: 0 };
-        const title = a.title
-          ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
-          ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
-          ?? 'Assignment';
-        return (
-          <li key={a.id}>
-            <Link
-              href={`/tutor/assignments/${a.id}`}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '0.75rem',
-                padding: '0.75rem 1rem',
-                border: '1px solid #e5e7eb', borderRadius: 8,
-                textDecoration: 'none', color: '#111827',
-              }}
-            >
-              <AssignmentTypeBadge type={a.assignment_type} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 600 }}>{title}</div>
-                {a.description && (
-                  <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.125rem' }}>
-                    {a.description}
-                  </div>
-                )}
-              </div>
-              <div style={{ fontSize: '0.85rem', color: '#6b7280', whiteSpace: 'nowrap' }}>
-                {s.completed}/{s.total} completed
-              </div>
-              {a.due_date && (
-                <div style={{ fontSize: '0.85rem', color: '#6b7280', whiteSpace: 'nowrap' }}>
-                  Due {formatShortDate(a.due_date)}
-                </div>
-              )}
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+    <div className={`${s.statTile} ${s[`statTile_${tone}`] ?? ''}`}>
+      <div className={s.statLabel}>{label}</div>
+      <div className={s.statValue}>{value}</div>
+      {sub && <div className={s.statSub}>{sub}</div>}
+    </div>
   );
 }
 
-const S = {
-  h2: { fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.75rem' },
-};
+function EmptyCard({ title, body }) {
+  return (
+    <div className={s.emptyCard}>
+      <div className={s.emptyTitle}>{title}</div>
+      {body && <div className={s.emptyBody}>{body}</div>}
+    </div>
+  );
+}
+
+function AssignmentRow({ row, stats, nowMs, archived = false }) {
+  const title = row.title
+    ?? (row.assignment_type === 'lesson' ? row.lesson?.title : null)
+    ?? (row.assignment_type === 'practice_test' ? row.practice_test?.name : null)
+    ?? 'Assignment';
+  const subtitle = displaySubtitle(row);
+  const completionPct =
+    stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : null;
+  const isOverdue =
+    !archived && row.due_date && Date.parse(row.due_date) < nowMs;
+
+  return (
+    <Link
+      href={`/tutor/assignments/${row.id}`}
+      className={`${s.assignCard} ${archived ? s.assignCardArchived : ''}`}
+    >
+      <div className={s.assignTop}>
+        <AssignmentTypeBadge type={row.assignment_type} />
+        <div className={s.assignTitle}>{title}</div>
+        {row.due_date && (
+          <span className={isOverdue ? s.dueOverdue : s.dueOn}>
+            {isOverdue ? 'Overdue' : 'Due'} · {formatShortDate(row.due_date)}
+          </span>
+        )}
+      </div>
+      {subtitle && <div className={s.assignSub}>{subtitle}</div>}
+      <div className={s.assignFooter}>
+        <span className={s.completionText}>
+          <strong>{stats.completed}</strong> of <strong>{stats.total}</strong> students completed
+          {completionPct != null && ` · ${completionPct}%`}
+        </span>
+        {stats.total > 0 && (
+          <div className={s.completionBar}>
+            <div
+              className={s.completionBarFill}
+              style={{ width: `${completionPct ?? 0}%` }}
+            />
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+function displaySubtitle(row) {
+  if (row.description) return row.description;
+  if (row.assignment_type === 'questions') {
+    const n = Array.isArray(row.question_ids) ? row.question_ids.length : 0;
+    return n === 0 ? null : `${n} question${n === 1 ? '' : 's'}`;
+  }
+  return null;
+}

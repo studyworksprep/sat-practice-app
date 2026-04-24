@@ -1,17 +1,20 @@
-// Teacher-facing assignment detail. Shows the assignment's metadata,
-// the list of enrolled students, and each student's progress (attempts
-// count, accuracy, completion state).
+// Tutor → assignment detail. Shows the assignment's metadata,
+// the list of enrolled students, and each student's progress
+// (attempts done, accuracy, completion state).
 //
-// Complements the student's /assignments/[id] page. RLS on
-// assignments_v2 allows SELECT via can_view(teacher_id), so the
-// caller reads the row as themselves — no service-role bypass.
+// Same design-kit vocabulary as the rest of the new tree:
+// breadcrumb + eyebrow + serif H1, stats strip, content card.
+// Per-student progress is computed from the v2 attempts table
+// (latest attempt per question wins) — we do not read v1
+// question_status here, since the new submit path doesn't
+// maintain it.
 
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { StatCard } from '@/lib/ui/StatCard';
-import { Table, Th, Td } from '@/lib/ui/Table';
+import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate } from '@/lib/formatters';
+import s from './AssignmentDetail.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,9 +53,10 @@ export default async function TutorAssignmentDetailPage({ params }) {
   if (!assignment || assignment.deleted_at) notFound();
 
   // For 'questions' assignments, compute per-student progress from
-  // the attempts table directly (not question_status, which the new
-  // tree doesn't reliably maintain). Reduce client-side: per (user,
-  // question) pair, the most recent attempt wins for the correct flag.
+  // the v2 attempts table directly (not question_status, which the
+  // new tree doesn't maintain). Latest attempt per (user, question)
+  // wins for the correctness flag — matches the runner's review
+  // behavior. Also feed the cohort-wide accuracy stat at the top.
   const questionIds =
     assignment.assignment_type === 'questions' && Array.isArray(assignment.question_ids)
       ? assignment.question_ids
@@ -72,14 +76,18 @@ export default async function TutorAssignmentDetailPage({ params }) {
 
   const statusByStudent = new Map();
   const seenPairs = new Set();
+  let cohortDone = 0;
+  let cohortCorrect = 0;
   for (const r of attemptRows) {
     const key = `${r.user_id}::${r.question_id}`;
-    if (seenPairs.has(key)) continue; // older attempts for same pair
+    if (seenPairs.has(key)) continue;
     seenPairs.add(key);
-    const s = statusByStudent.get(r.user_id) ?? { done: 0, correct: 0 };
-    s.done += 1;
-    if (r.is_correct) s.correct += 1;
-    statusByStudent.set(r.user_id, s);
+    const t = statusByStudent.get(r.user_id) ?? { done: 0, correct: 0 };
+    t.done += 1;
+    if (r.is_correct) t.correct += 1;
+    statusByStudent.set(r.user_id, t);
+    cohortDone += 1;
+    if (r.is_correct) cohortCorrect += 1;
   }
 
   const students = (junctionRows ?? []).map((r) => {
@@ -105,97 +113,196 @@ export default async function TutorAssignmentDetailPage({ params }) {
 
   const totalQuestions = questionIds.length;
   const completedCount = students.filter((s) => s.completed_at).length;
+  const cohortAccuracyPct =
+    cohortDone > 0 ? Math.round((cohortCorrect / cohortDone) * 100) : null;
+  const completionPct =
+    students.length > 0
+      ? Math.round((completedCount / students.length) * 100)
+      : null;
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+  const isOverdue =
+    assignment.due_date && Date.parse(assignment.due_date) < nowMs;
 
   return (
-    <main style={{ maxWidth: 1000, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' }}>
-      <nav style={{ marginBottom: '1rem' }}>
-        <Link href="/tutor/assignments" style={{ color: '#2563eb', textDecoration: 'none', fontSize: '0.9rem' }}>
-          ← Your assignments
-        </Link>
-      </nav>
+    <main className={s.container}>
+      <Link href="/tutor/assignments" className={s.breadcrumb}>
+        ← Your assignments
+      </Link>
 
-      <header style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>{title}</h1>
-        {assignment.description && (
-          <p style={{ color: '#4b5563', marginTop: 0 }}>{assignment.description}</p>
-        )}
-        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.875rem', color: '#6b7280', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-          <span>Type: {typeLabel(assignment.assignment_type)}</span>
+      <header className={s.header}>
+        <div className={s.eyebrow}>Assignment</div>
+        <h1 className={s.h1}>{title}</h1>
+        <div className={s.metaRow}>
+          <AssignmentTypeBadge type={assignment.assignment_type} />
           {assignment.due_date && (
-            <span>Due {formatDate(assignment.due_date)}</span>
+            <span className={isOverdue ? s.metaOverdue : s.metaItem}>
+              {isOverdue ? 'Overdue' : 'Due'} · {formatDate(assignment.due_date)}
+            </span>
           )}
-          {assignment.archived_at && <span style={{ color: '#b91c1c' }}>Archived</span>}
+          {assignment.archived_at && (
+            <span className={s.metaArchived}>Archived</span>
+          )}
         </div>
+        {assignment.description && (
+          <p className={s.description}>{assignment.description}</p>
+        )}
       </header>
 
-      <section style={{
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-        gap: '0.75rem', marginBottom: '1.5rem',
-      }}>
-        <StatCard label="Students" value={students.length} />
-        <StatCard label="Completed" value={`${completedCount} / ${students.length}`} />
+      <div className={s.statsStrip}>
+        <StatTile label="Students" value={students.length} />
+        <StatTile
+          label="Completed"
+          value={`${completedCount} / ${students.length}`}
+          sub={completionPct == null ? 'No students assigned' : `${completionPct}%`}
+          tone="good"
+        />
         {assignment.assignment_type === 'questions' && (
-          <StatCard label="Questions" value={totalQuestions} />
+          <StatTile
+            label="Questions"
+            value={totalQuestions}
+            sub={
+              cohortDone > 0
+                ? `${cohortDone.toLocaleString()} attempts across cohort`
+                : 'No attempts yet'
+            }
+          />
         )}
-      </section>
+        {assignment.assignment_type === 'questions' && cohortAccuracyPct != null && (
+          <StatTile
+            label="Cohort accuracy"
+            value={`${cohortAccuracyPct}%`}
+            sub={`${cohortCorrect.toLocaleString()} correct / ${cohortDone.toLocaleString()}`}
+            tone={accTone(cohortAccuracyPct)}
+          />
+        )}
+      </div>
 
-      <section>
-        <h2 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.75rem' }}>
-          Enrolled students
-        </h2>
+      <section className={s.card}>
+        <div className={s.cardHeader}>
+          <div>
+            <div className={s.h2}>Enrolled students</div>
+            <div className={s.cardHint}>
+              {students.length === 0
+                ? 'No students assigned yet.'
+                : `Click a row for the per-student detail view.`}
+            </div>
+          </div>
+        </div>
+
         {students.length === 0 ? (
-          <p style={{ color: '#9ca3af', fontStyle: 'italic' }}>No students assigned.</p>
+          <div className={s.empty}>
+            <div className={s.emptyTitle}>No students.</div>
+            <div className={s.emptyBody}>
+              This assignment has no students enrolled.
+            </div>
+          </div>
         ) : (
-          <Table>
+          <div className={s.tableWrap}>
+            <table className={s.table}>
               <thead>
                 <tr>
-                  <Th>Student</Th>
+                  <th className={s.th}>Student</th>
                   {assignment.assignment_type === 'questions' && (
                     <>
-                      <Th>Done</Th>
-                      <Th>Accuracy</Th>
+                      <th className={s.thNum}>Done</th>
+                      <th className={s.thProgress}>Progress</th>
+                      <th className={s.thNum}>Accuracy</th>
                     </>
                   )}
-                  <Th>Completed</Th>
+                  <th className={s.th}>Completed</th>
                 </tr>
               </thead>
               <tbody>
-                {students.map((s) => (
-                  <tr key={s.id}>
-                    <Td>
-                      <Link href={`/tutor/students/${s.id}`} style={{ color: '#2563eb', textDecoration: 'none' }}>
-                        {s.name}
-                      </Link>
-                      {s.email && (
-                        <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{s.email}</div>
+                {students.map((stu) => {
+                  const donePct =
+                    totalQuestions > 0
+                      ? Math.round((stu.done / totalQuestions) * 100)
+                      : null;
+                  const accPct =
+                    stu.done > 0
+                      ? Math.round((stu.correct / stu.done) * 100)
+                      : null;
+                  return (
+                    <tr key={stu.id} className={s.row}>
+                      <td className={s.td}>
+                        <Link
+                          href={`/tutor/students/${stu.id}`}
+                          className={s.nameLink}
+                        >
+                          {stu.name}
+                        </Link>
+                        {stu.email && <div className={s.email}>{stu.email}</div>}
+                      </td>
+                      {assignment.assignment_type === 'questions' && (
+                        <>
+                          <td className={s.tdNum}>
+                            {stu.done}
+                            <span className={s.muted}> / {totalQuestions}</span>
+                          </td>
+                          <td className={s.tdProgress}>
+                            {totalQuestions > 0 && (
+                              <div className={s.progress}>
+                                <div
+                                  className={s.progressBar}
+                                  style={{ width: `${donePct ?? 0}%` }}
+                                />
+                              </div>
+                            )}
+                          </td>
+                          <td className={s.tdNum}>
+                            {accPct == null ? (
+                              <span className={s.muted}>—</span>
+                            ) : (
+                              <span className={`${s.accBadge} ${accBadgeTone(accPct, s)}`}>
+                                {accPct}%
+                              </span>
+                            )}
+                          </td>
+                        </>
                       )}
-                    </Td>
-                    {assignment.assignment_type === 'questions' && (
-                      <>
-                        <Td>
-                          {s.done}/{totalQuestions}
-                        </Td>
-                        <Td>
-                          {s.done > 0 ? `${Math.round((s.correct / s.done) * 100)}%` : '—'}
-                        </Td>
-                      </>
-                    )}
-                    <Td>
-                      {s.completed_at
-                        ? formatDate(s.completed_at)
-                        : <span style={{ color: '#9ca3af' }}>—</span>}
-                    </Td>
-                  </tr>
-                ))}
+                      <td className={s.td}>
+                        {stu.completed_at ? (
+                          <span className={s.completedTag}>
+                            ✓ {formatDate(stu.completed_at)}
+                          </span>
+                        ) : (
+                          <span className={s.muted}>—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
-          </Table>
+            </table>
+          </div>
         )}
       </section>
     </main>
   );
 }
 
-function typeLabel(t) {
-  return { questions: 'Questions', lesson: 'Lesson', practice_test: 'Practice Test' }[t] ?? t;
+// ──────────────────────────────────────────────────────────────
+
+function StatTile({ label, value, sub, tone = 'neutral' }) {
+  return (
+    <div className={`${s.statTile} ${s[`statTile_${tone}`] ?? ''}`}>
+      <div className={s.statLabel}>{label}</div>
+      <div className={s.statValue}>{value}</div>
+      {sub && <div className={s.statSub}>{sub}</div>}
+    </div>
+  );
 }
 
+function accTone(pct) {
+  if (pct == null) return 'neutral';
+  if (pct >= 80) return 'good';
+  if (pct >= 50) return 'ok';
+  return 'warn';
+}
+
+function accBadgeTone(pct, styles) {
+  if (pct >= 80) return styles.accGood;
+  if (pct >= 50) return styles.accOk;
+  return styles.accBad;
+}
