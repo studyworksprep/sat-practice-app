@@ -16,22 +16,39 @@
 // (~530 on RW, ~510 on Math in real College Board scoring). We
 // implement that by picking a different linear mapping per route.
 //
-// The caller hands us { subject, rawCorrect, route, totalItems }
-// and gets back a scaled score, clipped to [200, 800].
+// First TypeScript canary in the new tree — pure functions, no
+// I/O, narrow public surface. Demonstrates the import path
+// (`@/lib/types`) for shared domain enums and confirms the
+// allowJs: true tsconfig accepts mixed .js + .ts call sites.
 
-/**
- * @typedef {object} SectionScoreInput
- * @property {'RW'|'MATH'} subject
- * @property {number} rawCorrect
- * @property {number} totalItems         - sum of module 1 + module 2 item counts
- * @property {'easy'|'hard'|'std'} route - which module-2 route was taken
- */
+import type { SubjectCode, RouteCode } from '@/lib/types';
+
+export interface SectionScoreInput {
+  subject: SubjectCode;
+  rawCorrect: number;
+  /** Sum of module 1 + module 2 item counts. */
+  totalItems: number;
+  /** Which module-2 route was taken. */
+  route: RouteCode;
+}
+
+export interface CompositeScoreInput {
+  rwScaled: number | null;
+  mathScaled: number | null;
+}
+
+interface Curve { floor: number; ceiling: number; }
 
 /**
  * Compute a scaled score for a single section (RW or Math).
- * Returns a value in [200, 800].
+ * Returns a value in [200, 800], or null if inputs are invalid.
  */
-export function scaleSectionScore({ subject, rawCorrect, totalItems, route }) {
+export function scaleSectionScore({
+  subject,
+  rawCorrect,
+  totalItems,
+  route,
+}: SectionScoreInput): number | null {
   if (!Number.isFinite(rawCorrect) || !Number.isFinite(totalItems) || totalItems <= 0) {
     return null;
   }
@@ -42,10 +59,13 @@ export function scaleSectionScore({ subject, rawCorrect, totalItems, route }) {
 }
 
 /**
- * Composite total: RW scaled + Math scaled, each clipped to
- * [200, 800]. Returns null if either side is null.
+ * Composite total: RW scaled + Math scaled, each already clipped
+ * to [200, 800]. Returns null if either side is null.
  */
-export function compositeScore({ rwScaled, mathScaled }) {
+export function compositeScore({
+  rwScaled,
+  mathScaled,
+}: CompositeScoreInput): number | null {
   if (rwScaled == null || mathScaled == null) return null;
   return rwScaled + mathScaled;
 }
@@ -61,8 +81,8 @@ export function compositeScore({ rwScaled, mathScaled }) {
  * lands around their real CB score within ~30 points — good
  * enough for directional feedback during practice.
  */
-function pickCurve(subject, route) {
-  const CURVES = {
+function pickCurve(subject: SubjectCode, route: RouteCode): Curve {
+  const CURVES: Record<SubjectCode, Record<RouteCode, Curve>> = {
     RW: {
       easy: { floor: 200, ceiling: 530 },
       std:  { floor: 200, ceiling: 700 },
