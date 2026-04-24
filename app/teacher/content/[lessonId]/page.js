@@ -10,6 +10,7 @@ import {
   DESMOS_INTERACTIVE_SLIDER_SETUP_EXAMPLE,
   parseDesmosInteractiveContent,
 } from '../../../../lib/lesson/desmos-interactive.mjs';
+import { validateLessonBlocks } from '../../../../lib/lesson/lesson-validation.mjs';
 
 export default function LessonEditorPage() {
   return <Suspense><LessonEditor /></Suspense>;
@@ -58,6 +59,7 @@ function LessonEditor() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [localValidation, setLocalValidation] = useState(null);
 
   // Load lesson + filters
   useEffect(() => {
@@ -71,6 +73,7 @@ function LessonEditor() {
         setBlocks((lessonData.lesson.blocks || []).map(b => ({ ...b, _key: b.id || Math.random().toString(36).slice(2) })));
         setTopics(lessonData.lesson.topics || []);
         setAvailableFilters(filterData);
+        setLocalValidation(lessonData.validation || null);
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
@@ -82,6 +85,18 @@ function LessonEditor() {
     setSaved(false);
     setError(null);
     try {
+      const validationInput = blocks.map((b) => ({
+        id: b.id || b._key,
+        block_type: b.block_type,
+        content: b.content || {},
+      }));
+      const validation = validateLessonBlocks(validationInput);
+      setLocalValidation(validation);
+      if (!validation.ok) {
+        const first = validation.errors[0];
+        throw new Error(`${first?.message || 'Validation failed'} (${first?.blockId || 'unknown block'})`);
+      }
+
       // Save metadata + topics
       const metaRes = await fetch(`/api/lessons/${lessonId}`, {
         method: 'PUT',
@@ -109,7 +124,10 @@ function LessonEditor() {
         }),
       });
       const blocksData = await blocksRes.json();
-      if (!blocksRes.ok) throw new Error(blocksData.error || 'Failed to save blocks');
+      if (!blocksRes.ok) {
+        const msg = blocksData.validation?.errors?.[0]?.message || blocksData.error || 'Failed to save blocks';
+        throw new Error(msg);
+      }
 
       // Update blocks with server IDs
       if (blocksData.blocks) {
@@ -183,6 +201,29 @@ function LessonEditor() {
           </button>
         </div>
       </div>
+
+      {localValidation && (
+        <div className="card" style={{ padding: 12, marginBottom: 16, borderLeft: localValidation.ok ? '3px solid var(--success)' : '3px solid var(--danger)' }}>
+          <div style={{ fontSize: 12, fontWeight: 700 }}>
+            Validation: {localValidation.summary?.errorCount || 0} error(s), {localValidation.summary?.warningCount || 0} warning(s)
+          </div>
+          {localValidation.errors?.slice(0, 4).map((issue, idx) => (
+            <div key={`err-${idx}`} style={{ color: 'var(--danger)', fontSize: 12, marginTop: 4 }}>
+              {issue.blockId}: {issue.message}
+            </div>
+          ))}
+          {localValidation.warnings?.slice(0, 4).map((issue, idx) => (
+            <div key={`warn-${idx}`} style={{ color: 'var(--muted)', fontSize: 12, marginTop: 4 }}>
+              {issue.blockId}: {issue.message}
+            </div>
+          ))}
+          {localValidation.workflowVisualization?.length > 0 && (
+            <pre style={{ marginTop: 6, fontSize: 11, whiteSpace: 'pre-wrap' }}>
+              {localValidation.workflowVisualization.join('\n')}
+            </pre>
+          )}
+        </div>
+      )}
 
       {/* Metadata card */}
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, Suspense } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import HtmlBlock from '../../../components/HtmlBlock';
 import { isLessonCompletionLocked, parseDesmosInteractiveContent, validateDesmosSubmission } from '../../../lib/lesson/desmos-interactive.mjs';
@@ -12,12 +12,14 @@ export default function LessonViewerPage() {
 
 function LessonViewer() {
   const { lessonId } = useParams();
+  const searchParams = useSearchParams();
   const [lesson, setLesson] = useState(null);
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [forceUnlockedBlockIds, setForceUnlockedBlockIds] = useState([]);
+  const [debugByBlock, setDebugByBlock] = useState({});
 
   useEffect(() => {
     Promise.all([
@@ -96,6 +98,7 @@ function LessonViewer() {
   if (!lesson) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Lesson not found.</p></div>;
 
   const blocks = lesson.blocks || [];
+  const debugMode = process.env.NODE_ENV !== 'production' && searchParams?.get('debug') === '1';
   const completedBlocks = new Set(progress?.completed_blocks || []);
   const checkAnswers = progress?.check_answers || {};
   const isComplete = !!progress?.completed_at;
@@ -193,9 +196,33 @@ function LessonViewer() {
                   prev.includes(currentBlock.id) ? prev : [...prev, currentBlock.id]
                 ));
               }}
+              debugMode={debugMode}
+              onDebug={(payload) => {
+                setDebugByBlock((prev) => ({ ...prev, [currentBlock.id]: payload }));
+              }}
             />
           )}
         </div>
+      )}
+
+      {debugMode && currentBlock && (
+        <details className="card" style={{ padding: 10, marginBottom: 12 }}>
+          <summary style={{ cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Debug info</summary>
+          <div style={{ fontSize: 12, marginTop: 8, display: 'grid', gap: 4 }}>
+            <div>block_id: <code>{currentBlock.id}</code></div>
+            <div>block_type: <code>{currentBlock.block_type}</code></div>
+            <div>workflow: <code>{currentBlock.content?.workflow_id || '—'}</code> step <code>{currentBlock.content?.step_index || '—'}</code>/<code>{currentBlock.content?.total_steps || '—'}</code></div>
+            <div>validation_mode: <code>{currentBlock.content?.validation?.mode || '—'}</code></div>
+            <div>attempts: <code>{debugByBlock[currentBlock.id]?.attempts ?? 0}</code></div>
+            <div>result: <code>{debugByBlock[currentBlock.id]?.success ? 'pass' : 'fail'}</code></div>
+            <div>reason_codes: <code>{(debugByBlock[currentBlock.id]?.reasons || []).join(', ') || '—'}</code></div>
+            <div>next_block: <code>{debugByBlock[currentBlock.id]?.nextBlockId || blocks[currentIndex + 1]?.id || '—'}</code></div>
+            <div>rejoin_target: <code>{currentBlock.content?.rejoin_at_block_id || '—'}</code></div>
+            <div>desmos_inherited: <code>{String(Boolean(currentBlock.content?.inherit_from_previous_workflow_desmos))}</code></div>
+            <div>expression_count: <code>{debugByBlock[currentBlock.id]?.expressionCount ?? 0}</code></div>
+            <div>detected_sliders: <code>{(debugByBlock[currentBlock.id]?.sliders || []).join(', ') || '—'}</code></div>
+          </div>
+        </details>
       )}
 
       {blocks.length > 0 && (
@@ -390,7 +417,7 @@ function QuestionLinkBlock({ block, isComplete }) {
   );
 }
 
-function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock }) {
+function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock, onDebug, debugMode = false }) {
   const hostRef = useRef(null);
   const calculatorRef = useRef(null);
   const [feedbackState, setFeedbackState] = useState(previousAnswer?.correct ? 'success' : 'idle');
@@ -502,6 +529,12 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock }) 
     setAttempts(nextAttempts);
 
     const entered = extractStudentExpressions(calculatorRef.current);
+    const sliderNames = entered
+      .map((row) => {
+        const match = String(row.latex || '').trim().match(/^([A-Za-z][A-Za-z0-9_]*)\s*=/);
+        return match ? match[1] : null;
+      })
+      .filter(Boolean);
     const result = validateDesmosSubmission({
       content,
       studentExpressions: entered,
@@ -523,6 +556,20 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock }) 
       if (result.solutionHtml && content.progression?.require_success) {
         onUnlock?.();
       }
+    }
+
+    if (debugMode) {
+      const branchTarget = result.success
+        ? content.on_correct_block_id
+        : content.on_incorrect_block_id;
+      onDebug?.({
+        attempts: nextAttempts,
+        success: result.success,
+        reasons: result.reasons || [result.reason].filter(Boolean),
+        nextBlockId: branchTarget || content.rejoin_at_block_id || null,
+        expressionCount: entered.length,
+        sliders: [...new Set(sliderNames)],
+      });
     }
   }
 

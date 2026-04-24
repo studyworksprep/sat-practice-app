@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../lib/supabase/server';
-import { parseDesmosInteractiveContent } from '../../../../../lib/lesson/desmos-interactive.mjs';
+import { validateLessonBlocks } from '../../../../../lib/lesson/lesson-validation.mjs';
 
 // GET /api/lessons/[lessonId]/blocks — get ordered blocks
 export async function GET(request, props) {
@@ -43,17 +43,12 @@ export async function PUT(request, props) {
       return NextResponse.json({ error: 'blocks must be an array' }, { status: 400 });
     }
 
-    for (const block of blocks) {
-      if (!block?.block_type) {
-        return NextResponse.json({ error: 'Each block requires block_type' }, { status: 400 });
-      }
-      if (block.block_type === 'desmos_interactive') {
-        try {
-          parseDesmosInteractiveContent(block.content || {});
-        } catch (err) {
-          return NextResponse.json({ error: err.message }, { status: 400 });
-        }
-      }
+    const validation = validateLessonBlocks(blocks);
+    if (!validation.ok) {
+      return NextResponse.json({
+        error: 'Lesson block validation failed',
+        validation,
+      }, { status: 400 });
     }
 
     // Verify the user can edit this lesson (author or admin)
@@ -101,7 +96,7 @@ export async function PUT(request, props) {
       .eq('lesson_id', lessonId)
       .order('sort_order');
 
-    return NextResponse.json({ ok: true, blocks: saved || [] });
+    return NextResponse.json({ ok: true, blocks: saved || [], validationWarnings: validation.warnings });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
