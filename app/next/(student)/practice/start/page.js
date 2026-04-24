@@ -13,7 +13,6 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { createSession, countAvailable } from './actions';
-import { startTestAttempt } from '../test/actions';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
 import { domainSection } from '@/lib/ui/question-layout';
 import { fetchAll } from '@/lib/supabase/fetchAll';
@@ -166,7 +165,6 @@ export default async function PracticeStartPage() {
       tests={tests}
       createSessionAction={createSession}
       countAvailableAction={countAvailable}
-      startTestAttemptAction={startTestAttempt}
       basePath="/practice"
     />
   );

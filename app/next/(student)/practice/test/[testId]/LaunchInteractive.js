@@ -8,7 +8,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import s from './Launch.module.css';
 
 export function LaunchInteractive({
@@ -18,17 +18,23 @@ export function LaunchInteractive({
   startTestAttemptAction,
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [confirmed, setConfirmed] = useState(false);
 
-  // Extra-time accommodation. Off by default (multiplier = 1.0).
-  // When enabled, the student picks between 1.5× (standard
-  // extended time) and 2× (double time). The multiplier ships
-  // to startTestAttempt and is stored on the attempt so every
-  // module inherits it.
-  const [accommodationOn, setAccommodationOn] = useState(false);
-  const [multiplier, setMultiplier] = useState(1.5);
+  // Extra-time accommodation. Defaults can come in via query params
+  // from the compact launcher on /practice/start: ?ext=1&mult=1.5
+  // means "open the launch page with 1.5× already selected". Times
+  // shown in the module summary below are scaled by the current
+  // multiplier so the student sees the clock they'll actually get.
+  const initialExt = searchParams?.get('ext') === '1';
+  const rawMult = Number(searchParams?.get('mult'));
+  const initialMult = rawMult === 2 || rawMult === 1.5 ? rawMult : 1.5;
+  const [accommodationOn, setAccommodationOn] = useState(initialExt);
+  const [multiplier, setMultiplier] = useState(initialMult);
+
+  const activeMultiplier = accommodationOn ? multiplier : 1;
 
   // If the student already has an in-progress test attempt, make
   // them confirm before starting — our Server Action will abandon
@@ -36,7 +42,7 @@ export function LaunchInteractive({
   const needsConfirm = inProgress != null && !confirmed;
 
   const totalMinutes = Math.round(
-    summary.reduce((acc, m) => acc + m.timeSeconds, 0) / 60,
+    (summary.reduce((acc, m) => acc + m.timeSeconds, 0) * activeMultiplier) / 60,
   );
   const totalQuestions = summary.reduce((acc, m) => acc + (m.itemCount ?? 0), 0);
 
@@ -118,7 +124,7 @@ export function LaunchInteractive({
                 )}
               </div>
               <div className={s.moduleTime}>
-                {Math.round(m.timeSeconds / 60)} min
+                {Math.round((m.timeSeconds * activeMultiplier) / 60)} min
               </div>
             </li>
           ))}

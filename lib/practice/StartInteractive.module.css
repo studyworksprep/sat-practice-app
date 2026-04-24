@@ -190,10 +190,17 @@
 
 .filterCardHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: var(--s4);
   gap: var(--s3);
+}
+
+.filterCardSub {
+  color: var(--fg3);
+  font-size: 13px;
+  margin: 4px 0 0;
+  max-width: 620px;
 }
 
 /* Primary CTA baked into the header. Matches design kit .btn.primary —
@@ -404,14 +411,11 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s4);
+  gap: var(--s3);
   margin-top: var(--s4);
   padding-top: var(--s4);
   border-top: 1px dashed var(--border);
-}
-
-.actionsRow .startBtn {
-  margin-left: auto;
+  justify-content: flex-end;
 }
 
 .secondaryField {
