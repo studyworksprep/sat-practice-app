@@ -13,8 +13,10 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { createSession, countAvailable } from './actions';
+import { startTestAttempt } from '../test/actions';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
 import { domainSection } from '@/lib/ui/question-layout';
+import { fetchAll } from '@/lib/supabase/fetchAll';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,31 +28,42 @@ export default async function PracticeStartPage() {
   if (profile.role === 'practice') redirect('/subscribe');
 
   // Domain / skill lookup. v2 has taxonomy inline on questions_v2
-  // so no separate taxonomy table join; one SELECT covers all the
-  // filter UI needs. domain_code is pulled alongside domain_name
-  // so the client can split the 8 domains into the design kit's
-  // Math / R&W columns (via domainSection).
-  const { data: questionRows } = await supabase
-    .from('questions_v2')
-    .select('domain_name, domain_code, skill_name, score_band')
-    .eq('is_published', true)
-    .eq('is_broken', false)
-    .is('deleted_at', null)
-    .not('domain_name', 'is', null)
-    .limit(5000);
+  // so no separate taxonomy table join. We paginate through every
+  // published row so the per-domain totals are never silently
+  // truncated by PostgREST's max-rows cap (see
+  // docs/architecture-plan.md Finding #1).
+  const questionRows = await fetchAll((from, to) =>
+    supabase
+      .from('questions_v2')
+      .select('domain_name, domain_code, skill_name, score_band')
+      .eq('is_published', true)
+      .eq('is_broken', false)
+      .is('deleted_at', null)
+      .not('domain_name', 'is', null)
+      .range(from, to),
+  );
 
   const domainMap = new Map();
   const scoreBandSet = new Set();
-  for (const row of questionRows ?? []) {
+  for (const row of questionRows) {
     if (row.domain_name) {
       let entry = domainMap.get(row.domain_name);
       if (!entry) {
-        entry = { code: row.domain_code ?? null, skills: new Set(), total: 0 };
+        entry = {
+          code: row.domain_code ?? null,
+          skills: new Map(),
+          total: 0,
+        };
         domainMap.set(row.domain_name, entry);
       }
       entry.total += 1;
       if (row.domain_code && !entry.code) entry.code = row.domain_code;
-      if (row.skill_name) entry.skills.add(row.skill_name);
+      if (row.skill_name) {
+        entry.skills.set(
+          row.skill_name,
+          (entry.skills.get(row.skill_name) ?? 0) + 1,
+        );
+      }
     }
     if (row.score_band != null) scoreBandSet.add(row.score_band);
   }
@@ -59,7 +72,9 @@ export default async function PracticeStartPage() {
       name,
       code: e.code,
       section: domainSection(e.code),
-      skills: Array.from(e.skills).sort(),
+      skills: Array.from(e.skills.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([skillName, count]) => ({ name: skillName, count })),
       total: e.total,
     }))
     .sort((a, b) => {
@@ -73,10 +88,12 @@ export default async function PracticeStartPage() {
   //   - active practice session (Resume card)
   //   - in-progress test attempt (Resume-test card)
   //   - published practice tests (Tests section)
+  //   - completed test attempts (for the ✓ mark beside done tests)
   const [
     { data: activeSession },
     { data: inProgressTestAttempt },
     { data: publishedTests },
+    { data: completedAttempts },
   ] = await Promise.all([
     supabase
       .from('practice_sessions')
@@ -102,6 +119,11 @@ export default async function PracticeStartPage() {
       .eq('is_published', true)
       .is('deleted_at', null)
       .order('code', { ascending: true }),
+    supabase
+      .from('practice_test_attempts_v2')
+      .select('practice_test_id')
+      .eq('user_id', user.id)
+      .eq('status', 'completed'),
   ]);
 
   const resumeInfo = activeSession
@@ -124,11 +146,15 @@ export default async function PracticeStartPage() {
       }
     : null;
 
+  const completedTestIds = new Set(
+    (completedAttempts ?? []).map((r) => r.practice_test_id).filter(Boolean),
+  );
   const tests = (publishedTests ?? []).map((t) => ({
     id:          t.id,
     code:        t.code,
     name:        t.name,
     isAdaptive:  t.is_adaptive,
+    completed:   completedTestIds.has(t.id),
   }));
 
   return (
@@ -140,6 +166,7 @@ export default async function PracticeStartPage() {
       tests={tests}
       createSessionAction={createSession}
       countAvailableAction={countAvailable}
+      startTestAttemptAction={startTestAttempt}
       basePath="/practice"
     />
   );

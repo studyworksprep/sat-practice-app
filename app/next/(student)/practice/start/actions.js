@@ -30,9 +30,9 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
+import { fetchAll } from '@/lib/supabase/fetchAll';
 
 const MAX_SESSION_SIZE = 50;
-const MAX_CANDIDATE_POOL = 5000;
 
 // Order options for the generated question list. 'display_code'
 // is the natural author-intended sequence (M-00001, M-00002, …);
@@ -159,21 +159,26 @@ function parseFilters(formData) {
 }
 
 async function loadCandidateIds(supabase, filters) {
-  let query = supabase
-    .from('questions_v2')
-    .select('id')
-    .eq('is_published', true)
-    .eq('is_broken', false)
-    .is('deleted_at', null);
+  try {
+    const rows = await fetchAll((from, to) => {
+      let query = supabase
+        .from('questions_v2')
+        .select('id')
+        .eq('is_published', true)
+        .eq('is_broken', false)
+        .is('deleted_at', null);
 
-  if (filters.domains.length)      query = query.in('domain_name', filters.domains);
-  if (filters.skills.length)       query = query.in('skill_name',  filters.skills);
-  if (filters.difficulties.length) query = query.in('difficulty',  filters.difficulties);
-  if (filters.scoreBands.length)   query = query.in('score_band',  filters.scoreBands);
+      if (filters.domains.length)      query = query.in('domain_name', filters.domains);
+      if (filters.skills.length)       query = query.in('skill_name',  filters.skills);
+      if (filters.difficulties.length) query = query.in('difficulty',  filters.difficulties);
+      if (filters.scoreBands.length)   query = query.in('score_band',  filters.scoreBands);
 
-  const { data, error } = await query.limit(MAX_CANDIDATE_POOL);
-  if (error) return null;
-  return (data ?? []).map((r) => r.id);
+      return query.range(from, to);
+    });
+    return rows.map((r) => r.id);
+  } catch {
+    return null;
+  }
 }
 
 /**

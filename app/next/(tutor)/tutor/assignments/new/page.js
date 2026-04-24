@@ -9,6 +9,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { fetchAll } from '@/lib/supabase/fetchAll';
 import { createAssignment } from './actions';
 import { NewAssignmentInteractive } from './NewAssignmentInteractive';
 import styles from './NewAssignmentInteractive.module.css';
@@ -25,27 +26,30 @@ export default async function NewAssignmentPage() {
     redirect('/');
   }
 
+  // Taxonomy + difficulty/score-band distribution for the filter
+  // form. We paginate so per-skill counts are never truncated by
+  // PostgREST's max-rows cap — the `.limit(5000)` we used before
+  // was the "db-max-rows silent-truncation" pattern the
+  // architecture plan explicitly flags (Finding #1).
   const [
     { data: studentsRaw },
-    { data: questionRows },
+    questionRows,
     { data: practiceTests },
     { data: lessons },
   ] = await Promise.all([
-    // The teacher's visible students via the unified view. RLS uses
-    // can_view() on the underlying tables — same pattern as the
-    // dashboard — so managers see their tutors' students too.
     supabase
       .from('student_practice_stats')
       .select('user_id, first_name, last_name, email')
       .order('last_name', { ascending: true, nullsFirst: false }),
-    // Taxonomy + difficulty/score-band distribution for the filter form.
-    supabase
-      .from('questions_v2')
-      .select('domain_name, skill_name, difficulty, score_band')
-      .eq('is_published', true)
-      .eq('is_broken', false)
-      .not('domain_name', 'is', null)
-      .limit(5000),
+    fetchAll((from, to) =>
+      supabase
+        .from('questions_v2')
+        .select('domain_name, skill_name, difficulty, score_band')
+        .eq('is_published', true)
+        .eq('is_broken', false)
+        .not('domain_name', 'is', null)
+        .range(from, to),
+    ),
     supabase
       .from('practice_tests_v2')
       .select('id, code, name')
@@ -76,7 +80,7 @@ export default async function NewAssignmentPage() {
   const skillMap = {};        // domain → skill → Set(scoreBands)
   const skillCount = {};      // domain → skill → questions count
   const difficultiesSet = new Set();
-  for (const row of questionRows ?? []) {
+  for (const row of questionRows) {
     if (!row.domain_name || !row.skill_name) continue;
     if (!skillMap[row.domain_name]) {
       skillMap[row.domain_name] = {};

@@ -258,27 +258,6 @@
   gap: 6px;
 }
 
-.domainRow {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  background: var(--bg-white);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all var(--dur-fast) var(--ease-std);
-}
-
-.domainRow:focus-visible {
-  outline: 2px solid var(--color-app-accent);
-  outline-offset: 2px;
-}
-
-.domainRow:hover { border-color: var(--color-slate-400); }
-
 .domainRowMath.on {
   border-color: #93c5fd;
   background: rgba(37, 99, 235, 0.04);
@@ -297,13 +276,7 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--fg1);
-  cursor: pointer;
   margin: 0;
-}
-
-.domainChip input {
-  margin: 0;
-  accent-color: var(--color-app-accent);
 }
 
 .domainRowMath.on .domainChip { color: #1e40af; }
@@ -480,3 +453,237 @@
   margin: var(--s2) 0 0;
   font-size: 13px;
 }
+
+/* ---------- Match-count pill (in filter card header) ---------- */
+
+.matchCount {
+  font-size: 13px;
+  color: var(--fg3);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.matchCountValue {
+  color: var(--fg1);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Domain row: main + expander split ---------- */
+
+.domainRow {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: all var(--dur-fast) var(--ease-std);
+  overflow: hidden;
+}
+
+.domainRow:hover { border-color: var(--color-slate-400); }
+
+.domainMain {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  text-align: left;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.domainMain:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: -2px;
+}
+
+.domainName { flex: 1; min-width: 0; }
+
+.domainRow.partial {
+  border-color: var(--color-app-accent);
+  background: color-mix(in srgb, var(--color-app-accent) 6%, var(--bg-white));
+}
+
+.domainCheck {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  flex-shrink: 0;
+  background: var(--bg-white);
+  color: transparent;
+}
+.domainCheckOn {
+  background: var(--color-app-accent);
+  border-color: var(--color-app-accent);
+  color: #fff;
+}
+.domainCheckPartial {
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+  background: var(--bg-white);
+}
+
+.domainExpander {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg3);
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std);
+  flex-shrink: 0;
+}
+.domainExpander:hover {
+  background: var(--color-slate-50);
+  color: var(--fg1);
+}
+.domainExpanderOpen { color: var(--color-app-accent); }
+.domainExpanderArrow {
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* Skill count pill at the end of each skill chip in the expanded list. */
+.skillChipCount {
+  margin-left: 6px;
+  color: var(--fg3);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+}
+.skillChip.on .skillChipCount {
+  color: var(--color-app-accent-hover);
+}
+
+/* ---------- Compressed practice-test launcher ---------- */
+
+.testLauncher {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.testLauncherHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+
+.testLauncherRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s3);
+}
+
+.testLauncherLabel {
+  flex: 1 1 320px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.testSelect {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--fg1);
+  background: var(--bg-white);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.testLauncherCheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--fg2);
+  padding-bottom: 8px;
+}
+
+.testMultiplier {
+  padding: 7px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--fg1);
+  background: var(--bg-white);
+  margin-bottom: 2px;
+}
+
+.launchBtn {
+  padding: 9px 18px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  background: var(--color-app-accent);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.launchBtn:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+.launchBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.testLauncherNote {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.testDetailsLink {
+  color: var(--color-app-accent);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 12px;
+}
+.testDetailsLink:hover { text-decoration: underline; }
