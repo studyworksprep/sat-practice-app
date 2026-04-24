@@ -1,50 +1,129 @@
 /* =============================================================
-   Student Review tab. Tokens from [data-tree="next"].
+   Student → Review. Tokens from [data-tree="next"].
 
-   Three stacked cards: Practice sessions · Practice tests ·
-   Practice your weak questions.
+   Pre-test study mode. Three tool cards (Common errors, Weak
+   questions drill, Flashcards) stacked below an optional
+   test-date countdown banner. Same visual vocabulary as the
+   other student hubs.
 ============================================================= */
 
 .container {
-  max-width: 960px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: var(--s5) var(--s5) var(--s7);
-  display: flex;
-  flex-direction: column;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
   gap: var(--s4);
   font-family: var(--font-sans);
   color: var(--fg1);
 }
 
+/* ---------- Header ---------- */
+
 .header { padding: var(--s2) 0; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
 
 .h1 {
   font-family: var(--font-serif);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  line-height: 1.15;
   color: var(--color-navy-900);
-  margin: 0 0 var(--s1);
+  margin: 0 0 var(--s2);
 }
 
 .sub {
   color: var(--fg3);
   font-size: 14px;
   margin: 0;
+  max-width: 720px;
 }
 
-.toast {
-  padding: var(--s3) var(--s4);
-  background: var(--color-diff-easy-bg);
-  border: 1px solid var(--color-diff-easy-bd);
-  color: var(--color-diff-easy-fg);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
+/* ---------- Countdown banner ---------- */
+
+.countdown {
+  background: linear-gradient(135deg, #fff 0%, #f7f4ec 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 22px;
+  position: relative;
+  overflow: hidden;
 }
 
-/* ---------- Card scaffolding ---------- */
+.countdown::before {
+  content: "";
+  position: absolute;
+  left: 22px;
+  top: 18px;
+  width: 40px;
+  height: 3px;
+  background: var(--color-gold-500);
+  border-radius: 2px;
+}
+
+.countdownTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  padding-top: 12px;
+}
+
+.countdownTitle {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+}
+
+.countdownSub {
+  font-size: 13px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.countdownPlan {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.countdownPlanLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.countdownPlanRow {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--fg2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.countdownPlanRow strong {
+  color: var(--color-navy-900);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* ---------- Generic card ---------- */
 
 .card {
   background: var(--card);
@@ -56,263 +135,274 @@
 
 .cardHeader {
   display: flex;
-  align-items: baseline;
   justify-content: space-between;
-  margin-bottom: var(--s3);
+  align-items: flex-start;
   gap: var(--s3);
+  margin-bottom: var(--s3);
+  flex-wrap: wrap;
 }
 
-.sectionLabel {
+.h2 {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.003em;
+  color: var(--fg1);
+  margin: 0;
+}
+
+.cardHint {
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: 2px;
+  max-width: 620px;
+}
+
+.cardTag {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--fg3);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
-.cardHeaderLink {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-app-accent);
-  text-decoration: none;
-}
-.cardHeaderLink:hover { text-decoration: underline; }
+/* ---------- Common errors list ---------- */
 
-.empty {
-  color: var(--fg2);
-  font-size: 13px;
-  margin: 0;
-}
-
-.inlineLink {
-  color: var(--color-app-accent);
-  text-decoration: none;
-  font-weight: 600;
-}
-.inlineLink:hover { text-decoration: underline; }
-
-/* ---------- Row list ---------- */
-
-.list {
+.skillList {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--s2);
 }
 
-.row {
+.skillRow {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   gap: var(--s3);
+  align-items: center;
   padding: 12px 14px;
+  border-radius: var(--radius-md);
   background: var(--color-slate-50);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
   transition: all var(--dur-fast) var(--ease-std);
 }
-
-.row:hover {
+.skillRow:hover {
   background: var(--bg-white);
   border-color: var(--border);
 }
 
-.rowLeft {
+.skillInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skillName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+  line-height: 1.3;
+}
+
+.skillMeta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.skillDomain {
+  font-weight: 600;
+  color: var(--fg2);
+}
+
+.skillStats { font-variant-numeric: tabular-nums; }
+
+.skillBar {
+  margin-top: 2px;
+  height: 5px;
+  background: var(--color-slate-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.skillBarFill {
+  height: 100%;
+  background: var(--color-diff-hard-fg);
+  border-radius: 999px;
+}
+
+.skillDrillForm {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skillDrillBtn {
+  padding: 7px 14px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  background: var(--color-app-accent);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.skillDrillBtn:hover { background: var(--color-app-accent-hover); }
+.skillDrillBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.skillDrillError {
+  font-size: 12px;
+  color: var(--color-diff-hard-fg);
+  max-width: 220px;
+}
+
+/* ---------- Weak-queue launcher ---------- */
+
+.launcherRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+
+.launcherField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.launcherSelect {
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--fg1);
+  background: var(--bg-white);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.launcherBtn {
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  background: var(--color-app-accent);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.launcherBtn:hover:not(:disabled) { background: var(--color-app-accent-hover); }
+.launcherBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.launcherError {
+  font-size: 13px;
+  color: var(--color-diff-hard-fg);
+  font-weight: 600;
+}
+
+/* ---------- Flashcards card ---------- */
+
+.flashcardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  padding: 8px 0;
+}
+
+.flashcardInfo {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
-  flex: 1;
 }
 
-.rowTitle {
+.flashcardTotal {
+  font-size: 32px;
+  font-weight: 750;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.flashcardLabel {
+  font-size: 13px;
+  color: var(--fg3);
+}
+
+.flashcardCta {
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  background: var(--color-app-accent);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-std);
+  white-space: nowrap;
+}
+.flashcardCta:hover {
+  background: var(--color-app-accent-hover);
+  color: #fff;
+}
+
+/* ---------- Empty state ---------- */
+
+.empty {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 22px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.emptyTitle {
   font-size: 14px;
   font-weight: 600;
   color: var(--fg1);
 }
 
-.rowMeta {
-  font-size: 12px;
-  color: var(--fg3);
-}
-
-.rowCode {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.partialTag {
-  color: var(--color-diff-med-fg);
-  font-weight: 600;
-  font-size: 12px;
-}
-
-/* ---------- Buttons ---------- */
-
-.reviewBtn,
-.resumeBtn {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 16px;
-  font-family: inherit;
+.emptyBody {
   font-size: 13px;
+  color: var(--fg3);
+  max-width: 440px;
+}
+
+.emptyCta {
+  margin-top: 8px;
+  font-size: 12px;
   font-weight: 700;
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  flex-shrink: 0;
-  transition: background var(--dur-fast) var(--ease-std),
-              border-color var(--dur-fast) var(--ease-std),
-              color var(--dur-fast) var(--ease-std);
-}
-
-.reviewBtn {
-  background: var(--color-app-accent);
-  color: #fff;
-  border: 1px solid var(--color-app-accent);
-}
-.reviewBtn:hover {
-  background: var(--color-app-accent-hover);
-  border-color: var(--color-app-accent-hover);
-}
-
-.resumeBtn {
-  background: var(--bg-white);
-  color: var(--fg1);
-  border: 1px solid var(--border-strong);
-}
-.resumeBtn:hover {
-  border-color: var(--color-app-accent);
   color: var(--color-app-accent);
-}
-
-/* ---------- Session lifecycle cluster (Resume / Submit / Abandon) ---------- */
-
-.lifecycleGroup {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s2);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.lifecycleSubmit,
-.lifecycleAbandon {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 14px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-std),
-              border-color var(--dur-fast) var(--ease-std),
-              color var(--dur-fast) var(--ease-std);
-}
-
-.lifecycleSubmit {
-  background: var(--color-app-accent);
-  color: #fff;
-  border: 1px solid var(--color-app-accent);
-}
-.lifecycleSubmit:hover:not(:disabled) {
-  background: var(--color-app-accent-hover);
-  border-color: var(--color-app-accent-hover);
-}
-.lifecycleSubmit:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.lifecycleAbandon {
-  background: transparent;
-  color: var(--color-diff-hard-fg);
-  border: 1px solid transparent;
-}
-.lifecycleAbandon:hover:not(:disabled) {
-  border-color: var(--color-diff-hard-bd);
-  background: var(--color-diff-hard-bg);
-}
-.lifecycleAbandon:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.lifecycleErr {
-  color: var(--color-diff-hard-fg);
-  font-size: 12px;
-  margin-right: var(--s2);
-}
-
-/* ---------- Test-specific row right cluster ---------- */
-
-.testRowRight {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s4);
-  flex-shrink: 0;
-}
-
-.scoreCluster {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s3);
-}
-
-.scoreBadge { text-align: center; }
-
-.scoreBadgeNum {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.005em;
-  font-variant-numeric: tabular-nums;
-  color: var(--fg1);
-}
-
-.scoreRw   { color: #ea580c; }
-.scoreMath { color: #2563eb; }
-
-.scoreBadgeLabel {
-  font-size: 9px;
-  font-weight: 700;
+  text-decoration: none;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--fg3);
+  letter-spacing: 0.04em;
 }
-
-@media (max-width: 640px) {
-  .row { flex-direction: column; align-items: flex-start; }
-  .testRowRight { width: 100%; justify-content: space-between; }
-}
-
-/* ---------- Weak-questions pool stats ---------- */
-
-.poolStats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--s3);
-  margin-bottom: var(--s4);
-}
-
-.poolStat {
-  padding: var(--s3);
-  background: var(--color-slate-50);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  text-align: left;
-}
-
-.poolStatValue {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--fg1);
-}
-
-.poolStatLabel {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--fg3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 2px;
-}
+.emptyCta:hover { text-decoration: underline; }
