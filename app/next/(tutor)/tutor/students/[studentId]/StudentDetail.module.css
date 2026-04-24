@@ -1,0 +1,386 @@
+/* =============================================================
+   Tutor → student detail page. Tokens from [data-tree="next"].
+
+   Mirrors the tutor dashboard vocabulary (header eyebrow, stats
+   row, content cards) so the per-student view feels like a
+   sibling of the cohort view.
+============================================================= */
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+/* ---------- Breadcrumb + header ---------- */
+
+.breadcrumb {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+  align-self: flex-start;
+}
+.breadcrumb:hover { text-decoration: underline; }
+
+.header { padding: var(--s2) 0; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+
+.sub {
+  color: var(--fg3);
+  font-size: 13px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.errorCard {
+  padding: var(--s4);
+  border-radius: var(--radius-lg);
+  background: var(--color-diff-hard-bg);
+  border: 1px solid var(--color-diff-hard-bd);
+  color: var(--color-diff-hard-fg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* ---------- Stat tiles ---------- */
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--s3);
+}
+
+.statCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statValue {
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statSub {
+  font-size: 11px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.statGood .statValue { color: var(--color-diff-easy-fg); }
+.statOk   .statValue { color: var(--color-diff-med-fg); }
+.statBad  .statValue { color: var(--color-diff-hard-fg); }
+
+/* ---------- Generic card ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-bottom: var(--s3);
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.cardHeaderHint { font-size: 12px; color: var(--fg3); }
+
+.cardHeaderLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+}
+.cardHeaderLink:hover { text-decoration: underline; }
+
+.empty {
+  color: var(--fg2);
+  font-size: 13px;
+  margin: 0;
+}
+
+.muted { color: var(--fg3); }
+.mono  { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ---------- Recent tests panel ---------- */
+
+.testList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--s2);
+}
+
+.testRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.testRow:hover {
+  background: var(--bg-white);
+  border-color: var(--border);
+  color: inherit;
+}
+
+.testRowLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.testRowName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.testRowMeta { font-size: 12px; color: var(--fg3); }
+.testRowTag  { color: var(--color-diff-med-fg); font-weight: 600; }
+
+.testRowScores {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-shrink: 0;
+}
+
+.scorePill { text-align: center; min-width: 46px; }
+.scorePillValue {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+.scorePillRw   .scorePillValue { color: #ea580c; }
+.scorePillMath .scorePillValue { color: #2563eb; }
+.scorePillLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+/* ---------- Recent sessions panel ---------- */
+
+.sessionList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.sessionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.sessionRow:hover {
+  background: var(--bg-white);
+  border-color: var(--border);
+  color: inherit;
+}
+
+.sessionRowLeft { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sessionRowDate { font-size: 13px; font-weight: 600; color: var(--fg1); }
+.sessionRowMeta { font-size: 11px; color: var(--fg3); }
+.sessionRowTag  { color: var(--color-diff-med-fg); font-weight: 600; }
+.sessionRowChevron { color: var(--fg3); font-size: 14px; flex-shrink: 0; }
+
+/* ---------- Assignments panel ---------- */
+
+.assignmentList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.assignmentRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.assignmentRow:hover { background: var(--color-slate-50); }
+.assignmentRowDone { background: var(--color-slate-50); opacity: 0.85; }
+
+.assignmentType {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  padding: 2px 8px;
+  background: var(--color-slate-100);
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+}
+
+.assignmentTitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assignmentCount { color: var(--fg3); font-weight: 400; }
+
+.due {
+  font-size: 11px;
+  color: var(--fg3);
+}
+
+.dueOverdue {
+  font-size: 11px;
+  color: var(--color-diff-hard-fg);
+  font-weight: 700;
+}
+
+.completedTag {
+  font-size: 11px;
+  color: var(--color-diff-easy-fg);
+  font-weight: 700;
+}
+
+/* ---------- Recent attempts table ---------- */
+
+.tableWrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.th, .thNum {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  border-bottom: 1px solid var(--border);
+  background: var(--color-slate-50);
+}
+.thNum { text-align: right; }
+
+.td, .tdNum {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--fg1);
+}
+.tdNum {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sourceTag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-slate-100);
+  color: var(--fg2);
+}
+
+.resCorrect { color: var(--color-diff-easy-fg); font-weight: 600; }
+.resWrong   { color: var(--color-diff-hard-fg); font-weight: 600; }
+
+.qid {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg3);
+}
