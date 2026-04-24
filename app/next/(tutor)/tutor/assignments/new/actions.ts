@@ -312,7 +312,7 @@ function allocateByWeight(weights: number[], size: number): number[] {
 
   const raw = weights.map((w) => (size * w) / total);
   const floored = raw.map((r) => Math.floor(r));
-  let leftover = size - floored.reduce((a, b) => a + b, 0);
+  const leftover = size - floored.reduce((a, b) => a + b, 0);
 
   if (leftover > 0) {
     const order = raw

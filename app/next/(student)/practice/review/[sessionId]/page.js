@@ -66,7 +66,7 @@ export default async function PracticeReviewPage({ params }) {
     // session_id column, so the timestamp is the binding.
     supabase
       .from('attempts')
-      .select('question_id, is_correct, selected_option_id, response_text, created_at')
+      .select('question_id, is_correct, selected_option_id, response_text, created_at, time_spent_ms')
       .eq('user_id', user.id)
       .in('question_id', questionIds)
       .gte('created_at', session.created_at)
@@ -159,6 +159,7 @@ export default async function PracticeReviewPage({ params }) {
             responseText: isSpr ? a.response_text : null,
             isCorrect: a.is_correct,
             submittedAt: a.created_at,
+            timeSpentMs: a.time_spent_ms ?? null,
           }
         : null,
       // Reveal payload — only surfaced when the student clicks
@@ -181,6 +182,63 @@ export default async function PracticeReviewPage({ params }) {
   //    the client gets something flat + pre-aggregated.
   const metrics = buildMetrics(items);
 
+  // 5) Timing view-model — one entry per position that carries
+  //    enough for the client's timing band (tooltip on hover).
+  //    Items without an attempt have timeSpentMs=0 and render
+  //    neutrally in the band.
+  const timing = buildTiming(items);
+
+  // 6) If this session was started from an assignment, load the
+  //    assignment row plus every attempt the student has on any
+  //    of the assignment's question ids, so the report can show
+  //    the assignment context + a daily practice heatmap. Any
+  //    failure here falls back to "no assignment context".
+  let assignmentContext = null;
+  const assignmentId =
+    session.filter_criteria
+    && typeof session.filter_criteria === 'object'
+    && typeof session.filter_criteria.assignment_id === 'string'
+      ? session.filter_criteria.assignment_id
+      : null;
+
+  if (assignmentId) {
+    const [{ data: assignment }, { data: assignmentAttempts }] = await Promise.all([
+      supabase
+        .from('assignments_v2')
+        .select('id, title, description, assignment_type, question_ids, due_date, created_at')
+        .eq('id', assignmentId)
+        .maybeSingle(),
+      // All attempts this student has on ANY question in the
+      // assignment — across every session, not just this one.
+      // Powers the daily practice map.
+      supabase
+        .from('attempts')
+        .select('question_id, created_at, is_correct, time_spent_ms')
+        .eq('user_id', user.id)
+        .in(
+          'question_id',
+          // Fall back to the session's ids if the assignment row
+          // couldn't be loaded — RLS may have filtered it out.
+          questionIds,
+        )
+        .order('created_at', { ascending: true }),
+    ]);
+
+    if (assignment) {
+      const dailyMap = buildDailyMap(assignmentAttempts ?? []);
+      assignmentContext = {
+        id: assignment.id,
+        title: assignment.title ?? 'Assignment',
+        description: assignment.description ?? null,
+        dueDate: assignment.due_date ?? null,
+        totalQuestions: Array.isArray(assignment.question_ids)
+          ? assignment.question_ids.length
+          : questionIds.length,
+        dailyMap,
+      };
+    }
+  }
+
   const sessionMeta = {
     sessionId: session.id,
     createdAt: session.created_at,
@@ -192,6 +250,8 @@ export default async function PracticeReviewPage({ params }) {
       sessionMeta={sessionMeta}
       items={items}
       metrics={metrics}
+      timing={timing}
+      assignment={assignmentContext}
     />
   );
 }
@@ -264,5 +324,82 @@ function buildMetrics(items) {
           .sort((a, b) => a[0].localeCompare(b[0]))
           .map(([name, v]) => ({ name, ...v })),
       })),
+  };
+}
+
+// ──────────────────────────────────────────────────────────────
+// Timing. Per-position time_spent_ms, plus total + median, used
+// by the timing band and its tooltip.
+// ──────────────────────────────────────────────────────────────
+
+function buildTiming(items) {
+  const entries = items.map((it) => {
+    const ms = it.studentAnswer?.timeSpentMs ?? 0;
+    return {
+      position: it.position,
+      questionId: it.questionId,
+      status: it.status,
+      timeSpentMs: ms > 0 ? ms : 0,
+      domainName: it.taxonomy?.domain_name ?? null,
+      skillName: it.taxonomy?.skill_name ?? null,
+    };
+  });
+  const measured = entries.filter((e) => e.timeSpentMs > 0);
+  const totalMs = measured.reduce((s, e) => s + e.timeSpentMs, 0);
+  const sorted = measured.map((e) => e.timeSpentMs).sort((a, b) => a - b);
+  const medianMs = sorted.length
+    ? sorted[Math.floor(sorted.length / 2)]
+    : 0;
+  return {
+    entries,
+    totalMs,
+    medianMs,
+    measuredCount: measured.length,
+  };
+}
+
+// ──────────────────────────────────────────────────────────────
+// Daily practice map. Groups an assignment's attempts by
+// local-calendar day so the review page can render a Duolingo-
+// style streak strip. Rendered in UTC dates (good enough for a
+// visual — per-student timezone would require the browser, but
+// this is a server view and consistency-across-reloads wins).
+// ──────────────────────────────────────────────────────────────
+
+function buildDailyMap(attempts) {
+  if (!attempts.length) {
+    return { days: [], firstDay: null, lastDay: null, totalAttempts: 0 };
+  }
+  const byDay = new Map();  // 'YYYY-MM-DD' → {attempts, correct, timeMs}
+  for (const a of attempts) {
+    const iso = (a.created_at || '').slice(0, 10);
+    if (!iso) continue;
+    const entry = byDay.get(iso) ?? { attempts: 0, correct: 0, timeMs: 0 };
+    entry.attempts += 1;
+    if (a.is_correct) entry.correct += 1;
+    if (typeof a.time_spent_ms === 'number' && a.time_spent_ms > 0) {
+      entry.timeMs += a.time_spent_ms;
+    }
+    byDay.set(iso, entry);
+  }
+  // Fill the calendar from first-day through today so empty days
+  // show up as gaps in the strip (the UX the user asked for:
+  // "how the assignment questions were distributed over time").
+  const firstIso = [...byDay.keys()].sort()[0];
+  const lastIso = new Date().toISOString().slice(0, 10);
+  const days = [];
+  const cursor = new Date(`${firstIso}T00:00:00Z`);
+  const end = new Date(`${lastIso}T00:00:00Z`);
+  while (cursor <= end) {
+    const iso = cursor.toISOString().slice(0, 10);
+    const entry = byDay.get(iso) ?? { attempts: 0, correct: 0, timeMs: 0 };
+    days.push({ date: iso, ...entry });
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return {
+    days,
+    firstDay: firstIso,
+    lastDay: lastIso,
+    totalAttempts: attempts.length,
   };
 }

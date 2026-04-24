@@ -508,3 +508,143 @@
 }
 
 .footerLinkPrimary:hover { text-decoration: underline; }
+
+/* ---------- Timing band ---------- */
+
+.timing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.timingStats {
+  display: flex;
+  gap: var(--s4);
+  font-size: 12px;
+  color: var(--fg3);
+  flex-wrap: wrap;
+}
+.timingStats strong {
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.timingBarShell {
+  padding: 8px 0;
+}
+
+.timingBar {
+  display: flex;
+  width: 100%;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-slate-100);
+  gap: 1px;
+}
+
+.timingSeg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 10px;
+  font-weight: 700;
+  transition: transform var(--dur-fast) var(--ease-std),
+    filter var(--dur-fast) var(--ease-std);
+  overflow: hidden;
+}
+.timingSeg:hover,
+.timingSegActive {
+  transform: scaleY(1.12);
+  filter: brightness(1.12);
+  z-index: 1;
+}
+.timingSegNum {
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.timingSegCorrect { background: var(--color-diff-easy-fg); }
+.timingSegWrong   { background: var(--color-diff-hard-fg); }
+.timingSegMissing { background: var(--fg3); color: var(--bg-white); }
+
+.timingHover {
+  min-height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--fg2);
+  flex-wrap: wrap;
+}
+.timingHoverNum {
+  font-weight: 700;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+.timingHoverSkill { color: var(--fg1); font-weight: 600; }
+.timingHoverDot   { color: var(--fg3); }
+.timingHoverTime  { font-variant-numeric: tabular-nums; }
+.timingHoverCorrect { color: var(--color-diff-easy-fg); font-weight: 700; text-transform: capitalize; }
+.timingHoverWrong   { color: var(--color-diff-hard-fg); font-weight: 700; text-transform: capitalize; }
+.timingHoverMissing { color: var(--fg3); font-weight: 600; text-transform: capitalize; }
+.timingHoverPlaceholder { color: var(--fg3); font-style: italic; }
+
+/* ---------- Daily practice map ---------- */
+
+.dailyMap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.dailyMapRange {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+
+.dailyMapRangeTotal {
+  color: var(--fg1);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.dailyMapStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 4px 0;
+}
+
+.dailyCell {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.dailyCellEmpty {
+  background: var(--color-slate-100);
+  border: 1px solid var(--border);
+}
+.dailyCell1 { background: color-mix(in srgb, var(--color-app-accent) 25%, var(--color-slate-100)); }
+.dailyCell2 { background: color-mix(in srgb, var(--color-app-accent) 45%, var(--color-slate-100)); }
+.dailyCell3 { background: color-mix(in srgb, var(--color-app-accent) 70%, var(--color-slate-100)); }
+.dailyCell4 { background: var(--color-app-accent); }
