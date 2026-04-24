@@ -1,0 +1,59 @@
+/* =============================================================
+   Practice runner — session page. Tokens from [data-tree="next"].
+   Only the question-removed soft-empty state is styled here; the
+   happy-path UI lives inside PracticeInteractive's own module.
+============================================================= */
+
+.removedMain {
+  max-width: 720px;
+  margin: var(--s6) auto var(--s7);
+  padding: var(--s5) var(--s6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.removedCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.removedEyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-diff-hard-fg);
+  margin-bottom: var(--s1);
+}
+
+.removedH1 {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--color-navy-900);
+  margin: 0;
+}
+
+.removedSub {
+  color: var(--fg2);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.removedLink {
+  color: var(--color-app-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.removedLink:hover { text-decoration: underline; }

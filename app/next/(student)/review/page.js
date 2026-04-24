@@ -26,6 +26,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import { buildWeakQueue, commonErrorsFromAttempts } from '@/lib/practice/weak-queue';
+import { StudyCountdown } from '@/lib/practice/StudyCountdown';
 import { createWeakQueueDrill, createSkillDrill } from './actions';
 import { WeakQueueLauncher } from './WeakQueueLauncher';
 import { SkillDrillButton } from './SkillDrillButton';
@@ -109,11 +110,6 @@ export default async function StudentReviewPage() {
     flashcardTotal = count ?? 0;
   }
 
-  // Study plan: simple allocation across the three tools based on
-  // how many days remain until the student's target SAT date. If
-  // no target date is set the banner doesn't render.
-  const countdown = buildCountdown(extendedProfile?.sat_test_date ?? null);
-
   const queueCount = weakQueue.length;
 
   return (
@@ -128,7 +124,7 @@ export default async function StudentReviewPage() {
         </p>
       </header>
 
-      {countdown && <CountdownBanner countdown={countdown} />}
+      <StudyCountdown isoDate={extendedProfile?.sat_test_date ?? null} />
 
       {/* ---------- Common errors ---------- */}
 
@@ -262,103 +258,3 @@ export default async function StudentReviewPage() {
   );
 }
 
-// ──────────────────────────────────────────────────────────────
-// Countdown banner.
-// ──────────────────────────────────────────────────────────────
-
-function CountdownBanner({ countdown }) {
-  return (
-    <div className={s.countdown}>
-      <div className={s.countdownTop}>
-        <div>
-          <div className={s.countdownTitle}>
-            {countdown.daysLeft === 0
-              ? 'Your SAT is today — rest up'
-              : countdown.daysLeft === 1
-                ? 'Your SAT is tomorrow'
-                : countdown.daysLeft < 0
-                  ? 'Your target test date has passed'
-                  : `Your SAT is in ${countdown.daysLeft} days`}
-          </div>
-          <div className={s.countdownSub}>
-            {countdown.dateLabel}
-          </div>
-        </div>
-        {countdown.plan && countdown.daysLeft > 0 && (
-          <div className={s.countdownPlan}>
-            <div className={s.countdownPlanLabel}>Suggested split</div>
-            <div className={s.countdownPlanRow}>
-              <span>
-                <strong>{countdown.plan.flashcards}</strong> flashcards
-              </span>
-              <span>
-                <strong>{countdown.plan.weak}</strong> weak questions
-              </span>
-              <span>
-                <strong>{countdown.plan.mocks}</strong> full tests
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function buildCountdown(isoDate) {
-  if (!isoDate) return null;
-  const d = new Date(`${isoDate}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const daysLeft = Math.round((d.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
-
-  const dateLabel = d.toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-
-  return {
-    daysLeft,
-    dateLabel,
-    plan: daysLeft > 0 ? allocateDays(daysLeft) : null,
-  };
-}
-
-/**
- * Rough study-plan allocation for the countdown banner. Biases
- * toward mock tests as the test date gets closer, toward
- * flashcards + weak questions when there's still runway.
- * Days-integer output, sum equals daysLeft.
- */
-function allocateDays(daysLeft) {
-  // Weights: close-to-test (under 5 days) leans heavy on mocks;
-  // 5–14 balanced; 15+ biases toward weak-q + flashcards.
-  let wFlash;
-  let wWeak;
-  let wMocks;
-  if (daysLeft <= 5) {
-    wFlash = 1; wWeak = 2; wMocks = 2;
-  } else if (daysLeft <= 14) {
-    wFlash = 2; wWeak = 3; wMocks = 2;
-  } else {
-    wFlash = 3; wWeak = 4; wMocks = 2;
-  }
-  const total = wFlash + wWeak + wMocks;
-  const raw = [
-    (daysLeft * wFlash) / total,
-    (daysLeft * wWeak) / total,
-    (daysLeft * wMocks) / total,
-  ];
-  const floored = raw.map(Math.floor);
-  let leftover = daysLeft - floored.reduce((a, b) => a + b, 0);
-  const order = raw
-    .map((r, i) => ({ i, frac: r - Math.floor(r) }))
-    .sort((a, b) => b.frac - a.frac);
-  for (let k = 0; k < leftover; k += 1) {
-    floored[order[k % order.length].i] += 1;
-  }
-  return { flashcards: floored[0], weak: floored[1], mocks: floored[2] };
-}

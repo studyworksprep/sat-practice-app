@@ -46,82 +46,9 @@
   max-width: 720px;
 }
 
-/* ---------- Countdown banner ---------- */
-
-.countdown {
-  background: linear-gradient(135deg, #fff 0%, #f7f4ec 100%);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 18px 22px;
-  position: relative;
-  overflow: hidden;
-}
-
-.countdown::before {
-  content: "";
-  position: absolute;
-  left: 22px;
-  top: 18px;
-  width: 40px;
-  height: 3px;
-  background: var(--color-gold-500);
-  border-radius: 2px;
-}
-
-.countdownTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--s4);
-  flex-wrap: wrap;
-  padding-top: 12px;
-}
-
-.countdownTitle {
-  font-family: var(--font-serif);
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--color-navy-900);
-}
-
-.countdownSub {
-  font-size: 13px;
-  color: var(--fg3);
-  margin-top: 2px;
-}
-
-.countdownPlan {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: flex-end;
-  flex-shrink: 0;
-}
-
-.countdownPlanLabel {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--fg3);
-}
-
-.countdownPlanRow {
-  display: flex;
-  gap: 14px;
-  font-size: 13px;
-  color: var(--fg2);
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.countdownPlanRow strong {
-  color: var(--color-navy-900);
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-}
+/* Countdown banner styles moved to
+   lib/practice/StudyCountdown.module.css so the dashboard can
+   share the same visual. */
 
 /* ---------- Generic card ---------- */
 

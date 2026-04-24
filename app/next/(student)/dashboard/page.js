@@ -382,6 +382,7 @@ export default async function StudentDashboardPage() {
       recentlyFinished={recentlyFinished}
       assignments={pendingAssignments}
       resumeInfo={resumeInfo}
+      todayMs={nowMs}
       updateTargetScoreAction={updateTargetScore}
     />
   );

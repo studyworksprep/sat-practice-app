@@ -11,6 +11,7 @@
 
 import Link from 'next/link';
 import { useActionState, useOptimistic } from 'react';
+import { StudyCountdown } from '@/lib/practice/StudyCountdown';
 import s from './Dashboard.module.css';
 
 export function DashboardInteractive({
@@ -19,6 +20,7 @@ export function DashboardInteractive({
   recentlyFinished,
   assignments,
   resumeInfo,
+  todayMs,
   updateTargetScoreAction,
 }) {
   const [optimisticTarget, setOptimisticTarget] = useOptimistic(
@@ -78,6 +80,15 @@ export function DashboardInteractive({
           </Link>
         </div>
       </section>
+
+      {/* ---------- Test-date countdown ---------- */}
+      {stats.satTestDate && (
+        <StudyCountdown
+          isoDate={stats.satTestDate}
+          todayMs={todayMs}
+          compact
+        />
+      )}
 
       {/* ---------- Stats row ---------- */}
       <section className={s.statsRow}>
