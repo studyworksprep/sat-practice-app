@@ -11,6 +11,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { createAssignment } from './actions';
 import { NewAssignmentInteractive } from './NewAssignmentInteractive';
+import styles from './NewAssignmentInteractive.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,42 +68,61 @@ export default async function NewAssignmentPage() {
       email: s.email,
     }));
 
-  // Taxonomy: { domain: [skills] }; difficulties + score-bands seen.
-  const domainMap = {};
+  // Taxonomy aggregation. For each (domain, skill) pair we track
+  // which score bands actually have published questions, so the
+  // form can only show bands the tutor could realistically select.
+  // Also a global difficulty list (difficulty is applied
+  // assignment-wide, not per-skill).
+  const skillMap = {};        // domain → skill → Set(scoreBands)
+  const skillCount = {};      // domain → skill → questions count
   const difficultiesSet = new Set();
-  const scoreBandsSet = new Set();
   for (const row of questionRows ?? []) {
-    if (!row.domain_name) continue;
-    if (!domainMap[row.domain_name]) domainMap[row.domain_name] = new Set();
-    if (row.skill_name) domainMap[row.domain_name].add(row.skill_name);
+    if (!row.domain_name || !row.skill_name) continue;
+    if (!skillMap[row.domain_name]) {
+      skillMap[row.domain_name] = {};
+      skillCount[row.domain_name] = {};
+    }
+    if (!skillMap[row.domain_name][row.skill_name]) {
+      skillMap[row.domain_name][row.skill_name] = new Set();
+      skillCount[row.domain_name][row.skill_name] = 0;
+    }
+    if (row.score_band != null) {
+      skillMap[row.domain_name][row.skill_name].add(row.score_band);
+    }
+    skillCount[row.domain_name][row.skill_name] += 1;
     if (row.difficulty != null) difficultiesSet.add(row.difficulty);
-    if (row.score_band != null) scoreBandsSet.add(row.score_band);
   }
-  const domains = Object.keys(domainMap)
+  const domains = Object.keys(skillMap)
     .sort()
-    .map((name) => ({ name, skills: Array.from(domainMap[name]).sort() }));
+    .map((domain) => ({
+      name: domain,
+      skills: Object.keys(skillMap[domain])
+        .sort()
+        .map((skill) => ({
+          name: skill,
+          scoreBands: Array.from(skillMap[domain][skill]).sort((a, b) => a - b),
+          count: skillCount[domain][skill],
+        })),
+    }));
   const difficulties = Array.from(difficultiesSet).sort((a, b) => a - b);
-  const scoreBands = Array.from(scoreBandsSet).sort((a, b) => a - b);
 
   return (
-    <main style={{ maxWidth: 880, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' }}>
-      <nav style={{ marginBottom: '1rem' }}>
-        <a href="/tutor/assignments" style={{ color: '#2563eb', textDecoration: 'none', fontSize: '0.9rem' }}>
-          ← Your assignments
-        </a>
-      </nav>
-      <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-        New assignment
-      </h1>
-      <p style={{ color: '#4b5563', marginTop: 0 }}>
-        Give your students a question set, a practice test, or a lesson.
-      </p>
+    <main className={styles.container}>
+      <a href="/tutor/assignments" className={styles.breadcrumb}>
+        ← Your assignments
+      </a>
+      <header className={styles.header}>
+        <div className={styles.eyebrow}>Assignment · New</div>
+        <h1 className={styles.h1}>New assignment</h1>
+        <p className={styles.sub}>
+          Give your students a question set, a practice test, or a lesson.
+        </p>
+      </header>
 
       <NewAssignmentInteractive
         students={students}
         domains={domains}
         difficulties={difficulties}
-        scoreBands={scoreBands}
         practiceTests={(practiceTests ?? []).map((pt) => ({ id: pt.id, label: pt.name ?? pt.code ?? pt.id }))}
         lessons={(lessons ?? []).map((l) => ({ id: l.id, title: l.title ?? 'Lesson' }))}
         createAction={createAssignment}
