@@ -17,6 +17,7 @@ function LessonViewer() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [forceUnlockedBlockIds, setForceUnlockedBlockIds] = useState([]);
 
   useEffect(() => {
     Promise.all([
@@ -27,6 +28,7 @@ function LessonViewer() {
         if (lessonData.error) throw new Error(lessonData.error);
         setLesson(lessonData.lesson);
         setProgress(progressData.progress);
+        setForceUnlockedBlockIds([]);
         // Start progress if first visit
         if (!progressData.progress) {
           fetch(`/api/lessons/${lessonId}/progress`, {
@@ -108,6 +110,7 @@ function LessonViewer() {
       && currentBlock.block_type === 'desmos_interactive'
       && currentBlock.content?.progression?.require_success
       && !completedBlocks.has(currentBlock.id)
+      && !forceUnlockedBlockIds.includes(currentBlock.id)
   );
 
   function goNext() {
@@ -184,6 +187,11 @@ function LessonViewer() {
               onSuccess={() => {
                 submitDesmosResult(currentBlock.id, true);
                 goNext();
+              }}
+              onUnlock={() => {
+                setForceUnlockedBlockIds((prev) => (
+                  prev.includes(currentBlock.id) ? prev : [...prev, currentBlock.id]
+                ));
               }}
             />
           )}
@@ -382,7 +390,7 @@ function QuestionLinkBlock({ block, isComplete }) {
   );
 }
 
-function DesmosInteractiveBlock({ block, previousAnswer, onSuccess }) {
+function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock }) {
   const hostRef = useRef(null);
   const calculatorRef = useRef(null);
   const [feedbackState, setFeedbackState] = useState(previousAnswer?.correct ? 'success' : 'idle');
@@ -512,6 +520,9 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess }) {
       setFeedbackHtml(result.feedbackHtml || content.feedback.retry_message_html);
       setProgressiveHintHtml(result.progressiveHintHtml || '');
       setSolutionHtml(result.solutionHtml || '');
+      if (result.solutionHtml && content.progression?.require_success) {
+        onUnlock?.();
+      }
     }
   }
 
