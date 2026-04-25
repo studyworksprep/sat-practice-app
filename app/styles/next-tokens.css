@@ -1,0 +1,165 @@
+/* =============================================================
+   Studyworks design-system tokens — scoped to the new tree.
+   Ported from the Claude-Design handoff:
+     studyworks-design-system/project/colors_and_type.css
+
+   Scoping strategy. Wrapped in [data-tree="next"] so legacy
+   pages — which still set their own :root variables in
+   globals.css with overlapping names (--bg, --card, --border,
+   --s1..5) — aren't affected. app/next/layout.js adds the
+   data-tree="next" attribute; every descendant inherits the
+   tokens below. When Phase 6 retires the legacy tree, flip
+   this block back to :root and drop the scoping attr.
+
+   Add new variables here, never in component CSS modules.
+   Component modules reference the variables via var(--foo).
+============================================================= */
+
+[data-tree="next"] {
+  /* ---------- Brand ---------- */
+  --color-brand-cyan:      #29B6E8;
+  --color-brand-cyan-dark: #1D8FBF;
+  --color-brand-cyan-soft: #DFF3FB;
+
+  /* ---------- Navy (marketing primary) ---------- */
+  --color-navy-50:  #f0f4f8;
+  --color-navy-100: #d9e2ec;
+  --color-navy-200: #bcccdc;
+  --color-navy-300: #9fb3c8;
+  --color-navy-400: #829ab1;
+  --color-navy-500: #627d98;
+  --color-navy-600: #486581;
+  --color-navy-700: #334e68;
+  --color-navy-800: #243b53;
+  --color-navy-900: #102a43;
+  --color-navy-950: #0a1929;
+
+  /* ---------- Gold (marketing accent) ---------- */
+  --color-gold-50:  #fffbea;
+  --color-gold-100: #fff3c4;
+  --color-gold-200: #fce588;
+  --color-gold-300: #fadb5f;
+  --color-gold-400: #f7c948;
+  --color-gold-500: #f0b429;
+  --color-gold-600: #de911d;
+  --color-gold-700: #cb6e17;
+  --color-gold-800: #b44d12;
+  --color-gold-900: #8d2b0b;
+
+  /* ---------- Slate (neutral text + UI) ---------- */
+  --color-slate-50:  #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  /* ---------- App primary (navy, matches marketing) ---------- */
+  --color-app-primary:       var(--color-navy-900);
+  --color-app-primary-hover: var(--color-navy-800);
+  --color-app-primary-soft:  rgba(16, 42, 67, 0.06);
+  --color-app-primary-ring:  rgba(16, 42, 67, 0.12);
+
+  --color-app-highlight:       var(--color-gold-500);
+  --color-app-highlight-hover: var(--color-gold-400);
+  --color-app-highlight-soft:  rgba(240, 180, 41, 0.12);
+
+  /* Legacy aliases — keep until all new-tree call sites migrate
+     to the --color-app-primary* names. */
+  --color-app-accent:       var(--color-app-primary);
+  --color-app-accent-hover: var(--color-app-primary-hover);
+  --color-app-accent-soft:  var(--color-app-primary-soft);
+
+  /* ---------- Semantic (muted) ---------- */
+  --color-success: #5ba876;
+  --color-danger:  #d97775;
+  --color-amber:   #c2993e;
+
+  --color-success-bg: rgba(91, 168, 118, 0.14);
+  --color-danger-bg:  rgba(217, 119, 117, 0.14);
+
+  /* ---------- Difficulty tints ---------- */
+  --color-diff-easy-bg:    #dcfce7;
+  --color-diff-easy-bd:    #86efac;
+  --color-diff-easy-fg:    #166534;
+  --color-diff-med-bg:     #fef9c3;
+  --color-diff-med-bd:     #fde047;
+  --color-diff-med-fg:     #854d0e;
+  --color-diff-hard-bg:    #fee2e2;
+  --color-diff-hard-bd:    #fca5a5;
+  --color-diff-hard-fg:    #991b1b;
+  --color-diff-vhard-bg:   #fce7f3;
+  --color-diff-vhard-bd:   #f9a8d4;
+  --color-diff-vhard-fg:   #9d174d;
+  --color-diff-extreme-bg: #ede9fe;
+  --color-diff-extreme-bd: #c4b5fd;
+  --color-diff-extreme-fg: #5b21b6;
+
+  /* ---------- Semantic surface tokens ---------- */
+  --bg:       #f9fafb;
+  --bg-white: #ffffff;
+  --card:     #ffffff;
+  --fg1:      #111827;
+  --fg2:      #475569;
+  --fg3:      #6b7280;
+  --border:   rgba(17, 24, 39, 0.08);
+  --border-strong: rgba(17, 24, 39, 0.18);
+
+  /* ---------- Typography ---------- */
+  --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-sans:  "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:  ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  /* App-scale heads (sans) */
+  --app-title-1: 28px;
+  --app-title-2: 18px;
+  --app-title-3: 14px;
+
+  --body-size: 16px; --body-lh: 1.65;
+  --body-sm-size: 14px; --body-sm-lh: 1.5;
+  --prose-size: 15px; --prose-lh: 1.65;
+
+  --eyebrow-size: 11px;
+  --eyebrow-weight: 700;
+  --eyebrow-tracking: 0.08em;
+
+  /* ---------- Spacing (4-based) ---------- */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 64px;
+  --s9: 96px;
+
+  /* ---------- Radius ---------- */
+  --radius-none: 0;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  24px;
+  --radius-pill: 999px;
+
+  /* ---------- Shadow ---------- */
+  --shadow-none: none;
+  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md:   0 4px 14px rgba(16, 42, 67, 0.08);
+  --shadow-lg:   0 8px 30px rgba(16, 42, 67, 0.12);
+  --shadow-ring-accent: 0 0 0 3px var(--color-app-accent-soft);
+  --shadow-ring-success: 0 0 0 3px rgba(91, 168, 118, 0.14);
+  --shadow-ring-danger:  0 0 0 3px rgba(217, 119, 117, 0.14);
+
+  /* ---------- Motion ---------- */
+  --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.0, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 300ms;
+}

@@ -1,0 +1,650 @@
+/* =============================================================
+   Practice session report page. Tokens from [data-tree="next"].
+
+   Layout stacking order:
+     1. Header (title + session date + summary line)
+     2. Metrics (stat tiles, by-difficulty, by-domain/skill)
+     3. Question map (clickable pills)
+     4. Selected question (QuestionRenderer in review mode)
+     5. Footer (back links)
+============================================================= */
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s5) var(--s7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+/* ---------- Header ---------- */
+
+.header {
+  padding: var(--s5) var(--s5) 0;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--color-navy-900);
+  margin: 0;
+}
+
+.subtitle {
+  color: var(--fg3);
+  font-size: 14px;
+  margin-top: var(--s2);
+}
+
+/* ---------- Shared card ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s4) var(--s5);
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+  margin: 0 0 var(--s3);
+}
+
+/* ---------- Metrics ---------- */
+
+.metrics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.statRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--s3);
+}
+
+.statTile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--fg1);
+  line-height: 1.15;
+}
+
+.statSubtitle {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.statTile_good .statValue { color: var(--color-diff-easy-fg); }
+.statTile_ok   .statValue { color: var(--color-diff-med-fg); }
+.statTile_bad  .statValue { color: var(--color-diff-hard-fg); }
+
+/* ---------- Difficulty row ---------- */
+
+.diffRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--s3);
+}
+
+.diffTile {
+  padding: var(--s3);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.diffLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.diffValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg1);
+  line-height: 1.15;
+}
+
+.diffSub {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.diffBar {
+  margin-top: var(--s2);
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-200);
+  overflow: hidden;
+}
+
+.diffBarFill {
+  height: 100%;
+  background: var(--color-app-accent);
+  transition: width var(--dur-slow) var(--ease-std);
+}
+
+.diffEasy    { background: var(--color-diff-easy-bg);    border-color: var(--color-diff-easy-bd); }
+.diffEasy    .diffValue,
+.diffEasy    .diffLabel { color: var(--color-diff-easy-fg); }
+.diffEasy    .diffBarFill { background: var(--color-diff-easy-fg); }
+
+.diffMed     { background: var(--color-diff-med-bg);     border-color: var(--color-diff-med-bd); }
+.diffMed     .diffValue,
+.diffMed     .diffLabel { color: var(--color-diff-med-fg); }
+.diffMed     .diffBarFill { background: var(--color-diff-med-fg); }
+
+.diffHard    { background: var(--color-diff-hard-bg);    border-color: var(--color-diff-hard-bd); }
+.diffHard    .diffValue,
+.diffHard    .diffLabel { color: var(--color-diff-hard-fg); }
+.diffHard    .diffBarFill { background: var(--color-diff-hard-fg); }
+
+.diffVHard   { background: var(--color-diff-vhard-bg);   border-color: var(--color-diff-vhard-bd); }
+.diffVHard   .diffValue,
+.diffVHard   .diffLabel { color: var(--color-diff-vhard-fg); }
+.diffVHard   .diffBarFill { background: var(--color-diff-vhard-fg); }
+
+.diffExtreme { background: var(--color-diff-extreme-bg); border-color: var(--color-diff-extreme-bd); }
+.diffExtreme .diffValue,
+.diffExtreme .diffLabel { color: var(--color-diff-extreme-fg); }
+.diffExtreme .diffBarFill { background: var(--color-diff-extreme-fg); }
+
+/* ---------- Domain / skill list ---------- */
+
+.domainList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.domainRow {
+  padding: var(--s3);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.domainHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+}
+
+.domainName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.domainStats {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s3);
+  font-weight: 700;
+}
+
+.domainCount {
+  font-size: 12px;
+  color: var(--fg3);
+  font-weight: 500;
+}
+
+.domainBar {
+  margin-top: var(--s2);
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-200);
+  overflow: hidden;
+}
+
+.domainBarFill {
+  height: 100%;
+  background: var(--color-app-accent);
+  transition: width var(--dur-slow) var(--ease-std);
+}
+
+.skillList {
+  list-style: none;
+  padding: 0;
+  margin: var(--s3) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+  border-top: 1px dashed var(--border);
+  padding-top: var(--s2);
+}
+
+.skillRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  gap: var(--s3);
+}
+
+.skillName {
+  color: var(--fg2);
+}
+
+.skillStats {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s2);
+  font-weight: 600;
+}
+
+.skillCount {
+  font-size: 11px;
+  color: var(--fg3);
+  font-weight: 500;
+}
+
+/* Accuracy color coding used by both domain and skill rows. */
+.pctGood    { color: var(--color-diff-easy-fg); }
+.pctOk      { color: var(--color-diff-med-fg); }
+.pctBad     { color: var(--color-diff-hard-fg); }
+.pctNeutral { color: var(--fg3); }
+
+/* ---------- Question map ---------- */
+
+.mapGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 6px;
+}
+
+.mapItem {
+  position: relative;
+  padding: var(--s2) var(--s1);
+  background: var(--card);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  text-align: center;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.mapItem:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.mapItem_correct {
+  background: var(--color-diff-easy-bg);
+  border-color: var(--color-diff-easy-bd);
+  color: var(--color-diff-easy-fg);
+}
+
+.mapItem_incorrect {
+  background: var(--color-diff-hard-bg);
+  border-color: var(--color-diff-hard-bd);
+  color: var(--color-diff-hard-fg);
+}
+
+.mapItem_unanswered {
+  background: var(--color-slate-100);
+  border-color: var(--border);
+  color: var(--fg3);
+}
+
+.mapItemActive {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+}
+
+/* Small dot top-right to indicate the question's reveal has been
+   opened. Visual memory aid as the student scrubs through items. */
+.mapItemRevealed::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-app-highlight);
+}
+
+.mapNum { display: block; }
+
+.mapMark {
+  display: block;
+  font-size: 11px;
+  opacity: 0.85;
+  margin-top: 1px;
+}
+
+/* ---------- Selected question card ---------- */
+
+.questionCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.questionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--s3);
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--border);
+}
+
+.questionHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.questionHeaderRight {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+
+.questionNum {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg1);
+}
+
+.questionCode {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--fg3);
+}
+
+.questionMeta {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg3);
+  font-weight: 500;
+}
+
+.answerHint {
+  font-size: 12px;
+  color: var(--fg2);
+}
+
+.answerHint strong {
+  color: var(--fg1);
+  font-weight: 700;
+}
+
+.revealBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--s2) var(--s4);
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+
+.revealBtn:hover {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+
+.resultBadgeCorrect,
+.resultBadgeWrong {
+  display: inline-block;
+  padding: var(--s1) var(--s3);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.resultBadgeCorrect {
+  background: var(--color-diff-easy-bg);
+  color: var(--color-diff-easy-fg);
+}
+
+.resultBadgeWrong {
+  background: var(--color-diff-hard-bg);
+  color: var(--color-diff-hard-fg);
+}
+
+.missingNote {
+  color: var(--fg3);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ---------- Footer links ---------- */
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  margin-top: var(--s3);
+}
+
+.footerLink {
+  color: var(--fg2);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footerLink:hover { color: var(--color-app-accent); }
+
+.footerLinkPrimary {
+  color: var(--color-app-accent);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.footerLinkPrimary:hover { text-decoration: underline; }
+
+/* ---------- Timing band ---------- */
+
+.timing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.timingStats {
+  display: flex;
+  gap: var(--s4);
+  font-size: 12px;
+  color: var(--fg3);
+  flex-wrap: wrap;
+}
+.timingStats strong {
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.timingBarShell {
+  padding: 8px 0;
+}
+
+.timingBar {
+  display: flex;
+  width: 100%;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-slate-100);
+  gap: 1px;
+}
+
+.timingSeg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 10px;
+  font-weight: 700;
+  transition: transform var(--dur-fast) var(--ease-std),
+    filter var(--dur-fast) var(--ease-std);
+  overflow: hidden;
+}
+.timingSeg:hover,
+.timingSegActive {
+  transform: scaleY(1.12);
+  filter: brightness(1.12);
+  z-index: 1;
+}
+.timingSegNum {
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.timingSegCorrect { background: var(--color-diff-easy-fg); }
+.timingSegWrong   { background: var(--color-diff-hard-fg); }
+.timingSegMissing { background: var(--fg3); color: var(--bg-white); }
+
+.timingHover {
+  min-height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--fg2);
+  flex-wrap: wrap;
+}
+.timingHoverNum {
+  font-weight: 700;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+.timingHoverSkill { color: var(--fg1); font-weight: 600; }
+.timingHoverDot   { color: var(--fg3); }
+.timingHoverTime  { font-variant-numeric: tabular-nums; }
+.timingHoverCorrect { color: var(--color-diff-easy-fg); font-weight: 700; text-transform: capitalize; }
+.timingHoverWrong   { color: var(--color-diff-hard-fg); font-weight: 700; text-transform: capitalize; }
+.timingHoverMissing { color: var(--fg3); font-weight: 600; text-transform: capitalize; }
+.timingHoverPlaceholder { color: var(--fg3); font-style: italic; }
+
+/* ---------- Daily practice map ---------- */
+
+.dailyMap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.dailyMapRange {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+
+.dailyMapRangeTotal {
+  color: var(--fg1);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+.dailyMapStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 4px 0;
+}
+
+.dailyCell {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.dailyCellEmpty {
+  background: var(--color-slate-100);
+  border: 1px solid var(--border);
+}
+.dailyCell1 { background: color-mix(in srgb, var(--color-app-accent) 25%, var(--color-slate-100)); }
+.dailyCell2 { background: color-mix(in srgb, var(--color-app-accent) 45%, var(--color-slate-100)); }
+.dailyCell3 { background: color-mix(in srgb, var(--color-app-accent) 70%, var(--color-slate-100)); }
+.dailyCell4 { background: var(--color-app-accent); }

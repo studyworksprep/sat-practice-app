@@ -30,11 +30,20 @@ export default function RootLayout({ children }) {
           crossOrigin="anonymous"
         />
 
-        {/* MathJax config: enable MathML input + CHTML output */}
+        {/* MathJax config: enable both MathML and TeX input so
+            content authored either way renders. TeX uses the
+            standard \( \) inline + \[ \] / $$ display delimiters,
+            matching the Bluebook-source content. CHTML output
+            keeps native browser layout/font matching. */}
         <Script id="mathjax-config" strategy="beforeInteractive">
           {`
             window.MathJax = {
-              loader: { load: ['input/mml', 'output/chtml'] },
+              loader: { load: ['input/mml', 'input/tex', 'output/chtml'] },
+              tex: {
+                inlineMath: [['\\\\(', '\\\\)']],
+                displayMath: [['\\\\[', '\\\\]'], ['$$', '$$']],
+                processEscapes: true
+              },
               options: {
                 skipHtmlTags: ['script','noscript','style','textarea','pre','code']
               },

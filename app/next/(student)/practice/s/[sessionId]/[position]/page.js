@@ -23,11 +23,14 @@
 // row. See actions.js in this directory.
 
 import { notFound, redirect } from 'next/navigation';
+import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { applyWatermark } from '@/lib/content/watermark';
 import { submitAnswer } from '@/lib/practice/session-actions';
 import { loadReviewData } from '@/lib/practice/load-review-data';
 import { PracticeInteractive } from '@/lib/practice/PracticeInteractive';
+import { QuestionMap } from '@/lib/practice/QuestionMap';
+import { inferLayoutMode } from '@/lib/ui/question-layout';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +48,7 @@ export default async function PracticeQuestionPage({ params }) {
   // 1) Load the session. RLS pins this to the owning user.
   const { data: session, error: sessionErr } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, current_position, test_type, mode, expires_at')
+    .select('id, user_id, question_ids, current_position, test_type, mode, expires_at, status')
     .eq('id', sessionId)
     .maybeSingle();
 
@@ -55,12 +58,37 @@ export default async function PracticeQuestionPage({ params }) {
     redirect('/practice/start?expired=1');
   }
 
+  // Completed / abandoned sessions don't allow further question
+  // navigation — they live on the review report instead.
+  if (session.status === 'completed') {
+    redirect(
+      session.mode === 'review'
+        ? '/review?complete=1'
+        : `/practice/review/${sessionId}`,
+    );
+  }
+  if (session.status === 'abandoned') {
+    redirect('/practice/start?abandoned=1');
+  }
+
   const questionIds = Array.isArray(session.question_ids) ? session.question_ids : [];
   if (questionIds.length === 0) notFound();
   if (position >= questionIds.length) {
-    // Ran off the end — send them to the dashboard for now. A proper
-    // summary page lands in a follow-up commit.
-    redirect('/dashboard?session_complete=1');
+    // Ran off the end — close the session and land on the report.
+    // Guarded by status = 'in_progress' so the flip is idempotent.
+    await supabase
+      .from('practice_sessions')
+      .update({
+        status: 'completed',
+        last_activity_at: new Date().toISOString(),
+      })
+      .eq('id', sessionId)
+      .eq('status', 'in_progress');
+    redirect(
+      session.mode === 'review'
+        ? '/review?complete=1'
+        : `/practice/review/${sessionId}`,
+    );
   }
 
   const questionId = questionIds[position];
@@ -79,20 +107,22 @@ export default async function PracticeQuestionPage({ params }) {
       .then(() => {}, () => {});
   }
 
-  // 3) Load the question content from questions_v2. The v2 row has
-  //    stem/stimulus/rationale + options (jsonb) + correct_answer
-  //    (jsonb) + taxonomy fields all inline. One query.
+  // 3) Load the question content from questions_v2 + the student's
+  //    prior attempt (for resume-reveal) + the full status list for
+  //    the question map footer. One Promise.all; three independent
+  //    queries.
   const [
     { data: question },
     { data: lastAttempt },
+    { data: sessionAttempts },
+    { data: sessionPublished },
   ] = await Promise.all([
     supabase
       .from('questions_v2')
       .select(
-        'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_name, skill_name, difficulty, score_band, display_code, is_broken',
+        'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_code, domain_name, skill_name, difficulty, score_band, display_code, is_broken, is_published, deleted_at',
       )
       .eq('id', questionId)
-      .eq('is_published', true)
       .maybeSingle(),
     supabase
       .from('attempts')
@@ -102,9 +132,60 @@ export default async function PracticeQuestionPage({ params }) {
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    // All of this user's attempts for this session's question set.
+    // Used to stamp correct / incorrect pills on the question map.
+    // Latest attempt per question_id wins if a student re-tried.
+    supabase
+      .from('attempts')
+      .select('question_id, is_correct, created_at')
+      .eq('user_id', user.id)
+      .in('question_id', questionIds)
+      .order('created_at', { ascending: false }),
+    // Publish / deletion check across the whole session — one IN
+    // query instead of per-position round-trips. Rows missing from
+    // the result are "removed" (deleted, unpublished, or missing).
+    supabase
+      .from('questions_v2')
+      .select('id, is_published, deleted_at')
+      .in('id', questionIds),
   ]);
 
-  if (!question) notFound();
+  // Question-removed / invalid state. Instead of notFound() — which
+  // would take the student out of the session entirely — render a
+  // soft "this question isn't available" state with the question
+  // map still visible so they can jump elsewhere.
+  const questionRemoved = !question
+    || question.deleted_at
+    || !question.is_published;
+
+  // Build the map items once, reused in both the happy-path render
+  // and the question-removed render.
+  const mapItems = buildMapItems({
+    questionIds,
+    publishedRows: sessionPublished ?? [],
+    attempts: sessionAttempts ?? [],
+  });
+
+  if (questionRemoved) {
+    return (
+      <main style={REMOVED_S.main}>
+        <h1 style={REMOVED_S.h1}>This question was removed</h1>
+        <p style={REMOVED_S.sub}>
+          It was either unpublished or deleted after your session was
+          created. Pick another question from the map below, or{' '}
+          <Link href="/practice/start" style={REMOVED_S.link}>
+            start a new session
+          </Link>.
+        </p>
+        <QuestionMap
+          basePath="/practice"
+          sessionId={sessionId}
+          currentPosition={position}
+          items={mapItems}
+        />
+      </main>
+    );
+  }
 
   // 4) Apply per-user watermarking to all HTML content before
   //    embedding. Invisible to real students, decodable from leaked
@@ -152,7 +233,14 @@ export default async function PracticeQuestionPage({ params }) {
     stimulusHtml,
     stemHtml,
     options: wmOptions,
+    // Layout preference from domain_code: reading-section domains
+    // (CAS/EOI/INI/SEC) → two-column (passage on the left, stem +
+    // options on the right); math domains render single-column.
+    // The renderer also falls back to single-column if there's no
+    // stimulus or the viewport is narrow.
+    layout: inferLayoutMode(question.domain_code),
     taxonomy: {
+      domain_code: question.domain_code,
       domain_name: question.domain_name,
       skill_name: question.skill_name,
       difficulty: question.difficulty,
@@ -194,23 +282,63 @@ export default async function PracticeQuestionPage({ params }) {
     mode: session.mode,
   };
 
-  // Review-mode sessions exit back to the review list; practice-mode
-  // sessions exit to the student dashboard. Same page handles both
-  // because the only difference is where the student lands at the end.
+  // Review-mode sessions exit back to the review pool list;
+  // practice-mode sessions exit to the per-session report. Same
+  // page handles both because the only difference is where the
+  // student lands at the end.
   const sessionCompleteHref =
     session.mode === 'review'
       ? '/review?complete=1'
-      : '/dashboard?session_complete=1';
+      : `/practice/review/${sessionId}`;
 
   return (
-    <PracticeInteractive
-      key={`${sessionId}-${position}`}
-      question={questionVM}
-      session={sessionVM}
-      initialAttempt={initialAttempt}
-      submitAnswerAction={submitAnswer}
-      basePath="/practice"
-      sessionCompleteHref={sessionCompleteHref}
-    />
+    <>
+      <PracticeInteractive
+        key={`${sessionId}-${position}`}
+        question={questionVM}
+        session={sessionVM}
+        initialAttempt={initialAttempt}
+        submitAnswerAction={submitAnswer}
+        basePath="/practice"
+        sessionCompleteHref={sessionCompleteHref}
+      />
+      <QuestionMap
+        basePath="/practice"
+        sessionId={sessionId}
+        currentPosition={position}
+        items={mapItems}
+        canSubmit={session.mode === 'practice'}
+      />
+    </>
   );
 }
+
+// ──────────────────────────────────────────────────────────────
+// Build the per-position item array the QuestionMap renders.
+// Latest attempt per question_id wins (attempts are already
+// ordered created_at desc by the caller). Missing from the
+// published-rows lookup = removed.
+// ──────────────────────────────────────────────────────────────
+
+function buildMapItems({ questionIds, publishedRows, attempts }) {
+  const publishedById = new Map(publishedRows.map((r) => [r.id, r]));
+  const latestByQid = new Map();
+  for (const a of attempts) {
+    if (!latestByQid.has(a.question_id)) latestByQid.set(a.question_id, a);
+  }
+  return questionIds.map((qid, i) => {
+    const pub = publishedById.get(qid);
+    const isRemoved = !pub || pub.deleted_at || !pub.is_published;
+    if (isRemoved) return { position: i, status: 'removed' };
+    const att = latestByQid.get(qid);
+    if (!att) return { position: i, status: 'unanswered' };
+    return { position: i, status: att.is_correct ? 'correct' : 'incorrect' };
+  });
+}
+
+const REMOVED_S = {
+  main: { maxWidth: 720, margin: '3rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
+  h1: { fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' },
+  sub: { color: '#4b5563', lineHeight: 1.5 },
+  link: { color: '#2563eb', textDecoration: 'none', fontWeight: 600 },
+};

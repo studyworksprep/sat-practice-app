@@ -1,0 +1,390 @@
+/* =============================================================
+   QuestionRenderer — design-kit qaTwoCol + option card styles.
+   Tokens are read from [data-tree="next"] in
+   app/styles/next-tokens.css.
+============================================================= */
+
+/* Root wrapper that hosts the math-typeset effect's ref. Uses
+   display: contents so the wrapping div doesn't appear in the
+   layout tree — descendants flow into the parent's flex/grid as
+   if the wrapper weren't there. */
+.typesetRoot {
+  display: contents;
+}
+
+/* ---------- Taxonomy strip (teacher mode) ---------- */
+
+.taxonomy {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+  margin: 0 0 var(--s3);
+}
+
+/* ---------- Stimulus (single-column variant) ---------- */
+
+.stimulus {
+  padding: var(--s4) var(--s5);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--s4);
+  font-size: var(--prose-size);
+  line-height: var(--prose-lh);
+  color: var(--color-slate-700);
+}
+
+/* Column variant — no own border; the twoCol card is the frame. */
+.stimulusColumn {
+  padding: 0;
+  font-size: var(--prose-size);
+  line-height: var(--prose-lh);
+  color: var(--color-slate-700);
+}
+
+/* ---------- Two-column card ---------- */
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+/* Wide viewports get the two-pane grid. Narrow stacks single-col. */
+@media (min-width: 820px) {
+  .twoCol {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.twoColLeft {
+  padding: var(--s5) var(--s6);
+  min-width: 0;
+  border-right: 1px solid var(--border);
+  font-size: var(--prose-size);
+  line-height: var(--prose-lh);
+  color: var(--color-slate-700);
+}
+
+.twoColRight {
+  padding: var(--s5) var(--s6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  min-width: 0;
+}
+
+/* Stacked variant — on narrow viewports the divider moves from
+   right to bottom of the left pane. */
+@media (max-width: 819.9px) {
+  .twoColLeft {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/* ---------- Slot variant (Desmos-style collapsible left pane) ----------
+
+   The transition is gated by the .slotAnimated flag so the initial
+   mount — which may restore a saved-open state from localStorage —
+   doesn't run the grid-track animation. After the user clicks the
+   calculator button, the caller flips slotAnimate on and subsequent
+   toggles animate normally. */
+
+.slotAnimated {
+  transition: grid-template-columns var(--dur-slow) var(--ease-std);
+}
+
+@media (min-width: 820px) {
+  .slotOpen {
+    grid-template-columns: 1fr 1fr;
+  }
+  .slotCollapsed {
+    grid-template-columns: 0fr 1fr;
+  }
+}
+
+/* When the slot pane is collapsed, strip its padding + divider so
+   nothing bleeds from the zero-width track. */
+.slotPane {
+  overflow: hidden;
+}
+.slotPaneCollapsed {
+  padding: 0;
+  border-right: none;
+  overflow: hidden;
+}
+
+/* On narrow viewports the slot pane is hidden outright — a
+   graphing calculator panel doesn't fit beside the stem on
+   phones. */
+@media (max-width: 819.9px) {
+  .slotPane,
+  .slotPaneCollapsed {
+    display: none;
+  }
+}
+
+/* ---------- Stem ---------- */
+
+.stem {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--fg1);
+  font-weight: 500;
+}
+
+/* ---------- Option list ---------- */
+
+.optionsFieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  /* Override browser default on fieldset so options fill the
+     flex-column container instead of shrinking to smallest word. */
+  min-inline-size: 0;
+  width: 100%;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s4);
+  padding: var(--s4);
+  background: var(--card);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.option:hover {
+  border-color: var(--color-app-accent);
+  background: var(--color-app-accent-soft);
+}
+
+.optionSelected {
+  border-color: var(--color-app-accent);
+  background: var(--color-app-accent-soft);
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.optionCorrect {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+  box-shadow: var(--shadow-ring-success);
+}
+
+.optionWrong {
+  border-color: var(--color-danger);
+  background: var(--color-danger-bg);
+  box-shadow: var(--shadow-ring-danger);
+}
+
+.optionDisabled {
+  cursor: default;
+}
+.optionDisabled:hover {
+  background: var(--card);
+  border-color: var(--border-strong);
+}
+.optionSelected.optionDisabled:hover {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+}
+.optionCorrect.optionDisabled:hover {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+}
+.optionWrong.optionDisabled:hover {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
+
+.radio {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.optionBadge {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  border: 1.5px solid var(--border-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--fg1);
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.option:hover .optionBadge {
+  background: var(--color-app-accent);
+  border-color: var(--color-app-accent);
+  color: #fff;
+}
+.option.optionDisabled:hover .optionBadge {
+  background: var(--card);
+  border-color: var(--border-strong);
+  color: var(--fg1);
+}
+
+.optionBadgeSelected {
+  background: var(--color-app-accent) !important;
+  border-color: var(--color-app-accent) !important;
+  color: #fff !important;
+}
+
+.optionBadgeCorrect {
+  background: var(--color-success) !important;
+  border-color: var(--color-success) !important;
+  color: #fff !important;
+}
+
+.optionBadgeWrong {
+  background: var(--color-danger) !important;
+  border-color: var(--color-danger) !important;
+  color: #fff !important;
+}
+
+.optionContent {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-slate-700);
+}
+
+/* ---------- SPR input ---------- */
+
+.sprWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.sprLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+  margin: 0;
+}
+
+.sprInput {
+  padding: var(--s3) var(--s4);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  max-width: 260px;
+  font-family: var(--font-mono);
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.sprInput:focus-visible {
+  outline: none;
+  border-color: var(--color-app-accent);
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.sprInputCorrect {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+  box-shadow: var(--shadow-ring-success);
+}
+
+.sprInputWrong {
+  border-color: var(--color-danger);
+  background: var(--color-danger-bg);
+  box-shadow: var(--shadow-ring-danger);
+}
+
+.sprHint {
+  color: var(--fg3);
+  font-size: 12px;
+  margin: 0;
+}
+
+/* ---------- Result banner ---------- */
+
+.result {
+  margin-top: var(--s2);
+  padding: var(--s4);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.resultBadge {
+  display: inline-block;
+  padding: var(--s1) var(--s3);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+
+.resultBadgeCorrect {
+  background: var(--color-diff-easy-bg);
+  color: var(--color-diff-easy-fg);
+}
+
+.resultBadgeWrong {
+  background: var(--color-diff-hard-bg);
+  color: var(--color-diff-hard-fg);
+}
+
+.correctAnswer {
+  margin: 0;
+  padding: var(--s3) var(--s4);
+  background: var(--color-app-highlight-soft);
+  border: 1px solid var(--color-gold-200);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--color-gold-800);
+}
+
+.rationale {
+  line-height: 1.65;
+  font-size: 14px;
+  color: var(--color-slate-700);
+  border-left: 3px solid var(--color-app-accent);
+  padding-left: var(--s4);
+  margin-top: var(--s2);
+}
