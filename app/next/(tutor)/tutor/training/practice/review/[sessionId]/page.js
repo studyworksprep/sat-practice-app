@@ -4,20 +4,15 @@
 // the session lookup pinned to the training-mode rows the
 // teacher's own training sessions write.
 //
-// The ReviewInteractive client component is imported across-tree
-// from the student route. It's a generic component (renders a
-// pre-built view-model) and lives there only because that's
-// where it was first written; promoting it to lib/practice is a
-// follow-up. Cross-tree imports work because the (student)
-// folder is a route group, not a path segment, so module
-// resolution treats it like any other folder.
+// The ReviewInteractive client component lives in lib/practice/
+// so both trees can import it without a cross-tree path.
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
-import { ReviewInteractive } from '../../../../../../(student)/practice/review/[sessionId]/ReviewInteractive';
+import { ReviewInteractive } from '@/lib/practice/ReviewInteractive';
 
 export const dynamic = 'force-dynamic';
 

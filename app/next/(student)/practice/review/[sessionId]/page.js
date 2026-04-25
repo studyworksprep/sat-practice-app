@@ -23,7 +23,7 @@ import { requireUser } from '@/lib/api/auth';
 import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
-import { ReviewInteractive } from './ReviewInteractive';
+import { ReviewInteractive } from '@/lib/practice/ReviewInteractive';
 
 export const dynamic = 'force-dynamic';
 
