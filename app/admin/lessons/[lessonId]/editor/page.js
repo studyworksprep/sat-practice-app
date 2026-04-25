@@ -89,6 +89,16 @@ function InternalLessonEditor() {
   const [importSpecText, setImportSpecText] = useState(IMPORT_EXAMPLES.equivalent_expressions);
   const [importMode, setImportMode] = useState('append');
   const [importResult, setImportResult] = useState(null);
+  const importKindSummary = useMemo(() => {
+    const parsed = parseLessonTemplateSpecText(importSpecText);
+    if (parsed.error || !Array.isArray(parsed.spec?.blocks)) return {};
+    const counts = {};
+    for (const block of parsed.spec.blocks) {
+      const kind = String(block?.kind || 'unknown');
+      counts[kind] = (counts[kind] || 0) + 1;
+    }
+    return counts;
+  }, [importSpecText]);
 
   useEffect(() => {
     Promise.all([
@@ -275,6 +285,10 @@ function InternalLessonEditor() {
     setDirty(true);
   }
 
+  function cancelImportPreview() {
+    setImportResult(null);
+  }
+
   async function handleSave() {
     if (jsonError) {
       setError('Fix JSON parse errors before saving.');
@@ -418,6 +432,7 @@ function InternalLessonEditor() {
         />
         <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <button className="btn secondary" onClick={validateImportSpec}>Validate</button>
+          <button className="btn secondary" onClick={cancelImportPreview} disabled={!importResult}>Cancel</button>
           <label style={{ fontSize: 12 }}>
             Insertion mode
             <select value={importMode} onChange={(e) => setImportMode(e.target.value)} style={{ marginLeft: 8 }}>
@@ -436,6 +451,9 @@ function InternalLessonEditor() {
         {importResult && (
           <div style={{ marginTop: 10, fontSize: 12 }}>
             <div>Generated blocks: <strong>{importResult.blocks.length}</strong></div>
+            <div style={{ marginTop: 4 }}>
+              Kinds: {Object.entries(importKindSummary).length === 0 ? '—' : Object.entries(importKindSummary).map(([kind, count]) => `${kind} (${count})`).join(', ')}
+            </div>
             <div style={{ marginTop: 6, display: 'grid', gap: 6 }}>
               {importResult.issues.map((entry, idx) => (
                 <div key={`issue-${idx}`} style={{ border: '1px solid var(--border, #ddd)', borderRadius: 6, padding: 6 }}>
