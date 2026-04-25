@@ -63,18 +63,34 @@ export default async function TutorAssignmentDetailPage({ params }) {
       : [];
   const studentIds = (junctionRows ?? []).map((r) => r.student_id);
 
-  let attemptRows = [];
-  if (questionIds.length > 0 && studentIds.length > 0) {
-    const { data } = await supabase
-      .from('attempts')
-      .select('user_id, question_id, is_correct, created_at')
-      .in('user_id', studentIds)
-      .in('question_id', questionIds)
-      .order('created_at', { ascending: false });
-    attemptRows = data ?? [];
-  }
+  // Two parallel reads: per-student attempts (latest wins for the
+  // correctness flag) and the question metadata so the Questions
+  // section below can show display_code + skill + per-question
+  // cohort accuracy. Skipped when the assignment has no question
+  // pool (lesson / practice-test types).
+  const [attemptRowsRes, questionMetaRes] = await Promise.all([
+    questionIds.length > 0 && studentIds.length > 0
+      ? supabase
+          .from('attempts')
+          .select('user_id, question_id, is_correct, created_at')
+          .in('user_id', studentIds)
+          .in('question_id', questionIds)
+          .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
+    questionIds.length > 0
+      ? supabase
+          .from('questions_v2')
+          .select('id, display_code, domain_name, skill_name, difficulty')
+          .in('id', questionIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const attemptRows = attemptRowsRes.data ?? [];
+  const questionMeta = new Map(
+    (questionMetaRes.data ?? []).map((q) => [q.id, q]),
+  );
 
   const statusByStudent = new Map();
+  const statusByQuestion = new Map();  // qid → { done, correct }
   const seenPairs = new Set();
   let cohortDone = 0;
   let cohortCorrect = 0;
@@ -86,6 +102,10 @@ export default async function TutorAssignmentDetailPage({ params }) {
     t.done += 1;
     if (r.is_correct) t.correct += 1;
     statusByStudent.set(r.user_id, t);
+    const q = statusByQuestion.get(r.question_id) ?? { done: 0, correct: 0 };
+    q.done += 1;
+    if (r.is_correct) q.correct += 1;
+    statusByQuestion.set(r.question_id, q);
     cohortDone += 1;
     if (r.is_correct) cohortCorrect += 1;
   }
@@ -278,6 +298,93 @@ export default async function TutorAssignmentDetailPage({ params }) {
           </div>
         )}
       </section>
+
+      {assignment.assignment_type === 'questions' && questionIds.length > 0 && (
+        <section className={s.card}>
+          <div className={s.cardHeader}>
+            <div>
+              <div className={s.h2}>Questions</div>
+              <div className={s.cardHint}>
+                {students.length === 1
+                  ? "What's been assigned and how this student has done so far."
+                  : "What's been assigned and the cohort's accuracy on each question."}
+              </div>
+            </div>
+            <span className={s.cardTag}>{questionIds.length} total</span>
+          </div>
+          <ul className={s.questionList}>
+            {questionIds.map((qid, i) => {
+              const meta = questionMeta.get(qid) ?? null;
+              const stat = statusByQuestion.get(qid) ?? { done: 0, correct: 0 };
+              const isSingleStudent = students.length === 1;
+              const studentTotal = students.length;
+              const accuracyPct =
+                stat.done > 0 ? Math.round((stat.correct / stat.done) * 100) : null;
+
+              let statusText;
+              let statusClass;
+              if (isSingleStudent) {
+                if (stat.done === 0) {
+                  statusText = 'Unanswered';
+                  statusClass = s.qStatusPending;
+                } else if (stat.correct > 0) {
+                  statusText = 'Correct';
+                  statusClass = s.qStatusCorrect;
+                } else {
+                  statusText = 'Wrong';
+                  statusClass = s.qStatusWrong;
+                }
+              } else {
+                statusText =
+                  stat.done === 0
+                    ? `0 of ${studentTotal} attempted`
+                    : `${stat.correct} of ${stat.done} correct${
+                        accuracyPct != null ? ` · ${accuracyPct}%` : ''
+                      }`;
+                statusClass =
+                  accuracyPct == null
+                    ? s.qStatusPending
+                    : accuracyPct >= 80
+                      ? s.qStatusCorrect
+                      : accuracyPct >= 50
+                        ? s.qStatusOk
+                        : s.qStatusWrong;
+              }
+
+              return (
+                <li key={qid} className={s.qRow}>
+                  <span className={s.qIndex}>{i + 1}</span>
+                  <div className={s.qInfo}>
+                    <div className={s.qCode}>
+                      {meta?.display_code ?? qid.slice(0, 8)}
+                    </div>
+                    <div className={s.qMeta}>
+                      {meta?.domain_name && (
+                        <span>{meta.domain_name}</span>
+                      )}
+                      {meta?.skill_name && (
+                        <>
+                          {meta.domain_name && <span className={s.muted}> · </span>}
+                          <span>{meta.skill_name}</span>
+                        </>
+                      )}
+                      {meta?.difficulty != null && (
+                        <>
+                          <span className={s.muted}> · </span>
+                          <span>diff {meta.difficulty}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <span className={`${s.qStatus} ${statusClass}`}>
+                    {statusText}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </main>
   );
 }
