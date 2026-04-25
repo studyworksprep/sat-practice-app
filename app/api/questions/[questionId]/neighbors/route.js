@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
-export async function GET(req, props) {
+export const GET = legacyApiRoute(async (req, props) => {
   const params = await props.params;
-  const supabase = await createClient();
-
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  }
+  const { user, supabase } = await requireUser();
 
   const currentId = params?.questionId; // ✅ FIX HERE
   if (!currentId) {
@@ -23,7 +19,7 @@ export async function GET(req, props) {
   const topic = searchParams.get('topic');
   const marked_only = searchParams.get('marked_only') === 'true';
 
-  const userId = auth.user.id;
+  const userId = user.id;
 
   const args = {
     current_question_id: currentId,
@@ -46,4 +42,4 @@ export async function GET(req, props) {
     prev_id: row?.prev_id ?? null,
     next_id: row?.next_id ?? null,
   });
-}
+});

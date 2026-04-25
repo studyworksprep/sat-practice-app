@@ -1,29 +1,18 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/teachers/[teacherId] — teacher detail with assigned students and their activity
-export async function GET(_request, props) {
+export const GET = legacyApiRoute(async (_request, props) => {
   const params = await props.params;
   const { teacherId } = params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: adminProfile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (adminProfile?.role !== 'admin' && adminProfile?.role !== 'manager') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  // Use service client for cross-user queries (auth already verified above)
-  const svc = createServiceClient();
+  const { user, profile, service: svc } = await requireServiceRole(
+    'manager/admin teacher detail — cross-teacher roster + training aggregate',
+    { allowedRoles: ['manager', 'admin'] },
+  );
 
   // If manager, verify they are assigned to this teacher
-  if (adminProfile.role === 'manager') {
+  if (profile.role === 'manager') {
     const { data: mta } = await svc
       .from('manager_teacher_assignments')
       .select('teacher_id')
@@ -337,4 +326,4 @@ export async function GET(_request, props) {
       domainMastery: teacherDomainMastery,
     },
   });
-}
+});

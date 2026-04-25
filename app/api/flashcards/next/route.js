@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/flashcards/next?set_id=xxx&exclude_id=yyy
 // Returns a single card, weighted inversely by mastery (lower mastery = more likely).
 // exclude_id prevents showing the same card twice in a row.
-export async function GET(req) {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+export const GET = legacyApiRoute(async (req) => {
+  const { user, supabase } = await requireUser();
 
   const setId = req.nextUrl.searchParams.get('set_id');
   const excludeId = req.nextUrl.searchParams.get('exclude_id');
@@ -18,7 +17,7 @@ export async function GET(req) {
     .from('flashcard_sets')
     .select('id')
     .eq('id', setId)
-    .eq('user_id', auth.user.id)
+    .eq('user_id', user.id)
     .single();
   if (!set) return NextResponse.json({ error: 'Set not found' }, { status: 404 });
 
@@ -45,4 +44,4 @@ export async function GET(req) {
   }
 
   return NextResponse.json({ card: chosen });
-}
+});

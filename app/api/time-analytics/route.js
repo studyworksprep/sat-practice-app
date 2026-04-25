@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/time-analytics — per-question time analytics
-export async function GET(request) {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  const user = auth.user;
+export const GET = legacyApiRoute(async (request) => {
+  const { user, supabase } = await requireUser();
 
   const { searchParams } = new URL(request.url);
   const questionId = searchParams.get('question_id');
@@ -116,4 +114,4 @@ export async function GET(request) {
     avgIncorrectMs: avg(incorrectTimes),
     totalQuestions: firstAttemptMap.size,
   });
-}
+});

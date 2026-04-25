@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
+import { createServiceClient } from '../../../lib/supabase/server';
 
 // GET /api/questions
 // Params: difficulties=1,2,3 | score_bands=1,2 | domains=Algebra,... | topics=Linear+Functions,...
 //         wrong_only | marked_only | hide_broken | q | limit | offset
-export async function GET(request) {
+export const GET = legacyApiRoute(async (request) => {
   const { searchParams } = new URL(request.url);
 
   // Multi-value difficulty (replaces single 'difficulty')
@@ -49,10 +51,11 @@ export async function GET(request) {
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
   const balanced = searchParams.get('balanced') === 'true';
 
-  const supabase = await createClient();
+  const { user, supabase } = await requireUser();
+  const userId = user.id;
 
-  // Step 1: Auth + search + user-specific restriction queries in parallel
-  const step1 = [supabase.auth.getUser()];
+  // Step 1: search + user-specific restriction queries in parallel
+  const step1 = [];
 
   // Search queries (don't need userId)
   if (qText) {
@@ -92,14 +95,9 @@ export async function GET(request) {
 
   const step1Results = await Promise.all(step1);
 
-  const { data: auth, error: authErr } = step1Results[0];
-  if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 });
-  const user = auth?.user ?? null;
-  const userId = user?.id ?? null;
-
   // Build restriction set from step 1 results
   let restrictIds = null;
-  let s1idx = 1;
+  let s1idx = 0;
 
   // Search results
   if (qText) {
@@ -369,7 +367,7 @@ export async function GET(request) {
   const totalCount = typeof count === 'number' ? count : 0;
 
   return NextResponse.json({ items, totalCount });
-}
+});
 
 // Intersect an existing restriction set with a new list.
 // If existing is null (no restriction yet), the new list becomes the restriction.

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/flashcards?set_id=xxx&page=1&page_size=25 — list cards in a set
 //
@@ -7,10 +8,8 @@ import { createClient } from '../../../lib/supabase/server';
 // page_size=25. page_size is clamped to a max of 100 so a misbehaving
 // client can't ask for 10,000 cards at once. Returns { cards, total,
 // page, pageSize, hasMore } so the caller can render a paginator.
-export async function GET(req) {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+export const GET = legacyApiRoute(async (req) => {
+  const { user, supabase } = await requireUser();
 
   const setId = req.nextUrl.searchParams.get('set_id');
   if (!setId) return NextResponse.json({ error: 'set_id required' }, { status: 400 });
@@ -30,7 +29,7 @@ export async function GET(req) {
     .from('flashcard_sets')
     .select('id')
     .eq('id', setId)
-    .eq('user_id', auth.user.id)
+    .eq('user_id', user.id)
     .single();
   if (!set) return NextResponse.json({ error: 'Set not found' }, { status: 404 });
 
@@ -51,13 +50,11 @@ export async function GET(req) {
     pageSize,
     hasMore: from + (cards?.length || 0) < total,
   });
-}
+});
 
 // POST /api/flashcards — create a new flashcard
-export async function POST(req) {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+export const POST = legacyApiRoute(async (req) => {
+  const { user, supabase } = await requireUser();
 
   const { set_id, front, back } = await req.json();
   if (!set_id || !front?.trim() || !back?.trim()) {
@@ -69,7 +66,7 @@ export async function POST(req) {
     .from('flashcard_sets')
     .select('id')
     .eq('id', set_id)
-    .eq('user_id', auth.user.id)
+    .eq('user_id', user.id)
     .single();
   if (!set) return NextResponse.json({ error: 'Set not found' }, { status: 404 });
 
@@ -81,13 +78,11 @@ export async function POST(req) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ card: data });
-}
+});
 
 // PATCH /api/flashcards — update mastery rating and/or front/back text
-export async function PATCH(req) {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+export const PATCH = legacyApiRoute(async (req) => {
+  const { user, supabase } = await requireUser();
 
   const body = await req.json();
   const { card_id, mastery, front, back } = body;
@@ -126,7 +121,7 @@ export async function PATCH(req) {
     .from('flashcard_sets')
     .select('id')
     .eq('id', card.set_id)
-    .eq('user_id', auth.user.id)
+    .eq('user_id', user.id)
     .single();
   if (!set) return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
 
@@ -139,13 +134,11 @@ export async function PATCH(req) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true, card: updated });
-}
+});
 
 // DELETE /api/flashcards — delete a card
-export async function DELETE(req) {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+export const DELETE = legacyApiRoute(async (req) => {
+  const { user, supabase } = await requireUser();
 
   const cardId = req.nextUrl.searchParams.get('card_id');
   if (!cardId) return NextResponse.json({ error: 'card_id required' }, { status: 400 });
@@ -162,11 +155,11 @@ export async function DELETE(req) {
     .from('flashcard_sets')
     .select('id')
     .eq('id', card.set_id)
-    .eq('user_id', auth.user.id)
+    .eq('user_id', user.id)
     .single();
   if (!set) return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
 
   const { error } = await supabase.from('flashcards').delete().eq('id', cardId);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true });
-}
+});

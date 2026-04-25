@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/act/dashboard
 // Returns ACT-specific dashboard data: section/category stats, recent accuracy, sessions, streak
-export async function GET() {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  const userId = auth.user.id;
+export const GET = legacyApiRoute(async () => {
+  const { user, supabase } = await requireUser();
+  const userId = user.id;
 
   // Parallel batch: attempts + profile
   const [{ data: attempts, error: attErr }, { data: profile }] = await Promise.all([
@@ -199,4 +198,4 @@ export async function GET() {
     strongest,
     weakest,
   });
-}
+});
