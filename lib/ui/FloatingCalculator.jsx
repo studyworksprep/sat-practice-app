@@ -31,11 +31,16 @@ import s from './FloatingCalculator.module.css';
  * @param {string} props.storageKey — Desmos localStorage key.
  * @param {string} [props.buttonClassName]
  * @param {string} [props.label='Calculator']
+ * @param {(calc: any|null) => void} [props.onCalcReady] — forwarded
+ *   to the inner DesmosPanel; receives the live calculator instance
+ *   once it mounts and `null` when the panel closes/unmounts. Used
+ *   by DesmosSavedStateButton to wire its Save / Load actions.
  */
 export function FloatingCalculator({
   storageKey,
   buttonClassName,
   label = 'Calculator',
+  onCalcReady,
 }) {
   const [open, setOpen] = useState(false);
   // null means "use the default bottom-right CSS position". After
@@ -160,7 +165,7 @@ export function FloatingCalculator({
             </button>
           </div>
           <div className={s.body}>
-            <DesmosPanel isOpen storageKey={storageKey} />
+            <DesmosPanel isOpen storageKey={storageKey} onCalcReady={onCalcReady} />
           </div>
         </div>
       )}
