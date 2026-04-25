@@ -11,10 +11,11 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
+import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { BookmarkIcon } from '@/lib/ui/icons';
 import s from './TestResults.module.css';
 
@@ -36,6 +37,7 @@ export function TestResultsInteractive({
   timing,
   reviewItems,
   pdfData,
+  desmosCanSave = false,
 }) {
   const [selectedOrdinal, setSelectedOrdinal] = useState(
     reviewItems.find((r) => !r.missing)?.ordinal ?? reviewItems[0]?.ordinal ?? 1,
@@ -46,6 +48,11 @@ export function TestResultsInteractive({
 
   const selected = reviewItems.find((r) => r.ordinal === selectedOrdinal) ?? reviewItems[0];
   const isRevealed = revealed.has(selected?.ordinal);
+
+  // Live calc handle for the saved-state button. The
+  // FloatingCalculator below renders a single panel for the whole
+  // results view, so the same ref serves every selected question.
+  const calcRef = useRef(null);
   const isMathItem = selected?.subject === 'MATH';
 
   function reveal(ordinal) {
@@ -293,6 +300,16 @@ export function TestResultsInteractive({
               {isMathItem && (
                 <FloatingCalculator
                   storageKey={`desmos:review:test:${attemptId}`}
+                  onCalcReady={(c) => { calcRef.current = c; }}
+                />
+              )}
+              {isMathItem && (desmosCanSave || selected?.desmosSavedState != null) && (
+                <DesmosSavedStateButton
+                  key={`desmos-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  initialSavedState={selected.desmosSavedState ?? null}
+                  canSave={desmosCanSave}
+                  calcRef={calcRef}
                 />
               )}
               {!isRevealed && !selected.missing && (

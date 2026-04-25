@@ -16,6 +16,7 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { loadDesmosSavedState } from '@/lib/practice/load-desmos-saved-state';
 import { applyWatermark } from '@/lib/content/watermark';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
 import {
@@ -199,6 +200,15 @@ export default async function PracticeTestRunnerPage({ params }) {
     testName: mod.practice_test?.name ?? 'Practice test',
   };
 
+  // Saved Desmos state (manager-supplied solutions). Math modules
+  // only — reading/writing modules don't get the calculator panel
+  // and never have saved states. Students see the load button when
+  // a state exists; managers/admins (training mode against the
+  // same module) get the popover with Save/Delete too.
+  const desmos = moduleInfo.subject === 'MATH'
+    ? await loadDesmosSavedState({ questionId: question.id, role: profile.role })
+    : { savedState: null, canSave: false };
+
   return (
     <TestRunnerInteractive
       attemptId={attemptId}
@@ -213,6 +223,8 @@ export default async function PracticeTestRunnerPage({ params }) {
       recordItemAnswerAction={recordItemAnswer}
       toggleMarkForReviewAction={toggleMarkForReview}
       finishModuleAction={finishModule}
+      desmosSavedState={desmos.savedState}
+      desmosCanSave={desmos.canSave}
     />
   );
 }

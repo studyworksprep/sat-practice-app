@@ -39,8 +39,8 @@ export default async function TutorTrainingReviewPage({ params }) {
   const questionIds = Array.isArray(session.question_ids) ? session.question_ids : [];
   if (questionIds.length === 0) notFound();
 
-  const { sessionMeta, items, metrics, timing, assignment } =
-    await buildSessionReview({ supabase, user, session });
+  const { sessionMeta, items, metrics, timing, assignment, desmosCanSave } =
+    await buildSessionReview({ supabase, user, role: profile.role, session });
 
   return (
     <ReviewInteractive
@@ -49,6 +49,7 @@ export default async function TutorTrainingReviewPage({ params }) {
       metrics={metrics}
       timing={timing}
       assignment={assignment}
+      desmosCanSave={desmosCanSave}
     />
   );
 }
