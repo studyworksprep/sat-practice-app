@@ -885,6 +885,20 @@ export default function AdminDashboard() {
       {activeTab === 'overview' && <>
         <h2 className="h2" style={{ marginBottom: 16 }}>Site Overview</h2>
 
+        <section className="adminSection">
+          <div className="adminSectionHeader">
+            <h3 className="h2" style={{ margin: 0 }}>Lesson Creation Tools</h3>
+          </div>
+          <div className="card" style={{ padding: 14, display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+            <p className="muted small" style={{ margin: 0 }}>
+              Manage lessons and open the internal lesson editor from the teacher content area.
+            </p>
+            <Link href="/teacher/content" className="btn secondary" style={{ fontSize: 12, padding: '4px 12px' }}>
+              Open Lesson Creation Tools
+            </Link>
+          </div>
+        </section>
+
       {/* ── Platform Activity & Health ───────────────────────── */}
       {platformStats && (
         <>
