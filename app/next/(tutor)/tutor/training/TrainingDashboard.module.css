@@ -1,0 +1,349 @@
+/* =============================================================
+   Tutor → training dashboard. Tokens from [data-tree="next"].
+
+   Mirrors the student dashboard layout (banner, stats row,
+   recently finished, pending) but with a Train-context badge so
+   a teacher always knows what surface they're on.
+============================================================= */
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+/* ---------- Banner ---------- */
+
+.banner {
+  background: linear-gradient(135deg, #fff 0%, #f7f4ec 100%);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 26px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s5);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.banner::before {
+  content: "";
+  position: absolute;
+  left: 28px;
+  top: 26px;
+  width: 40px;
+  height: 3px;
+  background: var(--color-gold-500);
+  border-radius: 2px;
+}
+
+.bannerText { display: grid; gap: 6px; padding-top: 14px; min-width: 0; }
+
+.bannerEyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+}
+
+.bannerGreeting {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--color-navy-900);
+}
+
+.bannerSub {
+  color: var(--fg3);
+  font-size: 13px;
+  max-width: 720px;
+}
+
+.bannerActions {
+  display: flex;
+  gap: var(--s2);
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btnPrimary,
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+
+.btnPrimary {
+  background: var(--color-app-accent);
+  color: #fff;
+  border-color: var(--color-app-accent);
+}
+.btnPrimary:hover {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+  color: #fff;
+}
+
+.btnSecondary {
+  background: var(--bg-white);
+  color: var(--fg1);
+  border-color: var(--border-strong);
+}
+.btnSecondary:hover { border-color: var(--color-app-accent); color: var(--color-app-accent); }
+
+/* ---------- Stats row ---------- */
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s3);
+}
+
+.statCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statSub { font-size: 11px; color: var(--fg3); margin-top: 2px; }
+
+.statCard_good  .statValue { color: var(--color-diff-easy-fg); }
+.statCard_ok    .statValue { color: var(--color-diff-med-fg); }
+.statCard_warn  .statValue { color: var(--color-diff-hard-fg); }
+
+/* ---------- Card ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s3);
+  margin-bottom: var(--s3);
+}
+
+.cardHeaderLink {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-app-accent);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.cardHeaderLink:hover { text-decoration: underline; }
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.cardSub {
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: 2px;
+  max-width: 620px;
+}
+
+.empty {
+  color: var(--fg3);
+  font-size: 13px;
+  margin: 0;
+}
+
+.inlineLink {
+  color: var(--color-app-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.inlineLink:hover { text-decoration: underline; }
+
+/* ---------- Recently finished list ---------- */
+
+.finishedList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.finishedRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.finishedRow:hover {
+  background: var(--bg-white);
+  border-color: var(--border);
+  color: inherit;
+}
+
+.typeBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.typeBadge_assignment { background: #eef2ff; color: #4338ca; }
+.typeBadge_test       { background: #fff7ed; color: #c2410c; }
+.typeBadge_session    { background: #ecfdf5; color: #047857; }
+
+.finishedMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.finishedTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.finishedSubtitle {
+  color: var(--fg3);
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.finishedMeta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--fg3);
+  align-items: center;
+}
+
+.finishedMetric { font-variant-numeric: tabular-nums; font-weight: 600; }
+.finishedDot { color: var(--fg3); }
+.finishedDate { font-variant-numeric: tabular-nums; }
+.finishedChevron {
+  color: var(--fg3);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.metricTone_good    { color: var(--color-diff-easy-fg); }
+.metricTone_ok      { color: var(--color-diff-med-fg); }
+.metricTone_warn    { color: var(--color-diff-hard-fg); }
+.metricTone_neutral { color: var(--fg1); }
+
+/* ---------- Pending assignments ---------- */
+
+.assignmentList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.assignmentRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.assignmentRow:hover {
+  background: var(--bg-white);
+  border-color: var(--border);
+  color: inherit;
+}
+
+.assignmentTitle {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.due {
+  font-size: 11px;
+  color: var(--fg3);
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.dueOverdue {
+  font-size: 11px;
+  color: var(--color-diff-hard-fg);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
