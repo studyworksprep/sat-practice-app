@@ -22,6 +22,7 @@ import { applyWatermark } from '@/lib/content/watermark';
 import { submitAnswer } from '@/lib/practice/session-actions';
 import { loadReviewData } from '@/lib/practice/load-review-data';
 import { loadDesmosSavedState } from '@/lib/practice/load-desmos-saved-state';
+import { loadConceptTags } from '@/lib/practice/load-concept-tags';
 import { PracticeInteractive } from '@/lib/practice/PracticeInteractive';
 import { QuestionMap } from '@/lib/practice/QuestionMap';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
@@ -247,9 +248,12 @@ export default async function TutorTrainingQuestionPage({ params }) {
   // Saved Desmos state for this question — math items only.
   // Managers/admins can save; teachers can load existing solutions.
   const desmosEligible = ['H', 'P', 'Q', 'S'].includes(question.domain_code ?? '');
-  const desmos = desmosEligible
-    ? await loadDesmosSavedState({ questionId, role: profile.role })
-    : { savedState: null, canSave: false };
+  const [desmos, conceptTags] = await Promise.all([
+    desmosEligible
+      ? loadDesmosSavedState({ questionId, role: profile.role })
+      : Promise.resolve({ savedState: null, canSave: false }),
+    loadConceptTags({ questionId, role: profile.role }),
+  ]);
 
   return (
     <>
@@ -263,6 +267,7 @@ export default async function TutorTrainingQuestionPage({ params }) {
         sessionCompleteHref={sessionCompleteHref}
         desmosSavedState={desmos.savedState}
         desmosCanSave={desmos.canSave}
+        conceptTags={conceptTags}
       />
       <QuestionMap
         basePath="/tutor/training/practice"

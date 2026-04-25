@@ -271,6 +271,40 @@ export default async function PracticeTestResultsPage({ params }) {
   }
   const desmosCanSave = profile.role === 'manager' || profile.role === 'admin';
 
+  // 8c) Concept tags catalog + per-item links — manager/admin
+  //     only. Mirrors the equivalent block in build-session-review;
+  //     loaded once per page load rather than per question.
+  const conceptTagsCanTag = profile.role === 'manager' || profile.role === 'admin';
+  const conceptTagsCanDelete = profile.role === 'admin';
+  let conceptTagsCatalog = null;
+  if (conceptTagsCanTag) {
+    const presentQids = reviewItems
+      .filter((it) => !it.missing)
+      .map((it) => it.questionId);
+    const [{ data: catalog }, { data: links }] = await Promise.all([
+      supabase
+        .from('concept_tags')
+        .select('id, name')
+        .order('name', { ascending: true }),
+      presentQids.length > 0
+        ? supabase
+            .from('question_concept_tags')
+            .select('question_id, tag_id')
+            .in('question_id', presentQids)
+        : Promise.resolve({ data: [] }),
+    ]);
+    conceptTagsCatalog = catalog ?? [];
+    const tagsByQid = new Map();
+    for (const r of links ?? []) {
+      const arr = tagsByQid.get(r.question_id) ?? [];
+      arr.push(r.tag_id);
+      tagsByQid.set(r.question_id, arr);
+    }
+    for (const it of reviewItems) {
+      if (!it.missing) it.conceptTagIds = tagsByQid.get(it.questionId) ?? [];
+    }
+  }
+
   // 9) Teacher profile for the PDF header.
   let teacher = null;
   if (teacherAssignment?.teacher_id) {
@@ -310,6 +344,9 @@ export default async function PracticeTestResultsPage({ params }) {
       reviewItems={reviewItems}
       pdfData={pdfData}
       desmosCanSave={desmosCanSave}
+      conceptTagsCatalog={conceptTagsCatalog}
+      conceptTagsCanTag={conceptTagsCanTag}
+      conceptTagsCanDelete={conceptTagsCanDelete}
     />
   );
 }

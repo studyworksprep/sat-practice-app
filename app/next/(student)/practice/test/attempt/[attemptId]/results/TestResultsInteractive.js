@@ -15,6 +15,7 @@ import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
+import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { BookmarkIcon } from '@/lib/ui/icons';
 import s from './TestResults.module.css';
@@ -38,6 +39,9 @@ export function TestResultsInteractive({
   reviewItems,
   pdfData,
   desmosCanSave = false,
+  conceptTagsCatalog = null,
+  conceptTagsCanTag = false,
+  conceptTagsCanDelete = false,
 }) {
   const [selectedOrdinal, setSelectedOrdinal] = useState(
     reviewItems.find((r) => !r.missing)?.ordinal ?? reviewItems[0]?.ordinal ?? 1,
@@ -352,6 +356,19 @@ export function TestResultsInteractive({
                 rationaleHtml: selected.reveal.rationaleHtml,
               } : null}
             />
+          )}
+
+          {conceptTagsCanTag && !selected.missing && conceptTagsCatalog && (
+            <div className={s.tutorTools}>
+              <ConceptTags
+                key={`tags-${selected.questionId}`}
+                questionId={selected.questionId}
+                initialTags={conceptTagsCatalog}
+                initialQuestionTagIds={selected.conceptTagIds ?? []}
+                canTag={conceptTagsCanTag}
+                canDelete={conceptTagsCanDelete}
+              />
+            </div>
           )}
         </section>
       )}

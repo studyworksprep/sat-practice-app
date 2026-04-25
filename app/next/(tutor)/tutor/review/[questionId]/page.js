@@ -23,6 +23,8 @@ import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { Card } from '@/lib/ui/Card';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
+import { ConceptTags } from '@/lib/practice/ConceptTags';
+import { loadConceptTags } from '@/lib/practice/load-concept-tags';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,6 +99,11 @@ export default async function TutorReviewQuestionPage({ params }) {
     rationaleHtml: question.rationale_rendered ?? question.rationale_html,
   };
 
+  const conceptTags = await loadConceptTags({
+    questionId: question.id,
+    role: profile.role,
+  });
+
   return (
     <main style={S.main}>
       <nav style={{ marginBottom: '1rem' }}>
@@ -140,6 +147,24 @@ export default async function TutorReviewQuestionPage({ params }) {
           result={resultVM}
         />
       </article>
+
+      {conceptTags.canTag && (
+        <section
+          style={{
+            marginTop: '1.25rem',
+            paddingTop: '1rem',
+            borderTop: '1px dashed var(--border)',
+          }}
+        >
+          <ConceptTags
+            questionId={question.id}
+            initialTags={conceptTags.tags}
+            initialQuestionTagIds={conceptTags.questionTagIds}
+            canTag={conceptTags.canTag}
+            canDelete={conceptTags.canDelete}
+          />
+        </section>
+      )}
     </main>
   );
 }
