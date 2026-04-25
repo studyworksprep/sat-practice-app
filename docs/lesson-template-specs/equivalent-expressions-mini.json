@@ -1,0 +1,30 @@
+{
+  "title": "Equivalent Expressions: Mini Lesson",
+  "description": "Quick workflow for graph and slider checks.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "intro",
+      "html": "<h2>Equivalent Expressions</h2><p>Different forms can produce the same outputs.</p>"
+    },
+    {
+      "kind": "graph_comparison_workflow",
+      "id": "graph_example_1",
+      "original_expression": "y=(x+1)(x-3)",
+      "candidate_expression": "y=x^2-2x-3",
+      "prompt_html": "<p>Graph the original and candidate expressions, then compare.</p>"
+    },
+    {
+      "kind": "slider_workflow",
+      "id": "slider_example_1",
+      "expression": "6X^2Y^2(X^6+2)",
+      "variables": ["X", "Y"],
+      "prompt_html": "<p>Use uppercase variables and create sliders.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "final_text",
+      "html": "<p>Great work. Continue to mixed strategy practice.</p>"
+    }
+  ]
+}
