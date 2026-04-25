@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../../lib/supabase/server';
+import { validateLessonBlocks } from '../../../../../lib/lesson/lesson-validation.mjs';
 
 // GET /api/lessons/[lessonId]/blocks — get ordered blocks
 export async function GET(request, props) {
@@ -40,6 +41,14 @@ export async function PUT(request, props) {
 
     if (!Array.isArray(blocks)) {
       return NextResponse.json({ error: 'blocks must be an array' }, { status: 400 });
+    }
+
+    const validation = validateLessonBlocks(blocks);
+    if (!validation.ok) {
+      return NextResponse.json({
+        error: 'Lesson block validation failed',
+        validation,
+      }, { status: 400 });
     }
 
     // Verify the user can edit this lesson (author or admin)
@@ -87,7 +96,7 @@ export async function PUT(request, props) {
       .eq('lesson_id', lessonId)
       .order('sort_order');
 
-    return NextResponse.json({ ok: true, blocks: saved || [] });
+    return NextResponse.json({ ok: true, blocks: saved || [], validationWarnings: validation.warnings });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

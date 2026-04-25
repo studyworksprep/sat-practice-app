@@ -1,0 +1,42 @@
+{
+  "title": "Boundaries: Mini Lesson",
+  "description": "Branching checks to reinforce conceptual boundaries.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "intro_boundaries",
+      "html": "<h2>Boundaries</h2><p>Test conceptual understanding with short branches.</p>"
+    },
+    {
+      "kind": "branching_question",
+      "id": "branch_1",
+      "question_html": "<p>Equivalent expressions always...</p>",
+      "choices": [
+        { "id": "a", "text": "look identical" },
+        { "id": "b", "text": "produce the same output" }
+      ],
+      "correct_choice_id": "b",
+      "correct_html": "<p>Correct. Outputs match for all valid inputs.</p>",
+      "incorrect_html": "<p>Not quite. Equivalent forms can look very different.</p>",
+      "rejoin_html": "<p>Now move to the next boundary question.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "midpoint",
+      "html": "<p>Keep going. Focus on definitions, not surface form.</p>"
+    },
+    {
+      "kind": "branching_question",
+      "id": "branch_2",
+      "question_html": "<p>If two expressions have different domains, can they be equivalent everywhere?</p>",
+      "choices": [
+        { "id": "a", "text": "Yes" },
+        { "id": "b", "text": "No" }
+      ],
+      "correct_choice_id": "b",
+      "correct_html": "<p>Correct. Domain differences prevent full equivalence.</p>",
+      "incorrect_html": "<p>Check domain restrictions before claiming equivalence.</p>",
+      "rejoin_html": "<p>Great, continue to summary.</p>"
+    }
+  ]
+}
