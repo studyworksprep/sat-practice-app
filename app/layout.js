@@ -60,6 +60,11 @@ export default function RootLayout({ children }) {
           strategy="beforeInteractive"
           src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
         />
+        <Script
+          id="desmos-calculator-script"
+          strategy="afterInteractive"
+          src={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${process.env.NEXT_PUBLIC_DESMOS_API_KEY || 'bac289385bcd4778a682276b95f5f116'}`}
+        />
       </head>
       <body>
         <TestTypeProvider>

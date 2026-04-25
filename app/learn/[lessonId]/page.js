@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState, Suspense } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import HtmlBlock from '../../../components/HtmlBlock';
+import { isLessonCompletionLocked, parseDesmosInteractiveContent, validateDesmosSubmission } from '../../../lib/lesson/desmos-interactive.mjs';
 
 export default function LessonViewerPage() {
   return <Suspense><LessonViewer /></Suspense>;
@@ -11,10 +12,14 @@ export default function LessonViewerPage() {
 
 function LessonViewer() {
   const { lessonId } = useParams();
+  const searchParams = useSearchParams();
   const [lesson, setLesson] = useState(null);
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [forceUnlockedBlockIds, setForceUnlockedBlockIds] = useState([]);
+  const [debugByBlock, setDebugByBlock] = useState({});
 
   useEffect(() => {
     Promise.all([
@@ -25,6 +30,7 @@ function LessonViewer() {
         if (lessonData.error) throw new Error(lessonData.error);
         setLesson(lessonData.lesson);
         setProgress(progressData.progress);
+        setForceUnlockedBlockIds([]);
         // Start progress if first visit
         if (!progressData.progress) {
           fetch(`/api/lessons/${lessonId}/progress`, {
@@ -63,6 +69,19 @@ function LessonViewer() {
     if (data.progress) setProgress(data.progress);
   }
 
+  async function submitDesmosResult(blockId, isCorrect) {
+    const res = await fetch(`/api/lessons/${lessonId}/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        block_id: blockId,
+        check_answer: { selected: null, correct: isCorrect, type: 'desmos_interactive' },
+      }),
+    });
+    const data = await res.json();
+    if (data.progress) setProgress(data.progress);
+  }
+
   // Mark lesson as complete
   async function markComplete() {
     const res = await fetch(`/api/lessons/${lessonId}/progress`, {
@@ -79,6 +98,7 @@ function LessonViewer() {
   if (!lesson) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Lesson not found.</p></div>;
 
   const blocks = lesson.blocks || [];
+  const debugMode = process.env.NODE_ENV !== 'production' && searchParams?.get('debug') === '1';
   const completedBlocks = new Set(progress?.completed_blocks || []);
   const checkAnswers = progress?.check_answers || {};
   const isComplete = !!progress?.completed_at;
@@ -86,6 +106,23 @@ function LessonViewer() {
   const progressPct = blocks.length > 0
     ? Math.round((completedBlocks.size / blocks.length) * 100)
     : 0;
+
+  const currentBlock = blocks[currentIndex] || null;
+  const currentIsLocked = Boolean(
+    currentBlock
+      && currentBlock.block_type === 'desmos_interactive'
+      && currentBlock.content?.progression?.require_success
+      && !completedBlocks.has(currentBlock.id)
+      && !forceUnlockedBlockIds.includes(currentBlock.id)
+  );
+
+  function goNext() {
+    setCurrentIndex((prev) => Math.min(prev + 1, Math.max(blocks.length - 1, 0)));
+  }
+
+  function goPrev() {
+    setCurrentIndex((prev) => Math.max(prev - 1, 0));
+  }
 
   return (
     <div className="container" style={{ paddingTop: 24, maxWidth: 800, paddingBottom: 80 }}>
@@ -124,32 +161,93 @@ function LessonViewer() {
         </div>
       </div>
 
-      {/* Blocks */}
-      {blocks.map((block) => (
-        <div key={block.id} style={{ marginBottom: 24 }}>
-          {block.block_type === 'text' && (
-            <TextBlock block={block} isRead={completedBlocks.has(block.id)} onRead={() => markBlockComplete(block.id)} />
+      {/* Block slideshow */}
+      {currentBlock && (
+        <div key={currentBlock.id} style={{ marginBottom: 16 }}>
+          {currentBlock.block_type === 'text' && (
+            <TextBlock block={currentBlock} isRead={completedBlocks.has(currentBlock.id)} onRead={() => markBlockComplete(currentBlock.id)} />
           )}
-          {block.block_type === 'video' && (
-            <VideoBlock block={block} isWatched={completedBlocks.has(block.id)} onWatched={() => markBlockComplete(block.id)} />
+          {currentBlock.block_type === 'video' && (
+            <VideoBlock block={currentBlock} isWatched={completedBlocks.has(currentBlock.id)} onWatched={() => markBlockComplete(currentBlock.id)} />
           )}
-          {block.block_type === 'check' && (
+          {currentBlock.block_type === 'check' && (
             <CheckBlock
-              block={block}
-              previousAnswer={checkAnswers[block.id]}
-              onSubmit={(selected, correct) => submitCheck(block.id, selected, correct)}
+              block={currentBlock}
+              previousAnswer={checkAnswers[currentBlock.id]}
+              onSubmit={(selected, correct) => {
+                submitCheck(currentBlock.id, selected, correct);
+                if (correct) goNext();
+              }}
             />
           )}
-          {block.block_type === 'question_link' && (
-            <QuestionLinkBlock block={block} isComplete={completedBlocks.has(block.id)} />
+          {currentBlock.block_type === 'question_link' && (
+            <QuestionLinkBlock block={currentBlock} isComplete={completedBlocks.has(currentBlock.id)} />
+          )}
+          {currentBlock.block_type === 'desmos_interactive' && (
+            <DesmosInteractiveBlock
+              block={currentBlock}
+              previousAnswer={checkAnswers[currentBlock.id]}
+              onSuccess={() => {
+                submitDesmosResult(currentBlock.id, true);
+                goNext();
+              }}
+              onUnlock={() => {
+                setForceUnlockedBlockIds((prev) => (
+                  prev.includes(currentBlock.id) ? prev : [...prev, currentBlock.id]
+                ));
+              }}
+              debugMode={debugMode}
+              onDebug={(payload) => {
+                setDebugByBlock((prev) => ({ ...prev, [currentBlock.id]: payload }));
+              }}
+            />
           )}
         </div>
-      ))}
+      )}
+
+      {debugMode && currentBlock && (
+        <details className="card" style={{ padding: 10, marginBottom: 12 }}>
+          <summary style={{ cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Debug info</summary>
+          <div style={{ fontSize: 12, marginTop: 8, display: 'grid', gap: 4 }}>
+            <div>block_id: <code>{currentBlock.id}</code></div>
+            <div>block_type: <code>{currentBlock.block_type}</code></div>
+            <div>workflow: <code>{currentBlock.content?.workflow_id || '—'}</code> step <code>{currentBlock.content?.step_index || '—'}</code>/<code>{currentBlock.content?.total_steps || '—'}</code></div>
+            <div>validation_mode: <code>{currentBlock.content?.validation?.mode || '—'}</code></div>
+            <div>attempts: <code>{debugByBlock[currentBlock.id]?.attempts ?? 0}</code></div>
+            <div>result: <code>{debugByBlock[currentBlock.id]?.success ? 'pass' : 'fail'}</code></div>
+            <div>reason_codes: <code>{(debugByBlock[currentBlock.id]?.reasons || []).join(', ') || '—'}</code></div>
+            <div>next_block: <code>{debugByBlock[currentBlock.id]?.nextBlockId || blocks[currentIndex + 1]?.id || '—'}</code></div>
+            <div>rejoin_target: <code>{currentBlock.content?.rejoin_at_block_id || '—'}</code></div>
+            <div>desmos_inherited: <code>{String(Boolean(currentBlock.content?.inherit_from_previous_workflow_desmos))}</code></div>
+            <div>expression_count: <code>{debugByBlock[currentBlock.id]?.expressionCount ?? 0}</code></div>
+            <div>detected_sliders: <code>{(debugByBlock[currentBlock.id]?.sliders || []).join(', ') || '—'}</code></div>
+          </div>
+        </details>
+      )}
+
+      {blocks.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          <button className="btn secondary" onClick={goPrev} disabled={currentIndex === 0}>
+            Previous
+          </button>
+          <span className="muted" style={{ fontSize: 12 }}>
+            Block {Math.min(currentIndex + 1, blocks.length)} of {blocks.length}
+          </span>
+          <button className="btn secondary" onClick={goNext} disabled={currentIndex >= blocks.length - 1 || currentIsLocked}>
+            Continue
+          </button>
+        </div>
+      )}
 
       {/* Complete button */}
-      {blocks.length > 0 && !isComplete && (
+      {blocks.length > 0 && !isComplete && currentIndex >= blocks.length - 1 && (
         <div style={{ textAlign: 'center', marginTop: 32 }}>
-          <button className="btn primary" onClick={markComplete} style={{ fontSize: 15, padding: '10px 32px' }}>
+          <button
+            className="btn primary"
+            onClick={markComplete}
+            disabled={isLessonCompletionLocked(blocks, [...completedBlocks])}
+            style={{ fontSize: 15, padding: '10px 32px' }}
+          >
             Mark Lesson Complete
           </button>
         </div>
@@ -315,6 +413,216 @@ function QuestionLinkBlock({ block, isComplete }) {
           {isComplete ? 'Review' : 'Practice'} &rarr;
         </Link>
       </div>
+    </div>
+  );
+}
+
+function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock, onDebug, debugMode = false }) {
+  const hostRef = useRef(null);
+  const calculatorRef = useRef(null);
+  const [feedbackState, setFeedbackState] = useState(previousAnswer?.correct ? 'success' : 'idle');
+  const [feedbackHtml, setFeedbackHtml] = useState('');
+  const [progressiveHintHtml, setProgressiveHintHtml] = useState('');
+  const [solutionHtml, setSolutionHtml] = useState('');
+  const [attempts, setAttempts] = useState(0);
+  const [desmosMountError, setDesmosMountError] = useState(false);
+
+  let content = null;
+  let contentError = null;
+  try {
+    content = parseDesmosInteractiveContent(block.content || {});
+  } catch (err) {
+    content = null;
+    contentError = err.message;
+  }
+
+  useEffect(() => {
+    if (!content || !hostRef.current) return undefined;
+    if (typeof window === 'undefined') return undefined;
+
+    let cancelled = false;
+    let intervalId = null;
+    let timeoutId = null;
+
+    const tryMount = () => {
+      if (cancelled || calculatorRef.current) return;
+      if (!window.Desmos?.GraphingCalculator) return;
+
+      const calculator = window.Desmos.GraphingCalculator(hostRef.current, {
+        expressions: content.calculator_options?.expressions ?? true,
+        lockViewport: content.calculator_options?.lockViewport ?? false,
+        sliders: content.calculator_options?.sliders ?? true,
+      });
+      calculatorRef.current = calculator;
+      setDesmosMountError(false);
+
+      for (const expr of content.initial_expressions || []) {
+        if (expr?.latex) calculator.setExpression({ id: expr.id, latex: expr.latex });
+      }
+
+      if (intervalId) clearInterval(intervalId);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+
+    tryMount();
+    if (!calculatorRef.current) {
+      intervalId = setInterval(tryMount, 200);
+      timeoutId = setTimeout(() => {
+        if (!calculatorRef.current) setDesmosMountError(true);
+        if (intervalId) clearInterval(intervalId);
+      }, 5000);
+    }
+
+    return () => {
+      cancelled = true;
+      if (intervalId) clearInterval(intervalId);
+      if (timeoutId) clearTimeout(timeoutId);
+      if (calculatorRef.current) {
+        calculatorRef.current.destroy();
+        calculatorRef.current = null;
+      }
+    };
+  }, [content]);
+
+  function extractStudentExpressions(calculator) {
+    const expressionList = calculator?.getExpressions?.() || [];
+    const stateList = calculator?.getState?.()?.expressions?.list || [];
+    const byId = new Map(stateList.map((row) => [row.id, row]));
+
+    return expressionList
+      .map((expr) => ({
+        latex: expr?.latex || byId.get(expr?.id)?.latex || '',
+        hidden: Boolean(expr?.hidden ?? byId.get(expr?.id)?.hidden),
+        type: expr?.type || byId.get(expr?.id)?.type || 'expression',
+        sliderBounds: expr?.sliderBounds || byId.get(expr?.id)?.sliderBounds || null,
+      }))
+      .filter((expr) => expr.latex);
+  }
+
+  function toEvaluableExpression(raw) {
+    const value = String(raw || '').trim();
+    if (!value) return '';
+    const eqIndex = value.indexOf('=');
+    return eqIndex >= 0 ? value.slice(eqIndex + 1).trim() : value;
+  }
+
+  function evaluateWithDesmos(rawExpression, x) {
+    const calculator = calculatorRef.current;
+    if (!calculator || !calculator.HelperExpression) return NaN;
+
+    const expression = toEvaluableExpression(rawExpression);
+    if (!expression) return NaN;
+
+    try {
+      const helper = calculator.HelperExpression({ latex: expression, variables: { x } });
+      const value = helper.numericValue;
+      helper?.destroy?.();
+      return Number.isFinite(value) ? value : NaN;
+    } catch {
+      return NaN;
+    }
+  }
+
+  function handleCheck() {
+    if (!content || !calculatorRef.current) return;
+    const nextAttempts = attempts + 1;
+    setAttempts(nextAttempts);
+
+    const entered = extractStudentExpressions(calculatorRef.current);
+    const sliderNames = entered
+      .map((row) => {
+        const match = String(row.latex || '').trim().match(/^([A-Za-z][A-Za-z0-9_]*)\s*=/);
+        return match ? match[1] : null;
+      })
+      .filter(Boolean);
+    const result = validateDesmosSubmission({
+      content,
+      studentExpressions: entered,
+      evaluateAtX: evaluateWithDesmos,
+      attempts: nextAttempts,
+    });
+
+    if (result.success) {
+      setFeedbackState('success');
+      setFeedbackHtml(result.feedbackHtml || content.feedback.success_message_html);
+      setProgressiveHintHtml(result.progressiveHintHtml || '');
+      setSolutionHtml(result.solutionHtml || '');
+      onSuccess();
+    } else {
+      setFeedbackState('retry');
+      setFeedbackHtml(result.feedbackHtml || content.feedback.retry_message_html);
+      setProgressiveHintHtml(result.progressiveHintHtml || '');
+      setSolutionHtml(result.solutionHtml || '');
+      if (result.solutionHtml && content.progression?.require_success) {
+        onUnlock?.();
+      }
+    }
+
+    if (debugMode) {
+      const branchTarget = result.success
+        ? content.on_correct_block_id
+        : content.on_incorrect_block_id;
+      onDebug?.({
+        attempts: nextAttempts,
+        success: result.success,
+        reasons: result.reasons || [result.reason].filter(Boolean),
+        nextBlockId: branchTarget || content.rejoin_at_block_id || null,
+        expressionCount: entered.length,
+        sliders: [...new Set(sliderNames)],
+      });
+    }
+  }
+
+  if (contentError) {
+    return (
+      <div className="card" style={{ padding: '20px 24px' }}>
+        <p style={{ color: 'var(--danger)' }}>Invalid desmos_interactive block: {contentError}</p>
+      </div>
+    );
+  }
+
+  if (!content) return null;
+
+  return (
+    <div className="card" style={{ padding: '20px 24px' }}>
+      {content.title && <h3 style={{ margin: '0 0 10px', fontSize: 18 }}>{content.title}</h3>}
+      <HtmlBlock className="prose" html={content.instructions_html} />
+      <div
+        ref={hostRef}
+        className="desmosHost"
+        style={{ minHeight: 320, marginTop: 12, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border, #ddd)' }}
+      />
+      {content.caption_html && (
+        <HtmlBlock className="prose muted" html={content.caption_html} />
+      )}
+      {desmosMountError && (
+        <p style={{ color: 'var(--danger)', fontSize: 13 }}>Desmos failed to load. Refresh and try again.</p>
+      )}
+
+      <button className="btn primary" onClick={handleCheck} style={{ marginTop: 10, fontSize: 13 }}>
+        Check Answer
+      </button>
+
+      {feedbackState === 'success' && (
+        <div role="status" aria-live="polite" style={{ marginTop: 12, color: 'var(--success)' }}>
+          <HtmlBlock html={feedbackHtml || content.feedback.success_message_html} />
+        </div>
+      )}
+      {feedbackState === 'retry' && (
+        <div role="status" aria-live="polite" style={{ marginTop: 12, color: 'var(--danger)' }}>
+          <HtmlBlock html={feedbackHtml || content.feedback.retry_message_html} />
+        </div>
+      )}
+      {progressiveHintHtml && (
+        <div aria-live="polite" style={{ marginTop: 8, color: 'var(--muted)', fontSize: 13 }}>
+          <HtmlBlock html={progressiveHintHtml} />
+        </div>
+      )}
+      {solutionHtml && (
+        <div aria-live="polite" style={{ marginTop: 8, borderTop: '1px solid var(--border, #ddd)', paddingTop: 8, color: 'var(--accent)' }}>
+          <HtmlBlock html={solutionHtml} />
+        </div>
+      )}
     </div>
   );
 }

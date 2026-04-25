@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../../lib/supabase/server';
+import { validateLessonBlocks } from '../../../../lib/lesson/lesson-validation.mjs';
 
 // GET /api/lessons/[lessonId] — get a single lesson with blocks and topics
 export async function GET(request, props) {
@@ -31,13 +32,19 @@ export async function GET(request, props) {
       ? [author.first_name, author.last_name].filter(Boolean).join(' ') || 'Unknown'
       : 'Unknown';
 
+    const blocks = blocksRes.data || [];
+    const validation = process.env.NODE_ENV !== 'production'
+      ? validateLessonBlocks(blocks)
+      : null;
+
     return NextResponse.json({
       lesson: {
         ...lessonRes.data,
         author_name: authorName,
-        blocks: blocksRes.data || [],
+        blocks,
         topics: topicsRes.data || [],
       },
+      validation,
     });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
