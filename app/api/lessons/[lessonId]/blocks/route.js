@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { validateLessonBlocks } from '../../../../../lib/lesson/lesson-validation.mjs';
 
 // GET /api/lessons/[lessonId]/blocks — get ordered blocks
-export async function GET(request, props) {
-  const params = await props.params;
+export const GET = legacyApiRoute(async (request, props) => {
+  const { supabase } = await requireUser();
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
+    const params = await props.params;
     const { lessonId } = params;
 
     const { data: blocks, error } = await supabase
@@ -24,17 +22,14 @@ export async function GET(request, props) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
 
 // PUT /api/lessons/[lessonId]/blocks — replace all blocks (full save)
 // Body: { blocks: [{ block_type, content, sort_order }, ...] }
-export async function PUT(request, props) {
-  const params = await props.params;
+export const PUT = legacyApiRoute(async (request, props) => {
+  const { user, profile, supabase } = await requireUser();
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
+    const params = await props.params;
     const { lessonId } = params;
     const body = await request.json();
     const { blocks } = body;
@@ -59,12 +54,6 @@ export async function PUT(request, props) {
       .maybeSingle();
 
     if (!lesson) return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
 
     if (lesson.author_id !== user.id && profile?.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -100,4 +89,4 @@ export async function PUT(request, props) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});

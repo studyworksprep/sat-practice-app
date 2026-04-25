@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireRole, requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/lessons — browse the content library
 // Query params: domain, skill, search, status, author_id
-export async function GET(request) {
+export const GET = legacyApiRoute(async (request) => {
+  // Auth happens outside the try/catch so a 401 from requireUser propagates
+  // to legacyApiRoute as a 401 (instead of being caught and remapped to 500).
+  const { user, profile, supabase } = await requireUser();
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const { searchParams } = new URL(request.url);
     const domain = searchParams.get('domain');
     const skill = searchParams.get('skill');
@@ -16,13 +16,6 @@ export async function GET(request) {
     const status = searchParams.get('status');
     const authorId = searchParams.get('author_id');
     const assigned = searchParams.get('assigned'); // "me" to get only assigned lessons
-
-    // Get user role for filtering
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
 
     const isTeacher = profile && ['teacher', 'manager', 'admin'].includes(profile.role);
 
@@ -137,25 +130,12 @@ export async function GET(request) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
 
 // POST /api/lessons — create a new lesson (teacher+)
-export async function POST(request) {
+export const POST = legacyApiRoute(async (request) => {
+  const { user, supabase } = await requireRole(['teacher', 'manager', 'admin']);
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || !['teacher', 'manager', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const body = await request.json();
     const { title, description, visibility, status: lessonStatus, topics } = body;
 
@@ -191,4 +171,4 @@ export async function POST(request) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
