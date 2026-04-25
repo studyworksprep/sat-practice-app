@@ -1,26 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 const ALLOWED_FIELDS = ['first_name', 'last_name', 'high_school', 'teacher_invite_code'];
 
 // PATCH /api/admin/teachers/[teacherId]/profile
-export async function PATCH(request, props) {
+export const PATCH = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   const { teacherId } = params;
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'admin' && profile?.role !== 'manager') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  const { supabase } = await requireRole(['manager', 'admin']);
 
   const body = await request.json();
   const updates = {};
@@ -50,4 +38,4 @@ export async function PATCH(request, props) {
     .maybeSingle();
 
   return NextResponse.json({ teacher: updated });
-}
+});

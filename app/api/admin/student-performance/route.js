@@ -1,22 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/student-performance
 // Returns aggregate student performance data for the admin dashboard.
-export async function GET() {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const GET = legacyApiRoute(async () => {
+  const { supabase } = await requireRole(['admin']);
 
   // ── 1) Overall Accuracy (first-attempt, last 30 days) ──────────
   const d30 = new Date(); d30.setDate(d30.getDate() - 30);
@@ -234,4 +223,4 @@ export async function GET() {
     },
     skillHeatmap: skills,
   });
-}
+});

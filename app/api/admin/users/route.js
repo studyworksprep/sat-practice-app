@@ -1,26 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
-
-async function requireAdmin(supabase) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Unauthorized', status: 401 };
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'admin') return { error: 'Forbidden', status: 403 };
-  return { user };
-}
+import { requireRole, requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/users
 // Returns all profiles grouped by role
-export async function GET() {
-  const supabase = await createClient();
-  const auth = await requireAdmin(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = legacyApiRoute(async () => {
+  const { supabase } = await requireRole(['admin']);
 
   const { data: profiles, error } = await supabase
     .from('profiles')
@@ -30,14 +15,12 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ profiles: profiles || [] });
-}
+});
 
 // PATCH /api/admin/users
 // Body: { user_id, role?, is_active?, first_name?, last_name?, email?, high_school?, graduation_year?, target_sat_score?, tutor_name? }
-export async function PATCH(request) {
-  const supabase = await createClient();
-  const auth = await requireAdmin(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
 
   const body = await request.json();
   const { user_id, role, is_active, first_name, last_name, email, high_school, graduation_year, target_sat_score, tutor_name } = body;
@@ -78,15 +61,16 @@ export async function PATCH(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ ok: true });
-}
+});
 
 // DELETE /api/admin/users
 // Body: { user_id }
 // Permanently deletes the user's auth account and profile (cascade)
-export async function DELETE(request) {
-  const supabase = await createClient();
-  const auth = await requireAdmin(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = legacyApiRoute(async (request) => {
+  const { user, service: svc } = await requireServiceRole(
+    'admin user deletion — needs auth.admin.deleteUser and cross-user profile delete',
+    { allowedRoles: ['admin'] },
+  );
 
   const { user_id } = await request.json();
   if (!user_id) {
@@ -94,11 +78,9 @@ export async function DELETE(request) {
   }
 
   // Prevent admin from deleting themselves
-  if (user_id === auth.user.id) {
+  if (user_id === user.id) {
     return NextResponse.json({ error: 'Cannot delete your own account.' }, { status: 400 });
   }
-
-  const svc = createServiceClient();
 
   // Delete the auth user — the profiles row will cascade-delete if the FK
   // is set to ON DELETE CASCADE, otherwise we delete it explicitly first.
@@ -118,4 +100,4 @@ export async function DELETE(request) {
   }
 
   return NextResponse.json({ ok: true });
-}
+});
