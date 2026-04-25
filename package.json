@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "validate-lessons": "node scripts/validate-lessons.mjs"
+    "validate-lessons": "node scripts/validate-lessons.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
