@@ -1,0 +1,91 @@
+/* =============================================================
+   Test-date countdown banner. Tokens from [data-tree="next"].
+   Used on /review and /dashboard.
+============================================================= */
+
+.banner {
+  background: linear-gradient(135deg, #fff 0%, #f7f4ec 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner::before {
+  content: "";
+  position: absolute;
+  left: 22px;
+  top: 18px;
+  width: 40px;
+  height: 3px;
+  background: var(--color-gold-500);
+  border-radius: 2px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  padding-top: 12px;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+}
+
+.sub {
+  font-size: 13px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.planLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.planRow {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--fg2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.planRow strong {
+  color: var(--color-navy-900);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* Dashboard mount gets a tighter body so it doesn't compete with
+   the banner above it. Everything else is inherited. */
+.banner.compact {
+  padding: 14px 18px;
+}
+.banner.compact::before {
+  left: 18px;
+  top: 14px;
+}
+.banner.compact .top { padding-top: 10px; }
+.banner.compact .title { font-size: 20px; }

@@ -85,14 +85,13 @@ export default async function PracticeStartPage() {
 
   // Parallel loads for the rest of the page:
   //   - active practice session (Resume card)
-  //   - in-progress test attempt (Resume-test card)
-  //   - published practice tests (Tests section)
-  //   - completed test attempts (for the ✓ mark beside done tests)
+  //   - in-progress test attempt (Resume-test card). Test launch UX
+  //     lives on its own page now (/practice/tests); this page only
+  //     surfaces the resume callout so a student mid-test doesn't
+  //     miss it.
   const [
     { data: activeSession },
     { data: inProgressTestAttempt },
-    { data: publishedTests },
-    { data: completedAttempts },
   ] = await Promise.all([
     supabase
       .from('practice_sessions')
@@ -112,17 +111,6 @@ export default async function PracticeStartPage() {
       .order('started_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
-    supabase
-      .from('practice_tests_v2')
-      .select('id, code, name, is_adaptive')
-      .eq('is_published', true)
-      .is('deleted_at', null)
-      .order('code', { ascending: true }),
-    supabase
-      .from('practice_test_attempts_v2')
-      .select('practice_test_id')
-      .eq('user_id', user.id)
-      .eq('status', 'completed'),
   ]);
 
   const resumeInfo = activeSession
@@ -145,24 +133,12 @@ export default async function PracticeStartPage() {
       }
     : null;
 
-  const completedTestIds = new Set(
-    (completedAttempts ?? []).map((r) => r.practice_test_id).filter(Boolean),
-  );
-  const tests = (publishedTests ?? []).map((t) => ({
-    id:          t.id,
-    code:        t.code,
-    name:        t.name,
-    isAdaptive:  t.is_adaptive,
-    completed:   completedTestIds.has(t.id),
-  }));
-
   return (
     <StartInteractive
       domains={domains}
       scoreBands={scoreBands}
       resumeInfo={resumeInfo}
       resumeTest={resumeTest}
-      tests={tests}
       createSessionAction={createSession}
       countAvailableAction={countAvailable}
       basePath="/practice"

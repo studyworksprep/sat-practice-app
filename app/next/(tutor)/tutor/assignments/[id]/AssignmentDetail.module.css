@@ -1,0 +1,341 @@
+/* =============================================================
+   Tutor → assignment detail. Tokens from [data-tree="next"].
+============================================================= */
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.breadcrumb {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+  align-self: flex-start;
+}
+.breadcrumb:hover { text-decoration: underline; }
+
+/* ---------- Header ---------- */
+
+.header { padding: var(--s2) 0; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+
+.metaRow {
+  display: flex;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 13px;
+  color: var(--fg3);
+}
+
+.metaItem { color: var(--fg3); }
+.metaOverdue {
+  color: var(--color-diff-hard-fg);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 12px;
+}
+.metaArchived {
+  color: var(--fg3);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 12px;
+  padding: 2px 8px;
+  background: var(--color-slate-100);
+  border-radius: var(--radius-pill);
+}
+
+.description {
+  font-size: 14px;
+  color: var(--fg2);
+  margin: var(--s3) 0 0;
+  max-width: 720px;
+}
+
+/* ---------- Stats strip ---------- */
+
+.statsStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s3);
+}
+
+.statTile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statValue {
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.statSub { font-size: 11px; color: var(--fg3); margin-top: 2px; }
+
+.statTile_good   .statValue { color: var(--color-diff-easy-fg); }
+.statTile_ok     .statValue { color: var(--color-diff-med-fg); }
+.statTile_warn   .statValue { color: var(--color-diff-hard-fg); }
+.statTile_neutral .statValue { color: var(--fg1); }
+
+/* ---------- Card + table ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-bottom: var(--s3);
+}
+
+.h2 {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.003em;
+  color: var(--fg1);
+  margin: 0;
+}
+
+.cardHint {
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.th, .thNum, .thProgress {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  border-bottom: 1px solid var(--border);
+  background: var(--color-slate-50);
+}
+.thNum { text-align: right; }
+.thProgress { width: 24%; }
+
+.row { transition: background var(--dur-fast) var(--ease-std); }
+.row:hover { background: var(--color-slate-50); }
+
+.td, .tdNum, .tdProgress {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--fg1);
+}
+.tdNum {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.tdProgress { padding: 12px; }
+
+.nameLink {
+  color: var(--color-app-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.nameLink:hover { text-decoration: underline; }
+
+.email {
+  font-size: 11px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.muted { color: var(--fg3); }
+
+.progress {
+  height: 6px;
+  background: var(--color-slate-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progressBar {
+  height: 100%;
+  background: var(--color-app-accent);
+  border-radius: 999px;
+}
+
+.accBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.accGood { background: var(--color-diff-easy-bg); color: var(--color-diff-easy-fg); }
+.accOk   { background: var(--color-diff-med-bg);  color: var(--color-diff-med-fg); }
+.accBad  { background: var(--color-diff-hard-bg); color: var(--color-diff-hard-fg); }
+
+.completedTag {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-diff-easy-fg);
+}
+
+.cardTag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ---------- Questions list ---------- */
+
+.questionList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.qRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.qRow:hover { background: var(--bg-white); border-color: var(--border); }
+
+.qIndex {
+  width: 28px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.qInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qCode {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg1);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.qMeta {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.qStatus {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.qStatusCorrect { background: var(--color-diff-easy-bg); color: var(--color-diff-easy-fg); }
+.qStatusOk      { background: var(--color-diff-med-bg);  color: var(--color-diff-med-fg); }
+.qStatusWrong   { background: var(--color-diff-hard-bg); color: var(--color-diff-hard-fg); }
+.qStatusPending { background: var(--color-slate-100); color: var(--fg3); }
+
+/* ---------- Empty state ---------- */
+
+.empty {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 22px 20px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+  margin-bottom: 4px;
+}
+
+.emptyBody { font-size: 13px; color: var(--fg3); }

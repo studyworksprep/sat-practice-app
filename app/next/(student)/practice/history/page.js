@@ -76,18 +76,56 @@ export default async function PracticeHistoryPage() {
 
   // 3) Build a per-session summary. For each session, count how
   //    many of its question_ids have a first attempt inside the
-  //    session window (created_at >= session.created_at).
+  //    session window (created_at >= session.created_at). We
+  //    snapshot `now` once here so downstream components stay
+  //    pure w.r.t. time (React 19 / compiler).
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+  const sevenDaysAgoMs = nowMs - 7 * 24 * 60 * 60 * 1000;
   const rows = (sessions ?? []).map((row) => buildRow(row, attempts));
+
+  // Summary stats strip (aggregated over the fetched window).
+  const completedRows = rows.filter((r) => r.completed);
+  const totalAttempted = completedRows.reduce((sum, r) => sum + r.attempted, 0);
+  const totalCorrect = completedRows.reduce((sum, r) => sum + r.correct, 0);
+  const overallAccuracy =
+    totalAttempted > 0
+      ? Math.round((totalCorrect / totalAttempted) * 100)
+      : null;
+  const thisWeekCount = rows.filter(
+    (r) => r.createdAt && Date.parse(r.createdAt) >= sevenDaysAgoMs,
+  ).length;
 
   return (
     <main className={s.container}>
       <header className={s.header}>
+        <div className={s.eyebrow}>Practice</div>
         <h1 className={s.h1}>Practice history</h1>
         <p className={s.sub}>
-          Every session you've run, newest first. Click Review to
-          see the full report, or Resume to pick up a partial one.
+          Every self-guided session you&apos;ve run, newest first.
+          Click Review to see the full report, or Resume to pick up
+          a partial one.
         </p>
       </header>
+
+      {rows.length > 0 && (
+        <div className={s.statsStrip}>
+          <div className={s.statTile}>
+            <div className={s.statValue}>{rows.length}</div>
+            <div className={s.statLabel}>Sessions shown</div>
+          </div>
+          <div className={s.statTile}>
+            <div className={s.statValue}>
+              {overallAccuracy == null ? '—' : `${overallAccuracy}%`}
+            </div>
+            <div className={s.statLabel}>Accuracy across completed</div>
+          </div>
+          <div className={s.statTile}>
+            <div className={s.statValue}>{thisWeekCount}</div>
+            <div className={s.statLabel}>This week</div>
+          </div>
+        </div>
+      )}
 
       {rows.length === 0 ? (
         <div className={s.card}>

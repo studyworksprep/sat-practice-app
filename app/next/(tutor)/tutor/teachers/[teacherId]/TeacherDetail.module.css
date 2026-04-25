@@ -1,0 +1,292 @@
+/* =============================================================
+   Manager → per-teacher detail. Tokens from [data-tree="next"].
+============================================================= */
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.breadcrumb {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+  align-self: flex-start;
+}
+.breadcrumb:hover { text-decoration: underline; }
+
+/* ---------- Header ---------- */
+
+.header { padding: var(--s2) 0; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+
+.sub {
+  color: var(--fg3);
+  font-size: 14px;
+}
+
+/* ---------- Stats strip ---------- */
+
+.statsStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s3);
+}
+
+.statTile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statValue {
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.statSub { font-size: 11px; color: var(--fg3); margin-top: 2px; }
+
+.statTile_good   .statValue { color: var(--color-diff-easy-fg); }
+.statTile_ok     .statValue { color: var(--color-diff-med-fg); }
+.statTile_warn   .statValue { color: var(--color-diff-hard-fg); }
+.statTile_neutral .statValue { color: var(--fg1); }
+
+/* ---------- Card + assignments list ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+  margin-bottom: var(--s3);
+}
+
+.h2 {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.003em;
+  color: var(--fg1);
+  margin: 0;
+}
+
+.cardHint {
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.assignmentList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.assignRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.assignRow:hover { background: var(--bg-white); border-color: var(--border); color: inherit; }
+
+.assignMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.assignTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assignMeta {
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.assignChevron {
+  color: var(--fg3);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.muted { color: var(--fg3); }
+.archived { color: var(--fg3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 11px; }
+
+.cardTag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ---------- Training panel ---------- */
+
+.trainingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--s3);
+}
+
+.trainingCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  min-width: 0;
+}
+
+.trainingHeader {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.trainingList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.trainingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.trainingRow:hover {
+  background: var(--bg-white);
+  border-color: var(--border);
+  color: inherit;
+}
+
+.trainingRowMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.trainingRowTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trainingRowMeta {
+  font-size: 11px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.trainingScore {
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.trainingEmpty {
+  font-size: 12px;
+  color: var(--fg3);
+  font-style: italic;
+  padding: 8px 10px;
+}
+
+/* ---------- Empty state ---------- */
+
+.empty {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 22px 20px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+  margin-bottom: 4px;
+}
+
+.emptyBody { font-size: 13px; color: var(--fg3); }

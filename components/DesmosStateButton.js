@@ -5,22 +5,29 @@ import { useCallback, useEffect, useState } from 'react';
 /**
  * Button to save/load a shared Desmos calculator state for a question.
  * - Managers/admins: can save the current calc state or load a saved one, plus delete.
- * - Teachers: automatically loads any saved state when available.
+ * - Teachers: can see that a saved state exists and click the button to load it.
  * - Icon is gray when no saved state, golden when one exists.
  *
+ * Saved states are NEVER auto-applied — not for teachers, not for
+ * students. A manager saves a Desmos solution as a reference for
+ * whoever's reviewing the question, not as a default the next
+ * person opens the question with. Applying it automatically made
+ * the calculator look pre-configured on every math question, which
+ * is confusing for anyone attempting the question for real.
+ * Loading is an explicit click on the button below.
+ *
  * Props:
- *   questionId  — the question UUID
+ *   questionId   — the question UUID
  *   getCalcState — () => object | null — returns the current Desmos state
  *   setCalcState — (state) => void — applies a state to the Desmos calculator
  */
-export default function DesmosStateButton({ questionId, getCalcState, setCalcState, disableAutoLoad }) {
+export default function DesmosStateButton({ questionId, getCalcState, setCalcState }) {
   const [hasSaved, setHasSaved] = useState(false);
   const [canSave, setCanSave] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedState, setSavedState] = useState(null);
-  const [autoLoaded, setAutoLoaded] = useState(false);
 
   const fetchState = useCallback(async () => {
     if (!questionId) return;
@@ -39,16 +46,6 @@ export default function DesmosStateButton({ questionId, getCalcState, setCalcSta
   }, [questionId]);
 
   useEffect(() => { fetchState(); }, [fetchState]);
-
-  // Auto-load for teachers (can't save = teacher), but not during practice tests
-  useEffect(() => {
-    if (!loaded || autoLoaded || disableAutoLoad) return;
-    if (canSave) return; // manager/admin — don't auto-load
-    if (savedState?.state_json && setCalcState) {
-      setCalcState(savedState.state_json);
-      setAutoLoaded(true);
-    }
-  }, [loaded, savedState, canSave, setCalcState, autoLoaded, disableAutoLoad]);
 
   async function handleSave() {
     if (!getCalcState || saving) return;

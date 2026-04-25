@@ -31,6 +31,7 @@ import { loadReviewData } from '@/lib/practice/load-review-data';
 import { PracticeInteractive } from '@/lib/practice/PracticeInteractive';
 import { QuestionMap } from '@/lib/practice/QuestionMap';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
+import s from './Runner.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,18 +94,32 @@ export default async function PracticeQuestionPage({ params }) {
 
   const questionId = questionIds[position];
 
-  // 2) Advance the persisted cursor if the student is moving forward.
-  //    Non-blocking: a failure here doesn't break the render.
+  // 2) Advance the persisted cursor if the student is moving to a
+  //    new position. This used to be fire-and-forget, which meant
+  //    a dropped packet on a bad connection silently left the
+  //    resume cursor stale. It's one small UPDATE and the page
+  //    doesn't render anything that depends on its result, so we
+  //    now await it and log any failure server-side — the student
+  //    still sees their question either way, but the cursor
+  //    actually persists.
   if (position !== session.current_position) {
-    // Fire-and-forget. Don't await — the update isn't on the critical path.
-    supabase
+    const { error: cursorErr } = await supabase
       .from('practice_sessions')
       .update({
         current_position: position,
         last_activity_at: new Date().toISOString(),
       })
-      .eq('id', sessionId)
-      .then(() => {}, () => {});
+      .eq('id', sessionId);
+    if (cursorErr) {
+      console.error(
+        JSON.stringify({
+          event: 'practice_cursor_update_failed',
+          session_id: sessionId,
+          position,
+          message: cursorErr.message,
+        }),
+      );
+    }
   }
 
   // 3) Load the question content from questions_v2 + the student's
@@ -168,15 +183,18 @@ export default async function PracticeQuestionPage({ params }) {
 
   if (questionRemoved) {
     return (
-      <main style={REMOVED_S.main}>
-        <h1 style={REMOVED_S.h1}>This question was removed</h1>
-        <p style={REMOVED_S.sub}>
-          It was either unpublished or deleted after your session was
-          created. Pick another question from the map below, or{' '}
-          <Link href="/practice/start" style={REMOVED_S.link}>
-            start a new session
-          </Link>.
-        </p>
+      <main className={s.removedMain}>
+        <div className={s.removedCard}>
+          <div className={s.removedEyebrow}>Question unavailable</div>
+          <h1 className={s.removedH1}>This question was removed</h1>
+          <p className={s.removedSub}>
+            It was either unpublished or deleted after your session
+            was created. Pick another question from the map below, or{' '}
+            <Link href="/practice/start" className={s.removedLink}>
+              start a new session
+            </Link>.
+          </p>
+        </div>
         <QuestionMap
           basePath="/practice"
           sessionId={sessionId}
@@ -336,9 +354,3 @@ function buildMapItems({ questionIds, publishedRows, attempts }) {
   });
 }
 
-const REMOVED_S = {
-  main: { maxWidth: 720, margin: '3rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  h1: { fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' },
-  sub: { color: '#4b5563', lineHeight: 1.5 },
-  link: { color: '#2563eb', textDecoration: 'none', fontWeight: 600 },
-};

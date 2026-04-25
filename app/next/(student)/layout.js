@@ -16,15 +16,20 @@ import { AppNav } from '@/lib/ui/AppNav';
 
 const STUDENT_LINKS = [
   { href: '/dashboard',         label: 'Dashboard' },
-  // "Practice" now covers both the session generator (question
-  // bank filter) and the per-test runner — unified under one tab.
-  // matchPrefix is a string instead of a function because the
-  // layout is a Server Component and can't pass functions across
-  // the boundary into the client AppNav. The client treats
-  // matchPrefix as "highlight this link for any URL under that
-  // prefix", so /practice/test/... and /practice/history both
-  // keep the Practice tab active.
-  { href: '/practice/start',    label: 'Practice', matchPrefix: '/practice' },
+  // Split in Phase 3: "Practice" is the self-guided session
+  // generator (question bank filter → session runner) and
+  // "Practice tests" is the full-length SAT-simulation hub.
+  // matchPrefix highlights the link for any URL under that prefix;
+  // the Practice-tests tab gets a more specific prefix so it
+  // doesn't also light up for /practice/start.
+  // "Practice" owns self-guided sessions; matchPrefix picks up the
+  // session runner (/practice/s/...) + history too.
+  { href: '/practice/start',    label: 'Practice',       matchPrefix: ['/practice/start', '/practice/s', '/practice/history', '/practice/review'] },
+  // "Practice tests" owns full-length simulations. The launch hub
+  // lives at the plural /practice/tests; the per-test instruction
+  // page and the runner/results live under the singular
+  // /practice/test — both need to keep this tab highlighted.
+  { href: '/practice/tests',    label: 'Practice tests', matchPrefix: ['/practice/tests', '/practice/test'] },
   { href: '/assignments',       label: 'Assignments' },
   { href: '/review',            label: 'Review' },
 ];
