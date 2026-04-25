@@ -1,16 +1,21 @@
-// Practice session start page. See docs/architecture-plan.md §3.7.
+// Practice session start page.
 //
-// Lightweight filter form that hands off to createSession Server
-// Action. The action builds a practice_sessions row with a random-
-// ordered slice of matching question ids, then redirects the user to
-// /practice/s/[sessionId]/0 — the opaque session-position URL
-// pattern from §3.7. URL manipulation after that point reveals
-// nothing; the server maps (sessionId, position) → questionId.
+// Server-side: load the domain/skill lookup and the distinct
+// score_band values from questions_v2 so the filter form can
+// offer them. Hand control to StartInteractive (client island)
+// for the form itself + live count + submission.
+//
+// The practice page downstream of this one never sees filters —
+// it reads question_ids[position] from the practice_sessions row
+// and renders. That separation is the whole point of the
+// fixed-list redesign: dumb viewer, smart generator.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { createSession } from './actions';
+import { createSession, countAvailable } from './actions';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
+import { domainSection } from '@/lib/ui/question-layout';
+import { fetchAll } from '@/lib/supabase/fetchAll';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,58 +26,145 @@ export default async function PracticeStartPage() {
   if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
 
-  // Fetch the filter options inline — domain list + skills per domain,
-  // drawn from questions_v2 (the v2 schema has taxonomy inline, no
-  // separate question_taxonomy join needed).
-  const { data: questionRows } = await supabase
-    .from('questions_v2')
-    .select('domain_name, skill_name')
-    .eq('is_published', true)
-    .eq('is_broken', false)
-    .not('domain_name', 'is', null)
-    .limit(5000);
+  // Domain / skill lookup. v2 has taxonomy inline on questions_v2
+  // so no separate taxonomy table join. We paginate through every
+  // published row so the per-domain totals are never silently
+  // truncated by PostgREST's max-rows cap (see
+  // docs/architecture-plan.md Finding #1).
+  const questionRows = await fetchAll((from, to) =>
+    supabase
+      .from('questions_v2')
+      .select('domain_name, domain_code, skill_name, score_band')
+      .eq('is_published', true)
+      .eq('is_broken', false)
+      .is('deleted_at', null)
+      .not('domain_name', 'is', null)
+      .range(from, to),
+  );
 
-  // Build { domain: Set<skill> } from the rows.
-  const domainMap = {};
-  for (const row of questionRows ?? []) {
-    if (!row.domain_name) continue;
-    if (!domainMap[row.domain_name]) domainMap[row.domain_name] = new Set();
-    if (row.skill_name) domainMap[row.domain_name].add(row.skill_name);
+  const domainMap = new Map();
+  const scoreBandSet = new Set();
+  for (const row of questionRows) {
+    if (row.domain_name) {
+      let entry = domainMap.get(row.domain_name);
+      if (!entry) {
+        entry = {
+          code: row.domain_code ?? null,
+          skills: new Map(),
+          total: 0,
+        };
+        domainMap.set(row.domain_name, entry);
+      }
+      entry.total += 1;
+      if (row.domain_code && !entry.code) entry.code = row.domain_code;
+      if (row.skill_name) {
+        entry.skills.set(
+          row.skill_name,
+          (entry.skills.get(row.skill_name) ?? 0) + 1,
+        );
+      }
+    }
+    if (row.score_band != null) scoreBandSet.add(row.score_band);
   }
-  const domains = Object.keys(domainMap)
-    .sort()
-    .map((name) => ({ name, skills: Array.from(domainMap[name]).sort() }));
+  const domains = Array.from(domainMap.entries())
+    .map(([name, e]) => ({
+      name,
+      code: e.code,
+      section: domainSection(e.code),
+      skills: Array.from(e.skills.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([skillName, count]) => ({ name: skillName, count })),
+      total: e.total,
+    }))
+    .sort((a, b) => {
+      // Math section first, then alphabetical within each section.
+      if (a.section !== b.section) return a.section === 'math' ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+  const scoreBands = Array.from(scoreBandSet).sort((a, b) => a - b);
 
-  // Is there an active practice-mode session we can offer to resume?
-  // Tutors see their own training-mode session via /tutor/training;
-  // this query is filtered to mode='practice' so the student flow
-  // never offers to resume a tutor's training session and vice versa.
-  const { data: activeSession } = await supabase
-    .from('practice_sessions')
-    .select('id, current_position, question_ids, last_activity_at')
-    .eq('user_id', user.id)
-    .eq('mode', 'practice')
-    .gt('expires_at', new Date().toISOString())
-    .order('last_activity_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // Parallel loads for the rest of the page:
+  //   - active practice session (Resume card)
+  //   - in-progress test attempt (Resume-test card)
+  //   - published practice tests (Tests section)
+  //   - completed test attempts (for the ✓ mark beside done tests)
+  const [
+    { data: activeSession },
+    { data: inProgressTestAttempt },
+    { data: publishedTests },
+    { data: completedAttempts },
+  ] = await Promise.all([
+    supabase
+      .from('practice_sessions')
+      .select('id, current_position, question_ids, last_activity_at')
+      .eq('user_id', user.id)
+      .eq('mode', 'practice')
+      .eq('status', 'in_progress')
+      .gt('expires_at', new Date().toISOString())
+      .order('last_activity_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('practice_test_attempts_v2')
+      .select('id, practice_test_id, started_at, practice_test:practice_tests_v2(name, code)')
+      .eq('user_id', user.id)
+      .eq('status', 'in_progress')
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('practice_tests_v2')
+      .select('id, code, name, is_adaptive')
+      .eq('is_published', true)
+      .is('deleted_at', null)
+      .order('code', { ascending: true }),
+    supabase
+      .from('practice_test_attempts_v2')
+      .select('practice_test_id')
+      .eq('user_id', user.id)
+      .eq('status', 'completed'),
+  ]);
 
   const resumeInfo = activeSession
     ? {
         sessionId: activeSession.id,
-        position: activeSession.current_position,
-        total: Array.isArray(activeSession.question_ids)
+        position:  activeSession.current_position,
+        total:     Array.isArray(activeSession.question_ids)
           ? activeSession.question_ids.length
           : 0,
         lastActivityAt: activeSession.last_activity_at,
       }
     : null;
 
+  const resumeTest = inProgressTestAttempt
+    ? {
+        attemptId: inProgressTestAttempt.id,
+        testId:    inProgressTestAttempt.practice_test_id,
+        testName:  inProgressTestAttempt.practice_test?.name ?? 'Practice test',
+        startedAt: inProgressTestAttempt.started_at,
+      }
+    : null;
+
+  const completedTestIds = new Set(
+    (completedAttempts ?? []).map((r) => r.practice_test_id).filter(Boolean),
+  );
+  const tests = (publishedTests ?? []).map((t) => ({
+    id:          t.id,
+    code:        t.code,
+    name:        t.name,
+    isAdaptive:  t.is_adaptive,
+    completed:   completedTestIds.has(t.id),
+  }));
+
   return (
     <StartInteractive
       domains={domains}
+      scoreBands={scoreBands}
       resumeInfo={resumeInfo}
+      resumeTest={resumeTest}
+      tests={tests}
       createSessionAction={createSession}
+      countAvailableAction={countAvailable}
       basePath="/practice"
     />
   );

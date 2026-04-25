@@ -1,21 +1,23 @@
-// Tutor dashboard — exercises the §3.8 unified hierarchy model.
+// Tutor dashboard. Server Component — the whole page runs
+// server-side, no client island because nothing is interactive
+// here beyond row clicks (which are plain Next.js Links).
 //
-// Queries the student_practice_stats view, which aggregates profile
-// fields + attempt stats. RLS on the underlying profiles and attempts
-// tables uses can_view(), so the view automatically returns only the
-// students the caller is allowed to see.
+// Data sources:
+//   - student_practice_stats view for the roster aggregates;
+//     RLS on the underlying tables uses can_view(), so the view
+//     returns only the students the caller is allowed to see.
+//   - practice_test_attempts_v2 (scoped to the visible students)
+//     for the "Recent tests" panel.
 //
-// Read-only on this first commit — no client island, no Server
-// Actions. Sorting / filtering / assignment creation land in
-// follow-ups. Per the Phase 2 pattern: a Server Component is the
-// whole file when there's no interactivity.
+// Layout mirrors the student dashboard vocabulary: banner, stats
+// row, primary content panel (students table), secondary panel
+// (recent test attempts across the roster).
 
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
-import { Button } from '@/lib/ui/Button';
-import { Card } from '@/lib/ui/Card';
-import { Table, Th, Td } from '@/lib/ui/Table';
+import s from './Dashboard.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,17 +26,14 @@ const STUDENT_LIMIT = 100;
 export default async function TutorDashboardPage() {
   const { user, profile, supabase } = await requireUser();
 
-  // Role gate. Only tutors (teacher/manager role) and admins land
-  // here; students get bounced to their own dashboard.
-  if (profile.role === 'student' || profile.role === 'practice') {
-    redirect('/dashboard');
-  }
-  if (!['teacher', 'manager', 'admin'].includes(profile.role)) {
-    redirect('/');
-  }
+  // Role gate. The (tutor) layout already enforces this, but
+  // belt-and-suspenders keeps this page correct if the layout
+  // ever goes missing.
+  if (profile.role === 'student' || profile.role === 'practice') redirect('/dashboard');
+  if (!['teacher', 'manager', 'admin'].includes(profile.role)) redirect('/');
 
-  // One query against the student_practice_stats view. RLS on the
-  // underlying tables uses can_view(), so visibility is automatic.
+  // Roster stats. Ordered by last-activity so the cohort's active
+  // students land near the top.
   const { data: rows, error: rpcErr } = await supabase
     .from('student_practice_stats')
     .select('*')
@@ -42,164 +41,246 @@ export default async function TutorDashboardPage() {
 
   if (rpcErr) {
     return (
-      <ErrorState
-        tutorName={profile.first_name ?? user.email}
-        message={`Failed to load students: ${rpcErr.message}`}
-      />
+      <main className={s.container}>
+        <header className={s.header}>
+          <div className={s.eyebrow}>Tutor</div>
+          <h1 className={s.h1}>
+            {profile.first_name ? `Hi, ${profile.first_name}` : 'Tutor dashboard'}
+          </h1>
+        </header>
+        <div className={s.errorCard} role="alert">
+          Failed to load students: {rpcErr.message}
+        </div>
+      </main>
     );
   }
 
   const rawStudents = rows ?? [];
-  if (rawStudents.length === 0) {
-    return (
-      <EmptyState tutorName={profile.first_name ?? user.email} />
-    );
-  }
+  const students = rawStudents.slice(0, STUDENT_LIMIT).map((row) => {
+    const total = Number(row.total_attempts ?? 0);
+    const correct = Number(row.correct_attempts ?? 0);
+    return {
+      id: row.user_id,
+      name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.email || '—',
+      email: row.email,
+      targetScore: row.target_sat_score,
+      highSchool: row.high_school,
+      graduationYear: row.graduation_year,
+      totalAttempts: total,
+      weekAttempts: Number(row.week_attempts ?? 0),
+      accuracy: total > 0 ? Math.round((correct / total) * 100) : null,
+      lastActivityAt: row.last_activity_at,
+    };
+  });
 
-  // Map the view rows to the view-model the table renders.
-  const students = rawStudents.slice(0, STUDENT_LIMIT).map((row) => ({
-    id: row.user_id,
-    name:
-      [row.first_name, row.last_name].filter(Boolean).join(' ') ||
-      row.email ||
-      '—',
-    email: row.email,
-    targetScore: row.target_sat_score,
-    highSchool: row.high_school,
-    graduationYear: row.graduation_year,
-    totalAttempts: Number(row.total_attempts ?? 0),
-    weekAttempts: Number(row.week_attempts ?? 0),
-    accuracy:
-      Number(row.total_attempts ?? 0) > 0
-        ? Math.round(
-            (Number(row.correct_attempts ?? 0) /
-              Number(row.total_attempts ?? 0)) *
-              100,
-          )
-        : null,
-    lastActivityAt: row.last_activity_at,
-  }));
-
-  // Cohort summary.
   const cohort = {
-    total: students.length,
-    visible: rawStudents.length,
+    total: rawStudents.length,
+    visible: students.length,
     activeThisWeek: students.filter((s) => s.weekAttempts > 0).length,
-    totalAttemptsThisWeek: students.reduce((acc, s) => acc + s.weekAttempts, 0),
+    attemptsThisWeek: students.reduce((acc, s) => acc + s.weekAttempts, 0),
   };
 
+  // Recent test attempts across the roster. Capped to 10 so the
+  // panel stays compact. Joining on practice_tests_v2 inline
+  // with !inner so rows without a published test drop.
+  const { data: recentTestAttempts } = await supabase
+    .from('practice_test_attempts_v2')
+    .select(`
+      id, user_id, status, finished_at, started_at,
+      composite_score, rw_scaled, math_scaled,
+      practice_test:practice_tests_v2!inner(name, code)
+    `)
+    .in('user_id', students.length > 0 ? students.map((s) => s.id) : ['00000000-0000-0000-0000-000000000000'])
+    .order('started_at', { ascending: false })
+    .limit(10);
+
+  const studentsById = new Map(students.map((s) => [s.id, s]));
+  const testRows = (recentTestAttempts ?? []).map((r) => ({
+    id: r.id,
+    studentId: r.user_id,
+    studentName: studentsById.get(r.user_id)?.name ?? '—',
+    testName: r.practice_test?.name ?? 'Practice test',
+    testCode: r.practice_test?.code ?? '',
+    status: r.status,
+    composite: r.composite_score,
+    rwScaled: r.rw_scaled,
+    mathScaled: r.math_scaled,
+    timestamp: r.finished_at ?? r.started_at,
+  }));
+
+  const greeting = profile.first_name
+    ? `Welcome back, ${profile.first_name}.`
+    : 'Welcome back.';
+
   return (
-    <main style={S.main}>
-      <header style={S.header}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h1 style={S.h1}>
-              {profile.first_name ? `Hi, ${profile.first_name}` : 'Tutor dashboard'}
-            </h1>
-            <p style={S.sub}>
-              {cohort.total} student{cohort.total === 1 ? '' : 's'} visible ·{' '}
-              {cohort.activeThisWeek} active this week ·{' '}
-              {cohort.totalAttemptsThisWeek} practice attempts in the last 7 days
-            </p>
+    <main className={s.container}>
+      {/* ---------- Banner ---------- */}
+      <section className={s.banner}>
+        <div className={s.bannerText}>
+          <div className={s.bannerGreeting}>{greeting}</div>
+          <div className={s.bannerSub}>
+            {cohort.total === 0
+              ? 'No students assigned yet.'
+              : `${cohort.total} student${cohort.total === 1 ? '' : 's'} · ${cohort.activeThisWeek} active this week · ${cohort.attemptsThisWeek} practice attempts in the last 7 days`}
           </div>
-          <Button href="/tutor/assignments">Assignments</Button>
         </div>
-      </header>
-
-      <section>
-        <h2 style={S.h2}>Your students</h2>
-        <Table style={{ fontSize: '0.95rem' }}>
-            <thead>
-              <tr>
-                <Th>Name</Th>
-                <Th>Target</Th>
-                <Th>Attempts</Th>
-                <Th>Accuracy</Th>
-                <Th>7-day</Th>
-                <Th>Last activity</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((s) => (
-                <tr key={s.id}>
-                  <Td style={{ verticalAlign: 'top' }}>
-                    <a href={`/tutor/students/${s.id}`} style={S.nameLink}>
-                      <div style={S.nameMain}>{s.name}</div>
-                    </a>
-                    {s.highSchool && (
-                      <div style={S.nameSub}>
-                        {s.highSchool}
-                        {s.graduationYear ? ` · class of ${s.graduationYear}` : ''}
-                      </div>
-                    )}
-                  </Td>
-                  <Td>{s.targetScore ?? '—'}</Td>
-                  <Td>{s.totalAttempts}</Td>
-                  <Td>
-                    {s.accuracy != null ? `${s.accuracy}%` : '—'}
-                  </Td>
-                  <Td>{s.weekAttempts}</Td>
-                  <Td>{formatRelativeShort(s.lastActivityAt) ?? '—'}</Td>
-                </tr>
-              ))}
-            </tbody>
-        </Table>
-        {cohort.visible > STUDENT_LIMIT && (
-          <p style={S.footnote}>
-            Showing the first {STUDENT_LIMIT} of {cohort.visible} students.
-            Filtering and pagination arrive in a follow-up.
-          </p>
-        )}
+        <div className={s.bannerActions}>
+          <Link href="/tutor/training/start" className={s.btnSecondary}>Training mode</Link>
+          <Link href="/tutor/assignments/new" className={s.btnPrimary}>New assignment</Link>
+        </div>
       </section>
+
+      {/* ---------- Cohort stat tiles ---------- */}
+      {cohort.total > 0 && (
+        <section className={s.statsRow}>
+          <StatTile label="Students" value={cohort.total} />
+          <StatTile label="Active this week" value={cohort.activeThisWeek} />
+          <StatTile label="Attempts · 7d" value={cohort.attemptsThisWeek} />
+          <StatTile
+            label="Roster size"
+            value={cohort.visible < cohort.total ? `${cohort.visible}+` : cohort.visible}
+          />
+        </section>
+      )}
+
+      {/* ---------- Students roster ---------- */}
+      {cohort.total === 0 ? (
+        <section className={s.card}>
+          <div className={s.empty}>
+            You don&apos;t have any students assigned yet. Once an admin
+            assigns them to you, they&apos;ll show up here.
+          </div>
+        </section>
+      ) : (
+        <section className={s.card}>
+          <div className={s.cardHeader}>
+            <div className={s.sectionLabel}>Your students</div>
+            <div className={s.cardHeaderHint}>
+              Ordered by most recent activity. Click any student for a
+              detail view.
+            </div>
+          </div>
+          <div className={s.tableWrap}>
+            <table className={s.table}>
+              <thead>
+                <tr>
+                  <th className={s.th}>Name</th>
+                  <th className={s.thNum}>Target</th>
+                  <th className={s.thNum}>Attempts</th>
+                  <th className={s.thNum}>Accuracy</th>
+                  <th className={s.thNum}>7-day</th>
+                  <th className={s.th}>Last activity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((st) => (
+                  <tr key={st.id} className={s.row}>
+                    <td className={s.td}>
+                      <Link href={`/tutor/students/${st.id}`} className={s.nameLink}>
+                        <div className={s.nameMain}>{st.name}</div>
+                      </Link>
+                      {(st.highSchool || st.graduationYear) && (
+                        <div className={s.nameSub}>
+                          {st.highSchool}
+                          {st.graduationYear ? ` · class of ${st.graduationYear}` : ''}
+                        </div>
+                      )}
+                    </td>
+                    <td className={s.tdNum}>{st.targetScore ?? '—'}</td>
+                    <td className={s.tdNum}>{st.totalAttempts.toLocaleString()}</td>
+                    <td className={s.tdNum}>
+                      <AccuracyBadge pct={st.accuracy} />
+                    </td>
+                    <td className={s.tdNum}>{st.weekAttempts}</td>
+                    <td className={s.td}>
+                      {formatRelativeShort(st.lastActivityAt) ?? <span className={s.muted}>—</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {cohort.visible < cohort.total && (
+            <p className={s.footnote}>
+              Showing the first {STUDENT_LIMIT} students. Filtering + pagination are on the way.
+            </p>
+          )}
+        </section>
+      )}
+
+      {/* ---------- Recent test attempts across the roster ---------- */}
+      {testRows.length > 0 && (
+        <section className={s.card}>
+          <div className={s.cardHeader}>
+            <div className={s.sectionLabel}>Recent practice tests</div>
+          </div>
+          <ul className={s.testList}>
+            {testRows.map((t) => (
+              <li key={t.id}>
+                <Link
+                  href={t.status === 'completed'
+                    ? `/practice/test/attempt/${t.id}/results`
+                    : `/tutor/students/${t.studentId}`}
+                  className={s.testRow}
+                >
+                  <div className={s.testRowLeft}>
+                    <div className={s.testRowName}>{t.studentName}</div>
+                    <div className={s.testRowMeta}>
+                      {t.testName} · {formatRelativeShort(t.timestamp) ?? '—'}
+                      {t.status !== 'completed' && (
+                        <span className={s.testRowTag}>
+                          {' · '}
+                          {t.status === 'in_progress' ? 'In progress' : 'Abandoned'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className={s.testRowScores}>
+                    {t.status === 'completed' && t.composite != null ? (
+                      <>
+                        <ScorePill label="Total" value={t.composite} />
+                        <ScorePill label="RW" value={t.rwScaled} tone="rw" />
+                        <ScorePill label="Math" value={t.mathScaled} tone="math" />
+                      </>
+                    ) : (
+                      <span className={s.muted}>—</span>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
   );
 }
 
-function EmptyState({ tutorName }) {
+// ──────────────────────────────────────────────────────────────
+
+function StatTile({ label, value }) {
   return (
-    <main style={S.main}>
-      <header style={S.header}>
-        <h1 style={S.h1}>{tutorName ? `Hi, ${tutorName}` : 'Tutor dashboard'}</h1>
-        <p style={S.sub}>You don&apos;t have any students assigned yet.</p>
-      </header>
-      <Card>
-        <p style={{ margin: 0 }}>
-          Your students will appear here once an admin assigns them to you.
-          If you expected to see a student already, double-check the
-          assignment in the admin panel.
-        </p>
-      </Card>
-    </main>
+    <div className={s.statCard}>
+      <div className={s.statValue}>{value}</div>
+      <div className={s.statLabel}>{label}</div>
+    </div>
   );
 }
 
-function ErrorState({ tutorName, message }) {
+function AccuracyBadge({ pct }) {
+  if (pct == null) return <span className={s.muted}>—</span>;
+  const tone = pct >= 80 ? s.accGood : pct >= 50 ? s.accOk : s.accBad;
+  return <span className={`${s.accBadge} ${tone}`}>{pct}%</span>;
+}
+
+function ScorePill({ label, value, tone }) {
+  if (value == null) return null;
+  const cls = [s.scorePill, tone === 'rw' ? s.scorePillRw : tone === 'math' ? s.scorePillMath : null]
+    .filter(Boolean).join(' ');
   return (
-    <main style={S.main}>
-      <header style={S.header}>
-        <h1 style={S.h1}>{tutorName ? `Hi, ${tutorName}` : 'Tutor dashboard'}</h1>
-        <p style={S.sub}>Something went wrong loading your students.</p>
-      </header>
-      <Card tone="danger" style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
-        <p style={{ margin: 0 }}>{message}</p>
-      </Card>
-    </main>
+    <div className={cls}>
+      <div className={s.scorePillValue}>{value}</div>
+      <div className={s.scorePillLabel}>{label}</div>
+    </div>
   );
 }
-
-
-const S = {
-  main: { maxWidth: 1100, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  header: { marginBottom: '1.5rem' },
-  h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' },
-  sub: { color: '#4b5563', marginTop: 0 },
-  h2: { fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.75rem' },
-  nameLink: { textDecoration: 'none', color: 'inherit' },
-  nameMain: { fontWeight: 600, color: '#2563eb' },
-  nameSub: { fontSize: '0.8rem', color: '#9ca3af' },
-  footnote: {
-    marginTop: '0.75rem',
-    fontSize: '0.85rem',
-    color: '#6b7280',
-  },
-};

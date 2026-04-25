@@ -1,20 +1,33 @@
 // Root of the rebuild tree. See docs/architecture-plan.md §3.6.
 //
-// During Phase 1 this is an empty pass-through layout. Everything still
-// inherits from `app/layout.js` (the top-level root layout), so the HTML
-// shell, font loading, and global CSS are unchanged. As Phase 2 fills in
-// the rebuilt pages, this layout becomes the natural home for next-tree-
-// specific providers, error boundaries, and shared UI chrome.
+// Responsibilities:
+//   1. Import the new-tree design-system tokens + prose rules.
+//      Tokens are declared on [data-tree="next"] so they don't
+//      leak into legacy pages, which still carry their own :root
+//      variables with overlapping names (--bg, --card, --border,
+//      --s1..5, etc.).
+//   2. Wrap children in <div data-tree="next"> so the tokens
+//      resolve via the attribute selector. Every new-tree
+//      component that reads `var(--…)` gets the token from this
+//      scope.
 //
-// Nobody reaches this tree unless the middleware rewrites their URL, and
-// the middleware only rewrites when the user is explicitly on
-// `ui_version='next'` (or the feature_flags kill switch has been flipped
-// to force 'next'). Internal accounts only, until the tree has content.
+// Phase 6 (legacy retirement) will flip the tokens back to :root
+// and drop this wrapping div; the `data-tree` attribute becomes
+// a no-op we can remove.
+//
+// Nobody reaches this tree unless the middleware rewrites their
+// URL, and the middleware only rewrites when the user is
+// explicitly on ui_version='next' (or the feature_flags kill
+// switch has forced everyone to 'next'). Internal accounts only
+// until feature parity is reached.
+
+import '../styles/next-tokens.css';
+import '../styles/next-prose.css';
 
 export const metadata = {
   title: 'Studyworks',
 };
 
 export default async function NextTreeLayout({ children }) {
-  return children;
+  return <div data-tree="next">{children}</div>;
 }

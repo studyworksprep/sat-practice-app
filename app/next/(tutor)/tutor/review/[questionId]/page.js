@@ -21,6 +21,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { Card } from '@/lib/ui/Card';
+import { inferLayoutMode } from '@/lib/ui/question-layout';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 
 export const dynamic = 'force-dynamic';
@@ -46,7 +47,7 @@ export default async function TutorReviewQuestionPage({ params }) {
       id, question_type, display_code,
       stimulus_html, stem_html, options, correct_answer, rationale_html,
       stimulus_rendered, stem_rendered, options_rendered, rationale_rendered,
-      domain_name, skill_name, difficulty, score_band, source,
+      domain_code, domain_name, skill_name, difficulty, score_band, source,
       is_published, is_broken, deleted_at
     `)
     .eq('id', questionId)
@@ -71,6 +72,7 @@ export default async function TutorReviewQuestionPage({ params }) {
     };
   });
 
+  const layout = inferLayoutMode(question.domain_code);
   const questionVM = {
     questionId: question.id,
     questionType: question.question_type,
@@ -133,6 +135,7 @@ export default async function TutorReviewQuestionPage({ params }) {
       <article style={S.article}>
         <QuestionRenderer
           mode="teacher"
+          layout={layout}
           question={questionVM}
           result={resultVM}
         />

@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "validate-lessons": "node scripts/validate-lessons.mjs"
+    "validate-lessons": "node scripts/validate-lessons.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
@@ -26,9 +27,12 @@
     "stripe": "^22.0.0"
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
     "@types/react": "19.2.14",
+    "@types/react-dom": "^19.2.3",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.0.0",
-    "eslint-config-next": "^16.2.3"
+    "eslint-config-next": "^16.2.3",
+    "typescript": "^6.0.3"
   }
 }
