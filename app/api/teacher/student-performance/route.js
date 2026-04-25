@@ -1,26 +1,17 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/teacher/student-performance
 // Returns aggregate student performance stats scoped to the teacher's roster.
 // Same shape as the admin student-performance endpoint but filtered to assigned students.
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (!profile || !['admin', 'manager', 'teacher'].includes(profile.role)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const GET = legacyApiRoute(async () => {
+  const { user, profile, service: svc } = await requireServiceRole(
+    'teacher student-performance aggregate',
+    { allowedRoles: ['teacher', 'manager', 'admin'] },
+  );
 
   // ── Get student IDs for this teacher's roster ──
-  const svc = createServiceClient();
   let studentIds = [];
 
   if (profile.role === 'admin') {
@@ -186,7 +177,7 @@ export async function GET() {
     skillHeatmap: skills,
     studentCount: studentIds.length,
   });
-}
+});
 
 function computeHardestEasiestFromAttempts(firstAttempts, taxMap) {
   if (!firstAttempts.length) return { hardest: [], easiest: [] };

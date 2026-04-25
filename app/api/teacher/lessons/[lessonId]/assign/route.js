@@ -1,25 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/teacher/lessons/[lessonId]/assign — assign a lesson to students
 // Body: { student_ids: string[], due_date?: string }
-export async function POST(request, props) {
+export const POST = legacyApiRoute(async (request, props) => {
   const params = await props.params;
+  const { supabase, user } = await requireRole(['teacher', 'manager', 'admin']);
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || !['teacher', 'manager', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const { lessonId } = params;
     const body = await request.json();
     const { student_ids, due_date } = body;
@@ -66,25 +54,13 @@ export async function POST(request, props) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
 
 // GET /api/teacher/lessons/[lessonId]/assign — get assignment info for a lesson
-export async function GET(request, props) {
+export const GET = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || !['teacher', 'manager', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    const { supabase, user } = await requireRole(['teacher', 'manager', 'admin']);
 
     const { lessonId } = params;
 
@@ -136,4 +112,4 @@ export async function GET(request, props) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});

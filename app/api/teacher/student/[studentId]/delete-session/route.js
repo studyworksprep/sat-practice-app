@@ -1,27 +1,17 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/teacher/student/[studentId]/delete-session
 // Body: { attemptIds: [uuid, ...] }
 // Deletes practice session attempt records for a student.
-export async function POST(request, props) {
+export const POST = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   const { studentId } = params;
-  const supabase = await createClient();
-  const service = createServiceClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  const { supabase, profile, service } = await requireServiceRole(
+    'teacher deletes student practice attempts',
+    { allowedRoles: ['teacher', 'manager', 'admin'] },
+  );
 
   // For teachers/managers, verify access to student
   if (profile.role === 'teacher' || profile.role === 'manager') {
@@ -52,4 +42,4 @@ export async function POST(request, props) {
   }
 
   return NextResponse.json({ deleted: count });
-}
+});

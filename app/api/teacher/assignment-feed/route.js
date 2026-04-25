@@ -1,23 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/teacher/assignment-feed
 // Returns per-student assignment rows for the teacher dashboard panel.
 // Each row = one (assignment, student) pair, sorted by due_date ascending (past-due first).
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (!['teacher', 'manager', 'admin'].includes(profile?.role)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const GET = legacyApiRoute(async () => {
+  const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
 
   // Fetch assignments
   let query = supabase
@@ -216,4 +205,4 @@ export async function GET() {
   });
 
   return NextResponse.json({ rows, total: rows.length });
-}
+});

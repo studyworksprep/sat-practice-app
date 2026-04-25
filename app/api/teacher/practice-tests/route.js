@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { createServiceClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { computeScaledScore } from '../../../../lib/scoreConversion';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
@@ -28,21 +30,9 @@ function displayName(profile) {
  *   - Roster-wide domain mastery from practice test questions
  *   - Summary statistics
  */
-export async function GET(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  const role = profile?.role;
-  if (role !== 'teacher' && role !== 'manager' && role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const GET = legacyApiRoute(async (request) => {
+  const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
+  const role = profile.role;
 
   // Pagination params
   const url = new URL(request.url);
@@ -357,4 +347,4 @@ export async function GET(request) {
     progressions,
     domainMastery,
   });
-}
+});
