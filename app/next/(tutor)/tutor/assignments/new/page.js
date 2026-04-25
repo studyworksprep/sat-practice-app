@@ -17,7 +17,7 @@ import styles from './NewAssignmentInteractive.module.css';
 export const dynamic = 'force-dynamic';
 
 export default async function NewAssignmentPage() {
-  const { profile, supabase } = await requireUser();
+  const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'student' || profile.role === 'practice') {
     redirect('/dashboard');
@@ -25,6 +25,11 @@ export default async function NewAssignmentPage() {
   if (!['teacher', 'manager', 'admin'].includes(profile.role)) {
     redirect('/');
   }
+
+  // For managers + admins, also load the teachers under them for
+  // the Trainees target. Teachers (non-managers) skip this query
+  // and the form's target toggle is hidden for them.
+  const isManagerScope = profile.role === 'manager' || profile.role === 'admin';
 
   // Taxonomy + difficulty/score-band distribution for the filter
   // form. We paginate so per-skill counts are never truncated by
@@ -36,6 +41,7 @@ export default async function NewAssignmentPage() {
     questionRows,
     { data: practiceTests },
     { data: lessons },
+    { data: teacherJunctions },
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -61,7 +67,29 @@ export default async function NewAssignmentPage() {
       .select('id, title, status')
       .eq('status', 'published')
       .order('title', { ascending: true }),
+    isManagerScope
+      ? supabase
+          .from('manager_teacher_assignments')
+          .select('teacher_id')
+          .eq('manager_id', user.id)
+      : Promise.resolve({ data: [] }),
   ]);
+
+  // Resolve the teacher profile cards once we know which ids.
+  const teacherIds = (teacherJunctions ?? []).map((r) => r.teacher_id).filter(Boolean);
+  const { data: teacherCards } = teacherIds.length > 0
+    ? await supabase
+        .from('profile_cards')
+        .select('id, first_name, last_name, email')
+        .in('id', teacherIds)
+    : { data: [] };
+  const teachers = (teacherCards ?? [])
+    .map((t) => ({
+      id: t.id,
+      name: [t.first_name, t.last_name].filter(Boolean).join(' ') || t.email || 'Teacher',
+      email: t.email,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   // Shape the students list for the picker.
   const students = (studentsRaw ?? [])
@@ -125,6 +153,7 @@ export default async function NewAssignmentPage() {
 
       <NewAssignmentInteractive
         students={students}
+        teachers={teachers}
         domains={domains}
         difficulties={difficulties}
         practiceTests={(practiceTests ?? []).map((pt) => ({ id: pt.id, label: pt.name ?? pt.code ?? pt.id }))}

@@ -38,7 +38,7 @@ type DomainTaxonomy = {
   skills: SkillTaxonomy[];
 };
 
-type StudentOption = { id: string; name: string; email: string | null };
+type PersonOption = { id: string; name: string; email: string | null };
 type PracticeTestOption = { id: string; label: string };
 type LessonOption = { id: string; title: string };
 
@@ -48,7 +48,13 @@ type CreateAction = (
 ) => Promise<ActionResult | null>;
 
 interface Props {
-  students: StudentOption[];
+  students: PersonOption[];
+  /**
+   * Teachers under this manager. Empty for non-managers — when
+   * empty, the Target toggle is hidden and the form falls back
+   * to the students-only behavior.
+   */
+  teachers?: PersonOption[];
   domains: DomainTaxonomy[];
   difficulties: number[];
   practiceTests: PracticeTestOption[];
@@ -78,6 +84,7 @@ function difficultyLabel(d: number): string {
 
 export function NewAssignmentInteractive({
   students,
+  teachers = [],
   domains,
   difficulties,
   practiceTests,
@@ -89,13 +96,25 @@ export function NewAssignmentInteractive({
     null,
   );
 
+  const hasTeachers = teachers.length > 0;
   const [assignmentType, setAssignmentType] = useState<'questions' | 'practice_test' | 'lesson'>(
     'questions',
   );
+  // Target = students (default) or trainees (teachers). The
+  // backend Server Action accepts the same student_id field for
+  // both — assignment_students_v2.student_id is just a user_id
+  // and doesn't care about role. The toggle is purely UX so a
+  // manager can switch the picker between their two cohorts.
+  const [target, setTarget] = useState<'students' | 'trainees'>('students');
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
   const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>([]);
   const [globalDifficulties, setGlobalDifficulties] = useState<Set<number>>(new Set());
   const [skillSearch, setSkillSearch] = useState('');
+
+  const visiblePeople = target === 'trainees' ? teachers : students;
+  const peopleLabel = target === 'trainees' ? 'Trainees' : 'Students';
+  const peopleEmpty =
+    target === 'trainees' ? 'You have no teachers on your team yet.' : 'You have no students yet.';
 
   const totalWeight = useMemo(
     () => selectedSkills.reduce((sum, s) => sum + s.weight, 0),
@@ -290,19 +309,55 @@ export function NewAssignmentInteractive({
         </div>
       </section>
 
-      {/* Students */}
+      {/* Students / Trainees */}
       <section className={styles.card}>
         <div className={styles.sectionLabel}>
-          Students
+          {peopleLabel}
           <span className={styles.sectionCount}>
             ({selectedStudents.size} selected)
           </span>
         </div>
-        {students.length === 0 ? (
-          <p className={styles.empty}>You have no students yet.</p>
+        {hasTeachers && (
+          <div className={styles.targetRow}>
+            <label
+              className={`${styles.typeOption} ${target === 'students' ? styles.typeOptionActive : ''}`}
+            >
+              <input
+                type="radio"
+                name="target_kind"
+                value="students"
+                checked={target === 'students'}
+                onChange={() => {
+                  setTarget('students');
+                  setSelectedStudents(new Set());
+                }}
+                className={styles.hidden}
+              />
+              <span>Students</span>
+            </label>
+            <label
+              className={`${styles.typeOption} ${target === 'trainees' ? styles.typeOptionActive : ''}`}
+            >
+              <input
+                type="radio"
+                name="target_kind"
+                value="trainees"
+                checked={target === 'trainees'}
+                onChange={() => {
+                  setTarget('trainees');
+                  setSelectedStudents(new Set());
+                }}
+                className={styles.hidden}
+              />
+              <span>Trainees (teachers)</span>
+            </label>
+          </div>
+        )}
+        {visiblePeople.length === 0 ? (
+          <p className={styles.empty}>{peopleEmpty}</p>
         ) : (
           <div className={styles.studentGrid}>
-            {students.map((s) => (
+            {visiblePeople.map((s) => (
               <label key={s.id} className={styles.studentItem}>
                 <input
                   type="checkbox"

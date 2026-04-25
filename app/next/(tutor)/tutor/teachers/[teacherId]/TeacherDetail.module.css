@@ -174,6 +174,105 @@
 .muted { color: var(--fg3); }
 .archived { color: var(--fg3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 11px; }
 
+.cardTag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ---------- Training panel ---------- */
+
+.trainingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--s3);
+}
+
+.trainingCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  min-width: 0;
+}
+
+.trainingHeader {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.trainingList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.trainingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  border: 1px solid transparent;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.trainingRow:hover {
+  background: var(--bg-white);
+  border-color: var(--border);
+  color: inherit;
+}
+
+.trainingRowMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.trainingRowTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trainingRowMeta {
+  font-size: 11px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.trainingScore {
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.trainingEmpty {
+  font-size: 12px;
+  color: var(--fg3);
+  font-style: italic;
+  padding: 8px 10px;
+}
+
 /* ---------- Empty state ---------- */
 
 .empty {

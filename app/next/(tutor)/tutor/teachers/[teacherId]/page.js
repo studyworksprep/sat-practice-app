@@ -41,11 +41,18 @@ export default async function ManagerTeacherDetailPage({ params }) {
   }
 
   // Parallel: teacher profile, their student junctions, their
-  // recent assignments.
+  // recent assignments, plus the teacher's own training data
+  // (assignments aimed AT them as a trainee, recent training
+  // sessions, recent test attempts) — that's the manager-side
+  // mirror of the per-student detail and gives meeting prep at
+  // a glance.
   const [
     { data: teacher },
     { data: tsRows },
     { data: assignments },
+    { data: trainingAssignmentJunctions },
+    { data: trainingSessions },
+    { data: trainingTests },
   ] = await Promise.all([
     supabase
       .from('profile_cards')
@@ -68,6 +75,40 @@ export default async function ManagerTeacherDetailPage({ params }) {
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(RECENT_ASSIGNMENTS_LIMIT),
+    // Training assignments: ones where the teacher is the trainee.
+    // Embed the parent so we can render type + title inline.
+    supabase
+      .from('assignment_students_v2')
+      .select(`
+        completed_at, created_at,
+        assignment:assignments_v2 (
+          id, assignment_type, title, due_date, archived_at, deleted_at,
+          question_ids,
+          lesson:lessons (title),
+          practice_test:practice_tests_v2 (name)
+        )
+      `)
+      .eq('student_id', teacherId)
+      .order('created_at', { ascending: false })
+      .limit(RECENT_ASSIGNMENTS_LIMIT),
+    supabase
+      .from('practice_sessions')
+      .select('id, created_at, question_ids, mode, status')
+      .eq('user_id', teacherId)
+      .in('mode', ['training', 'review'])
+      .neq('status', 'abandoned')
+      .order('created_at', { ascending: false })
+      .limit(8),
+    supabase
+      .from('practice_test_attempts_v2')
+      .select(`
+        id, status, started_at, finished_at,
+        composite_score, rw_scaled, math_scaled,
+        practice_test:practice_tests_v2 (name, code)
+      `)
+      .eq('user_id', teacherId)
+      .order('started_at', { ascending: false })
+      .limit(6),
   ]);
 
   if (!teacher) notFound();
@@ -145,6 +186,30 @@ export default async function ManagerTeacherDetailPage({ params }) {
     if (r.completed_at) t.completed += 1;
     completionsByAssignment.set(r.assignment_id, t);
   }
+
+  // Training rollups for the manager-side Training panel.
+  const trainingAssignments = (trainingAssignmentJunctions ?? [])
+    .map((r) => ({
+      ...r.assignment,
+      student_completed_at: r.completed_at,
+      junction_created_at: r.created_at,
+    }))
+    .filter((a) => a && a.id && !a.deleted_at && !a.archived_at);
+
+  const trainingCompletedTests = (trainingTests ?? []).filter((t) => t.status === 'completed');
+  const trainingTestsTaken = trainingCompletedTests.length;
+  const latestComposite = trainingCompletedTests
+    .filter((t) => Number.isFinite(t.composite_score))
+    .map((t) => t.composite_score)[0] ?? null;
+
+  const trainingSessionRows = (trainingSessions ?? [])
+    .filter((row) => Array.isArray(row.question_ids) && row.question_ids.length > 0)
+    .map((row) => ({
+      id: row.id,
+      createdAt: row.created_at,
+      total: row.question_ids.length,
+      completed: row.status === 'completed',
+    }));
 
   return (
     <main className={s.container}>
@@ -244,6 +309,141 @@ export default async function ManagerTeacherDetailPage({ params }) {
             })}
           </ul>
         )}
+      </section>
+
+      <section className={s.card}>
+        <div className={s.cardHeader}>
+          <div>
+            <div className={s.h2}>Training</div>
+            <div className={s.cardHint}>
+              {teacherName}&apos;s own SAT practice and review — what
+              they&apos;ve done as a trainee. Helps the
+              meeting-prep flow when you want to discuss the
+              homework or test you assigned them.
+            </div>
+          </div>
+          <span className={s.cardTag}>
+            {trainingTestsTaken} tests · {trainingSessionRows.length} sessions
+          </span>
+        </div>
+
+        <div className={s.trainingGrid}>
+          <div className={s.trainingCol}>
+            <div className={s.trainingHeader}>Training assignments</div>
+            {trainingAssignments.length === 0 ? (
+              <div className={s.trainingEmpty}>
+                No training assignments sent yet. Use the New
+                assignment form&apos;s Trainees toggle to give
+                them homework.
+              </div>
+            ) : (
+              <ul className={s.trainingList}>
+                {trainingAssignments.map((a) => {
+                  const title = a.title
+                    ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
+                    ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
+                    ?? 'Training assignment';
+                  return (
+                    <li key={a.id}>
+                      <Link
+                        href={`/tutor/assignments/${a.id}`}
+                        className={s.trainingRow}
+                      >
+                        <AssignmentTypeBadge type={a.assignment_type} />
+                        <div className={s.trainingRowMain}>
+                          <div className={s.trainingRowTitle}>{title}</div>
+                          <div className={s.trainingRowMeta}>
+                            {a.student_completed_at
+                              ? `Completed ${formatRelativeShort(a.student_completed_at) ?? ''}`
+                              : `Assigned ${formatRelativeShort(a.junction_created_at) ?? ''}`}
+                          </div>
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          <div className={s.trainingCol}>
+            <div className={s.trainingHeader}>Practice tests</div>
+            {(trainingTests ?? []).length === 0 ? (
+              <div className={s.trainingEmpty}>
+                No practice tests taken yet.
+                {latestComposite != null && ` Latest composite: ${latestComposite}.`}
+              </div>
+            ) : (
+              <ul className={s.trainingList}>
+                {(trainingTests ?? []).map((t) => (
+                  <li key={t.id}>
+                    <Link
+                      href={
+                        t.status === 'completed'
+                          ? `/practice/test/attempt/${t.id}/results`
+                          : `/tutor/teachers/${teacherId}`
+                      }
+                      className={s.trainingRow}
+                    >
+                      <div className={s.trainingRowMain}>
+                        <div className={s.trainingRowTitle}>
+                          {t.practice_test?.name ?? 'Practice test'}
+                        </div>
+                        <div className={s.trainingRowMeta}>
+                          {t.practice_test?.code ?? ''}
+                          {t.practice_test?.code && ' · '}
+                          {formatRelativeShort(t.finished_at ?? t.started_at) ?? '—'}
+                          {t.status !== 'completed' && (
+                            <> · {t.status === 'in_progress' ? 'In progress' : 'Abandoned'}</>
+                          )}
+                        </div>
+                      </div>
+                      {t.status === 'completed' && t.composite_score != null && (
+                        <span className={s.trainingScore}>
+                          {t.composite_score}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className={s.trainingCol}>
+            <div className={s.trainingHeader}>Practice sessions</div>
+            {trainingSessionRows.length === 0 ? (
+              <div className={s.trainingEmpty}>
+                No training sessions yet.
+              </div>
+            ) : (
+              <ul className={s.trainingList}>
+                {trainingSessionRows.map((row) => (
+                  <li key={row.id}>
+                    <Link
+                      href={
+                        row.completed
+                          ? `/practice/review/${row.id}`
+                          : `/tutor/teachers/${teacherId}`
+                      }
+                      className={s.trainingRow}
+                    >
+                      <div className={s.trainingRowMain}>
+                        <div className={s.trainingRowTitle}>
+                          {row.total} question{row.total === 1 ? '' : 's'}
+                        </div>
+                        <div className={s.trainingRowMeta}>
+                          {formatRelativeShort(row.createdAt) ?? '—'}
+                          {!row.completed && ' · In progress'}
+                        </div>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
       </section>
     </main>
   );
