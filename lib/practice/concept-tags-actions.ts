@@ -17,17 +17,24 @@
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
+import type { ActionResult } from '@/lib/types';
 
-/**
- * Add a concept tag to a question. Creates the tag if it doesn't
- * already exist (case-insensitive name match).
- *
- * @param {object} args
- * @param {string} args.questionId
- * @param {string} args.tagName
- * @returns {Promise<{ ok: true, data: { tag: { id: string, name: string } } } | { ok: false, error: string }>}
- */
-export async function addConceptTag({ questionId, tagName }) {
+interface ConceptTagSummary {
+  id: string;
+  name: string;
+}
+
+/** Add a concept tag to a question. Creates the tag if it doesn't
+ *  already exist (case-insensitive name match). Returns the tag
+ *  (existing or newly created) so the client can drop it into its
+ *  list without a refetch. */
+export async function addConceptTag({
+  questionId,
+  tagName,
+}: {
+  questionId: string;
+  tagName: string;
+}): Promise<ActionResult<{ data: { tag: ConceptTagSummary } }>> {
   if (!questionId) return actionFail('questionId required');
   const trimmed = (tagName ?? '').trim();
   if (!trimmed) return actionFail('tagName required');
@@ -49,7 +56,7 @@ export async function addConceptTag({ questionId, tagName }) {
     .ilike('name', trimmed)
     .maybeSingle();
 
-  let tag = existing;
+  let tag: ConceptTagSummary | null = existing;
   if (!tag) {
     const { data: newTag, error: createErr } = await supabase
       .from('concept_tags')
@@ -66,27 +73,26 @@ export async function addConceptTag({ questionId, tagName }) {
   const { error: linkErr } = await supabase
     .from('question_concept_tags')
     .upsert(
-      { question_id: questionId, tag_id: tag.id, created_by: user.id },
+      { question_id: questionId, tag_id: tag!.id, created_by: user.id },
       { onConflict: 'question_id,tag_id', ignoreDuplicates: true },
     );
   if (linkErr) return actionFail(linkErr.message);
 
   revalidatePath('/practice', 'layout');
   revalidatePath('/tutor', 'layout');
-  return actionOk({ tag });
+  return actionOk({ tag: tag! });
 }
 
-/**
- * Remove a concept tag from a question. Doesn't delete the tag
- * itself — that's a separate admin-management action on the API
- * route.
- *
- * @param {object} args
- * @param {string} args.tagId
- * @param {string} args.questionId
- * @returns {Promise<{ ok: true } | { ok: false, error: string }>}
- */
-export async function removeConceptTagFromQuestion({ tagId, questionId }) {
+/** Remove a concept tag from a question. Doesn't delete the tag
+ *  itself — that's a separate admin-management action on the API
+ *  route. */
+export async function removeConceptTagFromQuestion({
+  tagId,
+  questionId,
+}: {
+  tagId: string;
+  questionId: string;
+}): Promise<ActionResult> {
   if (!tagId) return actionFail('tagId required');
   if (!questionId) return actionFail('questionId required');
 
