@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { computeTestScores } from '../../../lib/testScoreHelper';
 
 // GET /api/progress — goal progress + streak data
-export async function GET() {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  const user = auth.user;
+export const GET = legacyApiRoute(async () => {
+  const { user, supabase } = await requireUser();
 
   // Fetch profile (target score), attempts (for streaks), and test scores in parallel
   const [profileResult, attemptsResult, testResult] = await Promise.all([
@@ -123,4 +121,4 @@ export async function GET() {
     totalPracticeDays,
     testScoreHistory,
   });
-}
+});

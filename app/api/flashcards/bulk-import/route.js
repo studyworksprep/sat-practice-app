@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/flashcards/bulk-import
 // Body: { cards: [{ front, back }], set_id }
 // Inserts multiple flashcards into a set at once
-export async function POST(req) {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+export const POST = legacyApiRoute(async (req) => {
+  const { user, supabase } = await requireUser();
 
   const { cards, set_id } = await req.json();
   if (!set_id) return NextResponse.json({ error: 'set_id required' }, { status: 400 });
@@ -20,7 +19,7 @@ export async function POST(req) {
     .from('flashcard_sets')
     .select('id')
     .eq('id', set_id)
-    .eq('user_id', auth.user.id)
+    .eq('user_id', user.id)
     .single();
   if (!set) return NextResponse.json({ error: 'Set not found' }, { status: 404 });
 
@@ -45,4 +44,4 @@ export async function POST(req) {
   }
 
   return NextResponse.json({ ok: true, inserted });
-}
+});

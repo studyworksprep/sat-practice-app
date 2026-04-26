@@ -1,24 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/teachers — list teachers (admins see all, managers see assigned)
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'admin' && profile?.role !== 'manager') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  // Use service client for cross-user queries (auth already verified above)
-  const svc = createServiceClient();
+export const GET = legacyApiRoute(async () => {
+  const { user, profile, service: svc } = await requireServiceRole(
+    'manager/admin teachers roster aggregate',
+    { allowedRoles: ['manager', 'admin'] },
+  );
 
   let teachers;
   if (profile.role === 'admin') {
@@ -157,4 +146,4 @@ export async function GET() {
   }));
 
   return NextResponse.json({ teachers: result });
-}
+});

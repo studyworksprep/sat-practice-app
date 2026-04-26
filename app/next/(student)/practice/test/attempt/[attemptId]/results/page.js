@@ -249,6 +249,62 @@ export default async function PracticeTestResultsPage({ params }) {
   // 8) Timing summary.
   const timing = buildTiming(reviewItems, moduleAttemptList);
 
+  // 8b) Saved Desmos states for the math review items, in one IN
+  //     query. Same set the FloatingCalculator on the results page
+  //     can load against; the SavedStateButton needs them attached
+  //     per-item so navigating questions surfaces the right one.
+  const MATH_DOMAINS = new Set(['H', 'P', 'Q', 'S']);
+  const mathQids = reviewItems
+    .filter((it) => !it.missing && MATH_DOMAINS.has(it.taxonomy?.domain_code ?? ''))
+    .map((it) => it.questionId);
+  if (mathQids.length > 0) {
+    const { data: savedRows } = await supabase
+      .from('desmos_saved_states')
+      .select('question_id, state_json')
+      .in('question_id', mathQids);
+    const byQid = new Map((savedRows ?? []).map((r) => [r.question_id, r.state_json]));
+    for (const it of reviewItems) {
+      if (!it.missing && MATH_DOMAINS.has(it.taxonomy?.domain_code ?? '')) {
+        it.desmosSavedState = byQid.get(it.questionId) ?? null;
+      }
+    }
+  }
+  const desmosCanSave = profile.role === 'manager' || profile.role === 'admin';
+
+  // 8c) Concept tags catalog + per-item links — manager/admin
+  //     only. Mirrors the equivalent block in build-session-review;
+  //     loaded once per page load rather than per question.
+  const conceptTagsCanTag = profile.role === 'manager' || profile.role === 'admin';
+  const conceptTagsCanDelete = profile.role === 'admin';
+  let conceptTagsCatalog = null;
+  if (conceptTagsCanTag) {
+    const presentQids = reviewItems
+      .filter((it) => !it.missing)
+      .map((it) => it.questionId);
+    const [{ data: catalog }, { data: links }] = await Promise.all([
+      supabase
+        .from('concept_tags')
+        .select('id, name')
+        .order('name', { ascending: true }),
+      presentQids.length > 0
+        ? supabase
+            .from('question_concept_tags')
+            .select('question_id, tag_id')
+            .in('question_id', presentQids)
+        : Promise.resolve({ data: [] }),
+    ]);
+    conceptTagsCatalog = catalog ?? [];
+    const tagsByQid = new Map();
+    for (const r of links ?? []) {
+      const arr = tagsByQid.get(r.question_id) ?? [];
+      arr.push(r.tag_id);
+      tagsByQid.set(r.question_id, arr);
+    }
+    for (const it of reviewItems) {
+      if (!it.missing) it.conceptTagIds = tagsByQid.get(it.questionId) ?? [];
+    }
+  }
+
   // 9) Teacher profile for the PDF header.
   let teacher = null;
   if (teacherAssignment?.teacher_id) {
@@ -287,6 +343,10 @@ export default async function PracticeTestResultsPage({ params }) {
       timing={timing}
       reviewItems={reviewItems}
       pdfData={pdfData}
+      desmosCanSave={desmosCanSave}
+      conceptTagsCatalog={conceptTagsCatalog}
+      conceptTagsCanTag={conceptTagsCanTag}
+      conceptTagsCanDelete={conceptTagsCanDelete}
     />
   );
 }

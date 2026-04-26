@@ -1,30 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
-
-const ALLOWED_ROLES = new Set(['manager', 'admin']);
-
-async function getAuthedUser(supabase) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || !ALLOWED_ROLES.has(profile.role)) return null;
-  return { user, profile };
-}
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/concept-tags?questionId=<uuid>  — returns all tags + which are on this question
 // GET /api/concept-tags                    — returns all tags (for admin management)
-export async function GET(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = legacyApiRoute(async (request) => {
+  const { supabase, profile } = await requireRole(['manager', 'admin']);
 
   const questionId = request.nextUrl.searchParams.get('questionId');
 
-  // Fetch all concept tags
   const { data: allTags, error: tagErr } = await supabase
     .from('concept_tags')
     .select('id, name, created_at, updated_at')
@@ -45,16 +29,14 @@ export async function GET(request) {
   return NextResponse.json({
     tags: allTags || [],
     questionTagIds,
-    is_admin: auth.profile.role === 'admin',
+    is_admin: profile.role === 'admin',
   });
-}
+});
 
 // POST /api/concept-tags  { questionId, tagName }
 // Adds a tag to a question. Creates the tag if it doesn't exist.
-export async function POST(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const POST = legacyApiRoute(async (request) => {
+  const { supabase, user } = await requireRole(['manager', 'admin']);
 
   const body = await request.json();
   const { questionId, tagName } = body;
@@ -64,7 +46,6 @@ export async function POST(request) {
 
   const normalized = tagName.trim();
 
-  // Check if tag already exists (case-insensitive)
   let { data: existing } = await supabase
     .from('concept_tags')
     .select('id, name')
@@ -73,46 +54,42 @@ export async function POST(request) {
 
   let tag = existing;
   if (!tag) {
-    // Create new tag
     const { data: newTag, error: createErr } = await supabase
       .from('concept_tags')
-      .insert({ name: normalized, created_by: auth.user.id })
+      .insert({ name: normalized, created_by: user.id })
       .select('id, name')
       .single();
     if (createErr) return NextResponse.json({ error: createErr.message }, { status: 500 });
     tag = newTag;
   }
 
-  // Link tag to question (ignore conflict = already tagged)
   const { error: linkErr } = await supabase
     .from('question_concept_tags')
     .upsert(
-      { question_id: questionId, tag_id: tag.id, created_by: auth.user.id },
+      { question_id: questionId, tag_id: tag.id, created_by: user.id },
       { onConflict: 'question_id,tag_id', ignoreDuplicates: true }
     );
 
   if (linkErr) return NextResponse.json({ error: linkErr.message }, { status: 500 });
 
   return NextResponse.json({ tag, linked: true });
-}
+});
 
 // DELETE /api/concept-tags  { tagId, questionId? }
-// If questionId provided: remove tag from question only
-// If no questionId: delete the tag entirely (admin only)
-export async function DELETE(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+// Both branches (unlink-from-question and delete-tag) require admin.
+// Manager role can read+create+link tags but not delete them.
+export const DELETE = legacyApiRoute(async (request) => {
+  const { supabase, profile } = await requireRole(['manager', 'admin']);
 
   const body = await request.json();
   const { tagId, questionId } = body;
   if (!tagId) return NextResponse.json({ error: 'tagId required' }, { status: 400 });
 
+  if (profile.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   if (questionId) {
-    // Remove tag from question — admins only
-    if (auth.profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
     const { error } = await supabase
       .from('question_concept_tags')
       .delete()
@@ -122,28 +99,18 @@ export async function DELETE(request) {
     return NextResponse.json({ removed: true });
   }
 
-  // Delete tag entirely — admin only
-  if (auth.profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
   const { error } = await supabase
     .from('concept_tags')
     .delete()
     .eq('id', tagId);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ deleted: true });
-}
+});
 
 // PATCH /api/concept-tags  { tagId, name }
 // Rename a tag — admin only
-export async function PATCH(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  if (auth.profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const PATCH = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
 
   const body = await request.json();
   const { tagId, name } = body;
@@ -160,4 +127,4 @@ export async function PATCH(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ tag });
-}
+});

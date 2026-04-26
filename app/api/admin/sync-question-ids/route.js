@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/admin/sync-question-ids
 // Accepts the Collegeboard metadata JSON array.
@@ -8,19 +9,11 @@ import { createClient, createServiceClient } from '../../../../lib/supabase/serv
 // Also backfills source_external_id from ibn where present.
 //
 // Returns { matched, updated, skipped, not_found, errors }
-export async function POST(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin question-id sync — bulk read/write across all questions',
+    { allowedRoles: ['admin'] },
+  );
 
   let entries;
   const contentType = request.headers.get('content-type') || '';
@@ -38,8 +31,6 @@ export async function POST(request) {
   if (!Array.isArray(entries)) {
     return NextResponse.json({ error: 'Expected a JSON array of metadata entries' }, { status: 400 });
   }
-
-  const admin = createServiceClient();
 
   // Pre-fetch all questions for efficient matching
   const { data: allQuestions, error: fetchErr } = await admin
@@ -140,4 +131,4 @@ export async function POST(request) {
   }
 
   return NextResponse.json(results);
-}
+});

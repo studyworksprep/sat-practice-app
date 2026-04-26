@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { isAlreadyClean, isMathQuestion, pickModel } from '../../../../../lib/questionsV2Hygiene';
 import {
   SYSTEM_PROMPT,
@@ -26,35 +27,20 @@ import {
 // Mirrors the POST-suggest / PUT-save pattern already used in
 // app/api/admin/batch-fix/route.js.
 
-async function requireAdmin() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: NextResponse.json({ error: 'Not authenticated' }, { status: 401 }) };
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return { error: NextResponse.json({ error: 'Admin only' }, { status: 403 }) };
-  }
-  return { user };
-}
-
 // ------------------------------------------------------------
 // POST — call Claude to get a suggested rewrite.
 // ------------------------------------------------------------
-export async function POST(request) {
-  const { error: authError } = await requireAdmin();
-  if (authError) return authError;
+export const POST = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin questions-v2 fix preview — read questions_v2 across users',
+    { allowedRoles: ['admin'] },
+  );
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
   const id = body?.id;
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
 
-  const admin = createServiceClient();
   const { data: row, error: loadErr } = await admin
     .from('questions_v2')
     .select('id, question_type, stimulus_html, stem_html, options, display_code, domain_name')
@@ -116,21 +102,21 @@ export async function POST(request) {
     console.error('questions-v2/fix POST error:', e);
     return NextResponse.json({ error: e.message || 'Claude request failed' }, { status: 500 });
   }
-}
+});
 
 // ------------------------------------------------------------
 // PUT — save an (edited) suggestion to questions_v2.
 // ------------------------------------------------------------
-export async function PUT(request) {
-  const { user, error: authError } = await requireAdmin();
-  if (authError) return authError;
+export const PUT = legacyApiRoute(async (request) => {
+  const { user, service: admin } = await requireServiceRole(
+    'admin questions-v2 fix save — write to questions_v2 across users',
+    { allowedRoles: ['admin'] },
+  );
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
   const { id, stimulus_html, stem_html, options } = body || {};
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
-
-  const admin = createServiceClient();
 
   // Load the existing row so we can merge (we only update the fields
   // that were sent and preserve the rest, especially ordinal on each
@@ -178,7 +164,7 @@ export async function PUT(request) {
   if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
 
   return NextResponse.json({ ok: true, last_fixed_at: update.last_fixed_at });
-}
+});
 
 // ------------------------------------------------------------
 // Claude call

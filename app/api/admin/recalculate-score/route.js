@@ -1,24 +1,17 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // PUT /api/admin/recalculate-score
 // Body: { attempt_id, rw_scaled, math_scaled, practice_test_id,
 //         rw_m1_correct, rw_m2_correct, math_m1_correct, math_m2_correct }
 // Saves corrected section scores to practice_test_attempts and
 // inserts corresponding score_conversion entries if not already present.
-export async function PUT(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || !['teacher', 'manager', 'admin'].includes(profile.role)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const PUT = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'teacher/manager/admin score recalculation — write to other users\' practice_test_attempts',
+    { allowedRoles: ['teacher', 'manager', 'admin'] },
+  );
 
   const body = await request.json();
   const { attempt_id, rw_scaled, math_scaled, practice_test_id,
@@ -34,7 +27,6 @@ export async function PUT(request) {
   }
 
   const composite = rwScore + mathScore;
-  const admin = createServiceClient();
 
   // Update the cached scores on the attempt
   const { error: updateErr } = await admin
@@ -96,4 +88,4 @@ export async function PUT(request) {
   }
 
   return NextResponse.json({ ok: true, composite, rw_scaled: rwScore, math_scaled: mathScore });
-}
+});

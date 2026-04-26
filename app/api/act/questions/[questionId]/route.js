@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/act/questions/:questionId
-export async function GET(_request, props) {
+export const GET = legacyApiRoute(async (_request, props) => {
   const params = await props.params;
   const questionId = params.questionId;
-  const supabase = await createClient();
+  const { user, supabase } = await requireUser();
+  const userId = user.id;
 
-  const [authResult, questionResult, optionsResult] = await Promise.all([
-    supabase.auth.getUser(),
+  const [questionResult, optionsResult] = await Promise.all([
     supabase
       .from('act_questions')
       .select('id, external_id, section, category_code, category, subcategory_code, subcategory, difficulty, question_type, stimulus_html, stem_html, rationale_html, is_broken, is_modeling, source_test, source_ordinal, highlight_ref')
@@ -21,9 +22,6 @@ export async function GET(_request, props) {
       .order('ordinal', { ascending: true }),
   ]);
 
-  const user = authResult.data?.user ?? null;
-  const userId = user?.id ?? null;
-
   const { data: question, error: qErr } = questionResult;
   if (qErr) return NextResponse.json({ error: qErr.message }, { status: 400 });
   if (!question) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
@@ -32,18 +30,14 @@ export async function GET(_request, props) {
   if (optErr) return NextResponse.json({ error: optErr.message }, { status: 400 });
 
   // Fetch user's most recent attempt (if any)
-  let lastAttempt = null;
-  if (userId) {
-    const { data: attempt } = await supabase
-      .from('act_attempts')
-      .select('id, selected_option_id, is_correct, created_at')
-      .eq('user_id', userId)
-      .eq('question_id', questionId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    lastAttempt = attempt;
-  }
+  const { data: lastAttempt } = await supabase
+    .from('act_attempts')
+    .select('id, selected_option_id, is_correct, created_at')
+    .eq('user_id', userId)
+    .eq('question_id', questionId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   const is_done = !!lastAttempt;
 
@@ -83,4 +77,4 @@ export async function GET(_request, props) {
     } : null,
     correct_option_id: correctOption?.id ?? null,
   });
-}
+});

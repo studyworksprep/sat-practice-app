@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { computeTestScores } from '../../../../lib/testScoreHelper';
 
 const BAND_WEIGHT = { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8, 6: 2.0, 7: 2.2 };
 
 // GET /api/dashboard/stats — extended analytics data
-export async function GET() {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  const user = auth.user;
+export const GET = legacyApiRoute(async () => {
+  const { user, supabase } = await requireUser();
 
   // ── All attempts with time data (oldest-first so first occurrence = first attempt) ──
   // Only include practice attempts (not practice_test or review)
@@ -172,4 +170,4 @@ export async function GET() {
     // Extended data for detailed stats page
     enrichedAttempts,
   });
-}
+});

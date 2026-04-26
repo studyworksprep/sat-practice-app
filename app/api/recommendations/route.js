@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 const BAND_WEIGHT = { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8, 6: 2.0, 7: 2.2 };
 
 // GET /api/recommendations — topic-level practice recommendations
-export async function GET() {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  const user = auth.user;
+export const GET = legacyApiRoute(async () => {
+  const { user, supabase } = await requireUser();
 
   // Get all first attempts (oldest first) for accuracy calculation
   const { data: allAttempts, error } = await supabase
@@ -156,4 +154,4 @@ export async function GET() {
     improving,
     mastered,
   });
-}
+});

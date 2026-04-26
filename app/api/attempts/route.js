@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/attempts
 // body: { question_id, selected_option_id?, response_text?, time_spent_ms? }
-export async function POST(request) {
+export const POST = legacyApiRoute(async (request) => {
+  // Auth happens outside the try/catch so a 401 from requireUser propagates
+  // to legacyApiRoute as a 401 (instead of being caught and remapped to 500).
+  const { user, supabase } = await requireUser();
   try {
     const body = await request.json().catch(() => ({}));
     const { question_id, selected_option_id, response_text, time_spent_ms, source, teacher_mode } = body || {};
@@ -11,26 +15,14 @@ export async function POST(request) {
     const VALID_SOURCES = ['practice', 'practice_test', 'review'];
     const attemptSource = VALID_SOURCES.includes(source) ? source : 'practice';
 
-    const supabase = await createClient();
-
-    // 1) Auth + version fetch in parallel
-    const [authResult, verResult] = await Promise.all([
-      supabase.auth.getUser(),
-      supabase
-        .from('question_versions')
-        .select('id, question_id, question_type, created_at')
-        .eq('question_id', question_id)
-        .eq('is_current', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
-
-    const { data: auth, error: authErr } = authResult;
-    if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    const user = auth.user;
-
-    const { data: ver, error: verErr } = verResult;
+    const { data: ver, error: verErr } = await supabase
+      .from('question_versions')
+      .select('id, question_id, question_type, created_at')
+      .eq('question_id', question_id)
+      .eq('is_current', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
     if (verErr) return NextResponse.json({ error: verErr.message }, { status: 400 });
     if (!ver) return NextResponse.json({ error: 'No current version found' }, { status: 404 });
 
@@ -194,4 +186,4 @@ export async function POST(request) {
     console.error('POST /api/attempts crashed:', e);
     return NextResponse.json({ error: e?.message || 'Server error' }, { status: 500 });
   }
-}
+});

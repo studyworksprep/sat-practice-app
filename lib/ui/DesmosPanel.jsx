@@ -12,10 +12,14 @@
 //
 // State persistence: Desmos's serialized state is saved to
 // localStorage keyed by `storageKey`, debounced to once per few
-// seconds of idle. On open we restore whatever's saved. Server-
-// backed persistence (to the existing desmos_saved_states table)
-// is a follow-up — localStorage already keeps state within the
-// browser across question navigations.
+// seconds of idle. On open we restore whatever's saved.
+//
+// Optionally, parents can pass `onCalcReady(calc)` to receive the
+// live Desmos instance once it's constructed; the
+// DesmosSavedStateButton uses this to wire its Save / Load /
+// Delete actions into the calculator without touching its host
+// element. The callback is invoked once on mount and again with
+// `null` on unmount so callers can drop their reference.
 //
 // The calculator's script tag is injected globally from
 // app/layout.js so the window.Desmos constructor is available
@@ -31,12 +35,17 @@ const DESMOS_API_KEY =
 
 const SAVE_DEBOUNCE_MS = 2000;
 
-export function DesmosPanel({ isOpen, storageKey }) {
+export function DesmosPanel({ isOpen, storageKey, onCalcReady }) {
   const hostRef     = useRef(null);
   const calcRef     = useRef(null);
   const saveTimer   = useRef(null);
   const rafRef      = useRef(null);
+  const onReadyRef  = useRef(onCalcReady);
   const [ready, setReady] = useState(false);
+
+  // Keep the callback ref fresh without forcing the init effect
+  // to re-run on every parent rerender.
+  useEffect(() => { onReadyRef.current = onCalcReady; }, [onCalcReady]);
 
   // If Desmos was loaded in an earlier page (via the global script
   // tag in app/layout.js), the constructor is already on window.
@@ -63,10 +72,12 @@ export function DesmosPanel({ isOpen, storageKey }) {
     scheduleResize();
     // Observe changes → debounced save.
     calcRef.current.observeEvent?.('change', () => scheduleSave());
+    onReadyRef.current?.(calcRef.current);
 
     return () => {
       // Save one last time on unmount.
       try { saveToLocalStorage(); } catch {}
+      try { onReadyRef.current?.(null); } catch {}
       try { calcRef.current?.destroy?.(); } catch {}
       calcRef.current = null;
     };

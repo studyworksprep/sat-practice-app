@@ -1,24 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/teacher/score-conversion
 // Allows teachers to upload score conversion data (same as admin endpoint).
 // Body: { test_id, test_name, entries: [{ section, module1_correct, module2_correct, scaled_score }] }
-export async function POST(request) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { service } = await requireServiceRole('teacher score-conversion upsert', {
+    allowedRoles: ['teacher', 'manager', 'admin'],
+  });
 
   const body = await request.json();
   const { test_id, test_name, entries } = body;
@@ -27,7 +17,6 @@ export async function POST(request) {
     return NextResponse.json({ error: 'test_id, test_name, and entries are required' }, { status: 400 });
   }
 
-  const service = createServiceClient();
   const rows = entries.map((e) => ({
     test_id,
     test_name,
@@ -44,4 +33,4 @@ export async function POST(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ saved: data.length });
-}
+});

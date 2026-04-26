@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/admin/questions-v2/approve
 //
@@ -17,20 +18,11 @@ import { createClient, createServiceClient } from '../../../../../lib/supabase/s
 // DELETE /api/admin/questions-v2/approve
 // Body: { ids: string[] }  — clears approved_at/approved_by on the
 // listed rows. Used by an admin un-approving a question.
-export async function POST(request) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { user, service: admin } = await requireServiceRole(
+    'admin questions-v2 approve — bulk audit-stamp across questions_v2',
+    { allowedRoles: ['admin'] },
+  );
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
@@ -42,7 +34,6 @@ export async function POST(request) {
     return NextResponse.json({ error: 'too many ids (max 500)' }, { status: 400 });
   }
 
-  const admin = createServiceClient();
   const nowIso = new Date().toISOString();
   const { error } = await admin
     .from('questions_v2')
@@ -52,22 +43,13 @@ export async function POST(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true, approved: ids.length, approved_at: nowIso });
-}
+});
 
-export async function DELETE(request) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-  }
+export const DELETE = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin questions-v2 unapprove — bulk clear approval audit on questions_v2',
+    { allowedRoles: ['admin'] },
+  );
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
@@ -76,7 +58,6 @@ export async function DELETE(request) {
     return NextResponse.json({ error: 'ids array is required' }, { status: 400 });
   }
 
-  const admin = createServiceClient();
   const { error } = await admin
     .from('questions_v2')
     .update({ approved_at: null, approved_by: null })
@@ -85,4 +66,4 @@ export async function DELETE(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true, unapproved: ids.length });
-}
+});

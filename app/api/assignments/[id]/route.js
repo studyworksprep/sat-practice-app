@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/assignments/[id] — student-facing: get assignment detail with question progress
-export async function GET(request, { params }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = legacyApiRoute(async (request, { params }) => {
+  const { user, supabase } = await requireUser();
 
   const { id } = await params;
 
@@ -99,4 +98,4 @@ export async function GET(request, { params }) {
     },
     questions,
   });
-}
+});

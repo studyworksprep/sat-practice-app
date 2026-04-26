@@ -1,22 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/teacher-effectiveness
 // Returns per-teacher metrics so admins can gauge effectiveness at a glance.
-export async function GET() {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const GET = legacyApiRoute(async () => {
+  const { supabase } = await requireRole(['admin']);
 
   const now = new Date();
   const d7 = new Date(now); d7.setDate(d7.getDate() - 7);
@@ -273,4 +262,4 @@ export async function GET() {
   });
 
   return NextResponse.json({ teachers: result });
-}
+});

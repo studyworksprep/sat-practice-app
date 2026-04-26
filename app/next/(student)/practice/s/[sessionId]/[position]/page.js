@@ -28,6 +28,7 @@ import { requireUser } from '@/lib/api/auth';
 import { applyWatermark } from '@/lib/content/watermark';
 import { submitAnswer } from '@/lib/practice/session-actions';
 import { loadReviewData } from '@/lib/practice/load-review-data';
+import { loadDesmosSavedState } from '@/lib/practice/load-desmos-saved-state';
 import { PracticeInteractive } from '@/lib/practice/PracticeInteractive';
 import { QuestionMap } from '@/lib/practice/QuestionMap';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
@@ -281,6 +282,15 @@ export default async function PracticeQuestionPage({ params }) {
     });
   }
 
+  // Saved Desmos state for this question — loaded for math items only.
+  // Students see nothing (canSave=false, no row exists), but we keep
+  // the load behind the same domain check the renderer uses so we
+  // skip the round-trip for reading-section questions.
+  const desmosEligible = ['H', 'P', 'Q', 'S'].includes(question.domain_code ?? '');
+  const desmos = desmosEligible
+    ? await loadDesmosSavedState({ questionId, role: profile.role })
+    : { savedState: null, canSave: false };
+
   const initialAttempt = lastAttempt
     ? {
         isCorrect: lastAttempt.is_correct,
@@ -319,6 +329,8 @@ export default async function PracticeQuestionPage({ params }) {
         submitAnswerAction={submitAnswer}
         basePath="/practice"
         sessionCompleteHref={sessionCompleteHref}
+        desmosSavedState={desmos.savedState}
+        desmosCanSave={desmos.canSave}
       />
       <QuestionMap
         basePath="/practice"

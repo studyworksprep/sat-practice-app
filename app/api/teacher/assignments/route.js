@@ -1,21 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/teacher/assignments — list teacher's student assignments with details
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const GET = legacyApiRoute(async () => {
+  const { supabase, user } = await requireRole(['teacher', 'manager', 'admin']);
 
   // Get assignments
   const { data: assignments } = await supabase
@@ -88,23 +77,11 @@ export async function GET() {
   });
 
   return NextResponse.json({ assignments: enriched });
-}
+});
 
 // POST /api/teacher/assignments — admin-only: assign a student to a teacher
-export async function POST(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Only admins can add students to teacher rosters' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { supabase, user } = await requireRole(['admin']);
 
   const body = await request.json().catch(() => ({}));
   const { student_email, teacher_id } = body;
@@ -145,23 +122,11 @@ export async function POST(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ ok: true, student_id: student.id, email: student.email });
-}
+});
 
 // DELETE /api/teacher/assignments — admin-only: remove a student from a teacher
-export async function DELETE(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Only admins can remove students from teacher rosters' }, { status: 403 });
-  }
+export const DELETE = legacyApiRoute(async (request) => {
+  const { supabase, user } = await requireRole(['admin']);
 
   const body = await request.json().catch(() => ({}));
   const { student_id, teacher_id } = body;
@@ -179,4 +144,4 @@ export async function DELETE(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ ok: true });
-}
+});

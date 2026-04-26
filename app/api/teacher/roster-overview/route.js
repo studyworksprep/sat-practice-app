@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { createServiceClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { computeScaledScore } from '../../../../lib/scoreConversion';
 
 const subjToSection = {
@@ -17,20 +19,15 @@ const subjToSection = {
  *   - weekly attempt count (last 7 days)
  *   - computed alerts (inactive, declining, improving)
  */
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = legacyApiRoute(async () => {
+  const { supabase, user } = await requireRole(['teacher', 'manager', 'admin']);
 
+  // Re-fetch profile with the extra columns this route uses for the teacher header
   const { data: profile } = await supabase
     .from('profiles')
     .select('role, first_name, last_name, email, teacher_invite_code')
     .eq('id', user.id)
     .maybeSingle();
-
-  if (!profile || !['admin', 'manager', 'teacher'].includes(profile.role)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
 
   // ── Get student list (same logic as /api/teacher/students) ──
   let studentProfiles = [];
@@ -328,4 +325,4 @@ export async function GET() {
     students,
     alerts: { inactive, declining, improving },
   });
-}
+});

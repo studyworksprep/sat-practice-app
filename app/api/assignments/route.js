@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server";
-import { createClient, createServiceClient } from "../../../lib/supabase/server";
+import { createServiceClient } from "../../../lib/supabase/server";
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
-export async function GET() {
+export const GET = legacyApiRoute(async () => {
+  // Auth happens outside the try/catch so a 401 from requireUser propagates
+  // to legacyApiRoute as a 401 (instead of being caught and remapped to 500).
+  const { user, supabase } = await requireUser();
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Get assignments for this student
     let { data: assignmentRows, error: fetchErr } = await supabase
       .from("question_assignment_students")
@@ -143,4 +139,4 @@ export async function GET() {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});

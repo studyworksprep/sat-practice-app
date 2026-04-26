@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // ============================================================
 // /api/admin/questions-v2/suggestions
@@ -25,33 +26,17 @@ import { createClient, createServiceClient } from '../../../../../lib/supabase/s
 //            Does not touch questions_v2; the row stays in 'collected'
 //            until the admin explicitly Applies it.
 
-async function requireAdmin() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: NextResponse.json({ error: 'Not authenticated' }, { status: 401 }) };
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return { error: NextResponse.json({ error: 'Admin only' }, { status: 403 }) };
-  }
-  return { user };
-}
-
-export async function GET(request) {
-  const { error: authError } = await requireAdmin();
-  if (authError) return authError;
+export const GET = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin questions-v2 suggestions read — staging-table cross-user read',
+    { allowedRoles: ['admin'] },
+  );
 
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status') || 'collected';
   const classification = searchParams.get('classification'); // optional
   const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit')) || 25));
   const offset = Math.max(0, Number(searchParams.get('offset')) || 0);
-
-  const admin = createServiceClient();
 
   let query = admin
     .from('questions_v2_fix_suggestions')
@@ -88,11 +73,13 @@ export async function GET(request) {
     total: count || 0,
     counts: byClassification,
   });
-}
+});
 
-export async function POST(request) {
-  const { user, error: authError } = await requireAdmin();
-  if (authError) return authError;
+export const POST = legacyApiRoute(async (request) => {
+  const { user, service: admin } = await requireServiceRole(
+    'admin questions-v2 suggestions write — apply/reject staging suggestions across users',
+    { allowedRoles: ['admin'] },
+  );
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
@@ -100,8 +87,6 @@ export async function POST(request) {
   if (!action) {
     return NextResponse.json({ error: 'action required' }, { status: 400 });
   }
-
-  const admin = createServiceClient();
 
   // Update a single collected suggestion in-place. Used by the Bulk
   // Review UI's inline edit flow so an admin can tweak Claude's HTML
@@ -302,4 +287,4 @@ export async function POST(request) {
   }
 
   return NextResponse.json({ error: `unknown action: ${action}` }, { status: 400 });
-}
+});

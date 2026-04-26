@@ -1,28 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
-
-async function requireAdminOrManager(supabase) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Unauthorized', status: 401 };
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'admin' && profile?.role !== 'manager') {
-    return { error: 'Forbidden', status: 403 };
-  }
-  return { user };
-}
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/skill-learnability
 // Returns all skills (from question_taxonomy) with their learnability ratings.
-export async function GET() {
-  const supabase = await createClient();
-  const auth = await requireAdminOrManager(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = legacyApiRoute(async () => {
+  const { supabase } = await requireRole(['manager', 'admin']);
 
   // Get distinct skills from taxonomy
   const { data: skills, error: skillErr } = await supabase
@@ -58,14 +41,12 @@ export async function GET() {
     .sort((a, b) => (a.domain_name || '').localeCompare(b.domain_name || '') || (a.skill_name || '').localeCompare(b.skill_name || ''));
 
   return NextResponse.json({ skills: result });
-}
+});
 
 // POST /api/admin/skill-learnability
 // Body: { updates: [{ skill_code, learnability }] }
-export async function POST(request) {
-  const supabase = await createClient();
-  const auth = await requireAdminOrManager(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['manager', 'admin']);
 
   const body = await request.json().catch(() => ({}));
   const updates = body?.updates;
@@ -92,4 +73,4 @@ export async function POST(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true, saved: rows.length });
-}
+});

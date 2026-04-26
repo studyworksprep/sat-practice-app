@@ -1,27 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "../../../../../lib/supabase/server";
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
-export async function GET(request, { params }) {
+export const GET = legacyApiRoute(async (request, { params }) => {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || (profile.role !== "teacher" && profile.role !== "manager" && profile.role !== "admin")) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
 
     const { assignmentId } = await params;
 
@@ -139,4 +122,4 @@ export async function GET(request, { params }) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});

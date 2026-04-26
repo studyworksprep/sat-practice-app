@@ -1,22 +1,15 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/admin/bulk-reocr
 // Accepts a PDF file (one question per page), sends to Mathpix OCR, then Claude.
 // Returns array of { question_id, stem_html, stimulus_html, options[], matched, current } for preview.
-export async function POST(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin bulk re-OCR — needs to read all questions and versions across users',
+    { allowedRoles: ['admin'] },
+  );
 
   const formData = await request.formData();
   const pdf = formData.get('pdf');
@@ -59,7 +52,6 @@ export async function POST(request) {
     // questions.question_id is the Collegeboard readable ID (text).
     // question_versions.question_id is a UUID FK to questions.id — different field!
     // So we match via the questions table first, then look up the version.
-    const admin = createServiceClient();
     for (const q of questions) {
       if (!q.question_id) { q.matched = false; continue; }
 
@@ -106,31 +98,21 @@ export async function POST(request) {
     console.error('bulk-reocr error:', e);
     return NextResponse.json({ error: e.message || 'Failed to process PDF' }, { status: 500 });
   }
-}
+});
 
 // PUT /api/admin/bulk-reocr
 // Applies corrections to a single question version + its options
 // Body: { version_id, stem_html, stimulus_html?, options?: [{ id, content_html }] }
-export async function PUT(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-  }
+export const PUT = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin bulk re-OCR save — bulk update across question_versions and answer_options',
+    { allowedRoles: ['admin'] },
+  );
 
   const { version_id, stem_html, stimulus_html, options } = await request.json();
   if (!version_id || !stem_html) {
     return NextResponse.json({ error: 'version_id and stem_html are required' }, { status: 400 });
   }
-
-  const admin = createServiceClient();
 
   // Update question version
   const update = { stem_html };
@@ -156,7 +138,7 @@ export async function PUT(request) {
   }
 
   return NextResponse.json({ ok: true });
-}
+});
 
 // ---------------------------------------------------------------------------
 // Mathpix: PDF → Markdown

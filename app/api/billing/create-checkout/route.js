@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 let _stripe;
 function getStripe() {
@@ -16,10 +17,8 @@ const PRICE_IDS = {
 // POST /api/billing/create-checkout
 // Creates a Stripe Checkout session for the authenticated user.
 // Body: { plan: 'student' | 'teacher' }
-export async function POST(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const POST = legacyApiRoute(async (request) => {
+  const { user, supabase } = await requireUser();
 
   const body = await request.json();
   const plan = body.plan || 'student';
@@ -75,4 +74,4 @@ export async function POST(request) {
   });
 
   return NextResponse.json({ url: session.url });
-}
+});

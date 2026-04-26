@@ -1,22 +1,15 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/act/questions/fix-categories
 // Fixes questions where a PHM subcategory name ended up in the category field.
 // Moves the value to subcategory and sets category to "Preparing for Higher Math".
-export async function POST(request) {
-  const userId = request.headers.get('x-user-id');
-  if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const admin = createServiceClient();
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('role')
-    .eq('id', userId)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin ACT taxonomy fix — bulk update across all questions',
+    { allowedRoles: ['admin'] },
+  );
 
   const SUBCAT_MAP = {
     'Algebra': { code: 'ALG', name: 'Algebra' },
@@ -72,4 +65,4 @@ export async function POST(request) {
     console.error('fix-categories error:', e);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
-}
+});
