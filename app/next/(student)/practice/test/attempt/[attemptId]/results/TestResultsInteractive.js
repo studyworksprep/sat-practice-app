@@ -17,6 +17,7 @@ import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
+import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
 import { BookmarkIcon } from '@/lib/ui/icons';
 import s from './TestResults.module.css';
 
@@ -316,6 +317,7 @@ export function TestResultsInteractive({
                   calcRef={calcRef}
                 />
               )}
+              <FlashcardsButton />
               {!isRevealed && !selected.missing && (
                 <button
                   type="button"
