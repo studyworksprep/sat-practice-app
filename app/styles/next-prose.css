@@ -73,3 +73,30 @@
   margin: 12px auto;
 }
 .sw-prose mjx-container { vertical-align: middle; }
+
+/* College Board's MathML source has display="block" set on most
+   <math> elements — even ones that semantically belong inline (a
+   single variable mid-sentence). MathJax SVG output respects that
+   attribute via `<mjx-container display="true">`, which renders
+   as a centered block. The result on a typical question is every
+   variable hovering on its own line.
+
+   Force inline-block in our prose so text flows naturally. The
+   tradeoff is that genuinely-display-style formulas
+   (`(3x-23)(19x+6)` etc.) lose their auto-centering — they still
+   render at math size, just inline within the surrounding
+   paragraph. Acceptable given the alternative is unreadable
+   single-variable lines.
+
+   A proper fix lives upstream in lib/content/render-math.mjs:
+   strip `display="block"` from the source MathML during
+   pre-render, decide block-vs-inline on whether the math is
+   wrapped in its own paragraph, then bump
+   rendered_source_hash and re-run the backfill. This CSS
+   override is a read-time bandaid until that ships. */
+.sw-prose mjx-container[display="true"],
+.sw-option-content mjx-container[display="true"] {
+  display: inline-block;
+  margin: 0 0.15em;
+  text-align: initial;
+}
