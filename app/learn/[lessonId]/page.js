@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import HtmlBlock from '../../../components/HtmlBlock';
 import { isLessonCompletionLocked, parseDesmosInteractiveContent, validateDesmosSubmission } from '../../../lib/lesson/desmos-interactive.mjs';
+import { buildBlockIndexMap, resolveAnswerNavigation, resolveContinueNavigation } from '../../../lib/lesson/runtime-navigation.mjs';
 
 export default function LessonViewerPage() {
   return <Suspense><LessonViewer /></Suspense>;
@@ -20,6 +21,8 @@ function LessonViewer() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [forceUnlockedBlockIds, setForceUnlockedBlockIds] = useState([]);
   const [debugByBlock, setDebugByBlock] = useState({});
+  const [workflowDesmosContext, setWorkflowDesmosContext] = useState({});
+  const [activeBranchState, setActiveBranchState] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -93,11 +96,7 @@ function LessonViewer() {
     if (data.progress) setProgress(data.progress);
   }
 
-  if (loading) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Loading…</p></div>;
-  if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
-  if (!lesson) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Lesson not found.</p></div>;
-
-  const blocks = lesson.blocks || [];
+  const blocks = useMemo(() => lesson?.blocks || [], [lesson?.blocks]);
   const debugMode = process.env.NODE_ENV !== 'production' && searchParams?.get('debug') === '1';
   const completedBlocks = new Set(progress?.completed_blocks || []);
   const checkAnswers = progress?.check_answers || {};
@@ -108,6 +107,11 @@ function LessonViewer() {
     : 0;
 
   const currentBlock = blocks[currentIndex] || null;
+  const blockIndexById = useMemo(() => buildBlockIndexMap(blocks), [blocks]);
+
+  if (loading) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Loading…</p></div>;
+  if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+  if (!lesson) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Lesson not found.</p></div>;
   const currentIsLocked = Boolean(
     currentBlock
       && currentBlock.block_type === 'desmos_interactive'
@@ -117,7 +121,35 @@ function LessonViewer() {
   );
 
   function goNext() {
-    setCurrentIndex((prev) => Math.min(prev + 1, Math.max(blocks.length - 1, 0)));
+    const result = resolveContinueNavigation({
+      blocks,
+      currentIndex,
+      activeBranchState,
+      blockIndexById,
+    });
+    setCurrentIndex(result.nextIndex);
+    setActiveBranchState(result.activeBranchState);
+  }
+
+  function routeFromAnswer(block, isCorrect) {
+    const result = resolveAnswerNavigation({
+      block,
+      isCorrect,
+      currentIndex,
+      totalBlocks: blocks.length,
+      blockIndexById,
+    });
+    setCurrentIndex(result.nextIndex);
+    setActiveBranchState(result.activeBranchState);
+  }
+
+  function captureWorkflowDesmosState(block, payload) {
+    const workflowId = block?.content?.workflow_id;
+    if (!workflowId || !payload?.state) return;
+    setWorkflowDesmosContext((prev) => ({
+      ...prev,
+      [workflowId]: payload,
+    }));
   }
 
   function goPrev() {
@@ -176,7 +208,7 @@ function LessonViewer() {
               previousAnswer={checkAnswers[currentBlock.id]}
               onSubmit={(selected, correct) => {
                 submitCheck(currentBlock.id, selected, correct);
-                if (correct) goNext();
+                routeFromAnswer(currentBlock, correct);
               }}
             />
           )}
@@ -187,15 +219,17 @@ function LessonViewer() {
             <DesmosInteractiveBlock
               block={currentBlock}
               previousAnswer={checkAnswers[currentBlock.id]}
-              onSuccess={() => {
-                submitDesmosResult(currentBlock.id, true);
-                goNext();
+              onResult={(isCorrect) => {
+                submitDesmosResult(currentBlock.id, isCorrect);
+                routeFromAnswer(currentBlock, isCorrect);
               }}
               onUnlock={() => {
                 setForceUnlockedBlockIds((prev) => (
                   prev.includes(currentBlock.id) ? prev : [...prev, currentBlock.id]
                 ));
               }}
+              inheritedWorkflowContext={workflowDesmosContext[currentBlock.content?.workflow_id]}
+              onCaptureWorkflowContext={(payload) => captureWorkflowDesmosState(currentBlock, payload)}
               debugMode={debugMode}
               onDebug={(payload) => {
                 setDebugByBlock((prev) => ({ ...prev, [currentBlock.id]: payload }));
@@ -219,6 +253,7 @@ function LessonViewer() {
             <div>next_block: <code>{debugByBlock[currentBlock.id]?.nextBlockId || blocks[currentIndex + 1]?.id || '—'}</code></div>
             <div>rejoin_target: <code>{currentBlock.content?.rejoin_at_block_id || '—'}</code></div>
             <div>desmos_inherited: <code>{String(Boolean(currentBlock.content?.inherit_from_previous_workflow_desmos))}</code></div>
+            <div>desmos_inherited_context_available: <code>{String(Boolean(workflowDesmosContext[currentBlock.content?.workflow_id]?.state))}</code></div>
             <div>expression_count: <code>{debugByBlock[currentBlock.id]?.expressionCount ?? 0}</code></div>
             <div>detected_sliders: <code>{(debugByBlock[currentBlock.id]?.sliders || []).join(', ') || '—'}</code></div>
           </div>
@@ -417,7 +452,16 @@ function QuestionLinkBlock({ block, isComplete }) {
   );
 }
 
-function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock, onDebug, debugMode = false }) {
+function DesmosInteractiveBlock({
+  block,
+  previousAnswer,
+  onResult,
+  onUnlock,
+  onDebug,
+  onCaptureWorkflowContext,
+  inheritedWorkflowContext,
+  debugMode = false,
+}) {
   const hostRef = useRef(null);
   const calculatorRef = useRef(null);
   const [feedbackState, setFeedbackState] = useState(previousAnswer?.correct ? 'success' : 'idle');
@@ -456,8 +500,13 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock, on
       calculatorRef.current = calculator;
       setDesmosMountError(false);
 
-      for (const expr of content.initial_expressions || []) {
-        if (expr?.latex) calculator.setExpression({ id: expr.id, latex: expr.latex });
+      const shouldInherit = Boolean(content.inherit_from_previous_workflow_desmos);
+      if (shouldInherit && inheritedWorkflowContext?.state?.expressions?.list?.length) {
+        calculator.setState(inheritedWorkflowContext.state);
+      } else {
+        for (const expr of content.initial_expressions || []) {
+          if (expr?.latex) calculator.setExpression({ id: expr.id, latex: expr.latex });
+        }
       }
 
       if (intervalId) clearInterval(intervalId);
@@ -482,7 +531,7 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock, on
         calculatorRef.current = null;
       }
     };
-  }, [content]);
+  }, [content, inheritedWorkflowContext]);
 
   function extractStudentExpressions(calculator) {
     const expressionList = calculator?.getExpressions?.() || [];
@@ -541,18 +590,24 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock, on
       evaluateAtX: evaluateWithDesmos,
       attempts: nextAttempts,
     });
+    onCaptureWorkflowContext?.({
+      state: calculatorRef.current?.getState?.() || null,
+      expressions: entered,
+      capturedAt: Date.now(),
+    });
 
     if (result.success) {
       setFeedbackState('success');
       setFeedbackHtml(result.feedbackHtml || content.feedback.success_message_html);
       setProgressiveHintHtml(result.progressiveHintHtml || '');
       setSolutionHtml(result.solutionHtml || '');
-      onSuccess();
+      onResult?.(true);
     } else {
       setFeedbackState('retry');
       setFeedbackHtml(result.feedbackHtml || content.feedback.retry_message_html);
       setProgressiveHintHtml(result.progressiveHintHtml || '');
       setSolutionHtml(result.solutionHtml || '');
+      onResult?.(false);
       if (result.solutionHtml && content.progression?.require_success) {
         onUnlock?.();
       }
