@@ -147,6 +147,11 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* Without min-width:0 the column expands to fit its widest
+     descendant — wide MathJax SVGs in the rendered preview
+     would otherwise push past the 1fr grid track and squeeze
+     the source-HTML column on the left to a few characters. */
+  min-width: 0;
 }
 
 .fieldColHead {
@@ -174,9 +179,12 @@
   background: var(--bg-card, #fff);
   color: var(--text, #1a1a1a);
   resize: vertical;
-  white-space: pre;
-  overflow-x: auto;
-  word-wrap: normal;
+  /* Wrap long HTML lines so the editor stays readable in the
+     narrow column. The DB stores the unwrapped string verbatim;
+     the textarea's value never inserts newlines on its own. */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .textarea:focus {
@@ -191,7 +199,10 @@
   padding: 8px 10px;
   font-size: 14px;
   min-height: 32px;
-  overflow-x: auto;
+  /* Contain wide SVG math inside the column rather than letting
+     it push the grid track wider and squeeze the source pane. */
+  overflow: auto;
+  max-width: 100%;
 }
 
 .renderedRaw {
@@ -203,9 +214,15 @@
   background: #1f2a44;
   color: #d6e0ff;
   border-radius: 6px;
-  white-space: pre;
-  overflow-x: auto;
-  max-height: 220px;
+  /* Wrap, don't scroll. The rendered SVG strings are very long
+     single-line blobs; horizontal scrolling makes them painful
+     to inspect. */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  max-height: 260px;
+  overflow-y: auto;
+  max-width: 100%;
 }
 
 .taxonomy {
