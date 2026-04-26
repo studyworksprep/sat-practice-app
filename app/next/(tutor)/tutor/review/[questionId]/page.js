@@ -27,6 +27,8 @@ import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { loadConceptTags } from '@/lib/practice/load-concept-tags';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
 import { loadQuestionNotes } from '@/lib/practice/load-question-notes';
+import { BrokenButton } from '@/lib/practice/BrokenButton';
+import { loadBrokenData } from '@/lib/practice/load-broken-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,9 +103,10 @@ export default async function TutorReviewQuestionPage({ params }) {
     rationaleHtml: question.rationale_rendered ?? question.rationale_html,
   };
 
-  const [conceptTags, questionNotes] = await Promise.all([
+  const [conceptTags, questionNotes, brokenData] = await Promise.all([
     loadConceptTags({ questionId: question.id, role: profile.role }),
     loadQuestionNotes({ questionId: question.id, role: profile.role, userId: user.id }),
+    loadBrokenData({ questionId: question.id, role: profile.role }),
   ]);
 
   return (
@@ -124,9 +127,20 @@ export default async function TutorReviewQuestionPage({ params }) {
             <div style={S.sub}>Code: <code>{question.display_code}</code></div>
           )}
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {!question.is_published && <Pill tone="warn">Unpublished</Pill>}
           {question.is_broken && <Pill tone="danger">Flagged</Pill>}
+          {brokenData.canEdit && (
+            <BrokenButton
+              questionId={question.id}
+              canEdit={brokenData.canEdit}
+              initialIsBroken={brokenData.isBroken}
+              raw={brokenData.raw}
+              rendered={brokenData.rendered}
+              taxonomy={brokenData.taxonomy}
+              renderedSourceHash={brokenData.renderedSourceHash}
+            />
+          )}
         </div>
       </header>
 
