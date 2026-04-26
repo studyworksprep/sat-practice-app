@@ -36,8 +36,13 @@ export default async function PracticeTestResultsPage({ params }) {
   const { attemptId } = await params;
   const { user, profile, supabase } = await requireUser();
 
-  if (profile.role === 'admin') redirect('/admin');
-  if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
+  // Tutors and admins can land here from the per-student detail
+  // page (/tutor/students/[studentId]) when reviewing a student's
+  // completed attempt. RLS on practice_test_attempts_v2 uses
+  // can_view(user_id), so authorization is enforced by the row
+  // lookup below — a stray attempt belonging to someone outside
+  // the caller's hierarchy 404s naturally. Practice-tier students
+  // still bounce to /subscribe.
   if (profile.role === 'practice') redirect('/subscribe');
 
   // 1) Attempt + test meta.

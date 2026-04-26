@@ -54,8 +54,11 @@ export default async function ManagerTeacherDetailPage({ params }) {
     { data: trainingSessions },
     { data: trainingTests },
   ] = await Promise.all([
+    // profile_cards doesn't expose email; the page needs it for
+    // the teacher header. profiles_select via can_view(id) covers
+    // the manager → teacher direct path that brings us here.
     supabase
-      .from('profile_cards')
+      .from('profiles')
       .select('id, first_name, last_name, email, role')
       .eq('id', teacherId)
       .maybeSingle(),
