@@ -28,12 +28,6 @@
   margin-top: 8px;
 }
 
-/* Normalize inline math baseline so an option with a fraction and
-   an option with a bare number have the same line-box height. */
-.sw-option-content mjx-container {
-  vertical-align: middle;
-}
-
 /* ----- .sw-prose — generic injected question text (stimulus,
        stem, rationale) ----- */
 
@@ -78,7 +72,18 @@
   object-fit: contain;
   margin: 12px auto;
 }
-.sw-prose mjx-container { vertical-align: middle; }
+/* MathJax SVG output already carries a per-glyph
+   `style="vertical-align: -<n>ex"` on each <svg> that aligns the
+   glyph to the surrounding text baseline. Leaving the container
+   at its default (baseline) lets that per-glyph offset land
+   correctly. An earlier `vertical-align: middle` here was
+   pushing the container to mid-line and stacking the negative
+   inline offset on top of it, sitting math noticeably below the
+   text baseline. */
+.sw-prose mjx-container,
+.sw-option-content mjx-container {
+  vertical-align: baseline;
+}
 
 /* Defensive: MathJax MathML input renders <math display="block">
    as <mjx-container display="true">. Without MathJax's CHTML
