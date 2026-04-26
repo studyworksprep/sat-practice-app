@@ -36,16 +36,21 @@ export default async function TutorTeachersPage() {
     new Set((teacherJunctions ?? []).map((r) => r.teacher_id).filter(Boolean)),
   );
 
-  // 2) Teacher profile cards + every (teacher → student) edge so
+  // 2) Teacher profile rows + every (teacher → student) edge so
   //    we can join roster sizes per teacher. Both queries run in
-  //    parallel along with the cohort stats fetch below.
+  //    parallel along with the cohort stats fetch below. Reading
+  //    profiles directly (rather than profile_cards) because we
+  //    need email for the teacher header — profile_cards
+  //    deliberately doesn't expose email. The profiles_select
+  //    policy uses can_view(id), which permits the manager →
+  //    teacher direct path that brought us here.
   const [
     { data: teacherProfiles },
     { data: tsRows },
   ] = teacherIds.length > 0
     ? await Promise.all([
         supabase
-          .from('profile_cards')
+          .from('profiles')
           .select('id, first_name, last_name, email, role')
           .in('id', teacherIds),
         supabase

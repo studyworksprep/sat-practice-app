@@ -75,11 +75,15 @@ export default async function NewAssignmentPage() {
       : Promise.resolve({ data: [] }),
   ]);
 
-  // Resolve the teacher profile cards once we know which ids.
+  // Resolve the teacher rows once we know which ids. profile_cards
+  // doesn't expose email; the picker uses email as a fallback when
+  // a teacher has no first/last name. profiles_select via
+  // can_view(id) covers the manager → teacher path that brings us
+  // here.
   const teacherIds = (teacherJunctions ?? []).map((r) => r.teacher_id).filter(Boolean);
   const { data: teacherCards } = teacherIds.length > 0
     ? await supabase
-        .from('profile_cards')
+        .from('profiles')
         .select('id, first_name, last_name, email')
         .in('id', teacherIds)
     : { data: [] };
