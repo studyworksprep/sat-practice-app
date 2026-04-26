@@ -20,6 +20,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
+import { loadQuestionNotesByQuestion } from '@/lib/practice/load-question-notes';
 import { inferLayoutMode, domainSection } from '@/lib/ui/question-layout';
 import { TestResultsInteractive } from './TestResultsInteractive';
 
@@ -271,6 +272,22 @@ export default async function PracticeTestResultsPage({ params }) {
   }
   const desmosCanSave = profile.role === 'manager' || profile.role === 'admin';
 
+  // 8b2) Question notes — org-scoped tutor notes. The loader
+  //      handles the visibility walk through
+  //      manager_teacher_assignments and returns canView=false
+  //      for student callers, so this is a no-op there.
+  const presentQids = reviewItems.filter((it) => !it.missing).map((it) => it.questionId);
+  const notesBundle = await loadQuestionNotesByQuestion({
+    questionIds: presentQids,
+    role: profile.role,
+    userId: user.id,
+  });
+  if (notesBundle.canView) {
+    for (const it of reviewItems) {
+      if (!it.missing) it.questionNotes = notesBundle.notesByQid.get(it.questionId) ?? [];
+    }
+  }
+
   // 8c) Concept tags catalog + per-item links — manager/admin
   //     only. Mirrors the equivalent block in build-session-review;
   //     loaded once per page load rather than per question.
@@ -347,6 +364,9 @@ export default async function PracticeTestResultsPage({ params }) {
       conceptTagsCatalog={conceptTagsCatalog}
       conceptTagsCanTag={conceptTagsCanTag}
       conceptTagsCanDelete={conceptTagsCanDelete}
+      questionNotesCanView={notesBundle.canView}
+      questionNotesIsAdmin={notesBundle.isAdmin}
+      currentUserId={user.id}
     />
   );
 }

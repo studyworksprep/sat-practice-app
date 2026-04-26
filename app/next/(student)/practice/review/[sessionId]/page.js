@@ -49,6 +49,7 @@ export default async function PracticeReviewPage({ params }) {
   const {
     sessionMeta, items, metrics, timing, assignment,
     desmosCanSave, conceptTagsCatalog, conceptTagsCanTag, conceptTagsCanDelete,
+    questionNotesCanView, questionNotesIsAdmin, currentUserId,
   } = await buildSessionReview({ supabase, user, role: profile.role, session });
 
   return (
@@ -62,6 +63,9 @@ export default async function PracticeReviewPage({ params }) {
       conceptTagsCatalog={conceptTagsCatalog}
       conceptTagsCanTag={conceptTagsCanTag}
       conceptTagsCanDelete={conceptTagsCanDelete}
+      questionNotesCanView={questionNotesCanView}
+      questionNotesIsAdmin={questionNotesIsAdmin}
+      currentUserId={currentUserId}
     />
   );
 }
