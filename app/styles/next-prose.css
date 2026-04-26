@@ -61,9 +61,15 @@
    doesn't overwhelm the question card on a wide screen, keep
    the natural aspect ratio, and center if the natural width is
    under the container. Bluebook-style sizing — figures are
-   informational, not the focal point. */
+   informational, not the focal point.
+
+   The :not() guard excludes math SVGs (which live inside
+   <mjx-container>). Without it, MathJax-output inline math
+   glyphs inherited display:block + margin:12px auto and rendered
+   as centered blocks on their own line — every variable
+   mid-sentence broke the paragraph flow. */
 .sw-prose img,
-.sw-prose svg {
+.sw-prose svg:not(mjx-container svg) {
   display: block;
   max-width: 100%;
   max-height: 360px;
@@ -74,26 +80,15 @@
 }
 .sw-prose mjx-container { vertical-align: middle; }
 
-/* College Board's MathML source has display="block" set on most
-   <math> elements — even ones that semantically belong inline (a
-   single variable mid-sentence). MathJax SVG output respects that
-   attribute via `<mjx-container display="true">`, which renders
-   as a centered block. The result on a typical question is every
-   variable hovering on its own line.
-
-   Force inline-block in our prose so text flows naturally. The
-   tradeoff is that genuinely-display-style formulas
-   (`(3x-23)(19x+6)` etc.) lose their auto-centering — they still
-   render at math size, just inline within the surrounding
-   paragraph. Acceptable given the alternative is unreadable
-   single-variable lines.
-
-   A proper fix lives upstream in lib/content/render-math.mjs:
-   strip `display="block"` from the source MathML during
-   pre-render, decide block-vs-inline on whether the math is
-   wrapped in its own paragraph, then bump
-   rendered_source_hash and re-run the backfill. This CSS
-   override is a read-time bandaid until that ships. */
+/* Defensive: MathJax MathML input renders <math display="block">
+   as <mjx-container display="true">. Without MathJax's CHTML
+   stylesheet loaded, the attribute alone has no layout effect —
+   but if the source bank ever gains genuinely-display-style
+   formulas, this keeps them flowing inline alongside surrounding
+   text rather than gaining a centered-block treatment from some
+   future stylesheet. The original mid-sentence-variable bug it
+   was trying to fix turned out to be the figure-SVG rule above
+   capturing math SVGs; that's solved at the source now. */
 .sw-prose mjx-container[display="true"],
 .sw-option-content mjx-container[display="true"] {
   display: inline-block;
