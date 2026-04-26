@@ -18,6 +18,7 @@ import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
+import { QuestionNotes } from '@/lib/practice/QuestionNotes';
 import { BookmarkIcon } from '@/lib/ui/icons';
 import s from './TestResults.module.css';
 
@@ -43,6 +44,9 @@ export function TestResultsInteractive({
   conceptTagsCatalog = null,
   conceptTagsCanTag = false,
   conceptTagsCanDelete = false,
+  questionNotesCanView = false,
+  questionNotesIsAdmin = false,
+  currentUserId = null,
 }) {
   const [selectedOrdinal, setSelectedOrdinal] = useState(
     reviewItems.find((r) => !r.missing)?.ordinal ?? reviewItems[0]?.ordinal ?? 1,
@@ -315,6 +319,16 @@ export function TestResultsInteractive({
                   initialSavedState={selected.desmosSavedState ?? null}
                   canSave={desmosCanSave}
                   calcRef={calcRef}
+                />
+              )}
+              {questionNotesCanView && !selected.missing && (
+                <QuestionNotes
+                  key={`notes-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  initialNotes={selected.questionNotes ?? []}
+                  isAdmin={questionNotesIsAdmin}
+                  currentUserId={currentUserId}
+                  canView={questionNotesCanView}
                 />
               )}
               <FlashcardsButton />

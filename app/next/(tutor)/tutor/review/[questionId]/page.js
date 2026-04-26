@@ -25,12 +25,14 @@ import { inferLayoutMode } from '@/lib/ui/question-layout';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { loadConceptTags } from '@/lib/practice/load-concept-tags';
+import { QuestionNotes } from '@/lib/practice/QuestionNotes';
+import { loadQuestionNotes } from '@/lib/practice/load-question-notes';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TutorReviewQuestionPage({ params }) {
   const { questionId } = await params;
-  const { profile, supabase } = await requireUser();
+  const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'student' || profile.role === 'practice') {
     redirect('/dashboard');
@@ -99,10 +101,10 @@ export default async function TutorReviewQuestionPage({ params }) {
     rationaleHtml: question.rationale_rendered ?? question.rationale_html,
   };
 
-  const conceptTags = await loadConceptTags({
-    questionId: question.id,
-    role: profile.role,
-  });
+  const [conceptTags, questionNotes] = await Promise.all([
+    loadConceptTags({ questionId: question.id, role: profile.role }),
+    loadQuestionNotes({ questionId: question.id, role: profile.role, userId: user.id }),
+  ]);
 
   return (
     <main style={S.main}>
@@ -162,6 +164,24 @@ export default async function TutorReviewQuestionPage({ params }) {
             initialQuestionTagIds={conceptTags.questionTagIds}
             canTag={conceptTags.canTag}
             canDelete={conceptTags.canDelete}
+          />
+        </section>
+      )}
+
+      {questionNotes.canView && (
+        <section
+          style={{
+            marginTop: '1.25rem',
+            paddingTop: '1rem',
+            borderTop: '1px dashed var(--border)',
+          }}
+        >
+          <QuestionNotes
+            questionId={question.id}
+            initialNotes={questionNotes.notes}
+            isAdmin={questionNotes.isAdmin}
+            currentUserId={questionNotes.currentUserId}
+            canView={questionNotes.canView}
           />
         </section>
       )}
