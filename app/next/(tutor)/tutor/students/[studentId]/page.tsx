@@ -294,7 +294,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
               <li key={t.id}>
                 <Link
                   href={t.status === 'completed'
-                    ? `/practice/test/attempt/${t.id}/results`
+                    ? `/tutor/students/${student.id}/tests/${t.id}/results`
                     : `/tutor/students/${student.id}`}
                   className={s.testRow}
                 >
