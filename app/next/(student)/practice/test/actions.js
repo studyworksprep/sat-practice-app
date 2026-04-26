@@ -44,7 +44,7 @@ import {
   availableRoutes,
   resolveRoute,
 } from '@/lib/practice-test/adaptive-routing';
-import { scaleSectionScore, compositeScore } from '@/lib/practice-test/scoring';
+import { recomputeAttemptScores } from '@/lib/practice-test/recompute-scores';
 
 const GRACE_SECONDS = 15;
 
@@ -526,88 +526,21 @@ export async function finishModule(_prev, formData) {
 // Factored out so deriveFinishReturn (for the double-submit case)
 // can reuse it if the test happened to be marked completed mid-
 // flight on the initial finishModule.
+//
+// The scoring + status flip lives in recomputeAttemptScores so the
+// import flow (which imports v1 attempts that need to be scored
+// against the v2 lookup table) goes through the exact same code
+// path. closeTestAttempt only adds the live-submit-only side effect:
+// stamping finished_at if it isn't already set. The .is('finished_at',
+// null) guard makes a double-call from deriveFinishReturn safe.
 async function closeTestAttempt(supabase, attemptId) {
-  // Pull all module attempts for this test attempt plus the
-  // module info we need for routing-aware scoring.
-  const { data: moduleAttempts } = await supabase
-    .from('practice_test_module_attempts_v2')
-    .select(`
-      correct_count,
-      practice_test_module:practice_test_modules_v2(subject_code, module_number, route_code)
-    `)
-    .eq('practice_test_attempt_id', attemptId);
-
-  // Aggregate per subject: total correct, total items, and whichever
-  // route module 2 landed on (scoring uses the module-2 route for
-  // the ceiling curve).
-  const bySubject = { RW: { correct: 0, total: 0, route: 'std' },
-                      MATH: { correct: 0, total: 0, route: 'std' } };
-
-  for (const ma of moduleAttempts ?? []) {
-    const m = ma.practice_test_module;
-    if (!m) continue;
-    bySubject[m.subject_code].correct += ma.correct_count ?? 0;
-  }
-
-  // Count items per subject (denominator for the scaling curve).
-  // One IN query against module items keyed by every module id that
-  // appeared above.
-  const moduleIds = (moduleAttempts ?? [])
-    .map((ma) => ma.practice_test_module?.module_number == null ? null : ma)
-    .filter(Boolean)
-    .map((ma) => ma.practice_test_module);
-  // We actually need the module IDs, not the records — redo:
-  const { data: moduleRows } = await supabase
-    .from('practice_test_module_attempts_v2')
-    .select(`
-      practice_test_module:practice_test_modules_v2(id, subject_code, module_number, route_code)
-    `)
-    .eq('practice_test_attempt_id', attemptId);
-
-  const moduleIdList = (moduleRows ?? []).map((r) => r.practice_test_module?.id).filter(Boolean);
-  if (moduleIdList.length > 0) {
-    const { data: itemsPerModule } = await supabase
-      .from('practice_test_module_items_v2')
-      .select('practice_test_module_id, practice_test_module:practice_test_modules_v2(subject_code)')
-      .in('practice_test_module_id', moduleIdList);
-    for (const it of itemsPerModule ?? []) {
-      const subj = it.practice_test_module?.subject_code;
-      if (subj) bySubject[subj].total += 1;
-    }
-  }
-
-  // Route for scoring = module 2's route. Find it in the aggregated
-  // moduleRows.
-  for (const r of moduleRows ?? []) {
-    const m = r.practice_test_module;
-    if (!m) continue;
-    if (m.module_number === 2) bySubject[m.subject_code].route = m.route_code;
-  }
-
-  const rwScaled = scaleSectionScore({
-    subject: 'RW',
-    rawCorrect: bySubject.RW.correct,
-    totalItems: bySubject.RW.total,
-    route: bySubject.RW.route,
-  });
-  const mathScaled = scaleSectionScore({
-    subject: 'MATH',
-    rawCorrect: bySubject.MATH.correct,
-    totalItems: bySubject.MATH.total,
-    route: bySubject.MATH.route,
-  });
-  const composite = compositeScore({ rwScaled, mathScaled });
-
   await supabase
     .from('practice_test_attempts_v2')
-    .update({
-      status: 'completed',
-      finished_at: new Date().toISOString(),
-      rw_scaled: rwScaled,
-      math_scaled: mathScaled,
-      composite_score: composite,
-    })
-    .eq('id', attemptId);
+    .update({ finished_at: new Date().toISOString() })
+    .eq('id', attemptId)
+    .is('finished_at', null);
+
+  await recomputeAttemptScores(supabase, attemptId);
 }
 
 // If finishModule runs a second time against an already-closed
