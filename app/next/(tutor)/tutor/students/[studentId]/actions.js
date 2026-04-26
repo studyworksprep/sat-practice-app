@@ -5,6 +5,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireUser, requireServiceRole } from '@/lib/api/auth';
 import { actionOk, actionFail, ApiError } from '@/lib/api/response';
+import { recomputeAttemptScores } from '@/lib/practice-test/recompute-scores';
 
 /**
  * Per-student practice history v1 → v2 import. The button calls this
@@ -67,6 +68,21 @@ export async function importStudentPracticeHistory(_prev, formData) {
     p_student_id: studentId,
   });
   if (error) return actionFail(`Import failed: ${error.message}`);
+
+  // Re-score the just-imported attempts via the same path
+  // closeTestAttempt uses for live submits. Lookup-aware: hits the
+  // score_conversion table first (where Bluebook uploads have been
+  // writing real CB scores keyed by test + per-module correct), so
+  // this is a no-op on rows whose status was already 'completed'
+  // and scores were already populated. The helper's guards leave
+  // abandoned and score-only-import attempts alone.
+  const { data: importedAttempts } = await svcCtx.service
+    .from('practice_test_attempts_v2')
+    .select('id')
+    .eq('user_id', studentId);
+  for (const a of importedAttempts ?? []) {
+    await recomputeAttemptScores(svcCtx.service, a.id);
+  }
 
   revalidatePath(`/tutor/students/${studentId}`);
   return actionOk(data);
