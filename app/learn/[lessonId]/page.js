@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import HtmlBlock from '../../../components/HtmlBlock';
@@ -20,6 +20,8 @@ function LessonViewer() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [forceUnlockedBlockIds, setForceUnlockedBlockIds] = useState([]);
   const [debugByBlock, setDebugByBlock] = useState({});
+  const [workflowDesmosContext, setWorkflowDesmosContext] = useState({});
+  const [activeBranchState, setActiveBranchState] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -93,11 +95,7 @@ function LessonViewer() {
     if (data.progress) setProgress(data.progress);
   }
 
-  if (loading) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Loading…</p></div>;
-  if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
-  if (!lesson) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Lesson not found.</p></div>;
-
-  const blocks = lesson.blocks || [];
+  const blocks = useMemo(() => lesson?.blocks || [], [lesson?.blocks]);
   const debugMode = process.env.NODE_ENV !== 'production' && searchParams?.get('debug') === '1';
   const completedBlocks = new Set(progress?.completed_blocks || []);
   const checkAnswers = progress?.check_answers || {};
@@ -108,6 +106,17 @@ function LessonViewer() {
     : 0;
 
   const currentBlock = blocks[currentIndex] || null;
+  const blockIndexById = useMemo(() => {
+    const map = new Map();
+    blocks.forEach((block, index) => {
+      if (block?.id != null) map.set(String(block.id), index);
+    });
+    return map;
+  }, [blocks]);
+
+  if (loading) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Loading…</p></div>;
+  if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
+  if (!lesson) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Lesson not found.</p></div>;
   const currentIsLocked = Boolean(
     currentBlock
       && currentBlock.block_type === 'desmos_interactive'
@@ -116,8 +125,67 @@ function LessonViewer() {
       && !forceUnlockedBlockIds.includes(currentBlock.id)
   );
 
+  function indexForBlockId(blockId) {
+    if (!blockId) return null;
+    const idx = blockIndexById.get(String(blockId));
+    return Number.isInteger(idx) ? idx : null;
+  }
+
   function goNext() {
-    setCurrentIndex((prev) => Math.min(prev + 1, Math.max(blocks.length - 1, 0)));
+    setCurrentIndex((prev) => {
+      const current = blocks[prev];
+      if (!current) return prev;
+
+      const nextLinear = Math.min(prev + 1, Math.max(blocks.length - 1, 0));
+
+      if (activeBranchState?.sourceBlockId) {
+        const isChosenBranchBlock = current.id === activeBranchState.chosenBlockId;
+        if (isChosenBranchBlock && activeBranchState.rejoinBlockId && activeBranchState.rejoinBlockId !== current.id) {
+          const rejoinIdx = indexForBlockId(activeBranchState.rejoinBlockId);
+          if (rejoinIdx != null) return rejoinIdx;
+        }
+
+        if (current.id === activeBranchState.rejoinBlockId) {
+          setActiveBranchState(null);
+        }
+      }
+
+      return nextLinear;
+    });
+  }
+
+  function goToBlockId(blockId, fallbackIndex = currentIndex + 1) {
+    const idx = indexForBlockId(blockId);
+    if (idx != null) {
+      setCurrentIndex(idx);
+      return true;
+    }
+    setCurrentIndex(Math.min(fallbackIndex, Math.max(blocks.length - 1, 0)));
+    return false;
+  }
+
+  function routeFromAnswer(block, isCorrect) {
+    const content = block?.content || {};
+    const targetId = isCorrect ? content.on_correct_block_id : content.on_incorrect_block_id;
+    const resolved = goToBlockId(targetId, currentIndex + 1);
+    if (resolved && targetId) {
+      setActiveBranchState({
+        sourceBlockId: block.id,
+        chosenBlockId: String(targetId),
+        rejoinBlockId: content.rejoin_at_block_id ? String(content.rejoin_at_block_id) : null,
+      });
+      return;
+    }
+    setActiveBranchState(null);
+  }
+
+  function captureWorkflowDesmosState(block, payload) {
+    const workflowId = block?.content?.workflow_id;
+    if (!workflowId || !payload?.state) return;
+    setWorkflowDesmosContext((prev) => ({
+      ...prev,
+      [workflowId]: payload,
+    }));
   }
 
   function goPrev() {
@@ -176,7 +244,7 @@ function LessonViewer() {
               previousAnswer={checkAnswers[currentBlock.id]}
               onSubmit={(selected, correct) => {
                 submitCheck(currentBlock.id, selected, correct);
-                if (correct) goNext();
+                routeFromAnswer(currentBlock, correct);
               }}
             />
           )}
@@ -189,13 +257,15 @@ function LessonViewer() {
               previousAnswer={checkAnswers[currentBlock.id]}
               onSuccess={() => {
                 submitDesmosResult(currentBlock.id, true);
-                goNext();
+                routeFromAnswer(currentBlock, true);
               }}
               onUnlock={() => {
                 setForceUnlockedBlockIds((prev) => (
                   prev.includes(currentBlock.id) ? prev : [...prev, currentBlock.id]
                 ));
               }}
+              inheritedWorkflowContext={workflowDesmosContext[currentBlock.content?.workflow_id]}
+              onCaptureWorkflowContext={(payload) => captureWorkflowDesmosState(currentBlock, payload)}
               debugMode={debugMode}
               onDebug={(payload) => {
                 setDebugByBlock((prev) => ({ ...prev, [currentBlock.id]: payload }));
@@ -219,6 +289,7 @@ function LessonViewer() {
             <div>next_block: <code>{debugByBlock[currentBlock.id]?.nextBlockId || blocks[currentIndex + 1]?.id || '—'}</code></div>
             <div>rejoin_target: <code>{currentBlock.content?.rejoin_at_block_id || '—'}</code></div>
             <div>desmos_inherited: <code>{String(Boolean(currentBlock.content?.inherit_from_previous_workflow_desmos))}</code></div>
+            <div>desmos_inherited_context_available: <code>{String(Boolean(workflowDesmosContext[currentBlock.content?.workflow_id]?.state))}</code></div>
             <div>expression_count: <code>{debugByBlock[currentBlock.id]?.expressionCount ?? 0}</code></div>
             <div>detected_sliders: <code>{(debugByBlock[currentBlock.id]?.sliders || []).join(', ') || '—'}</code></div>
           </div>
@@ -417,7 +488,16 @@ function QuestionLinkBlock({ block, isComplete }) {
   );
 }
 
-function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock, onDebug, debugMode = false }) {
+function DesmosInteractiveBlock({
+  block,
+  previousAnswer,
+  onSuccess,
+  onUnlock,
+  onDebug,
+  onCaptureWorkflowContext,
+  inheritedWorkflowContext,
+  debugMode = false,
+}) {
   const hostRef = useRef(null);
   const calculatorRef = useRef(null);
   const [feedbackState, setFeedbackState] = useState(previousAnswer?.correct ? 'success' : 'idle');
@@ -456,8 +536,13 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock, on
       calculatorRef.current = calculator;
       setDesmosMountError(false);
 
-      for (const expr of content.initial_expressions || []) {
-        if (expr?.latex) calculator.setExpression({ id: expr.id, latex: expr.latex });
+      const shouldInherit = Boolean(content.inherit_from_previous_workflow_desmos);
+      if (shouldInherit && inheritedWorkflowContext?.state?.expressions?.list?.length) {
+        calculator.setState(inheritedWorkflowContext.state);
+      } else {
+        for (const expr of content.initial_expressions || []) {
+          if (expr?.latex) calculator.setExpression({ id: expr.id, latex: expr.latex });
+        }
       }
 
       if (intervalId) clearInterval(intervalId);
@@ -482,7 +567,7 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock, on
         calculatorRef.current = null;
       }
     };
-  }, [content]);
+  }, [content, inheritedWorkflowContext]);
 
   function extractStudentExpressions(calculator) {
     const expressionList = calculator?.getExpressions?.() || [];
@@ -540,6 +625,11 @@ function DesmosInteractiveBlock({ block, previousAnswer, onSuccess, onUnlock, on
       studentExpressions: entered,
       evaluateAtX: evaluateWithDesmos,
       attempts: nextAttempts,
+    });
+    onCaptureWorkflowContext?.({
+      state: calculatorRef.current?.getState?.() || null,
+      expressions: entered,
+      capturedAt: Date.now(),
     });
 
     if (result.success) {
