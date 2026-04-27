@@ -32,13 +32,20 @@ export function AppNav({ user, links, rightExtras = null }) {
       <div className={s.navInner}>
         <div className={s.navLeft}>
           <Link href={links[0]?.href ?? '/dashboard'} className={s.logoLink}>
+            {/* Updated SVG wordmark from the design system. The
+                viewBox is 729×174 (≈4.19:1), so width/height are
+                set to match that ratio at the existing 28px nav
+                height. Using next/image with unoptimized so the
+                SVG passes through verbatim — Next's image optimizer
+                converts to raster otherwise. */}
             <Image
-              src="/studyworks-logo.png"
+              src="/studyworks-logo.svg"
               alt="Studyworks"
-              width={140}
+              width={117}
               height={28}
               className={s.logo}
               priority
+              unoptimized
             />
           </Link>
           <div className={s.navLinks}>
