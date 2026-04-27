@@ -191,6 +191,13 @@ export async function proxy(request) {
   const isNextAsset = pathname.startsWith('/_next/') || pathname.startsWith('/next/');
   const uiTree = !isApiRoute && !isNextAsset ? await resolveUiTree(supabase, user) : 'legacy';
 
+  // Surface the resolved tree on a request header so the root
+  // app/layout.js (and the legacy NavBar in particular) can hide
+  // itself authoritatively on /next pages — without that, NavBar
+  // would have to re-derive the tree from the JWT and would
+  // disagree with the proxy whenever the kill switch is set.
+  requestHeaders.set('x-ui-tree', uiTree);
+
   let response;
   if (uiTree === 'next') {
     // Rewrite /foo -> /next/foo. Browser URL unchanged; Next.js serves

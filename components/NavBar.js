@@ -6,19 +6,6 @@ import { useEffect, useState, useRef } from 'react';
 import { createClient } from '../lib/supabase/browser';
 import { useTestType } from '../lib/TestTypeContext';
 
-// Mirrors proxy.js userTreeFromJwt: prefer app_metadata, fall back
-// to user_metadata, default 'legacy'. Returned value is whatever
-// the user's flag is — used by NavBar to decide whether to render
-// at all (the new-tree layouts mount their own AppNav).
-function readUiVersion(user) {
-  try {
-    const meta = user?.app_metadata || user?.user_metadata || {};
-    return meta.ui_version === 'next' ? 'next' : 'legacy';
-  } catch {
-    return 'legacy';
-  }
-}
-
 function BugReportModal({ onClose }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -134,12 +121,11 @@ function BugReportModal({ onClose }) {
   );
 }
 
-export default function NavBar() {
+export default function NavBar({ uiTree = 'legacy' }) {
   const pathname = usePathname();
   const supabase = createClient();
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
-  const [uiVersion, setUiVersion] = useState(null);
   const [showBugModal, setShowBugModal] = useState(false);
   const { testType, setTestType } = useTestType();
 
@@ -157,13 +143,11 @@ export default function NavBar() {
     supabase.auth.getUser().then(({ data }) => {
       const u = data?.user ?? null;
       setUser(u);
-      setUiVersion(readUiVersion(u));
       fetchProfile(u?.id);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null;
       setUser(u);
-      setUiVersion(readUiVersion(u));
       fetchProfile(u?.id);
     });
     return () => sub?.subscription?.unsubscribe?.();
@@ -178,15 +162,13 @@ export default function NavBar() {
   // count jumps.
   if (pathname && pathname.startsWith('/features/')) return null;
 
-  // Users on ui_version='next' are routed through the new-tree layouts,
-  // each of which mounts its own AppNav. Without this guard the legacy
-  // NavBar renders on top of that, doubling the top bar on every
-  // /next page. Same hooks-rule note as above — check goes after the
-  // hooks. We default uiVersion to null until the user load resolves;
-  // briefly showing the legacy NavBar for the first ~50ms is better
-  // than a layout shift, and a 'next' user typically hits a route
-  // group whose layout obscures the result anyway.
-  if (uiVersion === 'next') return null;
+  // Hide on /next pages so the legacy NavBar doesn't double-stack
+  // on top of the new tree's AppNav. The signal comes from the
+  // proxy via the x-ui-tree request header (app/layout.js reads
+  // it server-side and passes it down) — that mirrors the proxy's
+  // own routing decision, including the kill switch, so this
+  // can't disagree with which tree is actually being served.
+  if (uiTree === 'next') return null;
 
   async function signOut() {
     await supabase.auth.signOut();

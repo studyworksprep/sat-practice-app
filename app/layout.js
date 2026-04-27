@@ -1,4 +1,5 @@
 import './globals.css';
+import { headers } from 'next/headers';
 import NavBar from '../components/NavBar';
 import StorageHygiene from '../components/StorageHygiene';
 import Script from 'next/script';
@@ -16,7 +17,16 @@ export const viewport = {
   maximumScale: 1,
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  // proxy.js sets x-ui-tree on every request based on the
+  // resolved tree (kill switch + per-user JWT flag combined).
+  // We pass it down so NavBar has an authoritative signal —
+  // re-deriving from the JWT in the client missed the kill
+  // switch and produced a "no nav at all" page when the two
+  // disagreed.
+  const h = await headers();
+  const uiTree = h.get('x-ui-tree') === 'next' ? 'next' : 'legacy';
+
   return (
     <html lang="en">
       <head>
@@ -72,7 +82,7 @@ export default function RootLayout({ children }) {
               cleanup runs before any of the legacy quota-prone
               setItem paths can fire on the next page load. */}
           <StorageHygiene />
-          <NavBar />
+          <NavBar uiTree={uiTree} />
           {children}
         </TestTypeProvider>
         {/* Vercel Analytics — tracks page views across both the legacy
