@@ -93,6 +93,19 @@ export async function proxy(request) {
     return NextResponse.next();
   }
 
+  // Static assets in /public — skip everything (auth, role gate,
+  // subscription, UI-tree rewrite). Without this, a request for
+  // /studyworks-logo.svg from a ui_version='next' user gets
+  // rewritten to /next/studyworks-logo.svg, which doesn't exist
+  // as a file, and the browser shows a broken image. The matcher
+  // already excludes `_next/static`, `_next/image`, and
+  // favicon.ico; we extend that here for any path whose last
+  // segment carries a file extension (logos, manifest, robots,
+  // and so on).
+  if (/\/[^/]+\.[a-zA-Z0-9]{1,8}$/.test(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   const requestHeaders = new Headers(request.headers);
 
   // We'll collect cookies set during auth refresh, then apply them to the final response
