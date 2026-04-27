@@ -1,10 +1,11 @@
 // Tutor → individual student detail page. See
 // docs/architecture-plan.md §3.8.
 //
-// Shows the student's profile + cohort-style stat row + recent
-// practice tests + recent practice sessions + assignments +
-// attempts feed. RLS on every table uses can_view(), so the page
-// returns 404 if the caller can't see this student.
+// Shows the student's profile + cohort-style stat row, then their
+// assignments, practice tests, and practice sessions in that
+// order — what a tutor wants to scan before a meeting. RLS on
+// every table uses can_view(), so the page returns 404 if the
+// caller can't see this student.
 //
 // Read-only on the tutor side — mutations live elsewhere
 // (assignments/new for new work; the runner pages for the
@@ -19,11 +20,10 @@ import { formatDate, formatRelativeShort } from '@/lib/formatters';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 import s from './StudentDetail.module.css';
 
-import type { Row, ViewRow, SubjectCode } from '@/lib/types';
+import type { ViewRow, SubjectCode } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-const RECENT_ATTEMPTS_LIMIT = 25;
 const RECENT_SESSIONS_LIMIT = 10;
 const RECENT_TESTS_LIMIT    = 10;
 
@@ -45,12 +45,11 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     redirect('/');
   }
 
-  // Seven parallel reads. RLS uses can_view() on each table, so
-  // an empty result on the stats row means the caller can't see
-  // this student → 404.
+  // Six parallel reads. RLS uses can_view() on each table, so an
+  // empty result on the stats row means the caller can't see this
+  // student → 404.
   const [
     { data: studentRows, error: rpcErr },
-    { data: attemptRows },
     { data: profileRow },
     { count: v1AttemptCount },
     { data: assignmentJunctions },
@@ -61,12 +60,6 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .from('student_practice_stats')
       .select('*')
       .eq('user_id', studentId),
-    supabase
-      .from('attempts')
-      .select('id, question_id, is_correct, time_spent_ms, source, created_at')
-      .eq('user_id', studentId)
-      .order('created_at', { ascending: false })
-      .limit(RECENT_ATTEMPTS_LIMIT),
     supabase
       .from('profiles')
       .select('practice_test_v2_imported_at')
@@ -135,9 +128,6 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     accuracy: total > 0 ? Math.round((correct / total) * 100) : null,
     lastActivityAt: row.last_activity_at,
   };
-
-  const recentAttempts = (attemptRows ?? []) as Pick<Row<'attempts'>,
-    'id' | 'question_id' | 'is_correct' | 'time_spent_ms' | 'source' | 'created_at'>[];
 
   // Test attempts — keep status-aware, surface scores on completed
   // ones, link by status.
@@ -246,6 +236,51 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         />
       </section>
 
+      {/* ---------- Assignments ---------- */}
+      <section className={s.card}>
+        <div className={s.cardHeader}>
+          <div className={s.sectionLabel}>Assignments</div>
+          <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.cardHeaderLink}>
+            + New assignment
+          </Link>
+        </div>
+        {assignments.length === 0 ? (
+          <p className={s.empty}>This student has no assignments.</p>
+        ) : (
+          <ul className={s.assignmentList}>
+            {assignments.map((a) => {
+              const title = a.title
+                ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
+                ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
+                ?? 'Assignment';
+              const n = Array.isArray(a.question_ids) ? (a.question_ids as unknown[]).length : null;
+              return (
+                <li key={a.id}>
+                  <Link
+                    href={`/tutor/assignments/${a.id}`}
+                    className={a.completed_at ? `${s.assignmentRow} ${s.assignmentRowDone}` : s.assignmentRow}
+                  >
+                    <span className={s.assignmentType}>{a.assignment_type}</span>
+                    <span className={s.assignmentTitle}>
+                      {title}
+                      {n != null && <span className={s.assignmentCount}> · {n} q{n === 1 ? '' : 's'}</span>}
+                    </span>
+                    {a.due_date && !a.completed_at && (
+                      <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
+                        Due {formatDate(a.due_date)}
+                      </span>
+                    )}
+                    {a.completed_at && (
+                      <span className={s.completedTag}>Completed</span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
       {/* ---------- Recent practice tests ---------- */}
       <section className={s.card}>
         <div className={s.cardHeader}>
@@ -325,95 +360,6 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
               </li>
             ))}
           </ul>
-        )}
-      </section>
-
-      {/* ---------- Assignments ---------- */}
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>Assignments</div>
-          <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.cardHeaderLink}>
-            + New assignment
-          </Link>
-        </div>
-        {assignments.length === 0 ? (
-          <p className={s.empty}>This student has no assignments.</p>
-        ) : (
-          <ul className={s.assignmentList}>
-            {assignments.map((a) => {
-              const title = a.title
-                ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
-                ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
-                ?? 'Assignment';
-              const n = Array.isArray(a.question_ids) ? (a.question_ids as unknown[]).length : null;
-              return (
-                <li key={a.id}>
-                  <Link
-                    href={`/tutor/assignments/${a.id}`}
-                    className={a.completed_at ? `${s.assignmentRow} ${s.assignmentRowDone}` : s.assignmentRow}
-                  >
-                    <span className={s.assignmentType}>{a.assignment_type}</span>
-                    <span className={s.assignmentTitle}>
-                      {title}
-                      {n != null && <span className={s.assignmentCount}> · {n} q{n === 1 ? '' : 's'}</span>}
-                    </span>
-                    {a.due_date && !a.completed_at && (
-                      <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
-                        Due {formatDate(a.due_date)}
-                      </span>
-                    )}
-                    {a.completed_at && (
-                      <span className={s.completedTag}>Completed</span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-
-      {/* ---------- Recent attempts feed ---------- */}
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>Recent attempts</div>
-          <div className={s.cardHeaderHint}>Last {RECENT_ATTEMPTS_LIMIT} across all sources</div>
-        </div>
-        {recentAttempts.length === 0 ? (
-          <p className={s.empty}>No attempts yet.</p>
-        ) : (
-          <div className={s.tableWrap}>
-            <table className={s.table}>
-              <thead>
-                <tr>
-                  <th className={s.th}>When</th>
-                  <th className={s.th}>Source</th>
-                  <th className={s.th}>Result</th>
-                  <th className={s.thNum}>Time</th>
-                  <th className={s.th}>Question</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentAttempts.map((a) => (
-                  <tr key={a.id}>
-                    <td className={s.td}>{formatRelativeShort(a.created_at) ?? '—'}</td>
-                    <td className={s.td}><span className={s.sourceTag}>{a.source}</span></td>
-                    <td className={s.td}>
-                      <span className={a.is_correct ? s.resCorrect : s.resWrong}>
-                        {a.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                      </span>
-                    </td>
-                    <td className={s.tdNum}>
-                      {a.time_spent_ms != null ? `${Math.round(a.time_spent_ms / 1000)}s` : '—'}
-                    </td>
-                    <td className={s.td}>
-                      <code className={s.qid}>{a.question_id?.slice(0, 8) ?? '?'}…</code>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         )}
       </section>
 

@@ -1,35 +1,25 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 const ALLOWED_FIELDS = ['first_name', 'last_name', 'high_school', 'graduation_year', 'target_sat_score', 'start_date'];
 
 // PATCH /api/teacher/student/[studentId]/profile
-export async function PATCH(request, props) {
+export const PATCH = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   const { studentId } = params;
 
-  // Prefer middleware-provided user ID (avoids stale-cookie auth issues)
-  const userId = request.headers.get('x-user-id');
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const svc = createServiceClient();
-
-  const { data: profile } = await svc
-    .from('profiles')
-    .select('role')
-    .eq('id', userId)
-    .maybeSingle();
-
-  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  const { user, profile, service: svc } = await requireServiceRole(
+    'teacher patches student profile fields',
+    { allowedRoles: ['teacher', 'manager', 'admin'] },
+  );
 
   // For teachers, verify access to this student
   if (profile.role === 'teacher' || profile.role === 'manager') {
     const { data: assignment } = await svc
       .from('teacher_student_assignments')
       .select('teacher_id')
-      .eq('teacher_id', userId)
+      .eq('teacher_id', user.id)
       .eq('student_id', studentId)
       .maybeSingle();
 
@@ -37,7 +27,7 @@ export async function PATCH(request, props) {
       const { data: classes } = await svc
         .from('classes')
         .select('id')
-        .eq('teacher_id', userId);
+        .eq('teacher_id', user.id);
 
       const classIds = (classes || []).map(c => c.id);
       let hasAccess = false;
@@ -89,4 +79,4 @@ export async function PATCH(request, props) {
     .maybeSingle();
 
   return NextResponse.json({ student: updated });
-}
+});

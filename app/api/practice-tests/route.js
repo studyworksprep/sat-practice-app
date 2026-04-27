@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { computeScaledScore, toScaledScore } from '../../../lib/scoreConversion';
 
 // GET /api/practice-tests
 // Returns { tests, attempts } for the current user.
 //   tests   — all published practice tests with question counts
 //   attempts — user's attempts newest-first, with scores for completed ones
-export async function GET() {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = legacyApiRoute(async () => {
+  const { user, supabase } = await requireUser();
 
   // Published tests
   const { data: testsRaw, error: testsErr } = await supabase
@@ -159,4 +157,4 @@ export async function GET() {
   });
 
   return NextResponse.json({ tests, attempts });
-}
+});

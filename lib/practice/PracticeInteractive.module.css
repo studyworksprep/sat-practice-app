@@ -139,6 +139,14 @@
   padding: var(--s5) var(--s6);
 }
 
+/* Tutor-only tools strip below the question — concept tags
+   editor today, more management surfaces (notes, etc.) later. */
+.tutorTools {
+  padding: 0 var(--s6) var(--s5);
+  border-top: 1px dashed var(--border);
+  padding-top: var(--s4);
+}
+
 .error {
   color: var(--color-danger);
   font-size: 14px;

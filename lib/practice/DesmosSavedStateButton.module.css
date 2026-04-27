@@ -1,0 +1,143 @@
+/* =============================================================
+   DesmosSavedStateButton — lightbulb icon + popover. Tokens from
+   [data-tree="next"]. Mounted in question-detail headers across
+   the practice runner, practice-test runner, session review, and
+   test results.
+============================================================= */
+
+.wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-muted, #999);
+  transition: color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.iconBtn:hover {
+  background: var(--bg-hover, rgba(0, 0, 0, 0.04));
+}
+
+.iconBtnSaved {
+  color: var(--color-gold-600, #c99a2e);
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 600;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e0d8c4);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-md, 0 6px 20px rgba(0, 0, 0, 0.18));
+  padding: 12px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.popoverTitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b6452);
+  margin-bottom: 2px;
+}
+
+.btnPrimary,
+.btnSecondary,
+.btnDanger,
+.btnGhost {
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.btnPrimary {
+  background: var(--color-navy-700, #1f2a44);
+  color: #fff;
+  border-color: var(--color-navy-700, #1f2a44);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--color-navy-800, #182238);
+}
+
+.btnSecondary {
+  background: var(--bg-card, #fff);
+  color: var(--text, #1a1a1a);
+  border-color: var(--border, #e0d8c4);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: var(--bg-hover, #f7f4ec);
+}
+
+.btnDanger {
+  background: var(--bg-card, #fff);
+  color: var(--color-danger, #b3261e);
+  border-color: var(--border, #e0d8c4);
+}
+
+.btnDanger:hover:not(:disabled) {
+  background: rgba(179, 38, 30, 0.06);
+  border-color: var(--color-danger, #b3261e);
+}
+
+.btnGhost {
+  background: transparent;
+  color: var(--text-muted, #6b6452);
+  border-color: transparent;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.btnGhost:hover:not(:disabled) {
+  background: var(--bg-hover, #f7f4ec);
+}
+
+.btnPrimary:disabled,
+.btnSecondary:disabled,
+.btnDanger:disabled,
+.btnGhost:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: 12px;
+  color: var(--color-danger, #b3261e);
+  margin-top: 2px;
+}
+
+.errorInline {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--color-danger, #b3261e);
+  color: var(--color-danger, #b3261e);
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 600;
+}

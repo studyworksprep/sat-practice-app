@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 let _stripe;
 function getStripe() {
@@ -10,10 +11,8 @@ function getStripe() {
 
 // POST /api/billing/create-portal
 // Creates a Stripe Customer Portal session for subscription management.
-export async function POST(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const POST = legacyApiRoute(async (request) => {
+  const { user, supabase } = await requireUser();
 
   // Get the user's stripe customer ID
   const { data: sub } = await supabase
@@ -34,4 +33,4 @@ export async function POST(request) {
   });
 
   return NextResponse.json({ url: session.url });
-}
+});

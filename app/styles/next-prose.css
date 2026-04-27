@@ -28,12 +28,6 @@
   margin-top: 8px;
 }
 
-/* Normalize inline math baseline so an option with a fraction and
-   an option with a bare number have the same line-box height. */
-.sw-option-content mjx-container {
-  vertical-align: middle;
-}
-
 /* ----- .sw-prose — generic injected question text (stimulus,
        stem, rationale) ----- */
 
@@ -61,9 +55,15 @@
    doesn't overwhelm the question card on a wide screen, keep
    the natural aspect ratio, and center if the natural width is
    under the container. Bluebook-style sizing — figures are
-   informational, not the focal point. */
+   informational, not the focal point.
+
+   The :not() guard excludes math SVGs (which live inside
+   <mjx-container>). Without it, MathJax-output inline math
+   glyphs inherited display:block + margin:12px auto and rendered
+   as centered blocks on their own line — every variable
+   mid-sentence broke the paragraph flow. */
 .sw-prose img,
-.sw-prose svg {
+.sw-prose svg:not(mjx-container svg) {
   display: block;
   max-width: 100%;
   max-height: 360px;
@@ -72,4 +72,31 @@
   object-fit: contain;
   margin: 12px auto;
 }
-.sw-prose mjx-container { vertical-align: middle; }
+/* MathJax SVG output already carries a per-glyph
+   `style="vertical-align: -<n>ex"` on each <svg> that aligns the
+   glyph to the surrounding text baseline. Leaving the container
+   at its default (baseline) lets that per-glyph offset land
+   correctly. An earlier `vertical-align: middle` here was
+   pushing the container to mid-line and stacking the negative
+   inline offset on top of it, sitting math noticeably below the
+   text baseline. */
+.sw-prose mjx-container,
+.sw-option-content mjx-container {
+  vertical-align: baseline;
+}
+
+/* Defensive: MathJax MathML input renders <math display="block">
+   as <mjx-container display="true">. Without MathJax's CHTML
+   stylesheet loaded, the attribute alone has no layout effect —
+   but if the source bank ever gains genuinely-display-style
+   formulas, this keeps them flowing inline alongside surrounding
+   text rather than gaining a centered-block treatment from some
+   future stylesheet. The original mid-sentence-variable bug it
+   was trying to fix turned out to be the figure-SVG rule above
+   capturing math SVGs; that's solved at the source now. */
+.sw-prose mjx-container[display="true"],
+.sw-option-content mjx-container[display="true"] {
+  display: inline-block;
+  margin: 0 0.15em;
+  text-align: initial;
+}

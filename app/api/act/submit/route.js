@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/act/submit
 // Body: { question_id, selected_option_id, time_spent_ms? }
-export async function POST(request) {
-  const supabase = await createClient();
-
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  }
-  const userId = auth.user.id;
+export const POST = legacyApiRoute(async (request) => {
+  const { user, supabase } = await requireUser();
+  const userId = user.id;
 
   const body = await request.json();
   const { question_id, selected_option_id, time_spent_ms } = body;
@@ -61,4 +57,4 @@ export async function POST(request) {
     is_correct,
     correct_option_id: correctOpt?.id ?? null,
   });
-}
+});

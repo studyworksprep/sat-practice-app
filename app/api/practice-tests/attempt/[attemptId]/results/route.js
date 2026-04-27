@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { computeScaledScore, toScaledScore, isHardRoute } from '../../../../../../lib/scoreConversion';
 
 // Standard SAT domain names by section. Used as the authoritative
@@ -30,20 +31,10 @@ function domainSubjectCode(domainName, fallback) {
 
 // GET /api/practice-tests/attempt/[attemptId]/results
 // Returns full results including scores, domain breakdown, and question review.
-export async function GET(_request, props) {
+export const GET = legacyApiRoute(async (_request, props) => {
   const params = await props.params;
   const { attemptId } = params;
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // Check if user is a teacher/admin who can view other students' results
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
+  const { user, profile, supabase } = await requireUser();
 
   const isTeacherOrAdmin = profile?.role === 'teacher' || profile?.role === 'manager' || profile?.role === 'admin';
 
@@ -541,4 +532,4 @@ export async function GET(_request, props) {
       email: teacherProfile.email,
     } : null,
   });
-}
+});

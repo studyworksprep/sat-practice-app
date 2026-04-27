@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/review
-export async function GET() {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  const user = auth.user;
+export const GET = legacyApiRoute(async () => {
+  const { user, supabase } = await requireUser();
 
   // Pull marked question_status rows
   const { data: statusRows, error } = await supabase
@@ -47,4 +45,4 @@ export async function GET() {
     });
 
   return NextResponse.json({ items });
-}
+});

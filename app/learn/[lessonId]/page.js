@@ -120,6 +120,12 @@ function LessonViewer() {
       && !forceUnlockedBlockIds.includes(currentBlock.id)
   );
 
+  function indexForBlockId(blockId) {
+    if (!blockId) return null;
+    const idx = blockIndexById.get(String(blockId));
+    return Number.isInteger(idx) ? idx : null;
+  }
+
   function goNext() {
     const result = resolveContinueNavigation({
       blocks,

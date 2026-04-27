@@ -1,30 +1,20 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
+import { createServiceClient } from '../../../../lib/supabase/server';
 import { syncStudentsToLessonworks } from '../../../../lib/lessonworksSync';
 
 // POST /api/admin/sync-lessonworks
 // Manually trigger a sync of student data to LessonWorks.
 // Body: { studentIds?: string[] }  — if omitted, syncs ALL active students with teacher assignments.
 // Can also be called via cron (e.g. Vercel Cron) with an Authorization header.
-export async function POST(request) {
+export const POST = legacyApiRoute(async (request) => {
   // Auth: either admin session or cron secret
   const cronSecret = request.headers.get('authorization')?.replace('Bearer ', '');
   const isCron = cronSecret && cronSecret === process.env.CRON_SECRET;
 
   if (!isCron) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (profile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+    await requireRole(['admin']);
   }
 
   const body = await request.json().catch(() => ({}));
@@ -64,4 +54,4 @@ export async function POST(request) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});

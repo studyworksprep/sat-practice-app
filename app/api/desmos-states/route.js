@@ -1,26 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
-const ALLOWED_ROLES = new Set(['teacher', 'manager', 'admin']);
 const CAN_SAVE_ROLES = new Set(['manager', 'admin']);
 
-async function getAuthedUser(supabase) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || !ALLOWED_ROLES.has(profile.role)) return null;
-  return { user, profile };
-}
-
 // GET /api/desmos-states?questionId=<uuid>
-export async function GET(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = legacyApiRoute(async (request) => {
+  const { supabase, profile } = await requireRole(['teacher', 'manager', 'admin']);
 
   const questionId = request.nextUrl.searchParams.get('questionId');
   if (!questionId) return NextResponse.json({ error: 'questionId required' }, { status: 400 });
@@ -35,18 +21,13 @@ export async function GET(request) {
 
   return NextResponse.json({
     state: data || null,
-    can_save: CAN_SAVE_ROLES.has(auth.profile.role),
+    can_save: CAN_SAVE_ROLES.has(profile.role),
   });
-}
+});
 
 // POST /api/desmos-states  { questionId, stateJson }
-export async function POST(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  if (!CAN_SAVE_ROLES.has(auth.profile.role)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { supabase, profile } = await requireRole(['manager', 'admin']);
 
   const body = await request.json();
   const { questionId, stateJson } = body;
@@ -60,7 +41,7 @@ export async function POST(request) {
       {
         question_id: questionId,
         state_json: stateJson,
-        saved_by: auth.profile.id,
+        saved_by: profile.id,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'question_id' }
@@ -70,16 +51,11 @@ export async function POST(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, id: data.id });
-}
+});
 
 // DELETE /api/desmos-states  { questionId }
-export async function DELETE(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  if (!CAN_SAVE_ROLES.has(auth.profile.role)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const DELETE = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['manager', 'admin']);
 
   const body = await request.json();
   const { questionId } = body;
@@ -92,4 +68,4 @@ export async function DELETE(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
-}
+});

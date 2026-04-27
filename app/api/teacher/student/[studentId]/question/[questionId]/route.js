@@ -1,26 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/teacher/student/[studentId]/question/[questionId]
 // Returns question data with the STUDENT's attempt status (read-only for teacher view)
-export async function GET(_request, props) {
+export const GET = legacyApiRoute(async (_request, props) => {
   const params = await props.params;
   const { studentId, questionId } = params;
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // Check role
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
 
   // For teachers, verify they can view this student
   if (profile.role === 'teacher' || profile.role === 'manager') {
@@ -152,4 +139,4 @@ export async function GET(_request, props) {
     student_attempt: firstAttempt || null,
     viewer_role: profile.role,
   });
-}
+});

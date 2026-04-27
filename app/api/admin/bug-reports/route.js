@@ -1,25 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
-
-async function requireAdmin(supabase) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Unauthorized', status: 401 };
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'admin') return { error: 'Forbidden', status: 403 };
-  return { user };
-}
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/bug-reports — list all bug reports
-export async function GET(request) {
-  const supabase = await createClient();
-  const auth = await requireAdmin(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
 
   const { searchParams } = new URL(request.url);
   const limit = parseInt(searchParams.get('limit') || '100', 10);
@@ -33,13 +18,11 @@ export async function GET(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ reports: data || [] });
-}
+});
 
 // POST /api/admin/bug-reports — create a new bug report
-export async function POST(request) {
-  const supabase = await createClient();
-  const auth = await requireAdmin(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = legacyApiRoute(async (request) => {
+  const { user, supabase } = await requireRole(['admin']);
 
   const body = await request.json();
   const { title, description, image_data } = body;
@@ -53,7 +36,7 @@ export async function POST(request) {
     description: description.trim(),
     image_url: image_data || null,
     status: 'open',
-    created_by: auth.user.email,
+    created_by: user.email,
   };
 
   const { data, error } = await supabase
@@ -65,13 +48,11 @@ export async function POST(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ report: data });
-}
+});
 
 // PATCH /api/admin/bug-reports — update status
-export async function PATCH(request) {
-  const supabase = await createClient();
-  const auth = await requireAdmin(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const PATCH = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
 
   const { id, status } = await request.json();
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
@@ -88,13 +69,11 @@ export async function PATCH(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true });
-}
+});
 
 // DELETE /api/admin/bug-reports — delete a bug report
-export async function DELETE(request) {
-  const supabase = await createClient();
-  const auth = await requireAdmin(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
 
   const { id } = await request.json();
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
@@ -103,4 +82,4 @@ export async function DELETE(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ ok: true });
-}
+});

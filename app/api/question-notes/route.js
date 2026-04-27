@@ -1,31 +1,32 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
+import { createServiceClient } from '../../../lib/supabase/server';
 
-const ALLOWED_ROLES = new Set(['teacher', 'manager', 'admin']);
-
-async function getAuthedUser(supabase) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data: profile } = await supabase
+// Re-fetch the caller's profile with the extra columns this route needs
+// (email, first_name, last_name) — requireRole only returns the auth-relevant
+// columns. Returns null on miss; callers treat that as not-allowed.
+async function fullProfile(supabase, userId) {
+  const { data } = await supabase
     .from('profiles')
     .select('id, email, role, first_name, last_name')
-    .eq('id', user.id)
+    .eq('id', userId)
     .maybeSingle();
-  if (!profile || !ALLOWED_ROLES.has(profile.role)) return null;
-  return { user, profile };
+  return data;
 }
 
 // GET /api/question-notes?questionId=<uuid>
-export async function GET(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = legacyApiRoute(async (request) => {
+  const { user, supabase } = await requireRole(['teacher', 'manager', 'admin']);
 
   const questionId = request.nextUrl.searchParams.get('questionId');
   if (!questionId) return NextResponse.json({ error: 'questionId required' }, { status: 400 });
 
+  const profile = await fullProfile(supabase, user.id);
+  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
   // Determine which authors this user can see notes from (org scoping)
-  const visibleAuthorIds = await getVisibleAuthorIds(auth.profile);
+  const visibleAuthorIds = await getVisibleAuthorIds(profile);
 
   // Use service client for notes query to resolve all author names
   // (teachers can't read manager profiles through RLS)
@@ -38,7 +39,6 @@ export async function GET(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Filter to visible notes (admins see all; others see org-scoped)
   const filtered = visibleAuthorIds
     ? (notes || []).filter(n => visibleAuthorIds.has(n.author_id))
     : (notes || []);
@@ -54,16 +54,14 @@ export async function GET(request) {
       author_name: [n.profiles?.first_name, n.profiles?.last_name].filter(Boolean).join(' ') || n.profiles?.email || 'Unknown',
       author_role: n.profiles?.role,
     })),
-    is_admin: auth.profile.role === 'admin',
-    user_id: auth.profile.id,
+    is_admin: profile.role === 'admin',
+    user_id: profile.id,
   });
-}
+});
 
 // POST /api/question-notes  { questionId, content }
-export async function POST(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const POST = legacyApiRoute(async (request) => {
+  const { user, supabase } = await requireRole(['teacher', 'manager', 'admin']);
 
   const body = await request.json();
   const { questionId, content } = body;
@@ -71,9 +69,12 @@ export async function POST(request) {
     return NextResponse.json({ error: 'questionId and content required' }, { status: 400 });
   }
 
+  const profile = await fullProfile(supabase, user.id);
+  if (!profile) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
   const { data, error } = await supabase
     .from('question_notes')
-    .insert({ question_id: questionId, author_id: auth.profile.id, content: content.trim() })
+    .insert({ question_id: questionId, author_id: profile.id, content: content.trim() })
     .select('id, question_id, author_id, content, created_at, updated_at')
     .single();
 
@@ -82,17 +83,15 @@ export async function POST(request) {
   return NextResponse.json({
     note: {
       ...data,
-      author_name: [auth.profile.first_name, auth.profile.last_name].filter(Boolean).join(' ') || auth.profile.email,
-      author_role: auth.profile.role,
+      author_name: [profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.email,
+      author_role: profile.role,
     },
   });
-}
+});
 
 // PATCH /api/question-notes  { noteId, content }
-export async function PATCH(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const PATCH = legacyApiRoute(async (request) => {
+  const { user, profile, supabase } = await requireRole(['teacher', 'manager', 'admin']);
 
   const body = await request.json();
   const { noteId, content } = body;
@@ -101,13 +100,13 @@ export async function PATCH(request) {
   }
 
   // Non-admins can only edit their own notes
-  if (auth.profile.role !== 'admin') {
+  if (profile.role !== 'admin') {
     const { data: existing } = await supabase
       .from('question_notes')
       .select('author_id')
       .eq('id', noteId)
       .single();
-    if (!existing || existing.author_id !== auth.profile.id) {
+    if (!existing || existing.author_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
   }
@@ -121,26 +120,24 @@ export async function PATCH(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ note: data });
-}
+});
 
 // DELETE /api/question-notes  { noteId }
-export async function DELETE(request) {
-  const supabase = await createClient();
-  const auth = await getAuthedUser(supabase);
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const DELETE = legacyApiRoute(async (request) => {
+  const { user, profile, supabase } = await requireRole(['teacher', 'manager', 'admin']);
 
   const body = await request.json();
   const { noteId } = body;
   if (!noteId) return NextResponse.json({ error: 'noteId required' }, { status: 400 });
 
   // Non-admins can only delete their own notes
-  if (auth.profile.role !== 'admin') {
+  if (profile.role !== 'admin') {
     const { data: existing } = await supabase
       .from('question_notes')
       .select('author_id')
       .eq('id', noteId)
       .single();
-    if (!existing || existing.author_id !== auth.profile.id) {
+    if (!existing || existing.author_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
   }
@@ -152,7 +149,7 @@ export async function DELETE(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
-}
+});
 
 /**
  * Determine which note authors are visible to the current user.

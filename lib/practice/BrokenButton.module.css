@@ -1,0 +1,354 @@
+/* =============================================================
+   BrokenButton — flag/inspect button + modal. Tokens from
+   [data-tree="next"]. Mounted in tutor question-detail headers.
+============================================================= */
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-card, #fff);
+  color: var(--text-muted, #6b6452);
+  border: 1px solid var(--border, #e0d8c4);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.iconBtn:hover {
+  background: var(--bg-hover, #f7f4ec);
+  color: var(--text, #1a1a1a);
+}
+
+.iconBtnBroken {
+  color: var(--color-gold-700, #a88229);
+  background: rgba(201, 154, 46, 0.08);
+  border-color: var(--color-gold-500, #c99a2e);
+}
+
+.iconBtnBroken:hover {
+  background: rgba(201, 154, 46, 0.14);
+  color: var(--color-gold-800, #8a6a1f);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.modal {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e0d8c4);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-lg, 0 16px 50px rgba(0, 0, 0, 0.22));
+  width: 100%;
+  max-width: 1080px;
+  max-height: 92vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 18px 22px 12px;
+  border-bottom: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-subtle, #f9f9f9);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.title {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--color-navy-700, #1f2a44);
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-muted, #6b6452);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+
+.mono {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: var(--text-muted, #6b6452);
+  cursor: pointer;
+}
+
+.closeBtn:hover {
+  background: var(--bg-hover, #f7f4ec);
+  color: var(--text, #1a1a1a);
+}
+
+.body {
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fieldPair {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b6452);
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 800px) {
+  .fieldGrid { grid-template-columns: 1fr; }
+}
+
+.fieldCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* Without min-width:0 the column expands to fit its widest
+     descendant — wide MathJax SVGs in the rendered preview
+     would otherwise push past the 1fr grid track and squeeze
+     the source-HTML column on the left to a few characters. */
+  min-width: 0;
+}
+
+.fieldColHead {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #6b6452);
+  display: flex;
+  justify-content: space-between;
+}
+
+.fieldNullNote {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-muted, #999);
+}
+
+.textarea {
+  width: 100%;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-card, #fff);
+  color: var(--text, #1a1a1a);
+  resize: vertical;
+  /* Wrap long HTML lines so the editor stays readable in the
+     narrow column. The DB stores the unwrapped string verbatim;
+     the textarea's value never inserts newlines on its own. */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-navy-500, #4f7ce0);
+}
+
+.preview {
+  background: var(--bg-subtle, #fafafa);
+  border: 1px solid var(--border, #eee);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
+  min-height: 32px;
+  /* Contain wide SVG math inside the column rather than letting
+     it push the grid track wider and squeeze the source pane. */
+  overflow: auto;
+  max-width: 100%;
+}
+
+.renderedRaw {
+  margin: 0;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  line-height: 1.45;
+  padding: 8px 10px;
+  background: #1f2a44;
+  color: #d6e0ff;
+  border-radius: 6px;
+  /* Wrap, don't scroll. The rendered SVG strings are very long
+     single-line blobs; horizontal scrolling makes them painful
+     to inspect. */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  max-height: 260px;
+  overflow-y: auto;
+  max-width: 100%;
+}
+
+.taxonomy {
+  border-top: 1px solid var(--border, #e0d8c4);
+  padding-top: 14px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.taxonomyHead {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted, #6b6452);
+}
+
+.taxonomyGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 800px) {
+  .taxonomyGrid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 480px) {
+  .taxonomyGrid { grid-template-columns: 1fr; }
+}
+
+.taxField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted, #6b6452);
+}
+
+.input {
+  width: 100%;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-card, #fff);
+  color: var(--text, #1a1a1a);
+  font-family: inherit;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-navy-500, #4f7ce0);
+}
+
+.brokenToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text, #1a1a1a);
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.footer {
+  padding: 14px 22px 18px;
+  border-top: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-subtle, #fafafa);
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footerActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btnPrimary,
+.btnSecondary {
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.btnPrimary {
+  background: var(--color-navy-700, #1f2a44);
+  color: #fff;
+  border-color: var(--color-navy-700, #1f2a44);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--color-navy-800, #182238);
+}
+
+.btnSecondary {
+  background: var(--bg-card, #fff);
+  color: var(--text, #1a1a1a);
+  border-color: var(--border, #e0d8c4);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: var(--bg-hover, #f7f4ec);
+}
+
+.btnPrimary:disabled,
+.btnSecondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: 13px;
+  color: var(--color-danger, #b3261e);
+  background: rgba(179, 38, 30, 0.06);
+  border: 1px solid rgba(179, 38, 30, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+}

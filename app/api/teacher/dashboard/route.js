@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { createServiceClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { computeTestScores } from '../../../../lib/testScoreHelper';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
@@ -46,21 +48,9 @@ function computeRecencyBonus(attempts) {
 }
 
 // GET /api/teacher/dashboard — roster-wide metrics for the teacher dashboard hub
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  const role = profile?.role;
-  if (role !== 'teacher' && role !== 'manager' && role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const GET = legacyApiRoute(async () => {
+  const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
+  const role = profile.role;
 
   // Get student IDs
   let studentIds = [];
@@ -382,7 +372,7 @@ export async function GET() {
     },
     upcomingRegistrations,
   });
-}
+});
 
 function displayName(profile) {
   if (!profile) return 'Student';

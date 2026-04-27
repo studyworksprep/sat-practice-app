@@ -731,6 +731,12 @@
 
 /* ---------- Selected question card ---------- */
 
+.tutorTools {
+  margin-top: var(--s4);
+  padding-top: var(--s4);
+  border-top: 1px dashed var(--border);
+}
+
 .questionCard {
   background: var(--card);
   border: 1px solid var(--border);

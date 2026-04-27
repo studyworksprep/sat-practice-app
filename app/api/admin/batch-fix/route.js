@@ -1,22 +1,15 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/admin/batch-fix
 // Accepts an image file, sends to Mathpix OCR, then Claude for extraction.
 // Returns { external_id, version_id, stem_html, stimulus_html } for preview.
-export async function POST(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin batch-fix preview — read questions/versions across users',
+    { allowedRoles: ['admin'] },
+  );
 
   const formData = await request.formData();
   const image = formData.get('image');
@@ -33,7 +26,6 @@ export async function POST(request) {
 
     // Step 3: Look up the question in the database to confirm it exists
     if (result.version_id) {
-      const admin = createServiceClient();
       const { data: ver } = await admin
         .from('question_versions')
         .select('id, question_id, stem_html, stimulus_html')
@@ -49,7 +41,6 @@ export async function POST(request) {
         result.found = false;
       }
     } else if (result.external_id) {
-      const admin = createServiceClient();
       const { data: q } = await admin
         .from('questions')
         .select('id, source_external_id')
@@ -80,31 +71,22 @@ export async function POST(request) {
     console.error('batch-fix error:', e);
     return NextResponse.json({ error: e.message || 'Failed to process image' }, { status: 500 });
   }
-}
+});
 
 // PUT /api/admin/batch-fix
 // Saves corrected HTML to the question version
 // Body: { version_id, stem_html, stimulus_html? }
-export async function PUT(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-  }
+export const PUT = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin batch-fix save — write to question_versions across users',
+    { allowedRoles: ['admin'] },
+  );
 
   const { version_id, stem_html, stimulus_html } = await request.json();
   if (!version_id || !stem_html) {
     return NextResponse.json({ error: 'version_id and stem_html are required' }, { status: 400 });
   }
 
-  const admin = createServiceClient();
   const update = { stem_html };
   if (stimulus_html !== undefined) update.stimulus_html = stimulus_html;
 
@@ -116,7 +98,7 @@ export async function PUT(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({ ok: true });
-}
+});
 
 // ---------------------------------------------------------------------------
 // Mathpix: image → markdown
