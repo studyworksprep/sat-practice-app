@@ -22,7 +22,8 @@
 import Link from 'next/link';
 import { useMemo, useRef, useState } from 'react';
 import { formatRelativeShort } from '@/lib/formatters';
-import { UsersIcon } from '@/lib/ui/icons';
+import { RosterIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import s from './Dashboard.module.css';
 
 const RECENT_TILE_COUNT = 8;
@@ -89,7 +90,7 @@ export function RosterFinder({ students }) {
     <section className={s.card}>
       <div className={s.cardHeader}>
         <div className={s.sectionLabel}>
-          <UsersIcon size={16} className={s.sectionIcon} />
+          <IconTile icon={RosterIcon} palette="navy" size="sm" />
           Find a student
         </div>
         <div className={s.cardHeaderHint}>

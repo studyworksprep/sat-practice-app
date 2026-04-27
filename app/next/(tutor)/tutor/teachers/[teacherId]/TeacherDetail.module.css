@@ -137,18 +137,13 @@
 .h2 {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.003em;
   color: var(--fg1);
   margin: 0;
-}
-
-.sectionIcon {
-  color: var(--color-gold-700);
-  flex-shrink: 0;
 }
 
 .cardHint {

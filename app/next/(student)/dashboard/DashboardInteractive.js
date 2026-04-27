@@ -12,7 +12,8 @@
 import Link from 'next/link';
 import { useActionState, useOptimistic } from 'react';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
-import { ClipboardCheckIcon, InboxIcon, TargetIcon } from '@/lib/ui/icons';
+import { ClipboardCheckIcon, GoalIcon, InboxIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import s from './Dashboard.module.css';
 
 export function DashboardInteractive({
@@ -118,7 +119,7 @@ export function DashboardInteractive({
         <div className={s.cardHeader}>
           <div>
             <div className={s.sectionLabel}>
-              <ClipboardCheckIcon size={16} className={s.sectionIcon} />
+              <IconTile icon={ClipboardCheckIcon} palette="success" size="sm" />
               Recently finished
             </div>
             <div className={s.cardSub}>
@@ -180,7 +181,7 @@ export function DashboardInteractive({
         <div className={s.cardHeader}>
           <div>
             <div className={s.sectionLabel}>
-              <InboxIcon size={16} className={s.sectionIcon} />
+              <IconTile icon={InboxIcon} palette="navy" size="sm" />
               Pending assignments
             </div>
             <div className={s.cardSub}>
@@ -214,7 +215,7 @@ export function DashboardInteractive({
       {/* ---------- Target score editor ---------- */}
       <section className={s.targetCard}>
         <div className={s.sectionLabel}>
-          <TargetIcon size={16} className={s.sectionIcon} />
+          <IconTile icon={GoalIcon} palette="gold" size="sm" />
           Target SAT score
         </div>
         <form action={submitAction} className={s.targetForm}>

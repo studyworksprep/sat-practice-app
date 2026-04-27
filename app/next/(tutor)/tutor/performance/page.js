@@ -10,7 +10,8 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { BarChartIcon, SparklesIcon } from '@/lib/ui/icons';
+import { PerformanceIcon, SparklesIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { loadRosterPerformance, sortSkills } from './loader';
 import { PerformanceSortToolbar } from './PerformanceSortToolbar';
 import s from './Performance.module.css';
@@ -101,7 +102,7 @@ export default async function TutorPerformancePage({ searchParams }) {
         <div className={s.cardHead}>
           <div>
             <h2 className={s.h2}>
-              <SparklesIcon size={20} className={s.cardIcon} />
+              <IconTile icon={SparklesIcon} palette="amber" size="md" />
               Common errors
             </h2>
             <p className={s.cardHint}>
@@ -154,7 +155,7 @@ export default async function TutorPerformancePage({ searchParams }) {
         <div className={s.cardHead}>
           <div>
             <h2 className={s.h2}>
-              <BarChartIcon size={20} className={s.cardIcon} />
+              <IconTile icon={PerformanceIcon} palette="cyan" size="md" />
               Skill heatmap
             </h2>
             <p className={s.cardHint}>

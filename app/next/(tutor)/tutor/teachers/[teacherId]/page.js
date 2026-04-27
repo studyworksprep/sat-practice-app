@@ -12,7 +12,8 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
-import { InboxIcon, TargetIcon } from '@/lib/ui/icons';
+import { GoalIcon, InboxIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { RosterFinder } from '../../dashboard/RosterFinder';
 import s from './TeacherDetail.module.css';
 
@@ -258,7 +259,7 @@ export default async function ManagerTeacherDetailPage({ params }) {
         <div className={s.cardHeader}>
           <div>
             <div className={s.h2}>
-              <InboxIcon size={18} className={s.sectionIcon} />
+              <IconTile icon={InboxIcon} palette="navy" size="md" />
               Recent assignments
             </div>
             <div className={s.cardHint}>
@@ -322,7 +323,7 @@ export default async function ManagerTeacherDetailPage({ params }) {
         <div className={s.cardHeader}>
           <div>
             <div className={s.h2}>
-              <TargetIcon size={18} className={s.sectionIcon} />
+              <IconTile icon={GoalIcon} palette="violet" size="md" />
               Training
             </div>
             <div className={s.cardHint}>

@@ -17,7 +17,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
-import { BookOpenIcon, UsersIcon } from '@/lib/ui/icons';
+import { RosterIcon, TestIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { RosterFinder } from './RosterFinder';
 import s from './Dashboard.module.css';
 
@@ -148,7 +149,7 @@ export default async function TutorDashboardPage() {
       {cohort.total === 0 ? (
         <section className={s.card}>
           <div className={s.emptyHero}>
-            <UsersIcon size={32} className={s.emptyIcon} />
+            <IconTile icon={RosterIcon} palette="gold" size="lg" />
             <div className={s.empty}>
               You don&apos;t have any students assigned yet. Once an admin
               assigns them to you, they&apos;ll show up here.
@@ -164,7 +165,7 @@ export default async function TutorDashboardPage() {
         <section className={s.card}>
           <div className={s.cardHeader}>
             <div className={s.sectionLabel}>
-              <BookOpenIcon size={16} className={s.sectionIcon} />
+              <IconTile icon={TestIcon} palette="cyan" size="sm" />
               Recent practice tests
             </div>
           </div>

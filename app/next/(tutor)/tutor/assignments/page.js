@@ -29,6 +29,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { ClipboardCheckIcon, InboxIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { formatShortDate } from '@/lib/formatters';
 import { AssignmentsToolbar } from './AssignmentsToolbar';
 import { filterAndSort, paginate } from './helpers';
@@ -277,7 +278,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
       <section className={s.section} id="active-section">
         <div className={s.sectionHead}>
           <h2 className={s.sectionTitle}>
-            <InboxIcon size={20} className={s.sectionIcon} />
+            <IconTile icon={InboxIcon} palette="navy" size="md" />
             Active
           </h2>
           <span className={s.sectionCount}>
@@ -326,7 +327,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
         <section className={s.section} id="archived-section">
           <div className={s.sectionHead}>
             <h2 className={s.sectionTitle}>
-              <ClipboardCheckIcon size={20} className={s.sectionIcon} />
+              <IconTile icon={ClipboardCheckIcon} palette="slate" size="md" />
               Archived
             </h2>
             <span className={s.sectionCount}>

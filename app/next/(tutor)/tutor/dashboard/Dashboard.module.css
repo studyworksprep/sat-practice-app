@@ -184,17 +184,12 @@
 .sectionLabel {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--fg3);
-}
-
-.sectionIcon {
-  color: var(--color-gold-700);
-  flex-shrink: 0;
 }
 
 .cardHeaderHint {
@@ -213,11 +208,6 @@
   text-align: center;
   gap: var(--s3);
   padding: var(--s4) 0;
-}
-
-.emptyIcon {
-  color: var(--color-gold-700);
-  opacity: 0.7;
 }
 
 .muted { color: var(--fg3); }

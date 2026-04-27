@@ -18,11 +18,12 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate, formatRelativeShort } from '@/lib/formatters';
 import {
-  BookOpenIcon,
   ClipboardCheckIcon,
   InboxIcon,
   PencilIcon,
+  TestIcon,
 } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 import s from './StudentDetail.module.css';
 
@@ -246,7 +247,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div className={s.sectionLabel}>
-            <InboxIcon size={16} className={s.sectionIcon} />
+            <IconTile icon={InboxIcon} palette="navy" size="sm" />
             Assignments
           </div>
           <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.cardHeaderLink}>
@@ -294,7 +295,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div className={s.sectionLabel}>
-            <BookOpenIcon size={16} className={s.sectionIcon} />
+            <IconTile icon={TestIcon} palette="cyan" size="sm" />
             Recent practice tests
           </div>
         </div>
@@ -345,7 +346,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div className={s.sectionLabel}>
-            <PencilIcon size={16} className={s.sectionIcon} />
+            <IconTile icon={PencilIcon} palette="gold" size="sm" />
             Recent practice sessions
           </div>
         </div>
@@ -382,7 +383,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div className={s.sectionLabel}>
-            <ClipboardCheckIcon size={16} className={s.sectionIcon} />
+            <IconTile icon={ClipboardCheckIcon} palette="slate" size="sm" />
             Practice history v2 import
           </div>
         </div>
