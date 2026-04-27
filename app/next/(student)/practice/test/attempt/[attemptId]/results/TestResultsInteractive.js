@@ -19,7 +19,7 @@ import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
-import { BookmarkIcon } from '@/lib/ui/icons';
+import { BookmarkIcon, CorrectIcon, IncorrectIcon } from '@/lib/ui/icons';
 import s from './TestResults.module.css';
 
 const SUBJECT_NAME = { RW: 'Reading & Writing', MATH: 'Math' };
@@ -208,14 +208,22 @@ export function TestResultsInteractive({
             />
           </div>
 
-          {/* Module-by-module usage against its allotted time. */}
-          {timing.byModule.length > 0 && (
-            <div className={s.moduleTimingList}>
-              {timing.byModule.map((m, i) => (
-                <ModuleTimingRow key={i} entry={m} />
-              ))}
-            </div>
-          )}
+          {/* Module-by-module usage against its allotted time.
+              Imported attempts (Bluebook) don't carry per-module
+              wall times, so we filter to rows that actually have
+              usable data; if none survive, the row block hides. */}
+          {(() => {
+            const usable = timing.byModule.filter((m) => m.usedMs != null);
+            if (usable.length === 0) return null;
+            const maxUsedMs = Math.max(...usable.map((m) => m.usedMs));
+            return (
+              <div className={s.moduleTimingList}>
+                {usable.map((m, i) => (
+                  <ModuleTimingRow key={i} entry={m} maxUsedMs={maxUsedMs} />
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Existing slowest-5 lists */}
           <div className={s.timingGrid}>
@@ -253,34 +261,60 @@ export function TestResultsInteractive({
           </div>
         </div>
 
-        <div className={s.mapGrid} role="list">
-          {reviewItems.map((it) => {
-            const isCurrent = it.ordinal === selected?.ordinal;
-            const diffCls = DIFF_CLASS[it.taxonomy?.difficulty] ?? null;
-            const cls = [
-              s.mapItem,
-              diffCls ? s[diffCls] : null,
-              isCurrent ? s.mapItemActive : null,
-              it.status === 'unanswered' ? s.mapItemUnanswered : null,
-              revealed.has(it.ordinal) ? s.mapItemRevealed : null,
-            ].filter(Boolean).join(' ');
-            return (
-              <button
-                key={it.ordinal}
-                type="button"
-                className={cls}
-                onClick={() => setSelectedOrdinal(it.ordinal)}
-                aria-label={`Question ${it.ordinal}, ${it.status}`}
-              >
-                <span className={s.mapNum}>{it.ordinal}</span>
-                {it.marked && (
-                  <BookmarkIcon filled size={10} className={s.mapFlag} />
-                )}
-                {it.status === 'correct'   && <span className={s.mapTick}>✓</span>}
-                {it.status === 'incorrect' && <span className={s.mapX}>✗</span>}
-              </button>
-            );
-          })}
+        <div className={s.mapModules}>
+          {groupItemsByModule(reviewItems).map((group) => (
+            <div key={group.key} className={s.mapModule}>
+              <div className={s.mapModuleLabel}>
+                <span className={s.mapModuleSubject}>
+                  {SUBJECT_NAME[group.subject] ?? group.subject}
+                </span>
+                <span className={s.mapModuleDot}>·</span>
+                <span className={s.mapModuleNumber}>
+                  Module {group.moduleNumber}
+                </span>
+                <span className={s.mapModuleCount}>
+                  {group.correct}/{group.total}
+                </span>
+              </div>
+              <div className={s.mapGrid} role="list">
+                {group.items.map((it) => {
+                  const isCurrent = it.ordinal === selected?.ordinal;
+                  const diffCls = DIFF_CLASS[it.taxonomy?.difficulty] ?? null;
+                  const cls = [
+                    s.mapItem,
+                    diffCls ? s[diffCls] : null,
+                    isCurrent ? s.mapItemActive : null,
+                    it.status === 'unanswered' ? s.mapItemUnanswered : null,
+                    revealed.has(it.ordinal) ? s.mapItemRevealed : null,
+                  ].filter(Boolean).join(' ');
+                  return (
+                    <button
+                      key={it.ordinal}
+                      type="button"
+                      className={cls}
+                      onClick={() => setSelectedOrdinal(it.ordinal)}
+                      aria-label={`Question ${it.ordinal}, ${it.status}`}
+                    >
+                      <span className={s.mapNum}>{it.ordinal}</span>
+                      {it.marked && (
+                        <BookmarkIcon filled size={10} className={s.mapFlag} />
+                      )}
+                      {it.status === 'correct' && (
+                        <span className={s.mapStatusCorrect} aria-hidden="true">
+                          <CorrectIcon size={16} />
+                        </span>
+                      )}
+                      {it.status === 'incorrect' && (
+                        <span className={s.mapStatusWrong} aria-hidden="true">
+                          <IncorrectIcon size={16} />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -543,15 +577,27 @@ function TimingStat({ label, value, subtitle, tone }) {
 
 const SUBJECT_FULL = { RW: 'Reading & Writing', MATH: 'Math' };
 
-function ModuleTimingRow({ entry }) {
-  const pct = entry.usedMs != null && entry.allottedMs > 0
+function ModuleTimingRow({ entry, maxUsedMs }) {
+  // Two scaling modes:
+  //  - When the module's allotted time is known, the bar fills
+  //    relative to that (e.g., 84% used). Tight (>= 90%) gets a
+  //    warning tint.
+  //  - When it isn't (imported attempts where we never recorded
+  //    the SAT time-limit alongside the per-module rows), scale
+  //    against the maximum usedMs in the visible set so the bars
+  //    still convey relative pacing across modules. The tight
+  //    tint is suppressed since "tight" has no anchor.
+  const pctVsAllotted = entry.usedMs != null && entry.allottedMs > 0
     ? Math.min(100, Math.round((entry.usedMs / entry.allottedMs) * 100))
     : null;
-  // Tone by how much time was used: gold ≥ 90%, neutral otherwise.
-  // Students finishing with lots of time left see a neutral bar;
-  // those who went to the wire get a warning tint.
-  const barCls = [s.modTimingFill, pct != null && pct >= 90 ? s.modTimingFillTight : null]
-    .filter(Boolean).join(' ');
+  const pctRelative = entry.usedMs != null && maxUsedMs > 0
+    ? Math.min(100, Math.round((entry.usedMs / maxUsedMs) * 100))
+    : null;
+  const fillPct = pctVsAllotted ?? pctRelative;
+  const barCls = [
+    s.modTimingFill,
+    pctVsAllotted != null && pctVsAllotted >= 90 ? s.modTimingFillTight : null,
+  ].filter(Boolean).join(' ');
   return (
     <div className={s.modTimingRow}>
       <div className={s.modTimingLabel}>
@@ -566,12 +612,16 @@ function ModuleTimingRow({ entry }) {
         </span>
       </div>
       <div className={s.modTimingBar}>
-        {pct != null && (
-          <div className={barCls} style={{ width: `${pct}%` }} />
+        {fillPct != null && (
+          <div className={barCls} style={{ width: `${fillPct}%` }} />
         )}
       </div>
       <div className={s.modTimingPct}>
-        {pct != null ? `${pct}%` : '—'}
+        {pctVsAllotted != null
+          ? `${pctVsAllotted}%`
+          : entry.usedMs != null
+            ? formatDuration(entry.usedMs)
+            : '—'}
       </div>
     </div>
   );
@@ -596,6 +646,37 @@ function DifficultyTimingTile({ entry }) {
       </div>
     </div>
   );
+}
+
+// Group reviewItems by (subject, module) preserving the test
+// order they arrive in. Each group also carries the running
+// correct/total tally so the module label can show "5/22"
+// next to it.
+function groupItemsByModule(items) {
+  const groups = [];
+  const byKey = new Map();
+  for (const it of items) {
+    const key = `${it.subject}__${it.moduleNumber}`;
+    let group = byKey.get(key);
+    if (!group) {
+      group = {
+        key,
+        subject: it.subject,
+        moduleNumber: it.moduleNumber,
+        items: [],
+        correct: 0,
+        total: 0,
+      };
+      byKey.set(key, group);
+      groups.push(group);
+    }
+    group.items.push(it);
+    if (!it.missing) {
+      group.total += 1;
+      if (it.studentAnswer?.isCorrect) group.correct += 1;
+    }
+  }
+  return groups;
 }
 
 function formatDuration(ms) {
