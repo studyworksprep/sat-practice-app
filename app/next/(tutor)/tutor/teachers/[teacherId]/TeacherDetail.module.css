@@ -108,6 +108,32 @@
   margin-bottom: var(--s3);
 }
 
+.cardHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-shrink: 0;
+}
+
+.assignTrainingBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-navy-900, var(--fg1));
+  background: var(--color-app-highlight-soft);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+}
+
+.assignTrainingBtn:hover {
+  background: var(--color-gold-100, #fef3c7);
+  border-color: var(--color-gold-300, #fcd34d);
+}
+
 .h2 {
   font-family: var(--font-sans);
   font-size: 16px;

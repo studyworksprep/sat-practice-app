@@ -325,9 +325,17 @@ export default async function ManagerTeacherDetailPage({ params }) {
               homework or test you assigned them.
             </div>
           </div>
-          <span className={s.cardTag}>
-            {trainingTestsTaken} tests · {trainingSessionRows.length} sessions
-          </span>
+          <div className={s.cardHeaderRight}>
+            <span className={s.cardTag}>
+              {trainingTestsTaken} tests · {trainingSessionRows.length} sessions
+            </span>
+            <Link
+              href={`/tutor/assignments/new?target=trainees&teacher=${teacher.id}`}
+              className={s.assignTrainingBtn}
+            >
+              + Assign training
+            </Link>
+          </div>
         </div>
 
         <div className={s.trainingGrid}>
