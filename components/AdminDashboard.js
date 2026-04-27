@@ -127,6 +127,7 @@ export default function AdminDashboard() {
   const [usersSearch, setUsersSearch] = useState('');
   const [usersSort, setUsersSort] = useState('joined'); // 'name' | 'joined' | 'role'
   const [usersSortDir, setUsersSortDir] = useState('asc'); // 'asc' | 'desc'
+  const [adminLessonEditorId, setAdminLessonEditorId] = useState('');
 
   // Edit profile popup
   const [editProfile, setEditProfile] = useState(null); // profile object being edited
@@ -2305,6 +2306,36 @@ export default function AdminDashboard() {
 
         </div>{/* end adminTabContent */}
       </div>{/* end adminTabLayout */}
+
+      <section className="card" style={{ marginTop: 16, padding: 16 }}>
+        <h3 style={{ margin: '0 0 10px', fontSize: 16 }}>Content shortcuts</h3>
+        <p className="muted small" style={{ margin: '0 0 12px' }}>
+          Quick links for managing lessons.
+        </p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Link href="/teacher/content" className="btn secondary" style={{ fontSize: 12, padding: '6px 12px' }}>
+            Go to Teacher Content
+          </Link>
+          <input
+            className="adminInput"
+            placeholder="Lesson ID for admin editor"
+            value={adminLessonEditorId}
+            onChange={(e) => setAdminLessonEditorId(e.target.value)}
+            style={{ maxWidth: 260 }}
+          />
+          <Link
+            href={adminLessonEditorId.trim() ? `/admin/lessons/${encodeURIComponent(adminLessonEditorId.trim())}/editor` : '#'}
+            className={`btn secondary${adminLessonEditorId.trim() ? '' : ' disabled'}`}
+            aria-disabled={!adminLessonEditorId.trim()}
+            onClick={(e) => {
+              if (!adminLessonEditorId.trim()) e.preventDefault();
+            }}
+            style={{ fontSize: 12, padding: '6px 12px' }}
+          >
+            Open Admin Lesson Editor
+          </Link>
+        </div>
+      </section>
 
       {/* ── Edit Profile Modal ─────────────────────────────── */}
       {editProfile && (

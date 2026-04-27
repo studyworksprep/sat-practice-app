@@ -43,7 +43,11 @@ export async function PUT(request, props) {
       return NextResponse.json({ error: 'blocks must be an array' }, { status: 400 });
     }
 
-    const validation = validateLessonBlocks(blocks);
+    const validationInput = blocks.map((block, index) => ({
+      ...block,
+      id: block?.id ?? block?.content?.id ?? `index:${index}`,
+    }));
+    const validation = validateLessonBlocks(validationInput);
     if (!validation.ok) {
       return NextResponse.json({
         error: 'Lesson block validation failed',
