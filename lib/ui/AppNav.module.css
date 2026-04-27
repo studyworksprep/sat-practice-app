@@ -148,6 +148,30 @@
 
 .billingLink:hover { color: var(--fg1); }
 
+/* Sign out — visually paired with the Account link but slightly
+   subdued so the primary nav controls (the link strip on the
+   left) keep visual priority. */
+.signOutBtn {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+}
+
+.signOutBtn:hover {
+  color: var(--fg1);
+  background: var(--color-slate-100);
+  border-color: var(--border-strong);
+}
+
 /* ---------- Narrow viewports ---------- */
 
 @media (max-width: 720px) {
@@ -156,4 +180,6 @@
   .navLinks { gap: 0; }
   .navLink  { padding: 4px 8px; font-size: 12px; }
   .userEmail { display: none; }
+  .billingLink { display: none; }
+  .signOutBtn { padding: 3px 8px; font-size: 11px; }
 }

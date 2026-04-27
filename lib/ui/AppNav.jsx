@@ -13,8 +13,8 @@
 'use client';
 
 import Link, { useLinkStatus } from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { createClient } from '@/lib/supabase/browser';
 import s from './AppNav.module.css';
 
 /**
@@ -27,25 +27,33 @@ import s from './AppNav.module.css';
 export function AppNav({ user, links, rightExtras = null }) {
   const pathname = usePathname() ?? '';
 
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    // Hard nav so the auth cookies clear and the next page render
+    // sees a signed-out user. router.push wouldn't reset the
+    // proxy's cached uiTree resolution this same way.
+    window.location.href = '/login';
+  }
+
   return (
     <nav className={s.nav}>
       <div className={s.navInner}>
         <div className={s.navLeft}>
           <Link href={links[0]?.href ?? '/dashboard'} className={s.logoLink}>
-            {/* Updated SVG wordmark from the design system. The
-                viewBox is 729×174 (≈4.19:1), so width/height are
-                set to match that ratio at the existing 28px nav
-                height. Using next/image with unoptimized so the
-                SVG passes through verbatim — Next's image optimizer
-                converts to raster otherwise. */}
-            <Image
+            {/* Plain <img> for the SVG wordmark. next/image blocks
+                SVG sources by default (security via embedded
+                scripts). The 1.8KB SVG renders natively in HTML —
+                no optimization needed. Width adjusted from 140 to
+                117 to keep the existing 28px nav height at the
+                new 729×174 ≈ 4.19:1 aspect ratio. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/studyworks-logo.svg"
               alt="Studyworks"
               width={117}
               height={28}
               className={s.logo}
-              priority
-              unoptimized
             />
           </Link>
           <div className={s.navLinks}>
@@ -75,6 +83,13 @@ export function AppNav({ user, links, rightExtras = null }) {
             <span className={s.roleBadge}>{user.role}</span>
           )}
           <Link href="/account/billing" className={s.billingLink}>Account</Link>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className={s.signOutBtn}
+          >
+            Sign out
+          </button>
         </div>
       </div>
     </nav>
