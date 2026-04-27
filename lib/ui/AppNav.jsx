@@ -12,7 +12,7 @@
 
 'use client';
 
-import Link from 'next/link';
+import Link, { useLinkStatus } from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import s from './AppNav.module.css';
@@ -51,7 +51,7 @@ export function AppNav({ user, links, rightExtras = null }) {
                   className={active ? `${s.navLink} ${s.navLinkActive}` : s.navLink}
                   aria-current={active ? 'page' : undefined}
                 >
-                  {link.label}
+                  <NavLinkLabel label={link.label} />
                 </Link>
               );
             })}
@@ -71,6 +71,23 @@ export function AppNav({ user, links, rightExtras = null }) {
         </div>
       </div>
     </nav>
+  );
+}
+
+// Inner child of each <Link>. useLinkStatus is only valid as a
+// descendant of next/link's Link, which is why this lives as a
+// separate component instead of inline logic in AppNav. While the
+// click is in flight (after click → before the new page commits)
+// the label dims slightly and a small pending dot appears, so
+// the user gets sub-100ms feedback that the click landed even
+// before the route's loading.js renders.
+function NavLinkLabel({ label }) {
+  const { pending } = useLinkStatus();
+  return (
+    <span className={pending ? `${s.linkLabel} ${s.linkLabelPending}` : s.linkLabel}>
+      {label}
+      {pending && <span className={s.pendingDot} aria-hidden="true" />}
+    </span>
   );
 }
 
