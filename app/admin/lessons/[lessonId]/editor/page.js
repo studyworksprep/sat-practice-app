@@ -318,6 +318,7 @@ function InternalLessonEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           blocks: recomputeSortOrders(blocks).map((block, index) => ({
+            id: block.id || block.content?.id || `index:${index}`,
             block_type: block.block_type,
             content: block.content,
             sort_order: index,

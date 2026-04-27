@@ -63,12 +63,21 @@ function ContentList() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {lessons.map(lesson => (
-            <Link
-              key={lesson.id}
-              href={`/teacher/content/${lesson.id}`}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              <div className="card" style={{ padding: '16px 20px', cursor: 'pointer', transition: 'box-shadow 0.15s' }}>
+            <div key={lesson.id} className="card" style={{ padding: '16px 20px', transition: 'box-shadow 0.15s' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 10, alignItems: 'center' }}>
+                <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                  {lesson.id}
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Link href={`/learn/${lesson.id}`} className="btn secondary" style={{ fontSize: 12, padding: '4px 10px' }}>
+                    Preview
+                  </Link>
+                  <Link href={`/teacher/content/${lesson.id}`} className="btn secondary" style={{ fontSize: 12, padding: '4px 10px' }}>
+                    Edit
+                  </Link>
+                </div>
+              </div>
+              <div style={{ cursor: 'default' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -109,7 +118,7 @@ function ContentList() {
                   </div>
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

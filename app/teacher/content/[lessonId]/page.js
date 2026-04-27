@@ -117,6 +117,7 @@ function LessonEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           blocks: blocks.map((b, i) => ({
+            id: b.id || b.content?.id || b._key,
             block_type: b.block_type,
             content: b.content,
             sort_order: i,
