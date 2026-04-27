@@ -20,6 +20,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { domainSection } from '@/lib/ui/question-layout';
+import { resolveQuestionV2Meta } from '@/lib/practice/weak-queue';
 import { updateTargetScore } from './actions';
 import { DashboardInteractive } from './DashboardInteractive';
 
@@ -164,18 +165,17 @@ export default async function StudentDashboardPage() {
   // Two-step: collect distinct question_ids from the attempts
   // window, fetch their domain metadata from questions_v2, then
   // aggregate in memory. (Can't embed-join because attempts has
-  // no declared FK to questions_v2.)
+  // no declared FK to questions_v2.) The helper translates v1-era
+  // attempt IDs through question_id_map so a legacy student's
+  // history shows up here too.
   const questionIds = Array.from(
     new Set((perfRows ?? []).map((r) => r.question_id).filter(Boolean)),
   );
-  let questionMeta = new Map();
-  if (questionIds.length > 0) {
-    const { data: qRows } = await supabase
-      .from('questions_v2')
-      .select('id, domain_code, domain_name')
-      .in('id', questionIds);
-    questionMeta = new Map((qRows ?? []).map((q) => [q.id, q]));
-  }
+  const questionMeta = await resolveQuestionV2Meta(
+    supabase,
+    questionIds,
+    'id, domain_code, domain_name, is_published, is_broken, deleted_at',
+  );
   const performance = aggregatePerformance(perfRows ?? [], questionMeta);
 
   // Resume info for the banner.
