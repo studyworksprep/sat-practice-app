@@ -126,7 +126,6 @@ export default async function TutorDashboardPage() {
           </div>
         </div>
         <div className={s.bannerActions}>
-          <Link href="/tutor/training/start" className={s.btnSecondary}>Training mode</Link>
           <Link href="/tutor/assignments/new" className={s.btnPrimary}>New assignment</Link>
         </div>
       </section>
