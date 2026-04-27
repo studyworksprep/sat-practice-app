@@ -22,6 +22,7 @@
 import Link from 'next/link';
 import { useMemo, useRef, useState } from 'react';
 import { formatRelativeShort } from '@/lib/formatters';
+import { UsersIcon } from '@/lib/ui/icons';
 import s from './Dashboard.module.css';
 
 const RECENT_TILE_COUNT = 8;
@@ -87,7 +88,10 @@ export function RosterFinder({ students }) {
   return (
     <section className={s.card}>
       <div className={s.cardHeader}>
-        <div className={s.sectionLabel}>Find a student</div>
+        <div className={s.sectionLabel}>
+          <UsersIcon size={16} className={s.sectionIcon} />
+          Find a student
+        </div>
         <div className={s.cardHeaderHint}>
           {students.length} on your roster · click a tile or type a
           name to jump to one.

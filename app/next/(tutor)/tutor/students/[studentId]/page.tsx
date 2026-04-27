@@ -17,6 +17,12 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate, formatRelativeShort } from '@/lib/formatters';
+import {
+  BookOpenIcon,
+  ClipboardCheckIcon,
+  InboxIcon,
+  PencilIcon,
+} from '@/lib/ui/icons';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 import s from './StudentDetail.module.css';
 
@@ -239,7 +245,10 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       {/* ---------- Assignments ---------- */}
       <section className={s.card}>
         <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>Assignments</div>
+          <div className={s.sectionLabel}>
+            <InboxIcon size={16} className={s.sectionIcon} />
+            Assignments
+          </div>
           <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.cardHeaderLink}>
             + New assignment
           </Link>
@@ -284,7 +293,10 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       {/* ---------- Recent practice tests ---------- */}
       <section className={s.card}>
         <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>Recent practice tests</div>
+          <div className={s.sectionLabel}>
+            <BookOpenIcon size={16} className={s.sectionIcon} />
+            Recent practice tests
+          </div>
         </div>
         {testRows.length === 0 ? (
           <p className={s.empty}>No practice tests yet.</p>
@@ -332,7 +344,10 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       {/* ---------- Recent practice sessions ---------- */}
       <section className={s.card}>
         <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>Recent practice sessions</div>
+          <div className={s.sectionLabel}>
+            <PencilIcon size={16} className={s.sectionIcon} />
+            Recent practice sessions
+          </div>
         </div>
         {sessionRowsView.length === 0 ? (
           <p className={s.empty}>No practice sessions yet.</p>
@@ -366,7 +381,10 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       {/* ---------- Practice history v2 import ---------- */}
       <section className={s.card}>
         <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>Practice history v2 import</div>
+          <div className={s.sectionLabel}>
+            <ClipboardCheckIcon size={16} className={s.sectionIcon} />
+            Practice history v2 import
+          </div>
         </div>
         <ImportPracticeHistoryButton
           studentId={student.id}

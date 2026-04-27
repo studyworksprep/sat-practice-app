@@ -10,6 +10,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { BarChartIcon, SparklesIcon } from '@/lib/ui/icons';
 import { loadRosterPerformance, sortSkills } from './loader';
 import { PerformanceSortToolbar } from './PerformanceSortToolbar';
 import s from './Performance.module.css';
@@ -99,7 +100,10 @@ export default async function TutorPerformancePage({ searchParams }) {
       <section className={s.card}>
         <div className={s.cardHead}>
           <div>
-            <h2 className={s.h2}>Common errors</h2>
+            <h2 className={s.h2}>
+              <SparklesIcon size={20} className={s.cardIcon} />
+              Common errors
+            </h2>
             <p className={s.cardHint}>
               Skills with the most missed questions across the roster.
               Static ranking — independent of the heatmap sort below.
@@ -149,7 +153,10 @@ export default async function TutorPerformancePage({ searchParams }) {
       <section className={s.card}>
         <div className={s.cardHead}>
           <div>
-            <h2 className={s.h2}>Skill heatmap</h2>
+            <h2 className={s.h2}>
+              <BarChartIcon size={20} className={s.cardIcon} />
+              Skill heatmap
+            </h2>
             <p className={s.cardHint}>
               Every skill the roster has worked on at least 5 times in the last{' '}
               {data.windowDays} days. The default order surfaces skills where

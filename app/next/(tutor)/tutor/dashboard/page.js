@@ -17,6 +17,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
+import { BookOpenIcon, UsersIcon } from '@/lib/ui/icons';
 import { RosterFinder } from './RosterFinder';
 import s from './Dashboard.module.css';
 
@@ -146,9 +147,12 @@ export default async function TutorDashboardPage() {
       {/* ---------- Roster finder ---------- */}
       {cohort.total === 0 ? (
         <section className={s.card}>
-          <div className={s.empty}>
-            You don&apos;t have any students assigned yet. Once an admin
-            assigns them to you, they&apos;ll show up here.
+          <div className={s.emptyHero}>
+            <UsersIcon size={32} className={s.emptyIcon} />
+            <div className={s.empty}>
+              You don&apos;t have any students assigned yet. Once an admin
+              assigns them to you, they&apos;ll show up here.
+            </div>
           </div>
         </section>
       ) : (
@@ -159,7 +163,10 @@ export default async function TutorDashboardPage() {
       {testRows.length > 0 && (
         <section className={s.card}>
           <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>Recent practice tests</div>
+            <div className={s.sectionLabel}>
+              <BookOpenIcon size={16} className={s.sectionIcon} />
+              Recent practice tests
+            </div>
           </div>
           <ul className={s.testList}>
             {testRows.map((t) => (

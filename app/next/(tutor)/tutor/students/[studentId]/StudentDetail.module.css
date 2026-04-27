@@ -129,11 +129,19 @@
 }
 
 .sectionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--fg3);
+}
+
+.sectionIcon {
+  color: var(--color-gold-700);
+  flex-shrink: 0;
 }
 
 .cardHeaderHint { font-size: 12px; color: var(--fg3); }

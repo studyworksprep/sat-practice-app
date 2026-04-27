@@ -122,12 +122,20 @@
 }
 
 .sectionTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-serif);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.005em;
   color: var(--color-navy-900);
   margin: 0;
+}
+
+.sectionIcon {
+  color: var(--color-gold-700);
+  flex-shrink: 0;
 }
 
 .sectionCount {

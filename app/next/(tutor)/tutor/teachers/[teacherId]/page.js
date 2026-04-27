@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
+import { InboxIcon, TargetIcon } from '@/lib/ui/icons';
 import { RosterFinder } from '../../dashboard/RosterFinder';
 import s from './TeacherDetail.module.css';
 
@@ -256,7 +257,10 @@ export default async function ManagerTeacherDetailPage({ params }) {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.h2}>Recent assignments</div>
+            <div className={s.h2}>
+              <InboxIcon size={18} className={s.sectionIcon} />
+              Recent assignments
+            </div>
             <div className={s.cardHint}>
               Last {RECENT_ASSIGNMENTS_LIMIT} this teacher has sent —
               click for the per-assignment detail.
@@ -317,7 +321,10 @@ export default async function ManagerTeacherDetailPage({ params }) {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.h2}>Training</div>
+            <div className={s.h2}>
+              <TargetIcon size={18} className={s.sectionIcon} />
+              Training
+            </div>
             <div className={s.cardHint}>
               {teacherName}&apos;s own SAT practice and review — what
               they&apos;ve done as a trainee. Helps the

@@ -28,6 +28,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
+import { ClipboardCheckIcon, InboxIcon } from '@/lib/ui/icons';
 import { formatShortDate } from '@/lib/formatters';
 import {
   AssignmentsToolbar,
@@ -278,7 +279,10 @@ export default async function TutorAssignmentsPage({ searchParams }) {
 
       <section className={s.section} id="active-section">
         <div className={s.sectionHead}>
-          <h2 className={s.sectionTitle}>Active</h2>
+          <h2 className={s.sectionTitle}>
+            <InboxIcon size={20} className={s.sectionIcon} />
+            Active
+          </h2>
           <span className={s.sectionCount}>
             {enrichedActive.length} open
             {activeQ && ` · ${activeView.totalCount} match search`}
@@ -324,7 +328,10 @@ export default async function TutorAssignmentsPage({ searchParams }) {
       {enrichedArchived.length > 0 && (
         <section className={s.section} id="archived-section">
           <div className={s.sectionHead}>
-            <h2 className={s.sectionTitle}>Archived</h2>
+            <h2 className={s.sectionTitle}>
+              <ClipboardCheckIcon size={20} className={s.sectionIcon} />
+              Archived
+            </h2>
             <span className={s.sectionCount}>
               {enrichedArchived.length} stored
               {archivedQ && ` · ${archivedView.totalCount} match search`}
