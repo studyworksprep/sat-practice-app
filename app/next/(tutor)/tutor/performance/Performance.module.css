@@ -1,0 +1,304 @@
+/* Tutor → Performance. Same layout vocabulary as the rest of
+   the new tree: max-width container, eyebrow + serif H1 + sub,
+   stats strip, content cards. */
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.header {
+  display: grid;
+  gap: var(--s2);
+  padding-block: var(--s3) var(--s2);
+}
+
+.eyebrow {
+  font-size: var(--eyebrow-size);
+  font-weight: var(--eyebrow-weight);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--color-gold-700);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: var(--app-title-1);
+  font-weight: 700;
+  color: var(--color-navy-900, var(--fg1));
+  line-height: 1.15;
+  margin: 0;
+}
+
+.sub {
+  margin: 0;
+  font-size: var(--body-size);
+  line-height: var(--body-lh);
+  color: var(--fg2);
+  max-width: 720px;
+}
+
+/* ---------- Stats strip ---------- */
+
+.statsStrip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s4);
+}
+
+.statTile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--s4);
+  display: grid;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+.statValue {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-navy-900, var(--fg1));
+  line-height: 1.05;
+}
+.statSub {
+  font-size: 13px;
+  color: var(--fg3);
+}
+
+@media (max-width: 720px) {
+  .statsStrip { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--s5);
+  display: grid;
+  gap: var(--s4);
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
+}
+
+.h2 {
+  font-family: var(--font-sans);
+  font-size: var(--app-title-2);
+  font-weight: 600;
+  color: var(--fg1);
+  margin: 0 0 4px;
+}
+
+.cardHint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg3);
+  max-width: 540px;
+}
+
+/* ---------- Empty state ---------- */
+
+.empty {
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: var(--s4);
+  display: grid;
+  gap: 4px;
+}
+.emptyTitle { font-weight: 600; color: var(--fg1); font-size: 14px; }
+.emptyBody  { font-size: 13px; color: var(--fg3); }
+
+/* ---------- Common errors list ---------- */
+
+.errorsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s2);
+  counter-reset: error-counter;
+}
+
+.errorRow {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: var(--s3);
+  align-items: start;
+  padding: var(--s3) var(--s2);
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.errorRank {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-gold-700);
+  text-align: center;
+}
+
+.errorBody { display: grid; gap: 2px; }
+
+.errorSkill {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--fg1);
+}
+
+.errorMeta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--fg3);
+}
+.errorDomain {
+  font-weight: 600;
+  color: var(--fg2);
+  background: var(--color-app-highlight-soft);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.errorStrugglers { color: #b91c1c; font-weight: 500; }
+
+.pctGood { color: #047857; font-weight: 500; }
+.pctOk   { color: #b45309; font-weight: 500; }
+.pctBad  { color: #b91c1c; font-weight: 500; }
+
+/* ---------- Heatmap ---------- */
+
+.sortLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--fg3);
+}
+.sortLabelText {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  font-size: 11px;
+}
+.sortSelect {
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--fg1);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.heatmapWrap {
+  overflow-x: auto;
+}
+
+.heatmap {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.heatmap thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.thSkill { min-width: 220px; }
+.thNum   { text-align: right; min-width: 110px; }
+
+.heatmap tbody tr { border-bottom: 1px solid var(--border); }
+.heatmap tbody tr:last-child { border-bottom: none; }
+
+.tdSkill {
+  padding: 12px;
+  vertical-align: middle;
+}
+.skillName  { font-weight: 600; color: var(--fg1); }
+.skillDomain {
+  font-size: 11px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.tdNum {
+  padding: 12px;
+  text-align: right;
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg2);
+}
+
+/* Accuracy bar in cohort-accuracy column. */
+.accBar {
+  position: relative;
+  display: inline-block;
+  width: 90px;
+  height: 22px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.accFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent, #6b7280);
+  opacity: 0.18;
+}
+.accValue {
+  position: relative;
+  display: block;
+  text-align: center;
+  line-height: 22px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+.accGood .accFill { background: #10b981; }
+.accOk   .accFill { background: #f59e0b; }
+.accBad  .accFill { background: #ef4444; }
+
+.belowPill {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.belowZero { color: var(--fg3); }

@@ -17,6 +17,7 @@ import { AppNav } from '@/lib/ui/AppNav';
 const BASE_TUTOR_LINKS = [
   { href: '/tutor/dashboard',         label: 'Dashboard' },
   { href: '/tutor/assignments',       label: 'Assignments' },
+  { href: '/tutor/performance',       label: 'Performance' },
   // The Train context is the teacher's own SAT practice and
   // review — kept separate from the rosters they teach. The
   // matchPrefix lights up for everything under /tutor/training,
