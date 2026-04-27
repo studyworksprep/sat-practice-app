@@ -15,13 +15,15 @@ import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate } from '@/lib/formatters';
+import { addAssignmentMembers } from './actions';
+import { AddMembersPicker } from './AddMembersPicker';
 import s from './AssignmentDetail.module.css';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TutorAssignmentDetailPage({ params }) {
   const { id: assignmentId } = await params;
-  const { profile, supabase } = await requireUser();
+  const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'student' || profile.role === 'practice') {
     redirect('/dashboard');
@@ -139,6 +141,60 @@ export default async function TutorAssignmentDetailPage({ params }) {
   });
   students.sort((a, b) => a.name.localeCompare(b.name));
 
+  // Eligible-to-add pool for the AddMembersPicker. Pulls every
+  // student the caller can see (RLS on student_practice_stats
+  // already scopes this) plus the manager's teachers if the
+  // caller is a manager / admin. Anyone already enrolled is
+  // filtered out so the picker shows only people who can
+  // actually be added. The action does its own role check + RLS
+  // gate on insert; this list just drives the UI.
+  const enrolledIds = new Set((junctionRows ?? []).map((r) => r.student_id));
+  const isManagerScope = profile.role === 'manager' || profile.role === 'admin';
+
+  const [{ data: eligibleStudents }, { data: teacherJuncs }] = await Promise.all([
+    supabase
+      .from('student_practice_stats')
+      .select('user_id, first_name, last_name, email')
+      .order('last_name', { ascending: true, nullsFirst: false }),
+    isManagerScope
+      ? supabase
+          .from('manager_teacher_assignments')
+          .select('teacher_id')
+          .eq('manager_id', user.id)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  let eligibleTeachers = [];
+  const teacherIds = (teacherJuncs ?? []).map((r) => r.teacher_id).filter(Boolean);
+  if (teacherIds.length > 0) {
+    const { data: teacherRows } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, email')
+      .in('id', teacherIds);
+    eligibleTeachers = (teacherRows ?? []).map((t) => ({
+      id: t.id,
+      role: 'trainee',
+      name:
+        [t.first_name, t.last_name].filter(Boolean).join(' ')
+        || t.email || 'Teacher',
+      email: t.email,
+    }));
+  }
+
+  const eligible = [
+    ...(eligibleStudents ?? []).map((row) => ({
+      id: row.user_id,
+      role: 'student',
+      name:
+        [row.first_name, row.last_name].filter(Boolean).join(' ')
+        || row.email || 'Student',
+      email: row.email,
+    })),
+    ...eligibleTeachers,
+  ]
+    .filter((p) => p.id && !enrolledIds.has(p.id))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
   const title = assignment.title
     ?? (assignment.assignment_type === 'lesson' ? assignment.lesson?.title : null)
     ?? (assignment.assignment_type === 'practice_test' ? assignment.practice_test?.name : null)
@@ -222,6 +278,14 @@ export default async function TutorAssignmentDetailPage({ params }) {
             </div>
           </div>
         </div>
+
+        {!assignment.archived_at && (
+          <AddMembersPicker
+            assignmentId={assignment.id}
+            eligible={eligible}
+            addAction={addAssignmentMembers}
+          />
+        )}
 
         {students.length === 0 ? (
           <div className={s.empty}>
