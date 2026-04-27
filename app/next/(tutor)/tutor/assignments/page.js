@@ -30,11 +30,8 @@ import { requireUser } from '@/lib/api/auth';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { ClipboardCheckIcon, InboxIcon } from '@/lib/ui/icons';
 import { formatShortDate } from '@/lib/formatters';
-import {
-  AssignmentsToolbar,
-  filterAndSort,
-  paginate,
-} from './AssignmentsToolbar';
+import { AssignmentsToolbar } from './AssignmentsToolbar';
+import { filterAndSort, paginate } from './helpers';
 import s from './AssignmentsList.module.css';
 
 export const dynamic = 'force-dynamic';
