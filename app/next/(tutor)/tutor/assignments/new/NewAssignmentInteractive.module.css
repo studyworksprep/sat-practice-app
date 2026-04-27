@@ -152,6 +152,15 @@
   color: var(--fg1);
 }
 
+/* ---------- Target (students vs trainees) ---------- */
+
+.targetRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: var(--s3);
+}
+
 /* ---------- Student picker ---------- */
 
 .studentGrid {

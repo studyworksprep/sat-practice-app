@@ -1,29 +1,18 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/questions/:questionId/correct
 // Admin/Manager: update question content & taxonomy fields, flag as broken.
-export async function POST(request, props) {
+export const POST = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   const questionId = params.questionId;
 
-  // Prefer middleware-provided user ID (avoids stale-cookie auth issues)
-  const userId = request.headers.get('x-user-id');
-  if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const admin = createServiceClient();
-
-  // Only admins and managers can submit corrections
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('role')
-    .eq('id', userId)
-    .maybeSingle();
-  const role = profile?.role || 'practice';
-
-  if (role !== 'admin' && role !== 'manager') {
-    return NextResponse.json({ error: 'Only admins and managers can submit corrections' }, { status: 403 });
-  }
+  const { user, service: admin } = await requireServiceRole(
+    'manager/admin question correction',
+    { allowedRoles: ['admin', 'manager'] },
+  );
+  const userId = user.id;
 
   const body = await request.json().catch(() => ({}));
   const { stimulus_html, stem_html, options, flag_broken, taxonomy } = body || {};
@@ -127,4 +116,4 @@ export async function POST(request, props) {
   }
 
   return NextResponse.json({ ok: true });
-}
+});

@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { userHasAccess } from '../../../../lib/subscription';
 
 // GET /api/billing/status
 // Returns the current user's subscription/access status.
-export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const GET = legacyApiRoute(async () => {
+  const { user, supabase } = await requireUser();
 
   const access = await userHasAccess(supabase, user.id);
 
@@ -29,4 +28,4 @@ export async function GET() {
     plan: access.plan || null,
     subscription,
   });
-}
+});

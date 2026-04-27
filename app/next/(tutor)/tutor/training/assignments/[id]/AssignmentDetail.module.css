@@ -1,0 +1,276 @@
+/* =============================================================
+   Tutor → training assignment detail. Tokens from
+   [data-tree="next"]. Same vocabulary as the manager-side
+   /tutor/assignments/[id] page, retargeted for the trainee.
+============================================================= */
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.breadcrumb {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+  align-self: flex-start;
+}
+.breadcrumb:hover { text-decoration: underline; }
+
+/* ---------- Header ---------- */
+
+.header { padding: var(--s2) 0; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+
+.metaRow {
+  display: flex;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 13px;
+  color: var(--fg3);
+}
+
+.metaItem { color: var(--fg3); }
+.metaOverdue {
+  color: var(--color-diff-hard-fg);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 12px;
+}
+.metaCompleted {
+  color: var(--color-diff-easy-fg);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.description {
+  font-size: 14px;
+  color: var(--fg2);
+  margin: var(--s3) 0 0;
+  max-width: 720px;
+}
+
+/* ---------- Stats strip ---------- */
+
+.statsStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s3);
+}
+
+.statTile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.statTile_good   .statValue { color: var(--color-diff-easy-fg); }
+.statTile_ok     .statValue { color: var(--color-diff-med-fg); }
+.statTile_warn   .statValue { color: var(--color-diff-hard-fg); }
+
+/* ---------- Card ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s3);
+  margin-bottom: var(--s3);
+  flex-wrap: wrap;
+}
+
+.h2 {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.003em;
+  color: var(--fg1);
+  margin: 0;
+}
+
+.cardHint {
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: 2px;
+  max-width: 560px;
+}
+
+.empty {
+  color: var(--fg3);
+  font-size: 13px;
+  margin: 0;
+}
+
+.ctaRow {
+  display: flex;
+  align-items: center;
+  margin-top: var(--s3);
+}
+
+/* ---------- Start button (shared by StartTrainingButton) ---------- */
+
+.startForm {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.startBtn {
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  background: var(--color-app-accent);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.startBtn:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  color: #fff;
+}
+.startBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.startError {
+  font-size: 13px;
+  color: var(--color-diff-hard-fg);
+  font-weight: 600;
+}
+
+/* ---------- Questions list ---------- */
+
+.questionList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.qRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.qRowCorrect { background: var(--color-diff-easy-bg); }
+.qRowWrong   { background: var(--color-diff-hard-bg); }
+
+.qIndex {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg3);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.qRowCorrect .qIndex { background: var(--color-diff-easy-fg); color: #fff; border-color: var(--color-diff-easy-fg); }
+.qRowWrong   .qIndex { background: var(--color-diff-hard-fg); color: #fff; border-color: var(--color-diff-hard-fg); }
+
+.qInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.qCode {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg1);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.qMeta {
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.diffPill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  color: #fff;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.diffEasy { background: var(--color-diff-easy-fg); }
+.diffMed  { background: var(--color-diff-med-fg); }
+.diffHard { background: var(--color-diff-hard-fg); }
+
+.muted { color: var(--fg3); }

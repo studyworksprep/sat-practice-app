@@ -1,15 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
-async function verifyTeacherAccess(supabase, userId, studentId) {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', userId)
-    .maybeSingle();
-
-  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') return false;
-
+async function verifyTeacherAccess(supabase, profile, userId, studentId) {
   if (profile.role === 'teacher' || profile.role === 'manager') {
     const { data: assignment } = await supabase
       .from('teacher_student_assignments')
@@ -38,14 +31,12 @@ async function verifyTeacherAccess(supabase, userId, studentId) {
 }
 
 // GET /api/teacher/student/[studentId]/registrations
-export async function GET(_request, props) {
+export const GET = legacyApiRoute(async (_request, props) => {
   const params = await props.params;
   const { studentId } = params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
 
-  if (!(await verifyTeacherAccess(supabase, user.id, studentId))) {
+  if (!(await verifyTeacherAccess(supabase, profile, user.id, studentId))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -56,17 +47,15 @@ export async function GET(_request, props) {
     .order('test_date', { ascending: true });
 
   return NextResponse.json({ registrations: registrations || [] });
-}
+});
 
 // POST /api/teacher/student/[studentId]/registrations
-export async function POST(request, props) {
+export const POST = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   const { studentId } = params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
 
-  if (!(await verifyTeacherAccess(supabase, user.id, studentId))) {
+  if (!(await verifyTeacherAccess(supabase, profile, user.id, studentId))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -83,17 +72,15 @@ export async function POST(request, props) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ registration: data });
-}
+});
 
 // DELETE /api/teacher/student/[studentId]/registrations
-export async function DELETE(request, props) {
+export const DELETE = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   const { studentId } = params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
 
-  if (!(await verifyTeacherAccess(supabase, user.id, studentId))) {
+  if (!(await verifyTeacherAccess(supabase, profile, user.id, studentId))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -109,4 +96,4 @@ export async function DELETE(request, props) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
-}
+});

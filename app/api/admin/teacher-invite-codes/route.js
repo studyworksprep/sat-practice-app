@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import crypto from 'crypto';
 
 function generateCode() {
@@ -11,21 +12,8 @@ function generateCode() {
 
 // GET /api/admin/teacher-invite-codes
 // Returns all teachers with their invite codes
-export async function GET() {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const GET = legacyApiRoute(async () => {
+  const { supabase } = await requireRole(['admin']);
 
   let { data: teachers, error } = await supabase
     .from('profiles')
@@ -47,26 +35,13 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ teachers: teachers || [] });
-}
+});
 
 // POST /api/admin/teacher-invite-codes
 // Generate or set an invite code for a teacher
 // Body: { teacher_id, code? } — if code is omitted, one is auto-generated
-export async function POST(request) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
 
   const body = await request.json();
   const { teacher_id, code } = body;
@@ -97,26 +72,13 @@ export async function POST(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ teacher_id, code: inviteCode });
-}
+});
 
 // DELETE /api/admin/teacher-invite-codes
 // Remove a teacher's invite code
 // Body: { teacher_id }
-export async function DELETE(request) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const DELETE = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
 
   const body = await request.json();
   const { teacher_id } = body;
@@ -133,4 +95,4 @@ export async function DELETE(request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });
-}
+});

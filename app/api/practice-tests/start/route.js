@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/practice-tests/start
 // Body: { practice_test_id, sections? }
 // sections: 'both' (default), 'rw', 'math'
 // Creates a new in_progress attempt and returns { attempt_id }
-export async function POST(request) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+export const POST = legacyApiRoute(async (request) => {
+  const { user, supabase } = await requireUser();
 
   const { practice_test_id, sections } = await request.json();
   if (!practice_test_id) {
@@ -49,4 +47,4 @@ export async function POST(request) {
   if (insertErr) return NextResponse.json({ error: insertErr.message }, { status: 400 });
 
   return NextResponse.json({ attempt_id: attempt.id });
-}
+});

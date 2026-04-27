@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../../lib/supabase/server';
-import { createServiceClient } from '../../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { computeScaledScore, isHardRoute } from '../../../../../../lib/scoreConversion';
 
 // POST /api/teacher/student/[studentId]/upload-bluebook
@@ -20,26 +20,13 @@ import { computeScaledScore, isHardRoute } from '../../../../../../lib/scoreConv
 //  2. practice_test_module_attempts
 //  3. attempts + practice_test_item_attempts for each question
 //  4. Score conversion data entries (if scores provided)
-export async function POST(request, props) {
+export const POST = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   const { studentId } = params;
-  const supabase = await createClient();
-  const service = createServiceClient();
-
-  // Authenticate the caller
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // Verify caller is teacher or admin
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profile?.role !== 'teacher' && profile?.role !== 'manager' && profile?.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  const { supabase, user, profile, service } = await requireServiceRole(
+    'teacher uploads Bluebook practice test for student',
+    { allowedRoles: ['teacher', 'manager', 'admin'] },
+  );
 
   // For teachers, verify they can view this student
   if (profile.role === 'teacher' || profile.role === 'manager') {
@@ -368,4 +355,4 @@ export async function POST(request, props) {
     math_scaled: mathScaled,
     questions_imported: questions.length,
   });
-}
+});

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 const DEFAULT_SETS = ['My Math', 'My Reading'];
 
@@ -22,17 +23,15 @@ async function ensureDefaults(supabase, userId) {
 }
 
 // GET /api/flashcard-sets — list all user-created sets with card counts and mastery averages
-export async function GET() {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+export const GET = legacyApiRoute(async () => {
+  const { user, supabase } = await requireUser();
 
-  await ensureDefaults(supabase, auth.user.id);
+  await ensureDefaults(supabase, user.id);
 
   const { data: sets, error } = await supabase
     .from('flashcard_sets')
     .select('id, name, is_default, parent_set_id, created_at')
-    .eq('user_id', auth.user.id)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -61,18 +60,16 @@ export async function GET() {
   });
 
   return NextResponse.json({ sets: setsWithData });
-}
+});
 
 // POST /api/flashcard-sets — create a new custom set
-export async function POST(req) {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+export const POST = legacyApiRoute(async (req) => {
+  const { user, supabase } = await requireUser();
 
   const { name, parent_set_id } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: 'Name is required' }, { status: 400 });
 
-  const insertData = { user_id: auth.user.id, name: name.trim(), is_default: false };
+  const insertData = { user_id: user.id, name: name.trim(), is_default: false };
   if (parent_set_id) insertData.parent_set_id = parent_set_id;
 
   const { data, error } = await supabase
@@ -83,4 +80,4 @@ export async function POST(req) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ set: data });
-}
+});

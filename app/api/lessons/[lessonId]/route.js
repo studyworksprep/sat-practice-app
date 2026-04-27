@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 import { validateLessonBlocks } from '../../../../lib/lesson/lesson-validation.mjs';
 
 // GET /api/lessons/[lessonId] — get a single lesson with blocks and topics
-export async function GET(request, props) {
+export const GET = legacyApiRoute(async (request, props) => {
+  // Auth happens outside the try/catch so a 401 from requireUser propagates
+  // to legacyApiRoute as a 401 (instead of being caught and remapped to 500).
+  const { supabase } = await requireUser();
   const params = await props.params;
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const { lessonId } = params;
 
     const [lessonRes, blocksRes, topicsRes] = await Promise.all([
@@ -49,16 +49,15 @@ export async function GET(request, props) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
 
 // PUT /api/lessons/[lessonId] — update lesson metadata + topics
-export async function PUT(request, props) {
+export const PUT = legacyApiRoute(async (request, props) => {
+  // Auth happens outside the try/catch so a 401 from requireUser propagates
+  // to legacyApiRoute as a 401 (instead of being caught and remapped to 500).
+  const { supabase } = await requireUser();
   const params = await props.params;
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const { lessonId } = params;
     const body = await request.json();
     const { title, description, visibility, status: lessonStatus, topics } = body;
@@ -93,16 +92,15 @@ export async function PUT(request, props) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
 
 // DELETE /api/lessons/[lessonId] — delete a lesson
-export async function DELETE(request, props) {
+export const DELETE = legacyApiRoute(async (request, props) => {
+  // Auth happens outside the try/catch so a 401 from requireUser propagates
+  // to legacyApiRoute as a 401 (instead of being caught and remapped to 500).
+  const { supabase } = await requireUser();
   const params = await props.params;
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const { lessonId } = params;
 
     const { error } = await supabase.from('lessons').delete().eq('id', lessonId);
@@ -112,4 +110,4 @@ export async function DELETE(request, props) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});

@@ -1,23 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
-
-async function requireAdmin(supabase) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Unauthorized', status: 401 };
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (profile?.role !== 'admin') return { error: 'Forbidden', status: 403 };
-  return { user };
-}
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/assignments — list all teacher-student assignments
-export async function GET() {
-  const supabase = await createClient();
-  const auth = await requireAdmin(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const GET = legacyApiRoute(async () => {
+  const { supabase } = await requireRole(['admin']);
 
   const { data, error } = await supabase
     .from('teacher_student_assignments')
@@ -26,14 +13,12 @@ export async function GET() {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ assignments: data || [] });
-}
+});
 
 // POST /api/admin/assignments — assign student to teacher
 // Body: { teacher_id, student_id }
-export async function POST(request) {
-  const supabase = await createClient();
-  const auth = await requireAdmin(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const POST = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
 
   const { teacher_id, student_id } = await request.json();
   if (!teacher_id || !student_id) {
@@ -52,14 +37,12 @@ export async function POST(request) {
   }
 
   return NextResponse.json({ ok: true });
-}
+});
 
 // DELETE /api/admin/assignments — remove assignment
 // Body: { teacher_id, student_id }
-export async function DELETE(request) {
-  const supabase = await createClient();
-  const auth = await requireAdmin(supabase);
-  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export const DELETE = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
 
   const { teacher_id, student_id } = await request.json();
   if (!teacher_id || !student_id) {
@@ -74,4 +57,4 @@ export async function DELETE(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true });
-}
+});

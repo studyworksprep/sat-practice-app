@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/questions-v2
 //
@@ -17,20 +18,8 @@ import { createClient } from '../../../../lib/supabase/server';
 //   q           — substring match on source_id / source_external_id / display_code
 //   approved    — 'unapproved' (default), 'approved', or 'all'. Filters
 //                 by the approved_at column (phase 5 audit field).
-export async function GET(req) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+export const GET = legacyApiRoute(async (req) => {
+  const { supabase } = await requireRole(['admin']);
 
   const url = new URL(req.url);
   const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '20', 10) || 20, 1), 100);
@@ -121,4 +110,4 @@ export async function GET(req) {
     offset,
     domains,
   });
-}
+});

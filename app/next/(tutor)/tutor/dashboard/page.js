@@ -17,6 +17,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
+import { RosterFinder } from './RosterFinder';
 import s from './Dashboard.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -24,7 +25,7 @@ export const dynamic = 'force-dynamic';
 const STUDENT_LIMIT = 100;
 
 export default async function TutorDashboardPage() {
-  const { user, profile, supabase } = await requireUser();
+  const { profile, supabase } = await requireUser();
 
   // Role gate. The (tutor) layout already enforces this, but
   // belt-and-suspenders keeps this page correct if the layout
@@ -143,7 +144,7 @@ export default async function TutorDashboardPage() {
         </section>
       )}
 
-      {/* ---------- Students roster ---------- */}
+      {/* ---------- Roster finder ---------- */}
       {cohort.total === 0 ? (
         <section className={s.card}>
           <div className={s.empty}>
@@ -152,60 +153,7 @@ export default async function TutorDashboardPage() {
           </div>
         </section>
       ) : (
-        <section className={s.card}>
-          <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>Your students</div>
-            <div className={s.cardHeaderHint}>
-              Ordered by most recent activity. Click any student for a
-              detail view.
-            </div>
-          </div>
-          <div className={s.tableWrap}>
-            <table className={s.table}>
-              <thead>
-                <tr>
-                  <th className={s.th}>Name</th>
-                  <th className={s.thNum}>Target</th>
-                  <th className={s.thNum}>Attempts</th>
-                  <th className={s.thNum}>Accuracy</th>
-                  <th className={s.thNum}>7-day</th>
-                  <th className={s.th}>Last activity</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.map((st) => (
-                  <tr key={st.id} className={s.row}>
-                    <td className={s.td}>
-                      <Link href={`/tutor/students/${st.id}`} className={s.nameLink}>
-                        <div className={s.nameMain}>{st.name}</div>
-                      </Link>
-                      {(st.highSchool || st.graduationYear) && (
-                        <div className={s.nameSub}>
-                          {st.highSchool}
-                          {st.graduationYear ? ` · class of ${st.graduationYear}` : ''}
-                        </div>
-                      )}
-                    </td>
-                    <td className={s.tdNum}>{st.targetScore ?? '—'}</td>
-                    <td className={s.tdNum}>{st.totalAttempts.toLocaleString()}</td>
-                    <td className={s.tdNum}>
-                      <AccuracyBadge pct={st.accuracy} />
-                    </td>
-                    <td className={s.tdNum}>{st.weekAttempts}</td>
-                    <td className={s.td}>
-                      {formatRelativeShort(st.lastActivityAt) ?? <span className={s.muted}>—</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {cohort.visible < cohort.total && (
-            <p className={s.footnote}>
-              Showing the first {STUDENT_LIMIT} students. Filtering + pagination are on the way.
-            </p>
-          )}
-        </section>
+        <RosterFinder students={students} />
       )}
 
       {/* ---------- Recent test attempts across the roster ---------- */}
@@ -265,12 +213,6 @@ function StatTile({ label, value }) {
       <div className={s.statLabel}>{label}</div>
     </div>
   );
-}
-
-function AccuracyBadge({ pct }) {
-  if (pct == null) return <span className={s.muted}>—</span>;
-  const tone = pct >= 80 ? s.accGood : pct >= 50 ? s.accOk : s.accBad;
-  return <span className={`${s.accBadge} ${tone}`}>{pct}%</span>;
 }
 
 function ScorePill({ label, value, tone }) {

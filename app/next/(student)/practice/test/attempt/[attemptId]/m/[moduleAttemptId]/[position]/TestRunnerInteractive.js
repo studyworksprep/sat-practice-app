@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import { useRouter } from 'next/navigation';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { DesmosPanel } from '@/lib/ui/DesmosPanel';
+import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { BookmarkIcon, CalculatorIcon } from '@/lib/ui/icons';
 import s from './TestRunner.module.css';
 
@@ -47,6 +48,8 @@ export function TestRunnerInteractive({
   recordItemAnswerAction,
   toggleMarkForReviewAction,
   finishModuleAction,
+  desmosSavedState = null,
+  desmosCanSave = false,
 }) {
   const router = useRouter();
 
@@ -85,6 +88,12 @@ export function TestRunnerInteractive({
     });
   }, []);
   const desmosVisible = desmosEligible && desmosOpen;
+
+  // Live calc handle for the saved-state button. Populated by
+  // DesmosPanel via onCalcReady once the calculator mounts.
+  const calcRef = useRef(null);
+  const showSavedStateBtn =
+    desmosEligible && (desmosCanSave || desmosSavedState != null);
   // useTransition lets us render a "pending" state on the Next/Back
   // buttons while the server fetches the next question. Without
   // this, router.push appears to do nothing until the new page is
@@ -398,6 +407,14 @@ export function TestRunnerInteractive({
               Calculator
             </button>
           )}
+          {showSavedStateBtn && (
+            <DesmosSavedStateButton
+              questionId={question.questionId}
+              initialSavedState={desmosSavedState}
+              canSave={desmosCanSave}
+              calcRef={calcRef}
+            />
+          )}
         </div>
       </div>
 
@@ -422,6 +439,7 @@ export function TestRunnerInteractive({
                 // (matches Bluebook behavior) but resets between
                 // modules.
                 storageKey={`desmos:test:${moduleAttemptId}`}
+                onCalcReady={(c) => { calcRef.current = c; }}
               />
             ) : null
           }

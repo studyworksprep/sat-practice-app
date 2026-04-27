@@ -13,13 +13,30 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { AppNav } from '@/lib/ui/AppNav';
 
-const TUTOR_LINKS = [
+// Teacher-facing items every tutor / manager / admin sees.
+const BASE_TUTOR_LINKS = [
   { href: '/tutor/dashboard',         label: 'Dashboard' },
   { href: '/tutor/assignments',       label: 'Assignments' },
-  // Training reuses the student practice runner with a tutor
-  // scope — launches from /tutor/training/start.
-  { href: '/tutor/training/start',    label: 'Training', matchPrefix: '/tutor/training' },
+  // The Train context is the teacher's own SAT practice and
+  // review — kept separate from the rosters they teach. The
+  // matchPrefix lights up for everything under /tutor/training,
+  // including the practice runner + assignment + review subpages.
+  { href: '/tutor/training',          label: 'Train', matchPrefix: '/tutor/training' },
 ];
+
+// Items added for managers + admins. The Teachers tab is the
+// manager's roster of tutors — equivalent in shape to the
+// tutor's roster of students, but one layer up.
+const MANAGER_LINKS = [
+  { href: '/tutor/teachers',          label: 'Teachers', matchPrefix: '/tutor/teachers' },
+];
+
+function linksForRole(role) {
+  if (role === 'manager' || role === 'admin') {
+    return [...BASE_TUTOR_LINKS, ...MANAGER_LINKS];
+  }
+  return BASE_TUTOR_LINKS;
+}
 
 export default async function TutorTreeLayout({ children }) {
   const { user, profile, supabase } = await requireUser();
@@ -42,7 +59,7 @@ export default async function TutorTreeLayout({ children }) {
 
   return (
     <>
-      <AppNav user={navUser} links={TUTOR_LINKS} />
+      <AppNav user={navUser} links={linksForRole(profile.role)} />
       {children}
     </>
   );

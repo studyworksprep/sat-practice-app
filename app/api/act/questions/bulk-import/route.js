@@ -1,22 +1,15 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/act/questions/bulk-import
 // Body: { questions: [ { section, stem_html, options: [...], ... } ] }
 // Inserts questions + answer options into the database.
-export async function POST(request) {
-  const userId = request.headers.get('x-user-id');
-  if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const admin = createServiceClient();
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('role')
-    .eq('id', userId)
-    .maybeSingle();
-  if (!profile || (profile.role !== 'admin' && profile.role !== 'manager')) {
-    return NextResponse.json({ error: 'Only admins and managers can import questions' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin/manager ACT bulk-import questions',
+    { allowedRoles: ['admin', 'manager'] },
+  );
 
   const { questions } = await request.json().catch(() => ({}));
   if (!Array.isArray(questions) || questions.length === 0) {
@@ -116,4 +109,4 @@ export async function POST(request) {
     console.error('bulk-import error:', e);
     return NextResponse.json({ error: e.message || 'Failed to import questions' }, { status: 500 });
   }
-}
+});

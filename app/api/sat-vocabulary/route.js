@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/sat-vocabulary?set_number=1 — list vocabulary cards for a set, with user progress
-export async function GET(req) {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+export const GET = legacyApiRoute(async (req) => {
+  const { user, supabase } = await requireUser();
 
   const setNumber = req.nextUrl.searchParams.get('set_number');
 
@@ -26,7 +25,7 @@ export async function GET(req) {
       const { data: progress } = await supabase
         .from('sat_vocabulary_progress')
         .select('vocabulary_id, mastery, last_reviewed_at')
-        .eq('user_id', auth.user.id)
+        .eq('user_id', user.id)
         .in('vocabulary_id', cardIds);
       for (const p of (progress || [])) {
         progressMap[p.vocabulary_id] = p;
@@ -58,7 +57,7 @@ export async function GET(req) {
     const { data: progress } = await supabase
       .from('sat_vocabulary_progress')
       .select('vocabulary_id, mastery')
-      .eq('user_id', auth.user.id)
+      .eq('user_id', user.id)
       .in('vocabulary_id', allIds);
     for (const p of (progress || [])) {
       progressMap[p.vocabulary_id] = p.mastery;
@@ -96,13 +95,11 @@ export async function GET(req) {
     : null;
 
   return NextResponse.json({ sets, totalCards, totalAvgMastery });
-}
+});
 
 // PATCH /api/sat-vocabulary — update mastery for a vocabulary card
-export async function PATCH(req) {
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+export const PATCH = legacyApiRoute(async (req) => {
+  const { user, supabase } = await requireUser();
 
   const { vocabulary_id, mastery } = await req.json();
   if (!vocabulary_id || mastery == null || mastery < 0 || mastery > 5) {
@@ -112,7 +109,7 @@ export async function PATCH(req) {
   const { error } = await supabase
     .from('sat_vocabulary_progress')
     .upsert({
-      user_id: auth.user.id,
+      user_id: user.id,
       vocabulary_id,
       mastery,
       last_reviewed_at: new Date().toISOString(),
@@ -120,4 +117,4 @@ export async function PATCH(req) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true });
-}
+});

@@ -1,0 +1,349 @@
+/* =============================================================
+   Student → assignments hub. Tokens from [data-tree="next"].
+
+   Mirrors the tutor dashboard / student-detail vocabulary
+   (header eyebrow + stats row + content cards) so the student's
+   assignments page is the same "app" visually as the rest.
+============================================================= */
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+/* ---------- Page header ---------- */
+
+.header { padding: var(--s2) 0; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+
+.sub {
+  color: var(--fg3);
+  font-size: 14px;
+  margin: 0;
+  max-width: 720px;
+}
+
+/* ---------- Stats strip ---------- */
+
+.statsStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s3);
+}
+
+.statTile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.statSub { font-size: 11px; color: var(--fg3); margin-top: 2px; }
+
+.statTile_good  .statValue { color: var(--color-diff-easy-fg); }
+.statTile_ok    .statValue { color: var(--color-diff-med-fg); }
+.statTile_warn  .statValue { color: var(--color-diff-hard-fg); }
+.statTile_neutral .statValue { color: var(--fg1); }
+
+/* ---------- Section (Pending / Completed) ---------- */
+
+.section { display: grid; gap: var(--s3); }
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+}
+
+.sectionTitle {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--color-navy-900);
+  margin: 0;
+}
+
+.sectionCount {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+/* ---------- Shared card bits ---------- */
+
+.cardList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--s2);
+}
+
+.cardTop {
+  display: flex;
+  gap: var(--s3);
+  align-items: center;
+}
+
+.cardTitle {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg1);
+  min-width: 0;
+}
+
+.cardSub {
+  font-size: 13px;
+  color: var(--fg2);
+  margin-top: 6px;
+}
+
+.cardMetaRow {
+  display: flex;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: 8px;
+}
+
+.cardMeta {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ---------- Pending card ---------- */
+
+.pendingCard {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.pendingCard:hover {
+  border-color: var(--color-app-accent);
+  box-shadow: 0 4px 14px rgba(31, 41, 55, 0.07);
+  color: inherit;
+}
+
+.dueOn,
+.dueOverdue {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+.dueOn { color: var(--fg3); }
+.dueOverdue { color: var(--color-diff-hard-fg); }
+
+.progress {
+  margin-top: 10px;
+  height: 6px;
+  background: var(--color-slate-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progressBar {
+  height: 100%;
+  background: var(--color-app-accent);
+  border-radius: 999px;
+}
+
+/* ---------- Completed grid ---------- */
+
+.completedGrid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--s3);
+}
+
+.completedCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.completedCard:hover {
+  border-color: var(--color-app-accent);
+  box-shadow: 0 4px 14px rgba(31, 41, 55, 0.07);
+  color: inherit;
+}
+
+.completedTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2);
+}
+
+.completedTag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-diff-easy-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.completedMeta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.metaDot { color: var(--fg3); }
+
+.completedNote {
+  font-size: 12px;
+  color: var(--fg3);
+  padding-top: 4px;
+}
+
+.completedFooter {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-app-accent);
+  margin-top: auto;
+  padding-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Difficulty breakdown tiles ---------- */
+
+.diffRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.diffTile {
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.diffLabel {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.diffValue {
+  font-size: 18px;
+  font-weight: 750;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.diffSub {
+  font-size: 10px;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+}
+
+.diffBar {
+  margin-top: 4px;
+  height: 4px;
+  background: var(--color-slate-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.diffBarFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-slate-300, #cbd5e1);
+}
+.diffBarGood { background: var(--color-diff-easy-fg); }
+.diffBarOk   { background: var(--color-diff-med-fg); }
+.diffBarBad  { background: var(--color-diff-hard-fg); }
+
+/* ---------- Empty card ---------- */
+
+.emptyCard {
+  background: var(--card);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 22px 20px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+  margin-bottom: 4px;
+}
+
+.emptyBody { font-size: 13px; color: var(--fg3); }

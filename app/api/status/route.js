@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/status { question_id, patch: { marked_for_review?, notes?, is_done?, is_broken? } }
-export async function POST(request) {
+export const POST = legacyApiRoute(async (request) => {
   const body = await request.json().catch(() => ({}));
   const { question_id, patch } = body || {};
   if (!question_id) return NextResponse.json({ error: 'question_id required' }, { status: 400 });
 
-  const supabase = await createClient();
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-  const user = auth.user;
+  const { user, supabase } = await requireUser();
 
   // Handle is_broken separately — it's a global flag on the questions table,
   // only writable by student/teacher/admin (not practice accounts).
@@ -47,4 +45,4 @@ export async function POST(request) {
   }
 
   return NextResponse.json({ ok: true });
-}
+});

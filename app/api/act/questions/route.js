@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/act/questions
 // Params: sections, categories, subcategories, difficulties, q, limit, offset, hide_broken
-export async function GET(request) {
+export const GET = legacyApiRoute(async (request) => {
   const { searchParams } = new URL(request.url);
 
   const sections = (searchParams.get('sections') || '')
@@ -25,12 +26,8 @@ export async function GET(request) {
   const limit = Math.min(parseInt(searchParams.get('limit') || '25', 10), 5000);
   const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10), 0);
 
-  const supabase = await createClient();
-
-  // Auth
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr) return NextResponse.json({ error: authErr.message }, { status: 400 });
-  const userId = auth?.user?.id ?? null;
+  const { user, supabase } = await requireUser();
+  const userId = user.id;
 
   // Build query
   let q = supabase
@@ -110,4 +107,4 @@ export async function GET(request) {
   }));
 
   return NextResponse.json({ items, totalCount: count ?? items.length });
-}
+});

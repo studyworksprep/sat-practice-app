@@ -380,17 +380,16 @@ export default function ReviewPage() {
   }
 
   async function loadSmart() {
-    setSmartLoading(true);
-    try {
-      const res = await fetch('/api/smart-review');
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || 'Failed to load smart review');
-      setSmartItems(json.items || []);
-    } catch (e) {
-      setMsg({ kind: 'danger', text: e.message });
-    } finally {
-      setSmartLoading(false);
-    }
+    // Smart Review has moved to the new-tree Review page (see
+    // app/next/(student)/review). The legacy /api/smart-review
+    // route was retired because it read from question_status, a
+    // v1 aggregation that isn't maintained on the v2 submit path.
+    // The new-tree page runs the same scoring on v2 attempts via
+    // lib/practice/weak-queue.js. This legacy tab is kept as a
+    // no-op so the rest of the legacy Review page still works
+    // for any user still on ui_version='legacy'.
+    setSmartItems([]);
+    setSmartLoading(false);
   }
 
   async function loadErrorLog() {

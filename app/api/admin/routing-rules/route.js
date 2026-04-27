@@ -1,30 +1,20 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
-import { createServiceClient } from '../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/routing-rules?practice_test_id=xxx
 // Returns routing rules for a specific practice test
-export async function GET(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-  }
+export const GET = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin routing-rules read — RLS would scope to caller',
+    { allowedRoles: ['admin'] },
+  );
 
   const { searchParams } = new URL(request.url);
   const practiceTestId = searchParams.get('practice_test_id');
   if (!practiceTestId) {
     return NextResponse.json({ error: 'practice_test_id is required' }, { status: 400 });
   }
-
-  const admin = createServiceClient();
 
   // Fetch routing rules
   const { data: rules, error } = await admin
@@ -45,24 +35,16 @@ export async function GET(request) {
     .order('module_number');
 
   return NextResponse.json({ rules: rules || [], modules: modules || [] });
-}
+});
 
 // PUT /api/admin/routing-rules
 // Replaces all routing rules for a practice test
 // Body: { practice_test_id, rules: [...] }
-export async function PUT(request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
-  }
+export const PUT = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin routing-rules write — RLS would scope to caller',
+    { allowedRoles: ['admin'] },
+  );
 
   const { practice_test_id, rules } = await request.json();
   if (!practice_test_id) {
@@ -71,8 +53,6 @@ export async function PUT(request) {
   if (!Array.isArray(rules)) {
     return NextResponse.json({ error: 'rules must be an array' }, { status: 400 });
   }
-
-  const admin = createServiceClient();
 
   // Delete existing rules for this test
   const { error: deleteError } = await admin
@@ -106,4 +86,4 @@ export async function PUT(request) {
   }
 
   return NextResponse.json({ ok: true, count: rules.length });
-}
+});

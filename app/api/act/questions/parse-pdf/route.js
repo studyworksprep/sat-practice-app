@@ -1,22 +1,15 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '../../../../../lib/supabase/server';
+import { requireServiceRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // POST /api/act/questions/parse-pdf
 // Accepts two PDF files (questions + answer key), sends to Mathpix, then Claude
 // Returns structured question array ready for review.
-export async function POST(request) {
-  const userId = request.headers.get('x-user-id');
-  if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-
-  const admin = createServiceClient();
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('role')
-    .eq('id', userId)
-    .maybeSingle();
-  if (!profile || (profile.role !== 'admin' && profile.role !== 'manager')) {
-    return NextResponse.json({ error: 'Only admins and managers can import questions' }, { status: 403 });
-  }
+export const POST = legacyApiRoute(async (request) => {
+  const { service: admin } = await requireServiceRole(
+    'admin/manager ACT PDF import — uploads images to storage bucket',
+    { allowedRoles: ['admin', 'manager'] },
+  );
 
   const formData = await request.formData();
   const questionsPdf = formData.get('questions_pdf');
@@ -61,7 +54,7 @@ export async function POST(request) {
     console.error('parse-pdf error:', e);
     return NextResponse.json({ error: e.message || 'Failed to parse PDFs' }, { status: 500 });
   }
-}
+});
 
 // ---------------------------------------------------------------------------
 // Download images from Mathpix CDN and upload to Supabase Storage

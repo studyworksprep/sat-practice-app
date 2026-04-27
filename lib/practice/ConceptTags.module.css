@@ -1,0 +1,152 @@
+/* =============================================================
+   ConceptTags — chip list + add popover. Tokens from
+   [data-tree="next"]. Mounted below the question body across
+   tutor surfaces (training runner, training review, results
+   page, single-question review).
+============================================================= */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-blue-50, rgba(79, 124, 224, 0.1));
+  color: var(--color-blue-700, #4f7ce0);
+  border: 1px solid var(--color-blue-200, rgba(79, 124, 224, 0.25));
+  border-radius: 14px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.chipRemove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-size: 14px;
+  padding: 0 0 0 2px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.chipRemove:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.chipRemove:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.adder {
+  position: relative;
+  display: inline-flex;
+}
+
+.addBtn {
+  background: var(--bg-card, #fff);
+  color: var(--text, #1a1a1a);
+  border: 1px solid var(--border, #e0d8c4);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.addBtn:hover {
+  background: var(--bg-hover, #f7f4ec);
+}
+
+.popover {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 4px);
+  z-index: 400;
+  width: 280px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e0d8c4);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-md, 0 4px 16px rgba(0, 0, 0, 0.12));
+  padding: 8px;
+}
+
+.input {
+  width: 100%;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-card, #fff);
+  color: var(--text, #1a1a1a);
+  margin-bottom: 4px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-navy-500, #4f7ce0);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.suggestions {
+  max-height: 160px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border, #eee);
+  padding-top: 4px;
+  margin-top: 4px;
+}
+
+.suggestion,
+.create {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 8px;
+  font-size: 13px;
+  border-radius: 4px;
+  color: var(--text, #333);
+}
+
+.suggestion:hover:not(:disabled),
+.create:hover:not(:disabled) {
+  background: var(--bg-hover, #f5f5f5);
+}
+
+.create {
+  color: var(--color-navy-700, #1f2a44);
+  font-weight: 500;
+}
+
+.suggestion:disabled,
+.create:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.error {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-danger, #b3261e);
+}

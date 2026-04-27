@@ -1,33 +1,26 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
+import { createServiceClient } from '../../../../lib/supabase/server';
 
 // GET /api/questions/:questionId
-export async function GET(_request, props) {
+export const GET = legacyApiRoute(async (_request, props) => {
   const params = await props.params;
   const questionId = params.questionId;
   const { searchParams } = new URL(_request.url);
   const viewAsStudentId = searchParams.get('view_as') || null;
-  const supabase = await createClient();
+  const { user, supabase } = await requireUser();
 
-  // 1) Auth + version fetch in parallel (independent of each other)
-  // Fetch both current and newest version in one query (prefer is_current=true)
-  const [authResult, versionsResult] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase
-      .from('question_versions')
-      .select('id, question_id, question_type, stimulus_html, stem_html, rationale_html, created_at, is_current')
-      .eq('question_id', questionId)
-      .order('is_current', { ascending: false })
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
-
-  const user = authResult.data?.user ?? null;
-
-  const { data: version, error: verErr } = versionsResult;
+  // Fetch question version (prefer is_current=true)
+  const { data: version, error: verErr } = await supabase
+    .from('question_versions')
+    .select('id, question_id, question_type, stimulus_html, stem_html, rationale_html, created_at, is_current')
+    .eq('question_id', questionId)
+    .order('is_current', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
   if (verErr) return NextResponse.json({ error: verErr.message }, { status: 400 });
-
   if (!version) {
     return NextResponse.json(
       { error: 'No question_versions found for this question.' },
@@ -224,4 +217,4 @@ export async function GET(_request, props) {
     correct_text,
     student_answer: studentAnswer,
   });
-}
+});

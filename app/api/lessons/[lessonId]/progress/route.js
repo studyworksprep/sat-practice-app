@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/lessons/[lessonId]/progress — get student's progress on this lesson
-export async function GET(request, props) {
+export const GET = legacyApiRoute(async (request, props) => {
+  // Auth happens outside the try/catch so a 401 from requireUser propagates
+  // to legacyApiRoute as a 401 (instead of being caught and remapped to 500).
+  const { user, supabase } = await requireUser();
   const params = await props.params;
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const { lessonId } = params;
 
     const { data: progress } = await supabase
@@ -22,17 +22,16 @@ export async function GET(request, props) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
 
 // POST /api/lessons/[lessonId]/progress — update progress
 // Body: { block_id, check_answer?: { selected, correct } , mark_complete?: boolean }
-export async function POST(request, props) {
+export const POST = legacyApiRoute(async (request, props) => {
+  // Auth happens outside the try/catch so a 401 from requireUser propagates
+  // to legacyApiRoute as a 401 (instead of being caught and remapped to 500).
+  const { user, supabase } = await requireUser();
   const params = await props.params;
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const { lessonId } = params;
     const body = await request.json();
     const { block_id, check_answer, mark_complete } = body;
@@ -104,4 +103,4 @@ export async function POST(request, props) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});

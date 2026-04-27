@@ -1,22 +1,14 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
+import { createServiceClient } from '../../../../../lib/supabase/server';
 
 // DELETE /api/practice-tests/attempt/[attemptId]
 // Permanently deletes a completed practice test attempt and all related records.
-export async function DELETE(_request, props) {
+export const DELETE = legacyApiRoute(async (_request, props) => {
   const params = await props.params;
   const { attemptId } = params;
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // Check if user is a teacher/admin who can delete any attempt
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
+  const { user, profile, supabase } = await requireUser();
 
   const isTeacherOrAdmin = profile?.role === 'teacher' || profile?.role === 'manager' || profile?.role === 'admin';
 
@@ -88,20 +80,17 @@ export async function DELETE(_request, props) {
   if (deleteErr) return NextResponse.json({ error: deleteErr.message }, { status: 500 });
 
   return NextResponse.json({ success: true });
-}
+});
 
 // GET /api/practice-tests/attempt/[attemptId]
 // Returns current module state for the active session.
 // "Active" = first module (in subject/module order) with no submitted practice_test_attempt_items.
 // Fetches all practice_test_modules in one query to avoid .single() failures
 // and redundant round-trips.
-export async function GET(_request, props) {
+export const GET = legacyApiRoute(async (_request, props) => {
   const params = await props.params;
   const { attemptId } = params;
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { user, supabase } = await requireUser();
 
   // Fetch attempt — filter by both id and user_id so this works regardless
   // of whether a RLS SELECT policy exists for this table.
@@ -272,4 +261,4 @@ export async function GET(_request, props) {
     time_limit_seconds: activeModuleRow.time_limit_seconds,
     questions,
   });
-}
+});

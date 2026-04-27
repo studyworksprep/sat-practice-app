@@ -1,27 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "../../../../lib/supabase/server";
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
-export async function GET(request) {
+export const GET = legacyApiRoute(async (request) => {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || (profile.role !== "teacher" && profile.role !== "manager" && profile.role !== "admin")) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
 
     // Pagination params
     const { searchParams } = new URL(request.url);
@@ -184,29 +167,11 @@ export async function GET(request) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
 
-export async function POST(request) {
+export const POST = legacyApiRoute(async (request) => {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || (profile.role !== "teacher" && profile.role !== "manager" && profile.role !== "admin")) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { supabase, user } = await requireRole(['teacher', 'manager', 'admin']);
 
     const body = await request.json();
     const { title, description, due_date, question_ids, student_ids, filter_criteria } = body;
@@ -262,29 +227,11 @@ export async function POST(request) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(request) {
+export const DELETE = legacyApiRoute(async (request) => {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || (profile.role !== "teacher" && profile.role !== "manager" && profile.role !== "admin")) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
 
     const body = await request.json();
     const { id } = body;
@@ -319,28 +266,11 @@ export async function DELETE(request) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
 
-export async function PATCH(request) {
+export const PATCH = legacyApiRoute(async (request) => {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || (profile.role !== "teacher" && profile.role !== "manager" && profile.role !== "admin")) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
 
     const body = await request.json();
     const { id, action } = body;
@@ -382,4 +312,4 @@ export async function PATCH(request) {
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
-}
+});
