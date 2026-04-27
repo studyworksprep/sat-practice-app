@@ -78,19 +78,28 @@ export async function loadRosterPerformance(supabase) {
     };
   }
 
-  // 2) Roster attempts in the lookback window. Paginated for
-  //    max-rows safety (Finding #1 in the architecture audit).
+  // 2) Roster attempts in the lookback window. Two-layer paging:
+  //    rosterIds is chunked so the .in() URL stays under
+  //    PostgREST's ~16KB cap (a manager with several hundred
+  //    students hits this), and each chunk goes through fetchAll
+  //    so the per-chunk results page through the max-rows cap.
   const sinceIso = new Date(
     Date.now() - PERFORMANCE_WINDOW_DAYS * 24 * 60 * 60 * 1000,
   ).toISOString();
-  const attempts = await fetchAll((from, to) =>
-    supabase
-      .from('attempts')
-      .select('user_id, question_id, is_correct, created_at')
-      .in('user_id', rosterIds)
-      .gte('created_at', sinceIso)
-      .range(from, to),
-  );
+  const ROSTER_CHUNK = 200;
+  const attempts = [];
+  for (let i = 0; i < rosterIds.length; i += ROSTER_CHUNK) {
+    const chunk = rosterIds.slice(i, i + ROSTER_CHUNK);
+    const chunkRows = await fetchAll((from, to) =>
+      supabase
+        .from('attempts')
+        .select('user_id, question_id, is_correct, created_at')
+        .in('user_id', chunk)
+        .gte('created_at', sinceIso)
+        .range(from, to),
+    );
+    attempts.push(...chunkRows);
+  }
 
   if (attempts.length === 0) {
     return {

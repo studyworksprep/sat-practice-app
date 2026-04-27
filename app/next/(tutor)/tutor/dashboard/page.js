@@ -174,7 +174,7 @@ export default async function TutorDashboardPage() {
               <li key={t.id}>
                 <Link
                   href={t.status === 'completed'
-                    ? `/practice/test/attempt/${t.id}/results`
+                    ? `/tutor/students/${t.studentId}/tests/${t.id}/results`
                     : `/tutor/students/${t.studentId}`}
                   className={s.testRow}
                 >

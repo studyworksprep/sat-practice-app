@@ -399,7 +399,14 @@ export default async function ManagerTeacherDetailPage({ params }) {
                     <Link
                       href={
                         t.status === 'completed'
-                          ? `/practice/test/attempt/${t.id}/results`
+                          // Reuse the /tutor/students/[id]/tests/[attemptId]/results
+                          // route — its loader keys off attempt.user_id via RLS,
+                          // not the URL slot, so passing the teacher id where the
+                          // student id usually goes is functionally correct. Gate
+                          // already filters to completed, so the
+                          // in-progress-only fallback path that does use
+                          // studentId can't fire.
+                          ? `/tutor/students/${teacherId}/tests/${t.id}/results`
                           : `/tutor/teachers/${teacherId}`
                       }
                       className={s.trainingRow}
