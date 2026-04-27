@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
@@ -55,7 +55,18 @@ export function TestResultsInteractive({
   const [exportingPdf, setExportingPdf] = useState(false);
   const [pdfError, setPdfError] = useState(null);
 
-  const selected = reviewItems.find((r) => r.ordinal === selectedOrdinal) ?? reviewItems[0];
+  // Group items by module once. Items in groups carry a
+  // moduleOrdinal field (1..N within their module) for the
+  // question-map labels and the per-question detail header. The
+  // global `ordinal` stays the source of truth for selection
+  // state so URL/back-button behavior is unchanged.
+  const moduleGroups = useMemo(() => groupItemsByModule(reviewItems), [reviewItems]);
+  const groupedItems = useMemo(
+    () => moduleGroups.flatMap((g) => g.items),
+    [moduleGroups],
+  );
+
+  const selected = groupedItems.find((r) => r.ordinal === selectedOrdinal) ?? groupedItems[0];
   const isRevealed = revealed.has(selected?.ordinal);
 
   // Live calc handle for the saved-state button. The
@@ -262,7 +273,7 @@ export function TestResultsInteractive({
         </div>
 
         <div className={s.mapModules}>
-          {groupItemsByModule(reviewItems).map((group) => (
+          {moduleGroups.map((group) => (
             <div key={group.key} className={s.mapModule}>
               <div className={s.mapModuleLabel}>
                 <span className={s.mapModuleSubject}>
@@ -293,9 +304,9 @@ export function TestResultsInteractive({
                       type="button"
                       className={cls}
                       onClick={() => setSelectedOrdinal(it.ordinal)}
-                      aria-label={`Question ${it.ordinal}, ${it.status}`}
+                      aria-label={`Question ${it.moduleOrdinal}, ${it.status}`}
                     >
-                      <span className={s.mapNum}>{it.ordinal}</span>
+                      <span className={s.mapNum}>{it.moduleOrdinal}</span>
                       {it.marked && (
                         <BookmarkIcon filled size={10} className={s.mapFlag} />
                       )}
@@ -323,7 +334,7 @@ export function TestResultsInteractive({
           <div className={s.questionHeader}>
             <div className={s.questionHeaderLeft}>
               <span className={s.questionNum}>
-                Question {selected.ordinal}
+                Question {selected.moduleOrdinal ?? selected.ordinal}
               </span>
               {selected.externalId && (
                 <span className={s.questionCode}>{selected.externalId}</span>
@@ -651,7 +662,10 @@ function DifficultyTimingTile({ entry }) {
 // Group reviewItems by (subject, module) preserving the test
 // order they arrive in. Each group also carries the running
 // correct/total tally so the module label can show "5/22"
-// next to it.
+// next to it. Items inside the group also get a per-module
+// ordinal — running 1..N within the module — so the question
+// map's button labels reset for each module instead of running
+// 1..98 across the whole test.
 function groupItemsByModule(items) {
   const groups = [];
   const byKey = new Map();
@@ -670,7 +684,8 @@ function groupItemsByModule(items) {
       byKey.set(key, group);
       groups.push(group);
     }
-    group.items.push(it);
+    const moduleOrdinal = group.items.length + 1;
+    group.items.push({ ...it, moduleOrdinal });
     if (!it.missing) {
       group.total += 1;
       if (it.studentAnswer?.isCorrect) group.correct += 1;
