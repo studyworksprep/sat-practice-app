@@ -11,6 +11,7 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
+import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate } from '@/lib/formatters';
 import { startTrainingAssignment } from './actions';
@@ -69,6 +70,12 @@ export default async function TutorTrainingAssignmentDetailPage({ params }) {
   if (assignment.assignment_type === 'questions') {
     const questionIds = Array.isArray(assignment.question_ids) ? assignment.question_ids : [];
     if (questionIds.length > 0) {
+      // Cover legacy v1 attempt ids so a tutor's pre-cutover
+      // attempts on these questions still count as "done."
+      const { allIds: attemptQuestionIds, v2ByLegacy } = await expandToAttemptIds(
+        supabase,
+        questionIds,
+      );
       const [qRes, aRes] = await Promise.all([
         supabase
           .from('questions_v2')
@@ -78,13 +85,14 @@ export default async function TutorTrainingAssignmentDetailPage({ params }) {
           .from('attempts')
           .select('question_id, is_correct, created_at')
           .eq('user_id', user.id)
-          .in('question_id', questionIds)
+          .in('question_id', attemptQuestionIds)
           .order('created_at', { ascending: false }),
       ]);
       const byId = new Map((qRes.data ?? []).map((q) => [q.id, q]));
       const latestByQ = new Map();
       for (const a of aRes.data ?? []) {
-        if (!latestByQ.has(a.question_id)) latestByQ.set(a.question_id, a);
+        const key = v2ByLegacy.get(a.question_id) ?? a.question_id;
+        if (!latestByQ.has(key)) latestByQ.set(key, a);
       }
       questionRows = questionIds.map((qid, i) => {
         const q = byId.get(qid) ?? { id: qid };

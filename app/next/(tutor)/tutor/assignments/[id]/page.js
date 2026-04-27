@@ -12,6 +12,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate } from '@/lib/formatters';
 import s from './AssignmentDetail.module.css';
@@ -63,18 +64,26 @@ export default async function TutorAssignmentDetailPage({ params }) {
       : [];
   const studentIds = (junctionRows ?? []).map((r) => r.student_id);
 
+  // Expand the v2 question_ids to also cover legacy v1 ids so
+  // students' pre-cutover attempts on these questions count toward
+  // the cohort stats below.
+  const { allIds: attemptQuestionIds, v2ByLegacy } = await expandToAttemptIds(
+    supabase,
+    questionIds,
+  );
+
   // Two parallel reads: per-student attempts (latest wins for the
   // correctness flag) and the question metadata so the Questions
   // section below can show display_code + skill + per-question
   // cohort accuracy. Skipped when the assignment has no question
   // pool (lesson / practice-test types).
   const [attemptRowsRes, questionMetaRes] = await Promise.all([
-    questionIds.length > 0 && studentIds.length > 0
+    attemptQuestionIds.length > 0 && studentIds.length > 0
       ? supabase
           .from('attempts')
           .select('user_id, question_id, is_correct, created_at')
           .in('user_id', studentIds)
-          .in('question_id', questionIds)
+          .in('question_id', attemptQuestionIds)
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),
     questionIds.length > 0
@@ -90,22 +99,26 @@ export default async function TutorAssignmentDetailPage({ params }) {
   );
 
   const statusByStudent = new Map();
-  const statusByQuestion = new Map();  // qid → { done, correct }
+  const statusByQuestion = new Map();  // qid (v2) → { done, correct }
   const seenPairs = new Set();
   let cohortDone = 0;
   let cohortCorrect = 0;
   for (const r of attemptRows) {
-    const key = `${r.user_id}::${r.question_id}`;
+    // Normalize legacy attempt ids back to the v2 question they
+    // map to, so seenPairs / statusByQuestion are keyed
+    // consistently regardless of which era the attempt landed in.
+    const qKey = v2ByLegacy.get(r.question_id) ?? r.question_id;
+    const key = `${r.user_id}::${qKey}`;
     if (seenPairs.has(key)) continue;
     seenPairs.add(key);
     const t = statusByStudent.get(r.user_id) ?? { done: 0, correct: 0 };
     t.done += 1;
     if (r.is_correct) t.correct += 1;
     statusByStudent.set(r.user_id, t);
-    const q = statusByQuestion.get(r.question_id) ?? { done: 0, correct: 0 };
+    const q = statusByQuestion.get(qKey) ?? { done: 0, correct: 0 };
     q.done += 1;
     if (r.is_correct) q.correct += 1;
-    statusByQuestion.set(r.question_id, q);
+    statusByQuestion.set(qKey, q);
     cohortDone += 1;
     if (r.is_correct) cohortCorrect += 1;
   }

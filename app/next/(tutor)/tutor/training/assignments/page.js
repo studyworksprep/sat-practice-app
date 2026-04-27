@@ -15,6 +15,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
+import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate } from '@/lib/formatters';
 import s from './TrainingAssignments.module.css';
@@ -289,17 +290,27 @@ async function loadAssignmentsData(supabase, userId) {
   );
   const assignmentIds = rows.map((r) => r.id);
 
+  // Cover legacy v1 attempt ids that map to these v2 questions —
+  // training mostly serves on-platform tutors who hadn't done the
+  // legacy practice flow much, but the path stays correct either
+  // way and the extra round-trip is one query against
+  // question_id_map.
+  const { allIds: attemptQuestionIds, v2ByLegacy } = await expandToAttemptIds(
+    supabase,
+    allQuestionIds,
+  );
+
   const [
     { data: attemptsRes },
     { data: questionsRes },
     { data: sessionsRes },
   ] = await Promise.all([
-    allQuestionIds.length
+    attemptQuestionIds.length
       ? supabase
           .from('attempts')
           .select('question_id, is_correct, created_at')
           .eq('user_id', userId)
-          .in('question_id', allQuestionIds)
+          .in('question_id', attemptQuestionIds)
           .order('created_at', { ascending: true })
       : Promise.resolve({ data: [] }),
     allQuestionIds.length
@@ -324,8 +335,9 @@ async function loadAssignmentsData(supabase, userId) {
 
   const firstAttemptByQid = new Map();
   for (const a of attemptsRes ?? []) {
-    if (!firstAttemptByQid.has(a.question_id)) {
-      firstAttemptByQid.set(a.question_id, a);
+    const key = v2ByLegacy.get(a.question_id) ?? a.question_id;
+    if (!firstAttemptByQid.has(key)) {
+      firstAttemptByQid.set(key, a);
     }
   }
   const attemptedSet = new Set(firstAttemptByQid.keys());

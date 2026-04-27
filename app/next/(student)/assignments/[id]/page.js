@@ -30,6 +30,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { formatDate } from '@/lib/formatters';
 import { Button } from '@/lib/ui/Button';
 import { startAssignmentPractice } from './actions';
@@ -111,6 +112,12 @@ export default async function AssignmentDetailPage({ params }) {
   if (assignment.assignment_type === 'questions') {
     const questionIds = Array.isArray(assignment.question_ids) ? assignment.question_ids : [];
     if (questionIds.length > 0) {
+      // Expand to include legacy v1 ids so attempts predating the
+      // v2 copy still count toward this assignment's progress.
+      const { allIds: attemptQuestionIds, v2ByLegacy } = await expandToAttemptIds(
+        supabase,
+        questionIds,
+      );
       const [qRes, aRes] = await Promise.all([
         supabase
           .from('questions_v2')
@@ -120,13 +127,14 @@ export default async function AssignmentDetailPage({ params }) {
           .from('attempts')
           .select('question_id, is_correct, created_at')
           .eq('user_id', user.id)
-          .in('question_id', questionIds)
+          .in('question_id', attemptQuestionIds)
           .order('created_at', { ascending: false }),
       ]);
       const byId = new Map((qRes.data ?? []).map((q) => [q.id, q]));
       const latestByQ = new Map();
       for (const a of aRes.data ?? []) {
-        if (!latestByQ.has(a.question_id)) latestByQ.set(a.question_id, a);
+        const key = v2ByLegacy.get(a.question_id) ?? a.question_id;
+        if (!latestByQ.has(key)) latestByQ.set(key, a);
       }
       questionRows = questionIds.map((qid, i) => {
         const q = byId.get(qid) ?? { id: qid };
