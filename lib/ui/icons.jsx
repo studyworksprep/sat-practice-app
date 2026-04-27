@@ -1,24 +1,23 @@
-// Shared SVG icons for the new tree. Small, stroke-based, drawn
-// on a 24×24 viewBox so a single glyph scales cleanly across the
-// top bar, popovers, and question navigation bubbles. `color` and
-// fill come from currentColor so callers style tone via the
-// parent's CSS (a className or a color prop).
+// Shared SVG icons for the new tree. 24×24 viewBox, currentColor
+// strokes, fill: none. Stroke width is 1.75 (per the design-kit
+// icons.html spec) — except for the Bookmark + Calculator icons
+// pre-dating this rewrite, which keep their original 2.0 / 1.7
+// strokes and `filled` semantics so the practice-test runner's
+// active "Mark for Review" pill renders identically.
 //
-// Each icon accepts a className so callers can tint it through
-// their module CSS (the "gold-when-active" pattern in the test
-// runner) without inline styles.
+// SVG paths are ported from the design system's
+// project/ui_kits/sat-practice-app/icons.html. That source is the
+// canonical reference — when adding a new icon, copy the path
+// from there rather than redrawing.
 //
-// Conventions for the section icons added below the original
-// Bookmark / Calculator pair:
-//   - 24×24 viewBox, stroke 1.7
-//   - `aria-hidden` by default (decorative — caller adds an
-//     accessible label on the surrounding element if needed)
-//   - currentColor strokes/fills so a parent .iconGold etc. tint
-//     each icon to its surface tone
-// Paths derive from common UI vocabulary (Lucide / Feather
-// shapes); stroke widths matched to the existing icons here.
+// Naming conventions:
+//   - PascalCase + 'Icon' suffix (MathIcon, PerformanceIcon, …).
+//   - Where the design-kit name and the in-tree name differ
+//     historically (e.g. BarChartIcon vs Performance), the
+//     design-kit name is the canonical export and the older
+//     name is kept as an alias for backward compat.
 
-function SvgRoot({ size = 18, strokeWidth = 1.7, className, children, ...rest }) {
+function SvgRoot({ size = 18, strokeWidth = 1.75, className, children, ...rest }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -38,12 +37,11 @@ function SvgRoot({ size = 18, strokeWidth = 1.7, className, children, ...rest })
   );
 }
 
-/**
- * Classic bookmark shape — used for the "Mark for Review" flag
- * throughout the practice-test runner, the module-review grid,
- * and the navigator popover. `filled` toggles between the hollow
- * outline (unmarked) and solid fill (marked) variants.
- */
+// ──────────────────────────────────────────────────────────────
+// Pre-existing — kept verbatim so the practice-test runner's
+// existing visual stays unchanged across this design refresh.
+// ──────────────────────────────────────────────────────────────
+
 export function BookmarkIcon({ filled = false, size = 18, className, ...rest }) {
   return (
     <svg
@@ -64,12 +62,6 @@ export function BookmarkIcon({ filled = false, size = 18, className, ...rest }) 
   );
 }
 
-/**
- * Simple calculator icon — a bordered body with a screen bar at
- * the top and a 3×3 grid of button dots. Stroke-based so it sits
- * next to text on the top bar without looking heavier than the
- * surrounding controls.
- */
 export function CalculatorIcon({ size = 18, className, ...rest }) {
   return (
     <svg
@@ -101,56 +93,458 @@ export function CalculatorIcon({ size = 18, className, ...rest }) {
 }
 
 // ──────────────────────────────────────────────────────────────
-// Section / domain icons. Used on card headers + empty states +
-// page hero spots across the new tree. One icon per concept,
-// re-used everywhere that concept shows up so a glance at the
-// glyph means the same thing on every page.
+// Subjects & domains
 // ──────────────────────────────────────────────────────────────
 
-/** Roster / cohort of students. Two figures + heads. */
-export function UsersIcon(props) {
+export function MathIcon(props) {
   return (
     <SvgRoot {...props}>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      <path d="M4 8h7M7.5 4.5v7M14 7l5 5M14 12l5-5M5 17l3-3 3 3M14 18h5M14 16h5" />
     </SvgRoot>
   );
 }
 
-/** Single student / individual learner. */
+export function ReadingWritingIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 5h7a3 3 0 0 1 3 3v12" />
+      <path d="M20 5h-3a3 3 0 0 0-3 3v12" />
+      <path d="M4 5v13h7" />
+      <path d="M20 5v13h-6" />
+    </SvgRoot>
+  );
+}
+/** @deprecated Use ReadingWritingIcon — kept for compatibility. */
+export const BookOpenIcon = ReadingWritingIcon;
+
+export function AlgebraIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 19V8M4 19h15M8 15v4M12 11v8M16 13v6M19 5l-3 3M16 8l-2-2" />
+    </SvgRoot>
+  );
+}
+
+export function AdvMathIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 20l5-9 4 5 7-13" />
+      <circle cx="9" cy="11" r="1.4" />
+      <circle cx="13" cy="16" r="1.4" />
+    </SvgRoot>
+  );
+}
+
+export function ProblemSolvingIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="9" cy="9" r="4.5" />
+      <circle cx="16" cy="15" r="4" />
+      <path d="M4 19h16" />
+    </SvgRoot>
+  );
+}
+
+export function DataAnalysisIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M3 12h7l1-3 2 6 1-3h7" />
+    </SvgRoot>
+  );
+}
+
+export function GeometryIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 20V4M4 20h16" />
+      <path d="M4 14l4-4 3 2 5-7 4 4" />
+    </SvgRoot>
+  );
+}
+
+export function InformationIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M5 4h11l3 3v13H5z" />
+      <path d="M16 4v3h3" />
+      <path d="M8 11h8M8 14h8M8 17h5" />
+    </SvgRoot>
+  );
+}
+
+export function CraftIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 6h13M4 12h11M4 18h7" />
+      <path d="M19 5l1.5 1.5L19 8" />
+    </SvgRoot>
+  );
+}
+
+export function ExpressionIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 18l4-12 4 12M5.5 14h5" />
+      <path d="M14 11h6M14 15h6M14 7h6" />
+    </SvgRoot>
+  );
+}
+
+export function StandardEnglishIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M5 5h11v14H5z" />
+      <path d="M9 5v14" />
+      <path d="M12 9h2M12 12h2M12 15h2" />
+    </SvgRoot>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// People & roles
+// ──────────────────────────────────────────────────────────────
+
 export function StudentIcon(props) {
   return (
     <SvgRoot {...props}>
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
+      <circle cx="12" cy="9" r="3.5" />
+      <path d="M5 19c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
     </SvgRoot>
   );
 }
 
-/** Teacher / mentor — graduation cap. Used for teacher cards. */
-export function GraduationCapIcon(props) {
+export function RosterIcon(props) {
   return (
     <SvgRoot {...props}>
-      <path d="M22 10v6" />
-      <path d="M2 10l10-5 10 5-10 5z" />
-      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+      <circle cx="9" cy="10" r="3" />
+      <circle cx="17" cy="10" r="3" />
+      <path d="M3 19c1-3 3-4.5 6-4.5s5 1.5 6 4.5" />
+      <path d="M14 19c.6-2 2-3.5 4-3.5s3 1 3.5 2.5" />
     </SvgRoot>
   );
 }
+/** @deprecated Use RosterIcon — kept for compatibility. */
+export const UsersIcon = RosterIcon;
 
-/** Open book — practice tests + lessons. */
-export function BookOpenIcon(props) {
+export function TutorIcon(props) {
   return (
     <SvgRoot {...props}>
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+      <circle cx="12" cy="9" r="3.5" />
+      <path d="M5 19c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+      <path d="M16 5l2 1.5-2 1.5" />
     </SvgRoot>
   );
 }
 
-/** Pencil — practice sessions, authoring. */
+export function ManagerIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="12" cy="9" r="3.5" />
+      <path d="M5 19c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+      <path d="M15.5 2l1 2 2 .5-1.5 1.5.5 2-2-1-2 1 .5-2L12.5 4.5l2-.5z" />
+    </SvgRoot>
+  );
+}
+
+export function GraduateIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="12" cy="9" r="3.5" />
+      <path d="M5 19c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+      <path d="M3 8l9-4 9 4-9 4z" />
+    </SvgRoot>
+  );
+}
+/** @deprecated Use GraduateIcon — kept for compatibility. */
+export const GraduationCapIcon = GraduateIcon;
+
+export function EnrolledIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 19v-2a4 4 0 0 1 4-4h4M16 16l2 2 4-4" />
+      <circle cx="10" cy="8" r="3.5" />
+    </SvgRoot>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// Performance & data
+// ──────────────────────────────────────────────────────────────
+
+export function PerformanceIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 19V5M4 19h16" />
+      <path d="M8 16V11M12 16V7M16 16v-6" />
+    </SvgRoot>
+  );
+}
+/** @deprecated Use PerformanceIcon — kept for compatibility. */
+export const BarChartIcon = PerformanceIcon;
+
+export function ProgressIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M3 17l5-5 4 3 4-6 5 5" />
+      <path d="M14 9h5v5" />
+    </SvgRoot>
+  );
+}
+/** @deprecated Use ProgressIcon — kept for compatibility. */
+export const TrendingUpIcon = ProgressIcon;
+
+export function ScoreIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M12 3l2.5 5.2 5.7.8-4.1 4 1 5.7L12 16l-5.1 2.7 1-5.7-4.1-4 5.7-.8z" />
+    </SvgRoot>
+  );
+}
+
+export function StreakIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M14 3c-3 4-7 5-7 9a5 5 0 0 0 10 0c0-1.5-.5-2.5-1-3.5" />
+      <path d="M12 9c2 1 3 2.5 3 4.5" />
+    </SvgRoot>
+  );
+}
+
+export function GoalIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="4.5" />
+      <circle cx="12" cy="12" r="1.4" />
+    </SvgRoot>
+  );
+}
+/** @deprecated Use GoalIcon — kept for compatibility. */
+export const TargetIcon = GoalIcon;
+
+export function AccuracyIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M12 3a9 9 0 1 0 9 9" />
+      <path d="M12 12V3a9 9 0 0 1 9 9z" />
+    </SvgRoot>
+  );
+}
+
+export function TrendIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 18l4-4 4 2 5-8 3 4" />
+    </SvgRoot>
+  );
+}
+
+export function TimeSpentIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 7v5l3.5 2" />
+    </SvgRoot>
+  );
+}
+/** @deprecated Use TimeSpentIcon — kept for compatibility. */
+export const ClockIcon = TimeSpentIcon;
+
+export function ImprovementIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M12 21V3" />
+      <path d="M12 5l-4 3M12 5l4 3" />
+      <path d="M12 13l-4 3M12 13l4 3" />
+    </SvgRoot>
+  );
+}
+
+export function ReportIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 5h16v3H4zM4 11h16v3H4zM4 17h16v3H4z" />
+      <path d="M7 6.5h.01M7 12.5h.01M7 18.5h.01" />
+    </SvgRoot>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// Activities
+// ──────────────────────────────────────────────────────────────
+
+export function QuestionBankIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M5 5h11l3 3v11H5z" />
+      <path d="M9 5v14" />
+      <path d="M12 10h4M12 13h4M12 16h3" />
+    </SvgRoot>
+  );
+}
+
+export function PracticeIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M7 5l12 7-12 7z" />
+    </SvgRoot>
+  );
+}
+
+export function ReviewIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 12a8 8 0 1 0 3-6.2" />
+      <path d="M3 4v4h4" />
+    </SvgRoot>
+  );
+}
+
+export function MarkedIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M6 4h11v16l-5.5-3.5L6 20z" />
+    </SvgRoot>
+  );
+}
+
+export function CorrectIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 12.5l3 3 5-6" />
+    </SvgRoot>
+  );
+}
+
+export function IncorrectIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9 9l6 6M15 9l-6 6" />
+    </SvgRoot>
+  );
+}
+
+export function NotesIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M5 5h12l3 3v11H5z" />
+      <path d="M9 11h7M9 14h7M9 17h4" />
+    </SvgRoot>
+  );
+}
+
+export function TestIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M5 4h14v6H5zM5 14h14v6H5z" />
+      <path d="M8 7h6M8 17h6" />
+    </SvgRoot>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// Utilities
+// ──────────────────────────────────────────────────────────────
+
+export function SearchIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="11" cy="11" r="6" />
+      <path d="M20 20l-4.5-4.5" />
+    </SvgRoot>
+  );
+}
+
+export function FilterIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M4 5h16l-6 8v6l-4 2v-8z" />
+    </SvgRoot>
+  );
+}
+
+export function SortIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M5 7h14M5 12h14M5 17h14" />
+    </SvgRoot>
+  );
+}
+
+export function CalendarIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <rect x="4" y="5" width="16" height="15" rx="1" />
+      <path d="M4 9h16" />
+      <path d="M9 3v4M15 3v4" />
+    </SvgRoot>
+  );
+}
+
+export function NotificationIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2H4.5z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </SvgRoot>
+  );
+}
+
+export function SettingsIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="12" cy="12" r="2.5" />
+      <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2 2M16.5 16.5l2 2M5.5 18.5l2-2M16.5 7.5l2-2" />
+    </SvgRoot>
+  );
+}
+
+export function HelpIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.7" />
+      <path d="M12 17h.01" />
+    </SvgRoot>
+  );
+}
+
+export function FeedbackIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M5 5h14v11H8l-3 3z" />
+      <path d="M9 9h7M9 12h5" />
+    </SvgRoot>
+  );
+}
+
+export function InfoIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v6" />
+      <circle cx="12" cy="16.2" r=".7" fill="currentColor" stroke="none" />
+    </SvgRoot>
+  );
+}
+
+export function ResourceIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <path d="M12 4l8 4v5c0 4-3.5 6.5-8 7.5C7.5 19.5 4 17 4 13V8z" />
+    </SvgRoot>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// Pre-existing tree icons that have no exact design-kit match.
+// Kept so the icons commit doesn't break consumers that picked
+// these specifically. Most render fine alongside the new
+// design-kit set.
+// ──────────────────────────────────────────────────────────────
+
 export function PencilIcon(props) {
   return (
     <SvgRoot {...props}>
@@ -160,7 +554,6 @@ export function PencilIcon(props) {
   );
 }
 
-/** Inbox — assignments hub. */
 export function InboxIcon(props) {
   return (
     <SvgRoot {...props}>
@@ -170,40 +563,6 @@ export function InboxIcon(props) {
   );
 }
 
-/** Bar chart — performance / analytics. */
-export function BarChartIcon(props) {
-  return (
-    <SvgRoot {...props}>
-      <path d="M3 3v18h18" />
-      <path d="M18 17V9" />
-      <path d="M13 17V5" />
-      <path d="M8 17v-3" />
-    </SvgRoot>
-  );
-}
-
-/** Trend up — improvement / progress arrows. */
-export function TrendingUpIcon(props) {
-  return (
-    <SvgRoot {...props}>
-      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-      <polyline points="16 7 22 7 22 13" />
-    </SvgRoot>
-  );
-}
-
-/** Target / bullseye — training, focused practice. */
-export function TargetIcon(props) {
-  return (
-    <SvgRoot {...props}>
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </SvgRoot>
-  );
-}
-
-/** Stack of cards — flashcards. */
 export function LayersIcon(props) {
   return (
     <SvgRoot {...props}>
@@ -214,7 +573,6 @@ export function LayersIcon(props) {
   );
 }
 
-/** Sparkles — review, "smart" features. */
 export function SparklesIcon(props) {
   return (
     <SvgRoot {...props}>
@@ -224,23 +582,12 @@ export function SparklesIcon(props) {
   );
 }
 
-/** Clipboard with check — completed / submitted assignments. */
 export function ClipboardCheckIcon(props) {
   return (
     <SvgRoot {...props}>
       <rect x="8" y="3" width="8" height="4" rx="1" />
       <path d="M8 5H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3" />
       <path d="m9 14 2 2 4-4" />
-    </SvgRoot>
-  );
-}
-
-/** Clock — timing, deadlines. */
-export function ClockIcon(props) {
-  return (
-    <SvgRoot {...props}>
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
     </SvgRoot>
   );
 }
