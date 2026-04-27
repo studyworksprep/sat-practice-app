@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import HtmlBlock from '../../../components/HtmlBlock';
 import { isLessonCompletionLocked, parseDesmosInteractiveContent, validateDesmosSubmission } from '../../../lib/lesson/desmos-interactive.mjs';
+import { buildBlockIndexMap, resolveAnswerNavigation, resolveContinueNavigation } from '../../../lib/lesson/runtime-navigation.mjs';
 
 export default function LessonViewerPage() {
   return <Suspense><LessonViewer /></Suspense>;
@@ -106,13 +107,7 @@ function LessonViewer() {
     : 0;
 
   const currentBlock = blocks[currentIndex] || null;
-  const blockIndexById = useMemo(() => {
-    const map = new Map();
-    blocks.forEach((block, index) => {
-      if (block?.id != null) map.set(String(block.id), index);
-    });
-    return map;
-  }, [blocks]);
+  const blockIndexById = useMemo(() => buildBlockIndexMap(blocks), [blocks]);
 
   if (loading) return <div className="container" style={{ paddingTop: 48 }}><p className="muted">Loading…</p></div>;
   if (error) return <div className="container" style={{ paddingTop: 48 }}><p style={{ color: 'var(--danger)' }}>{error}</p></div>;
@@ -132,51 +127,26 @@ function LessonViewer() {
   }
 
   function goNext() {
-    setCurrentIndex((prev) => {
-      const current = blocks[prev];
-      if (!current) return prev;
-
-      const nextLinear = Math.min(prev + 1, Math.max(blocks.length - 1, 0));
-
-      if (activeBranchState?.sourceBlockId) {
-        const isChosenBranchBlock = current.id === activeBranchState.chosenBlockId;
-        if (isChosenBranchBlock && activeBranchState.rejoinBlockId && activeBranchState.rejoinBlockId !== current.id) {
-          const rejoinIdx = indexForBlockId(activeBranchState.rejoinBlockId);
-          if (rejoinIdx != null) return rejoinIdx;
-        }
-
-        if (current.id === activeBranchState.rejoinBlockId) {
-          setActiveBranchState(null);
-        }
-      }
-
-      return nextLinear;
+    const result = resolveContinueNavigation({
+      blocks,
+      currentIndex,
+      activeBranchState,
+      blockIndexById,
     });
-  }
-
-  function goToBlockId(blockId, fallbackIndex = currentIndex + 1) {
-    const idx = indexForBlockId(blockId);
-    if (idx != null) {
-      setCurrentIndex(idx);
-      return true;
-    }
-    setCurrentIndex(Math.min(fallbackIndex, Math.max(blocks.length - 1, 0)));
-    return false;
+    setCurrentIndex(result.nextIndex);
+    setActiveBranchState(result.activeBranchState);
   }
 
   function routeFromAnswer(block, isCorrect) {
-    const content = block?.content || {};
-    const targetId = isCorrect ? content.on_correct_block_id : content.on_incorrect_block_id;
-    const resolved = goToBlockId(targetId, currentIndex + 1);
-    if (resolved && targetId) {
-      setActiveBranchState({
-        sourceBlockId: block.id,
-        chosenBlockId: String(targetId),
-        rejoinBlockId: content.rejoin_at_block_id ? String(content.rejoin_at_block_id) : null,
-      });
-      return;
-    }
-    setActiveBranchState(null);
+    const result = resolveAnswerNavigation({
+      block,
+      isCorrect,
+      currentIndex,
+      totalBlocks: blocks.length,
+      blockIndexById,
+    });
+    setCurrentIndex(result.nextIndex);
+    setActiveBranchState(result.activeBranchState);
   }
 
   function captureWorkflowDesmosState(block, payload) {
@@ -255,9 +225,9 @@ function LessonViewer() {
             <DesmosInteractiveBlock
               block={currentBlock}
               previousAnswer={checkAnswers[currentBlock.id]}
-              onSuccess={() => {
-                submitDesmosResult(currentBlock.id, true);
-                routeFromAnswer(currentBlock, true);
+              onResult={(isCorrect) => {
+                submitDesmosResult(currentBlock.id, isCorrect);
+                routeFromAnswer(currentBlock, isCorrect);
               }}
               onUnlock={() => {
                 setForceUnlockedBlockIds((prev) => (
@@ -491,7 +461,7 @@ function QuestionLinkBlock({ block, isComplete }) {
 function DesmosInteractiveBlock({
   block,
   previousAnswer,
-  onSuccess,
+  onResult,
   onUnlock,
   onDebug,
   onCaptureWorkflowContext,
@@ -637,12 +607,13 @@ function DesmosInteractiveBlock({
       setFeedbackHtml(result.feedbackHtml || content.feedback.success_message_html);
       setProgressiveHintHtml(result.progressiveHintHtml || '');
       setSolutionHtml(result.solutionHtml || '');
-      onSuccess();
+      onResult?.(true);
     } else {
       setFeedbackState('retry');
       setFeedbackHtml(result.feedbackHtml || content.feedback.retry_message_html);
       setProgressiveHintHtml(result.progressiveHintHtml || '');
       setSolutionHtml(result.solutionHtml || '');
+      onResult?.(false);
       if (result.solutionHtml && content.progression?.require_success) {
         onUnlock?.();
       }
