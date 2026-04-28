@@ -1,0 +1,38 @@
+/* IconTile — design-kit "icon in a tinted rounded square" used
+   on every section header, empty-state hero, and stat tile.
+   Tokens come from app/styles/next-tokens.css. */
+
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: var(--tile-bg);
+  color: var(--tile-fg);
+  border: 1px solid color-mix(in oklab, var(--tile-fg) 18%, transparent);
+  /* Stroke color is inherited from the tile via currentColor — the
+     SvgRoot icons all use stroke="currentColor". */
+}
+
+/* ---------- Sizes ---------- */
+
+.size_sm { width: 24px; height: 24px; border-radius: 6px; }
+.size_md { width: 32px; height: 32px; border-radius: 8px; }
+.size_lg { width: 48px; height: 48px; border-radius: 10px; }
+
+/* ---------- Palettes ----------
+   Each palette sets the two tile-* tokens. The .tile rule above
+   then renders bg + fg in the right pair. */
+
+.pal_math    { --tile-bg: var(--tile-math-bg);    --tile-fg: var(--tile-math-fg); }
+.pal_rw      { --tile-bg: var(--tile-rw-bg);      --tile-fg: var(--tile-rw-fg); }
+.pal_navy    { --tile-bg: var(--tile-navy-bg);    --tile-fg: var(--tile-navy-fg); }
+.pal_gold    { --tile-bg: var(--tile-gold-bg);    --tile-fg: var(--tile-gold-fg); }
+.pal_cyan    { --tile-bg: var(--tile-cyan-bg);    --tile-fg: var(--tile-cyan-fg); }
+.pal_success { --tile-bg: var(--tile-success-bg); --tile-fg: var(--tile-success-fg); }
+.pal_danger  { --tile-bg: var(--tile-danger-bg);  --tile-fg: var(--tile-danger-fg); }
+.pal_amber   { --tile-bg: var(--tile-amber-bg);   --tile-fg: var(--tile-amber-fg); }
+.pal_violet  { --tile-bg: var(--tile-violet-bg);  --tile-fg: var(--tile-violet-fg); }
+.pal_pink    { --tile-bg: var(--tile-pink-bg);    --tile-fg: var(--tile-pink-fg); }
+.pal_slate   { --tile-bg: var(--tile-slate-bg);   --tile-fg: var(--tile-slate-fg); }

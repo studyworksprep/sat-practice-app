@@ -82,6 +82,41 @@
   font-weight: 600;
 }
 
+/* ---------- Pending state ----------
+   useLinkStatus → pending toggles linkLabelPending mid-navigation.
+   The label dims slightly and a small pulsing dot trails the
+   text. It's quick visual ack that the click landed, sized to
+   feel "in flight" not "broken." */
+
+.linkLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity var(--dur-fast) var(--ease-std);
+}
+
+.linkLabelPending {
+  opacity: 0.6;
+}
+
+.pendingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: navPulse 0.85s ease-in-out infinite;
+}
+
+@keyframes navPulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50%      { opacity: 1;    transform: scale(1.1);  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pendingDot { animation: none; opacity: 0.7; }
+  .linkLabel { transition: none; }
+}
+
 /* ---------- Right side ---------- */
 
 .userEmail {
@@ -113,6 +148,30 @@
 
 .billingLink:hover { color: var(--fg1); }
 
+/* Sign out — visually paired with the Account link but slightly
+   subdued so the primary nav controls (the link strip on the
+   left) keep visual priority. */
+.signOutBtn {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+}
+
+.signOutBtn:hover {
+  color: var(--fg1);
+  background: var(--color-slate-100);
+  border-color: var(--border-strong);
+}
+
 /* ---------- Narrow viewports ---------- */
 
 @media (max-width: 720px) {
@@ -121,4 +180,6 @@
   .navLinks { gap: 0; }
   .navLink  { padding: 4px 8px; font-size: 12px; }
   .userEmail { display: none; }
+  .billingLink { display: none; }
+  .signOutBtn { padding: 3px 8px; font-size: 11px; }
 }

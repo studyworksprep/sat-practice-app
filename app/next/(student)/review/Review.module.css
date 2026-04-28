@@ -70,6 +70,9 @@
 }
 
 .h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 700;

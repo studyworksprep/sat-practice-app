@@ -30,12 +30,6 @@ import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import type { ActionResult } from '@/lib/types';
 
-// Helper: actionFail() is a .js helper that returns a widened shape.
-// Narrow it here so Server Action return type matches ActionResult.
-function fail(msg: string): ActionResult {
-  return actionFail(msg) as ActionResult;
-}
-
 const MAX_QUESTIONS = 50;
 const MAX_STUDENTS_PER_ASSIGNMENT = 200;
 
@@ -65,8 +59,8 @@ export async function createAssignment(
   try {
     ctx = await requireUser();
   } catch (err) {
-    if (err instanceof ApiError) return err.toActionResult() as ActionResult;
-    return fail('Unexpected error loading user');
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
   }
   // Cast once — requireUser returns { supabase: unknown } in our
   // AuthContext type until the auth helper itself migrates to .ts.
@@ -77,7 +71,7 @@ export async function createAssignment(
   };
 
   if (!['teacher', 'manager', 'admin'].includes(profile.role)) {
-    return fail('Only teachers can create assignments.');
+    return actionFail('Only teachers can create assignments.');
   }
 
   const rl = await rateLimit(`assignment-create:${user.id}`, {
@@ -85,12 +79,12 @@ export async function createAssignment(
     windowMs: 60_000,
   });
   if (!rl.ok) {
-    return fail('Too many assignments in a short time. Please slow down.');
+    return actionFail('Too many assignments in a short time. Please slow down.');
   }
 
   const assignmentType = String(formData.get('assignment_type') || '');
   if (!['questions', 'practice_test', 'lesson'].includes(assignmentType)) {
-    return fail('Select an assignment type.');
+    return actionFail('Select an assignment type.');
   }
 
   const title = String(formData.get('title') || '').trim() || null;
@@ -103,10 +97,10 @@ export async function createAssignment(
     .map((s) => String(s))
     .filter(Boolean);
   if (studentIds.length === 0) {
-    return fail('Select at least one student.');
+    return actionFail('Select at least one student.');
   }
   if (studentIds.length > MAX_STUDENTS_PER_ASSIGNMENT) {
-    return fail(
+    return actionFail(
       `You can assign to at most ${MAX_STUDENTS_PER_ASSIGNMENT} students at a time.`,
     );
   }
@@ -120,7 +114,7 @@ export async function createAssignment(
     typePayload = await buildLessonPayload(supabase, formData);
   }
   if (!typePayload.ok) {
-    return fail(typePayload.error);
+    return actionFail(typePayload.error);
   }
 
   const { data: assignment, error: insertErr } = await supabase
@@ -139,7 +133,7 @@ export async function createAssignment(
     .single();
 
   if (insertErr || !assignment) {
-    return fail(
+    return actionFail(
       `Failed to create assignment: ${insertErr?.message ?? 'unknown'}`,
     );
   }
@@ -153,7 +147,7 @@ export async function createAssignment(
     .insert(junctionRows);
 
   if (studentsErr) {
-    return fail(
+    return actionFail(
       `Assignment created but students could not be added: ${studentsErr.message}`,
     );
   }

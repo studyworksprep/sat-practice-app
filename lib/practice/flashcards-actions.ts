@@ -20,22 +20,43 @@
 
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
+import type { ActionResult } from '@/lib/types';
 
 const DEFAULT_SETS = ['My Math', 'My Reading'];
 const MAX_PAGE_SIZE = 100;
 
-/**
- * Ensure the student has the default "My Math" / "My Reading"
- * sets. Idempotent — only inserts the missing ones.
- */
-async function ensureDefaults(supabase, userId) {
+interface FlashcardSet {
+  id: string;
+  name: string;
+  is_default: boolean;
+  created_at: string;
+  card_count: number;
+}
+
+interface Flashcard {
+  id: string;
+  front: string;
+  back: string;
+  mastery: number | null;
+  created_at: string;
+  reviewed_at: string | null;
+}
+
+/** Ensure the student has the default "My Math" / "My Reading"
+ *  sets. Idempotent — only inserts the missing ones.
+ *  supabase / userId come from requireUser, which is .js — so
+ *  we don't have a precise SupabaseClient<Database> type here yet. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function ensureDefaults(supabase: any, userId: string): Promise<void> {
   const { data: existing } = await supabase
     .from('flashcard_sets')
     .select('id, name')
     .eq('user_id', userId)
     .eq('is_default', true);
 
-  const existingNames = new Set((existing ?? []).map((s) => s.name));
+  const existingNames = new Set(
+    ((existing ?? []) as Array<{ name: string }>).map((s) => s.name),
+  );
   const missing = DEFAULT_SETS.filter((n) => !existingNames.has(n));
 
   if (missing.length === 0) return;
@@ -44,12 +65,12 @@ async function ensureDefaults(supabase, userId) {
   );
 }
 
-/**
- * List the caller's flashcard sets with per-set card counts.
- * Mirrors GET /api/flashcard-sets but skips avg_mastery (the modal
- * doesn't display it — that's a /flashcards page feature).
- */
-export async function listFlashcardSets() {
+/** List the caller's flashcard sets with per-set card counts.
+ *  Mirrors GET /api/flashcard-sets but skips avg_mastery (the modal
+ *  doesn't display it — that's a /flashcards page feature). */
+export async function listFlashcardSets(): Promise<
+  ActionResult<{ data: { sets: FlashcardSet[] } }>
+> {
   let user;
   let supabase;
   try {
@@ -68,33 +89,44 @@ export async function listFlashcardSets() {
     .order('created_at', { ascending: true });
   if (error) return actionFail(error.message);
 
-  const setIds = (sets ?? []).map((s) => s.id);
-  const counts = {};
+  const setRows: Array<Omit<FlashcardSet, 'card_count'>> = sets ?? [];
+  const setIds = setRows.map((s) => s.id);
+  const counts: Record<string, number> = {};
   if (setIds.length > 0) {
     const { data: cards } = await supabase
       .from('flashcards')
       .select('set_id')
       .in('set_id', setIds);
-    for (const c of cards ?? []) {
+    for (const c of (cards ?? []) as Array<{ set_id: string }>) {
       counts[c.set_id] = (counts[c.set_id] ?? 0) + 1;
     }
   }
 
   return actionOk({
-    sets: (sets ?? []).map((s) => ({ ...s, card_count: counts[s.id] ?? 0 })),
+    sets: setRows.map((s) => ({ ...s, card_count: counts[s.id] ?? 0 })),
   });
 }
 
-/**
- * List a page of cards in a set the caller owns. Mirrors
- * GET /api/flashcards?set_id&page&page_size.
- *
- * @param {object} args
- * @param {string} args.setId
- * @param {number} [args.page=1]
- * @param {number} [args.pageSize=25]
- */
-export async function listFlashcards({ setId, page = 1, pageSize = 25 }) {
+/** List a page of cards in a set the caller owns. Mirrors
+ *  GET /api/flashcards?set_id&page&page_size. */
+export async function listFlashcards({
+  setId,
+  page = 1,
+  pageSize = 25,
+}: {
+  setId: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<
+  ActionResult<{
+    data: {
+      cards: Flashcard[];
+      total: number;
+      page: number;
+      pageSize: number;
+    };
+  }>
+> {
   if (!setId) return actionFail('setId required');
 
   let user;
@@ -107,9 +139,10 @@ export async function listFlashcards({ setId, page = 1, pageSize = 25 }) {
   }
 
   const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
-  const safeSize = Number.isFinite(pageSize) && pageSize > 0
-    ? Math.min(MAX_PAGE_SIZE, Math.floor(pageSize))
-    : 25;
+  const safeSize =
+    Number.isFinite(pageSize) && pageSize > 0
+      ? Math.min(MAX_PAGE_SIZE, Math.floor(pageSize))
+      : 25;
   const from = (safePage - 1) * safeSize;
   const to = from + safeSize - 1;
 
@@ -130,23 +163,24 @@ export async function listFlashcards({ setId, page = 1, pageSize = 25 }) {
   if (error) return actionFail(error.message);
 
   return actionOk({
-    cards: cards ?? [],
+    cards: (cards ?? []) as Flashcard[],
     total: count ?? 0,
     page: safePage,
     pageSize: safeSize,
   });
 }
 
-/**
- * Create a flashcard in a set the caller owns. Mirrors
- * POST /api/flashcards.
- *
- * @param {object} args
- * @param {string} args.setId
- * @param {string} args.front
- * @param {string} args.back
- */
-export async function createFlashcard({ setId, front, back }) {
+/** Create a flashcard in a set the caller owns. Mirrors
+ *  POST /api/flashcards. */
+export async function createFlashcard({
+  setId,
+  front,
+  back,
+}: {
+  setId: string;
+  front: string;
+  back: string;
+}): Promise<ActionResult<{ data: { card: Flashcard } }>> {
   if (!setId) return actionFail('setId required');
   const trimmedFront = (front ?? '').trim();
   const trimmedBack = (back ?? '').trim();
@@ -178,5 +212,5 @@ export async function createFlashcard({ setId, front, back }) {
     .single();
   if (error) return actionFail(error.message);
 
-  return actionOk({ card });
+  return actionOk({ card: card as Flashcard });
 }

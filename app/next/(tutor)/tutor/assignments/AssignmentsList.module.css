@@ -122,6 +122,9 @@
 }
 
 .sectionTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   font-family: var(--font-serif);
   font-size: 20px;
   font-weight: 700;

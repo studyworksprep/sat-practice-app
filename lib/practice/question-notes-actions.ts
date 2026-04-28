@@ -18,18 +18,35 @@
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
+import type { ActionResult, UserRole } from '@/lib/types';
 
-const TUTOR_ROLES = ['teacher', 'manager', 'admin'];
+const TUTOR_ROLES: UserRole[] = ['teacher', 'manager', 'admin'];
 
-/**
- * Add a tutor note to a question.
- *
- * @param {object} args
- * @param {string} args.questionId
- * @param {string} args.content
- * @returns {Promise<{ ok: true, data: { note: object } } | { ok: false, error: string }>}
- */
-export async function addQuestionNote({ questionId, content }) {
+interface QuestionNote {
+  id: string;
+  questionId: string;
+  authorId: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  authorName: string;
+  authorRole: UserRole | null;
+}
+
+interface QuestionNoteUpdate {
+  id: string;
+  content: string;
+  updatedAt: string;
+}
+
+/** Add a tutor note to a question. */
+export async function addQuestionNote({
+  questionId,
+  content,
+}: {
+  questionId: string;
+  content: string;
+}): Promise<ActionResult<{ data: { note: QuestionNote } }>> {
   if (!questionId) return actionFail('questionId required');
   const trimmed = (content ?? '').trim();
   if (!trimmed) return actionFail('content required');
@@ -58,7 +75,7 @@ export async function addQuestionNote({ questionId, content }) {
     .single();
   if (error) return actionFail(error.message);
 
-  const note = {
+  const note: QuestionNote = {
     id: data.id,
     questionId: data.question_id,
     authorId: data.author_id,
@@ -78,14 +95,14 @@ export async function addQuestionNote({ questionId, content }) {
   return actionOk({ note });
 }
 
-/**
- * Update an existing note's content. Author or admin only.
- *
- * @param {object} args
- * @param {string} args.noteId
- * @param {string} args.content
- */
-export async function updateQuestionNote({ noteId, content }) {
+/** Update an existing note's content. Author or admin only. */
+export async function updateQuestionNote({
+  noteId,
+  content,
+}: {
+  noteId: string;
+  content: string;
+}): Promise<ActionResult<{ data: { note: QuestionNoteUpdate } }>> {
   if (!noteId) return actionFail('noteId required');
   const trimmed = (content ?? '').trim();
   if (!trimmed) return actionFail('content required');
@@ -126,13 +143,12 @@ export async function updateQuestionNote({ noteId, content }) {
   });
 }
 
-/**
- * Delete a note. Author or admin only.
- *
- * @param {object} args
- * @param {string} args.noteId
- */
-export async function deleteQuestionNote({ noteId }) {
+/** Delete a note. Author or admin only. */
+export async function deleteQuestionNote({
+  noteId,
+}: {
+  noteId: string;
+}): Promise<ActionResult> {
   if (!noteId) return actionFail('noteId required');
 
   let supabase;

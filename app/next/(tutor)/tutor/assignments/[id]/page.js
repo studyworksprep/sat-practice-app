@@ -12,15 +12,18 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate } from '@/lib/formatters';
+import { addAssignmentMembers } from './actions';
+import { AddMembersPicker } from './AddMembersPicker';
 import s from './AssignmentDetail.module.css';
 
 export const dynamic = 'force-dynamic';
 
 export default async function TutorAssignmentDetailPage({ params }) {
   const { id: assignmentId } = await params;
-  const { profile, supabase } = await requireUser();
+  const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'student' || profile.role === 'practice') {
     redirect('/dashboard');
@@ -63,18 +66,26 @@ export default async function TutorAssignmentDetailPage({ params }) {
       : [];
   const studentIds = (junctionRows ?? []).map((r) => r.student_id);
 
+  // Expand the v2 question_ids to also cover legacy v1 ids so
+  // students' pre-cutover attempts on these questions count toward
+  // the cohort stats below.
+  const { allIds: attemptQuestionIds, v2ByLegacy } = await expandToAttemptIds(
+    supabase,
+    questionIds,
+  );
+
   // Two parallel reads: per-student attempts (latest wins for the
   // correctness flag) and the question metadata so the Questions
   // section below can show display_code + skill + per-question
   // cohort accuracy. Skipped when the assignment has no question
   // pool (lesson / practice-test types).
   const [attemptRowsRes, questionMetaRes] = await Promise.all([
-    questionIds.length > 0 && studentIds.length > 0
+    attemptQuestionIds.length > 0 && studentIds.length > 0
       ? supabase
           .from('attempts')
           .select('user_id, question_id, is_correct, created_at')
           .in('user_id', studentIds)
-          .in('question_id', questionIds)
+          .in('question_id', attemptQuestionIds)
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),
     questionIds.length > 0
@@ -90,22 +101,26 @@ export default async function TutorAssignmentDetailPage({ params }) {
   );
 
   const statusByStudent = new Map();
-  const statusByQuestion = new Map();  // qid → { done, correct }
+  const statusByQuestion = new Map();  // qid (v2) → { done, correct }
   const seenPairs = new Set();
   let cohortDone = 0;
   let cohortCorrect = 0;
   for (const r of attemptRows) {
-    const key = `${r.user_id}::${r.question_id}`;
+    // Normalize legacy attempt ids back to the v2 question they
+    // map to, so seenPairs / statusByQuestion are keyed
+    // consistently regardless of which era the attempt landed in.
+    const qKey = v2ByLegacy.get(r.question_id) ?? r.question_id;
+    const key = `${r.user_id}::${qKey}`;
     if (seenPairs.has(key)) continue;
     seenPairs.add(key);
     const t = statusByStudent.get(r.user_id) ?? { done: 0, correct: 0 };
     t.done += 1;
     if (r.is_correct) t.correct += 1;
     statusByStudent.set(r.user_id, t);
-    const q = statusByQuestion.get(r.question_id) ?? { done: 0, correct: 0 };
+    const q = statusByQuestion.get(qKey) ?? { done: 0, correct: 0 };
     q.done += 1;
     if (r.is_correct) q.correct += 1;
-    statusByQuestion.set(r.question_id, q);
+    statusByQuestion.set(qKey, q);
     cohortDone += 1;
     if (r.is_correct) cohortCorrect += 1;
   }
@@ -125,6 +140,60 @@ export default async function TutorAssignmentDetailPage({ params }) {
     };
   });
   students.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Eligible-to-add pool for the AddMembersPicker. Pulls every
+  // student the caller can see (RLS on student_practice_stats
+  // already scopes this) plus the manager's teachers if the
+  // caller is a manager / admin. Anyone already enrolled is
+  // filtered out so the picker shows only people who can
+  // actually be added. The action does its own role check + RLS
+  // gate on insert; this list just drives the UI.
+  const enrolledIds = new Set((junctionRows ?? []).map((r) => r.student_id));
+  const isManagerScope = profile.role === 'manager' || profile.role === 'admin';
+
+  const [{ data: eligibleStudents }, { data: teacherJuncs }] = await Promise.all([
+    supabase
+      .from('student_practice_stats')
+      .select('user_id, first_name, last_name, email')
+      .order('last_name', { ascending: true, nullsFirst: false }),
+    isManagerScope
+      ? supabase
+          .from('manager_teacher_assignments')
+          .select('teacher_id')
+          .eq('manager_id', user.id)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  let eligibleTeachers = [];
+  const teacherIds = (teacherJuncs ?? []).map((r) => r.teacher_id).filter(Boolean);
+  if (teacherIds.length > 0) {
+    const { data: teacherRows } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, email')
+      .in('id', teacherIds);
+    eligibleTeachers = (teacherRows ?? []).map((t) => ({
+      id: t.id,
+      role: 'trainee',
+      name:
+        [t.first_name, t.last_name].filter(Boolean).join(' ')
+        || t.email || 'Teacher',
+      email: t.email,
+    }));
+  }
+
+  const eligible = [
+    ...(eligibleStudents ?? []).map((row) => ({
+      id: row.user_id,
+      role: 'student',
+      name:
+        [row.first_name, row.last_name].filter(Boolean).join(' ')
+        || row.email || 'Student',
+      email: row.email,
+    })),
+    ...eligibleTeachers,
+  ]
+    .filter((p) => p.id && !enrolledIds.has(p.id))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const title = assignment.title
     ?? (assignment.assignment_type === 'lesson' ? assignment.lesson?.title : null)
@@ -209,6 +278,14 @@ export default async function TutorAssignmentDetailPage({ params }) {
             </div>
           </div>
         </div>
+
+        {!assignment.archived_at && (
+          <AddMembersPicker
+            assignmentId={assignment.id}
+            eligible={eligible}
+            addAction={addAssignmentMembers}
+          />
+        )}
 
         {students.length === 0 ? (
           <div className={s.empty}>

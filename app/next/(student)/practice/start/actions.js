@@ -31,6 +31,7 @@ import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { fetchAll } from '@/lib/supabase/fetchAll';
+import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 
 const MAX_SESSION_SIZE = 50;
 
@@ -184,17 +185,25 @@ async function loadCandidateIds(supabase, filters) {
 /**
  * Drop IDs the student has already answered. Sourced from
  * attempts (v2-native) rather than the legacy question_status
- * table, which is keyed on v1 question IDs.
+ * table, which is keyed on v1 question IDs. expandToAttemptIds
+ * folds in any legacy v1 ids that map to the candidate v2 ids,
+ * so a question the student answered on the legacy practice page
+ * (and was therefore recorded with a v1 question_id) gets
+ * dropped here too — they don't get re-served what they've
+ * already done.
  */
 async function dropAnswered(supabase, userId, candidateIds) {
   if (candidateIds.length === 0) return candidateIds;
+  const { allIds, v2ByLegacy } = await expandToAttemptIds(supabase, candidateIds);
   const { data: answered } = await supabase
     .from('attempts')
     .select('question_id')
     .eq('user_id', userId)
-    .in('question_id', candidateIds);
-  const answeredSet = new Set((answered ?? []).map((r) => r.question_id));
-  return candidateIds.filter((id) => !answeredSet.has(id));
+    .in('question_id', allIds);
+  const answeredV2Set = new Set(
+    (answered ?? []).map((r) => v2ByLegacy.get(r.question_id) ?? r.question_id),
+  );
+  return candidateIds.filter((id) => !answeredV2Set.has(id));
 }
 
 /**

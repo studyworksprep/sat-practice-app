@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
@@ -19,7 +19,8 @@ import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
-import { BookmarkIcon } from '@/lib/ui/icons';
+import { BookmarkIcon, CorrectIcon, IncorrectIcon, NotesIcon, TargetIcon, TimeSpentIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import s from './TestResults.module.css';
 
 const SUBJECT_NAME = { RW: 'Reading & Writing', MATH: 'Math' };
@@ -55,7 +56,18 @@ export function TestResultsInteractive({
   const [exportingPdf, setExportingPdf] = useState(false);
   const [pdfError, setPdfError] = useState(null);
 
-  const selected = reviewItems.find((r) => r.ordinal === selectedOrdinal) ?? reviewItems[0];
+  // Group items by module once. Items in groups carry a
+  // moduleOrdinal field (1..N within their module) for the
+  // question-map labels and the per-question detail header. The
+  // global `ordinal` stays the source of truth for selection
+  // state so URL/back-button behavior is unchanged.
+  const moduleGroups = useMemo(() => groupItemsByModule(reviewItems), [reviewItems]);
+  const groupedItems = useMemo(
+    () => moduleGroups.flatMap((g) => g.items),
+    [moduleGroups],
+  );
+
+  const selected = groupedItems.find((r) => r.ordinal === selectedOrdinal) ?? groupedItems[0];
   const isRevealed = revealed.has(selected?.ordinal);
 
   // Live calc handle for the saved-state button. The
@@ -160,7 +172,10 @@ export function TestResultsInteractive({
       {opportunity.length > 0 && (
         <section className={s.card}>
           <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>Opportunity Index</div>
+            <div className={s.sectionLabel}>
+              <IconTile icon={TargetIcon} palette="amber" size="sm" />
+              Opportunity Index
+            </div>
             <div className={s.oiDescription}>
               Skills where you have the most room to grow, weighted
               by learnability × wrong-question impact. Start here
@@ -175,7 +190,10 @@ export function TestResultsInteractive({
       {timing.anyTimed && (
         <section className={s.card}>
           <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>Timing</div>
+            <div className={s.sectionLabel}>
+              <IconTile icon={TimeSpentIcon} palette="cyan" size="sm" />
+              Timing
+            </div>
             <div className={s.cardHeaderHint}>
               Wall-clock time per module above; average time per
               question below comes from active answer time, not
@@ -208,14 +226,22 @@ export function TestResultsInteractive({
             />
           </div>
 
-          {/* Module-by-module usage against its allotted time. */}
-          {timing.byModule.length > 0 && (
-            <div className={s.moduleTimingList}>
-              {timing.byModule.map((m, i) => (
-                <ModuleTimingRow key={i} entry={m} />
-              ))}
-            </div>
-          )}
+          {/* Module-by-module usage against its allotted time.
+              Imported attempts (Bluebook) don't carry per-module
+              wall times, so we filter to rows that actually have
+              usable data; if none survive, the row block hides. */}
+          {(() => {
+            const usable = timing.byModule.filter((m) => m.usedMs != null);
+            if (usable.length === 0) return null;
+            const maxUsedMs = Math.max(...usable.map((m) => m.usedMs));
+            return (
+              <div className={s.moduleTimingList}>
+                {usable.map((m, i) => (
+                  <ModuleTimingRow key={i} entry={m} maxUsedMs={maxUsedMs} />
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Existing slowest-5 lists */}
           <div className={s.timingGrid}>
@@ -245,7 +271,10 @@ export function TestResultsInteractive({
       {/* ---------- Per-question review ---------- */}
       <section className={s.card}>
         <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>Per-question review</div>
+          <div className={s.sectionLabel}>
+            <IconTile icon={NotesIcon} palette="navy" size="sm" />
+            Per-question review
+          </div>
           <div className={s.cardHeaderHint}>
             Click any question below to review it. Your initial
             answer is shown; reveal the correct answer + rationale
@@ -253,34 +282,60 @@ export function TestResultsInteractive({
           </div>
         </div>
 
-        <div className={s.mapGrid} role="list">
-          {reviewItems.map((it) => {
-            const isCurrent = it.ordinal === selected?.ordinal;
-            const diffCls = DIFF_CLASS[it.taxonomy?.difficulty] ?? null;
-            const cls = [
-              s.mapItem,
-              diffCls ? s[diffCls] : null,
-              isCurrent ? s.mapItemActive : null,
-              it.status === 'unanswered' ? s.mapItemUnanswered : null,
-              revealed.has(it.ordinal) ? s.mapItemRevealed : null,
-            ].filter(Boolean).join(' ');
-            return (
-              <button
-                key={it.ordinal}
-                type="button"
-                className={cls}
-                onClick={() => setSelectedOrdinal(it.ordinal)}
-                aria-label={`Question ${it.ordinal}, ${it.status}`}
-              >
-                <span className={s.mapNum}>{it.ordinal}</span>
-                {it.marked && (
-                  <BookmarkIcon filled size={10} className={s.mapFlag} />
-                )}
-                {it.status === 'correct'   && <span className={s.mapTick}>✓</span>}
-                {it.status === 'incorrect' && <span className={s.mapX}>✗</span>}
-              </button>
-            );
-          })}
+        <div className={s.mapModules}>
+          {moduleGroups.map((group) => (
+            <div key={group.key} className={s.mapModule}>
+              <div className={s.mapModuleLabel}>
+                <span className={s.mapModuleSubject}>
+                  {SUBJECT_NAME[group.subject] ?? group.subject}
+                </span>
+                <span className={s.mapModuleDot}>·</span>
+                <span className={s.mapModuleNumber}>
+                  Module {group.moduleNumber}
+                </span>
+                <span className={s.mapModuleCount}>
+                  {group.correct}/{group.total}
+                </span>
+              </div>
+              <div className={s.mapGrid} role="list">
+                {group.items.map((it) => {
+                  const isCurrent = it.ordinal === selected?.ordinal;
+                  const diffCls = DIFF_CLASS[it.taxonomy?.difficulty] ?? null;
+                  const cls = [
+                    s.mapItem,
+                    diffCls ? s[diffCls] : null,
+                    isCurrent ? s.mapItemActive : null,
+                    it.status === 'unanswered' ? s.mapItemUnanswered : null,
+                    revealed.has(it.ordinal) ? s.mapItemRevealed : null,
+                  ].filter(Boolean).join(' ');
+                  return (
+                    <button
+                      key={it.ordinal}
+                      type="button"
+                      className={cls}
+                      onClick={() => setSelectedOrdinal(it.ordinal)}
+                      aria-label={`Question ${it.moduleOrdinal}, ${it.status}`}
+                    >
+                      <span className={s.mapNum}>{it.moduleOrdinal}</span>
+                      {it.marked && (
+                        <BookmarkIcon filled size={10} className={s.mapFlag} />
+                      )}
+                      {it.status === 'correct' && (
+                        <span className={s.mapStatusCorrect} aria-hidden="true">
+                          <CorrectIcon size={16} />
+                        </span>
+                      )}
+                      {it.status === 'incorrect' && (
+                        <span className={s.mapStatusWrong} aria-hidden="true">
+                          <IncorrectIcon size={16} />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -289,7 +344,7 @@ export function TestResultsInteractive({
           <div className={s.questionHeader}>
             <div className={s.questionHeaderLeft}>
               <span className={s.questionNum}>
-                Question {selected.ordinal}
+                Question {selected.moduleOrdinal ?? selected.ordinal}
               </span>
               {selected.externalId && (
                 <span className={s.questionCode}>{selected.externalId}</span>
@@ -543,15 +598,27 @@ function TimingStat({ label, value, subtitle, tone }) {
 
 const SUBJECT_FULL = { RW: 'Reading & Writing', MATH: 'Math' };
 
-function ModuleTimingRow({ entry }) {
-  const pct = entry.usedMs != null && entry.allottedMs > 0
+function ModuleTimingRow({ entry, maxUsedMs }) {
+  // Two scaling modes:
+  //  - When the module's allotted time is known, the bar fills
+  //    relative to that (e.g., 84% used). Tight (>= 90%) gets a
+  //    warning tint.
+  //  - When it isn't (imported attempts where we never recorded
+  //    the SAT time-limit alongside the per-module rows), scale
+  //    against the maximum usedMs in the visible set so the bars
+  //    still convey relative pacing across modules. The tight
+  //    tint is suppressed since "tight" has no anchor.
+  const pctVsAllotted = entry.usedMs != null && entry.allottedMs > 0
     ? Math.min(100, Math.round((entry.usedMs / entry.allottedMs) * 100))
     : null;
-  // Tone by how much time was used: gold ≥ 90%, neutral otherwise.
-  // Students finishing with lots of time left see a neutral bar;
-  // those who went to the wire get a warning tint.
-  const barCls = [s.modTimingFill, pct != null && pct >= 90 ? s.modTimingFillTight : null]
-    .filter(Boolean).join(' ');
+  const pctRelative = entry.usedMs != null && maxUsedMs > 0
+    ? Math.min(100, Math.round((entry.usedMs / maxUsedMs) * 100))
+    : null;
+  const fillPct = pctVsAllotted ?? pctRelative;
+  const barCls = [
+    s.modTimingFill,
+    pctVsAllotted != null && pctVsAllotted >= 90 ? s.modTimingFillTight : null,
+  ].filter(Boolean).join(' ');
   return (
     <div className={s.modTimingRow}>
       <div className={s.modTimingLabel}>
@@ -566,12 +633,16 @@ function ModuleTimingRow({ entry }) {
         </span>
       </div>
       <div className={s.modTimingBar}>
-        {pct != null && (
-          <div className={barCls} style={{ width: `${pct}%` }} />
+        {fillPct != null && (
+          <div className={barCls} style={{ width: `${fillPct}%` }} />
         )}
       </div>
       <div className={s.modTimingPct}>
-        {pct != null ? `${pct}%` : '—'}
+        {pctVsAllotted != null
+          ? `${pctVsAllotted}%`
+          : entry.usedMs != null
+            ? formatDuration(entry.usedMs)
+            : '—'}
       </div>
     </div>
   );
@@ -596,6 +667,41 @@ function DifficultyTimingTile({ entry }) {
       </div>
     </div>
   );
+}
+
+// Group reviewItems by (subject, module) preserving the test
+// order they arrive in. Each group also carries the running
+// correct/total tally so the module label can show "5/22"
+// next to it. Items inside the group also get a per-module
+// ordinal — running 1..N within the module — so the question
+// map's button labels reset for each module instead of running
+// 1..98 across the whole test.
+function groupItemsByModule(items) {
+  const groups = [];
+  const byKey = new Map();
+  for (const it of items) {
+    const key = `${it.subject}__${it.moduleNumber}`;
+    let group = byKey.get(key);
+    if (!group) {
+      group = {
+        key,
+        subject: it.subject,
+        moduleNumber: it.moduleNumber,
+        items: [],
+        correct: 0,
+        total: 0,
+      };
+      byKey.set(key, group);
+      groups.push(group);
+    }
+    const moduleOrdinal = group.items.length + 1;
+    group.items.push({ ...it, moduleOrdinal });
+    if (!it.missing) {
+      group.total += 1;
+      if (it.studentAnswer?.isCorrect) group.correct += 1;
+    }
+  }
+  return groups;
 }
 
 function formatDuration(ms) {

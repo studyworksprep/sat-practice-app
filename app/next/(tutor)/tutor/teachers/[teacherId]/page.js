@@ -12,6 +12,8 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
+import { GoalIcon, InboxIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { RosterFinder } from '../../dashboard/RosterFinder';
 import s from './TeacherDetail.module.css';
 
@@ -256,7 +258,10 @@ export default async function ManagerTeacherDetailPage({ params }) {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.h2}>Recent assignments</div>
+            <div className={s.h2}>
+              <IconTile icon={InboxIcon} palette="navy" size="md" />
+              Recent assignments
+            </div>
             <div className={s.cardHint}>
               Last {RECENT_ASSIGNMENTS_LIMIT} this teacher has sent —
               click for the per-assignment detail.
@@ -317,7 +322,10 @@ export default async function ManagerTeacherDetailPage({ params }) {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.h2}>Training</div>
+            <div className={s.h2}>
+              <IconTile icon={GoalIcon} palette="violet" size="md" />
+              Training
+            </div>
             <div className={s.cardHint}>
               {teacherName}&apos;s own SAT practice and review — what
               they&apos;ve done as a trainee. Helps the
@@ -325,9 +333,17 @@ export default async function ManagerTeacherDetailPage({ params }) {
               homework or test you assigned them.
             </div>
           </div>
-          <span className={s.cardTag}>
-            {trainingTestsTaken} tests · {trainingSessionRows.length} sessions
-          </span>
+          <div className={s.cardHeaderRight}>
+            <span className={s.cardTag}>
+              {trainingTestsTaken} tests · {trainingSessionRows.length} sessions
+            </span>
+            <Link
+              href={`/tutor/assignments/new?target=trainees&teacher=${teacher.id}`}
+              className={s.assignTrainingBtn}
+            >
+              + Assign training
+            </Link>
+          </div>
         </div>
 
         <div className={s.trainingGrid}>
@@ -383,7 +399,14 @@ export default async function ManagerTeacherDetailPage({ params }) {
                     <Link
                       href={
                         t.status === 'completed'
-                          ? `/practice/test/attempt/${t.id}/results`
+                          // Reuse the /tutor/students/[id]/tests/[attemptId]/results
+                          // route — its loader keys off attempt.user_id via RLS,
+                          // not the URL slot, so passing the teacher id where the
+                          // student id usually goes is functionally correct. Gate
+                          // already filters to completed, so the
+                          // in-progress-only fallback path that does use
+                          // studentId can't fire.
+                          ? `/tutor/students/${teacherId}/tests/${t.id}/results`
                           : `/tutor/teachers/${teacherId}`
                       }
                       className={s.trainingRow}

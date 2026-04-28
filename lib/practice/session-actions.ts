@@ -23,6 +23,17 @@ import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
+import type { ActionResult, QuestionType } from '@/lib/types';
+
+type SubmitAnswerResult = ActionResult<{
+  isCorrect: boolean;
+  questionType: QuestionType;
+  correctOptionId: string | null;
+  correctAnswerDisplay: string | null;
+  rationaleHtml: string | null;
+}>;
+
+type SessionLifecycleResult = ActionResult<{ sessionId: string }>;
 
 /**
  * Submit an answer for the current question in a practice session.
@@ -39,10 +50,11 @@ import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-an
  * createSession on the start page — the client PracticeInteractive
  * posts a FormData with sessionId, position, and either optionId
  * (MCQ) or responseText (SPR).
- *
- * @returns {Promise<{ok, isCorrect?, correctOptionId?, correctAnswerDisplay?, rationaleHtml?, questionType?, error?}>}
  */
-export async function submitAnswer(_prev, formData) {
+export async function submitAnswer(
+  _prev: unknown,
+  formData: FormData,
+): Promise<SubmitAnswerResult> {
   let ctx;
   try {
     ctx = await requireUser();
@@ -80,7 +92,9 @@ export async function submitAnswer(_prev, formData) {
   if (sessionErr || !session) return actionFail('Session not found');
   if (session.user_id !== user.id) return actionFail('Session not found');
 
-  const questionIds = Array.isArray(session.question_ids) ? session.question_ids : [];
+  const questionIds: string[] = Array.isArray(session.question_ids)
+    ? session.question_ids
+    : [];
   if (!Number.isInteger(position) || position < 0 || position >= questionIds.length) {
     return actionFail('Invalid session position');
   }
@@ -110,7 +124,7 @@ export async function submitAnswer(_prev, formData) {
   if (isSpr) {
     isCorrect = gradeSprAnswer(responseText, correct);
   } else if (selectedOptionId) {
-    isCorrect = gradeMcqAnswer(selectedOptionId, correct);
+    isCorrect = gradeMcqAnswer(String(selectedOptionId), correct);
   }
 
   // Insert the attempts row. v2 option codes ('A'/'B'/...) go into
@@ -121,7 +135,7 @@ export async function submitAnswer(_prev, formData) {
     question_id: questionId,
     is_correct: isCorrect,
     selected_option_id: null,
-    response_text: isSpr ? responseText : selectedOptionId,
+    response_text: isSpr ? responseText : String(selectedOptionId),
     source: 'practice',
   });
   if (insertErr) {
@@ -148,7 +162,7 @@ export async function submitAnswer(_prev, formData) {
   // the "student has engaged with every question" semantics.
   // Best-effort: a failure here does not block returning the grading
   // result to the student.
-  const assignmentId = session.filter_criteria?.assignment_id;
+  const assignmentId: string | undefined = session.filter_criteria?.assignment_id;
   if (assignmentId) {
     try {
       await markAssignmentCompletedIfDone(supabase, user.id, assignmentId);
@@ -165,7 +179,7 @@ export async function submitAnswer(_prev, formData) {
   return {
     ok: true,
     isCorrect,
-    questionType: question.question_type,
+    questionType: question.question_type as QuestionType,
     correctOptionId: !isSpr ? extractMcqCorrectId(correct) : null,
     // For SPR questions, the display string shown in the reviewed
     // state ("The correct answer was: 12.5 or 25/2"). For MCQ this
@@ -197,10 +211,14 @@ export async function submitAnswer(_prev, formData) {
  * Any questions the student didn't answer stay unanswered — the
  * review report surfaces them as Unanswered automatically.
  */
-export async function submitPracticeSession(_prev, formData) {
+export async function submitPracticeSession(
+  _prev: unknown,
+  formData: FormData,
+): Promise<SessionLifecycleResult> {
   let ctx;
-  try { ctx = await requireUser(); }
-  catch (err) {
+  try {
+    ctx = await requireUser();
+  } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
     return actionFail('Unexpected error loading user');
   }
@@ -241,10 +259,14 @@ export async function submitPracticeSession(_prev, formData) {
  * list. Existing attempts stay on the student's record (they
  * answered those questions, after all).
  */
-export async function abandonPracticeSession(_prev, formData) {
+export async function abandonPracticeSession(
+  _prev: unknown,
+  formData: FormData,
+): Promise<SessionLifecycleResult> {
   let ctx;
-  try { ctx = await requireUser(); }
-  catch (err) {
+  try {
+    ctx = await requireUser();
+  } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
     return actionFail('Unexpected error loading user');
   }
@@ -296,7 +318,12 @@ export async function abandonPracticeSession(_prev, formData) {
 //
 // Only runs for 'questions' assignments: for 'practice_test' and
 // 'lesson', completion is a different concept and lives elsewhere.
-async function markAssignmentCompletedIfDone(supabase, userId, assignmentId) {
+async function markAssignmentCompletedIfDone(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  userId: string,
+  assignmentId: string,
+): Promise<void> {
   const { data: assignment } = await supabase
     .from('assignments_v2')
     .select('id, assignment_type, question_ids')
@@ -305,7 +332,7 @@ async function markAssignmentCompletedIfDone(supabase, userId, assignmentId) {
   if (!assignment) return;
   if (assignment.assignment_type !== 'questions') return;
 
-  const questionIds = Array.isArray(assignment.question_ids)
+  const questionIds: string[] = Array.isArray(assignment.question_ids)
     ? assignment.question_ids
     : [];
   if (questionIds.length === 0) return;
@@ -316,7 +343,9 @@ async function markAssignmentCompletedIfDone(supabase, userId, assignmentId) {
     .eq('user_id', userId)
     .in('question_id', questionIds);
 
-  const distinct = new Set((attempted ?? []).map((r) => r.question_id));
+  const distinct = new Set(
+    ((attempted ?? []) as Array<{ question_id: string }>).map((r) => r.question_id),
+  );
   if (distinct.size < questionIds.length) return;
 
   await supabase
@@ -332,16 +361,17 @@ async function markAssignmentCompletedIfDone(supabase, userId, assignmentId) {
 //   { option_labels: ["A","C"], option_label: null } → multi-answer
 // Legacy shapes ("B" as a plain string, or ["A","C"] as a bare
 // array) stay accepted for any row that still surfaces them.
-function gradeMcqAnswer(selectedId, correct) {
+function gradeMcqAnswer(selectedId: string, correct: unknown): boolean {
   if (correct == null) return false;
   if (typeof correct === 'string') return correct === selectedId;
   if (Array.isArray(correct)) return correct.map(String).includes(selectedId);
   if (typeof correct === 'object') {
-    if (typeof correct.option_label === 'string' && correct.option_label) {
-      return correct.option_label === selectedId;
+    const obj = correct as { option_label?: unknown; option_labels?: unknown };
+    if (typeof obj.option_label === 'string' && obj.option_label) {
+      return obj.option_label === selectedId;
     }
-    if (Array.isArray(correct.option_labels) && correct.option_labels.length > 0) {
-      return correct.option_labels.map(String).includes(selectedId);
+    if (Array.isArray(obj.option_labels) && obj.option_labels.length > 0) {
+      return obj.option_labels.map(String).includes(selectedId);
     }
   }
   return false;
@@ -367,7 +397,7 @@ function gradeMcqAnswer(selectedId, correct) {
 // This matches the existing grading logic in the legacy submit-module
 // route handler.
 
-function normalizeText(s) {
+function normalizeText(s: unknown): string {
   return (s ?? '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
@@ -385,11 +415,11 @@ function normalizeText(s) {
 //      and compare.
 //   3. If text match fails and both sides parse as floats,
 //      compare numerically, respecting tolerance if present.
-function gradeSprAnswer(responseText, correct) {
+function gradeSprAnswer(responseText: string, correct: unknown): boolean {
   if (correct == null) return false;
 
-  const acceptableTexts = [];
-  let numericTarget = null;
+  const acceptableTexts: string[] = [];
+  let numericTarget: number | null = null;
   let tolerance = 0;
 
   if (typeof correct === 'string') {
@@ -397,23 +427,28 @@ function gradeSprAnswer(responseText, correct) {
   } else if (Array.isArray(correct)) {
     for (const v of correct) acceptableTexts.push(String(v));
   } else if (typeof correct === 'object') {
-    if (typeof correct.text === 'string' && correct.text) {
+    const obj = correct as {
+      text?: unknown;
+      number?: unknown;
+      tolerance?: unknown;
+    };
+    if (typeof obj.text === 'string' && obj.text) {
       try {
-        const parsed = JSON.parse(correct.text);
+        const parsed = JSON.parse(obj.text);
         if (Array.isArray(parsed)) {
           for (const v of parsed) acceptableTexts.push(String(v));
         } else {
-          acceptableTexts.push(correct.text);
+          acceptableTexts.push(obj.text);
         }
       } catch {
-        acceptableTexts.push(correct.text);
+        acceptableTexts.push(obj.text);
       }
     }
-    if (typeof correct.number === 'number') {
-      numericTarget = correct.number;
-      acceptableTexts.push(String(correct.number));
+    if (typeof obj.number === 'number') {
+      numericTarget = obj.number;
+      acceptableTexts.push(String(obj.number));
     }
-    if (typeof correct.tolerance === 'number') tolerance = correct.tolerance;
+    if (typeof obj.tolerance === 'number') tolerance = obj.tolerance;
   } else if (typeof correct === 'number') {
     numericTarget = correct;
     acceptableTexts.push(String(correct));

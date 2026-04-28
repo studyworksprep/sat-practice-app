@@ -18,6 +18,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
+import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { formatDate } from '@/lib/formatters';
 import s from './AssignmentsPage.module.css';
 
@@ -353,6 +354,14 @@ async function loadAssignmentsData(supabase, userId) {
   );
   const assignmentIds = rows.map((r) => r.id);
 
+  // Expand the v2 question_ids to include any legacy v1 ids that
+  // map to them — so a student's legacy-era attempts on these
+  // questions count toward the assignment's progress / accuracy.
+  const { allIds: attemptQuestionIds, v2ByLegacy } = await expandToAttemptIds(
+    supabase,
+    allQuestionIds,
+  );
+
   // Three parallel follow-up queries:
   //  (1) teacher cards,
   //  (2) attempts on every assignment question (to compute
@@ -369,12 +378,12 @@ async function loadAssignmentsData(supabase, userId) {
           .select('id, first_name, last_name')
           .in('id', teacherIds)
       : Promise.resolve({ data: [] }),
-    allQuestionIds.length
+    attemptQuestionIds.length
       ? supabase
           .from('attempts')
           .select('question_id, is_correct, created_at')
           .eq('user_id', userId)
-          .in('question_id', allQuestionIds)
+          .in('question_id', attemptQuestionIds)
           .order('created_at', { ascending: true })
       : Promise.resolve({ data: [] }),
     allQuestionIds.length
@@ -403,11 +412,15 @@ async function loadAssignmentsData(supabase, userId) {
 
   // First-attempt-per-question from the full attempts list (already
   // ordered asc). "First attempt wins" matches how the review page
-  // treats session performance.
+  // treats session performance. Attempts on legacy v1 ids get
+  // re-keyed to the v2 id they map to so per-question lookups by
+  // the v2 id (which is what assignment.question_ids carries) work
+  // for both eras.
   const firstAttemptByQid = new Map();
   for (const a of attemptsRes.data ?? []) {
-    if (!firstAttemptByQid.has(a.question_id)) {
-      firstAttemptByQid.set(a.question_id, a);
+    const key = v2ByLegacy.get(a.question_id) ?? a.question_id;
+    if (!firstAttemptByQid.has(key)) {
+      firstAttemptByQid.set(key, a);
     }
   }
   const attemptedSet = new Set(firstAttemptByQid.keys());

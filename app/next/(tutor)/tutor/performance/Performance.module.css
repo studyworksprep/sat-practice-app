@@ -1,0 +1,315 @@
+/* Tutor → Performance. Same layout vocabulary as the rest of
+   the new tree: max-width container, eyebrow + serif H1 + sub,
+   stats strip, content cards. */
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.header {
+  display: grid;
+  gap: var(--s2);
+  padding-block: var(--s3) var(--s2);
+}
+
+.eyebrow {
+  font-size: var(--eyebrow-size);
+  font-weight: var(--eyebrow-weight);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--color-gold-700);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: var(--app-title-1);
+  font-weight: 700;
+  color: var(--color-navy-900, var(--fg1));
+  line-height: 1.15;
+  margin: 0;
+}
+
+.sub {
+  margin: 0;
+  font-size: var(--body-size);
+  line-height: var(--body-lh);
+  color: var(--fg2);
+  max-width: 720px;
+}
+
+/* ---------- Stats strip ---------- */
+
+.statsStrip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s4);
+}
+
+.statTile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--s4);
+  display: grid;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+.statValueRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s2);
+}
+.statValue {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-navy-900, var(--fg1));
+  line-height: 1.05;
+}
+.statSubRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+.statSub {
+  font-size: 13px;
+  color: var(--fg3);
+}
+
+@media (max-width: 720px) {
+  .statsStrip { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--s5);
+  display: grid;
+  gap: var(--s4);
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
+}
+
+.h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-sans);
+  font-size: var(--app-title-2);
+  font-weight: 600;
+  color: var(--fg1);
+  margin: 0 0 4px;
+}
+
+.cardHint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg3);
+  max-width: 540px;
+}
+
+/* ---------- Empty state ---------- */
+
+.empty {
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: var(--s4);
+  display: grid;
+  gap: 4px;
+}
+.emptyTitle { font-weight: 600; color: var(--fg1); font-size: 14px; }
+.emptyBody  { font-size: 13px; color: var(--fg3); }
+
+/* ---------- Sort toolbar ---------- */
+
+.sortLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--fg3);
+}
+.sortLabelText {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  font-size: 11px;
+}
+.sortSelect {
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--fg1);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ---------- Skill heatmap (grid of colored tiles) ----------
+   Domains stack vertically with a small label row, each one
+   carrying a row of skill tiles. Tiles are uniform 110×88 — small
+   enough that 30+ skills fit without scroll, large enough for the
+   accuracy % to read at a glance. */
+
+.domainStack {
+  display: grid;
+  gap: var(--s4);
+}
+
+.domainBlock {
+  display: grid;
+  gap: var(--s2);
+}
+
+.domainHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+}
+
+.domainPillRw, .domainPillMath {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.domainPillRw   { background: var(--tile-rw-bg);   color: var(--tile-rw-fg); }
+.domainPillMath { background: var(--tile-math-bg); color: var(--tile-math-fg); }
+
+.domainName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.domainCount {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--fg3);
+  font-family: var(--font-mono);
+}
+
+.skillGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--s2);
+}
+
+.skillTile {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+  min-height: 80px;
+  background: var(--card);
+  /* Background tint comes from the tone class below. The color
+     itself is a soft token-derived bg so the tile reads as
+     "colored cell" without competing with the page chrome. */
+  transition: transform var(--dur-fast) var(--ease-std),
+              box-shadow var(--dur-fast) var(--ease-std);
+}
+
+.skillTile:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.skillTileTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.skillTileName {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg1);
+  line-height: 1.25;
+  /* Two-line clamp keeps tiles uniform — long skill names that
+     don't fit get truncated with an ellipsis (the title attr on
+     the tile shows the full text on hover). */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.skillTilePct {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.skillTileSub {
+  font-size: 10px;
+  color: var(--fg3);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+/* Tone classes drive both the soft background tint and the
+   accuracy-percent color. */
+.toneGood {
+  background: var(--tile-success-bg);
+  border-color: color-mix(in oklab, var(--tile-success-fg) 22%, transparent);
+}
+.toneGood .skillTilePct { color: var(--tile-success-fg); }
+
+.toneOk {
+  background: var(--tile-amber-bg);
+  border-color: color-mix(in oklab, var(--tile-amber-fg) 22%, transparent);
+}
+.toneOk .skillTilePct { color: var(--tile-amber-fg); }
+
+.toneBad {
+  background: var(--tile-danger-bg);
+  border-color: color-mix(in oklab, var(--tile-danger-fg) 26%, transparent);
+}
+.toneBad .skillTilePct { color: var(--tile-danger-fg); }
+
+.belowPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 1px 6px;
+  background: var(--tile-danger-fg);
+  color: var(--bg-white);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}

@@ -13,16 +13,18 @@
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
+import type { ActionResult } from '@/lib/types';
 
-/**
- * Save (upsert) a Desmos calculator state for a question.
- *
- * @param {object} args
- * @param {string} args.questionId
- * @param {object} args.stateJson — Desmos GraphingCalculator.getState() output
- * @returns {Promise<{ ok: true } | { ok: false, error: string }>}
- */
-export async function saveDesmosState({ questionId, stateJson }) {
+/** Save (upsert) a Desmos calculator state for a question.
+ *  stateJson is whatever GraphingCalculator.getState() returned —
+ *  an opaque blob to us, validated only as "is an object". */
+export async function saveDesmosState({
+  questionId,
+  stateJson,
+}: {
+  questionId: string;
+  stateJson: Record<string, unknown>;
+}): Promise<ActionResult> {
   if (!questionId) return actionFail('questionId required');
   if (!stateJson || typeof stateJson !== 'object') {
     return actionFail('stateJson required');
@@ -57,14 +59,12 @@ export async function saveDesmosState({ questionId, stateJson }) {
   return actionOk();
 }
 
-/**
- * Delete the saved Desmos state for a question.
- *
- * @param {object} args
- * @param {string} args.questionId
- * @returns {Promise<{ ok: true } | { ok: false, error: string }>}
- */
-export async function deleteDesmosState({ questionId }) {
+/** Delete the saved Desmos state for a question. */
+export async function deleteDesmosState({
+  questionId,
+}: {
+  questionId: string;
+}): Promise<ActionResult> {
   if (!questionId) return actionFail('questionId required');
 
   let supabase;

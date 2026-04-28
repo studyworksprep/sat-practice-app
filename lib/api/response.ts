@@ -17,38 +17,29 @@
 //     - Same { ok, data } / { ok, error } shape so the same client-side
 //       branching logic works uniformly.
 //
-// Usage from a route handler:
-//
-//   import { ok, fail } from '@/lib/api/response';
-//   return ok({ items, total });
-//   return fail('Not authorized', 403);
-//
-// Usage from a Server Action:
-//
-//   'use server';
-//   import { actionOk, actionFail } from '@/lib/api/response';
-//   export async function updateProfile(prevState, formData) {
-//     const name = formData.get('name');
-//     if (!name) return actionFail('Name is required');
-//     // ... do the mutation
-//     return actionOk({ name });
-//   }
-//
 // A throwing helper is also exported so that `requireUser()` and friends
 // in lib/api/auth.js can signal authentication failures with a throw that
-// the route wrapper (Phase 2) or Server Action wrapper converts into a
-// `fail()` / `actionFail()`.
+// the route wrapper or Server Action wrapper converts into a `fail()` /
+// `actionFail()`.
 
 import { NextResponse } from 'next/server';
+import type { Ok, Fail } from '@/lib/types';
 
 // ---- Route-handler helpers ----
 
-export function ok(data, init = {}) {
+export function ok<T>(data: T, init: ResponseInit = {}): NextResponse {
   return NextResponse.json({ ok: true, data }, init);
 }
 
-export function fail(error, status = 400, extra = {}) {
-  const body = { ok: false, error: typeof error === 'string' ? error : String(error) };
+export function fail(
+  error: string | Error,
+  status: number = 400,
+  extra: Record<string, unknown> = {},
+): NextResponse {
+  const body: Record<string, unknown> = {
+    ok: false,
+    error: typeof error === 'string' ? error : String(error),
+  };
   if (extra && typeof extra === 'object') {
     Object.assign(body, extra);
   }
@@ -61,24 +52,40 @@ export function fail(error, status = 400, extra = {}) {
  * Success return for a Server Action. Returns a plain object (not a
  * NextResponse) because Server Actions bypass the HTTP layer — the
  * return value is consumed directly by the client via useActionState.
+ *
+ * Two call shapes:
+ *   actionOk()              → { ok: true, data: null }
+ *   actionOk({ tag })       → { ok: true, data: { tag } }
+ *
+ * The literal `ok: true` lets callers narrow on `res.ok` and pull
+ * payload fields out of `res.data` with full type safety.
  */
-export function actionOk(data = null) {
-  return { ok: true, data };
+export function actionOk(): Ok<{ data: null }>;
+export function actionOk<T>(data: T): Ok<{ data: T }>;
+export function actionOk<T>(data: T | null = null): Ok<{ data: T | null }> {
+  return { ok: true, data } as Ok<{ data: T | null }>;
 }
 
 /**
  * Failure return for a Server Action. Same shape as actionOk but with
  * an error message. Does NOT throw — the caller (a form with
  * useActionState) expects a return value that it can inspect for the
- * pending/error transition.
- *
- * @param {string|Error} error - message or Error instance
- * @param {object} [extra] - merged into the returned object for
- *   field-specific validation errors, etc.
+ * pending/error transition. Extra fields (e.g. field-specific
+ * validation errors) are merged onto the result.
  */
-export function actionFail(error, extra = {}) {
-  const message = typeof error === 'string' ? error : String(error?.message ?? error);
-  return { ok: false, error: message, ...(extra && typeof extra === 'object' ? extra : {}) };
+export function actionFail(
+  error: string | Error | null | undefined,
+  extra: Record<string, unknown> = {},
+): Fail {
+  const message =
+    typeof error === 'string'
+      ? error
+      : String(
+          (error as { message?: unknown } | null | undefined)?.message ?? error,
+        );
+  const safeExtra =
+    extra && typeof extra === 'object' ? extra : {};
+  return { ok: false, error: message, ...safeExtra } as Fail;
 }
 
 // ---- Shared error class ----
@@ -89,14 +96,17 @@ export function actionFail(error, extra = {}) {
 // shape). Route/action wrappers catch it and call the appropriate
 // converter based on context.
 export class ApiError extends Error {
-  constructor(message, status = 400, extra = {}) {
+  status: number;
+  extra: Record<string, unknown>;
+
+  constructor(message: string, status: number = 400, extra: Record<string, unknown> = {}) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.extra = extra;
   }
 
-  toResponse() {
+  toResponse(): NextResponse {
     return fail(this.message, this.status, this.extra);
   }
 
@@ -109,11 +119,11 @@ export class ApiError extends Error {
    * new envelope, callers swap `.toLegacyResponse()` for
    * `.toResponse()`.
    */
-  toLegacyResponse() {
+  toLegacyResponse(): NextResponse {
     return NextResponse.json({ error: this.message }, { status: this.status });
   }
 
-  toActionResult() {
+  toActionResult(): Fail {
     return actionFail(this.message, this.extra);
   }
 }
@@ -141,8 +151,14 @@ export class ApiError extends Error {
 // scratch.
 // ──────────────────────────────────────────────────────────────
 
-export function apiRoute(handler) {
-  return async (...args) => {
+type RouteHandler<Args extends unknown[]> = (
+  ...args: Args
+) => Promise<NextResponse> | NextResponse;
+
+export function apiRoute<Args extends unknown[]>(
+  handler: RouteHandler<Args>,
+): (...args: Args) => Promise<NextResponse> {
+  return async (...args: Args) => {
     try {
       return await handler(...args);
     } catch (e) {
@@ -152,8 +168,10 @@ export function apiRoute(handler) {
   };
 }
 
-export function legacyApiRoute(handler) {
-  return async (...args) => {
+export function legacyApiRoute<Args extends unknown[]>(
+  handler: RouteHandler<Args>,
+): (...args: Args) => Promise<NextResponse> {
+  return async (...args: Args) => {
     try {
       return await handler(...args);
     } catch (e) {

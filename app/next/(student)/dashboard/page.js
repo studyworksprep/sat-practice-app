@@ -20,6 +20,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { domainSection } from '@/lib/ui/question-layout';
+import { resolveQuestionV2Meta } from '@/lib/practice/weak-queue';
 import { updateTargetScore } from './actions';
 import { DashboardInteractive } from './DashboardInteractive';
 
@@ -145,6 +146,24 @@ export default async function StudentDashboardPage() {
       .maybeSingle(),
   ]);
 
+  // Weekly accuracy trend for the "Your weekly progress" card.
+  // Reuses the same RPC the tutor performance page calls — passing
+  // a single-element roster (just this user). RLS still applies
+  // inside the RPC, so the only data this can return is the
+  // caller's own. 13 weeks tracks the standard 90-day window.
+  const TREND_WEEKS = 13;
+  const { data: trendRows } = await supabase.rpc('get_roster_weekly_trend', {
+    p_roster: [user.id],
+    p_num_weeks: TREND_WEEKS,
+  });
+  const weeklyTrend = (trendRows ?? []).map((r) => ({
+    startIso: r.start_iso,
+    endIso: r.end_iso,
+    attempts: Number(r.attempts ?? 0),
+    correct: Number(r.correct ?? 0),
+    accuracy: r.accuracy == null ? null : Number(r.accuracy),
+  }));
+
   const accuracy = totalAttempts && totalAttempts > 0
     ? Math.round(((correctAttempts ?? 0) / totalAttempts) * 100)
     : null;
@@ -164,18 +183,17 @@ export default async function StudentDashboardPage() {
   // Two-step: collect distinct question_ids from the attempts
   // window, fetch their domain metadata from questions_v2, then
   // aggregate in memory. (Can't embed-join because attempts has
-  // no declared FK to questions_v2.)
+  // no declared FK to questions_v2.) The helper translates v1-era
+  // attempt IDs through question_id_map so a legacy student's
+  // history shows up here too.
   const questionIds = Array.from(
     new Set((perfRows ?? []).map((r) => r.question_id).filter(Boolean)),
   );
-  let questionMeta = new Map();
-  if (questionIds.length > 0) {
-    const { data: qRows } = await supabase
-      .from('questions_v2')
-      .select('id, domain_code, domain_name')
-      .in('id', questionIds);
-    questionMeta = new Map((qRows ?? []).map((q) => [q.id, q]));
-  }
+  const questionMeta = await resolveQuestionV2Meta(
+    supabase,
+    questionIds,
+    'id, domain_code, domain_name, is_published, is_broken, deleted_at',
+  );
   const performance = aggregatePerformance(perfRows ?? [], questionMeta);
 
   // Resume info for the banner.
@@ -379,6 +397,7 @@ export default async function StudentDashboardPage() {
     <DashboardInteractive
       stats={stats}
       performance={performance}
+      weeklyTrend={weeklyTrend}
       recentlyFinished={recentlyFinished}
       assignments={pendingAssignments}
       resumeInfo={resumeInfo}

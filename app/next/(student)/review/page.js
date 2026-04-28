@@ -25,8 +25,14 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { fetchAll } from '@/lib/supabase/fetchAll';
-import { buildWeakQueue, commonErrorsFromAttempts } from '@/lib/practice/weak-queue';
+import {
+  buildWeakQueue,
+  commonErrorsFromAttempts,
+  resolveQuestionV2Meta,
+} from '@/lib/practice/weak-queue';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
+import { LayersIcon, SparklesIcon, TargetIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { createWeakQueueDrill, createSkillDrill } from './actions';
 import { WeakQueueLauncher } from './WeakQueueLauncher';
 import { SkillDrillButton } from './SkillDrillButton';
@@ -75,23 +81,16 @@ export default async function StudentReviewPage() {
 
   // Common Errors aggregation: reuse the question meta we'd need
   // anyway by grabbing the distinct question ids out of attempts
-  // and looking them up once.
+  // and looking them up once. The helper translates v1-era
+  // attempt question_ids through question_id_map so legacy-only
+  // students' wrong questions resolve correctly.
   const attemptedQids = Array.from(
     new Set(attemptsRaw.map((a) => a.question_id)),
   );
-  const metaRows = attemptedQids.length
-    ? await fetchAll((from, to) =>
-        supabase
-          .from('questions_v2')
-          .select('id, skill_name, domain_name, is_published, is_broken, deleted_at')
-          .in('id', attemptedQids)
-          .range(from, to),
-      )
-    : [];
-  const metaById = new Map(
-    metaRows
-      .filter((q) => q.is_published && !q.is_broken && q.deleted_at == null)
-      .map((q) => [q.id, q]),
+  const metaById = await resolveQuestionV2Meta(
+    supabase,
+    attemptedQids,
+    'id, skill_name, domain_name, is_published, is_broken, deleted_at',
   );
 
   const commonErrors = commonErrorsFromAttempts(attemptsRaw, metaById)
@@ -131,7 +130,10 @@ export default async function StudentReviewPage() {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.h2}>Common errors</div>
+            <div className={s.h2}>
+              <IconTile icon={SparklesIcon} palette="amber" size="md" />
+              <span>Common errors</span>
+            </div>
             <div className={s.cardHint}>
               Skills where you&apos;ve missed the most. Click one
               to drill that skill only.
@@ -186,7 +188,10 @@ export default async function StudentReviewPage() {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.h2}>Weak questions drill</div>
+            <div className={s.h2}>
+              <IconTile icon={TargetIcon} palette="cyan" size="md" />
+              <span>Weak questions drill</span>
+            </div>
             <div className={s.cardHint}>
               Your trickiest questions across every skill, ordered
               by how recently you missed them and how hard they are.
@@ -219,7 +224,10 @@ export default async function StudentReviewPage() {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.h2}>Flashcards</div>
+            <div className={s.h2}>
+              <IconTile icon={LayersIcon} palette="violet" size="md" />
+              <span>Flashcards</span>
+            </div>
             <div className={s.cardHint}>
               Terms and vocabulary you&apos;ve stashed for study.
             </div>

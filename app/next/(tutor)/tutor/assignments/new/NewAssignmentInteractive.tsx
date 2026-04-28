@@ -22,6 +22,7 @@
 'use client';
 
 import { useActionState, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { ActionResult } from '@/lib/types';
 import styles from './NewAssignmentInteractive.module.css';
 
@@ -100,13 +101,40 @@ export function NewAssignmentInteractive({
   const [assignmentType, setAssignmentType] = useState<'questions' | 'practice_test' | 'lesson'>(
     'questions',
   );
+
+  // Deep-link support: ?target=trainees&teacher=<id> pre-selects
+  // the trainee tab and preselects the named teacher. Used by
+  // the "+ Assign training" button on the teacher detail page so
+  // a manager doesn't have to re-find the trainee in the picker.
+  // Only honored when the manager actually has teachers — a pure
+  // teacher landing on the form ignores ?target=trainees.
+  const searchParams = useSearchParams();
+  const initialTargetIsTrainees =
+    hasTeachers && searchParams?.get('target') === 'trainees';
+  const initialPreselectedTeacher = initialTargetIsTrainees
+    ? searchParams?.get('teacher')
+    : null;
+
   // Target = students (default) or trainees (teachers). The
   // backend Server Action accepts the same student_id field for
   // both — assignment_students_v2.student_id is just a user_id
   // and doesn't care about role. The toggle is purely UX so a
   // manager can switch the picker between their two cohorts.
-  const [target, setTarget] = useState<'students' | 'trainees'>('students');
-  const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
+  const [target, setTarget] = useState<'students' | 'trainees'>(
+    initialTargetIsTrainees ? 'trainees' : 'students',
+  );
+  const [selectedStudents, setSelectedStudents] = useState<Set<string>>(() => {
+    // Pre-fill from ?teacher=<id> if it actually matches a row in
+    // the teachers list. Silently dropped if it doesn't (e.g., a
+    // stale link to a teacher who's since left the manager's team).
+    if (
+      initialPreselectedTeacher &&
+      teachers.some((t) => t.id === initialPreselectedTeacher)
+    ) {
+      return new Set([initialPreselectedTeacher]);
+    }
+    return new Set();
+  });
   const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>([]);
   const [globalDifficulties, setGlobalDifficulties] = useState<Set<number>>(new Set());
   const [skillSearch, setSkillSearch] = useState('');

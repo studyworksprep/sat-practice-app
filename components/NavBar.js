@@ -121,7 +121,7 @@ function BugReportModal({ onClose }) {
   );
 }
 
-export default function NavBar() {
+export default function NavBar({ uiTree = 'legacy' }) {
   const pathname = usePathname();
   const supabase = createClient();
   const [user, setUser] = useState(null);
@@ -161,6 +161,14 @@ export default function NavBar() {
   // when a user navigates away from a /features/* page and the hook
   // count jumps.
   if (pathname && pathname.startsWith('/features/')) return null;
+
+  // Hide on /next pages so the legacy NavBar doesn't double-stack
+  // on top of the new tree's AppNav. The signal comes from the
+  // proxy via the x-ui-tree request header (app/layout.js reads
+  // it server-side and passes it down) — that mirrors the proxy's
+  // own routing decision, including the kill switch, so this
+  // can't disagree with which tree is actually being served.
+  if (uiTree === 'next') return null;
 
   async function signOut() {
     await supabase.auth.signOut();

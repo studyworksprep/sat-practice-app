@@ -17,6 +17,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
+import { RosterIcon, TestIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { RosterFinder } from './RosterFinder';
 import s from './Dashboard.module.css';
 
@@ -126,7 +128,6 @@ export default async function TutorDashboardPage() {
           </div>
         </div>
         <div className={s.bannerActions}>
-          <Link href="/tutor/training/start" className={s.btnSecondary}>Training mode</Link>
           <Link href="/tutor/assignments/new" className={s.btnPrimary}>New assignment</Link>
         </div>
       </section>
@@ -147,9 +148,12 @@ export default async function TutorDashboardPage() {
       {/* ---------- Roster finder ---------- */}
       {cohort.total === 0 ? (
         <section className={s.card}>
-          <div className={s.empty}>
-            You don&apos;t have any students assigned yet. Once an admin
-            assigns them to you, they&apos;ll show up here.
+          <div className={s.emptyHero}>
+            <IconTile icon={RosterIcon} palette="gold" size="lg" />
+            <div className={s.empty}>
+              You don&apos;t have any students assigned yet. Once an admin
+              assigns them to you, they&apos;ll show up here.
+            </div>
           </div>
         </section>
       ) : (
@@ -160,14 +164,17 @@ export default async function TutorDashboardPage() {
       {testRows.length > 0 && (
         <section className={s.card}>
           <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>Recent practice tests</div>
+            <div className={s.sectionLabel}>
+              <IconTile icon={TestIcon} palette="cyan" size="sm" />
+              Recent practice tests
+            </div>
           </div>
           <ul className={s.testList}>
             {testRows.map((t) => (
               <li key={t.id}>
                 <Link
                   href={t.status === 'completed'
-                    ? `/practice/test/attempt/${t.id}/results`
+                    ? `/tutor/students/${t.studentId}/tests/${t.id}/results`
                     : `/tutor/students/${t.studentId}`}
                   className={s.testRow}
                 >

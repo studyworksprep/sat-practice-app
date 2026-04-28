@@ -28,12 +28,24 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
+import { ClipboardCheckIcon, InboxIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { formatShortDate } from '@/lib/formatters';
+import { AssignmentsToolbar } from './AssignmentsToolbar';
+import { filterAndSort, paginate } from './helpers';
 import s from './AssignmentsList.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TutorAssignmentsPage() {
+export default async function TutorAssignmentsPage({ searchParams }) {
+  const sp = (await searchParams) ?? {};
+  const activeQ      = typeof sp.q     === 'string' ? sp.q     : '';
+  const activeSort   = typeof sp.sort  === 'string' ? sp.sort  : 'newest';
+  const activePage   = Number(sp.page) || 1;
+  const archivedQ    = typeof sp.aq    === 'string' ? sp.aq    : '';
+  const archivedSort = typeof sp.asort === 'string' ? sp.asort : 'newest';
+  const archivedPage = Number(sp.apage) || 1;
+
   const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'student' || profile.role === 'practice') {
@@ -183,7 +195,10 @@ export default async function TutorAssignmentsPage() {
   const enrichedActive = enriched.filter((a) => !a.archived_at);
   const enrichedArchived = enriched.filter((a) => a.archived_at);
 
-  // Cohort-wide stats — flat numbers across the active set.
+  // Cohort-wide stats — flat numbers across the active set. Stats
+  // intentionally reflect the FULL active list, not the search-
+  // filtered slice; a tutor wants to see "I have 6 overdue total"
+  // even when they're filtering for one student.
   const totalAssignedRows = (junctionRows ?? []).filter((r) =>
     enrichedActive.some((a) => a.id === r.assignment_id),
   );
@@ -194,6 +209,18 @@ export default async function TutorAssignmentsPage() {
   const overdueCount = enrichedActive.filter(
     (a) => a.due_date && Date.parse(a.due_date) < nowMs,
   ).length;
+
+  // Apply search + sort + pagination to each section. Stats above
+  // already snapshotted full counts.
+  const activeFiltered = filterAndSort(enrichedActive, {
+    q: activeQ, sort: activeSort, nowMs,
+  });
+  const activeView = paginate(activeFiltered, activePage);
+
+  const archivedFiltered = filterAndSort(enrichedArchived, {
+    q: archivedQ, sort: archivedSort, nowMs,
+  });
+  const archivedView = paginate(archivedFiltered, archivedPage);
 
   return (
     <main className={s.container}>
@@ -248,11 +275,15 @@ export default async function TutorAssignmentsPage() {
         />
       </div>
 
-      <section className={s.section}>
+      <section className={s.section} id="active-section">
         <div className={s.sectionHead}>
-          <h2 className={s.sectionTitle}>Active</h2>
+          <h2 className={s.sectionTitle}>
+            <IconTile icon={InboxIcon} palette="navy" size="md" />
+            Active
+          </h2>
           <span className={s.sectionCount}>
             {enrichedActive.length} open
+            {activeQ && ` · ${activeView.totalCount} match search`}
           </span>
         </div>
         {enrichedActive.length === 0 ? (
@@ -261,31 +292,75 @@ export default async function TutorAssignmentsPage() {
             body="Click + New assignment to send your first one."
           />
         ) : (
-          <ul className={s.cardList}>
-            {enrichedActive.map((a) => (
-              <li key={a.id}>
-                <AssignmentRow row={a} nowMs={nowMs} />
-              </li>
-            ))}
-          </ul>
+          <>
+            <AssignmentsToolbar
+              qKey="q"
+              sortKey="sort"
+              pageKey="page"
+              initialQ={activeQ}
+              initialSort={activeSort}
+              page={activeView.page}
+              totalPages={activeView.totalPages}
+              totalCount={activeView.totalCount}
+              visibleCount={activeView.items.length}
+              anchorId="active-section"
+            />
+            {activeView.items.length === 0 ? (
+              <EmptyCard
+                title="No matches."
+                body="Try a different search term or clear the filter."
+              />
+            ) : (
+              <ul className={s.cardList}>
+                {activeView.items.map((a) => (
+                  <li key={a.id}>
+                    <AssignmentRow row={a} nowMs={nowMs} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </section>
 
       {enrichedArchived.length > 0 && (
-        <section className={s.section}>
+        <section className={s.section} id="archived-section">
           <div className={s.sectionHead}>
-            <h2 className={s.sectionTitle}>Archived</h2>
+            <h2 className={s.sectionTitle}>
+              <IconTile icon={ClipboardCheckIcon} palette="slate" size="md" />
+              Archived
+            </h2>
             <span className={s.sectionCount}>
               {enrichedArchived.length} stored
+              {archivedQ && ` · ${archivedView.totalCount} match search`}
             </span>
           </div>
-          <ul className={s.cardList}>
-            {enrichedArchived.map((a) => (
-              <li key={a.id}>
-                <AssignmentRow row={a} nowMs={nowMs} archived />
-              </li>
-            ))}
-          </ul>
+          <AssignmentsToolbar
+            qKey="aq"
+            sortKey="asort"
+            pageKey="apage"
+            initialQ={archivedQ}
+            initialSort={archivedSort}
+            page={archivedView.page}
+            totalPages={archivedView.totalPages}
+            totalCount={archivedView.totalCount}
+            visibleCount={archivedView.items.length}
+            anchorId="archived-section"
+          />
+          {archivedView.items.length === 0 ? (
+            <EmptyCard
+              title="No matches."
+              body="Try a different search term or clear the filter."
+            />
+          ) : (
+            <ul className={s.cardList}>
+              {archivedView.items.map((a) => (
+                <li key={a.id}>
+                  <AssignmentRow row={a} nowMs={nowMs} archived />
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       )}
     </main>

@@ -5,6 +5,8 @@
 // so it lives in its own module. The page Server Component calls
 // one function and renders the results.
 
+import { resolveQuestionV2Meta } from '@/lib/practice/weak-queue';
+
 const FIRST_ATTEMPT_WINDOW_DAYS = 30;
 const MIN_ATTEMPTS_FOR_RANKING = 5;
 const MIN_ATTEMPTS_FOR_SKILL = 3;
@@ -36,11 +38,15 @@ export async function loadPerformanceStats(supabase) {
 
   if (current.length > 0) {
     const questionIds = [...new Set(current.map((a) => a.question_id))];
-    const taxMap = await fetchTaxonomy(supabase, questionIds);
+    const taxMap = await resolveQuestionV2Meta(
+      supabase,
+      questionIds,
+      'id, domain_code, domain_name, skill_code, skill_name, difficulty, is_published, is_broken, deleted_at',
+    );
 
     const domainAgg = {};
     for (const a of current) {
-      const tax = taxMap[a.question_id];
+      const tax = taxMap.get(a.question_id);
       if (!tax) continue;
       if (tax.domain_code) {
         const d = (domainAgg[tax.domain_code] ??= {
@@ -109,19 +115,6 @@ function accuracyPct(rows) {
   if (rows.length === 0) return null;
   const correct = rows.filter((r) => r.is_correct).length;
   return Math.round((correct / rows.length) * 100);
-}
-
-async function fetchTaxonomy(supabase, questionIds) {
-  const taxMap = {};
-  for (let i = 0; i < questionIds.length; i += 500) {
-    const chunk = questionIds.slice(i, i + 500);
-    const { data } = await supabase
-      .from('questions_v2')
-      .select('id, domain_code, domain_name, skill_code, skill_name, difficulty')
-      .in('id', chunk);
-    for (const t of data ?? []) taxMap[t.id] = t;
-  }
-  return taxMap;
 }
 
 async function loadHardestEasiest(supabase) {

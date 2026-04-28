@@ -1,18 +1,47 @@
-// Catch-all placeholder for the rebuild tree. Any URL that the
-// middleware rewrites into app/next/* and doesn't yet have a concrete
-// implementation lands here, so Phase 1 internal-account testers see an
-// honest "under construction" page instead of a Next.js 404.
+// Catch-all for the rebuild tree. The middleware rewrites every
+// non-API URL for ui_version='next' users to /next/<path>; if
+// the new tree has no concrete page at that path, the request
+// resolves here instead of 404'ing.
 //
-// Phase 2 fills in concrete pages under app/next/dashboard/,
-// app/next/practice/, etc., and this catch-all recedes to covering only
-// genuinely-missing routes. By Phase 6 it's deleted along with the rest
-// of the parallel-build infrastructure.
+// Behavior:
+//   - Logged-in user → redirect to /dashboard. The new-tree
+//     dashboard exists, has a working AppNav, and gives the user
+//     a way home. Without this redirect, the catchall is the only
+//     /next page that mounts no route-group layout, so it
+//     renders with zero nav (the legacy NavBar above is gated to
+//     ui_version='legacy' as of the dual-nav fix, and the
+//     (student) / (tutor) / (admin) layouts only fire on their
+//     own subtrees). Internal testers who explicitly want to see
+//     the placeholder copy can read this file in source.
+//   - Logged-out user → render the placeholder copy below. They
+//     should never reach here in practice (the proxy redirects
+//     unauthenticated requests off subscription-required paths
+//     before this point), but the message stays as a fallback.
+//
+// Phase 6 (legacy retirement) deletes this file along with the
+// rest of the parallel-build infrastructure.
+
+import { redirect } from 'next/navigation';
+import { requireUser } from '@/lib/api/auth';
 
 export default async function NextTreeCatchAllPlaceholder({ params }) {
-  // Forward-compatible: `await params` is a no-op on Next 14 (plain object)
-  // and required on Next 16 (Promise). See docs/architecture-plan.md §1.5.6.
   const resolvedParams = await params;
-  const path = Array.isArray(resolvedParams?.slug) ? '/' + resolvedParams.slug.join('/') : '/';
+  const path = Array.isArray(resolvedParams?.slug)
+    ? '/' + resolvedParams.slug.join('/')
+    : '/';
+
+  let user = null;
+  try {
+    ({ user } = await requireUser());
+  } catch {
+    // requireUser throws ApiError when there's no session — fall
+    // through to the placeholder rather than surfacing a 401.
+  }
+
+  if (user) {
+    redirect('/dashboard');
+  }
+
   return (
     <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
       <h1>Rebuild tree — not yet wired up</h1>
@@ -20,11 +49,10 @@ export default async function NextTreeCatchAllPlaceholder({ params }) {
         Requested path: <code>{path}</code>
       </p>
       <p>
-        This URL has no implementation in the rebuild tree yet. It will
-        land in a future phase of the migration. If you need to use this
-        page today, an admin can flip your account back to{' '}
-        <code>ui_version=&apos;legacy&apos;</code> and you&apos;ll return
-        to the current product.
+        This URL has no implementation in the rebuild tree yet. Sign
+        in to land on the dashboard, or an admin can flip your
+        account back to <code>ui_version=&apos;legacy&apos;</code> to
+        reach the current product.
       </p>
     </main>
   );

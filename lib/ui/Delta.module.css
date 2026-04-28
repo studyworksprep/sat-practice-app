@@ -1,0 +1,18 @@
+/* Delta — small directional indicator for "vs prior" stats.
+   Tones from the design-system success / danger / slate tokens
+   so the colors match the tile palettes. */
+
+.delta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono, monospace);
+  white-space: nowrap;
+}
+
+.toneUp      { color: var(--tile-success-fg); }
+.toneDown    { color: var(--tile-danger-fg); }
+.toneNeutral { color: var(--fg3); }

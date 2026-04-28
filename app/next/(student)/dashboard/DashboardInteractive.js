@@ -12,11 +12,22 @@
 import Link from 'next/link';
 import { useActionState, useOptimistic } from 'react';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
+import { WeeklyTrendChart } from '@/lib/practice/WeeklyTrendChart';
+import { Sparkline } from '@/lib/ui/Sparkline';
+import { Delta } from '@/lib/ui/Delta';
+import {
+  ClipboardCheckIcon,
+  GoalIcon,
+  InboxIcon,
+  ProgressIcon,
+} from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import s from './Dashboard.module.css';
 
 export function DashboardInteractive({
   stats,
   performance,
+  weeklyTrend = [],
   recentlyFinished,
   assignments,
   resumeInfo,
@@ -95,14 +106,62 @@ export function DashboardInteractive({
         <StatTile
           value={formatInt(stats.totalAttempts)}
           label="Questions attempted"
+          spark={
+            weeklyTrend.length > 0 ? (
+              <Sparkline
+                data={weeklyTrend}
+                field="attempts"
+                tone="cyan"
+                ariaLabel="Weekly attempts trend"
+              />
+            ) : null
+          }
         />
         <StatTile
           value={stats.accuracy == null ? '—' : `${stats.accuracy}%`}
           label="Overall accuracy"
+          spark={
+            weeklyTrend.length > 0 ? (
+              <Sparkline
+                data={weeklyTrend}
+                field="accuracy"
+                tone="gold"
+                ariaLabel="Weekly accuracy trend"
+                treatZeroAsNull
+              />
+            ) : null
+          }
+          delta={
+            weeklyTrend.length > 0
+              ? (() => {
+                  const latest = lastNonNull(weeklyTrend, 'accuracy');
+                  const prior = priorAverage(weeklyTrend, 'accuracy', 'attempts');
+                  return latest != null && prior != null
+                    ? <Delta current={latest} prior={prior} format="percent" />
+                    : null;
+                })()
+              : null
+          }
         />
         <StatTile
           value={formatInt(stats.weekAttempts)}
           label="This week"
+          delta={
+            weeklyTrend.length >= 2
+              ? (() => {
+                  const last = weeklyTrend[weeklyTrend.length - 1];
+                  const prev = weeklyTrend[weeklyTrend.length - 2];
+                  return (
+                    <Delta
+                      current={last?.attempts ?? 0}
+                      prior={prev?.attempts ?? 0}
+                      format="count"
+                      suffix="vs last week"
+                    />
+                  );
+                })()
+              : null
+          }
         />
         <StatTile
           value={daysToTest == null ? '—' : daysToTest < 0 ? 'Past' : daysToTest}
@@ -116,7 +175,10 @@ export function DashboardInteractive({
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.sectionLabel}>Recently finished</div>
+            <div className={s.sectionLabel}>
+              <IconTile icon={ClipboardCheckIcon} palette="success" size="sm" />
+              Recently finished
+            </div>
             <div className={s.cardSub}>
               The work you&apos;ve closed out most recently — click to
               jump to its report.
@@ -165,6 +227,35 @@ export function DashboardInteractive({
         )}
       </section>
 
+      {/* ---------- Weekly progress trend ---------- */}
+      {weeklyTrend.length > 0 && (
+        <section className={s.card}>
+          <div className={s.cardHeader}>
+            <div>
+              <div className={s.sectionLabel}>
+                <IconTile icon={ProgressIcon} palette="success" size="sm" />
+                Your weekly progress
+              </div>
+              <div className={s.cardSub}>
+                Weekly accuracy (gold line) over the last 90 days, against
+                attempt volume (cyan bars). Empty weeks are gaps so the line
+                doesn&apos;t dip to 0 % when you take a break.
+              </div>
+            </div>
+          </div>
+          <WeeklyTrendChart
+            trend={weeklyTrend}
+            labels={{
+              latest: 'This week',
+              average: '90-day avg',
+              delta: 'Δ vs prior',
+              latestSubEmpty: 'No practice this week',
+              deltaSub: 'This week vs prior weeks',
+            }}
+          />
+        </section>
+      )}
+
       {/* ---------- Performance grid ---------- */}
       <section className={s.perfGrid}>
         <PerformanceCard title="Math" tone="math" data={performance.math} />
@@ -175,7 +266,10 @@ export function DashboardInteractive({
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.sectionLabel}>Pending assignments</div>
+            <div className={s.sectionLabel}>
+              <IconTile icon={InboxIcon} palette="navy" size="sm" />
+              Pending assignments
+            </div>
             <div className={s.cardSub}>
               {assignments.length === 0
                 ? "You're all caught up."
@@ -206,7 +300,10 @@ export function DashboardInteractive({
 
       {/* ---------- Target score editor ---------- */}
       <section className={s.targetCard}>
-        <div className={s.sectionLabel}>Target SAT score</div>
+        <div className={s.sectionLabel}>
+          <IconTile icon={GoalIcon} palette="gold" size="sm" />
+          Target SAT score
+        </div>
         <form action={submitAction} className={s.targetForm}>
           <label htmlFor="target" className={s.srOnly}>Target SAT score</label>
           <input
@@ -241,13 +338,54 @@ export function DashboardInteractive({
 
 // ──────────────────────────────────────────────────────────────
 
-function StatTile({ value, label }) {
+function StatTile({ value, label, spark, delta }) {
   return (
     <div className={s.statCard}>
-      <div className={s.statValue}>{value}</div>
-      <div className={s.statLabel}>{label}</div>
+      <div className={s.statValueRow}>
+        <div className={s.statValue}>{value}</div>
+        {spark}
+      </div>
+      <div className={s.statLabelRow}>
+        <div className={s.statLabel}>{label}</div>
+        {delta}
+      </div>
     </div>
   );
+}
+
+// Latest non-null value of a field across the trend buckets.
+// Used for "where the student stands today" reads.
+function lastNonNull(rows, field) {
+  for (let i = rows.length - 1; i >= 0; i -= 1) {
+    const v = rows[i]?.[field];
+    if (v != null) return v;
+  }
+  return null;
+}
+
+// Weighted average of a "rate-style" field (accuracy etc.) across
+// all buckets EXCEPT the latest non-null one. Weighting by an
+// `attempts`-like field keeps weeks with more activity from
+// being washed out by quiet weeks.
+function priorAverage(rows, valueField, weightField) {
+  // Find the latest non-null bucket so we exclude it from the
+  // prior average — comparing latest against itself would
+  // dilute the delta.
+  let latestIdx = -1;
+  for (let i = rows.length - 1; i >= 0; i -= 1) {
+    if (rows[i]?.[valueField] != null) { latestIdx = i; break; }
+  }
+  if (latestIdx <= 0) return null;
+  let weighted = 0;
+  let totalWeight = 0;
+  for (let i = 0; i < latestIdx; i += 1) {
+    const v = rows[i]?.[valueField];
+    const w = rows[i]?.[weightField] ?? 0;
+    if (v == null || w <= 0) continue;
+    weighted += v * w;
+    totalWeight += w;
+  }
+  return totalWeight > 0 ? weighted / totalWeight : null;
 }
 
 function PerformanceCard({ title, tone, data }) {
