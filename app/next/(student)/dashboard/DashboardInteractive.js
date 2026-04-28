@@ -13,6 +13,8 @@ import Link from 'next/link';
 import { useActionState, useOptimistic } from 'react';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
 import { WeeklyTrendChart } from '@/lib/practice/WeeklyTrendChart';
+import { Sparkline } from '@/lib/ui/Sparkline';
+import { Delta } from '@/lib/ui/Delta';
 import {
   ClipboardCheckIcon,
   GoalIcon,
@@ -104,14 +106,62 @@ export function DashboardInteractive({
         <StatTile
           value={formatInt(stats.totalAttempts)}
           label="Questions attempted"
+          spark={
+            weeklyTrend.length > 0 ? (
+              <Sparkline
+                data={weeklyTrend}
+                field="attempts"
+                tone="cyan"
+                ariaLabel="Weekly attempts trend"
+              />
+            ) : null
+          }
         />
         <StatTile
           value={stats.accuracy == null ? '—' : `${stats.accuracy}%`}
           label="Overall accuracy"
+          spark={
+            weeklyTrend.length > 0 ? (
+              <Sparkline
+                data={weeklyTrend}
+                field="accuracy"
+                tone="gold"
+                ariaLabel="Weekly accuracy trend"
+                treatZeroAsNull
+              />
+            ) : null
+          }
+          delta={
+            weeklyTrend.length > 0
+              ? (() => {
+                  const latest = lastNonNull(weeklyTrend, 'accuracy');
+                  const prior = priorAverage(weeklyTrend, 'accuracy', 'attempts');
+                  return latest != null && prior != null
+                    ? <Delta current={latest} prior={prior} format="percent" />
+                    : null;
+                })()
+              : null
+          }
         />
         <StatTile
           value={formatInt(stats.weekAttempts)}
           label="This week"
+          delta={
+            weeklyTrend.length >= 2
+              ? (() => {
+                  const last = weeklyTrend[weeklyTrend.length - 1];
+                  const prev = weeklyTrend[weeklyTrend.length - 2];
+                  return (
+                    <Delta
+                      current={last?.attempts ?? 0}
+                      prior={prev?.attempts ?? 0}
+                      format="count"
+                      suffix="vs last week"
+                    />
+                  );
+                })()
+              : null
+          }
         />
         <StatTile
           value={daysToTest == null ? '—' : daysToTest < 0 ? 'Past' : daysToTest}
@@ -288,13 +338,54 @@ export function DashboardInteractive({
 
 // ──────────────────────────────────────────────────────────────
 
-function StatTile({ value, label }) {
+function StatTile({ value, label, spark, delta }) {
   return (
     <div className={s.statCard}>
-      <div className={s.statValue}>{value}</div>
-      <div className={s.statLabel}>{label}</div>
+      <div className={s.statValueRow}>
+        <div className={s.statValue}>{value}</div>
+        {spark}
+      </div>
+      <div className={s.statLabelRow}>
+        <div className={s.statLabel}>{label}</div>
+        {delta}
+      </div>
     </div>
   );
+}
+
+// Latest non-null value of a field across the trend buckets.
+// Used for "where the student stands today" reads.
+function lastNonNull(rows, field) {
+  for (let i = rows.length - 1; i >= 0; i -= 1) {
+    const v = rows[i]?.[field];
+    if (v != null) return v;
+  }
+  return null;
+}
+
+// Weighted average of a "rate-style" field (accuracy etc.) across
+// all buckets EXCEPT the latest non-null one. Weighting by an
+// `attempts`-like field keeps weeks with more activity from
+// being washed out by quiet weeks.
+function priorAverage(rows, valueField, weightField) {
+  // Find the latest non-null bucket so we exclude it from the
+  // prior average — comparing latest against itself would
+  // dilute the delta.
+  let latestIdx = -1;
+  for (let i = rows.length - 1; i >= 0; i -= 1) {
+    if (rows[i]?.[valueField] != null) { latestIdx = i; break; }
+  }
+  if (latestIdx <= 0) return null;
+  let weighted = 0;
+  let totalWeight = 0;
+  for (let i = 0; i < latestIdx; i += 1) {
+    const v = rows[i]?.[valueField];
+    const w = rows[i]?.[weightField] ?? 0;
+    if (v == null || w <= 0) continue;
+    weighted += v * w;
+    totalWeight += w;
+  }
+  return totalWeight > 0 ? weighted / totalWeight : null;
 }
 
 function PerformanceCard({ title, tone, data }) {

@@ -67,12 +67,25 @@
   letter-spacing: 0.06em;
   color: var(--fg3);
 }
+.statValueRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s2);
+}
 .statValue {
   font-family: var(--font-serif);
   font-size: 28px;
   font-weight: 700;
   color: var(--color-navy-900, var(--fg1));
   line-height: 1.05;
+}
+.statSubRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2);
+  flex-wrap: wrap;
 }
 .statSub {
   font-size: 13px;

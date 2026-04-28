@@ -15,6 +15,8 @@ import {
   ProgressIcon,
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
+import { Sparkline } from '@/lib/ui/Sparkline';
+import { Delta } from '@/lib/ui/Delta';
 import { loadRosterPerformance, sortSkills } from './loader';
 import { PerformanceSortToolbar } from './PerformanceSortToolbar';
 import { WeeklyTrendChart } from '@/lib/practice/WeeklyTrendChart';
@@ -93,6 +95,30 @@ export default async function TutorPerformancePage({ searchParams }) {
             data.totalAttempts === 0
               ? 'Nothing recorded'
               : `Across ${data.skills.length} skill${data.skills.length === 1 ? '' : 's'}`
+          }
+          spark={
+            data.trend?.length > 0 ? (
+              <Sparkline
+                data={data.trend}
+                field="attempts"
+                tone="cyan"
+                ariaLabel="Cohort weekly attempt volume"
+              />
+            ) : null
+          }
+          delta={
+            data.trend?.length >= 2 ? (() => {
+              const last = data.trend[data.trend.length - 1];
+              const prev = data.trend[data.trend.length - 2];
+              return (
+                <Delta
+                  current={last?.attempts ?? 0}
+                  prior={prev?.attempts ?? 0}
+                  format="count"
+                  suffix="vs last week"
+                />
+              );
+            })() : null
           }
         />
         <StatTile
@@ -217,12 +243,18 @@ function SkillTile({ skill }) {
   );
 }
 
-function StatTile({ label, value, sub }) {
+function StatTile({ label, value, sub, spark, delta }) {
   return (
     <div className={s.statTile}>
       <div className={s.statLabel}>{label}</div>
-      <div className={s.statValue}>{value}</div>
-      {sub && <div className={s.statSub}>{sub}</div>}
+      <div className={s.statValueRow}>
+        <div className={s.statValue}>{value}</div>
+        {spark}
+      </div>
+      <div className={s.statSubRow}>
+        {sub && <div className={s.statSub}>{sub}</div>}
+        {delta}
+      </div>
     </div>
   );
 }
