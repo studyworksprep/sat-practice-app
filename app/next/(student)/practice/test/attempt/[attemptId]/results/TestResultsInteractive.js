@@ -19,7 +19,8 @@ import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
-import { BookmarkIcon, CorrectIcon, IncorrectIcon } from '@/lib/ui/icons';
+import { BookmarkIcon, CorrectIcon, IncorrectIcon, NotesIcon, TargetIcon, TimeSpentIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import s from './TestResults.module.css';
 
 const SUBJECT_NAME = { RW: 'Reading & Writing', MATH: 'Math' };
@@ -171,7 +172,10 @@ export function TestResultsInteractive({
       {opportunity.length > 0 && (
         <section className={s.card}>
           <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>Opportunity Index</div>
+            <div className={s.sectionLabel}>
+              <IconTile icon={TargetIcon} palette="amber" size="sm" />
+              Opportunity Index
+            </div>
             <div className={s.oiDescription}>
               Skills where you have the most room to grow, weighted
               by learnability × wrong-question impact. Start here
@@ -186,7 +190,10 @@ export function TestResultsInteractive({
       {timing.anyTimed && (
         <section className={s.card}>
           <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>Timing</div>
+            <div className={s.sectionLabel}>
+              <IconTile icon={TimeSpentIcon} palette="cyan" size="sm" />
+              Timing
+            </div>
             <div className={s.cardHeaderHint}>
               Wall-clock time per module above; average time per
               question below comes from active answer time, not
@@ -264,7 +271,10 @@ export function TestResultsInteractive({
       {/* ---------- Per-question review ---------- */}
       <section className={s.card}>
         <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>Per-question review</div>
+          <div className={s.sectionLabel}>
+            <IconTile icon={NotesIcon} palette="navy" size="sm" />
+            Per-question review
+          </div>
           <div className={s.cardHeaderHint}>
             Click any question below to review it. Your initial
             answer is shown; reveal the correct answer + rationale

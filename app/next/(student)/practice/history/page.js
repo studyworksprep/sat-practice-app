@@ -21,6 +21,8 @@ import {
   submitPracticeSession,
   abandonPracticeSession,
 } from '@/lib/practice/session-actions';
+import { PencilIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { SessionLifecycleButtons } from '../../review/SessionLifecycleButtons';
 import s from './page.module.css';
 
@@ -126,6 +128,18 @@ export default async function PracticeHistoryPage() {
           </div>
         </div>
       )}
+
+      <div className={s.sessionsHead}>
+        <div className={s.sessionsLabel}>
+          <IconTile icon={PencilIcon} palette="gold" size="sm" />
+          Sessions
+        </div>
+        {rows.length > 0 && (
+          <span className={s.sessionsCount}>
+            {rows.length} session{rows.length === 1 ? '' : 's'}
+          </span>
+        )}
+      </div>
 
       {rows.length === 0 ? (
         <div className={s.card}>
