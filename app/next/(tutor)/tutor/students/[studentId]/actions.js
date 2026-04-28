@@ -87,3 +87,110 @@ export async function importStudentPracticeHistory(_prev, formData) {
   revalidatePath(`/tutor/students/${studentId}`);
   return actionOk(data);
 }
+
+/**
+ * One-button cutover. Runs `importStudentPracticeHistory` (which
+ * also re-scores), then sets `app_metadata.ui_version='next'` on
+ * the user's auth row via the service-role admin client. After
+ * the next page load the proxy sees the new flag, rewrites the
+ * student onto `/next/...`, and they land on the new tree with
+ * their full history visible.
+ *
+ * Idempotent. Safe to retry — the import RPC self-gates on
+ * `profiles.practice_test_v2_imported_at`, the recompute helper
+ * skips already-scored rows, and re-setting `ui_version='next'`
+ * on a user already there is a no-op.
+ *
+ * Authorization: admin only. Managers and teachers use the
+ * separate per-feature buttons (import, etc.); only admins flip
+ * a student's tree assignment, since this is the canonical
+ * "graduate to next" action and rolling it back is also an admin
+ * job (set the flag back to 'legacy' or remove it).
+ *
+ * See docs/cutover-runbook.md for the surrounding pre-flight +
+ * verification checklist.
+ */
+export async function migrateUserToNext(_prev, formData) {
+  const studentId = formData.get('student_id');
+  if (typeof studentId !== 'string' || !studentId) {
+    return actionFail('student_id required');
+  }
+
+  let userCtx;
+  try {
+    userCtx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  if (userCtx.profile.role !== 'admin') {
+    return actionFail('Only admins can flip a student to the new tree.');
+  }
+
+  let svcCtx;
+  try {
+    svcCtx = await requireServiceRole(
+      `admin: migrate student ${studentId} to ui_version=next`,
+      { allowedRoles: ['admin'] },
+    );
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  // 1. Bulk-copy v1 → v2 (idempotent — the function skips if
+  //    already done).
+  const { data: importResult, error: importErr } =
+    await svcCtx.service.rpc('import_student_practice_history', {
+      p_student_id: studentId,
+    });
+  if (importErr) {
+    return actionFail(`Import failed: ${importErr.message}`);
+  }
+
+  // 2. Re-score the imported attempts. Idempotent.
+  const { data: imported } = await svcCtx.service
+    .from('practice_test_attempts_v2')
+    .select('id')
+    .eq('user_id', studentId);
+  let recomputed = 0;
+  for (const a of imported ?? []) {
+    const r = await recomputeAttemptScores(svcCtx.service, a.id);
+    if (r?.ok && r.changed) recomputed += 1;
+  }
+
+  // 3. Flip the auth flag. The Supabase admin client is the only
+  //    code path that can write app_metadata (user_metadata is
+  //    user-writable; app_metadata is admin-only by design, which
+  //    is what we want — students can't self-migrate).
+  //
+  //    updateUserById replaces app_metadata wholesale rather than
+  //    merging key-by-key, so read it first and write the union.
+  //    Otherwise unrelated app_metadata fields (e.g. provider
+  //    info) would silently disappear.
+  const { data: existingUser, error: readErr } =
+    await svcCtx.service.auth.admin.getUserById(studentId);
+  if (readErr || !existingUser?.user) {
+    return actionFail(`Could not read user: ${readErr?.message ?? 'not found'}`);
+  }
+  const mergedAppMeta = {
+    ...(existingUser.user.app_metadata ?? {}),
+    ui_version: 'next',
+  };
+  const { error: flipErr } = await svcCtx.service.auth.admin.updateUserById(
+    studentId,
+    { app_metadata: mergedAppMeta },
+  );
+  if (flipErr) {
+    return actionFail(`Could not set ui_version: ${flipErr.message}`);
+  }
+
+  revalidatePath(`/tutor/students/${studentId}`);
+  return actionOk({
+    flipped: true,
+    importedAttempts: imported?.length ?? 0,
+    recomputed,
+    importResult: importResult ?? null,
+  });
+}

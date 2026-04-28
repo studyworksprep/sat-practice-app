@@ -25,6 +25,7 @@ import {
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
+import { MigrateToNextButton } from './MigrateToNextButton';
 import s from './StudentDetail.module.css';
 
 import type { ViewRow, SubjectCode } from '@/lib/types';
@@ -392,6 +393,11 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           importedAt={profileRow?.practice_test_v2_imported_at ?? null}
           hasV1History={(v1AttemptCount ?? 0) > 0}
         />
+        {profile.role === 'admin' && (
+          <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--border)' }}>
+            <MigrateToNextButton studentId={student.id} currentUiVersion={null} />
+          </div>
+        )}
       </section>
     </main>
   );
