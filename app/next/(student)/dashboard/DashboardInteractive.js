@@ -12,13 +12,20 @@
 import Link from 'next/link';
 import { useActionState, useOptimistic } from 'react';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
-import { ClipboardCheckIcon, GoalIcon, InboxIcon } from '@/lib/ui/icons';
+import { WeeklyTrendChart } from '@/lib/practice/WeeklyTrendChart';
+import {
+  ClipboardCheckIcon,
+  GoalIcon,
+  InboxIcon,
+  ProgressIcon,
+} from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import s from './Dashboard.module.css';
 
 export function DashboardInteractive({
   stats,
   performance,
+  weeklyTrend = [],
   recentlyFinished,
   assignments,
   resumeInfo,
@@ -169,6 +176,35 @@ export function DashboardInteractive({
           </ul>
         )}
       </section>
+
+      {/* ---------- Weekly progress trend ---------- */}
+      {weeklyTrend.length > 0 && (
+        <section className={s.card}>
+          <div className={s.cardHeader}>
+            <div>
+              <div className={s.sectionLabel}>
+                <IconTile icon={ProgressIcon} palette="success" size="sm" />
+                Your weekly progress
+              </div>
+              <div className={s.cardSub}>
+                Weekly accuracy (gold line) over the last 90 days, against
+                attempt volume (cyan bars). Empty weeks are gaps so the line
+                doesn&apos;t dip to 0 % when you take a break.
+              </div>
+            </div>
+          </div>
+          <WeeklyTrendChart
+            trend={weeklyTrend}
+            labels={{
+              latest: 'This week',
+              average: '90-day avg',
+              delta: 'Δ vs prior',
+              latestSubEmpty: 'No practice this week',
+              deltaSub: 'This week vs prior weeks',
+            }}
+          />
+        </section>
+      )}
 
       {/* ---------- Performance grid ---------- */}
       <section className={s.perfGrid}>

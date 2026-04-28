@@ -31,6 +31,8 @@ import {
   resolveQuestionV2Meta,
 } from '@/lib/practice/weak-queue';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
+import { LayersIcon, SparklesIcon, TargetIcon } from '@/lib/ui/icons';
+import { IconTile } from '@/lib/ui/IconTile';
 import { createWeakQueueDrill, createSkillDrill } from './actions';
 import { WeakQueueLauncher } from './WeakQueueLauncher';
 import { SkillDrillButton } from './SkillDrillButton';
@@ -128,7 +130,10 @@ export default async function StudentReviewPage() {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.h2}>Common errors</div>
+            <div className={s.h2}>
+              <IconTile icon={SparklesIcon} palette="amber" size="md" />
+              <span>Common errors</span>
+            </div>
             <div className={s.cardHint}>
               Skills where you&apos;ve missed the most. Click one
               to drill that skill only.
@@ -183,7 +188,10 @@ export default async function StudentReviewPage() {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.h2}>Weak questions drill</div>
+            <div className={s.h2}>
+              <IconTile icon={TargetIcon} palette="cyan" size="md" />
+              <span>Weak questions drill</span>
+            </div>
             <div className={s.cardHint}>
               Your trickiest questions across every skill, ordered
               by how recently you missed them and how hard they are.
@@ -216,7 +224,10 @@ export default async function StudentReviewPage() {
       <section className={s.card}>
         <div className={s.cardHeader}>
           <div>
-            <div className={s.h2}>Flashcards</div>
+            <div className={s.h2}>
+              <IconTile icon={LayersIcon} palette="violet" size="md" />
+              <span>Flashcards</span>
+            </div>
             <div className={s.cardHint}>
               Terms and vocabulary you&apos;ve stashed for study.
             </div>

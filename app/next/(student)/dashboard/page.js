@@ -146,6 +146,24 @@ export default async function StudentDashboardPage() {
       .maybeSingle(),
   ]);
 
+  // Weekly accuracy trend for the "Your weekly progress" card.
+  // Reuses the same RPC the tutor performance page calls — passing
+  // a single-element roster (just this user). RLS still applies
+  // inside the RPC, so the only data this can return is the
+  // caller's own. 13 weeks tracks the standard 90-day window.
+  const TREND_WEEKS = 13;
+  const { data: trendRows } = await supabase.rpc('get_roster_weekly_trend', {
+    p_roster: [user.id],
+    p_num_weeks: TREND_WEEKS,
+  });
+  const weeklyTrend = (trendRows ?? []).map((r) => ({
+    startIso: r.start_iso,
+    endIso: r.end_iso,
+    attempts: Number(r.attempts ?? 0),
+    correct: Number(r.correct ?? 0),
+    accuracy: r.accuracy == null ? null : Number(r.accuracy),
+  }));
+
   const accuracy = totalAttempts && totalAttempts > 0
     ? Math.round(((correctAttempts ?? 0) / totalAttempts) * 100)
     : null;
@@ -379,6 +397,7 @@ export default async function StudentDashboardPage() {
     <DashboardInteractive
       stats={stats}
       performance={performance}
+      weeklyTrend={weeklyTrend}
       recentlyFinished={recentlyFinished}
       assignments={pendingAssignments}
       resumeInfo={resumeInfo}

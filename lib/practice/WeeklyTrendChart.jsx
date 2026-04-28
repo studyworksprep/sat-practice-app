@@ -1,19 +1,24 @@
-// Inline SVG trend chart for the Cohort progress card. Two
-// series in one viewBox:
+// Weekly accuracy + volume chart, shared between the tutor
+// performance page (cohort scope) and the student dashboard
+// (single-student scope). Same shape in both: an array of
+// rolling 7-day buckets with attempts / correct / accuracy
+// (null for empty weeks). Two series in one viewBox:
+//
 //   - vertical bars at the bottom = weekly attempt volume
 //     (relative to the busiest week in the window)
-//   - line on top  = weekly cohort accuracy (0..1, scaled to the
-//     accuracy axis)
+//   - line on top  = weekly accuracy, scaled to [0, 1]
 //
-// Both series share the x-axis (one tick per week). Hand-rolled
-// SVG instead of pulling a chart library because the data is
-// small (≤13 weeks for a 90-day window) and a chart library
-// would dwarf the visualization it draws.
+// Hand-rolled SVG instead of pulling a chart library — the
+// data is small (≤13 weeks for a 90-day window) and a chart
+// library would dwarf the visualization. Server-rendered, no
+// hydration cost.
 //
-// Server-rendered: this file is not 'use client', so the chart
-// is part of the page's HTML — no hydration cost.
+// `labels` lets the caller customize the three legend tile
+// captions (the cohort version uses "Window avg"; a single
+// student wants "Last 90 days" or similar). Defaults match
+// the tutor page's wording.
 
-import s from './CohortTrendChart.module.css';
+import s from './WeeklyTrendChart.module.css';
 
 const WIDTH = 560;
 const HEIGHT = 160;
@@ -21,14 +26,24 @@ const MARGIN = { top: 12, right: 16, bottom: 24, left: 28 };
 const INNER_W = WIDTH - MARGIN.left - MARGIN.right;
 const INNER_H = HEIGHT - MARGIN.top - MARGIN.bottom;
 
-// Y-axis tick marks for accuracy. 0%, 50%, 100% — keeps the
-// chart legible without crowding.
 const ACC_TICKS = [0, 0.5, 1];
 
+const DEFAULT_LABELS = {
+  latest: 'This week',
+  average: 'Window avg',
+  delta: 'Δ vs prior',
+  latestSubEmpty: 'No attempts yet',
+  deltaSub: 'Latest week vs window',
+};
+
 /**
- * @param {{ trend: Array<{ startIso: string, endIso: string, attempts: number, correct: number, accuracy: number|null }> }} props
+ * @param {{
+ *   trend: Array<{ startIso: string, endIso: string, attempts: number, correct: number, accuracy: number|null }>,
+ *   labels?: Partial<typeof DEFAULT_LABELS>,
+ * }} props
  */
-export function CohortTrendChart({ trend }) {
+export function WeeklyTrendChart({ trend, labels }) {
+  const L = { ...DEFAULT_LABELS, ...(labels ?? {}) };
   if (!trend || trend.length === 0) return null;
   const maxAttempts = Math.max(...trend.map((b) => b.attempts), 1);
 
@@ -75,7 +90,7 @@ export function CohortTrendChart({ trend }) {
     <div className={s.wrap}>
       <div className={s.legend}>
         <div className={s.legendStat}>
-          <div className={s.legendLabel}>This week</div>
+          <div className={s.legendLabel}>{L.latest}</div>
           <div className={s.legendValue}>
             {latest && latest.attempts > 0
               ? `${Math.round(latest.accuracy * 100)}%`
@@ -84,11 +99,11 @@ export function CohortTrendChart({ trend }) {
           <div className={s.legendSub}>
             {latest && latest.attempts > 0
               ? `${latest.correct} / ${latest.attempts} correct`
-              : 'No attempts yet'}
+              : L.latestSubEmpty}
           </div>
         </div>
         <div className={s.legendStat}>
-          <div className={s.legendLabel}>Window avg</div>
+          <div className={s.legendLabel}>{L.average}</div>
           <div className={s.legendValue}>
             {avgAccuracy != null ? `${Math.round(avgAccuracy * 100)}%` : '—'}
           </div>
@@ -97,7 +112,7 @@ export function CohortTrendChart({ trend }) {
           </div>
         </div>
         <div className={s.legendStat}>
-          <div className={s.legendLabel}>Δ vs prior</div>
+          <div className={s.legendLabel}>{L.delta}</div>
           <div
             className={[
               s.legendValue,
@@ -110,7 +125,7 @@ export function CohortTrendChart({ trend }) {
               : `${accuracyDelta > 0 ? '+' : ''}${Math.round(accuracyDelta * 100)} pts`}
           </div>
           <div className={s.legendSub}>
-            Latest week vs window
+            {L.deltaSub}
           </div>
         </div>
       </div>

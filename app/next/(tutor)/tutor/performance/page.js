@@ -17,7 +17,7 @@ import {
 import { IconTile } from '@/lib/ui/IconTile';
 import { loadRosterPerformance, sortSkills } from './loader';
 import { PerformanceSortToolbar } from './PerformanceSortToolbar';
-import { CohortTrendChart } from './CohortTrendChart';
+import { WeeklyTrendChart } from '@/lib/practice/WeeklyTrendChart';
 import s from './Performance.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -132,7 +132,7 @@ export default async function TutorPerformancePage({ searchParams }) {
             body="Once your students start answering questions, the weekly trend lights up here."
           />
         ) : (
-          <CohortTrendChart trend={data.trend} />
+          <WeeklyTrendChart trend={data.trend} />
         )}
       </section>
 
