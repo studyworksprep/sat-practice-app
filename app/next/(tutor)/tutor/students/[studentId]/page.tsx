@@ -359,7 +359,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
               <li key={row.id}>
                 <Link
                   href={row.completed
-                    ? `/practice/review/${row.id}`
+                    ? `/tutor/sessions/${row.id}`
                     : `/tutor/students/${student.id}`}
                   className={s.sessionRow}
                 >

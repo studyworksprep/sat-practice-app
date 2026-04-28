@@ -79,7 +79,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
   // section below can show display_code + skill + per-question
   // cohort accuracy. Skipped when the assignment has no question
   // pool (lesson / practice-test types).
-  const [attemptRowsRes, questionMetaRes] = await Promise.all([
+  const [attemptRowsRes, questionMetaRes, sessionRowsRes] = await Promise.all([
     attemptQuestionIds.length > 0 && studentIds.length > 0
       ? supabase
           .from('attempts')
@@ -94,11 +94,35 @@ export default async function TutorAssignmentDetailPage({ params }) {
           .select('id, display_code, domain_name, skill_name, difficulty')
           .in('id', questionIds)
       : Promise.resolve({ data: [] }),
+    // Latest practice session per student for this assignment.
+    // Powers the per-row "Report" link: when a student has at
+    // least one session that was launched from this assignment,
+    // the row gets a direct link to the latest one's review.
+    studentIds.length > 0
+      ? supabase
+          .from('practice_sessions')
+          .select('id, user_id, status, created_at')
+          .in('user_id', studentIds)
+          .eq('filter_criteria->>assignment_id', assignmentId)
+          .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
   ]);
   const attemptRows = attemptRowsRes.data ?? [];
   const questionMeta = new Map(
     (questionMetaRes.data ?? []).map((q) => [q.id, q]),
   );
+  // First (= most recent) session per user. Prefer a completed
+  // one if any exist; otherwise fall back to the most recent
+  // in-progress so the tutor can at least see in-flight work.
+  const reportSessionByUser = new Map();
+  for (const r of sessionRowsRes.data ?? []) {
+    const existing = reportSessionByUser.get(r.user_id);
+    if (!existing) {
+      reportSessionByUser.set(r.user_id, r);
+    } else if (existing.status !== 'completed' && r.status === 'completed') {
+      reportSessionByUser.set(r.user_id, r);
+    }
+  }
 
   const statusByStudent = new Map();
   const statusByQuestion = new Map();  // qid (v2) → { done, correct }
@@ -130,6 +154,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
     const name =
       [r.student?.first_name, r.student?.last_name].filter(Boolean).join(' ')
       || r.student?.email || 'Student';
+    const reportSession = reportSessionByUser.get(r.student_id) ?? null;
     return {
       id: r.student_id,
       name,
@@ -137,6 +162,10 @@ export default async function TutorAssignmentDetailPage({ params }) {
       completed_at: r.completed_at,
       done: stats.done,
       correct: stats.correct,
+      reportSessionId:
+        reportSession && reportSession.status === 'completed'
+          ? reportSession.id
+          : null,
     };
   });
   students.sort((a, b) => a.name.localeCompare(b.name));
@@ -308,6 +337,9 @@ export default async function TutorAssignmentDetailPage({ params }) {
                     </>
                   )}
                   <th className={s.th}>Completed</th>
+                  {assignment.assignment_type === 'questions' && (
+                    <th className={s.th}>Report</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -367,6 +399,20 @@ export default async function TutorAssignmentDetailPage({ params }) {
                           <span className={s.muted}>—</span>
                         )}
                       </td>
+                      {assignment.assignment_type === 'questions' && (
+                        <td className={s.td}>
+                          {stu.reportSessionId ? (
+                            <Link
+                              href={`/tutor/sessions/${stu.reportSessionId}`}
+                              className={s.reportLink}
+                            >
+                              View report →
+                            </Link>
+                          ) : (
+                            <span className={s.muted}>—</span>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

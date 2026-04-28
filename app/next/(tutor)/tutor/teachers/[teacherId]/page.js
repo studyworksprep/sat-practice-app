@@ -449,7 +449,7 @@ export default async function ManagerTeacherDetailPage({ params }) {
                     <Link
                       href={
                         row.completed
-                          ? `/practice/review/${row.id}`
+                          ? `/tutor/sessions/${row.id}`
                           : `/tutor/teachers/${teacherId}`
                       }
                       className={s.trainingRow}

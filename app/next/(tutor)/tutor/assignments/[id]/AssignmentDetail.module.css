@@ -199,6 +199,15 @@
 }
 .nameLink:hover { text-decoration: underline; }
 
+.reportLink {
+  color: var(--color-app-accent);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.reportLink:hover { text-decoration: underline; }
+
 .email {
   font-size: 11px;
   color: var(--fg3);

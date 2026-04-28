@@ -54,7 +54,7 @@ export default async function AssignmentDetailPage({ params }) {
   // junction row narrows to "is the caller a student of this?",
   // which we need to require here — teachers/admins fall through
   // to notFound() because their view lives under /tutor/...
-  const [parentRes, enrolledRes] = await Promise.all([
+  const [parentRes, enrolledRes, latestSessionRes] = await Promise.all([
     supabase
       .from('assignments_v2')
       .select(`
@@ -81,10 +81,26 @@ export default async function AssignmentDetailPage({ params }) {
       .eq('assignment_id', assignmentId)
       .eq('student_id', user.id)
       .maybeSingle(),
+    // Latest practice session this student has run for this
+    // assignment, completed first so the Report link always
+    // resolves to a finished session if one exists. Powers the
+    // "View report" button when the student has already run the
+    // set and the "Redo" path replaces "Start" but keeps the old
+    // report reachable.
+    supabase
+      .from('practice_sessions')
+      .select('id, status, created_at')
+      .eq('user_id', user.id)
+      .eq('filter_criteria->>assignment_id', assignmentId)
+      .order('status', { ascending: true })
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const assignment = parentRes.data;
   const enrolled = enrolledRes.data;
+  const latestSession = latestSessionRes.data;
 
   if (!assignment || assignment.deleted_at) notFound();
   if (!enrolled) notFound();
@@ -200,6 +216,7 @@ export default async function AssignmentDetailPage({ params }) {
             assignment={assignment}
             rows={questionRows ?? []}
             completed={enrolled.completed_at != null}
+            latestSessionId={latestSession?.id ?? null}
           />
         )}
         {assignment.assignment_type === 'practice_test' && (
@@ -213,7 +230,7 @@ export default async function AssignmentDetailPage({ params }) {
   );
 }
 
-function QuestionsView({ assignment, rows, completed }) {
+function QuestionsView({ assignment, rows, completed, latestSessionId }) {
   if (rows.length === 0) {
     return <p style={{ color: '#6b7280' }}>This assignment has no questions.</p>;
   }
@@ -221,7 +238,19 @@ function QuestionsView({ assignment, rows, completed }) {
   const doneCount = rows.filter((r) => r.is_done).length;
   const correctCount = rows.filter((r) => r.is_done && r.is_correct).length;
   const total = rows.length;
-  const allDone = doneCount === total && total > 0;
+
+  // Once the assignment has been submitted at least once, the
+  // primary CTA flips to "View report" and "Redo" sits next to
+  // it. Before then, "Start" / "Continue (N left)" are the only
+  // affordances. The Start action is never disabled — re-doing
+  // is allowed, and submitPracticeSession will refresh the
+  // completion timestamp on each submit.
+  const startLabel =
+    completed
+      ? 'Redo'
+      : doneCount > 0
+        ? `Continue (${total - doneCount} left)`
+        : 'Start';
 
   return (
     <>
@@ -234,10 +263,15 @@ function QuestionsView({ assignment, rows, completed }) {
           <Stat label="Accuracy" value={`${Math.round((correctCount / doneCount) * 100)}%`} />
         )}
         <div style={{ flex: 1 }} />
+        {completed && latestSessionId && (
+          <Button href={`/practice/review/${latestSessionId}`}>
+            View report
+          </Button>
+        )}
         <StartAssignmentButton
           assignmentId={assignment.id}
-          label={allDone ? 'Review' : doneCount > 0 ? `Continue (${total - doneCount} left)` : 'Start'}
-          disabled={completed}
+          label={startLabel}
+          disabled={false}
           startAction={startAssignmentPractice}
         />
       </section>
