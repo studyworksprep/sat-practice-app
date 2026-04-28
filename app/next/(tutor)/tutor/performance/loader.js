@@ -83,23 +83,29 @@ export async function loadRosterPerformance(supabase) {
   //    PostgREST's ~16KB cap (a manager with several hundred
   //    students hits this), and each chunk goes through fetchAll
   //    so the per-chunk results page through the max-rows cap.
+  //    Chunks fan out via Promise.all — serial chunking on a
+  //    big roster was the dominant slow-path on the perf page.
   const sinceIso = new Date(
     Date.now() - PERFORMANCE_WINDOW_DAYS * 24 * 60 * 60 * 1000,
   ).toISOString();
   const ROSTER_CHUNK = 200;
-  const attempts = [];
+  const rosterChunks = [];
   for (let i = 0; i < rosterIds.length; i += ROSTER_CHUNK) {
-    const chunk = rosterIds.slice(i, i + ROSTER_CHUNK);
-    const chunkRows = await fetchAll((from, to) =>
-      supabase
-        .from('attempts')
-        .select('user_id, question_id, is_correct, created_at')
-        .in('user_id', chunk)
-        .gte('created_at', sinceIso)
-        .range(from, to),
-    );
-    attempts.push(...chunkRows);
+    rosterChunks.push(rosterIds.slice(i, i + ROSTER_CHUNK));
   }
+  const chunkResults = await Promise.all(
+    rosterChunks.map((chunk) =>
+      fetchAll((from, to) =>
+        supabase
+          .from('attempts')
+          .select('user_id, question_id, is_correct, created_at')
+          .in('user_id', chunk)
+          .gte('created_at', sinceIso)
+          .range(from, to),
+      ),
+    ),
+  );
+  const attempts = chunkResults.flat();
 
   if (attempts.length === 0) {
     return {
@@ -188,11 +194,21 @@ export async function loadRosterPerformance(supabase) {
       domain_name: sk.domain_name,
       attempts: sk.attempts,
       correct: sk.correct,
+      missed: sk.attempts - sk.correct,
       accuracy: sk.attempts > 0 ? sk.correct / sk.attempts : 0,
       studentsTouched: sk.studentsTouched.size,
       studentsBelow60: studentsBelow60BySkill.get(sk.skill_code) ?? 0,
     });
   }
+
+  // 7) Weekly cohort accuracy + volume buckets for the trend
+  //    chart. Rolling 7-day windows ending at "now" — the most
+  //    recent week is always the rightmost data point and tracks
+  //    the actual lookback boundary (no half-week boundary
+  //    surprises if the load happens mid-week). Only buckets that
+  //    have at least one attempt land in the output; the chart
+  //    interpolates the rest.
+  const trend = buildWeeklyTrend(attempts, PERFORMANCE_WINDOW_DAYS);
 
   return {
     rosterSize: rosterIds.length,
@@ -200,7 +216,51 @@ export async function loadRosterPerformance(supabase) {
     totalAttempts: attempts.length,
     windowDays: PERFORMANCE_WINDOW_DAYS,
     skills,
+    trend,
   };
+}
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+function buildWeeklyTrend(attempts, windowDays) {
+  // Anchor weeks backwards from "now" so the most recent bucket
+  // ends at the same instant the lookback boundary is computed
+  // from. Bucket count = ceil(windowDays / 7); a 90-day window
+  // gets 13 weeks.
+  const now = Date.now();
+  const numWeeks = Math.ceil(windowDays / 7);
+  const buckets = new Array(numWeeks).fill(null).map((_, i) => {
+    // i = 0 is the oldest bucket; i = numWeeks-1 is the newest.
+    const endMs = now - (numWeeks - 1 - i) * WEEK_MS;
+    const startMs = endMs - WEEK_MS;
+    return {
+      startIso: new Date(startMs).toISOString(),
+      endIso: new Date(endMs).toISOString(),
+      startMs,
+      endMs,
+      attempts: 0,
+      correct: 0,
+    };
+  });
+  for (const a of attempts) {
+    const t = new Date(a.created_at).getTime();
+    if (Number.isNaN(t)) continue;
+    // Last bucket wins for the boundary instant.
+    const idx = Math.min(
+      numWeeks - 1,
+      Math.max(0, Math.floor((t - buckets[0].startMs) / WEEK_MS)),
+    );
+    if (idx < 0 || idx >= numWeeks) continue;
+    buckets[idx].attempts += 1;
+    if (a.is_correct) buckets[idx].correct += 1;
+  }
+  return buckets.map((b) => ({
+    startIso: b.startIso,
+    endIso: b.endIso,
+    attempts: b.attempts,
+    correct: b.correct,
+    accuracy: b.attempts > 0 ? b.correct / b.attempts : null,
+  }));
 }
 
 /**
@@ -221,6 +281,16 @@ export function sortSkills(skills, sort) {
       break;
     case 'attempts':
       arr.sort((a, b) => b.attempts - a.attempts);
+      break;
+    case 'most-missed':
+      // The "common errors" lens — skills with the most missed
+      // questions across the cohort. Folded into the heatmap's
+      // sort dropdown so the standalone Common-errors card can
+      // come down.
+      arr.sort((a, b) =>
+        b.missed - a.missed
+        || b.studentsBelow60 - a.studentsBelow60
+        || a.accuracy - b.accuracy);
       break;
     case 'name':
       arr.sort((a, b) => (a.skill_name ?? '').localeCompare(b.skill_name ?? ''));

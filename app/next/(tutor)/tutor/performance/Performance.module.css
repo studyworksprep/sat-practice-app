@@ -133,66 +133,7 @@
 .emptyTitle { font-weight: 600; color: var(--fg1); font-size: 14px; }
 .emptyBody  { font-size: 13px; color: var(--fg3); }
 
-/* ---------- Common errors list ---------- */
-
-.errorsList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--s2);
-  counter-reset: error-counter;
-}
-
-.errorRow {
-  display: grid;
-  grid-template-columns: 32px 1fr;
-  gap: var(--s3);
-  align-items: start;
-  padding: var(--s3) var(--s2);
-  border-radius: 8px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-}
-
-.errorRank {
-  font-family: var(--font-serif);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-gold-700);
-  text-align: center;
-}
-
-.errorBody { display: grid; gap: 2px; }
-
-.errorSkill {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--fg1);
-}
-
-.errorMeta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  font-size: 12px;
-  color: var(--fg3);
-}
-.errorDomain {
-  font-weight: 600;
-  color: var(--fg2);
-  background: var(--color-app-highlight-soft);
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 11px;
-}
-.errorStrugglers { color: #b91c1c; font-weight: 500; }
-
-.pctGood { color: #047857; font-weight: 500; }
-.pctOk   { color: #b45309; font-weight: 500; }
-.pctBad  { color: #b91c1c; font-weight: 500; }
-
-/* ---------- Heatmap ---------- */
+/* ---------- Sort toolbar ---------- */
 
 .sortLabel {
   display: inline-flex;
@@ -218,90 +159,144 @@
   cursor: pointer;
 }
 
-.heatmapWrap {
-  overflow-x: auto;
+/* ---------- Skill heatmap (grid of colored tiles) ----------
+   Domains stack vertically with a small label row, each one
+   carrying a row of skill tiles. Tiles are uniform 110×88 — small
+   enough that 30+ skills fit without scroll, large enough for the
+   accuracy % to read at a glance. */
+
+.domainStack {
+  display: grid;
+  gap: var(--s4);
 }
 
-.heatmap {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
+.domainBlock {
+  display: grid;
+  gap: var(--s2);
 }
 
-.heatmap thead th {
-  text-align: left;
-  font-size: 11px;
+.domainHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+}
+
+.domainPillRw, .domainPillMath {
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--fg3);
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 999px;
 }
+.domainPillRw   { background: var(--tile-rw-bg);   color: var(--tile-rw-fg); }
+.domainPillMath { background: var(--tile-math-bg); color: var(--tile-math-fg); }
 
-.thSkill { min-width: 220px; }
-.thNum   { text-align: right; min-width: 110px; }
-
-.heatmap tbody tr { border-bottom: 1px solid var(--border); }
-.heatmap tbody tr:last-child { border-bottom: none; }
-
-.tdSkill {
-  padding: 12px;
-  vertical-align: middle;
-}
-.skillName  { font-weight: 600; color: var(--fg1); }
-.skillDomain {
-  font-size: 11px;
-  color: var(--fg3);
-  margin-top: 2px;
-}
-
-.tdNum {
-  padding: 12px;
-  text-align: right;
-  vertical-align: middle;
-  font-variant-numeric: tabular-nums;
-  color: var(--fg2);
-}
-
-/* Accuracy bar in cohort-accuracy column. */
-.accBar {
-  position: relative;
-  display: inline-block;
-  width: 90px;
-  height: 22px;
-  background: var(--bg);
-  border-radius: 4px;
-  overflow: hidden;
-  vertical-align: middle;
-}
-.accFill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  background: var(--accent, #6b7280);
-  opacity: 0.18;
-}
-.accValue {
-  position: relative;
-  display: block;
-  text-align: center;
-  line-height: 22px;
-  font-size: 12px;
+.domainName {
+  font-size: 13px;
   font-weight: 600;
   color: var(--fg1);
 }
-.accGood .accFill { background: #10b981; }
-.accOk   .accFill { background: #f59e0b; }
-.accBad  .accFill { background: #ef4444; }
+
+.domainCount {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--fg3);
+  font-family: var(--font-mono);
+}
+
+.skillGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--s2);
+}
+
+.skillTile {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+  min-height: 80px;
+  background: var(--card);
+  /* Background tint comes from the tone class below. The color
+     itself is a soft token-derived bg so the tile reads as
+     "colored cell" without competing with the page chrome. */
+  transition: transform var(--dur-fast) var(--ease-std),
+              box-shadow var(--dur-fast) var(--ease-std);
+}
+
+.skillTile:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.skillTileTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.skillTileName {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg1);
+  line-height: 1.25;
+  /* Two-line clamp keeps tiles uniform — long skill names that
+     don't fit get truncated with an ellipsis (the title attr on
+     the tile shows the full text on hover). */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.skillTilePct {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.skillTileSub {
+  font-size: 10px;
+  color: var(--fg3);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+/* Tone classes drive both the soft background tint and the
+   accuracy-percent color. */
+.toneGood {
+  background: var(--tile-success-bg);
+  border-color: color-mix(in oklab, var(--tile-success-fg) 22%, transparent);
+}
+.toneGood .skillTilePct { color: var(--tile-success-fg); }
+
+.toneOk {
+  background: var(--tile-amber-bg);
+  border-color: color-mix(in oklab, var(--tile-amber-fg) 22%, transparent);
+}
+.toneOk .skillTilePct { color: var(--tile-amber-fg); }
+
+.toneBad {
+  background: var(--tile-danger-bg);
+  border-color: color-mix(in oklab, var(--tile-danger-fg) 26%, transparent);
+}
+.toneBad .skillTilePct { color: var(--tile-danger-fg); }
 
 .belowPill {
-  display: inline-block;
-  padding: 2px 8px;
-  background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 1px 6px;
+  background: var(--tile-danger-fg);
+  color: var(--bg-white);
   border-radius: 999px;
-  font-weight: 600;
-  font-size: 13px;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
-.belowZero { color: var(--fg3); }

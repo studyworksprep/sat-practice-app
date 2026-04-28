@@ -1,24 +1,26 @@
 // Tutor → Performance. Roster-wide aggregations to answer "what
-// should I focus on?". Tier 1 of the planned performance surface
-// (handoff doc §performance) — skill heatmap + common-errors
-// rollup. Trends and per-test breakdowns are queued for later
-// tiers.
+// should I focus on?". Server-rendered; one loader call does
+// the whole aggregation and the page renders the result.
 //
-// Server-rendered; one loader call does the whole aggregation
-// and the page renders the result. The sort dropdown is the only
-// interactive element, and lives in PerformanceSortToolbar.
+// Layout: stats strip on top, then a "cohort progress" card
+// (weekly accuracy trend + volume) for the time-series view,
+// then the skill heatmap as a grid of colored tiles grouped by
+// domain. The standalone Common-errors card was folded into
+// the heatmap's sort dropdown ("Most missed (cohort)").
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { PerformanceIcon, SparklesIcon } from '@/lib/ui/icons';
+import {
+  PerformanceIcon,
+  ProgressIcon,
+} from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { loadRosterPerformance, sortSkills } from './loader';
 import { PerformanceSortToolbar } from './PerformanceSortToolbar';
+import { CohortTrendChart } from './CohortTrendChart';
 import s from './Performance.module.css';
 
 export const dynamic = 'force-dynamic';
-
-const COMMON_ERRORS_TOP_N = 10;
 
 export default async function TutorPerformancePage({ searchParams }) {
   const sp = (await searchParams) ?? {};
@@ -34,22 +36,33 @@ export default async function TutorPerformancePage({ searchParams }) {
   }
 
   const data = await loadRosterPerformance(supabase);
-
   const sortedSkills = sortSkills(data.skills, sort);
 
-  // Common errors: independent of the heatmap's sort, always
-  // ranked by raw cohort misses so the headline weak-spot list
-  // doesn't shift when the user re-sorts the heatmap.
-  const commonErrors = [...data.skills]
-    .filter((sk) => sk.attempts - sk.correct > 0)
-    .sort((a, b) => {
-      const missA = a.attempts - a.correct;
-      const missB = b.attempts - b.correct;
-      return missB - missA
-        || b.studentsBelow60 - a.studentsBelow60
-        || a.accuracy - b.accuracy;
-    })
-    .slice(0, COMMON_ERRORS_TOP_N);
+  // Group skills by domain (subject + domain_name) for the
+  // heatmap grid. Order RW domains first, then Math, with the
+  // user's chosen sort applied within each domain. We lean on
+  // a stable subject prefix on domain_code (R*/M*) where
+  // available; falls back to the subject_code we don't have
+  // here, so we just split by RW vs Math via the standard
+  // domain_code prefixes.
+  const byDomain = new Map();
+  for (const sk of sortedSkills) {
+    const key = sk.domain_name ?? '—';
+    if (!byDomain.has(key)) {
+      byDomain.set(key, {
+        domain_code: sk.domain_code,
+        domain_name: sk.domain_name,
+        skills: [],
+      });
+    }
+    byDomain.get(key).skills.push(sk);
+  }
+  const domainGroups = Array.from(byDomain.values()).sort((a, b) => {
+    const aMath = isMathDomain(a.domain_code);
+    const bMath = isMathDomain(b.domain_code);
+    if (aMath !== bMath) return aMath ? 1 : -1;
+    return (a.domain_name ?? '').localeCompare(b.domain_name ?? '');
+  });
 
   return (
     <main className={s.container}>
@@ -98,59 +111,32 @@ export default async function TutorPerformancePage({ searchParams }) {
         />
       </div>
 
+      {/* Cohort progress — weekly trend over the lookback window */}
       <section className={s.card}>
         <div className={s.cardHead}>
           <div>
             <h2 className={s.h2}>
-              <IconTile icon={SparklesIcon} palette="amber" size="md" />
-              Common errors
+              <IconTile icon={ProgressIcon} palette="success" size="md" />
+              Cohort progress
             </h2>
             <p className={s.cardHint}>
-              Skills with the most missed questions across the roster.
-              Static ranking — independent of the heatmap sort below.
+              Weekly cohort accuracy (gold line) over the last {data.windowDays}
+              {' '}days, layered against attempt volume (cyan bars). Empty weeks
+              are gaps — the line skips over them rather than dipping to 0%.
             </p>
           </div>
         </div>
-        {commonErrors.length === 0 ? (
+        {data.totalAttempts === 0 ? (
           <EmptyHint
-            title="No errors yet."
-            body="As your students answer questions, the toughest skills surface here."
+            title="No activity yet."
+            body="Once your students start answering questions, the weekly trend lights up here."
           />
         ) : (
-          <ol className={s.errorsList}>
-            {commonErrors.map((sk, i) => {
-              const missed = sk.attempts - sk.correct;
-              const accPct = Math.round(sk.accuracy * 100);
-              return (
-                <li key={sk.skill_code} className={s.errorRow}>
-                  <span className={s.errorRank}>{i + 1}</span>
-                  <div className={s.errorBody}>
-                    <div className={s.errorSkill}>{sk.skill_name}</div>
-                    <div className={s.errorMeta}>
-                      {sk.domain_name && (
-                        <span className={s.errorDomain}>{sk.domain_name}</span>
-                      )}
-                      <span>{missed} missed of {sk.attempts}</span>
-                      <span>·</span>
-                      <span className={accuracyToneClass(accPct)}>{accPct}% cohort</span>
-                      {sk.studentsBelow60 > 0 && (
-                        <>
-                          <span>·</span>
-                          <span className={s.errorStrugglers}>
-                            {sk.studentsBelow60} student
-                            {sk.studentsBelow60 === 1 ? '' : 's'} below 60%
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+          <CohortTrendChart trend={data.trend} />
         )}
       </section>
 
+      {/* Skill heatmap */}
       <section className={s.card}>
         <div className={s.cardHead}>
           <div>
@@ -159,9 +145,11 @@ export default async function TutorPerformancePage({ searchParams }) {
               Skill heatmap
             </h2>
             <p className={s.cardHint}>
-              Every skill the roster has worked on at least 5 times in the last{' '}
-              {data.windowDays} days. The default order surfaces skills where
-              the most students are below 60% accuracy.
+              Every skill the roster has worked on at least 5 times in the
+              last {data.windowDays} days, grouped by domain. Each tile is
+              colored by cohort accuracy — red &lt; 60%, amber 60–80%,
+              green ≥ 80%. The "N below" pill counts students whose own
+              accuracy on the skill is under 60% (3+ attempts only).
             </p>
           </div>
           <PerformanceSortToolbar initialSort={sort} />
@@ -173,55 +161,59 @@ export default async function TutorPerformancePage({ searchParams }) {
             body="Once your roster has 5+ attempts on a skill, it will appear here."
           />
         ) : (
-          <div className={s.heatmapWrap}>
-            <table className={s.heatmap}>
-              <thead>
-                <tr>
-                  <th className={s.thSkill}>Skill</th>
-                  <th className={s.thNum}>Attempts</th>
-                  <th className={s.thNum}>Cohort accuracy</th>
-                  <th className={s.thNum}>Students touched</th>
-                  <th className={s.thNum}>Students &lt; 60%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedSkills.map((sk) => {
-                  const accPct = Math.round(sk.accuracy * 100);
-                  return (
-                    <tr key={sk.skill_code}>
-                      <td className={s.tdSkill}>
-                        <div className={s.skillName}>{sk.skill_name}</div>
-                        {sk.domain_name && (
-                          <div className={s.skillDomain}>{sk.domain_name}</div>
-                        )}
-                      </td>
-                      <td className={s.tdNum}>{sk.attempts}</td>
-                      <td className={s.tdNum}>
-                        <span className={`${s.accBar} ${accuracyTone(accPct)}`}>
-                          <span
-                            className={s.accFill}
-                            style={{ width: `${accPct}%` }}
-                          />
-                          <span className={s.accValue}>{accPct}%</span>
-                        </span>
-                      </td>
-                      <td className={s.tdNum}>{sk.studentsTouched}</td>
-                      <td className={s.tdNum}>
-                        {sk.studentsBelow60 > 0 ? (
-                          <span className={s.belowPill}>{sk.studentsBelow60}</span>
-                        ) : (
-                          <span className={s.belowZero}>0</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className={s.domainStack}>
+            {domainGroups.map((group) => (
+              <div key={group.domain_name ?? '—'} className={s.domainBlock}>
+                <div className={s.domainHead}>
+                  <span
+                    className={
+                      isMathDomain(group.domain_code) ? s.domainPillMath : s.domainPillRw
+                    }
+                  >
+                    {isMathDomain(group.domain_code) ? 'Math' : 'RW'}
+                  </span>
+                  <span className={s.domainName}>{group.domain_name ?? 'Other'}</span>
+                  <span className={s.domainCount}>
+                    {group.skills.length} skill{group.skills.length === 1 ? '' : 's'}
+                  </span>
+                </div>
+                <div className={s.skillGrid}>
+                  {group.skills.map((sk) => (
+                    <SkillTile key={sk.skill_code} skill={sk} />
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </section>
     </main>
+  );
+}
+
+function SkillTile({ skill }) {
+  const accPct = Math.round(skill.accuracy * 100);
+  const tone = accuracyToneClass(accPct);
+  return (
+    <div
+      className={`${s.skillTile} ${tone}`}
+      title={`${skill.skill_name} · ${accPct}% on ${skill.attempts} attempts · ${skill.studentsTouched} student${skill.studentsTouched === 1 ? '' : 's'} touched`}
+    >
+      <div className={s.skillTileTop}>
+        <div className={s.skillTileName}>{skill.skill_name}</div>
+        {skill.studentsBelow60 > 0 && (
+          <span className={s.belowPill} title={`${skill.studentsBelow60} students below 60%`}>
+            {skill.studentsBelow60}
+          </span>
+        )}
+      </div>
+      <div className={s.skillTilePct}>{accPct}%</div>
+      <div className={s.skillTileSub}>
+        {skill.attempts} attempt{skill.attempts === 1 ? '' : 's'}
+        {' · '}
+        {skill.studentsTouched} student{skill.studentsTouched === 1 ? '' : 's'}
+      </div>
+    </div>
   );
 }
 
@@ -244,14 +236,15 @@ function EmptyHint({ title, body }) {
   );
 }
 
-function accuracyTone(pct) {
-  if (pct >= 80) return s.accGood;
-  if (pct >= 60) return s.accOk;
-  return s.accBad;
+function accuracyToneClass(pct) {
+  if (pct >= 80) return s.toneGood;
+  if (pct >= 60) return s.toneOk;
+  return s.toneBad;
 }
 
-function accuracyToneClass(pct) {
-  if (pct >= 80) return s.pctGood;
-  if (pct >= 60) return s.pctOk;
-  return s.pctBad;
+// SAT domain codes are single letters; Math uses H/P/Q/S
+// (Algebra, Advanced Math, Problem solving / Data analysis,
+// Geometry & trig). Anything else falls into RW.
+function isMathDomain(code) {
+  return code === 'H' || code === 'P' || code === 'Q' || code === 'S';
 }
