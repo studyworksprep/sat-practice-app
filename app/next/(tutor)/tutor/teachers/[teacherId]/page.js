@@ -201,6 +201,30 @@ export default async function ManagerTeacherDetailPage({ params }) {
     }))
     .filter((a) => a && a.id && !a.deleted_at && !a.archived_at);
 
+  // Latest completed practice_session per training assignment so
+  // the row can deep-link to the trainee's report when one
+  // exists. One IN-query for all training assignments, kept by
+  // most-recent-first so the first hit per assignment_id wins.
+  const trainingAssignmentIds = trainingAssignments
+    .map((a) => a.id)
+    .filter((x) => typeof x === 'string');
+  const trainingReportByAssignment = new Map();
+  if (trainingAssignmentIds.length > 0) {
+    const { data: trainingSessionRowsForReports } = await supabase
+      .from('practice_sessions')
+      .select('id, status, created_at, filter_criteria')
+      .eq('user_id', teacherId)
+      .eq('status', 'completed')
+      .in('filter_criteria->>assignment_id', trainingAssignmentIds)
+      .order('created_at', { ascending: false });
+    for (const r of trainingSessionRowsForReports ?? []) {
+      const aid = r.filter_criteria?.assignment_id;
+      if (typeof aid === 'string' && !trainingReportByAssignment.has(aid)) {
+        trainingReportByAssignment.set(aid, r.id);
+      }
+    }
+  }
+
   const trainingCompletedTests = (trainingTests ?? []).filter((t) => t.status === 'completed');
   const trainingTestsTaken = trainingCompletedTests.length;
   const latestComposite = trainingCompletedTests
@@ -362,10 +386,14 @@ export default async function ManagerTeacherDetailPage({ params }) {
                     ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
                     ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
                     ?? 'Training assignment';
+                  const reportSessionId = trainingReportByAssignment.get(a.id) ?? null;
+                  const rowHref = reportSessionId
+                    ? `/tutor/sessions/${reportSessionId}`
+                    : `/tutor/assignments/${a.id}`;
                   return (
                     <li key={a.id}>
                       <Link
-                        href={`/tutor/assignments/${a.id}`}
+                        href={rowHref}
                         className={s.trainingRow}
                       >
                         <AssignmentTypeBadge type={a.assignment_type} />
@@ -373,7 +401,9 @@ export default async function ManagerTeacherDetailPage({ params }) {
                           <div className={s.trainingRowTitle}>{title}</div>
                           <div className={s.trainingRowMeta}>
                             {a.student_completed_at
-                              ? `Completed ${formatRelativeShort(a.student_completed_at) ?? ''}`
+                              ? `Completed ${formatRelativeShort(a.student_completed_at) ?? ''}${
+                                  reportSessionId ? ' · View report →' : ''
+                                }`
                               : `Assigned ${formatRelativeShort(a.junction_created_at) ?? ''}`}
                           </div>
                         </div>
