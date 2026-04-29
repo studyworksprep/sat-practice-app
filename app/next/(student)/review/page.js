@@ -31,6 +31,7 @@ import {
   resolveQuestionV2Meta,
 } from '@/lib/practice/weak-queue';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
+import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
 import { LayersIcon, SparklesIcon, TargetIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { createWeakQueueDrill, createSkillDrill } from './actions';
@@ -243,9 +244,14 @@ export default async function StudentReviewPage() {
               Create a set to start stashing terms you want to keep
               fresh before the test.
             </div>
-            <Link href="/flashcards" className={s.emptyCta}>
-              Go to flashcards →
-            </Link>
+            {/* Modal trigger — the legacy /flashcards page hasn't
+                been ported to /next yet, so the proxy rewrites
+                /flashcards → /next/flashcards → catchall →
+                /dashboard. Open the modal inline instead. */}
+            <FlashcardsButton
+              buttonClassName={s.emptyCta}
+              label="Open flashcards →"
+            />
           </div>
         ) : (
           <div className={s.flashcardRow}>
@@ -256,9 +262,10 @@ export default async function StudentReviewPage() {
                 {(flashcardSets ?? []).length === 1 ? '' : 's'}
               </div>
             </div>
-            <Link href="/flashcards" className={s.flashcardCta}>
-              Open flashcards →
-            </Link>
+            <FlashcardsButton
+              buttonClassName={s.flashcardCta}
+              label="Open flashcards →"
+            />
           </div>
         )}
       </section>

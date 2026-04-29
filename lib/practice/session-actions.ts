@@ -86,7 +86,7 @@ export async function submitAnswer(
   // the assignment-completion check after recording the attempt.
   const { data: session, error: sessionErr } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, filter_criteria')
+    .select('id, user_id, question_ids, filter_criteria, created_at')
     .eq('id', sessionId)
     .maybeSingle();
   if (sessionErr || !session) return actionFail('Session not found');
@@ -127,19 +127,37 @@ export async function submitAnswer(
     isCorrect = gradeMcqAnswer(String(selectedOptionId), correct);
   }
 
-  // Insert the attempts row. v2 option codes ('A'/'B'/...) go into
-  // response_text since the legacy selected_option_id column is a uuid.
-  // RLS allows user_id = auth.uid() for insert.
-  const { error: insertErr } = await supabase.from('attempts').insert({
-    user_id: user.id,
-    question_id: questionId,
-    is_correct: isCorrect,
-    selected_option_id: null,
-    response_text: isSpr ? responseText : String(selectedOptionId),
-    source: 'practice',
-  });
-  if (insertErr) {
-    return actionFail(`Failed to record attempt: ${insertErr.message}`);
+  // First-attempt-wins. Re-submits in the same session let the
+  // student keep trying without polluting the record. Look up
+  // any existing attempt for this question since the session
+  // started; if one exists, skip the insert and only return the
+  // current submission's grading. The server-rendered review
+  // page reads the earliest attempt per question, so the
+  // record stays anchored to the first try.
+  const { data: existing } = await supabase
+    .from('attempts')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('question_id', questionId)
+    .gte('created_at', session.created_at ?? '1970-01-01T00:00:00Z')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  let recorded = false;
+  if (!existing) {
+    const { error: insertErr } = await supabase.from('attempts').insert({
+      user_id: user.id,
+      question_id: questionId,
+      is_correct: isCorrect,
+      selected_option_id: null,
+      response_text: isSpr ? responseText : String(selectedOptionId),
+      source: 'practice',
+    });
+    if (insertErr) {
+      return actionFail(`Failed to record attempt: ${insertErr.message}`);
+    }
+    recorded = true;
   }
 
   // Upsert question_status for dashboard stats. Fire-and-forget-ish:
@@ -229,26 +247,47 @@ export async function submitPracticeSession(
 
   const { data: session } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, status')
+    .select('id, user_id, status, filter_criteria')
     .eq('id', sessionId)
     .maybeSingle();
   if (!session) return actionFail('Session not found');
   if (session.user_id !== user.id) return actionFail('Session not found');
-
-  // Idempotent — if it's already completed, just return success
-  // so the client can navigate to the report without friction.
-  if (session.status === 'completed') return { ok: true, sessionId };
   if (session.status === 'abandoned') return actionFail('Session was abandoned');
 
-  const { error } = await supabase
-    .from('practice_sessions')
-    .update({
-      status: 'completed',
-      last_activity_at: new Date().toISOString(),
-    })
-    .eq('id', sessionId)
-    .eq('status', 'in_progress');
-  if (error) return actionFail(`Could not submit session: ${error.message}`);
+  // Flip the session to completed if it isn't already. The
+  // ownership check above covers the security gate; the status
+  // guard here just means a re-submit is a no-op write rather
+  // than a redundant flip.
+  if (session.status !== 'completed') {
+    const { error } = await supabase
+      .from('practice_sessions')
+      .update({
+        status: 'completed',
+        last_activity_at: new Date().toISOString(),
+      })
+      .eq('id', sessionId)
+      .eq('status', 'in_progress');
+    if (error) return actionFail(`Could not submit session: ${error.message}`);
+  }
+
+  // Assignment completion. Submit Set is the explicit "I'm done"
+  // signal — bump completed_at on every submit (even re-submits)
+  // so the report-of-record always points to the latest run.
+  // Unlike the per-attempt path this does not require every
+  // question to have an attempt: hitting Submit Set means the
+  // student/trainee considers the set done, and unanswered items
+  // render as Unanswered on the review page.
+  const assignmentId: string | undefined =
+    session.filter_criteria?.assignment_id;
+  if (assignmentId) {
+    try {
+      await markAssignmentCompletedOnSubmit(supabase, user.id, assignmentId);
+    } catch {
+      // Best-effort. The session is already completed; the only
+      // user-visible cost of a failure here is a stale completion
+      // timestamp on the assignment junction.
+    }
+  }
 
   return { ok: true, sessionId };
 }
@@ -354,6 +393,36 @@ async function markAssignmentCompletedIfDone(
     .eq('assignment_id', assignmentId)
     .eq('student_id', userId)
     .is('completed_at', null);
+}
+
+// Submit Set companion to markAssignmentCompletedIfDone. The
+// per-attempt helper above only flips completed_at when every
+// question has been attempted and only on the first crossing —
+// good for "auto-complete on the last answer" semantics. This
+// helper is fired from submitPracticeSession when the set is
+// explicitly submitted, so it always bumps completed_at to now,
+// even if the student didn't answer everything and even if the
+// assignment was already completed. That's how a re-do flows back
+// into the same assignment slot: the latest submit wins.
+async function markAssignmentCompletedOnSubmit(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  userId: string,
+  assignmentId: string,
+): Promise<void> {
+  const { data: assignment } = await supabase
+    .from('assignments_v2')
+    .select('id, assignment_type')
+    .eq('id', assignmentId)
+    .maybeSingle();
+  if (!assignment) return;
+  if (assignment.assignment_type !== 'questions') return;
+
+  await supabase
+    .from('assignment_students_v2')
+    .update({ completed_at: new Date().toISOString() })
+    .eq('assignment_id', assignmentId)
+    .eq('student_id', userId);
 }
 
 // MCQ grading against v2's object-shaped correct_answer:

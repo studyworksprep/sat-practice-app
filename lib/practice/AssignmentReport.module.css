@@ -1,0 +1,375 @@
+/* Assignment Report — tutor-facing scrollable report. Shares
+   visual vocabulary with the rest of the new tree (max-width
+   container, eyebrow + serif H1, content cards) and reuses the
+   tile palette tokens for the per-section accuracy tones. */
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.breadcrumb {
+  font-size: 13px;
+  color: var(--fg3);
+  text-decoration: none;
+  font-weight: 500;
+}
+.breadcrumb:hover { color: var(--fg1); }
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding-block: var(--s3) var(--s2);
+  flex-wrap: wrap;
+}
+.headerMain {
+  display: grid;
+  gap: var(--s2);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.rebuildBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.rebuildBtn:hover {
+  color: var(--color-app-accent);
+  border-color: var(--color-app-accent);
+  background: color-mix(in oklab, var(--color-app-accent) 6%, transparent);
+}
+
+.eyebrow {
+  font-size: var(--eyebrow-size);
+  font-weight: var(--eyebrow-weight);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--color-gold-700);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: var(--app-title-1);
+  font-weight: 700;
+  color: var(--color-navy-900, var(--fg1));
+  line-height: 1.15;
+  margin: 0;
+}
+
+.h2 {
+  font-family: var(--font-sans);
+  font-size: var(--app-title-2);
+  font-weight: 600;
+  color: var(--fg1);
+  margin: 0 0 4px;
+}
+
+.subtitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--fg3);
+  flex-wrap: wrap;
+}
+.dot { color: var(--fg3); opacity: 0.6; }
+.studentName { color: var(--fg2); font-weight: 500; }
+.studentLink {
+  color: var(--color-app-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.studentLink:hover { text-decoration: underline; }
+
+/* ---------- Stat strip ---------- */
+
+.statStrip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s4);
+}
+@media (max-width: 720px) {
+  .statStrip { grid-template-columns: repeat(2, 1fr); }
+}
+
+.statTile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--s4);
+  display: grid;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+.statValue {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-navy-900, var(--fg1));
+  line-height: 1.05;
+}
+.statSub {
+  font-size: 12px;
+  color: var(--fg3);
+}
+.statTile_good .statValue { color: var(--tile-success-fg); }
+.statTile_ok   .statValue { color: var(--tile-amber-fg); }
+.statTile_bad  .statValue { color: var(--tile-danger-fg); }
+
+/* ---------- Cards ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--s5);
+  display: grid;
+  gap: var(--s4);
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
+}
+.cardHeadMain { flex: 1; min-width: 0; }
+.cardHint {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--fg3);
+  max-width: 580px;
+}
+
+/* ---------- Weak-spots pill row ---------- */
+
+.weakCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--s4);
+  display: grid;
+  gap: var(--s2);
+}
+.weakRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.weakLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.cardRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s4);
+}
+@media (max-width: 820px) {
+  .cardRow { grid-template-columns: 1fr; }
+}
+.weakPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tile-danger-bg);
+  color: var(--tile-danger-fg);
+  border: 1px solid color-mix(in oklab, var(--tile-danger-fg) 22%, transparent);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.weakPillCount {
+  font-family: var(--font-mono);
+  background: color-mix(in oklab, var(--tile-danger-fg) 14%, transparent);
+  color: var(--tile-danger-fg);
+  border-radius: 999px;
+  font-size: 10px;
+  padding: 1px 6px;
+  font-weight: 700;
+}
+
+.tone_good { color: var(--tile-success-fg); }
+.tone_ok   { color: var(--tile-amber-fg); }
+.tone_bad  { color: var(--tile-danger-fg); }
+.tone_neutral { color: var(--fg3); }
+
+/* ---------- Difficulty ---------- */
+
+.diffRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--s3);
+}
+.diffTile {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 2px;
+}
+.diffLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+.diffValue {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+.diffPct {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Selected-question detail card ----------
+   Mirrors TestResults.module.css's questionCard / questionHeader
+   so the assignment report and the practice-test report look the
+   same when a question is selected for review. */
+
+.questionCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--s5);
+  display: grid;
+  gap: var(--s3);
+}
+
+.questionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--border);
+}
+.questionHeaderLeft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.questionHeaderRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.questionNum {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-navy-900, var(--fg1));
+}
+.questionCode {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 8px;
+  color: var(--fg2);
+  letter-spacing: 0.04em;
+}
+.questionMeta {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.revealBtn {
+  appearance: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  background: var(--bg);
+  border: 1px solid color-mix(in oklab, var(--color-app-accent) 32%, transparent);
+  border-radius: 999px;
+  padding: 4px 14px;
+  cursor: pointer;
+}
+.revealBtn:hover {
+  background: var(--color-app-accent);
+  color: var(--bg-white, #fff);
+  border-color: var(--color-app-accent);
+}
+
+.resultBadgeCorrect,
+.resultBadgeWrong,
+.resultBadgeSkipped {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.resultBadgeCorrect {
+  background: var(--tile-success-bg);
+  color: var(--tile-success-fg);
+}
+.resultBadgeWrong {
+  background: var(--tile-danger-bg);
+  color: var(--tile-danger-fg);
+}
+.resultBadgeSkipped {
+  background: var(--tile-amber-bg);
+  color: var(--tile-amber-fg);
+}
+
+.missingNote {
+  padding: var(--s3);
+  font-size: 13px;
+  color: var(--fg3);
+  font-style: italic;
+  margin: 0;
+}
+
+.tutorTools {
+  margin-top: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--border);
+}

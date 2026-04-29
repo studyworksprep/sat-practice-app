@@ -98,7 +98,7 @@ export default async function ManagerTeacherDetailPage({ params }) {
       .limit(RECENT_ASSIGNMENTS_LIMIT),
     supabase
       .from('practice_sessions')
-      .select('id, created_at, question_ids, mode, status')
+      .select('id, created_at, question_ids, mode, status, filter_criteria')
       .eq('user_id', teacherId)
       .in('mode', ['training', 'review'])
       .neq('status', 'abandoned')
@@ -201,20 +201,83 @@ export default async function ManagerTeacherDetailPage({ params }) {
     }))
     .filter((a) => a && a.id && !a.deleted_at && !a.archived_at);
 
+  // Latest completed practice_session per training assignment so
+  // the row can deep-link to the trainee's report when one
+  // exists. One IN-query for all training assignments, kept by
+  // most-recent-first so the first hit per assignment_id wins.
+  const trainingAssignmentIds = trainingAssignments
+    .map((a) => a.id)
+    .filter((x) => typeof x === 'string');
+  const trainingReportByAssignment = new Map();
+  if (trainingAssignmentIds.length > 0) {
+    const { data: trainingSessionRowsForReports } = await supabase
+      .from('practice_sessions')
+      .select('id, status, created_at, filter_criteria')
+      .eq('user_id', teacherId)
+      .eq('status', 'completed')
+      .in('filter_criteria->>assignment_id', trainingAssignmentIds)
+      .order('created_at', { ascending: false });
+    for (const r of trainingSessionRowsForReports ?? []) {
+      const aid = r.filter_criteria?.assignment_id;
+      if (typeof aid === 'string' && !trainingReportByAssignment.has(aid)) {
+        trainingReportByAssignment.set(aid, r.id);
+      }
+    }
+  }
+
   const trainingCompletedTests = (trainingTests ?? []).filter((t) => t.status === 'completed');
   const trainingTestsTaken = trainingCompletedTests.length;
   const latestComposite = trainingCompletedTests
     .filter((t) => Number.isFinite(t.composite_score))
     .map((t) => t.composite_score)[0] ?? null;
 
+  // Title lookup for assignment-tied training sessions, so the
+  // panel can label rows like "Equivalent Expressions Review"
+  // instead of just "X questions" — the latter made multiple
+  // sessions on the same assignment (e.g. day 1 + day 2) look
+  // visually identical.
+  const trainingSessionAssignmentIds = Array.from(
+    new Set(
+      (trainingSessions ?? [])
+        .map((r) => r.filter_criteria?.assignment_id)
+        .filter((id) => typeof id === 'string'),
+    ),
+  );
+  const trainingSessionAssignmentTitles = new Map();
+  if (trainingSessionAssignmentIds.length > 0) {
+    const { data: titleRows } = await supabase
+      .from('assignments_v2')
+      .select('id, title')
+      .in('id', trainingSessionAssignmentIds);
+    for (const row of titleRows ?? []) {
+      trainingSessionAssignmentTitles.set(row.id, row.title);
+    }
+  }
+
+  // Defensive dedupe by id and shape rows for the panel. The
+  // dedupe shouldn't be necessary post-RLS-fix but covers any
+  // accidental SELECT join or stale build cache.
+  const seenSessionIds = new Set();
   const trainingSessionRows = (trainingSessions ?? [])
-    .filter((row) => Array.isArray(row.question_ids) && row.question_ids.length > 0)
-    .map((row) => ({
-      id: row.id,
-      createdAt: row.created_at,
-      total: row.question_ids.length,
-      completed: row.status === 'completed',
-    }));
+    .filter((row) => {
+      if (!Array.isArray(row.question_ids) || row.question_ids.length === 0) return false;
+      if (seenSessionIds.has(row.id)) return false;
+      seenSessionIds.add(row.id);
+      return true;
+    })
+    .map((row) => {
+      const aid = row.filter_criteria?.assignment_id;
+      const title = typeof aid === 'string'
+        ? trainingSessionAssignmentTitles.get(aid) ?? null
+        : null;
+      return {
+        id: row.id,
+        createdAt: row.created_at,
+        total: row.question_ids.length,
+        completed: row.status === 'completed',
+        title,
+      };
+    });
 
   return (
     <main className={s.container}>
@@ -362,10 +425,14 @@ export default async function ManagerTeacherDetailPage({ params }) {
                     ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
                     ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
                     ?? 'Training assignment';
+                  const reportSessionId = trainingReportByAssignment.get(a.id) ?? null;
+                  const rowHref = reportSessionId
+                    ? `/tutor/sessions/${reportSessionId}`
+                    : `/tutor/assignments/${a.id}`;
                   return (
                     <li key={a.id}>
                       <Link
-                        href={`/tutor/assignments/${a.id}`}
+                        href={rowHref}
                         className={s.trainingRow}
                       >
                         <AssignmentTypeBadge type={a.assignment_type} />
@@ -377,6 +444,9 @@ export default async function ManagerTeacherDetailPage({ params }) {
                               : `Assigned ${formatRelativeShort(a.junction_created_at) ?? ''}`}
                           </div>
                         </div>
+                        {reportSessionId && (
+                          <span className={s.reportPill}>View report →</span>
+                        )}
                       </Link>
                     </li>
                   );
@@ -449,20 +519,25 @@ export default async function ManagerTeacherDetailPage({ params }) {
                     <Link
                       href={
                         row.completed
-                          ? `/practice/review/${row.id}`
+                          ? `/tutor/sessions/${row.id}`
                           : `/tutor/teachers/${teacherId}`
                       }
                       className={s.trainingRow}
                     >
                       <div className={s.trainingRowMain}>
                         <div className={s.trainingRowTitle}>
-                          {row.total} question{row.total === 1 ? '' : 's'}
+                          {row.title ?? `${row.total} question${row.total === 1 ? '' : 's'}`}
                         </div>
                         <div className={s.trainingRowMeta}>
-                          {formatRelativeShort(row.createdAt) ?? '—'}
+                          {row.title
+                            ? `${row.total} q · ${formatSessionDate(row.createdAt)}`
+                            : formatSessionDate(row.createdAt)}
                           {!row.completed && ' · In progress'}
                         </div>
                       </div>
+                      {row.completed && (
+                        <span className={s.reportPill}>View report →</span>
+                      )}
                     </Link>
                   </li>
                 ))}
@@ -492,4 +567,20 @@ function accuracyTone(pct) {
   if (pct >= 80) return 'good';
   if (pct >= 50) return 'ok';
   return 'warn';
+}
+
+// "Apr 28, 3:42 PM" — used for the practice-sessions panel where
+// formatRelativeShort would collapse two same-day sessions to the
+// same string ("today" / "yesterday") and make them look like
+// duplicates.
+function formatSessionDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 }

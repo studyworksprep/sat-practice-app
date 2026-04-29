@@ -19,6 +19,9 @@ import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
+import { DomainBreakdownCard } from '@/lib/practice/DomainBreakdownCard';
+import { formatDuration } from '@/lib/practice/format-duration';
+import { QuestionMapGrid } from '@/lib/practice/QuestionMapGrid';
 import { BookmarkIcon, CorrectIcon, IncorrectIcon, NotesIcon, TargetIcon, TimeSpentIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import s from './TestResults.module.css';
@@ -101,8 +104,16 @@ export function TestResultsInteractive({
     }
   }
 
-  const domainsRw   = domains.filter((d) => d.subject_code === 'RW');
-  const domainsMath = domains.filter((d) => d.subject_code === 'MATH');
+  // Normalize the test-side {domain_name, skill_name} shape to the
+  // shared DomainBreakdownCard's {name, skills:[{name}]} shape.
+  // Doing it here keeps the shared component free of the older
+  // field names and the rest of this file untouched.
+  const domainsRw = domains
+    .filter((d) => d.subject_code === 'RW')
+    .map(normalizeDomain);
+  const domainsMath = domains
+    .filter((d) => d.subject_code === 'MATH')
+    .map(normalizeDomain);
 
   return (
     <main className={s.container}>
@@ -166,7 +177,7 @@ export function TestResultsInteractive({
           <DomainBreakdownCard title="Reading & Writing" tone="rw"   domains={domainsRw} />
           <DomainBreakdownCard title="Math"             tone="math" domains={domainsMath} />
         </section>
-      )}
+      )}{/* DomainBreakdownCard imported from @/lib/practice. */}
 
       {/* ---------- Opportunity Index ---------- */}
       {opportunity.length > 0 && (
@@ -282,10 +293,11 @@ export function TestResultsInteractive({
           </div>
         </div>
 
-        <div className={s.mapModules}>
-          {moduleGroups.map((group) => (
-            <div key={group.key} className={s.mapModule}>
-              <div className={s.mapModuleLabel}>
+        <QuestionMapGrid
+          groups={moduleGroups.map((group) => ({
+            key: group.key,
+            label: (
+              <>
                 <span className={s.mapModuleSubject}>
                   {SUBJECT_NAME[group.subject] ?? group.subject}
                 </span>
@@ -293,50 +305,23 @@ export function TestResultsInteractive({
                 <span className={s.mapModuleNumber}>
                   Module {group.moduleNumber}
                 </span>
-                <span className={s.mapModuleCount}>
-                  {group.correct}/{group.total}
-                </span>
-              </div>
-              <div className={s.mapGrid} role="list">
-                {group.items.map((it) => {
-                  const isCurrent = it.ordinal === selected?.ordinal;
-                  const diffCls = DIFF_CLASS[it.taxonomy?.difficulty] ?? null;
-                  const cls = [
-                    s.mapItem,
-                    diffCls ? s[diffCls] : null,
-                    isCurrent ? s.mapItemActive : null,
-                    it.status === 'unanswered' ? s.mapItemUnanswered : null,
-                    revealed.has(it.ordinal) ? s.mapItemRevealed : null,
-                  ].filter(Boolean).join(' ');
-                  return (
-                    <button
-                      key={it.ordinal}
-                      type="button"
-                      className={cls}
-                      onClick={() => setSelectedOrdinal(it.ordinal)}
-                      aria-label={`Question ${it.moduleOrdinal}, ${it.status}`}
-                    >
-                      <span className={s.mapNum}>{it.moduleOrdinal}</span>
-                      {it.marked && (
-                        <BookmarkIcon filled size={10} className={s.mapFlag} />
-                      )}
-                      {it.status === 'correct' && (
-                        <span className={s.mapStatusCorrect} aria-hidden="true">
-                          <CorrectIcon size={16} />
-                        </span>
-                      )}
-                      {it.status === 'incorrect' && (
-                        <span className={s.mapStatusWrong} aria-hidden="true">
-                          <IncorrectIcon size={16} />
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
+              </>
+            ),
+            countNote: `${group.correct}/${group.total}`,
+            items: group.items.map((it) => ({
+              id: it.ordinal,
+              ordinalLabel: it.moduleOrdinal,
+              status: it.status,
+              difficulty: it.taxonomy?.difficulty ?? null,
+              marked: !!it.marked,
+              missing: it.missing,
+              ariaLabel: `Question ${it.moduleOrdinal}, ${it.status}`,
+            })),
+          }))}
+          selectedId={selected?.ordinal}
+          onSelect={setSelectedOrdinal}
+          revealed={revealed}
+        />
       </section>
 
       {selected && (
@@ -473,55 +458,17 @@ function SectionTile({ label, tone, scaled, correct, total }) {
   );
 }
 
-function DomainBreakdownCard({ title, tone, domains }) {
-  if (domains.length === 0) return null;
-  const fillCls = tone === 'rw' ? s.barFillRw : s.barFillMath;
-  let sectCorrect = 0, sectTotal = 0;
-  for (const d of domains) { sectCorrect += d.correct; sectTotal += d.total; }
-  const sectPct = sectTotal > 0 ? Math.round((sectCorrect / sectTotal) * 100) : null;
-  return (
-    <div className={s.domainCard}>
-      <div className={s.domainCardHeader}>
-        <div className={s.domainCardTitle}>{title}</div>
-        <div className={tone === 'rw' ? s.domainCardPctRw : s.domainCardPctMath}>
-          {sectPct == null ? '—' : `${sectPct}%`}
-        </div>
-      </div>
-      {domains.map((d) => {
-        const pct = d.total > 0 ? Math.round((d.correct / d.total) * 100) : 0;
-        return (
-          <div key={d.domain_name} className={s.domainRow}>
-            <div className={s.domainRowHead}>
-              <div className={s.domainRowName}>{d.domain_name}</div>
-              <div className={s.domainRowStat}>
-                {d.correct}/{d.total}
-                <span className={s.domainRowPct}> · {pct}%</span>
-              </div>
-            </div>
-            <div className={s.bar}>
-              <div className={fillCls} style={{ width: `${pct}%` }} />
-            </div>
-            {d.skills.length > 0 && (
-              <ul className={s.skillList}>
-                {d.skills.map((sk) => {
-                  const sp = sk.total > 0 ? Math.round((sk.correct / sk.total) * 100) : 0;
-                  return (
-                    <li key={sk.skill_name} className={s.skillRow}>
-                      <span className={s.skillName}>{sk.skill_name}</span>
-                      <span className={s.skillStat}>
-                        {sk.correct}/{sk.total}
-                        <span className={s.skillPct}> · {sp}%</span>
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
+function normalizeDomain(d) {
+  return {
+    name: d.domain_name,
+    correct: d.correct ?? 0,
+    total: d.total ?? 0,
+    skills: (d.skills ?? []).map((sk) => ({
+      name: sk.skill_name,
+      correct: sk.correct ?? 0,
+      total: sk.total ?? 0,
+    })),
+  };
 }
 
 function OpportunityTable({ rows }) {
@@ -704,11 +651,6 @@ function groupItemsByModule(items) {
   return groups;
 }
 
-function formatDuration(ms) {
-  if (ms == null) return '—';
-  const sec = Math.round(ms / 1000);
-  if (sec < 60) return `${sec}s`;
-  const m = Math.floor(sec / 60);
-  const rem = sec % 60;
-  return rem > 0 ? `${m}m ${rem}s` : `${m}m`;
-}
+// formatDuration imported from @/lib/practice/format-duration —
+// shared with the assignment report and any other report-style
+// surface so durations format consistently.

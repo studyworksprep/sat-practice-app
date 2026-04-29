@@ -147,6 +147,13 @@
   gap: 2px;
 }
 
+.statValueRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .statValue {
   font-size: 26px;
   font-weight: 750;
@@ -161,6 +168,15 @@
   color: var(--fg3);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.statSubRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-height: 14px;
 }
 
 /* ---------- Generic card ---------- */

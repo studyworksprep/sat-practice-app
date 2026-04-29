@@ -196,6 +196,32 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       return aDue - bDue;
     });
 
+  // Latest completed practice_session per assignment, so the
+  // assignment row can deep-link to the report when one exists.
+  // One IN-query covers every assignment shown on the page; in
+  // JS we keep only the most recent completed session per
+  // assignment_id.
+  const assignmentIdsForSessions = assignments
+    .map((a) => a.id)
+    .filter((id): id is string => typeof id === 'string');
+  const reportSessionByAssignment = new Map<string, string>();
+  if (assignmentIdsForSessions.length > 0) {
+    const { data: sessionRows } = await supabase
+      .from('practice_sessions')
+      .select('id, status, created_at, filter_criteria')
+      .eq('user_id', studentId)
+      .eq('status', 'completed')
+      .in('filter_criteria->>assignment_id', assignmentIdsForSessions)
+      .order('created_at', { ascending: false });
+    for (const r of sessionRows ?? []) {
+      const fc = r.filter_criteria as { assignment_id?: string } | null;
+      const aid = typeof fc?.assignment_id === 'string' ? fc.assignment_id : null;
+      if (aid && !reportSessionByAssignment.has(aid)) {
+        reportSessionByAssignment.set(aid, r.id);
+      }
+    }
+  }
+
   const daysToTest = daysUntil(student.satTestDate);
 
   return (
@@ -265,10 +291,14 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                 ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
                 ?? 'Assignment';
               const n = Array.isArray(a.question_ids) ? (a.question_ids as unknown[]).length : null;
+              const reportSessionId = reportSessionByAssignment.get(a.id) ?? null;
+              const rowHref = reportSessionId
+                ? `/tutor/sessions/${reportSessionId}`
+                : `/tutor/assignments/${a.id}`;
               return (
                 <li key={a.id}>
                   <Link
-                    href={`/tutor/assignments/${a.id}`}
+                    href={rowHref}
                     className={a.completed_at ? `${s.assignmentRow} ${s.assignmentRowDone}` : s.assignmentRow}
                   >
                     <span className={s.assignmentType}>{a.assignment_type}</span>
@@ -281,7 +311,10 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                         Due {formatDate(a.due_date)}
                       </span>
                     )}
-                    {a.completed_at && (
+                    {a.completed_at && reportSessionId && (
+                      <span className={s.reportPill}>View report →</span>
+                    )}
+                    {a.completed_at && !reportSessionId && (
                       <span className={s.completedTag}>Completed</span>
                     )}
                   </Link>
@@ -359,7 +392,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
               <li key={row.id}>
                 <Link
                   href={row.completed
-                    ? `/practice/review/${row.id}`
+                    ? `/tutor/sessions/${row.id}`
                     : `/tutor/students/${student.id}`}
                   className={s.sessionRow}
                 >
@@ -372,7 +405,11 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                       {!row.completed && <span className={s.sessionRowTag}> · In progress</span>}
                     </div>
                   </div>
-                  <span className={s.sessionRowChevron} aria-hidden="true">→</span>
+                  {row.completed ? (
+                    <span className={s.reportPill}>View report →</span>
+                  ) : (
+                    <span className={s.sessionRowChevron} aria-hidden="true">→</span>
+                  )}
                 </Link>
               </li>
             ))}

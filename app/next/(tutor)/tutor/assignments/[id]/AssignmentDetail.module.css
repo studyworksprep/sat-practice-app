@@ -177,14 +177,18 @@
 .thNum { text-align: right; }
 .thProgress { width: 24%; }
 
-.row { transition: background var(--dur-fast) var(--ease-std); }
-.row:hover { background: var(--color-slate-50); }
+.row {
+  transition: background var(--dur-fast) var(--ease-std);
+  cursor: pointer;
+}
 
 .td, .tdNum, .tdProgress {
   padding: 12px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
   color: var(--fg1);
+  position: relative;
+  z-index: 1;
 }
 .tdNum {
   text-align: right;
@@ -196,8 +200,74 @@
   color: var(--color-app-accent);
   font-weight: 600;
   text-decoration: none;
+  position: relative;
+  z-index: 2;
 }
 .nameLink:hover { text-decoration: underline; }
+
+.reportLink {
+  color: var(--color-app-accent);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 13px;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+.reportLink:hover { text-decoration: underline; }
+
+/* Whole-row click target. The link element absolutely covers the
+   row so clicking blank space anywhere navigates to the per-
+   student assignment report. Inner interactive elements (the
+   name link, the Submit-for-student button) sit on top via
+   z-index so they keep their own click behavior. */
+.row { position: relative; }
+.rowLink {
+  position: absolute;
+  inset: 0;
+  text-indent: -10000px;
+  white-space: nowrap;
+  overflow: hidden;
+  z-index: 0;
+}
+.row:hover { background: color-mix(in oklab, var(--color-app-accent) 4%, transparent); }
+.row:hover .rowLinkLabel { text-decoration: underline; }
+
+.submitOnBehalfForm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  position: relative;
+  z-index: 2;
+}
+.submitOnBehalfBtn {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.submitOnBehalfBtn:hover:not(:disabled) {
+  color: var(--fg1);
+  border-color: var(--color-app-accent);
+  background: color-mix(in oklab, var(--color-app-accent) 6%, transparent);
+}
+.submitOnBehalfBtn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.submitOnBehalfError {
+  font-size: 11px;
+  color: #b91c1c;
+}
 
 .email {
   font-size: 11px;

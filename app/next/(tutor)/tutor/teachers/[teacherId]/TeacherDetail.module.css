@@ -222,8 +222,11 @@
 
 .trainingGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--s3);
+  /* 320px minmax keeps long assignment titles legible at typical
+     window widths — at narrower viewports the grid drops to 2,
+     then 1 column instead of squeezing three side-by-side. */
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--s4);
 }
 
 .trainingCol {
@@ -231,6 +234,7 @@
   flex-direction: column;
   gap: var(--s2);
   min-width: 0;
+  overflow: hidden;
 }
 
 .trainingHeader {
@@ -276,9 +280,13 @@
   font-size: 13px;
   font-weight: 600;
   color: var(--fg1);
+  /* Two-line clamp so long titles don't truncate mid-skill name
+     and don't spill horizontally either. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .trainingRowMeta {
@@ -293,6 +301,25 @@
   color: var(--fg1);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
+}
+
+.reportPill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--tile-success-bg);
+  color: var(--tile-success-fg);
+  border: 1px solid color-mix(in oklab, var(--tile-success-fg) 28%, transparent);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.trainingRow:hover .reportPill {
+  background: var(--tile-success-fg);
+  color: var(--bg-white, #fff);
+  border-color: var(--tile-success-fg);
 }
 
 .trainingEmpty {

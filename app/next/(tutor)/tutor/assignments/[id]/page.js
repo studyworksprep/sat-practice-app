@@ -15,8 +15,9 @@ import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate } from '@/lib/formatters';
-import { addAssignmentMembers } from './actions';
+import { addAssignmentMembers, submitAssignmentOnBehalf } from './actions';
 import { AddMembersPicker } from './AddMembersPicker';
+import { SubmitOnBehalfButton } from './SubmitOnBehalfButton';
 import s from './AssignmentDetail.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -48,7 +49,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
       .from('assignment_students_v2')
       .select(`
         student_id, completed_at, created_at,
-        student:profiles!assignment_students_v2_student_id_fkey (id, first_name, last_name, email)
+        student:profiles!assignment_students_v2_student_id_fkey (id, first_name, last_name, email, role)
       `)
       .eq('assignment_id', assignmentId),
   ]);
@@ -79,7 +80,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
   // section below can show display_code + skill + per-question
   // cohort accuracy. Skipped when the assignment has no question
   // pool (lesson / practice-test types).
-  const [attemptRowsRes, questionMetaRes] = await Promise.all([
+  const [attemptRowsRes, questionMetaRes, sessionRowsRes] = await Promise.all([
     attemptQuestionIds.length > 0 && studentIds.length > 0
       ? supabase
           .from('attempts')
@@ -94,11 +95,35 @@ export default async function TutorAssignmentDetailPage({ params }) {
           .select('id, display_code, domain_name, skill_name, difficulty')
           .in('id', questionIds)
       : Promise.resolve({ data: [] }),
+    // Latest practice session per student for this assignment.
+    // Powers the per-row "Report" link: when a student has at
+    // least one session that was launched from this assignment,
+    // the row gets a direct link to the latest one's review.
+    studentIds.length > 0
+      ? supabase
+          .from('practice_sessions')
+          .select('id, user_id, status, created_at')
+          .in('user_id', studentIds)
+          .eq('filter_criteria->>assignment_id', assignmentId)
+          .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
   ]);
   const attemptRows = attemptRowsRes.data ?? [];
   const questionMeta = new Map(
     (questionMetaRes.data ?? []).map((q) => [q.id, q]),
   );
+  // First (= most recent) session per user. Prefer a completed
+  // one if any exist; otherwise fall back to the most recent
+  // in-progress so the tutor can at least see in-flight work.
+  const reportSessionByUser = new Map();
+  for (const r of sessionRowsRes.data ?? []) {
+    const existing = reportSessionByUser.get(r.user_id);
+    if (!existing) {
+      reportSessionByUser.set(r.user_id, r);
+    } else if (existing.status !== 'completed' && r.status === 'completed') {
+      reportSessionByUser.set(r.user_id, r);
+    }
+  }
 
   const statusByStudent = new Map();
   const statusByQuestion = new Map();  // qid (v2) → { done, correct }
@@ -130,13 +155,29 @@ export default async function TutorAssignmentDetailPage({ params }) {
     const name =
       [r.student?.first_name, r.student?.last_name].filter(Boolean).join(' ')
       || r.student?.email || 'Student';
+    const reportSession = reportSessionByUser.get(r.student_id) ?? null;
+    // The "student" on an assignment is just any user_id at the
+    // schema level — could be a real student or a teacher being
+    // trained. Route to the right profile page based on their
+    // role; default to /tutor/students/[id] for unknown / null.
+    const role = r.student?.role ?? null;
+    const profileHref =
+      role === 'teacher' || role === 'manager'
+        ? `/tutor/teachers/${r.student_id}`
+        : `/tutor/students/${r.student_id}`;
     return {
       id: r.student_id,
       name,
       email: r.student?.email ?? null,
+      role,
+      profileHref,
       completed_at: r.completed_at,
       done: stats.done,
       correct: stats.correct,
+      reportSessionId:
+        reportSession && reportSession.status === 'completed'
+          ? reportSession.id
+          : null,
     };
   });
   students.sort((a, b) => a.name.localeCompare(b.name));
@@ -308,6 +349,9 @@ export default async function TutorAssignmentDetailPage({ params }) {
                     </>
                   )}
                   <th className={s.th}>Completed</th>
+                  {assignment.assignment_type === 'questions' && (
+                    <th className={s.th}>Report</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -320,11 +364,25 @@ export default async function TutorAssignmentDetailPage({ params }) {
                     stu.done > 0
                       ? Math.round((stu.correct / stu.done) * 100)
                       : null;
+                  const reportHref =
+                    assignment.assignment_type === 'questions'
+                      ? `/tutor/assignments/${assignment.id}/students/${stu.id}`
+                      : null;
                   return (
                     <tr key={stu.id} className={s.row}>
                       <td className={s.td}>
+                        {reportHref && (
+                          <Link
+                            href={reportHref}
+                            className={s.rowLink}
+                            aria-label={`Open ${stu.name}'s assignment report`}
+                            tabIndex={-1}
+                          >
+                            Open {stu.name}'s assignment report
+                          </Link>
+                        )}
                         <Link
-                          href={`/tutor/students/${stu.id}`}
+                          href={stu.profileHref}
                           className={s.nameLink}
                         >
                           {stu.name}
@@ -363,10 +421,29 @@ export default async function TutorAssignmentDetailPage({ params }) {
                           <span className={s.completedTag}>
                             ✓ {formatDate(stu.completed_at)}
                           </span>
+                        ) : !assignment.archived_at ? (
+                          <SubmitOnBehalfButton
+                            assignmentId={assignment.id}
+                            studentId={stu.id}
+                            studentName={stu.name}
+                            done={stu.done}
+                            total={totalQuestions}
+                            action={submitAssignmentOnBehalf}
+                          />
                         ) : (
                           <span className={s.muted}>—</span>
                         )}
                       </td>
+                      {assignment.assignment_type === 'questions' && (
+                        <td className={s.td}>
+                          <Link
+                            href={reportHref}
+                            className={`${s.reportLink} ${s.rowLinkLabel}`}
+                          >
+                            View report →
+                          </Link>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

@@ -13,6 +13,16 @@ import { requireUser } from '@/lib/api/auth';
 import {
   PerformanceIcon,
   ProgressIcon,
+  AlgebraIcon,
+  AdvMathIcon,
+  ProblemSolvingIcon,
+  GeometryIcon,
+  InformationIcon,
+  CraftIcon,
+  ExpressionIcon,
+  StandardEnglishIcon,
+  MathIcon,
+  ReadingWritingIcon,
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { Sparkline } from '@/lib/ui/Sparkline';
@@ -188,28 +198,35 @@ export default async function TutorPerformancePage({ searchParams }) {
           />
         ) : (
           <div className={s.domainStack}>
-            {domainGroups.map((group) => (
-              <div key={group.domain_name ?? '—'} className={s.domainBlock}>
-                <div className={s.domainHead}>
-                  <span
-                    className={
-                      isMathDomain(group.domain_code) ? s.domainPillMath : s.domainPillRw
-                    }
-                  >
-                    {isMathDomain(group.domain_code) ? 'Math' : 'RW'}
-                  </span>
-                  <span className={s.domainName}>{group.domain_name ?? 'Other'}</span>
-                  <span className={s.domainCount}>
-                    {group.skills.length} skill{group.skills.length === 1 ? '' : 's'}
-                  </span>
+            {domainGroups.map((group) => {
+              const isMath = isMathDomain(group.domain_code);
+              const SubIcon = subdomainIcon(group.domain_code);
+              return (
+                <div key={group.domain_name ?? '—'} className={s.domainBlock}>
+                  <div className={s.domainHead}>
+                    <IconTile
+                      icon={SubIcon}
+                      palette={isMath ? 'math' : 'rw'}
+                      size="sm"
+                    />
+                    <span
+                      className={isMath ? s.domainPillMath : s.domainPillRw}
+                    >
+                      {isMath ? 'Math' : 'RW'}
+                    </span>
+                    <span className={s.domainName}>{group.domain_name ?? 'Other'}</span>
+                    <span className={s.domainCount}>
+                      {group.skills.length} skill{group.skills.length === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  <div className={s.skillGrid}>
+                    {group.skills.map((sk) => (
+                      <SkillTile key={sk.skill_code} skill={sk} />
+                    ))}
+                  </div>
                 </div>
-                <div className={s.skillGrid}>
-                  {group.skills.map((sk) => (
-                    <SkillTile key={sk.skill_code} skill={sk} />
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
@@ -279,4 +296,23 @@ function accuracyToneClass(pct) {
 // Geometry & trig). Anything else falls into RW.
 function isMathDomain(code) {
   return code === 'H' || code === 'P' || code === 'Q' || code === 'S';
+}
+
+// Pick a domain-specific glyph for the heatmap header. RW codes
+// (INI / CAS / EOI / SEC) and Math single-letter codes both
+// map; unknown codes fall back to the generic subject icon so
+// the layout still reads as a heatmap row.
+function subdomainIcon(code) {
+  switch (code) {
+    case 'H':   return AlgebraIcon;
+    case 'P':   return AdvMathIcon;
+    case 'Q':   return ProblemSolvingIcon;
+    case 'S':   return GeometryIcon;
+    case 'INI': return InformationIcon;
+    case 'CAS': return CraftIcon;
+    case 'EOI': return ExpressionIcon;
+    case 'SEC': return StandardEnglishIcon;
+    default:
+      return isMathDomain(code) ? MathIcon : ReadingWritingIcon;
+  }
 }

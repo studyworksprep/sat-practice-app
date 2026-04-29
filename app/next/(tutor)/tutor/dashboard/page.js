@@ -19,12 +19,18 @@ import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
 import { RosterIcon, TestIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
+import { Sparkline } from '@/lib/ui/Sparkline';
+import { Delta } from '@/lib/ui/Delta';
 import { RosterFinder } from './RosterFinder';
 import s from './Dashboard.module.css';
 
 export const dynamic = 'force-dynamic';
 
 const STUDENT_LIMIT = 100;
+// Weeks of cohort attempt-volume to plot under the "Attempts · 7d"
+// stat tile. 8 weeks is enough to show a multi-week trend without
+// dragging in pre-cutover data.
+const SPARK_WEEKS = 8;
 
 export default async function TutorDashboardPage() {
   const { profile, supabase } = await requireUser();
@@ -83,19 +89,52 @@ export default async function TutorDashboardPage() {
     attemptsThisWeek: students.reduce((acc, s) => acc + s.weekAttempts, 0),
   };
 
-  // Recent test attempts across the roster. Capped to 10 so the
-  // panel stays compact. Joining on practice_tests_v2 inline
-  // with !inner so rows without a published test drop.
-  const { data: recentTestAttempts } = await supabase
-    .from('practice_test_attempts_v2')
-    .select(`
-      id, user_id, status, finished_at, started_at,
-      composite_score, rw_scaled, math_scaled,
-      practice_test:practice_tests_v2!inner(name, code)
-    `)
-    .in('user_id', students.length > 0 ? students.map((s) => s.id) : ['00000000-0000-0000-0000-000000000000'])
-    .order('started_at', { ascending: false })
-    .limit(10);
+  // Two parallel reads:
+  //   - Recent test attempts across the roster. Capped to 10 so
+  //     the panel stays compact. Joining on practice_tests_v2
+  //     with !inner so rows without a published test drop.
+  //   - Cohort weekly trend for the sparkline under the
+  //     "Attempts · 7d" stat tile. RPC reuses the same
+  //     get_roster_weekly_trend used on /tutor/performance so
+  //     the bucketing is consistent across surfaces.
+  const rosterIdsForRpc = students.length > 0
+    ? students.map((s) => s.id)
+    : ['00000000-0000-0000-0000-000000000000'];
+
+  const [
+    { data: recentTestAttempts },
+    { data: trendRows },
+  ] = await Promise.all([
+    supabase
+      .from('practice_test_attempts_v2')
+      .select(`
+        id, user_id, status, finished_at, started_at,
+        composite_score, rw_scaled, math_scaled,
+        practice_test:practice_tests_v2!inner(name, code)
+      `)
+      .in('user_id', rosterIdsForRpc)
+      .order('started_at', { ascending: false })
+      .limit(10),
+    students.length > 0
+      ? supabase.rpc('get_roster_weekly_trend', {
+          p_roster: rosterIdsForRpc,
+          p_num_weeks: SPARK_WEEKS,
+        })
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  // Normalize trend rows into the shape Sparkline + Delta expect.
+  // The RPC returns oldest → newest so the last bucket is the
+  // current week — matches `weekAttempts` on the stat tile.
+  const trend = (trendRows ?? []).map((r) => ({
+    startIso: r.start_iso,
+    endIso: r.end_iso,
+    attempts: Number(r.attempts ?? 0),
+    correct: Number(r.correct ?? 0),
+    accuracy: r.accuracy == null ? null : Number(r.accuracy),
+  }));
+  const lastWeek = trend.length > 0 ? trend[trend.length - 1] : null;
+  const priorWeek = trend.length > 1 ? trend[trend.length - 2] : null;
 
   const studentsById = new Map(students.map((s) => [s.id, s]));
   const testRows = (recentTestAttempts ?? []).map((r) => ({
@@ -136,8 +175,39 @@ export default async function TutorDashboardPage() {
       {cohort.total > 0 && (
         <section className={s.statsRow}>
           <StatTile label="Students" value={cohort.total} />
-          <StatTile label="Active this week" value={cohort.activeThisWeek} />
-          <StatTile label="Attempts · 7d" value={cohort.attemptsThisWeek} />
+          <StatTile
+            label="Active this week"
+            value={cohort.activeThisWeek}
+            sub={
+              cohort.total === 0
+                ? null
+                : `${Math.round((cohort.activeThisWeek / cohort.total) * 100)}% of roster`
+            }
+          />
+          <StatTile
+            label="Attempts · 7d"
+            value={cohort.attemptsThisWeek.toLocaleString()}
+            spark={
+              trend.length > 0 ? (
+                <Sparkline
+                  data={trend}
+                  field="attempts"
+                  tone="cyan"
+                  ariaLabel={`Cohort weekly attempts over the last ${SPARK_WEEKS} weeks`}
+                />
+              ) : null
+            }
+            delta={
+              lastWeek && priorWeek ? (
+                <Delta
+                  current={lastWeek.attempts}
+                  prior={priorWeek.attempts}
+                  format="count"
+                  suffix="vs last week"
+                />
+              ) : null
+            }
+          />
           <StatTile
             label="Roster size"
             value={cohort.visible < cohort.total ? `${cohort.visible}+` : cohort.visible}
@@ -213,11 +283,20 @@ export default async function TutorDashboardPage() {
 
 // ──────────────────────────────────────────────────────────────
 
-function StatTile({ label, value }) {
+function StatTile({ label, value, sub = null, spark = null, delta = null }) {
   return (
     <div className={s.statCard}>
-      <div className={s.statValue}>{value}</div>
       <div className={s.statLabel}>{label}</div>
+      <div className={s.statValueRow}>
+        <div className={s.statValue}>{value}</div>
+        {spark}
+      </div>
+      {(sub || delta) && (
+        <div className={s.statSubRow}>
+          {sub && <div className={s.statLabel} style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 500 }}>{sub}</div>}
+          {delta}
+        </div>
+      )}
     </div>
   );
 }

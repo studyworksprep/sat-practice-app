@@ -404,7 +404,7 @@ function AssignmentRow({ row, nowMs, archived = false }) {
   // page (which carries the per-student progress + question set).
   let href = `/tutor/assignments/${row.id}`;
   if (isSingle && single?.completedAt && single.reportSessionId) {
-    href = `/practice/review/${single.reportSessionId}`;
+    href = `/tutor/sessions/${single.reportSessionId}`;
   }
 
   // Progress percent: for single-student questions-type, base on

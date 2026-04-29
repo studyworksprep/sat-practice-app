@@ -330,6 +330,24 @@
   font-weight: 700;
 }
 
+.reportPill {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--tile-success-bg);
+  color: var(--tile-success-fg);
+  border: 1px solid color-mix(in oklab, var(--tile-success-fg) 28%, transparent);
+  white-space: nowrap;
+}
+.assignmentRow:hover .reportPill {
+  background: var(--tile-success-fg);
+  color: var(--bg-white, #fff);
+  border-color: var(--tile-success-fg);
+}
+
 /* ---------- Recent attempts table ---------- */
 
 .tableWrap {
