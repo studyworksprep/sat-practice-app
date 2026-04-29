@@ -22,12 +22,21 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
+import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
+import { ConceptTags } from './ConceptTags';
+import { DesmosSavedStateButton } from './DesmosSavedStateButton';
+import { FlashcardsButton } from './FlashcardsButton';
+import { QuestionNotes } from './QuestionNotes';
 import { QuestionMapGrid } from './QuestionMapGrid';
 import { ReviewDailyMap } from './ReviewDailyMap';
+import { DomainBreakdownCard, subjectFromDomainCode } from './DomainBreakdownCard';
+import { formatDuration } from './format-duration';
 import s from './AssignmentReport.module.css';
+
+const MATH_DOMAIN_CODES_FOR_CALC = new Set(['H', 'P', 'Q', 'S']);
 
 const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Very Hard', 5: 'Extreme' };
 
@@ -41,7 +50,18 @@ export function AssignmentReport({
   studentHref = null,
   backHref = null,
   backLabel = '← Back',
+  desmosCanSave = false,
+  conceptTagsCatalog = null,
+  conceptTagsCanTag = false,
+  conceptTagsCanDelete = false,
+  questionNotesCanView = false,
+  questionNotesIsAdmin = false,
+  currentUserId = null,
 }) {
+  // Live Desmos calc handle for the saved-state button. The
+  // FloatingCalculator below renders a single panel for the whole
+  // report, so the same ref serves every selected question.
+  const calcRef = useRef(null);
   const groups = useMemo(() => buildDomainGroups(items), [items]);
 
   const firstReal = items.find((it) => !it.missing) ?? items[0];
@@ -72,6 +92,17 @@ export function AssignmentReport({
   const measuredCount = timing?.measuredCount ?? 0;
 
   const weakSkills = useMemo(() => buildWeakSkills(metrics), [metrics]);
+
+  // Split metrics.byDomain into RW + Math buckets so the
+  // DomainBreakdownCard component (subject-tinted bars in the
+  // shared style) can render one card per subject — same pattern
+  // as the practice-test results page. Domains without a
+  // recognised code fall into RW since most legacy rows on the
+  // RW side have older codes.
+  const { rwDomains, mathDomains } = useMemo(
+    () => splitDomainsBySubject(metrics.byDomain ?? []),
+    [metrics],
+  );
 
   return (
     <main className={s.container}>
@@ -157,19 +188,11 @@ export function AssignmentReport({
         </section>
       )}
 
-      {/* ---------- By-domain ---------- */}
-      <section className={s.card}>
-        <div className={s.cardHead}>
-          <h2 className={s.h2}>By domain</h2>
-          <p className={s.cardHint}>
-            Skills under each domain are sorted weakest-first to
-            anchor the review-lesson plan.
-          </p>
-        </div>
-
-        {weakSkills.length > 0 && (
+      {/* ---------- Weak spots + by-domain breakdown ---------- */}
+      {weakSkills.length > 0 && (
+        <section className={s.weakCard}>
+          <div className={s.weakLabel}>Weak spots</div>
           <div className={s.weakRow}>
-            <span className={s.weakLabel}>Weak spots</span>
             {weakSkills.map((sk) => (
               <span key={sk.name} className={s.weakPill}>
                 {sk.name}
@@ -177,59 +200,27 @@ export function AssignmentReport({
               </span>
             ))}
           </div>
-        )}
+        </section>
+      )}
 
-        <div className={s.domainList}>
-          {metrics.byDomain.map((d) => {
-            const pct =
-              d.total > 0 ? Math.round((d.correct / d.total) * 100) : null;
-            return (
-              <div key={d.name} className={s.domainRow}>
-                <div className={s.domainHead}>
-                  <span className={s.domainName}>{d.name}</span>
-                  <span className={s.domainCount}>
-                    {d.correct} / {d.total}
-                    {pct != null && (
-                      <span className={`${s.domainPct} ${s[`tone_${accuracyTone(pct)}`] ?? ''}`}>
-                        {' '}{pct}%
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <div className={s.domainBar}>
-                  <div
-                    className={`${s.domainBarFill} ${s[`barFill_${accuracyTone(pct)}`] ?? ''}`}
-                    style={{ width: pct == null ? 0 : `${pct}%` }}
-                  />
-                </div>
-                {d.skills.length > 0 && (
-                  <ul className={s.skillList}>
-                    {[...d.skills]
-                      .sort((a, b) => skillRank(a) - skillRank(b))
-                      .map((sk) => {
-                        const sPct =
-                          sk.total > 0 ? Math.round((sk.correct / sk.total) * 100) : null;
-                        return (
-                          <li key={sk.name} className={s.skillRow}>
-                            <span className={s.skillName}>{sk.name}</span>
-                            <span className={s.skillStat}>
-                              {sk.correct}/{sk.total}
-                              {sPct != null && (
-                                <span className={`${s.skillPct} ${s[`tone_${accuracyTone(sPct)}`] ?? ''}`}>
-                                  {' · '}{sPct}%
-                                </span>
-                              )}
-                            </span>
-                          </li>
-                        );
-                      })}
-                  </ul>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      {(rwDomains.length > 0 || mathDomains.length > 0) && (
+        <section className={s.cardRow}>
+          {rwDomains.length > 0 && (
+            <DomainBreakdownCard
+              title="Reading & Writing"
+              tone="rw"
+              domains={rwDomains}
+            />
+          )}
+          {mathDomains.length > 0 && (
+            <DomainBreakdownCard
+              title="Math"
+              tone="math"
+              domains={mathDomains}
+            />
+          )}
+        </section>
+      )}
 
       {/* ---------- By-difficulty ---------- */}
       {metrics.byDifficulty.length > 0 && (
@@ -313,6 +304,37 @@ export function AssignmentReport({
               </span>
             </div>
             <div className={s.questionHeaderRight}>
+              {/* Calculator + Desmos saved state — only on math
+                  questions. Mirrors the practice-test report so a
+                  tutor can poke at graphs while reviewing. */}
+              {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
+                <FloatingCalculator
+                  storageKey={`desmos:report:${sessionMeta.sessionId}`}
+                  onCalcReady={(c) => { calcRef.current = c; }}
+                />
+              )}
+              {!selected.missing
+                && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '')
+                && (desmosCanSave || selected.desmosSavedState != null) && (
+                <DesmosSavedStateButton
+                  key={`desmos-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  initialSavedState={selected.desmosSavedState ?? null}
+                  canSave={desmosCanSave}
+                  calcRef={calcRef}
+                />
+              )}
+              {questionNotesCanView && !selected.missing && (
+                <QuestionNotes
+                  key={`notes-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  initialNotes={selected.questionNotes ?? []}
+                  isAdmin={questionNotesIsAdmin}
+                  currentUserId={currentUserId}
+                  canView={questionNotesCanView}
+                />
+              )}
+              <FlashcardsButton />
               {!isRevealed && !selected.missing && (
                 <button
                   type="button"
@@ -358,6 +380,19 @@ export function AssignmentReport({
                 rationaleHtml: selected.reveal.rationaleHtml,
               } : null}
             />
+          )}
+
+          {conceptTagsCanTag && !selected.missing && conceptTagsCatalog && (
+            <div className={s.tutorTools}>
+              <ConceptTags
+                key={`tags-${selected.questionId}`}
+                questionId={selected.questionId}
+                initialTags={conceptTagsCatalog}
+                initialQuestionTagIds={selected.conceptTagIds ?? []}
+                canTag={conceptTagsCanTag}
+                canDelete={conceptTagsCanDelete}
+              />
+            </div>
           )}
         </section>
       )}
@@ -461,11 +496,6 @@ function buildWeakSkills(metrics) {
   return out.slice(0, 6);
 }
 
-function skillRank(sk) {
-  if (sk.total <= 0) return Number.POSITIVE_INFINITY;
-  return sk.correct / sk.total;
-}
-
 function accuracyTone(pct) {
   if (pct == null) return 'neutral';
   if (pct >= 80) return 'good';
@@ -482,14 +512,41 @@ function accuracyBand(pct) {
   return 'Struggling';
 }
 
-function formatDuration(ms) {
-  if (!ms || ms < 1000) return ms ? '<1s' : '';
-  const s = Math.round(ms / 1000);
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  if (m === 0) return `${s}s`;
-  if (r === 0) return `${m}m`;
-  return `${m}m ${r}s`;
+function splitDomainsBySubject(byDomain) {
+  // metrics.byDomain shape: [{ name, code, correct, total, skills:
+  // [{ name, correct, total }] }]. DomainBreakdownCard expects
+  // the same shape (one less field — domains there are flat).
+  // Skills get sorted weakest-first within each domain so the
+  // review-lesson plan reads top-to-bottom.
+  const rwDomains = [];
+  const mathDomains = [];
+  for (const d of byDomain) {
+    const subj = subjectFromDomainCode(d.code);
+    const skills = (d.skills ?? [])
+      .map((sk) => ({
+        name: sk.name,
+        correct: sk.correct ?? 0,
+        total: sk.total ?? 0,
+      }))
+      .sort((a, b) => skillRank(a) - skillRank(b));
+    const entry = {
+      name: d.name,
+      correct: d.correct ?? 0,
+      total: d.total ?? 0,
+      skills,
+    };
+    if (subj === 'MATH') {
+      mathDomains.push(entry);
+    } else {
+      rwDomains.push(entry);
+    }
+  }
+  return { rwDomains, mathDomains };
+}
+
+function skillRank(sk) {
+  if (sk.total <= 0) return Number.POSITIVE_INFINITY;
+  return sk.correct / sk.total;
 }
 
 function formatSessionDate(iso) {

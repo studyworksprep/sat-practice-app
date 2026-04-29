@@ -20,7 +20,7 @@
 
 'use client';
 
-import { CorrectIcon, IncorrectIcon } from '@/lib/ui/icons';
+import { BookmarkIcon, CorrectIcon, IncorrectIcon } from '@/lib/ui/icons';
 import s from './QuestionMapGrid.module.css';
 
 const DIFF_CLASS = {
@@ -88,6 +88,9 @@ export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null 
                   aria-label={it.ariaLabel ?? `Question ${it.ordinalLabel}, ${it.status}`}
                 >
                   <span className={s.mapNum}>{it.ordinalLabel}</span>
+                  {it.marked && (
+                    <BookmarkIcon filled size={10} className={s.mapFlag} />
+                  )}
                   {it.status === 'correct' && (
                     <span className={s.mapStatusCorrect} aria-hidden="true">
                       <CorrectIcon size={16} />

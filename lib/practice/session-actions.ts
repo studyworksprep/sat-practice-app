@@ -86,7 +86,7 @@ export async function submitAnswer(
   // the assignment-completion check after recording the attempt.
   const { data: session, error: sessionErr } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, filter_criteria')
+    .select('id, user_id, question_ids, filter_criteria, created_at')
     .eq('id', sessionId)
     .maybeSingle();
   if (sessionErr || !session) return actionFail('Session not found');
@@ -127,19 +127,37 @@ export async function submitAnswer(
     isCorrect = gradeMcqAnswer(String(selectedOptionId), correct);
   }
 
-  // Insert the attempts row. v2 option codes ('A'/'B'/...) go into
-  // response_text since the legacy selected_option_id column is a uuid.
-  // RLS allows user_id = auth.uid() for insert.
-  const { error: insertErr } = await supabase.from('attempts').insert({
-    user_id: user.id,
-    question_id: questionId,
-    is_correct: isCorrect,
-    selected_option_id: null,
-    response_text: isSpr ? responseText : String(selectedOptionId),
-    source: 'practice',
-  });
-  if (insertErr) {
-    return actionFail(`Failed to record attempt: ${insertErr.message}`);
+  // First-attempt-wins. Re-submits in the same session let the
+  // student keep trying without polluting the record. Look up
+  // any existing attempt for this question since the session
+  // started; if one exists, skip the insert and only return the
+  // current submission's grading. The server-rendered review
+  // page reads the earliest attempt per question, so the
+  // record stays anchored to the first try.
+  const { data: existing } = await supabase
+    .from('attempts')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('question_id', questionId)
+    .gte('created_at', session.created_at ?? '1970-01-01T00:00:00Z')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  let recorded = false;
+  if (!existing) {
+    const { error: insertErr } = await supabase.from('attempts').insert({
+      user_id: user.id,
+      question_id: questionId,
+      is_correct: isCorrect,
+      selected_option_id: null,
+      response_text: isSpr ? responseText : String(selectedOptionId),
+      source: 'practice',
+    });
+    if (insertErr) {
+      return actionFail(`Failed to record attempt: ${insertErr.message}`);
+    }
+    recorded = true;
   }
 
   // Upsert question_status for dashboard stats. Fire-and-forget-ish:

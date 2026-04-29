@@ -55,14 +55,17 @@ export default async function TutorSessionReviewPage({ params }) {
     .eq('id', session.user_id)
     .maybeSingle();
 
-  const { sessionMeta, items, metrics, timing, assignment } =
-    await buildSessionReview({
-      supabase,
-      user,
-      target: { id: session.user_id },
-      role: profile.role,
-      session,
-    });
+  const {
+    sessionMeta, items, metrics, timing, assignment,
+    desmosCanSave, conceptTagsCatalog, conceptTagsCanTag, conceptTagsCanDelete,
+    questionNotesCanView, questionNotesIsAdmin, currentUserId,
+  } = await buildSessionReview({
+    supabase,
+    user,
+    target: { id: session.user_id },
+    role: profile.role,
+    session,
+  });
 
   const assignmentId =
     session.filter_criteria
@@ -99,6 +102,13 @@ export default async function TutorSessionReviewPage({ params }) {
       studentHref={ownerHomeHref}
       backHref={backHref}
       backLabel={backLabel}
+      desmosCanSave={desmosCanSave}
+      conceptTagsCatalog={conceptTagsCatalog}
+      conceptTagsCanTag={conceptTagsCanTag}
+      conceptTagsCanDelete={conceptTagsCanDelete}
+      questionNotesCanView={questionNotesCanView}
+      questionNotesIsAdmin={questionNotesIsAdmin}
+      currentUserId={currentUserId}
     />
   );
 }

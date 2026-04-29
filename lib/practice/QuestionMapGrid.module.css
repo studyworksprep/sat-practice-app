@@ -87,6 +87,13 @@
 
 .mapNum { line-height: 1; }
 
+.mapFlag {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  color: var(--color-gold-500);
+}
+
 .mapStatusCorrect, .mapStatusWrong {
   position: absolute;
   bottom: -4px;

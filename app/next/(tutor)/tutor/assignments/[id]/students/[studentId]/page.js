@@ -123,6 +123,13 @@ export default async function TutorAssignmentStudentReportPage({ params }) {
         studentHref={ownerHomeHref}
         backHref={`/tutor/assignments/${assignmentId}`}
         backLabel="← Back to assignment"
+        desmosCanSave={view.desmosCanSave}
+        conceptTagsCatalog={view.conceptTagsCatalog}
+        conceptTagsCanTag={view.conceptTagsCanTag}
+        conceptTagsCanDelete={view.conceptTagsCanDelete}
+        questionNotesCanView={view.questionNotesCanView}
+        questionNotesIsAdmin={view.questionNotesIsAdmin}
+        currentUserId={view.currentUserId}
       />
     );
   }
@@ -185,6 +192,13 @@ export default async function TutorAssignmentStudentReportPage({ params }) {
       studentHref={ownerHomeHref}
       backHref={`/tutor/assignments/${assignmentId}`}
       backLabel="← Back to assignment"
+      desmosCanSave={view.desmosCanSave}
+      conceptTagsCatalog={view.conceptTagsCatalog}
+      conceptTagsCanTag={view.conceptTagsCanTag}
+      conceptTagsCanDelete={view.conceptTagsCanDelete}
+      questionNotesCanView={view.questionNotesCanView}
+      questionNotesIsAdmin={view.questionNotesIsAdmin}
+      currentUserId={view.currentUserId}
     />
   );
 }
