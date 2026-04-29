@@ -311,10 +311,11 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                         Due {formatDate(a.due_date)}
                       </span>
                     )}
-                    {a.completed_at && (
-                      <span className={s.completedTag}>
-                        {reportSessionId ? 'View report' : 'Completed'}
-                      </span>
+                    {a.completed_at && reportSessionId && (
+                      <span className={s.reportPill}>View report →</span>
+                    )}
+                    {a.completed_at && !reportSessionId && (
+                      <span className={s.completedTag}>Completed</span>
                     )}
                   </Link>
                 </li>
@@ -404,7 +405,11 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                       {!row.completed && <span className={s.sessionRowTag}> · In progress</span>}
                     </div>
                   </div>
-                  <span className={s.sessionRowChevron} aria-hidden="true">→</span>
+                  {row.completed ? (
+                    <span className={s.reportPill}>View report →</span>
+                  ) : (
+                    <span className={s.sessionRowChevron} aria-hidden="true">→</span>
+                  )}
                 </Link>
               </li>
             ))}

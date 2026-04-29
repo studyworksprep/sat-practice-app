@@ -401,12 +401,13 @@ export default async function ManagerTeacherDetailPage({ params }) {
                           <div className={s.trainingRowTitle}>{title}</div>
                           <div className={s.trainingRowMeta}>
                             {a.student_completed_at
-                              ? `Completed ${formatRelativeShort(a.student_completed_at) ?? ''}${
-                                  reportSessionId ? ' · View report →' : ''
-                                }`
+                              ? `Completed ${formatRelativeShort(a.student_completed_at) ?? ''}`
                               : `Assigned ${formatRelativeShort(a.junction_created_at) ?? ''}`}
                           </div>
                         </div>
+                        {reportSessionId && (
+                          <span className={s.reportPill}>View report →</span>
+                        )}
                       </Link>
                     </li>
                   );
@@ -493,6 +494,9 @@ export default async function ManagerTeacherDetailPage({ params }) {
                           {!row.completed && ' · In progress'}
                         </div>
                       </div>
+                      {row.completed && (
+                        <span className={s.reportPill}>View report →</span>
+                      )}
                     </Link>
                   </li>
                 ))}
