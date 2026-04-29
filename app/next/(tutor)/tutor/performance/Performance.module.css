@@ -190,7 +190,7 @@
 
 .domainHead {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--s3);
 }
 

@@ -49,7 +49,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
       .from('assignment_students_v2')
       .select(`
         student_id, completed_at, created_at,
-        student:profiles!assignment_students_v2_student_id_fkey (id, first_name, last_name, email)
+        student:profiles!assignment_students_v2_student_id_fkey (id, first_name, last_name, email, role)
       `)
       .eq('assignment_id', assignmentId),
   ]);
@@ -156,10 +156,21 @@ export default async function TutorAssignmentDetailPage({ params }) {
       [r.student?.first_name, r.student?.last_name].filter(Boolean).join(' ')
       || r.student?.email || 'Student';
     const reportSession = reportSessionByUser.get(r.student_id) ?? null;
+    // The "student" on an assignment is just any user_id at the
+    // schema level — could be a real student or a teacher being
+    // trained. Route to the right profile page based on their
+    // role; default to /tutor/students/[id] for unknown / null.
+    const role = r.student?.role ?? null;
+    const profileHref =
+      role === 'teacher' || role === 'manager'
+        ? `/tutor/teachers/${r.student_id}`
+        : `/tutor/students/${r.student_id}`;
     return {
       id: r.student_id,
       name,
       email: r.student?.email ?? null,
+      role,
+      profileHref,
       completed_at: r.completed_at,
       done: stats.done,
       correct: stats.correct,
@@ -357,7 +368,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
                     <tr key={stu.id} className={s.row}>
                       <td className={s.td}>
                         <Link
-                          href={`/tutor/students/${stu.id}`}
+                          href={stu.profileHref}
                           className={s.nameLink}
                         >
                           {stu.name}
