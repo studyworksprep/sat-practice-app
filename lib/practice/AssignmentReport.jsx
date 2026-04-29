@@ -57,6 +57,12 @@ export function AssignmentReport({
   questionNotesCanView = false,
   questionNotesIsAdmin = false,
   currentUserId = null,
+  // Optional URL the tutor can click to force a fresh rebuild
+  // of the report from raw attempts (skips whichever
+  // practice_sessions row the page picked, expands to legacy
+  // v1 attempt ids). Set on the session view; null on the
+  // already-rebuilt per-trainee view.
+  rebuildHref = null,
 }) {
   // Live Desmos calc handle for the saved-state button. The
   // FloatingCalculator below renders a single panel for the whole
@@ -111,29 +117,40 @@ export function AssignmentReport({
       )}
 
       <header className={s.header}>
-        <div className={s.eyebrow}>
-          {assignment ? 'Assignment report' : 'Session report'}
+        <div className={s.headerMain}>
+          <div className={s.eyebrow}>
+            {assignment ? 'Assignment report' : 'Session report'}
+          </div>
+          <h1 className={s.h1}>
+            {assignment ? assignment.title : sessionDate}
+          </h1>
+          <div className={s.subtitleRow}>
+            {studentName && (studentHref ? (
+              <Link href={studentHref} className={s.studentLink}>
+                {studentName}
+              </Link>
+            ) : (
+              <span className={s.studentName}>{studentName}</span>
+            ))}
+            {studentName && <span className={s.dot}>·</span>}
+            <span>{sessionDate}</span>
+            {totalMs > 0 && (
+              <>
+                <span className={s.dot}>·</span>
+                <span>{formatDuration(totalMs)} working time</span>
+              </>
+            )}
+          </div>
         </div>
-        <h1 className={s.h1}>
-          {assignment ? assignment.title : sessionDate}
-        </h1>
-        <div className={s.subtitleRow}>
-          {studentName && (studentHref ? (
-            <Link href={studentHref} className={s.studentLink}>
-              {studentName}
-            </Link>
-          ) : (
-            <span className={s.studentName}>{studentName}</span>
-          ))}
-          {studentName && <span className={s.dot}>·</span>}
-          <span>{sessionDate}</span>
-          {totalMs > 0 && (
-            <>
-              <span className={s.dot}>·</span>
-              <span>{formatDuration(totalMs)} working time</span>
-            </>
-          )}
-        </div>
+        {rebuildHref && (
+          <Link
+            href={rebuildHref}
+            className={s.rebuildBtn}
+            title="Recompute the report from every attempt the student has on this assignment's questions"
+          >
+            ↻ Rebuild from attempts
+          </Link>
+        )}
       </header>
 
       {/* ---------- Stat strip ---------- */}

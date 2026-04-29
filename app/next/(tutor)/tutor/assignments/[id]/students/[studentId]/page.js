@@ -26,8 +26,16 @@ import { AssignmentReport } from '@/lib/practice/AssignmentReport';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TutorAssignmentStudentReportPage({ params }) {
+export default async function TutorAssignmentStudentReportPage({ params, searchParams }) {
   const { id: assignmentId, studentId } = await params;
+  const sp = (await searchParams) ?? {};
+  // ?rebuild=1 forces the synthetic-session path: skip the
+  // latest-completed-session lookup and rebuild the report from
+  // every attempt the student has on the assignment's question
+  // pool (with v1 ids included via question_id_map). Useful when
+  // the canonical session is missing data — e.g. multiple
+  // sessions, legacy imports, manual override side effects.
+  const forceRebuild = sp.rebuild === '1' || sp.rebuild === 'true';
   const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'student' || profile.role === 'practice') {
@@ -44,7 +52,7 @@ export default async function TutorAssignmentStudentReportPage({ params }) {
     { data: assignment },
     { data: junction },
     { data: ownerProfile },
-    { data: realSession },
+    { data: realSessionOrNull },
   ] = await Promise.all([
     supabase
       .from('assignments_v2')
@@ -85,6 +93,12 @@ export default async function TutorAssignmentStudentReportPage({ params }) {
     ownerRole === 'teacher' || ownerRole === 'manager'
       ? `/tutor/teachers/${studentId}`
       : `/tutor/students/${studentId}`;
+
+  // forceRebuild collapses path 1 (real session) into path 2
+  // (synthetic) so the rebuild button always pulls the full
+  // attempt history. Without it the page still prefers a real
+  // session if one exists.
+  const realSession = forceRebuild ? null : realSessionOrNull;
 
   const questionIds = Array.isArray(assignment.question_ids)
     ? assignment.question_ids.filter(Boolean)
@@ -130,6 +144,7 @@ export default async function TutorAssignmentStudentReportPage({ params }) {
         questionNotesCanView={view.questionNotesCanView}
         questionNotesIsAdmin={view.questionNotesIsAdmin}
         currentUserId={view.currentUserId}
+        rebuildHref={`/tutor/assignments/${assignmentId}/students/${studentId}?rebuild=1`}
       />
     );
   }

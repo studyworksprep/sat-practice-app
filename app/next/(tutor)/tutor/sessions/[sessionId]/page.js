@@ -91,6 +91,15 @@ export default async function TutorSessionReviewPage({ params }) {
     ? '← Back to assignment'
     : '← Back to profile';
 
+  // Rebuild URL — only meaningful when the session is tied to an
+  // assignment. Points at the per-trainee assignment route with
+  // ?rebuild=1, which forces the synthetic-from-attempts path
+  // (expandLegacyIds + every attempt on the assignment's
+  // question pool).
+  const rebuildHref = assignmentId
+    ? `/tutor/assignments/${assignmentId}/students/${session.user_id}?rebuild=1`
+    : null;
+
   return (
     <AssignmentReport
       sessionMeta={sessionMeta}
@@ -109,6 +118,7 @@ export default async function TutorSessionReviewPage({ params }) {
       questionNotesCanView={questionNotesCanView}
       questionNotesIsAdmin={questionNotesIsAdmin}
       currentUserId={currentUserId}
+      rebuildHref={rebuildHref}
     />
   );
 }

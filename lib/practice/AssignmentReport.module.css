@@ -22,9 +22,39 @@
 .breadcrumb:hover { color: var(--fg1); }
 
 .header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding-block: var(--s3) var(--s2);
+  flex-wrap: wrap;
+}
+.headerMain {
   display: grid;
   gap: var(--s2);
-  padding-block: var(--s3) var(--s2);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.rebuildBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.rebuildBtn:hover {
+  color: var(--color-app-accent);
+  border-color: var(--color-app-accent);
+  background: color-mix(in oklab, var(--color-app-accent) 6%, transparent);
 }
 
 .eyebrow {
