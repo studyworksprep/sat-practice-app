@@ -364,9 +364,23 @@ export default async function TutorAssignmentDetailPage({ params }) {
                     stu.done > 0
                       ? Math.round((stu.correct / stu.done) * 100)
                       : null;
+                  const reportHref =
+                    assignment.assignment_type === 'questions'
+                      ? `/tutor/assignments/${assignment.id}/students/${stu.id}`
+                      : null;
                   return (
                     <tr key={stu.id} className={s.row}>
                       <td className={s.td}>
+                        {reportHref && (
+                          <Link
+                            href={reportHref}
+                            className={s.rowLink}
+                            aria-label={`Open ${stu.name}'s assignment report`}
+                            tabIndex={-1}
+                          >
+                            Open {stu.name}'s assignment report
+                          </Link>
+                        )}
                         <Link
                           href={stu.profileHref}
                           className={s.nameLink}
@@ -407,31 +421,27 @@ export default async function TutorAssignmentDetailPage({ params }) {
                           <span className={s.completedTag}>
                             ✓ {formatDate(stu.completed_at)}
                           </span>
+                        ) : !assignment.archived_at ? (
+                          <SubmitOnBehalfButton
+                            assignmentId={assignment.id}
+                            studentId={stu.id}
+                            studentName={stu.name}
+                            done={stu.done}
+                            total={totalQuestions}
+                            action={submitAssignmentOnBehalf}
+                          />
                         ) : (
                           <span className={s.muted}>—</span>
                         )}
                       </td>
                       {assignment.assignment_type === 'questions' && (
                         <td className={s.td}>
-                          {stu.reportSessionId ? (
-                            <Link
-                              href={`/tutor/sessions/${stu.reportSessionId}`}
-                              className={s.reportLink}
-                            >
-                              View report →
-                            </Link>
-                          ) : !assignment.archived_at ? (
-                            <SubmitOnBehalfButton
-                              assignmentId={assignment.id}
-                              studentId={stu.id}
-                              studentName={stu.name}
-                              done={stu.done}
-                              total={totalQuestions}
-                              action={submitAssignmentOnBehalf}
-                            />
-                          ) : (
-                            <span className={s.muted}>—</span>
-                          )}
+                          <Link
+                            href={reportHref}
+                            className={`${s.reportLink} ${s.rowLinkLabel}`}
+                          >
+                            View report →
+                          </Link>
                         </td>
                       )}
                     </tr>
