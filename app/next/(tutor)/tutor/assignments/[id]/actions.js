@@ -27,6 +27,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
+import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 
 const MAX_ADD_AT_ONCE = 100;
 
@@ -114,11 +115,18 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
   // Pre-flight: caller must be able to see both the assignment
   // and the junction row for this student. The junction lookup
   // doubles as authorization — RLS will filter it out if the
-  // caller can't see the pair.
-  const [{ data: assignment }, { data: junction }] = await Promise.all([
+  // caller can't see the pair. We pull question_ids + created_at
+  // so we can synthesize a session if none exists yet (see
+  // below), and the student's role so the new session's mode
+  // matches what the live runner would have written.
+  const [
+    { data: assignment },
+    { data: junction },
+    { data: studentProfile },
+  ] = await Promise.all([
     ctx.supabase
       .from('assignments_v2')
-      .select('id, assignment_type')
+      .select('id, assignment_type, question_ids, created_at')
       .eq('id', assignmentId)
       .maybeSingle(),
     ctx.supabase
@@ -127,15 +135,19 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
       .eq('assignment_id', assignmentId)
       .eq('student_id', studentId)
       .maybeSingle(),
+    ctx.supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', studentId)
+      .maybeSingle(),
   ]);
   if (!assignment) return actionFail('Assignment not found.');
   if (!junction) return actionFail('Student is not on this assignment.');
 
   // Find the latest in-progress / completed practice session for
-  // this student on this assignment so the report has somewhere
-  // to live. Falling back to in-progress means a tutor can close
-  // out a session that's mid-flight; an already-completed session
-  // is also fine — we just refresh the timestamp.
+  // this student on this assignment. Falling back to in-progress
+  // means a tutor can close out a mid-flight session; an already-
+  // completed one is fine too — we just refresh the timestamp.
   const { data: latestSession } = await ctx.supabase
     .from('practice_sessions')
     .select('id, status')
@@ -146,22 +158,86 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
     .limit(1)
     .maybeSingle();
 
-  // Flip the session to completed (best-effort — if no session
-  // exists yet, we still mark the assignment as completed so the
-  // tutor can clear it from the open queue. Reports just won't be
-  // available until the student starts a session.)
-  if (latestSession && latestSession.status !== 'completed') {
-    const { error: updateErr } = await ctx.supabase
+  let resolvedSessionId = latestSession?.id ?? null;
+
+  if (latestSession) {
+    if (latestSession.status !== 'completed') {
+      const { error: updateErr } = await ctx.supabase
+        .from('practice_sessions')
+        .update({
+          status: 'completed',
+          last_activity_at: new Date().toISOString(),
+        })
+        .eq('id', latestSession.id)
+        .eq('status', 'in_progress');
+      if (updateErr) {
+        return actionFail(`Could not close session: ${updateErr.message}`);
+      }
+    }
+  } else {
+    // No session ever existed for this (student, assignment). The
+    // student probably worked the questions outside the v2 runner
+    // (legacy practice flow, pre-cutover imports, manual override
+    // before this code path existed). The assignment system and
+    // the session system should be the same thing — an assignment
+    // IS a session driven by the tutor — so close that gap by
+    // synthesizing a real session row tied to the student's
+    // earliest attempt on these questions.
+    const questionIds = Array.isArray(assignment.question_ids)
+      ? assignment.question_ids.filter(Boolean)
+      : [];
+
+    let createdAtIso = assignment.created_at ?? new Date().toISOString();
+    if (questionIds.length > 0) {
+      const { allIds } = await expandToAttemptIds(ctx.supabase, questionIds);
+      if (allIds.length > 0) {
+        // Earliest attempt the student has on any of the
+        // assignment's questions (v1 ids included via the
+        // question_id_map expansion above) becomes the
+        // synthetic session's start time. Anchoring there means
+        // buildSessionReview's "attempts since session.created_at"
+        // filter scoops up everything that should count.
+        const { data: earliest } = await ctx.supabase
+          .from('attempts')
+          .select('created_at')
+          .eq('user_id', studentId)
+          .in('question_id', allIds)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        if (earliest?.created_at) createdAtIso = earliest.created_at;
+      }
+    }
+
+    // mode='training' for trainees (teacher / manager being
+    // trained), 'practice' for actual students. Matches what the
+    // live runner would have written.
+    const studentRole = studentProfile?.role ?? null;
+    const mode = studentRole === 'teacher' || studentRole === 'manager'
+      ? 'training'
+      : 'practice';
+
+    const { data: insertedSession, error: insertErr } = await ctx.supabase
       .from('practice_sessions')
-      .update({
+      .insert({
+        user_id: studentId,
+        test_type: 'sat',
+        mode,
+        question_ids: questionIds,
+        current_position: Math.max(0, questionIds.length - 1),
         status: 'completed',
+        filter_criteria: { assignment_id: assignmentId },
+        created_at: createdAtIso,
         last_activity_at: new Date().toISOString(),
       })
-      .eq('id', latestSession.id)
-      .eq('status', 'in_progress');
-    if (updateErr) {
-      return actionFail(`Could not close session: ${updateErr.message}`);
+      .select('id')
+      .single();
+    if (insertErr || !insertedSession) {
+      return actionFail(
+        `Could not create session: ${insertErr?.message ?? 'unknown'}`,
+      );
     }
+    resolvedSessionId = insertedSession.id;
   }
 
   // Mark the assignment completed regardless of session state.
@@ -179,5 +255,5 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
   revalidatePath(`/tutor/assignments/${assignmentId}`);
   revalidatePath(`/tutor/students/${studentId}`);
   revalidatePath(`/tutor/teachers/${studentId}`);
-  return actionOk({ sessionId: latestSession?.id ?? null });
+  return actionOk({ sessionId: resolvedSessionId });
 }
