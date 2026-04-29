@@ -98,7 +98,7 @@ export default async function ManagerTeacherDetailPage({ params }) {
       .limit(RECENT_ASSIGNMENTS_LIMIT),
     supabase
       .from('practice_sessions')
-      .select('id, created_at, question_ids, mode, status')
+      .select('id, created_at, question_ids, mode, status, filter_criteria')
       .eq('user_id', teacherId)
       .in('mode', ['training', 'review'])
       .neq('status', 'abandoned')
@@ -231,14 +231,53 @@ export default async function ManagerTeacherDetailPage({ params }) {
     .filter((t) => Number.isFinite(t.composite_score))
     .map((t) => t.composite_score)[0] ?? null;
 
+  // Title lookup for assignment-tied training sessions, so the
+  // panel can label rows like "Equivalent Expressions Review"
+  // instead of just "X questions" — the latter made multiple
+  // sessions on the same assignment (e.g. day 1 + day 2) look
+  // visually identical.
+  const trainingSessionAssignmentIds = Array.from(
+    new Set(
+      (trainingSessions ?? [])
+        .map((r) => r.filter_criteria?.assignment_id)
+        .filter((id) => typeof id === 'string'),
+    ),
+  );
+  const trainingSessionAssignmentTitles = new Map();
+  if (trainingSessionAssignmentIds.length > 0) {
+    const { data: titleRows } = await supabase
+      .from('assignments_v2')
+      .select('id, title')
+      .in('id', trainingSessionAssignmentIds);
+    for (const row of titleRows ?? []) {
+      trainingSessionAssignmentTitles.set(row.id, row.title);
+    }
+  }
+
+  // Defensive dedupe by id and shape rows for the panel. The
+  // dedupe shouldn't be necessary post-RLS-fix but covers any
+  // accidental SELECT join or stale build cache.
+  const seenSessionIds = new Set();
   const trainingSessionRows = (trainingSessions ?? [])
-    .filter((row) => Array.isArray(row.question_ids) && row.question_ids.length > 0)
-    .map((row) => ({
-      id: row.id,
-      createdAt: row.created_at,
-      total: row.question_ids.length,
-      completed: row.status === 'completed',
-    }));
+    .filter((row) => {
+      if (!Array.isArray(row.question_ids) || row.question_ids.length === 0) return false;
+      if (seenSessionIds.has(row.id)) return false;
+      seenSessionIds.add(row.id);
+      return true;
+    })
+    .map((row) => {
+      const aid = row.filter_criteria?.assignment_id;
+      const title = typeof aid === 'string'
+        ? trainingSessionAssignmentTitles.get(aid) ?? null
+        : null;
+      return {
+        id: row.id,
+        createdAt: row.created_at,
+        total: row.question_ids.length,
+        completed: row.status === 'completed',
+        title,
+      };
+    });
 
   return (
     <main className={s.container}>
@@ -487,10 +526,12 @@ export default async function ManagerTeacherDetailPage({ params }) {
                     >
                       <div className={s.trainingRowMain}>
                         <div className={s.trainingRowTitle}>
-                          {row.total} question{row.total === 1 ? '' : 's'}
+                          {row.title ?? `${row.total} question${row.total === 1 ? '' : 's'}`}
                         </div>
                         <div className={s.trainingRowMeta}>
-                          {formatRelativeShort(row.createdAt) ?? '—'}
+                          {row.title
+                            ? `${row.total} q · ${formatSessionDate(row.createdAt)}`
+                            : formatSessionDate(row.createdAt)}
                           {!row.completed && ' · In progress'}
                         </div>
                       </div>
@@ -526,4 +567,20 @@ function accuracyTone(pct) {
   if (pct >= 80) return 'good';
   if (pct >= 50) return 'ok';
   return 'warn';
+}
+
+// "Apr 28, 3:42 PM" — used for the practice-sessions panel where
+// formatRelativeShort would collapse two same-day sessions to the
+// same string ("today" / "yesterday") and make them look like
+// duplicates.
+function formatSessionDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 }
