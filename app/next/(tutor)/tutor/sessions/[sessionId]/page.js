@@ -1,8 +1,9 @@
-// Tutor → student/trainee session review. Renders the same
-// ReviewInteractive client island the student sees on
-// /practice/review/[sessionId], but loaded against the session
-// owner's data (whoever they are — student or trainee teacher)
-// and gated to the tutor role.
+// Tutor → student/trainee session review. Renders an
+// AssignmentReport: top-to-bottom score summary, by-domain +
+// by-difficulty breakdowns, prioritized review queue (wrong +
+// skipped first) with each row expandable inline. Designed to
+// support a teacher running a review lesson — projection-friendly
+// and skim-first.
 //
 // This is the canonical "report" URL anywhere in the tutor tree.
 // It's reached from:
@@ -19,8 +20,8 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { ReviewInteractive } from '@/lib/practice/ReviewInteractive';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
+import { AssignmentReport } from './AssignmentReport';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,26 +47,22 @@ export default async function TutorSessionReviewPage({ params }) {
   const questionIds = Array.isArray(session.question_ids) ? session.question_ids : [];
   if (questionIds.length === 0) notFound();
 
-  // Look up the session owner's role so the back-link points to
-  // the right per-user page (student profile vs. teacher detail).
-  // Best-effort — falls back to a generic dashboard link.
+  // Owner profile drives the header student-name link and the
+  // back-link target (student profile vs. teacher detail).
   const { data: ownerProfile } = await supabase
     .from('profiles')
-    .select('id, role')
+    .select('id, role, first_name, last_name, email')
     .eq('id', session.user_id)
     .maybeSingle();
 
-  const {
-    sessionMeta, items, metrics, timing, assignment,
-    desmosCanSave, conceptTagsCatalog, conceptTagsCanTag, conceptTagsCanDelete,
-    questionNotesCanView, questionNotesIsAdmin, currentUserId,
-  } = await buildSessionReview({
-    supabase,
-    user,
-    target: { id: session.user_id },
-    role: profile.role,
-    session,
-  });
+  const { sessionMeta, items, metrics, timing, assignment } =
+    await buildSessionReview({
+      supabase,
+      user,
+      target: { id: session.user_id },
+      role: profile.role,
+      session,
+    });
 
   const assignmentId =
     session.filter_criteria
@@ -74,41 +71,34 @@ export default async function TutorSessionReviewPage({ params }) {
       ? session.filter_criteria.assignment_id
       : null;
 
-  // Default per-owner-role footer destinations. Assignment-tied
-  // sessions back to the assignment page so the tutor can jump
-  // between students; the non-assignment fallback goes to the
-  // owner's profile page.
   const ownerRole = ownerProfile?.role ?? null;
+  const ownerName =
+    [ownerProfile?.first_name, ownerProfile?.last_name].filter(Boolean).join(' ')
+    || ownerProfile?.email
+    || null;
   const ownerHomeHref =
     ownerRole === 'teacher' || ownerRole === 'manager'
       ? `/tutor/teachers/${session.user_id}`
       : `/tutor/students/${session.user_id}`;
 
-  const footerBackHref = assignmentId
+  const backHref = assignmentId
     ? `/tutor/assignments/${assignmentId}`
     : ownerHomeHref;
-  const footerBackLabel = assignmentId
+  const backLabel = assignmentId
     ? '← Back to assignment'
     : '← Back to profile';
 
   return (
-    <ReviewInteractive
+    <AssignmentReport
       sessionMeta={sessionMeta}
       items={items}
       metrics={metrics}
       timing={timing}
       assignment={assignment}
-      desmosCanSave={desmosCanSave}
-      conceptTagsCatalog={conceptTagsCatalog}
-      conceptTagsCanTag={conceptTagsCanTag}
-      conceptTagsCanDelete={conceptTagsCanDelete}
-      questionNotesCanView={questionNotesCanView}
-      questionNotesIsAdmin={questionNotesIsAdmin}
-      currentUserId={currentUserId}
-      footerBackHref={footerBackHref}
-      footerBackLabel={footerBackLabel}
-      footerNextHref={ownerHomeHref}
-      footerNextLabel="Profile →"
+      studentName={ownerName}
+      studentHref={ownerHomeHref}
+      backHref={backHref}
+      backLabel={backLabel}
     />
   );
 }
