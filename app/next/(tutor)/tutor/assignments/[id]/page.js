@@ -15,8 +15,9 @@ import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate } from '@/lib/formatters';
-import { addAssignmentMembers } from './actions';
+import { addAssignmentMembers, submitAssignmentOnBehalf } from './actions';
 import { AddMembersPicker } from './AddMembersPicker';
+import { SubmitOnBehalfButton } from './SubmitOnBehalfButton';
 import s from './AssignmentDetail.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -166,6 +167,9 @@ export default async function TutorAssignmentDetailPage({ params }) {
         reportSession && reportSession.status === 'completed'
           ? reportSession.id
           : null,
+      // Any non-abandoned session counts — drives the "Submit
+      // for student" button visibility and the confirmation copy.
+      hasSession: reportSession != null,
     };
   });
   students.sort((a, b) => a.name.localeCompare(b.name));
@@ -408,6 +412,14 @@ export default async function TutorAssignmentDetailPage({ params }) {
                             >
                               View report →
                             </Link>
+                          ) : !assignment.archived_at ? (
+                            <SubmitOnBehalfButton
+                              assignmentId={assignment.id}
+                              studentId={stu.id}
+                              studentName={stu.name}
+                              hasSession={stu.hasSession}
+                              action={submitAssignmentOnBehalf}
+                            />
                           ) : (
                             <span className={s.muted}>—</span>
                           )}

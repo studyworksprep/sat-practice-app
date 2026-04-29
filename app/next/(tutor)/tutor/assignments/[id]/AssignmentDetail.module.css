@@ -208,6 +208,40 @@
 }
 .reportLink:hover { text-decoration: underline; }
 
+.submitOnBehalfForm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.submitOnBehalfBtn {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.submitOnBehalfBtn:hover:not(:disabled) {
+  color: var(--fg1);
+  border-color: var(--color-app-accent);
+  background: color-mix(in oklab, var(--color-app-accent) 6%, transparent);
+}
+.submitOnBehalfBtn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.submitOnBehalfError {
+  font-size: 11px;
+  color: #b91c1c;
+}
+
 .email {
   font-size: 11px;
   color: var(--fg3);
