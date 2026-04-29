@@ -167,9 +167,6 @@ export default async function TutorAssignmentDetailPage({ params }) {
         reportSession && reportSession.status === 'completed'
           ? reportSession.id
           : null,
-      // Any non-abandoned session counts — drives the "Submit
-      // for student" button visibility and the confirmation copy.
-      hasSession: reportSession != null,
     };
   });
   students.sort((a, b) => a.name.localeCompare(b.name));
@@ -417,7 +414,8 @@ export default async function TutorAssignmentDetailPage({ params }) {
                               assignmentId={assignment.id}
                               studentId={stu.id}
                               studentName={stu.name}
-                              hasSession={stu.hasSession}
+                              done={stu.done}
+                              total={totalQuestions}
                               action={submitAssignmentOnBehalf}
                             />
                           ) : (

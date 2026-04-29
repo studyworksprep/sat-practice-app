@@ -21,7 +21,8 @@ export function SubmitOnBehalfButton({
   assignmentId,
   studentId,
   studentName,
-  hasSession,
+  done,
+  total,
   action,
 }) {
   const [state, submitAction, isPending] = useActionState(action, null);
@@ -29,18 +30,27 @@ export function SubmitOnBehalfButton({
 
   // Once the action returns a session id, jump straight to the
   // report so the tutor sees the work they just locked in. If
-  // the student never started a session we stay on the page;
-  // revalidatePath has already refreshed the row to show
-  // "Completed".
+  // there's no session row (e.g. legacy attempts pre-cutover),
+  // we stay on the page; revalidatePath has already refreshed
+  // the row to show "Completed".
   useEffect(() => {
     if (state?.ok && state?.sessionId) {
       router.push(`/tutor/sessions/${state.sessionId}`);
     }
   }, [state, router]);
 
-  const confirmText = hasSession
-    ? `Submit ${studentName}'s in-flight session and mark this assignment complete? They'll be able to view the report afterward.`
-    : `${studentName} has not started this assignment yet. Mark it complete anyway?`;
+  // Confirmation copy keys off attempt counts rather than the
+  // presence of a v2 practice_session row, so trainees with
+  // pre-cutover attempts (legacy imports) get an accurate
+  // summary instead of a misleading "hasn't started yet".
+  const totalNum = Number(total ?? 0);
+  const doneNum = Number(done ?? 0);
+  const confirmText =
+    doneNum === 0
+      ? `${studentName} hasn't answered any questions on this assignment yet. Mark it complete anyway?`
+      : doneNum >= totalNum && totalNum > 0
+        ? `Mark this assignment complete on ${studentName}'s behalf? They've answered all ${totalNum} questions and will be able to view the report afterward.`
+        : `Mark this assignment complete on ${studentName}'s behalf? They've answered ${doneNum} of ${totalNum} questions; the rest will show as Unanswered on the report.`;
 
   function handleSubmit(e) {
     if (typeof window !== 'undefined' && !window.confirm(confirmText)) {
