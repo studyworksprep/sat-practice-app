@@ -313,124 +313,109 @@
 .emptyTitle { font-weight: 600; color: var(--fg1); font-size: 14px; }
 .emptyBody { font-size: 13px; color: var(--fg3); }
 
-/* ---------- Review list ---------- */
+/* ---------- Selected-question detail card ----------
+   Mirrors TestResults.module.css's questionCard / questionHeader
+   so the assignment report and the practice-test report look the
+   same when a question is selected for review. */
 
-.reviewList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-.reviewItem {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-}
-.reviewSummary {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  width: 100%;
-  text-align: left;
-  display: grid;
-  grid-template-columns: 32px auto 1fr auto auto;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
-}
-.reviewSummary:hover { background: var(--card); }
-.reviewSummary[aria-expanded="true"] {
+.questionCard {
   background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--s5);
+  display: grid;
+  gap: var(--s3);
+}
+
+.questionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  padding-bottom: var(--s3);
   border-bottom: 1px solid var(--border);
 }
-
-.reviewOrdinal {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--fg3);
-  text-align: right;
+.questionHeaderLeft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
 }
-
-.reviewStatus {
+.questionHeaderRight {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.questionNum {
+  font-family: var(--font-serif);
+  font-size: 18px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 3px 8px;
-  border-radius: 999px;
+  color: var(--color-navy-900, var(--fg1));
 }
-.statusCorrect {
-  background: var(--tile-success-bg);
-  color: var(--tile-success-fg);
-}
-.statusWrong {
-  background: var(--tile-danger-bg);
-  color: var(--tile-danger-fg);
-}
-.statusSkipped {
-  background: var(--tile-amber-bg);
-  color: var(--tile-amber-fg);
-}
-
-.reviewTitle {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--fg1);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.reviewMeta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.reviewMetaPill {
+.questionCode {
   font-family: var(--font-mono);
   font-size: 11px;
-  background: var(--card);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 1px 8px;
   color: var(--fg2);
+  letter-spacing: 0.04em;
 }
-
-.reviewChevron {
-  color: var(--fg3);
+.questionMeta {
   font-size: 12px;
-  width: 12px;
-  text-align: center;
+  color: var(--fg3);
 }
 
-.reviewBody {
-  padding: var(--s4) var(--s4) var(--s5);
-  background: var(--card);
+.revealBtn {
+  appearance: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  background: var(--bg);
+  border: 1px solid color-mix(in oklab, var(--color-app-accent) 32%, transparent);
+  border-radius: 999px;
+  padding: 4px 14px;
+  cursor: pointer;
 }
-.reviewMissing {
+.revealBtn:hover {
+  background: var(--color-app-accent);
+  color: var(--bg-white, #fff);
+  border-color: var(--color-app-accent);
+}
+
+.resultBadgeCorrect,
+.resultBadgeWrong,
+.resultBadgeSkipped {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.resultBadgeCorrect {
+  background: var(--tile-success-bg);
+  color: var(--tile-success-fg);
+}
+.resultBadgeWrong {
+  background: var(--tile-danger-bg);
+  color: var(--tile-danger-fg);
+}
+.resultBadgeSkipped {
+  background: var(--tile-amber-bg);
+  color: var(--tile-amber-fg);
+}
+
+.missingNote {
   padding: var(--s3);
   font-size: 13px;
   color: var(--fg3);
   font-style: italic;
+  margin: 0;
 }
-.reviewFooter {
-  margin-top: var(--s3);
-  padding-top: var(--s3);
-  border-top: 1px solid var(--border);
-}
-.reviewDeepLink {
-  font-size: 13px;
-  color: var(--color-app-accent);
-  font-weight: 600;
-  text-decoration: none;
-}
-.reviewDeepLink:hover { text-decoration: underline; }

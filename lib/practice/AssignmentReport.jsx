@@ -1,27 +1,32 @@
-// Tutor-facing assignment report. The teacher's view of a
-// student's session — the lay-out is top-to-bottom scannable
-// (vs. the per-question pivot in ReviewInteractive that students
-// see) so a tutor can run a review lesson straight from the page.
+// Tutor-facing assignment report. Mirrors the practice-test
+// score report's vocabulary so the two surfaces feel like one
+// product:
+//   - score strip up top
+//   - daily-distribution heatmap so a tutor can see at a glance
+//     whether the work was crammed or spaced
+//   - by-domain breakdown card with per-skill rows + bars
+//   - by-difficulty pills
+//   - question map (clickable grid; status icon + difficulty
+//     tint per cell) that drives a selected-question detail
+//     card below
 //
-// Sections, in order:
-//   1. Header (assignment title, student, completion meta)
-//   2. Stat strip (score, accuracy, time, struggling skills)
-//   3. By-domain table with skill breakdowns
-//   4. By-difficulty pills
-//   5. Prioritized review (wrong + skipped first), expandable
-//      to show the stem, both answers, and the rationale inline
-//   6. Full question list (collapsed by default for skim)
+// Shared visual primitives:
+//   - QuestionMapGrid (canonical home; the practice-test report
+//     should switch to importing it in a follow-up)
+//   - ReviewDailyMap (already shared with the student review)
+//   - QuestionRenderer in mode='review' (used by every review
+//     surface)
 //
-// The data props mirror buildSessionReview's output so this
-// component is a drop-in alternative to ReviewInteractive in the
-// tutor tree.
+// The data props line up with buildSessionReview's output so a
+// page can hand the view-model straight in.
 
 'use client';
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
-import { CorrectIcon, IncorrectIcon, MarkedIcon } from '@/lib/ui/icons';
+import { QuestionMapGrid } from './QuestionMapGrid';
+import { ReviewDailyMap } from './ReviewDailyMap';
 import s from './AssignmentReport.module.css';
 
 const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Very Hard', 5: 'Extreme' };
@@ -36,39 +41,26 @@ export function AssignmentReport({
   studentHref = null,
   backHref = null,
   backLabel = '← Back',
-  perQuestionHref = null,
 }) {
-  // Wrong + skipped first; correct ones tucked behind a toggle so
-  // the reviewing tutor doesn't have to scroll past them. Items
-  // missing from the bank land in "Wrong" since we can't show the
-  // student's answer either way.
-  const incorrectItems = useMemo(
-    () => items.filter((it) => it.status !== 'correct'),
-    [items],
-  );
-  const correctItems = useMemo(
-    () => items.filter((it) => it.status === 'correct'),
-    [items],
-  );
+  const groups = useMemo(() => buildDomainGroups(items), [items]);
 
-  const [expanded, setExpanded] = useState(() => new Set());
-  const [showCorrect, setShowCorrect] = useState(false);
+  const firstReal = items.find((it) => !it.missing) ?? items[0];
+  const [selectedPosition, setSelectedPosition] = useState(
+    firstReal ? firstReal.position : 0,
+  );
+  const [revealed, setRevealed] = useState(() => new Set());
 
-  function toggle(position) {
-    setExpanded((prev) => {
+  function reveal(position) {
+    setRevealed((prev) => {
+      if (prev.has(position)) return prev;
       const next = new Set(prev);
-      if (next.has(position)) next.delete(position);
-      else next.add(position);
+      next.add(position);
       return next;
     });
   }
 
-  function expandAll(targets) {
-    setExpanded(new Set(targets.map((it) => it.position)));
-  }
-  function collapseAll() {
-    setExpanded(new Set());
-  }
+  const selected = items.find((it) => it.position === selectedPosition) ?? items[0];
+  const isRevealed = revealed.has(selected?.position);
 
   const sessionDate = formatSessionDate(sessionMeta.createdAt);
   const accuracyPct = metrics.accuracy == null
@@ -79,9 +71,6 @@ export function AssignmentReport({
   const medianMs = timing?.medianMs ?? 0;
   const measuredCount = timing?.measuredCount ?? 0;
 
-  // Skills that the student missed at least one question on,
-  // ordered by miss count desc. Drives the small "weak spots"
-  // pill row at the top of the by-domain section.
   const weakSkills = useMemo(() => buildWeakSkills(metrics), [metrics]);
 
   return (
@@ -116,7 +105,7 @@ export function AssignmentReport({
         </div>
       </header>
 
-      {/* ---------- Score strip ---------- */}
+      {/* ---------- Stat strip ---------- */}
       <section className={s.statStrip}>
         <Stat
           label="Questions"
@@ -150,13 +139,31 @@ export function AssignmentReport({
         />
       </section>
 
+      {/* ---------- Daily distribution ---------- */}
+      {assignment?.dailyMap?.days?.length > 0 && (
+        <section className={s.card}>
+          <div className={s.cardHead}>
+            <div className={s.cardHeadMain}>
+              <h2 className={s.h2}>Daily distribution</h2>
+              <p className={s.cardHint}>
+                One cell per day from the assignment&apos;s issue
+                date through today. Darker cells mean more
+                attempts that day; gaps make &quot;all in one
+                sitting&quot; vs. spaced practice obvious.
+              </p>
+            </div>
+          </div>
+          <ReviewDailyMap dailyMap={assignment.dailyMap} />
+        </section>
+      )}
+
       {/* ---------- By-domain ---------- */}
       <section className={s.card}>
         <div className={s.cardHead}>
           <h2 className={s.h2}>By domain</h2>
           <p className={s.cardHint}>
-            Where the work landed and where to focus the review.
-            Skills under each domain are sorted by accuracy ascending.
+            Skills under each domain are sorted weakest-first to
+            anchor the review-lesson plan.
           </p>
         </div>
 
@@ -256,197 +263,109 @@ export function AssignmentReport({
         </section>
       )}
 
-      {/* ---------- Wrong + skipped review ---------- */}
+      {/* ---------- Question map ---------- */}
       <section className={s.card}>
         <div className={s.cardHead}>
           <div className={s.cardHeadMain}>
-            <h2 className={s.h2}>Review queue</h2>
+            <h2 className={s.h2}>Per-question review</h2>
             <p className={s.cardHint}>
-              Every wrong or skipped question, in order. Click any
-              row to expand the stem, both answers, and the rationale
-              inline — designed for screen-share during a review
-              lesson.
+              Every question, color-coded by difficulty with a
+              corner mark for status. Click any cell to open the
+              detail below; revealed answers stay marked with a
+              dot so the tutor can track progress through the
+              review.
             </p>
           </div>
-          {incorrectItems.length > 0 && (
-            <div className={s.cardHeadActions}>
-              <button
-                type="button"
-                className={s.linkBtn}
-                onClick={() => expandAll(incorrectItems)}
-              >
-                Expand all
-              </button>
-              <span className={s.dot}>·</span>
-              <button
-                type="button"
-                className={s.linkBtn}
-                onClick={collapseAll}
-              >
-                Collapse all
-              </button>
-            </div>
-          )}
         </div>
 
-        {incorrectItems.length === 0 ? (
-          <div className={s.empty}>
-            <div className={s.emptyTitle}>Clean sweep.</div>
-            <div className={s.emptyBody}>
-              Every question was answered correctly. Skim the full
-              list below if you want to discuss reasoning.
-            </div>
-          </div>
-        ) : (
-          <ul className={s.reviewList}>
-            {incorrectItems.map((it) => (
-              <ReviewRow
-                key={it.position}
-                item={it}
-                expanded={expanded.has(it.position)}
-                onToggle={() => toggle(it.position)}
-                perQuestionHref={perQuestionHref}
-              />
-            ))}
-          </ul>
-        )}
+        <QuestionMapGrid
+          groups={groups}
+          selectedId={selected?.position}
+          onSelect={setSelectedPosition}
+          revealed={revealed}
+        />
       </section>
 
-      {/* ---------- All questions (collapsed by default) ---------- */}
-      <section className={s.card}>
-        <div className={s.cardHead}>
-          <div className={s.cardHeadMain}>
-            <h2 className={s.h2}>All questions</h2>
-            <p className={s.cardHint}>
-              {showCorrect
-                ? 'Including correct answers — click any row to expand.'
-                : 'Only the questions the student missed are shown above. Reveal correct answers if you want a full walkthrough.'}
-            </p>
-          </div>
-          <div className={s.cardHeadActions}>
-            <button
-              type="button"
-              className={s.linkBtn}
-              onClick={() => setShowCorrect((v) => !v)}
-            >
-              {showCorrect ? 'Hide correct' : `Show correct (${correctItems.length})`}
-            </button>
-          </div>
-        </div>
-
-        {showCorrect && (
-          correctItems.length === 0 ? (
-            <div className={s.empty}>
-              <div className={s.emptyBody}>No correct answers in this session.</div>
+      {/* ---------- Selected-question detail ---------- */}
+      {selected && (
+        <section className={s.questionCard}>
+          <div className={s.questionHeader}>
+            <div className={s.questionHeaderLeft}>
+              <span className={s.questionNum}>
+                Question {selected.position + 1}
+              </span>
+              {selected.externalId && (
+                <span className={s.questionCode}>{selected.externalId}</span>
+              )}
+              <span className={s.questionMeta}>
+                {selected.taxonomy?.domain_name && (
+                  <>{selected.taxonomy.domain_name}</>
+                )}
+                {selected.taxonomy?.skill_name && (
+                  <> · {selected.taxonomy.skill_name}</>
+                )}
+                {selected.taxonomy?.difficulty != null && (
+                  <> · {DIFF_LABEL[selected.taxonomy.difficulty] ?? `Difficulty ${selected.taxonomy.difficulty}`}</>
+                )}
+                {selected.studentAnswer?.timeSpentMs != null && (
+                  <> · {formatDuration(selected.studentAnswer.timeSpentMs)}</>
+                )}
+              </span>
             </div>
+            <div className={s.questionHeaderRight}>
+              {!isRevealed && !selected.missing && (
+                <button
+                  type="button"
+                  className={s.revealBtn}
+                  onClick={() => reveal(selected.position)}
+                >
+                  Reveal answer &amp; rationale
+                </button>
+              )}
+              {isRevealed && selected.studentAnswer && (
+                <span
+                  className={
+                    selected.studentAnswer.isCorrect
+                      ? s.resultBadgeCorrect
+                      : s.resultBadgeWrong
+                  }
+                >
+                  {selected.studentAnswer.isCorrect ? 'Correct' : 'Incorrect'}
+                </span>
+              )}
+              {isRevealed && !selected.studentAnswer && (
+                <span className={s.resultBadgeSkipped}>Unanswered</span>
+              )}
+            </div>
+          </div>
+
+          {selected.missing ? (
+            <p className={s.missingNote}>
+              This question is no longer available in the question bank.
+            </p>
           ) : (
-            <ul className={s.reviewList}>
-              {correctItems.map((it) => (
-                <ReviewRow
-                  key={it.position}
-                  item={it}
-                  expanded={expanded.has(it.position)}
-                  onToggle={() => toggle(it.position)}
-                  perQuestionHref={perQuestionHref}
-                />
-              ))}
-            </ul>
-          )
-        )}
-      </section>
+            <QuestionRenderer
+              key={`assignment-${selected.position}-${isRevealed ? 'r' : 'q'}`}
+              mode="review"
+              layout={selected.layout ?? 'single'}
+              question={selected}
+              selectedOptionId={selected.studentAnswer?.selectedOptionId ?? null}
+              responseText={selected.studentAnswer?.responseText ?? ''}
+              result={isRevealed ? {
+                isCorrect: selected.studentAnswer?.isCorrect ?? null,
+                correctOptionId: selected.reveal.correctOptionId,
+                correctAnswerDisplay: selected.reveal.correctAnswerDisplay,
+                rationaleHtml: selected.reveal.rationaleHtml,
+              } : null}
+            />
+          )}
+        </section>
+      )}
     </main>
   );
 }
 
 // ──────────────────────────────────────────────────────────────
-
-function ReviewRow({ item, expanded, onToggle, perQuestionHref }) {
-  const status = item.status; // 'correct' | 'incorrect' | 'unanswered'
-  const Icon =
-    status === 'correct' ? CorrectIcon
-    : status === 'incorrect' ? IncorrectIcon
-    : MarkedIcon;
-  const statusLabel =
-    status === 'correct' ? 'Correct'
-    : status === 'incorrect' ? 'Wrong'
-    : 'Unanswered';
-  const statusClass =
-    status === 'correct' ? s.statusCorrect
-    : status === 'incorrect' ? s.statusWrong
-    : s.statusSkipped;
-
-  return (
-    <li className={s.reviewItem}>
-      <button
-        type="button"
-        className={s.reviewSummary}
-        aria-expanded={expanded}
-        onClick={onToggle}
-      >
-        <span className={s.reviewOrdinal}>{item.position + 1}</span>
-        <span className={`${s.reviewStatus} ${statusClass}`}>
-          <Icon size={14} />
-          {statusLabel}
-        </span>
-        <span className={s.reviewTitle}>
-          {item.taxonomy?.skill_name ?? item.taxonomy?.domain_name ?? 'Question'}
-        </span>
-        <span className={s.reviewMeta}>
-          {item.taxonomy?.difficulty != null && (
-            <span className={s.reviewMetaPill}>
-              {DIFF_LABEL[item.taxonomy.difficulty] ?? `D${item.taxonomy.difficulty}`}
-            </span>
-          )}
-          {item.studentAnswer?.timeSpentMs != null && (
-            <span className={s.reviewMetaPill}>
-              {formatDuration(item.studentAnswer.timeSpentMs)}
-            </span>
-          )}
-        </span>
-        <span className={s.reviewChevron} aria-hidden="true">
-          {expanded ? '▾' : '▸'}
-        </span>
-      </button>
-
-      {expanded && (
-        <div className={s.reviewBody}>
-          {item.missing ? (
-            <div className={s.reviewMissing}>
-              This question is no longer in the bank, so the stem
-              and rationale aren&apos;t available.
-            </div>
-          ) : (
-            <>
-              <QuestionRenderer
-                mode="review"
-                layout={item.layout ?? 'single'}
-                question={item}
-                selectedOptionId={item.studentAnswer?.selectedOptionId ?? null}
-                responseText={item.studentAnswer?.responseText ?? ''}
-                result={{
-                  isCorrect: item.studentAnswer?.isCorrect ?? null,
-                  correctOptionId: item.reveal.correctOptionId,
-                  correctAnswerDisplay: item.reveal.correctAnswerDisplay,
-                  rationaleHtml: item.reveal.rationaleHtml,
-                }}
-              />
-              {perQuestionHref && (
-                <div className={s.reviewFooter}>
-                  <Link
-                    href={perQuestionHref}
-                    className={s.reviewDeepLink}
-                  >
-                    Open in interactive review →
-                  </Link>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-    </li>
-  );
-}
 
 function Stat({ label, value, sub, tone = 'neutral' }) {
   const cls = [s.statTile, s[`statTile_${tone}`] ?? null]
@@ -461,10 +380,76 @@ function Stat({ label, value, sub, tone = 'neutral' }) {
   );
 }
 
+const MATH_DOMAIN_CODES = new Set(['H', 'P', 'Q', 'S']);
+const RW_DOMAIN_CODES = new Set(['INI', 'CAS', 'EOI', 'SEC']);
+const SUBJECT_LABEL = { RW: 'Reading & Writing', MATH: 'Math', OTHER: 'Other' };
+const SUBJECT_ORDER = { RW: 0, MATH: 1, OTHER: 2 };
+
+function subjectGroupKey(code) {
+  if (MATH_DOMAIN_CODES.has(code)) return 'MATH';
+  if (RW_DOMAIN_CODES.has(code)) return 'RW';
+  return 'OTHER';
+}
+
+function buildDomainGroups(items) {
+  // Two-level group: subject → domain. Each header reads e.g.
+  // "Reading & Writing · Information & Ideas", parallel to the
+  // test report's "Reading & Writing · Module 1" treatment.
+  const byKey = new Map();
+  for (const it of items) {
+    const code = it.taxonomy?.domain_code ?? '';
+    const subject = subjectGroupKey(code);
+    const domainName = it.taxonomy?.domain_name ?? 'Other';
+    const key = `${subject}::${domainName}`;
+    if (!byKey.has(key)) {
+      byKey.set(key, {
+        key,
+        subject,
+        domainName,
+        items: [],
+        correct: 0,
+        total: 0,
+      });
+    }
+    const group = byKey.get(key);
+    group.items.push(it);
+    if (!it.missing) {
+      group.total += 1;
+      if (it.studentAnswer?.isCorrect) group.correct += 1;
+    }
+  }
+
+  const groups = Array.from(byKey.values()).sort((a, b) => {
+    const ao = SUBJECT_ORDER[a.subject] ?? 99;
+    const bo = SUBJECT_ORDER[b.subject] ?? 99;
+    if (ao !== bo) return ao - bo;
+    return a.domainName.localeCompare(b.domainName);
+  });
+
+  return groups.map((g) => ({
+    key: g.key,
+    label: (
+      <>
+        <span style={{ color: 'var(--color-navy-900)' }}>
+          {SUBJECT_LABEL[g.subject] ?? g.subject}
+        </span>
+        <span style={{ color: 'var(--fg3)', fontWeight: 400, margin: '0 4px' }}>·</span>
+        <span style={{ color: 'var(--fg2)' }}>{g.domainName}</span>
+      </>
+    ),
+    countNote: `${g.correct}/${g.total}`,
+    items: g.items.map((it) => ({
+      id: it.position,
+      ordinalLabel: it.position + 1,
+      status: it.status,
+      difficulty: it.taxonomy?.difficulty ?? null,
+      missing: it.missing,
+      ariaLabel: `Question ${it.position + 1}, ${it.status}`,
+    })),
+  }));
+}
+
 function buildWeakSkills(metrics) {
-  // Flatten skills across domains, surface the ones with at least
-  // one wrong answer, sort by wrong count desc and cap at 6 so the
-  // pill row stays readable on one line.
   const out = [];
   for (const d of metrics.byDomain ?? []) {
     for (const sk of d.skills ?? []) {
