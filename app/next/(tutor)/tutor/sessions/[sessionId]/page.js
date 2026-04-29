@@ -21,7 +21,7 @@
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
-import { AssignmentReport } from './AssignmentReport';
+import { AssignmentReport } from '@/lib/practice/AssignmentReport';
 
 export const dynamic = 'force-dynamic';
 

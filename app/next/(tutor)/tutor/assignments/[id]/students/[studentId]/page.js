@@ -22,7 +22,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
-import { AssignmentReport } from '../../../sessions/[sessionId]/AssignmentReport';
+import { AssignmentReport } from '@/lib/practice/AssignmentReport';
 
 export const dynamic = 'force-dynamic';
 
