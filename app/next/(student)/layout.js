@@ -35,7 +35,7 @@ const STUDENT_LINKS = [
 ];
 
 export default async function StudentTreeLayout({ children }) {
-  const { user, profile, supabase } = await requireUser();
+  const { user, profile } = await requireUser();
 
   // Bounce non-students out of this tree. Same gates the individual
   // page.js files apply, but lifted here so the AppNav doesn't
@@ -44,20 +44,10 @@ export default async function StudentTreeLayout({ children }) {
   if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
 
-  // First name for the nav greeting. Best-effort; fall back to the
-  // raw email if the row is missing or the column was never set.
-  // The default profile fetch in requireUser doesn't include
-  // first_name to keep the auth payload minimal.
-  const { data: nameRow } = await supabase
-    .from('profiles')
-    .select('first_name')
-    .eq('id', user.id)
-    .maybeSingle();
-
   const navUser = {
     email: user.email,
     role: profile.role ?? 'student',
-    firstName: nameRow?.first_name ?? null,
+    firstName: profile.first_name ?? null,
   };
 
   return (

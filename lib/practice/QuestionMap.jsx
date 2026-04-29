@@ -37,8 +37,13 @@ import s from './QuestionMap.module.css';
  * }>} props.items
  * @param {boolean} [props.canSubmit=true] — hide the Submit button
  *   when the page doesn't own the session (review mode), etc.
+ * @param {(position: number) => void} [props.onJump] — when supplied,
+ *   pill clicks call this instead of doing a route change. Used by
+ *   the in-runner client-state navigation; falls back to <a href> for
+ *   any caller (e.g. the soft "removed" page render) that doesn't
+ *   have an in-page state machine to drive.
  */
-export function QuestionMap({ basePath, sessionId, currentPosition, items, canSubmit = true }) {
+export function QuestionMap({ basePath, sessionId, currentPosition, items, canSubmit = true, onJump }) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -66,6 +71,16 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
     });
   }
 
+  const handlePillClick = onJump
+    ? (e, position) => {
+        // Close the modal (if open) before the runner re-renders
+        // the new question.
+        e.preventDefault();
+        setModalOpen(false);
+        onJump(position);
+      }
+    : null;
+
   const grid = (
     <div className={s.grid} role="list">
       {items.map((it) => (
@@ -74,6 +89,7 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
           item={it}
           isCurrent={it.position === currentPosition}
           href={`${basePath}/s/${sessionId}/${it.position}`}
+          onClick={handlePillClick ? (e) => handlePillClick(e, it.position) : undefined}
         />
       ))}
     </div>
@@ -133,7 +149,7 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
   );
 }
 
-function Pill({ item, isCurrent, href }) {
+function Pill({ item, isCurrent, href, onClick }) {
   const pillClass = [
     s.pill,
     item.status === 'correct'   ? s.pillCorrect   : null,
@@ -145,6 +161,7 @@ function Pill({ item, isCurrent, href }) {
     <a
       role="listitem"
       href={href}
+      onClick={onClick}
       className={pillClass}
       aria-current={isCurrent ? 'step' : undefined}
     >

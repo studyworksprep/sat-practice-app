@@ -40,22 +40,15 @@ function linksForRole(role) {
 }
 
 export default async function TutorTreeLayout({ children }) {
-  const { user, profile, supabase } = await requireUser();
+  const { user, profile } = await requireUser();
 
   if (profile.role === 'student' || profile.role === 'practice') redirect('/dashboard');
   if (!['teacher', 'manager', 'admin'].includes(profile.role)) redirect('/');
 
-  // Same name-for-greeting query the student layout uses.
-  const { data: nameRow } = await supabase
-    .from('profiles')
-    .select('first_name')
-    .eq('id', user.id)
-    .maybeSingle();
-
   const navUser = {
     email: user.email,
     role: profile.role,
-    firstName: nameRow?.first_name ?? null,
+    firstName: profile.first_name ?? null,
   };
 
   return (
