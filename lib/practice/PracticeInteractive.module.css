@@ -17,6 +17,73 @@
   color: var(--fg1);
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+/* ---------- Nav-pending progress sliver ----------
+   Thin top-of-runner bar that gives sub-frame feedback when the
+   student clicks Next/Prev/Map — even when the prefetch cache
+   has the answer ready (~30ms), the bar still flashes and lets
+   them know the click landed. Sits above the header in z-order;
+   pointer-events:none so it can never swallow a header click. */
+.navProgress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  pointer-events: none;
+  background: transparent;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.navProgress::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -30%;
+  width: 30%;
+  height: 100%;
+  background: var(--color-app-accent, #2451b3);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity var(--dur-fast, 120ms) var(--ease-std, ease);
+}
+
+.navProgressActive::before {
+  opacity: 1;
+  animation: nav-progress-slide 900ms cubic-bezier(.4, 0, .2, 1) infinite;
+}
+
+@keyframes nav-progress-slide {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(440%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navProgressActive::before {
+    animation: none;
+    left: 0;
+    width: 100%;
+    opacity: 0.4;
+  }
+}
+
+/* ---------- View Transitions cross-fade ----------
+   When the runner swaps a question via document.startViewTransition
+   (in PracticeInteractive's applyPayload), the browser snapshots
+   the old DOM, runs the state update, and animates between the
+   two snapshots. Default behavior is a 250ms root-level cross-
+   fade, which already feels nice. We only override timing so the
+   fade is short enough to feel like a snap, not a fade. Scoped
+   to the runner via :root[data-vt-runner] would be cleaner but
+   the API targets ::view-transition-* pseudo-elements at the
+   document root either way. */
+:global(::view-transition-old(root)),
+:global(::view-transition-new(root)) {
+  animation-duration: 160ms;
+  animation-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
 
 /* ---------- questionTopBar ---------- */

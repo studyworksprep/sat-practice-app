@@ -1,0 +1,148 @@
+/* Dashboard-shaped Suspense skeleton. Same vertical stack as
+   app/next/(student)/dashboard/Dashboard.module.css, with shapes
+   sized to roughly match the live cards. Intentionally close
+   enough that handoff to the real dashboard doesn't shift
+   layout, but not pixel-perfect — the live cards have content-
+   driven heights that the skeleton won't try to predict. */
+
+.main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+/* ---------- Banner ---------- */
+
+.banner {
+  border-radius: 14px;
+  padding: 26px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s5);
+  min-height: 132px;
+}
+
+.bannerText {
+  display: grid;
+  gap: 10px;
+}
+
+.bannerEyebrow { width: 96px; height: 12px; border-radius: 4px; }
+.bannerH1      { width: 320px; height: 32px; border-radius: 6px; }
+
+.bannerChips {
+  display: flex;
+  gap: var(--s2);
+  margin-top: 4px;
+}
+
+.chip {
+  width: 88px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+}
+
+.bannerActions {
+  display: flex;
+  gap: var(--s2);
+}
+
+.cta {
+  width: 132px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+/* ---------- Stats row ---------- */
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s3);
+}
+
+@media (max-width: 720px) {
+  .statsRow { grid-template-columns: repeat(2, 1fr); }
+}
+
+.stat {
+  height: 96px;
+  border-radius: 12px;
+}
+
+/* ---------- Performance + bottom rows + target ---------- */
+
+.perfGrid,
+.bottomRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s4);
+}
+
+@media (max-width: 960px) {
+  .perfGrid,
+  .bottomRow { grid-template-columns: 1fr; }
+}
+
+.perfCard   { height: 280px; border-radius: 12px; }
+.bottomCard { height: 320px; border-radius: 12px; }
+
+.targetCard { height: 132px; border-radius: 12px; }
+
+/* ---------- Shimmer (shared with PageSkeleton family) ---------- */
+
+.shimmer {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.bannerEyebrow,
+.bannerH1,
+.chip {
+  background-color: rgba(17, 24, 39, 0.06);
+  border: none;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(17, 24, 39, 0.04) 45%,
+    rgba(17, 24, 39, 0.06) 50%,
+    rgba(17, 24, 39, 0.04) 55%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  background-position-x: 100%;
+  animation: dashboard-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes dashboard-shimmer {
+  0%   { background-position-x: 100%; }
+  100% { background-position-x: -100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer::after {
+    animation: none;
+    background: rgba(17, 24, 39, 0.04);
+  }
+}
