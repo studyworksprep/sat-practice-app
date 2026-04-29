@@ -63,6 +63,22 @@ async function readKillSwitch(supabase) {
   }
 }
 
+// Paths that always serve from the legacy tree, regardless of
+// ui_version. These are shared auth surfaces (login form, OAuth
+// callback) — they don't render dashboard chrome and have no
+// /next-tree counterpart, so rewriting `/login` → `/next/login`
+// for a ui_version='next' user lands on the new-tree catchall.
+// Keep the list narrow: anything that should differ between
+// trees (dashboards, runners, reports) belongs to the rewrite
+// path, not here.
+const TREE_AGNOSTIC_PREFIXES = ['/login', '/auth'];
+
+function isTreeAgnostic(pathname) {
+  return TREE_AGNOSTIC_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + '/'),
+  );
+}
+
 function userTreeFromJwt(user) {
   try {
     const meta = user?.app_metadata || user?.user_metadata || {};
@@ -189,7 +205,13 @@ export async function proxy(request) {
   // One occasional DB hit for the kill switch (cached ~5s per instance).
   const isApiRoute = pathname.startsWith('/api/');
   const isNextAsset = pathname.startsWith('/_next/') || pathname.startsWith('/next/');
-  const uiTree = !isApiRoute && !isNextAsset ? await resolveUiTree(supabase, user) : 'legacy';
+  // Auth surfaces serve from the legacy tree for everyone — see
+  // TREE_AGNOSTIC_PREFIXES. Skip the resolver entirely so we
+  // don't fetch the kill switch on every login hit.
+  const treeAgnostic = isTreeAgnostic(pathname);
+  const uiTree = !isApiRoute && !isNextAsset && !treeAgnostic
+    ? await resolveUiTree(supabase, user)
+    : 'legacy';
 
   // Surface the resolved tree on a request header so the root
   // app/layout.js (and the legacy NavBar in particular) can hide
