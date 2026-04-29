@@ -21,6 +21,7 @@ import { RosterIcon, TestIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { Sparkline } from '@/lib/ui/Sparkline';
 import { Delta } from '@/lib/ui/Delta';
+import { loadTutorDashboard } from '@/lib/practice/load-tutor-dashboard';
 import { RosterFinder } from './RosterFinder';
 import s from './Dashboard.module.css';
 
@@ -33,7 +34,7 @@ const STUDENT_LIMIT = 100;
 const SPARK_WEEKS = 8;
 
 export default async function TutorDashboardPage() {
-  const { profile, supabase } = await requireUser();
+  const { user, profile } = await requireUser();
 
   // Role gate. The (tutor) layout already enforces this, but
   // belt-and-suspenders keeps this page correct if the layout
@@ -41,14 +42,14 @@ export default async function TutorDashboardPage() {
   if (profile.role === 'student' || profile.role === 'practice') redirect('/dashboard');
   if (!['teacher', 'manager', 'admin'].includes(profile.role)) redirect('/');
 
-  // Roster stats. Ordered by last-activity so the cohort's active
-  // students land near the top.
-  const { data: rows, error: rpcErr } = await supabase
-    .from('student_practice_stats')
-    .select('*')
-    .order('last_activity_at', { ascending: false, nullsFirst: false });
-
-  if (rpcErr) {
+  // Cached payload — student_practice_stats view + recent test
+  // attempts + roster weekly trend. TTL-only at 60s; tag-based
+  // invalidation isn't worth the cross-roster fan-out it would
+  // require from every student answer-submission.
+  let payload;
+  try {
+    payload = await loadTutorDashboard(user.id);
+  } catch (err) {
     return (
       <main className={s.container}>
         <header className={s.header}>
@@ -58,13 +59,13 @@ export default async function TutorDashboardPage() {
           </h1>
         </header>
         <div className={s.errorCard} role="alert">
-          Failed to load students: {rpcErr.message}
+          Failed to load students: {err?.message ?? String(err)}
         </div>
       </main>
     );
   }
 
-  const rawStudents = rows ?? [];
+  const { rawStudents, recentTestAttempts, trendRows } = payload;
   const students = rawStudents.slice(0, STUDENT_LIMIT).map((row) => {
     const total = Number(row.total_attempts ?? 0);
     const correct = Number(row.correct_attempts ?? 0);
@@ -88,40 +89,6 @@ export default async function TutorDashboardPage() {
     activeThisWeek: students.filter((s) => s.weekAttempts > 0).length,
     attemptsThisWeek: students.reduce((acc, s) => acc + s.weekAttempts, 0),
   };
-
-  // Two parallel reads:
-  //   - Recent test attempts across the roster. Capped to 10 so
-  //     the panel stays compact. Joining on practice_tests_v2
-  //     with !inner so rows without a published test drop.
-  //   - Cohort weekly trend for the sparkline under the
-  //     "Attempts · 7d" stat tile. RPC reuses the same
-  //     get_roster_weekly_trend used on /tutor/performance so
-  //     the bucketing is consistent across surfaces.
-  const rosterIdsForRpc = students.length > 0
-    ? students.map((s) => s.id)
-    : ['00000000-0000-0000-0000-000000000000'];
-
-  const [
-    { data: recentTestAttempts },
-    { data: trendRows },
-  ] = await Promise.all([
-    supabase
-      .from('practice_test_attempts_v2')
-      .select(`
-        id, user_id, status, finished_at, started_at,
-        composite_score, rw_scaled, math_scaled,
-        practice_test:practice_tests_v2!inner(name, code)
-      `)
-      .in('user_id', rosterIdsForRpc)
-      .order('started_at', { ascending: false })
-      .limit(10),
-    students.length > 0
-      ? supabase.rpc('get_roster_weekly_trend', {
-          p_roster: rosterIdsForRpc,
-          p_num_weeks: SPARK_WEEKS,
-        })
-      : Promise.resolve({ data: [] }),
-  ]);
 
   // Normalize trend rows into the shape Sparkline + Delta expect.
   // The RPC returns oldest → newest so the last bucket is the

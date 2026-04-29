@@ -19,14 +19,12 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { domainSection } from '@/lib/ui/question-layout';
-import { resolveQuestionV2Meta } from '@/lib/practice/weak-queue';
+import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { updateTargetScore } from './actions';
 import { DashboardInteractive } from './DashboardInteractive';
 
 export const dynamic = 'force-dynamic';
 
-const PERFORMANCE_LOOKBACK_DAYS = 90;
 const RECENT_FINISHED_CAP = 6;
 const RECENT_FINISHED_PER_TYPE = 10;
 
@@ -44,58 +42,28 @@ export default async function StudentDashboardPage() {
   // derive from this single reference.
   // eslint-disable-next-line react-hooks/purity
   const nowMs = Date.now();
-  const sevenDaysAgo  = new Date(nowMs - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const lookbackStart = new Date(nowMs - PERFORMANCE_LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString();
   const nowIso = new Date(nowMs).toISOString();
 
-  // Parallel reads. Most are tiny counts; the performance window
-  // and the assignment-rows join are the heavier ones. The three
-  // "recently finished" feeds (sessions, tests, assignments) each
-  // pull ~10 rows; they're merged + truncated to
-  // RECENT_FINISHED_CAP in memory below.
+  // Heavy aggregate (totals + per-domain) lives behind a 60s cache
+  // keyed by user id; submitAnswer revalidates the tag so a fresh
+  // answer flushes it on the next visit. Everything else is per-
+  // request (recent activity, assignments, active session) — the
+  // expensive bits were the count-on-attempts scans + 5,000-row
+  // pull, both folded into get_student_dashboard_stats now.
   const [
+    aggregate,
     { data: fullProfile },
-    { count: totalAttempts },
-    { count: correctAttempts },
-    { count: weekAttempts },
-    { data: perfRows },
     { data: recentSessions },
     { data: recentTestAttempts },
     { data: assignmentRows },
     { data: activeSession },
   ] = await Promise.all([
+    loadDashboardAggregate(user.id),
     supabase
       .from('profiles')
       .select('first_name, last_name, target_sat_score, high_school, graduation_year, sat_test_date')
       .eq('id', user.id)
       .maybeSingle(),
-    supabase
-      .from('attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('source', 'practice'),
-    supabase
-      .from('attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('source', 'practice')
-      .eq('is_correct', true),
-    supabase
-      .from('attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('source', 'practice')
-      .gte('created_at', sevenDaysAgo),
-    // Per-domain accuracy. attempts.question_id has no FK to
-    // questions_v2 so PostgREST can't embed-join; we fetch the
-    // attempts window first and look up questions_v2 by id below.
-    supabase
-      .from('attempts')
-      .select('is_correct, question_id')
-      .eq('user_id', user.id)
-      .eq('source', 'practice')
-      .gte('created_at', lookbackStart)
-      .limit(5000),
     // Recent completed practice sessions (in-progress / abandoned
     // belong in Practice hub's list, not here).
     supabase
@@ -164,37 +132,21 @@ export default async function StudentDashboardPage() {
     accuracy: r.accuracy == null ? null : Number(r.accuracy),
   }));
 
-  const accuracy = totalAttempts && totalAttempts > 0
-    ? Math.round(((correctAttempts ?? 0) / totalAttempts) * 100)
+  const accuracy = aggregate.totalAttempts > 0
+    ? Math.round((aggregate.correctAttempts / aggregate.totalAttempts) * 100)
     : null;
 
   const stats = {
     firstName: fullProfile?.first_name ?? null,
     targetScore: fullProfile?.target_sat_score ?? null,
     satTestDate: fullProfile?.sat_test_date ?? null,
-    totalAttempts: totalAttempts ?? 0,
-    correctAttempts: correctAttempts ?? 0,
-    weekAttempts: weekAttempts ?? 0,
+    totalAttempts: aggregate.totalAttempts,
+    correctAttempts: aggregate.correctAttempts,
+    weekAttempts: aggregate.weekAttempts,
     accuracy,
   };
 
-  // Performance: bucket attempts by domain_name, splitting into
-  // Math vs Reading & Writing via domainSection(domain_code).
-  // Two-step: collect distinct question_ids from the attempts
-  // window, fetch their domain metadata from questions_v2, then
-  // aggregate in memory. (Can't embed-join because attempts has
-  // no declared FK to questions_v2.) The helper translates v1-era
-  // attempt IDs through question_id_map so a legacy student's
-  // history shows up here too.
-  const questionIds = Array.from(
-    new Set((perfRows ?? []).map((r) => r.question_id).filter(Boolean)),
-  );
-  const questionMeta = await resolveQuestionV2Meta(
-    supabase,
-    questionIds,
-    'id, domain_code, domain_name, is_published, is_broken, deleted_at',
-  );
-  const performance = aggregatePerformance(perfRows ?? [], questionMeta);
+  const performance = aggregate.performance;
 
   // Resume info for the banner.
   const resumeInfo = activeSession && Array.isArray(activeSession.question_ids) && activeSession.question_ids.length > 0
@@ -412,59 +364,4 @@ function accuracyTone(pct) {
   if (pct >= 80) return 'good';
   if (pct >= 50) return 'ok';
   return 'warn';
-}
-
-// ──────────────────────────────────────────────────────────────
-// Aggregation helpers.
-// ──────────────────────────────────────────────────────────────
-
-function aggregatePerformance(rows, questionMeta) {
-  const byDomain = new Map();
-  for (const r of rows) {
-    const q = questionMeta.get(r.question_id);
-    if (!q || !q.domain_name) continue;
-    const key = q.domain_name;
-    let entry = byDomain.get(key);
-    if (!entry) {
-      entry = {
-        name: q.domain_name,
-        code: q.domain_code,
-        section: domainSection(q.domain_code),
-        correct: 0,
-        total: 0,
-      };
-      byDomain.set(key, entry);
-    }
-    entry.total += 1;
-    if (r.is_correct) entry.correct += 1;
-  }
-
-  const all = Array.from(byDomain.values()).sort((a, b) => b.total - a.total);
-  const math = all.filter((d) => d.section === 'math');
-  const rw   = all.filter((d) => d.section === 'rw');
-
-  return {
-    math: {
-      domains: math,
-      ...sectionTotals(math),
-    },
-    rw: {
-      domains: rw,
-      ...sectionTotals(rw),
-    },
-  };
-}
-
-function sectionTotals(domains) {
-  let correct = 0;
-  let total = 0;
-  for (const d of domains) {
-    correct += d.correct;
-    total += d.total;
-  }
-  return {
-    correct,
-    total,
-    pct: total > 0 ? Math.round((correct / total) * 100) : null,
-  };
 }
