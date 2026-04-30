@@ -101,7 +101,6 @@ export default async function TutorTrainingQuestionPage({ params }) {
       loadQuestionActionInput={{ expectedMode: 'training', includeTutorTools: true }}
       basePath="/tutor/training/practice"
       sessionCompleteHref={`/tutor/training/practice/review/${sessionId}`}
-      canSubmitSet={false}
     />
   );
 }

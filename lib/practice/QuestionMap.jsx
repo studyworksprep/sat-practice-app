@@ -64,7 +64,10 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
           setSubmitError(res?.error ?? 'Could not submit');
           return;
         }
-        router.push(`/practice/review/${sessionId}`);
+        // Mirror the runner's URL prefix so a tutor training set
+        // closes out into /tutor/training/practice/review/...
+        // instead of bouncing through the (student) tree.
+        router.push(`${basePath}/review/${sessionId}`);
       } catch (err) {
         setSubmitError(err.message ?? String(err));
       }
