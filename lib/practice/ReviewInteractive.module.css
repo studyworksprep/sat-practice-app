@@ -608,12 +608,12 @@
 .timingHoverMissing { color: var(--fg3); font-weight: 600; text-transform: capitalize; }
 .timingHoverPlaceholder { color: var(--fg3); font-style: italic; }
 
-/* ---------- Daily practice map ---------- */
+/* ---------- Daily practice bar chart ---------- */
 
 .dailyMap {
   display: flex;
   flex-direction: column;
-  gap: var(--s2);
+  gap: var(--s3);
 }
 
 .dailyMapRange {
@@ -636,25 +636,95 @@
   font-weight: 500;
 }
 
-.dailyMapStrip {
+/* Bar chart. Each day = one column with a height-encoded bar
+   above and a tabular numeric label of attempts on top. The
+   chart scrolls horizontally if the assignment ran for too
+   many days to fit (~30+); for shorter runs the columns
+   stretch to fill. */
+.dailyChart {
   display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-  padding: 4px 0;
+  align-items: flex-end;
+  gap: 4px;
+  min-height: 132px;
+  padding: 8px 4px 6px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
 }
 
-.dailyCell {
-  width: 16px;
-  height: 16px;
+.dailyBarCol {
+  flex: 1 1 14px;
+  min-width: 14px;
+  max-width: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 110px;
+  gap: 4px;
+}
+
+.dailyBarValue {
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg2);
+  line-height: 1;
+  min-height: 12px;
+}
+
+.dailyBarTrack {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  background: var(--color-slate-100);
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+}
+
+.dailyBarFill {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  transition: height var(--dur-fast) var(--ease-std);
+}
+
+/* Tone palette — mirrors the success / amber / danger / muted
+   tokens used elsewhere in the next tree. Empty days collapse
+   to a single-pixel slate baseline so the gap is still visible
+   without competing visually with practiced days. */
+.dailyBarGood    { background: var(--color-success); }
+.dailyBarOk      { background: var(--color-amber); }
+.dailyBarLow     { background: var(--color-danger); }
+.dailyBarNeutral { background: var(--color-app-accent); }
+.dailyBarEmpty {
+  height: 2px;
+  background: var(--color-slate-300, var(--color-slate-400));
+  align-self: flex-end;
+  border-radius: 2px;
+}
+
+.dailyChartLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 11.5px;
+  color: var(--fg2);
+  padding-top: 2px;
+}
+
+.dailyLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dailyLegendSwatch {
+  width: 12px;
+  height: 12px;
   border-radius: 3px;
   display: inline-block;
 }
-
-.dailyCellEmpty {
-  background: var(--color-slate-100);
-  border: 1px solid var(--border);
+.dailyLegendSwatch.dailyBarEmpty {
+  height: 12px;
+  background: var(--color-slate-300, var(--color-slate-400));
 }
-.dailyCell1 { background: color-mix(in srgb, var(--color-app-accent) 25%, var(--color-slate-100)); }
-.dailyCell2 { background: color-mix(in srgb, var(--color-app-accent) 45%, var(--color-slate-100)); }
-.dailyCell3 { background: color-mix(in srgb, var(--color-app-accent) 70%, var(--color-slate-100)); }
-.dailyCell4 { background: var(--color-app-accent); }

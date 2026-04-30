@@ -879,6 +879,28 @@
   width: 100%;
 }
 
+/* Per-question review layout — wide viewports get a 2-column shell:
+   question map on the left (sticky so it scrolls with the page),
+   question detail on the right. Narrow viewports stack vertically. */
+.reviewLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s4);
+}
+
+@media (min-width: 1024px) {
+  .reviewLayout {
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    align-items: start;
+  }
+  .reviewMapCard {
+    position: sticky;
+    top: var(--s4);
+    max-height: calc(100vh - var(--s5));
+    overflow-y: auto;
+  }
+}
+
 .questionCard {
   background: var(--card);
   border: 1px solid var(--border);

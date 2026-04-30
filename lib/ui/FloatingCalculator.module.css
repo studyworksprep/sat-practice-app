@@ -38,10 +38,10 @@
    drags the panel, FloatingCalculator.jsx switches to inline
    top/left + bottom/right: auto so the drag state wins.
 
-   resize: both turns on the native browser resize grip at the
-   bottom-right corner. It needs overflow != visible to render,
-   so the panel is overflow: hidden and .body scrolls on its own
-   if the Desmos instance ever overflows. */
+   The eight resize grips below are positioned absolutely inside
+   the panel — they replace the old `resize: both` CSS grip so the
+   panel is resizable from any side or corner like a normal
+   pop-up window. */
 .panel {
   position: fixed;
   bottom: 24px;
@@ -60,8 +60,27 @@
   flex-direction: column;
   z-index: 50;
   overflow: hidden;
-  resize: both;
 }
+
+/* ---------- Resize grips ----------
+   Edges are 6px-thick strips that hug each side of the panel,
+   inset 10px on each end so they don't fight the corner grips.
+   Corners are 12×12 squares that win at the four corners. All
+   are visually transparent — only the cursor changes, mirroring
+   how OS pop-ups feel. */
+.grip {
+  position: absolute;
+  z-index: 2;
+  background: transparent;
+}
+.gripN  { top: 0;    left: 10px; right: 10px; height: 6px; cursor: ns-resize; }
+.gripS  { bottom: 0; left: 10px; right: 10px; height: 6px; cursor: ns-resize; }
+.gripE  { right: 0;  top: 10px;  bottom: 10px; width: 6px; cursor: ew-resize; }
+.gripW  { left: 0;   top: 10px;  bottom: 10px; width: 6px; cursor: ew-resize; }
+.gripNW { top: 0;    left: 0;    width: 12px; height: 12px; cursor: nwse-resize; }
+.gripNE { top: 0;    right: 0;   width: 12px; height: 12px; cursor: nesw-resize; }
+.gripSW { bottom: 0; left: 0;    width: 12px; height: 12px; cursor: nesw-resize; }
+.gripSE { bottom: 0; right: 0;   width: 12px; height: 12px; cursor: nwse-resize; }
 
 .header {
   display: flex;
