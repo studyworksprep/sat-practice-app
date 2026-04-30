@@ -44,6 +44,7 @@ export default async function TutorTrainingDashboardPage() {
     { data: recentTestAttempts },
     { data: assignmentRows },
     { data: activeSession },
+    { data: inProgressTest },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -103,6 +104,17 @@ export default async function TutorTrainingDashboardPage() {
       .eq('status', 'in_progress')
       .gt('expires_at', nowIso)
       .order('last_activity_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('practice_test_attempts_v2')
+      .select(`
+        id, started_at,
+        practice_test:practice_tests_v2(name, code)
+      `)
+      .eq('user_id', user.id)
+      .eq('status', 'in_progress')
+      .order('started_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
   ]);
@@ -315,10 +327,58 @@ export default async function TutorTrainingDashboardPage() {
           sub={
             weakQueue.length === 0
               ? 'Nothing to drill yet'
-              : 'Questions ready in /tutor/training/review'
+              : 'Drill them in Review →'
           }
           tone={weakQueue.length > 0 ? 'warn' : 'neutral'}
         />
+      </section>
+
+      {/* ---------- Tool cards: Review + Practice tests ---------- */}
+      <section className={s.toolsRow}>
+        <Link href="/tutor/training/review" className={s.toolCard}>
+          <div className={s.toolCardEyebrow}>Train · Review</div>
+          <div className={s.toolCardTitle}>Review</div>
+          <div className={s.toolCardSub}>
+            Drill your weakest questions, fix common errors, and keep
+            your flashcards fresh.
+          </div>
+          <div className={s.toolCardFooter}>
+            <span className={s.toolCardMetric}>
+              {weakQueue.length === 0
+                ? 'Nothing in queue'
+                : `${weakQueue.length.toLocaleString()} in weak queue`}
+            </span>
+            <span className={s.toolCardChevron} aria-hidden="true">→</span>
+          </div>
+        </Link>
+        <Link href="/tutor/training/tests" className={s.toolCard}>
+          <div className={s.toolCardEyebrow}>Train · Practice tests</div>
+          <div className={s.toolCardTitle}>Practice tests</div>
+          <div className={s.toolCardSub}>
+            Full-length SAT simulations under timed conditions. View
+            your history and launch a new test.
+          </div>
+          <div className={s.toolCardFooter}>
+            <span className={s.toolCardMetric}>
+              {inProgressTest
+                ? `Resume: ${inProgressTest.practice_test?.name ?? 'Practice test'}`
+                : (() => {
+                    const completed = recentTestAttempts ?? [];
+                    const latest = completed.find((t) =>
+                      Number.isFinite(t.composite_score),
+                    );
+                    if (latest) {
+                      return `Latest composite: ${latest.composite_score}`;
+                    }
+                    if (completed.length > 0) {
+                      return `${completed.length} completed`;
+                    }
+                    return 'No tests yet';
+                  })()}
+            </span>
+            <span className={s.toolCardChevron} aria-hidden="true">→</span>
+          </div>
+        </Link>
       </section>
 
       <section className={s.card}>
