@@ -4,7 +4,7 @@
    tile palette tokens for the per-section accuracy tones. */
 
 .container {
-  max-width: 1080px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: var(--s5) var(--s6) var(--s7);
   display: grid;

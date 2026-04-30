@@ -4,7 +4,7 @@
 ============================================================= */
 
 .container {
-  max-width: 1180px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: var(--s5) var(--s5) var(--s7);
   display: flex;

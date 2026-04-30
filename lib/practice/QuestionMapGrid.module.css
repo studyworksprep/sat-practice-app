@@ -87,11 +87,25 @@
 
 .mapNum { line-height: 1; }
 
+/* Mark-for-review flag — gold-filled bookmark badge in the
+   top-left corner. White rim separates the badge from the
+   difficulty-tinted cell below so the flag reads cleanly on every
+   tile color. Pairs with the bottom-right correct/wrong badge. */
 .mapFlag {
   position: absolute;
-  top: -2px;
-  left: -2px;
-  color: var(--color-gold-500);
+  top: -5px;
+  left: -5px;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-gold-500);
+  color: var(--bg-white);
+  border: 1.5px solid var(--bg-white);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .mapStatusCorrect, .mapStatusWrong {
