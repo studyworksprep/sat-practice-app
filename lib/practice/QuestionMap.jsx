@@ -81,10 +81,18 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
       }
     : null;
 
+  // Live counts feed the strip header. "Answered" includes
+  // correct + incorrect (the student has submitted); "Remaining"
+  // is everything else (unanswered + removed).
+  const answeredCount = items.filter(
+    (it) => it.status === 'correct' || it.status === 'incorrect',
+  ).length;
+  const remainingCount = items.length - answeredCount;
+
   const grid = (
-    <div className={s.grid} role="list">
+    <div className={s.track} role="list">
       {items.map((it) => (
-        <Pill
+        <Cell
           key={it.position}
           item={it}
           isCurrent={it.position === currentPosition}
@@ -107,11 +115,40 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
     </button>
   ) : null;
 
+  const stripHeader = (
+    <div className={s.stripHeader}>
+      <div className={s.stripTitle}>
+        <span className={s.stripEyebrow}>Question navigator</span>
+        <span className={s.stripCount}>
+          {answeredCount} answered · {remainingCount} remaining
+        </span>
+      </div>
+      <div className={s.stripLegend}>
+        <span className={s.legendItem}>
+          <span className={`${s.legendDot} ${s.legendCurrent}`} />
+          Current
+        </span>
+        <span className={s.legendItem}>
+          <span className={`${s.legendDot} ${s.legendCorrect}`} />
+          Correct
+        </span>
+        <span className={s.legendItem}>
+          <span className={`${s.legendDot} ${s.legendIncorrect}`} />
+          Incorrect
+        </span>
+        <span className={s.legendItem}>
+          <span className={`${s.legendDot} ${s.legendUnanswered}`} />
+          Unanswered
+        </span>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <nav aria-label="Question navigation" className={s.footerWide}>
-        <div className={s.footerInner}>
-          <span className={s.stripLabel}>Questions</span>
+        {stripHeader}
+        <div className={s.stripBody}>
           {grid}
           {submitBtn}
         </div>
@@ -149,26 +186,29 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
   );
 }
 
-function Pill({ item, isCurrent, href, onClick }) {
-  const pillClass = [
-    s.pill,
-    item.status === 'correct'   ? s.pillCorrect   : null,
-    item.status === 'incorrect' ? s.pillIncorrect : null,
-    item.status === 'removed'   ? s.pillRemoved   : null,
-    isCurrent                    ? s.pillCurrent   : null,
+function Cell({ item, isCurrent, href, onClick }) {
+  // Status drives the cell's tone. `current` overrides everything —
+  // navy fill + the "you are here" arrow underneath the cell.
+  const statusClass =
+    item.status === 'correct'   ? s.cellCorrect   :
+    item.status === 'incorrect' ? s.cellIncorrect :
+    item.status === 'removed'   ? s.cellRemoved   :
+    s.cellUnanswered;
+  const cellClass = [
+    s.cell,
+    statusClass,
+    isCurrent ? s.cellCurrent : null,
   ].filter(Boolean).join(' ');
   return (
     <a
       role="listitem"
       href={href}
       onClick={onClick}
-      className={pillClass}
+      className={cellClass}
       aria-current={isCurrent ? 'step' : undefined}
     >
-      <span>{item.position + 1}</span>
-      {item.status === 'correct'   && <span className={s.statusMark} aria-label="correct">✓</span>}
-      {item.status === 'incorrect' && <span className={s.statusMark} aria-label="incorrect">✗</span>}
-      {item.status === 'removed'   && <span className={s.statusMark} aria-label="removed">—</span>}
+      <span className={s.cellNum}>{item.position + 1}</span>
+      {isCurrent && <span className={s.currentArrow} aria-hidden="true" />}
     </a>
   );
 }

@@ -37,6 +37,24 @@ function SvgRoot({ size = 18, strokeWidth = 1.75, className, children, ...rest }
   );
 }
 
+// Chevron arrows — used by the practice-runner top bar's prev/next
+// buttons. Stroke 2.0 to keep the glyph crisp inside the small
+// 36×36 button square.
+export function ChevronLeftIcon({ size = 16, className, ...rest }) {
+  return (
+    <SvgRoot size={size} strokeWidth={2} className={className} {...rest}>
+      <polyline points="15 6 9 12 15 18" />
+    </SvgRoot>
+  );
+}
+export function ChevronRightIcon({ size = 16, className, ...rest }) {
+  return (
+    <SvgRoot size={size} strokeWidth={2} className={className} {...rest}>
+      <polyline points="9 6 15 12 9 18" />
+    </SvgRoot>
+  );
+}
+
 // ──────────────────────────────────────────────────────────────
 // Pre-existing — kept verbatim so the practice-test runner's
 // existing visual stays unchanged across this design refresh.

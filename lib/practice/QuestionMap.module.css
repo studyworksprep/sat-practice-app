@@ -1,10 +1,14 @@
 /* =============================================================
-   QuestionMap — persistent footer strip with modal fallback on
-   narrow viewports. Tokens resolved from [data-tree="next"].
+   QuestionMap — practice runner's question navigator. Tokens
+   resolved from [data-tree="next"] in app/styles/next-tokens.css.
 
-   The wide-viewport strip and the narrow-viewport button are both
-   rendered; CSS @media decides which is visible, replacing the
-   old useMatchMedia hook.
+   Visual rules from the design kit's index.html / app.css under
+   ui_kits/sat-practice-app: square cells with mono numerals,
+   navy "current" fill with a "you are here" arrow underneath,
+   answered tinted by correct/incorrect, plus a header row with
+   live counts on the left and a legend on the right. Wide-
+   viewport layout is a sticky card; narrow-viewport collapses
+   to a Map button + modal.
 ============================================================= */
 
 /* ---------- Footer containers ---------- */
@@ -15,10 +19,12 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: var(--s3) var(--s4);
+  margin: var(--s3) var(--s5) var(--s4);
+  padding: 16px 18px 18px;
   background: var(--card);
-  border-top: 1px solid var(--border);
-  box-shadow: 0 -2px 8px rgba(16, 42, 67, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
   font-family: var(--font-sans);
   z-index: 10;
 }
@@ -26,20 +32,7 @@
 .footerWide {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-/* Full-width inner row. The practice runner's main is also
-   full-width now, so constraining the strip would just re-
-   introduce the misalignment we just fixed. Left-aligned label,
-   pills in the middle, Submit button pushes to the right via
-   margin-left: auto. */
-.footerInner {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: var(--s3);
-  overflow-x: auto;
+  gap: 14px;
 }
 
 .footerNarrow {
@@ -47,24 +40,189 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--s3);
-  width: 100%;
 }
 
-/* Flip visibility on narrow viewports. 720px matches the tutor
-   breakpoint used elsewhere. */
 @media (max-width: 720px) {
   .footerWide  { display: none; }
   .footerNarrow { display: flex; }
 }
 
-.stripLabel {
+/* ---------- Strip header (eyebrow + counts on left, legend right) ---------- */
+
+.stripHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.stripTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stripEyebrow {
   font-size: 11px;
   color: var(--fg3);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 700;
-  flex-shrink: 0;
 }
+
+.stripCount {
+  font-size: 12px;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+}
+
+.stripLegend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--fg2);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-white);
+}
+
+.legendDot.legendCurrent {
+  background: var(--color-navy-900);
+  border-color: var(--color-navy-900);
+}
+.legendDot.legendCorrect {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+}
+.legendDot.legendIncorrect {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
+.legendDot.legendUnanswered {
+  background: var(--bg-white);
+  border-color: var(--border-strong);
+}
+
+/* ---------- Strip body (cell track + Submit Set) ---------- */
+
+.stripBody {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+/* Track grows to fill, Submit Set sits flush right. The track
+   uses auto-fill so a set of 5 questions stretches sensibly and
+   30+ questions still wrap into a tight grid without horizontal
+   scroll. */
+.track {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 6px;
+}
+
+@media (max-width: 880px) {
+  .track {
+    grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+  }
+}
+
+/* ---------- Cell ---------- */
+
+.cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg2);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  transition: all var(--dur-fast) var(--ease-std);
+  padding: 0;
+}
+
+.cell:hover {
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.cellNum { position: relative; z-index: 1; }
+
+.cellUnanswered {
+  background: var(--bg-white);
+}
+
+.cellCorrect {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-diff-easy-fg);
+}
+
+.cellIncorrect {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  color: var(--color-diff-hard-fg);
+}
+
+.cellRemoved {
+  background: var(--color-slate-100);
+  border-color: var(--border);
+  color: var(--fg3);
+}
+
+.cellCurrent {
+  background: var(--color-navy-900);
+  border-color: var(--color-navy-900);
+  color: var(--bg-white);
+  box-shadow: 0 4px 14px rgba(16, 42, 67, 0.20);
+  transform: translateY(-1px);
+}
+.cellCurrent:hover { color: var(--bg-white); }
+
+/* "You are here" arrow under the current cell */
+.currentArrow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--color-navy-900);
+}
+
+/* ---------- Narrow-viewport "Map" button + modal ---------- */
 
 .mapBtn {
   display: inline-flex;
@@ -80,71 +238,6 @@
   cursor: pointer;
   font-family: var(--font-sans);
 }
-
-/* ---------- Pill grid ---------- */
-
-.grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s1);
-  align-items: center;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  min-width: 32px;
-  padding: var(--s1) var(--s2);
-  border-radius: var(--radius-md);
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  line-height: 1;
-  white-space: nowrap;
-  font-family: var(--font-sans);
-  transition: transform var(--dur-fast) var(--ease-std),
-              box-shadow var(--dur-fast) var(--ease-std);
-  background: var(--card);
-  color: var(--fg1);
-  border: 1px solid var(--border-strong);
-}
-
-.pill:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.pillCorrect {
-  background: var(--color-success-bg);
-  color: var(--color-diff-easy-fg);
-  border-color: var(--color-success);
-}
-
-.pillIncorrect {
-  background: var(--color-danger-bg);
-  color: var(--color-diff-hard-fg);
-  border-color: var(--color-danger);
-}
-
-.pillRemoved {
-  background: var(--color-slate-100);
-  color: var(--fg3);
-  border-color: var(--border);
-}
-
-.pillCurrent {
-  font-weight: 700;
-  outline: 2px solid var(--color-app-accent);
-  outline-offset: 2px;
-}
-
-.statusMark {
-  font-size: 11px;
-  opacity: 0.85;
-}
-
-/* ---------- Modal ---------- */
 
 .overlay {
   position: fixed;
@@ -192,14 +285,14 @@
 
 .submitBtn {
   flex-shrink: 0;
-  margin-left: auto;
+  align-self: stretch;
   display: inline-flex;
   align-items: center;
   padding: 8px 16px;
   background: var(--color-app-accent);
-  color: #fff;
+  color: var(--bg-white);
   border: 1px solid var(--color-app-accent);
-  border-radius: var(--radius-pill);
+  border-radius: 8px;
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
