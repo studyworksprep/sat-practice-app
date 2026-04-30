@@ -11,6 +11,7 @@
 // the nav even renders.
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { requireUser } from '@/lib/api/auth';
 import { AppNav } from '@/lib/ui/AppNav';
 
@@ -34,14 +35,32 @@ const STUDENT_LINKS = [
   { href: '/review',            label: 'Review' },
 ];
 
+// Practice-test surfaces (instruction page, runner, per-module review,
+// results) are shared infra: students take their tests here, but so do
+// teachers and managers via /tutor/training/tests → "Launch test". The
+// layout's role-redirect would otherwise bounce non-students back to
+// /tutor/dashboard the moment they navigated in.
+const SHARED_INFRA_PREFIXES = ['/practice/test/'];
+
+function isSharedInfraPath(pathname) {
+  if (!pathname) return false;
+  return SHARED_INFRA_PREFIXES.some((p) => pathname.startsWith(p));
+}
+
 export default async function StudentTreeLayout({ children }) {
   const { user, profile } = await requireUser();
+  const pathname = (await headers()).get('x-pathname') ?? '';
+  const sharedInfra = isSharedInfraPath(pathname);
 
   // Bounce non-students out of this tree. Same gates the individual
   // page.js files apply, but lifted here so the AppNav doesn't
-  // momentarily flash as a student before we redirect.
-  if (profile.role === 'admin') redirect('/admin');
-  if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
+  // momentarily flash as a student before we redirect. Skip for
+  // shared-infra paths so tutors taking a practice test from their
+  // own training tree aren't bounced mid-launch.
+  if (!sharedInfra) {
+    if (profile.role === 'admin') redirect('/admin');
+    if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
+  }
   if (profile.role === 'practice') redirect('/subscribe');
 
   const navUser = {
