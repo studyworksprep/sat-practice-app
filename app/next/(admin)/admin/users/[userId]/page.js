@@ -14,6 +14,7 @@ import { UserEditForm } from './UserEditForm';
 import { RoleChanger } from './RoleChanger';
 import { StatusActions } from './StatusActions';
 import { Relationships } from './Relationships';
+import a from '../../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,15 +43,16 @@ export default async function AdminUserDetailPage({ params }) {
   const isSelf = subject.id === user.id;
 
   return (
-    <main style={S.main}>
-      <nav style={S.breadcrumb}>
-        <a href="/admin" style={S.crumbLink}>← Admin</a>
+    <main className={a.container}>
+      <nav className={a.breadcrumb}>
+        <a href="/admin">← Admin</a>
         {' · '}
-        <a href="/admin/users" style={S.crumbLink}>Users</a>
+        <a href="/admin/users">Users</a>
       </nav>
 
-      <header style={S.header}>
-        <h1 style={S.h1}>{displayName}</h1>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · User</div>
+        <h1 className={a.h1}>{displayName}</h1>
         <div style={S.subRow}>
           <span style={{ ...S.roleTag, ...roleColor(subject.role) }}>{subject.role}</span>
           <StatusBadge active={subject.is_active} exempt={subject.subscription_exempt} />
@@ -95,12 +97,17 @@ export default async function AdminUserDetailPage({ params }) {
 }
 
 function Section({ title, tone, children }) {
-  const style = tone === 'danger'
-    ? { ...S.section, borderColor: '#fecaca' }
-    : S.section;
+  // Use the shared admin .section card and override only when the
+  // section is dangerous (status & deletion).
+  const sectionStyle = tone === 'danger'
+    ? { borderColor: 'var(--color-danger)' }
+    : undefined;
+  const titleColor = tone === 'danger' ? 'var(--color-diff-hard-fg)' : undefined;
   return (
-    <section style={style}>
-      <h2 style={tone === 'danger' ? S.h2Danger : S.h2}>{title}</h2>
+    <section className={a.section} style={sectionStyle}>
+      <h2 className={a.h2} style={titleColor ? { color: titleColor } : undefined}>
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -114,11 +121,12 @@ function StatusBadge({ active, exempt }) {
 
 function ErrorState({ message }) {
   return (
-    <main style={S.main}>
-      <header style={S.header}>
-        <h1 style={S.h1}>User detail</h1>
+    <main className={a.container}>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · User</div>
+        <h1 className={a.h1}>User detail</h1>
       </header>
-      <Card tone="danger" style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+      <Card tone="danger" style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>
         <p style={{ margin: 0 }}>{message}</p>
       </Card>
     </main>

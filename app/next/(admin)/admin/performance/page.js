@@ -9,6 +9,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { loadPerformanceStats } from './loader';
+import a from '../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,14 +25,15 @@ export default async function AdminPerformancePage() {
   const stats = await loadPerformanceStats(supabase);
 
   return (
-    <main style={S.main}>
-      <nav style={S.breadcrumb}>
-        <a href="/admin" style={S.crumbLink}>← Admin</a>
+    <main className={a.container}>
+      <nav className={a.breadcrumb}>
+        <a href="/admin">← Admin</a>
       </nav>
 
-      <header style={S.header}>
-        <h1 style={S.h1}>Student performance</h1>
-        <p style={S.sub}>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · Performance</div>
+        <h1 className={a.h1}>Student performance</h1>
+        <p className={a.sub}>
           Aggregate accuracy, score distribution, per-question and per-skill
           signals. First-attempt data over the last {30} days.
         </p>

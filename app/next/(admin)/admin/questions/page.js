@@ -19,6 +19,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
 import { Table, Th, Td } from '@/lib/ui/Table';
+import a from '../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,8 +60,11 @@ export default async function AdminQuestionsPage({ searchParams }) {
 
   if (error) {
     return (
-      <main style={S.main}>
-        <h1 style={S.h1}>Questions</h1>
+      <main className={a.container}>
+        <header className={a.header}>
+          <div className={a.eyebrow}>Admin · Questions</div>
+          <h1 className={a.h1}>Questions</h1>
+        </header>
         <p style={S.err}>Query failed: {error.message}</p>
       </main>
     );
@@ -70,16 +74,17 @@ export default async function AdminQuestionsPage({ searchParams }) {
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <main style={S.main}>
-      <nav style={{ marginBottom: '1rem' }}>
-        <Link href="/admin" style={S.backLink}>← Admin</Link>
+    <main className={a.container}>
+      <nav className={a.breadcrumb}>
+        <Link href="/admin">← Admin</Link>
       </nav>
 
-      <header style={S.header}>
-        <h1 style={S.h1}>Questions</h1>
-        <div style={S.sub}>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · Questions</div>
+        <h1 className={a.h1}>Questions</h1>
+        <p className={a.sub}>
           {total.toLocaleString()} match{total === 1 ? '' : 'es'} · page {page} of {lastPage}
-        </div>
+        </p>
       </header>
 
       <FilterBar current={{ q, broken, trimmed, hasmath }} />

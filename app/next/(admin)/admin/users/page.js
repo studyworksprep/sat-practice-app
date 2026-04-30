@@ -15,6 +15,7 @@ import { Card } from '@/lib/ui/Card';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { UsersFilter } from './UsersFilter';
 import { UsersNav } from './UsersNav';
+import a from '../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,14 +84,15 @@ export default async function AdminUsersPage({ searchParams }) {
   }
 
   return (
-    <main style={S.main}>
-      <nav style={S.breadcrumb}>
-        <a href="/admin" style={S.breadcrumbLink}>← Admin</a>
+    <main className={a.container}>
+      <nav className={a.breadcrumb}>
+        <a href="/admin">← Admin</a>
       </nav>
 
-      <header style={S.header}>
-        <h1 style={S.h1}>User management</h1>
-        <p style={S.sub}>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · Users</div>
+        <h1 className={a.h1}>User management</h1>
+        <p className={a.sub}>
           Browse and edit platform users. Click a name to open their detail
           page. Use Relationships for bulk assignments and Codes for
           signup/invite tokens.
@@ -99,15 +101,15 @@ export default async function AdminUsersPage({ searchParams }) {
 
       <UsersNav current="list" />
 
-      <section style={S.filterSection}>
+      <section>
         <UsersFilter currentRole={roleFilter} currentQuery={query} roleTally={roleTally} />
       </section>
 
-      <section>
-        <h2 style={S.h2}>
+      <section className={a.section}>
+        <div className={a.sectionLabel}>
           {rows.length} result{rows.length === 1 ? '' : 's'}
           {rows.length >= USER_LIMIT && ` (first ${USER_LIMIT})`}
-        </h2>
+        </div>
         <Table>
             <thead>
               <tr>
@@ -173,11 +175,12 @@ export default async function AdminUsersPage({ searchParams }) {
 
 function ErrorState({ message }) {
   return (
-    <main style={S.main}>
-      <header style={S.header}>
-        <h1 style={S.h1}>User management</h1>
+    <main className={a.container}>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · Users</div>
+        <h1 className={a.h1}>User management</h1>
       </header>
-      <Card tone="danger" style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+      <Card tone="danger" style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>
         <p style={{ margin: 0 }}>{message}</p>
       </Card>
     </main>
