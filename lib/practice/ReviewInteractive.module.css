@@ -10,7 +10,7 @@
 ============================================================= */
 
 .container {
-  max-width: 1080px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: var(--s5) var(--s5) var(--s7);
   display: flex;
@@ -376,6 +376,30 @@
   padding-top: var(--s3);
   border-top: 1px dashed var(--border);
   width: 100%;
+}
+
+/* Per-question review layout — wide viewports get a 2-column shell:
+   question map on the left (sticky so it scrolls with the page),
+   question detail on the right. Narrow viewports stack vertically.
+   Mirrors AssignmentReport / TestResultsInteractive so all three
+   review surfaces share one layout. */
+.reviewLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s4);
+}
+
+@media (min-width: 1024px) {
+  .reviewLayout {
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    align-items: start;
+  }
+  .reviewMapCard {
+    position: sticky;
+    top: var(--s4);
+    max-height: calc(100vh - var(--s5));
+    overflow-y: auto;
+  }
 }
 
 .questionCard {
