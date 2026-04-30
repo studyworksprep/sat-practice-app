@@ -206,8 +206,12 @@ function Cell({ item, isCurrent, href, onClick }) {
       onClick={onClick}
       className={cellClass}
       aria-current={isCurrent ? 'step' : undefined}
+      aria-label={item.marked
+        ? `Question ${item.position + 1}, marked for review`
+        : undefined}
     >
       <span className={s.cellNum}>{item.position + 1}</span>
+      {item.marked && <span className={s.cellFlag} aria-hidden="true" />}
       {isCurrent && <span className={s.currentArrow} aria-hidden="true" />}
     </a>
   );

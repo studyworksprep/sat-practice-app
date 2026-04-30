@@ -72,7 +72,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       .maybeSingle(),
     supabase
       .from('practice_sessions')
-      .select('id, user_id, question_ids, created_at, mode, filter_criteria, status')
+      .select('id, user_id, question_ids, created_at, mode, filter_criteria, status, marked_positions')
       .eq('user_id', studentId)
       .eq('filter_criteria->>assignment_id', assignmentId)
       .eq('status', 'completed')

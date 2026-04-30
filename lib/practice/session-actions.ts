@@ -346,6 +346,69 @@ export async function abandonPracticeSession(
 }
 
 // ──────────────────────────────────────────────────────────────
+// Mark for review
+// ──────────────────────────────────────────────────────────────
+
+/**
+ * Toggle mark-for-review on a single position inside a practice
+ * session. Stores positions as int[] on practice_sessions; the
+ * column was added in migration 20240101000037. Cheap, idempotent,
+ * and uses an UPDATE with a SQL array operation so two clicks
+ * from a flaky network can't drift the state.
+ */
+export async function togglePracticeMark(
+  _prev: unknown,
+  formData: FormData,
+): Promise<{ ok: true; sessionId: string; position: number; marked: boolean } | { ok: false; error: string }> {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase } = ctx;
+
+  const sessionId = String(formData.get('sessionId') ?? '');
+  const position = Number(formData.get('position') ?? -1);
+  if (!sessionId) return actionFail('sessionId required');
+  if (!Number.isInteger(position) || position < 0) {
+    return actionFail('position required');
+  }
+
+  const { data: session } = await supabase
+    .from('practice_sessions')
+    .select('id, user_id, status, marked_positions')
+    .eq('id', sessionId)
+    .maybeSingle();
+  if (!session) return actionFail('Session not found');
+  if (session.user_id !== user.id) return actionFail('Session not found');
+  if (session.status !== 'in_progress') {
+    return actionFail('Session not in progress');
+  }
+
+  const current: number[] = Array.isArray(session.marked_positions)
+    ? session.marked_positions
+    : [];
+  const isMarked = current.includes(position);
+  const next = isMarked
+    ? current.filter((p) => p !== position)
+    : [...current, position];
+
+  const { error } = await supabase
+    .from('practice_sessions')
+    .update({
+      marked_positions: next,
+      last_activity_at: new Date().toISOString(),
+    })
+    .eq('id', sessionId)
+    .eq('status', 'in_progress');
+  if (error) return actionFail(`Could not update mark: ${error.message}`);
+
+  return { ok: true, sessionId, position, marked: !isMarked };
+}
+
+// ──────────────────────────────────────────────────────────────
 // Assignment auto-completion
 // ──────────────────────────────────────────────────────────────
 //

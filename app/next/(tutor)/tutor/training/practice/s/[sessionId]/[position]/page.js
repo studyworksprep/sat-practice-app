@@ -95,6 +95,7 @@ export default async function TutorTrainingQuestionPage({ params }) {
       initialMapItems={payload.mapItems}
       initialConceptTags={payload.conceptTags}
       initialQuestionNotes={payload.questionNotes}
+      initialMarked={payload.marked}
       submitAnswerAction={submitAnswer}
       loadQuestionAction={loadQuestionAction}
       loadQuestionActionInput={{ expectedMode: 'training', includeTutorTools: true }}

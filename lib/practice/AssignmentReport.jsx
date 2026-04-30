@@ -501,8 +501,9 @@ function buildDomainGroups(items) {
       ordinalLabel: it.position + 1,
       status: it.status,
       difficulty: it.taxonomy?.difficulty ?? null,
+      marked: !!it.marked,
       missing: it.missing,
-      ariaLabel: `Question ${it.position + 1}, ${it.status}`,
+      ariaLabel: `Question ${it.position + 1}, ${it.status}${it.marked ? ', marked' : ''}`,
     })),
   }));
 }

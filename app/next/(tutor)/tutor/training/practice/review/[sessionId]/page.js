@@ -28,7 +28,7 @@ export default async function TutorTrainingReviewPage({ params }) {
   // session id with a teacher visiting from the wrong route.
   const { data: session } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, created_at, mode, filter_criteria')
+    .select('id, user_id, question_ids, created_at, mode, filter_criteria, marked_positions')
     .eq('id', sessionId)
     .in('mode', ['training', 'review'])
     .maybeSingle();

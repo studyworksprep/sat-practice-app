@@ -46,6 +46,7 @@ export type MapItemStatus = 'unanswered' | 'correct' | 'incorrect' | 'removed';
 export interface MapItem {
   position: number;
   status: MapItemStatus;
+  marked?: boolean;
 }
 
 export interface QuestionOption {
@@ -124,6 +125,9 @@ export interface QuestionPayload {
   mapItems: MapItem[];
   conceptTags: ConceptTagsPayload | null;
   questionNotes: QuestionNotesPayload | null;
+  /** Whether the current position is marked-for-review on the
+   *  session row. Drives the runner's toggle-button highlight. */
+  marked: boolean;
 }
 
 export type LoadQuestionResult =
@@ -151,7 +155,7 @@ export async function loadQuestion(
 
   let q = supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, current_position, test_type, mode, expires_at, status')
+    .select('id, user_id, question_ids, current_position, test_type, mode, expires_at, status, marked_positions')
     .eq('id', sessionId);
   if (expectedMode) q = q.eq('mode', expectedMode);
   const { data: session, error: sessionErr } = await q.maybeSingle();
@@ -267,10 +271,14 @@ export async function loadQuestion(
       .in('id', questionIds),
   ]);
 
+  const markedSet = new Set<number>(
+    Array.isArray(session.marked_positions) ? session.marked_positions : [],
+  );
   const mapItems = buildMapItems({
     questionIds,
     publishedRows: sessionPublished ?? [],
     attempts: sessionAttempts ?? [],
+    markedSet,
   });
 
   const questionRemoved = !question || question.deleted_at || !question.is_published;
@@ -371,6 +379,7 @@ export async function loadQuestion(
       mapItems,
       conceptTags,
       questionNotes,
+      marked: markedSet.has(position),
     },
   };
 }
@@ -392,10 +401,12 @@ function buildMapItems({
   questionIds,
   publishedRows,
   attempts,
+  markedSet,
 }: {
   questionIds: string[];
   publishedRows: { id: string; is_published: boolean; deleted_at: string | null }[];
   attempts: { question_id: string; is_correct: boolean; created_at: string }[];
+  markedSet?: Set<number>;
 }): MapItem[] {
   const publishedById = new Map(publishedRows.map((r) => [r.id, r]));
   const latestByQid = new Map<string, { question_id: string; is_correct: boolean }>();
@@ -403,11 +414,16 @@ function buildMapItems({
     if (!latestByQid.has(a.question_id)) latestByQid.set(a.question_id, a);
   }
   return questionIds.map((qid, i) => {
+    const marked = markedSet?.has(i) ?? false;
     const pub = publishedById.get(qid);
     const isRemoved = !pub || pub.deleted_at || !pub.is_published;
-    if (isRemoved) return { position: i, status: 'removed' as const };
+    if (isRemoved) return { position: i, status: 'removed' as const, marked };
     const att = latestByQid.get(qid);
-    if (!att) return { position: i, status: 'unanswered' as const };
-    return { position: i, status: att.is_correct ? ('correct' as const) : ('incorrect' as const) };
+    if (!att) return { position: i, status: 'unanswered' as const, marked };
+    return {
+      position: i,
+      status: att.is_correct ? ('correct' as const) : ('incorrect' as const),
+      marked,
+    };
   });
 }

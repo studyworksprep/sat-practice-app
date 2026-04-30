@@ -225,6 +225,41 @@
   min-width: 36px;
 }
 
+/* Mark-for-review pill in the right cluster. Mirrors the design
+   kit's `.markReviewBtn` — the icon picks up the amber token, the
+   button gets a light amber wash + amber border in its active
+   state. The runner persists the bit on
+   practice_sessions.marked_positions; the question-map flag in
+   the bottom strip watches the same source. */
+.markBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.markBtn:hover:not(:disabled) {
+  background: rgba(194, 153, 62, 0.08);
+  border-color: var(--color-amber);
+  color: #854d0e;
+}
+.markBtn svg { color: var(--color-amber); }
+.markBtnActive {
+  background: rgba(194, 153, 62, 0.14);
+  border-color: var(--color-amber);
+  color: #854d0e;
+}
+.markBtnActive svg { color: var(--color-amber); }
+.markBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
 /* Toggled-on state for the calculator button. Uses the softer
    app-accent tint per the design kit. */
 .navBtnActive {

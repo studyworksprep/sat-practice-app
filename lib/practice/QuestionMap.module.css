@@ -209,6 +209,22 @@
 }
 .cellCurrent:hover { color: var(--bg-white); }
 
+/* Mark-for-review badge — gold dot in the upper-right corner.
+   Smaller than the report-grid version (the strip cells are
+   only ~36 px wide, so a 14 px badge would crowd the number). */
+.cellFlag {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-amber);
+  border: 1.5px solid var(--bg-white);
+  pointer-events: none;
+  z-index: 2;
+}
+
 /* "You are here" arrow under the current cell */
 .currentArrow {
   position: absolute;
