@@ -152,6 +152,12 @@ export async function proxy(request) {
   if (user) {
     requestHeaders.set('x-user-id', user.id);
   }
+  // Pass the original request pathname so server components / layouts
+  // can read it via headers() when they need to (Next.js doesn't
+  // expose pathname to layouts directly). Used by the (student)
+  // layout to allow shared-infra paths like /practice/test/* through
+  // for non-student roles.
+  requestHeaders.set('x-pathname', request.nextUrl.pathname);
 
   const pathname = request.nextUrl.pathname;
 

@@ -4,7 +4,7 @@
    tile palette tokens for the per-section accuracy tones. */
 
 .container {
-  max-width: 1080px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: var(--s5) var(--s6) var(--s7);
   display: grid;
@@ -259,6 +259,30 @@
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Per-question review layout ----------
+   Wide viewports get a 2-column shell — question map on the left,
+   selected-question detail on the right. Narrow viewports stack.
+   The map column sticks to the top of the viewport so it stays
+   reachable as the student scrolls through long rationales. */
+.reviewLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s4);
+}
+
+@media (min-width: 1024px) {
+  .reviewLayout {
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    align-items: start;
+  }
+  .reviewMapCard {
+    position: sticky;
+    top: var(--s4);
+    max-height: calc(100vh - var(--s5));
+    overflow-y: auto;
+  }
 }
 
 /* ---------- Selected-question detail card ----------

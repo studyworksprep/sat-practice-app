@@ -272,29 +272,33 @@ export function AssignmentReport({
       )}
 
       {/* ---------- Question map ---------- */}
-      <section className={s.card}>
-        <div className={s.cardHead}>
-          <div className={s.cardHeadMain}>
-            <h2 className={s.h2}>Per-question review</h2>
-            <p className={s.cardHint}>
-              Every question, color-coded by difficulty with a
-              corner mark for status. Click any cell to open the
-              detail below; revealed answers stay marked with a
-              dot so the tutor can track progress through the
-              review.
-            </p>
+      {/* Per-question review: map on the left, detail on the right
+          on wide screens; stacks on narrow. The map sticks to the
+          top of the viewport so it stays reachable as the student
+          scrolls through long rationales. */}
+      <div className={s.reviewLayout}>
+        <section className={`${s.card} ${s.reviewMapCard}`}>
+          <div className={s.cardHead}>
+            <div className={s.cardHeadMain}>
+              <h2 className={s.h2}>Per-question review</h2>
+              <p className={s.cardHint}>
+                Every question, color-coded by difficulty with a
+                corner mark for status. Click any cell to open the
+                detail; revealed answers stay marked with a dot so
+                the tutor can track progress through the review.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <QuestionMapGrid
-          groups={groups}
-          selectedId={selected?.position}
-          onSelect={setSelectedPosition}
-          revealed={revealed}
-        />
-      </section>
+          <QuestionMapGrid
+            groups={groups}
+            selectedId={selected?.position}
+            onSelect={setSelectedPosition}
+            revealed={revealed}
+          />
+        </section>
 
-      {/* ---------- Selected-question detail ---------- */}
+        {/* ---------- Selected-question detail ---------- */}
       {selected && (
         <section className={s.questionCard}>
           <div className={s.questionHeader}>
@@ -414,6 +418,7 @@ export function AssignmentReport({
           )}
         </section>
       )}
+      </div>
     </main>
   );
 }
@@ -496,8 +501,9 @@ function buildDomainGroups(items) {
       ordinalLabel: it.position + 1,
       status: it.status,
       difficulty: it.taxonomy?.difficulty ?? null,
+      marked: !!it.marked,
       missing: it.missing,
-      ariaLabel: `Question ${it.position + 1}, ${it.status}`,
+      ariaLabel: `Question ${it.position + 1}, ${it.status}${it.marked ? ', marked' : ''}`,
     })),
   }));
 }

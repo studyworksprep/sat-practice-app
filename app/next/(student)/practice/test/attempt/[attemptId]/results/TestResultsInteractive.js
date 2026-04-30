@@ -301,50 +301,54 @@ export function TestResultsInteractive({
         </section>
       )}
 
-      {/* ---------- Per-question review ---------- */}
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>
-            <IconTile icon={NotesIcon} palette="navy" size="sm" />
-            Per-question review
+      {/* Per-question review: map on the left, detail on the right
+          on wide screens; stacks on narrow. The map column sticks
+          to the top of the viewport so it stays reachable as the
+          student scrolls through long rationales. */}
+      <div className={s.reviewLayout}>
+        <section className={`${s.card} ${s.reviewMapCard}`}>
+          <div className={s.cardHeader}>
+            <div className={s.sectionLabel}>
+              <IconTile icon={NotesIcon} palette="navy" size="sm" />
+              Per-question review
+            </div>
+            <div className={s.cardHeaderHint}>
+              Click any question to review it. Your initial answer
+              is shown; reveal the correct answer + rationale when
+              you&apos;re ready.
+            </div>
           </div>
-          <div className={s.cardHeaderHint}>
-            Click any question below to review it. Your initial
-            answer is shown; reveal the correct answer + rationale
-            when you&apos;re ready.
-          </div>
-        </div>
 
-        <QuestionMapGrid
-          groups={moduleGroups.map((group) => ({
-            key: group.key,
-            label: (
-              <>
-                <span className={s.mapModuleSubject}>
-                  {SUBJECT_NAME[group.subject] ?? group.subject}
-                </span>
-                <span className={s.mapModuleDot}>·</span>
-                <span className={s.mapModuleNumber}>
-                  Module {group.moduleNumber}
-                </span>
-              </>
-            ),
-            countNote: `${group.correct}/${group.total}`,
-            items: group.items.map((it) => ({
-              id: it.ordinal,
-              ordinalLabel: it.moduleOrdinal,
-              status: it.status,
-              difficulty: it.taxonomy?.difficulty ?? null,
-              marked: !!it.marked,
-              missing: it.missing,
-              ariaLabel: `Question ${it.moduleOrdinal}, ${it.status}`,
-            })),
-          }))}
-          selectedId={selected?.ordinal}
-          onSelect={setSelectedOrdinal}
-          revealed={revealed}
-        />
-      </section>
+          <QuestionMapGrid
+            groups={moduleGroups.map((group) => ({
+              key: group.key,
+              label: (
+                <>
+                  <span className={s.mapModuleSubject}>
+                    {SUBJECT_NAME[group.subject] ?? group.subject}
+                  </span>
+                  <span className={s.mapModuleDot}>·</span>
+                  <span className={s.mapModuleNumber}>
+                    Module {group.moduleNumber}
+                  </span>
+                </>
+              ),
+              countNote: `${group.correct}/${group.total}`,
+              items: group.items.map((it) => ({
+                id: it.ordinal,
+                ordinalLabel: it.moduleOrdinal,
+                status: it.status,
+                difficulty: it.taxonomy?.difficulty ?? null,
+                marked: !!it.marked,
+                missing: it.missing,
+                ariaLabel: `Question ${it.moduleOrdinal}, ${it.status}`,
+              })),
+            }))}
+            selectedId={selected?.ordinal}
+            onSelect={setSelectedOrdinal}
+            revealed={revealed}
+          />
+        </section>
 
       {selected && (
         <section className={s.questionCard}>
@@ -451,6 +455,7 @@ export function TestResultsInteractive({
           )}
         </section>
       )}
+      </div>
 
       <div className={s.footer}>
         <Link href="/review" className={s.footerLink}>← All practice</Link>

@@ -19,8 +19,8 @@ export default async function AttemptEntryPage({ params }) {
   const { attemptId } = await params;
   const { user, profile, supabase } = await requireUser();
 
+  // Shared infra — tutors take their own tests via the same runner.
   if (profile.role === 'admin') redirect('/admin');
-  if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
 
   const { data: attempt } = await supabase

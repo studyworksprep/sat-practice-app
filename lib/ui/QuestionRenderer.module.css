@@ -337,6 +337,13 @@
 
 /* ---------- Result banner ---------- */
 
+/* The grading banner fades + slides in instead of popping. Without
+   this the question card visually jolts the moment the action
+   returns: the banner injects ~80 px of new content directly under
+   the response, which feels like the whole question repaints. The
+   animation is short enough (180 ms) not to slow students down,
+   long enough that the eye reads it as a smooth update instead of
+   a snap. */
 .result {
   margin-top: var(--s2);
   padding: var(--s4);
@@ -346,6 +353,22 @@
   display: flex;
   flex-direction: column;
   gap: var(--s3);
+  animation: resultFadeIn var(--dur-base, 180ms) var(--ease-std);
+}
+
+@keyframes resultFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result { animation: none; }
 }
 
 .resultBadge {

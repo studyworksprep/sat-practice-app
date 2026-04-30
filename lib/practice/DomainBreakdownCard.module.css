@@ -45,6 +45,7 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: var(--s2);
   margin-bottom: var(--s1);
 }
 
@@ -52,6 +53,7 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--fg1);
+  min-width: 0;
 }
 
 .domainStat {
@@ -59,6 +61,8 @@
   color: var(--fg1);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .domainPct { color: var(--fg3); font-weight: 500; }
@@ -93,18 +97,27 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: var(--s2);
   font-size: 13px;
   padding: 4px 0;
   border-bottom: 1px dashed var(--border);
 }
 .skillRow:last-child { border-bottom: none; }
 
-.skillName { color: var(--fg2); }
+.skillName {
+  color: var(--fg2);
+  min-width: 0;
+}
 
+/* Keep "3/4 · 75%" on a single line so it doesn't break across
+   two lines when the skill name itself wraps. The flex parent
+   has gap so the two columns can't collide. */
 .skillStat {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: var(--fg1);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .skillPct { color: var(--fg3); font-weight: 500; }

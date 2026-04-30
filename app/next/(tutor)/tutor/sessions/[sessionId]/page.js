@@ -38,7 +38,7 @@ export default async function TutorSessionReviewPage({ params }) {
 
   const { data: session } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, created_at, mode, filter_criteria')
+    .select('id, user_id, question_ids, created_at, mode, filter_criteria, marked_positions')
     .eq('id', sessionId)
     .maybeSingle();
 

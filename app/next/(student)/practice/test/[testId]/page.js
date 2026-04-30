@@ -19,8 +19,11 @@ export default async function PracticeTestLaunchPage({ params }) {
   const { testId } = await params;
   const { user, profile, supabase } = await requireUser();
 
+  // Tutors + managers reach this surface from /tutor/training/tests
+  // → "Launch test" because the per-test instruction + runner pages
+  // are shared infra. Only block the roles that genuinely shouldn't
+  // be taking a test here.
   if (profile.role === 'admin') redirect('/admin');
-  if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
 
   const { data: test } = await supabase

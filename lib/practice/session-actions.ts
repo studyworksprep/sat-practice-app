@@ -17,13 +17,11 @@
 
 'use server';
 
-import { revalidatePath, updateTag } from 'next/cache';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
-import { dashboardCacheTag } from '@/lib/practice/load-dashboard-aggregate';
 import type { ActionResult, QuestionType } from '@/lib/types';
 
 type SubmitAnswerResult = ActionResult<{
@@ -190,17 +188,16 @@ export async function submitAnswer(
     }
   }
 
-  // Revalidate the dashboard path so the stats card refreshes on
-  // next navigation. No-op for tutors (they aren't on /dashboard)
-  // but harmless. Also updates the dashboard-aggregate cache for
-  // this user (totals + per-domain) so the next visit recomputes
-  // instead of serving the stale 60s cache; the path-level
-  // revalidate doesn't reach unstable_cache tags. updateTag is
-  // the Next 16 Server-Action variant that gives read-your-own-
-  // writes semantics here — revalidateTag now requires a profile
-  // arg and is for cron-style revalidation.
-  revalidatePath('/dashboard');
-  updateTag(dashboardCacheTag(user.id));
+  // Dashboard cache invalidation moved off the submit hot path.
+  // updateTag() forces the calling route (the practice runner) to
+  // wait for the invalidation, which was triggering a full RSC
+  // refresh of the runner page after every submit — Suspense
+  // boundary fired, the runner skeleton flashed, the question +
+  // Desmos panels visibly blanked then re-rendered. The dashboard
+  // already TTL-caches at 60 s in loadDashboardAggregate, so it
+  // refreshes naturally; the worst case is a student sees stats
+  // from up to a minute ago when they navigate back to /dashboard.
+  // Acceptable in exchange for a smooth submit experience.
 
   return {
     ok: true,
@@ -343,6 +340,69 @@ export async function abandonPracticeSession(
   if (error) return actionFail(`Could not abandon session: ${error.message}`);
 
   return { ok: true, sessionId };
+}
+
+// ──────────────────────────────────────────────────────────────
+// Mark for review
+// ──────────────────────────────────────────────────────────────
+
+/**
+ * Toggle mark-for-review on a single position inside a practice
+ * session. Stores positions as int[] on practice_sessions; the
+ * column was added in migration 20240101000037. Cheap, idempotent,
+ * and uses an UPDATE with a SQL array operation so two clicks
+ * from a flaky network can't drift the state.
+ */
+export async function togglePracticeMark(
+  _prev: unknown,
+  formData: FormData,
+): Promise<{ ok: true; sessionId: string; position: number; marked: boolean } | { ok: false; error: string }> {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase } = ctx;
+
+  const sessionId = String(formData.get('sessionId') ?? '');
+  const position = Number(formData.get('position') ?? -1);
+  if (!sessionId) return actionFail('sessionId required');
+  if (!Number.isInteger(position) || position < 0) {
+    return actionFail('position required');
+  }
+
+  const { data: session } = await supabase
+    .from('practice_sessions')
+    .select('id, user_id, status, marked_positions')
+    .eq('id', sessionId)
+    .maybeSingle();
+  if (!session) return actionFail('Session not found');
+  if (session.user_id !== user.id) return actionFail('Session not found');
+  if (session.status !== 'in_progress') {
+    return actionFail('Session not in progress');
+  }
+
+  const current: number[] = Array.isArray(session.marked_positions)
+    ? session.marked_positions
+    : [];
+  const isMarked = current.includes(position);
+  const next = isMarked
+    ? current.filter((p) => p !== position)
+    : [...current, position];
+
+  const { error } = await supabase
+    .from('practice_sessions')
+    .update({
+      marked_positions: next,
+      last_activity_at: new Date().toISOString(),
+    })
+    .eq('id', sessionId)
+    .eq('status', 'in_progress');
+  if (error) return actionFail(`Could not update mark: ${error.message}`);
+
+  return { ok: true, sessionId, position, marked: !isMarked };
 }
 
 // ──────────────────────────────────────────────────────────────

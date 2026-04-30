@@ -53,18 +53,26 @@ const DIFF_CLASS = {
 export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null }) {
   return (
     <div className={s.mapModules}>
-      {groups.map((group) => (
+      {groups.map((group) => {
+        // Empty string / null suppresses the label row entirely so
+        // ungrouped callers (e.g. ReviewInteractive's single-group
+        // map) don't render a hollow header strip above the grid.
+        const hasLabel = group.label != null && group.label !== '';
+        const hasCount = !!group.countNote;
+        return (
         <div key={group.key} className={s.mapModule}>
-          <div className={s.mapModuleLabel}>
-            {typeof group.label === 'string' ? (
-              <span className={s.mapModuleSubject}>{group.label}</span>
-            ) : (
-              group.label
-            )}
-            {group.countNote && (
-              <span className={s.mapModuleCount}>{group.countNote}</span>
-            )}
-          </div>
+          {(hasLabel || hasCount) && (
+            <div className={s.mapModuleLabel}>
+              {hasLabel && (typeof group.label === 'string' ? (
+                <span className={s.mapModuleSubject}>{group.label}</span>
+              ) : (
+                group.label
+              ))}
+              {hasCount && (
+                <span className={s.mapModuleCount}>{group.countNote}</span>
+              )}
+            </div>
+          )}
           <div className={s.mapGrid} role="list">
             {group.items.map((it) => {
               const diffCls = it.difficulty != null
@@ -106,7 +114,8 @@ export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null 
             })}
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
