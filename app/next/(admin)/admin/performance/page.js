@@ -139,8 +139,8 @@ function ScoreDistribution({ stats }) {
       <CardHeader title="Score distribution" badge={`${stats.totalTests} test${stats.totalTests !== 1 ? 's' : ''}`} badgeStyle={S.badgePurple} />
       <div style={S.bigRow}>
         <BigStat value={stats.avgComposite ?? '—'} label="Avg composite" />
-        <BigStat value={stats.avgRW ?? '—'} label="Avg R&W" color="#2563eb" size="small" />
-        <BigStat value={stats.avgMath ?? '—'} label="Avg math" color="#7c3aed" size="small" />
+        <BigStat value={stats.avgRW ?? '—'} label="Avg R&W" color="var(--color-app-accent)" size="small" />
+        <BigStat value={stats.avgMath ?? '—'} label="Avg math" color="var(--color-diff-extreme-fg)" size="small" />
       </div>
       <div style={S.chart}>
         {stats.buckets.map((b, i) => (
@@ -221,52 +221,49 @@ function BigStat({ value, label, color = '#111827', size = 'large' }) {
   );
 }
 
+// Page chrome (container / breadcrumb / header) comes from
+// admin.module.css; the inline objects below cover the per-card
+// internals — chart bars, score-band tally, heatmap cells.
 const S = {
-  main: { maxWidth: 1200, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  breadcrumb: { marginBottom: '1rem', fontSize: '0.85rem', color: '#6b7280' },
-  crumbLink: { color: '#2563eb', textDecoration: 'none' },
-  header: { marginBottom: '1.5rem' },
-  h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' },
-  sub: { color: '#4b5563', marginTop: 0 },
-  row2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '1rem', marginBottom: '1rem' },
-  card: { padding: '1.25rem', background: 'white', border: '1px solid #e5e7eb', borderRadius: 10 },
-  cardHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' },
-  h3: { fontSize: '0.95rem', fontWeight: 600, margin: 0, color: '#111827' },
-  badge: { padding: '0.2rem 0.6rem', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600 },
-  badgeBlue:   { background: '#dbeafe', color: '#1d4ed8' },
-  badgePurple: { background: '#f3e8ff', color: '#7c3aed' },
-  badgeRed:    { background: '#fee2e2', color: '#991b1b' },
-  badgeGreen:  { background: '#dcfce7', color: '#166534' },
-  badgeYellow: { background: '#fef3c7', color: '#92400e' },
+  row2: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: 'var(--s3)', marginBottom: 'var(--s3)' },
+  card: { padding: '18px 20px', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)' },
+  cardHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--s3)' },
+  h3: { fontFamily: 'var(--font-serif)', fontSize: 16, fontWeight: 700, letterSpacing: '-0.005em', margin: 0, color: 'var(--color-navy-900)' },
+  badge: { padding: '2px 10px', borderRadius: 'var(--radius-pill)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', border: '1px solid var(--border)' },
+  badgeBlue:   { background: 'var(--color-app-accent-soft)',  color: 'var(--color-app-accent)',     borderColor: 'var(--color-app-accent)' },
+  badgePurple: { background: 'var(--color-diff-extreme-bg)',  color: 'var(--color-diff-extreme-fg)', borderColor: 'var(--color-diff-extreme-bd)' },
+  badgeRed:    { background: 'var(--color-danger-bg)',        color: 'var(--color-diff-hard-fg)',   borderColor: 'var(--color-danger)' },
+  badgeGreen:  { background: 'var(--color-success-bg)',       color: 'var(--color-diff-easy-fg)',   borderColor: 'var(--color-success)' },
+  badgeYellow: { background: 'var(--color-diff-med-bg)',      color: 'var(--color-diff-med-fg)',    borderColor: 'var(--color-diff-med-bd)' },
 
-  bigRow: { display: 'flex', gap: '1rem', marginBottom: '0.75rem' },
-  bigStat: { display: 'flex', flexDirection: 'column', gap: '0.1rem' },
-  bigStatNum: { fontSize: '2rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
-  bigStatNumSmall: { fontSize: '1.25rem', fontWeight: 600, fontVariantNumeric: 'tabular-nums' },
-  bigStatLabel: { fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.025em' },
+  bigRow: { display: 'flex', gap: 'var(--s3)', marginBottom: 'var(--s2)' },
+  bigStat: { display: 'flex', flexDirection: 'column', gap: 2 },
+  bigStatNum: { fontSize: 28, fontWeight: 750, letterSpacing: '-0.01em', color: 'var(--fg1)', fontVariantNumeric: 'tabular-nums' },
+  bigStatNumSmall: { fontSize: 18, fontWeight: 700, color: 'var(--fg1)', fontVariantNumeric: 'tabular-nums' },
+  bigStatLabel: { fontSize: 11, color: 'var(--fg3)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 },
 
-  bars: { display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.5rem' },
-  barRow: { display: 'grid', gridTemplateColumns: '110px 1fr 48px', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' },
-  barLabel: { color: '#374151' },
-  barBg: { height: 8, background: '#f3f4f6', borderRadius: 4, overflow: 'hidden' },
-  barFill: { height: '100%', background: '#3b82f6', borderRadius: 4 },
-  barVal: { color: '#111827', textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
-  footnote: { fontSize: '0.75rem', color: '#6b7280', marginTop: '0.75rem', marginBottom: 0 },
+  bars: { display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 },
+  barRow: { display: 'grid', gridTemplateColumns: '110px 1fr 48px', alignItems: 'center', gap: 8, fontSize: 12 },
+  barLabel: { color: 'var(--fg2)' },
+  barBg: { height: 8, background: 'var(--color-slate-100)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' },
+  barFill: { height: '100%', background: 'var(--color-app-accent)', borderRadius: 'var(--radius-pill)' },
+  barVal: { color: 'var(--fg1)', textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 600 },
+  footnote: { fontSize: 11, color: 'var(--fg3)', marginTop: 'var(--s3)', marginBottom: 0 },
 
-  chart: { display: 'flex', gap: '0.35rem', height: 120, alignItems: 'flex-end', marginTop: '0.75rem' },
-  chartBar: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' },
-  chartBarStack: { flex: 1, width: '100%', background: '#f9fafb', borderRadius: 4, display: 'flex', alignItems: 'flex-end' },
-  chartBarFill: { width: '100%', background: 'linear-gradient(180deg, #a78bfa, #7c3aed)', borderRadius: 4 },
-  chartBarLabel: { fontSize: '0.65rem', color: '#9ca3af' },
-  chartBarCount: { fontSize: '0.65rem', color: '#374151', fontWeight: 600 },
+  chart: { display: 'flex', gap: 6, height: 120, alignItems: 'flex-end', marginTop: 'var(--s3)' },
+  chartBar: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 },
+  chartBarStack: { flex: 1, width: '100%', background: 'var(--color-slate-50)', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'flex-end' },
+  chartBarFill: { width: '100%', background: 'var(--color-app-accent)', borderRadius: 'var(--radius-sm)' },
+  chartBarLabel: { fontSize: 11, color: 'var(--fg3)', fontVariantNumeric: 'tabular-nums' },
+  chartBarCount: { fontSize: 11, color: 'var(--fg1)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
 
   qTable: { display: 'flex', flexDirection: 'column' },
-  qHead: { display: 'grid', gridTemplateColumns: '80px 1fr 60px 50px', padding: '0.35rem 0.5rem', fontSize: '0.7rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.025em', borderBottom: '1px solid #e5e7eb' },
-  qRow: { display: 'grid', gridTemplateColumns: '80px 1fr 60px 50px', padding: '0.45rem 0.5rem', fontSize: '0.85rem', borderBottom: '1px solid #f3f4f6', alignItems: 'center' },
-  qId: { fontFamily: 'monospace', fontSize: '0.75rem', color: '#6b7280', textDecoration: 'none' },
-  qSkill: { color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  qAcc: { fontWeight: 600, textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
-  qN: { color: '#6b7280', textAlign: 'right', fontSize: '0.8rem', fontVariantNumeric: 'tabular-nums' },
+  qHead: { display: 'grid', gridTemplateColumns: '80px 1fr 60px 50px', padding: '6px 8px', fontSize: 11, color: 'var(--fg3)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, borderBottom: '1px solid var(--border)' },
+  qRow: { display: 'grid', gridTemplateColumns: '80px 1fr 60px 50px', padding: '8px', fontSize: 13, borderBottom: '1px solid var(--border)', alignItems: 'center' },
+  qId: { fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--fg3)', textDecoration: 'none' },
+  qSkill: { color: 'var(--fg1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  qAcc: { fontWeight: 700, textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
+  qN: { color: 'var(--fg3)', textAlign: 'right', fontSize: 12, fontVariantNumeric: 'tabular-nums' },
 
   heatGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.4rem' },
   heatCell: { padding: '0.6rem 0.75rem', borderRadius: 6, border: '1px solid', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.4rem' },

@@ -17,6 +17,7 @@ import { Table, Th, Td } from '@/lib/ui/Table';
 import { ScoreConversionSection } from './ScoreConversionSection';
 import { TestThresholdsSection } from './TestThresholdsSection';
 import { LearnabilitySection } from './LearnabilitySection';
+import { RoleTag } from '@/lib/ui/RoleTag';
 import a from '../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -101,8 +102,8 @@ export default async function AdminContentPage({ searchParams }) {
                     <Td>
                       {q.flagged_by_name ?? '—'}
                       {q.flagged_by_role && (
-                        <span style={{ ...S.rolePill, ...roleColor(q.flagged_by_role) }}>
-                          {q.flagged_by_role}
+                        <span style={{ marginLeft: 6 }}>
+                          <RoleTag role={q.flagged_by_role} />
                         </span>
                       )}
                     </Td>
@@ -193,16 +194,6 @@ function Section({ title, badge, badgeStyle, children }) {
   );
 }
 
-
-function roleColor(role) {
-  switch (role) {
-    case 'admin':   return { background: '#fef3c7', color: '#92400e' };
-    case 'manager': return { background: '#ede9fe', color: '#5b21b6' };
-    case 'teacher': return { background: '#dbeafe', color: '#1d4ed8' };
-    case 'student': return { background: '#dcfce7', color: '#166534' };
-    default:        return { background: '#f3f4f6', color: '#6b7280' };
-  }
-}
 
 const S = {
   main: { maxWidth: 1200, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },

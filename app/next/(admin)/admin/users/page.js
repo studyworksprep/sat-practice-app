@@ -12,6 +12,8 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
 import { Card } from '@/lib/ui/Card';
+import { RoleTag } from '@/lib/ui/RoleTag';
+import { StatusBadge } from '@/lib/ui/StatusBadge';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { UsersFilter } from './UsersFilter';
 import { UsersNav } from './UsersNav';
@@ -132,9 +134,7 @@ export default async function AdminUsersPage({ searchParams }) {
                     </Td>
                     <Td>{u.email ?? '—'}</Td>
                     <Td>
-                      <span style={{ ...S.roleTag, ...roleTagColor(u.role) }}>
-                        {u.role}
-                      </span>
+                      <RoleTag role={u.role} />
                     </Td>
                     <Td>
                       {u.high_school ? (
@@ -148,13 +148,10 @@ export default async function AdminUsersPage({ searchParams }) {
                     </Td>
                     <Td>{formatDate(u.created_at) || '—'}</Td>
                     <Td>
-                      {!u.is_active ? (
-                        <span style={S.inactive}>Inactive</span>
-                      ) : u.subscription_exempt ? (
-                        <span style={S.exempt}>Exempt</span>
-                      ) : (
-                        <span style={S.active}>Active</span>
-                      )}
+                      <StatusBadge
+                        active={u.is_active !== false}
+                        exempt={u.subscription_exempt}
+                      />
                     </Td>
                   </tr>
                 );
@@ -188,39 +185,14 @@ function ErrorState({ message }) {
 }
 
 
-function roleTagColor(role) {
-  switch (role) {
-    case 'admin':
-      return { background: '#fef3c7', color: '#92400e' };
-    case 'manager':
-      return { background: '#ede9fe', color: '#5b21b6' };
-    case 'teacher':
-      return { background: '#dbeafe', color: '#1d4ed8' };
-    case 'student':
-      return { background: '#dcfce7', color: '#166534' };
-    default:
-      return { background: '#f3f4f6', color: '#6b7280' };
-  }
-}
-
+// Inline-row styles. Page chrome (container / header / sections)
+// comes from admin.module.css; role + status pills come from
+// shared RoleTag / StatusBadge primitives. Only the table-cell
+// link style is unique to this page.
 const S = {
-  main: { maxWidth: 1200, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  breadcrumb: { marginBottom: '1rem' },
-  breadcrumbLink: { color: '#2563eb', textDecoration: 'none', fontSize: '0.9rem' },
-  header: { marginBottom: '1.5rem' },
-  h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' },
-  sub: { color: '#4b5563', marginTop: 0 },
-  filterSection: { marginBottom: '1.5rem' },
-  h2: { fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', color: '#374151' },
-  nameLink: { color: '#2563eb', fontWeight: 600, textDecoration: 'none' },
-  roleTag: {
-    display: 'inline-block',
-    padding: '0.125rem 0.5rem',
-    borderRadius: 999,
-    fontSize: '0.75rem',
+  nameLink: {
+    color: 'var(--color-app-accent)',
     fontWeight: 600,
+    textDecoration: 'none',
   },
-  active: { color: '#166534', fontSize: '0.8rem' },
-  inactive: { color: '#991b1b', fontSize: '0.8rem' },
-  exempt: { color: '#92400e', fontSize: '0.8rem' },
 };

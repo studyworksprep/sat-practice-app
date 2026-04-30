@@ -10,6 +10,8 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
 import { Card } from '@/lib/ui/Card';
+import { RoleTag } from '@/lib/ui/RoleTag';
+import { StatusBadge } from '@/lib/ui/StatusBadge';
 import { UserEditForm } from './UserEditForm';
 import { RoleChanger } from './RoleChanger';
 import { StatusActions } from './StatusActions';
@@ -54,8 +56,11 @@ export default async function AdminUserDetailPage({ params }) {
         <div className={a.eyebrow}>Admin · User</div>
         <h1 className={a.h1}>{displayName}</h1>
         <div style={S.subRow}>
-          <span style={{ ...S.roleTag, ...roleColor(subject.role) }}>{subject.role}</span>
-          <StatusBadge active={subject.is_active} exempt={subject.subscription_exempt} />
+          <RoleTag role={subject.role} />
+          <StatusBadge
+            active={subject.is_active !== false}
+            exempt={subject.subscription_exempt}
+          />
           {subject.email && <span style={S.email}>{subject.email}</span>}
           <span style={S.muted}>Joined {formatDate(subject.created_at) || '—'}</span>
           <span style={S.muted}>UI: {subject.ui_version ?? 'legacy'}</span>
@@ -113,12 +118,6 @@ function Section({ title, tone, children }) {
   );
 }
 
-function StatusBadge({ active, exempt }) {
-  if (active === false) return <span style={S.badgeInactive}>Inactive</span>;
-  if (exempt) return <span style={S.badgeExempt}>Exempt</span>;
-  return <span style={S.badgeActive}>Active</span>;
-}
-
 function ErrorState({ message }) {
   return (
     <main className={a.container}>
@@ -134,30 +133,18 @@ function ErrorState({ message }) {
 }
 
 
-function roleColor(role) {
-  switch (role) {
-    case 'admin':   return { background: '#fef3c7', color: '#92400e' };
-    case 'manager': return { background: '#ede9fe', color: '#5b21b6' };
-    case 'teacher': return { background: '#dbeafe', color: '#1d4ed8' };
-    case 'student': return { background: '#dcfce7', color: '#166534' };
-    default:        return { background: '#f3f4f6', color: '#6b7280' };
-  }
-}
-
+// Page chrome (container / header / sections) comes from
+// admin.module.css; role + status pills from shared RoleTag /
+// StatusBadge primitives. Only the per-row meta layout is
+// unique to this page.
 const S = {
-  main: { maxWidth: 1100, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  breadcrumb: { marginBottom: '1rem', fontSize: '0.85rem', color: '#6b7280' },
-  crumbLink: { color: '#2563eb', textDecoration: 'none' },
-  header: { marginBottom: '2rem' },
-  h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.5rem' },
-  subRow: { display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', fontSize: '0.85rem' },
-  email: { color: '#4b5563' },
-  muted: { color: '#9ca3af' },
-  roleTag: { display: 'inline-block', padding: '0.125rem 0.6rem', borderRadius: 999, fontSize: '0.75rem', fontWeight: 600 },
-  badgeActive:   { padding: '0.125rem 0.6rem', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600, background: '#dcfce7', color: '#166534' },
-  badgeInactive: { padding: '0.125rem 0.6rem', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600, background: '#fee2e2', color: '#991b1b' },
-  badgeExempt:   { padding: '0.125rem 0.6rem', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600, background: '#fef3c7', color: '#92400e' },
-  section: { marginBottom: '1.5rem', padding: '1.25rem', background: 'white', border: '1px solid #e5e7eb', borderRadius: 10 },
-  h2: { fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem', color: '#111827' },
-  h2Danger: { fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem', color: '#991b1b' },
+  subRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 12,
+    alignItems: 'center',
+    fontSize: 13,
+  },
+  email: { color: 'var(--fg2)' },
+  muted: { color: 'var(--fg3)' },
 };
