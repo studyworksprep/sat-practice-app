@@ -25,6 +25,29 @@ import type { ActionResult } from '@/lib/types';
 const DEFAULT_SETS = ['My Math', 'My Reading'];
 const MAX_PAGE_SIZE = 100;
 
+/** Confirm `cardId` belongs to a set owned by `userId`. Done as
+ *  two separate reads instead of a flashcards → flashcard_sets
+ *  inner join because Supabase's generated types treat the joined
+ *  relationship as an array, which breaks ownership-check code
+ *  paths that want a single parent row. Two cheap PK lookups are
+ *  fine here — flashcards is a small per-user table. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function ownsCard(supabase: any, userId: string, cardId: string): Promise<boolean> {
+  const { data: card } = await supabase
+    .from('flashcards')
+    .select('id, set_id')
+    .eq('id', cardId)
+    .maybeSingle();
+  if (!card) return false;
+  const { data: set } = await supabase
+    .from('flashcard_sets')
+    .select('id')
+    .eq('id', card.set_id)
+    .eq('user_id', userId)
+    .maybeSingle();
+  return !!set;
+}
+
 interface FlashcardSet {
   id: string;
   name: string;
@@ -251,15 +274,7 @@ export async function updateFlashcard({
   }
   if (Object.keys(patch).length === 0) return actionFail('Nothing to update');
 
-  // Ownership check via the parent set. Cheaper than running a
-  // join on the update — the read confirms the caller owns the
-  // card before the write fires.
-  const { data: existing } = await supabase
-    .from('flashcards')
-    .select('id, set_id, flashcard_sets!inner(user_id)')
-    .eq('id', cardId)
-    .maybeSingle();
-  if (!existing || existing.flashcard_sets?.user_id !== user.id) {
+  if (!(await ownsCard(supabase, user.id, cardId))) {
     return actionFail('Card not found');
   }
 
@@ -292,12 +307,7 @@ export async function deleteFlashcard({
     throw e;
   }
 
-  const { data: existing } = await supabase
-    .from('flashcards')
-    .select('id, flashcard_sets!inner(user_id)')
-    .eq('id', cardId)
-    .maybeSingle();
-  if (!existing || existing.flashcard_sets?.user_id !== user.id) {
+  if (!(await ownsCard(supabase, user.id, cardId))) {
     return actionFail('Card not found');
   }
 
@@ -334,12 +344,7 @@ export async function rateFlashcard({
     throw e;
   }
 
-  const { data: existing } = await supabase
-    .from('flashcards')
-    .select('id, flashcard_sets!inner(user_id)')
-    .eq('id', cardId)
-    .maybeSingle();
-  if (!existing || existing.flashcard_sets?.user_id !== user.id) {
+  if (!(await ownsCard(supabase, user.id, cardId))) {
     return actionFail('Card not found');
   }
 
