@@ -206,12 +206,16 @@
   padding: var(--s5) var(--s6);
 }
 
-/* Tutor-only tools strip below the question — concept tags
-   editor today, more management surfaces (notes, etc.) later. */
+/* Tutor-only tools strip — concept tags editor today, more
+   management surfaces later. Rendered through the QuestionRenderer's
+   controlsNode slot so it sits in the same column as Submit, just
+   below the action buttons. Visual separator (dashed top) keeps it
+   distinct from the answer-action cluster above. */
 .tutorTools {
-  padding: 0 var(--s6) var(--s5);
+  margin-top: var(--s2);
+  padding-top: var(--s3);
   border-top: 1px dashed var(--border);
-  padding-top: var(--s4);
+  width: 100%;
 }
 
 .error {

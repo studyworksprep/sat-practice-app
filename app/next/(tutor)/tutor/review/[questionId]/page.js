@@ -207,26 +207,28 @@ export default async function TutorReviewQuestionPage({ params }) {
           layout={layout}
           question={questionVM}
           result={resultVM}
+          controlsNode={
+            conceptTags.canTag ? (
+              <div
+                style={{
+                  marginTop: '0.5rem',
+                  paddingTop: '0.75rem',
+                  borderTop: '1px dashed var(--border)',
+                  width: '100%',
+                }}
+              >
+                <ConceptTags
+                  questionId={question.id}
+                  initialTags={conceptTags.tags}
+                  initialQuestionTagIds={conceptTags.questionTagIds}
+                  canTag={conceptTags.canTag}
+                  canDelete={conceptTags.canDelete}
+                />
+              </div>
+            ) : null
+          }
         />
       </article>
-
-      {conceptTags.canTag && (
-        <section
-          style={{
-            marginTop: '1.25rem',
-            paddingTop: '1rem',
-            borderTop: '1px dashed var(--border)',
-          }}
-        >
-          <ConceptTags
-            questionId={question.id}
-            initialTags={conceptTags.tags}
-            initialQuestionTagIds={conceptTags.questionTagIds}
-            canTag={conceptTags.canTag}
-            canDelete={conceptTags.canDelete}
-          />
-        </section>
-      )}
 
       {questionNotes.canView && (
         <section
