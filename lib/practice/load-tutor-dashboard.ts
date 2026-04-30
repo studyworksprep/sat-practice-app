@@ -69,11 +69,16 @@ interface TrendRow {
  *  RLS on the underlying tables (student_practice_stats view +
  *  practice_test_attempts_v2 + the trend RPC) still applies as
  *  the calling user, so a forged tutorId can't widen visibility. */
-export function loadTutorDashboard(tutorId: string): Promise<TutorDashboardData> {
+export async function loadTutorDashboard(tutorId: string): Promise<TutorDashboardData> {
+  // Create the cookies-bound supabase client OUTSIDE unstable_cache.
+  // Next.js 15 throws if cookies() is called inside a cache scope,
+  // and createClient() awaits cookies() to bind the auth jar. The
+  // captured client makes its later HTTP calls without re-invoking
+  // cookies(), so the cached body stays clean.
+  const supabase = await createClient();
+
   return unstable_cache(
     async () => {
-      const supabase = await createClient();
-
       const { data: rows } = await supabase
         .from('student_practice_stats')
         .select('*')
