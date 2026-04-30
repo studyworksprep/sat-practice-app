@@ -149,6 +149,23 @@ export async function migrateUserToNext(_prev, formData) {
     return actionFail(`Import failed: ${importErr.message}`);
   }
 
+  // 1b. Backfill the student's legacy Error Log notes from
+  //     question_status.notes (v1-keyed) into question_error_notes
+  //     (v2-keyed). Idempotent — ON CONFLICT keeps any v2-side
+  //     edits the user has already made.
+  let errorNotesImported = 0;
+  let errorNotesSkipped = 0;
+  const { data: errNotesResult, error: errNotesErr } =
+    await svcCtx.service.rpc('import_student_error_notes', {
+      p_user_id: studentId,
+    });
+  if (errNotesErr) {
+    return actionFail(`Error-note backfill failed: ${errNotesErr.message}`);
+  }
+  const errNotesRow = Array.isArray(errNotesResult) ? errNotesResult[0] : errNotesResult;
+  errorNotesImported = errNotesRow?.imported_count ?? 0;
+  errorNotesSkipped = errNotesRow?.skipped_existing ?? 0;
+
   // 2. Re-score the imported attempts. Idempotent.
   const { data: imported } = await svcCtx.service
     .from('practice_test_attempts_v2')
@@ -191,6 +208,8 @@ export async function migrateUserToNext(_prev, formData) {
     flipped: true,
     importedAttempts: imported?.length ?? 0,
     recomputed,
+    errorNotesImported,
+    errorNotesSkipped,
     importResult: importResult ?? null,
   });
 }

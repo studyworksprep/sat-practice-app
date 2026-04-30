@@ -30,7 +30,9 @@ export function MigrateToNextButton({ studentId, currentUiVersion }) {
         {state?.ok && state.data?.flipped
           ? ` — imported ${state.data.importedAttempts ?? 0} test attempt${
               state.data.importedAttempts === 1 ? '' : 's'
-            }, recomputed ${state.data.recomputed ?? 0}.`
+            }, recomputed ${state.data.recomputed ?? 0}, brought ${state.data.errorNotesImported ?? 0} error note${
+              state.data.errorNotesImported === 1 ? '' : 's'
+            } across.`
           : '.'}
       </p>
     );
