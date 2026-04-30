@@ -125,6 +125,9 @@ export interface QuestionPayload {
   mapItems: MapItem[];
   conceptTags: ConceptTagsPayload | null;
   questionNotes: QuestionNotesPayload | null;
+  /** Student-private error-log note for the current question, if
+   *  any. Surfaces in PracticeInteractive's Error Log toggle. */
+  errorNote: { body: string; updatedAt: string } | null;
   /** Whether the current position is marked-for-review on the
    *  session row. Drives the runner's toggle-button highlight. */
   marked: boolean;
@@ -353,8 +356,9 @@ export async function loadQuestion(
 
   // Side-fetches for the per-question payload. Run in parallel — the
   // tutor-tool branches are no-ops for student callers since
-  // includeTutorTools is false.
-  const [desmos, conceptTags, questionNotes] = await Promise.all([
+  // includeTutorTools is false. The error-note read is always on
+  // since the Error Log is a student-private surface.
+  const [desmos, conceptTags, questionNotes, errorNoteRow] = await Promise.all([
     desmosEligible
       ? loadDesmosSavedState({ questionId, role })
       : Promise.resolve<DesmosPayload>({ savedState: null, canSave: false }),
@@ -364,7 +368,20 @@ export async function loadQuestion(
     includeTutorTools
       ? loadQuestionNotes({ questionId, role, userId })
       : Promise.resolve(null),
+    supabase
+      .from('question_error_notes')
+      .select('body, updated_at')
+      .eq('user_id', userId)
+      .eq('question_id', questionId)
+      .maybeSingle(),
   ]);
+
+  const errorNote = errorNoteRow?.data
+    ? {
+        body: errorNoteRow.data.body as string,
+        updatedAt: errorNoteRow.data.updated_at as string,
+      }
+    : null;
 
   return {
     kind: 'ok',
@@ -379,6 +396,7 @@ export async function loadQuestion(
       mapItems,
       conceptTags,
       questionNotes,
+      errorNote,
       marked: markedSet.has(position),
     },
   };

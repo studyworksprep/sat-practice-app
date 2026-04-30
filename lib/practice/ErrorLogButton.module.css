@@ -1,0 +1,158 @@
+/* Error Log toggle + popover panel. Trigger matches the
+   Calculator + Flashcards style so the per-question header stays
+   visually consistent. */
+
+.triggerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg1);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std);
+  position: relative;
+}
+.triggerBtn:hover { background: var(--color-slate-50); }
+
+/* Has-note state — gold tint mirrors the mark-for-review active
+   state, signaling there's something stored on this question. */
+.triggerBtnHasNote {
+  background: rgba(194, 153, 62, 0.10);
+  border-color: var(--color-amber);
+  color: #854d0e;
+}
+.triggerBtnHasNote svg { color: var(--color-amber); }
+
+/* Tiny dot in the upper-right corner of the trigger to make the
+   has-note state legible at a glance even without reading the
+   label change. */
+.dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-amber);
+}
+
+/* ---------- Popover panel ---------- */
+
+.panel {
+  position: absolute;
+  z-index: 30;
+  margin-top: 6px;
+  right: 0;
+  width: min(420px, calc(100vw - 32px));
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg1);
+}
+
+.headerClose {
+  border: none;
+  background: transparent;
+  color: var(--fg3);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+.headerClose:hover { color: var(--fg1); background: var(--color-slate-100); }
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--fg3);
+  line-height: 1.45;
+}
+
+.textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 88px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fg1);
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-app-accent);
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.saveBtn:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+.saveBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.saved {
+  font-size: 12px;
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.error {
+  font-size: 12px;
+  color: var(--color-danger);
+}
+
+.meta {
+  font-size: 11px;
+  color: var(--fg3);
+  font-family: var(--font-mono);
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+}

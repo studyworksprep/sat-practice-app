@@ -1,0 +1,258 @@
+/* =============================================================
+   Error Log — full list of the student's per-question error notes.
+   Reuses the visual vocabulary from /review (eyebrow + serif H1,
+   hairline cards) and from the assignment report's per-row layout.
+============================================================= */
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.header { padding: var(--s2) 0; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+
+.sub {
+  color: var(--fg3);
+  font-size: 13px;
+  margin: 0;
+  max-width: 720px;
+}
+
+.backLink {
+  display: inline-block;
+  margin-top: var(--s3);
+  font-size: 12px;
+  color: var(--fg3);
+  text-decoration: none;
+  font-weight: 600;
+}
+.backLink:hover { color: var(--color-app-accent); }
+
+/* ---------- Stats strip ---------- */
+
+.statsStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--s3);
+}
+
+.statTile {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+}
+
+.statValue {
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.statGood .statValue { color: var(--color-diff-easy-fg); }
+.statWarn .statValue { color: var(--color-diff-hard-fg); }
+
+/* ---------- Empty state ---------- */
+
+.emptyCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s6) var(--s5);
+  text-align: center;
+}
+
+.emptyH2 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+
+.emptyBody {
+  color: var(--fg3);
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 520px;
+  margin: 0 auto var(--s4);
+}
+
+.emptyCta {
+  display: inline-block;
+  padding: 10px 20px;
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+}
+.emptyCta:hover {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+
+/* ---------- Notes list ---------- */
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.row {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.rowHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+
+.rowMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.rowCode {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-navy-900);
+}
+
+.rowDomain {
+  color: var(--fg1);
+  font-weight: 600;
+}
+
+.rowDot { color: var(--fg3); }
+
+.rowSkill { color: var(--fg2); }
+
+.rowDiff {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+}
+
+.diffEasy    { background: var(--color-diff-easy-bg);    color: var(--color-diff-easy-fg);    border-color: var(--color-diff-easy-bd); }
+.diffMed     { background: var(--color-diff-med-bg);     color: var(--color-diff-med-fg);     border-color: var(--color-diff-med-bd); }
+.diffHard    { background: var(--color-diff-hard-bg);    color: var(--color-diff-hard-fg);    border-color: var(--color-diff-hard-bd); }
+.diffVHard   { background: var(--color-diff-vhard-bg);   color: var(--color-diff-vhard-fg);   border-color: var(--color-diff-vhard-bd); }
+.diffExtreme { background: var(--color-diff-extreme-bg); color: var(--color-diff-extreme-fg); border-color: var(--color-diff-extreme-bd); }
+
+.rowStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.accBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-variant-numeric: tabular-nums;
+  border: 1px solid var(--border);
+}
+.accGood { background: var(--color-success-bg); color: var(--color-diff-easy-fg);  border-color: var(--color-success); }
+.accOk   { background: var(--color-diff-med-bg); color: var(--color-diff-med-fg);  border-color: var(--color-diff-med-bd); }
+.accBad  { background: var(--color-danger-bg);   color: var(--color-diff-hard-fg); border-color: var(--color-danger); }
+
+.latestRight,
+.latestWrong {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+}
+.latestRight { background: var(--color-success-bg); color: var(--color-diff-easy-fg);  border-color: var(--color-success); }
+.latestWrong { background: var(--color-danger-bg);  color: var(--color-diff-hard-fg); border-color: var(--color-danger); }
+
+.rowBody {
+  margin: 0;
+  padding: var(--s3) var(--s4);
+  background: var(--color-slate-50);
+  border-left: 3px solid var(--color-amber);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--fg1);
+  white-space: pre-wrap;
+}
+
+.rowFoot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--fg3);
+}
+
+.rowDate { font-variant-numeric: tabular-nums; }

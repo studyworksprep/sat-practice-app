@@ -32,7 +32,7 @@ import {
 } from '@/lib/practice/weak-queue';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
-import { LayersIcon, SparklesIcon, TargetIcon } from '@/lib/ui/icons';
+import { LayersIcon, NotesIcon, SparklesIcon, TargetIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { createWeakQueueDrill, createSkillDrill } from './actions';
 import { WeakQueueLauncher } from './WeakQueueLauncher';
@@ -59,6 +59,7 @@ export default async function StudentReviewPage() {
     weakQueue,
     attemptsRaw,
     { data: flashcardSets },
+    { count: errorNotesCount },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -78,6 +79,10 @@ export default async function StudentReviewPage() {
       .select('id, name, is_default')
       .eq('user_id', user.id)
       .order('name', { ascending: true }),
+    supabase
+      .from('question_error_notes')
+      .select('question_id', { count: 'exact', head: true })
+      .eq('user_id', user.id),
   ]);
 
   // Common Errors aggregation: reuse the question meta we'd need
@@ -266,6 +271,52 @@ export default async function StudentReviewPage() {
               buttonClassName={s.flashcardCta}
               label="Open flashcards →"
             />
+          </div>
+        )}
+      </section>
+
+      {/* ---------- Error log ---------- */}
+
+      <section className={s.card}>
+        <div className={s.cardHeader}>
+          <div>
+            <div className={s.h2}>
+              <IconTile icon={NotesIcon} palette="amber" size="md" />
+              <span>Error log</span>
+            </div>
+            <div className={s.cardHint}>
+              Your private notes on questions you got wrong, written
+              while you practice.
+            </div>
+          </div>
+          <span className={s.cardTag}>
+            {(errorNotesCount ?? 0).toLocaleString()} note
+            {(errorNotesCount ?? 0) === 1 ? '' : 's'}
+          </span>
+        </div>
+        {(errorNotesCount ?? 0) === 0 ? (
+          <div className={s.empty}>
+            <div className={s.emptyTitle}>No error notes yet.</div>
+            <div className={s.emptyBody}>
+              When you miss a question in a practice session, click
+              the Error log button on it to jot down what tripped you
+              up. Your notes show up here.
+            </div>
+            <Link href="/practice/start" className={s.emptyCta}>
+              Start a session →
+            </Link>
+          </div>
+        ) : (
+          <div className={s.flashcardRow}>
+            <div className={s.flashcardInfo}>
+              <div className={s.flashcardTotal}>{errorNotesCount}</div>
+              <div className={s.flashcardLabel}>
+                Error note{errorNotesCount === 1 ? '' : 's'} recorded
+              </div>
+            </div>
+            <Link href="/review/error-log" className={s.flashcardCta}>
+              Open error log →
+            </Link>
           </div>
         )}
       </section>
