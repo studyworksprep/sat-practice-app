@@ -736,6 +736,16 @@ export default function ActQuestionDetailPage() {
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {isMath && calcMinimized && (
+            <button
+              type="button"
+              className="btn secondary"
+              style={{ fontSize: 12, padding: '4px 12px' }}
+              onClick={() => setCalcMinimized(false)}
+            >
+              Show calculator
+            </button>
+          )}
           <span className="pill">{SECTION_LABELS[data?.section] || data?.section}</span>
           {data?.difficulty != null && (
             <span className="pill">{DIFF_LABEL[data.difficulty] || `D${data.difficulty}`}</span>
