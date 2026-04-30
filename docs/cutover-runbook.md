@@ -94,8 +94,9 @@ Use `migrateUserToNext` from
 `app/next/(tutor)/tutor/students/[studentId]/actions.js` — it's
 the canonical path. The action:
 
-1. Verifies the caller is admin (or manager assigned to the
-   student, depending on env).
+1. Verifies the caller is admin or manager. Teachers see only
+   the per-feature import button; admins + managers see the
+   cutover button.
 2. Calls `import_student_practice_history(p_student_id)` to pull
    v1 practice-test attempts into the v2 tables. Idempotent — if
    already run, the action skips.

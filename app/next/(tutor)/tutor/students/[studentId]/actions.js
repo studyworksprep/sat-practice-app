@@ -101,11 +101,11 @@ export async function importStudentPracticeHistory(_prev, formData) {
  * skips already-scored rows, and re-setting `ui_version='next'`
  * on a user already there is a no-op.
  *
- * Authorization: admin only. Managers and teachers use the
- * separate per-feature buttons (import, etc.); only admins flip
- * a student's tree assignment, since this is the canonical
- * "graduate to next" action and rolling it back is also an admin
- * job (set the flag back to 'legacy' or remove it).
+ * Authorization: admin or manager. Teachers see only the per-
+ * feature import button; admins + managers see the cutover
+ * button. Rollback (flipping back to legacy) is also an
+ * admin/manager job — set the flag back to 'legacy' or remove
+ * it from app_metadata.
  *
  * See docs/cutover-runbook.md for the surrounding pre-flight +
  * verification checklist.
@@ -124,15 +124,15 @@ export async function migrateUserToNext(_prev, formData) {
     return actionFail('Unexpected error');
   }
 
-  if (userCtx.profile.role !== 'admin') {
-    return actionFail('Only admins can flip a student to the new tree.');
+  if (!['admin', 'manager'].includes(userCtx.profile.role)) {
+    return actionFail('Only admins and managers can flip a student to the new tree.');
   }
 
   let svcCtx;
   try {
     svcCtx = await requireServiceRole(
-      `admin: migrate student ${studentId} to ui_version=next`,
-      { allowedRoles: ['admin'] },
+      `${userCtx.profile.role}: migrate student ${studentId} to ui_version=next`,
+      { allowedRoles: ['admin', 'manager'] },
     );
   } catch (err) {
     if (err instanceof ApiError) return err.toActionResult();
