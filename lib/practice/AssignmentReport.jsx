@@ -396,20 +396,21 @@ export function AssignmentReport({
                 correctAnswerDisplay: selected.reveal.correctAnswerDisplay,
                 rationaleHtml: selected.reveal.rationaleHtml,
               } : null}
+              controlsNode={
+                conceptTagsCanTag && conceptTagsCatalog ? (
+                  <div className={s.tutorTools}>
+                    <ConceptTags
+                      key={`tags-${selected.questionId}`}
+                      questionId={selected.questionId}
+                      initialTags={conceptTagsCatalog}
+                      initialQuestionTagIds={selected.conceptTagIds ?? []}
+                      canTag={conceptTagsCanTag}
+                      canDelete={conceptTagsCanDelete}
+                    />
+                  </div>
+                ) : null
+              }
             />
-          )}
-
-          {conceptTagsCanTag && !selected.missing && conceptTagsCatalog && (
-            <div className={s.tutorTools}>
-              <ConceptTags
-                key={`tags-${selected.questionId}`}
-                questionId={selected.questionId}
-                initialTags={conceptTagsCatalog}
-                initialQuestionTagIds={selected.conceptTagIds ?? []}
-                canTag={conceptTagsCanTag}
-                canDelete={conceptTagsCanDelete}
-              />
-            </div>
           )}
         </section>
       )}

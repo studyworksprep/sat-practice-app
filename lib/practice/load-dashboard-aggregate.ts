@@ -69,11 +69,15 @@ export function dashboardCacheTag(userId: string): string {
  *  attempts / questions_v2 still applies inside the RPC because
  *  the function is SECURITY INVOKER, so a forged userId can't
  *  exfiltrate another user's data either way. */
-export function loadDashboardAggregate(userId: string): Promise<DashboardAggregate> {
+export async function loadDashboardAggregate(userId: string): Promise<DashboardAggregate> {
+  // Create the cookies-bound supabase client OUTSIDE unstable_cache.
+  // Next.js 15 throws if cookies() is called inside a cache scope;
+  // the captured client carries the cookie jar without re-invoking
+  // cookies() during the cached fetch.
+  const supabase = await createClient();
+
   return unstable_cache(
     async () => {
-      const supabase = await createClient();
-
       const nowMs = Date.now();
       const sevenDaysAgo  = new Date(nowMs - 7 * 24 * 60 * 60 * 1000).toISOString();
       const lookbackStart = new Date(

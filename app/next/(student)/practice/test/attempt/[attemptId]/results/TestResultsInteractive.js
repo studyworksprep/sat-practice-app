@@ -206,9 +206,10 @@ export function TestResultsInteractive({
               Timing
             </div>
             <div className={s.cardHeaderHint}>
-              Wall-clock time per module above; average time per
-              question below comes from active answer time, not
-              review-page dwell.
+              Each module bar shows your time per question — segment
+              widths are proportional to time spent, colored by
+              result. Hover a segment for the question, click to jump
+              to it below.
             </div>
           </div>
 
@@ -237,19 +238,40 @@ export function TestResultsInteractive({
             />
           </div>
 
-          {/* Module-by-module usage against its allotted time.
-              Imported attempts (Bluebook) don't carry per-module
-              wall times, so we filter to rows that actually have
-              usable data; if none survive, the row block hides. */}
+          {/* Module-by-module timing. Each module's bar is segmented
+              by question — segment width is proportional to the time
+              the student spent on that question, colored by status,
+              with hover tooltips. The bar's outer width represents
+              wall-clock usage vs the module's allotted time, so two
+              signals coexist: pacing within the module (segments) and
+              pacing against the SAT clock (bar fill).
+              Imported attempts (Bluebook) without per-module wall
+              times are still drawn; they just lose the % vs allotted
+              context and scale relative to the slowest module. */}
           {(() => {
             const usable = timing.byModule.filter((m) => m.usedMs != null);
             if (usable.length === 0) return null;
             const maxUsedMs = Math.max(...usable.map((m) => m.usedMs));
             return (
               <div className={s.moduleTimingList}>
-                {usable.map((m, i) => (
-                  <ModuleTimingRow key={i} entry={m} maxUsedMs={maxUsedMs} />
-                ))}
+                {usable.map((m, i) => {
+                  const groupKey = `${m.subject}__${m.moduleNumber}`;
+                  const group = moduleGroups.find((g) => g.key === groupKey);
+                  return (
+                    <ModuleTimingRow
+                      key={i}
+                      entry={m}
+                      items={group?.items ?? []}
+                      maxUsedMs={maxUsedMs}
+                      onSelectOrdinal={setSelectedOrdinal}
+                    />
+                  );
+                })}
+                <div className={s.modTimingLegend}>
+                  <span><span className={`${s.modTimingLegDot} ${s.modTimingSegCorrect}`} /> Correct</span>
+                  <span><span className={`${s.modTimingLegDot} ${s.modTimingSegWrong}`} /> Incorrect</span>
+                  <span><span className={`${s.modTimingLegDot} ${s.modTimingSegSkipped}`} /> Skipped</span>
+                </div>
               </div>
             );
           })()}
@@ -411,20 +433,21 @@ export function TestResultsInteractive({
                 correctAnswerDisplay: selected.reveal.correctAnswerDisplay,
                 rationaleHtml: selected.reveal.rationaleHtml,
               } : null}
+              controlsNode={
+                conceptTagsCanTag && conceptTagsCatalog ? (
+                  <div className={s.tutorTools}>
+                    <ConceptTags
+                      key={`tags-${selected.questionId}`}
+                      questionId={selected.questionId}
+                      initialTags={conceptTagsCatalog}
+                      initialQuestionTagIds={selected.conceptTagIds ?? []}
+                      canTag={conceptTagsCanTag}
+                      canDelete={conceptTagsCanDelete}
+                    />
+                  </div>
+                ) : null
+              }
             />
-          )}
-
-          {conceptTagsCanTag && !selected.missing && conceptTagsCatalog && (
-            <div className={s.tutorTools}>
-              <ConceptTags
-                key={`tags-${selected.questionId}`}
-                questionId={selected.questionId}
-                initialTags={conceptTagsCatalog}
-                initialQuestionTagIds={selected.conceptTagIds ?? []}
-                canTag={conceptTagsCanTag}
-                canDelete={conceptTagsCanDelete}
-              />
-            </div>
           )}
         </section>
       )}
@@ -545,16 +568,20 @@ function TimingStat({ label, value, subtitle, tone }) {
 
 const SUBJECT_FULL = { RW: 'Reading & Writing', MATH: 'Math' };
 
-function ModuleTimingRow({ entry, maxUsedMs }) {
-  // Two scaling modes:
+function ModuleTimingRow({ entry, items, maxUsedMs, onSelectOrdinal }) {
+  // Two scaling modes for the bar's outer width:
   //  - When the module's allotted time is known, the bar fills
   //    relative to that (e.g., 84% used). Tight (>= 90%) gets a
-  //    warning tint.
+  //    warning tint on the % readout.
   //  - When it isn't (imported attempts where we never recorded
   //    the SAT time-limit alongside the per-module rows), scale
   //    against the maximum usedMs in the visible set so the bars
-  //    still convey relative pacing across modules. The tight
-  //    tint is suppressed since "tight" has no anchor.
+  //    still convey relative pacing across modules.
+  // Within the bar, segments map 1:1 to questions. Each segment's
+  // width is proportional to its time_spent_ms over the module's
+  // summed answer time. Sum-of-segments equals the bar's outer
+  // width; the empty space to the right represents the remaining
+  // allotted time the student didn't use.
   const pctVsAllotted = entry.usedMs != null && entry.allottedMs > 0
     ? Math.min(100, Math.round((entry.usedMs / entry.allottedMs) * 100))
     : null;
@@ -562,10 +589,22 @@ function ModuleTimingRow({ entry, maxUsedMs }) {
     ? Math.min(100, Math.round((entry.usedMs / maxUsedMs) * 100))
     : null;
   const fillPct = pctVsAllotted ?? pctRelative;
-  const barCls = [
-    s.modTimingFill,
-    pctVsAllotted != null && pctVsAllotted >= 90 ? s.modTimingFillTight : null,
+  const tight = pctVsAllotted != null && pctVsAllotted >= 90;
+
+  const timedItems = (items ?? []).filter(
+    (it) => !it.missing && (it.studentAnswer?.timeSpentMs ?? 0) > 0,
+  );
+  const summedSegMs = timedItems.reduce(
+    (sum, it) => sum + (it.studentAnswer?.timeSpentMs || 0),
+    0,
+  );
+  const hasSegments = summedSegMs > 0;
+
+  const pctCls = [
+    s.modTimingPct,
+    tight ? s.modTimingPctTight : null,
   ].filter(Boolean).join(' ');
+
   return (
     <div className={s.modTimingRow}>
       <div className={s.modTimingLabel}>
@@ -580,11 +619,84 @@ function ModuleTimingRow({ entry, maxUsedMs }) {
         </span>
       </div>
       <div className={s.modTimingBar}>
-        {fillPct != null && (
-          <div className={barCls} style={{ width: `${fillPct}%` }} />
+        {hasSegments ? (
+          <div
+            className={s.modTimingSegRow}
+            style={{ width: fillPct != null ? `${fillPct}%` : '100%' }}
+          >
+            {timedItems.map((it) => {
+              const ms = it.studentAnswer.timeSpentMs;
+              const widthPct = (ms / summedSegMs) * 100;
+              if (widthPct < 0.3) return null;
+              const tone =
+                it.status === 'correct'
+                  ? s.modTimingSegCorrect
+                  : it.status === 'incorrect'
+                    ? s.modTimingSegWrong
+                    : s.modTimingSegSkipped;
+              const statusLabel =
+                it.status === 'correct'
+                  ? 'Correct'
+                  : it.status === 'incorrect'
+                    ? 'Incorrect'
+                    : 'Skipped';
+              const ordinalForLabel = it.moduleOrdinal ?? it.ordinal;
+              return (
+                <button
+                  key={it.ordinal}
+                  type="button"
+                  className={`${s.modTimingSeg} ${tone}`}
+                  style={{ width: `${widthPct}%` }}
+                  onClick={() => onSelectOrdinal?.(it.ordinal)}
+                  aria-label={`Question ${ordinalForLabel}, ${formatDuration(ms)}, ${statusLabel}`}
+                >
+                  <span className={s.modTimingTooltip} role="tooltip">
+                    <strong>
+                      Q{ordinalForLabel} · {formatDuration(ms)}
+                    </strong>
+                    {it.taxonomy?.difficulty != null && (
+                      <span>
+                        {DIFF_NAMES[it.taxonomy.difficulty] ??
+                          `Difficulty ${it.taxonomy.difficulty}`}
+                      </span>
+                    )}
+                    {it.taxonomy?.domain_name && (
+                      <span className={s.modTimingTooltipDim}>
+                        {it.taxonomy.domain_name}
+                      </span>
+                    )}
+                    {it.taxonomy?.skill_name &&
+                      it.taxonomy.skill_name !== it.taxonomy.domain_name && (
+                        <span className={s.modTimingTooltipDim}>
+                          {it.taxonomy.skill_name}
+                        </span>
+                      )}
+                    <span
+                      className={
+                        it.status === 'correct'
+                          ? s.modTimingTooltipCorrect
+                          : it.status === 'incorrect'
+                            ? s.modTimingTooltipWrong
+                            : s.modTimingTooltipSkipped
+                      }
+                    >
+                      {statusLabel}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          fillPct != null && (
+            <div
+              className={`${s.modTimingFill} ${tight ? s.modTimingFillTight : ''}`}
+              style={{ width: `${fillPct}%` }}
+            />
+          )
         )}
       </div>
-      <div className={s.modTimingPct}>
+      <div className={pctCls}>
         {pctVsAllotted != null
           ? `${pctVsAllotted}%`
           : entry.usedMs != null
