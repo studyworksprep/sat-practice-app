@@ -115,6 +115,19 @@ export default async function TutorTrainingErrorLogPage() {
                 </div>
               </div>
               <p className={s.rowBody}>{r.body}</p>
+              {r.preview ? (
+                <details className={s.preview}>
+                  <summary className={s.previewSummary}>
+                    <span className={s.previewSummaryShow}>Show question</span>
+                    <span className={s.previewSummaryHide}>Hide question</span>
+                  </summary>
+                  <QuestionPreview preview={r.preview} />
+                </details>
+              ) : (
+                <div className={s.previewMissing}>
+                  This question is no longer available in the question bank.
+                </div>
+              )}
               <div className={s.rowFoot}>
                 <span className={s.rowDate}>
                   Updated {formatDate(r.updatedAt)}
@@ -125,6 +138,91 @@ export default async function TutorTrainingErrorLogPage() {
         </ul>
       )}
     </main>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+
+function QuestionPreview({ preview }) {
+  const correctOptionId = preview.correctOptionId;
+  const studentSelected = preview.studentAnswer?.selectedOptionId ?? null;
+  return (
+    <div className={s.previewBody}>
+      {preview.stimulusHtml && (
+        <div
+          className={`${s.previewStimulus} sw-prose`}
+          dangerouslySetInnerHTML={{ __html: preview.stimulusHtml }}
+        />
+      )}
+      {preview.stemHtml && (
+        <div
+          className={`${s.previewStem} sw-prose`}
+          dangerouslySetInnerHTML={{ __html: preview.stemHtml }}
+        />
+      )}
+
+      {!preview.isSpr && preview.options.length > 0 && (
+        <ul className={s.previewOptions}>
+          {preview.options.map((opt) => {
+            const isCorrect = opt.id === correctOptionId;
+            const isPicked = studentSelected != null && opt.id === studentSelected;
+            const isWrongPick = isPicked && !isCorrect;
+            const cls = [
+              s.previewOption,
+              isCorrect ? s.previewOptionCorrect : null,
+              isWrongPick ? s.previewOptionWrong : null,
+            ].filter(Boolean).join(' ');
+            return (
+              <li key={opt.id} className={cls}>
+                <span className={s.previewOptionBadge}>{opt.label}</span>
+                <span
+                  className={`${s.previewOptionContent} sw-option-content`}
+                  dangerouslySetInnerHTML={{ __html: opt.content_html }}
+                />
+                {isCorrect && (
+                  <span className={s.previewOptionTag}>Correct</span>
+                )}
+                {isWrongPick && (
+                  <span className={s.previewOptionTagWrong}>Your answer</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {preview.isSpr && (
+        <div className={s.previewSprBlock}>
+          {preview.studentAnswer?.responseText && (
+            <div className={s.previewSprAnswer}>
+              <span className={s.previewSprLabel}>You wrote:</span>{' '}
+              <strong>{preview.studentAnswer.responseText}</strong>
+              {preview.studentAnswer.isCorrect === false && (
+                <span className={s.previewOptionTagWrong} style={{ marginLeft: 8 }}>
+                  Incorrect
+                </span>
+              )}
+            </div>
+          )}
+          {preview.correctAnswerDisplay && (
+            <div className={s.previewSprCorrect}>
+              <span className={s.previewSprLabel}>Correct answer:</span>{' '}
+              <strong>{preview.correctAnswerDisplay}</strong>
+            </div>
+          )}
+        </div>
+      )}
+
+      {preview.rationaleHtml && (
+        <div className={s.previewRationale}>
+          <div className={s.previewRationaleLabel}>Rationale</div>
+          <div
+            className={`${s.previewRationaleBody} sw-prose`}
+            dangerouslySetInnerHTML={{ __html: preview.rationaleHtml }}
+          />
+        </div>
+      )}
+    </div>
   );
 }
 

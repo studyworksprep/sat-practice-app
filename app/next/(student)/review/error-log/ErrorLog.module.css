@@ -256,3 +256,196 @@
 }
 
 .rowDate { font-variant-numeric: tabular-nums; }
+
+/* ---------- Expandable static question preview ---------- */
+
+/* <details> wrapper around each row's question content. Uses the
+   browser's native open / close behavior so no JS state is
+   needed; the summary chevron flips via the [open] selector. */
+.preview {
+  border-top: 1px dashed var(--border);
+  margin-top: var(--s2);
+  padding-top: var(--s2);
+}
+
+.previewSummary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  padding: 4px 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.previewSummary::-webkit-details-marker { display: none; }
+.previewSummary::before {
+  content: '▸';
+  display: inline-block;
+  font-size: 10px;
+  color: var(--fg3);
+  transition: transform var(--dur-fast) var(--ease-std);
+}
+.preview[open] .previewSummary::before { transform: rotate(90deg); }
+.previewSummaryHide { display: none; }
+.preview[open] .previewSummaryShow { display: none; }
+.preview[open] .previewSummaryHide { display: inline; }
+
+.previewMissing {
+  margin-top: var(--s2);
+  padding: var(--s2) var(--s3);
+  font-size: 12px;
+  color: var(--fg3);
+  background: var(--color-slate-50);
+  border-radius: var(--radius-sm);
+  font-style: italic;
+}
+
+.previewBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  padding: var(--s3) 0 var(--s2);
+}
+
+.previewStimulus {
+  padding: var(--s3) var(--s4);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-slate-700);
+}
+
+.previewStem {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--fg1);
+}
+
+/* MCQ option list — a static read of each choice with the correct
+   option tinted green and the student's wrong pick tinted red. */
+.previewOptions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.previewOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.previewOptionCorrect {
+  background: var(--color-success-bg);
+  border-color: var(--color-success);
+}
+.previewOptionWrong {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
+
+.previewOptionBadge {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--color-slate-100);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--fg1);
+}
+.previewOptionCorrect .previewOptionBadge {
+  background: var(--color-success);
+  color: var(--bg-white);
+}
+.previewOptionWrong .previewOptionBadge {
+  background: var(--color-danger);
+  color: var(--bg-white);
+}
+
+.previewOptionContent { flex: 1; min-width: 0; }
+
+.previewOptionTag,
+.previewOptionTagWrong {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+.previewOptionTag {
+  background: var(--color-success);
+  color: var(--bg-white);
+}
+.previewOptionTagWrong {
+  background: var(--color-danger);
+  color: var(--bg-white);
+}
+
+/* SPR (student-produced response) — show the typed answer + the
+   correct one as plain inline rows. */
+.previewSprBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+}
+.previewSprLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.previewSprAnswer { color: var(--fg1); }
+.previewSprCorrect { color: var(--color-diff-easy-fg); }
+
+/* Rationale block — distinct from the rest with a left accent
+   border so the student's eye lands on it last. */
+.previewRationale {
+  border-top: 1px dashed var(--border);
+  padding-top: var(--s3);
+}
+.previewRationaleLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: 4px;
+}
+.previewRationaleBody {
+  padding: var(--s3) var(--s4);
+  background: var(--color-slate-50);
+  border-left: 3px solid var(--color-app-accent);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg1);
+}
