@@ -16,13 +16,16 @@ import { requireUser } from '@/lib/api/auth';
 import { AppNav } from '@/lib/ui/AppNav';
 import { STUDENT_LINKS, tutorLinksForRole } from '@/lib/ui/nav-links';
 
-// Practice-test surfaces (instruction page, runner, per-module review,
-// results) are shared infra: students take their tests here, but so do
-// teachers and managers via /tutor/training/tests → "Launch test". The
-// layout's role-redirect would otherwise bounce non-students back to
-// /tutor/dashboard the moment they navigated in, and the AppNav links
-// would point at student-only surfaces.
-const SHARED_INFRA_PREFIXES = ['/practice/test/'];
+// Shared-infra surfaces: students use them, but so do teachers /
+// managers / admins (e.g. tutors taking a practice test from
+// /tutor/training/tests, or managing their own flashcard library).
+// The layout's role-redirect would otherwise bounce non-students
+// back to /tutor/dashboard the moment they navigated in, and the
+// AppNav links would point at student-only surfaces.
+//
+//  /practice/test/  — per-test instruction + runner + results
+//  /flashcards      — flashcard library (per-user, role-agnostic)
+const SHARED_INFRA_PREFIXES = ['/practice/test/', '/flashcards'];
 
 function isSharedInfraPath(pathname) {
   if (!pathname) return false;

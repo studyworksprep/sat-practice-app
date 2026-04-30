@@ -214,3 +214,173 @@ export async function createFlashcard({
 
   return actionOk({ card: card as Flashcard });
 }
+
+/** Update a flashcard the caller owns (front + back text).
+ *  Set ownership is enforced by the join from flashcards.set_id
+ *  to flashcard_sets.user_id. Mirrors PATCH /api/flashcards. */
+export async function updateFlashcard({
+  cardId,
+  front,
+  back,
+}: {
+  cardId: string;
+  front?: string;
+  back?: string;
+}): Promise<ActionResult<{ data: { card: Flashcard } }>> {
+  if (!cardId) return actionFail('cardId required');
+
+  let user;
+  let supabase;
+  try {
+    ({ user, supabase } = await requireUser());
+  } catch (e) {
+    if (e instanceof ApiError) return actionFail(e.message);
+    throw e;
+  }
+
+  const patch: Record<string, string> = {};
+  if (typeof front === 'string') {
+    const t = front.trim();
+    if (!t) return actionFail('Front cannot be empty');
+    patch.front = t;
+  }
+  if (typeof back === 'string') {
+    const t = back.trim();
+    if (!t) return actionFail('Back cannot be empty');
+    patch.back = t;
+  }
+  if (Object.keys(patch).length === 0) return actionFail('Nothing to update');
+
+  // Ownership check via the parent set. Cheaper than running a
+  // join on the update — the read confirms the caller owns the
+  // card before the write fires.
+  const { data: existing } = await supabase
+    .from('flashcards')
+    .select('id, set_id, flashcard_sets!inner(user_id)')
+    .eq('id', cardId)
+    .maybeSingle();
+  if (!existing || existing.flashcard_sets?.user_id !== user.id) {
+    return actionFail('Card not found');
+  }
+
+  const { data: card, error } = await supabase
+    .from('flashcards')
+    .update(patch)
+    .eq('id', cardId)
+    .select('id, front, back, mastery, created_at, reviewed_at')
+    .single();
+  if (error) return actionFail(error.message);
+
+  return actionOk({ card: card as Flashcard });
+}
+
+/** Delete a flashcard the caller owns. Mirrors
+ *  DELETE /api/flashcards?card_id=. */
+export async function deleteFlashcard({
+  cardId,
+}: {
+  cardId: string;
+}): Promise<ActionResult<{ data: { deletedId: string } }>> {
+  if (!cardId) return actionFail('cardId required');
+
+  let user;
+  let supabase;
+  try {
+    ({ user, supabase } = await requireUser());
+  } catch (e) {
+    if (e instanceof ApiError) return actionFail(e.message);
+    throw e;
+  }
+
+  const { data: existing } = await supabase
+    .from('flashcards')
+    .select('id, flashcard_sets!inner(user_id)')
+    .eq('id', cardId)
+    .maybeSingle();
+  if (!existing || existing.flashcard_sets?.user_id !== user.id) {
+    return actionFail('Card not found');
+  }
+
+  const { error } = await supabase
+    .from('flashcards')
+    .delete()
+    .eq('id', cardId);
+  if (error) return actionFail(error.message);
+
+  return actionOk({ deletedId: cardId });
+}
+
+/** Update a flashcard's mastery (0..5) after a self-rating in
+ *  the review flow. Stamps reviewed_at so the per-card "last
+ *  reviewed" surface stays current. */
+export async function rateFlashcard({
+  cardId,
+  mastery,
+}: {
+  cardId: string;
+  mastery: number;
+}): Promise<ActionResult<{ data: { card: Flashcard } }>> {
+  if (!cardId) return actionFail('cardId required');
+  if (!Number.isInteger(mastery) || mastery < 0 || mastery > 5) {
+    return actionFail('mastery must be an integer 0..5');
+  }
+
+  let user;
+  let supabase;
+  try {
+    ({ user, supabase } = await requireUser());
+  } catch (e) {
+    if (e instanceof ApiError) return actionFail(e.message);
+    throw e;
+  }
+
+  const { data: existing } = await supabase
+    .from('flashcards')
+    .select('id, flashcard_sets!inner(user_id)')
+    .eq('id', cardId)
+    .maybeSingle();
+  if (!existing || existing.flashcard_sets?.user_id !== user.id) {
+    return actionFail('Card not found');
+  }
+
+  const { data: card, error } = await supabase
+    .from('flashcards')
+    .update({ mastery, reviewed_at: new Date().toISOString() })
+    .eq('id', cardId)
+    .select('id, front, back, mastery, created_at, reviewed_at')
+    .single();
+  if (error) return actionFail(error.message);
+
+  return actionOk({ card: card as Flashcard });
+}
+
+/** Create a new (non-default) flashcard set under the caller. */
+export async function createFlashcardSet({
+  name,
+}: {
+  name: string;
+}): Promise<ActionResult<{ data: { set: FlashcardSet } }>> {
+  const trimmed = (name ?? '').trim();
+  if (!trimmed) return actionFail('Name is required');
+  if (trimmed.length > 80) return actionFail('Name is too long (max 80 chars)');
+
+  let user;
+  let supabase;
+  try {
+    ({ user, supabase } = await requireUser());
+  } catch (e) {
+    if (e instanceof ApiError) return actionFail(e.message);
+    throw e;
+  }
+
+  const { data, error } = await supabase
+    .from('flashcard_sets')
+    .insert({ user_id: user.id, name: trimmed, is_default: false })
+    .select('id, name, is_default, created_at')
+    .single();
+  if (error) return actionFail(error.message);
+
+  return actionOk({
+    set: { ...(data as Omit<FlashcardSet, 'card_count'>), card_count: 0 },
+  });
+}
