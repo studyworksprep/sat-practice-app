@@ -17,13 +17,11 @@
 
 'use server';
 
-import { revalidatePath, updateTag } from 'next/cache';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
-import { dashboardCacheTag } from '@/lib/practice/load-dashboard-aggregate';
 import type { ActionResult, QuestionType } from '@/lib/types';
 
 type SubmitAnswerResult = ActionResult<{
@@ -190,17 +188,16 @@ export async function submitAnswer(
     }
   }
 
-  // Revalidate the dashboard path so the stats card refreshes on
-  // next navigation. No-op for tutors (they aren't on /dashboard)
-  // but harmless. Also updates the dashboard-aggregate cache for
-  // this user (totals + per-domain) so the next visit recomputes
-  // instead of serving the stale 60s cache; the path-level
-  // revalidate doesn't reach unstable_cache tags. updateTag is
-  // the Next 16 Server-Action variant that gives read-your-own-
-  // writes semantics here — revalidateTag now requires a profile
-  // arg and is for cron-style revalidation.
-  revalidatePath('/dashboard');
-  updateTag(dashboardCacheTag(user.id));
+  // Dashboard cache invalidation moved off the submit hot path.
+  // updateTag() forces the calling route (the practice runner) to
+  // wait for the invalidation, which was triggering a full RSC
+  // refresh of the runner page after every submit — Suspense
+  // boundary fired, the runner skeleton flashed, the question +
+  // Desmos panels visibly blanked then re-rendered. The dashboard
+  // already TTL-caches at 60 s in loadDashboardAggregate, so it
+  // refreshes naturally; the worst case is a student sees stats
+  // from up to a minute ago when they navigate back to /dashboard.
+  // Acceptable in exchange for a smooth submit experience.
 
   return {
     ok: true,
