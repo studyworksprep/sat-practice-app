@@ -278,6 +278,12 @@ export default async function TutorTrainingDashboardPage() {
       }
     : null;
 
+  // Latest composite for the Practice tests card metric.
+  const latestTestWithScore = (recentTestAttempts ?? []).find((t) =>
+    Number.isFinite(t.composite_score),
+  );
+  const completedTestCount = (recentTestAttempts ?? []).length;
+
   return (
     <main className={s.container}>
       <section className={s.banner}>
@@ -290,19 +296,6 @@ export default async function TutorTrainingDashboardPage() {
             or work through what your manager assigned.
           </div>
         </div>
-        <div className={s.bannerActions}>
-          {resumeInfo && (
-            <Link
-              href={`/tutor/training/practice/s/${resumeInfo.sessionId}/${resumeInfo.position}`}
-              className={s.btnSecondary}
-            >
-              Resume session
-            </Link>
-          )}
-          <Link href="/tutor/training/practice" className={s.btnPrimary}>
-            Start training
-          </Link>
-        </div>
       </section>
 
       {fullProfile?.sat_test_date && (
@@ -312,6 +305,50 @@ export default async function TutorTrainingDashboardPage() {
           compact
         />
       )}
+
+      {/* Pending from manager moved up under the welcome panel —
+          a tutor's outstanding manager work shouldn't be the last
+          thing on the page they have to scroll for. */}
+      <section className={s.card}>
+        <div className={s.cardHeader}>
+          <div>
+            <div className={s.sectionLabel}>Pending from your manager</div>
+            <div className={s.cardSub}>
+              {pendingAssignments.length === 0
+                ? "Nothing pending — work through your weak queue or take a practice test."
+                : 'Work assigned to you, soonest first.'}
+            </div>
+          </div>
+          <Link href="/tutor/training/assignments" className={s.cardHeaderLink}>
+            View all →
+          </Link>
+        </div>
+        {pendingAssignments.length > 0 && (
+          <ul className={s.assignmentList}>
+            {pendingAssignments.map((a) => {
+              const title = a.title
+                ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
+                ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
+                ?? 'Training assignment';
+              return (
+                <li key={a.id}>
+                  <Link
+                    href={`/tutor/training/assignments/${a.id}`}
+                    className={s.assignmentRow}
+                  >
+                    <span className={s.assignmentTitle}>{title}</span>
+                    {a.due_date && (
+                      <span className={isOverdue(a.due_date, nowMs) ? s.dueOverdue : s.due}>
+                        Due {formatRowDate(a.due_date)}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
       <section className={s.statsRow}>
         <StatTile label="Questions attempted" value={total.toLocaleString()} />
@@ -333,20 +370,27 @@ export default async function TutorTrainingDashboardPage() {
         />
       </section>
 
-      {/* ---------- Tool cards: Review + Practice tests ---------- */}
+      {/* Tool cards — Practice, Practice tests, Review.
+          The banner used to carry "Resume session" / "Start training"
+          buttons but those were ambiguous (a tutor might have a
+          self-guided session AND a practice test in flight, and
+          "Start training" reads odd when you're already on the Train
+          page). Each card now owns its own kind: in-progress hints
+          + a single click into the dedicated surface where the
+          actual Resume button lives. */}
       <section className={s.toolsRow}>
-        <Link href="/tutor/training/review" className={s.toolCard}>
-          <div className={s.toolCardEyebrow}>Train · Review</div>
-          <div className={s.toolCardTitle}>Review</div>
+        <Link href="/tutor/training/practice" className={s.toolCard}>
+          <div className={s.toolCardEyebrow}>Train · Practice</div>
+          <div className={s.toolCardTitle}>Practice</div>
           <div className={s.toolCardSub}>
-            Drill your weakest questions, fix common errors, and keep
-            your flashcards fresh.
+            Self-guided question sets — pick a domain, choose your
+            size, and start drilling. Resume in-progress sets here.
           </div>
           <div className={s.toolCardFooter}>
             <span className={s.toolCardMetric}>
-              {weakQueue.length === 0
-                ? 'Nothing in queue'
-                : `${weakQueue.length.toLocaleString()} in weak queue`}
+              {resumeInfo
+                ? `Resume: question ${resumeInfo.position + 1} of ${resumeInfo.total}`
+                : 'Start a new set'}
             </span>
             <span className={s.toolCardChevron} aria-hidden="true">→</span>
           </div>
@@ -362,19 +406,27 @@ export default async function TutorTrainingDashboardPage() {
             <span className={s.toolCardMetric}>
               {inProgressTest
                 ? `Resume: ${inProgressTest.practice_test?.name ?? 'Practice test'}`
-                : (() => {
-                    const completed = recentTestAttempts ?? [];
-                    const latest = completed.find((t) =>
-                      Number.isFinite(t.composite_score),
-                    );
-                    if (latest) {
-                      return `Latest composite: ${latest.composite_score}`;
-                    }
-                    if (completed.length > 0) {
-                      return `${completed.length} completed`;
-                    }
-                    return 'No tests yet';
-                  })()}
+                : latestTestWithScore
+                  ? `Latest composite: ${latestTestWithScore.composite_score}`
+                  : completedTestCount > 0
+                    ? `${completedTestCount} completed`
+                    : 'No tests yet'}
+            </span>
+            <span className={s.toolCardChevron} aria-hidden="true">→</span>
+          </div>
+        </Link>
+        <Link href="/tutor/training/review" className={s.toolCard}>
+          <div className={s.toolCardEyebrow}>Train · Review</div>
+          <div className={s.toolCardTitle}>Review</div>
+          <div className={s.toolCardSub}>
+            Drill your weakest questions, fix common errors, and keep
+            your flashcards fresh.
+          </div>
+          <div className={s.toolCardFooter}>
+            <span className={s.toolCardMetric}>
+              {weakQueue.length === 0
+                ? 'Nothing in queue'
+                : `${weakQueue.length.toLocaleString()} in weak queue`}
             </span>
             <span className={s.toolCardChevron} aria-hidden="true">→</span>
           </div>
@@ -429,47 +481,6 @@ export default async function TutorTrainingDashboardPage() {
                 </Link>
               </li>
             ))}
-          </ul>
-        )}
-      </section>
-
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div>
-            <div className={s.sectionLabel}>Pending from your manager</div>
-            <div className={s.cardSub}>
-              {pendingAssignments.length === 0
-                ? "Nothing pending — work through your weak queue or take a practice test."
-                : 'Work assigned to you, soonest first.'}
-            </div>
-          </div>
-          <Link href="/tutor/training/assignments" className={s.cardHeaderLink}>
-            View all →
-          </Link>
-        </div>
-        {pendingAssignments.length > 0 && (
-          <ul className={s.assignmentList}>
-            {pendingAssignments.map((a) => {
-              const title = a.title
-                ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
-                ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
-                ?? 'Training assignment';
-              return (
-                <li key={a.id}>
-                  <Link
-                    href={`/tutor/training/assignments/${a.id}`}
-                    className={s.assignmentRow}
-                  >
-                    <span className={s.assignmentTitle}>{title}</span>
-                    {a.due_date && (
-                      <span className={isOverdue(a.due_date, nowMs) ? s.dueOverdue : s.due}>
-                        Due {formatRowDate(a.due_date)}
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
           </ul>
         )}
       </section>
