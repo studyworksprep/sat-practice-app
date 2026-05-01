@@ -59,6 +59,23 @@ export function TestRunnerInteractive({
   const [markedForReview, setMarkedForReview] = useState(!!initialAnswer.markedForReview);
   const [saveError, setSaveError] = useState(null);
   const [navOpen, setNavOpen] = useState(false);
+  // Cross-out (eliminated MCQ options). Keyed by the test's per-
+  // module question position so navigating Prev/Next within the
+  // same module preserves what the student has already eliminated.
+  // Session-only — refreshing the page wipes, matching Bluebook
+  // and the legacy practice-test runner.
+  const [crossedByPos, setCrossedByPos] = useState(() => new Map());
+  const currentCrossed = crossedByPos.get(position) ?? null;
+  const toggleCross = useCallback((optionId) => {
+    setCrossedByPos((prev) => {
+      const next = new Map(prev);
+      const setForPos = new Set(next.get(position) ?? []);
+      if (setForPos.has(optionId)) setForPos.delete(optionId);
+      else setForPos.add(optionId);
+      next.set(position, setForPos);
+      return next;
+    });
+  }, [position]);
 
   // Desmos — shown during Math modules only. The initial state is
   // read from localStorage in a post-mount effect so server + first
@@ -429,6 +446,8 @@ export function TestRunnerInteractive({
           onSelectOption={handleSelectOption}
           responseText={responseText}
           onResponseText={handleResponseText}
+          crossedOptionIds={currentCrossed}
+          onToggleCross={toggleCross}
           result={null}
           headerNode={headerNode}
           leftSlot={
