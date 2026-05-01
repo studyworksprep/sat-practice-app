@@ -20,6 +20,7 @@ import {
   clearTeacherInviteCode,
 } from './actions';
 import a from '../../../admin.module.css';
+import f from '../../../forms.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,122 +70,132 @@ export default async function AdminUserCodesPage() {
       <UsersNav current="codes" />
 
       <Section title={`Teacher Codes (${codesAvailable} available · ${codesUsed} used)`}>
-        <form action={createTeacherCode} style={S.addRow}>
-          <label style={S.label}>
-            <span style={S.labelText}>New code</span>
+        <form action={createTeacherCode} className={f.row}>
+          <label className={f.label}>
+            <span className={f.labelText}>New code</span>
             <input
               name="code"
               type="text"
               placeholder="Leave blank to auto-generate"
-              style={{ ...S.input, textTransform: 'uppercase' }}
+              className={f.input}
+              style={{ textTransform: 'uppercase', minWidth: 220 }}
             />
           </label>
           <Button type="submit" variant="primary" size="sm">Create</Button>
         </form>
 
         {(codes ?? []).length === 0 ? (
-          <p style={S.empty}>No teacher codes yet.</p>
+          <p className={f.empty}>No teacher codes yet.</p>
         ) : (
           <Table>
-              <thead>
-                <tr>
-                  <Th>Code</Th>
-                  <Th>Status</Th>
-                  <Th>Used by</Th>
-                  <Th>Created</Th>
-                  <Th style={{ width: 80 }} />
+            <thead>
+              <tr>
+                <Th>Code</Th>
+                <Th>Status</Th>
+                <Th>Used by</Th>
+                <Th>Created</Th>
+                <Th style={{ width: 80 }} />
+              </tr>
+            </thead>
+            <tbody>
+              {(codes ?? []).map((c) => (
+                <tr key={c.id}>
+                  <Td style={S.code}>{c.code}</Td>
+                  <Td>
+                    {c.used_by ? (
+                      <span style={{ ...S.statusPill, ...S.statusUsed }}>Used</span>
+                    ) : (
+                      <span style={{ ...S.statusPill, ...S.statusAvail }}>Available</span>
+                    )}
+                  </Td>
+                  <Td>
+                    {c.used_by ? (
+                      <a href={`/admin/users/${c.used_by}`} style={S.userLink}>
+                        {displayName(c.used_by_profile)
+                          || c.used_by_profile?.email
+                          || c.used_by.slice(0, 8)}
+                      </a>
+                    ) : (
+                      '—'
+                    )}
+                  </Td>
+                  <Td style={{ color: 'var(--fg3)', fontSize: 12 }}>
+                    {formatDate(c.created_at) || '—'}
+                  </Td>
+                  <Td>
+                    <form action={revokeTeacherCode}>
+                      <input type="hidden" name="id" value={c.id} />
+                      <Button type="submit" variant="remove" size="sm">Revoke</Button>
+                    </form>
+                  </Td>
                 </tr>
-              </thead>
-              <tbody>
-                {(codes ?? []).map((c) => (
-                  <tr key={c.id}>
-                    <Td style={{ fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.05em' }}>{c.code}</Td>
-                    <Td>
-                      {c.used_by ? (
-                        <span style={S.badgeUsed}>Used</span>
-                      ) : (
-                        <span style={S.badgeAvail}>Available</span>
-                      )}
-                    </Td>
-                    <Td>
-                      {c.used_by ? (
-                        <a href={`/admin/users/${c.used_by}`} style={S.userLink}>
-                          {displayName(c.used_by_profile) || c.used_by_profile?.email || c.used_by.slice(0, 8)}
-                        </a>
-                      ) : (
-                        '—'
-                      )}
-                    </Td>
-                    <Td style={{ color: '#6b7280', fontSize: '0.85rem' }}>{formatDate(c.created_at) || '—'}</Td>
-                    <Td>
-                      <form action={revokeTeacherCode}>
-                        <input type="hidden" name="id" value={c.id} />
-                        <Button type="submit" variant="remove" size="sm">Revoke</Button>
-                      </form>
-                    </Td>
-                  </tr>
-                ))}
-              </tbody>
+              ))}
+            </tbody>
           </Table>
         )}
       </Section>
 
       <Section title={`Teacher Invite Codes (${teachersWithCodes} of ${teachers?.length ?? 0} teachers have a code)`}>
-        <p style={S.note}>
+        <p className={f.formHint}>
           Each teacher can have one invite code. Generate a fresh one by
           submitting an empty value.
         </p>
 
         <Table>
-            <thead>
-              <tr>
-                <Th>Teacher</Th>
-                <Th>Current code</Th>
-                <Th>Set / regenerate</Th>
-                <Th style={{ width: 80 }} />
-              </tr>
-            </thead>
-            <tbody>
-              {(teachers ?? []).map((t) => (
-                <tr key={t.id}>
-                  <Td>
-                    <a href={`/admin/users/${t.id}`} style={S.userLink}>
-                      {displayName(t) || t.email}
-                    </a>
-                  </Td>
-                  <Td style={{ fontFamily: 'monospace', fontWeight: 600, letterSpacing: '0.05em' }}>
-                    {t.teacher_invite_code ?? <span style={{ color: '#9ca3af' }}>—</span>}
-                  </Td>
-                  <Td>
-                    <form action={setTeacherInviteCode} style={S.inlineForm}>
+          <thead>
+            <tr>
+              <Th>Teacher</Th>
+              <Th>Current code</Th>
+              <Th>Set / regenerate</Th>
+              <Th style={{ width: 80 }} />
+            </tr>
+          </thead>
+          <tbody>
+            {(teachers ?? []).map((t) => (
+              <tr key={t.id}>
+                <Td>
+                  <a href={`/admin/users/${t.id}`} style={S.userLink}>
+                    {displayName(t) || t.email}
+                  </a>
+                </Td>
+                <Td style={S.code}>
+                  {t.teacher_invite_code ?? (
+                    <span style={{ color: 'var(--fg3)' }}>—</span>
+                  )}
+                </Td>
+                <Td>
+                  <form action={setTeacherInviteCode} style={S.inlineForm}>
+                    <input type="hidden" name="teacher_id" value={t.id} />
+                    <input
+                      name="code"
+                      type="text"
+                      placeholder={t.teacher_invite_code
+                        ? 'New code or blank to rotate'
+                        : 'Code or blank for auto'}
+                      className={f.input}
+                      style={{ textTransform: 'uppercase', fontSize: 12, maxWidth: 200 }}
+                    />
+                    <Button type="submit" variant="primary" size="sm">
+                      {t.teacher_invite_code ? 'Change' : 'Generate'}
+                    </Button>
+                  </form>
+                </Td>
+                <Td>
+                  {t.teacher_invite_code && (
+                    <form action={clearTeacherInviteCode}>
                       <input type="hidden" name="teacher_id" value={t.id} />
-                      <input
-                        name="code"
-                        type="text"
-                        placeholder={t.teacher_invite_code ? 'New code or blank to rotate' : 'Code or blank for auto'}
-                        style={{ ...S.input, textTransform: 'uppercase', fontSize: '0.8rem', maxWidth: 200 }}
-                      />
-                      <Button type="submit" variant="primary" size="sm">
-                        {t.teacher_invite_code ? 'Change' : 'Generate'}
-                      </Button>
+                      <Button type="submit" variant="remove" size="sm">Clear</Button>
                     </form>
-                  </Td>
-                  <Td>
-                    {t.teacher_invite_code && (
-                      <form action={clearTeacherInviteCode}>
-                        <input type="hidden" name="teacher_id" value={t.id} />
-                        <Button type="submit" variant="remove" size="sm">Clear</Button>
-                      </form>
-                    )}
-                  </Td>
-                </tr>
-              ))}
-              {(teachers ?? []).length === 0 && (
-                <tr>
-                  <Td colSpan={4} style={S.empty}>No teachers found.</Td>
-                </tr>
-              )}
-            </tbody>
+                  )}
+                </Td>
+              </tr>
+            ))}
+            {(teachers ?? []).length === 0 && (
+              <tr>
+                <Td colSpan={4} className={f.empty}>No teachers found.</Td>
+              </tr>
+            )}
+          </tbody>
         </Table>
       </Section>
     </main>
@@ -206,23 +217,37 @@ function displayName(p) {
 }
 
 
+// Page chrome (container/header/section) comes from
+// admin.module.css; form bits from forms.module.css. Only the
+// per-cell code/link/status-pill styles are unique here.
 const S = {
-  main: { maxWidth: 1100, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  breadcrumb: { marginBottom: '1rem', fontSize: '0.85rem', color: '#6b7280' },
-  crumbLink: { color: '#2563eb', textDecoration: 'none' },
-  header: { marginBottom: '1.5rem' },
-  h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' },
-  sub: { color: '#4b5563', marginTop: 0 },
-  section: { marginBottom: '1.5rem', padding: '1.25rem', background: 'white', border: '1px solid #e5e7eb', borderRadius: 10 },
-  h2: { fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem', color: '#111827' },
-  note: { fontSize: '0.85rem', color: '#6b7280', marginTop: 0, marginBottom: '1rem' },
-  addRow: { display: 'flex', gap: '0.5rem', marginBottom: '1rem', alignItems: 'flex-end' },
-  inlineForm: { display: 'flex', gap: '0.4rem', alignItems: 'center' },
-  label: { display: 'flex', flexDirection: 'column', gap: '0.25rem' },
-  labelText: { fontSize: '0.7rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.025em' },
-  input: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.9rem', minWidth: 220 },
-  userLink: { color: '#2563eb', textDecoration: 'none' },
-  badgeAvail: { padding: '0.125rem 0.5rem', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600, background: '#dcfce7', color: '#166534' },
-  badgeUsed:  { padding: '0.125rem 0.5rem', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600, background: '#f3f4f6', color: '#6b7280' },
-  empty: { padding: '0.75rem', color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem', textAlign: 'center' },
+  inlineForm: { display: 'flex', gap: 6, alignItems: 'center' },
+  code: {
+    fontFamily: 'var(--font-mono)',
+    fontWeight: 700,
+    letterSpacing: '0.05em',
+    color: 'var(--color-navy-900)',
+  },
+  userLink: { color: 'var(--color-app-accent)', textDecoration: 'none', fontWeight: 600 },
+  statusPill: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '2px 10px',
+    borderRadius: 'var(--radius-pill)',
+    fontSize: 11,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+    border: '1px solid var(--border)',
+  },
+  statusAvail: {
+    background: 'var(--color-success-bg)',
+    color: 'var(--color-diff-easy-fg)',
+    borderColor: 'var(--color-success)',
+  },
+  statusUsed: {
+    background: 'var(--color-slate-100)',
+    color: 'var(--fg3)',
+    borderColor: 'var(--border-strong)',
+  },
 };

@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react';
 import { Button } from '@/lib/ui/Button';
 import { changeRole } from './actions';
-import s from './forms.module.css';
+import s from '../../../forms.module.css';
 
 const ROLES = [
   { value: 'practice', label: 'Practice' },

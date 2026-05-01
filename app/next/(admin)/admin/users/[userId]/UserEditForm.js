@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { Button } from '@/lib/ui/Button';
 import { updateProfileFields } from './actions';
-import s from './forms.module.css';
+import s from '../../../forms.module.css';
 
 export function UserEditForm({ userId, initial }) {
   const [state, formAction, pending] = useActionState(updateProfileFields, null);

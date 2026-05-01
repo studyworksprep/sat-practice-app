@@ -265,10 +265,10 @@ const S = {
   qAcc: { fontWeight: 700, textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
   qN: { color: 'var(--fg3)', textAlign: 'right', fontSize: 12, fontVariantNumeric: 'tabular-nums' },
 
-  heatGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.4rem' },
-  heatCell: { padding: '0.6rem 0.75rem', borderRadius: 6, border: '1px solid', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.4rem' },
-  heatLabel: { fontSize: '0.75rem', color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  heatVal: { fontSize: '0.85rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
+  heatGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 6 },
+  heatCell: { padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 6 },
+  heatLabel: { fontSize: 12, color: 'var(--color-navy-900)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  heatVal: { fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
 
   empty: { color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem', textAlign: 'center', padding: '1rem 0', margin: 0 },
 };

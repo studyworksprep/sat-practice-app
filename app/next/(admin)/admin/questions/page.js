@@ -174,23 +174,32 @@ function FilterBar({ current }) {
 
 function FlagPills({ row }) {
   const flags = [];
-  if (row.is_broken) flags.push(['broken', '#fee2e2', '#991b1b']);
+  if (row.is_broken) {
+    flags.push(['broken', 'var(--color-danger-bg)', 'var(--color-diff-hard-fg)', 'var(--color-danger)']);
+  }
   if ((row.stem_html ?? '').includes('TRIMMED')) {
-    flags.push(['trimmed', '#fef3c7', '#92400e']);
+    flags.push(['trimmed', 'var(--color-diff-med-bg)', 'var(--color-diff-med-fg)', 'var(--color-diff-med-bd)']);
   }
   if (/role="math"/.test(row.stem_html ?? '')) {
-    flags.push(['png-math', '#e0e7ff', '#3730a3']);
+    flags.push(['png-math', 'var(--color-app-accent-soft)', 'var(--color-app-accent)', 'var(--color-app-accent)']);
   }
-  if (flags.length === 0) return <span style={{ color: '#d1d5db' }}>—</span>;
+  if (flags.length === 0) return <span style={{ color: 'var(--fg3)' }}>—</span>;
   return (
-    <span style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-      {flags.map(([label, bg, fg]) => (
+    <span style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+      {flags.map(([label, bg, fg, bd]) => (
         <span
           key={label}
           style={{
-            display: 'inline-block', padding: '0.1rem 0.4rem',
-            borderRadius: 999, fontSize: '0.65rem', fontWeight: 600,
-            background: bg, color: fg,
+            display: 'inline-block',
+            padding: '2px 8px',
+            borderRadius: 'var(--radius-pill)',
+            fontSize: 10,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            background: bg,
+            color: fg,
+            border: `1px solid ${bd}`,
           }}
         >
           {label}
@@ -250,35 +259,102 @@ function stripToSnippet(html, limit = 120) {
 
 // ──────────────────────────────────────────────────────────────
 
+// Page chrome (container/breadcrumb/header) comes from
+// admin.module.css; the inline objects below cover the per-page
+// internals — filter bar, snippet column, pagination.
 const S = {
-  main: { maxWidth: 1400, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  backLink: { color: '#2563eb', textDecoration: 'none', fontSize: '0.9rem' },
-  header: { marginBottom: '1rem' },
-  h1: { fontSize: '1.5rem', fontWeight: 700, margin: 0 },
-  sub: { color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem' },
-  filterBar: { display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' },
+  filterBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 'var(--s3)',
+    flexWrap: 'wrap',
+  },
   search: {
-    padding: '0.375rem 0.625rem', border: '1px solid #d1d5db', borderRadius: 6,
-    fontSize: '0.9rem', minWidth: 280,
+    padding: '8px 10px',
+    border: '1px solid var(--border-strong)',
+    borderRadius: 'var(--radius-md)',
+    fontSize: 13,
+    fontFamily: 'inherit',
+    color: 'var(--fg1)',
+    background: 'var(--bg-white)',
+    minWidth: 280,
   },
-  toggle: { display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.85rem', color: '#374151' },
+  toggle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    fontSize: 13,
+    color: 'var(--fg1)',
+    fontWeight: 600,
+  },
   submit: {
-    padding: '0.375rem 0.875rem', background: '#2563eb', color: 'white',
-    border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem',
+    padding: '8px 16px',
+    background: 'var(--color-app-accent)',
+    color: 'var(--bg-white)',
+    border: '1px solid var(--color-app-accent)',
+    borderRadius: 'var(--radius-md)',
+    fontWeight: 700,
+    cursor: 'pointer',
+    fontSize: 13,
+    fontFamily: 'inherit',
   },
-  clearLink: { color: '#6b7280', textDecoration: 'none', fontSize: '0.85rem' },
-  snippet: { display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  link: { color: '#2563eb', textDecoration: 'none', fontWeight: 600 },
-  empty: { color: '#6b7280', textAlign: 'center', padding: '3rem' },
-  err: { color: '#991b1b' },
-  pagination: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginTop: '1.5rem' },
+  clearLink: {
+    color: 'var(--fg3)',
+    textDecoration: 'none',
+    fontSize: 12,
+    fontWeight: 600,
+  },
+  snippet: {
+    display: 'block',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    color: 'var(--fg2)',
+  },
+  link: {
+    color: 'var(--color-app-accent)',
+    textDecoration: 'none',
+    fontWeight: 700,
+    fontFamily: 'var(--font-mono)',
+  },
+  empty: {
+    color: 'var(--fg3)',
+    textAlign: 'center',
+    padding: 'var(--s6)',
+  },
+  err: { color: 'var(--color-danger)' },
+  pagination: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    marginTop: 'var(--s4)',
+  },
   pagBtn: {
-    padding: '0.375rem 0.75rem', background: 'white', color: '#374151',
-    border: '1px solid #d1d5db', borderRadius: 6, textDecoration: 'none', fontSize: '0.85rem', fontWeight: 500,
+    padding: '6px 12px',
+    background: 'var(--bg-white)',
+    color: 'var(--fg1)',
+    border: '1px solid var(--border-strong)',
+    borderRadius: 'var(--radius-md)',
+    textDecoration: 'none',
+    fontSize: 12,
+    fontWeight: 600,
   },
   pagBtnDisabled: {
-    padding: '0.375rem 0.75rem', background: '#f9fafb', color: '#d1d5db',
-    border: '1px solid #e5e7eb', borderRadius: 6, fontSize: '0.85rem', fontWeight: 500, cursor: 'not-allowed',
+    padding: '6px 12px',
+    background: 'var(--color-slate-50)',
+    color: 'var(--fg3)',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-md)',
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'not-allowed',
   },
-  pagCurrent: { color: '#374151', fontSize: '0.85rem', fontWeight: 500 },
+  pagCurrent: {
+    color: 'var(--fg2)',
+    fontSize: 12,
+    fontWeight: 600,
+    fontVariantNumeric: 'tabular-nums',
+  },
 };

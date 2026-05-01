@@ -4,7 +4,7 @@ import { useActionState, useState } from 'react';
 import { Button } from '@/lib/ui/Button';
 import { Card } from '@/lib/ui/Card';
 import { toggleActive, deleteUser } from './actions';
-import s from './forms.module.css';
+import s from '../../../forms.module.css';
 
 export function StatusActions({ userId, isActive, isSelf }) {
   const [toggleState, toggleAction, togglePending] = useActionState(toggleActive, null);
