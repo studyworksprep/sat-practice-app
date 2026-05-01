@@ -3,15 +3,16 @@
 import { useActionState } from 'react';
 import { Button } from '@/lib/ui/Button';
 import { updateProfileFields } from './actions';
+import s from './forms.module.css';
 
 export function UserEditForm({ userId, initial }) {
   const [state, formAction, pending] = useActionState(updateProfileFields, null);
 
   return (
-    <form action={formAction} style={S.form}>
+    <form action={formAction} className={s.form}>
       <input type="hidden" name="user_id" value={userId} />
 
-      <div style={S.grid}>
+      <div className={s.grid}>
         <Field label="First name" name="first_name" defaultValue={initial.first_name ?? ''} />
         <Field label="Last name" name="last_name" defaultValue={initial.last_name ?? ''} />
         <Field label="Email" name="email" type="email" defaultValue={initial.email ?? ''} />
@@ -21,12 +22,12 @@ export function UserEditForm({ userId, initial }) {
         <Field label="Target SAT score" name="target_sat_score" type="number" defaultValue={initial.target_sat_score ?? ''} />
       </div>
 
-      <div style={S.actions}>
+      <div className={s.actions}>
         <Button type="submit" disabled={pending}>
           {pending ? 'Saving…' : 'Save changes'}
         </Button>
-        {state?.ok && !pending && <span style={S.ok}>Saved.</span>}
-        {state?.ok === false && !pending && <span style={S.err}>{state.error}</span>}
+        {state?.ok && !pending && <span className={s.ok}>Saved.</span>}
+        {state?.ok === false && !pending && <span className={s.err}>{state.error}</span>}
       </div>
     </form>
   );
@@ -34,29 +35,14 @@ export function UserEditForm({ userId, initial }) {
 
 function Field({ label, name, defaultValue, type = 'text' }) {
   return (
-    <label style={S.label}>
-      <span style={S.labelText}>{label}</span>
+    <label className={s.label}>
+      <span className={s.labelText}>{label}</span>
       <input
         type={type}
         name={name}
         defaultValue={defaultValue}
-        style={S.input}
+        className={s.input}
       />
     </label>
   );
 }
-
-const S = {
-  form: { display: 'flex', flexDirection: 'column', gap: '1rem' },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '0.75rem',
-  },
-  label: { display: 'flex', flexDirection: 'column', gap: '0.25rem' },
-  labelText: { fontSize: '0.75rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.025em' },
-  input: { padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.9rem' },
-  actions: { display: 'flex', gap: '0.75rem', alignItems: 'center' },
-  ok: { color: '#166534', fontSize: '0.85rem' },
-  err: { color: '#991b1b', fontSize: '0.85rem' },
-};

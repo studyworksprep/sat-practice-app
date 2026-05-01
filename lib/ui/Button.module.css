@@ -1,0 +1,95 @@
+/* Shared button primitive — token-mapped variants used across
+   the new tree. Each variant has a base + disabled rule; the
+   disabled rule fires via the [disabled] attribute selector
+   so the .js side just toggles the attribute and the CSS
+   handles the visual. */
+
+.base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  line-height: 1.2;
+  transition: all var(--dur-fast) var(--ease-std);
+  border: 1px solid transparent;
+}
+.base:disabled,
+.base[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+/* ---------- Sizes ---------- */
+
+.sm {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.md {
+  padding: 8px 16px;
+  font-size: 13px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+}
+
+/* ---------- Variants ---------- */
+
+.primary {
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  border-color: var(--color-app-accent);
+}
+.primary:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+.primary:disabled {
+  opacity: 0.55;
+}
+
+.secondary {
+  background: var(--bg-white);
+  color: var(--fg1);
+  border-color: var(--border-strong);
+}
+.secondary:hover:not(:disabled) {
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+.secondary:disabled {
+  opacity: 0.55;
+  color: var(--fg3);
+}
+
+/* danger == amber-toned, used for irreversible actions that
+   want weight without screaming "deleted." Matches the legacy
+   "promote to admin" / "deactivate" buttons. */
+.danger {
+  background: var(--color-amber);
+  color: var(--bg-white);
+  border-color: var(--color-amber);
+}
+.danger:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+.danger:disabled {
+  opacity: 0.55;
+}
+
+/* remove == red-outlined inline action, lighter weight than
+   .danger. Used in rows ("Remove", "Revoke", "Clear"). */
+.remove {
+  background: transparent;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+.remove:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+}
+.remove:disabled {
+  opacity: 0.55;
+}
