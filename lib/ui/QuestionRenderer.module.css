@@ -166,6 +166,16 @@
   border: 0;
 }
 
+/* Outer flex-row that holds the option <label> and the cross-out
+   <button> as siblings — see OptionsList for why the button can't
+   live inside the label. The label flex-grows; the button is a
+   fixed circle. */
+.optionRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
 .option {
   display: flex;
   align-items: flex-start;
@@ -176,6 +186,19 @@
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease-std);
+  flex: 1;
+  min-width: 0;
+}
+
+/* Crossed-out: the eliminated option fades + line-throughs. Click
+   still works (student might change their mind), but visually
+   it's de-emphasised. */
+.optionCrossed { opacity: 0.45; }
+.optionCrossed .optionContent { text-decoration: line-through; }
+.optionCrossed .optionBadge {
+  text-decoration: line-through;
+  border-color: var(--fg3);
+  color: var(--fg3);
 }
 
 .option:hover {
@@ -283,6 +306,70 @@
   line-height: 1.55;
   color: var(--color-slate-700);
 }
+
+/* ---------- Cross-out toggle ----------
+   Default state is a small circle showing the option letter with
+   a horizontal strike through it. Active state (option is
+   currently crossed out) flips to plain text "Undo" so it reads
+   as the inverse action — matches the legacy practice-test
+   behavior students are already used to. */
+.crossOutBtn {
+  flex: 0 0 auto;
+  position: relative;
+  overflow: hidden;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 750;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--fg3);
+  transition: border-color var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std),
+              background var(--dur-fast) var(--ease-std);
+}
+/* The horizontal strike spans the full circle so the letter
+   underneath reads as eliminated. */
+.crossOutBtn::after {
+  content: '';
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: 50%;
+  height: 1.5px;
+  background: currentColor;
+  transform: translateY(-50%);
+}
+.crossOutBtn:hover {
+  border-color: var(--color-navy-900);
+  color: var(--fg1);
+}
+
+/* Active = the option is currently crossed out; the toggle now
+   reads as "Undo" plain text. */
+.crossOutBtnActive {
+  width: auto;
+  height: auto;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 0;
+  color: var(--fg1);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  background: transparent;
+}
+.crossOutBtnActive::after { display: none; }
+.crossOutBtnActive:hover { color: var(--color-app-accent); }
 
 /* ---------- SPR input ---------- */
 

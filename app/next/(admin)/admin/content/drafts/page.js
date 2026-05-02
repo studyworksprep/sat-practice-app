@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
 import { Table, Th, Td } from '@/lib/ui/Table';
+import a from '../../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,16 +46,17 @@ export default async function DraftsListPage() {
   }));
 
   return (
-    <main style={S.main}>
-      <nav style={{ marginBottom: '1rem' }}>
-        <Link href="/admin/content" style={S.backLink}>← Admin content</Link>
+    <main className={a.container}>
+      <nav className={a.breadcrumb}>
+        <Link href="/admin/content">← Admin content</Link>
       </nav>
 
-      <header style={S.header}>
-        <h1 style={S.h1}>Content drafts</h1>
-        <div style={S.sub}>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · Drafts</div>
+        <h1 className={a.h1}>Content drafts</h1>
+        <p className={a.sub}>
           Staged content fixes for questions_v2 rows. Promoted drafts drop off this list.
-        </div>
+        </p>
       </header>
 
       {rows.length === 0 ? (

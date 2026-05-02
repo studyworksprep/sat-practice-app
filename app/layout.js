@@ -1,10 +1,36 @@
 import './globals.css';
 import { headers } from 'next/headers';
+import { Inter, Playfair_Display } from 'next/font/google';
 import NavBar from '../components/NavBar';
 import StorageHygiene from '../components/StorageHygiene';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
 import { TestTypeProvider } from '../lib/TestTypeContext';
+
+// Self-hosted Google Fonts via next/font. The bundler downloads
+// them at build time, scopes the @font-face to a hashed class on
+// <html>, and exposes a CSS custom property each. The token file
+// (app/styles/next-tokens.css) reads --font-inter / --font-playfair
+// at the head of its --font-sans / --font-serif fallback stacks,
+// so every macOS / Windows / Linux user sees the same typeface
+// instead of falling through to system fonts.
+//
+// Weights chosen to match what next-tree CSS actually uses:
+//   - Inter 400/500/600/700/800 (the design kit's set)
+//   - Playfair Display 600/700/800 (serif headings)
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-playfair',
+  display: 'swap',
+});
 
 export const metadata = {
   title: 'SAT Practice',
@@ -28,7 +54,7 @@ export default async function RootLayout({ children }) {
   const uiTree = h.get('x-ui-tree') === 'next' ? 'next' : 'legacy';
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <head>
         {/* Speed up Desmos loading: early DNS + TLS handshake, then preload the script */}
         <link rel="dns-prefetch" href="https://www.desmos.com" />

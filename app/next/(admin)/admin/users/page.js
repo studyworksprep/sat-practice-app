@@ -12,9 +12,12 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
 import { Card } from '@/lib/ui/Card';
+import { RoleTag } from '@/lib/ui/RoleTag';
+import { StatusBadge } from '@/lib/ui/StatusBadge';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { UsersFilter } from './UsersFilter';
 import { UsersNav } from './UsersNav';
+import a from '../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,14 +86,15 @@ export default async function AdminUsersPage({ searchParams }) {
   }
 
   return (
-    <main style={S.main}>
-      <nav style={S.breadcrumb}>
-        <a href="/admin" style={S.breadcrumbLink}>← Admin</a>
+    <main className={a.container}>
+      <nav className={a.breadcrumb}>
+        <a href="/admin">← Admin</a>
       </nav>
 
-      <header style={S.header}>
-        <h1 style={S.h1}>User management</h1>
-        <p style={S.sub}>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · Users</div>
+        <h1 className={a.h1}>User management</h1>
+        <p className={a.sub}>
           Browse and edit platform users. Click a name to open their detail
           page. Use Relationships for bulk assignments and Codes for
           signup/invite tokens.
@@ -99,15 +103,15 @@ export default async function AdminUsersPage({ searchParams }) {
 
       <UsersNav current="list" />
 
-      <section style={S.filterSection}>
+      <section>
         <UsersFilter currentRole={roleFilter} currentQuery={query} roleTally={roleTally} />
       </section>
 
-      <section>
-        <h2 style={S.h2}>
+      <section className={a.section}>
+        <div className={a.sectionLabel}>
           {rows.length} result{rows.length === 1 ? '' : 's'}
           {rows.length >= USER_LIMIT && ` (first ${USER_LIMIT})`}
-        </h2>
+        </div>
         <Table>
             <thead>
               <tr>
@@ -130,9 +134,7 @@ export default async function AdminUsersPage({ searchParams }) {
                     </Td>
                     <Td>{u.email ?? '—'}</Td>
                     <Td>
-                      <span style={{ ...S.roleTag, ...roleTagColor(u.role) }}>
-                        {u.role}
-                      </span>
+                      <RoleTag role={u.role} />
                     </Td>
                     <Td>
                       {u.high_school ? (
@@ -146,13 +148,10 @@ export default async function AdminUsersPage({ searchParams }) {
                     </Td>
                     <Td>{formatDate(u.created_at) || '—'}</Td>
                     <Td>
-                      {!u.is_active ? (
-                        <span style={S.inactive}>Inactive</span>
-                      ) : u.subscription_exempt ? (
-                        <span style={S.exempt}>Exempt</span>
-                      ) : (
-                        <span style={S.active}>Active</span>
-                      )}
+                      <StatusBadge
+                        active={u.is_active !== false}
+                        exempt={u.subscription_exempt}
+                      />
                     </Td>
                   </tr>
                 );
@@ -173,11 +172,12 @@ export default async function AdminUsersPage({ searchParams }) {
 
 function ErrorState({ message }) {
   return (
-    <main style={S.main}>
-      <header style={S.header}>
-        <h1 style={S.h1}>User management</h1>
+    <main className={a.container}>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · Users</div>
+        <h1 className={a.h1}>User management</h1>
       </header>
-      <Card tone="danger" style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+      <Card tone="danger" style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>
         <p style={{ margin: 0 }}>{message}</p>
       </Card>
     </main>
@@ -185,39 +185,14 @@ function ErrorState({ message }) {
 }
 
 
-function roleTagColor(role) {
-  switch (role) {
-    case 'admin':
-      return { background: '#fef3c7', color: '#92400e' };
-    case 'manager':
-      return { background: '#ede9fe', color: '#5b21b6' };
-    case 'teacher':
-      return { background: '#dbeafe', color: '#1d4ed8' };
-    case 'student':
-      return { background: '#dcfce7', color: '#166534' };
-    default:
-      return { background: '#f3f4f6', color: '#6b7280' };
-  }
-}
-
+// Inline-row styles. Page chrome (container / header / sections)
+// comes from admin.module.css; role + status pills come from
+// shared RoleTag / StatusBadge primitives. Only the table-cell
+// link style is unique to this page.
 const S = {
-  main: { maxWidth: 1200, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  breadcrumb: { marginBottom: '1rem' },
-  breadcrumbLink: { color: '#2563eb', textDecoration: 'none', fontSize: '0.9rem' },
-  header: { marginBottom: '1.5rem' },
-  h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' },
-  sub: { color: '#4b5563', marginTop: 0 },
-  filterSection: { marginBottom: '1.5rem' },
-  h2: { fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', color: '#374151' },
-  nameLink: { color: '#2563eb', fontWeight: 600, textDecoration: 'none' },
-  roleTag: {
-    display: 'inline-block',
-    padding: '0.125rem 0.5rem',
-    borderRadius: 999,
-    fontSize: '0.75rem',
+  nameLink: {
+    color: 'var(--color-app-accent)',
     fontWeight: 600,
+    textDecoration: 'none',
   },
-  active: { color: '#166534', fontSize: '0.8rem' },
-  inactive: { color: '#991b1b', fontSize: '0.8rem' },
-  exempt: { color: '#92400e', fontSize: '0.8rem' },
 };

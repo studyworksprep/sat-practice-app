@@ -1,0 +1,42 @@
+/* Role tag — small colored pill that surfaces a profile.role
+   value. Tones are token-mapped so a palette change is one
+   file. Same shape used on /admin/users (list cell) and the
+   per-user detail header. */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--border);
+}
+
+.admin {
+  background: var(--color-diff-med-bg);
+  color: var(--color-diff-med-fg);
+  border-color: var(--color-diff-med-bd);
+}
+.manager {
+  background: var(--color-diff-extreme-bg);
+  color: var(--color-diff-extreme-fg);
+  border-color: var(--color-diff-extreme-bd);
+}
+.teacher {
+  background: var(--color-app-accent-soft);
+  color: var(--color-app-accent);
+  border-color: var(--color-app-accent);
+}
+.student {
+  background: var(--color-success-bg);
+  color: var(--color-diff-easy-fg);
+  border-color: var(--color-success);
+}
+.practice {
+  background: var(--color-slate-100);
+  color: var(--fg3);
+  border-color: var(--border-strong);
+}

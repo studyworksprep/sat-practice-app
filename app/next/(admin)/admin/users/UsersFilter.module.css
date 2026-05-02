@@ -1,0 +1,57 @@
+/* Filter form for the admin users list. */
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3);
+  align-items: flex-end;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 11px;
+  color: var(--fg3);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.input,
+.select {
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--fg1);
+  background: var(--bg-white);
+}
+
+.input { min-width: 240px; }
+.select { min-width: 160px; }
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--color-app-accent);
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.resetLink {
+  color: var(--fg3);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 10px;
+}
+.resetLink:hover { color: var(--color-app-accent); }

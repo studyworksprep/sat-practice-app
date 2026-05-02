@@ -1,0 +1,28 @@
+/* Sub-nav for the admin users area — pill-bar group with the
+   active tab elevated. */
+
+.nav {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--color-slate-100);
+  border-radius: var(--radius-md);
+}
+
+.tab {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: all var(--dur-fast) var(--ease-std);
+}
+
+.tab:hover { color: var(--fg1); }
+
+.tabActive {
+  background: var(--bg-white);
+  color: var(--color-navy-900);
+  box-shadow: var(--shadow-sm);
+}

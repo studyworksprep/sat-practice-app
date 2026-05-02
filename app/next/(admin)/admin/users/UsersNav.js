@@ -1,23 +1,26 @@
-// Sub-navigation for the admin users area. Server component — just
-// renders three links and highlights the current section. The
-// `current` prop is one of: 'list', 'relationships', 'codes'.
+// Sub-navigation for the admin users area. Server component —
+// just renders three links and highlights the current section.
+// `current` is one of: 'list', 'relationships', 'codes'.
+
+import s from './UsersNav.module.css';
 
 const ITEMS = [
-  { key: 'list', href: '/admin/users', label: 'Users' },
+  { key: 'list',          href: '/admin/users',               label: 'Users' },
   { key: 'relationships', href: '/admin/users/relationships', label: 'Relationships' },
-  { key: 'codes', href: '/admin/users/codes', label: 'Codes' },
+  { key: 'codes',         href: '/admin/users/codes',         label: 'Codes' },
 ];
 
 export function UsersNav({ current }) {
   return (
-    <nav style={S.nav} aria-label="Admin users sub-navigation">
+    <nav className={s.nav} aria-label="Admin users sub-navigation">
       {ITEMS.map((item) => {
         const active = item.key === current;
+        const cls = active ? `${s.tab} ${s.tabActive}` : s.tab;
         return (
           <a
             key={item.key}
             href={item.href}
-            style={{ ...S.tab, ...(active ? S.tabActive : {}) }}
+            className={cls}
             aria-current={active ? 'page' : undefined}
           >
             {item.label}
@@ -27,28 +30,3 @@ export function UsersNav({ current }) {
     </nav>
   );
 }
-
-const S = {
-  nav: {
-    display: 'flex',
-    gap: '0.25rem',
-    padding: '0.25rem',
-    background: '#f3f4f6',
-    borderRadius: 8,
-    marginBottom: '1.5rem',
-    width: 'fit-content',
-  },
-  tab: {
-    padding: '0.45rem 0.9rem',
-    fontSize: '0.85rem',
-    fontWeight: 600,
-    color: '#4b5563',
-    textDecoration: 'none',
-    borderRadius: 6,
-  },
-  tabActive: {
-    background: 'white',
-    color: '#111827',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-  },
-};

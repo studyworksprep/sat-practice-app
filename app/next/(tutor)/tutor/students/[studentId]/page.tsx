@@ -430,7 +430,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           importedAt={profileRow?.practice_test_v2_imported_at ?? null}
           hasV1History={(v1AttemptCount ?? 0) > 0}
         />
-        {profile.role === 'admin' && (
+        {(profile.role === 'admin' || profile.role === 'manager') && (
           <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--border)' }}>
             <MigrateToNextButton studentId={student.id} currentUiVersion={null} />
           </div>

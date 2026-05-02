@@ -17,6 +17,8 @@ import { Table, Th, Td } from '@/lib/ui/Table';
 import { ScoreConversionSection } from './ScoreConversionSection';
 import { TestThresholdsSection } from './TestThresholdsSection';
 import { LearnabilitySection } from './LearnabilitySection';
+import { RoleTag } from '@/lib/ui/RoleTag';
+import a from '../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,19 +51,20 @@ export default async function AdminContentPage({ searchParams }) {
   ]);
 
   return (
-    <main style={S.main}>
-      <nav style={S.breadcrumb}>
-        <a href="/admin" style={S.crumbLink}>← Admin</a>
+    <main className={a.container}>
+      <nav className={a.breadcrumb}>
+        <a href="/admin">← Admin</a>
       </nav>
 
-      <header style={S.header}>
-        <h1 style={S.h1}>Question content</h1>
-        <p style={S.sub}>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · Content</div>
+        <h1 className={a.h1}>Question content</h1>
+        <p className={a.sub}>
           Flagged items, scoring curves, adaptive routing, and skill
           learnability ratings — the content-operations surface.
         </p>
-        <p style={S.sub}>
-          <a href="/admin/content/drafts" style={S.link}>→ Content drafts</a>
+        <p className={a.sub}>
+          <a href="/admin/content/drafts" className={a.link}>→ Content drafts</a>
           {' '}— staged fixes for questions_v2 rows, side-by-side review + promote.
         </p>
       </header>
@@ -99,8 +102,8 @@ export default async function AdminContentPage({ searchParams }) {
                     <Td>
                       {q.flagged_by_name ?? '—'}
                       {q.flagged_by_role && (
-                        <span style={{ ...S.rolePill, ...roleColor(q.flagged_by_role) }}>
-                          {q.flagged_by_role}
+                        <span style={{ marginLeft: 6 }}>
+                          <RoleTag role={q.flagged_by_role} />
                         </span>
                       )}
                     </Td>
@@ -181,9 +184,9 @@ async function loadLearnability(supabase) {
 
 function Section({ title, badge, badgeStyle, children }) {
   return (
-    <section style={S.section}>
+    <section className={a.section}>
       <div style={S.sectionHead}>
-        <h2 style={S.h2}>{title}</h2>
+        <h2 className={a.h2}>{title}</h2>
         {badge && <span style={{ ...S.badge, ...(badgeStyle ?? {}) }}>{badge}</span>}
       </div>
       {children}
@@ -191,16 +194,6 @@ function Section({ title, badge, badgeStyle, children }) {
   );
 }
 
-
-function roleColor(role) {
-  switch (role) {
-    case 'admin':   return { background: '#fef3c7', color: '#92400e' };
-    case 'manager': return { background: '#ede9fe', color: '#5b21b6' };
-    case 'teacher': return { background: '#dbeafe', color: '#1d4ed8' };
-    case 'student': return { background: '#dcfce7', color: '#166534' };
-    default:        return { background: '#f3f4f6', color: '#6b7280' };
-  }
-}
 
 const S = {
   main: { maxWidth: 1200, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },

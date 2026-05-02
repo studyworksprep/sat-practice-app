@@ -453,6 +453,20 @@ export function NotesIcon(props) {
   );
 }
 
+// Two stacked index cards — used for the Flashcards trigger so it
+// reads as a study-card glyph distinct from QuestionNotes (single
+// page) and TestIcon (sectioned paper). Back card is offset
+// up-and-right from the front card; both have rounded corners.
+export function FlashcardsIcon(props) {
+  return (
+    <SvgRoot {...props}>
+      <rect x="7" y="3" width="14" height="10" rx="1.5" />
+      <rect x="3" y="8" width="14" height="13" rx="1.5" />
+      <path d="M6 13h8M6 16h6" />
+    </SvgRoot>
+  );
+}
+
 export function TestIcon(props) {
   return (
     <SvgRoot {...props}>

@@ -57,6 +57,35 @@ data path is healthy; they don't change anything.
    student with significant attempt history, run the v1→v2 ID
    audit (commit `1a4185b` for the helper that resolves these).
 
+5. **Per-student data audit** (optional but useful for the first
+   few flips). The following SQL surfaces what the student has
+   on the legacy side so you know what to expect afterwards:
+
+   ```sql
+   select
+     (select count(*) from attempts where user_id = '<sid>')                     as total_attempts,
+     (select count(*) from practice_test_attempts where user_id = '<sid>')      as legacy_test_attempts,
+     (select count(*) from practice_test_attempts_v2 where user_id = '<sid>')   as v2_test_attempts,
+     (select count(*) from question_assignments where student_id = '<sid>')    as legacy_assignments,
+     (select count(*) from assignment_students_v2 where student_id = '<sid>')  as v2_assignments,
+     (select count(*) from question_status where user_id = '<sid>' and notes is not null and length(trim(notes)) > 0) as legacy_error_notes,
+     (select count(*) from question_error_notes where user_id = '<sid>')       as v2_error_notes,
+     (select count(*) from flashcard_sets where user_id = '<sid>')             as flashcard_sets,
+     (select count(*) from flashcards f join flashcard_sets fs on f.set_id=fs.id where fs.user_id='<sid>') as flashcards;
+   ```
+
+   - `legacy_test_attempts` should match `v2_test_attempts` after
+     the import RPC runs (or be ≤ — re-imports skip already-in-v2
+     rows). A wide gap pre-flip and zero v2 means the import
+     hasn't run yet; the flip handles that automatically.
+   - `legacy_error_notes` should equal `v2_error_notes` after
+     `import_student_error_notes` runs (or v2 ≥ legacy if the
+     student has already written some notes after a previous
+     flip + flip-back).
+   - `legacy_assignments` and `v2_assignments` should be roughly
+     equal post-cutover; the continuous-sync trigger keeps them
+     in step.
+
 ---
 
 ## The flip
@@ -65,17 +94,24 @@ Use `migrateUserToNext` from
 `app/next/(tutor)/tutor/students/[studentId]/actions.js` — it's
 the canonical path. The action:
 
-1. Verifies the caller is admin (or manager assigned to the
-   student, depending on env).
+1. Verifies the caller is admin or manager. Teachers see only
+   the per-feature import button; admins + managers see the
+   cutover button.
 2. Calls `import_student_practice_history(p_student_id)` to pull
    v1 practice-test attempts into the v2 tables. Idempotent — if
    already run, the action skips.
 3. Calls `recomputeAttemptScores` on every imported attempt to
    populate `composite_score / rw_scaled / math_scaled` against
    the v2 score-conversion lookup.
-4. Sets `app_metadata.ui_version = 'next'` on the user via the
+4. Calls `import_student_error_notes(p_user_id)` to backfill the
+   student's legacy `question_status.notes` rows into the new
+   v2-keyed `question_error_notes` table. Idempotent — `ON
+   CONFLICT DO NOTHING` keeps any v2-side edits the student has
+   already made (e.g. if they re-flipped to legacy and back).
+5. Sets `app_metadata.ui_version = 'next'` on the user via the
    service-role auth client.
-5. Returns either `{ ok: true, importedAttempts, recomputed }`
+6. Returns either
+   `{ ok: true, importedAttempts, recomputed, errorNotesImported, errorNotesSkipped }`
    or a structured error.
 
 The button lives on `/tutor/students/<id>` next to the existing
@@ -129,6 +165,30 @@ minutes per student.
    land in `attempts` with `source='practice'`, and that the
    review page renders the rationale + correctness correctly.
 
+6. **Error log carry-over.** If the pre-flight audit showed
+   `legacy_error_notes > 0`, visit `/review/error-log` and
+   confirm the count matches. Open one entry's "Show question"
+   to confirm the question content + the student's latest
+   answer render. If `import_student_error_notes` skipped
+   anything (`errorNotesSkipped > 0` in the action result),
+   that means the v1 question wasn't in `question_id_map` —
+   rare and only affects truly orphaned v1 rows.
+
+7. **Flashcards.** Visit `/flashcards`. The student's existing
+   sets + cards should appear; no migration is required since
+   `flashcard_sets` and `flashcards` are user-keyed and shared
+   between trees. Click a set, confirm the card list renders,
+   and (if the set has cards) click Review to confirm the flip
+   + self-rate flow loads.
+
+8. **Mark-for-review on practice.** Start a 2-question session
+   from `/practice/start`. On the first question click "Mark
+   for review", then navigate to question 2 and back. The
+   gold-dot badge should persist on the bottom strip. Pre-flip
+   marks don't carry over (legacy practice was 1-question-at-
+   a-time and didn't write session rows), but post-flip marks
+   should be sticky.
+
 If any of those fails, **roll back first**, then debug.
 
 ---
@@ -176,8 +236,11 @@ consistent with what's actually being served.
 - **`practice_sessions` is v2-only.** Legacy practice activity
   (one-question-at-a-time on `/practice/[questionId]`) wrote to
   `attempts` but didn't create session rows. After a flip, the
-  student's "practice history" list is empty even though their
-  attempts are intact and counted everywhere else.
+  student's "practice history" list at `/practice/history` is
+  empty even though their attempts are intact and counted on
+  the dashboard, in Common Errors, in Smart Review, etc.
+  Reviewing an individual pre-flip question still works via
+  the Error Log row's "Show question" expand.
 
 - **Per-question timing on imported tests.** Bluebook uploads
   didn't capture `attempts.time_spent_ms`; the per-module wall
@@ -191,6 +254,28 @@ consistent with what's actually being served.
   loader resolves the option's label from `answer_options` for
   display so the renderer's red-X-on-wrong styling fires. New
   uploads going forward match the v2 shape.
+
+- **Mark-for-review on past sessions.** The new
+  `practice_sessions.marked_positions` column is v2-only. Pre-
+  flip practice activity has no concept of "marked for review"
+  to import. Post-flip marks are sticky on the runner and the
+  per-session review map.
+
+- **Concept tags written post-cutover.** The
+  `question_concept_tags` table FKs the legacy `questions` v1
+  id. Read paths translate v2 → v1 via `legacy-id-map`, so
+  reads work fine. Writes still require a v1 row to exist —
+  questions added to v2 after cutover (no v1 counterpart) get a
+  friendly "no v1 counterpart" error from `addConceptTag`. The
+  schema fix is the v1-decommissioning work in the parked queue.
+
+- **Desmos saved states.** `desmos_saved_states.question_id`
+  carries v1 ids historically. The next-tree loader reads by
+  the v2 id directly without translation — so a teacher-set
+  saved state on a v1 question won't surface for the v2
+  student until we migrate that table. Worth a one-shot
+  migration if any saved states exist; check
+  `select count(*) from desmos_saved_states` first.
 
 ---
 

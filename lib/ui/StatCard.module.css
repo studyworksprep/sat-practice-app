@@ -1,0 +1,36 @@
+/* Labeled-metric tile. Visually identical to the per-page stat
+   tiles on the student / tutor dashboards (statCard there is
+   inlined in each module). Single source of truth here so a
+   theme change is one-file. */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.value {
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.valueSmall {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--fg1);
+}

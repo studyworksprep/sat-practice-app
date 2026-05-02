@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/lib/ui/Button';
 import { Card } from '@/lib/ui/Card';
 import { updateTestThresholds } from './actions';
+import s from '../../forms.module.css';
 
 export function TestThresholdsSection({ tests, selectedTestId, currentRW, currentMath }) {
   const router = useRouter();
@@ -31,14 +32,15 @@ export function TestThresholdsSection({ tests, selectedTestId, currentRW, curren
 
   return (
     <>
-      <div style={S.selectorRow}>
-        <label style={S.field}>
-          <span style={S.fieldLabel}>Practice test</span>
+      <div className={s.row} style={{ marginBottom: 'var(--s3)' }}>
+        <label className={s.label}>
+          <span className={s.labelText}>Practice test</span>
           <select
             value={selectedTestId ?? ''}
             onChange={(e) => selectTest(e.target.value)}
             disabled={isLoading}
-            style={S.select}
+            className={s.select}
+            style={{ minWidth: 260 }}
           >
             <option value="">Select a test…</option>
             {tests.map((t) => (
@@ -46,33 +48,33 @@ export function TestThresholdsSection({ tests, selectedTestId, currentRW, curren
             ))}
           </select>
         </label>
-        {isLoading && <span style={S.hint}>Loading…</span>}
+        {isLoading && <span className={s.muted}>Loading…</span>}
       </div>
 
       {!selectedTestId && (
-        <p style={S.hint}>Pick a test to view and edit its adaptive routing thresholds.</p>
+        <p className={s.formHint}>Pick a test to view and edit its adaptive routing thresholds.</p>
       )}
 
       {selectedTestId && (
         <>
           {!selectedTest?.is_adaptive && (
-            <Card tone="warn" style={{ padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem' }}>
+            <Card tone="warn" style={{ padding: '12px 16px', marginBottom: 'var(--s3)', fontSize: 13 }}>
               This test is not marked as adaptive. Thresholds are stored but only
               used when <code>is_adaptive</code> is true.
             </Card>
           )}
 
-          <p style={S.hint}>
+          <p className={s.formHint}>
             Students scoring at or above the threshold on Module 1 route to the
             hard Module 2. Below threshold routes to easy.
           </p>
 
-          <form action={formAction} style={S.form}>
+          <form action={formAction} className={s.form}>
             <input type="hidden" name="practice_test_id" value={selectedTestId} />
 
-            <div style={S.row}>
-              <label style={S.field}>
-                <span style={S.fieldLabel}>R&W threshold</span>
+            <div className={s.row}>
+              <label className={s.label}>
+                <span className={s.labelText}>R&amp;W threshold</span>
                 <input
                   type="number"
                   name="rw_threshold"
@@ -81,12 +83,13 @@ export function TestThresholdsSection({ tests, selectedTestId, currentRW, curren
                   value={rw}
                   onChange={(e) => setRw(e.target.value)}
                   placeholder="e.g. 15"
-                  style={S.input}
+                  className={s.input}
+                  style={{ width: 120 }}
                 />
               </label>
 
-              <label style={S.field}>
-                <span style={S.fieldLabel}>Math threshold</span>
+              <label className={s.label}>
+                <span className={s.labelText}>Math threshold</span>
                 <input
                   type="number"
                   name="math_threshold"
@@ -95,7 +98,8 @@ export function TestThresholdsSection({ tests, selectedTestId, currentRW, curren
                   value={math}
                   onChange={(e) => setMath(e.target.value)}
                   placeholder="e.g. 14"
-                  style={S.input}
+                  className={s.input}
+                  style={{ width: 120 }}
                 />
               </label>
 
@@ -104,24 +108,13 @@ export function TestThresholdsSection({ tests, selectedTestId, currentRW, curren
               </Button>
             </div>
 
-            {state?.ok && !pending && <span style={S.ok}>Saved.</span>}
-            {state?.ok === false && !pending && <span style={S.err}>{state.error}</span>}
+            {state?.ok && !pending && <span className={s.ok}>Saved.</span>}
+            {state?.ok === false && !pending && (
+              <span className={s.err}>{state.error}</span>
+            )}
           </form>
         </>
       )}
     </>
   );
 }
-
-const S = {
-  selectorRow: { display: 'flex', gap: '0.5rem', alignItems: 'flex-end', marginBottom: '1rem' },
-  field: { display: 'flex', flexDirection: 'column', gap: '0.25rem' },
-  fieldLabel: { fontSize: '0.7rem', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.025em' },
-  select: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.9rem', background: 'white', minWidth: 260 },
-  input: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.9rem', width: 120 },
-  hint: { fontSize: '0.8rem', color: '#6b7280', marginTop: 0, marginBottom: '0.75rem' },
-  form: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
-  row: { display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' },
-  ok: { color: '#166534', fontSize: '0.85rem' },
-  err: { color: '#991b1b', fontSize: '0.85rem' },
-};

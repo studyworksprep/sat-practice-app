@@ -110,6 +110,7 @@ export default async function TutorTrainingPracticePage() {
       createSessionAction={createTrainingSession}
       countAvailableAction={countAvailable}
       basePath="/tutor/training/practice"
+      historyHref="/tutor/training/practice/history"
     />
   );
 }

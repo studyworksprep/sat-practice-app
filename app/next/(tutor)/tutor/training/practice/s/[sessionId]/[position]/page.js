@@ -95,6 +95,7 @@ export default async function TutorTrainingQuestionPage({ params }) {
       initialMapItems={payload.mapItems}
       initialConceptTags={payload.conceptTags}
       initialQuestionNotes={payload.questionNotes}
+      initialErrorNote={payload.errorNote}
       initialMarked={payload.marked}
       submitAnswerAction={submitAnswer}
       loadQuestionAction={loadQuestionAction}

@@ -17,6 +17,7 @@ import {
   assignManagerTeacher,
   unassignManagerTeacher,
 } from '../[userId]/actions';
+import a from '../../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,14 +53,15 @@ export default async function AdminUserRelationshipsPage() {
   ]);
 
   return (
-    <main style={S.main}>
-      <nav style={S.breadcrumb}>
-        <a href="/admin" style={S.crumbLink}>← Admin</a>
+    <main className={a.container}>
+      <nav className={a.breadcrumb}>
+        <a href="/admin">← Admin</a>
       </nav>
 
-      <header style={S.header}>
-        <h1 style={S.h1}>User relationships</h1>
-        <p style={S.sub}>
+      <header className={a.header}>
+        <div className={a.eyebrow}>Admin · Relationships</div>
+        <h1 className={a.h1}>User relationships</h1>
+        <p className={a.sub}>
           Bulk wiring for the assignment hierarchy. For per-person
           relationship edits, open the user detail page from the Users tab.
         </p>
@@ -142,8 +144,8 @@ export default async function AdminUserRelationshipsPage() {
 
 function Section({ title, children }) {
   return (
-    <section style={S.section}>
-      <h2 style={S.h2}>{title}</h2>
+    <section className={a.section}>
+      <h2 className={a.h2}>{title}</h2>
       {children}
     </section>
   );

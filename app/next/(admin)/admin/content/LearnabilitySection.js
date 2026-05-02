@@ -3,16 +3,17 @@
 import { useActionState, useMemo, useState } from 'react';
 import { Button } from '@/lib/ui/Button';
 import { saveSkillLearnability } from './actions';
+import s from '../../forms.module.css';
 
 export function LearnabilitySection({ skills }) {
   // Key by skill_code. Store the display value; diff against initial.
   const [values, setValues] = useState(() =>
-    Object.fromEntries(skills.map((s) => [s.skill_code, s.learnability])),
+    Object.fromEntries(skills.map((sk) => [sk.skill_code, sk.learnability])),
   );
   const [state, formAction, pending] = useActionState(saveSkillLearnability, null);
 
   const changed = useMemo(
-    () => skills.filter((s) => values[s.skill_code] !== s.learnability),
+    () => skills.filter((sk) => values[sk.skill_code] !== sk.learnability),
     [values, skills],
   );
 
@@ -22,84 +23,88 @@ export function LearnabilitySection({ skills }) {
 
   return (
     <>
-      <p style={S.hint}>
+      <p className={s.formHint}>
         Rate each skill 1 (hardest to improve) to 10 (easiest to improve). Used
         by the Opportunity Index.
       </p>
 
-      <div style={S.tableWrap}>
-        <table style={S.table}>
+      <div className={s.tableWrap}>
+        <table className={s.table}>
           <thead>
             <tr>
-              <th style={S.th}>Domain</th>
-              <th style={S.th}>Skill</th>
-              <th style={{ ...S.th, width: 180 }}>Learnability</th>
+              <th className={s.th}>Domain</th>
+              <th className={s.th}>Skill</th>
+              <th className={s.th} style={{ width: 180 }}>Learnability</th>
             </tr>
           </thead>
           <tbody>
-            {skills.map((s) => {
-              const dirty = values[s.skill_code] !== s.learnability;
+            {skills.map((sk) => {
+              const dirty = values[sk.skill_code] !== sk.learnability;
+              const rowCls = dirty ? s.trDirty : undefined;
               return (
-                <tr key={s.skill_code} style={dirty ? S.trDirty : undefined}>
-                  <td style={S.tdMuted}>{s.domain_name ?? '—'}</td>
-                  <td style={S.td}>{s.skill_name ?? s.skill_code}</td>
-                  <td style={S.td}>
-                    <div style={S.sliderRow}>
+                <tr key={sk.skill_code} className={rowCls}>
+                  <td className={s.tdMuted}>{sk.domain_name ?? '—'}</td>
+                  <td className={s.td}>{sk.skill_name ?? sk.skill_code}</td>
+                  <td className={s.td}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <input
                         type="range"
                         min="1"
                         max="10"
-                        value={values[s.skill_code]}
-                        onChange={(e) => updateValue(s.skill_code, e.target.value)}
-                        style={S.slider}
+                        value={values[sk.skill_code]}
+                        onChange={(e) => updateValue(sk.skill_code, e.target.value)}
+                        style={{ flex: 1, maxWidth: 140 }}
                       />
-                      <span style={S.sliderVal}>{values[s.skill_code]}</span>
+                      <span style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 700,
+                        minWidth: 18,
+                        textAlign: 'right',
+                      }}>
+                        {values[sk.skill_code]}
+                      </span>
                     </div>
                   </td>
                 </tr>
               );
             })}
             {skills.length === 0 && (
-              <tr><td colSpan={3} style={S.empty}>No skills found.</td></tr>
+              <tr>
+                <td colSpan={3} className={s.empty}>No skills found.</td>
+              </tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <form action={formAction} style={S.saveRow}>
+      <form action={formAction} className={s.row}>
         <input
           type="hidden"
           name="changes_json"
           value={JSON.stringify(
-            changed.map((s) => ({ skill_code: s.skill_code, learnability: values[s.skill_code] })),
+            changed.map((sk) => ({
+              skill_code: sk.skill_code,
+              learnability: values[sk.skill_code],
+            })),
           )}
         />
-        <Button type="submit" disabled={pending || changed.length === 0} size="sm">
+        <Button
+          type="submit"
+          disabled={pending || changed.length === 0}
+          size="sm"
+        >
           {pending ? 'Saving…' : `Save${changed.length ? ` (${changed.length})` : ''}`}
         </Button>
-        {changed.length > 0 && <span style={S.hint}>{changed.length} unsaved</span>}
-        {state?.ok && !pending && changed.length === 0 && (
-          <span style={S.ok}>Saved.</span>
+        {changed.length > 0 && (
+          <span className={s.muted}>{changed.length} unsaved</span>
         )}
-        {state?.ok === false && !pending && <span style={S.err}>{state.error}</span>}
+        {state?.ok && !pending && changed.length === 0 && (
+          <span className={s.ok}>Saved.</span>
+        )}
+        {state?.ok === false && !pending && (
+          <span className={s.err}>{state.error}</span>
+        )}
       </form>
     </>
   );
 }
-
-const S = {
-  hint: { fontSize: '0.8rem', color: '#6b7280', marginTop: 0, marginBottom: '0.75rem' },
-  tableWrap: { overflow: 'auto', maxHeight: 420, border: '1px solid #e5e7eb', borderRadius: 8, marginBottom: '0.75rem' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' },
-  th: { textAlign: 'left', padding: '0.4rem 0.7rem', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', fontSize: '0.7rem', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '0.025em', position: 'sticky', top: 0 },
-  td: { padding: '0.35rem 0.7rem', borderBottom: '1px solid #f3f4f6' },
-  tdMuted: { padding: '0.35rem 0.7rem', borderBottom: '1px solid #f3f4f6', color: '#6b7280', fontSize: '0.8rem' },
-  trDirty: { background: '#eff6ff' },
-  sliderRow: { display: 'flex', alignItems: 'center', gap: '0.5rem' },
-  slider: { flex: 1, maxWidth: 140 },
-  sliderVal: { fontFamily: 'monospace', fontWeight: 600, minWidth: 18, textAlign: 'right' },
-  empty: { padding: '1rem', textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' },
-  saveRow: { display: 'flex', gap: '0.5rem', alignItems: 'center' },
-  ok: { color: '#166534', fontSize: '0.85rem' },
-  err: { color: '#991b1b', fontSize: '0.85rem' },
-};

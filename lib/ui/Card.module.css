@@ -1,0 +1,21 @@
+/* Card primitive — token-mapped tones used across admin pages,
+   info banners, and error callouts. Extracted from the legacy
+   inline #f9fafb / #fef2f2 hex set so a theme change is one
+   file and the cards visually match the rest of the new tree
+   (--card / --border / --shadow-sm). */
+
+.base {
+  padding: var(--s4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg1);
+  box-shadow: var(--shadow-sm);
+}
+
+.soft    { background: var(--color-slate-50); border-color: var(--border); color: var(--fg1); }
+.danger  { background: var(--color-danger-bg);  border-color: var(--color-danger);  color: var(--color-diff-hard-fg); }
+.warn    { background: var(--color-diff-med-bg); border-color: var(--color-diff-med-bd); color: var(--color-diff-med-fg); }
+.info    { background: var(--color-app-accent-soft); border-color: var(--color-app-accent); color: var(--color-app-accent); }
+.success { background: var(--color-success-bg); border-color: var(--color-success); color: var(--color-diff-easy-fg); }
+.blank   { background: transparent; box-shadow: none; }

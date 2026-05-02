@@ -24,6 +24,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
+import { FlashcardsIcon } from '@/lib/ui/icons';
 import {
   createFlashcard,
   listFlashcardSets,
@@ -44,6 +45,7 @@ export function FlashcardsButton({ buttonClassName, label = 'Flashcards' }) {
         className={buttonClassName ?? s.triggerBtn}
         title="Open flashcards"
       >
+        <FlashcardsIcon size={18} />
         {label}
       </button>
       {open && <FlashcardsModal onClose={() => setOpen(false)} />}

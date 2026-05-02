@@ -1,0 +1,103 @@
+/* Shared page chrome for admin surfaces. Imported by every admin
+   page so the container, header, sections, and link styling stay
+   in one file and match the student / tutor tree's visual
+   vocabulary (eyebrow + serif H1, hairline cards, design tokens
+   throughout). Inner specifics — charts, tables, role pills —
+   stay per-page since each surface has unique structure. */
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.breadcrumb {
+  font-size: 12px;
+  color: var(--fg3);
+}
+.breadcrumb a {
+  color: var(--color-app-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.breadcrumb a:hover { text-decoration: underline; }
+
+.header { padding: var(--s2) 0; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+
+.sub {
+  color: var(--fg3);
+  font-size: 13px;
+  margin: 0;
+  max-width: 720px;
+}
+
+/* Card-style section panel — matches the dashboard / report
+   sections elsewhere. */
+.section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.h2 {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--color-navy-900);
+  margin: 0;
+}
+
+.help {
+  color: var(--fg3);
+  font-size: 13px;
+  margin: 0;
+  max-width: 720px;
+}
+
+/* Generic primary-link style for internal nav anchors that look
+   like text links (breadcrumbs, "back to ...", etc.). */
+.link {
+  color: var(--color-app-accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+}
+.link:hover { text-decoration: underline; }

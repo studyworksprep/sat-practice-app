@@ -5,20 +5,29 @@
    practice-test results.
 ============================================================= */
 
+/* Trigger — matches the Calculator toggle (.toggleBtn in
+   FloatingCalculator.module.css) so the per-question header reads
+   as a single cluster of tools rather than mismatched buttons. */
 .triggerBtn {
-  background: var(--bg-card, #fff);
-  color: var(--text, #1a1a1a);
-  border: 1px solid var(--border, #e0d8c4);
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 500;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg1);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std);
 }
 
 .triggerBtn:hover {
-  background: var(--bg-hover, #f7f4ec);
+  background: var(--color-slate-50);
 }
 
 .overlay {

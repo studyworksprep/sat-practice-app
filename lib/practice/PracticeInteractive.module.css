@@ -260,6 +260,14 @@
 .markBtnActive svg { color: var(--color-amber); }
 .markBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
+/* Position-relative slot for the Error Log button — its popover
+   panel uses absolute positioning anchored to its nearest
+   positioned ancestor, so the trigger needs a scoped wrapper. */
+.errorLogSlot {
+  position: relative;
+  display: inline-flex;
+}
+
 /* Toggled-on state for the calculator button. Uses the softer
    app-accent tint per the design kit. */
 .navBtnActive {
