@@ -32,6 +32,9 @@ export interface StudentNoteSummary {
   questionId: string | null;
   title: string | null;
   preview: string;
+  /** HTML rendering of the doc snippet with `\(…\)` delimiters
+   *  around math nodes for MathJax to typeset on the client. */
+  previewHtml: string;
   tags: string[];
   updatedAt: string;
 }

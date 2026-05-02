@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useCallback, useState, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ActionResult, StudentNoteSummary } from '@/lib/types';
@@ -91,6 +91,40 @@ export function NotesListInteractive({
     setNotes(initialNotes);
   }
 
+  // Re-typeset math snippets whenever the visible notes change.
+  // Mirrors lib/ui/QuestionRenderer.js's useMathTypeset — the global
+  // MathJax script (loaded in app/layout.js) typesets `\(…\)`
+  // delimiters in the rendered HTML once it's in the DOM.
+  const listRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const el = listRef.current;
+    if (!el) return undefined;
+    if (!/\\\(|\\\[|\$\$/.test(el.innerHTML)) return undefined;
+    let cancelled = false;
+    let tries = 0;
+    const tryTypeset = () => {
+      if (cancelled) return;
+      const mj = (window as unknown as {
+        MathJax?: {
+          typesetClear?: (els: Element[]) => void;
+          typesetPromise?: (els: Element[]) => Promise<unknown>;
+        };
+      }).MathJax;
+      if (mj?.typesetPromise) {
+        try {
+          mj.typesetClear?.([el]);
+          mj.typesetPromise([el]).catch(() => {});
+        } catch { /* */ }
+        return;
+      }
+      tries += 1;
+      if (tries < 240) setTimeout(tryTypeset, 50);
+    };
+    tryTypeset();
+    return () => { cancelled = true; };
+  }, [notes]);
+
   return (
     <>
       <div className={s.controls}>
@@ -129,7 +163,7 @@ export function NotesListInteractive({
             : 'No notes yet — create your first one.'}
         </div>
       ) : (
-        <div className={s.notesList}>
+        <div className={s.notesList} ref={listRef}>
           {notes.map((note) => (
             <NoteCard
               key={note.id}
@@ -171,7 +205,19 @@ function NoteCard({
           </h3>
           <span className={s.noteCardTime}>{timeAgo(note.updatedAt)}</span>
         </div>
-        {note.preview && <p className={s.noteCardPreview}>{note.preview}</p>}
+        {note.previewHtml ? (
+          <p
+            className={s.noteCardPreview}
+            // Server-generated snippet HTML: text is escaped in the
+            // server walker; only `\(…\)` MathJax delimiters and
+            // their latex contents are emitted unescaped, and MathJax
+            // extracts those before the browser parses surrounding
+            // text as markup.
+            dangerouslySetInnerHTML={{ __html: note.previewHtml }}
+          />
+        ) : note.preview ? (
+          <p className={s.noteCardPreview}>{note.preview}</p>
+        ) : null}
         <div className={s.noteCardFooter}>
           {note.tags.map((tag) => (
             <span key={tag} className={s.miniTag}>

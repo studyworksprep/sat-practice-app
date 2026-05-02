@@ -12,6 +12,7 @@ import type {
   StudentNoteSummary,
   NoteDoc,
 } from '@/lib/types';
+import { docToSnippetHtml } from '@/lib/notes/render';
 
 interface NoteRow {
   id: string;
@@ -29,6 +30,7 @@ interface SummaryRow {
   id: string;
   question_id: string | null;
   title: string | null;
+  body_json: NoteDoc | null;
   body_text: string;
   tags: string[];
   updated_at: string;
@@ -41,11 +43,18 @@ function toSummary(row: SummaryRow): StudentNoteSummary {
   const preview = collapsed.length > PREVIEW_LEN
     ? `${collapsed.slice(0, PREVIEW_LEN - 1)}…`
     : collapsed;
+  // Server-render the snippet HTML once. body_json on a freshly
+  // saved note shape may be null; fall back to the plain preview
+  // so the card isn't blank.
+  const previewHtml = row.body_json
+    ? docToSnippetHtml(row.body_json, PREVIEW_LEN)
+    : '';
   return {
     id: row.id,
     questionId: row.question_id,
     title: row.title,
     preview,
+    previewHtml,
     tags: row.tags ?? [],
     updatedAt: row.updated_at,
   };
@@ -78,7 +87,7 @@ export async function loadNotesIndex(
 ): Promise<{ notes: StudentNoteSummary[]; allTags: string[] }> {
   let query = supabase
     .from('student_notes')
-    .select('id, question_id, title, body_text, tags, updated_at')
+    .select('id, question_id, title, body_json, body_text, tags, updated_at')
     .order('updated_at', { ascending: false })
     .limit(200);
 
