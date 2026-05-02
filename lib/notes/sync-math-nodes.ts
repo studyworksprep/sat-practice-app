@@ -27,9 +27,6 @@ export function syncMathNodesFromDom(editor: Editor): void {
     const live = readMathFieldValue(field);
     const docLatex = (node.attrs.latex as string) ?? '';
 
-    // eslint-disable-next-line no-console
-    console.log('[syncMath] node@', pos, { live, docLatex });
-
     // Skip empty live reads when the doc already has a value — the
     // empty almost always means we read mid-blur or pre-upgrade,
     // not that the user actually cleared the field.
@@ -40,8 +37,6 @@ export function syncMathNodesFromDom(editor: Editor): void {
     }
     return false;
   });
-  // eslint-disable-next-line no-console
-  console.log('[syncMath] updates', updates);
 
   if (updates.length === 0) return;
 

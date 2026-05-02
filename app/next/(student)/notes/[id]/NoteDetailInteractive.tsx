@@ -29,7 +29,9 @@ interface Props {
   initialNote: StudentNote;
   createNoteAction: (input: {
     title?: string | null;
-    bodyJson: StudentNote['bodyJson'];
+    // Stringified TipTap doc — see actions.ts for the rationale
+    // (Server Action serialization strips peer keys on `{type, …}`).
+    bodyJson: string;
     bodyText: string;
     tags?: string[];
     questionId?: string | null;
@@ -37,7 +39,7 @@ interface Props {
   updateNoteAction: (input: {
     id: string;
     title?: string | null;
-    bodyJson: StudentNote['bodyJson'];
+    bodyJson: string;
     bodyText: string;
     tags?: string[];
     questionId?: string | null;
@@ -74,10 +76,11 @@ export function NoteDetailInteractive({
     setError(null);
     const tags = stringToTags(tagsInput);
     startTransition(async () => {
+      const bodyJsonString = JSON.stringify(payload.bodyJson);
       if (mode === 'new') {
         const res = await createNoteAction({
           title: payload.title,
-          bodyJson: payload.bodyJson,
+          bodyJson: bodyJsonString,
           bodyText: payload.bodyText,
           tags,
           questionId: initialNote.questionId,
@@ -93,7 +96,7 @@ export function NoteDetailInteractive({
       const res = await updateNoteAction({
         id: initialNote.id,
         title: payload.title,
-        bodyJson: payload.bodyJson,
+        bodyJson: bodyJsonString,
         bodyText: payload.bodyText,
         tags,
         questionId: initialNote.questionId,

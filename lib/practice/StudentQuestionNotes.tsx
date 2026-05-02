@@ -90,17 +90,17 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
 
   const handleSave = (payload: NoteEditorSavePayload) => {
     setError(null);
-    // eslint-disable-next-line no-console
-    console.log('[Popover] handleSave outgoing', JSON.stringify(payload.bodyJson));
     startTransition(async () => {
       const res = await upsertNoteForQuestion({
         questionId,
-        bodyJson: payload.bodyJson,
+        // Stringify across the Server Action boundary — the React
+        // Flight encoder strips peer keys (e.g. `attrs`) on objects
+        // shaped like ProseMirror nodes (`{ type, ... }`), so we
+        // round-trip the doc as an opaque string.
+        bodyJson: JSON.stringify(payload.bodyJson),
         bodyText: payload.bodyText,
         title: payload.title,
       });
-      // eslint-disable-next-line no-console
-      console.log('[Popover] handleSave response', res);
       if (!res.ok) {
         setError(res.error);
         return;
@@ -109,9 +109,6 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
         setNote(null);
         return;
       }
-      // eslint-disable-next-line no-console
-      console.log('[Popover] handleSave persisted bodyJson',
-        JSON.stringify(res.data.note.bodyJson));
       setNote({
         id: res.data.note.id,
         bodyJson: res.data.note.bodyJson,

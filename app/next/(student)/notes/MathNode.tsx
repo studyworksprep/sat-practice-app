@@ -172,8 +172,6 @@ function MathFieldView({ node, updateAttributes, editor }: NodeViewProps) {
     }
     const target = (node.attrs.latex as string) ?? '';
     const current = readMathFieldValue(el);
-    // eslint-disable-next-line no-console
-    console.log('[MathNode] value-effect', { target, current, willWrite: current !== target });
     if (current !== target) {
       writeMathFieldValue(el, target);
     }
@@ -185,16 +183,11 @@ function MathFieldView({ node, updateAttributes, editor }: NodeViewProps) {
     if (!mathLiveReady) return undefined;
     const el = ref.current;
     if (!el || !editable) return undefined;
-    // eslint-disable-next-line no-console
-    console.log('[MathNode] listener-attach', { editable });
-    const handler = (e: Event) => {
+    const handler = () => {
       const next = readMathFieldValue(el);
-      // eslint-disable-next-line no-console
-      console.log('[MathNode] event', e.type, {
-        next,
-        docLatex: docLatexRef.current,
-        skipEmpty: next === '' && docLatexRef.current !== '',
-      });
+      // Don't blank out the doc with an empty read. MathLive emits
+      // transient empty events during focus/blur on some versions;
+      // those would otherwise wipe a non-empty equation.
       if (next === '' && docLatexRef.current !== '') return;
       if (next !== docLatexRef.current) {
         docLatexRef.current = next;

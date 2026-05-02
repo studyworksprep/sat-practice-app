@@ -99,12 +99,8 @@ export function NoteEditor({
 
   const handleSave = useCallback(() => {
     if (!editor || !onSave) return;
-    // eslint-disable-next-line no-console
-    console.log('[NoteEditor] save: pre-sync JSON', JSON.stringify(editor.getJSON()));
     syncMathNodesFromDom(editor);
     const json = editor.getJSON() as unknown as NoteDoc;
-    // eslint-disable-next-line no-console
-    console.log('[NoteEditor] save: post-sync JSON', JSON.stringify(json));
     onSave({
       title: title.trim() || null,
       bodyJson: json,

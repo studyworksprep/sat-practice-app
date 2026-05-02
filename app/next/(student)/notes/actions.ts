@@ -24,7 +24,13 @@ const MAX_TAG_LEN       = 40;
 
 interface CreateInput {
   title?: string | null;
-  bodyJson: NoteDoc;
+  // Stringified TipTap JSON document. Round-tripped as a string
+  // because Next.js Server Action serialization (React Flight) has
+  // a sharp edge with objects whose top-level key is `type` — it
+  // strips peer keys like `attrs`, which is exactly the shape a
+  // ProseMirror node uses (`{ type, attrs, content }`). Sending the
+  // doc as an opaque string sidesteps the Flight encoder entirely.
+  bodyJson: string;
   bodyText: string;
   tags?: string[];
   questionId?: string | null;
@@ -36,9 +42,19 @@ interface UpdateInput extends CreateInput {
 
 interface UpsertForQuestionInput {
   questionId: string;
-  bodyJson: NoteDoc;
+  bodyJson: string;
   bodyText: string;
   title?: string | null;
+}
+
+function parseBodyJson(raw: string): NoteDoc | null {
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object') return parsed as NoteDoc;
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 function rowToNote(row: {
@@ -89,7 +105,7 @@ function validatePayload(p: CreateInput): string | null {
   if (p.title && p.title.length > MAX_TITLE_LEN) {
     return `Title is too long (max ${MAX_TITLE_LEN} characters)`;
   }
-  if (p.bodyJson == null || typeof p.bodyJson !== 'object') {
+  if (typeof p.bodyJson !== 'string' || !p.bodyJson) {
     return 'bodyJson required';
   }
   return null;
@@ -117,6 +133,8 @@ export async function createNote(
 ): Promise<ActionResult<{ data: { note: StudentNote } }>> {
   const validation = validatePayload(input);
   if (validation) return actionFail(validation);
+  const doc = parseBodyJson(input.bodyJson);
+  if (!doc) return actionFail('bodyJson is not valid JSON');
 
   const ctx = await getCtx();
   if ('error' in ctx) return actionFail(ctx.error);
@@ -126,7 +144,7 @@ export async function createNote(
     user_id: user.id,
     question_id: input.questionId ?? null,
     title: input.title?.trim() || null,
-    body_json: input.bodyJson,
+    body_json: doc,
     body_text: input.bodyText,
     tags: sanitizeTags(input.tags),
   };
@@ -152,6 +170,8 @@ export async function updateNote(
   if (!input.id) return actionFail('id required');
   const validation = validatePayload(input);
   if (validation) return actionFail(validation);
+  const doc = parseBodyJson(input.bodyJson);
+  if (!doc) return actionFail('bodyJson is not valid JSON');
 
   const ctx = await getCtx();
   if ('error' in ctx) return actionFail(ctx.error);
@@ -159,7 +179,7 @@ export async function updateNote(
 
   const patch = {
     title: input.title?.trim() || null,
-    body_json: input.bodyJson,
+    body_json: doc,
     body_text: input.bodyText,
     tags: sanitizeTags(input.tags),
     question_id: input.questionId ?? null,
@@ -209,11 +229,11 @@ export async function deleteNote(
 export async function upsertNoteForQuestion(
   input: UpsertForQuestionInput,
 ): Promise<ActionResult<{ data: { note: StudentNote | null } }>> {
-  // eslint-disable-next-line no-console
-  console.log('[action] upsertNoteForQuestion input.bodyJson', JSON.stringify(input.bodyJson));
   if (!input.questionId) return actionFail('questionId required');
   const validation = validatePayload(input);
   if (validation) return actionFail(validation);
+  const doc = parseBodyJson(input.bodyJson);
+  if (!doc) return actionFail('bodyJson is not valid JSON');
 
   const ctx = await getCtx();
   if ('error' in ctx) return actionFail(ctx.error);
@@ -243,14 +263,11 @@ export async function upsertNoteForQuestion(
   }
 
   if (existing) {
-    const sentJson = JSON.stringify(input.bodyJson);
-    // eslint-disable-next-line no-console
-    console.log('[action] upsert UPDATE branch, sending body_json', sentJson);
     const { data, error } = await supabase
       .from('student_notes')
       .update({
         title: input.title?.trim() || null,
-        body_json: input.bodyJson,
+        body_json: doc,
         body_text: input.bodyText,
       })
       .eq('id', existing.id)
@@ -260,26 +277,17 @@ export async function upsertNoteForQuestion(
       )
       .single();
     if (error) return actionFail(`Could not save note: ${error.message}`);
-    const returnedJson = JSON.stringify(data?.body_json);
-    // eslint-disable-next-line no-console
-    console.log('[action] upsert UPDATE returned body_json', returnedJson);
     revalidateNotes();
-    return actionOk({
-      note: rowToNote(data),
-      __debug: { sentJson, returnedJson },
-    });
+    return actionOk({ note: rowToNote(data) });
   }
 
-  const sentJson = JSON.stringify(input.bodyJson);
-  // eslint-disable-next-line no-console
-  console.log('[action] upsert INSERT branch, sending body_json', sentJson);
   const { data, error } = await supabase
     .from('student_notes')
     .insert({
       user_id: user.id,
       question_id: input.questionId,
       title: input.title?.trim() || null,
-      body_json: input.bodyJson,
+      body_json: doc,
       body_text: input.bodyText,
       tags: [],
     })
@@ -288,13 +296,7 @@ export async function upsertNoteForQuestion(
     )
     .single();
   if (error) return actionFail(`Could not save note: ${error.message}`);
-  const returnedJson = JSON.stringify(data?.body_json);
-  // eslint-disable-next-line no-console
-  console.log('[action] upsert INSERT returned body_json', returnedJson);
 
   revalidateNotes();
-  return actionOk({
-    note: rowToNote(data),
-    __debug: { sentJson, returnedJson },
-  });
+  return actionOk({ note: rowToNote(data) });
 }
