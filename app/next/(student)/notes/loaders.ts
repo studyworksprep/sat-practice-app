@@ -155,3 +155,42 @@ export async function loadNoteForQuestion(
   if (error || !data) return null;
   return toNote(data as NoteRow);
 }
+
+/** Batch variant for review surfaces that render many questions in
+ *  one page (session review, practice-test module review, results).
+ *  Returns a Map keyed by question_id with the most recent note per
+ *  question — the loader picks the freshest by `updated_at` so a
+ *  legacy (pre-uniqueness-enforcement) duplicate doesn't cause
+ *  double rendering. */
+export async function loadStudentNotesByQuestion(
+  supabase: SupabaseClient,
+  questionIds: string[],
+): Promise<Map<string, { id: string; bodyJson: unknown; bodyText: string; updatedAt: string }>> {
+  const out = new Map<string, { id: string; bodyJson: unknown; bodyText: string; updatedAt: string }>();
+  if (!questionIds || questionIds.length === 0) return out;
+
+  const { data, error } = await supabase
+    .from('student_notes')
+    .select('id, question_id, body_json, body_text, updated_at')
+    .in('question_id', questionIds)
+    .not('question_id', 'is', null)
+    .order('updated_at', { ascending: false });
+  if (error || !data) return out;
+
+  for (const row of data as Array<{
+    id: string;
+    question_id: string;
+    body_json: unknown;
+    body_text: string;
+    updated_at: string;
+  }>) {
+    if (out.has(row.question_id)) continue; // first wins; rows are pre-sorted desc
+    out.set(row.question_id, {
+      id: row.id,
+      bodyJson: row.body_json,
+      bodyText: row.body_text,
+      updatedAt: row.updated_at,
+    });
+  }
+  return out;
+}
