@@ -105,6 +105,7 @@ export default async function PracticeQuestionPage({ params }) {
       initialDesmos={payload.desmos}
       initialMapItems={payload.mapItems}
       initialErrorNote={payload.errorNote}
+      initialStudentNote={payload.studentNote}
       initialMarked={payload.marked}
       submitAnswerAction={submitAnswer}
       loadQuestionAction={loadQuestionAction}

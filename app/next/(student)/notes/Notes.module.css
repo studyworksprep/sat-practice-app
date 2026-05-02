@@ -1,0 +1,405 @@
+/* =============================================================
+   Student Notes — index page, detail page, and editor.
+   Variables sourced from [data-tree="next"] tokens with conservative
+   fallbacks so the surface still reads as legible if a token isn't
+   defined.
+============================================================= */
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text, #1a1a1a);
+  margin: 0;
+}
+
+.pageSubtitle {
+  font-size: 13px;
+  color: var(--text-muted, #777);
+  margin: 4px 0 0;
+}
+
+.btnPrimary,
+.btnSecondary,
+.btnDanger {
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: inherit;
+}
+
+.btnPrimary {
+  background: var(--color-navy-700, #1f2a44);
+  color: #fff;
+  border-color: var(--color-navy-700, #1f2a44);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--color-navy-800, #182238);
+}
+
+.btnSecondary {
+  background: var(--bg-card, #fff);
+  color: var(--text, #1a1a1a);
+  border-color: var(--border, #e0d8c4);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: var(--bg-hover, #f7f4ec);
+}
+
+.btnDanger {
+  background: transparent;
+  color: var(--color-danger, #b3261e);
+  border-color: rgba(179, 38, 30, 0.4);
+}
+
+.btnDanger:hover:not(:disabled) {
+  background: rgba(179, 38, 30, 0.06);
+}
+
+.btnPrimary:disabled,
+.btnSecondary:disabled,
+.btnDanger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ─── Index page ─────────────────────────────────────────── */
+
+.controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1 1 220px;
+  min-width: 180px;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-card, #fff);
+  color: var(--text, #1a1a1a);
+  font-family: inherit;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-navy-500, #4f7ce0);
+}
+
+.tagRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.tagChip {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--bg-subtle, #f5f0e3);
+  color: var(--text, #1a1a1a);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.tagChip:hover {
+  background: var(--bg-hover, #ece5d2);
+}
+
+.tagChipActive {
+  background: var(--color-navy-700, #1f2a44);
+  color: #fff;
+  border-color: var(--color-navy-700, #1f2a44);
+}
+
+.notesList {
+  display: grid;
+  gap: 10px;
+}
+
+.noteCard {
+  display: block;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e0d8c4);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.noteCard:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border-color: var(--color-navy-300, #c0cdf0);
+}
+
+.noteCardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.noteCardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text, #1a1a1a);
+  margin: 0;
+}
+
+.noteCardUntitled {
+  color: var(--text-muted, #888);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.noteCardTime {
+  font-size: 11px;
+  color: var(--text-muted, #888);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.noteCardPreview {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted, #555);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.noteCardFooter {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.miniTag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-muted, #6b6452);
+}
+
+.miniLink {
+  font-size: 11px;
+  color: var(--color-navy-500, #4f7ce0);
+}
+
+.empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-muted, #888);
+  border: 1px dashed var(--border, #e0d8c4);
+  border-radius: 10px;
+}
+
+/* ─── Detail / editor ──────────────────────────────────────── */
+
+.editorWrap {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e0d8c4);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.editorEmpty {
+  padding: 40px;
+  color: var(--text-muted, #888);
+  text-align: center;
+}
+
+.titleInput {
+  width: 100%;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 14px 18px;
+  border: none;
+  border-bottom: 1px solid var(--border, #e0d8c4);
+  background: transparent;
+  color: var(--text, #1a1a1a);
+  font-family: inherit;
+}
+
+.titleInput:focus {
+  outline: none;
+  background: var(--bg-subtle, #fafbff);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-subtle, #f9f9f9);
+  align-items: center;
+}
+
+.toolbarBtn {
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text, #1a1a1a);
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 28px;
+}
+
+.toolbarBtn:hover {
+  background: var(--bg-hover, #ece5d2);
+}
+
+.toolbarBtnActive {
+  background: var(--color-navy-700, #1f2a44);
+  color: #fff;
+  border-color: var(--color-navy-700, #1f2a44);
+}
+
+.toolbarSep {
+  display: inline-block;
+  width: 1px;
+  height: 18px;
+  background: var(--border, #e0d8c4);
+  margin: 0 4px;
+}
+
+.editorBox {
+  padding: 18px;
+  min-height: 320px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text, #1a1a1a);
+}
+
+.editorContent {
+  outline: none;
+  min-height: 280px;
+}
+
+.editorContent p {
+  margin: 0 0 0.6em;
+}
+
+.editorContent h1 {
+  font-size: 22px;
+  margin: 0.6em 0 0.3em;
+}
+
+.editorContent h2 {
+  font-size: 18px;
+  margin: 0.6em 0 0.3em;
+}
+
+.editorContent ul,
+.editorContent ol {
+  margin: 0 0 0.6em 1.4em;
+  padding: 0;
+}
+
+.editorContent blockquote {
+  border-left: 3px solid var(--border, #e0d8c4);
+  padding-left: 12px;
+  color: var(--text-muted, #555);
+  margin: 0 0 0.6em;
+}
+
+.editorContent code {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.92em;
+  background: var(--bg-subtle, #f3eedd);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+.editorFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-subtle, #f9f9f9);
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.backLink {
+  font-size: 13px;
+  color: var(--color-navy-500, #4f7ce0);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.detailMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted, #888);
+}
+
+.tagInput {
+  width: 100%;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-card, #fff);
+  font-family: inherit;
+  margin-top: 8px;
+}
+
+.errorBanner {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: rgba(179, 38, 30, 0.06);
+  border: 1px solid rgba(179, 38, 30, 0.25);
+  color: var(--color-danger, #b3261e);
+  border-radius: 8px;
+  font-size: 13px;
+}
