@@ -27,28 +27,42 @@ import {
   ReactNodeViewRenderer,
   type NodeViewProps,
 } from '@tiptap/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+interface MathfieldElementStatic {
+  fontsDirectory?: string | null;
+  soundsDirectory?: string | null;
+  loadFonts?: () => Promise<unknown>;
+}
 
 let mathLiveLoader: Promise<unknown> | null = null;
 function ensureMathLive(): Promise<unknown> {
   if (typeof window === 'undefined') return Promise.resolve();
   if (!mathLiveLoader) {
     mathLiveLoader = import('mathlive')
-      .then((mod) => {
+      .then(async (mod) => {
         // MathLive resolves its bundled WOFF2 math fonts relative to
         // the script URL by default, which under Next.js becomes
         // /_next/static/chunks/fonts/* — a 404. We host the fonts
         // ourselves under /public/mathlive-fonts and point MathLive
-        // there. Set once, before any <math-field> renders.
-        const MFE = (mod as { MathfieldElement?: {
-          fontsDirectory?: string | null;
-          soundsDirectory?: string | null;
-        } }).MathfieldElement;
+        // there.
+        //
+        // Order matters: the directory has to be set BEFORE any
+        // <math-field> connects, because MathLive bakes the URL into
+        // its FontFace objects during connectedCallback. We then call
+        // loadFonts() explicitly so the FontFace registration uses
+        // the corrected URL even if a math-field has already been
+        // connected with the old default. The MathFieldView below
+        // gates its <math-field> render on this promise resolving,
+        // which is the load-bearing guarantee for fresh mounts.
+        const MFE = (mod as { MathfieldElement?: MathfieldElementStatic })
+          .MathfieldElement;
         if (MFE) {
           try { MFE.fontsDirectory = '/mathlive-fonts'; } catch { /* */ }
-          // Disable the keypress sounds entirely — we don't ship the
-          // .wav files, and the default loader otherwise 404s on each.
           try { MFE.soundsDirectory = null; } catch { /* */ }
+          if (typeof MFE.loadFonts === 'function') {
+            try { await MFE.loadFonts(); } catch { /* */ }
+          }
         }
         return mod;
       })
@@ -107,6 +121,14 @@ export function writeMathFieldValue(el: HTMLElement | null | undefined, value: s
 function MathFieldView({ node, updateAttributes, editor }: NodeViewProps) {
   const ref = useRef<HTMLElement | null>(null);
   const editable = editor.isEditable;
+  // Gate the <math-field> render on MathLive being loaded AND the
+  // fontsDirectory being applied. If we render the element before
+  // that, the upgrade fires immediately and MathLive bakes the
+  // wrong font URLs into its FontFace registration — which is what
+  // produced the cascade of /_next/static/chunks/fonts/* 404s and
+  // a math-field that looked blank because the substitute system
+  // font has no fraction or root glyphs.
+  const [mathLiveReady, setMathLiveReady] = useState(false);
   // Mirrors node.attrs.latex without provoking React re-renders. The
   // event handlers in the second effect below need to read the latest
   // attr value to short-circuit duplicate writes, but tying that
@@ -116,6 +138,14 @@ function MathFieldView({ node, updateAttributes, editor }: NodeViewProps) {
   useEffect(() => {
     docLatexRef.current = (node.attrs.latex as string) ?? '';
   }, [node.attrs.latex]);
+
+  useEffect(() => {
+    let cancelled = false;
+    ensureMathLive().then(() => {
+      if (!cancelled) setMathLiveReady(true);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   // (1) Set the read-only state and the initial / external value.
   // Re-runs only when the editable flag flips or the doc-side latex
@@ -178,6 +208,33 @@ function MathFieldView({ node, updateAttributes, editor }: NodeViewProps) {
       el.removeEventListener('change', handler);
     };
   }, [editable, updateAttributes]);
+
+  if (!mathLiveReady) {
+    // Pre-load placeholder. Renders the latex source so the
+    // surrounding text isn't visually broken while MathLive resolves;
+    // this branch is only on screen for one or two frames in
+    // practice (the import is cache-hit after the first node).
+    return (
+      <NodeViewWrapper
+        as="span"
+        className="math-node math-node-loading"
+        data-editable={editable ? 'true' : 'false'}
+      >
+        <span
+          style={{
+            display: 'inline-block',
+            verticalAlign: 'middle',
+            padding: '0 4px',
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+            fontSize: '0.9em',
+            opacity: 0.6,
+          }}
+        >
+          {(node.attrs.latex as string) || '∑'}
+        </span>
+      </NodeViewWrapper>
+    );
+  }
 
   return (
     <NodeViewWrapper
