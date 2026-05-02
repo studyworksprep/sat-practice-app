@@ -16,3 +16,9 @@ export type {
   MapItemStatus,
   SessionMode,
 } from './practice';
+export type {
+  NoteDoc,
+  StudentNote,
+  StudentNoteSummary,
+  StudentNoteInput,
+} from './notes';

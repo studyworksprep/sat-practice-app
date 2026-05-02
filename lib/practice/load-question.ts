@@ -128,6 +128,16 @@ export interface QuestionPayload {
   /** Student-private error-log note for the current question, if
    *  any. Surfaces in PracticeInteractive's Error Log toggle. */
   errorNote: { body: string; updatedAt: string } | null;
+  /** Student-private rich-text note (TipTap doc) for this question.
+   *  Powers the StudentQuestionNotes popover next to the Error Log
+   *  button. At most one row per (user, question); see migration
+   *  20240101000040_student_notes.sql. */
+  studentNote: {
+    id: string;
+    bodyJson: unknown;
+    bodyText: string;
+    updatedAt: string;
+  } | null;
   /** Whether the current position is marked-for-review on the
    *  session row. Drives the runner's toggle-button highlight. */
   marked: boolean;
@@ -358,7 +368,7 @@ export async function loadQuestion(
   // tutor-tool branches are no-ops for student callers since
   // includeTutorTools is false. The error-note read is always on
   // since the Error Log is a student-private surface.
-  const [desmos, conceptTags, questionNotes, errorNoteRow] = await Promise.all([
+  const [desmos, conceptTags, questionNotes, errorNoteRow, studentNoteRow] = await Promise.all([
     desmosEligible
       ? loadDesmosSavedState({ questionId, role })
       : Promise.resolve<DesmosPayload>({ savedState: null, canSave: false }),
@@ -374,12 +384,29 @@ export async function loadQuestion(
       .eq('user_id', userId)
       .eq('question_id', questionId)
       .maybeSingle(),
+    supabase
+      .from('student_notes')
+      .select('id, body_json, body_text, updated_at')
+      .eq('user_id', userId)
+      .eq('question_id', questionId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const errorNote = errorNoteRow?.data
     ? {
         body: errorNoteRow.data.body as string,
         updatedAt: errorNoteRow.data.updated_at as string,
+      }
+    : null;
+
+  const studentNote = studentNoteRow?.data
+    ? {
+        id: studentNoteRow.data.id as string,
+        bodyJson: studentNoteRow.data.body_json,
+        bodyText: studentNoteRow.data.body_text as string,
+        updatedAt: studentNoteRow.data.updated_at as string,
       }
     : null;
 
@@ -397,6 +424,7 @@ export async function loadQuestion(
       conceptTags,
       questionNotes,
       errorNote,
+      studentNote,
       marked: markedSet.has(position),
     },
   };

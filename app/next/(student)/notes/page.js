@@ -1,0 +1,55 @@
+// Student notes index. Server Component — pre-loads the caller's
+// notes (filtered by optional ?search and ?tag query params) and
+// hands them to the client island that owns the search box, the tag
+// filter chips, and the per-note delete confirmation.
+//
+// New-note creation is a separate route (/notes/new) that mounts the
+// editor with an empty doc. The "+ New note" button is a plain link.
+
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import { requireUser } from '@/lib/api/auth';
+import { loadNotesIndex } from './loaders';
+import { NotesListInteractive } from './NotesListInteractive';
+import { deleteNote } from './actions';
+import s from './Notes.module.css';
+
+export const dynamic = 'force-dynamic';
+
+export default async function StudentNotesIndex({ searchParams }) {
+  const { profile, supabase } = await requireUser();
+
+  if (profile.role === 'admin') redirect('/admin');
+  if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
+  if (profile.role === 'practice') redirect('/subscribe');
+
+  const sp = (await searchParams) ?? {};
+  const search = typeof sp.search === 'string' ? sp.search : null;
+  const tag = typeof sp.tag === 'string' ? sp.tag : null;
+
+  const { notes, allTags } = await loadNotesIndex(supabase, { search, tag });
+
+  return (
+    <main className={s.page}>
+      <header className={s.pageHeader}>
+        <div>
+          <h1 className={s.pageTitle}>My notes</h1>
+          <p className={s.pageSubtitle}>
+            Private to you. Nothing here is shared with tutors or other students.
+          </p>
+        </div>
+        <Link href="/notes/new" className={s.btnPrimary}>
+          + New note
+        </Link>
+      </header>
+
+      <NotesListInteractive
+        initialNotes={notes}
+        allTags={allTags}
+        initialSearch={search ?? ''}
+        initialTag={tag ?? ''}
+        deleteNoteAction={deleteNote}
+      />
+    </main>
+  );
+}

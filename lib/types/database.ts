@@ -3116,6 +3116,50 @@ export type Database = {
         }
         Relationships: []
       }
+      student_notes: {
+        Row: {
+          body_json: Json
+          body_text: string
+          created_at: string
+          id: string
+          question_id: string | null
+          tags: string[]
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body_json?: Json
+          body_text?: string
+          created_at?: string
+          id?: string
+          question_id?: string | null
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body_json?: Json
+          body_text?: string
+          created_at?: string
+          id?: string
+          question_id?: string | null
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_notes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null

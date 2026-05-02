@@ -19,6 +19,7 @@ import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
+import { StudentQuestionNotes } from '@/lib/practice/StudentQuestionNotes';
 import { DomainBreakdownCard } from '@/lib/practice/DomainBreakdownCard';
 import { formatDuration } from '@/lib/practice/format-duration';
 import { QuestionMapGrid } from '@/lib/practice/QuestionMapGrid';
@@ -395,6 +396,13 @@ export function TestResultsInteractive({
                   isAdmin={questionNotesIsAdmin}
                   currentUserId={currentUserId}
                   canView={questionNotesCanView}
+                />
+              )}
+              {!selected.missing && (
+                <StudentQuestionNotes
+                  key={`mynote-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  initialNote={selected.studentNote ?? null}
                 />
               )}
               <FlashcardsButton />

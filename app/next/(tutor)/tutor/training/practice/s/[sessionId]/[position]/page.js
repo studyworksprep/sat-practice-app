@@ -96,6 +96,7 @@ export default async function TutorTrainingQuestionPage({ params }) {
       initialConceptTags={payload.conceptTags}
       initialQuestionNotes={payload.questionNotes}
       initialErrorNote={payload.errorNote}
+      initialStudentNote={payload.studentNote}
       initialMarked={payload.marked}
       submitAnswerAction={submitAnswer}
       loadQuestionAction={loadQuestionAction}
