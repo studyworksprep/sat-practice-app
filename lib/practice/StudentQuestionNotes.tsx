@@ -90,6 +90,8 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
 
   const handleSave = (payload: NoteEditorSavePayload) => {
     setError(null);
+    // eslint-disable-next-line no-console
+    console.log('[Popover] handleSave outgoing', JSON.stringify(payload.bodyJson));
     startTransition(async () => {
       const res = await upsertNoteForQuestion({
         questionId,
@@ -97,6 +99,8 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
         bodyText: payload.bodyText,
         title: payload.title,
       });
+      // eslint-disable-next-line no-console
+      console.log('[Popover] handleSave response', res);
       if (!res.ok) {
         setError(res.error);
         return;
@@ -105,6 +109,9 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
         setNote(null);
         return;
       }
+      // eslint-disable-next-line no-console
+      console.log('[Popover] handleSave persisted bodyJson',
+        JSON.stringify(res.data.note.bodyJson));
       setNote({
         id: res.data.note.id,
         bodyJson: res.data.note.bodyJson,
