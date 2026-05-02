@@ -27,7 +27,7 @@ import {
   ReactNodeViewRenderer,
   type NodeViewProps,
 } from '@tiptap/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 interface MathfieldElementStatic {
   fontsDirectory?: string | null;
@@ -147,47 +147,40 @@ function MathFieldView({ node, updateAttributes, editor }: NodeViewProps) {
     return () => { cancelled = true; };
   }, []);
 
-  // (1) Set the read-only state and the initial / external value.
-  // Re-runs only when the editable flag flips or the doc-side latex
-  // changes from outside this node-view (undo/redo, server reseed).
-  // Crucially this effect does NOT respond to its own updateAttributes
-  // calls because those go through the docLatexRef short-circuit in
-  // effect (2).
-  useEffect(() => {
-    let cancelled = false;
-    ensureMathLive().then(() => {
-      if (cancelled) return;
-      const el = ref.current;
-      if (!el) return;
+  // (1) Apply the read-only state and the latest doc-side latex value
+  // every time the math-field is on screen, MathLive has finished
+  // loading, or `node.attrs.latex` changes externally (undo/redo,
+  // server reseed after save). Uses useLayoutEffect so the value is
+  // written before the browser paints — otherwise the field would
+  // paint blank for one frame after a re-seed and the user would see
+  // the equation flicker.
+  //
+  // The `mathLiveReady` dep is load-bearing: ref.current is null
+  // before the gate flips, so the previous useEffect-based version
+  // skipped this work and never ran again because its other deps
+  // (latex, editable) hadn't changed.
+  useLayoutEffect(() => {
+    if (!mathLiveReady) return;
+    const el = ref.current;
+    if (!el) return;
+    if (!editable) {
+      el.setAttribute('readonly', '');
+      try { (el as unknown as { readOnly?: boolean }).readOnly = true; } catch { /* */ }
+    } else {
+      el.removeAttribute('readonly');
+      try { (el as unknown as { readOnly?: boolean }).readOnly = false; } catch { /* */ }
+    }
+    const target = (node.attrs.latex as string) ?? '';
+    const current = readMathFieldValue(el);
+    if (current !== target) {
+      writeMathFieldValue(el, target);
+    }
+  }, [mathLiveReady, node.attrs.latex, editable]);
 
-      // MathLive's reflected attribute is `readonly` (HTML idiom),
-      // not `read-only`. Some 0.x builds also accept `read-only`;
-      // setting the property too covers both.
-      if (!editable) {
-        el.setAttribute('readonly', '');
-        try { (el as unknown as { readOnly?: boolean }).readOnly = true; } catch { /* */ }
-      } else {
-        el.removeAttribute('readonly');
-        try { (el as unknown as { readOnly?: boolean }).readOnly = false; } catch { /* */ }
-      }
-
-      const target = (node.attrs.latex as string) ?? '';
-      const current = readMathFieldValue(el);
-      if (current !== target) {
-        writeMathFieldValue(el, target);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [node.attrs.latex, editable]);
-
-  // (2) Track user input. Listen on both `input` (every keystroke)
-  // and `change` (fires on blur with the final value) so we capture
-  // the value even if MathLive batches inputs into a single change.
-  // The `attached` flag pins the listeners across re-renders so a
-  // node.attrs.latex change doesn't tear them down mid-typing.
-  useEffect(() => {
+  // (2) Track user input. Same gate on `mathLiveReady` so the
+  // listener attaches as soon as the math-field exists.
+  useLayoutEffect(() => {
+    if (!mathLiveReady) return undefined;
     const el = ref.current;
     if (!el || !editable) return undefined;
     const handler = () => {
@@ -207,7 +200,7 @@ function MathFieldView({ node, updateAttributes, editor }: NodeViewProps) {
       el.removeEventListener('input', handler);
       el.removeEventListener('change', handler);
     };
-  }, [editable, updateAttributes]);
+  }, [mathLiveReady, editable, updateAttributes]);
 
   if (!mathLiveReady) {
     // Pre-load placeholder. Renders the latex source so the
