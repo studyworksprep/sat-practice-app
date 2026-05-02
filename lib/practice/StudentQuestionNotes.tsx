@@ -46,11 +46,20 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
   const [pending, startTransition] = useTransition();
   const panelRef = useRef<HTMLDivElement | null>(null);
 
-  // Reseed on question change.
+  // Reseed when the user navigates to a different question. We
+  // deliberately drop `initialNote` from the deps even though we
+  // read it inside the effect: after a save, the action's
+  // revalidatePath('/practice', 'layout') refreshes the route, which
+  // updates the prop chain and would re-fire this effect with the
+  // freshly-persisted note as the new value — the popover would
+  // close out from under the user mid-edit. The local `note` state
+  // is already up to date in that scenario (handleSave just set it),
+  // so there's nothing to reseed.
   useEffect(() => {
     setNote(initialNote);
     setOpen(false);
-  }, [questionId, initialNote]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionId]);
 
   // Click-outside closes the popover. Carve out two exceptions so
   // tapping into the embedded editor doesn't unmount it:
