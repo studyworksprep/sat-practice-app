@@ -1,19 +1,19 @@
 // Walks the editor doc and writes each math node's `latex` attribute
 // directly from its live `<math-field>` element. Called from the
-// save handler so the persisted doc always reflects what the user
-// sees, regardless of whether MathLive's `input` events fired (some
-// MathLive versions emit on a microtask boundary; others bundle
-// keystrokes into one batch when the soft keyboard inserts a
-// template). Walking the DOM at save time is the only fully
-// reliable read.
+// save handler so the persisted doc reflects what the user sees,
+// regardless of whether MathLive's `input` events fired in time.
+//
+// Defensive: if the live read comes back empty but the doc already
+// has a non-empty latex, we trust the doc. A blank read almost
+// always means the field was just blurred, not yet upgraded, or
+// being torn down — none of those should clobber a real equation.
 
 import type { Editor } from '@tiptap/react';
+import { readMathFieldValue } from '@/app/next/(student)/notes/MathNode';
 
 export function syncMathNodesFromDom(editor: Editor): void {
   const { state, view } = editor;
 
-  // Collect updates first; mutating the doc inside descendants() while
-  // iterating would invalidate the positions the walk relies on.
   const updates: Array<{ pos: number; latex: string }> = [];
 
   state.doc.descendants((node, pos) => {
@@ -21,15 +21,21 @@ export function syncMathNodesFromDom(editor: Editor): void {
 
     const dom = view.nodeDOM(pos) as HTMLElement | null;
     if (!dom) return false;
-    // The node-view wrapper is a span; the math-field is its direct
-    // child. querySelector handles either nesting depth.
     const field = dom.querySelector('math-field') as HTMLElement | null;
     if (!field) return false;
-    const live = (field as unknown as { value?: string }).value ?? '';
-    if (live !== node.attrs.latex) {
+
+    const live = readMathFieldValue(field);
+    const docLatex = (node.attrs.latex as string) ?? '';
+
+    // Skip empty live reads when the doc already has a value — the
+    // empty almost always means we read mid-blur or pre-upgrade,
+    // not that the user actually cleared the field.
+    if (!live && docLatex) return false;
+
+    if (live !== docLatex) {
       updates.push({ pos, latex: live });
     }
-    return false; // atom node — no need to recurse further
+    return false;
   });
 
   if (updates.length === 0) return;

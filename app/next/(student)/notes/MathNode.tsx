@@ -2,15 +2,22 @@
 //
 // The node carries one attribute (`latex`). Its node-view mounts a
 // MathLive `<math-field>` web component. In edit mode the field is
-// fully interactive — keystrokes flow back into the node through
-// updateAttributes, so the parent editor's onUpdate sees the change
-// and includes it in the next save. In read-only mode the field is
-// static (read-only attribute set) and won't surface the virtual
-// keyboard.
+// fully interactive — every interaction is mirrored into the doc
+// through updateAttributes so the editor's onUpdate sees it.
 //
 // MathLive is loaded via dynamic import on first node mount so it
 // stays out of the editor's initial bundle until the doc actually
 // contains math.
+//
+// MathLive's API has shifted across recent versions, so all reads
+// and writes go through readMathFieldValue / writeMathFieldValue
+// helpers that try the documented APIs in order:
+//   1. setValue(latex) / getValue('latex-expanded' || 'latex')
+//   2. .value setter / getter
+//   3. textContent (works during element upgrade, before scripting)
+// This module never throws if one of those paths is missing — it
+// silently falls through. The node attrs are the source of truth
+// the editor persists.
 
 'use client';
 
@@ -36,63 +43,131 @@ function ensureMathLive(): Promise<unknown> {
   return mathLiveLoader;
 }
 
+interface MathFieldLike {
+  value?: string;
+  getValue?: (...args: unknown[]) => string;
+  setValue?: (value: string, options?: unknown) => void;
+}
+
+export function readMathFieldValue(el: HTMLElement | null | undefined): string {
+  if (!el) return '';
+  const e = el as unknown as MathFieldLike;
+  if (typeof e.getValue === 'function') {
+    try {
+      const v = e.getValue();
+      if (typeof v === 'string') return v;
+    } catch {
+      /* fall through */
+    }
+  }
+  if (typeof e.value === 'string') return e.value;
+  // Pre-upgrade: the math-field still has its initial textContent.
+  return el.textContent ?? '';
+}
+
+export function writeMathFieldValue(el: HTMLElement | null | undefined, value: string): void {
+  if (!el) return;
+  const e = el as unknown as MathFieldLike;
+  if (typeof e.setValue === 'function') {
+    try {
+      e.setValue(value);
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  try {
+    e.value = value;
+    return;
+  } catch {
+    /* fall through */
+  }
+  el.textContent = value;
+}
+
 function MathFieldView({ node, updateAttributes, editor }: NodeViewProps) {
   const ref = useRef<HTMLElement | null>(null);
   const editable = editor.isEditable;
+  // Mirrors node.attrs.latex without provoking React re-renders. The
+  // event handlers in the second effect below need to read the latest
+  // attr value to short-circuit duplicate writes, but tying that
+  // closure to a state value would tear down the listener on every
+  // keystroke.
+  const docLatexRef = useRef<string>((node.attrs.latex as string) ?? '');
+  useEffect(() => {
+    docLatexRef.current = (node.attrs.latex as string) ?? '';
+  }, [node.attrs.latex]);
 
+  // (1) Set the read-only state and the initial / external value.
+  // Re-runs only when the editable flag flips or the doc-side latex
+  // changes from outside this node-view (undo/redo, server reseed).
+  // Crucially this effect does NOT respond to its own updateAttributes
+  // calls because those go through the docLatexRef short-circuit in
+  // effect (2).
   useEffect(() => {
     let cancelled = false;
     ensureMathLive().then(() => {
       if (cancelled) return;
       const el = ref.current;
       if (!el) return;
-      // The web-component reads attributes for these — set after
-      // upgrade so a late-initializing element still picks them up.
+
+      // MathLive's reflected attribute is `readonly` (HTML idiom),
+      // not `read-only`. Some 0.x builds also accept `read-only`;
+      // setting the property too covers both.
       if (!editable) {
-        el.setAttribute('read-only', 'true');
+        el.setAttribute('readonly', '');
+        try { (el as unknown as { readOnly?: boolean }).readOnly = true; } catch { /* */ }
       } else {
-        el.removeAttribute('read-only');
+        el.removeAttribute('readonly');
+        try { (el as unknown as { readOnly?: boolean }).readOnly = false; } catch { /* */ }
       }
-      const setValue = () => {
-        const next = (node.attrs.latex as string) ?? '';
-        const current = (el as unknown as { value?: string }).value ?? '';
-        if (current !== next) {
-          (el as unknown as { value?: string }).value = next;
-        }
-      };
-      setValue();
+
+      const target = (node.attrs.latex as string) ?? '';
+      const current = readMathFieldValue(el);
+      if (current !== target) {
+        writeMathFieldValue(el, target);
+      }
     });
     return () => {
       cancelled = true;
     };
-    // Re-sync whenever the doc-side latex changes (e.g. undo/redo).
-    // editor.isEditable changes are picked up via the editable closure.
   }, [node.attrs.latex, editable]);
 
+  // (2) Track user input. Listen on both `input` (every keystroke)
+  // and `change` (fires on blur with the final value) so we capture
+  // the value even if MathLive batches inputs into a single change.
+  // The `attached` flag pins the listeners across re-renders so a
+  // node.attrs.latex change doesn't tear them down mid-typing.
   useEffect(() => {
     const el = ref.current;
     if (!el || !editable) return undefined;
     const handler = () => {
-      const next = (el as unknown as { value?: string }).value ?? '';
-      if (next !== node.attrs.latex) {
+      const next = readMathFieldValue(el);
+      // Don't blank out the doc with an empty read. MathLive emits
+      // transient empty events during focus/blur on some versions;
+      // those would otherwise wipe a non-empty equation.
+      if (next === '' && docLatexRef.current !== '') return;
+      if (next !== docLatexRef.current) {
+        docLatexRef.current = next;
         updateAttributes({ latex: next });
       }
     };
     el.addEventListener('input', handler);
-    return () => el.removeEventListener('input', handler);
-  }, [editable, updateAttributes, node.attrs.latex]);
+    el.addEventListener('change', handler);
+    return () => {
+      el.removeEventListener('input', handler);
+      el.removeEventListener('change', handler);
+    };
+  }, [editable, updateAttributes]);
 
-  // The math-field tag is a custom element registered by MathLive.
-  // React 19 passes through unknown tags as-is.
   return (
     <NodeViewWrapper
       as="span"
       className="math-node"
       data-editable={editable ? 'true' : 'false'}
     >
-      {/* @ts-expect-error — math-field is a runtime-registered custom element */}
       <math-field
-        ref={ref}
+        ref={ref as React.Ref<HTMLElement>}
         style={{
           display: 'inline-block',
           verticalAlign: 'middle',
@@ -102,7 +177,13 @@ function MathFieldView({ node, updateAttributes, editor }: NodeViewProps) {
           borderRadius: '3px',
           background: editable ? 'var(--bg-soft, #fafbff)' : 'transparent',
         }}
-      />
+      >
+        {/* MathLive picks up textContent at upgrade time, which is
+            the only reliable way to seed the value before the
+            element's scripts have run. The .value/.setValue path in
+            effect (1) takes over for everything afterwards. */}
+        {(node.attrs.latex as string) ?? ''}
+      </math-field>
     </NodeViewWrapper>
   );
 }
@@ -130,8 +211,6 @@ export const MathExtension = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    // Plain HTML serialization (used when copying the doc out of the
-    // editor). The runtime renderer is the React node-view above.
     return ['span', mergeAttributes(HTMLAttributes, { 'data-math': '' })];
   },
 
