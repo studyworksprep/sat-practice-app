@@ -209,6 +209,8 @@ export async function deleteNote(
 export async function upsertNoteForQuestion(
   input: UpsertForQuestionInput,
 ): Promise<ActionResult<{ data: { note: StudentNote | null } }>> {
+  // eslint-disable-next-line no-console
+  console.log('[action] upsertNoteForQuestion input.bodyJson', JSON.stringify(input.bodyJson));
   if (!input.questionId) return actionFail('questionId required');
   const validation = validatePayload(input);
   if (validation) return actionFail(validation);
@@ -241,6 +243,9 @@ export async function upsertNoteForQuestion(
   }
 
   if (existing) {
+    const sentJson = JSON.stringify(input.bodyJson);
+    // eslint-disable-next-line no-console
+    console.log('[action] upsert UPDATE branch, sending body_json', sentJson);
     const { data, error } = await supabase
       .from('student_notes')
       .update({
@@ -255,10 +260,19 @@ export async function upsertNoteForQuestion(
       )
       .single();
     if (error) return actionFail(`Could not save note: ${error.message}`);
+    const returnedJson = JSON.stringify(data?.body_json);
+    // eslint-disable-next-line no-console
+    console.log('[action] upsert UPDATE returned body_json', returnedJson);
     revalidateNotes();
-    return actionOk({ note: rowToNote(data) });
+    return actionOk({
+      note: rowToNote(data),
+      __debug: { sentJson, returnedJson },
+    });
   }
 
+  const sentJson = JSON.stringify(input.bodyJson);
+  // eslint-disable-next-line no-console
+  console.log('[action] upsert INSERT branch, sending body_json', sentJson);
   const { data, error } = await supabase
     .from('student_notes')
     .insert({
@@ -274,7 +288,13 @@ export async function upsertNoteForQuestion(
     )
     .single();
   if (error) return actionFail(`Could not save note: ${error.message}`);
+  const returnedJson = JSON.stringify(data?.body_json);
+  // eslint-disable-next-line no-console
+  console.log('[action] upsert INSERT returned body_json', returnedJson);
 
   revalidateNotes();
-  return actionOk({ note: rowToNote(data) });
+  return actionOk({
+    note: rowToNote(data),
+    __debug: { sentJson, returnedJson },
+  });
 }
