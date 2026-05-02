@@ -1,14 +1,3 @@
-// Auto-generated TypeScript types for the Supabase schema.
-//
-// DO NOT edit by hand. Regenerated whenever a migration lands via:
-//
-//   supabase gen types typescript --project-id noqtadytxyslkoetchrs
-//
-// or by invoking the Supabase MCP `generate_typescript_types` tool.
-// The Database export below is consumed by lib/types/db.ts (which
-// re-exports the Tables<>/Row<> aliases the rest of the codebase
-// imports) so call sites never reach into this file directly.
-
 export type Json =
   | string
   | number
@@ -1167,6 +1156,7 @@ export type Database = {
           filter_criteria: Json
           id: string
           last_activity_at: string
+          marked_positions: number[]
           mode: string
           question_ids: Json
           status: string
@@ -1181,6 +1171,7 @@ export type Database = {
           filter_criteria?: Json
           id?: string
           last_activity_at?: string
+          marked_positions?: number[]
           mode?: string
           question_ids?: Json
           status?: string
@@ -1195,6 +1186,7 @@ export type Database = {
           filter_criteria?: Json
           id?: string
           last_activity_at?: string
+          marked_positions?: number[]
           mode?: string
           question_ids?: Json
           status?: string
@@ -2064,6 +2056,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "question_content_drafts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      question_error_notes: {
+        Row: {
+          body: string
+          created_at: string
+          question_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          question_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          question_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_error_notes_question_id_fkey"
             columns: ["question_id"]
             isOneToOne: false
             referencedRelation: "questions_v2"
@@ -3121,8 +3145,13 @@ export type Database = {
           body_json: Json
           body_text: string
           created_at: string
+          domain_code: string | null
+          domain_name: string | null
           id: string
           question_id: string | null
+          skill_code: string | null
+          skill_name: string | null
+          subject_code: string | null
           tags: string[]
           title: string | null
           updated_at: string
@@ -3132,8 +3161,13 @@ export type Database = {
           body_json?: Json
           body_text?: string
           created_at?: string
+          domain_code?: string | null
+          domain_name?: string | null
           id?: string
           question_id?: string | null
+          skill_code?: string | null
+          skill_name?: string | null
+          subject_code?: string | null
           tags?: string[]
           title?: string | null
           updated_at?: string
@@ -3143,8 +3177,13 @@ export type Database = {
           body_json?: Json
           body_text?: string
           created_at?: string
+          domain_code?: string | null
+          domain_name?: string | null
           id?: string
           question_id?: string | null
+          skill_code?: string | null
+          skill_name?: string | null
+          subject_code?: string | null
           tags?: string[]
           title?: string | null
           updated_at?: string
@@ -3485,6 +3524,50 @@ export type Database = {
           skill_desc: string
         }[]
       }
+      get_roster_skill_performance: {
+        Args: {
+          p_min_skill_attempts?: number
+          p_min_student_attempts?: number
+          p_roster: string[]
+          p_since: string
+          p_struggling_threshold?: number
+        }
+        Returns: {
+          accuracy: number
+          attempts: number
+          correct: number
+          domain_code: string
+          domain_name: string
+          missed: number
+          skill_code: string
+          skill_name: string
+          students_below_60: number
+          students_touched: number
+        }[]
+      }
+      get_roster_weekly_trend: {
+        Args: { p_num_weeks?: number; p_roster: string[] }
+        Returns: {
+          accuracy: number
+          attempts: number
+          correct: number
+          end_iso: string
+          start_iso: string
+        }[]
+      }
+      get_student_dashboard_stats: {
+        Args: {
+          p_lookback_start: string
+          p_user_id: string
+          p_week_ago: string
+        }
+        Returns: {
+          correct_attempts: number
+          per_domain: Json
+          total_attempts: number
+          week_attempts: number
+        }[]
+      }
       get_user_practice_summary: {
         Args: never
         Returns: {
@@ -3493,6 +3576,13 @@ export type Database = {
           total_attempts: number
           total_correct: number
           total_unique_attempted: number
+        }[]
+      }
+      import_student_error_notes: {
+        Args: { p_user_id: string }
+        Returns: {
+          imported_count: number
+          skipped_existing: number
         }[]
       }
       import_student_practice_history: {
@@ -3710,3 +3800,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+

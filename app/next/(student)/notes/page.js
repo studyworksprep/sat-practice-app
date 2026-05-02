@@ -26,8 +26,17 @@ export default async function StudentNotesIndex({ searchParams }) {
   const sp = (await searchParams) ?? {};
   const search = typeof sp.search === 'string' ? sp.search : null;
   const tag = typeof sp.tag === 'string' ? sp.tag : null;
+  const subject = typeof sp.subject === 'string' ? sp.subject : null;
+  const domain = typeof sp.domain === 'string' ? sp.domain : null;
+  const skill = typeof sp.skill === 'string' ? sp.skill : null;
 
-  const { notes, allTags } = await loadNotesIndex(supabase, { search, tag });
+  const { notes, allTags, facets } = await loadNotesIndex(supabase, {
+    search,
+    tag,
+    subject,
+    domain,
+    skill,
+  });
 
   return (
     <main className={s.page}>
@@ -46,8 +55,12 @@ export default async function StudentNotesIndex({ searchParams }) {
       <NotesListInteractive
         initialNotes={notes}
         allTags={allTags}
+        facets={facets}
         initialSearch={search ?? ''}
         initialTag={tag ?? ''}
+        initialSubject={subject ?? ''}
+        initialDomain={domain ?? ''}
+        initialSkill={skill ?? ''}
         deleteNoteAction={deleteNote}
       />
     </main>

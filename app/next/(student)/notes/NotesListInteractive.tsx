@@ -10,15 +10,25 @@ import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ActionResult, StudentNoteSummary } from '@/lib/types';
+import type { NotesIndexFacets } from './loaders';
 import s from './Notes.module.css';
 
 interface Props {
   initialNotes: StudentNoteSummary[];
   allTags: string[];
+  facets: NotesIndexFacets;
   initialSearch: string;
   initialTag: string;
+  initialSubject: string;
+  initialDomain: string;
+  initialSkill: string;
   deleteNoteAction: (id: string) => Promise<ActionResult<{ data: { id: string } }>>;
 }
+
+const SUBJECT_LABEL: Record<string, string> = {
+  rw: 'Reading & Writing',
+  math: 'Math',
+};
 
 function timeAgo(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
@@ -37,40 +47,118 @@ function timeAgo(iso: string): string {
 export function NotesListInteractive({
   initialNotes,
   allTags,
+  facets,
   initialSearch,
   initialTag,
+  initialSubject,
+  initialDomain,
+  initialSkill,
   deleteNoteAction,
 }: Props) {
   const router = useRouter();
   const [notes, setNotes] = useState(initialNotes);
   const [search, setSearch] = useState(initialSearch);
   const [activeTag, setActiveTag] = useState(initialTag);
+  const [activeSubject, setActiveSubject] = useState(initialSubject);
+  const [activeDomain, setActiveDomain] = useState(initialDomain);
+  const [activeSkill, setActiveSkill] = useState(initialSkill);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const pushQuery = useCallback(
-    (next: { search?: string; tag?: string }) => {
+    (next: {
+      search?: string;
+      tag?: string;
+      subject?: string;
+      domain?: string;
+      skill?: string;
+    }) => {
       const params = new URLSearchParams();
       if (next.search) params.set('search', next.search);
       if (next.tag) params.set('tag', next.tag);
+      if (next.subject) params.set('subject', next.subject);
+      if (next.domain) params.set('domain', next.domain);
+      if (next.skill) params.set('skill', next.skill);
       const qs = params.toString();
       router.replace(qs ? `/notes?${qs}` : '/notes');
     },
     [router],
   );
 
+  const navigate = (overrides: Partial<{
+    search: string; tag: string; subject: string; domain: string; skill: string;
+  }>) => {
+    const next = {
+      search:  overrides.search  ?? search,
+      tag:     overrides.tag     ?? activeTag,
+      subject: overrides.subject ?? activeSubject,
+      domain:  overrides.domain  ?? activeDomain,
+      skill:   overrides.skill   ?? activeSkill,
+    };
+    startTransition(() => pushQuery(next));
+  };
+
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    // Debounce-lite: replace immediately, but use a transition so
-    // the Server Component re-fetch doesn't block typing.
-    startTransition(() => pushQuery({ search: value, tag: activeTag }));
+    navigate({ search: value });
   };
 
   const handleTagClick = (tag: string) => {
     const next = activeTag === tag ? '' : tag;
     setActiveTag(next);
-    startTransition(() => pushQuery({ search, tag: next }));
+    navigate({ tag: next });
   };
+
+  const handleSubject = (code: string) => {
+    const next = activeSubject === code ? '' : code;
+    setActiveSubject(next);
+    // Selecting a different subject invalidates the current
+    // domain/skill — they belong to whatever subject the student
+    // was just in. Clearing avoids "Math + RW skill" empty results.
+    setActiveDomain('');
+    setActiveSkill('');
+    navigate({ subject: next, domain: '', skill: '' });
+  };
+
+  const handleDomain = (code: string, subjectCode: string | null) => {
+    const next = activeDomain === code ? '' : code;
+    setActiveDomain(next);
+    setActiveSkill('');
+    // Clicking a domain implicitly narrows to its subject.
+    const subjectNext = next && subjectCode ? subjectCode : activeSubject;
+    setActiveSubject(subjectNext);
+    navigate({ subject: subjectNext, domain: next, skill: '' });
+  };
+
+  const handleSkill = (code: string, subjectCode: string | null, domainCode: string | null) => {
+    const next = activeSkill === code ? '' : code;
+    setActiveSkill(next);
+    const subjectNext = next && subjectCode ? subjectCode : activeSubject;
+    const domainNext  = next && domainCode  ? domainCode  : activeDomain;
+    setActiveSubject(subjectNext);
+    setActiveDomain(domainNext);
+    navigate({ subject: subjectNext, domain: domainNext, skill: next });
+  };
+
+  const handleClearTaxonomy = () => {
+    setActiveSubject('');
+    setActiveDomain('');
+    setActiveSkill('');
+    navigate({ subject: '', domain: '', skill: '' });
+  };
+
+  // Hide domains that don't belong to the active subject (when one
+  // is set) so the sidebar narrows progressively.
+  const visibleDomains = activeSubject
+    ? facets.domains.filter((d) => d.subjectCode === activeSubject)
+    : facets.domains;
+  const visibleSkills = facets.skills.filter((sk) => {
+    if (activeDomain && sk.domainCode !== activeDomain) return false;
+    if (activeSubject && sk.subjectCode !== activeSubject) return false;
+    return true;
+  });
+
+  const hasTaxonomyFilter = !!(activeSubject || activeDomain || activeSkill);
 
   const handleDelete = (id: string) => {
     if (!window.confirm('Delete this note? This cannot be undone.')) return;
@@ -126,55 +214,131 @@ export function NotesListInteractive({
   }, [notes]);
 
   return (
-    <>
-      <div className={s.controls}>
-        <input
-          type="search"
-          className={s.searchInput}
-          placeholder="Search your notes…"
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
+    <div className={s.indexLayout}>
+      <aside className={s.sidebar} aria-label="Filters">
+        <FacetSection
+          title="Subject"
+          items={facets.subjects.map((sub) => ({
+            key: sub.code,
+            label: SUBJECT_LABEL[sub.code] ?? sub.code,
+            count: sub.count,
+            active: activeSubject === sub.code,
+            onClick: () => handleSubject(sub.code),
+          }))}
         />
+        <FacetSection
+          title="Domain"
+          items={visibleDomains.map((d) => ({
+            key: d.code,
+            label: d.name ?? d.code,
+            count: d.count,
+            active: activeDomain === d.code,
+            onClick: () => handleDomain(d.code, d.subjectCode),
+          }))}
+        />
+        <FacetSection
+          title="Skill"
+          items={visibleSkills.map((sk) => ({
+            key: `${sk.domainCode ?? ''}/${sk.code}`,
+            label: sk.name ?? sk.code,
+            count: sk.count,
+            active: activeSkill === sk.code,
+            onClick: () => handleSkill(sk.code, sk.subjectCode, sk.domainCode),
+          }))}
+        />
+        {hasTaxonomyFilter && (
+          <button
+            type="button"
+            className={s.clearFiltersBtn}
+            onClick={handleClearTaxonomy}
+          >
+            Clear filters
+          </button>
+        )}
+      </aside>
+
+      <div className={s.indexMain}>
+        <div className={s.controls}>
+          <input
+            type="search"
+            className={s.searchInput}
+            placeholder="Search by tag or text…"
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+        </div>
+
+        {allTags.length > 0 && (
+          <div className={s.tagRow}>
+            {allTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                className={
+                  activeTag === tag ? `${s.tagChip} ${s.tagChipActive}` : s.tagChip
+                }
+                onClick={() => handleTagClick(tag)}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {error && <div className={s.errorBanner}>{error}</div>}
+
+        {notes.length === 0 ? (
+          <div className={s.empty}>
+            {search || activeTag || hasTaxonomyFilter
+              ? 'No notes match your filter.'
+              : 'No notes yet — create your first one.'}
+          </div>
+        ) : (
+          <div className={s.notesList} ref={listRef}>
+            {notes.map((note) => (
+              <NoteCard
+                key={note.id}
+                note={note}
+                onDelete={() => handleDelete(note.id)}
+                disabled={isPending}
+              />
+            ))}
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
 
-      {allTags.length > 0 && (
-        <div className={s.tagRow}>
-          {allTags.map((tag) => (
+interface FacetItem {
+  key: string;
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}
+
+function FacetSection({ title, items }: { title: string; items: FacetItem[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div className={s.facetSection}>
+      <div className={s.facetTitle}>{title}</div>
+      <ul className={s.facetList}>
+        {items.map((it) => (
+          <li key={it.key}>
             <button
-              key={tag}
               type="button"
-              className={
-                activeTag === tag ? `${s.tagChip} ${s.tagChipActive}` : s.tagChip
-              }
-              onClick={() => handleTagClick(tag)}
+              className={it.active ? `${s.facetItem} ${s.facetItemActive}` : s.facetItem}
+              onClick={it.onClick}
+              aria-pressed={it.active}
             >
-              #{tag}
+              <span className={s.facetItemLabel}>{it.label}</span>
+              <span className={s.facetItemCount}>{it.count}</span>
             </button>
-          ))}
-        </div>
-      )}
-
-      {error && <div className={s.errorBanner}>{error}</div>}
-
-      {notes.length === 0 ? (
-        <div className={s.empty}>
-          {search || activeTag
-            ? 'No notes match your filter.'
-            : 'No notes yet — create your first one.'}
-        </div>
-      ) : (
-        <div className={s.notesList} ref={listRef}>
-          {notes.map((note) => (
-            <NoteCard
-              key={note.id}
-              note={note}
-              onDelete={() => handleDelete(note.id)}
-              disabled={isPending}
-            />
-          ))}
-        </div>
-      )}
-    </>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

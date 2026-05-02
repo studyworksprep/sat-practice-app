@@ -14,7 +14,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import dynamicImport from 'next/dynamic';
 import Link from 'next/link';
 import { upsertNoteForQuestion } from '@/app/next/(student)/notes/actions';
-import type { NoteDoc, StudentNote } from '@/lib/types';
+import type { NoteDoc } from '@/lib/types';
 import s from './QuestionNotes.module.css';
 import type { NoteEditorSavePayload } from '@/app/next/(student)/notes/NoteEditor';
 
@@ -29,6 +29,7 @@ const NoteEditor = dynamicImport(
 
 interface InitialStudentNote {
   id: string;
+  title: string | null;
   bodyJson: NoteDoc;
   bodyText: string;
   updatedAt: string;
@@ -100,6 +101,7 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
   const handleSave = (payload: NoteEditorSavePayload) => {
     setError(null);
     startTransition(async () => {
+      const tax = payload.taxonomy;
       const res = await upsertNoteForQuestion({
         questionId,
         // Stringify across the Server Action boundary — the React
@@ -109,6 +111,11 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
         bodyJson: JSON.stringify(payload.bodyJson),
         bodyText: payload.bodyText,
         title: payload.title,
+        subjectCode: tax.subjectCode,
+        domainCode:  tax.domainCode,
+        domainName:  tax.domainName,
+        skillCode:   tax.skillCode,
+        skillName:   tax.skillName,
       });
       if (!res.ok) {
         setError(res.error);
@@ -120,6 +127,7 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
       }
       setNote({
         id: res.data.note.id,
+        title: res.data.note.title,
         bodyJson: res.data.note.bodyJson,
         bodyText: res.data.note.bodyText,
         updatedAt: res.data.note.updatedAt,
@@ -174,11 +182,10 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
           <div style={{ padding: 0, overflow: 'auto', flex: 1 }}>
             <NoteEditor
               initialDoc={note?.bodyJson ?? null}
-              initialTitle={null}
+              initialTitle={note?.title ?? null}
               editable
               saving={pending}
               onSave={handleSave}
-              hideTitle
               saveLabel={hasNote ? 'Save changes' : 'Save note'}
               placeholder="Write a private note about this question…"
             />

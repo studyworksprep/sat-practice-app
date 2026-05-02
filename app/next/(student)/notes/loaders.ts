@@ -22,6 +22,11 @@ interface NoteRow {
   body_json: NoteDoc;
   body_text: string;
   tags: string[];
+  subject_code: string | null;
+  domain_code: string | null;
+  domain_name: string | null;
+  skill_code: string | null;
+  skill_name: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +38,11 @@ interface SummaryRow {
   body_json: NoteDoc | null;
   body_text: string;
   tags: string[];
+  subject_code: string | null;
+  domain_code: string | null;
+  domain_name: string | null;
+  skill_code: string | null;
+  skill_name: string | null;
   updated_at: string;
 }
 
@@ -56,6 +66,11 @@ function toSummary(row: SummaryRow): StudentNoteSummary {
     preview,
     previewHtml,
     tags: row.tags ?? [],
+    subjectCode: row.subject_code,
+    domainCode: row.domain_code,
+    domainName: row.domain_name,
+    skillCode: row.skill_code,
+    skillName: row.skill_name,
     updatedAt: row.updated_at,
   };
 }
@@ -69,6 +84,11 @@ function toNote(row: NoteRow): StudentNote {
     bodyJson: row.body_json,
     bodyText: row.body_text,
     tags: row.tags ?? [],
+    subjectCode: row.subject_code,
+    domainCode: row.domain_code,
+    domainName: row.domain_name,
+    skillCode: row.skill_code,
+    skillName: row.skill_name,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -77,32 +97,73 @@ function toNote(row: NoteRow): StudentNote {
 interface IndexFilters {
   search?: string | null;
   tag?: string | null;
+  subject?: string | null;
+  domain?: string | null;
+  skill?: string | null;
+}
+
+/** Sidebar-facet shape for the notes index: the full set of subject /
+ *  domain / skill values the caller has notes in, plus a count per
+ *  bucket so the UI can render "Math · Algebra (3)". */
+export interface NotesIndexFacets {
+  subjects: { code: string; count: number }[];
+  domains: {
+    code: string;
+    name: string | null;
+    subjectCode: string | null;
+    count: number;
+  }[];
+  skills: {
+    code: string;
+    name: string | null;
+    subjectCode: string | null;
+    domainCode: string | null;
+    count: number;
+  }[];
 }
 
 /** List the caller's notes, most-recent first, with optional
- *  full-text search and a single-tag filter. */
+ *  full-text search, single-tag filter, and subject / domain / skill
+ *  filters. The facet computation runs against a separate
+ *  unfiltered-by-search query so the sidebar always reflects the
+ *  caller's full taxonomy footprint regardless of the active text
+ *  filter. */
 export async function loadNotesIndex(
   supabase: SupabaseClient,
   filters: IndexFilters = {},
-): Promise<{ notes: StudentNoteSummary[]; allTags: string[] }> {
+): Promise<{
+  notes: StudentNoteSummary[];
+  allTags: string[];
+  facets: NotesIndexFacets;
+}> {
   let query = supabase
     .from('student_notes')
-    .select('id, question_id, title, body_json, body_text, tags, updated_at')
+    .select(
+      'id, question_id, title, body_json, body_text, tags, subject_code, domain_code, domain_name, skill_code, skill_name, updated_at',
+    )
     .order('updated_at', { ascending: false })
     .limit(200);
 
   const term = filters.search?.trim();
   if (term) {
     // Phrase-style websearch over the existing GIN index. ilike on
-    // title is OR'd in so a typed title still hits even if the body
-    // hasn't been indexed yet.
+    // title / tags is OR'd in so a typed title or tag still hits
+    // even if body hasn't been indexed yet.
+    const escaped = term.replace(/[%_]/g, '\\$&');
     query = query.or(
-      `title.ilike.%${term.replace(/[%_]/g, '\\$&')}%,body_text.ilike.%${term.replace(/[%_]/g, '\\$&')}%`,
+      `title.ilike.%${escaped}%,body_text.ilike.%${escaped}%`,
     );
   }
 
   const tag = filters.tag?.trim().toLowerCase();
   if (tag) query = query.contains('tags', [tag]);
+
+  const subject = filters.subject?.trim().toLowerCase();
+  if (subject) query = query.eq('subject_code', subject);
+  const domain = filters.domain?.trim();
+  if (domain) query = query.eq('domain_code', domain);
+  const skill = filters.skill?.trim();
+  if (skill) query = query.eq('skill_code', skill);
 
   const { data, error } = await query;
   if (error) {
@@ -110,7 +171,7 @@ export async function loadNotesIndex(
     // as "no notes" rather than crashing the route.
     // eslint-disable-next-line no-console
     console.error('loadNotesIndex error', error);
-    return { notes: [], allTags: [] };
+    return { notes: [], allTags: [], facets: { subjects: [], domains: [], skills: [] } };
   }
 
   const rows = (data ?? []) as SummaryRow[];
@@ -120,9 +181,81 @@ export async function loadNotesIndex(
   const tagSet = new Set<string>();
   for (const r of rows) for (const t of r.tags ?? []) tagSet.add(t);
 
+  const facets = await loadNotesIndexFacets(supabase);
+
   return {
     notes: rows.map(toSummary),
     allTags: [...tagSet].sort(),
+    facets,
+  };
+}
+
+/** Pull the unfiltered subject / domain / skill counts so the
+ *  sidebar shows every bucket the user has notes in even when the
+ *  active filter narrows the visible list to one. */
+async function loadNotesIndexFacets(
+  supabase: SupabaseClient,
+): Promise<NotesIndexFacets> {
+  const { data, error } = await supabase
+    .from('student_notes')
+    .select('subject_code, domain_code, domain_name, skill_code, skill_name')
+    .limit(2000);
+  if (error || !data) {
+    return { subjects: [], domains: [], skills: [] };
+  }
+
+  const subjectCounts = new Map<string, number>();
+  const domainAcc = new Map<
+    string,
+    { code: string; name: string | null; subjectCode: string | null; count: number }
+  >();
+  const skillAcc = new Map<
+    string,
+    { code: string; name: string | null; subjectCode: string | null; domainCode: string | null; count: number }
+  >();
+
+  for (const r of data as Array<Pick<
+    SummaryRow,
+    'subject_code' | 'domain_code' | 'domain_name' | 'skill_code' | 'skill_name'
+  >>) {
+    if (r.subject_code) {
+      subjectCounts.set(r.subject_code, (subjectCounts.get(r.subject_code) ?? 0) + 1);
+    }
+    if (r.domain_code) {
+      const k = r.domain_code;
+      const existing = domainAcc.get(k);
+      if (existing) existing.count += 1;
+      else domainAcc.set(k, {
+        code: k,
+        name: r.domain_name,
+        subjectCode: r.subject_code,
+        count: 1,
+      });
+    }
+    if (r.skill_code) {
+      const k = `${r.domain_code ?? ''}/${r.skill_code}`;
+      const existing = skillAcc.get(k);
+      if (existing) existing.count += 1;
+      else skillAcc.set(k, {
+        code: r.skill_code,
+        name: r.skill_name,
+        subjectCode: r.subject_code,
+        domainCode: r.domain_code,
+        count: 1,
+      });
+    }
+  }
+
+  return {
+    subjects: [...subjectCounts.entries()]
+      .map(([code, count]) => ({ code, count }))
+      .sort((a, b) => a.code.localeCompare(b.code)),
+    domains: [...domainAcc.values()].sort((a, b) =>
+      (a.name ?? a.code).localeCompare(b.name ?? b.code),
+    ),
+    skills: [...skillAcc.values()].sort((a, b) =>
+      (a.name ?? a.code).localeCompare(b.name ?? b.code),
+    ),
   };
 }
 
@@ -136,7 +269,7 @@ export async function loadNote(
   const { data, error } = await supabase
     .from('student_notes')
     .select(
-      'id, user_id, question_id, title, body_json, body_text, tags, created_at, updated_at',
+      'id, user_id, question_id, title, body_json, body_text, tags, subject_code, domain_code, domain_name, skill_code, skill_name, created_at, updated_at',
     )
     .eq('id', id)
     .maybeSingle();
@@ -155,7 +288,7 @@ export async function loadNoteForQuestion(
   const { data, error } = await supabase
     .from('student_notes')
     .select(
-      'id, user_id, question_id, title, body_json, body_text, tags, created_at, updated_at',
+      'id, user_id, question_id, title, body_json, body_text, tags, subject_code, domain_code, domain_name, skill_code, skill_name, created_at, updated_at',
     )
     .eq('question_id', questionId)
     .order('updated_at', { ascending: false })
@@ -174,13 +307,13 @@ export async function loadNoteForQuestion(
 export async function loadStudentNotesByQuestion(
   supabase: SupabaseClient,
   questionIds: string[],
-): Promise<Map<string, { id: string; bodyJson: unknown; bodyText: string; updatedAt: string }>> {
-  const out = new Map<string, { id: string; bodyJson: unknown; bodyText: string; updatedAt: string }>();
+): Promise<Map<string, { id: string; title: string | null; bodyJson: unknown; bodyText: string; updatedAt: string }>> {
+  const out = new Map<string, { id: string; title: string | null; bodyJson: unknown; bodyText: string; updatedAt: string }>();
   if (!questionIds || questionIds.length === 0) return out;
 
   const { data, error } = await supabase
     .from('student_notes')
-    .select('id, question_id, body_json, body_text, updated_at')
+    .select('id, question_id, title, body_json, body_text, updated_at')
     .in('question_id', questionIds)
     .not('question_id', 'is', null)
     .order('updated_at', { ascending: false });
@@ -189,6 +322,7 @@ export async function loadStudentNotesByQuestion(
   for (const row of data as Array<{
     id: string;
     question_id: string;
+    title: string | null;
     body_json: unknown;
     body_text: string;
     updated_at: string;
@@ -196,6 +330,7 @@ export async function loadStudentNotesByQuestion(
     if (out.has(row.question_id)) continue; // first wins; rows are pre-sorted desc
     out.set(row.question_id, {
       id: row.id,
+      title: row.title,
       bodyJson: row.body_json,
       bodyText: row.body_text,
       updatedAt: row.updated_at,

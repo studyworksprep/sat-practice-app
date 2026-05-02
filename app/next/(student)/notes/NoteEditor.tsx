@@ -19,18 +19,20 @@ import StarterKit from '@tiptap/starter-kit';
 import { MathExtension } from './MathNode';
 import { docToPlainText, EMPTY_DOC } from '@/lib/notes/render';
 import { syncMathNodesFromDom } from '@/lib/notes/sync-math-nodes';
-import type { NoteDoc } from '@/lib/types';
+import type { NoteDoc, NoteTaxonomy } from '@/lib/types';
 import s from './Notes.module.css';
 
 export interface NoteEditorSavePayload {
   title: string | null;
   bodyJson: NoteDoc;
   bodyText: string;
+  taxonomy: NoteTaxonomy;
 }
 
 interface Props {
   initialDoc?: NoteDoc | null;
   initialTitle?: string | null;
+  initialTaxonomy?: NoteTaxonomy | null;
   editable?: boolean;
   saving?: boolean;
   onSave?: (payload: NoteEditorSavePayload) => void;
@@ -41,9 +43,18 @@ interface Props {
   placeholder?: string;
 }
 
+const EMPTY_TAXONOMY: NoteTaxonomy = {
+  subjectCode: null,
+  domainCode:  null,
+  domainName:  null,
+  skillCode:   null,
+  skillName:   null,
+};
+
 export function NoteEditor({
   initialDoc,
   initialTitle = null,
+  initialTaxonomy = null,
   editable = true,
   saving = false,
   onSave,
@@ -52,6 +63,9 @@ export function NoteEditor({
   placeholder = 'Start typing your note…',
 }: Props) {
   const [title, setTitle] = useState(initialTitle ?? '');
+  const [taxonomy, setTaxonomy] = useState<NoteTaxonomy>(
+    initialTaxonomy ?? EMPTY_TAXONOMY,
+  );
   const startingDoc: NoteDoc = useMemo(
     () => (initialDoc && Object.keys(initialDoc).length > 0 ? initialDoc : EMPTY_DOC),
     [initialDoc],
@@ -84,6 +98,7 @@ export function NoteEditor({
   useEffect(() => {
     if (!editor) return;
     setTitle(initialTitle ?? '');
+    setTaxonomy(initialTaxonomy ?? EMPTY_TAXONOMY);
     editor.commands.setContent(startingDoc as unknown as object, { emitUpdate: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startingDoc]);
@@ -105,8 +120,19 @@ export function NoteEditor({
       title: title.trim() || null,
       bodyJson: json,
       bodyText: docToPlainText(json),
+      taxonomy: {
+        subjectCode: taxonomy.subjectCode,
+        domainCode:  taxonomy.domainCode,
+        domainName:  taxonomy.domainName?.trim() || null,
+        skillCode:   taxonomy.skillCode,
+        skillName:   taxonomy.skillName?.trim() || null,
+      },
     });
-  }, [editor, onSave, title]);
+  }, [editor, onSave, title, taxonomy]);
+
+  const updateTaxonomy = (patch: Partial<NoteTaxonomy>) => {
+    setTaxonomy((prev) => ({ ...prev, ...patch }));
+  };
 
   if (!editor) return <div className={s.editorEmpty}>Loading editor…</div>;
 
@@ -123,6 +149,52 @@ export function NoteEditor({
           maxLength={200}
         />
       )}
+
+      <div className={s.taxonomyRow} role="group" aria-label="Subject, domain, and skill">
+        <label className={s.taxonomyField}>
+          <span className={s.taxonomyLabel}>Subject</span>
+          <select
+            className={s.taxonomyInput}
+            value={taxonomy.subjectCode ?? ''}
+            onChange={(e) =>
+              updateTaxonomy({ subjectCode: e.target.value || null })
+            }
+            disabled={!editable || saving}
+          >
+            <option value="">—</option>
+            <option value="rw">Reading & Writing</option>
+            <option value="math">Math</option>
+          </select>
+        </label>
+        <label className={s.taxonomyField}>
+          <span className={s.taxonomyLabel}>Domain</span>
+          <input
+            type="text"
+            className={s.taxonomyInput}
+            placeholder="e.g. Algebra"
+            value={taxonomy.domainName ?? ''}
+            onChange={(e) =>
+              updateTaxonomy({ domainName: e.target.value || null })
+            }
+            disabled={!editable || saving}
+            maxLength={80}
+          />
+        </label>
+        <label className={s.taxonomyField}>
+          <span className={s.taxonomyLabel}>Skill</span>
+          <input
+            type="text"
+            className={s.taxonomyInput}
+            placeholder="e.g. Linear equations"
+            value={taxonomy.skillName ?? ''}
+            onChange={(e) =>
+              updateTaxonomy({ skillName: e.target.value || null })
+            }
+            disabled={!editable || saving}
+            maxLength={80}
+          />
+        </label>
+      </div>
 
       {editable && (
         <div className={s.toolbar} role="toolbar" aria-label="Formatting">

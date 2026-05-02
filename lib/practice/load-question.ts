@@ -134,6 +134,7 @@ export interface QuestionPayload {
    *  20240101000040_student_notes.sql. */
   studentNote: {
     id: string;
+    title: string | null;
     bodyJson: unknown;
     bodyText: string;
     updatedAt: string;
@@ -386,7 +387,7 @@ export async function loadQuestion(
       .maybeSingle(),
     supabase
       .from('student_notes')
-      .select('id, body_json, body_text, updated_at')
+      .select('id, title, body_json, body_text, updated_at')
       .eq('user_id', userId)
       .eq('question_id', questionId)
       .order('updated_at', { ascending: false })
@@ -404,6 +405,7 @@ export async function loadQuestion(
   const studentNote = studentNoteRow?.data
     ? {
         id: studentNoteRow.data.id as string,
+        title: (studentNoteRow.data.title as string | null) ?? null,
         bodyJson: studentNoteRow.data.body_json,
         bodyText: studentNoteRow.data.body_text as string,
         updatedAt: studentNoteRow.data.updated_at as string,

@@ -18,6 +18,7 @@ export type {
 } from './practice';
 export type {
   NoteDoc,
+  NoteTaxonomy,
   StudentNote,
   StudentNoteSummary,
   StudentNoteInput,
