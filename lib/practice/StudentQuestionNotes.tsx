@@ -52,11 +52,20 @@ export function StudentQuestionNotes({ questionId, initialNote }: Props) {
     setOpen(false);
   }, [questionId, initialNote]);
 
-  // Click-outside closes the popover.
+  // Click-outside closes the popover. Carve out two exceptions so
+  // tapping into the embedded editor doesn't unmount it:
+  //  1. MathLive's virtual keyboard renders as a singleton appended
+  //     to document.body — anything inside it is technically "outside"
+  //     the popover but is part of the same input affordance.
+  //  2. Same for any MathLive-styled descendant (popovers, menus,
+  //     suggestion lists), all of which use the ML__ class prefix.
   useEffect(() => {
     if (!open) return undefined;
     const handler = (e: PointerEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (target.closest?.('[class*="ML__"], math-field, math-virtual-keyboard')) return;
+      if (panelRef.current && !panelRef.current.contains(target)) {
         setOpen(false);
       }
     };

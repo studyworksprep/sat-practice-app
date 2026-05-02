@@ -18,6 +18,7 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { MathExtension } from './MathNode';
 import { docToPlainText, EMPTY_DOC } from '@/lib/notes/render';
+import { syncMathNodesFromDom } from '@/lib/notes/sync-math-nodes';
 import type { NoteDoc } from '@/lib/types';
 import s from './Notes.module.css';
 
@@ -98,6 +99,11 @@ export function NoteEditor({
 
   const handleSave = useCallback(() => {
     if (!editor || !onSave) return;
+    // Pull live values out of every <math-field> before serializing.
+    // MathLive's `input` event timing can lag the user's last keystroke
+    // (especially when the soft keyboard inserts a template), so we
+    // can't trust the doc attrs alone — walk the DOM to be certain.
+    syncMathNodesFromDom(editor);
     const json = editor.getJSON() as unknown as NoteDoc;
     onSave({
       title: title.trim() || null,
