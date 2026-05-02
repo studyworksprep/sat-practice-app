@@ -33,12 +33,31 @@ let mathLiveLoader: Promise<unknown> | null = null;
 function ensureMathLive(): Promise<unknown> {
   if (typeof window === 'undefined') return Promise.resolve();
   if (!mathLiveLoader) {
-    mathLiveLoader = import('mathlive').catch((err) => {
-      // eslint-disable-next-line no-console
-      console.error('MathLive failed to load', err);
-      mathLiveLoader = null;
-      return null;
-    });
+    mathLiveLoader = import('mathlive')
+      .then((mod) => {
+        // MathLive resolves its bundled WOFF2 math fonts relative to
+        // the script URL by default, which under Next.js becomes
+        // /_next/static/chunks/fonts/* — a 404. We host the fonts
+        // ourselves under /public/mathlive-fonts and point MathLive
+        // there. Set once, before any <math-field> renders.
+        const MFE = (mod as { MathfieldElement?: {
+          fontsDirectory?: string | null;
+          soundsDirectory?: string | null;
+        } }).MathfieldElement;
+        if (MFE) {
+          try { MFE.fontsDirectory = '/mathlive-fonts'; } catch { /* */ }
+          // Disable the keypress sounds entirely — we don't ship the
+          // .wav files, and the default loader otherwise 404s on each.
+          try { MFE.soundsDirectory = null; } catch { /* */ }
+        }
+        return mod;
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('MathLive failed to load', err);
+        mathLiveLoader = null;
+        return null;
+      });
   }
   return mathLiveLoader;
 }
