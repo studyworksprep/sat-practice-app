@@ -68,7 +68,26 @@ export function AssignmentReport({
   // FloatingCalculator below renders a single panel for the whole
   // report, so the same ref serves every selected question.
   const calcRef = useRef(null);
-  const groups = useMemo(() => buildDomainGroups(items), [items]);
+  // Assignments are linear by nature — a single ordered list,
+  // no domain/skill split. The metrics card above already shows
+  // the per-domain breakdown, so the question map stays a flat
+  // run of positions.
+  const groups = useMemo(
+    () => [{
+      key: 'all',
+      label: '',
+      items: items.map((it) => ({
+        id: it.position,
+        ordinalLabel: it.position + 1,
+        status: it.status,
+        difficulty: it.taxonomy?.difficulty ?? null,
+        marked: !!it.marked,
+        missing: it.missing,
+        ariaLabel: `Question ${it.position + 1}, ${it.status}${it.marked ? ', marked' : ''}`,
+      })),
+    }],
+    [items],
+  );
 
   const firstReal = items.find((it) => !it.missing) ?? items[0];
   const [selectedPosition, setSelectedPosition] = useState(
@@ -438,75 +457,6 @@ function Stat({ label, value, sub, tone = 'neutral' }) {
   );
 }
 
-const MATH_DOMAIN_CODES = new Set(['H', 'P', 'Q', 'S']);
-const RW_DOMAIN_CODES = new Set(['INI', 'CAS', 'EOI', 'SEC']);
-const SUBJECT_LABEL = { RW: 'Reading & Writing', MATH: 'Math', OTHER: 'Other' };
-const SUBJECT_ORDER = { RW: 0, MATH: 1, OTHER: 2 };
-
-function subjectGroupKey(code) {
-  if (MATH_DOMAIN_CODES.has(code)) return 'MATH';
-  if (RW_DOMAIN_CODES.has(code)) return 'RW';
-  return 'OTHER';
-}
-
-function buildDomainGroups(items) {
-  // Two-level group: subject → domain. Each header reads e.g.
-  // "Reading & Writing · Information & Ideas", parallel to the
-  // test report's "Reading & Writing · Module 1" treatment.
-  const byKey = new Map();
-  for (const it of items) {
-    const code = it.taxonomy?.domain_code ?? '';
-    const subject = subjectGroupKey(code);
-    const domainName = it.taxonomy?.domain_name ?? 'Other';
-    const key = `${subject}::${domainName}`;
-    if (!byKey.has(key)) {
-      byKey.set(key, {
-        key,
-        subject,
-        domainName,
-        items: [],
-        correct: 0,
-        total: 0,
-      });
-    }
-    const group = byKey.get(key);
-    group.items.push(it);
-    if (!it.missing) {
-      group.total += 1;
-      if (it.studentAnswer?.isCorrect) group.correct += 1;
-    }
-  }
-
-  const groups = Array.from(byKey.values()).sort((a, b) => {
-    const ao = SUBJECT_ORDER[a.subject] ?? 99;
-    const bo = SUBJECT_ORDER[b.subject] ?? 99;
-    if (ao !== bo) return ao - bo;
-    return a.domainName.localeCompare(b.domainName);
-  });
-
-  return groups.map((g) => ({
-    key: g.key,
-    label: (
-      <>
-        <span style={{ color: 'var(--color-navy-900)' }}>
-          {SUBJECT_LABEL[g.subject] ?? g.subject}
-        </span>
-        <span style={{ color: 'var(--fg3)', fontWeight: 400, margin: '0 4px' }}>·</span>
-        <span style={{ color: 'var(--fg2)' }}>{g.domainName}</span>
-      </>
-    ),
-    countNote: `${g.correct}/${g.total}`,
-    items: g.items.map((it) => ({
-      id: it.position,
-      ordinalLabel: it.position + 1,
-      status: it.status,
-      difficulty: it.taxonomy?.difficulty ?? null,
-      marked: !!it.marked,
-      missing: it.missing,
-      ariaLabel: `Question ${it.position + 1}, ${it.status}${it.marked ? ', marked' : ''}`,
-    })),
-  }));
-}
 
 function buildWeakSkills(metrics) {
   const out = [];
