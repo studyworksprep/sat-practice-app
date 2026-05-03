@@ -19,6 +19,7 @@ import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
+import { ErrorLogButton } from '@/lib/practice/ErrorLogButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
@@ -53,6 +54,7 @@ export function TestResultsInteractive({
   questionNotesCanView = false,
   questionNotesIsAdmin = false,
   currentUserId = null,
+  isViewerOwner = true,
 }) {
   const [selectedOrdinal, setSelectedOrdinal] = useState(
     reviewItems.find((r) => !r.missing)?.ordinal ?? reviewItems[0]?.ordinal ?? 1,
@@ -424,6 +426,15 @@ export function TestResultsInteractive({
                   currentUserId={currentUserId}
                   canView={questionNotesCanView}
                 />
+              )}
+              {isViewerOwner && !selected.missing && (
+                <div className={s.errorLogSlot}>
+                  <ErrorLogButton
+                    key={`elog-${selected.questionId}`}
+                    questionId={selected.questionId}
+                    initialNote={selected.errorNote ?? null}
+                  />
+                </div>
               )}
               <FlashcardsButton />
               {!isRevealed && !selected.missing && (

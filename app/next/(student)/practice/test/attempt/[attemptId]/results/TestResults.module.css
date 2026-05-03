@@ -831,6 +831,14 @@
   color: var(--fg3);
 }
 
+/* Position-relative wrapper for the ErrorLogButton popover so the
+   panel (absolute, right:0) anchors to the trigger rather than the
+   page. Same pattern as PracticeInteractive's errorLogSlot. */
+.errorLogSlot {
+  position: relative;
+  display: inline-flex;
+}
+
 .diffTimingTile.diffEasy    { background: var(--color-diff-easy-bg);    border-color: var(--color-diff-easy-bd); }
 .diffTimingTile.diffEasy    .diffTimingLabel,
 .diffTimingTile.diffEasy    .diffTimingValue { color: var(--color-diff-easy-fg); }
