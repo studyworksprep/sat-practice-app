@@ -99,7 +99,6 @@ function ensureExcalidraw(): Promise<ExcalidrawModule | null> {
         // Side-effect import for the stylesheet — Excalidraw ships
         // its CSS as a separate entry. Without this, the toolbar
         // and color pickers render unstyled.
-        // @ts-expect-error CSS subpath import
         await import('@excalidraw/excalidraw/index.css');
         const mod = await import('@excalidraw/excalidraw');
         return {
