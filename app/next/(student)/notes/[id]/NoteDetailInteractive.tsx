@@ -12,7 +12,7 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import type { ActionResult, StudentNote } from '@/lib/types';
+import type { ActionResult, NoteTaxonomy, StudentNote } from '@/lib/types';
 import s from '../Notes.module.css';
 import type { NoteEditorSavePayload } from '../NoteEditor';
 
@@ -35,6 +35,11 @@ interface Props {
     bodyText: string;
     tags?: string[];
     questionId?: string | null;
+    subjectCode?: string | null;
+    domainCode?: string | null;
+    domainName?: string | null;
+    skillCode?: string | null;
+    skillName?: string | null;
   }) => Promise<ActionResult<{ data: { note: StudentNote } }>>;
   updateNoteAction: (input: {
     id: string;
@@ -43,6 +48,11 @@ interface Props {
     bodyText: string;
     tags?: string[];
     questionId?: string | null;
+    subjectCode?: string | null;
+    domainCode?: string | null;
+    domainName?: string | null;
+    skillCode?: string | null;
+    skillName?: string | null;
   }) => Promise<ActionResult<{ data: { note: StudentNote } }>>;
   deleteNoteAction: (id: string) => Promise<ActionResult<{ data: { id: string } }>>;
 }
@@ -77,6 +87,7 @@ export function NoteDetailInteractive({
     const tags = stringToTags(tagsInput);
     startTransition(async () => {
       const bodyJsonString = JSON.stringify(payload.bodyJson);
+      const tax = payload.taxonomy;
       if (mode === 'new') {
         const res = await createNoteAction({
           title: payload.title,
@@ -84,6 +95,11 @@ export function NoteDetailInteractive({
           bodyText: payload.bodyText,
           tags,
           questionId: initialNote.questionId,
+          subjectCode: tax.subjectCode,
+          domainCode:  tax.domainCode,
+          domainName:  tax.domainName,
+          skillCode:   tax.skillCode,
+          skillName:   tax.skillName,
         });
         if (!res.ok) {
           setError(res.error);
@@ -100,6 +116,11 @@ export function NoteDetailInteractive({
         bodyText: payload.bodyText,
         tags,
         questionId: initialNote.questionId,
+        subjectCode: tax.subjectCode,
+        domainCode:  tax.domainCode,
+        domainName:  tax.domainName,
+        skillCode:   tax.skillCode,
+        skillName:   tax.skillName,
       });
       if (!res.ok) {
         setError(res.error);
@@ -107,6 +128,14 @@ export function NoteDetailInteractive({
       }
       setSavedAt(res.data.note.updatedAt);
     });
+  };
+
+  const initialTaxonomy: NoteTaxonomy = {
+    subjectCode: initialNote.subjectCode,
+    domainCode:  initialNote.domainCode,
+    domainName:  initialNote.domainName,
+    skillCode:   initialNote.skillCode,
+    skillName:   initialNote.skillName,
   };
 
   const handleDelete = () => {
@@ -150,6 +179,7 @@ export function NoteDetailInteractive({
       <NoteEditor
         initialDoc={initialNote.bodyJson}
         initialTitle={initialNote.title}
+        initialTaxonomy={initialTaxonomy}
         editable
         saving={isPending}
         onSave={handleSave}

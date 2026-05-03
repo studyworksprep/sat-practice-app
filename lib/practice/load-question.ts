@@ -59,6 +59,7 @@ export interface QuestionOption {
 export interface QuestionTaxonomy {
   domain_code: string | null;
   domain_name: string | null;
+  skill_code: string | null;
   skill_name: string | null;
   difficulty: number | null;
   score_band: string | null;
@@ -134,8 +135,14 @@ export interface QuestionPayload {
    *  20240101000040_student_notes.sql. */
   studentNote: {
     id: string;
+    title: string | null;
     bodyJson: unknown;
     bodyText: string;
+    subjectCode: string | null;
+    domainCode: string | null;
+    domainName: string | null;
+    skillCode: string | null;
+    skillName: string | null;
     updatedAt: string;
   } | null;
   /** Whether the current position is marked-for-review on the
@@ -260,7 +267,7 @@ export async function loadQuestion(
     supabase
       .from('questions_v2')
       .select(
-        'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_code, domain_name, skill_name, difficulty, score_band, display_code, is_broken, is_published, deleted_at',
+        'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_code, domain_name, skill_code, skill_name, difficulty, score_band, display_code, is_broken, is_published, deleted_at',
       )
       .eq('id', questionId)
       .maybeSingle(),
@@ -339,6 +346,7 @@ export async function loadQuestion(
     taxonomy: {
       domain_code: question.domain_code ?? null,
       domain_name: question.domain_name ?? null,
+      skill_code: question.skill_code ?? null,
       skill_name: question.skill_name ?? null,
       difficulty: question.difficulty ?? null,
       score_band: question.score_band ?? null,
@@ -386,7 +394,9 @@ export async function loadQuestion(
       .maybeSingle(),
     supabase
       .from('student_notes')
-      .select('id, body_json, body_text, updated_at')
+      .select(
+        'id, title, body_json, body_text, subject_code, domain_code, domain_name, skill_code, skill_name, updated_at',
+      )
       .eq('user_id', userId)
       .eq('question_id', questionId)
       .order('updated_at', { ascending: false })
@@ -404,8 +414,14 @@ export async function loadQuestion(
   const studentNote = studentNoteRow?.data
     ? {
         id: studentNoteRow.data.id as string,
+        title: (studentNoteRow.data.title as string | null) ?? null,
         bodyJson: studentNoteRow.data.body_json,
         bodyText: studentNoteRow.data.body_text as string,
+        subjectCode: (studentNoteRow.data.subject_code as string | null) ?? null,
+        domainCode:  (studentNoteRow.data.domain_code as string | null) ?? null,
+        domainName:  (studentNoteRow.data.domain_name as string | null) ?? null,
+        skillCode:   (studentNoteRow.data.skill_code as string | null) ?? null,
+        skillName:   (studentNoteRow.data.skill_name as string | null) ?? null,
         updatedAt: studentNoteRow.data.updated_at as string,
       }
     : null;

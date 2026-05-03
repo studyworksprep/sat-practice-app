@@ -403,6 +403,7 @@ export function TestResultsInteractive({
                   key={`mynote-${selected.questionId}`}
                   questionId={selected.questionId}
                   initialNote={selected.studentNote ?? null}
+                  questionTaxonomy={selected.taxonomy ?? null}
                 />
               )}
               <FlashcardsButton />

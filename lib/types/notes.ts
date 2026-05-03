@@ -12,8 +12,22 @@ import type { Json } from './database';
  *  type-system update; the renderer treats unknown nodes as no-ops. */
 export type NoteDoc = Json;
 
+/** Subject / domain / skill metadata copied from a linked question
+ *  on first save (sticky — the student can later override these via
+ *  the editor and the server respects their values on subsequent
+ *  writes). All four fields are nullable: standalone notes start
+ *  out uncategorized until the student fills them in. */
+export interface NoteTaxonomy {
+  /** 'rw' | 'math' — the SAT section, derived via domainSection() */
+  subjectCode: string | null;
+  domainCode: string | null;
+  domainName: string | null;
+  skillCode: string | null;
+  skillName: string | null;
+}
+
 /** What the loader returns for a single student note (camelCase). */
-export interface StudentNote {
+export interface StudentNote extends NoteTaxonomy {
   id: string;
   userId: string;
   questionId: string | null;
@@ -27,7 +41,7 @@ export interface StudentNote {
 
 /** Lighter shape used by the index page — body_json omitted so the
  *  list payload stays small. */
-export interface StudentNoteSummary {
+export interface StudentNoteSummary extends NoteTaxonomy {
   id: string;
   questionId: string | null;
   title: string | null;
@@ -39,8 +53,10 @@ export interface StudentNoteSummary {
   updatedAt: string;
 }
 
-/** Input accepted by createNote / updateNote. */
-export interface StudentNoteInput {
+/** Input accepted by createNote / updateNote. Taxonomy fields are
+ *  optional: when missing on a note that's linked to a question, the
+ *  Server Action copies them from the question on first save. */
+export interface StudentNoteInput extends Partial<NoteTaxonomy> {
   title?: string | null;
   bodyJson: NoteDoc;
   bodyText: string;

@@ -6,9 +6,158 @@
 ============================================================= */
 
 .page {
-  max-width: 960px;
+  max-width: 1160px;
   margin: 0 auto;
   padding: 24px 20px 48px;
+}
+
+.indexLayout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .indexLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e0d8c4);
+  border-radius: 10px;
+  padding: 12px 8px;
+  font-size: 13px;
+}
+
+.facetSection {
+  padding: 6px 4px;
+}
+
+.facetSection + .facetSection {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border, #e0d8c4);
+}
+
+.facetTitle {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #777);
+  padding: 0 6px 6px;
+}
+
+.facetList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* Subject > Domain > Skill tree. The two nested <ul>s pull the
+   indent out of CSS so the tree is keyboard-navigable as a single
+   list while still reading visually as a hierarchy. */
+.facetTree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.facetTreeChildren {
+  list-style: none;
+  margin: 1px 0 4px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border, #e0d8c4);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.facetTreeChildren .facetTreeChildren {
+  margin-bottom: 2px;
+}
+
+.facetItem {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text, #1a1a1a);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+}
+
+.facetItem:hover {
+  background: var(--bg-hover, #f1eada);
+}
+
+.facetItemActive {
+  background: var(--color-navy-700, #1f2a44);
+  color: #fff;
+  border-color: var(--color-navy-700, #1f2a44);
+}
+
+.facetItemActive:hover {
+  background: var(--color-navy-800, #182238);
+}
+
+.facetItemLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.facetItemCount {
+  font-size: 11px;
+  color: var(--text-muted, #888);
+  flex-shrink: 0;
+}
+
+.facetItemActive .facetItemCount {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.clearFiltersBtn {
+  margin: 8px 4px 0;
+  width: calc(100% - 8px);
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid var(--border, #e0d8c4);
+  color: var(--text-muted, #555);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.clearFiltersBtn:hover {
+  background: var(--bg-hover, #f1eada);
+  color: var(--text, #1a1a1a);
+}
+
+.indexMain {
+  min-width: 0;
 }
 
 .pageHeader {
@@ -259,6 +408,51 @@
   background: var(--bg-subtle, #fafbff);
 }
 
+.taxonomyRow {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(140px, 1.2fr) minmax(140px, 1.2fr);
+  gap: 8px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-subtle, #fafbff);
+}
+
+.taxonomyField {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.taxonomyLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #777);
+}
+
+.taxonomyInput {
+  font-size: 13px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-card, #fff);
+  color: var(--text, #1a1a1a);
+  font-family: inherit;
+  min-width: 0;
+}
+
+.taxonomyInput:focus {
+  outline: none;
+  border-color: var(--color-navy-500, #4f7ce0);
+}
+
+.taxonomyInput:disabled {
+  background: var(--bg-subtle, #f5f0e3);
+  opacity: 0.7;
+}
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -402,4 +596,113 @@
   color: var(--color-danger, #b3261e);
   border-radius: 8px;
   font-size: 13px;
+}
+
+/* ─── Drawing (Excalidraw) block ──────────────────────────── */
+
+.drawingBlock {
+  display: block;
+  margin: 12px 0;
+  padding: 8px;
+  border: 1px solid var(--border, #e0d8c4);
+  border-radius: 8px;
+  background: var(--bg-card, #fff);
+}
+
+.drawingBlock[data-editable="false"] {
+  border-style: dashed;
+}
+
+.drawingSvg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.drawingSvg svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.drawingPlaceholder {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted, #888);
+  background: var(--bg-subtle, #fafbff);
+  border-radius: 4px;
+}
+
+.drawingActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* Snippet-page badge for the index card preview. Stays compact and
+   non-load-bearing — the actual drawing isn't embedded on the index
+   for payload reasons, just an inline marker. */
+:global(.snippet-drawing) {
+  display: inline-block;
+  padding: 0 5px;
+  margin: 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-muted, #6b6452);
+}
+
+/* ─── Excalidraw modal ─────────────────────────────────────── */
+
+.excalidrawModal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.excalidrawModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-card, #fff);
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid var(--border, #e0d8c4);
+  font-weight: 600;
+}
+
+.excalidrawModalActions {
+  display: flex;
+  gap: 8px;
+}
+
+.excalidrawModalCanvas {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--bg-card, #fff);
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  /* Excalidraw is sized by its host; an explicit min-height keeps
+     the canvas usable on shorter viewports. */
+  min-height: 400px;
+}
+
+.excalidrawModalLoading {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card, #fff);
+  border-radius: 8px;
+  color: var(--text-muted, #888);
+  font-size: 14px;
 }
