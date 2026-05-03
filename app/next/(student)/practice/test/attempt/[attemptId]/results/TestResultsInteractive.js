@@ -551,7 +551,10 @@ function TimingTile({ label, value, rows, onJump }) {
                 className={s.timingItemBtn}
                 onClick={() => onJump?.(r.ordinal)}
               >
-                <span className={s.timingItemOrdinal}>Q{r.ordinal}</span>
+                <span className={s.timingItemOrdinal}>
+                  {r.moduleNumber != null ? `M${r.moduleNumber} · ` : ''}
+                  Q{r.modulePosition ?? r.ordinal}
+                </span>
                 <span className={s.timingItemMs}>{formatDuration(r.ms)}</span>
               </button>
             </li>
