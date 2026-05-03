@@ -27,8 +27,6 @@ import { IconTile } from '@/lib/ui/IconTile';
 import s from './TestResults.module.css';
 
 const SUBJECT_NAME = { RW: 'Reading & Writing', MATH: 'Math' };
-const DIFF_LABEL   = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Very Hard', 5: 'Extreme' };
-const DIFF_CLASS   = { 1: 'diffEasy', 2: 'diffMed', 3: 'diffHard', 4: 'diffVHard', 5: 'diffExtreme' };
 
 export function TestResultsInteractive({
   attemptId,
@@ -290,11 +288,11 @@ export function TestResultsInteractive({
             />
           </div>
 
-          {/* Optional: by-difficulty breakdown if we have enough data. */}
-          {timing.byDifficulty.length > 0 && timing.byDifficulty.some((d) => d.count >= 2) && (
+          {/* Optional: by-score-band breakdown if we have enough data. */}
+          {timing.byScoreBand.length > 0 && timing.byScoreBand.some((d) => d.count >= 2) && (
             <div className={s.diffTimingRow}>
-              {timing.byDifficulty.map((d) => (
-                <DifficultyTimingTile key={d.difficulty} entry={d} />
+              {timing.byScoreBand.map((d) => (
+                <ScoreBandTimingTile key={d.scoreBand} entry={d} />
               ))}
             </div>
           )}
@@ -365,8 +363,8 @@ export function TestResultsInteractive({
                 {` · Module ${selected.moduleNumber}`}
                 {selected.taxonomy?.domain_name && ` · ${selected.taxonomy.domain_name}`}
                 {selected.taxonomy?.skill_name && ` · ${selected.taxonomy.skill_name}`}
-                {selected.taxonomy?.difficulty &&
-                  ` · ${DIFF_LABEL[selected.taxonomy.difficulty] ?? 'Difficulty ' + selected.taxonomy.difficulty}`}
+                {selected.taxonomy?.score_band != null &&
+                  ` · Band ${selected.taxonomy.score_band}`}
                 {selected.studentAnswer?.timeSpentMs != null &&
                   ` · ${formatDuration(selected.studentAnswer.timeSpentMs)}`}
               </span>
@@ -662,10 +660,9 @@ function ModuleTimingRow({ entry, items, maxUsedMs, onSelectOrdinal }) {
                     <strong>
                       Q{ordinalForLabel} · {formatDuration(ms)}
                     </strong>
-                    {it.taxonomy?.difficulty != null && (
+                    {it.taxonomy?.score_band != null && (
                       <span>
-                        {DIFF_NAMES[it.taxonomy.difficulty] ??
-                          `Difficulty ${it.taxonomy.difficulty}`}
+                        Band {it.taxonomy.score_band}
                       </span>
                     )}
                     {it.taxonomy?.domain_name && (
@@ -715,18 +712,21 @@ function ModuleTimingRow({ entry, items, maxUsedMs, onSelectOrdinal }) {
   );
 }
 
-const DIFF_NAMES = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Very hard', 5: 'Extreme' };
-const DIFF_TONE = {
-  1: 'diffEasy', 2: 'diffMed', 3: 'diffHard', 4: 'diffVHard', 5: 'diffExtreme',
+// Score bands run 1–7. Reuse the existing 5-step tone palette so we
+// don't have to add new CSS for every band: low bands → easy tone,
+// mid → med/hard, top → very-hard/extreme.
+const BAND_TONE = {
+  1: 'diffEasy', 2: 'diffEasy', 3: 'diffMed', 4: 'diffMed',
+  5: 'diffHard', 6: 'diffVHard', 7: 'diffExtreme',
 };
 
-function DifficultyTimingTile({ entry }) {
-  const toneCls = DIFF_TONE[entry.difficulty];
+function ScoreBandTimingTile({ entry }) {
+  const toneCls = BAND_TONE[entry.scoreBand];
   const cls = [s.diffTimingTile, toneCls ? s[toneCls] : null].filter(Boolean).join(' ');
   return (
     <div className={cls}>
       <div className={s.diffTimingLabel}>
-        {DIFF_NAMES[entry.difficulty] ?? `Difficulty ${entry.difficulty}`}
+        Band {entry.scoreBand}
       </div>
       <div className={s.diffTimingValue}>{formatDuration(entry.avgMs)}</div>
       <div className={s.diffTimingSub}>
