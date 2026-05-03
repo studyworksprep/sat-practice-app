@@ -449,3 +449,82 @@
   line-height: 1.6;
   color: var(--fg1);
 }
+
+/* ─── /review/error-log — two-column study layout ─── */
+
+.reviewRow {
+  /* Override the default single-column row stack — the study view
+     pairs question + note side by side. */
+  display: block;
+}
+
+.reviewBody {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--s4);
+  margin-top: var(--s3);
+}
+
+@media (max-width: 900px) {
+  .reviewBody { grid-template-columns: 1fr; }
+}
+
+.reviewQuestionCol,
+.reviewNoteCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.reviewColLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg3);
+}
+
+.reviewNoteBody {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg1);
+  white-space: pre-wrap;
+  background: var(--bg-subtle, var(--color-slate-50));
+  padding: var(--s3) var(--s4);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-app-accent);
+  margin: 0;
+}
+
+/* ─── Rationale collapse on the study view ─── */
+
+.rationaleDetails {
+  margin-top: var(--s2);
+}
+
+.rationaleSummary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-subtle, var(--color-slate-50));
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-app-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rationaleSummary::-webkit-details-marker { display: none; }
+.rationaleSummary:hover { background: var(--bg-hover, var(--color-slate-100)); }
+
+.rationaleSummaryHide { display: none; }
+.rationaleDetails[open] .rationaleSummaryShow { display: none; }
+.rationaleDetails[open] .rationaleSummaryHide { display: inline; }
+
+.rationaleDetails > .previewRationale {
+  margin-top: var(--s2);
+}

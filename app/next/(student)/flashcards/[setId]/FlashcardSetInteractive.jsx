@@ -13,7 +13,7 @@ import {
   updateFlashcard,
 } from '@/lib/practice/flashcards-actions';
 import { MASTERY_LABELS } from '@/lib/practice/flashcards-helpers';
-import s from '../Flashcards.module.css';
+import s from '../../notes/flashcards/Flashcards.module.css';
 
 const CARDS_PER_PAGE = 20;
 
