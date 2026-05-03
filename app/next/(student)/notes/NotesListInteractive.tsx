@@ -147,16 +147,52 @@ export function NotesListInteractive({
     navigate({ subject: '', domain: '', skill: '' });
   };
 
-  // Hide domains that don't belong to the active subject (when one
-  // is set) so the sidebar narrows progressively.
-  const visibleDomains = activeSubject
-    ? facets.domains.filter((d) => d.subjectCode === activeSubject)
-    : facets.domains;
-  const visibleSkills = facets.skills.filter((sk) => {
-    if (activeDomain && sk.domainCode !== activeDomain) return false;
-    if (activeSubject && sk.subjectCode !== activeSubject) return false;
-    return true;
-  });
+  // Build a Subject → Domain → Skill tree from the facet data so the
+  // sidebar can render skills indented under their parent domain
+  // instead of as a separate flat section. We narrow by the active
+  // subject so picking "Math" hides RW domains entirely.
+  type SkillNode = { code: string; name: string | null; count: number };
+  type DomainNode = {
+    code: string;
+    name: string | null;
+    subjectCode: string | null;
+    count: number;
+    skills: SkillNode[];
+  };
+  type SubjectNode = { code: string; count: number; domains: DomainNode[] };
+
+  const subjectFiltered = (subjectCode: string | null) =>
+    !activeSubject || subjectCode === activeSubject;
+
+  const domainsByCode = new Map<string, DomainNode>();
+  for (const d of facets.domains) {
+    if (!subjectFiltered(d.subjectCode)) continue;
+    domainsByCode.set(d.code, {
+      code: d.code,
+      name: d.name,
+      subjectCode: d.subjectCode,
+      count: d.count,
+      skills: [],
+    });
+  }
+  for (const sk of facets.skills) {
+    if (!subjectFiltered(sk.subjectCode)) continue;
+    if (!sk.domainCode) continue;
+    const parent = domainsByCode.get(sk.domainCode);
+    if (!parent) continue;
+    parent.skills.push({ code: sk.code, name: sk.name, count: sk.count });
+  }
+  for (const dn of domainsByCode.values()) {
+    dn.skills.sort((a, b) => (a.name ?? a.code).localeCompare(b.name ?? b.code));
+  }
+
+  const subjectTree: SubjectNode[] = facets.subjects.map((sub) => ({
+    code: sub.code,
+    count: sub.count,
+    domains: [...domainsByCode.values()]
+      .filter((d) => d.subjectCode === sub.code)
+      .sort((a, b) => (a.name ?? a.code).localeCompare(b.name ?? b.code)),
+  }));
 
   const hasTaxonomyFilter = !!(activeSubject || activeDomain || activeSkill);
 
@@ -216,36 +252,89 @@ export function NotesListInteractive({
   return (
     <div className={s.indexLayout}>
       <aside className={s.sidebar} aria-label="Filters">
-        <FacetSection
-          title="Subject"
-          items={facets.subjects.map((sub) => ({
-            key: sub.code,
-            label: SUBJECT_LABEL[sub.code] ?? sub.code,
-            count: sub.count,
-            active: activeSubject === sub.code,
-            onClick: () => handleSubject(sub.code),
-          }))}
-        />
-        <FacetSection
-          title="Domain"
-          items={visibleDomains.map((d) => ({
-            key: d.code,
-            label: d.name ?? d.code,
-            count: d.count,
-            active: activeDomain === d.code,
-            onClick: () => handleDomain(d.code, d.subjectCode),
-          }))}
-        />
-        <FacetSection
-          title="Skill"
-          items={visibleSkills.map((sk) => ({
-            key: `${sk.domainCode ?? ''}/${sk.code}`,
-            label: sk.name ?? sk.code,
-            count: sk.count,
-            active: activeSkill === sk.code,
-            onClick: () => handleSkill(sk.code, sk.subjectCode, sk.domainCode),
-          }))}
-        />
+        <div className={s.facetTitle}>Subject</div>
+        <ul className={s.facetTree}>
+          {subjectTree.map((sub) => {
+            const isSubjectActive = activeSubject === sub.code;
+            return (
+              <li key={sub.code}>
+                <button
+                  type="button"
+                  className={
+                    isSubjectActive
+                      ? `${s.facetItem} ${s.facetItemActive}`
+                      : s.facetItem
+                  }
+                  onClick={() => handleSubject(sub.code)}
+                  aria-pressed={isSubjectActive}
+                >
+                  <span className={s.facetItemLabel}>
+                    {SUBJECT_LABEL[sub.code] ?? sub.code}
+                  </span>
+                  <span className={s.facetItemCount}>{sub.count}</span>
+                </button>
+                {/* Show domains nested under their subject. We always
+                    render them (not just when the subject is active)
+                    so the student sees the whole taxonomy at a glance,
+                    matching how files-and-folders trees feel. */}
+                {sub.domains.length > 0 && (
+                  <ul className={s.facetTreeChildren}>
+                    {sub.domains.map((d) => {
+                      const isDomainActive = activeDomain === d.code;
+                      return (
+                        <li key={d.code}>
+                          <button
+                            type="button"
+                            className={
+                              isDomainActive
+                                ? `${s.facetItem} ${s.facetItemActive}`
+                                : s.facetItem
+                            }
+                            onClick={() => handleDomain(d.code, d.subjectCode)}
+                            aria-pressed={isDomainActive}
+                          >
+                            <span className={s.facetItemLabel}>
+                              {d.name ?? d.code}
+                            </span>
+                            <span className={s.facetItemCount}>{d.count}</span>
+                          </button>
+                          {d.skills.length > 0 && (
+                            <ul className={s.facetTreeChildren}>
+                              {d.skills.map((sk) => {
+                                const isSkillActive = activeSkill === sk.code;
+                                return (
+                                  <li key={sk.code}>
+                                    <button
+                                      type="button"
+                                      className={
+                                        isSkillActive
+                                          ? `${s.facetItem} ${s.facetItemActive}`
+                                          : s.facetItem
+                                      }
+                                      onClick={() => handleSkill(
+                                        sk.code, d.subjectCode, d.code,
+                                      )}
+                                      aria-pressed={isSkillActive}
+                                    >
+                                      <span className={s.facetItemLabel}>
+                                        {sk.name ?? sk.code}
+                                      </span>
+                                      <span className={s.facetItemCount}>{sk.count}</span>
+                                    </button>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
         {hasTaxonomyFilter && (
           <button
             type="button"
@@ -310,37 +399,6 @@ export function NotesListInteractive({
   );
 }
 
-interface FacetItem {
-  key: string;
-  label: string;
-  count: number;
-  active: boolean;
-  onClick: () => void;
-}
-
-function FacetSection({ title, items }: { title: string; items: FacetItem[] }) {
-  if (items.length === 0) return null;
-  return (
-    <div className={s.facetSection}>
-      <div className={s.facetTitle}>{title}</div>
-      <ul className={s.facetList}>
-        {items.map((it) => (
-          <li key={it.key}>
-            <button
-              type="button"
-              className={it.active ? `${s.facetItem} ${s.facetItemActive}` : s.facetItem}
-              onClick={it.onClick}
-              aria-pressed={it.active}
-            >
-              <span className={s.facetItemLabel}>{it.label}</span>
-              <span className={s.facetItemCount}>{it.count}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 function NoteCard({
   note,

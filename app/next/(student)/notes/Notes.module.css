@@ -63,6 +63,32 @@
   gap: 1px;
 }
 
+/* Subject > Domain > Skill tree. The two nested <ul>s pull the
+   indent out of CSS so the tree is keyboard-navigable as a single
+   list while still reading visually as a hierarchy. */
+.facetTree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.facetTreeChildren {
+  list-style: none;
+  margin: 1px 0 4px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border, #e0d8c4);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.facetTreeChildren .facetTreeChildren {
+  margin-bottom: 2px;
+}
+
 .facetItem {
   display: flex;
   width: 100%;

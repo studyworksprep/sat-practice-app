@@ -20,6 +20,12 @@ import { MathExtension } from './MathNode';
 import { docToPlainText, EMPTY_DOC } from '@/lib/notes/render';
 import { syncMathNodesFromDom } from '@/lib/notes/sync-math-nodes';
 import type { NoteDoc, NoteTaxonomy } from '@/lib/types';
+import {
+  domainsForSubject,
+  findDomain,
+  findSkill,
+  type SatSubjectCode,
+} from '@/lib/practice/sat-taxonomy';
 import s from './Notes.module.css';
 
 export interface NoteEditorSavePayload {
@@ -134,6 +140,63 @@ export function NoteEditor({
     setTaxonomy((prev) => ({ ...prev, ...patch }));
   };
 
+  const handleSubjectChange = (rawSubject: string) => {
+    const subject = rawSubject || null;
+    // Subject change invalidates the current domain + skill since
+    // they belong to whatever subject the student was just in.
+    updateTaxonomy({
+      subjectCode: subject,
+      domainCode: null,
+      domainName: null,
+      skillCode: null,
+      skillName: null,
+    });
+  };
+
+  const handleDomainChange = (rawDomain: string) => {
+    if (!rawDomain) {
+      updateTaxonomy({
+        domainCode: null,
+        domainName: null,
+        skillCode: null,
+        skillName: null,
+      });
+      return;
+    }
+    const domain = findDomain(rawDomain);
+    updateTaxonomy({
+      // Selecting a domain implicitly fixes the subject too —
+      // useful when the student opens a fresh note and jumps
+      // straight to a domain.
+      subjectCode: domain?.subjectCode ?? taxonomy.subjectCode,
+      domainCode:  domain?.code ?? rawDomain,
+      domainName:  domain?.name ?? null,
+      skillCode:   null,
+      skillName:   null,
+    });
+  };
+
+  const handleSkillChange = (rawSkill: string) => {
+    if (!rawSkill) {
+      updateTaxonomy({ skillCode: null, skillName: null });
+      return;
+    }
+    const skill = findSkill(taxonomy.domainCode, rawSkill);
+    updateTaxonomy({
+      skillCode: skill?.code ?? rawSkill,
+      skillName: skill?.name ?? null,
+    });
+  };
+
+  const subjectForDomainList: SatSubjectCode | null =
+    taxonomy.subjectCode === 'rw' || taxonomy.subjectCode === 'math'
+      ? taxonomy.subjectCode
+      : null;
+  const domainOptions = subjectForDomainList
+    ? domainsForSubject(subjectForDomainList)
+    : [];
+  const skillOptions = findDomain(taxonomy.domainCode)?.skills ?? [];
+
   if (!editor) return <div className={s.editorEmpty}>Loading editor…</div>;
 
   return (
@@ -156,9 +219,7 @@ export function NoteEditor({
           <select
             className={s.taxonomyInput}
             value={taxonomy.subjectCode ?? ''}
-            onChange={(e) =>
-              updateTaxonomy({ subjectCode: e.target.value || null })
-            }
+            onChange={(e) => handleSubjectChange(e.target.value)}
             disabled={!editable || saving}
           >
             <option value="">—</option>
@@ -168,31 +229,31 @@ export function NoteEditor({
         </label>
         <label className={s.taxonomyField}>
           <span className={s.taxonomyLabel}>Domain</span>
-          <input
-            type="text"
+          <select
             className={s.taxonomyInput}
-            placeholder="e.g. Algebra"
-            value={taxonomy.domainName ?? ''}
-            onChange={(e) =>
-              updateTaxonomy({ domainName: e.target.value || null })
-            }
-            disabled={!editable || saving}
-            maxLength={80}
-          />
+            value={taxonomy.domainCode ?? ''}
+            onChange={(e) => handleDomainChange(e.target.value)}
+            disabled={!editable || saving || !subjectForDomainList}
+          >
+            <option value="">{subjectForDomainList ? '—' : 'Pick a subject first'}</option>
+            {domainOptions.map((d) => (
+              <option key={d.code} value={d.code}>{d.name}</option>
+            ))}
+          </select>
         </label>
         <label className={s.taxonomyField}>
           <span className={s.taxonomyLabel}>Skill</span>
-          <input
-            type="text"
+          <select
             className={s.taxonomyInput}
-            placeholder="e.g. Linear equations"
-            value={taxonomy.skillName ?? ''}
-            onChange={(e) =>
-              updateTaxonomy({ skillName: e.target.value || null })
-            }
-            disabled={!editable || saving}
-            maxLength={80}
-          />
+            value={taxonomy.skillCode ?? ''}
+            onChange={(e) => handleSkillChange(e.target.value)}
+            disabled={!editable || saving || skillOptions.length === 0}
+          >
+            <option value="">{skillOptions.length ? '—' : 'Pick a domain first'}</option>
+            {skillOptions.map((sk) => (
+              <option key={sk.code} value={sk.code}>{sk.name}</option>
+            ))}
+          </select>
         </label>
       </div>
 
