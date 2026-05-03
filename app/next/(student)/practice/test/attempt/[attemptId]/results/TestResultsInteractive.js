@@ -13,26 +13,27 @@
 
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { recalculateScore } from '@/lib/practice-test/score-actions';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
+import { ErrorLogButton } from '@/lib/practice/ErrorLogButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
-import { StudentQuestionNotes } from '@/lib/practice/StudentQuestionNotes';
-import { DomainBreakdownCard } from '@/lib/practice/DomainBreakdownCard';
+import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import { formatDuration } from '@/lib/practice/format-duration';
 import { QuestionMapGrid } from '@/lib/practice/QuestionMapGrid';
-import { BookmarkIcon, CorrectIcon, IncorrectIcon, NotesIcon, TargetIcon, TimeSpentIcon } from '@/lib/ui/icons';
+import { BookmarkIcon, CorrectIcon, IncorrectIcon, NotesIcon, TimeSpentIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import s from './TestResults.module.css';
 
 const SUBJECT_NAME = { RW: 'Reading & Writing', MATH: 'Math' };
-const DIFF_LABEL   = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Very Hard', 5: 'Extreme' };
-const DIFF_CLASS   = { 1: 'diffEasy', 2: 'diffMed', 3: 'diffHard', 4: 'diffVHard', 5: 'diffExtreme' };
 
 export function TestResultsInteractive({
   attemptId,
+  practiceTestId = null,
   testName,
   testCode,
   status,
@@ -45,6 +46,7 @@ export function TestResultsInteractive({
   timing,
   reviewItems,
   pdfData,
+  viewerRole = 'student',
   desmosCanSave = false,
   conceptTagsCatalog = null,
   conceptTagsCanTag = false,
@@ -52,6 +54,7 @@ export function TestResultsInteractive({
   questionNotesCanView = false,
   questionNotesIsAdmin = false,
   currentUserId = null,
+  isViewerOwner = true,
 }) {
   const [selectedOrdinal, setSelectedOrdinal] = useState(
     reviewItems.find((r) => !r.missing)?.ordinal ?? reviewItems[0]?.ordinal ?? 1,
@@ -59,6 +62,16 @@ export function TestResultsInteractive({
   const [revealed, setRevealed] = useState(() => new Set());
   const [exportingPdf, setExportingPdf] = useState(false);
   const [pdfError, setPdfError] = useState(null);
+
+  // Tutor-only "Recalculate Score" affordance. The dialog lets a
+  // teacher / manager / admin override the runner-computed scaled
+  // scores with whatever Bluebook actually reported, and folds the
+  // (m1, m2 → scaled) mapping back into score_conversion so future
+  // attempts of the same test hit the lookup. Hidden for students.
+  const canRecalculate =
+    viewerRole === 'teacher' || viewerRole === 'manager' || viewerRole === 'admin';
+  const [showScoreDialog, setShowScoreDialog] = useState(false);
+  const router = useRouter();
 
   // Group items by module once. Items in groups carry a
   // moduleOrdinal field (1..N within their module) for the
@@ -106,15 +119,24 @@ export function TestResultsInteractive({
   }
 
   // Normalize the test-side {domain_name, skill_name} shape to the
-  // shared DomainBreakdownCard's {name, skills:[{name}]} shape.
-  // Doing it here keeps the shared component free of the older
-  // field names and the rest of this file untouched.
+  // shared SkillBreakdownCard's {name, skills:[{name}]} shape, and
+  // mark each skill as priority if it sits in the top-N rows of the
+  // opportunity index (matched by skill_code, falling back to name).
+  // Folds opportunity into the breakdown so we don't render the same
+  // signal twice.
+  const PRIORITY_TOP_N = 3;
+  const priorityKeys = new Set(
+    (opportunity ?? [])
+      .slice(0, PRIORITY_TOP_N)
+      .map((r) => r.skill_code ?? r.skill_name)
+      .filter(Boolean),
+  );
   const domainsRw = domains
     .filter((d) => d.subject_code === 'RW')
-    .map(normalizeDomain);
+    .map((d) => normalizeDomain(d, priorityKeys));
   const domainsMath = domains
     .filter((d) => d.subject_code === 'MATH')
-    .map(normalizeDomain);
+    .map((d) => normalizeDomain(d, priorityKeys));
 
   return (
     <main className={s.container}>
@@ -143,6 +165,15 @@ export function TestResultsInteractive({
           >
             {exportingPdf ? 'Building PDF…' : '⇩ Export PDF'}
           </button>
+          {canRecalculate && (
+            <button
+              type="button"
+              className={s.recalcBtn}
+              onClick={() => setShowScoreDialog(true)}
+            >
+              Recalculate score
+            </button>
+          )}
         </div>
       </header>
 
@@ -172,29 +203,27 @@ export function TestResultsInteractive({
         />
       </section>
 
-      {/* ---------- Domain / skill breakdown ---------- */}
+      {/* ---------- Domain / skill breakdown ----------
+          Stacked-skill bars per domain. Skill segments size by
+          question count, color by accuracy bucket; the top
+          opportunity-index skills carry a 🎯 marker. The card's
+          Top Opportunities strip below the bars surfaces the
+          OI score + learnability + accuracy for new tutors who
+          need the "where do I focus" pointer spelled out. */}
       {(domainsRw.length > 0 || domainsMath.length > 0) && (
         <section className={s.cardRow}>
-          <DomainBreakdownCard title="Reading & Writing" tone="rw"   domains={domainsRw} />
-          <DomainBreakdownCard title="Math"             tone="math" domains={domainsMath} />
-        </section>
-      )}{/* DomainBreakdownCard imported from @/lib/practice. */}
-
-      {/* ---------- Opportunity Index ---------- */}
-      {opportunity.length > 0 && (
-        <section className={s.card}>
-          <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>
-              <IconTile icon={TargetIcon} palette="amber" size="sm" />
-              Opportunity Index
-            </div>
-            <div className={s.oiDescription}>
-              Skills where you have the most room to grow, weighted
-              by learnability × wrong-question impact. Start here
-              for the biggest score lift.
-            </div>
-          </div>
-          <OpportunityTable rows={opportunity.slice(0, 10)} />
+          <SkillBreakdownCard
+            title="Reading & Writing"
+            tone="rw"
+            domains={domainsRw}
+            opportunities={(opportunity ?? []).filter((o) => o.subject_code === 'RW')}
+          />
+          <SkillBreakdownCard
+            title="Math"
+            tone="math"
+            domains={domainsMath}
+            opportunities={(opportunity ?? []).filter((o) => o.subject_code === 'MATH')}
+          />
         </section>
       )}
 
@@ -291,11 +320,11 @@ export function TestResultsInteractive({
             />
           </div>
 
-          {/* Optional: by-difficulty breakdown if we have enough data. */}
-          {timing.byDifficulty.length > 0 && timing.byDifficulty.some((d) => d.count >= 2) && (
+          {/* Optional: by-score-band breakdown if we have enough data. */}
+          {timing.byScoreBand.length > 0 && timing.byScoreBand.some((d) => d.count >= 2) && (
             <div className={s.diffTimingRow}>
-              {timing.byDifficulty.map((d) => (
-                <DifficultyTimingTile key={d.difficulty} entry={d} />
+              {timing.byScoreBand.map((d) => (
+                <ScoreBandTimingTile key={d.scoreBand} entry={d} />
               ))}
             </div>
           )}
@@ -366,8 +395,8 @@ export function TestResultsInteractive({
                 {` · Module ${selected.moduleNumber}`}
                 {selected.taxonomy?.domain_name && ` · ${selected.taxonomy.domain_name}`}
                 {selected.taxonomy?.skill_name && ` · ${selected.taxonomy.skill_name}`}
-                {selected.taxonomy?.difficulty &&
-                  ` · ${DIFF_LABEL[selected.taxonomy.difficulty] ?? 'Difficulty ' + selected.taxonomy.difficulty}`}
+                {selected.taxonomy?.score_band != null &&
+                  ` · Band ${selected.taxonomy.score_band}`}
                 {selected.studentAnswer?.timeSpentMs != null &&
                   ` · ${formatDuration(selected.studentAnswer.timeSpentMs)}`}
               </span>
@@ -398,13 +427,14 @@ export function TestResultsInteractive({
                   canView={questionNotesCanView}
                 />
               )}
-              {!selected.missing && (
-                <StudentQuestionNotes
-                  key={`mynote-${selected.questionId}`}
-                  questionId={selected.questionId}
-                  initialNote={selected.studentNote ?? null}
-                  questionTaxonomy={selected.taxonomy ?? null}
-                />
+              {isViewerOwner && !selected.missing && (
+                <div className={s.errorLogSlot}>
+                  <ErrorLogButton
+                    key={`elog-${selected.questionId}`}
+                    questionId={selected.questionId}
+                    initialNote={selected.errorNote ?? null}
+                  />
+                </div>
               )}
               <FlashcardsButton />
               {!isRevealed && !selected.missing && (
@@ -472,7 +502,184 @@ export function TestResultsInteractive({
           Start another →
         </Link>
       </div>
+
+      {showScoreDialog && (
+        <RecalculateScoreDialog
+          attemptId={attemptId}
+          practiceTestId={practiceTestId}
+          sections={sections}
+          onClose={() => setShowScoreDialog(false)}
+          onSaved={() => {
+            setShowScoreDialog(false);
+            router.refresh();
+          }}
+        />
+      )}
     </main>
+  );
+}
+
+function RecalculateScoreDialog({
+  attemptId,
+  practiceTestId,
+  sections,
+  onClose,
+  onSaved,
+}) {
+  // Seed inputs from the existing attempt + per-module counts. The
+  // tutor will typically only need to type the corrected scaled
+  // scores; the m1/m2 counts come straight from the runner unless
+  // they need correcting too.
+  const [form, setForm] = useState(() => ({
+    rwScaled:      sections.RW?.scaled != null ? String(sections.RW.scaled) : '',
+    mathScaled:    sections.MATH?.scaled != null ? String(sections.MATH.scaled) : '',
+    rwM1Correct:   String(sections.RW?.m1Correct ?? 0),
+    rwM2Correct:   String(sections.RW?.m2Correct ?? 0),
+    mathM1Correct: String(sections.MATH?.m1Correct ?? 0),
+    mathM2Correct: String(sections.MATH?.m2Correct ?? 0),
+  }));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const rwScaledNum = parseInt(form.rwScaled, 10);
+  const mathScaledNum = parseInt(form.mathScaled, 10);
+  const previewComposite =
+    Number.isFinite(rwScaledNum) && Number.isFinite(mathScaledNum)
+      ? rwScaledNum + mathScaledNum
+      : null;
+
+  function update(key, value) {
+    setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await recalculateScore({
+        attemptId,
+        practiceTestId,
+        rwScaled: parseInt(form.rwScaled, 10),
+        mathScaled: parseInt(form.mathScaled, 10),
+        rwM1Correct: parseInt(form.rwM1Correct, 10) || 0,
+        rwM2Correct: parseInt(form.rwM2Correct, 10) || 0,
+        mathM1Correct: parseInt(form.mathM1Correct, 10) || 0,
+        mathM2Correct: parseInt(form.mathM2Correct, 10) || 0,
+      });
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      onSaved();
+    } catch (err) {
+      setError(err?.message ?? String(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className={s.dialogBackdrop} onClick={onClose}>
+      <div
+        className={s.dialogCard}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="recalc-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={s.dialogHead}>
+          <h2 id="recalc-title" className={s.dialogTitle}>Recalculate score</h2>
+          <button type="button" className={s.dialogClose} onClick={onClose}>
+            ×
+          </button>
+        </div>
+        <p className={s.dialogIntro}>
+          Enter the corrected scaled scores from Bluebook plus the
+          per-module correct counts that produced them. The new
+          scaled scores overwrite this attempt&apos;s result and the
+          (m1, m2 → scaled) mapping is saved to the lookup table for
+          future attempts of the same test.
+        </p>
+        <form onSubmit={handleSubmit} className={s.dialogForm}>
+          <fieldset className={s.dialogSection}>
+            <legend className={s.dialogLegend}>Reading &amp; Writing</legend>
+            <label className={s.dialogField}>
+              <span>Scaled (200–800)</span>
+              <input
+                type="number" min={200} max={800} step={10}
+                value={form.rwScaled}
+                onChange={(e) => update('rwScaled', e.target.value)}
+                required
+              />
+            </label>
+            <label className={s.dialogField}>
+              <span>Module 1 correct</span>
+              <input
+                type="number" min={0}
+                value={form.rwM1Correct}
+                onChange={(e) => update('rwM1Correct', e.target.value)}
+                required
+              />
+            </label>
+            <label className={s.dialogField}>
+              <span>Module 2 correct</span>
+              <input
+                type="number" min={0}
+                value={form.rwM2Correct}
+                onChange={(e) => update('rwM2Correct', e.target.value)}
+                required
+              />
+            </label>
+          </fieldset>
+          <fieldset className={s.dialogSection}>
+            <legend className={s.dialogLegend}>Math</legend>
+            <label className={s.dialogField}>
+              <span>Scaled (200–800)</span>
+              <input
+                type="number" min={200} max={800} step={10}
+                value={form.mathScaled}
+                onChange={(e) => update('mathScaled', e.target.value)}
+                required
+              />
+            </label>
+            <label className={s.dialogField}>
+              <span>Module 1 correct</span>
+              <input
+                type="number" min={0}
+                value={form.mathM1Correct}
+                onChange={(e) => update('mathM1Correct', e.target.value)}
+                required
+              />
+            </label>
+            <label className={s.dialogField}>
+              <span>Module 2 correct</span>
+              <input
+                type="number" min={0}
+                value={form.mathM2Correct}
+                onChange={(e) => update('mathM2Correct', e.target.value)}
+                required
+              />
+            </label>
+          </fieldset>
+          {previewComposite != null && (
+            <div className={s.dialogComposite}>
+              Composite: <strong>{previewComposite}</strong>
+            </div>
+          )}
+          {error && <p role="alert" className={s.dialogError}>{error}</p>}
+          <div className={s.dialogActions}>
+            <button type="button" className={s.dialogCancel} onClick={onClose} disabled={saving}>
+              Cancel
+            </button>
+            <button type="submit" className={s.dialogSubmit} disabled={saving}>
+              {saving ? 'Saving…' : 'Save score'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
@@ -495,7 +702,7 @@ function SectionTile({ label, tone, scaled, correct, total }) {
   );
 }
 
-function normalizeDomain(d) {
+function normalizeDomain(d, priorityKeys = null) {
   return {
     name: d.domain_name,
     correct: d.correct ?? 0,
@@ -504,37 +711,11 @@ function normalizeDomain(d) {
       name: sk.skill_name,
       correct: sk.correct ?? 0,
       total: sk.total ?? 0,
+      isPriority: priorityKeys
+        ? priorityKeys.has(sk.skill_code) || priorityKeys.has(sk.skill_name)
+        : false,
     })),
   };
-}
-
-function OpportunityTable({ rows }) {
-  const max = Math.max(1, ...rows.map((r) => r.opportunity_index));
-  return (
-    <ul className={s.oiList}>
-      {rows.map((r, i) => {
-        const acc = r.total > 0 ? Math.round((r.correct / r.total) * 100) : 0;
-        const barW = Math.max(4, (r.opportunity_index / max) * 100);
-        return (
-          <li key={`${r.skill_code}-${i}`} className={s.oiRow}>
-            <div className={s.oiRowMain}>
-              <div className={s.oiRowSkill}>{r.skill_name}</div>
-              <div className={s.oiRowDomain}>
-                {r.subject_code === 'RW' ? 'Reading & Writing' : 'Math'} · {r.domain_name}
-              </div>
-            </div>
-            <div className={s.oiRowRight}>
-              <div className={s.oiRowBar}>
-                <div className={s.oiRowFill} style={{ width: `${barW}%` }} />
-              </div>
-              <div className={s.oiRowScore}>{r.opportunity_index.toFixed(1)}</div>
-              <div className={s.oiRowAccuracy}>{acc}% ({r.correct}/{r.total})</div>
-            </div>
-          </li>
-        );
-      })}
-    </ul>
-  );
 }
 
 function TimingTile({ label, value, rows, onJump }) {
@@ -671,10 +852,9 @@ function ModuleTimingRow({ entry, items, maxUsedMs, onSelectOrdinal }) {
                     <strong>
                       Q{ordinalForLabel} · {formatDuration(ms)}
                     </strong>
-                    {it.taxonomy?.difficulty != null && (
+                    {it.taxonomy?.score_band != null && (
                       <span>
-                        {DIFF_NAMES[it.taxonomy.difficulty] ??
-                          `Difficulty ${it.taxonomy.difficulty}`}
+                        Band {it.taxonomy.score_band}
                       </span>
                     )}
                     {it.taxonomy?.domain_name && (
@@ -724,23 +904,33 @@ function ModuleTimingRow({ entry, items, maxUsedMs, onSelectOrdinal }) {
   );
 }
 
-const DIFF_NAMES = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Very hard', 5: 'Extreme' };
-const DIFF_TONE = {
-  1: 'diffEasy', 2: 'diffMed', 3: 'diffHard', 4: 'diffVHard', 5: 'diffExtreme',
+// Score bands run 1–7. Color buckets per spec: 1–3 green (easy),
+// 4–5 yellow (medium), 6–7 red (hard). The "Band {n}" label
+// disambiguates within each bucket.
+const BAND_TONE = {
+  1: 'diffEasy', 2: 'diffEasy', 3: 'diffEasy',
+  4: 'diffMed', 5: 'diffMed',
+  6: 'diffHard', 7: 'diffHard',
 };
 
-function DifficultyTimingTile({ entry }) {
-  const toneCls = DIFF_TONE[entry.difficulty];
+function ScoreBandTimingTile({ entry }) {
+  const toneCls = BAND_TONE[entry.scoreBand];
   const cls = [s.diffTimingTile, toneCls ? s[toneCls] : null].filter(Boolean).join(' ');
   return (
     <div className={cls}>
       <div className={s.diffTimingLabel}>
-        {DIFF_NAMES[entry.difficulty] ?? `Difficulty ${entry.difficulty}`}
+        Band {entry.scoreBand}
       </div>
       <div className={s.diffTimingValue}>{formatDuration(entry.avgMs)}</div>
       <div className={s.diffTimingSub}>
         avg · {entry.count} q{entry.count === 1 ? '' : 's'}
       </div>
+      {entry.accuracyPct != null && (
+        <div className={s.diffTimingAcc}>
+          {entry.accuracyPct}% correct
+          <span className={s.diffTimingAccDim}> ({entry.correct}/{entry.count})</span>
+        </div>
+      )}
     </div>
   );
 }

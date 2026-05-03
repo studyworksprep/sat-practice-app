@@ -38,7 +38,6 @@ import s from './AssignmentReport.module.css';
 
 const MATH_DOMAIN_CODES_FOR_CALC = new Set(['H', 'P', 'Q', 'S']);
 
-const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Very Hard', 5: 'Extreme' };
 
 export function AssignmentReport({
   sessionMeta,
@@ -258,22 +257,22 @@ export function AssignmentReport({
         </section>
       )}
 
-      {/* ---------- By-difficulty ---------- */}
-      {metrics.byDifficulty.length > 0 && (
+      {/* ---------- By score band ---------- */}
+      {metrics.byScoreBand.length > 0 && (
         <section className={s.card}>
           <div className={s.cardHead}>
-            <h2 className={s.h2}>By difficulty</h2>
+            <h2 className={s.h2}>By score band</h2>
           </div>
           <div className={s.diffRow}>
-            {metrics.byDifficulty
-              .filter((d) => d.difficulty)
+            {metrics.byScoreBand
+              .filter((d) => d.scoreBand)
               .map((d) => {
                 const pct =
                   d.total > 0 ? Math.round((d.correct / d.total) * 100) : null;
                 return (
-                  <div key={d.difficulty} className={s.diffTile}>
+                  <div key={d.scoreBand} className={s.diffTile}>
                     <div className={s.diffLabel}>
-                      {DIFF_LABEL[d.difficulty] ?? `Difficulty ${d.difficulty}`}
+                      Band {d.scoreBand}
                     </div>
                     <div className={s.diffValue}>
                       {d.correct} / {d.total}
@@ -335,8 +334,8 @@ export function AssignmentReport({
                 {selected.taxonomy?.skill_name && (
                   <> · {selected.taxonomy.skill_name}</>
                 )}
-                {selected.taxonomy?.difficulty != null && (
-                  <> · {DIFF_LABEL[selected.taxonomy.difficulty] ?? `Difficulty ${selected.taxonomy.difficulty}`}</>
+                {selected.taxonomy?.score_band != null && (
+                  <> · Band {selected.taxonomy.score_band}</>
                 )}
                 {selected.studentAnswer?.timeSpentMs != null && (
                   <> · {formatDuration(selected.studentAnswer.timeSpentMs)}</>

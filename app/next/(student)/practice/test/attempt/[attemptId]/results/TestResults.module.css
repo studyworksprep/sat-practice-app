@@ -86,11 +86,169 @@
 .pdfBtn:hover:not(:disabled) { background: var(--color-navy-800); border-color: var(--color-navy-800); }
 .pdfBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
+.recalcBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--card);
+  color: var(--color-navy-900);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.recalcBtn:hover:not(:disabled) { background: var(--bg); }
+.recalcBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
 .pdfError {
   color: var(--color-diff-hard-fg);
   font-size: 13px;
   margin: 0;
 }
+
+/* ---------- Recalculate-score dialog ---------- */
+
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: var(--s4);
+}
+.dialogCard {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 460px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--s5);
+}
+.dialogHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--s3);
+}
+.dialogTitle {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-navy-900);
+}
+.dialogClose {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--fg3);
+  padding: 0 6px;
+}
+.dialogClose:hover { color: var(--fg1); }
+.dialogIntro {
+  margin: 0 0 var(--s4);
+  color: var(--fg2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+.dialogSection {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--s3) var(--s3) var(--s2);
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--s2) var(--s3);
+  align-items: end;
+}
+.dialogLegend {
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg2);
+  padding: 0 var(--s2);
+}
+.dialogField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--fg2);
+}
+.dialogField span {
+  font-weight: 600;
+}
+.dialogField input {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  color: var(--fg1);
+}
+.dialogField input:focus {
+  outline: 2px solid var(--color-navy-900);
+  outline-offset: 1px;
+}
+.dialogComposite {
+  font-size: 14px;
+  color: var(--fg2);
+  text-align: center;
+}
+.dialogComposite strong {
+  color: var(--color-navy-900);
+  font-size: 18px;
+}
+.dialogError {
+  color: var(--color-diff-hard-fg);
+  font-size: 13px;
+  margin: 0;
+}
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s2);
+}
+.dialogCancel,
+.dialogSubmit {
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border-strong);
+}
+.dialogCancel {
+  background: var(--card);
+  color: var(--fg2);
+}
+.dialogCancel:hover:not(:disabled) { background: var(--bg); }
+.dialogSubmit {
+  background: var(--color-navy-900);
+  color: #fff;
+  border-color: var(--color-navy-900);
+}
+.dialogSubmit:hover:not(:disabled) { background: var(--color-navy-800); }
+.dialogCancel:disabled,
+.dialogSubmit:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ---------- Composite hero ---------- */
 
@@ -542,9 +700,13 @@
   z-index: 2;
 }
 
-.modTimingSegCorrect { background: var(--color-success); }
-.modTimingSegWrong   { background: var(--color-danger); }
-.modTimingSegSkipped { background: var(--color-slate-400); }
+/* Match the SkillBreakdownCard / DifficultyTile palette so every
+   accuracy-encoded surface on the page reads in one visual
+   language: bright bd-tone green for correct, bd-tone red for
+   wrong, neutral slate for skipped. */
+.modTimingSegCorrect { background: var(--color-diff-easy-bd); }
+.modTimingSegWrong   { background: var(--color-diff-hard-bd); }
+.modTimingSegSkipped { background: var(--color-slate-300, #cbd5e1); }
 
 .modTimingTooltip {
   position: absolute;
@@ -654,6 +816,27 @@
   font-size: 11px;
   color: var(--fg3);
   margin-top: 2px;
+}
+.diffTimingAcc {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg1);
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.diffTimingAccDim {
+  font-weight: 500;
+  color: var(--fg3);
+}
+
+/* Position-relative wrapper for the ErrorLogButton popover so the
+   panel (absolute, right:0) anchors to the trigger rather than the
+   page. Same pattern as PracticeInteractive's errorLogSlot. */
+.errorLogSlot {
+  position: relative;
+  display: inline-flex;
 }
 
 .diffTimingTile.diffEasy    { background: var(--color-diff-easy-bg);    border-color: var(--color-diff-easy-bd); }
