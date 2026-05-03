@@ -1,0 +1,187 @@
+/* Stacked-skill breakdown card. Compact replacement for the
+   side-by-side DomainBreakdownCard + OpportunityTable pair: each
+   domain renders as a single ~36px bar (segments per skill, sized
+   by question count, colored by accuracy bucket) plus a wrap-row
+   of skill captions for full numeric specificity. */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--s4);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+}
+
+.titlePctRw,
+.titlePctMath {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.titlePctRw   { color: var(--tile-rw-fg); }
+.titlePctMath { color: var(--tile-math-fg); }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 11px;
+  color: var(--fg2);
+}
+.legendDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+.legendSep {
+  color: var(--fg3);
+  margin: 0 2px;
+}
+.legendPriority {
+  font-size: 11px;
+  color: var(--fg2);
+}
+
+.domainList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.domain {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.domainHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+}
+.domainName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg1);
+}
+.domainStat {
+  font-size: 12px;
+  color: var(--fg2);
+  font-variant-numeric: tabular-nums;
+}
+.domainPct {
+  color: var(--color-navy-900);
+  font-weight: 700;
+}
+
+/* The bar itself — flex container; segments grow proportional to
+   question count via flex-grow set inline. min-height keeps
+   single-question segments visible; min-width on segments stops
+   them from collapsing to zero on a narrow viewport. */
+.bar {
+  display: flex;
+  width: 100%;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.segment {
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+  min-width: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: filter var(--dur-fast) var(--ease-std);
+}
+.segment + .segment {
+  border-left: 1px solid rgba(255, 255, 255, 0.55);
+}
+.segment:hover {
+  filter: brightness(0.92);
+}
+
+.segmentPriority {
+  font-size: 10px;
+  line-height: 1;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.85));
+}
+
+.bucketLow  { background: var(--color-diff-hard-bg); }
+.bucketMid  { background: var(--color-diff-med-bg); }
+.bucketHigh { background: var(--color-diff-easy-bg); }
+
+/* Caption row: skill name · correct/total · pct, in a wrap row
+   so even long domains fit. Priority skills get a subtle accent
+   so the eye lands there first. */
+.skillCaptions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 11px;
+  color: var(--fg2);
+  font-variant-numeric: tabular-nums;
+}
+.skillCaption {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+.skillCaption::after {
+  content: '·';
+  margin-left: 12px;
+  color: var(--fg3);
+}
+.skillCaption:last-child::after { content: ''; }
+
+.skillCaptionPriority {
+  font-weight: 700;
+  color: var(--color-navy-900);
+}
+
+.captionPriority {
+  font-size: 11px;
+}
+.captionName {
+  color: inherit;
+}
+.captionStat {
+  color: var(--fg3);
+}
+.skillCaptionPriority .captionStat {
+  color: var(--color-navy-900);
+}

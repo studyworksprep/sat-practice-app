@@ -21,10 +21,10 @@ import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
-import { DomainBreakdownCard } from '@/lib/practice/DomainBreakdownCard';
+import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import { formatDuration } from '@/lib/practice/format-duration';
 import { QuestionMapGrid } from '@/lib/practice/QuestionMapGrid';
-import { BookmarkIcon, CorrectIcon, IncorrectIcon, NotesIcon, TargetIcon, TimeSpentIcon } from '@/lib/ui/icons';
+import { BookmarkIcon, CorrectIcon, IncorrectIcon, NotesIcon, TimeSpentIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import s from './TestResults.module.css';
 
@@ -117,15 +117,24 @@ export function TestResultsInteractive({
   }
 
   // Normalize the test-side {domain_name, skill_name} shape to the
-  // shared DomainBreakdownCard's {name, skills:[{name}]} shape.
-  // Doing it here keeps the shared component free of the older
-  // field names and the rest of this file untouched.
+  // shared SkillBreakdownCard's {name, skills:[{name}]} shape, and
+  // mark each skill as priority if it sits in the top-N rows of the
+  // opportunity index (matched by skill_code, falling back to name).
+  // Folds opportunity into the breakdown so we don't render the same
+  // signal twice.
+  const PRIORITY_TOP_N = 3;
+  const priorityKeys = new Set(
+    (opportunity ?? [])
+      .slice(0, PRIORITY_TOP_N)
+      .map((r) => r.skill_code ?? r.skill_name)
+      .filter(Boolean),
+  );
   const domainsRw = domains
     .filter((d) => d.subject_code === 'RW')
-    .map(normalizeDomain);
+    .map((d) => normalizeDomain(d, priorityKeys));
   const domainsMath = domains
     .filter((d) => d.subject_code === 'MATH')
-    .map(normalizeDomain);
+    .map((d) => normalizeDomain(d, priorityKeys));
 
   return (
     <main className={s.container}>
@@ -192,29 +201,16 @@ export function TestResultsInteractive({
         />
       </section>
 
-      {/* ---------- Domain / skill breakdown ---------- */}
+      {/* ---------- Domain / skill breakdown ----------
+          Stacked-skill bars per domain. Skill segments size by
+          question count, color by accuracy bucket; the top
+          opportunity-index skills carry a 🎯 marker so the
+          old standalone Opportunity Index section is folded in
+          rather than repeated. */}
       {(domainsRw.length > 0 || domainsMath.length > 0) && (
         <section className={s.cardRow}>
-          <DomainBreakdownCard title="Reading & Writing" tone="rw"   domains={domainsRw} />
-          <DomainBreakdownCard title="Math"             tone="math" domains={domainsMath} />
-        </section>
-      )}{/* DomainBreakdownCard imported from @/lib/practice. */}
-
-      {/* ---------- Opportunity Index ---------- */}
-      {opportunity.length > 0 && (
-        <section className={s.card}>
-          <div className={s.cardHeader}>
-            <div className={s.sectionLabel}>
-              <IconTile icon={TargetIcon} palette="amber" size="sm" />
-              Opportunity Index
-            </div>
-            <div className={s.oiDescription}>
-              Skills where you have the most room to grow, weighted
-              by learnability × wrong-question impact. Start here
-              for the biggest score lift.
-            </div>
-          </div>
-          <OpportunityTable rows={opportunity.slice(0, 10)} />
+          <SkillBreakdownCard title="Reading & Writing" tone="rw"   domains={domainsRw} />
+          <SkillBreakdownCard title="Math"             tone="math" domains={domainsMath} />
         </section>
       )}
 
@@ -684,7 +680,7 @@ function SectionTile({ label, tone, scaled, correct, total }) {
   );
 }
 
-function normalizeDomain(d) {
+function normalizeDomain(d, priorityKeys = null) {
   return {
     name: d.domain_name,
     correct: d.correct ?? 0,
@@ -693,37 +689,11 @@ function normalizeDomain(d) {
       name: sk.skill_name,
       correct: sk.correct ?? 0,
       total: sk.total ?? 0,
+      isPriority: priorityKeys
+        ? priorityKeys.has(sk.skill_code) || priorityKeys.has(sk.skill_name)
+        : false,
     })),
   };
-}
-
-function OpportunityTable({ rows }) {
-  const max = Math.max(1, ...rows.map((r) => r.opportunity_index));
-  return (
-    <ul className={s.oiList}>
-      {rows.map((r, i) => {
-        const acc = r.total > 0 ? Math.round((r.correct / r.total) * 100) : 0;
-        const barW = Math.max(4, (r.opportunity_index / max) * 100);
-        return (
-          <li key={`${r.skill_code}-${i}`} className={s.oiRow}>
-            <div className={s.oiRowMain}>
-              <div className={s.oiRowSkill}>{r.skill_name}</div>
-              <div className={s.oiRowDomain}>
-                {r.subject_code === 'RW' ? 'Reading & Writing' : 'Math'} · {r.domain_name}
-              </div>
-            </div>
-            <div className={s.oiRowRight}>
-              <div className={s.oiRowBar}>
-                <div className={s.oiRowFill} style={{ width: `${barW}%` }} />
-              </div>
-              <div className={s.oiRowScore}>{r.opportunity_index.toFixed(1)}</div>
-              <div className={s.oiRowAccuracy}>{acc}% ({r.correct}/{r.total})</div>
-            </div>
-          </li>
-        );
-      })}
-    </ul>
-  );
 }
 
 function TimingTile({ label, value, rows, onJump }) {
