@@ -105,13 +105,18 @@ export function SkillBreakdownCard({ title, tone, domains, opportunities = [] })
                       key={sk.name}
                       className={`${s.segment} ${bucket}`}
                       style={{ flexGrow: skTotal }}
-                      title={`${sk.name}: ${sk.correct}/${skTotal} · ${skPct}%${
-                        sk.isPriority ? ' · priority' : ''
-                      }`}
+                      tabIndex={0}
                     >
                       {sk.isPriority && (
                         <span className={s.segmentPriority} aria-hidden="true">🎯</span>
                       )}
+                      <span className={s.segmentTooltip} role="tooltip">
+                        <strong>{sk.name}</strong>
+                        <span className={s.segmentTooltipDim}>
+                          {sk.correct}/{skTotal} · {skPct}%
+                          {sk.isPriority ? ' · priority' : ''}
+                        </span>
+                      </span>
                     </div>
                   );
                 })}

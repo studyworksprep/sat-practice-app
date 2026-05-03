@@ -914,6 +914,12 @@ function ScoreBandTimingTile({ entry }) {
       <div className={s.diffTimingSub}>
         avg · {entry.count} q{entry.count === 1 ? '' : 's'}
       </div>
+      {entry.accuracyPct != null && (
+        <div className={s.diffTimingAcc}>
+          {entry.accuracyPct}% correct
+          <span className={s.diffTimingAccDim}> ({entry.correct}/{entry.count})</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -700,9 +700,13 @@
   z-index: 2;
 }
 
-.modTimingSegCorrect { background: var(--color-success); }
-.modTimingSegWrong   { background: var(--color-danger); }
-.modTimingSegSkipped { background: var(--color-slate-400); }
+/* Match the SkillBreakdownCard / DifficultyTile palette so every
+   accuracy-encoded surface on the page reads in one visual
+   language: bright bd-tone green for correct, bd-tone red for
+   wrong, neutral slate for skipped. */
+.modTimingSegCorrect { background: var(--color-diff-easy-bd); }
+.modTimingSegWrong   { background: var(--color-diff-hard-bd); }
+.modTimingSegSkipped { background: var(--color-slate-300, #cbd5e1); }
 
 .modTimingTooltip {
   position: absolute;
@@ -812,6 +816,19 @@
   font-size: 11px;
   color: var(--fg3);
   margin-top: 2px;
+}
+.diffTimingAcc {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg1);
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.diffTimingAccDim {
+  font-weight: 500;
+  color: var(--fg3);
 }
 
 .diffTimingTile.diffEasy    { background: var(--color-diff-easy-bg);    border-color: var(--color-diff-easy-bd); }
