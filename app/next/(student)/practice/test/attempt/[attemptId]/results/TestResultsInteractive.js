@@ -204,13 +204,24 @@ export function TestResultsInteractive({
       {/* ---------- Domain / skill breakdown ----------
           Stacked-skill bars per domain. Skill segments size by
           question count, color by accuracy bucket; the top
-          opportunity-index skills carry a 🎯 marker so the
-          old standalone Opportunity Index section is folded in
-          rather than repeated. */}
+          opportunity-index skills carry a 🎯 marker. The card's
+          Top Opportunities strip below the bars surfaces the
+          OI score + learnability + accuracy for new tutors who
+          need the "where do I focus" pointer spelled out. */}
       {(domainsRw.length > 0 || domainsMath.length > 0) && (
         <section className={s.cardRow}>
-          <SkillBreakdownCard title="Reading & Writing" tone="rw"   domains={domainsRw} />
-          <SkillBreakdownCard title="Math"             tone="math" domains={domainsMath} />
+          <SkillBreakdownCard
+            title="Reading & Writing"
+            tone="rw"
+            domains={domainsRw}
+            opportunities={(opportunity ?? []).filter((o) => o.subject_code === 'RW')}
+          />
+          <SkillBreakdownCard
+            title="Math"
+            tone="math"
+            domains={domainsMath}
+            opportunities={(opportunity ?? []).filter((o) => o.subject_code === 'MATH')}
+          />
         </section>
       )}
 

@@ -3,22 +3,23 @@
 //   - segment width  ∝ question count for that skill
 //   - segment color  = accuracy bucket (red < 50, amber 50–75, green ≥ 75)
 //   - 🎯 marker      = skill is in the caller-supplied "priority" set
-//                       (typically the top-N rows of the opportunity index)
+//                       (top-N rows of the opportunity index)
+//   - hover          = tooltip carrying skill name + correct/total + pct
 //
-// Replaces the old <DomainBreakdownCard> + <OpportunityTable> pair on
-// the practice-test results surface. The two used to surface the same
-// underlying signal (per-skill accuracy × volume) twice in two long
-// vertical lists; this component fuses them into a single compact
-// row per domain so the page stops paging endlessly through 30+
-// skill rows.
+// Beneath the bars, a compact Top Opportunities strip surfaces the
+// three skills with the highest opportunity_index for this subject:
+// learnability + current accuracy + OI score, plus a one-line
+// explainer. The marker on the bar is the visual cue; this strip
+// is the "what does it mean / where do I focus" companion that the
+// old standalone Opportunity Index card used to provide.
 //
-// Specificity preserved: every per-skill correct/total + accuracy
-// number still appears in the caption row beneath each bar; hovering
-// a segment surfaces the same numbers as a tooltip for fine targets.
-//
-// Domain shape (same as DomainBreakdownCard):
+// Domain shape:
 //   { name, correct, total,
 //     skills: [{ name, correct, total, isPriority?: boolean }] }
+//
+// Opportunity row shape (matches buildOpportunity output):
+//   { skill_name, domain_name, learnability, correct, total,
+//     opportunity_index }
 
 'use client';
 
@@ -39,8 +40,17 @@ import s from './SkillBreakdownCard.module.css';
  *     isPriority?: boolean,
  *   }>,
  * }>} props.domains
+ * @param {Array<{
+ *   skill_name: string,
+ *   domain_name: string,
+ *   learnability: number,
+ *   correct: number,
+ *   total: number,
+ *   opportunity_index: number,
+ * }>} [props.opportunities] - already filtered to this subject and
+ *   sorted by opportunity_index DESC. The card slices the top 3.
  */
-export function SkillBreakdownCard({ title, tone, domains }) {
+export function SkillBreakdownCard({ title, tone, domains, opportunities = [] }) {
   if (!domains || domains.length === 0) return null;
 
   let sectCorrect = 0;
@@ -51,6 +61,8 @@ export function SkillBreakdownCard({ title, tone, domains }) {
   }
   const sectPct = sectTotal > 0 ? Math.round((sectCorrect / sectTotal) * 100) : null;
   const sectPctCls = tone === 'rw' ? s.titlePctRw : s.titlePctMath;
+
+  const topOpps = opportunities.slice(0, 3);
 
   return (
     <div className={s.card}>
@@ -104,34 +116,53 @@ export function SkillBreakdownCard({ title, tone, domains }) {
                   );
                 })}
               </div>
-              <ul className={s.skillCaptions}>
-                {(d.skills ?? []).map((sk) => {
-                  const skTotal = sk.total ?? 0;
-                  const skPct = skTotal > 0
-                    ? Math.round(((sk.correct ?? 0) / skTotal) * 100)
-                    : 0;
-                  return (
-                    <li
-                      key={sk.name}
-                      className={`${s.skillCaption} ${
-                        sk.isPriority ? s.skillCaptionPriority : ''
-                      }`}
-                    >
-                      {sk.isPriority && (
-                        <span className={s.captionPriority} aria-hidden="true">🎯</span>
-                      )}
-                      <span className={s.captionName}>{sk.name}</span>
-                      <span className={s.captionStat}>
-                        {sk.correct}/{skTotal} · {skPct}%
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
             </li>
           );
         })}
       </ul>
+
+      {topOpps.length > 0 && (
+        <div className={s.opps}>
+          <div className={s.oppsHeader}>
+            <div className={s.oppsTitle}>Top opportunities 🎯</div>
+            <div className={s.oppsBlurb}>
+              <strong>Opportunity = learnability × wrong-question impact.</strong>{' '}
+              Higher = more score lift available. Start here.
+            </div>
+          </div>
+          <ol className={s.oppsList}>
+            {topOpps.map((o, i) => {
+              const acc = o.total > 0 ? Math.round((o.correct / o.total) * 100) : 0;
+              return (
+                <li key={`${o.skill_name}-${i}`} className={s.oppsRow}>
+                  <span className={s.oppsRank}>{i + 1}</span>
+                  <div className={s.oppsBody}>
+                    <div className={s.oppsSkill}>{o.skill_name}</div>
+                    <div className={s.oppsDomain}>{o.domain_name}</div>
+                  </div>
+                  <div className={s.oppsStats}>
+                    <span className={s.oppsStat}>
+                      <span className={s.oppsStatLabel}>Learn</span>
+                      <span className={s.oppsStatValue}>
+                        {o.learnability != null ? `${Math.round(o.learnability * 10) / 10}/10` : '—'}
+                      </span>
+                    </span>
+                    <span className={s.oppsStat}>
+                      <span className={s.oppsStatLabel}>Acc</span>
+                      <span className={s.oppsStatValue}>
+                        {acc}% <span className={s.oppsStatDim}>({o.correct}/{o.total})</span>
+                      </span>
+                    </span>
+                    <span className={s.oppsScore} title="Opportunity index">
+                      {o.opportunity_index.toFixed(1)}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      )}
     </div>
   );
 }

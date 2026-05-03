@@ -137,51 +137,117 @@
   filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.85));
 }
 
-.bucketLow  { background: var(--color-diff-hard-bg); }
-.bucketMid  { background: var(--color-diff-med-bg); }
-.bucketHigh { background: var(--color-diff-easy-bg); }
+.bucketLow  { background: var(--color-diff-hard-bd); }
+.bucketMid  { background: var(--color-diff-med-bd); }
+.bucketHigh { background: var(--color-diff-easy-bd); }
 
-/* Caption row: skill name · correct/total · pct, in a wrap row
-   so even long domains fit. Priority skills get a subtle accent
-   so the eye lands there first. */
-.skillCaptions {
+/* ---------- Top opportunities strip ---------- */
+
+.opps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  border-top: 1px dashed var(--border);
+  padding-top: var(--s3);
+  margin-top: var(--s2);
+}
+.oppsHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.oppsTitle {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-navy-900);
+}
+.oppsBlurb {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--fg2);
+}
+.oppsBlurb strong {
+  color: var(--fg1);
+  font-weight: 700;
+}
+.oppsList {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
+  flex-direction: column;
+  gap: 4px;
+}
+.oppsRow {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: center;
+  gap: var(--s3);
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.oppsRank {
   font-size: 11px;
-  color: var(--fg2);
+  font-weight: 800;
+  color: var(--fg3);
+  text-align: center;
   font-variant-numeric: tabular-nums;
 }
-.skillCaption {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  white-space: nowrap;
+.oppsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
 }
-.skillCaption::after {
-  content: '·';
-  margin-left: 12px;
-  color: var(--fg3);
-}
-.skillCaption:last-child::after { content: ''; }
-
-.skillCaptionPriority {
+.oppsSkill {
+  font-size: 13px;
   font-weight: 700;
-  color: var(--color-navy-900);
+  color: var(--fg1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-.captionPriority {
+.oppsDomain {
   font-size: 11px;
-}
-.captionName {
-  color: inherit;
-}
-.captionStat {
   color: var(--fg3);
 }
-.skillCaptionPriority .captionStat {
-  color: var(--color-navy-900);
+.oppsStats {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  font-variant-numeric: tabular-nums;
+}
+.oppsStat {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+}
+.oppsStatLabel {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg3);
+  font-weight: 700;
+}
+.oppsStatValue {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+.oppsStatDim {
+  color: var(--fg3);
+  font-weight: 500;
+}
+.oppsScore {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-amber, #c2993e);
+  font-variant-numeric: tabular-nums;
+  min-width: 38px;
+  text-align: right;
 }
