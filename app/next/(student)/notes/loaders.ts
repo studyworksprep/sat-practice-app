@@ -304,16 +304,31 @@ export async function loadNoteForQuestion(
  *  question — the loader picks the freshest by `updated_at` so a
  *  legacy (pre-uniqueness-enforcement) duplicate doesn't cause
  *  double rendering. */
+interface BatchedStudentNote {
+  id: string;
+  title: string | null;
+  bodyJson: unknown;
+  bodyText: string;
+  subjectCode: string | null;
+  domainCode: string | null;
+  domainName: string | null;
+  skillCode: string | null;
+  skillName: string | null;
+  updatedAt: string;
+}
+
 export async function loadStudentNotesByQuestion(
   supabase: SupabaseClient,
   questionIds: string[],
-): Promise<Map<string, { id: string; title: string | null; bodyJson: unknown; bodyText: string; updatedAt: string }>> {
-  const out = new Map<string, { id: string; title: string | null; bodyJson: unknown; bodyText: string; updatedAt: string }>();
+): Promise<Map<string, BatchedStudentNote>> {
+  const out = new Map<string, BatchedStudentNote>();
   if (!questionIds || questionIds.length === 0) return out;
 
   const { data, error } = await supabase
     .from('student_notes')
-    .select('id, question_id, title, body_json, body_text, updated_at')
+    .select(
+      'id, question_id, title, body_json, body_text, subject_code, domain_code, domain_name, skill_code, skill_name, updated_at',
+    )
     .in('question_id', questionIds)
     .not('question_id', 'is', null)
     .order('updated_at', { ascending: false });
@@ -325,6 +340,11 @@ export async function loadStudentNotesByQuestion(
     title: string | null;
     body_json: unknown;
     body_text: string;
+    subject_code: string | null;
+    domain_code: string | null;
+    domain_name: string | null;
+    skill_code: string | null;
+    skill_name: string | null;
     updated_at: string;
   }>) {
     if (out.has(row.question_id)) continue; // first wins; rows are pre-sorted desc
@@ -333,6 +353,11 @@ export async function loadStudentNotesByQuestion(
       title: row.title,
       bodyJson: row.body_json,
       bodyText: row.body_text,
+      subjectCode: row.subject_code,
+      domainCode:  row.domain_code,
+      domainName:  row.domain_name,
+      skillCode:   row.skill_code,
+      skillName:   row.skill_name,
       updatedAt: row.updated_at,
     });
   }
