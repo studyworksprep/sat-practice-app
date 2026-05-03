@@ -17,6 +17,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { MathExtension } from './MathNode';
+import { ExcalidrawExtension, insertExcalidraw } from './ExcalidrawNode';
 import { docToPlainText, EMPTY_DOC } from '@/lib/notes/render';
 import { syncMathNodesFromDom } from '@/lib/notes/sync-math-nodes';
 import type { NoteDoc, NoteTaxonomy } from '@/lib/types';
@@ -78,7 +79,7 @@ export function NoteEditor({
   );
 
   const editor = useEditor({
-    extensions: [StarterKit, MathExtension],
+    extensions: [StarterKit, MathExtension, ExcalidrawExtension],
     content: startingDoc as unknown as object,
     editable,
     immediatelyRender: false,
@@ -116,6 +117,11 @@ export function NoteEditor({
       .focus()
       .insertContent({ type: 'math', attrs: { latex: '' } })
       .run();
+  }, [editor]);
+
+  const handleInsertDrawing = useCallback(() => {
+    if (!editor) return;
+    insertExcalidraw(editor);
   }, [editor]);
 
   const handleSave = useCallback(() => {
@@ -314,6 +320,11 @@ export function NoteEditor({
             label="∑ Math"
             ariaLabel="Insert equation"
             onClick={handleInsertMath}
+          />
+          <ToolbarButton
+            label="✎ Drawing"
+            ariaLabel="Insert drawing"
+            onClick={handleInsertDrawing}
           />
         </div>
       )}

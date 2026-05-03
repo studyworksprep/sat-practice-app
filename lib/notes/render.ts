@@ -26,7 +26,9 @@ const BLOCK_TYPES = new Set([
 ]);
 
 /** Flatten a TipTap doc to plain text. Math nodes contribute their
- *  raw LaTeX so search hits "frac" inside `\frac{1}{2}`. */
+ *  raw LaTeX so search hits "frac" inside `\frac{1}{2}`; drawing
+ *  nodes contribute a `[drawing]` token so a search for the word
+ *  "drawing" still finds notes that contain one. */
 export function docToPlainText(doc: NoteDoc): string {
   if (!doc || typeof doc !== 'object') return '';
   let out = '';
@@ -35,6 +37,9 @@ export function docToPlainText(doc: NoteDoc): string {
     if (typeof node.text === 'string') out += node.text;
     if (node.type === 'math' && node.attrs && typeof node.attrs.latex === 'string') {
       out += ` ${node.attrs.latex} `;
+    }
+    if (node.type === 'excalidraw') {
+      out += ' [drawing] ';
     }
     if (Array.isArray(node.content)) {
       for (const child of node.content) walk(child);
@@ -85,6 +90,7 @@ interface SnippetState {
 }
 
 const MATH_VISIBLE_WEIGHT = 6;
+const DRAWING_VISIBLE_WEIGHT = 12;
 
 /** Walk a TipTap doc and emit an HTML snippet suitable for inline
  *  preview cards. Math nodes become `\\(latex\\)` so MathJax can
@@ -133,6 +139,21 @@ function appendNode(node: DocNode | undefined, state: SnippetState): void {
     // the browser renders the surrounding text.
     state.out += '\\(' + node.attrs.latex + '\\)';
     state.visible += MATH_VISIBLE_WEIGHT;
+    return;
+  }
+
+  if (node.type === 'excalidraw') {
+    if (state.visible >= state.maxLen) {
+      state.truncated = true;
+      return;
+    }
+    // Cards intentionally don't embed the SVG: it would balloon the
+    // payload of every notes-index render and the cards are
+    // 200-char snippets, not preview thumbnails. A small inline
+    // badge (matching the .miniLink style) makes the presence of
+    // a drawing visible without rendering it.
+    state.out += '<span class="snippet-drawing">[drawing]</span>';
+    state.visible += DRAWING_VISIBLE_WEIGHT;
     return;
   }
 

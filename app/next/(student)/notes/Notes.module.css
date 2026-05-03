@@ -597,3 +597,112 @@
   border-radius: 8px;
   font-size: 13px;
 }
+
+/* ─── Drawing (Excalidraw) block ──────────────────────────── */
+
+.drawingBlock {
+  display: block;
+  margin: 12px 0;
+  padding: 8px;
+  border: 1px solid var(--border, #e0d8c4);
+  border-radius: 8px;
+  background: var(--bg-card, #fff);
+}
+
+.drawingBlock[data-editable="false"] {
+  border-style: dashed;
+}
+
+.drawingSvg {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.drawingSvg svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.drawingPlaceholder {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted, #888);
+  background: var(--bg-subtle, #fafbff);
+  border-radius: 4px;
+}
+
+.drawingActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* Snippet-page badge for the index card preview. Stays compact and
+   non-load-bearing — the actual drawing isn't embedded on the index
+   for payload reasons, just an inline marker. */
+:global(.snippet-drawing) {
+  display: inline-block;
+  padding: 0 5px;
+  margin: 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-muted, #6b6452);
+}
+
+/* ─── Excalidraw modal ─────────────────────────────────────── */
+
+.excalidrawModal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.excalidrawModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-card, #fff);
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid var(--border, #e0d8c4);
+  font-weight: 600;
+}
+
+.excalidrawModalActions {
+  display: flex;
+  gap: 8px;
+}
+
+.excalidrawModalCanvas {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--bg-card, #fff);
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  /* Excalidraw is sized by its host; an explicit min-height keeps
+     the canvas usable on shorter viewports. */
+  min-height: 400px;
+}
+
+.excalidrawModalLoading {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card, #fff);
+  border-radius: 8px;
+  color: var(--text-muted, #888);
+  font-size: 14px;
+}
