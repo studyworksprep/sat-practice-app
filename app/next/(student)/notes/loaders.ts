@@ -12,7 +12,7 @@ import type {
   StudentNoteSummary,
   NoteDoc,
 } from '@/lib/types';
-import { docToSnippetHtml } from '@/lib/notes/render';
+import { docToSnippetHtml, docToFullHtml } from '@/lib/notes/render';
 
 interface NoteRow {
   id: string;
@@ -256,6 +256,110 @@ async function loadNotesIndexFacets(
     skills: [...skillAcc.values()].sort((a, b) =>
       (a.name ?? a.code).localeCompare(b.name ?? b.code),
     ),
+  };
+}
+
+// ──────────────────────────────────────────────────────────────
+// Review (study) variant: same filters as loadNotesIndex, but
+// returns notes with the full body_json rendered to HTML so the
+// /review/notes long-scroll page can show every note inline.
+// ──────────────────────────────────────────────────────────────
+
+export interface NoteForReview {
+  id: string;
+  title: string | null;
+  bodyHtml: string;
+  bodyText: string;
+  tags: string[];
+  subjectCode: string | null;
+  domainCode: string | null;
+  domainName: string | null;
+  skillCode: string | null;
+  skillName: string | null;
+  questionId: string | null;
+  updatedAt: string;
+}
+
+/** Load notes for the /review/notes study page. Same filter shape
+ *  and facets as the manage index, but body_json is rendered to
+ *  full HTML once on the server (cards-page snippet rendering
+ *  isn't reused — the study view wants the entire note). */
+export async function loadNotesForReview(
+  supabase: SupabaseClient,
+  filters: IndexFilters = {},
+): Promise<{
+  notes: NoteForReview[];
+  allTags: string[];
+  facets: NotesIndexFacets;
+}> {
+  let query = supabase
+    .from('student_notes')
+    .select(
+      'id, title, body_json, body_text, tags, subject_code, domain_code, domain_name, skill_code, skill_name, question_id, updated_at',
+    )
+    .order('updated_at', { ascending: false })
+    .limit(200);
+
+  const term = filters.search?.trim();
+  if (term) {
+    const escaped = term.replace(/[%_]/g, '\\$&');
+    query = query.or(`title.ilike.%${escaped}%,body_text.ilike.%${escaped}%`);
+  }
+
+  const tag = filters.tag?.trim().toLowerCase();
+  if (tag) query = query.contains('tags', [tag]);
+
+  const subject = filters.subject?.trim().toLowerCase();
+  if (subject) query = query.eq('subject_code', subject);
+  const domain = filters.domain?.trim();
+  if (domain) query = query.eq('domain_code', domain);
+  const skill = filters.skill?.trim();
+  if (skill) query = query.eq('skill_code', skill);
+
+  const { data, error } = await query;
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.error('loadNotesForReview error', error);
+    return { notes: [], allTags: [], facets: { subjects: [], domains: [], skills: [] } };
+  }
+
+  const rows = (data ?? []) as Array<{
+    id: string;
+    title: string | null;
+    body_json: NoteDoc | null;
+    body_text: string;
+    tags: string[];
+    subject_code: string | null;
+    domain_code: string | null;
+    domain_name: string | null;
+    skill_code: string | null;
+    skill_name: string | null;
+    question_id: string | null;
+    updated_at: string;
+  }>;
+
+  const tagSet = new Set<string>();
+  for (const r of rows) for (const t of r.tags ?? []) tagSet.add(t);
+
+  const facets = await loadNotesIndexFacets(supabase);
+
+  return {
+    notes: rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      bodyHtml: r.body_json ? docToFullHtml(r.body_json) : '',
+      bodyText: r.body_text,
+      tags: r.tags ?? [],
+      subjectCode: r.subject_code,
+      domainCode: r.domain_code,
+      domainName: r.domain_name,
+      skillCode: r.skill_code,
+      skillName: r.skill_name,
+      questionId: r.question_id,
+      updatedAt: r.updated_at,
+    })),
+    allTags: [...tagSet].sort(),
+    facets,
   };
 }
 

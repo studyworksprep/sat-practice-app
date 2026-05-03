@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import Link from 'next/link';
 import { rateFlashcard } from '@/lib/practice/flashcards-actions';
 import { MASTERY_LABELS } from '@/lib/practice/flashcards-helpers';
-import s from '../../Flashcards.module.css';
+import s from '../../../notes/flashcards/Flashcards.module.css';
 
 // weight = 6 - mastery (mastery 0 → weight 6, mastery 5 → weight 1)
 function pickWeightedRandom(cards, excludeId) {

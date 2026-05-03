@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { loadNotesIndex } from './loaders';
 import { NotesListInteractive } from './NotesListInteractive';
+import { NotesNav } from './NotesNav';
 import { deleteNote } from './actions';
 import s from './Notes.module.css';
 
@@ -40,6 +41,7 @@ export default async function StudentNotesIndex({ searchParams }) {
 
   return (
     <main className={s.page}>
+      <NotesNav />
       <header className={s.pageHeader}>
         <div>
           <h1 className={s.pageTitle}>My notes</h1>
