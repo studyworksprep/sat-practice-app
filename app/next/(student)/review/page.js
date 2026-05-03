@@ -1,25 +1,30 @@
 // Student → Review. Pre-test study surface.
 //
 // The Review tab is for the days leading up to the test: "I have
-// ten days; what should I do?" Three tools, top to bottom:
+// ten days; what should I do?" The page is the gathering point
+// for everything review-related — active drill tools and passive
+// re-reading both live here.
 //
+// Active drills (top of page, highest-leverage):
 //   1. Common errors — skills where the student has missed the
 //      most questions, with a one-click drill per skill.
 //   2. Weak questions drill — a mixed drill of the student's
 //      weakest questions across every skill, picked by the Smart
 //      Review priority formula (wrong now + historically bad +
 //      stale + hard), ported to the v2 attempts table.
-//   3. Flashcards — entry point to the existing flashcards UI
-//      for terms / vocabulary check.
+//
+// Review materials (passive re-reading of saved notes):
+//   3. Review notes      → /review/notes      (long-scroll reader)
+//   4. Review error log  → /review/error-log  (entry beside question)
+//   5. Review flashcards → /notes/flashcards  (set picker → flip flow)
 //
 // If the student has set a target SAT date on their profile
-// (profiles.sat_test_date), a countdown banner pins to the top
-// with a suggested allocation across the three tools for the
-// remaining days.
+// (profiles.sat_test_date), a countdown banner pins to the top.
 //
-// The three cards all share the same visual vocabulary as the
-// rest of the new tree — design-kit tokens, header eyebrow, stat
-// tiles, content cards.
+// The note-style cards link out to surfaces that live under either
+// /review/* (study modes) or /notes/* (manage hubs); the cards
+// surface the relevant counts so the student knows how much
+// material is waiting.
 
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -31,7 +36,7 @@ import {
   resolveQuestionV2Meta,
 } from '@/lib/practice/weak-queue';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
-import { LayersIcon, NotesIcon, SparklesIcon, TargetIcon } from '@/lib/ui/icons';
+import { BookOpenIcon, LayersIcon, NotesIcon, SparklesIcon, TargetIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { createWeakQueueDrill, createSkillDrill } from './actions';
 import { WeakQueueLauncher } from './WeakQueueLauncher';
@@ -52,13 +57,15 @@ export default async function StudentReviewPage() {
 
   // Parallel: extended profile (for sat_test_date), the scored
   // weak queue, raw attempts + question meta for the Common Errors
-  // aggregation, and the student's flashcard sets.
+  // aggregation, plus rollup counts for the three review-materials
+  // cards (notes, error log, flashcards).
   const [
     { data: extendedProfile },
     weakQueue,
     attemptsRaw,
     { data: flashcardSets },
     { count: errorNotesCount },
+    { count: studentNotesCount },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -81,6 +88,10 @@ export default async function StudentReviewPage() {
     supabase
       .from('question_error_notes')
       .select('question_id', { count: 'exact', head: true })
+      .eq('user_id', user.id),
+    supabase
+      .from('student_notes')
+      .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id),
   ]);
 
@@ -224,96 +235,76 @@ export default async function StudentReviewPage() {
         )}
       </section>
 
-      {/* ---------- Flashcards ---------- */}
+      {/* ---------- Review materials ---------- */}
+      {/* Re-read what you've stashed across the three note kinds.
+          Each card is a quick link into the matching study surface
+          (or the flashcards set picker, where the existing
+          per-set review flow lives). */}
 
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div>
-            <div className={s.h2}>
-              <IconTile icon={LayersIcon} palette="violet" size="md" />
-              <span>Flashcards</span>
-            </div>
-            <div className={s.cardHint}>
-              Terms and vocabulary you&apos;ve stashed for study.
-            </div>
-          </div>
-          <span className={s.cardTag}>
-            {flashcardTotal.toLocaleString()} card{flashcardTotal === 1 ? '' : 's'}
-          </span>
+      <section className={s.materialsSection}>
+        <div className={s.materialsHeader}>
+          <h2 className={s.materialsTitle}>Review materials</h2>
+          <p className={s.materialsHint}>
+            Re-read your saved notes, error log, and flashcards.
+          </p>
         </div>
-        {flashcardTotal === 0 ? (
-          <div className={s.empty}>
-            <div className={s.emptyTitle}>No flashcards yet.</div>
-            <div className={s.emptyBody}>
-              Create a set to start stashing terms you want to keep
-              fresh before the test.
-            </div>
-            <Link href="/flashcards" className={s.emptyCta}>
-              Open flashcards →
-            </Link>
-          </div>
-        ) : (
-          <div className={s.flashcardRow}>
-            <div className={s.flashcardInfo}>
-              <div className={s.flashcardTotal}>{flashcardTotal}</div>
-              <div className={s.flashcardLabel}>
-                Total cards across {(flashcardSets ?? []).length} set
-                {(flashcardSets ?? []).length === 1 ? '' : 's'}
-              </div>
-            </div>
-            <Link href="/flashcards" className={s.flashcardCta}>
-              Open flashcards →
-            </Link>
-          </div>
-        )}
-      </section>
-
-      {/* ---------- Error log ---------- */}
-
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div>
-            <div className={s.h2}>
-              <IconTile icon={NotesIcon} palette="amber" size="md" />
-              <span>Error log</span>
-            </div>
-            <div className={s.cardHint}>
-              Your private notes on questions you got wrong, written
-              while you practice.
-            </div>
-          </div>
-          <span className={s.cardTag}>
-            {(errorNotesCount ?? 0).toLocaleString()} note
-            {(errorNotesCount ?? 0) === 1 ? '' : 's'}
-          </span>
+        <div className={s.materialsGrid}>
+          <MaterialCard
+            href="/review/notes"
+            icon={BookOpenIcon}
+            palette="cyan"
+            title="Review notes"
+            count={studentNotesCount ?? 0}
+            countLabel={(studentNotesCount ?? 0) === 1 ? 'note' : 'notes'}
+            hint="Scroll your saved notes, filtered by subject, domain, or skill."
+            emptyHint="No notes yet. Start one from any question."
+          />
+          <MaterialCard
+            href="/review/error-log"
+            icon={NotesIcon}
+            palette="amber"
+            title="Review error log"
+            count={errorNotesCount ?? 0}
+            countLabel={(errorNotesCount ?? 0) === 1 ? 'entry' : 'entries'}
+            hint="Each entry alongside the question you got wrong."
+            emptyHint="No error log entries yet. Jot one in any session."
+          />
+          <MaterialCard
+            href="/notes/flashcards"
+            icon={LayersIcon}
+            palette="violet"
+            title="Review flashcards"
+            count={flashcardTotal}
+            countLabel={flashcardTotal === 1 ? 'card' : 'cards'}
+            hint={
+              (flashcardSets ?? []).length > 0
+                ? `Across ${(flashcardSets ?? []).length} set${(flashcardSets ?? []).length === 1 ? '' : 's'}.`
+                : 'Pick a set to start a flip-and-rate review.'
+            }
+            emptyHint="No flashcards yet. Create a set to get started."
+          />
         </div>
-        {(errorNotesCount ?? 0) === 0 ? (
-          <div className={s.empty}>
-            <div className={s.emptyTitle}>No error notes yet.</div>
-            <div className={s.emptyBody}>
-              When you miss a question in a practice session, click
-              the Error log button on it to jot down what tripped you
-              up. Your notes show up here.
-            </div>
-            <Link href="/practice/start" className={s.emptyCta}>
-              Start a session →
-            </Link>
-          </div>
-        ) : (
-          <div className={s.flashcardRow}>
-            <div className={s.flashcardInfo}>
-              <div className={s.flashcardTotal}>{errorNotesCount}</div>
-              <div className={s.flashcardLabel}>
-                Error note{errorNotesCount === 1 ? '' : 's'} recorded
-              </div>
-            </div>
-            <Link href="/review/error-log" className={s.flashcardCta}>
-              Open error log →
-            </Link>
-          </div>
-        )}
       </section>
     </main>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+
+function MaterialCard({ href, icon: Icon, palette, title, count, countLabel, hint, emptyHint }) {
+  const isEmpty = count === 0;
+  return (
+    <Link href={href} className={s.materialCard}>
+      <div className={s.materialCardTop}>
+        <IconTile icon={Icon} palette={palette} size="md" />
+        <span className={s.materialCardCount}>
+          {count.toLocaleString()} {countLabel}
+        </span>
+      </div>
+      <div className={s.materialCardTitle}>{title}</div>
+      <div className={s.materialCardHint}>{isEmpty ? emptyHint : hint}</div>
+      <div className={s.materialCardCta}>Open →</div>
+    </Link>
   );
 }
 

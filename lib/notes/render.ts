@@ -104,6 +104,112 @@ export function docToSnippetHtml(doc: NoteDoc, maxLen = 240): string {
   return state.out.trim();
 }
 
+// ──────────────────────────────────────────────────────────────
+// Full-document HTML renderer — used by the /review/notes
+// long-scroll study view to render the entire body without
+// truncation. Mirrors the snippet walker but emits proper block
+// elements + mark markup, and inlines the rendered SVG for
+// drawing nodes (the snippet renderer skipped those for index
+// payload reasons; on the study page we do want them visible).
+// ──────────────────────────────────────────────────────────────
+
+interface MarkLike {
+  type?: string;
+  attrs?: Record<string, unknown>;
+}
+
+interface DocNodeWithMarks extends DocNode {
+  marks?: MarkLike[];
+}
+
+const HEADING_TAG: Record<string, string> = {
+  '1': 'h1',
+  '2': 'h2',
+  '3': 'h3',
+};
+
+function applyMarks(html: string, marks: MarkLike[] | undefined): string {
+  if (!marks || marks.length === 0) return html;
+  let out = html;
+  for (const m of marks) {
+    switch (m.type) {
+      case 'bold':   out = `<strong>${out}</strong>`; break;
+      case 'italic': out = `<em>${out}</em>`; break;
+      case 'strike': out = `<s>${out}</s>`; break;
+      case 'code':   out = `<code>${out}</code>`; break;
+      case 'link': {
+        const href = String((m.attrs?.href as string) ?? '');
+        // Escape the href to prevent attribute injection. Drop
+        // anything that doesn't look like http(s) / mailto / a
+        // relative path so a `javascript:` mark doesn't leak
+        // through.
+        const safe = /^(https?:|mailto:|\/)/.test(href)
+          ? escapeHtml(href)
+          : '';
+        out = safe
+          ? `<a href="${safe}" rel="noopener noreferrer" target="_blank">${out}</a>`
+          : out;
+        break;
+      }
+      default: break;
+    }
+  }
+  return out;
+}
+
+/** Render an entire TipTap doc to HTML. Suitable for embedding in
+ *  a `dangerouslySetInnerHTML` block (text is escaped; only known
+ *  block / mark / inline tags are emitted; drawing SVGs come from
+ *  Excalidraw's exportToSvg, which is the same source we trust on
+ *  the editor render path). */
+export function docToFullHtml(doc: NoteDoc): string {
+  if (!doc || typeof doc !== 'object') return '';
+  let out = '';
+  const walk = (node: DocNodeWithMarks | undefined): string => {
+    if (!node) return '';
+    if (typeof node.text === 'string') {
+      return applyMarks(escapeHtml(node.text), node.marks);
+    }
+    const inner = (node.content ?? []).map((c) => walk(c)).join('');
+    switch (node.type) {
+      case 'doc':
+        return inner;
+      case 'paragraph':
+        return `<p>${inner}</p>`;
+      case 'heading': {
+        const level = String(node.attrs?.level ?? '2');
+        const tag = HEADING_TAG[level] ?? 'h2';
+        return `<${tag}>${inner}</${tag}>`;
+      }
+      case 'bulletList':  return `<ul>${inner}</ul>`;
+      case 'orderedList': return `<ol>${inner}</ol>`;
+      case 'listItem':    return `<li>${inner}</li>`;
+      case 'blockquote':  return `<blockquote>${inner}</blockquote>`;
+      case 'codeBlock':   return `<pre><code>${inner}</code></pre>`;
+      case 'hardBreak':   return '<br />';
+      case 'horizontalRule': return '<hr />';
+      case 'math': {
+        const latex = String(node.attrs?.latex ?? '');
+        return latex ? `\\(${latex}\\)` : '';
+      }
+      case 'excalidraw': {
+        const svg = String(node.attrs?.svg ?? '');
+        // The SVG comes from Excalidraw's exportToSvg, written by
+        // the editor's save handler. We trust it the same way the
+        // editor does on the read-only render path; if the value
+        // is missing we fall back to a placeholder.
+        return svg
+          ? `<div class="note-drawing">${svg}</div>`
+          : '<div class="note-drawing-empty">[empty drawing]</div>';
+      }
+      default:
+        return inner;
+    }
+  };
+  out = walk(doc as DocNodeWithMarks);
+  return out;
+}
+
 function appendNode(node: DocNode | undefined, state: SnippetState): void {
   if (!node || state.truncated) return;
 

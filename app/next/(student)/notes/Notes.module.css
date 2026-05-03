@@ -11,6 +11,43 @@
   padding: 24px 20px 48px;
 }
 
+/* ─── NotesNav ─── */
+
+.notesNav {
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border, #e0d8c4);
+}
+
+.notesNavList {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notesNavTab {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted, #777);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.notesNavTab:hover {
+  color: var(--text, #1a1a1a);
+}
+
+.notesNavTabActive {
+  color: var(--color-navy-700, #1f2a44);
+  border-bottom-color: var(--color-navy-700, #1f2a44);
+  font-weight: 600;
+}
+
 .indexLayout {
   display: grid;
   grid-template-columns: 220px 1fr;
