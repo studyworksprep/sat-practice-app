@@ -712,12 +712,13 @@ function ModuleTimingRow({ entry, items, maxUsedMs, onSelectOrdinal }) {
   );
 }
 
-// Score bands run 1–7. Reuse the existing 5-step tone palette so we
-// don't have to add new CSS for every band: low bands → easy tone,
-// mid → med/hard, top → very-hard/extreme.
+// Score bands run 1–7. Color buckets per spec: 1–3 green (easy),
+// 4–5 yellow (medium), 6–7 red (hard). The "Band {n}" label
+// disambiguates within each bucket.
 const BAND_TONE = {
-  1: 'diffEasy', 2: 'diffEasy', 3: 'diffMed', 4: 'diffMed',
-  5: 'diffHard', 6: 'diffVHard', 7: 'diffExtreme',
+  1: 'diffEasy', 2: 'diffEasy', 3: 'diffEasy',
+  4: 'diffMed', 5: 'diffMed',
+  6: 'diffHard', 7: 'diffHard',
 };
 
 function ScoreBandTimingTile({ entry }) {
