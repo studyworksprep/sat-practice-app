@@ -495,3 +495,36 @@
   border-left: 3px solid var(--color-app-accent);
   margin: 0;
 }
+
+/* ─── Rationale collapse on the study view ─── */
+
+.rationaleDetails {
+  margin-top: var(--s2);
+}
+
+.rationaleSummary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border, #e0d8c4);
+  background: var(--bg-subtle, var(--color-slate-50));
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-app-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rationaleSummary::-webkit-details-marker { display: none; }
+.rationaleSummary:hover { background: var(--bg-hover, var(--color-slate-100)); }
+
+.rationaleSummaryHide { display: none; }
+.rationaleDetails[open] .rationaleSummaryShow { display: none; }
+.rationaleDetails[open] .rationaleSummaryHide { display: inline; }
+
+.rationaleDetails > .previewRationale {
+  margin-top: var(--s2);
+}

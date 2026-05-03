@@ -203,13 +203,19 @@ function QuestionPreview({ preview }) {
       )}
 
       {preview.rationaleHtml && (
-        <div className={s.previewRationale}>
-          <div className={s.previewRationaleLabel}>Rationale</div>
-          <div
-            className={`${s.previewRationaleBody} sw-prose`}
-            dangerouslySetInnerHTML={{ __html: preview.rationaleHtml }}
-          />
-        </div>
+        <details className={s.rationaleDetails}>
+          <summary className={s.rationaleSummary}>
+            <span className={s.rationaleSummaryShow}>Show rationale</span>
+            <span className={s.rationaleSummaryHide}>Hide rationale</span>
+          </summary>
+          <div className={s.previewRationale}>
+            <div className={s.previewRationaleLabel}>Rationale</div>
+            <div
+              className={`${s.previewRationaleBody} sw-prose`}
+              dangerouslySetInnerHTML={{ __html: preview.rationaleHtml }}
+            />
+          </div>
+        </details>
       )}
     </div>
   );

@@ -141,6 +141,57 @@ export default async function StudentReviewPage() {
 
       <StudyCountdown isoDate={extendedProfile?.sat_test_date ?? null} />
 
+      {/* ---------- Review materials ---------- */}
+      {/* Quick links into the three review surfaces — usually the
+          first thing a student wants to do when they land here.
+          The active drills (Common errors, Weak questions) live
+          below for the days they want to grind new attempts. */}
+
+      <section className={s.materialsSection}>
+        <div className={s.materialsHeader}>
+          <h2 className={s.materialsTitle}>Review materials</h2>
+          <p className={s.materialsHint}>
+            Re-read your saved notes, error log, and flashcards.
+          </p>
+        </div>
+        <div className={s.materialsGrid}>
+          <MaterialCard
+            href="/review/notes"
+            icon={BookOpenIcon}
+            palette="cyan"
+            title="Review notes"
+            count={studentNotesCount ?? 0}
+            countLabel={(studentNotesCount ?? 0) === 1 ? 'note' : 'notes'}
+            hint="Scroll your saved notes, filtered by subject, domain, or skill."
+            emptyHint="No notes yet. Start one from any question."
+          />
+          <MaterialCard
+            href="/review/error-log"
+            icon={NotesIcon}
+            palette="amber"
+            title="Review error log"
+            count={errorNotesCount ?? 0}
+            countLabel={(errorNotesCount ?? 0) === 1 ? 'entry' : 'entries'}
+            hint="Each entry alongside the question you got wrong."
+            emptyHint="No error log entries yet. Jot one in any session."
+          />
+          <MaterialCard
+            href="/notes/flashcards"
+            icon={LayersIcon}
+            palette="violet"
+            title="Review flashcards"
+            count={flashcardTotal}
+            countLabel={flashcardTotal === 1 ? 'card' : 'cards'}
+            hint={
+              (flashcardSets ?? []).length > 0
+                ? `Across ${(flashcardSets ?? []).length} set${(flashcardSets ?? []).length === 1 ? '' : 's'}.`
+                : 'Pick a set to start a flip-and-rate review.'
+            }
+            emptyHint="No flashcards yet. Create a set to get started."
+          />
+        </div>
+      </section>
+
       {/* ---------- Common errors ---------- */}
 
       <section className={s.card}>
@@ -235,56 +286,6 @@ export default async function StudentReviewPage() {
         )}
       </section>
 
-      {/* ---------- Review materials ---------- */}
-      {/* Re-read what you've stashed across the three note kinds.
-          Each card is a quick link into the matching study surface
-          (or the flashcards set picker, where the existing
-          per-set review flow lives). */}
-
-      <section className={s.materialsSection}>
-        <div className={s.materialsHeader}>
-          <h2 className={s.materialsTitle}>Review materials</h2>
-          <p className={s.materialsHint}>
-            Re-read your saved notes, error log, and flashcards.
-          </p>
-        </div>
-        <div className={s.materialsGrid}>
-          <MaterialCard
-            href="/review/notes"
-            icon={BookOpenIcon}
-            palette="cyan"
-            title="Review notes"
-            count={studentNotesCount ?? 0}
-            countLabel={(studentNotesCount ?? 0) === 1 ? 'note' : 'notes'}
-            hint="Scroll your saved notes, filtered by subject, domain, or skill."
-            emptyHint="No notes yet. Start one from any question."
-          />
-          <MaterialCard
-            href="/review/error-log"
-            icon={NotesIcon}
-            palette="amber"
-            title="Review error log"
-            count={errorNotesCount ?? 0}
-            countLabel={(errorNotesCount ?? 0) === 1 ? 'entry' : 'entries'}
-            hint="Each entry alongside the question you got wrong."
-            emptyHint="No error log entries yet. Jot one in any session."
-          />
-          <MaterialCard
-            href="/notes/flashcards"
-            icon={LayersIcon}
-            palette="violet"
-            title="Review flashcards"
-            count={flashcardTotal}
-            countLabel={flashcardTotal === 1 ? 'card' : 'cards'}
-            hint={
-              (flashcardSets ?? []).length > 0
-                ? `Across ${(flashcardSets ?? []).length} set${(flashcardSets ?? []).length === 1 ? '' : 's'}.`
-                : 'Pick a set to start a flip-and-rate review.'
-            }
-            emptyHint="No flashcards yet. Create a set to get started."
-          />
-        </div>
-      </section>
     </main>
   );
 }
