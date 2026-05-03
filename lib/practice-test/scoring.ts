@@ -12,18 +12,20 @@
 //     - Lookup-aware. Mirrors v1 lib/scoreConversion.computeScaledScore:
 //         1. Exact match on (m1_correct, m2_correct) in lookupRows
 //         2. Interpolate / extrapolate within the same adaptive route
-//         3. Fall back to scaleSectionScore (the linear approximation)
+//         3. Piecewise miss-penalty fallback (matches the legacy
+//            scoreConversion piecewiseFallback so both trees agree
+//            on a score when the lookup is empty for a test).
 //       Bluebook uploads write rows into score_conversion keyed by the
 //       practice-test UUID, so a recompute on an attempt of the same
 //       test with the same per-module correct counts hits step 1 and
 //       returns the user-entered College Board score verbatim. New
 //       tests with no Bluebook history yet land on step 3.
 //
-// Adaptive scoring detail: module 2's route affects the ceiling. If
-// a student gets the easy module 2, their scaled max is capped
-// (~530 on RW, ~510 on Math in real College Board scoring). The
-// linear curves below approximate that; the lookup table — when
-// populated — is the truth.
+// All scores are rounded to the nearest 10 and clamped to [200, 800] —
+// real SAT section scores are always multiples of 10, and surfacing a
+// 207 in the UI immediately reads as "broken math". Match the legacy
+// scoreConversion.js behavior exactly so the next tree and legacy tree
+// produce the same number for the same inputs.
 //
 // First TypeScript canary in the new tree — pure functions, no
 // I/O, narrow public surface.
@@ -44,8 +46,6 @@ export interface CompositeScoreInput {
   mathScaled: number | null;
 }
 
-interface Curve { floor: number; ceiling: number; }
-
 /** A row of the score_conversion lookup table, narrowed to the
  *  columns the scoring logic reads. The table keys section as
  *  'reading_writing' / 'math'; SubjectCode is 'RW' / 'MATH'. The
@@ -64,21 +64,23 @@ export interface SectionScoreLookupInput {
   m1Correct: number;
   m2Correct: number;
   /** Total items across module 1 + 2 for this section. Used by the
-   *  linear-fallback step when the lookup misses. */
+   *  piecewise-fallback step when the lookup misses. */
   totalItems: number;
   /** Which module-2 route was taken. */
   route: RouteCode;
   /** score_conversion rows for this practice-test. Either pre-filtered
    *  to one section by the caller, or unfiltered — the helper drops
    *  rows whose section doesn't match `subject`. Empty/undefined is
-   *  fine; the function falls straight through to linear scaling. */
+   *  fine; the function falls straight through to the piecewise
+   *  fallback. */
   lookupRows?: ScoreConversionRow[];
 }
 
 /**
  * Compute a scaled score for a single section (RW or Math) using
- * the pure linear approximation. Returns a value in [200, 800], or
- * null if inputs are invalid.
+ * the piecewise miss-penalty model (mirrors the legacy
+ * scoreConversion.piecewiseFallback). Returns a value in [200, 800]
+ * rounded to the nearest 10, or null if inputs are invalid.
  */
 export function scaleSectionScore({
   subject,
@@ -89,24 +91,33 @@ export function scaleSectionScore({
   if (!Number.isFinite(rawCorrect) || !Number.isFinite(totalItems) || totalItems <= 0) {
     return null;
   }
-  const pct = Math.max(0, Math.min(1, rawCorrect / totalItems));
-  const curve = pickCurve(subject, route);
-  const scaled = Math.round(curve.floor + (curve.ceiling - curve.floor) * pct);
-  return Math.max(200, Math.min(800, scaled));
+  const safeRaw = Math.max(0, Math.min(rawCorrect, totalItems));
+  // No per-module split — apportion correct counts evenly across the
+  // two modules so the piecewise model has something to work with.
+  // Real callers should prefer scaleSectionScoreWithLookup, which
+  // keeps m1 / m2 distinct.
+  const half = Math.round(safeRaw / 2);
+  return piecewiseFallback({
+    subject,
+    m1Correct: half,
+    m2Correct: safeRaw - half,
+    route,
+  });
 }
 
 /**
  * Compute a scaled score using the score_conversion lookup table
- * first, falling back to the linear approximation. Mirrors v1
+ * first, falling back to the piecewise miss-penalty model. Mirrors v1
  * lib/scoreConversion.computeScaledScore.
  *
  * Three-step priority:
  *   1. Exact (m1, m2) match in lookupRows for this section.
  *   2. Interpolate / extrapolate between known points on the same
  *      adaptive route.
- *   3. Linear fallback via scaleSectionScore.
+ *   3. Piecewise miss-penalty fallback.
  *
- * Returns a value in [200, 800], or null if inputs are invalid.
+ * Returns a value in [200, 800] rounded to the nearest 10, or null
+ * if inputs are invalid.
  */
 export function scaleSectionScoreWithLookup({
   subject,
@@ -128,11 +139,13 @@ export function scaleSectionScoreWithLookup({
   const sectionKey = subject === 'RW' ? 'reading_writing' : 'math';
   const rows = (lookupRows ?? []).filter((r) => r.section === sectionKey);
 
-  // 1. Exact match.
+  // 1. Exact match. Bluebook scores are already multiples of 10, so
+  //    just clamp without rounding to preserve the user-entered value
+  //    verbatim.
   const exact = rows.find(
     (r) => r.module1_correct === m1Correct && r.module2_correct === m2Correct,
   );
-  if (exact) return clampAndRound(exact.scaled_score);
+  if (exact) return clamp(exact.scaled_score);
 
   // 2. Interpolate within the same adaptive route. Two passes:
   //    first restrict to rows with the same m1_correct (truly the
@@ -174,12 +187,15 @@ export function scaleSectionScoreWithLookup({
     }
   }
 
-  // 3. Linear fallback.
-  return scaleSectionScore({
+  // 3. Piecewise miss-penalty fallback. Matches the legacy
+  //    scoreConversion.piecewiseFallback so both trees converge on
+  //    the same number when the lookup is empty.
+  return piecewiseFallback({
     subject,
-    rawCorrect: m1Correct + m2Correct,
-    totalItems,
+    m1Correct,
+    m2Correct,
     route,
+    totalItems: Number.isFinite(totalItems) && totalItems > 0 ? totalItems : null,
   });
 }
 
@@ -196,11 +212,20 @@ export function compositeScore({
 }
 
 // ──────────────────────────────────────────────────────────────
-// Internal helpers
+// Internal helpers — kept in lockstep with the legacy
+// lib/scoreConversion.js so both trees produce identical numbers.
 // ──────────────────────────────────────────────────────────────
 
+function roundTo10(n: number): number {
+  return Math.round(n / 10) * 10;
+}
+
+function clamp(n: number): number {
+  return Math.max(200, Math.min(800, n));
+}
+
 function clampAndRound(n: number): number {
-  return Math.max(200, Math.min(800, Math.round(n)));
+  return clamp(roundTo10(n));
 }
 
 function isHardRoute(route: RouteCode): boolean {
@@ -228,30 +253,67 @@ function interpolate(
   return clampAndRound(raw);
 }
 
+// Defaults match legacy scoreConversion DEFAULTS (per-module item
+// counts + the route-detection threshold).
+const DEFAULTS: Record<SubjectCode, { m1Count: number; m2Count: number }> = {
+  RW:   { m1Count: 27, m2Count: 27 },
+  MATH: { m1Count: 22, m2Count: 22 },
+};
+
+// Approximate observed adaptive ranges. Matches legacy
+// ROUTE_RANGES — easy route caps in the mid-500s, hard route can
+// reach 800 from a 450 floor.
+const ROUTE_RANGES: Record<'easy' | 'hard', { min: number; max: number }> = {
+  easy: { min: 200, max: 540 },
+  hard: { min: 450, max: 800 },
+};
+
+// Points lost per missed question on each route. Matches legacy
+// MISS_PENALTY — hard route ≈ 12–13 per miss, easy route ≈ 6–8.
+const MISS_PENALTY: Record<'easy' | 'hard', Record<SubjectCode, number>> = {
+  easy: { RW: 6,  MATH: 8 },
+  hard: { RW: 12, MATH: 13 },
+};
+
+interface PiecewiseInput {
+  subject: SubjectCode;
+  m1Correct: number;
+  m2Correct: number;
+  route: RouteCode;
+  /** Optional override for total items in the section. When unset
+   *  we fall back to DEFAULTS (27+27 for RW, 22+22 for Math). */
+  totalItems?: number | null;
+}
+
 /**
- * Per-route curve. 'hard' route unlocks the full 800 ceiling;
- * 'easy' route caps in the ~500–530 range, which is in line with
- * real College Board adaptive behavior; 'std' sits between (and
- * is what non-adaptive tests use).
- *
- * These are not College Board's actual tables. They are linear
- * approximations calibrated so a solid student on the hard route
- * lands around their real CB score within ~30 points — good
- * enough for directional feedback during practice. The lookup
- * path above is the better truth when populated.
+ * Piecewise linear miss-penalty fallback. Mirrors the legacy
+ * scoreConversion.piecewiseFallback verbatim. For the hard route,
+ * scores down from 800 by per-miss penalty; for the easy route,
+ * linear scale across the route range.
  */
-function pickCurve(subject: SubjectCode, route: RouteCode): Curve {
-  const CURVES: Record<SubjectCode, Record<RouteCode, Curve>> = {
-    RW: {
-      easy: { floor: 200, ceiling: 530 },
-      std:  { floor: 200, ceiling: 700 },
-      hard: { floor: 400, ceiling: 800 },
-    },
-    MATH: {
-      easy: { floor: 200, ceiling: 510 },
-      std:  { floor: 200, ceiling: 700 },
-      hard: { floor: 400, ceiling: 800 },
-    },
-  };
-  return CURVES[subject]?.[route] ?? CURVES[subject]?.std ?? { floor: 200, ceiling: 800 };
+function piecewiseFallback({
+  subject,
+  m1Correct,
+  m2Correct,
+  route,
+  totalItems = null,
+}: PiecewiseInput): number {
+  const def = DEFAULTS[subject];
+  const maxTotal = totalItems ?? (def.m1Count + def.m2Count);
+  const total = m1Correct + m2Correct;
+  const missed = Math.max(0, maxTotal - total);
+
+  // route_code is the source of truth when present; otherwise infer
+  // from m1 against the route threshold.
+  const onHard = isHardRoute(route) || m1Correct >= HARD_THRESHOLD[subject];
+  const routeKey: 'easy' | 'hard' = onHard ? 'hard' : 'easy';
+  const range = ROUTE_RANGES[routeKey];
+
+  if (routeKey === 'hard') {
+    const penalty = MISS_PENALTY.hard[subject];
+    const raw = 800 - missed * penalty;
+    return clamp(roundTo10(Math.max(raw, range.min)));
+  }
+  const fraction = maxTotal > 0 ? total / maxTotal : 0;
+  return clamp(roundTo10(range.min + fraction * (range.max - range.min)));
 }

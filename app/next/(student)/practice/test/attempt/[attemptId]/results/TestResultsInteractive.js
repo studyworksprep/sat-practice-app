@@ -13,6 +13,8 @@
 
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { recalculateScore } from '@/lib/practice-test/score-actions';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
@@ -30,6 +32,7 @@ const SUBJECT_NAME = { RW: 'Reading & Writing', MATH: 'Math' };
 
 export function TestResultsInteractive({
   attemptId,
+  practiceTestId = null,
   testName,
   testCode,
   status,
@@ -42,6 +45,7 @@ export function TestResultsInteractive({
   timing,
   reviewItems,
   pdfData,
+  viewerRole = 'student',
   desmosCanSave = false,
   conceptTagsCatalog = null,
   conceptTagsCanTag = false,
@@ -56,6 +60,16 @@ export function TestResultsInteractive({
   const [revealed, setRevealed] = useState(() => new Set());
   const [exportingPdf, setExportingPdf] = useState(false);
   const [pdfError, setPdfError] = useState(null);
+
+  // Tutor-only "Recalculate Score" affordance. The dialog lets a
+  // teacher / manager / admin override the runner-computed scaled
+  // scores with whatever Bluebook actually reported, and folds the
+  // (m1, m2 → scaled) mapping back into score_conversion so future
+  // attempts of the same test hit the lookup. Hidden for students.
+  const canRecalculate =
+    viewerRole === 'teacher' || viewerRole === 'manager' || viewerRole === 'admin';
+  const [showScoreDialog, setShowScoreDialog] = useState(false);
+  const router = useRouter();
 
   // Group items by module once. Items in groups carry a
   // moduleOrdinal field (1..N within their module) for the
@@ -140,6 +154,15 @@ export function TestResultsInteractive({
           >
             {exportingPdf ? 'Building PDF…' : '⇩ Export PDF'}
           </button>
+          {canRecalculate && (
+            <button
+              type="button"
+              className={s.recalcBtn}
+              onClick={() => setShowScoreDialog(true)}
+            >
+              Recalculate score
+            </button>
+          )}
         </div>
       </header>
 
@@ -461,7 +484,184 @@ export function TestResultsInteractive({
           Start another →
         </Link>
       </div>
+
+      {showScoreDialog && (
+        <RecalculateScoreDialog
+          attemptId={attemptId}
+          practiceTestId={practiceTestId}
+          sections={sections}
+          onClose={() => setShowScoreDialog(false)}
+          onSaved={() => {
+            setShowScoreDialog(false);
+            router.refresh();
+          }}
+        />
+      )}
     </main>
+  );
+}
+
+function RecalculateScoreDialog({
+  attemptId,
+  practiceTestId,
+  sections,
+  onClose,
+  onSaved,
+}) {
+  // Seed inputs from the existing attempt + per-module counts. The
+  // tutor will typically only need to type the corrected scaled
+  // scores; the m1/m2 counts come straight from the runner unless
+  // they need correcting too.
+  const [form, setForm] = useState(() => ({
+    rwScaled:      sections.RW?.scaled != null ? String(sections.RW.scaled) : '',
+    mathScaled:    sections.MATH?.scaled != null ? String(sections.MATH.scaled) : '',
+    rwM1Correct:   String(sections.RW?.m1Correct ?? 0),
+    rwM2Correct:   String(sections.RW?.m2Correct ?? 0),
+    mathM1Correct: String(sections.MATH?.m1Correct ?? 0),
+    mathM2Correct: String(sections.MATH?.m2Correct ?? 0),
+  }));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const rwScaledNum = parseInt(form.rwScaled, 10);
+  const mathScaledNum = parseInt(form.mathScaled, 10);
+  const previewComposite =
+    Number.isFinite(rwScaledNum) && Number.isFinite(mathScaledNum)
+      ? rwScaledNum + mathScaledNum
+      : null;
+
+  function update(key, value) {
+    setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await recalculateScore({
+        attemptId,
+        practiceTestId,
+        rwScaled: parseInt(form.rwScaled, 10),
+        mathScaled: parseInt(form.mathScaled, 10),
+        rwM1Correct: parseInt(form.rwM1Correct, 10) || 0,
+        rwM2Correct: parseInt(form.rwM2Correct, 10) || 0,
+        mathM1Correct: parseInt(form.mathM1Correct, 10) || 0,
+        mathM2Correct: parseInt(form.mathM2Correct, 10) || 0,
+      });
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      onSaved();
+    } catch (err) {
+      setError(err?.message ?? String(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className={s.dialogBackdrop} onClick={onClose}>
+      <div
+        className={s.dialogCard}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="recalc-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className={s.dialogHead}>
+          <h2 id="recalc-title" className={s.dialogTitle}>Recalculate score</h2>
+          <button type="button" className={s.dialogClose} onClick={onClose}>
+            ×
+          </button>
+        </div>
+        <p className={s.dialogIntro}>
+          Enter the corrected scaled scores from Bluebook plus the
+          per-module correct counts that produced them. The new
+          scaled scores overwrite this attempt&apos;s result and the
+          (m1, m2 → scaled) mapping is saved to the lookup table for
+          future attempts of the same test.
+        </p>
+        <form onSubmit={handleSubmit} className={s.dialogForm}>
+          <fieldset className={s.dialogSection}>
+            <legend className={s.dialogLegend}>Reading &amp; Writing</legend>
+            <label className={s.dialogField}>
+              <span>Scaled (200–800)</span>
+              <input
+                type="number" min={200} max={800} step={10}
+                value={form.rwScaled}
+                onChange={(e) => update('rwScaled', e.target.value)}
+                required
+              />
+            </label>
+            <label className={s.dialogField}>
+              <span>Module 1 correct</span>
+              <input
+                type="number" min={0}
+                value={form.rwM1Correct}
+                onChange={(e) => update('rwM1Correct', e.target.value)}
+                required
+              />
+            </label>
+            <label className={s.dialogField}>
+              <span>Module 2 correct</span>
+              <input
+                type="number" min={0}
+                value={form.rwM2Correct}
+                onChange={(e) => update('rwM2Correct', e.target.value)}
+                required
+              />
+            </label>
+          </fieldset>
+          <fieldset className={s.dialogSection}>
+            <legend className={s.dialogLegend}>Math</legend>
+            <label className={s.dialogField}>
+              <span>Scaled (200–800)</span>
+              <input
+                type="number" min={200} max={800} step={10}
+                value={form.mathScaled}
+                onChange={(e) => update('mathScaled', e.target.value)}
+                required
+              />
+            </label>
+            <label className={s.dialogField}>
+              <span>Module 1 correct</span>
+              <input
+                type="number" min={0}
+                value={form.mathM1Correct}
+                onChange={(e) => update('mathM1Correct', e.target.value)}
+                required
+              />
+            </label>
+            <label className={s.dialogField}>
+              <span>Module 2 correct</span>
+              <input
+                type="number" min={0}
+                value={form.mathM2Correct}
+                onChange={(e) => update('mathM2Correct', e.target.value)}
+                required
+              />
+            </label>
+          </fieldset>
+          {previewComposite != null && (
+            <div className={s.dialogComposite}>
+              Composite: <strong>{previewComposite}</strong>
+            </div>
+          )}
+          {error && <p role="alert" className={s.dialogError}>{error}</p>}
+          <div className={s.dialogActions}>
+            <button type="button" className={s.dialogCancel} onClick={onClose} disabled={saving}>
+              Cancel
+            </button>
+            <button type="submit" className={s.dialogSubmit} disabled={saving}>
+              {saving ? 'Saving…' : 'Save score'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
