@@ -162,7 +162,7 @@ function applyMarks(html: string, marks: MarkLike[] | undefined): string {
  *  sanitizeNoteHtml before return so callers can safely pass it to
  *  `dangerouslySetInnerHTML`. The walker emits only known block /
  *  mark / inline tags, but Excalidraw drawings carry inline SVG
- *  whose attributes/handlers DOMPurify scrubs. */
+ *  whose attributes/handlers the sanitizer scrubs. */
 export function docToFullHtml(doc: NoteDoc): string {
   if (!doc || typeof doc !== 'object') return '';
   let out = '';

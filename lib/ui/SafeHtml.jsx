@@ -1,5 +1,5 @@
 // SafeHtml — single primitive for every place that needs to render
-// untrusted or admin-authored HTML. Wraps DOMPurify + the React
+// untrusted or admin-authored HTML. Wraps the sanitizer + the React
 // dangerouslySetInnerHTML pattern so callers don't have to remember
 // to sanitize on every site.
 //

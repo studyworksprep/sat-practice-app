@@ -20,18 +20,18 @@
 //     - Admins are trusted; this is defense-in-depth so a
 //       compromised admin token can't immediately stage XSS.
 //
-// Both profiles run on the server (jsdom backend) and the client
-// (window.DOMPurify) via isomorphic-dompurify so the same code path
-// applies on every render boundary.
+// Implementation note: we use sanitize-html (pure JS, no jsdom) so
+// the same code path runs server- and client-side without dragging
+// jsdom into the Vercel Node runtime — the previous attempt with
+// isomorphic-dompurify hit ESM/CJS interop errors via jsdom's
+// transitive deps.
 
-import DOMPurify from 'isomorphic-dompurify';
+import sanitizeHtml from 'sanitize-html';
 
 // ──────────────────────────────────────────────────────────────
 // Note profile — what docToFullHtml emits, plus inline SVG so
 // Excalidraw drawings survive. Excludes raw <script>, <iframe>,
-// any `on*` attribute, any non-http/https/mailto/relative href,
-// any data: URL except the SVG <image> use case (none in our docs
-// today; tighten further if that changes).
+// any `on*` attribute, any non-http/https/mailto/relative href.
 // ──────────────────────────────────────────────────────────────
 
 const NOTE_TAGS = [
@@ -44,15 +44,16 @@ const NOTE_TAGS = [
   // Excalidraw SVG output (these are the elements the exporter
   // actually emits)
   'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline',
-  'polygon', 'text', 'tspan', 'defs', 'mask', 'clippath', 'use',
-  'lineargradient', 'radialgradient', 'stop', 'filter', 'fegaussianblur',
-  'fecolormatrix', 'femerge', 'femergenode', 'feoffset',
+  'polygon', 'text', 'tspan', 'defs', 'mask', 'clipPath', 'use',
+  'linearGradient', 'radialGradient', 'stop', 'filter', 'feGaussianBlur',
+  'feColorMatrix', 'feMerge', 'feMergeNode', 'feOffset',
   'symbol', 'image', 'title', 'desc',
 ];
 
-const NOTE_ATTRS = [
-  'class', 'href', 'target', 'rel',
-  // SVG geometry / styling
+// sanitize-html's `allowedAttributes` is a per-tag map. The `*`
+// entry applies to every tag. Easier to read this way than
+// repeating the SVG geometry list under each SVG element.
+const SVG_ATTRS = [
   'viewBox', 'xmlns', 'xmlns:xlink',
   'd', 'cx', 'cy', 'r', 'rx', 'ry', 'x', 'y', 'x1', 'y1', 'x2', 'y2',
   'width', 'height', 'transform',
@@ -65,22 +66,29 @@ const NOTE_ATTRS = [
   'offset', 'stop-color', 'stop-opacity',
   'mask', 'clip-path', 'filter',
   'in', 'in2', 'result', 'stdDeviation', 'values', 'mode',
-  'href', 'xlink:href',
+  'xlink:href',
 ];
+
+const NOTE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: NOTE_TAGS,
+  allowedAttributes: {
+    '*': ['class', 'id', 'style', ...SVG_ATTRS],
+    a: ['href', 'target', 'rel', 'class'],
+    image: ['href', 'xlink:href', ...SVG_ATTRS],
+    use: ['href', 'xlink:href', ...SVG_ATTRS],
+  },
+  allowedSchemes: ['http', 'https', 'mailto'],
+  allowedSchemesAppliedToAttributes: ['href', 'src', 'xlink:href'],
+  allowProtocolRelative: false,
+  // Permit relative + fragment URLs alongside the http/https/mailto
+  // allowlist above.
+  allowedSchemesByTag: {},
+  parser: { lowerCaseTags: false, lowerCaseAttributeNames: false },
+};
 
 export function sanitizeNoteHtml(html: string | null | undefined): string {
   if (!html) return '';
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: NOTE_TAGS,
-    ALLOWED_ATTR: NOTE_ATTRS,
-    // No JavaScript-bearing schemes anywhere.
-    ALLOWED_URI_REGEXP: /^(https?:|mailto:|\/|#)/i,
-    // Don't keep relative `data:` URIs that could ship inline JS.
-    ALLOW_DATA_ATTR: false,
-    // Keep the wrapping <body>'s contents only (sanitize() returns
-    // the inner HTML by default, but this is explicit).
-    KEEP_CONTENT: true,
-  });
+  return sanitizeHtml(html, NOTE_OPTIONS);
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -90,14 +98,52 @@ export function sanitizeNoteHtml(html: string | null | undefined): string {
 // set; we still strip <script>, on* handlers, and javascript: URLs.
 // ──────────────────────────────────────────────────────────────
 
+const MATHML_TAGS = [
+  'math', 'maction', 'annotation', 'annotation-xml', 'menclose',
+  'merror', 'mfenced', 'mfrac', 'mi', 'mmultiscripts', 'mn',
+  'mo', 'mover', 'mpadded', 'mphantom', 'mprescripts', 'mroot',
+  'mrow', 'ms', 'semantics', 'mspace', 'msqrt', 'mstyle',
+  'msub', 'msup', 'msubsup', 'mtable', 'mtd', 'mtext',
+  'mtr', 'munder', 'munderover',
+];
+
+const HTML_TAGS = [
+  'p', 'br', 'hr', 'div', 'span',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
+  'strong', 'em', 's', 'b', 'i', 'u', 'sub', 'sup',
+  'a', 'img', 'figure', 'figcaption',
+  'table', 'thead', 'tbody', 'tr', 'td', 'th', 'caption',
+];
+
+const QUESTION_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: [...HTML_TAGS, ...MATHML_TAGS, ...NOTE_TAGS],
+  allowedAttributes: {
+    '*': ['class', 'id', 'style', 'aria-label', 'role', ...SVG_ATTRS],
+    a: ['href', 'target', 'rel', 'class'],
+    img: ['src', 'alt', 'width', 'height', 'class', 'style'],
+    image: ['href', 'xlink:href', ...SVG_ATTRS],
+    use: ['href', 'xlink:href', ...SVG_ATTRS],
+    // MathML attributes — sanitize-html only emits attributes it knows
+    // about, so the math elements need explicit attribute allowlists.
+    math: ['xmlns', 'display', 'class'],
+    annotation: ['encoding'],
+    'annotation-xml': ['encoding'],
+    mfrac: ['linethickness'],
+    mo: ['fence', 'separator', 'lspace', 'rspace', 'stretchy'],
+    mspace: ['width', 'height', 'depth'],
+    mstyle: ['mathvariant', 'mathcolor', 'mathbackground'],
+  },
+  allowedSchemes: ['http', 'https', 'mailto', 'data'],
+  allowedSchemesAppliedToAttributes: ['href', 'src', 'xlink:href'],
+  // Permit data: URIs only on <img src> (for inline figure encoding);
+  // sanitize-html applies this per-attribute when set.
+  allowProtocolRelative: false,
+  allowedSchemesByTag: {},
+  parser: { lowerCaseTags: false, lowerCaseAttributeNames: false },
+};
+
 export function sanitizeQuestionHtml(html: string | null | undefined): string {
   if (!html) return '';
-  return DOMPurify.sanitize(html, {
-    // USE_PROFILES preserves MathML + SVG + safe HTML in one call,
-    // which is exactly the question-content shape (rendered math +
-    // figures + inline markup). DOMPurify still strips on* attrs
-    // and dangerous URIs under this profile.
-    USE_PROFILES: { html: true, mathMl: true, svg: true },
-    ALLOWED_URI_REGEXP: /^(https?:|mailto:|\/|#|data:image\/(png|jpeg|gif|webp|svg\+xml);base64,)/i,
-  });
+  return sanitizeHtml(html, QUESTION_OPTIONS);
 }
