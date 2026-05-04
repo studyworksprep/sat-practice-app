@@ -257,3 +257,55 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
   revalidatePath(`/tutor/teachers/${studentId}`);
   return actionOk({ sessionId: resolvedSessionId });
 }
+
+/**
+ * Archive (or un-archive) an assignment. Stamps `archived_at` on the
+ * assignments_v2 row, which the assignments-list page filters into a
+ * separate "Archived" section. Reversible — passing `archive=false`
+ * (or omitting it from FormData) clears the timestamp, and the row
+ * comes back to the active list.
+ *
+ * Lets a tutor clean stale work — assignments a student abandoned —
+ * out of their primary view without losing the row for audit / report
+ * purposes.
+ *
+ * Authorization: tutor / manager / admin. RLS on assignments_v2
+ * already gates which rows the caller can update (`is_v2_assignment_teacher`
+ * + admin), so a forged assignment_id can't reach into someone else's
+ * row.
+ */
+export async function archiveAssignment(_prev, formData) {
+  const assignmentId = formData.get('assignment_id');
+  if (typeof assignmentId !== 'string' || !assignmentId) {
+    return actionFail('assignment_id required');
+  }
+
+  // FormData encodes "true"/"false" as strings; treat anything other
+  // than "false" as archive = true so a checkbox-less submit
+  // archives by default.
+  const archive = String(formData.get('archive') ?? 'true') !== 'false';
+
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+  if (!['teacher', 'manager', 'admin'].includes(ctx.profile.role)) {
+    return actionFail('Forbidden');
+  }
+
+  const { error } = await ctx.supabase
+    .from('assignments_v2')
+    .update({ archived_at: archive ? new Date().toISOString() : null })
+    .eq('id', assignmentId);
+
+  if (error) {
+    return actionFail(`Could not ${archive ? 'archive' : 'restore'}: ${error.message}`);
+  }
+
+  revalidatePath('/tutor/assignments');
+  revalidatePath(`/tutor/assignments/${assignmentId}`);
+  return actionOk({ archived: archive });
+}

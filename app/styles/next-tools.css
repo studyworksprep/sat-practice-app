@@ -1,0 +1,102 @@
+/* ============================================================
+   Student-facing tool buttons. Loaded by app/next/layout.js so
+   any client island can apply `sw-tool-btn` and get the unified
+   two-line treatment without per-surface CSS-module duplication.
+
+   Layout: icon centered on the first line, label on the second.
+   Compact, square-ish, wraps on narrow viewports.
+
+   States via modifier classes on the same element:
+     .sw-tool-btn-active     — open / pressed (e.g. calculator on)
+     .sw-tool-btn-has-content — has saved content (e.g. note exists)
+============================================================ */
+
+.sw-tool-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 64px;
+  padding: 6px 10px;
+  background: var(--bg-white, #fff);
+  border: 1px solid var(--border-strong, #d4d4d8);
+  border-radius: var(--radius-md, 8px);
+  color: var(--fg1, #111827);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.1;
+  cursor: pointer;
+  position: relative;
+  transition:
+    background var(--dur-fast, 120ms) var(--ease-std, ease),
+    border-color var(--dur-fast, 120ms) var(--ease-std, ease),
+    color var(--dur-fast, 120ms) var(--ease-std, ease);
+}
+
+.sw-tool-btn:hover:not(:disabled) {
+  background: var(--color-app-accent-soft, #e0f2fe);
+  border-color: var(--color-app-accent, #0284c7);
+  color: var(--color-app-accent, #0284c7);
+}
+
+.sw-tool-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sw-tool-btn:focus-visible {
+  outline: 2px solid var(--color-app-accent, #0284c7);
+  outline-offset: 2px;
+}
+
+.sw-tool-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sw-tool-btn-label {
+  white-space: nowrap;
+}
+
+/* Open / pressed — same accent treatment as the existing
+   PracticeInteractive markBtn-active style. */
+.sw-tool-btn-active {
+  background: var(--color-app-accent-soft, #e0f2fe);
+  border-color: var(--color-app-accent, #0284c7);
+  color: var(--color-app-accent, #0284c7);
+}
+
+/* Saved-content tint — gold dot on the icon row. Used by
+   QuestionNotes / StudentQuestionNotes / ErrorLogButton when the
+   student has already saved content. */
+.sw-tool-btn-has-content {
+  border-color: var(--color-gold-500, #d4a72c);
+  color: var(--color-gold-700, #92651a);
+}
+
+.sw-tool-btn-has-content .sw-tool-btn-icon::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-gold-500, #d4a72c);
+}
+
+/* ============================================================
+   Reveal-answer row. Used on review surfaces (ReviewInteractive,
+   AssignmentReport, TestResultsInteractive) to host the
+   "Reveal answer & rationale" CTA underneath the question card,
+   instead of crammed into the header tool row.
+============================================================ */
+
+.sw-reveal-row {
+  display: flex;
+  justify-content: center;
+  margin: var(--s4, 16px) 0;
+}

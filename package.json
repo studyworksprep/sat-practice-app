@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
+    "@sentry/nextjs": "^10.51.0",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",
     "@tiptap/core": "^3.22.5",
@@ -30,12 +31,14 @@
     "next": "^16.2.3",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "sanitize-html": "^2.17.3",
     "stripe": "^22.0.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/sanitize-html": "^2.16.1",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.2.3",

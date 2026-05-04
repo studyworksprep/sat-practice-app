@@ -21,7 +21,6 @@
 
 import Link from 'next/link';
 import { useMemo, useRef, useState } from 'react';
-import { formatRelativeShort } from '@/lib/formatters';
 import { RosterIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import s from './Dashboard.module.css';
@@ -36,10 +35,6 @@ const RECENT_TILE_COUNT = 8;
  * @property {number|null}   targetScore
  * @property {string|null}   highSchool
  * @property {number|null}   graduationYear
- * @property {number}        totalAttempts
- * @property {number}        weekAttempts
- * @property {number|null}   accuracy
- * @property {string|null}   lastActivityAt
  */
 
 export function RosterFinder({ students }) {
@@ -163,18 +158,20 @@ export function RosterFinder({ students }) {
                   </div>
                 </div>
               </div>
-              <div className={s.tileMetrics}>
-                <span className={s.tileMetric}>
-                  <strong>{st.accuracy == null ? '—' : `${st.accuracy}%`}</strong>{' '}
-                  acc
-                </span>
-                <span className={s.tileMetric}>
-                  <strong>{st.weekAttempts}</strong> this week
-                </span>
-                <span className={s.tileLast}>
-                  {formatRelativeShort(st.lastActivityAt) ?? '—'}
-                </span>
-              </div>
+              {(st.targetScore != null || st.graduationYear) && (
+                <div className={s.tileMetrics}>
+                  {st.targetScore != null && (
+                    <span className={s.tileMetric}>
+                      Target <strong>{st.targetScore}</strong>
+                    </span>
+                  )}
+                  {st.graduationYear && (
+                    <span className={s.tileMetric}>
+                      Class of <strong>{st.graduationYear}</strong>
+                    </span>
+                  )}
+                </div>
+              )}
             </Link>
           ))}
         </div>
@@ -186,11 +183,10 @@ export function RosterFinder({ students }) {
             <thead>
               <tr>
                 <th className={s.th}>Name</th>
+                <th className={s.th}>Email</th>
                 <th className={s.thNum}>Target</th>
-                <th className={s.thNum}>Attempts</th>
-                <th className={s.thNum}>Accuracy</th>
-                <th className={s.thNum}>7-day</th>
-                <th className={s.th}>Last activity</th>
+                <th className={s.th}>School</th>
+                <th className={s.thNum}>Class</th>
               </tr>
             </thead>
             <tbody>
@@ -203,24 +199,11 @@ export function RosterFinder({ students }) {
                     >
                       <div className={s.nameMain}>{st.name}</div>
                     </Link>
-                    {(st.highSchool || st.graduationYear) && (
-                      <div className={s.nameSub}>
-                        {st.highSchool}
-                        {st.graduationYear ? ` · class of ${st.graduationYear}` : ''}
-                      </div>
-                    )}
                   </td>
+                  <td className={s.td}>{st.email ?? <span className={s.muted}>—</span>}</td>
                   <td className={s.tdNum}>{st.targetScore ?? '—'}</td>
-                  <td className={s.tdNum}>{st.totalAttempts.toLocaleString()}</td>
-                  <td className={s.tdNum}>
-                    {st.accuracy == null
-                      ? <span className={s.muted}>—</span>
-                      : <span className={`${s.accBadge} ${accBadgeTone(st.accuracy, s)}`}>{st.accuracy}%</span>}
-                  </td>
-                  <td className={s.tdNum}>{st.weekAttempts}</td>
-                  <td className={s.td}>
-                    {formatRelativeShort(st.lastActivityAt) ?? <span className={s.muted}>—</span>}
-                  </td>
+                  <td className={s.td}>{st.highSchool ?? <span className={s.muted}>—</span>}</td>
+                  <td className={s.tdNum}>{st.graduationYear ?? '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -235,10 +218,4 @@ function initialsOf(name) {
   if (!name) return '?';
   const parts = String(name).trim().split(/\s+/).slice(0, 2);
   return parts.map((p) => p[0]?.toUpperCase() ?? '').join('') || '?';
-}
-
-function accBadgeTone(pct, styles) {
-  if (pct >= 80) return styles.accGood;
-  if (pct >= 50) return styles.accOk;
-  return styles.accBad;
 }

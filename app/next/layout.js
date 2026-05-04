@@ -23,6 +23,7 @@
 
 import '../styles/next-tokens.css';
 import '../styles/next-prose.css';
+import '../styles/next-tools.css';
 
 export const metadata = {
   title: 'Studyworks',

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 async function fetchAll(supabase, table, select, buildQuery, orderCol) {
   const pageSize = 1000;
@@ -28,10 +29,10 @@ async function fetchAll(supabase, table, select, buildQuery, orderCol) {
 //   counts = { [domain_name]: { count: N, topics: { [skill_key]: M } } }
 //   (unfiltered totals; contextual filtering is handled by /api/domain-counts)
 // ?domain=X → returns { topics } for that domain only (legacy, kept for compat)
-export async function GET(request) {
+export const GET = legacyApiRoute(async (request) => {
+  const { supabase } = await requireUser();
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get('domain');
-  const supabase = await createClient();
 
   try {
     if (!domain) {
@@ -125,4 +126,4 @@ export async function GET(request) {
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 400 });
   }
-}
+});

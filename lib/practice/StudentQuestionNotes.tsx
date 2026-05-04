@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { upsertNoteForQuestion } from '@/app/next/(student)/notes/actions';
 import type { NoteDoc, NoteTaxonomy } from '@/lib/types';
 import { domainSection } from '@/lib/ui/question-layout';
+import { ToolButton } from '@/lib/ui/ToolButton';
 import s from './QuestionNotes.module.css';
 import type { NoteEditorSavePayload } from '@/app/next/(student)/notes/NoteEditor';
 
@@ -187,28 +188,26 @@ export function StudentQuestionNotes({
     });
   };
 
-  const iconCls = [s.iconBtn, hasNote ? s.iconBtnHasNotes : null]
-    .filter(Boolean)
-    .join(' ');
-
   return (
     <div className={s.wrap}>
-      <button
-        type="button"
-        className={iconCls}
+      <ToolButton
+        icon={(
+          /* Pencil-on-paper icon to differentiate from the tutor-notes
+             "lined paper" icon next to it. */
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+          </svg>
+        )}
+        label="Notes"
+        active={open}
+        hasContent={hasNote}
         onClick={(e) => {
           e.stopPropagation();
           setOpen((v) => !v);
         }}
         title={hasNote ? 'View your note' : 'Add a private note'}
         aria-label="My private note for this question"
-      >
-        {/* Pencil-on-paper icon to differentiate from the tutor-notes
-            "lined paper" icon next to it. */}
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
-        </svg>
-      </button>
+      />
 
       {open && (
         <div
@@ -220,7 +219,7 @@ export function StudentQuestionNotes({
           aria-label="My note for this question"
         >
           <div className={s.header}>
-            <span className={s.title}>My note (private)</span>
+            <span className={s.title}>Notes</span>
             <button
               type="button"
               className={s.closeBtn}

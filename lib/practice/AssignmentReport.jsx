@@ -26,8 +26,10 @@ import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
+import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { ConceptTags } from './ConceptTags';
 import { DesmosSavedStateButton } from './DesmosSavedStateButton';
+import { ErrorLogButton } from './ErrorLogButton';
 import { FlashcardsButton } from './FlashcardsButton';
 import { QuestionNotes } from './QuestionNotes';
 import { QuestionMapGrid } from './QuestionMapGrid';
@@ -67,6 +69,7 @@ export function AssignmentReport({
   // FloatingCalculator below renders a single panel for the whole
   // report, so the same ref serves every selected question.
   const calcRef = useRef(null);
+  const [refOpen, setRefOpen] = useState(false);
   // Assignments are linear by nature — a single ordered list,
   // no domain/skill split. The metrics card above already shows
   // the per-domain breakdown, so the question map stays a flat
@@ -347,6 +350,12 @@ export function AssignmentReport({
                   questions. Mirrors the practice-test report so a
                   tutor can poke at graphs while reviewing. */}
               {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
+                <ReferenceSheetButton
+                  open={refOpen}
+                  onOpenChange={setRefOpen}
+                />
+              )}
+              {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
                 <FloatingCalculator
                   storageKey={`desmos:report:${sessionMeta.sessionId}`}
                   onCalcReady={(c) => { calcRef.current = c; }}
@@ -374,28 +383,12 @@ export function AssignmentReport({
                 />
               )}
               <FlashcardsButton />
-              {!isRevealed && !selected.missing && (
-                <button
-                  type="button"
-                  className={s.revealBtn}
-                  onClick={() => reveal(selected.position)}
-                >
-                  Reveal answer &amp; rationale
-                </button>
-              )}
-              {isRevealed && selected.studentAnswer && (
-                <span
-                  className={
-                    selected.studentAnswer.isCorrect
-                      ? s.resultBadgeCorrect
-                      : s.resultBadgeWrong
-                  }
-                >
-                  {selected.studentAnswer.isCorrect ? 'Correct' : 'Incorrect'}
-                </span>
-              )}
-              {isRevealed && !selected.studentAnswer && (
-                <span className={s.resultBadgeSkipped}>Unanswered</span>
+              {!selected.missing && (
+                <ErrorLogButton
+                  key={`elog-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  initialNote={selected.errorNote ?? null}
+                />
               )}
             </div>
           </div>
@@ -433,6 +426,17 @@ export function AssignmentReport({
                 ) : null
               }
             />
+          )}
+          {!isRevealed && !selected.missing && (
+            <div className="sw-reveal-row">
+              <button
+                type="button"
+                className={s.revealBtn}
+                onClick={() => reveal(selected.position)}
+              >
+                Reveal answer &amp; rationale
+              </button>
+            </div>
           )}
         </section>
       )}

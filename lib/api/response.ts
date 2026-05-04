@@ -23,7 +23,9 @@
 // `actionFail()`.
 
 import { NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import type { Ok, Fail } from '@/lib/types';
+import { logger, newRequestId } from './logger';
 
 // ---- Route-handler helpers ----
 
@@ -155,15 +157,31 @@ type RouteHandler<Args extends unknown[]> = (
   ...args: Args
 ) => Promise<NextResponse> | NextResponse;
 
+// Centralised exception path: structured log + Sentry capture +
+// rethrow so Next's onRequestError still fires with full request
+// context. ApiError throws are intentional 401/403/etc and are NOT
+// reported — only unexpected exceptions are.
+function reportRouteError(e: unknown, requestId: string): never {
+  const err = e instanceof Error ? e : new Error(String(e));
+  Sentry.withScope((scope) => {
+    scope.setTag('request_id', requestId);
+    scope.setTag('layer', 'route');
+    Sentry.captureException(err);
+  });
+  logger.error({ requestId, err }, 'route_handler_failed');
+  throw e as Error;
+}
+
 export function apiRoute<Args extends unknown[]>(
   handler: RouteHandler<Args>,
 ): (...args: Args) => Promise<NextResponse> {
   return async (...args: Args) => {
+    const requestId = newRequestId();
     try {
       return await handler(...args);
     } catch (e) {
       if (e instanceof ApiError) return e.toResponse();
-      throw e;
+      reportRouteError(e, requestId);
     }
   };
 }
@@ -172,11 +190,12 @@ export function legacyApiRoute<Args extends unknown[]>(
   handler: RouteHandler<Args>,
 ): (...args: Args) => Promise<NextResponse> {
   return async (...args: Args) => {
+    const requestId = newRequestId();
     try {
       return await handler(...args);
     } catch (e) {
       if (e instanceof ApiError) return e.toLegacyResponse();
-      throw e;
+      reportRouteError(e, requestId);
     }
   };
 }

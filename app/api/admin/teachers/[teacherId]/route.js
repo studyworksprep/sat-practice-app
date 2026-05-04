@@ -6,22 +6,16 @@ import { legacyApiRoute } from '@/lib/api/response';
 export const GET = legacyApiRoute(async (_request, props) => {
   const params = await props.params;
   const { teacherId } = params;
-  const { user, profile, service: svc } = await requireServiceRole(
+  const { supabase, service: svc } = await requireServiceRole(
     'manager/admin teacher detail — cross-teacher roster + training aggregate',
     { allowedRoles: ['manager', 'admin'] },
   );
 
-  // If manager, verify they are assigned to this teacher
-  if (profile.role === 'manager') {
-    const { data: mta } = await svc
-      .from('manager_teacher_assignments')
-      .select('teacher_id')
-      .eq('manager_id', user.id)
-      .eq('teacher_id', teacherId)
-      .maybeSingle();
-    if (!mta) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+  // can_view returns true for admin (via is_admin) and for any manager
+  // assigned to this teacher via manager_teacher_assignments.
+  const { data: canView } = await supabase.rpc('can_view', { target: teacherId });
+  if (!canView) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   // Teacher profile + assigned student IDs in parallel

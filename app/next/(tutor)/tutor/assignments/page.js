@@ -31,6 +31,7 @@ import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { ClipboardCheckIcon, InboxIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { formatShortDate } from '@/lib/formatters';
+import { ArchiveButton } from './ArchiveButton';
 import { AssignmentsToolbar } from './AssignmentsToolbar';
 import { filterAndSort, paginate } from './helpers';
 import s from './AssignmentsList.module.css';
@@ -313,8 +314,9 @@ export default async function TutorAssignmentsPage({ searchParams }) {
             ) : (
               <ul className={s.cardList}>
                 {activeView.items.map((a) => (
-                  <li key={a.id}>
+                  <li key={a.id} className={s.cardRow}>
                     <AssignmentRow row={a} nowMs={nowMs} />
+                    <ArchiveButton assignmentId={a.id} archived={false} />
                   </li>
                 ))}
               </ul>
@@ -355,8 +357,9 @@ export default async function TutorAssignmentsPage({ searchParams }) {
           ) : (
             <ul className={s.cardList}>
               {archivedView.items.map((a) => (
-                <li key={a.id}>
+                <li key={a.id} className={s.cardRow}>
                   <AssignmentRow row={a} nowMs={nowMs} archived />
+                  <ArchiveButton assignmentId={a.id} archived />
                 </li>
               ))}
             </ul>

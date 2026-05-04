@@ -9,42 +9,16 @@ export const PATCH = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   const { studentId } = params;
 
-  const { user, profile, service: svc } = await requireServiceRole(
+  const { supabase, service: svc } = await requireServiceRole(
     'teacher patches student profile fields',
     { allowedRoles: ['teacher', 'manager', 'admin'] },
   );
 
-  // For teachers, verify access to this student
-  if (profile.role === 'teacher' || profile.role === 'manager') {
-    const { data: assignment } = await svc
-      .from('teacher_student_assignments')
-      .select('teacher_id')
-      .eq('teacher_id', user.id)
-      .eq('student_id', studentId)
-      .maybeSingle();
-
-    if (!assignment) {
-      const { data: classes } = await svc
-        .from('classes')
-        .select('id')
-        .eq('teacher_id', user.id);
-
-      const classIds = (classes || []).map(c => c.id);
-      let hasAccess = false;
-      if (classIds.length) {
-        const { data: enrollment } = await svc
-          .from('class_enrollments')
-          .select('student_id')
-          .in('class_id', classIds)
-          .eq('student_id', studentId)
-          .maybeSingle();
-        hasAccess = !!enrollment;
-      }
-
-      if (!hasAccess) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
-    }
+  // can_view covers admin, direct tutor->student, manager->tutor->student,
+  // and class enrollments. Use the RLS-scoped client so auth.uid() resolves.
+  const { data: canView } = await supabase.rpc('can_view', { target: studentId });
+  if (!canView) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const body = await request.json();

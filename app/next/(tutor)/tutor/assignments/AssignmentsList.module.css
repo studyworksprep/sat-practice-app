@@ -175,6 +175,41 @@
   opacity: 0.85;
 }
 
+/* Row wrapper — wraps the card <Link> + the Archive button as
+   siblings so the button click doesn't bubble through to the
+   <Link>'s navigation. */
+.cardRow {
+  position: relative;
+}
+
+.archiveBtn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--fg2);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-std),
+    border-color var(--dur-fast) var(--ease-std),
+    color var(--dur-fast) var(--ease-std);
+  z-index: 1;
+}
+.archiveBtn:hover {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+.archiveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .assignTop {
   display: flex;
   align-items: center;

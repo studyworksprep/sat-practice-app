@@ -118,6 +118,58 @@ If a production-only hotfix is unavoidable:
    `pg_restore` it into the local instance. The sanitization script is
    (TODO Phase 2 deliverable).
 
+## Observability — Sentry
+
+The app forwards unhandled exceptions to Sentry from four points:
+
+1. **Server route handlers.** Every route wrapped in `apiRoute()` /
+   `legacyApiRoute()` (`lib/api/response.ts`) reports unexpected
+   throws to Sentry with a `request_id` tag and `layer: route`.
+   `ApiError` throws (intentional 4xx) are NOT reported.
+2. **Server Components, Server Actions, middleware.** Captured
+   automatically by Sentry's Next.js integration via
+   `instrumentation.ts` → `onRequestError`.
+3. **Client error boundaries.** `lib/ui/ErrorScreen.js` calls
+   `Sentry.captureException(error)` and shows the resulting event id
+   to the user as "Reference: …" so a support ticket can be matched
+   to a Sentry issue.
+4. **Root layout.** `app/global-error.js` is the last-resort
+   boundary for errors thrown in the root layout itself.
+
+### Required env vars
+
+| Var | Where | Purpose |
+|---|---|---|
+| `SENTRY_DSN` | server runtime | enables server-side capture; unset → no-op |
+| `NEXT_PUBLIC_SENTRY_DSN` | client + server | enables client capture |
+| `SENTRY_ORG` | build step | for source-map upload |
+| `SENTRY_PROJECT` | build step | for source-map upload |
+| `SENTRY_AUTH_TOKEN` | build step | source-map upload auth; only set on Vercel |
+
+When `SENTRY_DSN` and `NEXT_PUBLIC_SENTRY_DSN` are unset, the SDK
+no-ops everywhere. Local dev should leave them unset by default;
+set both to point at the dev Sentry project to test capture
+end-to-end.
+
+### Sample rates
+
+- `tracesSampleRate: 0.1` (server) / `0.05` (client) in production.
+- `replaysSessionSampleRate: 0` and `replaysOnErrorSampleRate: 0`
+  by default. Bump per-deploy when investigating a specific UX bug.
+
+### Triaging an alert
+
+1. Open the Sentry issue. The `request_id` tag groups every log
+   line that came from the same request — search Vercel logs for
+   that id to get the full server-side context.
+2. The user-facing "Reference" code shown by `ErrorScreen` is the
+   Sentry event id. A support ticket that quotes that code can be
+   linked back to the issue directly.
+3. The `caller_role` and `event=service_role_bypass` fields on
+   `lib/api/auth.js`'s audit log (for `requireServiceRole` calls)
+   live in the same Vercel log stream — use them to spot bypasses
+   that shouldn't be happening.
+
 ## Content protection incident response
 
 If a scraper is detected (via Sentry alert from `lib/api/rateLimit.js`
