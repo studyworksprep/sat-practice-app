@@ -246,13 +246,13 @@ Each row's `reason` string is logged for audit.
 | `/api/admin/routing-rules` | `admin` | routing-rules read/write |
 | `/api/admin/sync-question-ids` | `admin` | bulk question-id sync |
 | `/api/admin/teachers` | `manager`, `admin` | teachers roster aggregate |
-| `/api/admin/teachers/[teacherId]` | `manager`, `admin` | teacher detail; **inline `manager → tsa(teacher_id=me)` check** |
+| `/api/admin/teachers/[teacherId]` | `manager`, `admin` | teacher detail; `can_view(teacherId)` |
 | `/api/admin/users` (DELETE only) | `admin` | needs `auth.admin.deleteUser` |
 | `/api/questions/[questionId]/correct` | `admin`, `manager` | question correction |
 | `/api/teacher/score-conversion` | `teacher`, `manager`, `admin` | score-conversion upsert |
-| `/api/teacher/student/[studentId]/delete-session` | `teacher`, `manager`, `admin` | uses `teacher_can_view_student` RPC ✅ |
+| `/api/teacher/student/[studentId]/delete-session` | `teacher`, `manager`, `admin` | `can_view(studentId)` |
 | `/api/teacher/student/[studentId]/profile` | `teacher`, `manager`, `admin` | `can_view(studentId)` |
-| `/api/teacher/student/[studentId]/upload-bluebook` | `teacher`, `manager`, `admin` | uses `teacher_can_view_student` RPC ✅ |
+| `/api/teacher/student/[studentId]/upload-bluebook` | `teacher`, `manager`, `admin` | `can_view(studentId)` |
 | `/api/teacher/student-performance` | `teacher`, `manager`, `admin` | aggregates over caller's roster |
 
 ### 3.4 External API key (`validateExternalApiKey`)
@@ -316,12 +316,22 @@ Fixed:
 - `/api/teacher/student/[studentId]/scores`
 - `/api/teacher/student/[studentId]/stats`
 
-Still open: `/api/admin/teachers/[teacherId]` does its own inline
-manager-on-teacher check (`exists in mta where teacher_id = ?`),
-which is correct for the manager→tutor case but worth normalizing
-to `can_view(teacherId)` for consistency. `delete-session` and
-`upload-bluebook` use `teacher_can_view_student`, which also misses
-managers — the same `can_view` migration applies and should follow.
+Follow-ups, also fixed in the same matrix-driven pass:
+
+- `/api/teacher/student/[studentId]/delete-session` and
+  `/api/teacher/student/[studentId]/upload-bluebook` previously
+  called `teacher_can_view_student`, which only checks
+  `is_admin() OR direct tsa OR class_enrollments` — same manager
+  blind spot. Switched to `can_view(studentId)`.
+- `/api/admin/teachers/[teacherId]` previously did an inline
+  `manager_teacher_assignments` lookup. Correct for the
+  manager→tutor case, but normalized to `can_view(teacherId)` so
+  there's one place to fix and one place to test.
+
+Net effect: every authorization check on a target user across the
+`/api/teacher/student/*` and `/api/admin/teachers/*` trees now
+flows through `can_view`. `teacher_can_view_student` has zero
+remaining callers in `app/api/`.
 
 ### 4.3 Role checks split across helper and inline
 

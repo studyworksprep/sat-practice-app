@@ -8,19 +8,16 @@ import { legacyApiRoute } from '@/lib/api/response';
 export const POST = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   const { studentId } = params;
-  const { supabase, profile, service } = await requireServiceRole(
+  const { supabase, service } = await requireServiceRole(
     'teacher deletes student practice attempts',
     { allowedRoles: ['teacher', 'manager', 'admin'] },
   );
 
-  // For teachers/managers, verify access to student
-  if (profile.role === 'teacher' || profile.role === 'manager') {
-    const { data: canView } = await supabase.rpc('teacher_can_view_student', {
-      target_student_id: studentId,
-    });
-    if (!canView) {
-      return NextResponse.json({ error: 'Forbidden: student not in your roster' }, { status: 403 });
-    }
+  // can_view covers admin, direct tutor->student, manager->tutor->student,
+  // and class enrollments. teacher_can_view_student misses the manager paths.
+  const { data: canView } = await supabase.rpc('can_view', { target: studentId });
+  if (!canView) {
+    return NextResponse.json({ error: 'Forbidden: student not in your roster' }, { status: 403 });
   }
 
   const body = await request.json();
