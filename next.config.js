@@ -1,3 +1,5 @@
+const { withSentryConfig } = require('@sentry/nextjs');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -19,4 +21,31 @@ const nextConfig = {
   // imports mathjax-full; other route chunks are unaffected.
   serverExternalPackages: ['mathjax-full'],
 };
-module.exports = nextConfig;
+
+// Sentry source-map upload + auto-instrumentation. Activates only
+// when SENTRY_AUTH_TOKEN is set (i.e. on Vercel deploys); local dev
+// builds leave the upload step inert. See instrumentation.ts and
+// instrumentation-client.ts for the runtime init.
+module.exports = withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Quieter local dev. The wrapper still injects the runtime SDK
+  // (which itself no-ops without a DSN) but skips upload-related
+  // build steps when no auth token is present.
+  silent: !process.env.SENTRY_AUTH_TOKEN,
+
+  // Hide the source-map files from the public build output so
+  // they're uploaded to Sentry but not served to the browser.
+  hideSourceMaps: true,
+
+  // Disable the bundle-size telemetry — we don't need yet another
+  // outbound request from every build.
+  telemetry: false,
+
+  // Tunnel client errors through a same-origin /monitoring route to
+  // sidestep ad-blockers swallowing Sentry envelopes from the
+  // browser. Costs nothing if the DSN is unset (Sentry just no-ops).
+  tunnelRoute: '/monitoring',
+});

@@ -350,14 +350,14 @@ enters via `requireUser` and relies on RLS / `is_v2_assignment_teacher`
 inside the body. Confirm coverage with a negative test (a student
 calling `createAssignment` with a forged `formData`).
 
-### 4.5 `requireServiceRole` audit log is a string, not structured
+### 4.5 ~~`requireServiceRole` audit log is a string, not structured~~ — fixed
 
-The `reason` argument on every `requireServiceRole` call is logged
-verbatim to stdout via `lib/api/logger.js`. Sentry / log aggregation
-can't currently search across these by `route` or `caller_role` since
-the reason is free text. When observability lands (Phase 5 / Week 3 of
-the hardening plan), add `route` and `caller_role` as first-class
-fields on the audit record.
+The audit log in `lib/api/auth.js`'s `requireServiceRole` now goes
+through the structured logger (`lib/api/logger.js`) with
+`event=service_role_bypass`, `caller_role`, and `user_id` as
+first-class fields. The free-text `reason` is still preserved for
+context but log explorers can now group and search by structured
+fields.
 
 ### 4.6 ~~Unauthenticated catalog endpoints~~ — fixed
 
