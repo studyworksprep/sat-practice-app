@@ -63,6 +63,8 @@ Each row answers two questions:
 | `createAssignment` | `(tutor)/tutor/assignments/new/actions.ts` | yes | `requireUser` | role guard inside body — **verify** |
 | `addAssignmentMembers` | `(tutor)/tutor/assignments/[id]/actions.js` | yes | `requireUser` | RLS via `is_v2_assignment_teacher` |
 | `submitAssignmentOnBehalf` | same | yes | `requireUser` | RLS via `is_v2_assignment_teacher` |
+| `archiveAssignment` | same | yes | `requireUser` (role-checked inline) | RLS via `is_v2_assignment_teacher` |
+| `updateStudentProfile` | `(tutor)/tutor/roster/actions.ts` | yes | `requireRole(['teacher','manager','admin'])` then `requireServiceRole(...,{allowedRoles:[teacher,manager,admin]})` | `can_view(studentId)` + allowlist of editable fields |
 | `importStudentPracticeHistory` | `(tutor)/tutor/students/[studentId]/actions.js` | yes | `requireUser` then `requireServiceRole(...,{allowedRoles:['teacher','manager','admin']})` | `can_view(studentId)` |
 | `migrateUserToNext` | same | yes | `requireUser` then `requireServiceRole(...,{allowedRoles:['admin']})` | n/a (admin only) |
 | `createTrainingSession` | `(tutor)/tutor/training/practice/actions.js` | yes | `requireUser` | self-only |
