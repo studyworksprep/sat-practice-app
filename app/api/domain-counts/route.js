@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
-import { createClient, createServiceClient } from '../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
+import { createServiceClient } from '../../../lib/supabase/server';
 
 // GET /api/domain-counts
 // Params: difficulties, score_bands, wrong_only, marked_only, hide_broken
 // Returns: { [domain_name]: { count: N, topics: { [skill_name]: M } } }
 // Counts reflect non-domain/topic filters only, so callers can show how many
 // questions exist in each domain/topic under the current filter settings.
-export async function GET(request) {
+export const GET = legacyApiRoute(async (request) => {
+  const { supabase } = await requireUser();
   try {
   const { searchParams } = new URL(request.url);
 
@@ -21,8 +24,6 @@ export async function GET(request) {
   const undone_only  = searchParams.get('undone_only')  === 'true';
   const hide_broken  = searchParams.get('hide_broken')  === 'true';
   const only_broken  = searchParams.get('only_broken')  === 'true';
-
-  const supabase = await createClient();
 
   // Get user ID from middleware header (avoids stale-cookie auth issues)
   const userId = request.headers.get('x-user-id') || null;
@@ -206,7 +207,7 @@ export async function GET(request) {
     console.error('[domain-counts]', e);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
-}
+});
 
 function intersect(existing, incoming) {
   if (existing === null) return incoming;

@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireUser } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/act/filters
 // Returns { sections, categories } for ACT filter UI
-export async function GET() {
-  const supabase = await createClient();
+export const GET = legacyApiRoute(async () => {
+  const { supabase } = await requireUser();
 
   try {
     // Fetch all distinct section + category + subcategory combos
@@ -73,4 +74,4 @@ export async function GET() {
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 400 });
   }
-}
+});

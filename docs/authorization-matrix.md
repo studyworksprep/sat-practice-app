@@ -52,9 +52,9 @@ Each row answers two questions:
 | `deleteScoreConversion` | same | yes | `requireRole(['admin'])` | RLS |
 | `updateTestThresholds` | same | yes | `requireRole(['admin'])` | RLS |
 | `saveSkillLearnability` | same | yes | `requireRole(['admin'])` | RLS |
-| `saveDraft` | `(admin)/admin/content/drafts/[draftId]/actions.js` | yes | `requireUser` (then inline role check) | RLS + `profile.role IN ('admin','manager')` |
-| `promoteDraft` | same | yes | `requireUser` (then inline role check) | RLS + `profile.role IN ('admin','manager')` |
-| `rejectDraft` | same | yes | `requireUser` (then inline role check) | RLS + `profile.role IN ('admin','manager')` |
+| `saveDraft` | `(admin)/admin/content/drafts/[draftId]/actions.js` | yes | `requireRole(['admin'])` | RLS |
+| `promoteDraft` | same | yes | `requireRole(['admin'])` | RLS |
+| `rejectDraft` | same | yes | `requireRole(['admin'])` | RLS |
 
 ### Tutor (teacher / manager) tree
 
@@ -272,13 +272,13 @@ Server-to-server integration, bypasses user auth deliberately.
 | `/api/webhooks/stripe` | `Stripe.webhooks.constructEvent` against `STRIPE_WEBHOOK_SECRET` |
 | `/api/signup` | service-role; validates own `teacherCode` against `teacher_codes` table |
 
-### 3.6 Unauthenticated catalog endpoints (RLS-only)
+### 3.6 Catalog endpoints (`requireUser`, then RLS)
 
-| Route | Risk |
+| Route | Notes |
 |---|---|
-| `/api/act/filters` | read-only taxonomy aggregate; non-PII; OK |
-| `/api/domain-counts` | reads `question_taxonomy`; reads optional `x-user-id` header (not authoritative — used for filter context only) |
-| `/api/filters` | read-only taxonomy aggregate; non-PII; OK |
+| `/api/act/filters` | read-only ACT taxonomy aggregate |
+| `/api/domain-counts` | SAT taxonomy aggregate; uses `x-user-id` header (set by proxy.js, overwritten on every request) for marked/wrong/undone filters |
+| `/api/filters` | read-only SAT taxonomy aggregate |
 
 ### 3.7 Unauthenticated routes that should not be
 
@@ -333,15 +333,15 @@ Net effect: every authorization check on a target user across the
 flows through `can_view`. `teacher_can_view_student` has zero
 remaining callers in `app/api/`.
 
-### 4.3 Role checks split across helper and inline
+### 4.3 ~~Role checks split across helper and inline~~ — fixed
 
-`(admin)/admin/content/drafts/[draftId]/actions.js` enters via
-`requireUser()` and then does an inline
-`profile.role !== 'admin' && profile.role !== 'manager'` check inside
-each action body. Not wrong, but inconsistent with the rest of the
-admin tree, which uses `requireRole(['admin'])` at the top. Worth
-normalizing to `requireRole(['admin','manager'])` so the gate is
-visible in one place per file.
+`(admin)/admin/content/drafts/[draftId]/actions.js` previously
+entered via `requireUser()` and then did an inline
+`profile.role !== 'admin'` check inside each action body. Now uses
+`requireRole(['admin'])` at the top of each action, matching the
+rest of the admin tree. (The earlier matrix row mistakenly listed
+manager as allowed; the actual inline check was admin-only, so
+the new gate matches the original intent.)
 
 ### 4.4 Server Actions that bypass `requireRole`
 
@@ -359,15 +359,11 @@ the reason is free text. When observability lands (Phase 5 / Week 3 of
 the hardening plan), add `route` and `caller_role` as first-class
 fields on the audit record.
 
-### 4.6 Unauthenticated catalog endpoints
+### 4.6 ~~Unauthenticated catalog endpoints~~ — fixed
 
-`/api/act/filters`, `/api/domain-counts`, `/api/filters` are
-RLS-scoped via the cookie session but don't require auth. Today the
-underlying tables (`act_questions`, `question_taxonomy`) are readable
-by `authenticated`. If a future migration tightens RLS on those
-tables, these endpoints will silently start returning empty arrays
-for unauthenticated callers. Cheap fix: add `await requireUser()` to
-each so the failure is loud.
+`/api/act/filters`, `/api/domain-counts`, and `/api/filters` now
+gate on `await requireUser()`. Anonymous callers get a 401 instead
+of a silently-empty response.
 
 ---
 

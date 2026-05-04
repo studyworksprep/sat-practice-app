@@ -15,13 +15,13 @@
 //                 list).
 //
 // All three require admin role. RLS on question_content_drafts
-// already enforces this at the DB layer; the explicit check lives
-// here so the action returns a useful error instead of a silent
-// zero-row update.
+// already enforces this at the DB layer; the explicit gate lives
+// here via requireRole so the action returns 403 instead of a
+// silent zero-row update.
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { requireUser } from '@/lib/api/auth';
+import { requireRole } from '@/lib/api/auth';
 
 function emptyToNull(v) {
   return v == null || v === '' ? null : v;
@@ -42,8 +42,7 @@ function parseOptionsOrThrow(raw) {
 }
 
 export async function saveDraft(draftId, formData) {
-  const { user, profile, supabase } = await requireUser();
-  if (profile.role !== 'admin') throw new Error('admin required');
+  const { supabase } = await requireRole(['admin']);
 
   const stem_html      = emptyToNull(formData.get('stem_html'));
   const stimulus_html  = emptyToNull(formData.get('stimulus_html'));
@@ -75,8 +74,7 @@ export async function saveDraft(draftId, formData) {
 }
 
 export async function promoteDraft(draftId) {
-  const { user, profile, supabase } = await requireUser();
-  if (profile.role !== 'admin') throw new Error('admin required');
+  const { user, supabase } = await requireRole(['admin']);
 
   // Load the draft to know the target question_id and which fields
   // are non-null (only those get copied).
@@ -133,8 +131,7 @@ export async function promoteDraft(draftId) {
 }
 
 export async function rejectDraft(draftId) {
-  const { user, profile, supabase } = await requireUser();
-  if (profile.role !== 'admin') throw new Error('admin required');
+  const { user, supabase } = await requireRole(['admin']);
 
   const { error } = await supabase
     .from('question_content_drafts')
