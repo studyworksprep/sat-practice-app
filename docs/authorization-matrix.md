@@ -220,11 +220,11 @@ Every route below trusts RLS for resource scoping.
 | `/api/teacher/question-assignments/[assignmentId]` | `teacher`, `manager`, `admin` | |
 | `/api/teacher/question-assignments` | `teacher`, `manager`, `admin` | |
 | `/api/teacher/roster-overview` | `teacher`, `manager`, `admin` | |
-| `/api/teacher/student/[studentId]/dashboard` | `teacher`, `manager`, `admin` | **inline tsa lookup — manager-blocked** |
-| `/api/teacher/student/[studentId]/question/[questionId]` | `teacher`, `manager`, `admin` | **inline tsa lookup — manager-blocked** |
-| `/api/teacher/student/[studentId]/registrations` | `teacher`, `manager`, `admin` | **inline tsa lookup — manager-blocked** |
-| `/api/teacher/student/[studentId]/scores` | `teacher`, `manager`, `admin` | **inline tsa lookup — manager-blocked** |
-| `/api/teacher/student/[studentId]/stats` | `teacher`, `manager`, `admin` | **inline tsa lookup — manager-blocked** |
+| `/api/teacher/student/[studentId]/dashboard` | `teacher`, `manager`, `admin` | `can_view(studentId)` |
+| `/api/teacher/student/[studentId]/question/[questionId]` | `teacher`, `manager`, `admin` | `can_view(studentId)` |
+| `/api/teacher/student/[studentId]/registrations` | `teacher`, `manager`, `admin` | `can_view(studentId)` |
+| `/api/teacher/student/[studentId]/scores` | `teacher`, `manager`, `admin` | `can_view(studentId)` |
+| `/api/teacher/student/[studentId]/stats` | `teacher`, `manager`, `admin` | `can_view(studentId)` |
 | `/api/teacher/students` | `teacher`, `manager`, `admin` | |
 
 ### 3.3 `requireServiceRole(reason, {allowedRoles})` — RLS bypass with role gate
@@ -251,7 +251,7 @@ Each row's `reason` string is logged for audit.
 | `/api/questions/[questionId]/correct` | `admin`, `manager` | question correction |
 | `/api/teacher/score-conversion` | `teacher`, `manager`, `admin` | score-conversion upsert |
 | `/api/teacher/student/[studentId]/delete-session` | `teacher`, `manager`, `admin` | uses `teacher_can_view_student` RPC ✅ |
-| `/api/teacher/student/[studentId]/profile` | `teacher`, `manager`, `admin` | **inline tsa lookup — manager-blocked** |
+| `/api/teacher/student/[studentId]/profile` | `teacher`, `manager`, `admin` | `can_view(studentId)` |
 | `/api/teacher/student/[studentId]/upload-bluebook` | `teacher`, `manager`, `admin` | uses `teacher_can_view_student` RPC ✅ |
 | `/api/teacher/student-performance` | `teacher`, `manager`, `admin` | aggregates over caller's roster |
 
@@ -300,11 +300,15 @@ gated on `requireRole(['admin'])`, matching the new-tree
 `addScoreConversions` Server Action. The legacy caller
 (`AdminDashboard.js:737`) is admin-only, so this is the right scope.
 
-### 4.2 Six legacy teacher routes block managers
+### 4.2 ~~Six legacy teacher routes block managers~~ — fixed
 
-The handoff doc already flagged this. The matrix above marks each
-with **inline tsa lookup — manager-blocked**:
+All six routes now call `can_view(studentId)` instead of the inline
+`teacher_student_assignments(teacher_id=me)` lookup. `can_view`
+covers admin, direct tutor→student, manager→tutor→student, and
+class enrollments — the previous inline check missed every manager
+path.
 
+Fixed:
 - `/api/teacher/student/[studentId]/dashboard`
 - `/api/teacher/student/[studentId]/profile`
 - `/api/teacher/student/[studentId]/question/[questionId]`
@@ -312,11 +316,12 @@ with **inline tsa lookup — manager-blocked**:
 - `/api/teacher/student/[studentId]/scores`
 - `/api/teacher/student/[studentId]/stats`
 
-Plus `/api/admin/teachers/[teacherId]` for the manager-on-teacher case.
-
-Two of the same family already use the `teacher_can_view_student` RPC
-correctly (`delete-session`, `upload-bluebook`) — that's the reference
-pattern. Fix is ~2 lines per route.
+Still open: `/api/admin/teachers/[teacherId]` does its own inline
+manager-on-teacher check (`exists in mta where teacher_id = ?`),
+which is correct for the manager→tutor case but worth normalizing
+to `can_view(teacherId)` for consistency. `delete-session` and
+`upload-bluebook` use `teacher_can_view_student`, which also misses
+managers — the same `can_view` migration applies and should follow.
 
 ### 4.3 Role checks split across helper and inline
 

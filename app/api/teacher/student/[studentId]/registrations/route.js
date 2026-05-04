@@ -2,32 +2,11 @@ import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/api/auth';
 import { legacyApiRoute } from '@/lib/api/response';
 
-async function verifyTeacherAccess(supabase, profile, userId, studentId) {
-  if (profile.role === 'teacher' || profile.role === 'manager') {
-    const { data: assignment } = await supabase
-      .from('teacher_student_assignments')
-      .select('teacher_id')
-      .eq('teacher_id', userId)
-      .eq('student_id', studentId)
-      .maybeSingle();
-
-    if (!assignment) {
-      const { data: classes } = await supabase.from('classes').select('id').eq('teacher_id', userId);
-      const classIds = (classes || []).map(c => c.id);
-      if (classIds.length) {
-        const { data: enrollment } = await supabase
-          .from('class_enrollments')
-          .select('student_id')
-          .in('class_id', classIds)
-          .eq('student_id', studentId)
-          .maybeSingle();
-        if (!enrollment) return false;
-      } else {
-        return false;
-      }
-    }
-  }
-  return true;
+// can_view covers admin, direct tutor->student, manager->tutor->student,
+// and class enrollments. Previous inline implementation missed managers.
+async function verifyTeacherAccess(supabase, _profile, _userId, studentId) {
+  const { data } = await supabase.rpc('can_view', { target: studentId });
+  return !!data;
 }
 
 // GET /api/teacher/student/[studentId]/registrations

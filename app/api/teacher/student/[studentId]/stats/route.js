@@ -9,39 +9,13 @@ const BAND_WEIGHT = { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8, 6: 2.0, 7: 2.2 };
 export const GET = legacyApiRoute(async (_request, props) => {
   const params = await props.params;
   const { studentId } = params;
-  const { supabase, user, profile } = await requireRole(['teacher', 'manager', 'admin']);
+  const { supabase } = await requireRole(['teacher', 'manager', 'admin']);
 
-  // For teachers, verify they can view this student
-  if (profile.role === 'teacher' || profile.role === 'manager') {
-    const { data: assignment } = await supabase
-      .from('teacher_student_assignments')
-      .select('teacher_id')
-      .eq('teacher_id', user.id)
-      .eq('student_id', studentId)
-      .maybeSingle();
-
-    if (!assignment) {
-      const { data: classes } = await supabase
-        .from('classes')
-        .select('id')
-        .eq('teacher_id', user.id);
-
-      const classIds = (classes || []).map(c => c.id);
-      let hasAccess = false;
-      if (classIds.length) {
-        const { data: enrollment } = await supabase
-          .from('class_enrollments')
-          .select('student_id')
-          .in('class_id', classIds)
-          .eq('student_id', studentId)
-          .maybeSingle();
-        hasAccess = !!enrollment;
-      }
-
-      if (!hasAccess) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
-    }
+  // can_view covers admin, direct tutor->student, manager->tutor->student,
+  // and class enrollments. The previous inline check missed managers.
+  const { data: canView } = await supabase.rpc('can_view', { target: studentId });
+  if (!canView) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   // Fetch student profile
