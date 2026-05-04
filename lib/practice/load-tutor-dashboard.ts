@@ -1,41 +1,36 @@
-// Tutor-dashboard data load: student_practice_stats view + recent
-// practice-test attempts + 8-week cohort weekly trend RPC.
+// Tutor-dashboard data load.
 //
-// We previously wrapped this whole thing in unstable_cache with a
-// 60-second TTL. That turned out to be unsafe: in some Next 16
-// invocation paths (background revalidation, prefetch, etc.) the
-// closure runs after the originating request scope has already
-// been torn down. The supabase client captured outside the cache
-// still holds a reference to a `cookieStore` from `await cookies()`,
-// but that object is request-scoped — the next call returns no
-// cookies, so Supabase sends the query without an auth header,
-// RLS on student_practice_stats denies (the view filters by
-// auth.uid() via can_view), the view returns [] for the tutor's
-// roster, and that empty result gets stored in the cache for the
-// next 60 seconds. The user sees "you don't have any students"
-// until the TTL elapses.
+// Two queries:
 //
-// Repro path the user reported: tutor dashboard → student profile
-// → back to tutor dashboard → empty roster.
+//   1. profiles (RLS-scoped) — name + static profile detail for every
+//      student the tutor can see. Replaced an earlier
+//      student_practice_stats view query that aggregated four
+//      attempt counts per student via a heavy GROUP BY join across
+//      the whole attempts table; on a 40-student roster that scan
+//      was ~1.5–2 s, and the per-student perf data wasn't worth it
+//      on a "find a student" surface — the per-student detail page
+//      already has it.
 //
-// Fix: load the queries inline on every render. They're three
-// parallel reads gated by RLS, ~200–400 ms total in production —
-// cheaper than the prior cache-miss path used to be when it had to
-// chunk and reaggregate. Re-add caching here only if a profile
-// shows it's actually expensive, and use a request-scoped strategy
-// (React.cache) rather than the cross-request unstable_cache.
+//   2. practice_test_attempts_v2 (RLS-scoped, limit 5) — recent
+//      practice tests across the roster. Down from 10 since the
+//      surface is "what just happened?" not "audit history".
+//
+// We previously also called get_roster_weekly_trend for an 8-week
+// cohort sparkline on the stat row. Dropped: same disposability
+// rationale, and the sparkline burned another 8× attempts scan.
+//
+// Both queries run in parallel. RLS does the visibility filtering
+// — a forged tutorId can't widen the result set.
 //
 // See docs/architecture-plan.md §3.6.
 
 import { createClient } from '@/lib/supabase/server';
 
-const SPARK_WEEKS = 8;
-const RECENT_TEST_LIMIT = 10;
+const RECENT_TEST_LIMIT = 5;
 
 export interface TutorDashboardData {
   rawStudents: Array<RawStudentRow>;
   recentTestAttempts: Array<RecentTestAttempt>;
-  trendRows: Array<TrendRow>;
 }
 
 interface RawStudentRow {
@@ -47,10 +42,6 @@ interface RawStudentRow {
   high_school: string | null;
   graduation_year: number | null;
   sat_test_date: string | null;
-  total_attempts: number | string | null;
-  correct_attempts: number | string | null;
-  week_attempts: number | string | null;
-  last_activity_at: string | null;
 }
 
 interface RecentTestAttempt {
@@ -65,60 +56,55 @@ interface RecentTestAttempt {
   practice_test: { name: string | null; code: string | null } | null;
 }
 
-interface TrendRow {
-  start_iso: string;
-  end_iso: string;
-  attempts: number | string | null;
-  correct: number | string | null;
-  accuracy: number | string | null;
-}
-
-/** Load the tutor-dashboard payload for the given tutor. RLS on the
- *  underlying tables (student_practice_stats view +
- *  practice_test_attempts_v2 + the trend RPC) applies as the calling
- *  user, so a forged tutorId can't widen visibility. */
-export async function loadTutorDashboard(tutorId: string): Promise<TutorDashboardData> {
+/** Load the tutor-dashboard payload for the given tutor. RLS on
+ *  profiles + practice_test_attempts_v2 applies as the calling
+ *  user via can_view, so a forged tutorId can't widen visibility. */
+export async function loadTutorDashboard(_tutorId: string): Promise<TutorDashboardData> {
   const supabase = await createClient();
 
-  const { data: rows } = await supabase
-    .from('student_practice_stats')
-    .select('*')
-    .order('last_activity_at', { ascending: false, nullsFirst: false });
+  // Fetch the visible-student profiles first; their ids drive the
+  // recent-tests `.in()` filter. RLS on profiles uses can_view, so
+  // we get exactly the tutor's roster.
+  const { data: profileRows } = await supabase
+    .from('profiles')
+    .select(
+      'id, email, first_name, last_name, target_sat_score, high_school, graduation_year, sat_test_date',
+    )
+    .eq('role', 'student')
+    .order('last_name', { ascending: true, nullsFirst: false })
+    .order('first_name', { ascending: true, nullsFirst: false });
 
-  const rawStudents: RawStudentRow[] = (rows as RawStudentRow[] | null) ?? [];
+  const rawStudents: RawStudentRow[] = (profileRows ?? []).map((p) => ({
+    user_id: p.id as string,
+    email: p.email,
+    first_name: p.first_name,
+    last_name: p.last_name,
+    target_sat_score: p.target_sat_score,
+    high_school: p.high_school,
+    graduation_year: p.graduation_year,
+    sat_test_date: p.sat_test_date,
+  }));
 
-  // Roster ids drive the recent-tests filter and the trend RPC.
-  // Empty roster short-circuits both: pass a single bogus uuid for
-  // the tests query (returns nothing cleanly) and skip the RPC.
+  // Recent test attempts. Pass a single bogus uuid when the roster
+  // is empty so the query returns nothing without a syntax-level
+  // empty `.in()` (PostgREST rejects those).
   const rosterIds = rawStudents.length > 0
     ? rawStudents.map((r) => r.user_id)
     : ['00000000-0000-0000-0000-000000000000'];
 
-  const [
-    { data: recentTestAttempts },
-    { data: trendRows },
-  ] = await Promise.all([
-    supabase
-      .from('practice_test_attempts_v2')
-      .select(`
-        id, user_id, status, finished_at, started_at,
-        composite_score, rw_scaled, math_scaled,
-        practice_test:practice_tests_v2!inner(name, code)
-      `)
-      .in('user_id', rosterIds)
-      .order('started_at', { ascending: false })
-      .limit(RECENT_TEST_LIMIT),
-    rawStudents.length > 0
-      ? supabase.rpc('get_roster_weekly_trend', {
-          p_roster: rosterIds,
-          p_num_weeks: SPARK_WEEKS,
-        })
-      : Promise.resolve({ data: [] }),
-  ]);
+  const { data: recentTestAttempts } = await supabase
+    .from('practice_test_attempts_v2')
+    .select(`
+      id, user_id, status, finished_at, started_at,
+      composite_score, rw_scaled, math_scaled,
+      practice_test:practice_tests_v2!inner(name, code)
+    `)
+    .in('user_id', rosterIds)
+    .order('started_at', { ascending: false })
+    .limit(RECENT_TEST_LIMIT);
 
   return {
     rawStudents,
     recentTestAttempts: (recentTestAttempts as RecentTestAttempt[] | null) ?? [],
-    trendRows: (trendRows as TrendRow[] | null) ?? [],
   };
 }
