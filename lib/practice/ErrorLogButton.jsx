@@ -79,7 +79,7 @@ export function ErrorLogButton({
 
   const isDirty = (draft.trim() || '') !== (note?.body ?? '');
   const hasNote = !!note;
-  const triggerLabel = 'Error log';
+  const triggerLabel = 'Error Log';
 
   function handleSave() {
     setError(null);
@@ -121,7 +121,7 @@ export function ErrorLogButton({
       {open && (
         <div ref={panelRef} className={s.panel} role="dialog" aria-label="Error log note">
           <div className={s.header}>
-            <strong className={s.headerTitle}>Error log</strong>
+            <strong className={s.headerTitle}>Error Log</strong>
             <button
               type="button"
               className={s.headerClose}

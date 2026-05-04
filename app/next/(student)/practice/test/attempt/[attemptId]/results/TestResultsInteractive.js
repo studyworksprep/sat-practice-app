@@ -454,15 +454,6 @@ export function TestResultsInteractive({
                 </div>
               )}
               <FlashcardsButton />
-              {isRevealed && selected.studentAnswer && (
-                <span
-                  className={selected.studentAnswer.isCorrect
-                    ? s.resultBadgeCorrect
-                    : s.resultBadgeWrong}
-                >
-                  {selected.studentAnswer.isCorrect ? 'Correct' : 'Incorrect'}
-                </span>
-              )}
             </div>
           </div>
 

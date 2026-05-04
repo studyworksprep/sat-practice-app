@@ -390,20 +390,6 @@ export function AssignmentReport({
                   initialNote={selected.errorNote ?? null}
                 />
               )}
-              {isRevealed && selected.studentAnswer && (
-                <span
-                  className={
-                    selected.studentAnswer.isCorrect
-                      ? s.resultBadgeCorrect
-                      : s.resultBadgeWrong
-                  }
-                >
-                  {selected.studentAnswer.isCorrect ? 'Correct' : 'Incorrect'}
-                </span>
-              )}
-              {isRevealed && !selected.studentAnswer && (
-                <span className={s.resultBadgeSkipped}>Unanswered</span>
-              )}
             </div>
           </div>
 

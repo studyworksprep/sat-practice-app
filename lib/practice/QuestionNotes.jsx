@@ -156,7 +156,7 @@ export function QuestionNotes({
             <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z" />
           </svg>
         )}
-        label="Tutor note"
+        label="Tutor Notes"
         active={open}
         hasContent={hasNotes}
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
@@ -173,7 +173,7 @@ export function QuestionNotes({
           aria-label="Tutor notes"
         >
           <div className={s.header}>
-            <span className={s.title}>Tutor notes</span>
+            <span className={s.title}>Tutor Notes</span>
             <button
               type="button"
               className={s.closeBtn}
