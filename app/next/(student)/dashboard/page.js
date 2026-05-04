@@ -57,6 +57,7 @@ export default async function StudentDashboardPage() {
     { data: recentTestAttempts },
     { data: assignmentRows },
     { data: activeSession },
+    { data: nextRegistrationRow },
   ] = await Promise.all([
     loadDashboardAggregate(user.id),
     supabase
@@ -112,6 +113,18 @@ export default async function StudentDashboardPage() {
       .order('last_activity_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    // Soonest upcoming SAT registration. Used as the countdown
+    // anchor when the student hasn't set a personal target date
+    // on their profile — a tutor-added registration row is the
+    // canonical "real" test date once one exists.
+    supabase
+      .from('sat_test_registrations')
+      .select('test_date')
+      .eq('student_id', user.id)
+      .gte('test_date', new Date().toISOString().slice(0, 10))
+      .order('test_date', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   // Weekly accuracy trend for the "Your weekly progress" card.
@@ -139,7 +152,13 @@ export default async function StudentDashboardPage() {
   const stats = {
     firstName: fullProfile?.first_name ?? null,
     targetScore: fullProfile?.target_sat_score ?? null,
-    satTestDate: fullProfile?.sat_test_date ?? null,
+    // Profile sat_test_date is the student's personal target;
+    // a tutor-added registration row supersedes it when present
+    // because it represents a real registered exam, not a goal.
+    satTestDate:
+      (typeof nextRegistrationRow?.test_date === 'string' ? nextRegistrationRow.test_date : null)
+      ?? fullProfile?.sat_test_date
+      ?? null,
     totalAttempts: aggregate.totalAttempts,
     correctAttempts: aggregate.correctAttempts,
     weekAttempts: aggregate.weekAttempts,

@@ -26,6 +26,10 @@ import {
 import { IconTile } from '@/lib/ui/IconTile';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 import { MigrateToNextButton } from './MigrateToNextButton';
+import { OfficialScoresCard } from './OfficialScoresCard';
+import { ScoreProgressChart } from './ScoreProgressChart';
+import { TestRegistrationsCard } from './TestRegistrationsCard';
+import { UploadBluebookCard } from './UploadBluebookCard';
 import s from './StudentDetail.module.css';
 
 import type { ViewRow, SubjectCode } from '@/lib/types';
@@ -63,6 +67,8 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     { data: assignmentJunctions },
     { data: testAttemptRows },
     { data: sessionRows },
+    { data: registrations },
+    { data: officialScores },
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -107,6 +113,20 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .neq('status', 'abandoned')
       .order('created_at', { ascending: false })
       .limit(RECENT_SESSIONS_LIMIT),
+    supabase
+      .from('sat_test_registrations')
+      .select('id, test_date, created_at')
+      .eq('student_id', studentId)
+      .order('test_date', { ascending: true }),
+    supabase
+      .from('sat_official_scores')
+      .select(`
+        id, test_date, rw_score, math_score, composite_score, created_at, test_type,
+        domain_ini, domain_cas, domain_eoi, domain_sec,
+        domain_alg, domain_atm, domain_pam, domain_geo
+      `)
+      .eq('student_id', studentId)
+      .order('test_date', { ascending: false }),
   ]);
 
   if (rpcErr) {
@@ -269,6 +289,44 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           value={formatRelativeShort(student.lastActivityAt) ?? '—'}
         />
       </section>
+
+      {/* ---------- Score progress + target ---------- */}
+      {(officialScores ?? []).length > 0 && (
+        <section className={s.card}>
+          <div className={s.cardHeader}>
+            <div className={s.sectionLabel}>Progress toward target</div>
+          </div>
+          <ScoreProgressChart
+            scores={officialScores ?? []}
+            targetScore={student.targetScore}
+          />
+        </section>
+      )}
+
+      {/* ---------- Test registrations ---------- */}
+      <TestRegistrationsCard
+        studentId={student.id}
+        registrations={(registrations ?? []).map((r) => ({
+          id: r.id as string,
+          test_date: r.test_date as string,
+        }))}
+      />
+
+      {/* ---------- Official scores ---------- */}
+      <OfficialScoresCard
+        studentId={student.id}
+        scores={(officialScores ?? []) as unknown as Array<{
+          id: string; test_date: string; rw_score: number; math_score: number;
+          composite_score: number; test_type: string | null;
+          domain_ini: number | null; domain_cas: number | null;
+          domain_eoi: number | null; domain_sec: number | null;
+          domain_alg: number | null; domain_atm: number | null;
+          domain_pam: number | null; domain_geo: number | null;
+        }>}
+      />
+
+      {/* ---------- Upload Bluebook ---------- */}
+      <UploadBluebookCard studentId={student.id} />
 
       {/* ---------- Assignments ---------- */}
       <section className={s.card}>

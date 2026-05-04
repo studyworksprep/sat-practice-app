@@ -67,6 +67,10 @@ Each row answers two questions:
 | `updateStudentProfile` | `(tutor)/tutor/roster/actions.ts` | yes | `requireRole(['teacher','manager','admin'])` then `requireServiceRole(...,{allowedRoles:[teacher,manager,admin]})` | `can_view(studentId)` + allowlist of editable fields |
 | `importStudentPracticeHistory` | `(tutor)/tutor/students/[studentId]/actions.js` | yes | `requireUser` then `requireServiceRole(...,{allowedRoles:['teacher','manager','admin']})` | `can_view(studentId)` |
 | `migrateUserToNext` | same | yes | `requireUser` then `requireServiceRole(...,{allowedRoles:['admin']})` | n/a (admin only) |
+| `addTestRegistration` | same | yes | `requireUser` (role-checked inline) | `can_view(studentId)` |
+| `removeTestRegistration` | same | yes | `requireUser` (role-checked inline) | `can_view(studentId)` |
+| `addOfficialScore` | same | yes | `requireUser` (role-checked inline) | `can_view(studentId)` |
+| `removeOfficialScore` | same | yes | `requireUser` (role-checked inline) | `can_view(studentId)` |
 | `createTrainingSession` | `(tutor)/tutor/training/practice/actions.js` | yes | `requireUser` | self-only |
 | `countAvailable` (training) | same | no | `requireUser` | RLS |
 | `createTrainingWeakQueueDrill` | `(tutor)/tutor/training/review/actions.js` | yes | `requireUser` | self-only |

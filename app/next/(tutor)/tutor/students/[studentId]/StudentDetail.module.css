@@ -405,3 +405,462 @@
   font-size: 11px;
   color: var(--fg3);
 }
+
+/* ============================================================
+   Test registrations + official scores + Bluebook upload cards.
+   Shared with the QuickEdit modal idiom from /tutor/roster but
+   scoped here so the student-detail page can ship without
+   importing across feature boundaries.
+============================================================ */
+
+.empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg3);
+}
+
+.muted { color: var(--fg3); font-size: 12px; }
+
+.regGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s4);
+}
+@media (max-width: 540px) { .regGrid { grid-template-columns: 1fr; } }
+
+.regGroupLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg3);
+  margin-bottom: 6px;
+}
+
+.regList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.regRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  font-size: 13px;
+}
+
+.regDate { color: var(--fg2); }
+.regDateUpcoming { color: var(--fg1); font-weight: 600; }
+
+.regRemove {
+  background: transparent;
+  border: none;
+  color: var(--fg3);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.regRemove:hover { background: var(--color-slate-100); color: var(--color-red-600, #dc2626); }
+.regRemove:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Score rows */
+.scoreList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.scoreRow {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.scoreRowMain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+
+.scoreRowDate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.scoreRowType {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg3);
+  background: var(--color-slate-100);
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.scoreRowScores {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scorePillTotal {
+  background: var(--color-app-accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.scorePillRw {
+  background: var(--color-rw-soft, #e0eafc);
+  color: var(--color-rw-fg, #2c5d8a);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.scorePillMath {
+  background: var(--color-math-soft, #ece4f3);
+  color: var(--color-math-fg, #5f4585);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.scoreRowDomains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+}
+
+.domainChip {
+  font-size: 11px;
+  color: var(--fg2);
+  background: var(--color-slate-50);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.scoreRemove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: var(--fg3);
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.scoreRemove:hover { background: var(--color-slate-100); color: var(--color-red-600, #dc2626); }
+.scoreRemove:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------- Modal ---------- */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: var(--s4);
+}
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: min(560px, 100%);
+  max-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.modalTitle { font-size: 14px; font-weight: 700; color: var(--fg1); }
+.modalClose {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--fg2);
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.modalClose:hover { background: var(--color-slate-100); color: var(--fg1); }
+
+.modalBody {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 460px) { .fieldRow { grid-template-columns: 1fr; } }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fieldNarrow { flex: 0 0 110px; }
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg2);
+}
+
+.input {
+  padding: 8px 10px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--fg1);
+  font-family: inherit;
+  font-size: 13px;
+}
+.input:focus { outline: 2px solid var(--color-app-accent); outline-offset: 1px; }
+
+.compositeRow {
+  text-align: center;
+  font-size: 13px;
+  color: var(--fg2);
+}
+.compositeRow strong {
+  color: var(--color-app-accent);
+  font-size: 16px;
+  font-weight: 700;
+  margin-left: 6px;
+}
+
+.error {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--color-red-50, #fef2f2);
+  color: var(--color-red-700, #b91c1c);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+}
+
+.btnPrimary {
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.btnPrimary:hover { background: var(--color-app-accent-hover); }
+.btnPrimary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btnSecondary {
+  background: transparent;
+  color: var(--fg1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.btnSecondary:hover { background: var(--color-slate-100); }
+.btnSecondary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Domain selects inside the Add Score modal */
+
+.domainGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+}
+
+.domainGroupLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+
+.domainGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+@media (max-width: 460px) { .domainGrid { grid-template-columns: 1fr; } }
+
+.domainCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.domainCellLabel {
+  font-size: 11px;
+  color: var(--fg2);
+}
+
+/* Bluebook upload — parsed file summary */
+
+.parsedSummary {
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.parsedHead { font-weight: 700; color: var(--fg1); font-size: 13px; }
+.parsedRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+@media (max-width: 460px) { .parsedRow { grid-template-columns: 1fr; } }
+
+/* Result block (post-upload) */
+
+.resultBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 0;
+}
+.resultComposite {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-app-accent);
+  line-height: 1;
+}
+.resultLabel {
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+.resultPair { display: flex; gap: 6px; }
+
+/* ---------- Score progress chart ---------- */
+
+.chartWrap {
+  width: 100%;
+  background: var(--bg-white);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.chartGrid {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  opacity: 0.6;
+}
+
+.chartTickLabel {
+  font-size: 11px;
+  fill: var(--fg3);
+  font-family: inherit;
+}
+
+.chartTargetLine {
+  stroke: var(--color-gold-500, #d4a72c);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+
+.chartTargetLabel {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--color-gold-700, #92651a);
+  font-family: inherit;
+}
+
+.chartLine {
+  stroke: var(--color-app-accent);
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chartDot {
+  fill: var(--color-app-accent);
+}
+
+.chartPointLabel {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--fg1);
+  font-family: inherit;
+}
