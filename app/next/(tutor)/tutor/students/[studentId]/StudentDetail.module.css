@@ -407,6 +407,41 @@
 }
 
 /* ============================================================
+   Two-column body. Left column carries the click-into surfaces
+   (assignments, recent tests, sessions); right column is glance
+   data + occasional add-actions (chart, registrations, scores,
+   Bluebook upload). Stacks on narrow viewports.
+============================================================ */
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--s4);
+  align-items: start;
+}
+
+.colMain,
+.colSide {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Footer-style card — slimmer presentation for the v2 import
+   strip at the bottom of the page, which is rarely needed once
+   the cutover has run on the student. */
+.footerCard {
+  margin-top: var(--s4);
+}
+
+/* ============================================================
    Test registrations + official scores + Bluebook upload cards.
    Shared with the QuickEdit modal idiom from /tutor/roster but
    scoped here so the student-detail page can ship without

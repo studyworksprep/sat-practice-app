@@ -29,11 +29,6 @@ export function UploadBluebookCard({ studentId }) {
           + Upload
         </button>
       </div>
-      <p className={s.empty}>
-        Upload a Bluebook HTML export for this student to import per-question
-        attempts into their practice-test history. Optional: skip the file and
-        record only the scaled scores.
-      </p>
       {open && (
         <UploadModal
           studentId={studentId}

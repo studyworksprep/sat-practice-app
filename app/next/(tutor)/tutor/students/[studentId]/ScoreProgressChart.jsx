@@ -4,18 +4,18 @@
 // dashed horizontal reference line.
 //
 // Server-renderable — no hooks, no client boundary. Sized to fit
-// in a card slot with a fixed aspect ratio; the polyline scales
-// to fit whatever min/max the data + target suggest.
+// in a card slot via SVG viewBox; the polyline scales to fit
+// whatever min/max the data + target suggest.
 //
-// Empty-state copy lives at the call site, not here — this just
-// returns null when there's nothing to plot, so the caller can
-// pick its own placeholder.
+// The target label lives in the card's section header at the call
+// site, not inside the chart, so the chart stays full-width
+// inside narrow side-column slots.
 
 import s from './StudentDetail.module.css';
 
 const VIEWBOX_W = 720;
 const VIEWBOX_H = 220;
-const MARGIN = { top: 18, right: 88, bottom: 32, left: 56 };
+const MARGIN = { top: 18, right: 12, bottom: 32, left: 56 };
 
 const PLOT_W = VIEWBOX_W - MARGIN.left - MARGIN.right;
 const PLOT_H = VIEWBOX_H - MARGIN.top - MARGIN.bottom;
@@ -104,24 +104,15 @@ export function ScoreProgressChart({ scores, targetScore }) {
           );
         })}
 
-        {/* Target line + label */}
+        {/* Target line */}
         {targetY != null && (
-          <g>
-            <line
-              x1={MARGIN.left}
-              x2={MARGIN.left + PLOT_W}
-              y1={targetY}
-              y2={targetY}
-              className={s.chartTargetLine}
-            />
-            <text
-              x={MARGIN.left + PLOT_W + 8}
-              y={targetY + 4}
-              className={s.chartTargetLabel}
-            >
-              Target {targetValue}
-            </text>
-          </g>
+          <line
+            x1={MARGIN.left}
+            x2={MARGIN.left + PLOT_W}
+            y1={targetY}
+            y2={targetY}
+            className={s.chartTargetLine}
+          />
         )}
 
         {/* Score polyline + points */}
