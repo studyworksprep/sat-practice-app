@@ -1,24 +1,34 @@
-// Cached fetch for the tutor dashboard's three slow reads — the
-// student_practice_stats view (per-student aggregates across the
-// caller's visible roster), recent practice-test attempts, and the
-// 8-week cohort weekly trend RPC. The view in particular scans
-// every visible student's attempts on every render, so even with
-// RLS pushdown a manager with many students pays a noticeable
-// fixed cost per dashboard load.
+// Tutor-dashboard data load: student_practice_stats view + recent
+// practice-test attempts + 8-week cohort weekly trend RPC.
 //
-// Cache strategy: TTL-only at 60s. Unlike the student dashboard
-// (where submitAnswer can trivially flush its own user's tag), a
-// tutor's data depends on which students are in their visible
-// roster, so a per-tutor tag would need every student-side write
-// to walk the roster graph and invalidate every viewer's cache.
-// Not worth the complexity. 60s freshness on a tutor's roster
-// summary is acceptable — they aren't watching for sub-minute
-// changes — and the answer-submission path stays simple.
+// We previously wrapped this whole thing in unstable_cache with a
+// 60-second TTL. That turned out to be unsafe: in some Next 16
+// invocation paths (background revalidation, prefetch, etc.) the
+// closure runs after the originating request scope has already
+// been torn down. The supabase client captured outside the cache
+// still holds a reference to a `cookieStore` from `await cookies()`,
+// but that object is request-scoped — the next call returns no
+// cookies, so Supabase sends the query without an auth header,
+// RLS on student_practice_stats denies (the view filters by
+// auth.uid() via can_view), the view returns [] for the tutor's
+// roster, and that empty result gets stored in the cache for the
+// next 60 seconds. The user sees "you don't have any students"
+// until the TTL elapses.
+//
+// Repro path the user reported: tutor dashboard → student profile
+// → back to tutor dashboard → empty roster.
+//
+// Fix: load the queries inline on every render. They're three
+// parallel reads gated by RLS, ~200–400 ms total in production —
+// cheaper than the prior cache-miss path used to be when it had to
+// chunk and reaggregate. Re-add caching here only if a profile
+// shows it's actually expensive, and use a request-scoped strategy
+// (React.cache) rather than the cross-request unstable_cache.
+//
+// See docs/architecture-plan.md §3.6.
 
-import { unstable_cache } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 
-const TTL_SECONDS = 60;
 const SPARK_WEEKS = 8;
 const RECENT_TEST_LIMIT = 10;
 
@@ -63,67 +73,52 @@ interface TrendRow {
   accuracy: number | string | null;
 }
 
-/** Load the cached tutor-dashboard payload for the given tutor.
- *  Caller passes their authenticated user id, which is folded
- *  into the cache key so different tutors get separate entries.
- *  RLS on the underlying tables (student_practice_stats view +
- *  practice_test_attempts_v2 + the trend RPC) still applies as
- *  the calling user, so a forged tutorId can't widen visibility. */
+/** Load the tutor-dashboard payload for the given tutor. RLS on the
+ *  underlying tables (student_practice_stats view +
+ *  practice_test_attempts_v2 + the trend RPC) applies as the calling
+ *  user, so a forged tutorId can't widen visibility. */
 export async function loadTutorDashboard(tutorId: string): Promise<TutorDashboardData> {
-  // Create the cookies-bound supabase client OUTSIDE unstable_cache.
-  // Next.js 15 throws if cookies() is called inside a cache scope,
-  // and createClient() awaits cookies() to bind the auth jar. The
-  // captured client makes its later HTTP calls without re-invoking
-  // cookies(), so the cached body stays clean.
   const supabase = await createClient();
 
-  return unstable_cache(
-    async () => {
-      const { data: rows } = await supabase
-        .from('student_practice_stats')
-        .select('*')
-        .order('last_activity_at', { ascending: false, nullsFirst: false });
+  const { data: rows } = await supabase
+    .from('student_practice_stats')
+    .select('*')
+    .order('last_activity_at', { ascending: false, nullsFirst: false });
 
-      const rawStudents: RawStudentRow[] = (rows as RawStudentRow[] | null) ?? [];
+  const rawStudents: RawStudentRow[] = (rows as RawStudentRow[] | null) ?? [];
 
-      // Student ids we'll filter the recent-tests query and the
-      // trend RPC by. Empty array would short-circuit both calls,
-      // but the no-roster path is handled by the page already; we
-      // pass a single bogus uuid so the queries return nothing
-      // cleanly without an extra branch here.
-      const rosterIds = rawStudents.length > 0
-        ? rawStudents.map((r) => r.user_id)
-        : ['00000000-0000-0000-0000-000000000000'];
+  // Roster ids drive the recent-tests filter and the trend RPC.
+  // Empty roster short-circuits both: pass a single bogus uuid for
+  // the tests query (returns nothing cleanly) and skip the RPC.
+  const rosterIds = rawStudents.length > 0
+    ? rawStudents.map((r) => r.user_id)
+    : ['00000000-0000-0000-0000-000000000000'];
 
-      const [
-        { data: recentTestAttempts },
-        { data: trendRows },
-      ] = await Promise.all([
-        supabase
-          .from('practice_test_attempts_v2')
-          .select(`
-            id, user_id, status, finished_at, started_at,
-            composite_score, rw_scaled, math_scaled,
-            practice_test:practice_tests_v2!inner(name, code)
-          `)
-          .in('user_id', rosterIds)
-          .order('started_at', { ascending: false })
-          .limit(RECENT_TEST_LIMIT),
-        rawStudents.length > 0
-          ? supabase.rpc('get_roster_weekly_trend', {
-              p_roster: rosterIds,
-              p_num_weeks: SPARK_WEEKS,
-            })
-          : Promise.resolve({ data: [] }),
-      ]);
+  const [
+    { data: recentTestAttempts },
+    { data: trendRows },
+  ] = await Promise.all([
+    supabase
+      .from('practice_test_attempts_v2')
+      .select(`
+        id, user_id, status, finished_at, started_at,
+        composite_score, rw_scaled, math_scaled,
+        practice_test:practice_tests_v2!inner(name, code)
+      `)
+      .in('user_id', rosterIds)
+      .order('started_at', { ascending: false })
+      .limit(RECENT_TEST_LIMIT),
+    rawStudents.length > 0
+      ? supabase.rpc('get_roster_weekly_trend', {
+          p_roster: rosterIds,
+          p_num_weeks: SPARK_WEEKS,
+        })
+      : Promise.resolve({ data: [] }),
+  ]);
 
-      return {
-        rawStudents,
-        recentTestAttempts: (recentTestAttempts as RecentTestAttempt[] | null) ?? [],
-        trendRows: (trendRows as TrendRow[] | null) ?? [],
-      };
-    },
-    ['tutor-dashboard', tutorId],
-    { revalidate: TTL_SECONDS },
-  )();
+  return {
+    rawStudents,
+    recentTestAttempts: (recentTestAttempts as RecentTestAttempt[] | null) ?? [],
+    trendRows: (trendRows as TrendRow[] | null) ?? [],
+  };
 }
