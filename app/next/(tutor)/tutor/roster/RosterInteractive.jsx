@@ -11,7 +11,6 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { formatDate } from '@/lib/formatters';
 import { QuickEditModal } from './QuickEditModal';
 import s from './Roster.module.css';
 
@@ -20,8 +19,6 @@ const SORTS = {
   nameDesc:{ label: 'Name (Z→A)',         cmp: (a, b) => nameOf(b).localeCompare(nameOf(a)) },
   target:  { label: 'Target ↑',           cmp: (a, b) => (a.targetScore ?? 0) - (b.targetScore ?? 0) },
   targetDesc: { label: 'Target ↓',        cmp: (a, b) => (b.targetScore ?? 0) - (a.targetScore ?? 0) },
-  testDate: { label: 'Test date (soonest)', cmp: (a, b) => dateMs(a.satTestDate) - dateMs(b.satTestDate) },
-  testDateDesc: { label: 'Test date (latest)', cmp: (a, b) => dateMs(b.satTestDate) - dateMs(a.satTestDate) },
   graduation:  { label: 'Class (oldest)', cmp: (a, b) => (a.graduationYear ?? 9999) - (b.graduationYear ?? 9999) },
   graduationDesc: { label: 'Class (newest)', cmp: (a, b) => (b.graduationYear ?? 0) - (a.graduationYear ?? 0) },
 };
@@ -31,12 +28,6 @@ function nameOf(st) {
     || st.firstName
     || st.email
     || '—';
-}
-
-function dateMs(iso) {
-  if (!iso) return Number.POSITIVE_INFINITY;
-  const t = Date.parse(iso);
-  return Number.isFinite(t) ? t : Number.POSITIVE_INFINITY;
 }
 
 export function RosterInteractive({ students, canEdit }) {
@@ -122,7 +113,6 @@ export function RosterInteractive({ students, canEdit }) {
                 <th className={s.thNum}>Target</th>
                 <th className={s.th}>School</th>
                 <th className={s.thNum}>Class</th>
-                <th className={s.th}>Test date</th>
                 <th className={s.thStatus}>Status</th>
                 <th className={s.thAction} aria-label="Actions" />
               </tr>
@@ -139,9 +129,6 @@ export function RosterInteractive({ students, canEdit }) {
                   <td className={s.tdNum}>{st.targetScore ?? '—'}</td>
                   <td className={s.td}>{st.highSchool ?? <span className={s.muted}>—</span>}</td>
                   <td className={s.tdNum}>{st.graduationYear ?? '—'}</td>
-                  <td className={s.td}>
-                    {st.satTestDate ? formatDate(st.satTestDate) : <span className={s.muted}>—</span>}
-                  </td>
                   <td className={s.tdStatus}>
                     <span className={st.isActive ? s.statusActive : s.statusInactive}>
                       {st.isActive ? 'Active' : 'Inactive'}

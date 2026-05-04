@@ -27,7 +27,7 @@ export default async function TutorRosterPage() {
   const { data: rows } = await supabase
     .from('profiles')
     .select(
-      'id, email, first_name, last_name, high_school, graduation_year, target_sat_score, sat_test_date, start_date, is_active',
+      'id, email, first_name, last_name, high_school, graduation_year, target_sat_score, start_date, is_active',
     )
     .eq('role', 'student')
     .order('last_name', { ascending: true, nullsFirst: false })
@@ -41,7 +41,6 @@ export default async function TutorRosterPage() {
     highSchool: p.high_school,
     graduationYear: p.graduation_year,
     targetScore: p.target_sat_score,
-    satTestDate: p.sat_test_date,
     startDate: p.start_date,
     isActive: p.is_active !== false, // null → treat as active
   }));

@@ -6,7 +6,6 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatDate } from '@/lib/formatters';
 import { addOfficialScore, removeOfficialScore } from './actions';
 import s from './StudentDetail.module.css';
 
@@ -73,7 +72,11 @@ function ScoreRow({ studentId, score, onRemoved }) {
     <li className={s.scoreRow}>
       <div className={s.scoreRowMain}>
         <div className={s.scoreRowDate}>
-          {formatDate(score.test_date)}
+          {/* Always include the year. The shared formatDate helper
+              omits it for current-year dates, which made the score
+              rows wrap inconsistently between, say, "Mar 13" and
+              "Dec 5, 2025". */}
+          {formatScoreDate(score.test_date)}
           <span className={s.scoreRowType}>{score.test_type ?? 'SAT'}</span>
         </div>
         <div className={s.scoreRowScores}>
@@ -273,4 +276,10 @@ function DomainSelect({ k, label, value, onChange }) {
       </select>
     </label>
   );
+}
+
+function formatScoreDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
