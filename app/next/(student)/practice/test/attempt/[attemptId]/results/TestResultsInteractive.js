@@ -454,15 +454,6 @@ export function TestResultsInteractive({
                 </div>
               )}
               <FlashcardsButton />
-              {!isRevealed && !selected.missing && (
-                <button
-                  type="button"
-                  className={s.revealBtn}
-                  onClick={() => reveal(selected.ordinal)}
-                >
-                  Reveal answer &amp; rationale
-                </button>
-              )}
               {isRevealed && selected.studentAnswer && (
                 <span
                   className={selected.studentAnswer.isCorrect
@@ -508,6 +499,17 @@ export function TestResultsInteractive({
                 ) : null
               }
             />
+          )}
+          {!isRevealed && !selected.missing && (
+            <div className="sw-reveal-row">
+              <button
+                type="button"
+                className={s.revealBtn}
+                onClick={() => reveal(selected.ordinal)}
+              >
+                Reveal answer &amp; rationale
+              </button>
+            </div>
           )}
         </section>
       )}

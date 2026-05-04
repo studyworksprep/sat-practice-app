@@ -184,9 +184,6 @@ function QuestionPreview({ preview }) {
                 {isCorrect && (
                   <span className={s.previewOptionTag}>Correct</span>
                 )}
-                {isWrongPick && (
-                  <span className={s.previewOptionTagWrong}>Your answer</span>
-                )}
               </li>
             );
           })}

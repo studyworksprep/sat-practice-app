@@ -19,6 +19,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { NotesIcon } from '@/lib/ui/icons';
+import { ToolButton } from '@/lib/ui/ToolButton';
 import { saveErrorNote } from './error-notes-actions';
 import s from './ErrorLogButton.module.css';
 
@@ -78,7 +79,7 @@ export function ErrorLogButton({
 
   const isDirty = (draft.trim() || '') !== (note?.body ?? '');
   const hasNote = !!note;
-  const triggerLabel = hasNote ? 'Edit error note' : 'Error log';
+  const triggerLabel = 'Error log';
 
   function handleSave() {
     setError(null);
@@ -105,21 +106,17 @@ export function ErrorLogButton({
 
   return (
     <>
-      <button
-        type="button"
+      <ToolButton
+        icon={<NotesIcon size={20} />}
+        label={triggerLabel}
+        active={open}
+        hasContent={hasNote}
         onClick={() => setOpen((v) => !v)}
-        className={[
-          buttonClassName ?? s.triggerBtn,
-          hasNote ? s.triggerBtnHasNote : null,
-        ].filter(Boolean).join(' ')}
         title={hasNote ? 'You have an error note on this question' : 'Add an error note'}
         data-error-log-trigger={questionId}
         aria-pressed={open}
-      >
-        <NotesIcon size={18} />
-        {triggerLabel}
-        {hasNote && <span className={s.dot} aria-hidden="true" />}
-      </button>
+        className={buttonClassName}
+      />
 
       {open && (
         <div ref={panelRef} className={s.panel} role="dialog" aria-label="Error log note">

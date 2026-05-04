@@ -25,6 +25,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { FlashcardsIcon } from '@/lib/ui/icons';
+import { ToolButton } from '@/lib/ui/ToolButton';
 import {
   createFlashcard,
   listFlashcardSets,
@@ -39,15 +40,13 @@ export function FlashcardsButton({ buttonClassName, label = 'Flashcards' }) {
 
   return (
     <>
-      <button
-        type="button"
+      <ToolButton
+        icon={<FlashcardsIcon size={20} />}
+        label={label}
         onClick={() => setOpen(true)}
-        className={buttonClassName ?? s.triggerBtn}
         title="Open flashcards"
-      >
-        <FlashcardsIcon size={18} />
-        {label}
-      </button>
+        className={buttonClassName}
+      />
       {open && <FlashcardsModal onClose={() => setOpen(false)} />}
     </>
   );

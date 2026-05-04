@@ -29,6 +29,7 @@ import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { ConceptTags } from './ConceptTags';
 import { DesmosSavedStateButton } from './DesmosSavedStateButton';
+import { ErrorLogButton } from './ErrorLogButton';
 import { FlashcardsButton } from './FlashcardsButton';
 import { QuestionNotes } from './QuestionNotes';
 import { QuestionMapGrid } from './QuestionMapGrid';
@@ -382,14 +383,12 @@ export function AssignmentReport({
                 />
               )}
               <FlashcardsButton />
-              {!isRevealed && !selected.missing && (
-                <button
-                  type="button"
-                  className={s.revealBtn}
-                  onClick={() => reveal(selected.position)}
-                >
-                  Reveal answer &amp; rationale
-                </button>
+              {!selected.missing && (
+                <ErrorLogButton
+                  key={`elog-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  initialNote={selected.errorNote ?? null}
+                />
               )}
               {isRevealed && selected.studentAnswer && (
                 <span
@@ -441,6 +440,17 @@ export function AssignmentReport({
                 ) : null
               }
             />
+          )}
+          {!isRevealed && !selected.missing && (
+            <div className="sw-reveal-row">
+              <button
+                type="button"
+                className={s.revealBtn}
+                onClick={() => reveal(selected.position)}
+              >
+                Reveal answer &amp; rationale
+              </button>
+            </div>
           )}
         </section>
       )}

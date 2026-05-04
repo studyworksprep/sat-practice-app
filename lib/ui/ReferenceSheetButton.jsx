@@ -15,6 +15,7 @@
 
 import { useEffect } from 'react';
 import { ReferenceIcon } from './icons';
+import { ToolButton } from './ToolButton';
 import s from './ReferenceSheetButton.module.css';
 
 /**
@@ -42,21 +43,17 @@ export function ReferenceSheetButton({
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onOpenChange]);
 
-  const btnCls = [buttonClassName ?? s.toggleBtn, open ? s.toggleBtnActive : null]
-    .filter(Boolean).join(' ');
-
   return (
     <>
-      <button
-        type="button"
+      <ToolButton
+        icon={<ReferenceIcon />}
+        label={label}
+        active={open}
         onClick={() => onOpenChange(!open)}
-        className={btnCls}
         aria-pressed={open}
         title={open ? 'Hide reference sheet' : 'Show reference sheet'}
-      >
-        <ReferenceIcon />
-        {label}
-      </button>
+        className={buttonClassName}
+      />
       {open && (
         <div
           className={s.overlay}

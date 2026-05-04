@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { DesmosPanel } from '@/lib/ui/DesmosPanel';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
+import { ToolButton } from '@/lib/ui/ToolButton';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { BookmarkIcon, CalculatorIcon } from '@/lib/ui/icons';
 import { NavPopover } from './NavPopover';
@@ -420,22 +421,19 @@ export function TestRunnerInteractive({
         <div className={s.topBarRight}>
           {desmosEligible && (
             <ReferenceSheetButton
-              buttonClassName={refOpen ? `${s.calcBtn} ${s.calcBtnActive}` : s.calcBtn}
               open={refOpen}
               onOpenChange={setRefOpen}
             />
           )}
           {desmosEligible && (
-            <button
-              type="button"
+            <ToolButton
+              icon={<CalculatorIcon />}
+              label="Calculator"
+              active={desmosOpen}
               onClick={toggleDesmos}
               aria-pressed={desmosOpen}
-              className={desmosOpen ? `${s.calcBtn} ${s.calcBtnActive}` : s.calcBtn}
               title={desmosOpen ? 'Hide calculator' : 'Show calculator'}
-            >
-              <CalculatorIcon />
-              Calculator
-            </button>
+            />
           )}
           {showSavedStateBtn && (
             <DesmosSavedStateButton

@@ -26,6 +26,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DesmosPanel } from './DesmosPanel';
 import { CalculatorIcon } from './icons';
+import { ToolButton } from './ToolButton';
 import s from './FloatingCalculator.module.css';
 
 /**
@@ -206,9 +207,6 @@ export function FloatingCalculator({
     if (isTouch) window.addEventListener('touchcancel', onEnd);
   }, []);
 
-  const btnCls = [buttonClassName ?? s.toggleBtn, open ? s.toggleBtnActive : null]
-    .filter(Boolean).join(' ');
-
   // Inline style only when user has dragged — the default is the
   // CSS rule's bottom-right anchor so a freshly-opened panel lands
   // in a predictable spot.
@@ -218,16 +216,15 @@ export function FloatingCalculator({
 
   return (
     <>
-      <button
-        type="button"
+      <ToolButton
+        icon={<CalculatorIcon />}
+        label={label}
+        active={open}
         onClick={() => setOpen((v) => !v)}
-        className={btnCls}
         aria-pressed={open}
         title={open ? 'Hide calculator' : 'Show calculator'}
-      >
-        <CalculatorIcon />
-        {label}
-      </button>
+        className={buttonClassName}
+      />
       {open && (
         <div
           ref={panelRef}

@@ -193,9 +193,6 @@ function QuestionPreview({ preview }) {
                   className={`${s.previewOptionContent} sw-option-content`}
                 />
                 {isCorrect && <span className={s.previewOptionTag}>Correct</span>}
-                {isWrongPick && (
-                  <span className={s.previewOptionTagWrong}>Your answer</span>
-                )}
               </li>
             );
           })}
