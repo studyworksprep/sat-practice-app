@@ -26,6 +26,7 @@ import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
+import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { ConceptTags } from './ConceptTags';
 import { DesmosSavedStateButton } from './DesmosSavedStateButton';
 import { FlashcardsButton } from './FlashcardsButton';
@@ -67,6 +68,7 @@ export function AssignmentReport({
   // FloatingCalculator below renders a single panel for the whole
   // report, so the same ref serves every selected question.
   const calcRef = useRef(null);
+  const [refOpen, setRefOpen] = useState(false);
   // Assignments are linear by nature — a single ordered list,
   // no domain/skill split. The metrics card above already shows
   // the per-domain breakdown, so the question map stays a flat
@@ -346,6 +348,12 @@ export function AssignmentReport({
               {/* Calculator + Desmos saved state — only on math
                   questions. Mirrors the practice-test report so a
                   tutor can poke at graphs while reviewing. */}
+              {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
+                <ReferenceSheetButton
+                  open={refOpen}
+                  onOpenChange={setRefOpen}
+                />
+              )}
               {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
                 <FloatingCalculator
                   storageKey={`desmos:report:${sessionMeta.sessionId}`}

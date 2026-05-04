@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import { useRouter } from 'next/navigation';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { DesmosPanel } from '@/lib/ui/DesmosPanel';
+import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { BookmarkIcon, CalculatorIcon } from '@/lib/ui/icons';
 import { NavPopover } from './NavPopover';
@@ -106,6 +107,10 @@ export function TestRunnerInteractive({
     });
   }, []);
   const desmosVisible = desmosEligible && desmosOpen;
+
+  // Reference sheet — Math modules only. Modal state is local; the
+  // sheet is read-only so there's nothing to persist.
+  const [refOpen, setRefOpen] = useState(false);
 
   // Live calc handle for the saved-state button. Populated by
   // DesmosPanel via onCalcReady once the calculator mounts.
@@ -413,6 +418,13 @@ export function TestRunnerInteractive({
           </div>
         </div>
         <div className={s.topBarRight}>
+          {desmosEligible && (
+            <ReferenceSheetButton
+              buttonClassName={refOpen ? `${s.calcBtn} ${s.calcBtnActive}` : s.calcBtn}
+              open={refOpen}
+              onOpenChange={setRefOpen}
+            />
+          )}
           {desmosEligible && (
             <button
               type="button"

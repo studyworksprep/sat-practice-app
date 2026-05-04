@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { recalculateScore } from '@/lib/practice-test/score-actions';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
+import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { ErrorLogButton } from '@/lib/practice/ErrorLogButton';
@@ -93,6 +94,7 @@ export function TestResultsInteractive({
   // results view, so the same ref serves every selected question.
   const calcRef = useRef(null);
   const isMathItem = selected?.subject === 'MATH';
+  const [refOpen, setRefOpen] = useState(false);
 
   function reveal(ordinal) {
     setRevealed((prev) => {
@@ -403,6 +405,12 @@ export function TestResultsInteractive({
               </span>
             </div>
             <div className={s.questionHeaderRight}>
+              {isMathItem && (
+                <ReferenceSheetButton
+                  open={refOpen}
+                  onOpenChange={setRefOpen}
+                />
+              )}
               {isMathItem && (
                 <FloatingCalculator
                   storageKey={`desmos:review:test:${attemptId}`}

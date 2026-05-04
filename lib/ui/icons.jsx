@@ -110,6 +110,30 @@ export function CalculatorIcon({ size = 18, className, ...rest }) {
   );
 }
 
+export function ReferenceIcon({ size = 18, className, ...rest }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+      {...rest}
+    >
+      <path d="M4 4.5a1.5 1.5 0 0 1 1.5-1.5H18a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H5.5A1.5 1.5 0 0 1 4 19.5v-15z" />
+      <path d="M4 19.5a1.5 1.5 0 0 1 1.5-1.5H19" />
+      <path d="M8 7h7" />
+      <path d="M8 10.5h7" />
+      <path d="M8 14h4" />
+    </svg>
+  );
+}
+
 // ──────────────────────────────────────────────────────────────
 // Subjects & domains
 // ──────────────────────────────────────────────────────────────
