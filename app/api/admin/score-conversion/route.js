@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../lib/supabase/server';
+import { requireRole } from '@/lib/api/auth';
+import { legacyApiRoute } from '@/lib/api/response';
 
 // GET /api/admin/score-conversion?test_id=...
 // Returns existing score_conversion rows for a given test
-export async function GET(request) {
-  const supabase = await createClient();
+export const GET = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
   const { searchParams } = new URL(request.url);
   const testId = searchParams.get('test_id');
 
@@ -20,12 +21,12 @@ export async function GET(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ rows: data });
-}
+});
 
 // POST /api/admin/score-conversion
 // Body: { test_id, test_name, entries: [{ section, module1_correct, module2_correct, scaled_score }] }
-export async function POST(request) {
-  const supabase = await createClient();
+export const POST = legacyApiRoute(async (request) => {
+  const { supabase } = await requireRole(['admin']);
   const body = await request.json();
   const { test_id, test_name, entries } = body;
 
@@ -49,4 +50,4 @@ export async function POST(request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ saved: data.length });
-}
+});

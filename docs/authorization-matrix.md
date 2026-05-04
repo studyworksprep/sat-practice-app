@@ -280,11 +280,11 @@ Server-to-server integration, bypasses user auth deliberately.
 | `/api/domain-counts` | reads `question_taxonomy`; reads optional `x-user-id` header (not authoritative — used for filter context only) |
 | `/api/filters` | read-only taxonomy aggregate; non-PII; OK |
 
-### 3.7 ⚠️ Unauthenticated routes that should not be
+### 3.7 Unauthenticated routes that should not be
 
-| Route | Issue |
-|---|---|
-| `/api/admin/score-conversion` | **Bug.** Both GET and POST run with no auth at all. POST upserts into `score_conversion`. Should be `requireRole(['admin','manager'])`. |
+(None as of 2026-05-04. `/api/admin/score-conversion` previously
+fell here; fixed to `requireRole(['admin'])` in the same commit
+that surfaced the finding.)
 
 ---
 
@@ -292,12 +292,13 @@ Server-to-server integration, bypasses user auth deliberately.
 
 These rows need follow-up work. Listed in order of severity.
 
-### 4.1 `/api/admin/score-conversion` is unauthenticated
+### 4.1 ~~`/api/admin/score-conversion` is unauthenticated~~ — fixed
 
-`app/api/admin/score-conversion/route.js` exports `GET` and `POST` and
-calls `createClient()` with no `requireRole`. POST upserts rows into
-the `score_conversion` table. Anyone with a session (or no session at
-all, depending on RLS on that table) can write. Highest-priority fix.
+`app/api/admin/score-conversion/route.js` previously ran both GET and
+POST with no `requireRole` gate. Now wrapped in `legacyApiRoute` and
+gated on `requireRole(['admin'])`, matching the new-tree
+`addScoreConversions` Server Action. The legacy caller
+(`AdminDashboard.js:737`) is admin-only, so this is the right scope.
 
 ### 4.2 Six legacy teacher routes block managers
 
