@@ -8,6 +8,7 @@
 // runtime.
 
 import type { NoteDoc } from '@/lib/types';
+import { sanitizeNoteHtml } from '@/lib/sanitize';
 
 interface DocNode {
   type?: string;
@@ -101,7 +102,7 @@ export function docToSnippetHtml(doc: NoteDoc, maxLen = 240): string {
   const state: SnippetState = { out: '', visible: 0, truncated: false, maxLen };
   appendNode(doc as DocNode, state);
   if (state.truncated) state.out += '…';
-  return state.out.trim();
+  return sanitizeNoteHtml(state.out.trim());
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -157,11 +158,11 @@ function applyMarks(html: string, marks: MarkLike[] | undefined): string {
   return out;
 }
 
-/** Render an entire TipTap doc to HTML. Suitable for embedding in
- *  a `dangerouslySetInnerHTML` block (text is escaped; only known
- *  block / mark / inline tags are emitted; drawing SVGs come from
- *  Excalidraw's exportToSvg, which is the same source we trust on
- *  the editor render path). */
+/** Render an entire TipTap doc to HTML. Output is sanitized via
+ *  sanitizeNoteHtml before return so callers can safely pass it to
+ *  `dangerouslySetInnerHTML`. The walker emits only known block /
+ *  mark / inline tags, but Excalidraw drawings carry inline SVG
+ *  whose attributes/handlers DOMPurify scrubs. */
 export function docToFullHtml(doc: NoteDoc): string {
   if (!doc || typeof doc !== 'object') return '';
   let out = '';
@@ -207,7 +208,7 @@ export function docToFullHtml(doc: NoteDoc): string {
     }
   };
   out = walk(doc as DocNodeWithMarks);
-  return out;
+  return sanitizeNoteHtml(out);
 }
 
 function appendNode(node: DocNode | undefined, state: SnippetState): void {

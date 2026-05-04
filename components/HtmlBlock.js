@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { sanitizeQuestionHtml } from '@/lib/sanitize';
 
 const MATHJAX_SRC = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
 const SCRIPT_ID = 'mathjax-cdn-script';
@@ -38,12 +39,15 @@ function ensureMathJaxLoaded() {
   }
 }
 
-// Strip wrapping double-quotes that some DB columns return around HTML strings
+// Strip wrapping double-quotes that some DB columns return around HTML
+// strings, then run the question-content sanitizer (defense-in-depth
+// for admin-authored content). The sanitizer preserves MathML / SVG /
+// safe HTML while stripping <script>, on* handlers, and dangerous URIs.
 function cleanHtml(raw) {
   if (!raw) return '';
   let s = raw;
   if (s.startsWith('"') && s.endsWith('"')) s = s.slice(1, -1);
-  return s;
+  return sanitizeQuestionHtml(s);
 }
 
 function HtmlBlockImpl({ html, className, imgMaxWidth }) {

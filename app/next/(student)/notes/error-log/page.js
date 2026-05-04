@@ -14,6 +14,7 @@ import { requireUser } from '@/lib/api/auth';
 import { loadErrorNotes } from '@/lib/practice/load-error-notes';
 import { NotesIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
+import { SafeHtml } from '@/lib/ui/SafeHtml';
 import { NotesNav } from '../NotesNav';
 import s from './ErrorLog.module.css';
 import notesS from '../Notes.module.css';
@@ -160,15 +161,15 @@ function QuestionPreview({ preview }) {
   return (
     <div className={s.previewBody}>
       {preview.stimulusHtml && (
-        <div
+        <SafeHtml
+          html={preview.stimulusHtml}
           className={`${s.previewStimulus} sw-prose`}
-          dangerouslySetInnerHTML={{ __html: preview.stimulusHtml }}
         />
       )}
       {preview.stemHtml && (
-        <div
+        <SafeHtml
+          html={preview.stemHtml}
           className={`${s.previewStem} sw-prose`}
-          dangerouslySetInnerHTML={{ __html: preview.stemHtml }}
         />
       )}
 
@@ -186,9 +187,10 @@ function QuestionPreview({ preview }) {
             return (
               <li key={opt.id} className={cls}>
                 <span className={s.previewOptionBadge}>{opt.label}</span>
-                <span
+                <SafeHtml
+                  as="span"
+                  html={opt.content_html}
                   className={`${s.previewOptionContent} sw-option-content`}
-                  dangerouslySetInnerHTML={{ __html: opt.content_html }}
                 />
                 {isCorrect && <span className={s.previewOptionTag}>Correct</span>}
                 {isWrongPick && (
@@ -225,9 +227,9 @@ function QuestionPreview({ preview }) {
       {preview.rationaleHtml && (
         <div className={s.previewRationale}>
           <div className={s.previewRationaleLabel}>Rationale</div>
-          <div
+          <SafeHtml
+            html={preview.rationaleHtml}
             className={`${s.previewRationaleBody} sw-prose`}
-            dangerouslySetInnerHTML={{ __html: preview.rationaleHtml }}
           />
         </div>
       )}
