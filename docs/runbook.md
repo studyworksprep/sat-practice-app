@@ -118,6 +118,91 @@ If a production-only hotfix is unavoidable:
    `pg_restore` it into the local instance. The sanitization script is
    (TODO Phase 2 deliverable).
 
+## Negative-test scaffold (Playwright)
+
+The matrix-driven authorization tests live in `tests/e2e/` and run
+via Playwright. Each spec is a representative slice of the
+authorization-matrix categories; full coverage stays in
+`docs/authorization-matrix.md` and grows incrementally as new
+routes / actions land.
+
+### Layout
+
+```
+playwright.config.ts           Project shape + auth setup wiring
+tests/e2e/
+  auth.setup.ts                Logs in admin / teacher / student;
+                               saves storage state to tests/.auth/
+  helpers/fixtures.ts          UUIDs + matrix anchors
+  api-auth.anon.spec.ts        anonymous → 401
+  api-auth.student.spec.ts     student → 403 on tutor + admin
+  api-auth.teacher.spec.ts     teacher → 403 on admin + cross-roster
+  page-auth.teacher.spec.ts    page-level redirects + 404s
+```
+
+### Required test users
+
+The dev seed (`scripts/dev-seed-practice-test-v2.sql` +
+`scripts/dev-seed-ui-preview.sql`) creates them. Password is
+`devseed123` for all. The relationships matter — the cross-roster
+tests assume student2 is NOT on the seeded teacher's roster:
+
+| Email | Role | Roster |
+|---|---|---|
+| `admin@test.studyworks` | admin | sees all |
+| `teacher@test.studyworks` | teacher | student1 only |
+| `student1@test.studyworks` | student | on teacher's roster |
+| `student2@test.studyworks` | student | NOT on teacher's roster |
+
+### Running
+
+First time on a machine:
+
+```
+npm install
+npm run test:e2e:install   # downloads the chromium binary
+```
+
+Then any of:
+
+```
+npm run test:e2e                       # all projects
+npm run test:e2e -- --project=anonymous
+npm run test:e2e -- --project=teacher
+npm run test:e2e:ui                    # interactive Playwright UI
+```
+
+Default target is `http://localhost:3000`; the config boots
+`npm run dev` if nothing's listening. To run against a Vercel
+preview instead, set `E2E_BASE_URL=<url>` and the config skips the
+local server step.
+
+### Adding a test
+
+1. Add the rule to `docs/authorization-matrix.md` first.
+2. Add an entry to `tests/e2e/helpers/fixtures.ts` if it's a route
+   list, otherwise hardcode in the spec.
+3. Pick the right project filename suffix:
+   - `*.anon.spec.ts` for anonymous
+   - `*.student.spec.ts` / `*.teacher.spec.ts` / `*.admin.spec.ts`
+     for role-bound tests (storage state loads automatically)
+4. Each project depends on `setup`, which runs `auth.setup.ts`
+   once per CI invocation.
+
+### Limits of the scaffold
+
+- **Server Actions aren't covered yet.** Driving them via Playwright
+  needs the Next-internal `$ACTION_REF` ID, which changes between
+  builds. Coverage approach: drive Server Actions through their UI
+  surfaces (e.g. submit the QuickEditModal as the wrong role and
+  assert the error toast), not direct HTTP. Tracked in matrix §4.4.
+- **Manager role isn't seeded.** Manager-specific tests need a
+  manager test user + a `manager_teacher_assignments` row in the
+  seed — both straightforward additions when we tackle that pass.
+- **Test data assertions stay shallow.** The specs assert status
+  codes, not response bodies, by design — bodies vary with seed
+  state, status codes don't.
+
 ## Observability — Sentry
 
 The app forwards unhandled exceptions to Sentry from four points:

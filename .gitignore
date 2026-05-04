@@ -8,3 +8,11 @@ next-env.d.ts
 
 # TypeScript incremental build cache.
 tsconfig.tsbuildinfo
+
+# Playwright artifacts. .auth/ holds storage-state JSON written by
+# tests/e2e/auth.setup.ts; test-results / playwright-report are the
+# per-run outputs.
+tests/.auth/
+test-results/
+playwright-report/
+playwright/.cache/
