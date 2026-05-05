@@ -471,9 +471,15 @@ function buildWeakSkills(metrics) {
   return out.slice(0, 6);
 }
 
+// Bucket thresholds match SkillBreakdownCard's segmented bars:
+// ≥75 good, ≥50 ok, <50 bad. Earlier this used a stricter ≥80
+// for "good" which made 75% read amber on the score-band tile
+// while the same skill read green on the bar above — visually
+// inconsistent. Aligned here so a tutor sees one signal across
+// the report.
 function accuracyTone(pct) {
   if (pct == null) return 'neutral';
-  if (pct >= 80) return 'good';
+  if (pct >= 75) return 'good';
   if (pct >= 50) return 'ok';
   return 'bad';
 }
