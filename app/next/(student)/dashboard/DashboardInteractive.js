@@ -390,19 +390,32 @@ function priorAverage(rows, valueField, weightField) {
 
 function PerformanceCard({ title, tone, data }) {
   const toneCls = tone === 'rw' ? s.perfToneRw : s.perfToneMath;
-  const pct = data.pct;
+  // Section-level mastery: weight by attempt volume across the
+  // section's domains so a section with one well-mastered domain
+  // and one weak domain reads as the volume-weighted average,
+  // matching how the per-domain bars roll up visually.
+  let sectionMasteryWeighted = 0;
+  let sectionMasteryDenom = 0;
+  for (const d of data.domains) {
+    if (d.mastery == null || d.total <= 0) continue;
+    sectionMasteryWeighted += d.mastery * d.total;
+    sectionMasteryDenom += d.total;
+  }
+  const sectionMastery = sectionMasteryDenom > 0
+    ? sectionMasteryWeighted / sectionMasteryDenom
+    : null;
   const noData = data.domains.length === 0;
   return (
     <div className={`${s.perfCard} ${toneCls}`}>
       <div className={s.perfCardHeader}>
         <div className={s.perfTitle}>{title}</div>
         <div className={s.perfPct}>
-          {pct == null ? '—' : `${pct}%`}
+          {sectionMastery == null ? '—' : `${Math.round(sectionMastery)}%`}
         </div>
       </div>
       {noData ? (
         <p className={s.empty}>
-          No attempts yet. Practice some {title.toLowerCase()} questions to see your accuracy here.
+          No attempts yet. Practice some {title.toLowerCase()} questions to see your mastery here.
         </p>
       ) : (
         <div className={s.domainList}>
@@ -416,7 +429,13 @@ function PerformanceCard({ title, tone, data }) {
 }
 
 function DomainRow({ domain, tone }) {
-  const pct = domain.total > 0 ? Math.round((domain.correct / domain.total) * 100) : 0;
+  // Bar fill + headline number are the mastery score (difficulty-
+  // and band-weighted, with a volume curve and a recency bonus)
+  // rather than raw accuracy. See migration
+  // 20260505000000_dashboard_stats_with_mastery and
+  // lib/mastery.js for the formula. Mastery null → 0 so the empty
+  // bar reads the same as "no signal yet".
+  const mastery = domain.mastery == null ? 0 : domain.mastery;
   const fillCls = tone === 'rw' ? s.barFillRw : s.barFillMath;
   return (
     <div className={s.domainRow}>
@@ -424,9 +443,9 @@ function DomainRow({ domain, tone }) {
       <div className={s.domainCount}>{domain.total}</div>
       <div className={s.domainBar}>
         <div className={s.bar}>
-          <div className={fillCls} style={{ width: `${pct}%` }} />
+          <div className={fillCls} style={{ width: `${mastery}%` }} />
         </div>
-        <span className={s.barPct}>{pct}%</span>
+        <span className={s.barPct}>{mastery}%</span>
       </div>
     </div>
   );
