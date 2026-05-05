@@ -34,7 +34,8 @@ import { FlashcardsButton } from './FlashcardsButton';
 import { QuestionNotes } from './QuestionNotes';
 import { QuestionMapGrid } from './QuestionMapGrid';
 import { ReviewDailyMap } from './ReviewDailyMap';
-import { DomainBreakdownCard, subjectFromDomainCode } from './DomainBreakdownCard';
+import { subjectFromDomainCode } from './DomainBreakdownCard';
+import { SkillBreakdownCard } from './SkillBreakdownCard';
 import { ReportHero } from './ReportHero';
 import { formatDuration } from './format-duration';
 import s from './AssignmentReport.module.css';
@@ -253,14 +254,14 @@ export function AssignmentReport({
       {(rwDomains.length > 0 || mathDomains.length > 0) && (
         <section className={s.cardRow}>
           {rwDomains.length > 0 && (
-            <DomainBreakdownCard
+            <SkillBreakdownCard
               title="Reading & Writing"
               tone="rw"
               domains={rwDomains}
             />
           )}
           {mathDomains.length > 0 && (
-            <DomainBreakdownCard
+            <SkillBreakdownCard
               title="Math"
               tone="math"
               domains={mathDomains}
