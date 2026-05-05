@@ -15,6 +15,30 @@ import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import type { ActionResult } from '@/lib/types';
 
+// desmos_saved_states.question_id is FK'd to questions_v2 (see
+// migration 20260505000001). The new tree always works in v2 ids,
+// but a few legacy callers still pass v1 uuids — translate via
+// question_id_map before writing so a stale id doesn't trip the FK.
+async function resolveQuestionV2Id(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  qid: string,
+): Promise<string | null> {
+  if (!qid) return null;
+  const { data: v2 } = await supabase
+    .from('questions_v2')
+    .select('id')
+    .eq('id', qid)
+    .maybeSingle();
+  if (v2?.id) return v2.id as string;
+  const { data: mapped } = await supabase
+    .from('question_id_map')
+    .select('new_question_id')
+    .eq('old_question_id', qid)
+    .maybeSingle();
+  return mapped?.new_question_id ? (mapped.new_question_id as string) : null;
+}
+
 /** Save (upsert) a Desmos calculator state for a question.
  *  stateJson is whatever GraphingCalculator.getState() returned —
  *  an opaque blob to us, validated only as "is an object". */
@@ -39,11 +63,14 @@ export async function saveDesmosState({
     throw e;
   }
 
+  const v2Id = await resolveQuestionV2Id(supabase, questionId);
+  if (!v2Id) return actionFail('question not found');
+
   const { error } = await supabase
     .from('desmos_saved_states')
     .upsert(
       {
-        question_id: questionId,
+        question_id: v2Id,
         state_json: stateJson,
         saved_by: profile.id,
         updated_at: new Date().toISOString(),
@@ -75,10 +102,13 @@ export async function deleteDesmosState({
     throw e;
   }
 
+  const v2Id = await resolveQuestionV2Id(supabase, questionId);
+  if (!v2Id) return actionFail('question not found');
+
   const { error } = await supabase
     .from('desmos_saved_states')
     .delete()
-    .eq('question_id', questionId);
+    .eq('question_id', v2Id);
 
   if (error) return actionFail(error.message);
   revalidatePath('/practice', 'layout');
