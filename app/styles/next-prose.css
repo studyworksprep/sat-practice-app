@@ -57,13 +57,20 @@
    under the container. Bluebook-style sizing — figures are
    informational, not the focal point.
 
-   The :not() guard excludes math SVGs (which live inside
-   <mjx-container>). Without it, MathJax-output inline math
-   glyphs inherited display:block + margin:12px auto and rendered
-   as centered blocks on their own line — every variable
-   mid-sentence broke the paragraph flow. */
+   Earlier this rule used `svg:not(mjx-container svg)` to skip
+   math glyphs, but that compound :not() selector silently fails
+   in some render paths (the descendant form inside :not() isn't
+   universally supported the way browsers map it through React /
+   shadow boundaries) — math glyphs ended up matching the figure
+   rule and rendered as centered blocks on their own lines. Switch
+   to a cascade-based reset: apply the figure styling to all SVGs,
+   then explicitly snap math-container SVGs back to inline. This
+   relies on plain specificity rather than negation, which works
+   reliably everywhere question content lands. */
 .sw-prose img,
-.sw-prose svg:not(mjx-container svg) {
+.sw-prose svg,
+.sw-option-content img,
+.sw-option-content svg {
   display: block;
   max-width: 100%;
   max-height: 360px;
@@ -71,6 +78,17 @@
   height: auto;
   object-fit: contain;
   margin: 12px auto;
+}
+.sw-prose mjx-container svg,
+.sw-option-content mjx-container svg,
+mjx-container svg {
+  display: inline;
+  max-width: none;
+  max-height: none;
+  width: auto;
+  height: auto;
+  object-fit: initial;
+  margin: 0;
 }
 /* MathJax SVG output already carries a per-glyph
    `style="vertical-align: -<n>ex"` on each <svg> that aligns the
