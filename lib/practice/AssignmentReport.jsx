@@ -270,7 +270,11 @@ export function AssignmentReport({
         </section>
       )}
 
-      {/* ---------- By score band ---------- */}
+      {/* ---------- By score band ----------
+           Tile color encodes question difficulty (the score band
+           itself), not accuracy: 1–3 green (easy), 4–5 yellow
+           (medium), 6–7 red (hard), with within-group shading so
+           Band 1 vs 2 vs 3 reads as different shades of green. */}
       {metrics.byScoreBand.length > 0 && (
         <section className={s.card}>
           <div className={s.cardHead}>
@@ -283,7 +287,7 @@ export function AssignmentReport({
                 const pct =
                   d.total > 0 ? Math.round((d.correct / d.total) * 100) : null;
                 return (
-                  <div key={d.scoreBand} className={s.diffTile}>
+                  <div key={d.scoreBand} className={`${s.diffTile} sw-band-${d.scoreBand}`}>
                     <div className={s.diffLabel}>
                       Band {d.scoreBand}
                     </div>
@@ -291,7 +295,7 @@ export function AssignmentReport({
                       {d.correct} / {d.total}
                     </div>
                     {pct != null && (
-                      <div className={`${s.diffPct} ${s[`tone_${accuracyTone(pct)}`] ?? ''}`}>
+                      <div className={s.diffPct}>
                         {pct}%
                       </div>
                     )}

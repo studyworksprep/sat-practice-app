@@ -179,7 +179,12 @@
 
 .diffBarFill {
   height: 100%;
-  background: var(--color-app-accent);
+  /* Inherit the tile's color (sw-band-* sets this on the parent
+     in app/styles/next-tools.css). currentColor lets the bar
+     match the band's foreground without hard-coding seven
+     companion rules here. */
+  background: currentColor;
+  opacity: 0.85;
   transition: width var(--dur-slow) var(--ease-std);
 }
 
