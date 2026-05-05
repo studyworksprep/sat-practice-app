@@ -405,6 +405,17 @@ export function TestResultsInteractive({
               </span>
             </div>
             <div className={s.questionHeaderRight}>
+              {/* Desmos saved state first — distinct lightbulb anchors
+                  the leftmost slot on every math-question row. */}
+              {isMathItem && (desmosCanSave || selected?.desmosSavedState != null) && (
+                <DesmosSavedStateButton
+                  key={`desmos-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  initialSavedState={selected.desmosSavedState ?? null}
+                  canSave={desmosCanSave}
+                  calcRef={calcRef}
+                />
+              )}
               {isMathItem && (
                 <ReferenceSheetButton
                   open={refOpen}
@@ -415,15 +426,6 @@ export function TestResultsInteractive({
                 <FloatingCalculator
                   storageKey={`desmos:review:test:${attemptId}`}
                   onCalcReady={(c) => { calcRef.current = c; }}
-                />
-              )}
-              {isMathItem && (desmosCanSave || selected?.desmosSavedState != null) && (
-                <DesmosSavedStateButton
-                  key={`desmos-${selected.questionId}`}
-                  questionId={selected.questionId}
-                  initialSavedState={selected.desmosSavedState ?? null}
-                  canSave={desmosCanSave}
-                  calcRef={calcRef}
                 />
               )}
               {questionNotesCanView && !selected.missing && (

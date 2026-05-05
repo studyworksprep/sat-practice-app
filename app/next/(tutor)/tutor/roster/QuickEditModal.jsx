@@ -32,7 +32,6 @@ export function QuickEditModal({ student, onClose }) {
   const [targetScore, setTargetScore] = useState(
     student.targetScore == null ? '' : String(student.targetScore),
   );
-  const [satTestDate, setSatTestDate] = useState(student.satTestDate ?? '');
   const [startDate, setStartDate] = useState(student.startDate ?? '');
   const [isActive, setIsActive] = useState(student.isActive !== false);
 
@@ -46,7 +45,6 @@ export function QuickEditModal({ student, onClose }) {
       high_school: highSchool.trim() || null,
       graduation_year: graduationYear === '' ? null : Number(graduationYear),
       target_sat_score: targetScore === '' ? null : Number(targetScore),
-      sat_test_date: satTestDate || null,
       start_date: startDate || null,
       is_active: isActive,
     };
@@ -139,26 +137,22 @@ export function QuickEditModal({ student, onClose }) {
             </label>
           </div>
 
-          <div className={s.fieldRow}>
-            <label className={s.field}>
-              <span className={s.fieldLabel}>SAT test date</span>
-              <input
-                type="date"
-                value={satTestDate}
-                onChange={(e) => setSatTestDate(e.target.value)}
-                className={s.input}
-              />
-            </label>
-            <label className={s.field}>
-              <span className={s.fieldLabel}>Start date</span>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className={s.input}
-              />
-            </label>
-          </div>
+          {/* SAT test date intentionally not editable here.
+              The canonical home for test dates is the
+              sat_test_registrations list on the student detail
+              page (which supports past + future entries) — a
+              single-value field on profiles couldn't represent
+              that, and keeping it here led to "test date" feeling
+              like two different things to the same tutor. */}
+          <label className={s.field}>
+            <span className={s.fieldLabel}>Start date</span>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className={s.input}
+            />
+          </label>
 
           <label className={s.activeRow}>
             <input

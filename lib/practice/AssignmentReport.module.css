@@ -74,11 +74,14 @@
   margin: 0;
 }
 
+/* Serif h2 for card titles ("Daily distribution", "By score band",
+   "Per-question review"). Matches the practice-test report's
+   header treatment. */
 .h2 {
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
   font-size: var(--app-title-2);
-  font-weight: 600;
-  color: var(--fg1);
+  font-weight: 700;
+  color: var(--color-navy-900, var(--fg1));
   margin: 0 0 4px;
 }
 
@@ -299,12 +302,15 @@
   gap: var(--s3);
 }
 
+/* Two-row stack: question number + meta on top (allowed to wrap),
+   tool buttons on the second row right-aligned. Avoids the jagged
+   layout that flex-row + flex-wrap caused when a long
+   domain/skill description pushed the buttons to the next line at
+   different points per question. */
 .questionHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--s3);
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--s2);
   padding-bottom: var(--s3);
   border-bottom: 1px solid var(--border);
 }
@@ -316,10 +322,11 @@
   min-width: 0;
 }
 .questionHeaderRight {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
 }
 
 .questionNum {

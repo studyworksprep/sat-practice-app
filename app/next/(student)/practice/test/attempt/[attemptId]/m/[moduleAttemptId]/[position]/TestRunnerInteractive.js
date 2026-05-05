@@ -419,6 +419,17 @@ export function TestRunnerInteractive({
           </div>
         </div>
         <div className={s.topBarRight}>
+          {/* Desmos saved state first — leftmost on the top bar.
+              Anchors the math toolset on the live runner the same
+              way it does on the report surfaces. */}
+          {showSavedStateBtn && (
+            <DesmosSavedStateButton
+              questionId={question.questionId}
+              initialSavedState={desmosSavedState}
+              canSave={desmosCanSave}
+              calcRef={calcRef}
+            />
+          )}
           {desmosEligible && (
             <ReferenceSheetButton
               open={refOpen}
@@ -433,14 +444,6 @@ export function TestRunnerInteractive({
               onClick={toggleDesmos}
               aria-pressed={desmosOpen}
               title={desmosOpen ? 'Hide calculator' : 'Show calculator'}
-            />
-          )}
-          {showSavedStateBtn && (
-            <DesmosSavedStateButton
-              questionId={question.questionId}
-              initialSavedState={desmosSavedState}
-              canSave={desmosCanSave}
-              calcRef={calcRef}
             />
           )}
         </div>

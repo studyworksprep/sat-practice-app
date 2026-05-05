@@ -24,8 +24,13 @@ import {
   TestIcon,
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
+import { EditTargetStartButton } from './EditTargetStartModal';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 import { MigrateToNextButton } from './MigrateToNextButton';
+import { OfficialScoresCard } from './OfficialScoresCard';
+import { ScoreProgressChart } from './ScoreProgressChart';
+import { TestRegistrationsCard } from './TestRegistrationsCard';
+import { UploadBluebookCard } from './UploadBluebookCard';
 import s from './StudentDetail.module.css';
 
 import type { ViewRow, SubjectCode } from '@/lib/types';
@@ -63,6 +68,8 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     { data: assignmentJunctions },
     { data: testAttemptRows },
     { data: sessionRows },
+    { data: registrations },
+    { data: officialScores },
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -70,7 +77,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId),
     supabase
       .from('profiles')
-      .select('practice_test_v2_imported_at')
+      .select('practice_test_v2_imported_at, created_at, start_date')
       .eq('id', studentId)
       .maybeSingle(),
     supabase
@@ -107,6 +114,20 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .neq('status', 'abandoned')
       .order('created_at', { ascending: false })
       .limit(RECENT_SESSIONS_LIMIT),
+    supabase
+      .from('sat_test_registrations')
+      .select('id, test_date, created_at')
+      .eq('student_id', studentId)
+      .order('test_date', { ascending: true }),
+    supabase
+      .from('sat_official_scores')
+      .select(`
+        id, test_date, rw_score, math_score, composite_score, created_at, test_type,
+        domain_ini, domain_cas, domain_eoi, domain_sec,
+        domain_alg, domain_atm, domain_pam, domain_geo
+      `)
+      .eq('student_id', studentId)
+      .order('test_date', { ascending: false }),
   ]);
 
   if (rpcErr) {
@@ -122,6 +143,15 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
   const total   = Number(row.total_attempts ?? 0);
   const correct = Number(row.correct_attempts ?? 0);
   const week    = Number(row.week_attempts ?? 0);
+  // Effective start date defaults to the signup timestamp
+  // (profiles.created_at, set by handle_new_user) when start_date
+  // hasn't been set explicitly. The Edit modal still writes to the
+  // explicit start_date column; the fallback only governs display
+  // and the archived-summary score lookups.
+  const profileForStart = profileRow as { start_date?: string | null; created_at?: string | null } | null;
+  const startDateRaw = profileForStart?.start_date ?? null;
+  const effectiveStartDate = startDateRaw ?? profileForStart?.created_at ?? null;
+
   const student = {
     id: row.user_id ?? studentId,
     name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.email || 'Unknown',
@@ -130,6 +160,8 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     highSchool: row.high_school,
     graduationYear: row.graduation_year,
     satTestDate: row.sat_test_date,
+    startDate: startDateRaw,
+    effectiveStartDate,
     totalAttempts: total,
     correctAttempts: correct,
     weekAttempts: week,
@@ -246,9 +278,18 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* ---------- Stat tiles ---------- */}
+      {/* ---------- Stat tiles ----------
+           Target + Start date sit at the front since both are
+           tutor-editable (single combined modal at the right).
+           Effective start date defaults to the signup timestamp
+           when start_date hasn't been set explicitly. */}
       <section className={s.statsRow}>
         <StatTile label="Target" value={student.targetScore ?? '—'} />
+        <StatTile
+          label="Start date"
+          value={student.effectiveStartDate ? (formatDate(student.effectiveStartDate) ?? '—') : '—'}
+          subtitle={student.startDate ? undefined : 'defaults to signup'}
+        />
         <StatTile
           label="Accuracy"
           value={student.accuracy != null ? `${student.accuracy}%` : '—'}
@@ -268,157 +309,223 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           label="Last activity"
           value={formatRelativeShort(student.lastActivityAt) ?? '—'}
         />
+        <div className={s.statsRowAction}>
+          <EditTargetStartButton
+            studentId={student.id}
+            targetScore={student.targetScore ?? null}
+            startDate={profileRow?.start_date ?? null}
+          />
+        </div>
       </section>
 
-      {/* ---------- Assignments ---------- */}
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>
-            <IconTile icon={InboxIcon} palette="navy" size="sm" />
-            Assignments
-          </div>
-          <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.cardHeaderLink}>
-            + New assignment
-          </Link>
-        </div>
-        {assignments.length === 0 ? (
-          <p className={s.empty}>This student has no assignments.</p>
-        ) : (
-          <ul className={s.assignmentList}>
-            {assignments.map((a) => {
-              const title = a.title
-                ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
-                ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
-                ?? 'Assignment';
-              const n = Array.isArray(a.question_ids) ? (a.question_ids as unknown[]).length : null;
-              const reportSessionId = reportSessionByAssignment.get(a.id) ?? null;
-              const rowHref = reportSessionId
-                ? `/tutor/sessions/${reportSessionId}`
-                : `/tutor/assignments/${a.id}`;
-              return (
-                <li key={a.id}>
-                  <Link
-                    href={rowHref}
-                    className={a.completed_at ? `${s.assignmentRow} ${s.assignmentRowDone}` : s.assignmentRow}
-                  >
-                    <span className={s.assignmentType}>{a.assignment_type}</span>
-                    <span className={s.assignmentTitle}>
-                      {title}
-                      {n != null && <span className={s.assignmentCount}> · {n} q{n === 1 ? '' : 's'}</span>}
-                    </span>
-                    {a.due_date && !a.completed_at && (
-                      <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
-                        Due {formatDate(a.due_date)}
-                      </span>
-                    )}
-                    {a.completed_at && reportSessionId && (
-                      <span className={s.reportPill}>View report →</span>
-                    )}
-                    {a.completed_at && !reportSessionId && (
-                      <span className={s.completedTag}>Completed</span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-
-      {/* ---------- Recent practice tests ---------- */}
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>
-            <IconTile icon={TestIcon} palette="cyan" size="sm" />
-            Recent practice tests
-          </div>
-        </div>
-        {testRows.length === 0 ? (
-          <p className={s.empty}>No practice tests yet.</p>
-        ) : (
-          <ul className={s.testList}>
-            {testRows.map((t) => (
-              <li key={t.id}>
-                <Link
-                  href={t.status === 'completed'
-                    ? `/tutor/students/${student.id}/tests/${t.id}/results`
-                    : `/tutor/students/${student.id}`}
-                  className={s.testRow}
-                >
-                  <div className={s.testRowLeft}>
-                    <div className={s.testRowName}>{t.testName}</div>
-                    <div className={s.testRowMeta}>
-                      <span className={s.mono}>{t.testCode}</span>
-                      {t.testCode && ' · '}
-                      {formatRelativeShort(t.timestamp) ?? '—'}
-                      {t.status !== 'completed' && (
-                        <span className={s.testRowTag}>
-                          {' · '}{t.status === 'in_progress' ? 'In progress' : 'Abandoned'}
+      {/* ---------- Two-column body ----------
+           Left column: the click-into surfaces a tutor reaches
+           for most often (assignments, recent tests, sessions).
+           Right column: glance / reference data + the
+           occasionally-used add-actions.
+      */}
+      <div className={s.contentGrid}>
+        <div className={s.colMain}>
+          {/* Assignments */}
+          <section className={s.card}>
+            <div className={s.cardHeader}>
+              <div className={s.sectionLabel}>
+                <IconTile icon={InboxIcon} palette="navy" size="sm" />
+                Assignments
+              </div>
+              <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.cardHeaderLink}>
+                + New assignment
+              </Link>
+            </div>
+            {assignments.length === 0 ? (
+              <p className={s.empty}>This student has no assignments.</p>
+            ) : (
+              <ul className={s.assignmentList}>
+                {assignments.map((a) => {
+                  const title = a.title
+                    ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
+                    ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
+                    ?? 'Assignment';
+                  const n = Array.isArray(a.question_ids) ? (a.question_ids as unknown[]).length : null;
+                  const reportSessionId = reportSessionByAssignment.get(a.id) ?? null;
+                  const rowHref = reportSessionId
+                    ? `/tutor/sessions/${reportSessionId}`
+                    : `/tutor/assignments/${a.id}`;
+                  return (
+                    <li key={a.id}>
+                      <Link
+                        href={rowHref}
+                        className={a.completed_at ? `${s.assignmentRow} ${s.assignmentRowDone}` : s.assignmentRow}
+                      >
+                        <span className={s.assignmentType}>{a.assignment_type}</span>
+                        <span className={s.assignmentTitle}>
+                          {title}
+                          {n != null && <span className={s.assignmentCount}> · {n} q{n === 1 ? '' : 's'}</span>}
                         </span>
+                        {a.due_date && !a.completed_at && (
+                          <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
+                            Due {formatDate(a.due_date)}
+                          </span>
+                        )}
+                        {a.completed_at && reportSessionId && (
+                          <span className={s.reportPill}>View report →</span>
+                        )}
+                        {a.completed_at && !reportSessionId && (
+                          <span className={s.completedTag}>Completed</span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+
+          {/* Recent practice tests */}
+          <section className={s.card}>
+            <div className={s.cardHeader}>
+              <div className={s.sectionLabel}>
+                <IconTile icon={TestIcon} palette="cyan" size="sm" />
+                Recent practice tests
+              </div>
+            </div>
+            {testRows.length === 0 ? (
+              <p className={s.empty}>No practice tests yet.</p>
+            ) : (
+              <ul className={s.testList}>
+                {testRows.map((t) => (
+                  <li key={t.id}>
+                    <Link
+                      href={t.status === 'completed'
+                        ? `/tutor/students/${student.id}/tests/${t.id}/results`
+                        : `/tutor/students/${student.id}`}
+                      className={s.testRow}
+                    >
+                      <div className={s.testRowLeft}>
+                        <div className={s.testRowName}>{t.testName}</div>
+                        <div className={s.testRowMeta}>
+                          <span className={s.mono}>{t.testCode}</span>
+                          {t.testCode && ' · '}
+                          {formatRelativeShort(t.timestamp) ?? '—'}
+                          {t.status !== 'completed' && (
+                            <span className={s.testRowTag}>
+                              {' · '}{t.status === 'in_progress' ? 'In progress' : 'Abandoned'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className={s.testRowScores}>
+                        {t.status === 'completed' && t.composite != null ? (
+                          <>
+                            <ScorePill label="Total" value={t.composite} />
+                            <ScorePill label="RW"   value={t.rwScaled} subject="RW" />
+                            <ScorePill label="Math" value={t.mathScaled} subject="MATH" />
+                          </>
+                        ) : (
+                          <span className={s.muted}>—</span>
+                        )}
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {/* Recent practice sessions */}
+          <section className={s.card}>
+            <div className={s.cardHeader}>
+              <div className={s.sectionLabel}>
+                <IconTile icon={PencilIcon} palette="gold" size="sm" />
+                Recent practice sessions
+              </div>
+            </div>
+            {sessionRowsView.length === 0 ? (
+              <p className={s.empty}>No practice sessions yet.</p>
+            ) : (
+              <ul className={s.sessionList}>
+                {sessionRowsView.map((row) => (
+                  <li key={row.id}>
+                    <Link
+                      href={row.completed
+                        ? `/tutor/sessions/${row.id}`
+                        : `/tutor/students/${student.id}`}
+                      className={s.sessionRow}
+                    >
+                      <div className={s.sessionRowLeft}>
+                        <div className={s.sessionRowDate}>
+                          {formatRelativeShort(row.createdAt) ?? '—'}
+                        </div>
+                        <div className={s.sessionRowMeta}>
+                          {row.total} question{row.total === 1 ? '' : 's'}
+                          {!row.completed && <span className={s.sessionRowTag}> · In progress</span>}
+                        </div>
+                      </div>
+                      {row.completed ? (
+                        <span className={s.reportPill}>View report →</span>
+                      ) : (
+                        <span className={s.sessionRowChevron} aria-hidden="true">→</span>
                       )}
-                    </div>
-                  </div>
-                  <div className={s.testRowScores}>
-                    {t.status === 'completed' && t.composite != null ? (
-                      <>
-                        <ScorePill label="Total" value={t.composite} />
-                        <ScorePill label="RW"   value={t.rwScaled} subject="RW" />
-                        <ScorePill label="Math" value={t.mathScaled} subject="MATH" />
-                      </>
-                    ) : (
-                      <span className={s.muted}>—</span>
-                    )}
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* ---------- Recent practice sessions ---------- */}
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>
-            <IconTile icon={PencilIcon} palette="gold" size="sm" />
-            Recent practice sessions
-          </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
-        {sessionRowsView.length === 0 ? (
-          <p className={s.empty}>No practice sessions yet.</p>
-        ) : (
-          <ul className={s.sessionList}>
-            {sessionRowsView.map((row) => (
-              <li key={row.id}>
-                <Link
-                  href={row.completed
-                    ? `/tutor/sessions/${row.id}`
-                    : `/tutor/students/${student.id}`}
-                  className={s.sessionRow}
-                >
-                  <div className={s.sessionRowLeft}>
-                    <div className={s.sessionRowDate}>
-                      {formatRelativeShort(row.createdAt) ?? '—'}
-                    </div>
-                    <div className={s.sessionRowMeta}>
-                      {row.total} question{row.total === 1 ? '' : 's'}
-                      {!row.completed && <span className={s.sessionRowTag}> · In progress</span>}
-                    </div>
-                  </div>
-                  {row.completed ? (
-                    <span className={s.reportPill}>View report →</span>
-                  ) : (
-                    <span className={s.sessionRowChevron} aria-hidden="true">→</span>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
 
-      {/* ---------- Practice history v2 import ---------- */}
-      <section className={s.card}>
+        <aside className={s.colSide}>
+          {/* Score progress chart — compact glance only renders when
+              we have at least one official score on file. The
+              target value sits in the section header so the chart
+              body doesn't reserve right margin for the label. */}
+          {(officialScores ?? []).length > 0 && (
+            <section className={s.card}>
+              <div className={s.cardHeader}>
+                <div className={s.sectionLabel}>Progress</div>
+                {student.targetScore != null && (
+                  <span className={s.cardHeaderHint}>
+                    Target <strong>{student.targetScore}</strong>
+                  </span>
+                )}
+              </div>
+              <ScoreProgressChart
+                scores={officialScores ?? []}
+                targetScore={student.targetScore}
+              />
+            </section>
+          )}
+
+          {/* Test registrations */}
+          <TestRegistrationsCard
+            studentId={student.id}
+            registrations={(registrations ?? []).map((r) => ({
+              id: r.id as string,
+              test_date: r.test_date as string,
+            }))}
+          />
+
+          {/* Official scores */}
+          <OfficialScoresCard
+            studentId={student.id}
+            scores={(officialScores ?? []) as unknown as Array<{
+              id: string; test_date: string; rw_score: number; math_score: number;
+              composite_score: number; test_type: string | null;
+              domain_ini: number | null; domain_cas: number | null;
+              domain_eoi: number | null; domain_sec: number | null;
+              domain_alg: number | null; domain_atm: number | null;
+              domain_pam: number | null; domain_geo: number | null;
+            }>}
+          />
+
+          {/* Upload Bluebook (just the action trigger) */}
+          <UploadBluebookCard studentId={student.id} />
+        </aside>
+      </div>
+
+      {/* ---------- Practice history v2 import — bottom strip,
+                    rarely needed once the cutover has run.       */}
+      <section className={`${s.card} ${s.footerCard}`}>
         <div className={s.cardHeader}>
           <div className={s.sectionLabel}>
             <IconTile icon={ClipboardCheckIcon} palette="slate" size="sm" />

@@ -1095,12 +1095,14 @@
   gap: var(--s4);
 }
 
+/* Two-row stack: question number + meta on top (allowed to wrap),
+   tool buttons on the second row right-aligned. Long
+   domain/skill descriptions no longer push the buttons to
+   different wrap points per question. */
 .questionHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: var(--s3);
+  flex-direction: column;
+  gap: var(--s2);
   padding-bottom: var(--s3);
   border-bottom: 1px solid var(--border);
 }
@@ -1110,13 +1112,13 @@
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-  flex: 1;
 }
 
 .questionNum {
-  font-size: 15px;
+  font-family: var(--font-serif);
+  font-size: 18px;
   font-weight: 700;
-  color: var(--fg1);
+  color: var(--color-navy-900, var(--fg1));
 }
 
 .questionCode {
@@ -1134,10 +1136,11 @@
 }
 
 .questionHeaderRight {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: var(--s2);
-  flex-wrap: wrap;
 }
 
 .revealBtn {

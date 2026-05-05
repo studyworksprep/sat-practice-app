@@ -25,13 +25,16 @@ import { requireRole, requireServiceRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import type { ActionResult } from '@/lib/types';
 
+// sat_test_date is intentionally NOT in this allowlist. The
+// canonical home for test dates is sat_test_registrations on
+// the student detail page, which supports past + future entries;
+// a single-value column on profiles couldn't model that.
 const ALLOWED_FIELDS = [
   'first_name',
   'last_name',
   'high_school',
   'graduation_year',
   'target_sat_score',
-  'sat_test_date',
   'start_date',
   'is_active',
 ] as const;

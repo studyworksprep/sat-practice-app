@@ -45,6 +45,7 @@ interface SectionPerformance {
     section: 'math' | 'rw';
     correct: number;
     total: number;
+    mastery: number | null;
   }>;
   correct: number;
   total: number;
@@ -60,6 +61,13 @@ interface RpcRow {
     domain_name: string;
     correct: number | string;
     total: number | string;
+    // Mastery comes from the RPC (migration
+    // 20260505000000_dashboard_stats_with_mastery): difficulty- +
+    // band-weighted accuracy × volume curve × recency bonus,
+    // capped at 100. Null is possible if the database is older
+    // than the migration; tolerate that until the migration has
+    // run everywhere.
+    mastery?: number | string | null;
   }> | null;
 }
 
@@ -100,6 +108,7 @@ export async function loadDashboardAggregate(userId: string): Promise<DashboardA
       section: domainSection(d.domain_code) as 'math' | 'rw',
       correct: Number(d.correct ?? 0),
       total:   Number(d.total   ?? 0),
+      mastery: d.mastery == null ? null : Number(d.mastery),
     }))
     .sort((a, b) => b.total - a.total);
 

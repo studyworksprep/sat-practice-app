@@ -34,7 +34,9 @@ import { FlashcardsButton } from './FlashcardsButton';
 import { QuestionNotes } from './QuestionNotes';
 import { QuestionMapGrid } from './QuestionMapGrid';
 import { ReviewDailyMap } from './ReviewDailyMap';
-import { DomainBreakdownCard, subjectFromDomainCode } from './DomainBreakdownCard';
+import { subjectFromDomainCode } from './DomainBreakdownCard';
+import { SkillBreakdownCard } from './SkillBreakdownCard';
+import { ReportHero } from './ReportHero';
 import { formatDuration } from './format-duration';
 import s from './AssignmentReport.module.css';
 
@@ -174,39 +176,45 @@ export function AssignmentReport({
         )}
       </header>
 
-      {/* ---------- Stat strip ---------- */}
-      <section className={s.statStrip}>
-        <Stat
-          label="Questions"
-          value={`${metrics.attempted} / ${metrics.total}`}
-          sub={
-            metrics.attempted < metrics.total
+      {/* ---------- Headline + supporting tiles ----------
+           Hero = accuracy %, the headline metric a tutor reads
+           first. Supporting tiles repeat the practice-test report's
+           visual rhythm: questions answered, correct/wrong, time. */}
+      <ReportHero
+        primary={{
+          label: 'Accuracy',
+          value: accuracyPct == null ? '—' : `${accuracyPct}%`,
+          sub: accuracyPct == null
+            ? 'No attempts yet'
+            : `${metrics.correct} of ${metrics.attempted} correct${
+                metrics.attempted < metrics.total
+                  ? ` · ${metrics.total - metrics.attempted} unanswered`
+                  : ''
+              }`,
+        }}
+        tiles={[
+          {
+            label: 'Questions',
+            value: `${metrics.attempted} / ${metrics.total}`,
+            sub: metrics.attempted < metrics.total
               ? `${metrics.total - metrics.attempted} unanswered`
-              : 'All answered'
-          }
-        />
-        <Stat
-          label="Correct"
-          value={metrics.correct}
-          sub={`${metrics.attempted - metrics.correct} wrong`}
-          tone={accuracyPct == null ? 'neutral' : accuracyTone(accuracyPct)}
-        />
-        <Stat
-          label="Accuracy"
-          value={accuracyPct == null ? '—' : `${accuracyPct}%`}
-          sub={accuracyBand(accuracyPct)}
-          tone={accuracyPct == null ? 'neutral' : accuracyTone(accuracyPct)}
-        />
-        <Stat
-          label="Time"
-          value={formatDuration(totalMs) || '—'}
-          sub={
-            measuredCount > 0
+              : 'All answered',
+          },
+          {
+            label: 'Wrong answers',
+            value: String(metrics.attempted - metrics.correct),
+            sub: accuracyBand(accuracyPct),
+            tone: accuracyPct == null ? 'neutral' : accuracyTone(accuracyPct),
+          },
+          {
+            label: 'Time',
+            value: formatDuration(totalMs) || '—',
+            sub: measuredCount > 0
               ? `Median ${formatDuration(medianMs)} per question`
-              : 'No timing recorded'
-          }
-        />
-      </section>
+              : 'No timing recorded',
+          },
+        ]}
+      />
 
       {/* ---------- Daily distribution ---------- */}
       {assignment?.dailyMap?.days?.length > 0 && (
@@ -215,10 +223,12 @@ export function AssignmentReport({
             <div className={s.cardHeadMain}>
               <h2 className={s.h2}>Daily distribution</h2>
               <p className={s.cardHint}>
-                One cell per day from the assignment&apos;s issue
-                date through today. Darker cells mean more
-                attempts that day; gaps make &quot;all in one
-                sitting&quot; vs. spaced practice obvious.
+                One bar per day from the assignment&apos;s issue
+                date through today. Bar height shows attempt
+                volume, bar color shows accuracy — green ≥80%,
+                amber 50–79%, red &lt;50%. Slate marks days with
+                no practice, so spaced effort vs. last-minute
+                cramming reads at a glance.
               </p>
             </div>
           </div>
@@ -244,14 +254,14 @@ export function AssignmentReport({
       {(rwDomains.length > 0 || mathDomains.length > 0) && (
         <section className={s.cardRow}>
           {rwDomains.length > 0 && (
-            <DomainBreakdownCard
+            <SkillBreakdownCard
               title="Reading & Writing"
               tone="rw"
               domains={rwDomains}
             />
           )}
           {mathDomains.length > 0 && (
-            <DomainBreakdownCard
+            <SkillBreakdownCard
               title="Math"
               tone="math"
               domains={mathDomains}
@@ -260,7 +270,11 @@ export function AssignmentReport({
         </section>
       )}
 
-      {/* ---------- By score band ---------- */}
+      {/* ---------- By score band ----------
+           Tile color encodes question difficulty (the score band
+           itself), not accuracy: 1–3 green (easy), 4–5 yellow
+           (medium), 6–7 red (hard), with within-group shading so
+           Band 1 vs 2 vs 3 reads as different shades of green. */}
       {metrics.byScoreBand.length > 0 && (
         <section className={s.card}>
           <div className={s.cardHead}>
@@ -273,7 +287,7 @@ export function AssignmentReport({
                 const pct =
                   d.total > 0 ? Math.round((d.correct / d.total) * 100) : null;
                 return (
-                  <div key={d.scoreBand} className={s.diffTile}>
+                  <div key={d.scoreBand} className={`${s.diffTile} sw-band-${d.scoreBand}`}>
                     <div className={s.diffLabel}>
                       Band {d.scoreBand}
                     </div>
@@ -281,7 +295,7 @@ export function AssignmentReport({
                       {d.correct} / {d.total}
                     </div>
                     {pct != null && (
-                      <div className={`${s.diffPct} ${s[`tone_${accuracyTone(pct)}`] ?? ''}`}>
+                      <div className={s.diffPct}>
                         {pct}%
                       </div>
                     )}
@@ -346,9 +360,22 @@ export function AssignmentReport({
               </span>
             </div>
             <div className={s.questionHeaderRight}>
-              {/* Calculator + Desmos saved state — only on math
-                  questions. Mirrors the practice-test report so a
-                  tutor can poke at graphs while reviewing. */}
+              {/* Desmos saved state goes first so the lightbulb is
+                  the leftmost affordance on every math-question
+                  row — distinct visual weight from the ref + calc
+                  toggles to its right. */}
+              {!selected.missing
+                && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '')
+                && (desmosCanSave || selected.desmosSavedState != null) && (
+                <DesmosSavedStateButton
+                  key={`desmos-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  initialSavedState={selected.desmosSavedState ?? null}
+                  canSave={desmosCanSave}
+                  calcRef={calcRef}
+                />
+              )}
+              {/* Reference sheet + floating calculator — math only. */}
               {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
                 <ReferenceSheetButton
                   open={refOpen}
@@ -359,17 +386,6 @@ export function AssignmentReport({
                 <FloatingCalculator
                   storageKey={`desmos:report:${sessionMeta.sessionId}`}
                   onCalcReady={(c) => { calcRef.current = c; }}
-                />
-              )}
-              {!selected.missing
-                && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '')
-                && (desmosCanSave || selected.desmosSavedState != null) && (
-                <DesmosSavedStateButton
-                  key={`desmos-${selected.questionId}`}
-                  questionId={selected.questionId}
-                  initialSavedState={selected.desmosSavedState ?? null}
-                  canSave={desmosCanSave}
-                  calcRef={calcRef}
                 />
               )}
               {questionNotesCanView && !selected.missing && (
@@ -447,20 +463,6 @@ export function AssignmentReport({
 
 // ──────────────────────────────────────────────────────────────
 
-function Stat({ label, value, sub, tone = 'neutral' }) {
-  const cls = [s.statTile, s[`statTile_${tone}`] ?? null]
-    .filter(Boolean)
-    .join(' ');
-  return (
-    <div className={cls}>
-      <div className={s.statLabel}>{label}</div>
-      <div className={s.statValue}>{value}</div>
-      {sub && <div className={s.statSub}>{sub}</div>}
-    </div>
-  );
-}
-
-
 function buildWeakSkills(metrics) {
   const out = [];
   for (const d of metrics.byDomain ?? []) {
@@ -473,9 +475,15 @@ function buildWeakSkills(metrics) {
   return out.slice(0, 6);
 }
 
+// Bucket thresholds match SkillBreakdownCard's segmented bars:
+// ≥75 good, ≥50 ok, <50 bad. Earlier this used a stricter ≥80
+// for "good" which made 75% read amber on the score-band tile
+// while the same skill read green on the bar above — visually
+// inconsistent. Aligned here so a tutor sees one signal across
+// the report.
 function accuracyTone(pct) {
   if (pct == null) return 'neutral';
-  if (pct >= 80) return 'good';
+  if (pct >= 75) return 'good';
   if (pct >= 50) return 'ok';
   return 'bad';
 }

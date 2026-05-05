@@ -213,3 +213,145 @@ export async function migrateUserToNext(_prev, formData) {
     importResult: importResult ?? null,
   });
 }
+
+// ──────────────────────────────────────────────────────────────
+// Test registrations + official scores. Mirrors the legacy
+// /api/teacher/student/[studentId]/registrations and /scores
+// routes; rewritten as Server Actions to match the new tree's
+// mutation pattern.
+// ──────────────────────────────────────────────────────────────
+
+const SAT_DOMAIN_FIELDS = [
+  'domain_ini', 'domain_cas', 'domain_eoi', 'domain_sec',
+  'domain_alg', 'domain_atm', 'domain_pam', 'domain_geo',
+];
+
+async function authorizeStudentEdit(studentId) {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return { ok: false, result: err.toActionResult() };
+    return { ok: false, result: actionFail('Unexpected error') };
+  }
+  if (!['teacher', 'manager', 'admin'].includes(ctx.profile.role)) {
+    return { ok: false, result: actionFail('Forbidden') };
+  }
+  // can_view returns true for admin and any tutor / manager who
+  // can see this student via the unified visibility model.
+  const { data: canView } = await ctx.supabase.rpc('can_view', { target: studentId });
+  if (!canView) return { ok: false, result: actionFail('Forbidden') };
+  return { ok: true, ctx };
+}
+
+export async function addTestRegistration(_prev, formData) {
+  const studentId = String(formData.get('student_id') ?? '');
+  const testDate = String(formData.get('test_date') ?? '');
+  if (!studentId) return actionFail('student_id required');
+  if (!testDate) return actionFail('Test date required');
+
+  const auth = await authorizeStudentEdit(studentId);
+  if (!auth.ok) return auth.result;
+
+  const { error, data } = await auth.ctx.supabase
+    .from('sat_test_registrations')
+    .insert({ student_id: studentId, test_date: testDate, created_by: auth.ctx.user.id })
+    .select('id, test_date, created_at')
+    .single();
+  if (error) return actionFail(error.message);
+
+  revalidatePath(`/tutor/students/${studentId}`);
+  return actionOk({ registration: data });
+}
+
+export async function removeTestRegistration(_prev, formData) {
+  const studentId = String(formData.get('student_id') ?? '');
+  const id = String(formData.get('id') ?? '');
+  if (!studentId || !id) return actionFail('student_id and id required');
+
+  const auth = await authorizeStudentEdit(studentId);
+  if (!auth.ok) return auth.result;
+
+  const { error } = await auth.ctx.supabase
+    .from('sat_test_registrations')
+    .delete()
+    .eq('id', id)
+    .eq('student_id', studentId);
+  if (error) return actionFail(error.message);
+
+  revalidatePath(`/tutor/students/${studentId}`);
+  return actionOk({ id });
+}
+
+export async function addOfficialScore(_prev, formData) {
+  const studentId = String(formData.get('student_id') ?? '');
+  if (!studentId) return actionFail('student_id required');
+
+  const testDate = String(formData.get('test_date') ?? '');
+  const rwScoreStr = String(formData.get('rw_score') ?? '');
+  const mathScoreStr = String(formData.get('math_score') ?? '');
+  const testTypeRaw = String(formData.get('test_type') ?? 'SAT');
+  const testType = ['SAT', 'PSAT'].includes(testTypeRaw) ? testTypeRaw : 'SAT';
+
+  if (!testDate || !rwScoreStr || !mathScoreStr) {
+    return actionFail('test_date, rw_score, and math_score are required');
+  }
+  const rw = Number(rwScoreStr);
+  const math = Number(mathScoreStr);
+  if (!Number.isFinite(rw) || !Number.isFinite(math)) {
+    return actionFail('Scores must be numbers');
+  }
+  if (rw < 200 || rw > 800 || math < 200 || math > 800) {
+    return actionFail('Scores must be between 200 and 800');
+  }
+
+  const auth = await authorizeStudentEdit(studentId);
+  if (!auth.ok) return auth.result;
+
+  const parseDomain = (raw) => {
+    if (raw == null || raw === '') return null;
+    const n = parseInt(String(raw), 10);
+    return n >= 1 && n <= 7 ? n : null;
+  };
+  const row = {
+    student_id: studentId,
+    test_date: testDate,
+    rw_score: rw,
+    math_score: math,
+    composite_score: rw + math,
+    test_type: testType,
+    created_by: auth.ctx.user.id,
+  };
+  for (const key of SAT_DOMAIN_FIELDS) {
+    row[key] = parseDomain(formData.get(key));
+  }
+
+  const { error, data } = await auth.ctx.supabase
+    .from('sat_official_scores')
+    .insert(row)
+    .select(`id, test_date, rw_score, math_score, composite_score, created_at, test_type, ${SAT_DOMAIN_FIELDS.join(', ')}`)
+    .single();
+  if (error) return actionFail(error.message);
+
+  revalidatePath(`/tutor/students/${studentId}`);
+  return actionOk({ score: data });
+}
+
+export async function removeOfficialScore(_prev, formData) {
+  const studentId = String(formData.get('student_id') ?? '');
+  const id = String(formData.get('id') ?? '');
+  if (!studentId || !id) return actionFail('student_id and id required');
+
+  const auth = await authorizeStudentEdit(studentId);
+  if (!auth.ok) return auth.result;
+
+  const { error } = await auth.ctx.supabase
+    .from('sat_official_scores')
+    .delete()
+    .eq('id', id)
+    .eq('student_id', studentId);
+  if (error) return actionFail(error.message);
+
+  revalidatePath(`/tutor/students/${studentId}`);
+  return actionOk({ id });
+}
