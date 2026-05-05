@@ -324,3 +324,64 @@
 }
 .btnSecondary:hover { background: var(--color-slate-100); }
 .btnSecondary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ---------- Per-row action cluster ---------- */
+
+.actionRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.archiveBtn {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--fg2);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-std),
+    border-color var(--dur-fast) var(--ease-std),
+    color var(--dur-fast) var(--ease-std);
+}
+.archiveBtn:hover:not(:disabled) {
+  background: var(--color-slate-100);
+  border-color: var(--color-slate-400, var(--border-strong));
+  color: var(--fg1);
+}
+.archiveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.restoreBtn {
+  background: var(--color-app-accent-soft);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--color-app-accent);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.restoreBtn:hover:not(:disabled) { background: var(--color-app-accent); color: #fff; }
+.restoreBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---------- Archived-row tone modifiers ---------- */
+
+.impactPositive {
+  color: var(--color-success-fg, #047857);
+  font-weight: 700;
+}
+.impactNegative {
+  color: var(--color-danger-fg, #b91c1c);
+  font-weight: 700;
+}
+
+.reachHit   { color: var(--color-success-fg, #047857); font-weight: 700; }
+.reachClose { color: var(--color-app-accent, #0284c7); font-weight: 700; }
+.reachMid   { color: var(--color-amber-fg, #b45309);   font-weight: 700; }
+.reachLow   { color: var(--color-danger-fg, #b91c1c);  font-weight: 700; }

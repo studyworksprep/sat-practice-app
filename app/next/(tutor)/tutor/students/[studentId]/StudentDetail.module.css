@@ -73,6 +73,37 @@
   gap: var(--s3);
 }
 
+/* Small action row aligned with the stat tiles — currently hosts
+   the Edit target / start date trigger so a tutor can update the
+   two most-touched profile fields right next to where they're
+   displayed. */
+.statsRowAction {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--s2);
+}
+
+.editPill {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--fg2);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-std),
+    border-color var(--dur-fast) var(--ease-std),
+    color var(--dur-fast) var(--ease-std);
+}
+.editPill:hover {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
 .statCard {
   background: var(--card);
   border: 1px solid var(--border);

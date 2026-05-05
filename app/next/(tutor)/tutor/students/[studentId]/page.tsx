@@ -24,6 +24,7 @@ import {
   TestIcon,
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
+import { EditTargetStartButton } from './EditTargetStartModal';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 import { MigrateToNextButton } from './MigrateToNextButton';
 import { OfficialScoresCard } from './OfficialScoresCard';
@@ -76,7 +77,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId),
     supabase
       .from('profiles')
-      .select('practice_test_v2_imported_at')
+      .select('practice_test_v2_imported_at, created_at, start_date')
       .eq('id', studentId)
       .maybeSingle(),
     supabase
@@ -142,6 +143,15 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
   const total   = Number(row.total_attempts ?? 0);
   const correct = Number(row.correct_attempts ?? 0);
   const week    = Number(row.week_attempts ?? 0);
+  // Effective start date defaults to the signup timestamp
+  // (profiles.created_at, set by handle_new_user) when start_date
+  // hasn't been set explicitly. The Edit modal still writes to the
+  // explicit start_date column; the fallback only governs display
+  // and the archived-summary score lookups.
+  const profileForStart = profileRow as { start_date?: string | null; created_at?: string | null } | null;
+  const startDateRaw = profileForStart?.start_date ?? null;
+  const effectiveStartDate = startDateRaw ?? profileForStart?.created_at ?? null;
+
   const student = {
     id: row.user_id ?? studentId,
     name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.email || 'Unknown',
@@ -150,6 +160,8 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     highSchool: row.high_school,
     graduationYear: row.graduation_year,
     satTestDate: row.sat_test_date,
+    startDate: startDateRaw,
+    effectiveStartDate,
     totalAttempts: total,
     correctAttempts: correct,
     weekAttempts: week,
@@ -266,9 +278,18 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* ---------- Stat tiles ---------- */}
+      {/* ---------- Stat tiles ----------
+           Target + Start date sit at the front since both are
+           tutor-editable (single combined modal at the right).
+           Effective start date defaults to the signup timestamp
+           when start_date hasn't been set explicitly. */}
       <section className={s.statsRow}>
         <StatTile label="Target" value={student.targetScore ?? '—'} />
+        <StatTile
+          label="Start date"
+          value={student.effectiveStartDate ? (formatDate(student.effectiveStartDate) ?? '—') : '—'}
+          subtitle={student.startDate ? undefined : 'defaults to signup'}
+        />
         <StatTile
           label="Accuracy"
           value={student.accuracy != null ? `${student.accuracy}%` : '—'}
@@ -288,6 +309,13 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           label="Last activity"
           value={formatRelativeShort(student.lastActivityAt) ?? '—'}
         />
+        <div className={s.statsRowAction}>
+          <EditTargetStartButton
+            studentId={student.id}
+            targetScore={student.targetScore ?? null}
+            startDate={profileRow?.start_date ?? null}
+          />
+        </div>
       </section>
 
       {/* ---------- Two-column body ----------
