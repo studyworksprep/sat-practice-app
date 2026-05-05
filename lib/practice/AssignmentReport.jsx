@@ -356,9 +356,22 @@ export function AssignmentReport({
               </span>
             </div>
             <div className={s.questionHeaderRight}>
-              {/* Calculator + Desmos saved state — only on math
-                  questions. Mirrors the practice-test report so a
-                  tutor can poke at graphs while reviewing. */}
+              {/* Desmos saved state goes first so the lightbulb is
+                  the leftmost affordance on every math-question
+                  row — distinct visual weight from the ref + calc
+                  toggles to its right. */}
+              {!selected.missing
+                && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '')
+                && (desmosCanSave || selected.desmosSavedState != null) && (
+                <DesmosSavedStateButton
+                  key={`desmos-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  initialSavedState={selected.desmosSavedState ?? null}
+                  canSave={desmosCanSave}
+                  calcRef={calcRef}
+                />
+              )}
+              {/* Reference sheet + floating calculator — math only. */}
               {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
                 <ReferenceSheetButton
                   open={refOpen}
@@ -369,17 +382,6 @@ export function AssignmentReport({
                 <FloatingCalculator
                   storageKey={`desmos:report:${sessionMeta.sessionId}`}
                   onCalcReady={(c) => { calcRef.current = c; }}
-                />
-              )}
-              {!selected.missing
-                && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '')
-                && (desmosCanSave || selected.desmosSavedState != null) && (
-                <DesmosSavedStateButton
-                  key={`desmos-${selected.questionId}`}
-                  questionId={selected.questionId}
-                  initialSavedState={selected.desmosSavedState ?? null}
-                  canSave={desmosCanSave}
-                  calcRef={calcRef}
                 />
               )}
               {questionNotesCanView && !selected.missing && (
