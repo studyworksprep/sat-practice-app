@@ -35,6 +35,7 @@ import { QuestionNotes } from './QuestionNotes';
 import { QuestionMapGrid } from './QuestionMapGrid';
 import { ReviewDailyMap } from './ReviewDailyMap';
 import { DomainBreakdownCard, subjectFromDomainCode } from './DomainBreakdownCard';
+import { ReportHero } from './ReportHero';
 import { formatDuration } from './format-duration';
 import s from './AssignmentReport.module.css';
 
@@ -174,39 +175,45 @@ export function AssignmentReport({
         )}
       </header>
 
-      {/* ---------- Stat strip ---------- */}
-      <section className={s.statStrip}>
-        <Stat
-          label="Questions"
-          value={`${metrics.attempted} / ${metrics.total}`}
-          sub={
-            metrics.attempted < metrics.total
+      {/* ---------- Headline + supporting tiles ----------
+           Hero = accuracy %, the headline metric a tutor reads
+           first. Supporting tiles repeat the practice-test report's
+           visual rhythm: questions answered, correct/wrong, time. */}
+      <ReportHero
+        primary={{
+          label: 'Accuracy',
+          value: accuracyPct == null ? '—' : `${accuracyPct}%`,
+          sub: accuracyPct == null
+            ? 'No attempts yet'
+            : `${metrics.correct} of ${metrics.attempted} correct${
+                metrics.attempted < metrics.total
+                  ? ` · ${metrics.total - metrics.attempted} unanswered`
+                  : ''
+              }`,
+        }}
+        tiles={[
+          {
+            label: 'Questions',
+            value: `${metrics.attempted} / ${metrics.total}`,
+            sub: metrics.attempted < metrics.total
               ? `${metrics.total - metrics.attempted} unanswered`
-              : 'All answered'
-          }
-        />
-        <Stat
-          label="Correct"
-          value={metrics.correct}
-          sub={`${metrics.attempted - metrics.correct} wrong`}
-          tone={accuracyPct == null ? 'neutral' : accuracyTone(accuracyPct)}
-        />
-        <Stat
-          label="Accuracy"
-          value={accuracyPct == null ? '—' : `${accuracyPct}%`}
-          sub={accuracyBand(accuracyPct)}
-          tone={accuracyPct == null ? 'neutral' : accuracyTone(accuracyPct)}
-        />
-        <Stat
-          label="Time"
-          value={formatDuration(totalMs) || '—'}
-          sub={
-            measuredCount > 0
+              : 'All answered',
+          },
+          {
+            label: 'Wrong answers',
+            value: String(metrics.attempted - metrics.correct),
+            sub: accuracyBand(accuracyPct),
+            tone: accuracyPct == null ? 'neutral' : accuracyTone(accuracyPct),
+          },
+          {
+            label: 'Time',
+            value: formatDuration(totalMs) || '—',
+            sub: measuredCount > 0
               ? `Median ${formatDuration(medianMs)} per question`
-              : 'No timing recorded'
-          }
-        />
-      </section>
+              : 'No timing recorded',
+          },
+        ]}
+      />
 
       {/* ---------- Daily distribution ---------- */}
       {assignment?.dailyMap?.days?.length > 0 && (
@@ -215,10 +222,12 @@ export function AssignmentReport({
             <div className={s.cardHeadMain}>
               <h2 className={s.h2}>Daily distribution</h2>
               <p className={s.cardHint}>
-                One cell per day from the assignment&apos;s issue
-                date through today. Darker cells mean more
-                attempts that day; gaps make &quot;all in one
-                sitting&quot; vs. spaced practice obvious.
+                One bar per day from the assignment&apos;s issue
+                date through today. Bar height shows attempt
+                volume, bar color shows accuracy — green ≥80%,
+                amber 50–79%, red &lt;50%. Slate marks days with
+                no practice, so spaced effort vs. last-minute
+                cramming reads at a glance.
               </p>
             </div>
           </div>
@@ -446,20 +455,6 @@ export function AssignmentReport({
 }
 
 // ──────────────────────────────────────────────────────────────
-
-function Stat({ label, value, sub, tone = 'neutral' }) {
-  const cls = [s.statTile, s[`statTile_${tone}`] ?? null]
-    .filter(Boolean)
-    .join(' ');
-  return (
-    <div className={cls}>
-      <div className={s.statLabel}>{label}</div>
-      <div className={s.statValue}>{value}</div>
-      {sub && <div className={s.statSub}>{sub}</div>}
-    </div>
-  );
-}
-
 
 function buildWeakSkills(metrics) {
   const out = [];
