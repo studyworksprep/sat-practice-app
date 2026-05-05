@@ -151,15 +151,29 @@ export default async function TutorDashboardPage() {
                     </div>
                   </div>
                   <div className={s.testRowScores}>
-                    {t.status === 'completed' && t.composite != null ? (
-                      <>
-                        <ScorePill label="Total" value={t.composite} />
-                        <ScorePill label="RW" value={t.rwScaled} tone="rw" />
-                        <ScorePill label="Math" value={t.mathScaled} tone="math" />
-                      </>
-                    ) : (
-                      <span className={s.muted}>—</span>
-                    )}
+                    {(() => {
+                      // Show Total + RW + Math only when both
+                      // sections have scaled scores. Single-
+                      // section tests (a student practiced only
+                      // RW or only Math) show just that section's
+                      // pill — the composite would be misleading
+                      // since "RW + 0" isn't a real total.
+                      const hasRw = t.rwScaled != null;
+                      const hasMath = t.mathScaled != null;
+                      if (t.status !== 'completed') return <span className={s.muted}>—</span>;
+                      if (hasRw && hasMath) {
+                        return (
+                          <>
+                            {t.composite != null && <ScorePill label="Total" value={t.composite} />}
+                            <ScorePill label="RW" value={t.rwScaled} tone="rw" />
+                            <ScorePill label="Math" value={t.mathScaled} tone="math" />
+                          </>
+                        );
+                      }
+                      if (hasRw)   return <ScorePill label="RW only"   value={t.rwScaled}   tone="rw" />;
+                      if (hasMath) return <ScorePill label="Math only" value={t.mathScaled} tone="math" />;
+                      return <span className={s.muted}>—</span>;
+                    })()}
                   </div>
                 </Link>
               </li>

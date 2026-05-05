@@ -92,6 +92,11 @@ export async function loadTutorDashboard(_tutorId: string): Promise<TutorDashboa
     ? rawStudents.map((r) => r.user_id)
     : ['00000000-0000-0000-0000-000000000000'];
 
+  // Recent test attempts the tutor cares about: completed +
+  // abandoned (a tutor can still want to see "X started a test
+  // and abandoned it"). In-progress sessions are excluded — those
+  // belong on the student's own dashboard, not in the tutor's
+  // recent-results panel.
   const { data: recentTestAttempts } = await supabase
     .from('practice_test_attempts_v2')
     .select(`
@@ -100,6 +105,7 @@ export async function loadTutorDashboard(_tutorId: string): Promise<TutorDashboa
       practice_test:practice_tests_v2!inner(name, code)
     `)
     .in('user_id', rosterIds)
+    .neq('status', 'in_progress')
     .order('started_at', { ascending: false })
     .limit(RECENT_TEST_LIMIT);
 
