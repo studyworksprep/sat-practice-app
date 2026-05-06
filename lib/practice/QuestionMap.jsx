@@ -24,6 +24,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitPracticeSession } from './session-actions';
+import { domainSection } from '@/lib/ui/question-layout';
 import s from './QuestionMap.module.css';
 
 /**
@@ -202,12 +203,18 @@ function Cell({ item, isCurrent, href, onClick }) {
     statusClass,
     isCurrent ? s.cellCurrent : null,
   ].filter(Boolean).join(' ');
+  // Subject (RW / Math) tints unanswered cells via [data-subject];
+  // current + correct + incorrect override it visually but the
+  // attribute stays on the element so a hover or focus ring can
+  // still pick up the subject color if needed.
+  const subject = item.domainCode ? domainSection(item.domainCode) : null;
   return (
     <a
       role="listitem"
       href={href}
       onClick={onClick}
       className={cellClass}
+      data-subject={subject ?? undefined}
       aria-current={isCurrent ? 'step' : undefined}
       aria-label={item.marked
         ? `Question ${item.position + 1}, marked for review`

@@ -181,6 +181,17 @@
 .cellUnanswered {
   background: var(--bg-white);
 }
+/* Subject hint on unanswered cells — a 2px subject-colored
+   bottom edge quietly turns the strip into a session map
+   (which positions are RW, which are Math) without painting
+   the whole cell. Skipped on answered / current / removed
+   cells where status takes over. */
+.cellUnanswered[data-subject="rw"] {
+  box-shadow: inset 0 -2px 0 var(--color-subject-rw);
+}
+.cellUnanswered[data-subject="math"] {
+  box-shadow: inset 0 -2px 0 var(--color-subject-math);
+}
 
 .cellCorrect {
   background: var(--color-success-bg);

@@ -208,8 +208,13 @@
 
 .optionSelected {
   border-color: var(--color-app-accent);
-  background: var(--color-app-accent-soft);
-  box-shadow: var(--shadow-ring-accent);
+  /* Slightly stronger fill (~0.06 alpha) so the chosen option
+     reads as picked, not just outlined. Pairs with a navy-900
+     left edge accent on the option to anchor the eye to the
+     selection without inventing a new color. */
+  background: rgba(16, 42, 67, 0.06);
+  box-shadow: inset 2px 0 0 var(--color-navy-900),
+              var(--shadow-ring-accent);
 }
 
 .optionCorrect {
@@ -232,7 +237,7 @@
   border-color: var(--border-strong);
 }
 .optionSelected.optionDisabled:hover {
-  background: var(--color-app-accent-soft);
+  background: rgba(16, 42, 67, 0.06);
   border-color: var(--color-app-accent);
 }
 .optionCorrect.optionDisabled:hover {

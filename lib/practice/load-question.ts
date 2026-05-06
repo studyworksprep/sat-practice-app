@@ -47,6 +47,10 @@ export interface MapItem {
   position: number;
   status: MapItemStatus;
   marked?: boolean;
+  /** Domain code for the underlying questions_v2 row. Used by the
+   *  navigator strip to tint cells by subject so the strip reads as
+   *  a session map (RW orange / Math blue). Null on removed rows. */
+  domainCode?: string | null;
 }
 
 export interface QuestionOption {
@@ -287,7 +291,7 @@ export async function loadQuestion(
       .order('created_at', { ascending: false }),
     supabase
       .from('questions_v2')
-      .select('id, is_published, deleted_at')
+      .select('id, is_published, deleted_at, domain_code')
       .in('id', questionIds),
   ]);
 
@@ -466,7 +470,12 @@ function buildMapItems({
   markedSet,
 }: {
   questionIds: string[];
-  publishedRows: { id: string; is_published: boolean; deleted_at: string | null }[];
+  publishedRows: {
+    id: string;
+    is_published: boolean;
+    deleted_at: string | null;
+    domain_code: string | null;
+  }[];
   attempts: { question_id: string; is_correct: boolean; created_at: string }[];
   markedSet?: Set<number>;
 }): MapItem[] {
@@ -479,13 +488,19 @@ function buildMapItems({
     const marked = markedSet?.has(i) ?? false;
     const pub = publishedById.get(qid);
     const isRemoved = !pub || pub.deleted_at || !pub.is_published;
-    if (isRemoved) return { position: i, status: 'removed' as const, marked };
+    if (isRemoved) {
+      return { position: i, status: 'removed' as const, marked, domainCode: null };
+    }
+    const domainCode = pub?.domain_code ?? null;
     const att = latestByQid.get(qid);
-    if (!att) return { position: i, status: 'unanswered' as const, marked };
+    if (!att) {
+      return { position: i, status: 'unanswered' as const, marked, domainCode };
+    }
     return {
       position: i,
       status: att.is_correct ? ('correct' as const) : ('incorrect' as const),
       marked,
+      domainCode,
     };
   });
 }
