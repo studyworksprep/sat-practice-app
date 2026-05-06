@@ -66,6 +66,14 @@ export function StudentQuestionNotes({
 }: Props) {
   const [note, setNote] = useState<InitialStudentNote | null>(initialNote);
   const [open, setOpen] = useState(false);
+  // Once the student has opened the popover at least once, we keep
+  // it mounted and toggle visibility via CSS instead of unmounting.
+  // That way the embedded NoteEditor's TipTap instance — and any
+  // unsaved typing inside it — survives a click-outside / Escape /
+  // close-button dismissal. The whole component is keyed on
+  // questionId by the runner, so a question change still drops the
+  // mounted editor and seeds a fresh one.
+  const [hasOpened, setHasOpened] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -203,20 +211,31 @@ export function StudentQuestionNotes({
         hasContent={hasNote}
         onClick={(e) => {
           e.stopPropagation();
-          setOpen((v) => !v);
+          setOpen((v) => {
+            const next = !v;
+            if (next) setHasOpened(true);
+            return next;
+          });
         }}
         title={hasNote ? 'View your note' : 'Add a private note'}
         aria-label="My private note for this question"
       />
 
-      {open && (
+      {hasOpened && (
         <div
           ref={panelRef}
           className={s.panel}
-          style={{ width: 480, maxHeight: 560 }}
+          style={{
+            width: 480,
+            maxHeight: 560,
+            // Hide via display rather than unmount so the embedded
+            // editor's in-progress text survives click-outside.
+            display: open ? undefined : 'none',
+          }}
           onClick={(e) => e.stopPropagation()}
           role="dialog"
           aria-label="My note for this question"
+          aria-hidden={!open}
         >
           <div className={s.header}>
             <span className={s.title}>Notes</span>
@@ -230,18 +249,16 @@ export function StudentQuestionNotes({
             </button>
           </div>
 
-          <div style={{ padding: 0, overflow: 'auto', flex: 1 }}>
-            <NoteEditor
-              initialDoc={note?.bodyJson ?? null}
-              initialTitle={note?.title ?? null}
-              initialTaxonomy={initialTaxonomy}
-              editable
-              saving={pending}
-              onSave={handleSave}
-              saveLabel={hasNote ? 'Save changes' : 'Save note'}
-              placeholder="Write a private note about this question…"
-            />
-          </div>
+          <NoteEditor
+            initialDoc={note?.bodyJson ?? null}
+            initialTitle={note?.title ?? null}
+            initialTaxonomy={initialTaxonomy}
+            editable
+            saving={pending}
+            onSave={handleSave}
+            saveLabel={hasNote ? 'Save changes' : 'Save note'}
+            placeholder="Write a private note about this question…"
+          />
 
           {error && <div className={s.error}>{error}</div>}
 
