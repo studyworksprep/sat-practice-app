@@ -13,6 +13,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { createSession, countAvailable } from './actions';
+import { searchQuestions } from '@/lib/practice/question-search-actions';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
 import { domainSection } from '@/lib/ui/question-layout';
 import { fetchAll } from '@/lib/supabase/fetchAll';
@@ -141,6 +142,7 @@ export default async function PracticeStartPage() {
       resumeTest={resumeTest}
       createSessionAction={createSession}
       countAvailableAction={countAvailable}
+      searchQuestionsAction={searchQuestions}
       basePath="/practice"
     />
   );

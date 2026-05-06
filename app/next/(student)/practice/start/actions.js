@@ -87,6 +87,42 @@ export async function createSession(_prev, formData) {
   const rl = await rateLimit(`practice-start:${user.id}`, { limit: 20, windowMs: 60_000 });
   if (!rl.ok) return actionFail('Too many session starts. Please wait and try again.');
 
+  // Quick-find from the search bar: if the form carries an
+  // explicit_question_id, build a one-question session out of it
+  // and skip the filter pipeline entirely. The id is validated
+  // against questions_v2 so a poisoned form can't slip a
+  // non-existent / unpublished id into the session.
+  const explicitId = String(formData.get('explicit_question_id') ?? '').trim();
+  if (explicitId) {
+    const { data: q, error: qErr } = await supabase
+      .from('questions_v2')
+      .select('id')
+      .eq('id', explicitId)
+      .eq('is_published', true)
+      .eq('is_broken', false)
+      .is('deleted_at', null)
+      .maybeSingle();
+    if (qErr) return actionFail(`Failed to load question: ${qErr.message}`);
+    if (!q) return actionFail('Question not found.');
+
+    const { data: oneSession, error: oneErr } = await supabase
+      .from('practice_sessions')
+      .insert({
+        user_id: user.id,
+        test_type: 'sat',
+        mode: 'practice',
+        question_ids: [q.id],
+        current_position: 0,
+        filter_criteria: { explicit: true, actual_size: 1 },
+      })
+      .select('id')
+      .single();
+    if (oneErr || !oneSession) {
+      return actionFail(`Failed to create session: ${oneErr?.message ?? 'unknown'}`);
+    }
+    redirect(`/practice/s/${oneSession.id}/0`);
+  }
+
   const filters = parseFilters(formData);
 
   const candidateIds = await loadCandidateIds(supabase, filters);

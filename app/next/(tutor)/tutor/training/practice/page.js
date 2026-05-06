@@ -12,6 +12,7 @@ import { requireUser } from '@/lib/api/auth';
 import { domainSection } from '@/lib/ui/question-layout';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import { StartInteractive } from '@/lib/practice/StartInteractive';
+import { searchQuestions } from '@/lib/practice/question-search-actions';
 import { countAvailable, createTrainingSession } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -109,6 +110,7 @@ export default async function TutorTrainingPracticePage() {
       resumeInfo={resumeInfo}
       createSessionAction={createTrainingSession}
       countAvailableAction={countAvailable}
+      searchQuestionsAction={searchQuestions}
       basePath="/tutor/training/practice"
       historyHref="/tutor/training/practice/history"
     />
