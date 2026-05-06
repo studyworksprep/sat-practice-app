@@ -51,6 +51,41 @@ export async function createTrainingSession(_prev, formData) {
     return actionFail('Too many session starts. Please wait a moment and try again.');
   }
 
+  // Quick-find from the search bar: build a one-question
+  // training session from the explicit id, skipping the filter
+  // pipeline. Validated against questions_v2 so a forged form
+  // can't seed a session with junk.
+  const explicitId = String(formData.get('explicit_question_id') ?? '').trim();
+  if (explicitId) {
+    const { data: q, error: qErr } = await supabase
+      .from('questions_v2')
+      .select('id')
+      .eq('id', explicitId)
+      .eq('is_published', true)
+      .eq('is_broken', false)
+      .is('deleted_at', null)
+      .maybeSingle();
+    if (qErr) return actionFail(`Failed to load question: ${qErr.message}`);
+    if (!q) return actionFail('Question not found.');
+
+    const { data: oneSession, error: oneErr } = await supabase
+      .from('practice_sessions')
+      .insert({
+        user_id: user.id,
+        test_type: 'sat',
+        mode: 'training',
+        question_ids: [q.id],
+        current_position: 0,
+        filter_criteria: { explicit: true, actual_size: 1 },
+      })
+      .select('id')
+      .single();
+    if (oneErr || !oneSession) {
+      return actionFail(`Failed to create session: ${oneErr?.message ?? 'unknown'}`);
+    }
+    redirect(`/tutor/training/practice/s/${oneSession.id}/0`);
+  }
+
   const filters = parseFilters(formData);
 
   const candidateIds = await loadCandidateIds(supabase, filters);

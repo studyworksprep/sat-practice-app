@@ -225,6 +225,46 @@ function revalidateNotes() {
   revalidatePath('/practice', 'layout');
 }
 
+/** Resolve a question id passed in from the client to its
+ *  questions_v2 row id. Pre-cutover content can carry v1 ids
+ *  forward (from attempts, from old session payloads, from a
+ *  student deep-linking an old report) — those need to be walked
+ *  through question_id_map before they can be written to
+ *  student_notes.question_id, which carries an FK on
+ *  questions_v2(id). Without this step, students see a confusing
+ *  "foreign key violation" error on save when the question they're
+ *  noting still references a v1 uuid.
+ *
+ *  If the id is already a v2 id, question_id_map has no row for
+ *  it and we return the input unchanged. If neither path matches
+ *  (deleted question, bad input), we return null and the caller
+ *  drops the question_id link rather than reject the save —
+ *  losing the question link is a softer failure than losing the
+ *  whole note.
+ */
+async function resolveQuestionV2Id(
+  supabase: SupabaseClient,
+  qid: string | null | undefined,
+): Promise<string | null> {
+  if (!qid) return null;
+  const { data: mapped } = await supabase
+    .from('question_id_map')
+    .select('new_question_id')
+    .eq('old_question_id', qid)
+    .maybeSingle();
+  if (mapped?.new_question_id) return mapped.new_question_id as string;
+  // Not in the map → either it's already a v2 id (the common case)
+  // or it points to a row that doesn't exist anywhere. Confirm it
+  // resolves on questions_v2 before returning, so the caller can
+  // null out the link instead of triggering a FK violation.
+  const { data: v2 } = await supabase
+    .from('questions_v2')
+    .select('id')
+    .eq('id', qid)
+    .maybeSingle();
+  return v2?.id ? (v2.id as string) : null;
+}
+
 /** Create a new note. Returns the freshly persisted row. */
 export async function createNote(
   input: CreateInput,
@@ -238,14 +278,20 @@ export async function createNote(
   if ('error' in ctx) return actionFail(ctx.error);
   const { user, supabase } = ctx as { user: { id: string }; supabase: SupabaseClient };
 
-  const seed = input.questionId
-    ? await taxonomyForQuestion(supabase, input.questionId)
+  // Resolve any v1 question id forward to its v2 counterpart
+  // before write — student_notes.question_id carries an FK on
+  // questions_v2(id), so passing a v1 id straight through fails
+  // the constraint.
+  const resolvedQid = await resolveQuestionV2Id(supabase, input.questionId);
+
+  const seed = resolvedQid
+    ? await taxonomyForQuestion(supabase, resolvedQid)
     : null;
   const tax = resolveTaxonomy(input, null, seed);
 
   const payload = {
     user_id: user.id,
-    question_id: input.questionId ?? null,
+    question_id: resolvedQid,
     title: input.title?.trim() || null,
     body_json: doc,
     body_text: input.bodyText,
@@ -297,8 +343,13 @@ export async function updateNote(
         skillName:   existing.skill_name,
       }
     : null;
-  const seed = input.questionId
-    ? await taxonomyForQuestion(supabase, input.questionId)
+  // Same v1→v2 translation as createNote — students editing a
+  // note tied to a pre-cutover question would otherwise hit an FK
+  // violation on the questions_v2 reference.
+  const resolvedQid = await resolveQuestionV2Id(supabase, input.questionId);
+
+  const seed = resolvedQid
+    ? await taxonomyForQuestion(supabase, resolvedQid)
     : null;
   const tax = resolveTaxonomy(input, existingTax, seed);
 
@@ -307,7 +358,7 @@ export async function updateNote(
     body_json: doc,
     body_text: input.bodyText,
     tags: sanitizeTags(input.tags),
-    question_id: input.questionId ?? null,
+    question_id: resolvedQid,
     ...taxonomyToColumns(tax),
   };
 
@@ -365,13 +416,22 @@ export async function upsertNoteForQuestion(
   if ('error' in ctx) return actionFail(ctx.error);
   const { user, supabase } = ctx as { user: { id: string }; supabase: SupabaseClient };
 
+  // Walk a v1 question id forward to its v2 counterpart before
+  // touching student_notes — the table's FK is on questions_v2(id).
+  // Also use the resolved id for the existing-note lookup so the
+  // upsert finds a row written under the v2 id.
+  const resolvedQid = await resolveQuestionV2Id(supabase, input.questionId);
+  if (!resolvedQid) {
+    return actionFail('That question is no longer in the bank, so a per-question note can\'t be saved against it.');
+  }
+
   const { data: existing } = await supabase
     .from('student_notes')
     .select(
       'id, subject_code, domain_code, domain_name, skill_code, skill_name',
     )
     .eq('user_id', user.id)
-    .eq('question_id', input.questionId)
+    .eq('question_id', resolvedQid)
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -403,7 +463,7 @@ export async function upsertNoteForQuestion(
   // subsequent saves the existing row's stickiness wins per Option A.
   const seed = existing
     ? null
-    : await taxonomyForQuestion(supabase, input.questionId);
+    : await taxonomyForQuestion(supabase, resolvedQid);
   const tax = resolveTaxonomy(input, existingTax, seed);
 
   if (existing) {
@@ -430,7 +490,7 @@ export async function upsertNoteForQuestion(
     .from('student_notes')
     .insert({
       user_id: user.id,
-      question_id: input.questionId,
+      question_id: resolvedQid,
       title: input.title?.trim() || null,
       body_json: doc,
       body_text: input.bodyText,

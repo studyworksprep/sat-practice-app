@@ -57,13 +57,17 @@
    under the container. Bluebook-style sizing — figures are
    informational, not the focal point.
 
-   The :not() guard excludes math SVGs (which live inside
-   <mjx-container>). Without it, MathJax-output inline math
-   glyphs inherited display:block + margin:12px auto and rendered
-   as centered blocks on their own line — every variable
-   mid-sentence broke the paragraph flow. */
-.sw-prose img,
-.sw-prose svg:not(mjx-container svg) {
+   This rule deliberately targets ONLY <img>. Earlier versions
+   also targeted bare <svg> with a :not(mjx-container svg) guard,
+   but that compound :not() failed in real render paths and the
+   figure styling kept getting applied to MathJax glyphs — every
+   inline number ended up on its own centered line. Question
+   figures in this app are rasterized <img> elements; the only
+   <svg> elements that appear in question/answer HTML come from
+   MathJax. Leaving raw <svg> unstyled here means math keeps
+   MathJax's own inline-flow defaults and we don't need a
+   counter-rule to undo over-broad styling. */
+.sw-prose img {
   display: block;
   max-width: 100%;
   max-height: 360px;
@@ -85,18 +89,37 @@
   vertical-align: baseline;
 }
 
-/* Defensive: MathJax MathML input renders <math display="block">
-   as <mjx-container display="true">. Without MathJax's CHTML
-   stylesheet loaded, the attribute alone has no layout effect —
-   but if the source bank ever gains genuinely-display-style
-   formulas, this keeps them flowing inline alongside surrounding
-   text rather than gaining a centered-block treatment from some
-   future stylesheet. The original mid-sentence-variable bug it
-   was trying to fix turned out to be the figure-SVG rule above
-   capturing math SVGs; that's solved at the source now. */
+/* Force display-mode math to flow inline alongside surrounding
+   text. Catches three failure modes that all collapse a
+   mid-sentence number (`81`, `7%`, etc.) onto its own centered
+   line:
+
+   1. MathJax SVG/CHTML output: <mjx-container display="true">.
+      Default mjx-container[display="true"] in MathJax stylesheets
+      is `display: block; text-align: center; margin: 1em 0`.
+
+   2. Native MathML rendering (Chrome 109+, Firefox): a raw
+      <math display="block"> element behaves as a block-level
+      box with center alignment.
+
+   3. The new tree's pre-rendered content sometimes lands an
+      mjx-container outside .sw-prose / .sw-option-content (e.g.
+      inside the practice-test runner's stem during a sub-render
+      pass). The unscoped match below keeps the fix working
+      everywhere question content can land.
+
+   The override sets text-align:initial so the math container
+   doesn't push the surrounding centered block flow. Margin
+   collapses to 0 0.15em so consecutive inline math expressions
+   don't run into each other. */
 .sw-prose mjx-container[display="true"],
-.sw-option-content mjx-container[display="true"] {
+.sw-prose math[display="block"],
+.sw-option-content mjx-container[display="true"],
+.sw-option-content math[display="block"],
+mjx-container[display="true"],
+math[display="block"] {
   display: inline-block;
   margin: 0 0.15em;
   text-align: initial;
+  vertical-align: baseline;
 }

@@ -77,7 +77,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId),
     supabase
       .from('profiles')
-      .select('practice_test_v2_imported_at, created_at, start_date')
+      .select('practice_test_v2_imported_at, created_at, start_date, ui_version')
       .eq('id', studentId)
       .maybeSingle(),
     supabase
@@ -539,7 +539,10 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         />
         {(profile.role === 'admin' || profile.role === 'manager') && (
           <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--border)' }}>
-            <MigrateToNextButton studentId={student.id} currentUiVersion={null} />
+            <MigrateToNextButton
+              studentId={student.id}
+              currentUiVersion={(profileRow as { ui_version?: string | null } | null)?.ui_version ?? null}
+            />
           </div>
         )}
       </section>
