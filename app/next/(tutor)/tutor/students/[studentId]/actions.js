@@ -177,28 +177,25 @@ export async function migrateUserToNext(_prev, formData) {
     if (r?.ok && r.changed) recomputed += 1;
   }
 
-  // 3. Flip the auth flag. The Supabase admin client is the only
-  //    code path that can write app_metadata (user_metadata is
-  //    user-writable; app_metadata is admin-only by design, which
-  //    is what we want — students can't self-migrate).
+  // 3. Flip the canonical flag on profiles.ui_version. A
+  //    database trigger (sync_role_to_auth_metadata, migration
+  //    20240101000002) mirrors any profiles.ui_version change
+  //    into auth.users.raw_app_meta_data so the JWT picks it up
+  //    on next token refresh — that's how the proxy (which reads
+  //    JWT app_metadata, zero DB hops) sees the flip.
   //
-  //    updateUserById replaces app_metadata wholesale rather than
-  //    merging key-by-key, so read it first and write the union.
-  //    Otherwise unrelated app_metadata fields (e.g. provider
-  //    info) would silently disappear.
-  const { data: existingUser, error: readErr } =
-    await svcCtx.service.auth.admin.getUserById(studentId);
-  if (readErr || !existingUser?.user) {
-    return actionFail(`Could not read user: ${readErr?.message ?? 'not found'}`);
-  }
-  const mergedAppMeta = {
-    ...(existingUser.user.app_metadata ?? {}),
-    ui_version: 'next',
-  };
-  const { error: flipErr } = await svcCtx.service.auth.admin.updateUserById(
-    studentId,
-    { app_metadata: mergedAppMeta },
-  );
+  //    Earlier versions of this action wrote app_metadata directly
+  //    via auth.admin.updateUserById. That bypassed the trigger
+  //    and left profiles.ui_version stuck at 'legacy', so the
+  //    admin User Management page — which reads from profiles —
+  //    kept reporting migrated students as legacy. Migration
+  //    20260505_backfill_profiles_ui_version_from_auth fixed the
+  //    historical drift; routing the write through profiles keeps
+  //    them in sync going forward.
+  const { error: flipErr } = await svcCtx.service
+    .from('profiles')
+    .update({ ui_version: 'next' })
+    .eq('id', studentId);
   if (flipErr) {
     return actionFail(`Could not set ui_version: ${flipErr.message}`);
   }
