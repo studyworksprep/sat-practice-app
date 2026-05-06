@@ -22,6 +22,7 @@ export const dynamic = 'force-dynamic';
 export default async function AdminLessonsPage({ searchParams }) {
   const sp = (await searchParams) ?? {};
   const imported = typeof sp.imported === 'string' ? sp.imported : '';
+  const deleted = sp.deleted === '1';
 
   const { profile, supabase } = await requireUser();
 
@@ -71,8 +72,8 @@ export default async function AdminLessonsPage({ searchParams }) {
         <h1 className={a.h1}>Lessons</h1>
         <p className={a.sub}>
           Every lesson in the content library. Import a new lesson from a
-          LessonTemplateSpec JSON document, or open an existing lesson in
-          the legacy editor to edit its blocks.
+          LessonTemplateSpec JSON document, or open an existing lesson to
+          edit its metadata and blocks.
         </p>
       </header>
 
@@ -81,6 +82,7 @@ export default async function AdminLessonsPage({ searchParams }) {
           Imported lesson <code>{imported.slice(0, 8)}</code> created.
         </div>
       )}
+      {deleted && <div style={S.flash}>Lesson deleted.</div>}
 
       <section className={a.section}>
         <div style={S.cta}>
@@ -139,7 +141,7 @@ export default async function AdminLessonsPage({ searchParams }) {
                     {formatDate(l.updated_at) || '—'}
                   </Td>
                   <Td>
-                    <a href={`/admin/lessons/${l.id}/editor`} style={S.link}>
+                    <a href={`/admin/lessons/${l.id}`} style={S.link}>
                       Edit
                     </a>
                   </Td>
