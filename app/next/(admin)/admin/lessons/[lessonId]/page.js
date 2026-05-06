@@ -49,8 +49,11 @@ export default async function AdminLessonEditPage({ params }) {
 
   return (
     <main className={a.container}>
-      <nav className={a.breadcrumb}>
+      <nav className={a.breadcrumb} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
         <a href="/admin/lessons">← Lessons</a>
+        <a href={`/admin/lessons/${lesson.id}/preview`} className={a.link}>
+          Preview ↗
+        </a>
       </nav>
 
       <header className={a.header}>
