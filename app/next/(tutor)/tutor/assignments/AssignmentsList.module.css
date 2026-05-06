@@ -215,6 +215,12 @@
   align-items: center;
   gap: var(--s3);
   flex-wrap: wrap;
+  /* Reserve room for the absolutely-positioned ArchiveButton in
+     the top-right corner — without this, the due-date / student-
+     name pill on the right side of the row slides under the
+     button. ~96px covers the widest label ("Restore") plus its
+     padding plus the right offset, with a small breathing gap. */
+  padding-right: 96px;
 }
 
 .assignTop > .assignTitle { flex: 1; min-width: 140px; }
