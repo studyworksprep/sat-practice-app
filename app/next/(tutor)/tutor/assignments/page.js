@@ -128,13 +128,15 @@ export default async function TutorAssignmentsPage({ searchParams }) {
   ]);
 
   // Attempt aggregation: for each (user, qid) pair we keep the
-  // attempts in chronological order so we can pick out the
-  // earliest one that falls inside the assignment's own session
-  // window — that's the in-session attempt, the same scoping rule
-  // the runner and per-student report use. Without this, a
-  // student who'd already answered one of these questions in some
-  // unrelated practice session would be counted as "done" before
-  // they ever opened the assignment.
+  // attempts in chronological order. When the assignment has its
+  // own practice session, we pick the earliest attempt at-or-after
+  // session.createdAt — same scoping rule the runner and per-
+  // student report use, so a student's older attempt on the same
+  // question doesn't get counted as in-assignment work. When no
+  // session exists for the (assignment, student) pair (legacy
+  // pre-cutover work, manual completion, etc.), we fall back to
+  // the earliest attempt overall — same fallback that
+  // submitAssignmentOnBehalf uses to synthesize a session.
   const attemptsAsc = (attemptsRaw ?? []).slice().reverse();
   const attemptsByPairAsc = new Map();
   for (const a of attemptsAsc) {
@@ -176,15 +178,16 @@ export default async function TutorAssignmentsPage({ searchParams }) {
       const total = Array.isArray(a.question_ids) ? a.question_ids.length : 0;
       const sessionInfo =
         sessionByAssignmentUser.get(`${a.id}::${j.student_id}`) ?? null;
-      if (a.assignment_type === 'questions' && total > 0 && sessionInfo) {
+      if (a.assignment_type === 'questions' && total > 0) {
         for (const qid of a.question_ids) {
           const arr = attemptsByPairAsc.get(`${j.student_id}::${qid}`) ?? [];
-          const inSession = arr.find(
-            (att) => att.created_at >= sessionInfo.createdAt,
-          );
-          if (inSession) {
+          if (arr.length === 0) continue;
+          const attempt = sessionInfo
+            ? arr.find((att) => att.created_at >= sessionInfo.createdAt)
+            : arr[0];
+          if (attempt) {
             done += 1;
-            if (inSession.is_correct) correct += 1;
+            if (attempt.is_correct) correct += 1;
           }
         }
       }

@@ -161,15 +161,22 @@ export default async function TutorAssignmentDetailPage({ params }) {
   const statusByQuestion = new Map();  // qid (v2) → { done, correct }
   let cohortDone = 0;
   let cohortCorrect = 0;
+  // For each student, count attempts on the assignment's questions.
+  // When a linked session exists we scope to attempts at-or-after
+  // session.created_at (so older unrelated attempts on the same
+  // question don't bleed in); without one we fall back to the
+  // earliest attempt overall, matching the synthesis fallback in
+  // submitAssignmentOnBehalf so completed-but-no-session rows still
+  // show progress instead of a misleading 0/N.
   for (const studentId of studentIds) {
     const session = latestSessionByUser.get(studentId);
-    if (!session) continue;
     for (const qid of questionIds) {
       const qKey = v2ByLegacy.get(qid) ?? qid;
       const arr = attemptsByPairAsc.get(`${studentId}::${qKey}`) ?? [];
-      const inSession = arr.find(
-        (att) => att.created_at >= session.created_at,
-      );
+      if (arr.length === 0) continue;
+      const inSession = session
+        ? arr.find((att) => att.created_at >= session.created_at)
+        : arr[0];
       if (!inSession) continue;
       const t = statusByStudent.get(studentId) ?? { done: 0, correct: 0 };
       t.done += 1;
