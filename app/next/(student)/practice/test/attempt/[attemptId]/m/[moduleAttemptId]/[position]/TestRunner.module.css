@@ -96,7 +96,15 @@
               color var(--dur-fast) var(--ease-std);
 }
 
-.timerWarn     { background: var(--color-diff-med-bg);  color: var(--color-diff-med-fg); }
+/* Warn state (≤ 2:00 remain) picks up the brand gold-soft —
+   gives the timer warmth as it counts down and surfaces the
+   gold accent that otherwise lives only on Mark-for-review.
+   Critical state (≤ 0:30) escalates to the diff-hard red. */
+.timerWarn {
+  background: var(--color-app-highlight-soft);
+  color: var(--color-gold-800);
+  border: 1px solid var(--color-gold-200);
+}
 .timerCritical { background: var(--color-diff-hard-bg); color: var(--color-diff-hard-fg); }
 
 /* ---------- Main question area ---------- */

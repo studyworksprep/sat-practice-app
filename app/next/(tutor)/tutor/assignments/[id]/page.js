@@ -112,11 +112,25 @@ export default async function TutorAssignmentDetailPage({ params }) {
   const questionMeta = new Map(
     (questionMetaRes.data ?? []).map((q) => [q.id, q]),
   );
-  // First (= most recent) session per user. Prefer a completed
-  // one if any exist; otherwise fall back to the most recent
-  // in-progress so the tutor can at least see in-flight work.
+  // Two session maps. They serve different needs:
+  //
+  //   reportSessionByUser — drives the per-row "Report" link.
+  //     Prefers a completed session if any exist, otherwise falls
+  //     back to the most recent in-progress one so the tutor can
+  //     at least click through to see in-flight work.
+  //   latestSessionByUser — drives the done / correct counts.
+  //     Always the most recent session (any status), so progress
+  //     reflects what the student is actively doing right now,
+  //     not a stale completed run from before they restarted.
+  //
+  // sessionRowsRes is ordered by created_at desc, so the first
+  // occurrence per user is the latest.
   const reportSessionByUser = new Map();
+  const latestSessionByUser = new Map();
   for (const r of sessionRowsRes.data ?? []) {
+    if (!latestSessionByUser.has(r.user_id)) {
+      latestSessionByUser.set(r.user_id, r);
+    }
     const existing = reportSessionByUser.get(r.user_id);
     if (!existing) {
       reportSessionByUser.set(r.user_id, r);
@@ -125,29 +139,49 @@ export default async function TutorAssignmentDetailPage({ params }) {
     }
   }
 
-  const statusByStudent = new Map();
-  const statusByQuestion = new Map();  // qid (v2) → { done, correct }
-  const seenPairs = new Set();
-  let cohortDone = 0;
-  let cohortCorrect = 0;
-  for (const r of attemptRows) {
-    // Normalize legacy attempt ids back to the v2 question they
-    // map to, so seenPairs / statusByQuestion are keyed
-    // consistently regardless of which era the attempt landed in.
+  // Per-(user, qid) chronological attempt list — needed so we can
+  // pick the earliest attempt that landed inside the student's
+  // own assignment session, not just the latest cross-session one.
+  // Without this scoping a student who'd answered one of these
+  // questions in some unrelated practice session would be counted
+  // as "done" before they ever opened this assignment, and the
+  // cohort accuracy stat at the top would lump those in with the
+  // genuine in-assignment attempts. attempts came back desc; flip
+  // to asc so .find returns the earliest match.
+  const attemptsAsc = attemptRows.slice().reverse();
+  const attemptsByPairAsc = new Map();
+  for (const r of attemptsAsc) {
     const qKey = v2ByLegacy.get(r.question_id) ?? r.question_id;
     const key = `${r.user_id}::${qKey}`;
-    if (seenPairs.has(key)) continue;
-    seenPairs.add(key);
-    const t = statusByStudent.get(r.user_id) ?? { done: 0, correct: 0 };
-    t.done += 1;
-    if (r.is_correct) t.correct += 1;
-    statusByStudent.set(r.user_id, t);
-    const q = statusByQuestion.get(qKey) ?? { done: 0, correct: 0 };
-    q.done += 1;
-    if (r.is_correct) q.correct += 1;
-    statusByQuestion.set(qKey, q);
-    cohortDone += 1;
-    if (r.is_correct) cohortCorrect += 1;
+    if (!attemptsByPairAsc.has(key)) attemptsByPairAsc.set(key, []);
+    attemptsByPairAsc.get(key).push(r);
+  }
+
+  const statusByStudent = new Map();
+  const statusByQuestion = new Map();  // qid (v2) → { done, correct }
+  let cohortDone = 0;
+  let cohortCorrect = 0;
+  for (const studentId of studentIds) {
+    const session = latestSessionByUser.get(studentId);
+    if (!session) continue;
+    for (const qid of questionIds) {
+      const qKey = v2ByLegacy.get(qid) ?? qid;
+      const arr = attemptsByPairAsc.get(`${studentId}::${qKey}`) ?? [];
+      const inSession = arr.find(
+        (att) => att.created_at >= session.created_at,
+      );
+      if (!inSession) continue;
+      const t = statusByStudent.get(studentId) ?? { done: 0, correct: 0 };
+      t.done += 1;
+      if (inSession.is_correct) t.correct += 1;
+      statusByStudent.set(studentId, t);
+      const q = statusByQuestion.get(qKey) ?? { done: 0, correct: 0 };
+      q.done += 1;
+      if (inSession.is_correct) q.correct += 1;
+      statusByQuestion.set(qKey, q);
+      cohortDone += 1;
+      if (inSession.is_correct) cohortCorrect += 1;
+    }
   }
 
   const students = (junctionRows ?? []).map((r) => {

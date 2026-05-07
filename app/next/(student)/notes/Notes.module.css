@@ -420,6 +420,16 @@
   border: 1px solid var(--border, #e0d8c4);
   border-radius: 10px;
   overflow: hidden;
+  /* Flex column so the editor body can absorb the leftover
+     space when the parent has a fixed height (the per-question
+     popover) — keeps the title input, taxonomy dropdowns,
+     toolbar, and Save row anchored, while the body itself
+     scrolls internally. In an unconstrained parent (the
+     standalone /notes page) the column just stacks naturally
+     and grows with content. */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .editorEmpty {
@@ -532,10 +542,18 @@
 
 .editorBox {
   padding: 18px;
-  min-height: 320px;
   font-size: 15px;
   line-height: 1.55;
   color: var(--text, #1a1a1a);
+  /* When the editor sits inside a fixed-height container
+     (popover), the body is the flex-grow slot and scrolls
+     internally so the Save row below stays visible. In an
+     unconstrained parent the body grows with content and
+     .editorContent's own min-height: 280px keeps an empty
+     note comfortable to type in. */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .editorContent {

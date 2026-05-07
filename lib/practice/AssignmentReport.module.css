@@ -262,6 +262,13 @@
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  /* Explicit foreground so the percent reads the same across
+     all seven score bands. Without this, .sw-band-{1..7} on the
+     parent .diffTile sets `color` (band-shaded green / amber /
+     red), which the percent would otherwise inherit — making
+     the same "75%" look different per tile. The band identity
+     is still carried by the tile's background + border. */
+  color: var(--fg1);
 }
 
 /* ---------- Per-question review layout ----------

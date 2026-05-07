@@ -51,6 +51,26 @@
   border: 1px solid var(--border);
   padding: 6px 10px;
 }
+
+/* Tables inside answer-choice cards get the same border + cell
+   padding vocabulary as prose-body tables (so the table reads
+   as structured rather than bare numbers floating in space),
+   but with tighter top/bottom margin since an option card has
+   less room than the stem column, and explicit th alignment +
+   weight so column headers look the same whether the content
+   was authored with <th> or with <td>. */
+.sw-option-content table {
+  border-collapse: collapse;
+  margin: 4px 0;
+}
+.sw-option-content th, .sw-option-content td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+}
+.sw-option-content th {
+  text-align: left;
+  font-weight: 600;
+}
 /* Question-content figures. Cap the height so a tall graph
    doesn't overwhelm the question card on a wide screen, keep
    the natural aspect ratio, and center if the natural width is

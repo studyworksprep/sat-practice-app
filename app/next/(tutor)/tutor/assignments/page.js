@@ -127,23 +127,34 @@ export default async function TutorAssignmentsPage({ searchParams }) {
       : Promise.resolve({ data: [] }),
   ]);
 
-  // Attempt aggregation: latest attempt per (user, question) pair
-  // wins, mirroring the runner's first-attempt-wins rule on review.
-  // attemptsRaw is ordered desc, so the first one we see is the
-  // latest.
-  const attemptByPair = new Map();
-  for (const a of attemptsRaw ?? []) {
+  // Attempt aggregation: for each (user, qid) pair we keep the
+  // attempts in chronological order so we can pick out the
+  // earliest one that falls inside the assignment's own session
+  // window — that's the in-session attempt, the same scoping rule
+  // the runner and per-student report use. Without this, a
+  // student who'd already answered one of these questions in some
+  // unrelated practice session would be counted as "done" before
+  // they ever opened the assignment.
+  const attemptsAsc = (attemptsRaw ?? []).slice().reverse();
+  const attemptsByPairAsc = new Map();
+  for (const a of attemptsAsc) {
     const key = `${a.user_id}::${a.question_id}`;
-    if (!attemptByPair.has(key)) attemptByPair.set(key, a);
+    if (!attemptsByPairAsc.has(key)) attemptsByPairAsc.set(key, []);
+    attemptsByPairAsc.get(key).push(a);
   }
 
-  // Latest session per (assignment_id, user_id) pair.
+  // Latest session per (assignment_id, user_id) pair. Tracks both
+  // the id (for the click-through link on completed tiles) and the
+  // created_at timestamp (for scoping the done/correct counts to
+  // attempts that landed inside the session window).
   const sessionByAssignmentUser = new Map();
   for (const row of sessionRows ?? []) {
     const aid = row.filter_criteria?.assignment_id;
     if (!aid) continue;
     const key = `${aid}::${row.user_id}`;
-    if (!sessionByAssignmentUser.has(key)) sessionByAssignmentUser.set(key, row.id);
+    if (!sessionByAssignmentUser.has(key)) {
+      sessionByAssignmentUser.set(key, { id: row.id, createdAt: row.created_at });
+    }
   }
 
   // Per-assignment view-model.
@@ -163,17 +174,21 @@ export default async function TutorAssignmentsPage({ searchParams }) {
       let done = 0;
       let correct = 0;
       const total = Array.isArray(a.question_ids) ? a.question_ids.length : 0;
-      if (a.assignment_type === 'questions' && total > 0) {
+      const sessionInfo =
+        sessionByAssignmentUser.get(`${a.id}::${j.student_id}`) ?? null;
+      if (a.assignment_type === 'questions' && total > 0 && sessionInfo) {
         for (const qid of a.question_ids) {
-          const att = attemptByPair.get(`${j.student_id}::${qid}`);
-          if (att) {
+          const arr = attemptsByPairAsc.get(`${j.student_id}::${qid}`) ?? [];
+          const inSession = arr.find(
+            (att) => att.created_at >= sessionInfo.createdAt,
+          );
+          if (inSession) {
             done += 1;
-            if (att.is_correct) correct += 1;
+            if (inSession.is_correct) correct += 1;
           }
         }
       }
-      const reportSessionId =
-        sessionByAssignmentUser.get(`${a.id}::${j.student_id}`) ?? null;
+      const reportSessionId = sessionInfo?.id ?? null;
 
       single = {
         studentId: j.student_id,

@@ -62,7 +62,12 @@ export default function LoginPage() {
     setForgotLoading(true);
     setLoginMsg(null);
     const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      // Land on /auth/update-password after the callback exchanges
+      // the magic-link code for a session, so the user actually gets
+      // a chance to set a new password. Without ?next, the callback
+      // falls back to /?confirmed=true (the email-confirmation
+      // landing) and the reset never completes.
+      redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
     });
     setForgotLoading(false);
     if (error) return setLoginMsg({ kind: 'danger', text: error.message });

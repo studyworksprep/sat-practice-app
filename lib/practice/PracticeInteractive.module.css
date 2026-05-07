@@ -18,6 +18,13 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  /* Tinted page wash so the white question / option / map cards
+     have something to sit on instead of floating on a plain
+     white page. The QuestionMap footer is sticky and extends
+     below the runner; tinting via .main keeps both surfaces on
+     the same wash. */
+  background: var(--bg-tint);
+  min-height: 100vh;
 }
 
 /* ---------- Nav-pending progress sliver ----------
@@ -149,10 +156,17 @@
   justify-content: center;
 }
 .progressPillCurrent {
-  font-size: 16px;
-  font-weight: 750;
+  /* Serif current-position number — Playfair 700 in navy-900,
+     same family the dashboard greeting uses. Brings a flash of
+     the marketing register into the product without inventing
+     a new family. The total stays Inter so the eye treats the
+     current number as the active slot. */
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
   color: var(--color-navy-900);
-  letter-spacing: -0.005em;
+  letter-spacing: -0.01em;
+  line-height: 1;
 }
 .progressPillDivider { color: var(--color-slate-400); font-size: 14px; }
 .progressPillTotal   { font-size: 13px; font-weight: 600; color: var(--fg3); }

@@ -47,6 +47,10 @@ export interface MapItem {
   position: number;
   status: MapItemStatus;
   marked?: boolean;
+  /** Domain code for the underlying questions_v2 row. Used by the
+   *  navigator strip to tint cells by subject so the strip reads as
+   *  a session map (RW orange / Math blue). Null on removed rows. */
+  domainCode?: string | null;
 }
 
 export interface QuestionOption {
@@ -175,7 +179,7 @@ export async function loadQuestion(
 
   let q = supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, current_position, test_type, mode, expires_at, status, marked_positions')
+    .select('id, user_id, question_ids, current_position, test_type, mode, expires_at, status, marked_positions, created_at, filter_criteria')
     .eq('id', sessionId);
   if (expectedMode) q = q.eq('mode', expectedMode);
   const { data: session, error: sessionErr } = await q.maybeSingle();
@@ -258,6 +262,41 @@ export async function loadQuestion(
       });
   }
 
+  // Assignment sessions act like a fresh attempt: historical
+  // attempts on these question ids from other sessions don't pre-
+  // seed the answer state and don't count toward this session's
+  // "answered N of M" progress. Without this, a student who'd
+  // already done one of the questions in a prior practice session
+  // would land on the question pre-filled (with feedback / Reveal
+  // unlocked) and the navigator would mark it complete before
+  // they'd touched it in this session.
+  //
+  // Regular practice (mode='practice' without an assignment_id) and
+  // training stay history-aware so the "you got this right last
+  // time" affordance keeps working there. The submit-side already
+  // uses the same created_at gate to avoid double-recording, so
+  // this just brings the load-side into agreement with it.
+  const isAssignmentSession =
+    !!session.filter_criteria
+    && typeof session.filter_criteria === 'object'
+    && !!(session.filter_criteria as Record<string, unknown>).assignment_id;
+  const sessionCreatedAt = session.created_at ?? '1970-01-01T00:00:00Z';
+
+  const lastAttemptQuery = supabase
+    .from('attempts')
+    .select('id, is_correct, selected_option_id, response_text, created_at')
+    .eq('user_id', userId)
+    .eq('question_id', questionId);
+  const sessionAttemptsQuery = supabase
+    .from('attempts')
+    .select('question_id, is_correct, created_at')
+    .eq('user_id', userId)
+    .in('question_id', questionIds);
+  if (isAssignmentSession) {
+    lastAttemptQuery.gte('created_at', sessionCreatedAt);
+    sessionAttemptsQuery.gte('created_at', sessionCreatedAt);
+  }
+
   const [
     { data: question },
     { data: lastAttempt },
@@ -271,23 +310,15 @@ export async function loadQuestion(
       )
       .eq('id', questionId)
       .maybeSingle(),
-    supabase
-      .from('attempts')
-      .select('id, is_correct, selected_option_id, response_text, created_at')
-      .eq('user_id', userId)
-      .eq('question_id', questionId)
+    lastAttemptQuery
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
-    supabase
-      .from('attempts')
-      .select('question_id, is_correct, created_at')
-      .eq('user_id', userId)
-      .in('question_id', questionIds)
+    sessionAttemptsQuery
       .order('created_at', { ascending: false }),
     supabase
       .from('questions_v2')
-      .select('id, is_published, deleted_at')
+      .select('id, is_published, deleted_at, domain_code')
       .in('id', questionIds),
   ]);
 
@@ -466,7 +497,12 @@ function buildMapItems({
   markedSet,
 }: {
   questionIds: string[];
-  publishedRows: { id: string; is_published: boolean; deleted_at: string | null }[];
+  publishedRows: {
+    id: string;
+    is_published: boolean;
+    deleted_at: string | null;
+    domain_code: string | null;
+  }[];
   attempts: { question_id: string; is_correct: boolean; created_at: string }[];
   markedSet?: Set<number>;
 }): MapItem[] {
@@ -479,13 +515,19 @@ function buildMapItems({
     const marked = markedSet?.has(i) ?? false;
     const pub = publishedById.get(qid);
     const isRemoved = !pub || pub.deleted_at || !pub.is_published;
-    if (isRemoved) return { position: i, status: 'removed' as const, marked };
+    if (isRemoved) {
+      return { position: i, status: 'removed' as const, marked, domainCode: null };
+    }
+    const domainCode = pub?.domain_code ?? null;
     const att = latestByQid.get(qid);
-    if (!att) return { position: i, status: 'unanswered' as const, marked };
+    if (!att) {
+      return { position: i, status: 'unanswered' as const, marked, domainCode };
+    }
     return {
       position: i,
       status: att.is_correct ? ('correct' as const) : ('incorrect' as const),
       marked,
+      domainCode,
     };
   });
 }
