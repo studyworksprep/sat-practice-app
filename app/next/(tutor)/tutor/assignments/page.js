@@ -99,25 +99,38 @@ export default async function TutorAssignmentsPage({ searchParams }) {
     .filter((p) => p.junc.length === 1);
 
   const allUserIds = Array.from(new Set(singleStudentRows.map((p) => p.junc[0].student_id)));
-  const allQids = Array.from(
-    new Set(singleStudentRows.flatMap((p) =>
-      Array.isArray(p.a.question_ids) ? p.a.question_ids : [],
-    )),
-  );
 
-  // Two parallel follow-ups: the attempts the relevant single
-  // students have made on the question ids in their assignments,
-  // and the latest practice_sessions row per assignment id for
-  // the click-through link on completed single-student tiles.
-  const [{ data: attemptsRaw }, { data: sessionRows }] = await Promise.all([
-    allUserIds.length > 0 && allQids.length > 0
-      ? supabase
+  // Per-student question pool — only the qids that show up on
+  // assignments this particular student is on. The cross-product
+  // (allUserIds × allQids) would balloon past PostgREST's 1000-row
+  // db-max-rows cap on a busy manager and silently truncate the
+  // attempts result, leaving most assignment tiles stuck at 0/N.
+  const qidsByUser = new Map();
+  for (const { a, junc } of singleStudentRows) {
+    const uid = junc[0].student_id;
+    const qids = Array.isArray(a.question_ids) ? a.question_ids : [];
+    if (qids.length === 0) continue;
+    const existing = qidsByUser.get(uid) ?? new Set();
+    for (const q of qids) existing.add(q);
+    qidsByUser.set(uid, existing);
+  }
+
+  // One attempts query per student, in parallel. Each stays small
+  // (a few hundred rows) so none hits the truncation cap.
+  const [perUserAttempts, { data: sessionRows }] = await Promise.all([
+    Promise.all(
+      allUserIds.map(async (uid) => {
+        const qidSet = qidsByUser.get(uid);
+        if (!qidSet || qidSet.size === 0) return [];
+        const { data } = await supabase
           .from('attempts')
           .select('user_id, question_id, is_correct, created_at')
-          .in('user_id', allUserIds)
-          .in('question_id', allQids)
-          .order('created_at', { ascending: false })
-      : Promise.resolve({ data: [] }),
+          .eq('user_id', uid)
+          .in('question_id', Array.from(qidSet))
+          .order('created_at', { ascending: false });
+        return data ?? [];
+      }),
+    ),
     assignmentIds.length > 0
       ? supabase
           .from('practice_sessions')
@@ -126,6 +139,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),
   ]);
+  const attemptsRaw = perUserAttempts.flat();
 
   // Attempt aggregation: for each (user, qid) pair we keep the
   // attempts in chronological order. When the assignment has its
