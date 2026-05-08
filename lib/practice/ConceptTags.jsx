@@ -16,7 +16,7 @@
 
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useTransition } from 'react';
 import {
   addConceptTag,
   removeConceptTagFromQuestion,
@@ -46,9 +46,14 @@ export function ConceptTags({
   const [search, setSearch] = useState('');
   const [error, setError] = useState(null);
   const [pending, startTransition] = useTransition();
+  // Fixed-position coords for the popover so it isn't clipped by an
+  // ancestor with overflow:hidden and can flip upward when the
+  // button is near the viewport bottom.
+  const [popupPos, setPopupPos] = useState(null);
 
   const inputRef = useRef(null);
   const panelRef = useRef(null);
+  const buttonRef = useRef(null);
 
   // Click-outside closes the popover. Same delayed-attach trick the
   // legacy component uses so the click that opened the popover
@@ -72,6 +77,39 @@ export function ConceptTags({
   // Focus the input the moment the popover opens.
   useEffect(() => {
     if (showInput && inputRef.current) inputRef.current.focus();
+  }, [showInput]);
+
+  // Open downward by default; flip upward when there isn't enough
+  // room below and there's more room above. Clamp left so the 280px
+  // panel never overflows the viewport horizontally.
+  useLayoutEffect(() => {
+    if (!showInput) { setPopupPos(null); return undefined; }
+    const POPUP_W = 280;
+    const POPUP_ESTIMATED_H = 220;
+    const MARGIN = 8;
+    const compute = () => {
+      const btn = buttonRef.current;
+      if (!btn) return;
+      const r = btn.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const spaceBelow = vh - r.bottom;
+      const spaceAbove = r.top;
+      const flipUp = spaceBelow < POPUP_ESTIMATED_H && spaceAbove > spaceBelow;
+      const left = Math.max(MARGIN, Math.min(r.left, vw - POPUP_W - MARGIN));
+      setPopupPos(
+        flipUp
+          ? { left, bottom: vh - r.top + 4 }
+          : { left, top: r.bottom + 4 }
+      );
+    };
+    compute();
+    window.addEventListener('resize', compute);
+    window.addEventListener('scroll', compute, true);
+    return () => {
+      window.removeEventListener('resize', compute);
+      window.removeEventListener('scroll', compute, true);
+    };
   }, [showInput]);
 
   if (!canTag) return null;
@@ -171,6 +209,7 @@ export function ConceptTags({
 
       <div className={s.adder} ref={panelRef}>
         <button
+          ref={buttonRef}
           type="button"
           className={s.addBtn}
           onClick={() => setShowInput((v) => !v)}
@@ -178,8 +217,15 @@ export function ConceptTags({
           {showInput ? 'Close' : '+ Add tag'}
         </button>
 
-        {showInput && (
-          <div className={s.popover}>
+        {showInput && popupPos && (
+          <div
+            className={s.popover}
+            style={{
+              left: popupPos.left,
+              top: popupPos.top,
+              bottom: popupPos.bottom,
+            }}
+          >
             <input
               ref={inputRef}
               type="text"
