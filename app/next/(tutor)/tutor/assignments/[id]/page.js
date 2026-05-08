@@ -162,21 +162,23 @@ export default async function TutorAssignmentDetailPage({ params }) {
   let cohortDone = 0;
   let cohortCorrect = 0;
   // For each student, count attempts on the assignment's questions.
-  // When a linked session exists we scope to attempts at-or-after
-  // session.created_at (so older unrelated attempts on the same
-  // question don't bleed in); without one we fall back to the
-  // earliest attempt overall, matching the synthesis fallback in
-  // submitAssignmentOnBehalf so completed-but-no-session rows still
-  // show progress instead of a misleading 0/N.
+  // We scope to attempts at-or-after a per-student floor:
+  //   - if a linked session exists, that session's created_at;
+  //   - otherwise, the assignment's own created_at.
+  // Earlier unrelated attempts on the same question (a student who
+  // happened to have practiced one of these questions before this
+  // assignment was created) are explicitly excluded so the
+  // assignment surface treats every question as brand-new for the
+  // student — matching the runner and the per-student report page.
+  const assignmentFloor = assignment.created_at ?? '1970-01-01T00:00:00Z';
   for (const studentId of studentIds) {
     const session = latestSessionByUser.get(studentId);
+    const floor = session?.created_at ?? assignmentFloor;
     for (const qid of questionIds) {
       const qKey = v2ByLegacy.get(qid) ?? qid;
       const arr = attemptsByPairAsc.get(`${studentId}::${qKey}`) ?? [];
       if (arr.length === 0) continue;
-      const inSession = session
-        ? arr.find((att) => att.created_at >= session.created_at)
-        : arr[0];
+      const inSession = arr.find((att) => att.created_at >= floor);
       if (!inSession) continue;
       const t = statusByStudent.get(studentId) ?? { done: 0, correct: 0 };
       t.done += 1;
