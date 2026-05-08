@@ -36,12 +36,23 @@
   color: var(--color-slate-700);
 }
 
-/* Column variant — no own border; the twoCol card is the frame. */
+/* Column variant — no own border; the twoCol card is the frame.
+   overflow-x: auto contains oversized stimulus content (mainly
+   wide data tables — RW-00194 has a 4-column corn-vocabulary
+   table that's wider than the pane) inside its own grid track.
+   Without it the table ignores the column boundary and visually
+   leaks into the answer-choices column, since .twoCol's
+   overflow: hidden clips at the card's outer edge, not at the
+   track. Normal prose wraps via sw-prose's overflow-wrap, so a
+   scrollbar only appears when content actually overflows —
+   nothing changes for the typical question. */
 .stimulusColumn {
   padding: 0;
   font-size: var(--prose-size);
   line-height: var(--prose-lh);
   color: var(--color-slate-700);
+  overflow-x: auto;
+  min-width: 0;
 }
 
 /* ---------- Two-column card ---------- */
