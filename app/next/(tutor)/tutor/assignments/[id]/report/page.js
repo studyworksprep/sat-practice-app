@@ -164,6 +164,16 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
 
   let cohortDone = 0;
   let cohortCorrect = 0;
+  // Cohort byDomain / byScoreBand. Same shape AssignmentReport
+  // expects from buildSessionReview, but the unit is (student,
+  // question) cells across attempters (omissions excluded so an
+  // assignment that's only partially attempted doesn't show 0%
+  // everywhere). With total = attempted cells and correct =
+  // correct cells, SkillBreakdownCard renders "X / Y · Z%" as
+  // "of the times someone attempted this skill, X correct out
+  // of Y attempts" — the most useful signal for a tutor.
+  const byScoreBand = new Map();   // band → { correct, total }
+  const byDomain = new Map();      // domain_name → { name, code, correct, total, skills }
   const items = questionIds.map((qid, position) => {
     const qKey = v2KeyForAssignmentQid(qid);
     const q = questionContentById.get(qKey);
@@ -185,6 +195,39 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
         incorrect.push({ id: stu.id, name: stu.name });
       }
       cohortDone += 1;
+
+      // Per-attempt cohort metric tallies. Only landed attempts
+      // count toward total; missing question rows still count
+      // toward `total` since q?.score_band/domain may be null
+      // (gracefully degrade to 'Unknown' / band 0).
+      const band = q?.score_band ?? 0;
+      const bandEntry = byScoreBand.get(band) ?? { correct: 0, total: 0 };
+      bandEntry.total += 1;
+      if (a.is_correct) bandEntry.correct += 1;
+      byScoreBand.set(band, bandEntry);
+
+      const domainName = q?.domain_name ?? 'Unknown';
+      let domainEntry = byDomain.get(domainName);
+      if (!domainEntry) {
+        domainEntry = {
+          name: domainName,
+          code: q?.domain_code ?? null,
+          correct: 0,
+          total: 0,
+          skills: new Map(),
+        };
+        byDomain.set(domainName, domainEntry);
+      }
+      domainEntry.total += 1;
+      if (a.is_correct) domainEntry.correct += 1;
+
+      const skillName = q?.skill_name;
+      if (skillName) {
+        const skillEntry = domainEntry.skills.get(skillName) ?? { correct: 0, total: 0 };
+        skillEntry.total += 1;
+        if (a.is_correct) skillEntry.correct += 1;
+        domainEntry.skills.set(skillName, skillEntry);
+      }
     }
 
     // Map the cohort breakdown to the QuestionMapGrid's three
@@ -297,6 +340,20 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
         completedCount,
         totalQuestions: questionIds.length,
         wrongQuestionCount,
+        byScoreBand: Array.from(byScoreBand.entries())
+          .sort((a, b) => a[0] - b[0])
+          .map(([scoreBand, v]) => ({ scoreBand, ...v })),
+        byDomain: Array.from(byDomain.values())
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((d) => ({
+            name: d.name,
+            code: d.code,
+            correct: d.correct,
+            total: d.total,
+            skills: Array.from(d.skills.entries())
+              .sort((a, b) => a[0].localeCompare(b[0]))
+              .map(([name, v]) => ({ name, ...v })),
+          })),
       }}
       backHref={`/tutor/assignments/${assignmentId}`}
     />

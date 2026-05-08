@@ -20,8 +20,10 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
+import { subjectFromDomainCode } from './DomainBreakdownCard';
 import { QuestionMapGrid } from './QuestionMapGrid';
 import { ReportHero } from './ReportHero';
+import { SkillBreakdownCard } from './SkillBreakdownCard';
 import s from './GroupAssignmentReport.module.css';
 
 export function GroupAssignmentReport({
@@ -69,6 +71,17 @@ export function GroupAssignmentReport({
   const accuracyPct = metrics.cohortAccuracy == null
     ? null
     : Math.round(metrics.cohortAccuracy * 100);
+
+  // Same shapes the per-student AssignmentReport renders. With
+  // total = attempted cells and correct = correct cells, "wrong"
+  // here naturally means incorrect attempts (omissions are
+  // already excluded), so this surfaces skills the cohort got
+  // wrong rather than just skills nobody's attempted yet.
+  const weakSkills = useMemo(() => buildWeakSkills(metrics), [metrics]);
+  const { rwDomains, mathDomains } = useMemo(
+    () => splitDomainsBySubject(metrics.byDomain ?? []),
+    [metrics],
+  );
 
   return (
     <main className={s.container}>
@@ -142,6 +155,75 @@ export function GroupAssignmentReport({
           },
         ]}
       />
+
+      {/* ---------- Group weak spots ----------
+           Skills with the most incorrect attempts across the
+           cohort. Sorted by wrong-count desc; capped at 6 so the
+           strip doesn't sprawl. */}
+      {weakSkills.length > 0 && (
+        <section className={s.weakCard}>
+          <div className={s.weakLabel}>Group weak spots</div>
+          <div className={s.weakRow}>
+            {weakSkills.map((sk) => (
+              <span key={sk.name} className={s.weakPill}>
+                {sk.name}
+                <span className={s.weakPillCount}>{sk.wrong}</span>
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ---------- By-domain skill breakdown ----------
+           One subject card each, RW and Math, with a per-skill row.
+           Reuses the same SkillBreakdownCard the per-student report
+           uses; here the totals are cohort-wide. */}
+      {(rwDomains.length > 0 || mathDomains.length > 0) && (
+        <section className={s.cardRow}>
+          {rwDomains.length > 0 && (
+            <SkillBreakdownCard
+              title="Reading & Writing"
+              tone="rw"
+              domains={rwDomains}
+            />
+          )}
+          {mathDomains.length > 0 && (
+            <SkillBreakdownCard
+              title="Math"
+              tone="math"
+              domains={mathDomains}
+            />
+          )}
+        </section>
+      )}
+
+      {/* ---------- Cohort accuracy by score band ---------- */}
+      {(metrics.byScoreBand ?? []).length > 0 && (
+        <section className={s.card}>
+          <div className={s.cardHead}>
+            <h2 className={s.h2}>By score band</h2>
+          </div>
+          <div className={s.diffRow}>
+            {metrics.byScoreBand
+              .filter((d) => d.scoreBand)
+              .map((d) => {
+                const pct =
+                  d.total > 0 ? Math.round((d.correct / d.total) * 100) : null;
+                return (
+                  <div key={d.scoreBand} className={`${s.diffTile} sw-band-${d.scoreBand}`}>
+                    <div className={s.diffLabel}>Band {d.scoreBand}</div>
+                    <div className={s.diffValue}>
+                      {d.correct} / {d.total}
+                    </div>
+                    {pct != null && (
+                      <div className={s.diffPct}>{pct}%</div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+        </section>
+      )}
 
       <div className={s.reviewLayout}>
         <section className={`${s.card} ${s.reviewMapCard}`}>
@@ -307,4 +389,51 @@ function cohortAriaLabel(cohort) {
   const i = cohort.incorrect.length;
   const o = cohort.omitted.length;
   return `${c} correct, ${i} incorrect, ${o} omitted`;
+}
+
+// ──────────────────────────────────────────────────────────────
+// Mirrors the per-student AssignmentReport helpers. Kept inline
+// here rather than shared because we may evolve the cohort
+// semantics independently — e.g. a future "show skills with the
+// largest gap between cohort accuracy and class average" pivot.
+
+function buildWeakSkills(metrics) {
+  const out = [];
+  for (const d of metrics.byDomain ?? []) {
+    for (const sk of d.skills ?? []) {
+      const wrong = (sk.total ?? 0) - (sk.correct ?? 0);
+      if (wrong > 0) out.push({ name: sk.name, wrong, total: sk.total });
+    }
+  }
+  out.sort((a, b) => b.wrong - a.wrong || b.total - a.total);
+  return out.slice(0, 6);
+}
+
+function splitDomainsBySubject(byDomain) {
+  const rwDomains = [];
+  const mathDomains = [];
+  for (const d of byDomain) {
+    const subj = subjectFromDomainCode(d.code);
+    const skills = (d.skills ?? [])
+      .map((sk) => ({
+        name: sk.name,
+        correct: sk.correct ?? 0,
+        total: sk.total ?? 0,
+      }))
+      .sort((a, b) => skillRank(a) - skillRank(b));
+    const entry = {
+      name: d.name,
+      correct: d.correct ?? 0,
+      total: d.total ?? 0,
+      skills,
+    };
+    if (subj === 'MATH') mathDomains.push(entry);
+    else rwDomains.push(entry);
+  }
+  return { rwDomains, mathDomains };
+}
+
+function skillRank(sk) {
+  if (sk.total <= 0) return Number.POSITIVE_INFINITY;
+  return sk.correct / sk.total;
 }
