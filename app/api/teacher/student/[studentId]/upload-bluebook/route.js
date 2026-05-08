@@ -3,6 +3,71 @@ import { requireServiceRole } from '@/lib/api/auth';
 import { legacyApiRoute } from '@/lib/api/response';
 import { computeScaledScore, isHardRoute } from '../../../../../../lib/scoreConversion';
 
+// Mirror a freshly-inserted v1 Bluebook upload into the v2 tables so
+// students already on `ui_version='next'` see the result. v2 ids are
+// intentionally aligned with v1 ids (same attempt/module/module_item
+// uuids; `attempts` is shared), so this is a per-attempt copy of the
+// same rows. Best-effort: a v2 mirror failure is logged but does not
+// fail the upload, since the v1 write — the canonical store on the
+// legacy tree — already succeeded.
+async function mirrorBluebookUploadToV2(service, v1AttemptId, uploadedBy) {
+  const { data: v1Attempt, error: aErr } = await service
+    .from('practice_test_attempts')
+    .select('id, user_id, practice_test_id, status, started_at, finished_at, composite_score, rw_scaled, math_scaled')
+    .eq('id', v1AttemptId)
+    .single();
+  if (aErr || !v1Attempt) {
+    return { ok: false, error: aErr?.message || 'v1 attempt not found' };
+  }
+
+  const { error: a2Err } = await service
+    .from('practice_test_attempts_v2')
+    .insert({
+      id: v1Attempt.id,
+      user_id: v1Attempt.user_id,
+      practice_test_id: v1Attempt.practice_test_id,
+      status: v1Attempt.status,
+      source: 'bluebook_upload',
+      started_at: v1Attempt.started_at,
+      finished_at: v1Attempt.finished_at,
+      composite_score: v1Attempt.composite_score,
+      rw_scaled: v1Attempt.rw_scaled,
+      math_scaled: v1Attempt.math_scaled,
+      uploaded_by: uploadedBy ?? null,
+    });
+  if (a2Err) return { ok: false, error: `v2 attempt: ${a2Err.message}` };
+
+  const { data: v1Modules, error: mErr } = await service
+    .from('practice_test_module_attempts')
+    .select('id, practice_test_attempt_id, practice_test_module_id, started_at, finished_at, correct_count, raw_score')
+    .eq('practice_test_attempt_id', v1AttemptId);
+  if (mErr) return { ok: false, error: `v1 module attempts: ${mErr.message}` };
+
+  if (v1Modules?.length) {
+    const { error: m2Err } = await service
+      .from('practice_test_module_attempts_v2')
+      .insert(v1Modules);
+    if (m2Err) return { ok: false, error: `v2 module attempts: ${m2Err.message}` };
+
+    const moduleAttemptIds = v1Modules.map(m => m.id);
+    const { data: v1Items, error: iErr } = await service
+      .from('practice_test_item_attempts')
+      .select('id, practice_test_module_attempt_id, practice_test_module_item_id, attempt_id')
+      .in('practice_test_module_attempt_id', moduleAttemptIds);
+    if (iErr) return { ok: false, error: `v1 item attempts: ${iErr.message}` };
+
+    if (v1Items?.length) {
+      const v2Items = v1Items.map(i => ({ ...i, marked_for_review: false }));
+      const { error: i2Err } = await service
+        .from('practice_test_item_attempts_v2')
+        .insert(v2Items);
+      if (i2Err) return { ok: false, error: `v2 item attempts: ${i2Err.message}` };
+    }
+  }
+
+  return { ok: true };
+}
+
 // POST /api/teacher/student/[studentId]/upload-bluebook
 // Body: {
 //   practice_test_id,        — UUID of the practice test to associate with
@@ -84,6 +149,11 @@ export const POST = legacyApiRoute(async (request, props) => {
 
     if (attemptErr) {
       return NextResponse.json({ error: `Failed to create attempt: ${attemptErr.message}` }, { status: 500 });
+    }
+
+    const mirror = await mirrorBluebookUploadToV2(service, attempt.id, user.id);
+    if (!mirror.ok) {
+      console.warn(`[upload-bluebook] v2 mirror failed for attempt ${attempt.id}: ${mirror.error}`);
     }
 
     return NextResponse.json({
@@ -343,6 +413,11 @@ export const POST = legacyApiRoute(async (request, props) => {
       module2_correct: correctCounts.math.m2,
       scaled_score: mathScaled,
     }, { onConflict: 'test_id,section,module1_correct,module2_correct' });
+  }
+
+  const mirror = await mirrorBluebookUploadToV2(service, attempt.id, user.id);
+  if (!mirror.ok) {
+    console.warn(`[upload-bluebook] v2 mirror failed for attempt ${attempt.id}: ${mirror.error}`);
   }
 
   return NextResponse.json({
