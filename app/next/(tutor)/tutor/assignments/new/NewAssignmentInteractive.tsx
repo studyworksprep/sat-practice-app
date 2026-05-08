@@ -102,17 +102,22 @@ export function NewAssignmentInteractive({
     'questions',
   );
 
-  // Deep-link support: ?target=trainees&teacher=<id> pre-selects
-  // the trainee tab and preselects the named teacher. Used by
-  // the "+ Assign training" button on the teacher detail page so
-  // a manager doesn't have to re-find the trainee in the picker.
-  // Only honored when the manager actually has teachers — a pure
-  // teacher landing on the form ignores ?target=trainees.
+  // Deep-link support:
+  //   ?target=trainees&teacher=<id> — manager flow from the teacher
+  //     detail page; pre-selects the trainee tab + named teacher.
+  //   ?student=<id> — tutor flow from the student profile's
+  //     "+ New assignment" link; pre-checks the named student so
+  //     the tutor doesn't have to re-find them in the picker.
+  // ?target=trainees is only honored when the user actually has
+  // teachers — a pure teacher landing on the form ignores it.
   const searchParams = useSearchParams();
   const initialTargetIsTrainees =
     hasTeachers && searchParams?.get('target') === 'trainees';
   const initialPreselectedTeacher = initialTargetIsTrainees
     ? searchParams?.get('teacher')
+    : null;
+  const initialPreselectedStudent = !initialTargetIsTrainees
+    ? searchParams?.get('student')
     : null;
 
   // Target = students (default) or trainees (teachers). The
@@ -132,6 +137,13 @@ export function NewAssignmentInteractive({
       teachers.some((t) => t.id === initialPreselectedTeacher)
     ) {
       return new Set([initialPreselectedTeacher]);
+    }
+    // Same idea for ?student=<id> from the student profile.
+    if (
+      initialPreselectedStudent &&
+      students.some((s) => s.id === initialPreselectedStudent)
+    ) {
+      return new Set([initialPreselectedStudent]);
     }
     return new Set();
   });
