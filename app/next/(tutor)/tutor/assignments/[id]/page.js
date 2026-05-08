@@ -320,6 +320,17 @@ export default async function TutorAssignmentDetailPage({ params }) {
         {assignment.description && (
           <p className={s.description}>{assignment.description}</p>
         )}
+        {assignment.assignment_type === 'questions' && students.length > 0 && (
+          <div className={s.headerActions}>
+            <Link
+              href={`/tutor/assignments/${assignment.id}/report`}
+              className={s.groupReportBtn}
+              title="Open the cohort-wide report — one view of every student's performance, ideal for group review sessions"
+            >
+              Group report →
+            </Link>
+          </div>
+        )}
       </header>
 
       <div className={s.statsStrip}>
