@@ -117,6 +117,11 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId)
       .eq('mode', 'practice')
       .neq('status', 'abandoned')
+      // Exclude assignment-linked sessions — those already surface
+      // in the Assignments list above (each completed assignment
+      // links to its session report there), so listing them here
+      // would double-count the same work.
+      .is('filter_criteria->>assignment_id', null)
       .order('created_at', { ascending: false })
       .limit(RECENT_SESSIONS_LIMIT),
     supabase
