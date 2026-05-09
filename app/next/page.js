@@ -1,39 +1,52 @@
-// Root of the rebuild tree. Mirrors app/page.js: an authenticated
-// caller gets redirected to a real landing page based on role, so
-// flipped users don't get parked on a dead-end placeholder when
-// they hit `/`. Logged-out callers fall through to the placeholder
-// copy below.
+// Root of the rebuild tree. The proxy now defaults to the next
+// tree for every visitor, so this page is the marketing landing
+// for unauthenticated traffic and a redirect hub for everyone
+// signed in. Logged-out callers see HomeClient (the new-tree
+// login + signup surface). Logged-in callers bounce to the
+// role-appropriate home.
+//
+// `?confirmed=true` and `?confirmed=error` ride through from the
+// auth callback so the success/failure banner inside HomeClient
+// can render even after the callback set a session — we render
+// the landing instead of redirecting in that case so the user
+// sees the confirmation message before logging in.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { HomeClient } from './HomeClient';
 
-export default async function NextTreeRoot() {
+export const dynamic = 'force-dynamic';
+
+export default async function NextTreeRoot(props) {
+  const searchParams = await props.searchParams;
+  const confirmed = searchParams?.confirmed;
+
+  // Email-confirmation landing — render the form even if a session
+  // exists from the callback, so the user sees the success banner
+  // and chooses to log in. Mirrors the legacy app/page.js behavior.
+  if (confirmed === 'true') {
+    return <HomeClient emailConfirmed />;
+  }
+  if (confirmed === 'error') {
+    return <HomeClient emailConfirmed="error" />;
+  }
+
   let profile = null;
   try {
     ({ profile } = await requireUser());
   } catch {
-    // No session — show the placeholder. The proxy already
-    // bounces unauthenticated requests off subscription-required
-    // paths, so reaching here without a session is rare.
+    // No session — fall through to the landing page below.
   }
 
   if (profile) {
     const role = profile.role;
     const dest =
-      role === 'practice' ? '/practice'
-      : role === 'teacher' || role === 'manager' ? '/tutor'
+      role === 'admin' ? '/admin'
+      : role === 'teacher' || role === 'manager' ? '/tutor/dashboard'
+      : role === 'practice' ? '/practice'
       : '/dashboard';
     redirect(dest);
   }
 
-  return (
-    <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
-      <h1>Studyworks (rebuild preview)</h1>
-      <p>
-        You are on the rebuild tree. If you reached this page by
-        accident, an admin can flip your account back to the legacy
-        tree.
-      </p>
-    </main>
-  );
+  return <HomeClient />;
 }
