@@ -81,71 +81,44 @@
   .topBar { padding: 16px 20px; }
 }
 
-/* ---------- Hero column ---------- */
-
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--eyebrow-size);
-  font-weight: var(--eyebrow-weight);
-  letter-spacing: var(--eyebrow-tracking);
-  text-transform: uppercase;
-  color: var(--color-gold-700);
-  background: var(--color-app-highlight-soft);
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
-  margin-bottom: 20px;
-}
-
-.eyebrowDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-gold-500);
-}
+/* ---------- Hero column ----------
+   Two-tier hierarchy only: a single Playfair headline in navy and
+   one unified body paragraph in slate. The earlier draft layered
+   an eyebrow pill, a two-tone headline (navy + gold italic), and
+   two separate body sizes — that read as four distinct typefaces
+   stacked. Cutting back to two registers makes the page feel
+   composed instead of busy. */
 
 .headline {
   font-family: var(--font-serif);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.05;
-  font-size: clamp(40px, 6vw, 64px);
+  font-size: clamp(40px, 5.5vw, 56px);
   color: var(--color-navy-900);
-  margin: 0 0 20px;
-}
-
-.headlineAccent {
-  color: var(--color-gold-600);
-  font-style: italic;
+  margin: 0 0 24px;
+  max-width: 16ch;
 }
 
 .subhead {
-  font-size: 17px;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.65;
   color: var(--fg2);
   max-width: 540px;
-  margin: 0 0 14px;
-}
-
-.byline {
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--fg3);
-  max-width: 540px;
-  margin: 0 0 32px;
+  margin: 0 0 36px;
 }
 
 .bylineLink {
   color: var(--color-navy-700);
   font-weight: 600;
-  text-decoration: none;
-  border-bottom: 1px dotted var(--color-navy-300);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--color-navy-300);
 }
 
 .bylineLink:hover {
   color: var(--color-navy-900);
-  border-bottom-color: var(--color-navy-700);
+  text-decoration-color: var(--color-navy-700);
 }
 
 /* ---------- Role cards ---------- */

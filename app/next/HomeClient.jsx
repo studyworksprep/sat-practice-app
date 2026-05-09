@@ -158,24 +158,15 @@ export function HomeClient({ emailConfirmed }) {
 
       <div className={s.main}>
         <section>
-          <span className={s.eyebrow}>
-            <span className={s.eyebrowDot} aria-hidden="true" />
-            Built for SAT mastery
-          </span>
-          <h1 className={s.headline}>
-            Targeted practice that <span className={s.headlineAccent}>moves your score</span>.
-          </h1>
+          <h1 className={s.headline}>Targeted practice that moves your score.</h1>
           <p className={s.subhead}>
-            Studyworks gives you adaptive practice across every SAT domain and skill.
-            Track your progress question by question, pinpoint your weak spots, and
-            walk into test day with confidence.
-          </p>
-          <p className={s.byline}>
-            Created by the test prep experts at{' '}
+            Studyworks gives you adaptive practice across every SAT domain and skill —
+            the same data-driven process the tutors at{' '}
             <a className={s.bylineLink} href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer">
               Studyworks Prep
-            </a>
-            . The same data-driven process we run with every tutoring student.
+            </a>{' '}
+            run with every student. Track your progress question by question, pinpoint
+            your weak spots, and walk into test day with confidence.
           </p>
 
           <div className={s.roleGrid}>
