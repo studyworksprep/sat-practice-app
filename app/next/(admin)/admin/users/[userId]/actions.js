@@ -153,6 +153,87 @@ export async function toggleActive(_prev, formData) {
 }
 
 /**
+ * Ban the user for a terms-of-service violation. Sets banned_at to
+ * now() and forces is_active=false so the moderation flag agrees
+ * with the ban. Distinct from toggleActive's "Inactive" state, which
+ * is for routine archiving by a teacher or admin.
+ *
+ * Form contract:
+ *   user_id   — required
+ *   confirm   — must equal "BAN" to proceed
+ *   reason    — optional free text (currently logged via
+ *               revalidatePath only; persisted reason field is a
+ *               follow-up if we want an audit trail)
+ */
+export async function banUser(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await requireRole(['admin']);
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  let userId;
+  try {
+    userId = getUserId(formData);
+  } catch (err) {
+    return err.toActionResult();
+  }
+
+  if (userId === ctx.user.id) {
+    return actionFail('You cannot ban your own account.');
+  }
+
+  if (formData.get('confirm') !== 'BAN') {
+    return actionFail('Type BAN to confirm.');
+  }
+
+  const { error } = await ctx.supabase
+    .from('profiles')
+    .update({ banned_at: new Date().toISOString(), is_active: false })
+    .eq('id', userId);
+
+  if (error) return actionFail(`Failed: ${error.message}`);
+
+  revalidatePath(`/admin/users/${userId}`);
+  revalidatePath('/admin/users');
+  return actionOk({ banned: true });
+}
+
+/**
+ * Reverse a ban. Clears banned_at; leaves is_active alone so the
+ * admin can decide whether to also reactivate the account.
+ */
+export async function unbanUser(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await requireRole(['admin']);
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  let userId;
+  try {
+    userId = getUserId(formData);
+  } catch (err) {
+    return err.toActionResult();
+  }
+
+  const { error } = await ctx.supabase
+    .from('profiles')
+    .update({ banned_at: null })
+    .eq('id', userId);
+
+  if (error) return actionFail(`Failed: ${error.message}`);
+
+  revalidatePath(`/admin/users/${userId}`);
+  revalidatePath('/admin/users');
+  return actionOk({ banned: false });
+}
+
+/**
  * Permanently delete the user (profile + auth.users row). Used to
  * clean up test/bad accounts. For routine "remove this student,"
  * use toggleActive instead.

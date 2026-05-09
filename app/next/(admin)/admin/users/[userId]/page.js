@@ -105,6 +105,7 @@ export default async function AdminUserDetailPage({ params }) {
         <StatusActions
           userId={subject.id}
           isActive={subject.is_active !== false}
+          isBanned={subject.banned_at != null}
           isSelf={isSelf}
         />
       </Section>
