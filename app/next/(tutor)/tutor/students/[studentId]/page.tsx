@@ -17,10 +17,13 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate, formatRelativeShort } from '@/lib/formatters';
+import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
+import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import {
   ClipboardCheckIcon,
   InboxIcon,
   PencilIcon,
+  PerformanceIcon,
   TestIcon,
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
@@ -58,9 +61,10 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     redirect('/');
   }
 
-  // Six parallel reads. RLS uses can_view() on each table, so an
+  // Parallel reads. RLS uses can_view() on each table, so an
   // empty result on the stats row means the caller can't see this
-  // student → 404.
+  // student → 404. The dashboard aggregate runs as the same RLS-
+  // scoped client, so the tutor only sees their student's data.
   const [
     { data: studentRows, error: rpcErr },
     { data: profileRow },
@@ -70,6 +74,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     { data: sessionRows },
     { data: registrations },
     { data: officialScores },
+    aggregate,
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -128,6 +133,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       `)
       .eq('student_id', studentId)
       .order('test_date', { ascending: false }),
+    loadDashboardAggregate(studentId),
   ]);
 
   if (rpcErr) {
@@ -317,6 +323,44 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           />
         </div>
       </section>
+
+      {/* ---------- Performance ----------
+           Same skill-segmented bars the student sees on their own
+           dashboard — surface them here so a tutor opens the
+           detail page and can read where the student is strong /
+           weak without bouncing through a separate report. The
+           "More statistics" link goes to the deeper, tutor-only
+           view (per-skill table, daily-activity heatmap, by-
+           difficulty rollup, weekly trend). */}
+      {(aggregate.performance.math.domains.length > 0 ||
+        aggregate.performance.rw.domains.length > 0) && (
+        <section className={s.perfSection}>
+          <div className={s.perfHeader}>
+            <div className={s.sectionLabel}>
+              <IconTile icon={PerformanceIcon} palette="cyan" size="sm" />
+              Performance · last 90 days
+            </div>
+            <Link
+              href={`/tutor/students/${student.id}/stats`}
+              className={s.cardHeaderLink}
+            >
+              More statistics →
+            </Link>
+          </div>
+          <div className={s.perfGrid}>
+            <SkillBreakdownCard
+              title="Math"
+              tone="math"
+              domains={toBreakdownDomains(aggregate.performance.math.domains)}
+            />
+            <SkillBreakdownCard
+              title="Reading & Writing"
+              tone="rw"
+              domains={toBreakdownDomains(aggregate.performance.rw.domains)}
+            />
+          </div>
+        </section>
+      )}
 
       {/* ---------- Two-column body ----------
            Left column: the click-into surfaces a tutor reaches
@@ -605,6 +649,26 @@ function ErrorState({ message }: { message: string }) {
       <div className={s.errorCard} role="alert">{message}</div>
     </main>
   );
+}
+
+// Adapter from loadDashboardAggregate's domain shape to the
+// SkillBreakdownCard's `{ name, correct, total, skills }` shape.
+// Mirrors the helper on the student dashboard so the two surfaces
+// pass identical inputs into the shared card.
+function toBreakdownDomains(
+  domains: Array<{
+    name: string;
+    correct: number;
+    total: number;
+    skills: Array<{ name: string; correct: number; total: number }>;
+  }>,
+) {
+  return domains.map((d) => ({
+    name:    d.name,
+    correct: d.correct,
+    total:   d.total,
+    skills:  d.skills ?? [],
+  }));
 }
 
 function accuracyTone(pct: number | null): 'good' | 'ok' | 'bad' | undefined {

@@ -444,6 +444,34 @@
    Bluebook upload). Stacks on narrow viewports.
 ============================================================ */
 
+/* ---------- Performance section ----------
+   Two SkillBreakdownCards side-by-side (Math + RW), with a small
+   header strip carrying the section label and the "More
+   statistics" deep-link. Same shape as the student dashboard;
+   only the surrounding header differs. */
+.perfSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.perfHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+}
+
+.perfGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+}
+
+@media (max-width: 820px) {
+  .perfGrid { grid-template-columns: 1fr; }
+}
+
 .contentGrid {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
