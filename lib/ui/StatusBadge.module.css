@@ -1,5 +1,6 @@
-/* Profile status badge — Active / Inactive / Exempt. Same
-   token mapping as the role tag above. */
+/* Profile status badge — Active / Inactive / Banned. Same
+   token mapping as the role tag above. Subscription state moved
+   to SubscriptionBadge. */
 
 .badge {
   display: inline-flex;
@@ -23,8 +24,8 @@
   color: var(--color-diff-hard-fg);
   border-color: var(--color-danger);
 }
-.exempt {
-  background: var(--color-diff-med-bg);
-  color: var(--color-diff-med-fg);
-  border-color: var(--color-diff-med-bd);
+.banned {
+  background: var(--color-diff-hard-fg);
+  color: #fff;
+  border-color: var(--color-diff-hard-fg);
 }

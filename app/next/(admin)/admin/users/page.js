@@ -14,6 +14,7 @@ import { formatDate } from '@/lib/formatters';
 import { Card } from '@/lib/ui/Card';
 import { RoleTag } from '@/lib/ui/RoleTag';
 import { StatusBadge } from '@/lib/ui/StatusBadge';
+import { SubscriptionBadge } from '@/lib/ui/SubscriptionBadge';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { UsersFilter } from './UsersFilter';
 import { UsersNav } from './UsersNav';
@@ -42,7 +43,7 @@ export default async function AdminUsersPage({ searchParams }) {
   let q = supabase
     .from('profiles')
     .select(
-      'id, email, first_name, last_name, role, high_school, graduation_year, created_at, is_active, subscription_exempt, target_sat_score, ui_version',
+      'id, email, first_name, last_name, role, high_school, graduation_year, created_at, is_active, banned_at, subscription_exempt, target_sat_score, ui_version',
     )
     .order('created_at', { ascending: false })
     .limit(USER_LIMIT);
@@ -69,6 +70,19 @@ export default async function AdminUsersPage({ searchParams }) {
   }
 
   const rows = users ?? [];
+
+  // Pull subscription rows for the visible profiles in one round-trip.
+  // The subscriptions table has a unique constraint on user_id, so the
+  // lookup is 1:1. Plan + status drive the diagnostic Subscription
+  // column below; profile.role is intentionally not consulted there.
+  const subsByUser = new Map();
+  if (rows.length > 0) {
+    const { data: subs } = await supabase
+      .from('subscriptions')
+      .select('user_id, plan, status')
+      .in('user_id', rows.map((r) => r.id));
+    for (const s of subs ?? []) subsByUser.set(s.user_id, s);
+  }
 
   // Role + tree counts for the filter-bar summary. Separate from
   // the filtered query so the counts don't shrink when the user
@@ -153,6 +167,7 @@ export default async function AdminUsersPage({ searchParams }) {
                 <Th>School</Th>
                 <Th>Created</Th>
                 <Th>Status</Th>
+                <Th>Subscription</Th>
               </tr>
             </thead>
             <tbody>
@@ -185,7 +200,13 @@ export default async function AdminUsersPage({ searchParams }) {
                     <Td>
                       <StatusBadge
                         active={u.is_active !== false}
+                        banned={u.banned_at != null}
+                      />
+                    </Td>
+                    <Td>
+                      <SubscriptionBadge
                         exempt={u.subscription_exempt}
+                        subscription={subsByUser.get(u.id) ?? null}
                       />
                     </Td>
                   </tr>
@@ -193,7 +214,7 @@ export default async function AdminUsersPage({ searchParams }) {
               })}
               {rows.length === 0 && (
                 <tr>
-                  <Td colSpan={7} style={{ padding: '1.5rem', textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' }}>
+                  <Td colSpan={8} style={{ padding: '1.5rem', textAlign: 'center', color: '#9ca3af', fontStyle: 'italic' }}>
                     No users match those filters.
                   </Td>
                 </tr>
