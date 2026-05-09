@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export default function ConceptTags({ questionId, userRole }) {
   const [tags, setTags] = useState([]);           // all concept tags
@@ -11,9 +11,14 @@ export default function ConceptTags({ questionId, userRole }) {
   const [showInput, setShowInput] = useState(false);
   const [search, setSearch] = useState('');
   const [adding, setAdding] = useState(false);
+  // Fixed-position coords for the popover so it isn't clipped by an
+  // ancestor with overflow:hidden (the legacy question card) or pushed
+  // off-screen when the button sits near the viewport bottom.
+  const [popupPos, setPopupPos] = useState(null);
 
   const inputRef = useRef(null);
   const panelRef = useRef(null);
+  const buttonRef = useRef(null);
 
   const isVisible = userRole === 'admin' || userRole === 'manager' || userRole === 'teacher';
 
@@ -52,6 +57,39 @@ export default function ConceptTags({ questionId, userRole }) {
   // Focus input when opened
   useEffect(() => {
     if (showInput && inputRef.current) inputRef.current.focus();
+  }, [showInput]);
+
+  // Position the popover. Open downward by default; flip upward when
+  // there isn't enough room below and there's more room above. Clamp
+  // left so the 280px panel never overflows the viewport horizontally.
+  useLayoutEffect(() => {
+    if (!showInput) { setPopupPos(null); return; }
+    const POPUP_W = 280;
+    const POPUP_ESTIMATED_H = 220;
+    const MARGIN = 8;
+    const compute = () => {
+      const btn = buttonRef.current;
+      if (!btn) return;
+      const r = btn.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const spaceBelow = vh - r.bottom;
+      const spaceAbove = r.top;
+      const flipUp = spaceBelow < POPUP_ESTIMATED_H && spaceAbove > spaceBelow;
+      const left = Math.max(MARGIN, Math.min(r.left, vw - POPUP_W - MARGIN));
+      setPopupPos(
+        flipUp
+          ? { left, bottom: vh - r.top + 4 }
+          : { left, top: r.bottom + 4 }
+      );
+    };
+    compute();
+    window.addEventListener('resize', compute);
+    window.addEventListener('scroll', compute, true);
+    return () => {
+      window.removeEventListener('resize', compute);
+      window.removeEventListener('scroll', compute, true);
+    };
   }, [showInput]);
 
   if (!isVisible || !loaded) return null;
@@ -170,8 +208,9 @@ export default function ConceptTags({ questionId, userRole }) {
       )}
 
       {/* Add Tag button + input */}
-      <div style={{ position: 'relative' }} ref={panelRef}>
+      <div style={{ display: 'inline-block' }} ref={panelRef}>
         <button
+          ref={buttonRef}
           type="button"
           className="btn secondary"
           style={{ fontSize: 12, padding: '4px 12px' }}
@@ -180,11 +219,15 @@ export default function ConceptTags({ questionId, userRole }) {
           {showInput ? 'Close' : '+ Add Tag'}
         </button>
 
-        {showInput && (
+        {showInput && popupPos && (
           <div
             style={{
-              position: 'absolute', left: 0, top: '100%', zIndex: 400,
-              marginTop: 4, width: 280,
+              position: 'fixed',
+              left: popupPos.left,
+              top: popupPos.top,
+              bottom: popupPos.bottom,
+              zIndex: 400,
+              width: 280,
               background: 'var(--bg-card, #fff)',
               border: '1px solid var(--border, #ddd)',
               borderRadius: 8,
