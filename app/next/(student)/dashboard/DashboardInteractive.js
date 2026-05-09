@@ -11,6 +11,7 @@
 
 import Link from 'next/link';
 import { useActionState, useOptimistic } from 'react';
+import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
 import { WeeklyTrendChart } from '@/lib/practice/WeeklyTrendChart';
 import { Sparkline } from '@/lib/ui/Sparkline';
@@ -256,11 +257,28 @@ export function DashboardInteractive({
         </section>
       )}
 
-      {/* ---------- Performance grid ---------- */}
-      <section className={s.perfGrid}>
-        <PerformanceCard title="Math" tone="math" data={performance.math} />
-        <PerformanceCard title="Reading & Writing" tone="rw" data={performance.rw} />
-      </section>
+      {/* ---------- Performance grid ----------
+          Same shared SkillBreakdownCard the assignment and
+          practice-test reports use: one row per domain with a
+          stacked-skill bar (segments sized by question count,
+          colored by accuracy bucket). Each card returns null when
+          its section has no attempts, so a brand-new student
+          renders nothing rather than a row of empty bars. */}
+      {(performance.math.domains.length > 0 ||
+        performance.rw.domains.length > 0) && (
+        <section className={s.perfGrid}>
+          <SkillBreakdownCard
+            title="Math"
+            tone="math"
+            domains={toBreakdownDomains(performance.math.domains)}
+          />
+          <SkillBreakdownCard
+            title="Reading & Writing"
+            tone="rw"
+            domains={toBreakdownDomains(performance.rw.domains)}
+          />
+        </section>
+      )}
 
       {/* ---------- Pending assignments ---------- */}
       <section className={s.card}>
@@ -388,67 +406,16 @@ function priorAverage(rows, valueField, weightField) {
   return totalWeight > 0 ? weighted / totalWeight : null;
 }
 
-function PerformanceCard({ title, tone, data }) {
-  const toneCls = tone === 'rw' ? s.perfToneRw : s.perfToneMath;
-  // Section-level mastery: weight by attempt volume across the
-  // section's domains so a section with one well-mastered domain
-  // and one weak domain reads as the volume-weighted average,
-  // matching how the per-domain bars roll up visually.
-  let sectionMasteryWeighted = 0;
-  let sectionMasteryDenom = 0;
-  for (const d of data.domains) {
-    if (d.mastery == null || d.total <= 0) continue;
-    sectionMasteryWeighted += d.mastery * d.total;
-    sectionMasteryDenom += d.total;
-  }
-  const sectionMastery = sectionMasteryDenom > 0
-    ? sectionMasteryWeighted / sectionMasteryDenom
-    : null;
-  const noData = data.domains.length === 0;
-  return (
-    <div className={`${s.perfCard} ${toneCls}`}>
-      <div className={s.perfCardHeader}>
-        <div className={s.perfTitle}>{title}</div>
-        <div className={s.perfPct}>
-          {sectionMastery == null ? '—' : `${Math.round(sectionMastery)}%`}
-        </div>
-      </div>
-      {noData ? (
-        <p className={s.empty}>
-          No attempts yet. Practice some {title.toLowerCase()} questions to see your mastery here.
-        </p>
-      ) : (
-        <div className={s.domainList}>
-          {data.domains.map((d) => (
-            <DomainRow key={d.name} domain={d} tone={tone} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function DomainRow({ domain, tone }) {
-  // Bar fill + headline number are the mastery score (difficulty-
-  // and band-weighted, with a volume curve and a recency bonus)
-  // rather than raw accuracy. See migration
-  // 20260505000000_dashboard_stats_with_mastery and
-  // lib/mastery.js for the formula. Mastery null → 0 so the empty
-  // bar reads the same as "no signal yet".
-  const mastery = domain.mastery == null ? 0 : domain.mastery;
-  const fillCls = tone === 'rw' ? s.barFillRw : s.barFillMath;
-  return (
-    <div className={s.domainRow}>
-      <div className={s.domainName}>{domain.name}</div>
-      <div className={s.domainCount}>{domain.total}</div>
-      <div className={s.domainBar}>
-        <div className={s.bar}>
-          <div className={fillCls} style={{ width: `${mastery}%` }} />
-        </div>
-        <span className={s.barPct}>{mastery}%</span>
-      </div>
-    </div>
-  );
+// Adapter from the dashboard aggregate's per-domain shape to the
+// SkillBreakdownCard's expected `{ name, correct, total, skills }`.
+// Drops the section-only fields the card doesn't read.
+function toBreakdownDomains(domains) {
+  return domains.map((d) => ({
+    name:    d.name,
+    correct: d.correct,
+    total:   d.total,
+    skills:  d.skills ?? [],
+  }));
 }
 
 function kindLabel(kind) {

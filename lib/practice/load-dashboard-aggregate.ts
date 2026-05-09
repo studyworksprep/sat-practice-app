@@ -38,6 +38,13 @@ export interface DashboardAggregate {
   };
 }
 
+interface DomainSkill {
+  code: string | null;
+  name: string;
+  correct: number;
+  total: number;
+}
+
 interface SectionPerformance {
   domains: Array<{
     name: string;
@@ -45,7 +52,7 @@ interface SectionPerformance {
     section: 'math' | 'rw';
     correct: number;
     total: number;
-    mastery: number | null;
+    skills: DomainSkill[];
   }>;
   correct: number;
   total: number;
@@ -56,18 +63,21 @@ interface RpcRow {
   total_attempts: number | string;
   correct_attempts: number | string;
   week_attempts: number | string;
+  // The RPC enriches each domain with a `skills` array — see
+  // migration 20260509130000_dashboard_stats_with_skills. An older
+  // deployment may still be on the pre-skills version; treat the
+  // field as optional so the loader tolerates the migration window.
   per_domain: Array<{
     domain_code: string | null;
     domain_name: string;
     correct: number | string;
     total: number | string;
-    // Mastery comes from the RPC (migration
-    // 20260505000000_dashboard_stats_with_mastery): difficulty- +
-    // band-weighted accuracy × volume curve × recency bonus,
-    // capped at 100. Null is possible if the database is older
-    // than the migration; tolerate that until the migration has
-    // run everywhere.
-    mastery?: number | string | null;
+    skills?: Array<{
+      skill_code: string | null;
+      skill_name: string;
+      correct: number | string;
+      total: number | string;
+    }> | null;
   }> | null;
 }
 
@@ -108,7 +118,18 @@ export async function loadDashboardAggregate(userId: string): Promise<DashboardA
       section: domainSection(d.domain_code) as 'math' | 'rw',
       correct: Number(d.correct ?? 0),
       total:   Number(d.total   ?? 0),
-      mastery: d.mastery == null ? null : Number(d.mastery),
+      // Sort skills weakest-first inside the domain so the
+      // SkillBreakdownCard's segmented bar reads left-to-right
+      // from "needs work" → "mastered" — same convention as the
+      // assignment / practice-test reports.
+      skills: (Array.isArray(d.skills) ? d.skills : [])
+        .map((sk) => ({
+          code:    sk.skill_code ?? null,
+          name:    sk.skill_name,
+          correct: Number(sk.correct ?? 0),
+          total:   Number(sk.total   ?? 0),
+        }))
+        .sort((a, b) => skillRank(a) - skillRank(b)),
     }))
     .sort((a, b) => b.total - a.total);
 
@@ -124,6 +145,11 @@ export async function loadDashboardAggregate(userId: string): Promise<DashboardA
       rw:   { domains: rw,   ...sectionTotals(rw)   },
     },
   };
+}
+
+function skillRank(sk: { correct: number; total: number }): number {
+  if (sk.total <= 0) return Number.POSITIVE_INFINITY;
+  return sk.correct / sk.total;
 }
 
 function sectionTotals(domains: Array<{ correct: number; total: number }>) {
