@@ -1,0 +1,115 @@
+/* Resume-test landing card. Single hero card centered in the
+   viewport. Tokens from [data-tree="next"]. */
+
+.shell {
+  min-height: calc(100vh - var(--s5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s5) var(--s4);
+  background: var(--bg);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  padding: 32px 36px;
+  max-width: 540px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  left: 36px; top: 30px;
+  width: 40px; height: 3px;
+  background: var(--color-gold-500);
+  border-radius: 2px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  padding-top: 14px;
+  margin-bottom: var(--s2);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s3);
+}
+
+.sub {
+  color: var(--fg2);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0 0 var(--s4);
+}
+
+.sub strong {
+  color: var(--fg1);
+}
+
+.dateChip {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.actions {
+  display: flex;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.btnPrimary,
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+}
+
+.btnPrimary {
+  background: var(--color-app-accent);
+  color: #fff;
+  border-color: var(--color-app-accent);
+}
+.btnPrimary:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+.btnPrimary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  background: var(--bg-white);
+  color: var(--fg1);
+  border-color: var(--border-strong);
+}
+.btnSecondary:hover {
+  background: var(--color-slate-50);
+}

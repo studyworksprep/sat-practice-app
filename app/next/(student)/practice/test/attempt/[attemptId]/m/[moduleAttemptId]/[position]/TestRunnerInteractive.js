@@ -51,6 +51,7 @@ export function TestRunnerInteractive({
   recordItemAnswerAction,
   toggleMarkForReviewAction,
   finishModuleAction,
+  pauseTestModuleAction,
   desmosSavedState = null,
   desmosCanSave = false,
 }) {
@@ -346,6 +347,55 @@ export function TestRunnerInteractive({
     });
   }
 
+  // Save and Exit. We await the pending answer save before pausing
+  // so the student's last-edited response and elapsed time per
+  // question land on the server first; THEN paused_at is stamped
+  // on the module so the entry page kicks them to the resume
+  // screen on return. Same await-discipline as the timeout
+  // handler — pausing closes the runner, so we need durable
+  // writes before we redirect.
+  const pauseConfirmText = 'Save your progress and exit the test? The timer will pause and you can pick up here later from the dashboard.';
+  async function handleSaveAndExit() {
+    if (typeof window !== 'undefined' && !window.confirm(pauseConfirmText)) {
+      return;
+    }
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    if (pendingSaveRef.current) {
+      try { await flushSave(pendingSaveRef.current); } catch {}
+      pendingSaveRef.current = null;
+    } else {
+      // No pending answer change, but elapsed time on the current
+      // question is still pending — flush it as a time-only save
+      // so paused_at doesn't lose the seconds the student spent
+      // staring at this question before clicking Save and Exit.
+      const now = Date.now();
+      const deltaMs = Math.max(0, now - lastSaveTimeRef.current);
+      if (deltaMs >= 500) {
+        const fd = new FormData();
+        fd.set('moduleAttemptId', moduleAttemptId);
+        fd.set('moduleItemId', moduleItemId);
+        fd.set('timeSpentMs', String(deltaMs));
+        try {
+          const res = await recordItemAnswerAction(null, fd);
+          if (res?.ok) lastSaveTimeRef.current = now;
+        } catch { /* swallow — pausing should still proceed */ }
+      }
+    }
+    const fd = new FormData();
+    fd.set('moduleAttemptId', moduleAttemptId);
+    fd.set('position', String(position));
+    try {
+      const res = await pauseTestModuleAction(null, fd);
+      if (!res?.ok) {
+        setSaveError(res?.error ?? 'Could not pause');
+        return;
+      }
+      router.push('/dashboard');
+    } catch (err) {
+      setSaveError(err.message ?? String(err));
+    }
+  }
+
   // Auto-submit on timeout. We DO await the pending save here
   // (unlike user-driven navigation) because the module is closing
   // and we want the last answer durably recorded before the
@@ -446,6 +496,14 @@ export function TestRunnerInteractive({
               title={desmosOpen ? 'Hide calculator' : 'Show calculator'}
             />
           )}
+          <button
+            type="button"
+            className={s.saveExitBtn}
+            onClick={handleSaveAndExit}
+            title="Save your progress and exit. The timer pauses; you can resume later from the dashboard."
+          >
+            Save &amp; exit
+          </button>
         </div>
       </div>
 
