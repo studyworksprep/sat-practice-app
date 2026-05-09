@@ -199,10 +199,24 @@
   letter-spacing: 0.06em;
 }
 
-/* ---------- Performance grid ----------
-   Two-column shell that holds two SkillBreakdownCards (Math + RW).
-   The cards bring their own card chrome — this rule only owns
-   the grid spacing. */
+/* ---------- Performance section ----------
+   Section label + "More statistics" deep-link sit above the
+   two-column shell that holds the SkillBreakdownCards (Math +
+   RW). The cards bring their own card chrome — these rules
+   only own the header strip + grid spacing. */
+
+.perfSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.perfHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s3);
+}
 
 .perfGrid {
   display: grid;
