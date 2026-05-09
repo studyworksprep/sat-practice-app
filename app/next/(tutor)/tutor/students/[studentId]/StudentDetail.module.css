@@ -344,6 +344,22 @@
 
 .assignmentCount { color: var(--fg3); font-weight: 400; }
 
+/* Stack the assigned + due dates so each row carries both timestamps
+   without the title flex-1 squeezing them off the right edge. */
+.assignmentDates {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.assignedDate {
+  font-size: 11px;
+  color: var(--fg3);
+}
+
 .due {
   font-size: 11px;
   color: var(--fg3);

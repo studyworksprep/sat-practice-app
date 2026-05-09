@@ -94,7 +94,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .select(`
         completed_at,
         assignment:assignments_v2 (
-          id, assignment_type, title, due_date, archived_at, deleted_at,
+          id, assignment_type, title, due_date, archived_at, deleted_at, created_at,
           question_ids,
           lesson:lessons (title),
           practice_test:practice_tests_v2 (name)
@@ -215,23 +215,24 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     due_date: string | null;
     archived_at: string | null;
     deleted_at: string | null;
+    created_at: string | null;
     question_ids: unknown;
     lesson: { title: string | null } | null;
     practice_test: { name: string | null } | null;
     completed_at: string | null;
   };
+  // Newest-assigned first. The list is the running record of
+  // what the tutor has handed out, so the freshest work sits at
+  // the top regardless of completion or due-date status.
   const assignments = (
     (assignmentJunctions ?? []) as unknown as { completed_at: string | null; assignment: Assignment }[]
   )
     .map((j) => ({ ...j.assignment, completed_at: j.completed_at }))
     .filter((a) => a && a.id && !a.deleted_at && !a.archived_at)
     .sort((a, b) => {
-      const aDone = a.completed_at != null;
-      const bDone = b.completed_at != null;
-      if (aDone !== bDone) return aDone ? 1 : -1;
-      const aDue = a.due_date ? Date.parse(a.due_date) : Number.POSITIVE_INFINITY;
-      const bDue = b.due_date ? Date.parse(b.due_date) : Number.POSITIVE_INFINITY;
-      return aDue - bDue;
+      const aAt = a.created_at ? Date.parse(a.created_at) : 0;
+      const bAt = b.created_at ? Date.parse(b.created_at) : 0;
+      return bAt - aAt;
     });
 
   // Latest completed practice_session per assignment, so the
@@ -406,11 +407,18 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                           {title}
                           {n != null && <span className={s.assignmentCount}> · {n} q{n === 1 ? '' : 's'}</span>}
                         </span>
-                        {a.due_date && !a.completed_at && (
-                          <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
-                            Due {formatDate(a.due_date)}
-                          </span>
-                        )}
+                        <span className={s.assignmentDates}>
+                          {a.created_at && (
+                            <span className={s.assignedDate}>
+                              Assigned {formatDate(a.created_at)}
+                            </span>
+                          )}
+                          {a.due_date && (
+                            <span className={isOverdue(a.due_date) && !a.completed_at ? s.dueOverdue : s.due}>
+                              Due {formatDate(a.due_date)}
+                            </span>
+                          )}
+                        </span>
                         {a.completed_at && reportSessionId && (
                           <span className={s.reportPill}>View report →</span>
                         )}
