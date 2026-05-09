@@ -12,6 +12,7 @@ import { formatDate } from '@/lib/formatters';
 import { Card } from '@/lib/ui/Card';
 import { RoleTag } from '@/lib/ui/RoleTag';
 import { StatusBadge } from '@/lib/ui/StatusBadge';
+import { SubscriptionBadge } from '@/lib/ui/SubscriptionBadge';
 import { UserEditForm } from './UserEditForm';
 import { RoleChanger } from './RoleChanger';
 import { StatusActions } from './StatusActions';
@@ -33,13 +34,19 @@ export default async function AdminUserDetailPage({ params }) {
   const { data: subject, error } = await supabase
     .from('profiles')
     .select(
-      'id, email, first_name, last_name, role, is_active, subscription_exempt, target_sat_score, high_school, graduation_year, tutor_name, sat_test_date, created_at, ui_version',
+      'id, email, first_name, last_name, role, is_active, banned_at, subscription_exempt, target_sat_score, high_school, graduation_year, tutor_name, sat_test_date, created_at, ui_version',
     )
     .eq('id', userId)
     .maybeSingle();
 
   if (error) return <ErrorState message={`Failed to load user: ${error.message}`} />;
   if (!subject) notFound();
+
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('plan, status')
+    .eq('user_id', userId)
+    .maybeSingle();
 
   const displayName = [subject.first_name, subject.last_name].filter(Boolean).join(' ') || subject.email || subject.id;
   const isSelf = subject.id === user.id;
@@ -59,7 +66,11 @@ export default async function AdminUserDetailPage({ params }) {
           <RoleTag role={subject.role} />
           <StatusBadge
             active={subject.is_active !== false}
+            banned={subject.banned_at != null}
+          />
+          <SubscriptionBadge
             exempt={subject.subscription_exempt}
+            subscription={subscription ?? null}
           />
           {subject.email && <span style={S.email}>{subject.email}</span>}
           <span style={S.muted}>Joined {formatDate(subject.created_at) || '—'}</span>
