@@ -23,6 +23,7 @@ import {
   recordItemAnswer,
   toggleMarkForReview,
   finishModule,
+  pauseTestModule,
 } from '../../../../../actions';
 import { TestRunnerInteractive } from './TestRunnerInteractive';
 
@@ -45,7 +46,7 @@ export default async function PracticeTestRunnerPage({ params }) {
   const { data: moduleAttempt } = await supabase
     .from('practice_test_module_attempts_v2')
     .select(`
-      id, started_at, finished_at, practice_test_attempt_id,
+      id, started_at, finished_at, paused_at, practice_test_attempt_id,
       practice_test_module:practice_test_modules_v2(
         id, subject_code, module_number, route_code, time_limit_seconds,
         practice_test:practice_tests_v2(id, name, code)
@@ -65,6 +66,12 @@ export default async function PracticeTestRunnerPage({ params }) {
     redirect(`/practice/test/attempt/${attemptId}`);
   }
   if (moduleAttempt.practice_test_attempt.status !== 'in_progress') {
+    redirect(`/practice/test/attempt/${attemptId}`);
+  }
+  // Paused — kick to the entry page, which renders the resume
+  // screen. Without this guard a direct-URL hit on a paused
+  // module would render the runner with a frozen timer.
+  if (moduleAttempt.paused_at) {
     redirect(`/practice/test/attempt/${attemptId}`);
   }
 
@@ -223,6 +230,7 @@ export default async function PracticeTestRunnerPage({ params }) {
       recordItemAnswerAction={recordItemAnswer}
       toggleMarkForReviewAction={toggleMarkForReview}
       finishModuleAction={finishModule}
+      pauseTestModuleAction={pauseTestModule}
       desmosSavedState={desmos.savedState}
       desmosCanSave={desmos.canSave}
     />

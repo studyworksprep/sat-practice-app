@@ -20,6 +20,7 @@ import {
   ClipboardCheckIcon,
   GoalIcon,
   InboxIcon,
+  PerformanceIcon,
   ProgressIcon,
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
@@ -263,20 +264,34 @@ export function DashboardInteractive({
           stacked-skill bar (segments sized by question count,
           colored by accuracy bucket). Each card returns null when
           its section has no attempts, so a brand-new student
-          renders nothing rather than a row of empty bars. */}
+          renders nothing rather than a row of empty bars. The
+          "More statistics" link opens the deep view that bundles
+          the daily heatmap, by-difficulty breakdown, and the full
+          per-skill ranked table. */}
       {(performance.math.domains.length > 0 ||
         performance.rw.domains.length > 0) && (
-        <section className={s.perfGrid}>
-          <SkillBreakdownCard
-            title="Math"
-            tone="math"
-            domains={toBreakdownDomains(performance.math.domains)}
-          />
-          <SkillBreakdownCard
-            title="Reading & Writing"
-            tone="rw"
-            domains={toBreakdownDomains(performance.rw.domains)}
-          />
+        <section className={s.perfSection}>
+          <div className={s.perfHeader}>
+            <div className={s.sectionLabel}>
+              <IconTile icon={PerformanceIcon} palette="cyan" size="sm" />
+              Performance · last 90 days
+            </div>
+            <Link href="/dashboard/stats" className={s.cardHeaderLink}>
+              More statistics →
+            </Link>
+          </div>
+          <div className={s.perfGrid}>
+            <SkillBreakdownCard
+              title="Math"
+              tone="math"
+              domains={toBreakdownDomains(performance.math.domains)}
+            />
+            <SkillBreakdownCard
+              title="Reading & Writing"
+              tone="rw"
+              domains={toBreakdownDomains(performance.rw.domains)}
+            />
+          </div>
         </section>
       )}
 

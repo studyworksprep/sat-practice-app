@@ -375,6 +375,136 @@ export async function toggleMarkForReview(_prev, formData) {
 }
 
 // ──────────────────────────────────────────────────────────────
+// pauseTestModule — Save-and-Exit support.
+//
+// Stamps paused_at = now() and paused_at_position = the question
+// the student was on. The runner's countdown is derived from
+// (started_at, time_limit_seconds) on the module, so we don't
+// need to write a "remaining" field — resume shifts started_at
+// forward by the pause duration and the timer picks up where it
+// left off.
+//
+// Idempotent: pausing an already-paused module is a no-op (we
+// keep the original paused_at so the resume math still uses the
+// real pause start, not a re-pause click).
+// ──────────────────────────────────────────────────────────────
+
+export async function pauseTestModule(_prev, formData) {
+  let ctx;
+  try { ctx = await requireUser(); }
+  catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+  const { user, supabase } = ctx;
+
+  const moduleAttemptId = String(formData.get('moduleAttemptId') ?? '');
+  if (!moduleAttemptId) return actionFail('Missing moduleAttemptId');
+
+  const positionRaw = formData.get('position');
+  const position = positionRaw == null ? null : Number(positionRaw);
+  if (position != null && (!Number.isInteger(position) || position < 0)) {
+    return actionFail('Invalid position');
+  }
+
+  const { data: moduleAttempt } = await supabase
+    .from('practice_test_module_attempts_v2')
+    .select(`
+      id, finished_at, paused_at,
+      practice_test_attempt:practice_test_attempts_v2(user_id, status)
+    `)
+    .eq('id', moduleAttemptId)
+    .maybeSingle();
+  if (!moduleAttempt) return actionFail('Module not found');
+  if (moduleAttempt.practice_test_attempt.user_id !== user.id) {
+    return actionFail('Not allowed');
+  }
+  if (moduleAttempt.finished_at) return actionFail('Module already submitted');
+  if (moduleAttempt.practice_test_attempt.status !== 'in_progress') {
+    return actionFail('Test is not in progress');
+  }
+  // Already paused — leave paused_at alone so a double-click
+  // doesn't shift the resume math.
+  if (moduleAttempt.paused_at) return { ok: true, alreadyPaused: true };
+
+  const { error } = await supabase
+    .from('practice_test_module_attempts_v2')
+    .update({
+      paused_at: new Date().toISOString(),
+      paused_at_position: position,
+    })
+    .eq('id', moduleAttemptId);
+  if (error) return actionFail(error.message);
+  return { ok: true };
+}
+
+// ──────────────────────────────────────────────────────────────
+// resumeTestModule
+//
+// Clears paused_at + paused_at_position and shifts started_at
+// forward by the pause duration so the countdown picks up at the
+// same remaining time. Returns the position the student was on
+// when they paused so the entry-page redirect can drop them back
+// on the same question.
+// ──────────────────────────────────────────────────────────────
+
+export async function resumeTestModule(_prev, formData) {
+  let ctx;
+  try { ctx = await requireUser(); }
+  catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+  const { user, supabase } = ctx;
+
+  const moduleAttemptId = String(formData.get('moduleAttemptId') ?? '');
+  if (!moduleAttemptId) return actionFail('Missing moduleAttemptId');
+
+  const { data: moduleAttempt } = await supabase
+    .from('practice_test_module_attempts_v2')
+    .select(`
+      id, finished_at, started_at, paused_at, paused_at_position,
+      practice_test_attempt:practice_test_attempts_v2(user_id, status)
+    `)
+    .eq('id', moduleAttemptId)
+    .maybeSingle();
+  if (!moduleAttempt) return actionFail('Module not found');
+  if (moduleAttempt.practice_test_attempt.user_id !== user.id) {
+    return actionFail('Not allowed');
+  }
+  if (moduleAttempt.finished_at) return actionFail('Module already submitted');
+  if (moduleAttempt.practice_test_attempt.status !== 'in_progress') {
+    return actionFail('Test is not in progress');
+  }
+  // Not paused — return cleanly so the caller can route the
+  // student straight into the runner.
+  if (!moduleAttempt.paused_at) {
+    return { ok: true, position: 0, wasPaused: false };
+  }
+
+  const pauseDurationMs =
+    Date.now() - new Date(moduleAttempt.paused_at).getTime();
+  const newStartedAt = new Date(
+    new Date(moduleAttempt.started_at).getTime() + Math.max(0, pauseDurationMs),
+  ).toISOString();
+
+  const resumePosition = Number.isInteger(moduleAttempt.paused_at_position)
+    ? moduleAttempt.paused_at_position
+    : 0;
+
+  const { error } = await supabase
+    .from('practice_test_module_attempts_v2')
+    .update({
+      started_at: newStartedAt,
+      paused_at: null,
+      paused_at_position: null,
+    })
+    .eq('id', moduleAttemptId);
+  if (error) return actionFail(error.message);
+  return { ok: true, wasPaused: true, position: resumePosition };
+}
+
+// ──────────────────────────────────────────────────────────────
 // finishModule
 // ──────────────────────────────────────────────────────────────
 
