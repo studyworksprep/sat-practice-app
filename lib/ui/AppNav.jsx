@@ -40,11 +40,14 @@ export function AppNav({ user, links, rightExtras = null }) {
     <nav className={s.nav}>
       <div className={s.navInner}>
         <div className={s.navLeft}>
-          <Link href={links[0]?.href ?? '/dashboard'} className={s.logoLink}>
+          <Link href={links.find((l) => l.href)?.href ?? '/dashboard'} className={s.logoLink}>
             <StudyworksWordmark className={s.logo} />
           </Link>
           <div className={s.navLinks}>
-            {links.map((link) => {
+            {links.map((link, i) => {
+              if (link.kind === 'divider') {
+                return <span key={`div-${i}`} className={s.navDivider} aria-hidden="true" />;
+              }
               const active = isActive(pathname, link);
               return (
                 <Link

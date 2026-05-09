@@ -7,7 +7,10 @@
 // Admins land here too: they need to see their teachers' and
 // managers' views during test drives, so the layout accepts
 // teacher / manager / admin. Students / practice-only users
-// bounce to their own tree.
+// bounce to their own tree. For role === 'admin' the nav comes
+// out as the unified Operate · Teach · Train union (same union
+// (admin)/layout.js renders) so the top bar doesn't switch
+// identity when the admin moves between subtrees.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';

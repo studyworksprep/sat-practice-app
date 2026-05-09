@@ -6,11 +6,18 @@
 // chrome at all — admin pages rendered without an AppNav, which
 // made navigation between sections impossible without typing
 // URLs by hand.
+//
+// The nav itself comes from tutorLinksForRole('admin'), which
+// returns the unified Operate · Teach · Train union. Same call
+// is used by (tutor)/layout.js and the (student) shared-infra
+// path so the admin sees the identical nav no matter which
+// subtree the page lives under — clicking "Dashboard" always
+// means the admin overview, not the tutor dashboard.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { AppNav } from '@/lib/ui/AppNav';
-import { ADMIN_LINKS } from '@/lib/ui/nav-links';
+import { tutorLinksForRole } from '@/lib/ui/nav-links';
 
 export default async function AdminTreeLayout({ children }) {
   const { user, profile } = await requireUser();
@@ -37,7 +44,7 @@ export default async function AdminTreeLayout({ children }) {
 
   return (
     <>
-      <AppNav user={navUser} links={ADMIN_LINKS} />
+      <AppNav user={navUser} links={tutorLinksForRole(profile.role)} />
       {children}
     </>
   );

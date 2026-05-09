@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { StatCard } from '@/lib/ui/StatCard';
 import { formatShortDate } from '@/lib/formatters';
+import { BulkMigrateButton } from './BulkMigrateButton';
 import s from './AdminOverview.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -55,6 +56,7 @@ export default async function AdminLandingPage() {
     { count: attempts30d },
     { count: practiceTests30d },
     { data: volumeWeeks },
+    { count: legacyStudentsRemaining },
   ] = await Promise.all([
     supabase.rpc('count_distinct_users_since', { since: todayStart.toISOString() }),
     supabase.rpc('count_distinct_users_since', { since: d7.toISOString() }),
@@ -82,6 +84,14 @@ export default async function AdminLandingPage() {
       .eq('status', 'completed')
       .gte('finished_at', d30.toISOString()),
     supabase.rpc('get_practice_volume_by_week', { weeks: 8 }),
+    // Count of students still pending the v1 → v2 cutover. Drives
+    // the BulkMigrateButton's "X remaining" badge on first paint;
+    // the action returns a fresh count after each batch.
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('role', 'student')
+      .or('ui_version.is.null,ui_version.eq.legacy'),
   ]);
 
   const activeUsers = {
@@ -200,6 +210,19 @@ export default async function AdminLandingPage() {
       </section>
 
       <section className={s.section}>
+        <div className={s.sectionLabel}>Migration cutover</div>
+        <p className={s.help}>
+          Bulk version of the per-student &ldquo;Migrate to new
+          tree&rdquo; button. Each click imports legacy practice
+          history, recomputes scores, backfills error notes, and flips{' '}
+          <code>ui_version=&apos;next&apos;</code> for the next 50 students
+          still on the legacy tree. Idempotent and per-student
+          reversible.
+        </p>
+        <BulkMigrateButton initialRemaining={legacyStudentsRemaining ?? 0} />
+      </section>
+
+      <section className={s.section}>
         <div className={s.sectionLabel}>Manage</div>
         <p className={s.help}>
           The remaining admin sections are landing as Server Component
@@ -215,6 +238,21 @@ export default async function AdminLandingPage() {
           <NavCard href="/admin/content" title="Score conversions + thresholds" desc="Test-level config + curves." />
           <NavCard href="/admin/users/relationships" title="User relationships" desc="Teacher ↔ student assignments." />
           <NavCard href="/admin/users/codes" title="Signup codes" desc="Issue + audit invite codes." />
+        </div>
+      </section>
+
+      <section className={s.section}>
+        <div className={s.sectionLabel}>Teach + train</div>
+        <p className={s.help}>
+          The tutor and student-facing surfaces an admin reaches via
+          the divider clusters in the top nav. Listed here so they&apos;re
+          discoverable from the overview, not just the nav bar.
+        </p>
+        <div className={s.navGrid}>
+          <NavCard href="/tutor/roster"      title="Roster"      desc="Browse + manage students across all tutors." />
+          <NavCard href="/tutor/assignments" title="Assignments" desc="Create + monitor practice assignments." />
+          <NavCard href="/tutor/teachers"    title="Teachers"    desc="Manager view of every teacher's cohort." />
+          <NavCard href="/tutor/training"    title="Train"       desc="Take practice and tests as a student would." />
         </div>
       </section>
     </main>

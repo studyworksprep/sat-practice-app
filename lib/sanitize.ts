@@ -133,6 +133,22 @@ const QUESTION_OPTIONS: sanitizeHtml.IOptions = {
     mo: ['fence', 'separator', 'lspace', 'rspace', 'stretchy'],
     mspace: ['width', 'height', 'depth'],
     mstyle: ['mathvariant', 'mathcolor', 'mathbackground'],
+    // Table attributes. sanitize-html strips every attribute on a tag
+    // with no allowlist entry, so without these the colspan/rowspan
+    // on a multi-column header silently collapses to a 1-cell header
+    // — affecting every published question with a `<table>`. The
+    // College Board content uses border/align/cellpadding on the
+    // outer table, scope/colspan/rowspan inside, plus inline width.
+    table: ['border', 'align', 'cellpadding', 'cellspacing', 'summary', 'width'],
+    thead: ['align', 'valign'],
+    tbody: ['align', 'valign'],
+    tfoot: ['align', 'valign'],
+    tr: ['align', 'valign'],
+    th: ['colspan', 'rowspan', 'scope', 'headers', 'align', 'valign', 'abbr', 'width'],
+    td: ['colspan', 'rowspan', 'headers', 'align', 'valign', 'width'],
+    caption: ['align'],
+    col: ['span', 'align', 'valign', 'width'],
+    colgroup: ['span', 'align', 'valign', 'width'],
   },
   allowedSchemes: ['http', 'https', 'mailto', 'data'],
   allowedSchemesAppliedToAttributes: ['href', 'src', 'xlink:href'],
