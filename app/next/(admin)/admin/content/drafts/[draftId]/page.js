@@ -98,7 +98,7 @@ export default async function DraftEditorPage({ params }) {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <Link
-            href={`/tutor/review/${current.id}`}
+            href={`/admin/questions/${current.id}`}
             target="_blank"
             style={S.secondaryBtn}
           >

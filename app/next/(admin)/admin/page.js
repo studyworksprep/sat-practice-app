@@ -217,6 +217,21 @@ export default async function AdminLandingPage() {
           <NavCard href="/admin/users/codes" title="Signup codes" desc="Issue + audit invite codes." />
         </div>
       </section>
+
+      <section className={s.section}>
+        <div className={s.sectionLabel}>Teach + train</div>
+        <p className={s.help}>
+          The tutor and student-facing surfaces an admin reaches via
+          the divider clusters in the top nav. Listed here so they&apos;re
+          discoverable from the overview, not just the nav bar.
+        </p>
+        <div className={s.navGrid}>
+          <NavCard href="/tutor/roster"      title="Roster"      desc="Browse + manage students across all tutors." />
+          <NavCard href="/tutor/assignments" title="Assignments" desc="Create + monitor practice assignments." />
+          <NavCard href="/tutor/teachers"    title="Teachers"    desc="Manager view of every teacher's cohort." />
+          <NavCard href="/tutor/training"    title="Train"       desc="Take practice and tests as a student would." />
+        </div>
+      </section>
     </main>
   );
 }

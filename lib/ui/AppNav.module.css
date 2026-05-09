@@ -57,6 +57,18 @@
   gap: var(--s1);
 }
 
+/* Vertical hairline between nav clusters. Used by the admin nav to
+   visually separate Operate · Teach · Train. Slightly taller than
+   the link text so it reads as a deliberate cluster boundary, not
+   an accidental gap. */
+.navDivider {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 6px;
+  align-self: center;
+}
+
 .navLink {
   color: var(--fg2);
   font-size: 13px;
@@ -179,6 +191,7 @@
   .navLeft  { gap: var(--s3); }
   .navLinks { gap: 0; }
   .navLink  { padding: 4px 8px; font-size: 12px; }
+  .navDivider { margin: 0 3px; height: 14px; }
   .userEmail { display: none; }
   .billingLink { display: none; }
   .signOutBtn { padding: 3px 8px; font-size: 11px; }

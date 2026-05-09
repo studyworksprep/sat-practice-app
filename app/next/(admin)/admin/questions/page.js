@@ -1,8 +1,11 @@
 // Admin question-bank browser. Paginated table of questions_v2
 // with lean display — display_code / domain / skill / difficulty /
 // status flags / updated_at — and a per-row link to
-// /tutor/review/<id> where <QuestionRenderer mode="teacher"> does
-// the full typeset view. The list stays fast by keeping rendered
+// /admin/questions/<id> where <QuestionRenderer mode="teacher"> does
+// the full typeset view. The detail page lives in the (admin) tree
+// (parallel to the tutor /tutor/review/<id> page, sharing the same
+// QuestionReviewPage component) so the admin nav stays visible
+// during the drill-in. The list stays fast by keeping rendered
 // columns out of the SELECT; clicking through loads them at the
 // detail page.
 //
@@ -109,7 +112,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
             {rows.map((r) => (
               <tr key={r.id}>
                 <Td style={{ fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
-                  <Link href={`/tutor/review/${r.id}`} style={S.link}>
+                  <Link href={`/admin/questions/${r.id}`} style={S.link}>
                     {r.display_code || r.id.slice(0, 8)}
                   </Link>
                 </Td>
