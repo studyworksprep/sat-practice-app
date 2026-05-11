@@ -11,15 +11,56 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/browser';
 import s from './Home.module.css';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const GRAD_YEARS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR + i);
 
+// If Supabase falls back to the Site URL when the redirect_to it
+// was given isn't on the project allowlist, the magic-link session
+// arrives in the URL fragment of `/` instead of /auth/callback.
+// `detectSessionInUrl` in @supabase/ssr's browser client picks the
+// tokens up and writes them to local-storage / cookies, but the
+// server-side render of this page already happened with no session
+// — so the user sees the login form instead of being redirected.
+// This effect runs once on mount: if the URL has a session-bearing
+// fragment, call setSession explicitly (just in case
+// detectSessionInUrl was disabled by config) and hard-nav to the
+// dashboard so the server-side render runs with the fresh cookies.
+function useAuthFragmentBounce() {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash;
+    if (!hash || !hash.includes('access_token=')) return;
+    const params = new URLSearchParams(hash.slice(1));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    if (!accessToken || !refreshToken) return;
+
+    const supabase = createClient();
+    (async () => {
+      try {
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+      } catch {
+        // setSession can fail if @supabase/ssr already picked the
+        // fragment up via detectSessionInUrl; the redirect below
+        // still works because the cookies are now in place.
+      }
+      // Hard-nav so the proxy and server components run with the
+      // fresh session cookies. Strip the fragment in the process.
+      window.location.replace('/dashboard');
+    })();
+  }, []);
+}
+
 export function HomeClient({ emailConfirmed }) {
   const supabase = createClient();
+  useAuthFragmentBounce();
   const [tab, setTab] = useState('login');
 
   const [loginEmail, setLoginEmail] = useState('');

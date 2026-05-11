@@ -89,9 +89,16 @@ export async function GET(request, { params }) {
     // Where Supabase's /verify endpoint should redirect after it
     // mints the session. /auth/callback handles the code-for-
     // session exchange via exchangeCodeForSession() and then
-    // forwards to ?next=…
+    // forwards to either ?next=, the demo-specific cookie set
+    // below, or the role-appropriate home.
+    //
+    // Do NOT append a query string to the redirect_to — Supabase
+    // checks redirect_to against an allowlist, and many projects
+    // configure exact-match URLs without query params. Anything
+    // unmatched falls back to the project's Site URL, which dumps
+    // the session in the URL fragment at `/`. We carry the demo
+    // destination via the `sw_demo_next` cookie instead.
     const callback = new URL('/auth/callback', url.origin);
-    callback.searchParams.set('next', dest);
 
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return plainError(
@@ -114,7 +121,15 @@ export async function GET(request, { params }) {
       );
     }
 
-    return NextResponse.redirect(data.properties.action_link);
+    const response = NextResponse.redirect(data.properties.action_link);
+    response.cookies.set('sw_demo_next', dest, {
+      path: '/',
+      maxAge: 300,
+      sameSite: 'lax',
+      httpOnly: true,
+      secure: true,
+    });
+    return response;
   } catch (err) {
     return plainError(
       'Unexpected error while starting the demo session.',
