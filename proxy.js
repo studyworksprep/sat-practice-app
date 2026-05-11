@@ -165,6 +165,32 @@ export async function proxy(request) {
   if (user) {
     requestHeaders.set('x-user-id', user.id);
   }
+
+  // Demo-account write lockdown. The DB enforces this authoritatively
+  // via the demo_readonly_* restrictive policies, but rejecting the
+  // request here is faster (no DB round-trip, no Postgres RLS error
+  // to translate) and lets the response carry a clean
+  // "demo accounts are read-only" message. Three classes of write
+  // get gated:
+  //   1) non-GET requests to /api/* (REST mutations)
+  //   2) requests carrying the `next-action` header (server actions)
+  //   3) /auth/demo/* sign-out is allowed through so demo visitors
+  //      can leave the demo; everything else under /auth/ stays free
+  //      since the auth flow is itself a state mutation we permit.
+  // External / public / webhook routes were already short-circuited
+  // above, so we don't reach this block for them.
+  const isDemoSession = user?.app_metadata?.is_demo === true;
+  if (isDemoSession) {
+    const isMutation =
+      (request.nextUrl.pathname.startsWith('/api/') && request.method !== 'GET' && request.method !== 'HEAD') ||
+      request.headers.get('next-action') !== null;
+    if (isMutation) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Demo accounts are read-only' }),
+        { status: 403, headers: { 'content-type': 'application/json' } },
+      );
+    }
+  }
   // Pass the original request pathname so server components / layouts
   // can read it via headers() when they need to (Next.js doesn't
   // expose pathname to layouts directly). Used by the (student)

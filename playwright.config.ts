@@ -84,6 +84,22 @@ export default defineConfig({
         storageState: 'tests/.auth/admin.json',
       },
     },
+
+    // ---- Marketing screenshots. Runs against the demo accounts
+    //      seeded by the demo-accounts migration + scripts/seed-
+    //      demo-data.mjs. Each spec signs in via /auth/demo/<persona>
+    //      and captures the marked URLs into public/screenshots/.
+    //      Has no `dependencies: ['setup']` — it uses its own
+    //      auto-login flow, not the form-driven storage state.
+    {
+      name: 'screenshots',
+      testDir: './tests/screenshots',
+      testMatch: /.+\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+      },
+    },
   ],
 
   // Boot a local dev server only when the suite isn't pointed at a
