@@ -590,13 +590,19 @@ export async function finishModule(_prev, formData) {
     });
 
     // Pick the available route for module 2 — fall back gracefully
-    // if the test is missing its hard / easy module.
+    // if the test is missing its hard / easy module. The `order by`
+    // is deliberate: resolveRoute's last-resort fallback iterates
+    // the Set in insertion order, and without an ORDER BY the
+    // physical row order (which for several existing tests happens
+    // to be 'easy' first) silently routed every NULL-threshold
+    // student to easy.
     const { data: module2Options } = await supabase
       .from('practice_test_modules_v2')
       .select('id, subject_code, module_number, route_code')
       .eq('practice_test_id', testId)
       .eq('subject_code', subject)
-      .eq('module_number', 2);
+      .eq('module_number', 2)
+      .order('route_code', { ascending: true });
 
     const routes = availableRoutes(module2Options ?? [], subject, 2);
     const resolved = resolveRoute(routes, preferred);
