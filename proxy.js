@@ -166,25 +166,33 @@ export async function proxy(request) {
     requestHeaders.set('x-user-id', user.id);
   }
 
-  // Demo-account write lockdown. The DB enforces this authoritatively
-  // via the demo_readonly_* restrictive policies, but rejecting the
-  // request here is faster (no DB round-trip, no Postgres RLS error
-  // to translate) and lets the response carry a clean
-  // "demo accounts are read-only" message. Three classes of write
-  // get gated:
-  //   1) non-GET requests to /api/* (REST mutations)
-  //   2) requests carrying the `next-action` header (server actions)
-  //   3) /auth/demo/* sign-out is allowed through so demo visitors
-  //      can leave the demo; everything else under /auth/ stays free
-  //      since the auth flow is itself a state mutation we permit.
-  // External / public / webhook routes were already short-circuited
-  // above, so we don't reach this block for them.
+  // Demo-account write lockdown for REST mutations. The DB
+  // enforces this authoritatively via the demo_readonly_*
+  // restrictive policies, but rejecting raw /api/* writes here
+  // is faster (no DB round-trip, no Postgres RLS error to
+  // translate) and lets the response carry a clean
+  // "demo accounts are read-only" message.
+  //
+  // Server actions (POSTs carrying the `next-action` header)
+  // are deliberately NOT gated here. The proxy can't tell a
+  // read action (countAvailable, searchQuestions) from a write
+  // action (updateTargetScore), and read actions auto-fire on
+  // mount from several pages — blocking them breaks the demo
+  // experience. Demo writes from server actions still fail at
+  // the DB layer via RLS; the user sees a Postgres "row
+  // violates RLS" error in the rare case they click a button
+  // that mutates, which is an acceptable trade for the demo
+  // surface to navigate cleanly.
+  //
+  // External / public / webhook routes were already short-
+  // circuited above, so we don't reach this block for them.
   const isDemoSession = user?.app_metadata?.is_demo === true;
   if (isDemoSession) {
-    const isMutation =
-      (request.nextUrl.pathname.startsWith('/api/') && request.method !== 'GET' && request.method !== 'HEAD') ||
-      request.headers.get('next-action') !== null;
-    if (isMutation) {
+    const isApiMutation =
+      request.nextUrl.pathname.startsWith('/api/') &&
+      request.method !== 'GET' &&
+      request.method !== 'HEAD';
+    if (isApiMutation) {
       return new NextResponse(
         JSON.stringify({ error: 'Demo accounts are read-only' }),
         { status: 403, headers: { 'content-type': 'application/json' } },
