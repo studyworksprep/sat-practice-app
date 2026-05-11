@@ -169,6 +169,16 @@ on conflict (provider, provider_id) do nothing;
 -- so the proxy's subscription gate doesn't redirect them; and
 -- ui_version='next' so they land in the new tree (which is the
 -- design language we want screenshotted).
+--
+-- ON CONFLICT DO UPDATE (not DO NOTHING) because the existing
+-- on_auth_user_created trigger inserts a profiles row with
+-- default values the moment the auth.users insert above fires.
+-- DO NOTHING would leave us with the trigger's defaults
+-- (role='practice', is_demo=false, ui_version='legacy') and
+-- the marketing personas would never appear correctly. The
+-- DO UPDATE clause replays the intended fields each run, which
+-- also makes this migration safely idempotent on schema
+-- refreshes.
 
 insert into public.profiles (
   id, email, role, is_demo, subscription_exempt, ui_version,
@@ -223,7 +233,16 @@ values
     'student', true, true, 'next',
     'Joaquin', 'Mercer', 1420, 2027, 'Lincoln Prep High School'
   )
-on conflict (id) do nothing;
+on conflict (id) do update set
+  role                = excluded.role,
+  is_demo             = excluded.is_demo,
+  subscription_exempt = excluded.subscription_exempt,
+  ui_version          = excluded.ui_version,
+  first_name          = excluded.first_name,
+  last_name           = excluded.last_name,
+  target_sat_score    = excluded.target_sat_score,
+  graduation_year     = excluded.graduation_year,
+  high_school         = excluded.high_school;
 
 -- ---- 3) Roster wiring --------------------------------------
 -- Manager visibility resolves through two joins:
