@@ -1,0 +1,83 @@
+name: Regenerate marketing screenshots
+
+# Drives the Playwright screenshots project against a deployed
+# preview / production URL. Signs in as each demo persona via
+# /auth/demo/<persona>, captures every URL declared in
+# tests/screenshots/marketing.spec.ts, and commits the regenerated
+# PNGs in public/screenshots/ back to the branch that triggered
+# the workflow.
+#
+# Trigger from the GitHub UI:
+#   Actions → "Regenerate marketing screenshots" → Run workflow.
+#   * base-url: the deployed URL to capture from
+#       (e.g. https://www.studyworks.io, or a Vercel preview URL).
+#   * branch: which branch to commit the PNGs to. Defaults to the
+#       branch you launched the workflow from.
+#
+# No secrets are required — the workflow drives the public
+# /auth/demo/<persona> route to acquire a session, which is the
+# same code path a marketing visitor uses.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base-url:
+        description: "Deployed URL to capture against (e.g. https://www.studyworks.io)"
+        required: true
+        default: "https://www.studyworks.io"
+
+permissions:
+  # We commit the regenerated PNGs back to the branch.
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run screenshot capture
+        env:
+          E2E_BASE_URL: ${{ inputs.base-url }}
+        run: npx playwright test --project=screenshots
+
+      - name: Commit regenerated PNGs
+        # Push a follow-up commit on the same branch only when the
+        # capture actually changed pixels. `git diff --quiet` exits
+        # nonzero when there are changes, so we invert it.
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/screenshots/
+          if git diff --staged --quiet; then
+            echo "No screenshot changes to commit."
+            exit 0
+          fi
+          git commit -m "Regenerate marketing screenshots from ${{ inputs.base-url }}"
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Upload PNGs as workflow artifact
+        # Belt-and-suspenders: if the commit step is misconfigured
+        # for any reason (branch protection, force-push needed),
+        # the captured PNGs still come out the GitHub Actions UI
+        # as a downloadable zip.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: public/screenshots/
+          retention-days: 7
