@@ -42,6 +42,7 @@ export function TestResultsInteractive({
   startedAt,
   finishedAt,
   composite,
+  sectionsOnly = null,
   sections,
   domains,
   opportunity,
@@ -156,6 +157,11 @@ export function TestResultsInteractive({
                   year: 'numeric', month: 'long', day: 'numeric',
                 })
               : '—'}
+            {sectionsOnly && (
+              <span className={s.sectionsOnlyBadge}>
+                {sectionsOnly === 'RW' ? 'R&W only' : 'Math only'}
+              </span>
+            )}
             {status === 'abandoned' && <span className={s.abandonedTag}> · Abandoned</span>}
           </div>
         </div>
@@ -182,29 +188,45 @@ export function TestResultsInteractive({
 
       {pdfError && <p role="alert" className={s.pdfError}>{pdfError}</p>}
 
-      {/* ---------- Composite + section scores ---------- */}
+      {/* ---------- Composite + section scores ----------
+          Section-only attempts (sectionsOnly = 'RW' | 'MATH') don't
+          have a composite — the hero card swaps to the single-section
+          scaled score (out of 800), and the section-tile row collapses
+          to just the section the student sat. */}
       <section className={s.compositeCard}>
-        <div className={s.compositeLabel}>Composite score</div>
-        <div className={s.compositeValue}>{composite ?? '—'}</div>
-        <div className={s.compositeMax}> / 1600</div>
+        <div className={s.compositeLabel}>
+          {sectionsOnly === 'RW'   ? 'R&W section score' :
+           sectionsOnly === 'MATH' ? 'Math section score' :
+                                     'Composite score'}
+        </div>
+        <div className={s.compositeValue}>
+          {sectionsOnly === 'RW'   ? (sections.RW?.scaled   ?? '—') :
+           sectionsOnly === 'MATH' ? (sections.MATH?.scaled ?? '—') :
+                                     (composite ?? '—')}
+        </div>
+        <div className={s.compositeMax}>
+          {sectionsOnly ? ' / 800' : ' / 1600'}
+        </div>
       </section>
 
-      <section className={s.sectionScoreRow}>
-        <SectionTile
-          label="Reading & Writing"
-          tone="rw"
-          scaled={sections.RW?.scaled}
-          correct={sections.RW?.correct}
-          total={sections.RW?.total}
-        />
-        <SectionTile
-          label="Math"
-          tone="math"
-          scaled={sections.MATH?.scaled}
-          correct={sections.MATH?.correct}
-          total={sections.MATH?.total}
-        />
-      </section>
+      {!sectionsOnly && (
+        <section className={s.sectionScoreRow}>
+          <SectionTile
+            label="Reading & Writing"
+            tone="rw"
+            scaled={sections.RW?.scaled}
+            correct={sections.RW?.correct}
+            total={sections.RW?.total}
+          />
+          <SectionTile
+            label="Math"
+            tone="math"
+            scaled={sections.MATH?.scaled}
+            correct={sections.MATH?.correct}
+            total={sections.MATH?.total}
+          />
+        </section>
+      )}
 
       {/* ---------- Domain / skill breakdown ----------
           Stacked-skill bars per domain. Skill segments size by

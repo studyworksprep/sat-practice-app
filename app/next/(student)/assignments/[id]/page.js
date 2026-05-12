@@ -17,17 +17,16 @@
 //   'practice_test' — shows a launch link to the next-tree
 //                     /practice/test/<testId> launch page, which
 //                     handles attempt creation and routing into
-//                     the runner. Earlier revisions linked to the
-//                     legacy /practice-test?test=<id> URL with
-//                     external=true, but for ui_version='next'
-//                     users the middleware rewrites that to
+//                     the runner. When filter_criteria.sections is
+//                     'rw' or 'math' we append ?sections=<v>; the
+//                     launch picker pre-fills from that but the
+//                     student can still override. Earlier revisions
+//                     linked to the legacy /practice-test?test=<id>
+//                     URL with external=true, but for ui_version=
+//                     'next' users the middleware rewrites that to
 //                     /next/practice-test, which has no concrete
 //                     route and falls through to the [...slug]
-//                     catch-all → redirect('/dashboard'). The
-//                     fix is to point at the rebuilt route
-//                     directly. Note: filter_criteria.sections
-//                     ('rw' / 'math' / 'both') is not yet honored
-//                     by the next-tree runner — full test only.
+//                     catch-all → redirect('/dashboard').
 //
 //   'lesson'        — shows the lesson title + description. Lessons
 //                     are not fully implemented yet; the row is
@@ -325,6 +324,12 @@ function QuestionsView({ assignment, rows, completed, latestSessionId }) {
 function PracticeTestView({ assignment }) {
   const pt = assignment.practice_test;
   const sections = assignment.filter_criteria?.sections;
+  // Propagate the assignment's section preference to the launch
+  // page as ?sections=rw|math. The picker on the launch screen
+  // pre-fills from this but allows the student to override.
+  const launchHref = sections && sections !== 'both'
+    ? `/practice/test/${assignment.practice_test_id}?sections=${sections}`
+    : `/practice/test/${assignment.practice_test_id}`;
 
   return (
     <section style={{
@@ -343,7 +348,7 @@ function PracticeTestView({ assignment }) {
         </div>
       )}
       <Button
-        href={`/practice/test/${assignment.practice_test_id}`}
+        href={launchHref}
         style={{ alignSelf: 'flex-start' }}
       >
         Launch practice test

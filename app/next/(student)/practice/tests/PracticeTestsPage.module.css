@@ -230,6 +230,20 @@
   color: var(--fg1);
 }
 
+.sectionsOnlyPill {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-100);
+  color: var(--fg2);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
 .testMeta {
   font-size: 11px;
   color: var(--fg3);

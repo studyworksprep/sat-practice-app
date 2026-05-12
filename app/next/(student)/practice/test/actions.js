@@ -64,6 +64,15 @@ export async function startTestAttempt(_prev, formData) {
   const testId = String(formData.get('testId') ?? '');
   if (!testId) return actionFail('testId required');
 
+  // Sections restriction. URL/legacy shape uses lowercase
+  // 'rw' | 'math' | 'both'; we normalize to the uppercase subject_code
+  // values used everywhere else in v2 and store null for "both".
+  const sectionsRaw = String(formData.get('sections') ?? '').toLowerCase();
+  const sectionsOnly =
+    sectionsRaw === 'rw' ? 'RW' :
+    sectionsRaw === 'math' ? 'MATH' :
+    null;
+
   // Optional time-accommodation multiplier. Clamped to the same
   // [1.0, 3.0] range the DB check enforces so a malformed client
   // value doesn't reach the insert.
@@ -88,19 +97,21 @@ export async function startTestAttempt(_prev, formData) {
     return actionFail('Test not available');
   }
 
-  // Find the first module (RW, module 1, std route). This is the
-  // entry point for every attempt — adaptive routing only affects
-  // module 2 within each section.
+  // Pick the entry module. For full tests and RW-only attempts that's
+  // RW module 1 std; for MATH-only it's MATH module 1 std. Adaptive
+  // routing for module 1 → module 2 still applies within the chosen
+  // section.
+  const firstSubject = sectionsOnly === 'MATH' ? 'MATH' : 'RW';
   const { data: firstModule } = await supabase
     .from('practice_test_modules_v2')
     .select('id, subject_code, module_number, route_code, time_limit_seconds')
     .eq('practice_test_id', testId)
-    .eq('subject_code', 'RW')
+    .eq('subject_code', firstSubject)
     .eq('module_number', 1)
     .eq('route_code', 'std')
     .maybeSingle();
   if (!firstModule) {
-    return actionFail('This test is missing its first module. Contact support.');
+    return actionFail(`This test is missing its first ${firstSubject} module. Contact support.`);
   }
 
   // Abandon any other in-progress attempt for this user so the
@@ -120,6 +131,7 @@ export async function startTestAttempt(_prev, formData) {
       status: 'in_progress',
       source: 'app',
       time_multiplier: timeMultiplier,
+      sections_only: sectionsOnly,
     })
     .select('id')
     .single();
@@ -531,7 +543,7 @@ export async function finishModule(_prev, formData) {
         id, subject_code, module_number, route_code, practice_test_id
       ),
       practice_test_attempt:practice_test_attempts_v2(
-        id, user_id, status, practice_test_id,
+        id, user_id, status, practice_test_id, sections_only,
         practice_test:practice_tests_v2(
           id, is_adaptive, rw_route_threshold, math_route_threshold
         )
@@ -579,6 +591,7 @@ export async function finishModule(_prev, formData) {
   const subject       = currentModule.subject_code;
   const moduleNumber  = currentModule.module_number;
   const testId        = test.id;
+  const sectionsOnly  = moduleAttempt.practice_test_attempt.sections_only;
 
   // CASE A: module 1 of a section → route module 2 adaptively.
   if (moduleNumber === 1) {
@@ -621,8 +634,18 @@ export async function finishModule(_prev, formData) {
     return { ok: true, nextModuleAttemptId: nextAttempt.id, step: 'next-module' };
   }
 
-  // CASE B: module 2 of RW → start Math module 1.
+  // CASE B: module 2 of RW → start Math module 1, unless the
+  // student opted into an RW-only attempt, in which case the test
+  // ends here and we score off the two RW modules alone.
   if (subject === 'RW' && moduleNumber === 2) {
+    if (sectionsOnly === 'RW') {
+      await closeTestAttempt(supabase, moduleAttempt.practice_test_attempt_id);
+      return {
+        ok: true,
+        step: 'test-complete',
+        attemptId: moduleAttempt.practice_test_attempt_id,
+      };
+    }
     const { data: mathModule1 } = await supabase
       .from('practice_test_modules_v2')
       .select('id')
@@ -684,6 +707,7 @@ async function closeTestAttempt(supabase, attemptId) {
 // route next" answer so the client lands in the right place.
 async function deriveFinishReturn(supabase, moduleAttempt) {
   const m = moduleAttempt.practice_test_module;
+  const sectionsOnly = moduleAttempt.practice_test_attempt?.sections_only ?? null;
   if (m.module_number === 1) {
     const { data: nextRow } = await supabase
       .from('practice_test_module_attempts_v2')
@@ -698,7 +722,8 @@ async function deriveFinishReturn(supabase, moduleAttempt) {
       ? { ok: true, nextModuleAttemptId: next.id, step: 'next-module' }
       : actionFail('Next module not created');
   }
-  if (m.subject_code === 'RW' && m.module_number === 2) {
+  // RW mod 2 → MATH mod 1, except RW-only attempts terminate here.
+  if (m.subject_code === 'RW' && m.module_number === 2 && sectionsOnly !== 'RW') {
     const { data: nextRow } = await supabase
       .from('practice_test_module_attempts_v2')
       .select('id, practice_test_module:practice_test_modules_v2(subject_code, module_number)')
