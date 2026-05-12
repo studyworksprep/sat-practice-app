@@ -121,20 +121,16 @@
   border-color: var(--border-strong);
 }
 
-/* ---------- Strip body (cell track + Submit Set) ---------- */
+/* ---------- Cell track (with Finish pill inline at the end) ---------- */
 
-.stripBody {
-  display: flex;
-  align-items: stretch;
-  gap: 12px;
-}
-
-/* Track grows to fill, Submit Set sits flush right. The track
-   uses auto-fill so a set of 5 questions stretches sensibly and
-   30+ questions still wrap into a tight grid without horizontal
-   scroll. */
+/* The track uses auto-fill so a set of 5 questions stretches
+   sensibly and 30+ questions still wrap into a tight grid
+   without horizontal scroll. The Finish pill is the last grid
+   item — it spans two columns so it reads as a slightly bigger
+   pill at the end of the questions, visually the "last step
+   after the questions" rather than a flush-right primary
+   button that competes with the per-question Submit. */
 .track {
-  flex: 1;
   min-width: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
@@ -308,31 +304,40 @@
   cursor: pointer;
 }
 
-/* ---------- Submit Set button (end of strip + modal) ---------- */
+/* ---------- Finish pill (last item in the cell track) ---------- */
 
-.submitBtn {
-  flex-shrink: 0;
-  align-self: stretch;
+/* Spans two grid columns and overrides the cell's square aspect-
+   ratio so the label fits comfortably. Accent fill keeps it
+   discoverable; sitting after the last question (rather than
+   flush-right at the bottom of the strip) decouples it from the
+   per-question Submit button below the question card. */
+.finishPill {
+  grid-column: span 2;
+  aspect-ratio: auto;
   display: inline-flex;
   align-items: center;
-  padding: 8px 16px;
+  justify-content: center;
+  padding: 0 12px;
+  min-height: 36px;
   background: var(--color-app-accent);
   color: var(--bg-white);
   border: 1px solid var(--color-app-accent);
   border-radius: 8px;
-  font-family: inherit;
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease-std);
+  transition: background var(--dur-fast) var(--ease-std), transform var(--dur-fast) var(--ease-std);
 }
 
-.submitBtn:hover:not(:disabled) {
+.finishPill:hover:not(:disabled) {
   background: var(--color-app-accent-hover);
   border-color: var(--color-app-accent-hover);
+  transform: translateY(-1px);
 }
 
-.submitBtn:disabled {
+.finishPill:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -341,10 +346,4 @@
   width: 100%;
   color: var(--color-diff-hard-fg);
   font-size: 12px;
-}
-
-.modalSubmit {
-  margin-top: var(--s3);
-  display: flex;
-  justify-content: flex-end;
 }
