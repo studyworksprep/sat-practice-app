@@ -289,6 +289,20 @@
   word-break: break-word;
 }
 
+.sectionsOnlyPill {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-100);
+  color: var(--fg2);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
 .trainingRowMeta {
   font-size: 11px;
   color: var(--fg3);

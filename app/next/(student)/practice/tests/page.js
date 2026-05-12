@@ -36,7 +36,7 @@ export default async function PracticeTestsPage() {
       .from('practice_test_attempts_v2')
       .select(`
         id, practice_test_id, status, started_at, finished_at,
-        composite_score, rw_scaled, math_scaled,
+        composite_score, rw_scaled, math_scaled, sections_only,
         time_multiplier, adaptive_version,
         practice_test:practice_tests_v2 (name, code, is_adaptive)
       `)
@@ -408,6 +408,11 @@ function HistoryTable({ attempts }) {
               <td className={s.td}>
                 <div className={s.testName}>
                   {a.practice_test?.name ?? 'Practice test'}
+                  {a.sections_only && (
+                    <span className={s.sectionsOnlyPill}>
+                      {a.sections_only === 'RW' ? 'R&W only' : 'Math only'}
+                    </span>
+                  )}
                 </div>
                 <div className={s.testMeta}>
                   {a.practice_test?.code ?? ''}

@@ -42,6 +42,7 @@ export function TestResultsInteractive({
   startedAt,
   finishedAt,
   composite,
+  sectionsOnly = null,
   sections,
   domains,
   opportunity,
@@ -156,6 +157,11 @@ export function TestResultsInteractive({
                   year: 'numeric', month: 'long', day: 'numeric',
                 })
               : '—'}
+            {sectionsOnly && (
+              <span className={s.sectionsOnlyBadge}>
+                {sectionsOnly === 'RW' ? 'R&W only' : 'Math only'}
+              </span>
+            )}
             {status === 'abandoned' && <span className={s.abandonedTag}> · Abandoned</span>}
           </div>
         </div>
@@ -182,29 +188,67 @@ export function TestResultsInteractive({
 
       {pdfError && <p role="alert" className={s.pdfError}>{pdfError}</p>}
 
-      {/* ---------- Composite + section scores ---------- */}
+      {/* ---------- Composite + section scores ----------
+          Section-only attempts (sectionsOnly = 'RW' | 'MATH') don't
+          have a composite — the hero card swaps to the single-section
+          scaled score (out of 800), and the section-tile row collapses
+          to just the section the student sat. The adaptive route
+          (easy/hard for module 2) appears in the section tiles for
+          full tests, or tucked beneath the hero score for section-
+          only attempts so it isn't missing. */}
       <section className={s.compositeCard}>
-        <div className={s.compositeLabel}>Composite score</div>
-        <div className={s.compositeValue}>{composite ?? '—'}</div>
-        <div className={s.compositeMax}> / 1600</div>
+        <div className={s.compositeLabel}>
+          {sectionsOnly === 'RW'   ? 'R&W section score' :
+           sectionsOnly === 'MATH' ? 'Math section score' :
+                                     'Composite score'}
+        </div>
+        <div className={s.compositeValue}>
+          {sectionsOnly === 'RW'   ? (sections.RW?.scaled   ?? '—') :
+           sectionsOnly === 'MATH' ? (sections.MATH?.scaled ?? '—') :
+                                     (composite ?? '—')}
+        </div>
+        <div className={s.compositeMax}>
+          {sectionsOnly ? ' / 800' : ' / 1600'}
+        </div>
+        {sectionsOnly && (() => {
+          const code = sectionsOnly === 'RW'
+            ? sections.RW?.routeCode
+            : sections.MATH?.routeCode;
+          const label = formatRouteLabel(code);
+          if (!label) return null;
+          return (
+            <div
+              className={`${s.routeBadge} ${
+                code === 'hard' ? s.routeBadgeHard : s.routeBadgeEasy
+              } ${s.routeBadgeHero}`}
+              title="Adaptive route the student was placed on for module 2"
+            >
+              Module 2 · {label}
+            </div>
+          );
+        })()}
       </section>
 
-      <section className={s.sectionScoreRow}>
-        <SectionTile
-          label="Reading & Writing"
-          tone="rw"
-          scaled={sections.RW?.scaled}
-          correct={sections.RW?.correct}
-          total={sections.RW?.total}
-        />
-        <SectionTile
-          label="Math"
-          tone="math"
-          scaled={sections.MATH?.scaled}
-          correct={sections.MATH?.correct}
-          total={sections.MATH?.total}
-        />
-      </section>
+      {!sectionsOnly && (
+        <section className={s.sectionScoreRow}>
+          <SectionTile
+            label="Reading & Writing"
+            tone="rw"
+            scaled={sections.RW?.scaled}
+            correct={sections.RW?.correct}
+            total={sections.RW?.total}
+            routeCode={sections.RW?.routeCode}
+          />
+          <SectionTile
+            label="Math"
+            tone="math"
+            scaled={sections.MATH?.scaled}
+            correct={sections.MATH?.correct}
+            total={sections.MATH?.total}
+            routeCode={sections.MATH?.routeCode}
+          />
+        </section>
+      )}
 
       {/* ---------- Domain / skill breakdown ----------
           Stacked-skill bars per domain. Skill segments size by
@@ -697,8 +741,9 @@ function RecalculateScoreDialog({
 
 // ──────────────────────────────────────────────────────────────
 
-function SectionTile({ label, tone, scaled, correct, total }) {
+function SectionTile({ label, tone, scaled, correct, total, routeCode }) {
   const cls = tone === 'rw' ? s.sectionTileRw : s.sectionTileMath;
+  const routeLabel = formatRouteLabel(routeCode);
   return (
     <div className={`${s.sectionTile} ${cls}`}>
       <div className={s.sectionTileLabel}>{label}</div>
@@ -710,8 +755,28 @@ function SectionTile({ label, tone, scaled, correct, total }) {
         {correct ?? 0} correct
         {total > 0 && <span className={s.sectionTileOver}> / {total}</span>}
       </div>
+      {routeLabel && (
+        <div
+          className={`${s.routeBadge} ${
+            routeCode === 'hard' ? s.routeBadgeHard : s.routeBadgeEasy
+          }`}
+          title="Adaptive route the student was placed on for module 2"
+        >
+          Module 2 · {routeLabel}
+        </div>
+      )}
     </div>
   );
+}
+
+// Adaptive route → display string. Non-adaptive tests carry
+// route_code='std' (single module 2 for everyone); there's nothing
+// useful to surface for those, so we return null and the badge
+// renders only on tests that actually routed.
+function formatRouteLabel(routeCode) {
+  if (routeCode === 'hard') return 'Hard';
+  if (routeCode === 'easy') return 'Easy';
+  return null;
 }
 
 function normalizeDomain(d, priorityKeys = null) {

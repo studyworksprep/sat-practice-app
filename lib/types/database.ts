@@ -660,15 +660,8 @@ export type Database = {
             foreignKeyName: "desmos_saved_states_question_id_fkey"
             columns: ["question_id"]
             isOneToOne: true
-            referencedRelation: "questions"
+            referencedRelation: "questions_v2"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "desmos_saved_states_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
           },
           {
             foreignKeyName: "desmos_saved_states_saved_by_fkey"
@@ -1246,6 +1239,7 @@ export type Database = {
           math_scaled: number | null
           practice_test_id: string
           rw_scaled: number | null
+          sections_only: string | null
           source: string
           started_at: string
           status: string
@@ -1261,6 +1255,7 @@ export type Database = {
           math_scaled?: number | null
           practice_test_id: string
           rw_scaled?: number | null
+          sections_only?: string | null
           source?: string
           started_at?: string
           status: string
@@ -1276,6 +1271,7 @@ export type Database = {
           math_scaled?: number | null
           practice_test_id?: string
           rw_scaled?: number | null
+          sections_only?: string | null
           source?: string
           started_at?: string
           status?: string
@@ -1435,6 +1431,8 @@ export type Database = {
           correct_count: number | null
           finished_at: string | null
           id: string
+          paused_at: string | null
+          paused_at_position: number | null
           practice_test_attempt_id: string
           practice_test_module_id: string
           raw_score: number | null
@@ -1444,6 +1442,8 @@ export type Database = {
           correct_count?: number | null
           finished_at?: string | null
           id?: string
+          paused_at?: string | null
+          paused_at_position?: number | null
           practice_test_attempt_id: string
           practice_test_module_id: string
           raw_score?: number | null
@@ -1453,6 +1453,8 @@ export type Database = {
           correct_count?: number | null
           finished_at?: string | null
           id?: string
+          paused_at?: string | null
+          paused_at_position?: number | null
           practice_test_attempt_id?: string
           practice_test_module_id?: string
           raw_score?: number | null
@@ -1768,6 +1770,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          banned_at: string | null
           created_at: string | null
           email: string | null
           first_name: string | null
@@ -1775,6 +1778,7 @@ export type Database = {
           high_school: string | null
           id: string
           is_active: boolean
+          is_demo: boolean
           last_name: string | null
           practice_test_v2_imported_at: string | null
           role: string
@@ -1788,6 +1792,7 @@ export type Database = {
           user_type: string | null
         }
         Insert: {
+          banned_at?: string | null
           created_at?: string | null
           email?: string | null
           first_name?: string | null
@@ -1795,6 +1800,7 @@ export type Database = {
           high_school?: string | null
           id: string
           is_active?: boolean
+          is_demo?: boolean
           last_name?: string | null
           practice_test_v2_imported_at?: string | null
           role?: string
@@ -1808,6 +1814,7 @@ export type Database = {
           user_type?: string | null
         }
         Update: {
+          banned_at?: string | null
           created_at?: string | null
           email?: string | null
           first_name?: string | null
@@ -1815,6 +1822,7 @@ export type Database = {
           high_school?: string | null
           id?: string
           is_active?: boolean
+          is_demo?: boolean
           last_name?: string | null
           practice_test_v2_imported_at?: string | null
           role?: string
@@ -3438,6 +3446,14 @@ export type Database = {
       }
     }
     Functions: {
+      assignment_has_visible_student: {
+        Args: { p_assignment_id: string }
+        Returns: boolean
+      }
+      assignment_teacher_visible: {
+        Args: { p_assignment_id: string }
+        Returns: boolean
+      }
       backfill_questions_v2_correct_labels: { Args: never; Returns: number }
       backfill_questions_v2_display_codes: { Args: never; Returns: number }
       can_view: { Args: { target: string }; Returns: boolean }
@@ -3568,6 +3584,14 @@ export type Database = {
           week_attempts: number
         }[]
       }
+      get_student_extended_stats: {
+        Args: { p_lookback_start: string; p_user_id: string }
+        Returns: {
+          by_day: Json
+          by_difficulty: Json
+          by_score_band: Json
+        }[]
+      }
       get_user_practice_summary: {
         Args: never
         Returns: {
@@ -3598,6 +3622,7 @@ export type Database = {
         Args: { p_assignment_id: string; p_teacher_id: string }
         Returns: boolean
       }
+      is_demo: { Args: never; Returns: boolean }
       is_lesson_assignment_student: {
         Args: { p_assignment_id: string; p_student_id: string }
         Returns: boolean

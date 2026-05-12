@@ -15,8 +15,17 @@ import { LaunchInteractive } from './LaunchInteractive';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PracticeTestLaunchPage({ params }) {
+export default async function PracticeTestLaunchPage({ params, searchParams }) {
   const { testId } = await params;
+  const resolvedSearch = searchParams ? await searchParams : {};
+  // Initial section selection. URL shape matches the legacy launcher
+  // ('rw' | 'math' | 'both'); a missing param means full test. The
+  // picker on the launch screen lets the student override either way.
+  const rawSections = String(resolvedSearch?.sections ?? '').toLowerCase();
+  const initialSections =
+    rawSections === 'rw' ? 'rw' :
+    rawSections === 'math' ? 'math' :
+    'both';
   const { user, profile, supabase } = await requireUser();
 
   // Tutors + managers reach this surface from /tutor/training/tests
@@ -78,6 +87,7 @@ export default async function PracticeTestLaunchPage({ params }) {
       inProgress={inProgress
         ? { attemptId: inProgress.id, sameTest: inProgress.practice_test_id === test.id }
         : null}
+      initialSections={initialSections}
       startTestAttemptAction={startTestAttempt}
     />
   );

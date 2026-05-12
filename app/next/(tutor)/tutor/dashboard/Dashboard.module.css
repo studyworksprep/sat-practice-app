@@ -360,6 +360,20 @@
   color: var(--fg3);
 }
 
+.assignmentTypePill {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-100);
+  color: var(--fg2);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
 .testRowTag {
   color: var(--color-diff-med-fg);
   font-weight: 600;

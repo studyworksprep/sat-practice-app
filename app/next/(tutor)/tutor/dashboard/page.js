@@ -8,17 +8,22 @@
 //     deliberately dropped: the per-student detail page is where
 //     that data belongs, and aggregating across the whole attempts
 //     table on this surface was the slowest thing on the page.
-//   - practice_test_attempts_v2 (limit 5) for the "Recent practice
-//     tests" panel.
+//   - assignment_students_v2 (limit 8) for the "Recent assignments
+//     completed" panel. Most tutors operate through assignments,
+//     and practice-test assignments now auto-complete their
+//     junction row when the attempt finishes, so this panel
+//     covers question, lesson, and practice-test completions in
+//     one place. Self-directed practice + practice tests are
+//     still reachable through the roster → student page.
 //
 // Layout: banner with roster size, primary content panel
-// (RosterFinder), secondary panel (recent test attempts).
+// (RosterFinder), secondary panel (recent assignment completions).
 
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
-import { TestIcon } from '@/lib/ui/icons';
+import { ClipboardCheckIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { loadTutorDashboard } from '@/lib/practice/load-tutor-dashboard';
 import { RosterFinder } from './RosterFinder';
@@ -56,7 +61,7 @@ export default async function TutorDashboardPage() {
     );
   }
 
-  const { rawStudents, recentTestAttempts } = payload;
+  const { rawStudents, recentCompletions } = payload;
   const students = rawStudents.slice(0, STUDENT_LIMIT).map((row) => ({
     id: row.user_id,
     name: [row.first_name, row.last_name].filter(Boolean).join(' ') || row.email || '—',
@@ -72,18 +77,29 @@ export default async function TutorDashboardPage() {
   };
 
   const studentsById = new Map(students.map((st) => [st.id, st]));
-  const testRows = (recentTestAttempts ?? []).map((r) => ({
-    id: r.id,
-    studentId: r.user_id,
-    studentName: studentsById.get(r.user_id)?.name ?? '—',
-    testName: r.practice_test?.name ?? 'Practice test',
-    testCode: r.practice_test?.code ?? '',
-    status: r.status,
-    composite: r.composite_score,
-    rwScaled: r.rw_scaled,
-    mathScaled: r.math_scaled,
-    timestamp: r.finished_at ?? r.started_at,
-  }));
+
+  // Recent completion rows for the panel. Each row's link points to
+  // the student detail page so the tutor can drill into the specific
+  // session / attempt from there — no per-assignment tutor URL
+  // exists yet and a student page lists both kinds of work.
+  const completionRows = (recentCompletions ?? [])
+    .filter((r) => r.assignment != null)
+    .map((r) => {
+      const a = r.assignment;
+      const title =
+        a.title
+        ?? (a.assignment_type === 'practice_test' ? a.practice_test?.name : null)
+        ?? (a.assignment_type === 'lesson' ? a.lesson?.title : null)
+        ?? 'Assignment';
+      return {
+        id: `${a.id}:${r.student_id}`,
+        studentId: r.student_id,
+        studentName: studentsById.get(r.student_id)?.name ?? '—',
+        title,
+        assignmentType: a.assignment_type,
+        completedAt: r.completed_at,
+      };
+    });
 
   const greeting = profile.first_name
     ? `Welcome back, ${profile.first_name}.`
@@ -120,60 +136,37 @@ export default async function TutorDashboardPage() {
         <RosterFinder students={students} />
       )}
 
-      {/* ---------- Recent test attempts across the roster ---------- */}
-      {testRows.length > 0 && (
+      {/* ---------- Recent assignments completed ---------- */}
+      {completionRows.length > 0 && (
         <section className={s.card}>
           <div className={s.cardHeader}>
             <div className={s.sectionLabel}>
-              <IconTile icon={TestIcon} palette="cyan" size="sm" />
-              Recent practice tests
+              <IconTile icon={ClipboardCheckIcon} palette="success" size="sm" />
+              Recent assignments completed
+            </div>
+            <div className={s.cardHeaderHint}>
+              Self-directed practice and standalone tests live on each
+              student&apos;s page — find them via the roster above.
             </div>
           </div>
           <ul className={s.testList}>
-            {testRows.map((t) => (
-              <li key={t.id}>
+            {completionRows.map((row) => (
+              <li key={row.id}>
                 <Link
-                  href={t.status === 'completed'
-                    ? `/tutor/students/${t.studentId}/tests/${t.id}/results`
-                    : `/tutor/students/${t.studentId}`}
+                  href={`/tutor/students/${row.studentId}`}
                   className={s.testRow}
                 >
                   <div className={s.testRowLeft}>
-                    <div className={s.testRowName}>{t.studentName}</div>
+                    <div className={s.testRowName}>{row.studentName}</div>
                     <div className={s.testRowMeta}>
-                      {t.testName} · {formatRelativeShort(t.timestamp) ?? '—'}
-                      {t.status !== 'completed' && (
-                        <span className={s.testRowTag}>
-                          {' · '}
-                          {t.status === 'in_progress' ? 'In progress' : 'Abandoned'}
-                        </span>
-                      )}
+                      <span className={s.assignmentTypePill}>
+                        {assignmentTypeLabel(row.assignmentType)}
+                      </span>
+                      {' '}
+                      {row.title}
+                      {' · '}
+                      {formatRelativeShort(row.completedAt) ?? '—'}
                     </div>
-                  </div>
-                  <div className={s.testRowScores}>
-                    {(() => {
-                      // Show Total + RW + Math only when both
-                      // sections have scaled scores. Single-
-                      // section tests (a student practiced only
-                      // RW or only Math) show just that section's
-                      // pill — the composite would be misleading
-                      // since "RW + 0" isn't a real total.
-                      const hasRw = t.rwScaled != null;
-                      const hasMath = t.mathScaled != null;
-                      if (t.status !== 'completed') return <span className={s.muted}>—</span>;
-                      if (hasRw && hasMath) {
-                        return (
-                          <>
-                            {t.composite != null && <ScorePill label="Total" value={t.composite} />}
-                            <ScorePill label="RW" value={t.rwScaled} tone="rw" />
-                            <ScorePill label="Math" value={t.mathScaled} tone="math" />
-                          </>
-                        );
-                      }
-                      if (hasRw)   return <ScorePill label="RW only"   value={t.rwScaled}   tone="rw" />;
-                      if (hasMath) return <ScorePill label="Math only" value={t.mathScaled} tone="math" />;
-                      return <span className={s.muted}>—</span>;
-                    })()}
                   </div>
                 </Link>
               </li>
@@ -187,14 +180,8 @@ export default async function TutorDashboardPage() {
 
 // ──────────────────────────────────────────────────────────────
 
-function ScorePill({ label, value, tone }) {
-  if (value == null) return null;
-  const cls = [s.scorePill, tone === 'rw' ? s.scorePillRw : tone === 'math' ? s.scorePillMath : null]
-    .filter(Boolean).join(' ');
-  return (
-    <div className={cls}>
-      <div className={s.scorePillValue}>{value}</div>
-      <div className={s.scorePillLabel}>{label}</div>
-    </div>
-  );
+function assignmentTypeLabel(type) {
+  if (type === 'practice_test') return 'Practice test';
+  if (type === 'lesson') return 'Lesson';
+  return 'Questions';
 }

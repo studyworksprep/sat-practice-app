@@ -108,7 +108,7 @@ export default async function ManagerTeacherDetailPage({ params }) {
       .from('practice_test_attempts_v2')
       .select(`
         id, status, started_at, finished_at,
-        composite_score, rw_scaled, math_scaled,
+        composite_score, rw_scaled, math_scaled, sections_only,
         practice_test:practice_tests_v2 (name, code)
       `)
       .eq('user_id', teacherId)
@@ -484,6 +484,11 @@ export default async function ManagerTeacherDetailPage({ params }) {
                       <div className={s.trainingRowMain}>
                         <div className={s.trainingRowTitle}>
                           {t.practice_test?.name ?? 'Practice test'}
+                          {t.sections_only && (
+                            <span className={s.sectionsOnlyPill}>
+                              {t.sections_only === 'RW' ? 'R&W only' : 'Math only'}
+                            </span>
+                          )}
                         </div>
                         <div className={s.trainingRowMeta}>
                           {t.practice_test?.code ?? ''}
@@ -494,10 +499,16 @@ export default async function ManagerTeacherDetailPage({ params }) {
                           )}
                         </div>
                       </div>
-                      {t.status === 'completed' && t.composite_score != null && (
-                        <span className={s.trainingScore}>
-                          {t.composite_score}
-                        </span>
+                      {t.status === 'completed' && (
+                        t.composite_score != null ? (
+                          <span className={s.trainingScore}>
+                            {t.composite_score}
+                          </span>
+                        ) : t.sections_only === 'RW' && t.rw_scaled != null ? (
+                          <span className={s.trainingScore}>{t.rw_scaled}</span>
+                        ) : t.sections_only === 'MATH' && t.math_scaled != null ? (
+                          <span className={s.trainingScore}>{t.math_scaled}</span>
+                        ) : null
                       )}
                     </Link>
                   </li>

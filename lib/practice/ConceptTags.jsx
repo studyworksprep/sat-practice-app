@@ -51,7 +51,6 @@ export function ConceptTags({
   // button is near the viewport bottom.
   const [popupPos, setPopupPos] = useState(null);
 
-  const inputRef = useRef(null);
   const panelRef = useRef(null);
   const buttonRef = useRef(null);
 
@@ -72,11 +71,6 @@ export function ConceptTags({
       clearTimeout(t);
       document.removeEventListener('pointerdown', handler);
     };
-  }, [showInput]);
-
-  // Focus the input the moment the popover opens.
-  useEffect(() => {
-    if (showInput && inputRef.current) inputRef.current.focus();
   }, [showInput]);
 
   // Open downward by default; flip upward when there isn't enough
@@ -227,7 +221,6 @@ export function ConceptTags({
             }}
           >
             <input
-              ref={inputRef}
               type="text"
               className={s.input}
               value={search}
@@ -235,6 +228,13 @@ export function ConceptTags({
               onKeyDown={handleKeyDown}
               placeholder="Type to search or create tag…"
               disabled={pending}
+              // autoFocus rather than an effect because the input is
+              // conditionally rendered: it only mounts once popupPos
+              // resolves (one render after showInput flips), so a
+              // useEffect keyed on showInput fires too early and
+              // inputRef.current is still null. autoFocus runs on
+              // mount, which is exactly when the input first exists.
+              autoFocus
             />
 
             {trimmed && (suggestions.length > 0 || !exactMatch) && (
