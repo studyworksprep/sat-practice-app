@@ -14,12 +14,20 @@
 //                     Start/Continue button that creates a session
 //                     and redirects into /practice/s/<sid>/0.
 //
-//   'practice_test' — shows a launch link to the existing
-//                     /practice-test?test=<id> route. That flow
-//                     lives in the legacy tree for now; for users
-//                     on ui_version='next' it will hit the catch-
-//                     all until practice-test is rebuilt. Known
-//                     limitation, documented here.
+//   'practice_test' — shows a launch link to the next-tree
+//                     /practice/test/<testId> launch page, which
+//                     handles attempt creation and routing into
+//                     the runner. Earlier revisions linked to the
+//                     legacy /practice-test?test=<id> URL with
+//                     external=true, but for ui_version='next'
+//                     users the middleware rewrites that to
+//                     /next/practice-test, which has no concrete
+//                     route and falls through to the [...slug]
+//                     catch-all → redirect('/dashboard'). The
+//                     fix is to point at the rebuilt route
+//                     directly. Note: filter_criteria.sections
+//                     ('rw' / 'math' / 'both') is not yet honored
+//                     by the next-tree runner — full test only.
 //
 //   'lesson'        — shows the lesson title + description. Lessons
 //                     are not fully implemented yet; the row is
@@ -317,8 +325,6 @@ function QuestionsView({ assignment, rows, completed, latestSessionId }) {
 function PracticeTestView({ assignment }) {
   const pt = assignment.practice_test;
   const sections = assignment.filter_criteria?.sections;
-  const qs = new URLSearchParams({ test: assignment.practice_test_id });
-  if (sections && sections !== 'both') qs.set('sections', sections);
 
   return (
     <section style={{
@@ -337,8 +343,7 @@ function PracticeTestView({ assignment }) {
         </div>
       )}
       <Button
-        href={`/practice-test?${qs.toString()}`}
-        external
+        href={`/practice/test/${assignment.practice_test_id}`}
         style={{ alignSelf: 'flex-start' }}
       >
         Launch practice test
