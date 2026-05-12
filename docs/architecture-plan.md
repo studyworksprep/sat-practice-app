@@ -75,9 +75,9 @@ The rebuild is not a big-bang rewrite. It's six phases, each independently shipp
 | **Assignments** | `question_assignments`, `question_assignment_students` | `/api/assignments/*`, `/api/teacher/question-assignments` | `/assignments/[id]`, `/teacher` |
 | **Learning content (lessons)** | `lessons`, `lesson_blocks`, `lesson_topics`, `lesson_assignments`, `lesson_assignment_students`, `lesson_progress` | `/api/lessons/*`, `/api/teacher/lessons/*` | `/learn`, `/teacher/content/[lessonId]` |
 | **Flashcards & vocab** | `flashcard_sets`, `flashcards`, `sat_vocabulary`, `sat_vocabulary_progress` | `/api/flashcards/*`, `/api/flashcard-sets`, `/api/sat-vocabulary` | `/flashcards/[setId]`, `/review` |
-| **ACT (parallel universe)** | `act_questions`, `act_answer_options`, `act_attempts` | `/api/act/*` | `/act-practice/*` |
+| **ACT (peer of SAT)** | `act_questions` (carries `source_test` + `source_ordinal` so practice-tests are virtual slices of the same pool), `act_answer_options`, `act_attempts` (anticipated additions in Phase 2 ACT integration: `act_practice_test_attempts` for cached scaled scores, `act_score_conversion` per source-test form, and a `test_type` column on shared tables `practice_sessions` / `question_notes` / `error_notes` / `question_status` / `desmos_saved_states` / `assignments_v2` — see §3.4 Cross-test data model) | `/api/act/*` (legacy tree only; next tree dispatches via `test_type` parameter at the loader layer) | unified with SAT in the next tree (`/dashboard`, `/practice/*`, `/review`, `/notes`, etc. with a `?test=` slice on launch pages); legacy `/act-practice/*` retained through Phase 6 |
 | **Billing** | `subscriptions` | `/api/billing/*`, `/api/webhooks/stripe` | `/account/billing`, `/subscribe` |
-| **Admin & reporting** | `bug_reports`, `desmos_saved_states`, `question_availability` (broken — RLS enabled, no policies) | `/api/admin/*`, `/api/error-log`, `/api/time-analytics` | `/admin`, `/admin/bulk-reocr` |
+| **Admin & reporting** | `bug_reports`, `desmos_saved_states`, `question_availability` (broken — RLS enabled, no policies) | `/api/admin/*`, `/api/error-log`, `/api/time-analytics` | `/admin` (and the deprecated `/admin/bulk-reocr` PDF→OCR tool, kept only for legacy callers — not a next-tree porting target) |
 
 ### 1.4 Auth / role system
 
@@ -204,7 +204,7 @@ Six principles that every piece of the rebuild should be tested against:
 - **Drop the v1 question tables** (`questions`, `question_versions`, `answer_options`, `correct_answers`, `question_taxonomy`) once `questions_v2` is the only read/write target. The `question_id_map` bridge table can stay for as long as legacy attempts reference old IDs, then be archived.
 - **Normalize `questions_v2.options`.** Move options into a child `question_options` table keyed by `(question_id, option_label)`. Keep the JSON path only for `correct_answer` metadata (text/number/tolerance for SPR) because that's genuinely variant-shape. Options are uniform and deserve SQL typing so indexes, tag joins (the `option_answer_choice_tags` we added last week), and search all work naturally.
 - **Define the `practice_test_*` schema in migrations.** Seven tables, all the RLS policies, all the indexes. This is mandatory foundational work — nothing else is safe until the production schema matches the migration history.
-- **Unify the SAT assignment model** into one `assignments` table with a polymorphic `target_type` (`question_set` | `lesson` | `practice_test`) and a single `assignment_students` junction. Drop the four current SAT assignment tables. This removes about 30% of the teacher-route complexity on the SAT side. **ACT keeps its own parallel `act_assignments` + `act_assignment_students` pair** — the ACT assignment model is passage-based and doesn't share the SAT's question-set shape well enough to be worth forcing into a single schema (see §3.6 on ACT separation). Cross-test reporting happens through the rollup layer described in §3.8, not by merging the tables.
+- **Unify the assignment model** into one `assignments` table with a polymorphic `target_type` (`question_set` | `lesson` | `practice_test`) and a single `assignment_students` junction. Drop the four current SAT assignment tables. This removes about 30% of the teacher-route complexity on the SAT side. **When ACT assignments ship, they reuse the same pair** with a `test_type` discriminator on the assignment row, joining the shared-tables set described in §3.4 (Cross-test data model). If the passage-based ACT model eventually demands its own shape, a `passage_set` value joins the polymorphic `target_type` enum — storage stays unified. Today ACT has no assignment surface, so this is forward-wiring, not a migration. Cross-test reporting reads directly from the unified table, not from a rollup view.
 - **Standardize audit columns on every table:** `created_at`, `created_by`, `updated_at`, `updated_by`, `deleted_at` (soft delete). A single trigger per table maintains `updated_at`. `deleted_at IS NULL` becomes the default filter in every read query and in every RLS policy.
 
 **RLS discipline:**
@@ -279,7 +279,7 @@ The `db-max-rows` silent-truncation bug becomes structurally impossible because 
 /api/questions/[id]/attempts
 ```
 
-SAT and ACT endpoints remain parallel trees (`/api/questions/*` and `/api/act/questions/*`, `/api/practice-tests/*` and `/api/act/practice-tests/*`) because the content shape, assignment model, scoring rules, and test structure differ fundamentally — ACT tests have no module routing, no adaptive logic, and a passage-based assignment model that doesn't compress cleanly into the SAT's question-set shape. What both trees do share is the helper layer defined above: same `requireRole()`, same `paginate()`, same `ok()`/`fail()`, same rate limiting, same logging. Cross-cutting bugs get fixed once. Test-specific logic stays isolated. A dedicated `/api/me/activity` rollup endpoint reads from both trees and returns unified counts (total attempts, total practice tests, assignment completion percentages) so dashboards and managerial reporting can aggregate across the two without merging schemas.
+The legacy `/api/act/*` tree is preserved for `ui_version=legacy` users throughout the parallel-build period, but no new ACT-specific routes are added to the next tree. New endpoints accept a `test_type` parameter and dispatch to the right table at the loader layer, not the route layer. Practical example: a single `/api/questions?test=act` replaces the parallel `/api/act/questions` — and in most cases the route disappears entirely because a Server Component reads directly from Supabase with the test-type-aware loader. ACT keeps its content-shape difference (passages, sections, categories vs. domain/skill); the routes that consume that content don't have to. Cross-test reporting falls out of the data layer for free: the dashboard's Server Component calls sibling loaders for SAT and ACT in the same request, so a dedicated `/api/me/activity` rollup endpoint is no longer needed. See §3.4 **Cross-test data model** for the discriminator pattern that makes this safe.
 
 **Standard route skeleton.** Every new route looks like this:
 
@@ -389,9 +389,9 @@ The `<QuestionRenderer>` is the biggest win. All three current implementations c
 
 **Server-side session state, not localStorage.** The `practice_session_*`, `teacher_review_session_*`, `act_session_*` localStorage caches all exist to compensate for a frontend that doesn't have server-rendered pagination. In the rebuild, session state (current question list, position, timers, draft answers) moves into a server-side `practice_sessions` table keyed by an opaque `sessionId` (see §3.7). The client only knows its session id; the server looks up everything else. URL params survive reloads, share cleanly, and don't leak question content; `localStorage` stops being a privacy surface entirely.
 
-The only legitimate use of localStorage in the rebuild is per-question timer recovery (`{qid}_elapsed`), and even that could move to session storage or the URL hash. Both client-side toggles from the legacy tree (`studyworks_test_type` and `sat_teacher_mode`) are removed — see the navigation model below. Everything else goes away.
+The only legitimate use of localStorage in the rebuild is per-question timer recovery (`{qid}_elapsed`), and even that could move to session storage or the URL hash. Both client-side toggles from the legacy tree (`studyworks_test_type` and `sat_teacher_mode`) leave `localStorage`. `sat_teacher_mode` is genuinely retired — role + URL determine mode. `studyworks_test_type` is replaced rather than removed: the test-type selection survives as a `?test=sat|act` query parameter on the practice and practice-tests launch pages, with SAT-first tabs and no stored preference. URL state, not browser state — see the navigation model below. Everything else goes away.
 
-**Navigation tree, not toggles.** The legacy product uses two client-side toggles that mutate UI context: `studyworks_test_type` (SAT vs ACT) and `sat_teacher_mode` (privileged-user view mode). Both disappear in the rebuild. A user's experience is determined entirely by their role and the URL they're on — no flags to sync, no state to persist, no "why am I seeing this" confusion.
+**Navigation tree, not localStorage toggles.** The legacy product uses two client-side toggles that mutate UI context: `studyworks_test_type` (SAT vs ACT) and `sat_teacher_mode` (privileged-user view mode). Both leave `localStorage`. `sat_teacher_mode` disappears entirely — role + URL determine view mode, no flag to sync. `studyworks_test_type` becomes a `?test=sat|act` URL query parameter on the practice and practice-tests launch pages, with SAT-first tabs and no stored personalization preference (students historically switch between test types and a stable preference is the wrong model); everywhere else, both test types render together on one page (§3.4 Cross-test data model). The user's experience is determined entirely by their role and the URL they're on — including the `?test=` slice when it's set. URL state survives reloads, shares cleanly across users, and is explicit per-page.
 
 The new top-level route tree:
 
@@ -418,28 +418,45 @@ app/(next)/
       teachers/[id]/students/[id]/
   (admin)/
     admin/
-  act/                                — fully parallel ACT tree
-    (student)/
-      dashboard/
-      practice/s/[sessionId]/[position]
-      review/
-      practice-test/
-    (tutor)/
-      tutor/
-        training/
-        students/
-        ...
-    (manager)/
-      manager/
-        ...
 ```
 
 Key consequences:
 
 - **`/tutor/training` looks and feels exactly like the student practice and review UIs.** That's the whole point — tutors experience what their students experience. The shared `<QuestionRenderer>` and the shared practice-session flow serve both audiences with zero divergence in rendering. The only difference is the data filter: on `/tutor/training`, the queries are `where user_id = auth.uid()`, and RLS via `can_view` (§3.8) protects the row regardless. There is no "teacher mode" toggle, no inline `isTeacherMode` branch in the renderer, no way for the two experiences to drift.
-- **`/act/*` is a complete parallel tree.** ACT dashboards, practice, practice tests (no module routing), passage-based assignments, review, and tutor training all live under the ACT path. The SAT and ACT trees share backend helpers (auth, pagination, rate limiting, response envelopes, the watermarking helper from §3.7) and share UI primitives (`<Button>`, `<Card>`, `<Modal>`, `<QuestionRenderer>`), but not data schema or navigation state. Cross-test reporting lives in a dedicated `user_activity_rollup` view and the `/api/me/activity` endpoint, so a dashboard that wants to show "total attempts across SAT + ACT" or "practice tests completed, both tests" can do so with a single query.
-- **There are no test-type or teacher-mode toggles to forget to render, debug, or sync.** The URL is the mode.
-- **Login lands the user on their default test type.** A new `profiles.default_test_type` column (`sat` | `act`, default `sat`) decides whether a fresh login redirects to `/dashboard` or `/act/dashboard`. Users navigate between the two freely through a top-level nav item; the last-visited tree is remembered per-session for return visits.
+- **ACT and SAT share every route in the next tree.** The dashboard, review, notes, and assignments pages render both test types on the same page; the practice launcher and the practice-tests hub use a `?test=sat|act` query-param slice so a tutor can deep-link to "this student's ACT practice setup" or "ACT practice tests." There is no `/act/*` namespace — every URL is unified. Inside the runner the test type comes off the `practice_sessions` row, not the URL. The mechanism that keeps this safe is detailed in **Cross-test data model** below: the SAT and ACT *data layer* still forks (separate questions tables, separate attempts tables), but the *pages, renderers, and runner* are shared. New SAT features built against the shared tables (notes, error log, marked-for-review, Desmos saved states) inherit to ACT by construction.
+- **The launcher tabs are SAT-first, then ACT.** Tabs on the practice and practice-tests pages, SAT first. No per-student personalization flag — the rebuild deliberately doesn't introduce a `preferred_test_type` column, because students historically work on both tests and switch as test dates approach. One extra click to land on ACT is the correct tradeoff for not pretending the choice is stable.
+- **There are no test-type or teacher-mode toggles in `localStorage`.** Teacher mode is gone permanently — role + URL determine it. The `studyworks_test_type` flag is replaced, not removed: the test-type selection survives as a `?test=sat|act` query parameter on the practice and practice-tests launch pages. URL state, not browser state.
+- **Per-test-type sections on shared pages hide when there's no data.** A SAT-only student doesn't see an empty ACT card on the dashboard; an ACT-only student doesn't see an empty SAT card. Server-side check: if the student has zero attempts in that test type, the section is suppressed. Keeps the dashboard from looking half-finished for the majority case (one test type).
+
+**Cross-test data model.** ACT and SAT share UI but not schema. The fork happens at the loader and write-action layer — the thinnest layer where the difference actually lives — and the page, renderer, and runner stay shared. This is the technical machinery behind "no ACT area that feels separate."
+
+Shared tables carry a `test_type` discriminator (`sat` | `act`, NOT NULL, default `sat` so existing rows backfill). The set is:
+
+- **`practice_sessions`** — server-side session state: `test_type`, `question_ids[]`, current position, draft answers, expiry. Already designed this way in Phase 1 (§Phase 1 step 10). The runner reads `test_type` to pick the right question loader.
+- **`question_notes`** — student rich-text notes attached to a question. ACT inherits SAT note-taking by writing rows with `test_type='act'`; the Notes hub and per-question note surfaces render both.
+- **`error_notes`** — student "why I got this wrong" reflections that the Review error-log surface aggregates. Same inheritance pattern.
+- **`question_status`** — marked-for-review flags, attempt counters, last-seen timestamps per (user, question). Star an ACT question → it appears in the Smart Review weak queue alongside SAT marks.
+- **`desmos_saved_states`** — saved calculator state per (user, question). ACT math questions accept calculators; same machinery.
+- **`assignments_v2`** / **`assignment_students_v2`** — once ACT assignments ship (no surface today, forward-wiring only), they reuse this pair with `test_type='act'`. If passage-based ACT assignments require it, a `passage_set` value joins the polymorphic `target_type` enum; storage stays unified.
+
+Strictly-separate tables (no `test_type` column — the table itself encodes the test):
+
+- **`questions_v2`** (SAT) and **`act_questions`** (ACT) — different column shapes, taxonomy (domain/skill vs section/category/subcategory), and answer-option storage. The loader picks the right table based on the session's `test_type`.
+- **`attempts`** (SAT) and **`act_attempts`** (ACT) — different FKs into the question tables.
+- **`act_answer_options`** — ACT-specific child table; SAT keeps options inline.
+- **`practice_test_*`** (SAT, seven tables, adaptive module routing). ACT does **not** get a parallel `act_practice_test_*` family — see "ACT practice tests as virtual constructs" below.
+- **`score_conversion`** (SAT 200–1600) and **`act_score_conversion`** (ACT 1–36, keyed per source-test form because ACT score curves differ per form).
+- **`sat_vocabulary`** and any future **`act_vocabulary`** — distinct content domains.
+
+**ACT practice tests as virtual constructs.** Every ACT question already carries `source_test` + `source_ordinal` columns — there is no separate ACT question-bank vs. practice-test content store; both surfaces draw from the same `act_questions` pool, just sliced differently. An ACT "practice test" is therefore the deterministic slice `from('act_questions') WHERE source_test = X ORDER BY source_ordinal`, run through the same `practice_sessions` machinery as ACT practice (filtered) and SAT practice. No 7-table `act_practice_test_*` family is needed. The only new ACT-side storage is **one** small cached-attempts table:
+
+- **`act_practice_test_attempts`** — `id`, `user_id`, `source_test`, `status`, `started_at`, `finished_at`, `english_scaled`, `math_scaled`, `reading_scaled`, `science_scaled`, `composite_score`, `practice_session_id` FK. One row per test attempt. Caches the scaled scores at finalize so dashboard renders don't recompute from `act_attempts` every time; mirrors how SAT's `practice_test_attempts_v2` caches composite score. Per-question answers stay in `act_attempts` (discoverable via the linked `practice_session_id`); no `test_attempt_id` FK on `act_attempts` is needed.
+
+This collapses the previous plan's "Phase 4: ACT practice tests, 2–3 weeks, parallel schema family" into part of Phase 2 — one migration, one small loader, the existing runner. The asymmetry with SAT (which keeps its 7-table family for adaptive routing) is correct: ACT tests are linear, scored from a static per-form conversion table, and don't need module attempts or item attempts as separate concepts.
+
+**Audit-greppability.** Every existing call site that reads a shared table (`from('practice_sessions')`, `from('question_notes')`, `from('question_status')`, `from('desmos_saved_states')`) is reviewed once when ACT integration lands and either gains a `.eq('test_type', 'sat')` filter or is explicitly marked cross-test. Joins that enrich with question metadata branch on `test_type` to pick the right questions table. The Phase 2 ACT-integration PR includes this audit list as a checklist — no shared-table reader merges without an explicit test-type story. The failure mode it guards against is silent: UUIDs in `question_id` columns are globally unique (so the row identifies correctly), but the *join target* differs, so a missed join produces null fields rather than a loud error.
+
+**Features inherit by construction.** When a new SAT feature is built against a shared table — a new field on `question_status`, a new note style in `question_notes`, a richer Desmos state — ACT picks it up automatically with zero ACT-specific code. The audit's old finding "every bug fix in one must be mirrored in the other, and in practice they drift" (§2 `[M]`) becomes structurally impossible for shared-table features. Drift remains only on the strictly-separate tables, where it belongs: a SAT-specific scoring rule has no obligation to apply to ACT.
 
 **Error boundaries on every route segment.** Each of the following gets an `error.js` that captures the actual error, shows a recovery button, and surfaces the stack to support (following the pattern from `app/dashboard/error.js`):
 
@@ -870,7 +887,7 @@ Once Phase 1.5 is complete, Phase 2 is cleared to start writing real content und
 4. **Wire up `useActionState` / `useFormStatus` / `useOptimistic`** in the Phase 2 client islands. Every form in the new tree uses this pattern from day one; there is no "legacy form handling" variant in `app/next/*`.
 5. **Enable `updateTag()` and `refresh()` for mutations that need read-your-writes.** Teacher flows especially: creating/editing assignments, updating student notes, recording scores. The teacher sees their edit immediately on the same request, no stale-while-revalidate window.
 6. **Refactor the surviving `/api/*` routes** to use `requireRole()` / `ok()` / `fail()` / `paginate()`. This is the original Phase 2 plan, but scoped down to only the ~30–40 routes that actually need to exist after Server Actions absorb the rest. Categories that survive: external/public/webhook endpoints, live-polling endpoints, bulk data exports, admin analytics that aggregate across users.
-7. **Collapse duplicate routes among the survivors.** `/api/dashboard/stats` merges into `/api/dashboard` (though both may ultimately be deleted if the dashboard is a Server Component). Legacy `/api/act/*` tree remains because SAT and ACT stay schema-parallel per §3.2.
+7. **Collapse duplicate routes among the survivors.** `/api/dashboard/stats` merges into `/api/dashboard` (though both may ultimately be deleted if the dashboard is a Server Component). The legacy `/api/act/*` tree is decommissioned during this phase, alongside its caller routes — Phase 2 unification (§3.4 Cross-test data model) already moved the next tree off these routes by dispatching on `test_type` at the loader layer; Phase 6 ratifies the deletion and removes the legacy files. `/api/questions` is parameterized to accept a `test_type` query param and serve both content trees from one route.
 8. **Audit every remaining `createServiceClient()` call** after the Server Action migration. Many of the legacy service-role bypasses exist because a route needed to do something the client couldn't do via RLS — with Server Actions, the caller's identity is still `auth.uid()`, so most of those bypasses can become RLS-scoped. Target: cut service-role usage by more than half.
 9. **Fix the RLS drift using `can_view()`.** Rewrite every policy that still does `exists (select 1 from profiles)` to use the JWT-based `is_admin()` / `is_teacher()` helpers or the new unified `can_view()` function from §3.8. Gate this on the Phase 1 back-test returning zero diffs. Add migrations for the tables where RLS was enabled-without-policies (`question_availability` — probably just drop it) or is missing entirely.
 10. **Enable the React Compiler** via `reactCompiler: true` in `next.config.js` if it wasn't already turned on during Phase 1.5. Measure build time impact; keep it on unless the hit is severe.
@@ -883,7 +900,7 @@ Once Phase 1.5 is complete, Phase 2 is cleared to start writing real content und
 
 1. **Drop the v1 question tables** (`questions`, `question_versions`, `answer_options`, `correct_answers`, `question_taxonomy`). Archive to a `_legacy` schema for 90 days, then drop. `question_id_map` stays for attempts referencing old IDs.
 2. **Normalize `questions_v2.options`** into a `question_options` child table. Migrate the JSONB payload into rows. Update `question_concept_tags` and `option_answer_choice_tags` to FK the new table.
-3. **Unify the SAT assignment model** per §3.2. One `assignments` + `assignment_students` pair replacing `question_assignments` + `question_assignment_students` + `lesson_assignments` + `lesson_assignment_students` on the SAT side. Dual-write during the transition; the legacy tree reads the old shape, the `(next)` tree reads the new one. **ACT gets its own `act_assignments` + `act_assignment_students` pair** — new tables, not a rename of anything existing, because today ACT has no dedicated assignment system. The ACT assignment model is passage-based and distinct.
+3. **Unify the assignment model** per §3.2. One `assignments` + `assignment_students` pair replacing `question_assignments` + `question_assignment_students` + `lesson_assignments` + `lesson_assignment_students` on the SAT side. Dual-write during the transition; the legacy tree reads the old shape, the `(next)` tree reads the new one. **ACT assignments, when they ship, reuse the same pair** with `test_type='act'` on the assignment row — no new tables. ACT has no assignment surface today, so the pair is sized for both test types from day one. A `passage_set` value joins the polymorphic `target_type` enum if the passage-based ACT model demands it; storage stays unified.
 4. **Standardize audit columns.** Every table gets `created_at`, `created_by`, `updated_at`, `updated_by`, `deleted_at`. Soft-delete becomes the default. RLS policies on every table add `deleted_at IS NULL` filter.
 5. **Delete or implement `question_availability`.** My bet is delete.
 6. **Add the missing indexes** for common RLS join patterns (`teacher_student_assignments (teacher_id, student_id)`, `lesson_assignments (student_id)`, etc.).
@@ -953,14 +970,14 @@ Once Phase 1.5 is complete, Phase 2 is cleared to start writing real content und
 | Inline role checks | ~51 | 0 |
 | Bare `fetch+useEffect` | ~79 | <20 |
 | Distinct localStorage key prefixes | 16 | 1 (just `{qid}_elapsed`) |
-| Client-side test-type toggles (`studyworks_test_type`) | 1 | 0 (dedicated `/act/*` path tree) |
+| Client-side test-type toggles (`studyworks_test_type`) | 1 | 0 (URL-driven `?test=` slice on launch pages; shared routes everywhere else) |
 | Client-side teacher-mode toggles (`sat_teacher_mode`) | 1 | 0 (role + URL determine mode) |
 | Files over 1,000 lines | 7 | 0 |
 | Error boundaries | 1 | 6+ |
 | Question renderer implementations | 3 | 1 (shared across SAT + ACT) |
 | SAT assignment system tables | 4 | 2 (`assignments` + `assignment_students`) |
-| ACT assignment system tables | 0 (today ACT has no dedicated assignments) | 2 (`act_assignments` + `act_assignment_students`, passage-based) |
-| Question schemas in use | 2 | 1 (SAT `questions_v2`, separate ACT `act_questions_v2`) |
+| ACT assignment system tables | 0 (today ACT has no dedicated assignments) | 0 (ACT reuses unified `assignments_v2` with `test_type='act'`) |
+| Question schemas in use | 2 (`questions_v2`, `act_questions`; renderers forked across SAT/ACT/teacher) | 2 (`questions_v2`, `act_questions`; one shared renderer + runner via `test_type`-aware loader) |
 | Schemas missing from migrations | 2 (practice_test_*, get_question_neighbors) | 0 |
 | Places in RLS where hierarchy visibility is re-derived | 7+ | 1 (`can_view()`) |
 | RLS policies that query `profiles` directly | many | 0 |
@@ -1017,8 +1034,12 @@ Mitigation: rate-limit thresholds are set based on the observed 99.9th-percentil
 **Risk: Watermarking rendered HTML breaks screen readers or copy-paste for legitimate accessibility use.**
 Mitigation: the zero-width character pattern is inserted only in non-semantic positions (between tags, inside whitespace runs, never inside `alt` text, `aria-label`, or any screen-reader-visible attribute). A separate accessibility audit runs against the watermarked output in the Playwright suite before watermarking ships to any cohort. If a conflict surfaces, watermarking is disabled per-page via a feature flag rather than ripped out wholesale.
 
-**Risk: The full parallel ACT tree doubles the frontend surface area.**
-Mitigation: the trees share everything they can — shared UI primitives (`<Button>`, `<Card>`, `<QuestionRenderer>`), shared helper modules (`requireRole`, `paginate`, `useApi`), and shared design tokens — so the duplication is limited to navigation, routing, and the handful of places where SAT and ACT genuinely differ (module routing, adaptive logic, scoring conversion). The duplication is the right trade-off for content/format independence: a bug in ACT assignment routing can never regress SAT practice, and vice versa.
+**Risk: Shared tables silently cross-contaminate across test types.**
+Once `practice_sessions`, `question_notes`, `error_notes`, `question_status`, and `desmos_saved_states` hold both SAT and ACT rows (§3.4 Cross-test data model), any SAT-side reader that joins to `questions_v2` without filtering `test_type='sat'` will silently return null question metadata for ACT rows — the row identifies correctly via its globally-unique UUID, but the *join target* is the wrong table, so the UI ends up labeling the row with empty fields rather than throwing a loud error. Same risk for ACT-side joins to `act_questions`.
+
+Mitigation: every shared-table reader is audited once during the Phase 2 ACT-integration PR (roughly 15–25 call sites across the codebase) and either gains a `test_type` filter or is explicitly marked cross-test. Joins that enrich with question metadata pick the right questions table from the row's `test_type`. The audit list is a PR checklist; no shared-table reader merges without an explicit test-type story.
+
+The inverse upside is the reason this design wins: a feature built against any shared table — a new note style, a new flag on `question_status`, a richer Desmos state — inherits to the other test type for free, with zero per-test-type code. The audit's old finding "every bug fix in one must be mirrored in the other, and in practice they drift" (§2 `[M]`) becomes structurally impossible for shared-table features.
 
 ---
 

@@ -1,0 +1,162 @@
+/* Billing surface. Single Card-wrapped status panel. Tokens come
+   from next-tokens.css. Visual sibling to other account-level
+   surfaces in the next tree. */
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--color-navy-900);
+  margin: 0;
+}
+
+.card {
+  padding: 24px;
+}
+
+.statusBlock {
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusLabel {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--fg1);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dotActive {
+  background: #22c55e;
+}
+
+.dotInactive {
+  background: #dc2626;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+
+.pillExempt {
+  background: rgba(22, 163, 74, 0.10);
+  color: #166534;
+}
+
+.pillRole,
+.pillSub {
+  background: rgba(79, 124, 224, 0.10);
+  color: var(--color-app-accent);
+}
+
+.subDetails {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--color-slate-50, var(--bg));
+  border-radius: var(--radius-sm);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.rowLabel {
+  color: var(--fg2);
+}
+
+.rowValue {
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.toneGood { color: #166534; }
+.toneAccent { color: var(--color-app-accent); }
+.toneWarn { color: #dc2626; }
+
+.cancelNote {
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: #92400e;
+}
+
+.exemptNote {
+  padding: 16px;
+  background: rgba(22, 163, 74, 0.06);
+  border: 1px solid rgba(22, 163, 74, 0.20);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: #166534;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.errorBanner {
+  margin-top: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: #991b1b;
+}

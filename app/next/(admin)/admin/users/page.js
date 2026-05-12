@@ -61,7 +61,35 @@ export default async function AdminUsersPage({ searchParams }) {
     );
   }
 
-  const { data: users, error } = await q;
+  // Role + tree counts for the filter-bar summary. Independent of the
+  // filtered list, so fire them in parallel with it. Previously this
+  // pulled up to 50k profile rows just to aggregate seven numbers in
+  // memory; head:true count:'exact' returns counts only — no row
+  // payload — and the seven counts dispatch concurrently.
+  const countRole = (role) =>
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', role);
+
+  const [
+    usersResult,
+    studentCountResult,
+    teacherCountResult,
+    managerCountResult,
+    adminCountResult,
+    practiceCountResult,
+    nextCountResult,
+    totalCountResult,
+  ] = await Promise.all([
+    q,
+    countRole('student'),
+    countRole('teacher'),
+    countRole('manager'),
+    countRole('admin'),
+    countRole('practice'),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('ui_version', 'next'),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
+  ]);
+
+  const { data: users, error } = usersResult;
 
   if (error) {
     return (
@@ -84,25 +112,20 @@ export default async function AdminUsersPage({ searchParams }) {
     for (const s of subs ?? []) subsByUser.set(s.user_id, s);
   }
 
-  // Role + tree counts for the filter-bar summary. Separate from
-  // the filtered query so the counts don't shrink when the user
-  // picks a role filter. Admins care about the overall distribution
-  // and the legacy-vs-next migration progress.
-  const { data: allUsers } = await supabase
-    .from('profiles')
-    .select('role, ui_version')
-    .limit(50000);
-
-  const roleTally = { practice: 0, student: 0, teacher: 0, manager: 0, admin: 0 };
-  const treeTally = { next: 0, legacy: 0 };
-  for (const r of allUsers ?? []) {
-    if (r.role && Object.prototype.hasOwnProperty.call(roleTally, r.role)) {
-      roleTally[r.role] += 1;
-    }
-    // Null ui_version → legacy by default (matches proxy.js fallback).
-    treeTally[r.ui_version === 'next' ? 'next' : 'legacy'] += 1;
-  }
-  const totalUsers = treeTally.next + treeTally.legacy;
+  const roleTally = {
+    practice: practiceCountResult.count ?? 0,
+    student: studentCountResult.count ?? 0,
+    teacher: teacherCountResult.count ?? 0,
+    manager: managerCountResult.count ?? 0,
+    admin: adminCountResult.count ?? 0,
+  };
+  const totalUsers = totalCountResult.count ?? 0;
+  // Null ui_version → legacy by default (matches proxy.js fallback);
+  // legacy = total minus explicit next-bucket.
+  const treeTally = {
+    next: nextCountResult.count ?? 0,
+    legacy: Math.max(0, totalUsers - (nextCountResult.count ?? 0)),
+  };
   const nextPct = totalUsers > 0
     ? Math.round((treeTally.next / totalUsers) * 100)
     : 0;

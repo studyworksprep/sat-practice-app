@@ -65,22 +65,21 @@ async function readKillSwitch(supabase) {
 
 // Paths that always serve from the legacy tree, regardless of
 // ui_version. Two flavors live here:
-//   - Shared auth surfaces (login form, OAuth callback) that
-//     don't render dashboard chrome.
-//   - Marketing / billing pages (features tour, subscribe,
-//     account billing) that have no next-tree counterpart yet.
-// Without this list, a next-default user clicking Account or
-// landing on /features/students would be rewritten to a path
-// that doesn't exist in app/next/* and fall into the catchall.
-// Keep the list narrow: anything that should differ between
-// trees (dashboards, runners, reports) belongs to the rewrite
-// path, not here.
+//   - Route handlers under /auth that exchange Supabase codes for
+//     sessions and redirect. They have no UI; one copy is enough.
+//   - Marketing pages (features tour) that have no next-tree
+//     counterpart yet. Subscribe, account/billing, login, and
+//     /auth/update-password used to live here too; once the next
+//     tree picked up matching pages they were dropped so a next
+//     user lands on the new-tree version instead of the legacy
+//     copy.
+// Without this list, a next-default user hitting /features/students
+// would be rewritten to a path that doesn't exist in app/next/*
+// and fall into the catchall. Keep the list narrow.
 const TREE_AGNOSTIC_PREFIXES = [
-  '/login',
-  '/auth',
+  '/auth/callback',
+  '/auth/demo',
   '/features',
-  '/subscribe',
-  '/account',
 ];
 
 function isTreeAgnostic(pathname) {
@@ -258,13 +257,13 @@ export async function proxy(request) {
   // One occasional DB hit for the kill switch (cached ~5s per instance).
   const isApiRoute = pathname.startsWith('/api/');
   const isNextAsset = pathname.startsWith('/_next/') || pathname.startsWith('/next/');
-  // Auth surfaces (login/auth callback) serve from the legacy tree
-  // for everyone — see TREE_AGNOSTIC_PREFIXES — but we still want to
-  // know the user's tree so the legacy NavBar in app/layout.js can
-  // hide itself for next users on /login. Otherwise a next user
-  // visiting /login would see the legacy nav for a moment, then
-  // get the AppNav after the post-login redirect lands on the new
-  // tree. Resolving uiTree here costs at most one cached kill-switch
+  // Auth route handlers (/auth/callback, /auth/demo) serve from the
+  // legacy tree for everyone — see TREE_AGNOSTIC_PREFIXES — because
+  // they have no UI and one copy is enough. The /login, /subscribe,
+  // /account/billing, and /auth/update-password pages now live in
+  // both trees, so they participate in the normal rewrite flow:
+  // next users get the new-tree version, legacy users the legacy
+  // one. Resolving uiTree here costs at most one cached kill-switch
   // read; the JWT lookup is local.
   const treeAgnostic = isTreeAgnostic(pathname);
   const uiTree = !isApiRoute && !isNextAsset

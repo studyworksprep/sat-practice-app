@@ -50,6 +50,14 @@ export default async function StudentDashboardPage() {
   // request (recent activity, assignments, active session) — the
   // expensive bits were the count-on-attempts scans + 5,000-row
   // pull, both folded into get_student_dashboard_stats now.
+  // Wider caps for the two reads that used to live in a second wave
+  // (after computing keys from assignmentRows + recentSessions). The
+  // old shape was a true waterfall; broadening these by user_id only
+  // lets them run in parallel with the rest, and the in-memory filter
+  // below picks out the exact rows the build needs.
+  const RECENT_ATTEMPTS_CAP = 2000;
+  const ASSIGNMENT_LINKED_SESSIONS_CAP = 100;
+
   const [
     aggregate,
     { data: fullProfile },
@@ -58,6 +66,8 @@ export default async function StudentDashboardPage() {
     { data: assignmentRows },
     { data: activeSession },
     { data: nextRegistrationRow },
+    { data: assignmentLinkedSessions },
+    { data: recentAttempts },
   ] = await Promise.all([
     loadDashboardAggregate(user.id),
     supabase
@@ -125,6 +135,28 @@ export default async function StudentDashboardPage() {
       .order('test_date', { ascending: true })
       .limit(1)
       .maybeSingle(),
+    // All of this user's assignment-linked practice sessions, recent
+    // first. We pick the latest one per assignment_id in memory below
+    // for the "View report" click-through; filtering by a specific
+    // assignment-id list would force this into a second wave.
+    supabase
+      .from('practice_sessions')
+      .select('id, created_at, filter_criteria')
+      .eq('user_id', user.id)
+      .not('filter_criteria->>assignment_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(ASSIGNMENT_LINKED_SESSIONS_CAP),
+    // Most-recent attempts for this user. Used to compute first-
+    // attempt accuracy on each card in "Recently finished". Bounded
+    // by row-count (most recent first) rather than the qid IN-list
+    // the prior version used so it can run in parallel with the
+    // session / assignment fetches.
+    supabase
+      .from('attempts')
+      .select('question_id, is_correct, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(RECENT_ATTEMPTS_CAP),
   ]);
 
   // Weekly accuracy trend for the "Your weekly progress" card.
@@ -206,56 +238,11 @@ export default async function StudentDashboardPage() {
     (a) => a.student_completed_at,
   );
 
-  // One more query: for recently-completed assignments, look up
-  // the latest practice_sessions row whose filter_criteria
-  // points at that assignment id. That session's review page
-  // becomes the "View report" target; if none exists (e.g. the
-  // assignment was completed on the legacy path), we fall back
-  // to the assignment detail page. We also need attempts to
-  // compute per-session and per-assignment accuracy for the
-  // finished cards.
-  const recentAssignmentIds = completedAssignments
-    .sort(
-      (a, b) =>
-        Date.parse(b.student_completed_at ?? 0) -
-        Date.parse(a.student_completed_at ?? 0),
-    )
-    .slice(0, RECENT_FINISHED_PER_TYPE)
-    .map((a) => a.id);
-
-  const allQidForAccuracy = Array.from(
-    new Set([
-      ...(recentSessions ?? []).flatMap((s) =>
-        Array.isArray(s.question_ids) ? s.question_ids : [],
-      ),
-      ...completedAssignments.flatMap((a) =>
-        Array.isArray(a.question_ids) ? a.question_ids : [],
-      ),
-    ]),
-  );
-
-  const [{ data: assignmentSessionRows }, { data: recentAttempts }] =
-    await Promise.all([
-      recentAssignmentIds.length > 0
-        ? supabase
-            .from('practice_sessions')
-            .select('id, created_at, filter_criteria')
-            .eq('user_id', user.id)
-            .in('filter_criteria->>assignment_id', recentAssignmentIds)
-            .order('created_at', { ascending: false })
-        : Promise.resolve({ data: [] }),
-      allQidForAccuracy.length > 0
-        ? supabase
-            .from('attempts')
-            .select('question_id, is_correct, created_at')
-            .eq('user_id', user.id)
-            .in('question_id', allQidForAccuracy)
-        : Promise.resolve({ data: [] }),
-    ]);
-
   // Latest session per assignment id — for the click-through link.
+  // assignmentLinkedSessions is already ordered created_at desc, so
+  // the first row seen for each assignment_id is the latest.
   const latestSessionByAssignment = new Map();
-  for (const row of assignmentSessionRows ?? []) {
+  for (const row of assignmentLinkedSessions ?? []) {
     const aid = row.filter_criteria?.assignment_id;
     if (!aid) continue;
     if (!latestSessionByAssignment.has(aid)) {

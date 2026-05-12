@@ -1,0 +1,454 @@
+/* /learn surface. Shared across the library, the lesson viewer, and
+   the static Getting Started tutorial. Tokens come from next-tokens.css
+   (loaded by the /next root layout). */
+
+/* ── Library page (page.js) ───────────────────────────────────── */
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--color-navy-900);
+  margin: 0;
+}
+
+.gettingStartedLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  margin-bottom: 20px;
+}
+
+.gettingStartedCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  transition: border-color var(--dur-fast) var(--ease-std);
+}
+
+.gettingStartedLink:hover .gettingStartedCard {
+  border-color: var(--color-app-accent);
+}
+
+.gettingStartedIcon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.gettingStartedBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.gettingStartedTitle {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-app-accent);
+}
+
+.gettingStartedSub {
+  font-size: 13px;
+  color: var(--fg2);
+  margin: 2px 0 0;
+}
+
+.gettingStartedArrow {
+  color: var(--color-app-accent);
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border);
+}
+
+.tab {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+.tab:hover {
+  color: var(--fg1);
+}
+
+.tabActive {
+  color: var(--color-app-accent);
+  border-bottom-color: var(--color-app-accent);
+}
+
+.filterRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filterInput {
+  flex: 1;
+  min-width: 200px;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-white, #fff);
+  color: var(--fg1);
+  font-family: inherit;
+}
+
+.filterInput:focus,
+.filterSelect:focus {
+  outline: none;
+  border-color: var(--color-app-accent);
+  box-shadow: 0 0 0 3px var(--color-app-highlight-soft);
+}
+
+.filterSelect {
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-white, #fff);
+  color: var(--fg1);
+  font-family: inherit;
+}
+
+.filterSubmit {
+  padding: 8px 16px;
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filterSubmit:hover {
+  background: var(--color-app-accent-hover, var(--color-app-accent));
+}
+
+.emptyCard {
+  padding: 32px;
+  text-align: center;
+}
+
+.emptyText {
+  color: var(--fg2);
+  margin: 0;
+  font-style: italic;
+}
+
+.lessonList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lessonCardLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.lessonCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  transition: border-color var(--dur-fast) var(--ease-std);
+}
+
+.lessonCardLink:hover .lessonCard {
+  border-color: var(--color-app-accent);
+}
+
+.lessonCardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.lessonCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.lessonTitle {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--fg1);
+}
+
+.lessonBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.lessonBadgeDone {
+  background: #166534;
+}
+
+.lessonBadgeProgress {
+  background: var(--color-app-accent);
+}
+
+.lessonDescription {
+  font-size: 13px;
+  color: var(--fg2);
+  margin: 0;
+}
+
+.lessonTopics {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.lessonTopic {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--color-app-highlight-soft);
+  color: var(--color-app-accent);
+}
+
+.lessonAuthor {
+  font-size: 12px;
+  color: var(--fg2);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ── Lesson viewer ([lessonId]/page.js + getting-started/page.js) ── */
+
+.viewerPage {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.breadcrumb {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.breadcrumb a {
+  color: var(--color-app-accent);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.viewerHeader {
+  margin-bottom: 24px;
+}
+
+.viewerTitle {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+  margin: 0 0 6px;
+}
+
+.viewerDescription {
+  font-size: 14px;
+  color: var(--fg2);
+  margin: 0 0 8px;
+}
+
+.viewerMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.viewerByline {
+  font-size: 13px;
+  color: var(--fg2);
+}
+
+.viewerTopics {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.viewerTopic {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--color-app-highlight-soft);
+  color: var(--color-app-accent);
+}
+
+/* ── Getting Started static blocks ─────────────────────────────── */
+
+.staticBlocks {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.staticTextCard {
+  padding: 20px 24px;
+}
+
+.checkCard {
+  padding: 20px 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.checkCardCorrect {
+  border: 2px solid #166534;
+}
+
+.checkCardWrong {
+  border: 2px solid #dc2626;
+}
+
+.checkEyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.checkPrompt {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg1);
+  margin: 0 0 12px;
+}
+
+.checkChoices {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checkChoice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  width: 100%;
+  color: var(--fg1);
+  font-family: inherit;
+}
+
+.checkChoice:hover:not(:disabled) {
+  background: var(--color-slate-100, var(--bg));
+}
+
+.checkChoice:disabled {
+  cursor: default;
+}
+
+.checkChoiceSelected {
+  background: var(--color-app-highlight-soft);
+  border-color: var(--color-app-accent);
+}
+
+.checkChoiceCorrect {
+  background: rgba(22, 163, 74, 0.10);
+  border-color: #166534;
+}
+
+.checkChoiceWrong {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: #dc2626;
+}
+
+.checkChoiceLetter {
+  font-weight: 700;
+  color: var(--fg2);
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.checkChoiceText {
+  flex: 1;
+}
+
+.checkChoiceMark {
+  margin-left: auto;
+  font-weight: 700;
+}
+
+.checkChoiceCorrect .checkChoiceMark { color: #166534; }
+.checkChoiceWrong .checkChoiceMark { color: #dc2626; }
+
+.checkSubmit {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.checkSubmit:hover:not(:disabled) {
+  background: var(--color-app-accent-hover, var(--color-app-accent));
+}
+
+.checkSubmit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkExplanation {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-slate-50, var(--bg));
+  font-size: 14px;
+  color: var(--fg1);
+}

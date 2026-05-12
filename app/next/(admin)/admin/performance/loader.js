@@ -6,6 +6,7 @@
 // one function and renders the results.
 
 import { resolveQuestionV2Meta } from '@/lib/practice/weak-queue';
+import { fetchAll } from '@/lib/supabase/fetchAll';
 
 const FIRST_ATTEMPT_WINDOW_DAYS = 30;
 const MIN_ATTEMPTS_FOR_RANKING = 5;
@@ -19,9 +20,14 @@ export async function loadPerformanceStats(supabase) {
   const d30 = new Date(now); d30.setDate(d30.getDate() - FIRST_ATTEMPT_WINDOW_DAYS);
   const d60 = new Date(now); d60.setDate(d60.getDate() - 2 * FIRST_ATTEMPT_WINDOW_DAYS);
 
-  const [currentAttempts, previousAttempts] = await Promise.all([
+  // All four reads are independent — run them in one wave. Previously
+  // hardest/easiest and score-distribution awaited sequentially after
+  // the attempt fetches, adding their latency on top.
+  const [currentAttempts, previousAttempts, hardestEasiest, scoreDistribution] = await Promise.all([
     fetchAttempts(supabase, d30, now),
     fetchAttempts(supabase, d60, d30),
+    loadHardestEasiest(supabase),
+    loadScoreDistribution(supabase),
   ]);
 
   const current = dedupFirstAttempts(currentAttempts);
@@ -82,21 +88,25 @@ export async function loadPerformanceStats(supabase) {
     .map((s) => ({ ...s, accuracy: Math.round((s.correct / s.total) * 100) }))
     .sort((a, b) => a.accuracy - b.accuracy);
 
-  const { hardest, easiest } = await loadHardestEasiest(supabase);
-  const scoreDistribution = await loadScoreDistribution(supabase);
+  const { hardest, easiest } = hardestEasiest;
 
   return { overallAccuracy, hardestQuestions: hardest, easiestQuestions: easiest, scoreDistribution, skillHeatmap };
 }
 
 async function fetchAttempts(supabase, from, to) {
-  const { data } = await supabase
-    .from('attempts')
-    .select('user_id, question_id, is_correct, created_at')
-    .gte('created_at', from.toISOString())
-    .lt('created_at', to.toISOString())
-    .order('created_at', { ascending: true })
-    .limit(10000);
-  return data ?? [];
+  // Page through with fetchAll — PostgREST silently caps at max-rows
+  // (1000 by default), and the old .limit(10000) was a footgun that
+  // would still truncate at the project's max-rows cap, hiding most
+  // of the data on busy windows.
+  return fetchAll((rangeFrom, rangeTo) =>
+    supabase
+      .from('attempts')
+      .select('user_id, question_id, is_correct, created_at')
+      .gte('created_at', from.toISOString())
+      .lt('created_at', to.toISOString())
+      .order('created_at', { ascending: true })
+      .range(rangeFrom, rangeTo),
+  );
 }
 
 function dedupFirstAttempts(rows) {
@@ -146,18 +156,24 @@ async function loadHardestEasiest(supabase) {
 }
 
 async function loadScoreDistribution(supabase) {
-  const { data } = await supabase
-    .from('practice_test_attempts')
-    .select('composite_score, rw_scaled, math_scaled')
-    .eq('status', 'completed')
-    .not('composite_score', 'is', null);
+  // No explicit .limit() previously meant PostgREST capped this at
+  // max-rows (1000), silently dropping completed tests once the
+  // platform grew past that. Page through instead.
+  const data = await fetchAll((rangeFrom, rangeTo) =>
+    supabase
+      .from('practice_test_attempts')
+      .select('composite_score, rw_scaled, math_scaled')
+      .eq('status', 'completed')
+      .not('composite_score', 'is', null)
+      .range(rangeFrom, rangeTo),
+  );
 
   const buckets = [];
   for (let lo = BUCKET_MIN; lo <= BUCKET_MAX; lo += BUCKET_STEP) {
     buckets.push({ range: `${lo}-${lo + BUCKET_STEP - 1}`, lo, hi: lo + BUCKET_STEP - 1, count: 0 });
   }
 
-  const rows = data ?? [];
+  const rows = data;
   let sumC = 0, sumR = 0, sumM = 0, nR = 0, nM = 0;
 
   for (const s of rows) {
