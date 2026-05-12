@@ -270,3 +270,69 @@ or `lib/api/scraperSignals.js`):
    action on the account.
 5. File a Sentry-linked incident so the pattern is logged for future
    calibration.
+
+## Demo accounts and marketing screenshots
+
+The marketing slideshow at `/features/*` is driven by real product
+pages screenshotted while signed in as one of two seeded accounts:
+
+- `demo.student@studyworks.demo` — high-activity student profile
+- `demo.tutor@studyworks.demo` — manager overseeing six demo students
+
+Both carry `profiles.is_demo = true`. The DB-layer `demo_readonly_*`
+restrictive policies (see `20260511000000_demo_readonly_foundation.sql`)
+deny every INSERT / UPDATE / DELETE for sessions whose JWT carries
+`app_metadata.is_demo = true`. The proxy adds a second gate that
+returns 403 on any non-GET request from a demo session, so writes
+fail fast with a clean JSON error instead of a Postgres RLS error.
+
+### First-time setup per environment
+
+1. Apply the migrations. The accounts and roster wiring land
+   automatically via `20260511000001_create_demo_accounts.sql`.
+2. Seed activity data once:
+   ```
+   SUPABASE_URL=…  SUPABASE_SERVICE_ROLE_KEY=…  npm run seed:demo
+   ```
+   The script is idempotent — re-running rebuilds the same data.
+
+### Refreshing screenshots
+
+After a UI change that affects a captured surface:
+
+```
+E2E_BASE_URL=https://<preview-url>  npm run screenshots
+```
+
+Playwright signs in via `/auth/demo/<persona>` and writes the
+captured PNGs into `public/screenshots/`. Commit the regenerated
+files together with the UI change.
+
+### Adding a new captured surface
+
+Append a tuple to `STUDENT_SHOTS` or `TUTOR_SHOTS` in
+`tests/screenshots/marketing.spec.ts`, then reference the
+filename from the relevant slide deck under `app/features/`.
+
+### When a new public-schema table is added
+
+The demo lockdown applies to existing tables at the time the
+foundation migration ran. New tables MUST add three restrictive
+policies before they can be considered demo-safe:
+
+```sql
+create policy demo_readonly_insert on public.<table>
+  as restrictive for insert to authenticated
+  with check (not public.is_demo());
+create policy demo_readonly_update on public.<table>
+  as restrictive for update to authenticated
+  using (not public.is_demo()) with check (not public.is_demo());
+create policy demo_readonly_delete on public.<table>
+  as restrictive for delete to authenticated
+  using (not public.is_demo());
+```
+
+The `demo-readonly.spec.ts` regression test runs in the screenshots
+project; it catches the proxy gate breaking but does not yet iterate
+every public-schema table. A SQL-level test that does is on the
+phase-2 follow-up list.

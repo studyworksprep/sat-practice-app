@@ -14,7 +14,9 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "screenshots": "playwright test --project=screenshots",
+    "seed:demo": "node scripts/seed-demo-data.mjs"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",

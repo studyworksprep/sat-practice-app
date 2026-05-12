@@ -64,14 +64,24 @@ async function readKillSwitch(supabase) {
 }
 
 // Paths that always serve from the legacy tree, regardless of
-// ui_version. These are shared auth surfaces (login form, OAuth
-// callback) — they don't render dashboard chrome and have no
-// /next-tree counterpart, so rewriting `/login` → `/next/login`
-// for a ui_version='next' user lands on the new-tree catchall.
+// ui_version. Two flavors live here:
+//   - Shared auth surfaces (login form, OAuth callback) that
+//     don't render dashboard chrome.
+//   - Marketing / billing pages (features tour, subscribe,
+//     account billing) that have no next-tree counterpart yet.
+// Without this list, a next-default user clicking Account or
+// landing on /features/students would be rewritten to a path
+// that doesn't exist in app/next/* and fall into the catchall.
 // Keep the list narrow: anything that should differ between
 // trees (dashboards, runners, reports) belongs to the rewrite
 // path, not here.
-const TREE_AGNOSTIC_PREFIXES = ['/login', '/auth'];
+const TREE_AGNOSTIC_PREFIXES = [
+  '/login',
+  '/auth',
+  '/features',
+  '/subscribe',
+  '/account',
+];
 
 function isTreeAgnostic(pathname) {
   return TREE_AGNOSTIC_PREFIXES.some(
@@ -82,10 +92,12 @@ function isTreeAgnostic(pathname) {
 function userTreeFromJwt(user) {
   try {
     const meta = user?.app_metadata || user?.user_metadata || {};
-    const v = meta.ui_version;
-    return v === 'next' ? 'next' : 'legacy';
+    // Default is 'next'. The per-user flag is now an opt-OUT — only
+    // ui_version='legacy' parks a user on the old tree. Anything
+    // else (unset, 'next', stale value) lands on the new tree.
+    return meta.ui_version === 'legacy' ? 'legacy' : 'next';
   } catch {
-    return 'legacy';
+    return 'next';
   }
 }
 
@@ -94,9 +106,10 @@ async function resolveUiTree(supabase, user) {
   const force = await readKillSwitch(supabase);
   if (force === 'next') return 'next';
   if (force === 'legacy') return 'legacy';
-  // Per-user flag from JWT.
+  // Per-user flag from JWT, or the new-tree default for anonymous
+  // visitors (so the marketing landing page is the next-tree one).
   if (user) return userTreeFromJwt(user);
-  return 'legacy';
+  return 'next';
 }
 
 export async function proxy(request) {
@@ -151,6 +164,40 @@ export async function proxy(request) {
   // Pass authenticated user ID to route handlers via request header
   if (user) {
     requestHeaders.set('x-user-id', user.id);
+  }
+
+  // Demo-account write lockdown for REST mutations. The DB
+  // enforces this authoritatively via the demo_readonly_*
+  // restrictive policies, but rejecting raw /api/* writes here
+  // is faster (no DB round-trip, no Postgres RLS error to
+  // translate) and lets the response carry a clean
+  // "demo accounts are read-only" message.
+  //
+  // Server actions (POSTs carrying the `next-action` header)
+  // are deliberately NOT gated here. The proxy can't tell a
+  // read action (countAvailable, searchQuestions) from a write
+  // action (updateTargetScore), and read actions auto-fire on
+  // mount from several pages — blocking them breaks the demo
+  // experience. Demo writes from server actions still fail at
+  // the DB layer via RLS; the user sees a Postgres "row
+  // violates RLS" error in the rare case they click a button
+  // that mutates, which is an acceptable trade for the demo
+  // surface to navigate cleanly.
+  //
+  // External / public / webhook routes were already short-
+  // circuited above, so we don't reach this block for them.
+  const isDemoSession = user?.app_metadata?.is_demo === true;
+  if (isDemoSession) {
+    const isApiMutation =
+      request.nextUrl.pathname.startsWith('/api/') &&
+      request.method !== 'GET' &&
+      request.method !== 'HEAD';
+    if (isApiMutation) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Demo accounts are read-only' }),
+        { status: 403, headers: { 'content-type': 'application/json' } },
+      );
+    }
   }
   // Pass the original request pathname so server components / layouts
   // can read it via headers() when they need to (Next.js doesn't
@@ -211,13 +258,18 @@ export async function proxy(request) {
   // One occasional DB hit for the kill switch (cached ~5s per instance).
   const isApiRoute = pathname.startsWith('/api/');
   const isNextAsset = pathname.startsWith('/_next/') || pathname.startsWith('/next/');
-  // Auth surfaces serve from the legacy tree for everyone — see
-  // TREE_AGNOSTIC_PREFIXES. Skip the resolver entirely so we
-  // don't fetch the kill switch on every login hit.
+  // Auth surfaces (login/auth callback) serve from the legacy tree
+  // for everyone — see TREE_AGNOSTIC_PREFIXES — but we still want to
+  // know the user's tree so the legacy NavBar in app/layout.js can
+  // hide itself for next users on /login. Otherwise a next user
+  // visiting /login would see the legacy nav for a moment, then
+  // get the AppNav after the post-login redirect lands on the new
+  // tree. Resolving uiTree here costs at most one cached kill-switch
+  // read; the JWT lookup is local.
   const treeAgnostic = isTreeAgnostic(pathname);
-  const uiTree = !isApiRoute && !isNextAsset && !treeAgnostic
+  const uiTree = !isApiRoute && !isNextAsset
     ? await resolveUiTree(supabase, user)
-    : 'legacy';
+    : 'next';
 
   // Surface the resolved tree on a request header so the root
   // app/layout.js (and the legacy NavBar in particular) can hide
@@ -227,7 +279,7 @@ export async function proxy(request) {
   requestHeaders.set('x-ui-tree', uiTree);
 
   let response;
-  if (uiTree === 'next') {
+  if (uiTree === 'next' && !treeAgnostic) {
     // Rewrite /foo -> /next/foo. Browser URL unchanged; Next.js serves
     // the file under app/next/foo. This is the Phase 1 on-ramp; the
     // new tree is an empty stub until Phase 2 fills it in.

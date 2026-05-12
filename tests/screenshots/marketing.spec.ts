@@ -1,0 +1,115 @@
+// Marketing screenshots. Drives the live product as the seeded
+// demo accounts and saves each marked surface to
+// public/screenshots/. Run on demand:
+//
+//   E2E_BASE_URL=https://<preview-url> npx playwright test --project=screenshots
+//
+// or against a local dev server:
+//
+//   npm run dev    # in another terminal
+//   npx playwright test --project=screenshots
+//
+// Prerequisites (one-time per environment):
+//   1. Migrations applied (incl. 20260511000000_demo_readonly_foundation.sql
+//      and 20260511000001_create_demo_accounts.sql).
+//   2. Activity data seeded:
+//        SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node scripts/seed-demo-data.mjs
+//
+// Adding a screenshot:
+//   Append a tuple to STUDENT_SHOTS or TUTOR_SHOTS below. The
+//   slideshow already references filenames in /public/screenshots/;
+//   match those filenames here so a regen swaps the image in place
+//   without touching the slide deck.
+
+import { test, expect, type Page } from '@playwright/test';
+import path from 'node:path';
+
+const OUT_DIR = path.resolve('public/screenshots');
+
+type Shot = {
+  filename: string;
+  path: string;
+  // Optional selector to wait for before snapping. Defaults to
+  // 'networkidle'. Many of the dashboards do their own data
+  // fetching after the initial paint, so waiting for a sentinel
+  // element is more reliable than networkidle alone.
+  waitFor?: string;
+  // Optional CSS that hides volatile UI (timestamps, "last
+  // synced 3s ago") that would change between runs and produce
+  // noisy git diffs. Injected before the snap.
+  hideCss?: string;
+};
+
+const STUDENT_SHOTS: Shot[] = [
+  {
+    filename: 'student-dashboard-1.png',
+    path: '/dashboard',
+    waitFor: '[data-testid="dashboard-banner"], main',
+  },
+  {
+    filename: 'review-hub.png',
+    path: '/review',
+  },
+];
+
+const TUTOR_SHOTS: Shot[] = [
+  {
+    filename: 'manager-team-roster.png',
+    path: '/tutor/team',
+  },
+];
+
+// Hide elements with timestamps or progress bars whose exact
+// values change run-over-run. Keeps git diffs of regenerated
+// PNGs to genuine layout / content changes.
+const STABILIZE_CSS = `
+  [data-volatile], .relativeTime, .liveCount {
+    visibility: hidden !important;
+  }
+`;
+
+async function signInAs(page: Page, persona: 'student' | 'tutor') {
+  // /auth/demo/<persona> mints a magic-link session server-side
+  // and redirects to the persona's home. By the time waitForURL
+  // resolves we have valid cookies in this browser context for
+  // the duration of the spec.
+  await page.goto(`/auth/demo/${persona}`);
+  await page.waitForURL((url) => !url.pathname.startsWith('/auth/demo/'), {
+    timeout: 15_000,
+  });
+}
+
+async function captureShot(page: Page, shot: Shot) {
+  await page.goto(shot.path);
+  if (shot.waitFor) {
+    await page.waitForSelector(shot.waitFor, { timeout: 15_000 });
+  } else {
+    await page.waitForLoadState('networkidle');
+  }
+  await page.addStyleTag({ content: shot.hideCss ?? STABILIZE_CSS });
+  // Small settle delay for late-binding animations (skeletons
+  // fading out, charts easing into their final state).
+  await page.waitForTimeout(400);
+  const out = path.join(OUT_DIR, shot.filename);
+  await page.screenshot({ path: out, fullPage: true });
+}
+
+test.describe('marketing screenshots — student', () => {
+  test('capture student surfaces', async ({ page }) => {
+    await signInAs(page, 'student');
+    for (const shot of STUDENT_SHOTS) {
+      await captureShot(page, shot);
+    }
+    expect(STUDENT_SHOTS.length).toBeGreaterThan(0);
+  });
+});
+
+test.describe('marketing screenshots — tutor', () => {
+  test('capture tutor surfaces', async ({ page }) => {
+    await signInAs(page, 'tutor');
+    for (const shot of TUTOR_SHOTS) {
+      await captureShot(page, shot);
+    }
+    expect(TUTOR_SHOTS.length).toBeGreaterThan(0);
+  });
+});
