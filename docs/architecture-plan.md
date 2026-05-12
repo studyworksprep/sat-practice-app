@@ -77,7 +77,7 @@ The rebuild is not a big-bang rewrite. It's six phases, each independently shipp
 | **Flashcards & vocab** | `flashcard_sets`, `flashcards`, `sat_vocabulary`, `sat_vocabulary_progress` | `/api/flashcards/*`, `/api/flashcard-sets`, `/api/sat-vocabulary` | `/flashcards/[setId]`, `/review` |
 | **ACT (parallel universe)** | `act_questions`, `act_answer_options`, `act_attempts` | `/api/act/*` | `/act-practice/*` |
 | **Billing** | `subscriptions` | `/api/billing/*`, `/api/webhooks/stripe` | `/account/billing`, `/subscribe` |
-| **Admin & reporting** | `bug_reports`, `desmos_saved_states`, `question_availability` (broken — RLS enabled, no policies) | `/api/admin/*`, `/api/error-log`, `/api/time-analytics` | `/admin`, `/admin/bulk-reocr` |
+| **Admin & reporting** | `bug_reports`, `desmos_saved_states`, `question_availability` (broken — RLS enabled, no policies) | `/api/admin/*`, `/api/error-log`, `/api/time-analytics` | `/admin` (and the deprecated `/admin/bulk-reocr` PDF→OCR tool, kept only for legacy callers — not a next-tree porting target) |
 
 ### 1.4 Auth / role system
 
