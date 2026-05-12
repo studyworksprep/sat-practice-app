@@ -114,6 +114,13 @@ const HTML_TAGS = [
   'strong', 'em', 's', 'b', 'i', 'u', 'sub', 'sup',
   'a', 'img', 'figure', 'figcaption',
   'table', 'thead', 'tbody', 'tr', 'td', 'th', 'caption',
+  // <colgroup>/<col> carry per-column width hints (e.g. QTI
+  // "colspec colwidth:50" patterns from College Board source).
+  // Stripping them collapses every column to content-width, which
+  // makes a Frequency-style data table look uneven when one column
+  // is much longer than the others. They have no script surface,
+  // so allowing them is safe.
+  'colgroup', 'col',
 ];
 
 const QUESTION_OPTIONS: sanitizeHtml.IOptions = {
@@ -147,6 +154,8 @@ const QUESTION_OPTIONS: sanitizeHtml.IOptions = {
     th: ['colspan', 'rowspan', 'scope', 'headers', 'align', 'valign', 'abbr', 'width'],
     td: ['colspan', 'rowspan', 'headers', 'align', 'valign', 'width'],
     caption: ['align'],
+    colgroup: ['span', 'align', 'valign', 'width'],
+    col: ['span', 'align', 'valign', 'width'],
     col: ['span', 'align', 'valign', 'width'],
     colgroup: ['span', 'align', 'valign', 'width'],
   },
