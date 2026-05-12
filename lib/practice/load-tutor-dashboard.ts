@@ -53,6 +53,7 @@ interface RecentTestAttempt {
   composite_score: number | null;
   rw_scaled: number | null;
   math_scaled: number | null;
+  sections_only: string | null;
   practice_test: { name: string | null; code: string | null } | null;
 }
 
@@ -101,7 +102,7 @@ export async function loadTutorDashboard(_tutorId: string): Promise<TutorDashboa
     .from('practice_test_attempts_v2')
     .select(`
       id, user_id, status, finished_at, started_at,
-      composite_score, rw_scaled, math_scaled,
+      composite_score, rw_scaled, math_scaled, sections_only,
       practice_test:practice_tests_v2!inner(name, code)
     `)
     .in('user_id', rosterIds)
