@@ -11,13 +11,16 @@
 //      on a "find a student" surface — the per-student detail page
 //      already has it.
 //
-//   2. practice_test_attempts_v2 (RLS-scoped, limit 5) — recent
-//      practice tests across the roster. Down from 10 since the
-//      surface is "what just happened?" not "audit history".
-//
-// We previously also called get_roster_weekly_trend for an 8-week
-// cohort sparkline on the stat row. Dropped: same disposability
-// rationale, and the sparkline burned another 8× attempts scan.
+//   2. assignment_students_v2 (RLS-scoped, limit 8) — recently
+//      completed assignments across the roster. Replaces the prior
+//      practice_test_attempts_v2 panel: most tutors operate through
+//      assignments, and practice-test assignments now auto-complete
+//      their junction row when the attempt finishes
+//      (markPracticeTestAssignmentsCompletedIfDone in
+//      app/next/(student)/practice/test/actions.js), so the
+//      assignments panel covers question, lesson, and practice-test
+//      completions in one place. Self-directed practice + practice
+//      tests are still reachable through the roster → student page.
 //
 // Both queries run in parallel. RLS does the visibility filtering
 // — a forged tutorId can't widen the result set.
@@ -26,11 +29,11 @@
 
 import { createClient } from '@/lib/supabase/server';
 
-const RECENT_TEST_LIMIT = 5;
+const RECENT_COMPLETIONS_LIMIT = 8;
 
 export interface TutorDashboardData {
   rawStudents: Array<RawStudentRow>;
-  recentTestAttempts: Array<RecentTestAttempt>;
+  recentCompletions: Array<RecentAssignmentCompletion>;
 }
 
 interface RawStudentRow {
@@ -44,28 +47,30 @@ interface RawStudentRow {
   sat_test_date: string | null;
 }
 
-interface RecentTestAttempt {
-  id: string;
-  user_id: string;
-  status: string;
-  finished_at: string | null;
-  started_at: string | null;
-  composite_score: number | null;
-  rw_scaled: number | null;
-  math_scaled: number | null;
-  sections_only: string | null;
-  practice_test: { name: string | null; code: string | null } | null;
+export interface RecentAssignmentCompletion {
+  student_id: string;
+  completed_at: string | null;
+  assignment: {
+    id: string;
+    assignment_type: 'questions' | 'practice_test' | 'lesson';
+    title: string | null;
+    question_ids: string[] | null;
+    practice_test_id: string | null;
+    lesson_id: string | null;
+    practice_test: { name: string | null; code: string | null } | null;
+    lesson: { title: string | null } | null;
+  } | null;
 }
 
 /** Load the tutor-dashboard payload for the given tutor. RLS on
- *  profiles + practice_test_attempts_v2 applies as the calling
- *  user via can_view, so a forged tutorId can't widen visibility. */
+ *  profiles + assignment_students_v2 applies as the calling user
+ *  via can_view, so a forged tutorId can't widen visibility. */
 export async function loadTutorDashboard(_tutorId: string): Promise<TutorDashboardData> {
   const supabase = await createClient();
 
   // Fetch the visible-student profiles first; their ids drive the
-  // recent-tests `.in()` filter. RLS on profiles uses can_view, so
-  // we get exactly the tutor's roster.
+  // recent-completions `.in()` filter. RLS on profiles uses can_view,
+  // so we get exactly the tutor's roster.
   const { data: profileRows } = await supabase
     .from('profiles')
     .select(
@@ -86,32 +91,37 @@ export async function loadTutorDashboard(_tutorId: string): Promise<TutorDashboa
     sat_test_date: p.sat_test_date,
   }));
 
-  // Recent test attempts. Pass a single bogus uuid when the roster
-  // is empty so the query returns nothing without a syntax-level
-  // empty `.in()` (PostgREST rejects those).
+  // Pass a single bogus uuid when the roster is empty so the query
+  // returns nothing without a syntax-level empty `.in()` (PostgREST
+  // rejects those).
   const rosterIds = rawStudents.length > 0
     ? rawStudents.map((r) => r.user_id)
     : ['00000000-0000-0000-0000-000000000000'];
 
-  // Recent test attempts the tutor cares about: completed +
-  // abandoned (a tutor can still want to see "X started a test
-  // and abandoned it"). In-progress sessions are excluded — those
-  // belong on the student's own dashboard, not in the tutor's
-  // recent-results panel.
-  const { data: recentTestAttempts } = await supabase
-    .from('practice_test_attempts_v2')
+  // Recently completed assignments across the roster. Filter out
+  // archived/deleted assignments via the embedded join — those
+  // shouldn't appear on a "what just happened?" surface.
+  const { data: recentCompletions } = await supabase
+    .from('assignment_students_v2')
     .select(`
-      id, user_id, status, finished_at, started_at,
-      composite_score, rw_scaled, math_scaled, sections_only,
-      practice_test:practice_tests_v2!inner(name, code)
+      student_id, completed_at,
+      assignment:assignments_v2!inner(
+        id, assignment_type, title, question_ids,
+        practice_test_id, lesson_id, archived_at, deleted_at,
+        practice_test:practice_tests_v2(name, code),
+        lesson:lessons(title)
+      )
     `)
-    .in('user_id', rosterIds)
-    .neq('status', 'in_progress')
-    .order('started_at', { ascending: false })
-    .limit(RECENT_TEST_LIMIT);
+    .in('student_id', rosterIds)
+    .not('completed_at', 'is', null)
+    .is('assignment.deleted_at', null)
+    .is('assignment.archived_at', null)
+    .order('completed_at', { ascending: false })
+    .limit(RECENT_COMPLETIONS_LIMIT);
 
   return {
     rawStudents,
-    recentTestAttempts: (recentTestAttempts as RecentTestAttempt[] | null) ?? [],
+    recentCompletions:
+      (recentCompletions as RecentAssignmentCompletion[] | null) ?? [],
   };
 }

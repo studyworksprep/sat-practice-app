@@ -693,13 +693,56 @@ export async function finishModule(_prev, formData) {
 // stamping finished_at if it isn't already set. The .is('finished_at',
 // null) guard makes a double-call from deriveFinishReturn safe.
 async function closeTestAttempt(supabase, attemptId) {
-  await supabase
+  const { data: updatedRows } = await supabase
     .from('practice_test_attempts_v2')
     .update({ finished_at: new Date().toISOString() })
     .eq('id', attemptId)
-    .is('finished_at', null);
+    .is('finished_at', null)
+    .select('user_id, practice_test_id');
 
   await recomputeAttemptScores(supabase, attemptId);
+
+  // Mirror the question-assignment auto-completion path
+  // (markAssignmentCompletedIfDone in lib/practice/session-actions.ts).
+  // When this attempt's user has any practice-test assignments pointing
+  // at this practice_test_id with an open assignment_students_v2 row,
+  // flip completed_at to now so the assignment shows up in the tutor's
+  // recent-completions panel and the student's recently-finished list.
+  // Idempotent — the IS NULL guard on completed_at protects against
+  // double calls (e.g. deriveFinishReturn's idempotent re-route).
+  const closed = updatedRows?.[0];
+  if (closed) {
+    await markPracticeTestAssignmentsCompletedIfDone(
+      supabase,
+      closed.user_id,
+      closed.practice_test_id,
+    );
+  }
+}
+
+// Practice-test counterpart to markAssignmentCompletedIfDone for the
+// question-assignment flow. We don't track an explicit attempt ↔
+// assignment link on practice_test_attempts_v2; the contract is
+// simpler than question assignments: completing any attempt of the
+// assigned test counts as completing the assignment. Mark every
+// matching open assignment_students_v2 row for this student so a
+// rare "student assigned the same test twice" still resolves cleanly.
+async function markPracticeTestAssignmentsCompletedIfDone(supabase, userId, practiceTestId) {
+  if (!userId || !practiceTestId) return;
+  const { data: matchingAssignments } = await supabase
+    .from('assignments_v2')
+    .select('id')
+    .eq('assignment_type', 'practice_test')
+    .eq('practice_test_id', practiceTestId)
+    .is('deleted_at', null);
+  const ids = (matchingAssignments ?? []).map((a) => a.id);
+  if (ids.length === 0) return;
+  await supabase
+    .from('assignment_students_v2')
+    .update({ completed_at: new Date().toISOString() })
+    .eq('student_id', userId)
+    .in('assignment_id', ids)
+    .is('completed_at', null);
 }
 
 // If finishModule runs a second time against an already-closed

@@ -3,15 +3,19 @@
 //
 //   1. Banner — greeting, target / days-to-test chips, Resume +
 //      Start practice CTAs
-//   2. Stats row — four tiles computed from the attempts table
-//   3. Recently finished — unified list of the most recent
+//   2. Pending assignments — tutor-assigned work still open, top 3
+//      newest first, with a bright accent so it's the obvious next
+//      action item. "View all" links into /assignments for the
+//      full inbox. Promoted from the bottom of the page because the
+//      majority of students engage through assignments first.
+//   3. Stats row — four tiles computed from the attempts table
+//   4. Recently finished — unified list of the most recent
 //      completed practice sessions, practice-test attempts, and
 //      assignments, with per-item links to each's report. This is
 //      the "what did I just do?" surface that a tutor and student
 //      pull up at the start of their session.
-//   4. Performance grid — per-domain accuracy bars split into
+//   5. Performance grid — per-domain accuracy bars split into
 //      Math and Reading & Writing columns
-//   5. Pending assignments — tutor-assigned work still open
 //   6. Target-score editor (small form)
 //
 // Every block reads from the server in this single page; the
@@ -106,7 +110,7 @@ export default async function StudentDashboardPage() {
       .select(`
         completed_at,
         assignment:assignments_v2 (
-          id, assignment_type, title, due_date, archived_at, deleted_at,
+          id, assignment_type, title, due_date, created_at, archived_at, deleted_at,
           question_ids,
           lesson:lessons (title),
           practice_test:practice_tests_v2 (name)
@@ -216,14 +220,20 @@ export default async function StudentDashboardPage() {
     .map((r) => ({ ...r.assignment, student_completed_at: r.completed_at }))
     .filter((a) => a && a.id && !a.deleted_at && !a.archived_at);
 
+  // Pending = open + non-archived + non-deleted. Sort newest-first
+  // (most recently assigned at top) so a brand-new assignment is the
+  // first thing the student sees on the next login. Cap at 3 — the
+  // panel sits prominently above the fold and any more would crowd
+  // the page; the See all link exposes the full inbox.
+  const PENDING_DISPLAY_CAP = 3;
   const pendingAssignments = allAssignments
     .filter((a) => !a.student_completed_at)
     .sort((a, b) => {
-      const aDue = a.due_date ? Date.parse(a.due_date) : Number.POSITIVE_INFINITY;
-      const bDue = b.due_date ? Date.parse(b.due_date) : Number.POSITIVE_INFINITY;
-      return aDue - bDue;
+      const ac = a.created_at ? Date.parse(a.created_at) : 0;
+      const bc = b.created_at ? Date.parse(b.created_at) : 0;
+      return bc - ac;
     })
-    .slice(0, 5)
+    .slice(0, PENDING_DISPLAY_CAP)
     .map((a) => ({
       id: a.id,
       assignment_type: a.assignment_type,
@@ -234,6 +244,7 @@ export default async function StudentDashboardPage() {
       due_date: a.due_date,
       n_questions: Array.isArray(a.question_ids) ? a.question_ids.length : null,
     }));
+  const pendingTotalCount = allAssignments.filter((a) => !a.student_completed_at).length;
 
   const completedAssignments = allAssignments.filter(
     (a) => a.student_completed_at,
@@ -370,6 +381,7 @@ export default async function StudentDashboardPage() {
       weeklyTrend={weeklyTrend}
       recentlyFinished={recentlyFinished}
       assignments={pendingAssignments}
+      assignmentsTotal={pendingTotalCount}
       resumeInfo={resumeInfo}
       todayMs={nowMs}
       updateTargetScoreAction={updateTargetScore}
