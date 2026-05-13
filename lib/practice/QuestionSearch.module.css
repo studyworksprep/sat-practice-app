@@ -168,3 +168,129 @@
 .pillDiffEasy   { background: var(--color-diff-easy-soft, #e6f7ed); color: var(--color-diff-easy-fg); }
 .pillDiffMedium { background: var(--color-diff-med-soft,  #fff5e0); color: var(--color-diff-med-fg);  }
 .pillDiffHard   { background: var(--color-diff-hard-soft, #fde8e8); color: var(--color-diff-hard-fg); }
+
+/* ----- Tag chips + +Tag picker -----
+   Chips render above the search input so they read as currently-
+   active filters. The +Tag button + popover sits inline with the
+   input and the Clear button so the action sequence "narrow,
+   narrow more, clear" all lives on one row. */
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 10px;
+  background: var(--color-app-accent-soft);
+  color: var(--color-app-accent);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chipRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius-pill);
+}
+.chipRemove:hover {
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+}
+
+.tagBtnWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.tagBtn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg2);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std), border-color var(--dur-fast) var(--ease-std), color var(--dur-fast) var(--ease-std);
+}
+.tagBtn:hover,
+.tagBtn[aria-expanded="true"] {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
+.tagPicker {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.12));
+}
+
+.tagPickerInput {
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--fg1);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm, 6px);
+}
+.tagPickerInput:focus {
+  outline: none;
+  border-color: var(--color-app-accent);
+  box-shadow: 0 0 0 2px var(--color-app-accent-soft);
+}
+
+.tagPickerList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.tagPickerRow {
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--fg1);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+}
+.tagPickerRow:hover {
+  background: var(--color-app-accent-soft);
+  color: var(--color-app-accent);
+}
