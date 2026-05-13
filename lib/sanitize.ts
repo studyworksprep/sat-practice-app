@@ -156,8 +156,6 @@ const QUESTION_OPTIONS: sanitizeHtml.IOptions = {
     caption: ['align'],
     colgroup: ['span', 'align', 'valign', 'width'],
     col: ['span', 'align', 'valign', 'width'],
-    col: ['span', 'align', 'valign', 'width'],
-    colgroup: ['span', 'align', 'valign', 'width'],
   },
   allowedSchemes: ['http', 'https', 'mailto', 'data'],
   allowedSchemesAppliedToAttributes: ['href', 'src', 'xlink:href'],
