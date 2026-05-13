@@ -29,6 +29,11 @@ import s from './Dashboard.module.css';
 export function DashboardInteractive({
   stats,
   performance,
+  // Per §3.4 cross-test data model: this is null when the student
+  // has zero ACT attempts so the section hides cleanly. When set,
+  // shape is { totalAttempts, correctAttempts, weekAttempts,
+  // accuracy, sections: [{ name, correct, total, skills: [...] }] }.
+  performanceAct = null,
   weeklyTrend = [],
   recentlyFinished,
   assignments,
@@ -320,7 +325,7 @@ export function DashboardInteractive({
           <div className={s.perfHeader}>
             <div className={s.sectionLabel}>
               <IconTile icon={PerformanceIcon} palette="cyan" size="sm" />
-              Performance · last 90 days
+              SAT performance · last 90 days
             </div>
             <Link href="/dashboard/stats" className={s.cardHeaderLink}>
               More statistics →
@@ -336,6 +341,38 @@ export function DashboardInteractive({
               title="Reading & Writing"
               tone="rw"
               domains={toBreakdownDomains(performance.rw.domains)}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* ---------- ACT performance ----------
+          Renders only when the student has ACT attempts in the
+          90-day window (§3.4 per-test-type sections hide when there's
+          no data). Same SkillBreakdownCard the SAT section uses;
+          ACT sections sit in the domain slot, ACT categories in the
+          skill slot. tone='math' is a placeholder palette until the
+          design kit ships an ACT-specific accent. */}
+      {performanceAct && performanceAct.sections.length > 0 && (
+        <section className={s.perfSection}>
+          <div className={s.perfHeader}>
+            <div className={s.sectionLabel}>
+              <IconTile icon={PerformanceIcon} palette="cyan" size="sm" />
+              ACT performance · last 90 days
+            </div>
+            {performanceAct.accuracy != null && (
+              <span className={s.cardHeaderLink}>
+                {performanceAct.totalAttempts} attempt
+                {performanceAct.totalAttempts === 1 ? '' : 's'} ·{' '}
+                {performanceAct.accuracy}%
+              </span>
+            )}
+          </div>
+          <div className={s.perfGrid}>
+            <SkillBreakdownCard
+              title="ACT"
+              tone="math"
+              domains={toBreakdownDomains(performanceAct.sections)}
             />
           </div>
         </section>

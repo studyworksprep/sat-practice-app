@@ -58,12 +58,17 @@ export default async function RootLayout({ children }) {
       <head>
         {/* Speed up Desmos loading: early DNS + TLS handshake, then preload the script */}
         <link rel="dns-prefetch" href="https://www.desmos.com" />
-        <link rel="preconnect" href="https://www.desmos.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.desmos.com" />
+        {/* No crossOrigin here — `next/script` below renders a plain
+            <script> tag (no `crossorigin` attribute), which the browser
+            treats as a no-CORS request. A `crossOrigin="anonymous"` on
+            this preload would mismatch that, so the preload would be
+            ignored and the script would re-fetch from scratch — adding
+            latency and, on flaky networks, tripping ERR_TIMED_OUT. */}
         <link
           rel="preload"
           href={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${process.env.NEXT_PUBLIC_DESMOS_API_KEY || 'bac289385bcd4778a682276b95f5f116'}`}
           as="script"
-          crossOrigin="anonymous"
         />
 
         {/* MathJax config: enable both MathML and TeX input so
