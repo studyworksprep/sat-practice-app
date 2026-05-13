@@ -127,6 +127,7 @@ export async function createAssignment(
       due_date: dueDate,
       created_by: user.id,
       updated_by: user.id,
+      test_type: 'sat',
       ...typePayload.row,
     })
     .select('id')
@@ -141,6 +142,7 @@ export async function createAssignment(
   const junctionRows = studentIds.map((sid) => ({
     assignment_id: assignment.id,
     student_id: sid,
+    test_type: 'sat',
   }));
   const { error: studentsErr } = await supabase
     .from('assignment_students_v2')

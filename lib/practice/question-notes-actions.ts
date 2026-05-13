@@ -70,7 +70,7 @@ export async function addQuestionNote({
 
   const { data, error } = await supabase
     .from('question_notes')
-    .insert({ question_id: questionId, author_id: user.id, content: trimmed })
+    .insert({ question_id: questionId, author_id: user.id, content: trimmed, test_type: 'sat' })
     .select('id, question_id, author_id, content, created_at, updated_at')
     .single();
   if (error) return actionFail(error.message);

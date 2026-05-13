@@ -74,7 +74,7 @@ export const POST = legacyApiRoute(async (request) => {
 
   const { data, error } = await supabase
     .from('question_notes')
-    .insert({ question_id: questionId, author_id: profile.id, content: content.trim() })
+    .insert({ question_id: questionId, author_id: profile.id, content: content.trim(), test_type: 'sat' })
     .select('id, question_id, author_id, content, created_at, updated_at')
     .single();
 

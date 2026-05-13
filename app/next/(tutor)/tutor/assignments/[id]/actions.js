@@ -72,6 +72,7 @@ export async function addAssignmentMembers(_prev, formData) {
   const rows = userIds.map((uid) => ({
     assignment_id: assignmentId,
     student_id: uid,
+    test_type: 'sat',
   }));
 
   // Upsert with ignoreDuplicates so re-adding someone who's

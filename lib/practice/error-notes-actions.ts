@@ -72,7 +72,7 @@ export async function saveErrorNote(
   const { data, error } = await supabase
     .from('question_error_notes')
     .upsert(
-      { user_id: user.id, question_id: questionId, body: trimmed },
+      { user_id: user.id, question_id: questionId, body: trimmed, test_type: 'sat' },
       { onConflict: 'user_id,question_id' },
     )
     .select('body, updated_at')
