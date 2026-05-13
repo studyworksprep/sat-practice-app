@@ -24,6 +24,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
+import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
 import { updateTargetScore } from './actions';
 import { DashboardInteractive } from './DashboardInteractive';
 
@@ -64,6 +65,7 @@ export default async function StudentDashboardPage() {
 
   const [
     aggregate,
+    aggregateAct,
     { data: fullProfile },
     { data: recentSessions },
     { data: recentTestAttempts },
@@ -74,6 +76,11 @@ export default async function StudentDashboardPage() {
     { data: recentAttempts },
   ] = await Promise.all([
     loadDashboardAggregate(user.id),
+    // Sibling ACT aggregator. Returns zeroed totals when the
+    // student has no ACT attempts; the renderer hides the ACT card
+    // in that case (§3.4 "per-test-type sections hide when there's
+    // no data").
+    loadDashboardAggregateAct(user.id),
     supabase
       .from('profiles')
       .select('first_name, last_name, target_sat_score, high_school, graduation_year, sat_test_date')
@@ -213,6 +220,33 @@ export default async function StudentDashboardPage() {
   };
 
   const performance = aggregate.performance;
+
+  // ACT performance — pre-shaped here into the SkillBreakdownCard's
+  // expected `domains` shape (sections-as-domains, categories-as-
+  // skills) so the client island stays test-type-agnostic. `null`
+  // signals the renderer to skip the ACT card entirely.
+  const performanceAct = aggregateAct.totalAttempts > 0
+    ? {
+        totalAttempts: aggregateAct.totalAttempts,
+        correctAttempts: aggregateAct.correctAttempts,
+        weekAttempts: aggregateAct.weekAttempts,
+        accuracy: aggregateAct.totalAttempts > 0
+          ? Math.round((aggregateAct.correctAttempts / aggregateAct.totalAttempts) * 100)
+          : null,
+        sections: aggregateAct.performance.sections.map((sec) => ({
+          name: sec.label,
+          correct: sec.correct,
+          total: sec.total,
+          // Categories render as the SkillBreakdownCard segmented bar
+          // — same shape the SAT card consumes for its skill list.
+          skills: sec.categories.map((c) => ({
+            name: c.name,
+            correct: c.correct,
+            total: c.total,
+          })),
+        })),
+      }
+    : null;
 
   // Resume info for the banner.
   const resumeInfo = activeSession && Array.isArray(activeSession.question_ids) && activeSession.question_ids.length > 0
@@ -388,6 +422,7 @@ export default async function StudentDashboardPage() {
     <DashboardInteractive
       stats={stats}
       performance={performance}
+      performanceAct={performanceAct}
       weeklyTrend={weeklyTrend}
       recentlyFinished={recentlyFinished}
       assignments={pendingAssignments}
