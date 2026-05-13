@@ -52,6 +52,50 @@
   padding: 6px 10px;
 }
 
+/* ----- QTI-authored stimulus tables (M-01151 etc.) -----
+   College Board APIP/QTI source wraps every data table in a
+   single-cell layout table (<table class="table"> with one <td>
+   that contains a title <p> + the real inner table). The default
+   .sw-prose td rule above paints a border around that wrapper
+   cell, making the whole thing look like a card with another card
+   inside it. The rules below special-case the QTI markers:
+
+     .table         — outer layout wrapper. Strip border + padding
+                      so it acts as an invisible container; keep
+                      the natural vertical margin from .sw-prose
+                      table.
+     .table_WithBorder — the real data table. Center it under the
+                      caption, give it strong borders and a tinted
+                      first-row "header band" (the source authors
+                      headers with <td>, not <th>, so we restyle
+                      the first row instead of selecting <th>).
+     .para_center   — APIP "center align" marker, used on the
+                      caption <p> and on data <td>s that should be
+                      centered (numeric columns, headers).
+
+   Targeted by class so we don't accidentally change any other
+   table that legitimately wants the default sw-prose styling. */
+.sw-prose table.table { border: 0; margin: 12px 0; }
+.sw-prose table.table > tbody > tr > td { border: 0; padding: 0; }
+
+.sw-prose table.table_WithBorder {
+  border-collapse: collapse;
+  margin: 8px auto;
+}
+.sw-prose table.table_WithBorder th,
+.sw-prose table.table_WithBorder td {
+  border: 1px solid var(--border-strong);
+  padding: 6px 12px;
+  background: var(--card);
+}
+.sw-prose table.table_WithBorder > tbody > tr:first-child > td {
+  font-weight: 600;
+  background: var(--color-slate-50);
+  color: var(--fg1);
+}
+
+.sw-prose .para_center { text-align: center; }
+
 /* Tables inside answer-choice cards get the same border + cell
    padding vocabulary as prose-body tables (so the table reads
    as structured rather than bare numbers floating in space),
