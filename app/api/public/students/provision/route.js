@@ -149,12 +149,19 @@ export async function POST(request) {
         { status: 409 },
       );
     }
+    // Stamp the LW link, and capture the parent billing email
+    // alongside it so tutor surfaces can show "Parent: <addr>" for
+    // this student even though it's an existing native Studyworks
+    // account. We're the source of truth for parent_email; safe to
+    // overwrite a stale value when LessonWorks re-asserts a new one.
+    const claimUpdate = {
+      lessonworks_student_id: lessonworksStudentId,
+      lessonworks_organization_id: organizationId,
+    };
+    if (email) claimUpdate.parent_email = email;
     const { error: stampErr } = await svc
       .from('profiles')
-      .update({
-        lessonworks_student_id: lessonworksStudentId,
-        lessonworks_organization_id: organizationId,
-      })
+      .update(claimUpdate)
       .eq('id', claimExistingId);
     if (stampErr) {
       return NextResponse.json({ error: `Claim failed: ${stampErr.message}` }, { status: 500 });
@@ -188,15 +195,20 @@ export async function POST(request) {
   const newProfileId = authData.user.id;
 
   // handle_new_user trigger fires here and seeds profiles with
-  // role='student', email=authEmail. Overwrite the synth email
-  // with the real parent address (when present) and stamp the
-  // LessonWorks linkage. grade_level isn't a profiles column today
-  // — drop it on the floor for now (LessonWorks already holds it
-  // locally); revisit if Studyworks ever needs to read it.
+  // role='student', email=authEmail (the synth). Leave profile.email
+  // at the synth — that column means "the student's own login email"
+  // and we don't have one yet for a brand-new provisioned account.
+  // The parent's billing address goes on parent_email, NOT on
+  // profile.email, so a future student-side signup with their real
+  // school email doesn't collide and we don't display the parent's
+  // address as if it were the student's. grade_level isn't a
+  // profiles column today — drop it on the floor for now
+  // (LessonWorks already holds it locally); revisit if Studyworks
+  // ever needs to read it.
   const profileUpdate = {
-    email: email ?? null,
     lessonworks_student_id: lessonworksStudentId,
     lessonworks_organization_id: organizationId,
+    parent_email: email,
   };
   const { error: updateErr } = await svc
     .from('profiles')
