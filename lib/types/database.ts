@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -97,6 +97,65 @@ export type Database = {
           },
         ]
       }
+      act_practice_test_attempts: {
+        Row: {
+          composite_score: number | null
+          created_at: string
+          english_scaled: number | null
+          finished_at: string | null
+          id: string
+          math_scaled: number | null
+          practice_session_id: string | null
+          reading_scaled: number | null
+          science_scaled: number | null
+          source_test: string
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          composite_score?: number | null
+          created_at?: string
+          english_scaled?: number | null
+          finished_at?: string | null
+          id?: string
+          math_scaled?: number | null
+          practice_session_id?: string | null
+          reading_scaled?: number | null
+          science_scaled?: number | null
+          source_test: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          composite_score?: number | null
+          created_at?: string
+          english_scaled?: number | null
+          finished_at?: string | null
+          id?: string
+          math_scaled?: number | null
+          practice_session_id?: string | null
+          reading_scaled?: number | null
+          science_scaled?: number | null
+          source_test?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "act_practice_test_attempts_practice_session_id_fkey"
+            columns: ["practice_session_id"]
+            isOneToOne: false
+            referencedRelation: "practice_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       act_questions: {
         Row: {
           category: string
@@ -160,6 +219,33 @@ export type Database = {
         }
         Relationships: []
       }
+      act_score_conversion: {
+        Row: {
+          created_at: string
+          raw_score: number
+          scaled_score: number
+          section: string
+          source_test: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          raw_score: number
+          scaled_score: number
+          section: string
+          source_test: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          raw_score?: number
+          scaled_score?: number
+          section?: string
+          source_test?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       answer_options: {
         Row: {
           content_html: string
@@ -199,13 +285,6 @@ export type Database = {
             referencedRelation: "question_versions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "answer_options_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_version_id"]
-          },
         ]
       }
       assignment_students_v2: {
@@ -214,18 +293,21 @@ export type Database = {
           completed_at: string | null
           created_at: string
           student_id: string
+          test_type: string
         }
         Insert: {
           assignment_id: string
           completed_at?: string | null
           created_at?: string
           student_id: string
+          test_type?: string
         }
         Update: {
           assignment_id?: string
           completed_at?: string | null
           created_at?: string
           student_id?: string
+          test_type?: string
         }
         Relationships: [
           {
@@ -273,6 +355,7 @@ export type Database = {
           practice_test_id: string | null
           question_ids: string[] | null
           teacher_id: string
+          test_type: string
           title: string | null
           updated_at: string
           updated_by: string | null
@@ -291,6 +374,7 @@ export type Database = {
           practice_test_id?: string | null
           question_ids?: string[] | null
           teacher_id: string
+          test_type?: string
           title?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -309,6 +393,7 @@ export type Database = {
           practice_test_id?: string | null
           question_ids?: string[] | null
           teacher_id?: string
+          test_type?: string
           title?: string | null
           updated_at?: string
           updated_by?: string | null
@@ -621,13 +706,6 @@ export type Database = {
             referencedRelation: "question_versions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "correct_answers_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_version_id"]
-          },
         ]
       }
       desmos_saved_states: {
@@ -637,6 +715,7 @@ export type Database = {
           question_id: string
           saved_by: string
           state_json: Json
+          test_type: string
           updated_at: string
         }
         Insert: {
@@ -645,6 +724,7 @@ export type Database = {
           question_id: string
           saved_by: string
           state_json: Json
+          test_type?: string
           updated_at?: string
         }
         Update: {
@@ -653,6 +733,7 @@ export type Database = {
           question_id?: string
           saved_by?: string
           state_json?: Json
+          test_type?: string
           updated_at?: string
         }
         Relationships: [
@@ -662,13 +743,6 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "questions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "desmos_saved_states_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
           },
           {
             foreignKeyName: "desmos_saved_states_saved_by_fkey"
@@ -1156,10 +1230,8 @@ export type Database = {
           filter_criteria: Json
           id: string
           last_activity_at: string
-          marked_positions: number[]
           mode: string
           question_ids: Json
-          status: string
           test_type: string
           user_id: string
         }
@@ -1171,10 +1243,8 @@ export type Database = {
           filter_criteria?: Json
           id?: string
           last_activity_at?: string
-          marked_positions?: number[]
           mode?: string
           question_ids?: Json
-          status?: string
           test_type?: string
           user_id: string
         }
@@ -1186,10 +1256,8 @@ export type Database = {
           filter_criteria?: Json
           id?: string
           last_activity_at?: string
-          marked_positions?: number[]
           mode?: string
           question_ids?: Json
-          status?: string
           test_type?: string
           user_id?: string
         }
@@ -1246,10 +1314,10 @@ export type Database = {
           math_scaled: number | null
           practice_test_id: string
           rw_scaled: number | null
+          sections_only: string | null
           source: string
           started_at: string
           status: string
-          time_multiplier: number
           uploaded_by: string | null
           user_id: string
         }
@@ -1261,10 +1329,10 @@ export type Database = {
           math_scaled?: number | null
           practice_test_id: string
           rw_scaled?: number | null
+          sections_only?: string | null
           source?: string
           started_at?: string
           status: string
-          time_multiplier?: number
           uploaded_by?: string | null
           user_id: string
         }
@@ -1276,10 +1344,10 @@ export type Database = {
           math_scaled?: number | null
           practice_test_id?: string
           rw_scaled?: number | null
+          sections_only?: string | null
           source?: string
           started_at?: string
           status?: string
-          time_multiplier?: number
           uploaded_by?: string | null
           user_id?: string
         }
@@ -1340,21 +1408,18 @@ export type Database = {
         Row: {
           attempt_id: string
           id: string
-          marked_for_review: boolean
           practice_test_module_attempt_id: string
           practice_test_module_item_id: string
         }
         Insert: {
           attempt_id: string
           id?: string
-          marked_for_review?: boolean
           practice_test_module_attempt_id: string
           practice_test_module_item_id: string
         }
         Update: {
           attempt_id?: string
           id?: string
-          marked_for_review?: boolean
           practice_test_module_attempt_id?: string
           practice_test_module_item_id?: string
         }
@@ -1435,6 +1500,8 @@ export type Database = {
           correct_count: number | null
           finished_at: string | null
           id: string
+          paused_at: string | null
+          paused_at_position: number | null
           practice_test_attempt_id: string
           practice_test_module_id: string
           raw_score: number | null
@@ -1444,6 +1511,8 @@ export type Database = {
           correct_count?: number | null
           finished_at?: string | null
           id?: string
+          paused_at?: string | null
+          paused_at_position?: number | null
           practice_test_attempt_id: string
           practice_test_module_id: string
           raw_score?: number | null
@@ -1453,6 +1522,8 @@ export type Database = {
           correct_count?: number | null
           finished_at?: string | null
           id?: string
+          paused_at?: string | null
+          paused_at_position?: number | null
           practice_test_attempt_id?: string
           practice_test_module_id?: string
           raw_score?: number | null
@@ -1511,13 +1582,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "question_versions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "practice_test_module_items_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_version_id"]
           },
         ]
       }
@@ -1775,11 +1839,13 @@ export type Database = {
           high_school: string | null
           id: string
           is_active: boolean
+          is_demo: boolean
           last_name: string | null
+          lessonworks_organization_id: string | null
+          lessonworks_student_id: string | null
           practice_test_v2_imported_at: string | null
           role: string
           sat_test_date: string | null
-          start_date: string | null
           subscription_exempt: boolean
           target_sat_score: number | null
           teacher_invite_code: string | null
@@ -1795,11 +1861,13 @@ export type Database = {
           high_school?: string | null
           id: string
           is_active?: boolean
+          is_demo?: boolean
           last_name?: string | null
+          lessonworks_organization_id?: string | null
+          lessonworks_student_id?: string | null
           practice_test_v2_imported_at?: string | null
           role?: string
           sat_test_date?: string | null
-          start_date?: string | null
           subscription_exempt?: boolean
           target_sat_score?: number | null
           teacher_invite_code?: string | null
@@ -1815,11 +1883,13 @@ export type Database = {
           high_school?: string | null
           id?: string
           is_active?: boolean
+          is_demo?: boolean
           last_name?: string | null
+          lessonworks_organization_id?: string | null
+          lessonworks_student_id?: string | null
           practice_test_v2_imported_at?: string | null
           role?: string
           sat_test_date?: string | null
-          start_date?: string | null
           subscription_exempt?: boolean
           target_sat_score?: number | null
           teacher_invite_code?: string | null
@@ -1986,13 +2056,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "question_concept_tags_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
-          },
-          {
             foreignKeyName: "question_concept_tags_tag_id_fkey"
             columns: ["tag_id"]
             isOneToOne: false
@@ -2068,6 +2131,7 @@ export type Database = {
           body: string
           created_at: string
           question_id: string
+          test_type: string
           updated_at: string
           user_id: string
         }
@@ -2075,6 +2139,7 @@ export type Database = {
           body: string
           created_at?: string
           question_id: string
+          test_type?: string
           updated_at?: string
           user_id: string
         }
@@ -2082,6 +2147,7 @@ export type Database = {
           body?: string
           created_at?: string
           question_id?: string
+          test_type?: string
           updated_at?: string
           user_id?: string
         }
@@ -2130,25 +2196,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "question_id_map_old_question_id_fkey"
-            columns: ["old_question_id"]
-            isOneToOne: true
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
-          },
-          {
             foreignKeyName: "question_id_map_old_version_id_fkey"
             columns: ["old_version_id"]
             isOneToOne: false
             referencedRelation: "question_versions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_id_map_old_version_id_fkey"
-            columns: ["old_version_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_version_id"]
           },
         ]
       }
@@ -2159,6 +2211,7 @@ export type Database = {
           created_at: string
           id: string
           question_id: string
+          test_type: string
           updated_at: string
         }
         Insert: {
@@ -2167,6 +2220,7 @@ export type Database = {
           created_at?: string
           id?: string
           question_id: string
+          test_type?: string
           updated_at?: string
         }
         Update: {
@@ -2175,6 +2229,7 @@ export type Database = {
           created_at?: string
           id?: string
           question_id?: string
+          test_type?: string
           updated_at?: string
         }
         Relationships: [
@@ -2205,13 +2260,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "questions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_notes_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
           },
         ]
       }
@@ -2261,22 +2309,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "question_status_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_status_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
-          },
-        ]
+        Relationships: []
       }
       question_taxonomy: {
         Row: {
@@ -2332,13 +2365,6 @@ export type Database = {
             referencedRelation: "questions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "question_taxonomy_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
-          },
         ]
       }
       question_versions: {
@@ -2391,13 +2417,6 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "questions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_versions_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
           },
         ]
       }
@@ -2837,322 +2856,15 @@ export type Database = {
         }
         Relationships: []
       }
-      stg_answer_options_new: {
-        Row: {
-          label: string | null
-          option_html: string | null
-          ordinal: number
-          source_external_id: string
-          version: number
-        }
-        Insert: {
-          label?: string | null
-          option_html?: string | null
-          ordinal: number
-          source_external_id: string
-          version?: number
-        }
-        Update: {
-          label?: string | null
-          option_html?: string | null
-          ordinal?: number
-          source_external_id?: string
-          version?: number
-        }
-        Relationships: []
-      }
-      stg_correct_answers_new: {
-        Row: {
-          answer_json: Json | null
-          correct_option_ordinal: number | null
-          source_external_id: string
-          version: number
-        }
-        Insert: {
-          answer_json?: Json | null
-          correct_option_ordinal?: number | null
-          source_external_id: string
-          version?: number
-        }
-        Update: {
-          answer_json?: Json | null
-          correct_option_ordinal?: number | null
-          source_external_id?: string
-          version?: number
-        }
-        Relationships: []
-      }
-      stg_practice_test_module_items: {
-        Row: {
-          module_number: number
-          ordinal: number
-          practice_test_code: string
-          route_code: string
-          source: string | null
-          source_external_id: string
-          subject_code: string
-          version: number
-        }
-        Insert: {
-          module_number: number
-          ordinal: number
-          practice_test_code: string
-          route_code: string
-          source?: string | null
-          source_external_id: string
-          subject_code: string
-          version?: number
-        }
-        Update: {
-          module_number?: number
-          ordinal?: number
-          practice_test_code?: string
-          route_code?: string
-          source?: string | null
-          source_external_id?: string
-          subject_code?: string
-          version?: number
-        }
-        Relationships: []
-      }
-      stg_practice_test_modules: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          module_number: number
-          practice_test_code: string
-          route_code: string
-          subject_code: string
-          time_limit_seconds: number
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          module_number: number
-          practice_test_code: string
-          route_code: string
-          subject_code: string
-          time_limit_seconds: number
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          module_number?: number
-          practice_test_code?: string
-          route_code?: string
-          subject_code?: string
-          time_limit_seconds?: number
-        }
-        Relationships: []
-      }
-      stg_practice_test_routing_rules: {
-        Row: {
-          created_at: string | null
-          from_module_number: number
-          metric: string
-          operator: string
-          practice_test_code: string
-          subject_code: string
-          threshold: number
-          to_route_code: string
-        }
-        Insert: {
-          created_at?: string | null
-          from_module_number: number
-          metric: string
-          operator: string
-          practice_test_code: string
-          subject_code: string
-          threshold: number
-          to_route_code: string
-        }
-        Update: {
-          created_at?: string | null
-          from_module_number?: number
-          metric?: string
-          operator?: string
-          practice_test_code?: string
-          subject_code?: string
-          threshold?: number
-          to_route_code?: string
-        }
-        Relationships: []
-      }
-      stg_practice_tests: {
-        Row: {
-          adaptive_version: string | null
-          code: string
-          created_at: string | null
-          id: string | null
-          is_adaptive: boolean | null
-          is_frozen: boolean | null
-          is_published: boolean | null
-          name: string
-        }
-        Insert: {
-          adaptive_version?: string | null
-          code: string
-          created_at?: string | null
-          id?: string | null
-          is_adaptive?: boolean | null
-          is_frozen?: boolean | null
-          is_published?: boolean | null
-          name: string
-        }
-        Update: {
-          adaptive_version?: string | null
-          code?: string
-          created_at?: string | null
-          id?: string | null
-          is_adaptive?: boolean | null
-          is_frozen?: boolean | null
-          is_published?: boolean | null
-          name?: string
-        }
-        Relationships: []
-      }
-      stg_pt11_corrected_taxonomy: {
-        Row: {
-          domain_code: string | null
-          external_id: string | null
-          skill_code: string | null
-        }
-        Insert: {
-          domain_code?: string | null
-          external_id?: string | null
-          skill_code?: string | null
-        }
-        Update: {
-          domain_code?: string | null
-          external_id?: string | null
-          skill_code?: string | null
-        }
-        Relationships: []
-      }
-      stg_pt6_id_reconciliation: {
-        Row: {
-          alt_source_external_id: string | null
-          module_number: number | null
-          ordinal: number | null
-          route_code: string | null
-          source_external_id: string | null
-          subject_code: string | null
-        }
-        Insert: {
-          alt_source_external_id?: string | null
-          module_number?: number | null
-          ordinal?: number | null
-          route_code?: string | null
-          source_external_id?: string | null
-          subject_code?: string | null
-        }
-        Update: {
-          alt_source_external_id?: string | null
-          module_number?: number | null
-          ordinal?: number | null
-          route_code?: string | null
-          source_external_id?: string | null
-          subject_code?: string | null
-        }
-        Relationships: []
-      }
-      stg_pt7_id_reconciliation: {
-        Row: {
-          har_source_external_id: string | null
-          ids_differ: boolean | null
-          matched_by_text: boolean | null
-          module_number: number | null
-          ordinal: number | null
-          route_code: string | null
-          stem_preview: string | null
-          stimulus_preview: string | null
-          subject_code: string | null
-          txt_source_external_id: string | null
-        }
-        Insert: {
-          har_source_external_id?: string | null
-          ids_differ?: boolean | null
-          matched_by_text?: boolean | null
-          module_number?: number | null
-          ordinal?: number | null
-          route_code?: string | null
-          stem_preview?: string | null
-          stimulus_preview?: string | null
-          subject_code?: string | null
-          txt_source_external_id?: string | null
-        }
-        Update: {
-          har_source_external_id?: string | null
-          ids_differ?: boolean | null
-          matched_by_text?: boolean | null
-          module_number?: number | null
-          ordinal?: number | null
-          route_code?: string | null
-          stem_preview?: string | null
-          stimulus_preview?: string | null
-          subject_code?: string | null
-          txt_source_external_id?: string | null
-        }
-        Relationships: []
-      }
-      stg_question_versions_new: {
-        Row: {
-          metadata: Json
-          question_type: string
-          rationale_html: string | null
-          source_external_id: string
-          stem_html: string | null
-          stimulus_html: string | null
-          version: number
-        }
-        Insert: {
-          metadata?: Json
-          question_type: string
-          rationale_html?: string | null
-          source_external_id: string
-          stem_html?: string | null
-          stimulus_html?: string | null
-          version?: number
-        }
-        Update: {
-          metadata?: Json
-          question_type?: string
-          rationale_html?: string | null
-          source_external_id?: string
-          stem_html?: string | null
-          stimulus_html?: string | null
-          version?: number
-        }
-        Relationships: []
-      }
-      stg_questions_new: {
-        Row: {
-          source: string
-          source_external_id: string
-        }
-        Insert: {
-          source: string
-          source_external_id: string
-        }
-        Update: {
-          source?: string
-          source_external_id?: string
-        }
-        Relationships: []
-      }
       student_notes: {
         Row: {
           body_json: Json
           body_text: string
           created_at: string
-          domain_code: string | null
-          domain_name: string | null
           id: string
           question_id: string | null
-          skill_code: string | null
-          skill_name: string | null
-          subject_code: string | null
           tags: string[]
+          test_type: string
           title: string | null
           updated_at: string
           user_id: string
@@ -3161,14 +2873,10 @@ export type Database = {
           body_json?: Json
           body_text?: string
           created_at?: string
-          domain_code?: string | null
-          domain_name?: string | null
           id?: string
           question_id?: string | null
-          skill_code?: string | null
-          skill_name?: string | null
-          subject_code?: string | null
           tags?: string[]
+          test_type?: string
           title?: string | null
           updated_at?: string
           user_id: string
@@ -3177,14 +2885,10 @@ export type Database = {
           body_json?: Json
           body_text?: string
           created_at?: string
-          domain_code?: string | null
-          domain_name?: string | null
           id?: string
           question_id?: string | null
-          skill_code?: string | null
-          skill_name?: string | null
-          subject_code?: string | null
           tags?: string[]
+          test_type?: string
           title?: string | null
           updated_at?: string
           user_id?: string
@@ -3270,6 +2974,7 @@ export type Database = {
         Row: {
           code: string
           created_at: string | null
+          exempt: boolean
           id: string
           used_at: string | null
           used_by: string | null
@@ -3277,6 +2982,7 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string | null
+          exempt?: boolean
           id?: string
           used_at?: string | null
           used_by?: string | null
@@ -3284,6 +2990,7 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string | null
+          exempt?: boolean
           id?: string
           used_at?: string | null
           used_by?: string | null
@@ -3399,26 +3106,6 @@ export type Database = {
         }
         Relationships: []
       }
-      questions_current: {
-        Row: {
-          difficulty: number | null
-          domain_code: string | null
-          domain_name: string | null
-          program: string | null
-          question_id: string | null
-          question_type: string | null
-          question_version_id: string | null
-          rationale_html: string | null
-          score_band_range_cd: number | null
-          skill_code: string | null
-          skill_name: string | null
-          source: string | null
-          source_external_id: string | null
-          stem_html: string | null
-          stimulus_html: string | null
-        }
-        Relationships: []
-      }
       student_practice_stats: {
         Row: {
           correct_attempts: number | null
@@ -3446,6 +3133,7 @@ export type Database = {
         Returns: boolean
       }
       can_view_lesson: { Args: { p_lesson_id: string }; Returns: boolean }
+      count_distinct_users_since: { Args: { since: string }; Returns: number }
       get_practice_volume_by_week: {
         Args: { weeks?: number }
         Returns: {
@@ -3454,105 +3142,20 @@ export type Database = {
           week_start: string
         }[]
       }
-      get_question_neighbors:
-        | {
-            Args: {
-              current_question_id: string
-              p_difficulty?: number
-              p_domain_name?: string
-              p_marked_only?: boolean
-              p_program?: string
-              p_score_bands?: number[]
-              p_skill_name?: string
-            }
-            Returns: {
-              next_id: string
-              prev_id: string
-            }[]
-          }
-        | {
-            Args: {
-              current_question_id: string
-              p_difficulty?: number
-              p_domain_name?: string
-              p_marked_only?: boolean
-              p_program?: string
-              p_score_bands?: number[]
-              p_skill_name?: string
-              p_user_id: string
-            }
-            Returns: {
-              next_id: string
-              prev_id: string
-            }[]
-          }
-      get_question_outline_counts:
-        | {
-            Args: {
-              p_difficulty?: number
-              p_marked_only?: boolean
-              p_score_band?: number
-            }
-            Returns: {
-              domain: string
-              question_count: number
-              skill_desc: string
-            }[]
-          }
-        | {
-            Args: {
-              p_difficulty?: number
-              p_marked_only?: boolean
-              p_score_bands?: number[]
-            }
-            Returns: {
-              domain: string
-              question_count: number
-              skill_desc: string
-            }[]
-          }
-      get_question_outline_counts_v2: {
+      get_question_neighbors: {
         Args: {
+          current_question_id: string
           p_difficulty?: number
+          p_domain_name?: string
           p_marked_only?: boolean
+          p_program?: string
           p_score_bands?: number[]
+          p_skill_name?: string
           p_user_id: string
         }
         Returns: {
-          domain: string
-          question_count: number
-          skill_desc: string
-        }[]
-      }
-      get_roster_skill_performance: {
-        Args: {
-          p_min_skill_attempts?: number
-          p_min_student_attempts?: number
-          p_roster: string[]
-          p_since: string
-          p_struggling_threshold?: number
-        }
-        Returns: {
-          accuracy: number
-          attempts: number
-          correct: number
-          domain_code: string
-          domain_name: string
-          missed: number
-          skill_code: string
-          skill_name: string
-          students_below_60: number
-          students_touched: number
-        }[]
-      }
-      get_roster_weekly_trend: {
-        Args: { p_num_weeks?: number; p_roster: string[] }
-        Returns: {
-          accuracy: number
-          attempts: number
-          correct: number
-          end_iso: string
-          start_iso: string
+          next_id: string
+          prev_id: string
         }[]
       }
       get_student_dashboard_stats: {
@@ -3568,21 +3171,12 @@ export type Database = {
           week_attempts: number
         }[]
       }
-      get_user_practice_summary: {
-        Args: never
+      get_student_extended_stats: {
+        Args: { p_lookback_start: string; p_user_id: string }
         Returns: {
-          marked_count: number
-          percent_correct: number
-          total_attempts: number
-          total_correct: number
-          total_unique_attempted: number
-        }[]
-      }
-      import_student_error_notes: {
-        Args: { p_user_id: string }
-        Returns: {
-          imported_count: number
-          skipped_existing: number
+          by_day: Json
+          by_difficulty: Json
+          by_score_band: Json
         }[]
       }
       import_student_practice_history: {
@@ -3598,6 +3192,7 @@ export type Database = {
         Args: { p_assignment_id: string; p_teacher_id: string }
         Returns: boolean
       }
+      is_demo: { Args: never; Returns: boolean }
       is_lesson_assignment_student: {
         Args: { p_assignment_id: string; p_student_id: string }
         Returns: boolean
@@ -3653,16 +3248,9 @@ export type Database = {
         Args: { broken: boolean; question_uuid: string }
         Returns: undefined
       }
-      stg_clear_practice_test: { Args: { p_code: string }; Returns: undefined }
       student_has_lesson_assignment: {
         Args: { p_lesson_id: string; p_student_id: string }
         Returns: boolean
-      }
-      submit_attempt: {
-        Args: { p_question_id: string; p_selected_answer: string }
-        Returns: {
-          is_correct: boolean
-        }[]
       }
       teacher_can_view_student: {
         Args: { target_student_id: string }
