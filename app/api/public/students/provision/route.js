@@ -62,6 +62,12 @@ export async function POST(request) {
   const organizationId       = String(body?.organization_id        ?? '').trim();
   const email                = body?.email == null ? null : String(body.email).trim() || null;
   const gradeLevel           = body?.grade_level == null ? null : String(body.grade_level).trim() || null;
+  // Optional: when the LessonWorks-side admin has used the search
+  // endpoint and picked an existing Studyworks profile to claim,
+  // the helper sends that profile's UUID here and we stamp the
+  // LessonWorks link onto it rather than creating a new auth user.
+  // No-op when omitted.
+  const claimExistingId      = String(body?.claim_existing_studyworks_id ?? '').trim();
 
   if (!lessonworksStudentId) {
     return NextResponse.json({ error: 'lessonworks_student_id is required' }, { status: 400 });
@@ -110,6 +116,50 @@ export async function POST(request) {
       );
     }
     return NextResponse.json({ student_id: existing.id, created: false }, { status: 200 });
+  }
+
+  // Claim path. The caller has already used the search endpoint
+  // and identified an existing Studyworks-native profile that
+  // should carry the LessonWorks link. Stamp the link directly
+  // onto that profile and return; never create a new auth user
+  // in this branch. The profile is guarded so we don't silently
+  // steal a profile that's already linked to a different LW
+  // student — that's a 409 the operator has to resolve.
+  if (claimExistingId) {
+    const { data: target, error: tgtErr } = await svc
+      .from('profiles')
+      .select('id, role, lessonworks_student_id, lessonworks_organization_id')
+      .eq('id', claimExistingId)
+      .maybeSingle();
+    if (tgtErr) {
+      return NextResponse.json({ error: `Claim lookup failed: ${tgtErr.message}` }, { status: 500 });
+    }
+    if (!target) {
+      return NextResponse.json({ error: 'claim_existing_studyworks_id not found' }, { status: 404 });
+    }
+    if (target.role !== 'student') {
+      return NextResponse.json({ error: 'claim target is not a student profile' }, { status: 400 });
+    }
+    if (
+      target.lessonworks_student_id
+      && target.lessonworks_student_id !== lessonworksStudentId
+    ) {
+      return NextResponse.json(
+        { error: 'claim target is already linked to a different LessonWorks student' },
+        { status: 409 },
+      );
+    }
+    const { error: stampErr } = await svc
+      .from('profiles')
+      .update({
+        lessonworks_student_id: lessonworksStudentId,
+        lessonworks_organization_id: organizationId,
+      })
+      .eq('id', claimExistingId);
+    if (stampErr) {
+      return NextResponse.json({ error: `Claim failed: ${stampErr.message}` }, { status: 500 });
+    }
+    return NextResponse.json({ student_id: claimExistingId, created: false, claimed: true }, { status: 200 });
   }
 
   // Create the auth user. Synth email avoids the sibling-on-same-
