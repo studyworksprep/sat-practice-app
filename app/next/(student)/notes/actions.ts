@@ -296,6 +296,7 @@ export async function createNote(
     body_json: doc,
     body_text: input.bodyText,
     tags: sanitizeTags(input.tags),
+    test_type: 'sat',
     ...taxonomyToColumns(tax),
   };
 
@@ -495,6 +496,7 @@ export async function upsertNoteForQuestion(
       body_json: doc,
       body_text: input.bodyText,
       tags: [],
+      test_type: 'sat',
       ...taxonomyToColumns(tax),
     })
     .select(

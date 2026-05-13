@@ -74,6 +74,7 @@ export async function saveDesmosState({
         state_json: stateJson,
         saved_by: profile.id,
         updated_at: new Date().toISOString(),
+        test_type: 'sat',
       },
       { onConflict: 'question_id' },
     );
