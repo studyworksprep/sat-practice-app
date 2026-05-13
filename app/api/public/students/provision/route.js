@@ -12,17 +12,24 @@
 // the DB level — see migration 20240101000043_profiles_lessonworks_link
 // .sql). A repeat call with the same id is a cheap SELECT and 200.
 //
-// Sibling email handling. The LessonWorks contract says `email` is
-// the parent billing address — multiple LessonWorks students can
-// legitimately share one. To avoid two siblings colliding on
-// auth.users.email_key, the auth user gets a synthesized address
-// derived from lessonworks_student_id (lw-<uuid>@provisioned
-// .studyworks.local). The real parent email is stored on
-// profiles.email as the display value; auth.users.email stays the
-// synth. Net effect: provisioned siblings each get their own
-// distinct Studyworks profile, both display the parent email, and
-// the parent can still sign up Studyworks-native with the real
-// address later without conflicting with these accounts.
+// Identity model. The LessonWorks `email` payload field is the
+// *student's* email address — per the integration decision in PR
+// #46 (LessonWorks) + commit replacing parent_email (Studyworks),
+// LessonWorks stopped sending parent billing emails through this
+// channel. When LessonWorks supplies a student email, we use it as
+// auth.users.email so the student can later log in / reset their
+// password with that address; handle_new_user mirrors it into
+// profiles.email. When LessonWorks doesn't have a student email
+// (common for younger students whose record only carries a parent),
+// we fall back to a per-LessonWorks-id synth address
+// (lw-<uuid>@provisioned.studyworks.local). The synth keeps retries
+// idempotent at the auth layer and never collides between siblings.
+//
+// Claim path. If the LessonWorks-side admin has used the search
+// endpoint and picked an existing Studyworks profile to claim, the
+// helper sends that profile's UUID as claim_existing_studyworks_id
+// and we stamp the LessonWorks link onto that row instead of
+// creating a new auth user.
 //
 // Auth. Single shared `EXTERNAL_API_KEY` env var, same secret the
 // existing GET /api/public/students/[studentId]/practice-data
@@ -35,13 +42,27 @@ import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
-// Auth email synth — kept stable per LessonWorks student so a
-// double-provision (race condition / retry) lands on the same auth
-// row. The handle_new_user trigger will populate profiles from
-// auth.users on first create; we then overwrite profiles.email
-// with the real parent address and stamp the LessonWorks link.
+// Synth auth address — used only when LessonWorks doesn't supply a
+// student email. Stable per LessonWorks student so a double-
+// provision (race / retry) lands on the same auth row instead of
+// stranding orphans.
 function synthAuthEmail(lessonworksStudentId) {
   return `lw-${lessonworksStudentId}@provisioned.studyworks.local`;
+}
+
+// Detect a Supabase auth "email already in use" error so we can
+// translate it into a clean 409 with operator-friendly text. The
+// search endpoint should have surfaced any pre-existing account
+// with this email — if we got here, either the admin chose "Create
+// new" despite a viable candidate or the search arm missed
+// (typo, normalization gap). Either way the answer is the same:
+// stop, go through search again.
+function isDuplicateEmailError(err) {
+  const msg = (err?.message ?? '').toLowerCase();
+  return msg.includes('already registered')
+      || msg.includes('already exists')
+      || msg.includes('duplicate')
+      || err?.code === 'email_exists';
 }
 
 export async function POST(request) {
@@ -62,11 +83,6 @@ export async function POST(request) {
   const organizationId       = String(body?.organization_id        ?? '').trim();
   const email                = body?.email == null ? null : String(body.email).trim() || null;
   const gradeLevel           = body?.grade_level == null ? null : String(body.grade_level).trim() || null;
-  // Optional: when the LessonWorks-side admin has used the search
-  // endpoint and picked an existing Studyworks profile to claim,
-  // the helper sends that profile's UUID here and we stamp the
-  // LessonWorks link onto it rather than creating a new auth user.
-  // No-op when omitted.
   const claimExistingId      = String(body?.claim_existing_studyworks_id ?? '').trim();
 
   if (!lessonworksStudentId) {
@@ -94,12 +110,6 @@ export async function POST(request) {
     return NextResponse.json({ error: `Lookup failed: ${lookupErr.message}` }, { status: 500 });
   }
   if (existing) {
-    // Quietly catch up the organization_id if the row pre-dated us
-    // tracking it (a backfilled row, for example, can have a known
-    // lessonworks_student_id but a null org). Never overwrites an
-    // already-populated value to a different value — that case is
-    // surfaced as an error so it can be investigated rather than
-    // silently rewritten.
     if (organizationId && existing.lessonworks_organization_id == null) {
       await svc
         .from('profiles')
@@ -149,19 +159,12 @@ export async function POST(request) {
         { status: 409 },
       );
     }
-    // Stamp the LW link, and capture the parent billing email
-    // alongside it so tutor surfaces can show "Parent: <addr>" for
-    // this student even though it's an existing native Studyworks
-    // account. We're the source of truth for parent_email; safe to
-    // overwrite a stale value when LessonWorks re-asserts a new one.
-    const claimUpdate = {
-      lessonworks_student_id: lessonworksStudentId,
-      lessonworks_organization_id: organizationId,
-    };
-    if (email) claimUpdate.parent_email = email;
     const { error: stampErr } = await svc
       .from('profiles')
-      .update(claimUpdate)
+      .update({
+        lessonworks_student_id: lessonworksStudentId,
+        lessonworks_organization_id: organizationId,
+      })
       .eq('id', claimExistingId);
     if (stampErr) {
       return NextResponse.json({ error: `Claim failed: ${stampErr.message}` }, { status: 500 });
@@ -169,12 +172,14 @@ export async function POST(request) {
     return NextResponse.json({ student_id: claimExistingId, created: false, claimed: true }, { status: 200 });
   }
 
-  // Create the auth user. Synth email avoids the sibling-on-same-
-  // parent-email collision on auth.users.email_key. email_confirm:
-  // true so the synth doesn't sit in a "needs verification" state
-  // the parent can never satisfy; a real login flow will require
-  // a separate password-reset/invite anyway.
-  const authEmail = synthAuthEmail(lessonworksStudentId);
+  // Create-new path. Use the student's email as the auth address
+  // when LessonWorks supplied one (the student can later log in /
+  // reset password with this address). Fall back to the per-LW-id
+  // synth when null. email_confirm: true marks the address verified
+  // because the LessonWorks admin who initiated the link has
+  // already done that work — the student doesn't need to click a
+  // verification link before they can use the account.
+  const authEmail = email || synthAuthEmail(lessonworksStudentId);
   const password = crypto.randomBytes(24).toString('base64url');
   const { data: authData, error: authErr } = await svc.auth.admin.createUser({
     email: authEmail,
@@ -187,6 +192,15 @@ export async function POST(request) {
     },
   });
   if (authErr || !authData?.user?.id) {
+    if (isDuplicateEmailError(authErr)) {
+      return NextResponse.json(
+        {
+          error:
+            'A Studyworks account with this email already exists. Use the search flow to claim it instead of creating a new one.',
+        },
+        { status: 409 },
+      );
+    }
     return NextResponse.json(
       { error: `Failed to create auth user: ${authErr?.message ?? 'unknown'}` },
       { status: 500 },
@@ -194,30 +208,23 @@ export async function POST(request) {
   }
   const newProfileId = authData.user.id;
 
-  // handle_new_user trigger fires here and seeds profiles with
-  // role='student', email=authEmail (the synth). Leave profile.email
-  // at the synth — that column means "the student's own login email"
-  // and we don't have one yet for a brand-new provisioned account.
-  // The parent's billing address goes on parent_email, NOT on
-  // profile.email, so a future student-side signup with their real
-  // school email doesn't collide and we don't display the parent's
-  // address as if it were the student's. grade_level isn't a
-  // profiles column today — drop it on the floor for now
-  // (LessonWorks already holds it locally); revisit if Studyworks
-  // ever needs to read it.
-  const profileUpdate = {
-    lessonworks_student_id: lessonworksStudentId,
-    lessonworks_organization_id: organizationId,
-    parent_email: email,
-  };
+  // handle_new_user trigger fires and seeds profiles with
+  // role='student', email=authEmail (either the real student email
+  // or the synth). Nothing to overwrite — the trigger's mirror is
+  // the correct end-state. Just stamp the LessonWorks link.
+  // grade_level isn't a profiles column today; drop it on the floor
+  // (LessonWorks already holds it locally).
   const { error: updateErr } = await svc
     .from('profiles')
-    .update(profileUpdate)
+    .update({
+      lessonworks_student_id: lessonworksStudentId,
+      lessonworks_organization_id: organizationId,
+    })
     .eq('id', newProfileId);
   if (updateErr) {
     // Roll the auth user back so a partial-create can't strand an
     // orphan in auth.users that the next provision call will
-    // collide with on the synth email.
+    // collide with on the synth or student email.
     await svc.auth.admin.deleteUser(newProfileId);
     return NextResponse.json(
       { error: `Failed to finalize profile: ${updateErr.message}` },

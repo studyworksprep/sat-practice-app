@@ -50,7 +50,7 @@ export async function GET(request) {
   // explode the search space.
   let query = svc
     .from('profiles')
-    .select('id, first_name, last_name, email, parent_email, role, is_active, created_at, lessonworks_student_id')
+    .select('id, first_name, last_name, email, role, is_active, created_at, lessonworks_student_id')
     .eq('role', 'student')
     .limit(MAX_RESULTS);
 
@@ -73,15 +73,13 @@ export async function GET(request) {
     }
   }
   if (email) {
-    // Exact email match against both the student-identity email
-    // (profile.email) and the parent billing email (parent_email).
-    // LessonWorks's `email` query param is the parent address, so
-    // parent_email is the more useful slot — but we keep
-    // profile.email in the OR so a hit on a native-Studyworks
-    // student whose own email happens to match still surfaces.
+    // Exact email match against profile.email — the student-identity
+    // address. Per the PR #46 (LW) + parent_email revert (SW) design,
+    // LessonWorks's `email` query param is the student's email, not
+    // the parent billing address, so a direct equality on
+    // profile.email is what we want. Case-insensitive via ilike.
     const safe = email.replace(/[%_\\]/g, '\\$&').replace(/,/g, '');
     conditions.push(`email.ilike.${safe}`);
-    conditions.push(`parent_email.ilike.${safe}`);
   }
   query = query.or(conditions.join(','));
 
@@ -110,8 +108,7 @@ export async function GET(request) {
       student_id: p.id,
       first_name: p.first_name,
       last_name: p.last_name,
-      email: p.email,                  // student-identity email
-      parent_email: p.parent_email,    // LW billing email (when LW-linked)
+      email: p.email,
       is_active: p.is_active,
       created_at: p.created_at,
       attempts_count: attemptsByProfile.get(p.id) ?? 0,
