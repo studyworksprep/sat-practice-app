@@ -40,11 +40,14 @@ export default async function PracticeHistoryPage() {
   // 1) All practice-mode sessions for this user. RLS scopes to
   //    user_id = auth.uid(); the extra .eq('user_id', ...) is
   //    belt-and-suspenders / makes the query intent explicit.
+  //    SAT-only — ACT history will live on its own list once the
+  //    ACT runner ships (§3.4 per-test-type sections).
   const { data: sessions } = await supabase
     .from('practice_sessions')
     .select('id, created_at, question_ids, current_position, mode, filter_criteria, status')
     .eq('user_id', user.id)
     .eq('mode', 'practice')
+    .eq('test_type', 'sat')
     .neq('status', 'abandoned')
     .order('created_at', { ascending: false })
     .limit(PAGE_SIZE);

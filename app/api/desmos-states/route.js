@@ -15,6 +15,7 @@ export const GET = legacyApiRoute(async (request) => {
     .from('desmos_saved_states')
     .select('id, question_id, state_json, saved_by, created_at, updated_at')
     .eq('question_id', questionId)
+    .eq('test_type', 'sat')
     .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -65,7 +66,8 @@ export const DELETE = legacyApiRoute(async (request) => {
   const { error } = await supabase
     .from('desmos_saved_states')
     .delete()
-    .eq('question_id', questionId);
+    .eq('question_id', questionId)
+    .eq('test_type', 'sat');
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });

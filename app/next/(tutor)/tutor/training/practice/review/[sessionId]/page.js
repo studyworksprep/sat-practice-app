@@ -26,9 +26,11 @@ export default async function TutorTrainingReviewPage({ params }) {
   // Session row. Pinned to the caller and to training-mode so
   // this page never accidentally renders a practice-mode
   // session id with a teacher visiting from the wrong route.
+  // Specific row by id; test_type included so buildSessionReview can
+  // branch its question-joining reads (loader-fork pattern, §3.4).
   const { data: session } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, created_at, mode, filter_criteria, marked_positions')
+    .select('id, user_id, question_ids, created_at, mode, filter_criteria, marked_positions, test_type')
     .eq('id', sessionId)
     .in('mode', ['training', 'review'])
     .maybeSingle();

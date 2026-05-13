@@ -153,6 +153,7 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
     .from('practice_sessions')
     .select('id, status')
     .eq('user_id', studentId)
+    .eq('test_type', 'sat')
     .eq('filter_criteria->>assignment_id', assignmentId)
     .neq('status', 'abandoned')
     .order('created_at', { ascending: false })

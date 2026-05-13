@@ -266,6 +266,7 @@ function EmptyCard({ title, body }) {
 // ──────────────────────────────────────────────────────────────
 
 async function loadAssignmentsData(supabase, userId) {
+  // SAT-only training assignments inbox.
   const { data: junctionRows } = await supabase
     .from('assignment_students_v2')
     .select(`
@@ -278,7 +279,8 @@ async function loadAssignmentsData(supabase, userId) {
         practice_test:practice_tests_v2 (name, code)
       )
     `)
-    .eq('student_id', userId);
+    .eq('student_id', userId)
+    .eq('test_type', 'sat');
 
   const rows = (junctionRows ?? [])
     .map((r) => ({ ...r.assignment, student_completed_at: r.completed_at }))
@@ -324,6 +326,7 @@ async function loadAssignmentsData(supabase, userId) {
           .from('practice_sessions')
           .select('id, created_at, filter_criteria')
           .eq('user_id', userId)
+          .eq('test_type', 'sat')
           .in('filter_criteria->>assignment_id', assignmentIds)
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),

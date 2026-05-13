@@ -218,10 +218,13 @@ export const GET = legacyApiRoute(async () => {
     supabase.from('lesson_progress').select('user_id').gte('updated_at', d30.toISOString()).limit(10000),
     supabase.from('bug_reports').select('created_by').gte('created_at', d30.toISOString()).limit(10000),
     supabase.from('practice_test_attempts').select('user_id').eq('status', 'completed').gte('finished_at', d30.toISOString()).limit(10000),
-    supabase.from('desmos_saved_states').select('saved_by').gte('created_at', d30.toISOString()).limit(10000),
+    // Admin cohort metrics — SAT-only so distinct-user counts stay
+    // meaningful (a tutor active on both test types would otherwise
+    // double-count once ACT writes land).
+    supabase.from('desmos_saved_states').select('saved_by').eq('test_type', 'sat').gte('created_at', d30.toISOString()).limit(10000),
     // Teacher features
     supabase.from('question_assignments').select('teacher_id').gte('created_at', d30.toISOString()).limit(10000),
-    supabase.from('question_notes').select('author_id').gte('created_at', d30.toISOString()).limit(10000),
+    supabase.from('question_notes').select('author_id').eq('test_type', 'sat').gte('created_at', d30.toISOString()).limit(10000),
     supabase.from('lesson_assignments').select('teacher_id').gte('created_at', d30.toISOString()).limit(10000),
     supabase.from('sat_test_registrations').select('created_by').gte('created_at', d30.toISOString()).limit(10000),
     supabase.from('sat_official_scores').select('created_by').gte('created_at', d30.toISOString()).limit(10000),

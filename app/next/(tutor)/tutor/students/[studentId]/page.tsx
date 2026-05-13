@@ -89,6 +89,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .from('practice_test_attempts')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', studentId),
+    // SAT-only assignments inbox for this student.
     supabase
       .from('assignment_students_v2')
       .select(`
@@ -100,7 +101,8 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           practice_test:practice_tests_v2 (name)
         )
       `)
-      .eq('student_id', studentId),
+      .eq('student_id', studentId)
+      .eq('test_type', 'sat'),
     supabase
       .from('practice_test_attempts_v2')
       .select(`
@@ -111,11 +113,13 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId)
       .order('started_at', { ascending: false })
       .limit(RECENT_TESTS_LIMIT),
+    // SAT-only practice sessions for this student.
     supabase
       .from('practice_sessions')
       .select('id, created_at, question_ids, current_position, status')
       .eq('user_id', studentId)
       .eq('mode', 'practice')
+      .eq('test_type', 'sat')
       .neq('status', 'abandoned')
       // Exclude assignment-linked sessions — those already surface
       // in the Assignments list above (each completed assignment
@@ -256,6 +260,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .select('id, status, created_at, filter_criteria')
       .eq('user_id', studentId)
       .eq('status', 'completed')
+      .eq('test_type', 'sat')
       .in('filter_criteria->>assignment_id', assignmentIdsForSessions)
       .order('created_at', { ascending: false });
     for (const r of sessionRows ?? []) {

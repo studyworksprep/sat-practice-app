@@ -109,7 +109,8 @@ export async function deleteDesmosState({
   const { error } = await supabase
     .from('desmos_saved_states')
     .delete()
-    .eq('question_id', v2Id);
+    .eq('question_id', v2Id)
+    .eq('test_type', 'sat');
 
   if (error) return actionFail(error.message);
   revalidatePath('/practice', 'layout');

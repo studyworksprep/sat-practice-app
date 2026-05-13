@@ -94,10 +94,13 @@ export default async function AssignmentDetailPage({ params }) {
     // "View report" button when the student has already run the
     // set and the "Redo" path replaces "Start" but keeps the old
     // report reachable.
+    // SAT-only — ACT assignments are forward-wired (§3.4) but no
+    // ACT assignment surface exists today.
     supabase
       .from('practice_sessions')
       .select('id, status, created_at')
       .eq('user_id', user.id)
+      .eq('test_type', 'sat')
       .eq('filter_criteria->>assignment_id', assignmentId)
       .order('status', { ascending: true })
       .order('created_at', { ascending: false })

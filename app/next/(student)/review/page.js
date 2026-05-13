@@ -85,10 +85,15 @@ export default async function StudentReviewPage() {
       .select('id, name, is_default')
       .eq('user_id', user.id)
       .order('name', { ascending: true }),
+    // Error-log count matches loadErrorNotes (SAT-only today; PR 4
+    // will branch the join target).
     supabase
       .from('question_error_notes')
       .select('question_id', { count: 'exact', head: true })
-      .eq('user_id', user.id),
+      .eq('user_id', user.id)
+      .eq('test_type', 'sat'),
+    // Student-notes count matches the cross-test notes hub (§3.4) —
+    // intentionally unfiltered.
     supabase
       .from('student_notes')
       .select('id', { count: 'exact', head: true })

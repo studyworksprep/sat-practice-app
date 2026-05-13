@@ -426,6 +426,9 @@ export async function upsertNoteForQuestion(
     return actionFail('That question is no longer in the bank, so a per-question note can\'t be saved against it.');
   }
 
+  // Per-question existing-note lookup. The unique key on (user, question)
+  // is per-test-type — PR 4 will plumb test_type from the calling
+  // session for ACT support.
   const { data: existing } = await supabase
     .from('student_notes')
     .select(
@@ -433,6 +436,7 @@ export async function upsertNoteForQuestion(
     )
     .eq('user_id', user.id)
     .eq('question_id', resolvedQid)
+    .eq('test_type', 'sat')
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle();

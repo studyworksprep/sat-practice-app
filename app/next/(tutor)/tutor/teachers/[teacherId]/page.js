@@ -68,6 +68,7 @@ export default async function ManagerTeacherDetailPage({ params }) {
       .from('teacher_student_assignments')
       .select('student_id, created_at')
       .eq('teacher_id', teacherId),
+    // SAT-only assignments authored by this teacher.
     supabase
       .from('assignments_v2')
       .select(`
@@ -77,11 +78,11 @@ export default async function ManagerTeacherDetailPage({ params }) {
         practice_test:practice_tests_v2 (name)
       `)
       .eq('teacher_id', teacherId)
+      .eq('test_type', 'sat')
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(RECENT_ASSIGNMENTS_LIMIT),
-    // Training assignments: ones where the teacher is the trainee.
-    // Embed the parent so we can render type + title inline.
+    // SAT-only training assignments aimed AT this teacher.
     supabase
       .from('assignment_students_v2')
       .select(`
@@ -94,13 +95,16 @@ export default async function ManagerTeacherDetailPage({ params }) {
         )
       `)
       .eq('student_id', teacherId)
+      .eq('test_type', 'sat')
       .order('created_at', { ascending: false })
       .limit(RECENT_ASSIGNMENTS_LIMIT),
+    // SAT-only training-mode sessions for this teacher.
     supabase
       .from('practice_sessions')
       .select('id, created_at, question_ids, mode, status, filter_criteria')
       .eq('user_id', teacherId)
       .in('mode', ['training', 'review'])
+      .eq('test_type', 'sat')
       .neq('status', 'abandoned')
       .order('created_at', { ascending: false })
       .limit(8),
@@ -215,6 +219,7 @@ export default async function ManagerTeacherDetailPage({ params }) {
       .select('id, status, created_at, filter_criteria')
       .eq('user_id', teacherId)
       .eq('status', 'completed')
+      .eq('test_type', 'sat')
       .in('filter_criteria->>assignment_id', trainingAssignmentIds)
       .order('created_at', { ascending: false });
     for (const r of trainingSessionRowsForReports ?? []) {

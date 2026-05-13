@@ -396,8 +396,11 @@ async function loadAssignmentsData(supabase, userId) {
     assignmentIds.length
       ? supabase
           .from('practice_sessions')
+          // Per-assignment "View report" lookup. SAT-only — assignments
+          // is a SAT surface today (§3.4 forward-wires ACT assignments).
           .select('id, created_at, filter_criteria')
           .eq('user_id', userId)
+          .eq('test_type', 'sat')
           .in(
             'filter_criteria->>assignment_id',
             assignmentIds,

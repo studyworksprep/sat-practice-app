@@ -35,6 +35,7 @@ export const GET = legacyApiRoute(async (request) => {
     .from('question_notes')
     .select('id, question_id, author_id, content, created_at, updated_at, profiles:author_id(first_name, last_name, email, role)')
     .eq('question_id', questionId)
+    .eq('test_type', 'sat')
     .order('created_at', { ascending: true });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

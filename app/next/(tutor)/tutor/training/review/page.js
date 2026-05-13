@@ -62,10 +62,12 @@ export default async function TutorTrainingReviewPage() {
       .select('id, name, is_default')
       .eq('user_id', user.id)
       .order('name', { ascending: true }),
+    // SAT-only error-log count (matches loadErrorNotes' SAT scoping).
     supabase
       .from('question_error_notes')
       .select('question_id', { count: 'exact', head: true })
-      .eq('user_id', user.id),
+      .eq('user_id', user.id)
+      .eq('test_type', 'sat'),
   ]);
 
   const attemptedQids = Array.from(
