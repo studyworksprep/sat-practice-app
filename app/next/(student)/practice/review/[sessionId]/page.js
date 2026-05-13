@@ -34,9 +34,12 @@ export default async function PracticeReviewPage({ params }) {
 
   // Session row. RLS pins this to the owning user; a stray
   // session id belonging to someone else just 404s.
+  // Specific row by id; test_type is selected so buildSessionReview
+  // can branch its question-joining reads on it (loader-fork pattern,
+  // §3.4).
   const { data: session } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, created_at, mode, filter_criteria, marked_positions')
+    .select('id, user_id, question_ids, created_at, mode, filter_criteria, marked_positions, test_type')
     .eq('id', sessionId)
     .maybeSingle();
 

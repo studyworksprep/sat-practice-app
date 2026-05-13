@@ -422,6 +422,7 @@ export async function loadQuestion(
       .select('body, updated_at')
       .eq('user_id', userId)
       .eq('question_id', questionId)
+      .eq('test_type', session.test_type)
       .maybeSingle(),
     supabase
       .from('student_notes')
@@ -430,6 +431,7 @@ export async function loadQuestion(
       )
       .eq('user_id', userId)
       .eq('question_id', questionId)
+      .eq('test_type', session.test_type)
       .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle(),

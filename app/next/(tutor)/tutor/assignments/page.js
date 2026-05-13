@@ -56,6 +56,8 @@ export default async function TutorAssignmentsPage({ searchParams }) {
     redirect('/');
   }
 
+  // SAT-only list of the tutor's outgoing assignments. ACT
+  // assignments are forward-wired (§3.4) but no surface ships today.
   const { data: rows } = await supabase
     .from('assignments_v2')
     .select(`
@@ -65,6 +67,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
       practice_test:practice_tests_v2 (name)
     `)
     .eq('teacher_id', user.id)
+    .eq('test_type', 'sat')
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
@@ -135,6 +138,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
       ? supabase
           .from('practice_sessions')
           .select('id, created_at, filter_criteria, user_id')
+          .eq('test_type', 'sat')
           .in('filter_criteria->>assignment_id', assignmentIds)
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),

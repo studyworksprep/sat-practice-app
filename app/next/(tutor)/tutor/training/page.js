@@ -66,12 +66,15 @@ export default async function TutorTrainingDashboardPage() {
       .eq('user_id', user.id)
       .gte('created_at', sevenDaysAgoIso),
     buildWeakQueue(supabase, user.id),
+    // Tutor-self training dashboard, SAT-only (mirrors the student
+    // dashboard scoping). PR 4 will add an ACT section.
     supabase
       .from('practice_sessions')
       .select('id, created_at, question_ids, mode, status, filter_criteria')
       .eq('user_id', user.id)
       .in('mode', ['training', 'practice', 'review'])
       .eq('status', 'completed')
+      .eq('test_type', 'sat')
       .order('created_at', { ascending: false })
       .limit(RECENT_FINISHED_PER_TYPE),
     supabase
@@ -85,6 +88,8 @@ export default async function TutorTrainingDashboardPage() {
       .eq('status', 'completed')
       .order('finished_at', { ascending: false })
       .limit(RECENT_FINISHED_PER_TYPE),
+    // SAT-only training assignments. ACT manager-to-tutor assignments
+    // are forward-wired but no surface exists today.
     supabase
       .from('assignment_students_v2')
       .select(`
@@ -96,13 +101,15 @@ export default async function TutorTrainingDashboardPage() {
           practice_test:practice_tests_v2 (name)
         )
       `)
-      .eq('student_id', user.id),
+      .eq('student_id', user.id)
+      .eq('test_type', 'sat'),
     supabase
       .from('practice_sessions')
       .select('id, current_position, question_ids, last_activity_at')
       .eq('user_id', user.id)
       .in('mode', ['training', 'practice'])
       .eq('status', 'in_progress')
+      .eq('test_type', 'sat')
       .gt('expires_at', nowIso)
       .order('last_activity_at', { ascending: false })
       .limit(1)
@@ -170,6 +177,7 @@ export default async function TutorTrainingDashboardPage() {
         .from('practice_sessions')
         .select('id, created_at, filter_criteria')
         .eq('user_id', user.id)
+        .eq('test_type', 'sat')
         .in('filter_criteria->>assignment_id', completedAssignmentIds)
         .order('created_at', { ascending: false })
     : { data: [] };

@@ -136,6 +136,8 @@ export async function loadNotesIndex(
   allTags: string[];
   facets: NotesIndexFacets;
 }> {
+  // Notes hub is intentionally cross-test (§3.4): a single notes
+  // inbox spans both SAT and ACT. No test_type filter here.
   let query = supabase
     .from('student_notes')
     .select(
@@ -196,6 +198,7 @@ export async function loadNotesIndex(
 async function loadNotesIndexFacets(
   supabase: SupabaseClient,
 ): Promise<NotesIndexFacets> {
+  // Cross-test like loadNotesIndex — facet counts span both test types.
   const { data, error } = await supabase
     .from('student_notes')
     .select('subject_code, domain_code, domain_name, skill_code, skill_name')
@@ -292,6 +295,8 @@ export async function loadNotesForReview(
   allTags: string[];
   facets: NotesIndexFacets;
 }> {
+  // Cross-test like the manage index — /review/notes is the unified
+  // study surface for both test types.
   let query = supabase
     .from('student_notes')
     .select(
@@ -389,12 +394,15 @@ export async function loadNoteForQuestion(
   supabase: SupabaseClient,
   questionId: string,
 ): Promise<StudentNote | null> {
+  // Per-question popover. test_type is implied by the question; PR 4
+  // will plumb it in. SAT-only for now matches every existing caller.
   const { data, error } = await supabase
     .from('student_notes')
     .select(
       'id, user_id, question_id, title, body_json, body_text, tags, subject_code, domain_code, domain_name, skill_code, skill_name, created_at, updated_at',
     )
     .eq('question_id', questionId)
+    .eq('test_type', 'sat')
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -428,6 +436,8 @@ export async function loadStudentNotesByQuestion(
   const out = new Map<string, BatchedStudentNote>();
   if (!questionIds || questionIds.length === 0) return out;
 
+  // Batch per-question fetch. Same per-question scope as loadNoteForQuestion;
+  // SAT-only for now (PR 4 will branch / pass test_type from session).
   const { data, error } = await supabase
     .from('student_notes')
     .select(
@@ -435,6 +445,7 @@ export async function loadStudentNotesByQuestion(
     )
     .in('question_id', questionIds)
     .not('question_id', 'is', null)
+    .eq('test_type', 'sat')
     .order('updated_at', { ascending: false });
   if (error || !data) return out;
 

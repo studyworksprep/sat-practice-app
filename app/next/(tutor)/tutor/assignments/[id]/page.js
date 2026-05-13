@@ -104,6 +104,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
           .from('practice_sessions')
           .select('id, user_id, status, created_at')
           .in('user_id', studentIds)
+          .eq('test_type', 'sat')
           .eq('filter_criteria->>assignment_id', assignmentId)
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),

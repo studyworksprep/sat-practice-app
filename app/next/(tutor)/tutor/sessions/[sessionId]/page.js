@@ -36,9 +36,11 @@ export default async function TutorSessionReviewPage({ params }) {
     redirect('/');
   }
 
+  // Specific row by id; test_type included so buildSessionReview can
+  // branch its question-joining reads (loader-fork pattern, §3.4).
   const { data: session } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, created_at, mode, filter_criteria, marked_positions')
+    .select('id, user_id, question_ids, created_at, mode, filter_criteria, marked_positions, test_type')
     .eq('id', sessionId)
     .maybeSingle();
 

@@ -72,8 +72,11 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       .maybeSingle(),
     supabase
       .from('practice_sessions')
-      .select('id, user_id, question_ids, created_at, mode, filter_criteria, status, marked_positions')
+      // test_type included so buildSessionReview can branch its
+      // question-joining reads (loader-fork pattern, §3.4).
+      .select('id, user_id, question_ids, created_at, mode, filter_criteria, status, marked_positions, test_type')
       .eq('user_id', studentId)
+      .eq('test_type', 'sat')
       .eq('filter_criteria->>assignment_id', assignmentId)
       .eq('status', 'completed')
       .order('created_at', { ascending: false })

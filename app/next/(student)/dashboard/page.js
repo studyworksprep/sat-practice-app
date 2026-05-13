@@ -80,13 +80,15 @@ export default async function StudentDashboardPage() {
       .eq('id', user.id)
       .maybeSingle(),
     // Recent completed practice sessions (in-progress / abandoned
-    // belong in Practice hub's list, not here).
+    // belong in Practice hub's list, not here). SAT-only — PR 4 adds
+    // an ACT section that renders alongside this one (§3.4).
     supabase
       .from('practice_sessions')
       .select('id, created_at, question_ids, mode, status, filter_criteria')
       .eq('user_id', user.id)
       .eq('mode', 'practice')
       .eq('status', 'completed')
+      .eq('test_type', 'sat')
       .order('created_at', { ascending: false })
       .limit(RECENT_FINISHED_PER_TYPE),
     // Recent completed practice-test attempts.
@@ -105,6 +107,8 @@ export default async function StudentDashboardPage() {
     // in memory). Same shape the previous dashboard used, with
     // completed_at + question_ids pulled through so we can
     // surface both views.
+    // SAT-only assignments inbox; an ACT assignments inbox lands in
+    // a later phase (no ACT assignment surface ships in PR 4).
     supabase
       .from('assignment_students_v2')
       .select(`
@@ -116,14 +120,17 @@ export default async function StudentDashboardPage() {
           practice_test:practice_tests_v2 (name)
         )
       `)
-      .eq('student_id', user.id),
-    // Active session for the Resume CTA in the banner.
+      .eq('student_id', user.id)
+      .eq('test_type', 'sat'),
+    // Active session for the Resume CTA in the banner. SAT-only;
+    // an ACT Resume tile lands with the ACT dashboard aggregator.
     supabase
       .from('practice_sessions')
       .select('id, current_position, question_ids, last_activity_at')
       .eq('user_id', user.id)
       .eq('mode', 'practice')
       .eq('status', 'in_progress')
+      .eq('test_type', 'sat')
       .gt('expires_at', nowIso)
       .order('last_activity_at', { ascending: false })
       .limit(1)
@@ -144,10 +151,13 @@ export default async function StudentDashboardPage() {
     // first. We pick the latest one per assignment_id in memory below
     // for the "View report" click-through; filtering by a specific
     // assignment-id list would force this into a second wave.
+    // SAT-only — ACT assignments are forward-wired (§3.4) but no
+    // surface today.
     supabase
       .from('practice_sessions')
       .select('id, created_at, filter_criteria')
       .eq('user_id', user.id)
+      .eq('test_type', 'sat')
       .not('filter_criteria->>assignment_id', 'is', null)
       .order('created_at', { ascending: false })
       .limit(ASSIGNMENT_LINKED_SESSIONS_CAP),

@@ -101,6 +101,8 @@ export async function loadTutorDashboard(_tutorId: string): Promise<TutorDashboa
   // Recently completed assignments across the roster. Filter out
   // archived/deleted assignments via the embedded join — those
   // shouldn't appear on a "what just happened?" surface.
+  // Cross-test by intent (§3.4): tutor "recent activity" spans both
+  // test types so ACT completions surface here automatically.
   const { data: recentCompletions } = await supabase
     .from('assignment_students_v2')
     .select(`

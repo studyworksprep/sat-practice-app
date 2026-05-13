@@ -60,7 +60,8 @@ export async function saveErrorNote(
       .from('question_error_notes')
       .delete()
       .eq('user_id', user.id)
-      .eq('question_id', questionId);
+      .eq('question_id', questionId)
+      .eq('test_type', 'sat');
     if (error) return actionFail(`Could not clear note: ${error.message}`);
     return { ok: true, note: null };
   }
@@ -108,6 +109,7 @@ export async function getErrorNote(
     .select('body, updated_at')
     .eq('user_id', user.id)
     .eq('question_id', questionId)
+    .eq('test_type', 'sat')
     .maybeSingle();
 
   if (error) return actionFail(`Could not load note: ${error.message}`);

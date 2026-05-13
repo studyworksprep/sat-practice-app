@@ -81,12 +81,14 @@ export default async function TutorTrainingPracticePage() {
   // separate from any practice-mode session a teacher might
   // have started in another tree (training tree never offers a
   // resume of a non-training session).
+  // SAT-only tutor-self training launcher.
   const { data: activeSession } = await supabase
     .from('practice_sessions')
     .select('id, current_position, question_ids, last_activity_at')
     .eq('user_id', user.id)
     .eq('mode', 'training')
     .eq('status', 'in_progress')
+    .eq('test_type', 'sat')
     .gt('expires_at', new Date().toISOString())
     .order('last_activity_at', { ascending: false })
     .limit(1)

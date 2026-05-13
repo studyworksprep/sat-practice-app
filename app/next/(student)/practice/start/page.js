@@ -94,12 +94,16 @@ export default async function PracticeStartPage() {
     { data: activeSession },
     { data: inProgressTestAttempt },
   ] = await Promise.all([
+    // SAT practice launcher Resume card. The launcher uses a
+    // ?test=sat|act slice (§3.4) but until ACT loaders ship in PR 4
+    // this page is SAT-only.
     supabase
       .from('practice_sessions')
       .select('id, current_position, question_ids, last_activity_at')
       .eq('user_id', user.id)
       .eq('mode', 'practice')
       .eq('status', 'in_progress')
+      .eq('test_type', 'sat')
       .gt('expires_at', new Date().toISOString())
       .order('last_activity_at', { ascending: false })
       .limit(1)

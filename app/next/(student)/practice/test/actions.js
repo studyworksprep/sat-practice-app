@@ -729,10 +729,14 @@ async function closeTestAttempt(supabase, attemptId) {
 // rare "student assigned the same test twice" still resolves cleanly.
 async function markPracticeTestAssignmentsCompletedIfDone(supabase, userId, practiceTestId) {
   if (!userId || !practiceTestId) return;
+  // SAT practice tests only — ACT practice tests have their own
+  // attempts table (act_practice_test_attempts) and never appear as
+  // assignments_v2 rows today (§3.4 forward-wires ACT assignments).
   const { data: matchingAssignments } = await supabase
     .from('assignments_v2')
     .select('id')
     .eq('assignment_type', 'practice_test')
+    .eq('test_type', 'sat')
     .eq('practice_test_id', practiceTestId)
     .is('deleted_at', null);
   const ids = (matchingAssignments ?? []).map((a) => a.id);

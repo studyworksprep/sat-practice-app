@@ -34,11 +34,13 @@ export default async function TutorTrainingHistoryPage() {
   if (profile.role === 'student' || profile.role === 'practice') redirect('/practice/history');
   if (!['teacher', 'manager', 'admin'].includes(profile.role)) redirect('/');
 
+  // Tutor self-training history, SAT-only.
   const { data: sessions } = await supabase
     .from('practice_sessions')
     .select('id, created_at, question_ids, current_position, mode, filter_criteria, status')
     .eq('user_id', user.id)
     .eq('mode', 'training')
+    .eq('test_type', 'sat')
     .neq('status', 'abandoned')
     .order('created_at', { ascending: false })
     .limit(PAGE_SIZE);
