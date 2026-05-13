@@ -56,14 +56,28 @@ export async function GET(request) {
 
   const conditions = [];
   if (q) {
+    // Substring match on first_name and last_name independently.
+    // Whitespace-strip the query first so "La Rocca" finds a stored
+    // "LaRocca" and vice-versa — common collation difference between
+    // self-typed and admin-typed last names. Doesn't fix every shape
+    // (apostrophes, hyphens) but kills the most frequent miss.
     const safe = q.replace(/[%_\\]/g, '\\$&').replace(/,/g, '');
     const pattern = `%${safe}%`;
+    const compact = safe.replace(/\s+/g, '');
+    const compactPattern = `%${compact}%`;
     conditions.push(`first_name.ilike.${pattern}`);
     conditions.push(`last_name.ilike.${pattern}`);
+    if (compact !== safe) {
+      conditions.push(`first_name.ilike.${compactPattern}`);
+      conditions.push(`last_name.ilike.${compactPattern}`);
+    }
   }
   if (email) {
-    // Exact email match — emails are case-insensitive in practice
-    // but stored case-sensitive; use ilike for a tolerant compare.
+    // Exact email match against profile.email — the student-identity
+    // address. Per the PR #46 (LW) + parent_email revert (SW) design,
+    // LessonWorks's `email` query param is the student's email, not
+    // the parent billing address, so a direct equality on
+    // profile.email is what we want. Case-insensitive via ilike.
     const safe = email.replace(/[%_\\]/g, '\\$&').replace(/,/g, '');
     conditions.push(`email.ilike.${safe}`);
   }
