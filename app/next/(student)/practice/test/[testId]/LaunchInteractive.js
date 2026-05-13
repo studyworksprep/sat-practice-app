@@ -15,6 +15,7 @@ export function LaunchInteractive({
   test,
   summary,
   inProgress,
+  initialSections = 'both',
   startTestAttemptAction,
 }) {
   const router = useRouter();
@@ -34,6 +35,13 @@ export function LaunchInteractive({
   const [accommodationOn, setAccommodationOn] = useState(initialExt);
   const [multiplier, setMultiplier] = useState(initialMult);
 
+  // Sections picker. 'both' = full test; 'rw' / 'math' = single-
+  // section attempt. Pre-filled from the page's ?sections= param
+  // (assignment-driven default) but always overridable.
+  const [sections, setSections] = useState(
+    initialSections === 'rw' || initialSections === 'math' ? initialSections : 'both',
+  );
+
   const activeMultiplier = accommodationOn ? multiplier : 1;
 
   // If the student already has an in-progress test attempt, make
@@ -41,10 +49,21 @@ export function LaunchInteractive({
   // the old one, and we'd rather surface that explicitly.
   const needsConfirm = inProgress != null && !confirmed;
 
-  const totalMinutes = Math.round(
-    (summary.reduce((acc, m) => acc + m.timeSeconds, 0) * activeMultiplier) / 60,
+  // Filter the module summary by the chosen section so the student
+  // sees the actual modules they'll sit (and the total time reflects
+  // a single-section attempt rather than a full test).
+  const filteredSummary = summary.filter((m) =>
+    sections === 'both' ? true :
+    sections === 'rw'   ? m.subject === 'RW' :
+                          m.subject === 'MATH',
   );
-  const totalQuestions = summary.reduce((acc, m) => acc + (m.itemCount ?? 0), 0);
+
+  const totalMinutes = Math.round(
+    (filteredSummary.reduce((acc, m) => acc + m.timeSeconds, 0) * activeMultiplier) / 60,
+  );
+  const totalQuestions = filteredSummary.reduce(
+    (acc, m) => acc + (m.itemCount ?? 0), 0,
+  );
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -53,6 +72,7 @@ export function LaunchInteractive({
     setError(null);
     const fd = new FormData();
     fd.set('testId', test.id);
+    if (sections !== 'both') fd.set('sections', sections);
     if (accommodationOn && multiplier > 1) {
       fd.set('timeMultiplier', String(multiplier));
     }
@@ -107,11 +127,50 @@ export function LaunchInteractive({
       </section>
 
       <section className={s.card}>
+        <div className={s.sectionLabel}>Sections</div>
+        <div className={s.accomOptions}>
+          <label className={s.radioRow}>
+            <input
+              type="radio"
+              name="sections"
+              checked={sections === 'both'}
+              onChange={() => setSections('both')}
+            />
+            <span>
+              <strong>Full test</strong> — Reading &amp; Writing and Math
+            </span>
+          </label>
+          <label className={s.radioRow}>
+            <input
+              type="radio"
+              name="sections"
+              checked={sections === 'rw'}
+              onChange={() => setSections('rw')}
+            />
+            <span>
+              <strong>R&amp;W only</strong> — Reading &amp; Writing modules
+            </span>
+          </label>
+          <label className={s.radioRow}>
+            <input
+              type="radio"
+              name="sections"
+              checked={sections === 'math'}
+              onChange={() => setSections('math')}
+            />
+            <span>
+              <strong>Math only</strong> — Math modules
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <section className={s.card}>
         <div className={s.sectionLabel}>
           {totalQuestions} questions · about {totalMinutes} minutes total
         </div>
         <ol className={s.moduleList}>
-          {summary.map((m) => (
+          {filteredSummary.map((m) => (
             <li key={`${m.subject}-${m.moduleNumber}`} className={s.moduleItem}>
               <div className={s.moduleLeft}>
                 <div className={s.moduleName}>
@@ -209,7 +268,13 @@ export function LaunchInteractive({
           className={s.beginBtn}
           disabled={submitting || needsConfirm}
         >
-          {submitting ? 'Starting…' : 'Begin test'}
+          {submitting
+            ? 'Starting…'
+            : sections === 'rw'
+              ? 'Begin R&W section'
+              : sections === 'math'
+                ? 'Begin Math section'
+                : 'Begin test'}
         </button>
         {error && <p className={s.error}>{error}</p>}
       </form>

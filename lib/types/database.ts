@@ -741,7 +741,7 @@ export type Database = {
             foreignKeyName: "desmos_saved_states_question_id_fkey"
             columns: ["question_id"]
             isOneToOne: true
-            referencedRelation: "questions"
+            referencedRelation: "questions_v2"
             referencedColumns: ["id"]
           },
           {
@@ -1832,6 +1832,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          banned_at: string | null
           created_at: string | null
           email: string | null
           first_name: string | null
@@ -1854,6 +1855,7 @@ export type Database = {
           user_type: string | null
         }
         Insert: {
+          banned_at?: string | null
           created_at?: string | null
           email?: string | null
           first_name?: string | null
@@ -1876,6 +1878,7 @@ export type Database = {
           user_type?: string | null
         }
         Update: {
+          banned_at?: string | null
           created_at?: string | null
           email?: string | null
           first_name?: string | null
@@ -3125,6 +3128,14 @@ export type Database = {
       }
     }
     Functions: {
+      assignment_has_visible_student: {
+        Args: { p_assignment_id: string }
+        Returns: boolean
+      }
+      assignment_teacher_visible: {
+        Args: { p_assignment_id: string }
+        Returns: boolean
+      }
       backfill_questions_v2_correct_labels: { Args: never; Returns: number }
       backfill_questions_v2_display_codes: { Args: never; Returns: number }
       can_view: { Args: { target: string }; Returns: boolean }

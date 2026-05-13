@@ -32,6 +32,7 @@ export function DashboardInteractive({
   weeklyTrend = [],
   recentlyFinished,
   assignments,
+  assignmentsTotal = 0,
   resumeInfo,
   todayMs,
   updateTargetScoreAction,
@@ -102,6 +103,51 @@ export function DashboardInteractive({
           compact
         />
       )}
+
+      {/* ---------- Pending assignments ----------
+          Promoted to the top of the page below the banner because
+          most students engage through assignments first. Soft-amber
+          accent (gold-50 wash + gold-500 left rail, tied to the
+          InboxIcon's gold palette) makes it the obvious next action
+          item without overwhelming the rest of the page. Newest
+          first, top 3; the See all link exposes the full inbox at
+          /assignments. */}
+      <section className={`${s.card} ${s.pendingCard}`}>
+        <div className={s.cardHeader}>
+          <div>
+            <div className={s.sectionLabel}>
+              <IconTile icon={InboxIcon} palette="gold" size="sm" />
+              Pending assignments
+            </div>
+            <div className={s.cardSub}>
+              {assignments.length === 0
+                ? "You're all caught up."
+                : assignmentsTotal > assignments.length
+                  ? `Your ${assignments.length} most recent — ${assignmentsTotal} open total.`
+                  : 'What your tutor has assigned you, newest first.'}
+            </div>
+          </div>
+          <Link href="/assignments" className={s.cardHeaderLink}>
+            {assignmentsTotal > assignments.length ? 'See all →' : 'View all →'}
+          </Link>
+        </div>
+        {assignments.length > 0 && (
+          <ul className={s.assignmentList}>
+            {assignments.map((a) => (
+              <li key={a.id}>
+                <Link href={`/assignments/${a.id}`} className={s.assignmentRow}>
+                  <span className={s.assignmentTitle}>{a.title}</span>
+                  {a.due_date && (
+                    <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
+                      Due {formatRowDate(a.due_date)}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {/* ---------- Stats row ---------- */}
       <section className={s.statsRow}>
@@ -294,42 +340,6 @@ export function DashboardInteractive({
           </div>
         </section>
       )}
-
-      {/* ---------- Pending assignments ---------- */}
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div>
-            <div className={s.sectionLabel}>
-              <IconTile icon={InboxIcon} palette="navy" size="sm" />
-              Pending assignments
-            </div>
-            <div className={s.cardSub}>
-              {assignments.length === 0
-                ? "You're all caught up."
-                : 'What your tutor has assigned you, soonest first.'}
-            </div>
-          </div>
-          <Link href="/assignments" className={s.cardHeaderLink}>
-            View all →
-          </Link>
-        </div>
-        {assignments.length > 0 && (
-          <ul className={s.assignmentList}>
-            {assignments.map((a) => (
-              <li key={a.id}>
-                <Link href={`/assignments/${a.id}`} className={s.assignmentRow}>
-                  <span className={s.assignmentTitle}>{a.title}</span>
-                  {a.due_date && (
-                    <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
-                      Due {formatRowDate(a.due_date)}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
 
       {/* ---------- Target score editor ---------- */}
       <section className={s.targetCard}>

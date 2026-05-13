@@ -16,10 +16,14 @@
 // renders server-side and stays in sync with the reveal state
 // the student sees.
 //
-// Submit Set. The strip ends with a primary "Submit Set" button
-// that closes out the session (even mid-set, leaving unanswered
-// questions marked Unanswered on the review report). The server
-// action is idempotent so a double-click is safe.
+// Finish. The strip ends with a "Finish" pill that closes out
+// the session (even mid-set, leaving unanswered questions marked
+// Unanswered on the review report). The pill lives inline at
+// the end of the question cells — visually the "last step after
+// the questions" — rather than flush-right at the bottom of the
+// strip, so it can't be confused with the per-question Submit
+// button on the question card. The server action is idempotent
+// so a double-click is safe.
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -53,7 +57,7 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
   function handleSubmitSet() {
     setSubmitError(null);
     const ok = typeof window !== 'undefined'
-      ? window.confirm('Submit this set? Any unanswered questions will be marked as skipped.')
+      ? window.confirm('Finish this set? Any unanswered questions will be marked as skipped.')
       : true;
     if (!ok) return;
     startTransition(async () => {
@@ -93,6 +97,18 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
   ).length;
   const remainingCount = items.length - answeredCount;
 
+  const finishPill = canSubmit ? (
+    <button
+      type="button"
+      onClick={handleSubmitSet}
+      disabled={isPending}
+      className={s.finishPill}
+      title="Finish this set and see the report"
+    >
+      {isPending ? 'Finishing…' : 'Finish'}
+    </button>
+  ) : null;
+
   const grid = (
     <div className={s.track} role="list">
       {items.map((it) => (
@@ -104,20 +120,9 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
           onClick={handlePillClick ? (e) => handlePillClick(e, it.position) : undefined}
         />
       ))}
+      {finishPill}
     </div>
   );
-
-  const submitBtn = canSubmit ? (
-    <button
-      type="button"
-      onClick={handleSubmitSet}
-      disabled={isPending}
-      className={s.submitBtn}
-      title="Submit this set and see the report"
-    >
-      {isPending ? 'Submitting…' : 'Submit Set'}
-    </button>
-  ) : null;
 
   const stripHeader = (
     <div className={s.stripHeader}>
@@ -152,10 +157,7 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
     <>
       <nav aria-label="Question navigation" className={s.footerWide}>
         {stripHeader}
-        <div className={s.stripBody}>
-          {grid}
-          {submitBtn}
-        </div>
+        {grid}
         {submitError && <div className={s.submitError} role="alert">{submitError}</div>}
       </nav>
 
@@ -163,7 +165,6 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
         <button type="button" onClick={() => setModalOpen(true)} className={s.mapBtn}>
           Map ({currentPosition + 1}/{items.length})
         </button>
-        {submitBtn}
       </div>
 
       {modalOpen && (
@@ -182,7 +183,6 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
               </button>
             </header>
             {grid}
-            {submitBtn && <div className={s.modalSubmit}>{submitBtn}</div>}
           </div>
         </div>
       )}

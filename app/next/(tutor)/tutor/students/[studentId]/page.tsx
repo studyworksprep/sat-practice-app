@@ -105,7 +105,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .from('practice_test_attempts_v2')
       .select(`
         id, status, started_at, finished_at,
-        composite_score, rw_scaled, math_scaled,
+        composite_score, rw_scaled, math_scaled, sections_only,
         practice_test:practice_tests_v2(name, code)
       `)
       .eq('user_id', studentId)
@@ -189,6 +189,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     composite: r.composite_score,
     rwScaled: r.rw_scaled,
     mathScaled: r.math_scaled,
+    sectionsOnly: r.sections_only ?? null,
     testName: (r.practice_test as { name?: string } | null)?.name ?? 'Practice test',
     testCode: (r.practice_test as { code?: string } | null)?.code ?? '',
   }));
@@ -459,7 +460,14 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                       className={s.testRow}
                     >
                       <div className={s.testRowLeft}>
-                        <div className={s.testRowName}>{t.testName}</div>
+                        <div className={s.testRowName}>
+                          {t.testName}
+                          {t.sectionsOnly && (
+                            <span className={s.sectionsOnlyPill}>
+                              {t.sectionsOnly === 'RW' ? 'R&W only' : 'Math only'}
+                            </span>
+                          )}
+                        </div>
                         <div className={s.testRowMeta}>
                           <span className={s.mono}>{t.testCode}</span>
                           {t.testCode && ' · '}
@@ -472,12 +480,18 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                         </div>
                       </div>
                       <div className={s.testRowScores}>
-                        {t.status === 'completed' && t.composite != null ? (
+                        {t.status !== 'completed' ? (
+                          <span className={s.muted}>—</span>
+                        ) : t.composite != null ? (
                           <>
                             <ScorePill label="Total" value={t.composite} />
                             <ScorePill label="RW"   value={t.rwScaled} subject="RW" />
                             <ScorePill label="Math" value={t.mathScaled} subject="MATH" />
                           </>
+                        ) : t.sectionsOnly === 'RW' && t.rwScaled != null ? (
+                          <ScorePill label="RW only" value={t.rwScaled} subject="RW" />
+                        ) : t.sectionsOnly === 'MATH' && t.mathScaled != null ? (
+                          <ScorePill label="Math only" value={t.mathScaled} subject="MATH" />
                         ) : (
                           <span className={s.muted}>—</span>
                         )}

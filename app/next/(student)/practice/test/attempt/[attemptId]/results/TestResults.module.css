@@ -62,6 +62,19 @@
   letter-spacing: 0.04em;
 }
 
+.sectionsOnlyBadge {
+  display: inline-block;
+  margin-left: var(--s2);
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-100);
+  color: var(--fg2);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .headerActions {
   display: inline-flex;
   gap: var(--s2);
@@ -345,6 +358,37 @@
   margin-top: var(--s1);
 }
 .sectionTileOver { color: var(--fg3); }
+
+/* Adaptive-route badge. Reads "Module 2 · Hard" or "Module 2 · Easy"
+   so tutor + student can confirm which routing the student got after
+   module 1. Hidden on non-adaptive tests (route_code='std') because
+   there's only one module 2 for everyone. The hero variant
+   (.routeBadgeHero) drops the inline-block + section-tile spacing
+   for the centered composite-card layout. */
+.routeBadge {
+  display: inline-block;
+  margin-top: var(--s2);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+}
+.routeBadgeHard {
+  background: var(--color-danger-bg);
+  color: var(--color-diff-hard-fg);
+  border-color: var(--color-danger);
+}
+.routeBadgeEasy {
+  background: var(--color-success-bg);
+  color: var(--color-diff-easy-fg);
+  border-color: var(--color-success);
+}
+.routeBadgeHero {
+  margin-top: var(--s3);
+}
 
 /* ---------- Generic card ---------- */
 

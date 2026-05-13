@@ -325,6 +325,7 @@ async function loadAssignmentsData(supabase, userId) {
         title,
         description,
         due_date,
+        created_at,
         archived_at,
         deleted_at,
         question_ids,
@@ -479,11 +480,12 @@ async function loadAssignmentsData(supabase, userId) {
   const completed = rows.filter((r) => r.student_completed_at);
 
   pending.sort((a, b) => {
-    // Overdue first, then by due date ascending (soonest first),
-    // then undated at the bottom.
-    const aDue = a.due_date ? Date.parse(a.due_date) : Number.POSITIVE_INFINITY;
-    const bDue = b.due_date ? Date.parse(b.due_date) : Number.POSITIVE_INFINITY;
-    return aDue - bDue;
+    // Newest first — most recently assigned at the top. Matches the
+    // dashboard's Pending Assignments panel so a student clicking
+    // "See all" lands on the same order they were just looking at.
+    const ac = a.created_at ? Date.parse(a.created_at) : 0;
+    const bc = b.created_at ? Date.parse(b.created_at) : 0;
+    return bc - ac;
   });
   completed.sort((a, b) => {
     const at = Date.parse(a.student_completed_at ?? 0);

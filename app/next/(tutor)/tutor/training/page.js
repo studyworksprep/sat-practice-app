@@ -78,6 +78,7 @@ export default async function TutorTrainingDashboardPage() {
       .from('practice_test_attempts_v2')
       .select(`
         id, finished_at, composite_score, rw_scaled, math_scaled,
+        sections_only,
         practice_test:practice_tests_v2(name, code)
       `)
       .eq('user_id', user.id)
@@ -212,19 +213,28 @@ export default async function TutorTrainingDashboardPage() {
     });
   }
   for (const t of recentTestAttempts ?? []) {
+    const sectionsOnly = t.sections_only ?? null;
+    let metric;
+    if (sectionsOnly === 'RW' && Number.isFinite(t.rw_scaled)) {
+      metric = `${t.rw_scaled} RW · R&W only`;
+    } else if (sectionsOnly === 'MATH' && Number.isFinite(t.math_scaled)) {
+      metric = `${t.math_scaled} Math · Math only`;
+    } else if (Number.isFinite(t.composite_score)) {
+      metric = `${t.composite_score} composite${
+        Number.isFinite(t.rw_scaled) && Number.isFinite(t.math_scaled)
+          ? ` · RW ${t.rw_scaled} · Math ${t.math_scaled}`
+          : ''
+      }`;
+    } else {
+      metric = 'Completed';
+    }
     finished.push({
       kind: 'test',
       id: t.id,
       title: t.practice_test?.name ?? 'Practice test',
       subtitle: t.practice_test?.code ?? null,
       finishedAt: t.finished_at,
-      metric: Number.isFinite(t.composite_score)
-        ? `${t.composite_score} composite${
-            Number.isFinite(t.rw_scaled) && Number.isFinite(t.math_scaled)
-              ? ` · RW ${t.rw_scaled} · Math ${t.math_scaled}`
-              : ''
-          }`
-        : 'Completed',
+      metric,
       tone: 'neutral',
       href: `/practice/test/attempt/${t.id}/results`,
     });
