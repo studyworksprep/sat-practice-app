@@ -1,0 +1,51 @@
+/* =============================================================
+   Practice start — test-type tabs above the launcher form.
+   SAT-first per docs/architecture-plan.md §3.4. The tabs are a
+   light row of links above the existing StartInteractive layout;
+   they don't compete visually with the form below.
+============================================================= */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 0 0;
+  margin-bottom: -8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+}
+
+.tab:hover {
+  color: var(--fg1);
+  background: var(--color-slate-50);
+}
+
+.tabActive {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--fg1);
+  /* Pull the active tab down one pixel so it overlaps the bottom
+     border of the tabs row — the classic "selected tab connects
+     to the panel below" look. */
+  margin-bottom: -1px;
+}
+
+.tabActive:hover {
+  background: var(--card);
+}

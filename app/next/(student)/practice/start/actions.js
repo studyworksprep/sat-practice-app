@@ -308,3 +308,190 @@ async function orderIds(supabase, ids, order) {
     return ca.localeCompare(cb);
   });
 }
+
+// ──────────────────────────────────────────────────────────────
+// ACT counterparts — countAvailableAct + createActSession. Same
+// shape and behavior as the SAT versions above, branched onto
+// act_questions / act_attempts + the section/category taxonomy.
+// See docs/architecture-plan.md §3.4 — practice launcher uses a
+// `?test=sat|act` slice and forks at the action layer; the runner
+// itself is unified (PR 5).
+// ──────────────────────────────────────────────────────────────
+
+export async function countAvailableAct(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase } = ctx;
+  const filters = parseActFilters(formData);
+
+  const candidateIds = await loadActCandidateIds(supabase, filters);
+  if (candidateIds == null) return actionFail('Failed to load candidate questions.');
+  const finalIds = filters.unansweredOnly
+    ? await dropAnsweredAct(supabase, user.id, candidateIds)
+    : candidateIds;
+
+  return { ok: true, count: finalIds.length };
+}
+
+export async function createActSession(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase } = ctx;
+
+  // Same per-user rate limit as SAT — the practice-start key is shared
+  // so a student can't bypass it by switching tabs.
+  const rl = await rateLimit(`practice-start:${user.id}`, { limit: 20, windowMs: 60_000 });
+  if (!rl.ok) return actionFail('Too many session starts. Please wait and try again.');
+
+  const filters = parseActFilters(formData);
+
+  const candidateIds = await loadActCandidateIds(supabase, filters);
+  if (candidateIds == null) return actionFail('Failed to load candidate questions.');
+
+  const poolIds = filters.unansweredOnly
+    ? await dropAnsweredAct(supabase, user.id, candidateIds)
+    : candidateIds;
+
+  if (poolIds.length === 0) {
+    return actionFail(filters.unansweredOnly
+      ? 'No unanswered questions match those filters. Try broadening or turn off "only unanswered".'
+      : 'No questions match those filters. Try a broader selection.');
+  }
+
+  const ordered = await orderActIds(supabase, poolIds, filters.order);
+  const sliced = ordered.slice(0, filters.size);
+
+  const { data: session, error: insertErr } = await supabase
+    .from('practice_sessions')
+    .insert({
+      user_id: user.id,
+      test_type: 'act',
+      mode: 'practice',
+      question_ids: sliced,
+      current_position: 0,
+      filter_criteria: {
+        sections:       filters.sections,
+        categories:     filters.categories,
+        difficulties:   filters.difficulties,
+        unansweredOnly: filters.unansweredOnly,
+        order:          filters.order,
+        size:           filters.size,
+        actual_size:    sliced.length,
+      },
+    })
+    .select('id')
+    .single();
+
+  if (insertErr || !session) {
+    return actionFail(`Failed to create session: ${insertErr?.message ?? 'unknown'}`);
+  }
+
+  redirect(`/practice/s/${session.id}/0`);
+}
+
+function parseActFilters(formData) {
+  const sections       = formData.getAll('section').filter(Boolean).map(String);
+  const categories     = formData.getAll('category').filter(Boolean).map(String);
+  const difficulties   = formData.getAll('difficulty').map(Number).filter(Number.isFinite);
+  const unansweredOnly = formData.get('unanswered_only') === '1';
+  const rawOrder       = String(formData.get('order') ?? 'display_code');
+  // Reuse the same ORDER_OPTIONS — 'display_code' on the ACT side
+  // means source_test+source_ordinal natural order. 'easy_first' /
+  // 'hard_first' and 'random' work the same way.
+  const order          = ORDER_OPTIONS.has(rawOrder) ? rawOrder : 'display_code';
+  const rawSize        = Number(formData.get('size') ?? 10);
+  const size = Math.min(
+    Math.max(Number.isFinite(rawSize) ? Math.floor(rawSize) : 10, 1),
+    MAX_SESSION_SIZE,
+  );
+  return { sections, categories, difficulties, unansweredOnly, order, size };
+}
+
+async function loadActCandidateIds(supabase, filters) {
+  try {
+    const rows = await fetchAll((from, to) => {
+      let query = supabase
+        .from('act_questions')
+        .select('id')
+        .eq('is_broken', false);
+
+      if (filters.sections.length)     query = query.in('section',     filters.sections);
+      if (filters.categories.length)   query = query.in('category',    filters.categories);
+      if (filters.difficulties.length) query = query.in('difficulty',  filters.difficulties);
+
+      return query.range(from, to);
+    });
+    return rows.map((r) => r.id);
+  } catch {
+    return null;
+  }
+}
+
+// "Unattempted only" against act_attempts. No legacy v1 era for ACT,
+// so no question_id_map translation — the unattempted check is a
+// simple IN-set difference.
+async function dropAnsweredAct(supabase, userId, candidateIds) {
+  if (candidateIds.length === 0) return candidateIds;
+  const { data: answered } = await supabase
+    .from('act_attempts')
+    .select('question_id')
+    .eq('user_id', userId)
+    .in('question_id', candidateIds);
+  const answeredSet = new Set((answered ?? []).map((r) => r.question_id));
+  return candidateIds.filter((id) => !answeredSet.has(id));
+}
+
+// ACT ordering. 'display_code' falls back to source_test + source_ordinal
+// (the natural ACT-test sequence). 'random' shuffles in-memory; the
+// difficulty-ordered variants reuse the sort-key fetch pattern from
+// the SAT side.
+async function orderActIds(supabase, ids, order) {
+  if (ids.length === 0) return ids;
+
+  if (order === 'random') {
+    const a = [...ids];
+    for (let i = a.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  const { data } = await supabase
+    .from('act_questions')
+    .select('id, source_test, source_ordinal, difficulty')
+    .in('id', ids);
+  const byId = new Map((data ?? []).map((r) => [r.id, r]));
+
+  if (order === 'easy_first' || order === 'hard_first') {
+    const dir = order === 'easy_first' ? 1 : -1;
+    return [...ids].sort((a, b) => {
+      const da = byId.get(a)?.difficulty ?? 0;
+      const db = byId.get(b)?.difficulty ?? 0;
+      if (da !== db) return (da - db) * dir;
+      return compareActNatural(byId.get(a), byId.get(b));
+    });
+  }
+
+  // 'display_code' on ACT → source_test ASC, then source_ordinal ASC.
+  return [...ids].sort((a, b) => compareActNatural(byId.get(a), byId.get(b)));
+}
+
+function compareActNatural(a, b) {
+  const at = a?.source_test ?? '';
+  const bt = b?.source_test ?? '';
+  if (at !== bt) return at.localeCompare(bt);
+  const ao = a?.source_ordinal ?? 0;
+  const bo = b?.source_ordinal ?? 0;
+  return ao - bo;
+}
