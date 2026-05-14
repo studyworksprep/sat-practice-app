@@ -35,10 +35,18 @@ import {
   commonErrorsFromAttempts,
   resolveQuestionV2Meta,
 } from '@/lib/practice/weak-queue';
+import {
+  buildWeakQueueAct,
+  commonErrorsFromActAttempts,
+  resolveActQuestionMetaForReview,
+} from '@/lib/practice/weak-queue-act';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
 import { BookOpenIcon, LayersIcon, NotesIcon, SparklesIcon, TargetIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
-import { createWeakQueueDrill, createSkillDrill } from './actions';
+import {
+  createWeakQueueDrill, createSkillDrill,
+  createActWeakQueueDrill, createActCategoryDrill,
+} from './actions';
 import { WeakQueueLauncher } from './WeakQueueLauncher';
 import { SkillDrillButton } from './SkillDrillButton';
 import s from './Review.module.css';
@@ -55,14 +63,18 @@ export default async function StudentReviewPage() {
   if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
 
-  // Parallel: extended profile (for sat_test_date), the scored
-  // weak queue, raw attempts + question meta for the Common Errors
-  // aggregation, plus rollup counts for the three review-materials
-  // cards (notes, error log, flashcards).
+  // Parallel: extended profile (for sat_test_date), SAT scored
+  // weak queue + raw attempts + question meta, ACT versions of the
+  // same, plus rollup counts for the three review-materials cards
+  // (notes, error log, flashcards). Error-log count is now both
+  // test types combined since the /review/error-log page shows
+  // SAT + ACT entries on the same page.
   const [
     { data: extendedProfile },
     weakQueue,
     attemptsRaw,
+    weakQueueAct,
+    actAttemptsRaw,
     { data: flashcardSets },
     { count: errorNotesCount },
     { count: studentNotesCount },
@@ -80,20 +92,27 @@ export default async function StudentReviewPage() {
         .eq('user_id', user.id)
         .range(from, to),
     ),
+    buildWeakQueueAct(supabase, user.id),
+    fetchAll((from, to) =>
+      supabase
+        .from('act_attempts')
+        .select('question_id, is_correct, created_at')
+        .eq('user_id', user.id)
+        .range(from, to),
+    ),
     supabase
       .from('flashcard_sets')
       .select('id, name, is_default')
       .eq('user_id', user.id)
       .order('name', { ascending: true }),
-    // Error-log count matches loadErrorNotes (SAT-only today; PR 4
-    // will branch the join target).
+    // Cross-test error-log count — the /review/error-log page shows
+    // both test types together (§3.4 unified review).
     supabase
       .from('question_error_notes')
       .select('question_id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('test_type', 'sat'),
-    // Student-notes count matches the cross-test notes hub (§3.4) —
-    // intentionally unfiltered.
+      .eq('user_id', user.id),
+    // Student-notes count is cross-test by design (§3.4 single
+    // notes inbox).
     supabase
       .from('student_notes')
       .select('id', { count: 'exact', head: true })
@@ -118,6 +137,27 @@ export default async function StudentReviewPage() {
     .filter((row) => row.wrong > 0)
     .slice(0, COMMON_ERRORS_TOP_N);
 
+  // ACT side — same shape (skill_name carries category, domain_name
+  // carries section label) so the existing render markup is reused.
+  const actAttemptedQids = Array.from(
+    new Set(actAttemptsRaw.map((a) => a.question_id)),
+  );
+  const actMetaById = await resolveActQuestionMetaForReview(
+    supabase,
+    actAttemptedQids,
+  );
+  const actCommonErrors = commonErrorsFromActAttempts(actAttemptsRaw, actMetaById)
+    .filter((row) => row.wrong > 0)
+    .slice(0, COMMON_ERRORS_TOP_N);
+
+  // Whether to show test-type headers. When the student only has
+  // data for one test type the page reads cleanly without a header.
+  // When both have data, headers disambiguate the two columns of
+  // "Common errors" + "Weak questions" cards.
+  const hasSatData = commonErrors.length > 0 || weakQueue.length > 0;
+  const hasActData = actCommonErrors.length > 0 || weakQueueAct.length > 0;
+  const showHeaders = hasSatData && hasActData;
+
   // Flashcard rollup. The cards-per-set join is one extra query;
   // cheap, but skippable when the student has no sets yet.
   let flashcardTotal = 0;
@@ -129,8 +169,6 @@ export default async function StudentReviewPage() {
       .in('set_id', setIds);
     flashcardTotal = count ?? 0;
   }
-
-  const queueCount = weakQueue.length;
 
   return (
     <main className={s.container}>
@@ -197,101 +235,173 @@ export default async function StudentReviewPage() {
         </div>
       </section>
 
-      {/* ---------- Common errors ---------- */}
-
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div>
-            <div className={s.h2}>
-              <IconTile icon={SparklesIcon} palette="amber" size="md" />
-              <span>Common errors</span>
+      {/* ---------- SAT review surfaces ---------- */}
+      {hasSatData && (
+        <>
+          {showHeaders && (
+            <div className={s.testTypeHeader}>
+              <span className={s.testTypeLabel}>SAT</span>
             </div>
-            <div className={s.cardHint}>
-              Skills where you&apos;ve missed the most. Click one
-              to drill that skill only.
-            </div>
-          </div>
-          <span className={s.cardTag}>
-            {commonErrors.length} skill{commonErrors.length === 1 ? '' : 's'}
-          </span>
-        </div>
-        {commonErrors.length === 0 ? (
-          <div className={s.empty}>
-            <div className={s.emptyTitle}>No errors to review yet.</div>
-            <div className={s.emptyBody}>
-              As you answer questions across practice and assignments,
-              the skills where you slip up show up here.
-            </div>
-          </div>
-        ) : (
-          <ul className={s.skillList}>
-            {commonErrors.map((row) => (
-              <li key={row.skill_name} className={s.skillRow}>
-                <div className={s.skillInfo}>
-                  <div className={s.skillName}>{row.skill_name}</div>
-                  <div className={s.skillMeta}>
-                    {row.domain_name && (
-                      <span className={s.skillDomain}>{row.domain_name}</span>
-                    )}
-                    <span className={s.skillStats}>
-                      {row.wrong} wrong of {row.total} attempts ·{' '}
-                      {Math.round(row.accuracy * 100)}% accuracy
-                    </span>
-                  </div>
-                  <div className={s.skillBar}>
-                    <div
-                      className={s.skillBarFill}
-                      style={{ width: `${Math.round(row.accuracy * 100)}%` }}
-                    />
-                  </div>
-                </div>
-                <SkillDrillButton
-                  skillName={row.skill_name}
-                  createAction={createSkillDrill}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* ---------- Weak questions drill ---------- */}
-
-      <section className={s.card}>
-        <div className={s.cardHeader}>
-          <div>
-            <div className={s.h2}>
-              <IconTile icon={TargetIcon} palette="cyan" size="md" />
-              <span>Weak questions drill</span>
-            </div>
-            <div className={s.cardHint}>
-              Your trickiest questions across every skill, ordered
-              by how recently you missed them and how hard they are.
-              Answers and rationales reveal at the end of each
-              question.
-            </div>
-          </div>
-          <span className={s.cardTag}>
-            {queueCount.toLocaleString()} in queue
-          </span>
-        </div>
-        {queueCount === 0 ? (
-          <div className={s.empty}>
-            <div className={s.emptyTitle}>Nothing in your queue yet.</div>
-            <div className={s.emptyBody}>
-              Anything you get wrong across practice, assignments,
-              and tests lands here automatically.
-            </div>
-          </div>
-        ) : (
-          <WeakQueueLauncher
-            queueCount={queueCount}
+          )}
+          <ReviewCommonErrors
+            commonErrors={commonErrors}
+            labelKind="skill"
+            createAction={createSkillDrill}
+          />
+          <ReviewWeakQueue
+            queueCount={weakQueue.length}
             createAction={createWeakQueueDrill}
           />
-        )}
-      </section>
+        </>
+      )}
+
+      {/* ---------- ACT review surfaces ----------
+          Sibling block to the SAT one above. Renders only when the
+          student has any ACT data (common errors or a non-empty
+          weak queue). When both test types have data, simple test-
+          type headers above each block disambiguate them; otherwise
+          we hide the header and the surfaces read like the legacy
+          single-test layout. */}
+      {hasActData && (
+        <>
+          {showHeaders && (
+            <div className={s.testTypeHeader}>
+              <span className={s.testTypeLabel}>ACT</span>
+            </div>
+          )}
+          <ReviewCommonErrors
+            commonErrors={actCommonErrors}
+            labelKind="category"
+            createAction={createActCategoryDrill}
+          />
+          <ReviewWeakQueue
+            queueCount={weakQueueAct.length}
+            createAction={createActWeakQueueDrill}
+          />
+        </>
+      )}
+
+      {/* Empty state when the student has no review-eligible
+          attempts on either test type. */}
+      {!hasSatData && !hasActData && (
+        <section className={s.card}>
+          <div className={s.empty}>
+            <div className={s.emptyTitle}>Nothing to review yet.</div>
+            <div className={s.emptyBody}>
+              As you answer questions across practice, assignments,
+              and tests, the skills you stumble on and your weakest
+              questions will surface here.
+            </div>
+          </div>
+        </section>
+      )}
 
     </main>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// Shared sub-sections. SAT and ACT branches render the same shape;
+// the only differences are the action they fire and the singular
+// noun the empty-state copy uses ("skill" vs "category").
+// ──────────────────────────────────────────────────────────────
+
+function ReviewCommonErrors({ commonErrors, labelKind, createAction }) {
+  const noun = labelKind === 'category' ? 'category' : 'skill';
+  const pluralNoun = labelKind === 'category' ? 'categories' : 'skills';
+  return (
+    <section className={s.card}>
+      <div className={s.cardHeader}>
+        <div>
+          <div className={s.h2}>
+            <IconTile icon={SparklesIcon} palette="amber" size="md" />
+            <span>Common errors</span>
+          </div>
+          <div className={s.cardHint}>
+            {pluralNoun.charAt(0).toUpperCase() + pluralNoun.slice(1)} where you&apos;ve missed the most. Click one
+            to drill that {noun} only.
+          </div>
+        </div>
+        <span className={s.cardTag}>
+          {commonErrors.length} {commonErrors.length === 1 ? noun : pluralNoun}
+        </span>
+      </div>
+      {commonErrors.length === 0 ? (
+        <div className={s.empty}>
+          <div className={s.emptyTitle}>No errors to review yet.</div>
+          <div className={s.emptyBody}>
+            As you answer questions, the {pluralNoun} where you slip
+            up show up here.
+          </div>
+        </div>
+      ) : (
+        <ul className={s.skillList}>
+          {commonErrors.map((row) => (
+            <li key={row.skill_name} className={s.skillRow}>
+              <div className={s.skillInfo}>
+                <div className={s.skillName}>{row.skill_name}</div>
+                <div className={s.skillMeta}>
+                  {row.domain_name && (
+                    <span className={s.skillDomain}>{row.domain_name}</span>
+                  )}
+                  <span className={s.skillStats}>
+                    {row.wrong} wrong of {row.total} attempts ·{' '}
+                    {Math.round(row.accuracy * 100)}% accuracy
+                  </span>
+                </div>
+                <div className={s.skillBar}>
+                  <div
+                    className={s.skillBarFill}
+                    style={{ width: `${Math.round(row.accuracy * 100)}%` }}
+                  />
+                </div>
+              </div>
+              <SkillDrillButton
+                skillName={row.skill_name}
+                createAction={createAction}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function ReviewWeakQueue({ queueCount, createAction }) {
+  return (
+    <section className={s.card}>
+      <div className={s.cardHeader}>
+        <div>
+          <div className={s.h2}>
+            <IconTile icon={TargetIcon} palette="cyan" size="md" />
+            <span>Weak questions drill</span>
+          </div>
+          <div className={s.cardHint}>
+            Your trickiest questions, ordered by how recently you
+            missed them and how hard they are. Answers and rationales
+            reveal at the end of each question.
+          </div>
+        </div>
+        <span className={s.cardTag}>
+          {queueCount.toLocaleString()} in queue
+        </span>
+      </div>
+      {queueCount === 0 ? (
+        <div className={s.empty}>
+          <div className={s.emptyTitle}>Nothing in your queue yet.</div>
+          <div className={s.emptyBody}>
+            Anything you get wrong across practice, assignments,
+            and tests lands here automatically.
+          </div>
+        </div>
+      ) : (
+        <WeakQueueLauncher
+          queueCount={queueCount}
+          createAction={createAction}
+        />
+      )}
+    </section>
   );
 }
 

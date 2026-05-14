@@ -425,3 +425,27 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+/* ---------- Test-type header ----------
+   A thin label that sits above the SAT / ACT review-surface blocks
+   when the student has data for both test types. When only one
+   test type has data the block renders without a header. */
+
+.testTypeHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 -4px;
+}
+
+.testTypeLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg3);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-white);
+}
