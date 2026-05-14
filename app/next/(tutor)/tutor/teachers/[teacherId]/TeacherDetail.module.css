@@ -157,6 +157,7 @@
   padding: 0;
   margin: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
 }
 
@@ -170,6 +171,7 @@
   border: 1px solid transparent;
   text-decoration: none;
   color: inherit;
+  min-width: 0;
   transition: all var(--dur-fast) var(--ease-std);
 }
 .assignRow:hover { background: var(--bg-white); border-color: var(--border); color: inherit; }
