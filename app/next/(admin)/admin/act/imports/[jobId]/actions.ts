@@ -48,6 +48,7 @@ async function getJob(
   source_test: string;
   test_pdf_url: string | null;
   math_html_url: string | null;
+  science_html_url: string | null;
   answer_key_url: string | null;
   scale_url: string | null;
   log_json: LogEntry[] | null;
@@ -55,7 +56,7 @@ async function getJob(
   const { data } = await supabase
     .from('act_import_jobs')
     .select(
-      'id, source_test, test_pdf_url, math_html_url, answer_key_url, scale_url, log_json',
+      'id, source_test, test_pdf_url, math_html_url, science_html_url, answer_key_url, scale_url, log_json',
     )
     .eq('id', jobId)
     .maybeSingle();
@@ -157,6 +158,7 @@ async function parseSectionAction(
       testPdfPath: job.test_pdf_url,
       answerKeyPath: job.answer_key_url,
       mathHtmlPath: section === 'math' ? job.math_html_url : null,
+      scienceHtmlPath: section === 'science' ? job.science_html_url : null,
     });
 
     if (drafts.length > 0) {

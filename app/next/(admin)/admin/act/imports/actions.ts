@@ -31,10 +31,11 @@ const BUCKET = 'act-imports';
 // stray image upload fails loudly; math_html_url accepts both
 // .html and .htm.
 const ALLOWED: Record<string, RegExp> = {
-  test_pdf:   /\.pdf$/i,
-  math_html:  /\.html?$/i,
-  answer_key: /\.pdf$/i,
-  scale:      /\.pdf$/i,
+  test_pdf:     /\.pdf$/i,
+  math_html:    /\.html?$/i,
+  science_html: /\.html?$/i,
+  answer_key:   /\.pdf$/i,
+  scale:        /\.pdf$/i,
 };
 
 const SIZE_LIMIT = 50 * 1024 * 1024; // 50 MB per file — well above a typical ACT PDF.
@@ -102,10 +103,11 @@ export async function createImportJob(
   // bucket is private and reads go through getSignedUrl).
   const urlUpdates: Record<string, string> = {};
   const SLOT_TO_COLUMN: Record<string, string> = {
-    test_pdf:   'test_pdf_url',
-    math_html:  'math_html_url',
-    answer_key: 'answer_key_url',
-    scale:      'scale_url',
+    test_pdf:     'test_pdf_url',
+    math_html:    'math_html_url',
+    science_html: 'science_html_url',
+    answer_key:   'answer_key_url',
+    scale:        'scale_url',
   };
 
   for (const { slot, file } of uploads) {

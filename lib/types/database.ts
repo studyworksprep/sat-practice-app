@@ -110,6 +110,7 @@ export type Database = {
           reading_status: string
           scale_status: string
           scale_url: string | null
+          science_html_url: string | null
           science_status: string
           source_test: string
           status: string
@@ -128,6 +129,7 @@ export type Database = {
           reading_status?: string
           scale_status?: string
           scale_url?: string | null
+          science_html_url?: string | null
           science_status?: string
           source_test: string
           status?: string
@@ -146,6 +148,7 @@ export type Database = {
           reading_status?: string
           scale_status?: string
           scale_url?: string | null
+          science_html_url?: string | null
           science_status?: string
           source_test?: string
           status?: string

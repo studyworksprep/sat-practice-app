@@ -91,6 +91,11 @@ export interface ParseSectionInput {
    *  a higher-fidelity LaTeX source alongside the test PDF.
    *  Ignored on other sections. */
   mathHtmlPath?: string | null;
+  /** Optional Mathpix HTML export of the science section. Same
+   *  pipeline as math: figures get rehosted from data: URLs
+   *  onto question-figures, LaTeX-y notation comes through
+   *  pre-OCR'd. Ignored on other sections. */
+  scienceHtmlPath?: string | null;
 }
 
 export interface ParseSectionResult {
@@ -103,7 +108,7 @@ export interface ParseSectionResult {
  *  pipeline-level warnings (separate from per-question
  *  parse_warnings). */
 export async function parseSection(input: ParseSectionInput): Promise<ParseSectionResult> {
-  const { supabase, jobId, sourceTest, section, testPdfPath, answerKeyPath, mathHtmlPath } = input;
+  const { supabase, jobId, sourceTest, section, testPdfPath, answerKeyPath, mathHtmlPath, scienceHtmlPath } = input;
 
   const testPdf = await downloadAsBase64(supabase, testPdfPath);
   const userBlocks: ContentBlock[] = [
@@ -124,34 +129,42 @@ export async function parseSection(input: ParseSectionInput): Promise<ParseSecti
       ' The second PDF is the answer key — use it to set is_correct on each option and to confirm taxonomy.';
   }
 
-  // Math-section enrichment: when the admin uploaded a Mathpix
-  // HTML export, pre-process any embedded figures (Mathpix emits
-  // them as base64 data: URLs inline in <img> tags) onto the
-  // public question-figures bucket, then append the rewritten
-  // HTML as a text block so Claude has the pre-OCR'd LaTeX +
-  // public figure URLs alongside the PDF vision. The result is
-  // that Claude can drop the <img src="https://…"> tags
-  // straight into stem_html and the runner renders the figure
-  // from CDN — no manual figure upload needed.
+  // Mathpix-HTML enrichment: when the admin uploaded a Mathpix
+  // export for this section, pre-process any embedded figures
+  // (Mathpix emits them as base64 data: URLs inline in <img>
+  // tags) onto the public question-figures bucket, then append
+  // the rewritten HTML as a text block so Claude has the pre-
+  // OCR'd LaTeX + public figure URLs alongside the PDF vision.
+  // Result: Claude drops the <img src="https://…"> tags
+  // straight into stem_html / stimulus_html and the runner
+  // renders the figure from CDN — no manual figure upload
+  // needed. Available for math (math_html) and science
+  // (science_html); same pipeline either way.
   const figureWarnings: string[] = [];
-  if (section === 'math' && mathHtmlPath) {
+  const mathpixPath =
+    section === 'math' ? mathHtmlPath :
+    section === 'science' ? scienceHtmlPath :
+    null;
+  if (mathpixPath) {
     try {
-      const rawHtml = await downloadAsText(supabase, mathHtmlPath);
+      const rawHtml = await downloadAsText(supabase, mathpixPath);
       const { html: rehosted, rehosted: rehostedCount, warnings: figWarns } =
         await rehostMathpixFigures(supabase, rawHtml);
       if (rehostedCount > 0) {
         figureWarnings.push(`Rehosted ${rehostedCount} Mathpix figure${rehostedCount === 1 ? '' : 's'}`);
       }
       figureWarnings.push(...figWarns);
+      const sectionWord = section === 'math' ? 'math' : 'science';
       userBlocks.push({
         type: 'text',
         text:
-          'The following is the Mathpix HTML export of the math section, with equations already in LaTeX' +
+          `The following is the Mathpix HTML export of the ${sectionWord} section, with equations` +
+          ` (and ${sectionWord === 'science' ? 'chemistry / unit notation' : 'LaTeX'} where present) already structured` +
           ' and every figure already uploaded to a public bucket (the <img src="…"> attributes point at' +
-          ' public URLs you may include verbatim in stem_html / option content_html). Use it as the' +
-          ' primary source for any equation that appears in both the PDF and the HTML, and copy each' +
-          ' question\'s figure <img> tag(s) into the matching stem so no manual figure upload is needed' +
-          ' downstream:\n\n' +
+          ' public URLs you may include verbatim in stem_html / option content_html / stimulus_html).' +
+          ' Use it as the primary source for any equation or figure that appears in both the PDF and' +
+          ' the HTML, and copy each question\'s figure <img> tag(s) into the matching stem (or shared' +
+          ' stimulus for science passages) so no manual figure upload is needed downstream:\n\n' +
           rehosted,
       });
     } catch {
