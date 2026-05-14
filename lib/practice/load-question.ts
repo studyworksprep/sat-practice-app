@@ -47,7 +47,10 @@ import {
 } from '@/lib/practice/load-act-question';
 import type { UserRole } from '@/lib/types';
 
-const DESMOS_DOMAINS = new Set(['H', 'P', 'Q', 'S']);
+// Mirrors CALCULATOR_DOMAINS in PracticeInteractive / ReviewInteractive.
+// Drives whether the loader fires loadDesmosSavedState — SAT math
+// codes + ACT 'math'.
+const DESMOS_DOMAINS = new Set(['H', 'P', 'Q', 'S', 'math']);
 
 export type SessionMode = 'practice' | 'training' | 'review';
 export type MapItemStatus = 'unanswered' | 'correct' | 'incorrect' | 'removed';
