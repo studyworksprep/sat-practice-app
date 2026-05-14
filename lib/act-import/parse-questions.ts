@@ -15,6 +15,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { callClaude, parseClaudeJson, type ContentBlock } from './anthropic';
 import { downloadAsBase64, downloadAsText } from './storage';
+import { rehostMathpixFigures } from './mathpix-figures';
 import { mathDifficulty, scienceDifficulty } from './difficulty';
 import { SECTION_PROMPTS } from './prompts';
 import type { ActSection } from '@/lib/practice/act-taxonomy';
@@ -124,17 +125,34 @@ export async function parseSection(input: ParseSectionInput): Promise<ParseSecti
   }
 
   // Math-section enrichment: when the admin uploaded a Mathpix
-  // HTML export, append it as a text block so Claude has the
-  // pre-OCR'd LaTeX for every equation alongside the PDF vision.
+  // HTML export, pre-process any embedded figures (Mathpix emits
+  // them as base64 data: URLs inline in <img> tags) onto the
+  // public question-figures bucket, then append the rewritten
+  // HTML as a text block so Claude has the pre-OCR'd LaTeX +
+  // public figure URLs alongside the PDF vision. The result is
+  // that Claude can drop the <img src="https://…"> tags
+  // straight into stem_html and the runner renders the figure
+  // from CDN — no manual figure upload needed.
+  const figureWarnings: string[] = [];
   if (section === 'math' && mathHtmlPath) {
     try {
-      const html = await downloadAsText(supabase, mathHtmlPath);
+      const rawHtml = await downloadAsText(supabase, mathHtmlPath);
+      const { html: rehosted, rehosted: rehostedCount, warnings: figWarns } =
+        await rehostMathpixFigures(supabase, rawHtml);
+      if (rehostedCount > 0) {
+        figureWarnings.push(`Rehosted ${rehostedCount} Mathpix figure${rehostedCount === 1 ? '' : 's'}`);
+      }
+      figureWarnings.push(...figWarns);
       userBlocks.push({
         type: 'text',
         text:
-          'The following is the Mathpix HTML export of the math section, with equations already in LaTeX.' +
-          ' Use it as the primary source for any equation that appears in both the PDF and the HTML:\n\n' +
-          html,
+          'The following is the Mathpix HTML export of the math section, with equations already in LaTeX' +
+          ' and every figure already uploaded to a public bucket (the <img src="…"> attributes point at' +
+          ' public URLs you may include verbatim in stem_html / option content_html). Use it as the' +
+          ' primary source for any equation that appears in both the PDF and the HTML, and copy each' +
+          ' question\'s figure <img> tag(s) into the matching stem so no manual figure upload is needed' +
+          ' downstream:\n\n' +
+          rehosted,
       });
     } catch {
       // Soft-fail: parser still runs from the PDF alone.
@@ -269,7 +287,7 @@ export async function parseSection(input: ParseSectionInput): Promise<ParseSecti
     };
   });
 
-  return { drafts, warnings };
+  return { drafts, warnings: [...figureWarnings, ...warnings] };
 }
 
 function expectedOptionCount(section: ActSection): number {

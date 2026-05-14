@@ -27,8 +27,9 @@ ANSWER KEY DOCUMENT (if attached as a second PDF):
 - Mark the matching option is_correct: true. All others is_correct: false.
 
 IMAGES / FIGURES:
-- If a question has a diagram/figure that you can describe but not reconstruct, set needs_figure: true on that draft and leave the figure out of stem_html.
-- For tables you can reconstruct as HTML, embed them inline.
+- For tables you can reconstruct as HTML, embed them inline (<table>…</table>).
+- If a Mathpix HTML export is attached alongside the test PDF, its <img src="https://…"> tags point at figures already uploaded to a public bucket. COPY each question's figure <img> verbatim into the matching stem_html (or option content_html, or stimulus_html if the figure is shared). These URLs are stable and renderable as-is; do NOT replace them with placeholders.
+- If a question has a diagram/figure that is NOT covered by the Mathpix HTML and that you can describe but not reconstruct, set needs_figure: true on that draft and leave the figure out of stem_html. An admin will upload it during review.
 
 PARSE WARNINGS:
 - parse_warnings is an array of short strings flagging anything non-fatal: "option count != 4", "answer key letter not found", "passage boundary unclear", etc. Empty array if everything looks clean.`;
