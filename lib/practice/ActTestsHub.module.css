@@ -1,0 +1,281 @@
+/* =============================================================
+   ActTestsHub — layout for the ACT practice-tests hub. Sibling
+   stylesheet to PracticeTestsPage.module.css (which the SAT hub
+   uses inline in app/next/...). Same shape, plus the per-form
+   card grid the SAT side doesn't have (its launcher is a single
+   dropdown).
+============================================================= */
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+
+.h1 {
+  font-family: var(--font-serif, inherit);
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--fg1);
+}
+
+.sub {
+  margin: 0;
+  color: var(--fg2);
+  font-size: 14px;
+  max-width: 60ch;
+}
+
+.h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--fg1);
+}
+
+/* ---------- Tabs ---------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+}
+
+.tab:hover {
+  color: var(--fg1);
+  background: var(--color-slate-50);
+}
+
+.tabActive {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--fg1);
+  margin-bottom: -1px;
+}
+
+.tabActive:hover {
+  background: var(--card);
+}
+
+/* ---------- Resume callout ---------- */
+
+.resumeCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-app-accent-soft);
+  font-size: 14px;
+}
+
+.resumeLink {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--color-app-accent);
+  white-space: nowrap;
+}
+
+/* ---------- Launcher / card grid ---------- */
+
+.launcherCard,
+.card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardHint {
+  font-size: 13px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.cardGrid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.testCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  transition: border-color var(--dur-fast) var(--ease-std);
+}
+
+.testCard:hover {
+  border-color: var(--color-app-accent);
+}
+
+.testCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.testCardTitle {
+  font-weight: 700;
+  color: var(--fg1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.testCardCompleted {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-success-fg, var(--fg2));
+  background: var(--color-success-soft, var(--color-slate-100));
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.02em;
+}
+
+.testCardMeta {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.testCardCta {
+  padding: 8px 14px;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity var(--dur-fast) var(--ease-std);
+}
+
+.testCardCta:hover { opacity: 0.92; }
+.testCardCta:disabled { opacity: 0.6; cursor: default; }
+
+/* ---------- Empty state ---------- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+  text-align: center;
+}
+
+.emptyTitle {
+  font-weight: 700;
+  color: var(--fg1);
+}
+
+.emptyBody {
+  font-size: 13px;
+  color: var(--fg2);
+}
+
+/* ---------- History table ---------- */
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.th, .thNum {
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg3);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.thNum { text-align: right; }
+
+.td, .tdNum, .tdAction {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--fg1);
+}
+.tdNum { text-align: right; font-variant-numeric: tabular-nums; }
+.tdAction { text-align: right; }
+
+.tdComposite {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.viewLink {
+  font-weight: 600;
+  font-size: 12px;
+  text-decoration: none;
+  color: var(--color-app-accent);
+  white-space: nowrap;
+}

@@ -107,6 +107,7 @@ export default async function PracticeQuestionPage({ params }) {
       initialErrorNote={payload.errorNote}
       initialStudentNote={payload.studentNote}
       initialMarked={payload.marked}
+      practiceTest={payload.practiceTest}
       submitAnswerAction={submitAnswer}
       loadQuestionAction={loadQuestionAction}
       basePath="/practice"

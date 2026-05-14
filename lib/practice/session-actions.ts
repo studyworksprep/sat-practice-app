@@ -33,7 +33,13 @@ type SubmitAnswerResult = ActionResult<{
   rationaleHtml: string | null;
 }>;
 
-type SessionLifecycleResult = ActionResult<{ sessionId: string }>;
+type SessionLifecycleResult = ActionResult<{
+  sessionId: string;
+  // Set on ACT practice-test submits — the runner client uses this
+  // to route to the ACT results page rather than the standard
+  // session-review page.
+  actAttemptId?: string | null;
+}>;
 
 /**
  * Submit an answer for the current question in a practice session.
@@ -287,7 +293,7 @@ export async function submitPracticeSession(
 
   const { data: session } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, status, filter_criteria')
+    .select('id, user_id, status, filter_criteria, test_type')
     .eq('id', sessionId)
     .maybeSingle();
   if (!session) return actionFail('Session not found');
@@ -329,7 +335,30 @@ export async function submitPracticeSession(
     }
   }
 
-  return { ok: true, sessionId };
+  // ACT practice tests: cache the scaled-score snapshot to
+  // act_practice_test_attempts. The runner client checks for
+  // `actAttemptId` on the result and routes the student to the
+  // ACT results page when present. See docs/architecture-plan.md
+  // §3.4 "ACT practice tests as virtual constructs."
+  let actAttemptId: string | null = null;
+  if (
+    session.test_type === 'act'
+    && session.filter_criteria?.kind === 'practice_test'
+  ) {
+    try {
+      const { finalizeActPracticeTest } = await import(
+        '@/app/next/(student)/practice/tests/actions'
+      );
+      const res = await finalizeActPracticeTest(supabase, user.id, sessionId);
+      if (res.ok) actAttemptId = res.attemptId;
+    } catch {
+      // Best-effort. The session is completed; the worst case is the
+      // student lands on the regular session-review page instead of
+      // the ACT results page until they re-submit.
+    }
+  }
+
+  return { ok: true, sessionId, actAttemptId };
 }
 
 /**

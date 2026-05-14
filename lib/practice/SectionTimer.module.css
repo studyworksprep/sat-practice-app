@@ -1,0 +1,56 @@
+/* =============================================================
+   SectionTimer — small pill that sits in the runner's top strip
+   when an ACT practice-test session is active. Tone shifts at the
+   5-minute and 1-minute thresholds so the student doesn't get
+   surprised when time's almost up.
+============================================================= */
+
+.timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.label {
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.timer_warn {
+  border-color: var(--color-amber-fg, #b45309);
+  background: var(--color-amber-soft, #fef3c7);
+  color: var(--color-amber-fg, #b45309);
+}
+
+.timer_warn .label { color: var(--color-amber-fg, #b45309); }
+
+.timer_urgent {
+  border-color: var(--color-danger-fg, #b91c1c);
+  background: var(--color-danger-soft, #fee2e2);
+  color: var(--color-danger-fg, #b91c1c);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.timer_urgent .label { color: var(--color-danger-fg, #b91c1c); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.78; }
+}
