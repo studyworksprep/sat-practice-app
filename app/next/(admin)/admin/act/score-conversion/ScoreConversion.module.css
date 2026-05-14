@@ -1,0 +1,393 @@
+/* =============================================================
+   Admin → ACT → Score conversion. Form picker, section tabs, and
+   the per-(form,section) editor with inline table + CSV path.
+============================================================= */
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.backLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg3);
+  text-decoration: none;
+}
+.backLink:hover { color: var(--fg1); }
+
+.h1 {
+  font-family: var(--font-serif, inherit);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 4px 0 0;
+  color: var(--fg1);
+}
+
+.sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--fg2);
+  max-width: 72ch;
+}
+
+/* ---------- Form picker ---------- */
+
+.formPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.pickerLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+
+.pickerRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.pickerEmpty {
+  font-size: 13px;
+  color: var(--fg3);
+  font-style: italic;
+}
+
+.formList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.formChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+  text-decoration: none;
+  background: var(--bg-white);
+}
+
+.formChip:hover { background: var(--color-slate-50); }
+
+.formChipActive {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
+.formChipNoTable {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-slate-100);
+  color: var(--fg3);
+}
+
+.newFormBtn {
+  padding: 6px 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  cursor: pointer;
+}
+.newFormBtn:hover { color: var(--fg1); background: var(--color-slate-50); }
+
+/* ---------- Section tabs ---------- */
+
+.sectionTabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sectionTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-decoration: none;
+}
+
+.sectionTab:hover { color: var(--fg1); background: var(--color-slate-50); }
+
+.sectionTabActive {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--fg1);
+  margin-bottom: -1px;
+}
+
+.sectionTabCount {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg3);
+  background: var(--color-slate-100);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.sectionTabActive .sectionTabCount {
+  background: var(--color-app-accent-soft);
+  color: var(--color-app-accent);
+}
+
+/* ---------- Editor ---------- */
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.editorHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.editorTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg1);
+}
+
+.editorHint {
+  font-size: 12px;
+  color: var(--fg2);
+  margin-top: 2px;
+}
+
+.editorErr { color: var(--color-danger-fg, #b91c1c); }
+
+.editorActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btnPrimary {
+  padding: 8px 14px;
+  border: 1px solid var(--color-app-accent);
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btnPrimary:hover:not(:disabled) { opacity: 0.92; }
+.btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btnSecondary {
+  padding: 8px 14px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-white);
+  color: var(--fg1);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnSecondary:hover:not(:disabled) { background: var(--color-slate-50); }
+.btnSecondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btnGhost {
+  padding: 6px 10px;
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--fg2);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btnGhost:hover { color: var(--fg1); background: var(--color-slate-50); }
+
+/* ---------- Editor table ---------- */
+
+.tableWrap { overflow-x: auto; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.thNum, .thAction {
+  text-align: right;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg3);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.thAction { width: 36px; }
+
+.tdNum, .tdAction {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.tdNum { text-align: right; }
+.tdAction { text-align: right; width: 36px; }
+
+.cellInput {
+  width: 90px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--fg1);
+  background: var(--bg-white);
+}
+
+.cellInput:focus {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: -1px;
+}
+
+.rowDelete {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--fg3);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.rowDelete:hover {
+  color: var(--color-danger-fg, #b91c1c);
+  background: var(--color-danger-soft, #fee2e2);
+}
+
+.emptyRow {
+  padding: 24px;
+  text-align: center;
+  color: var(--fg3);
+  font-style: italic;
+}
+
+.addRowBar {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* ---------- CSV path ---------- */
+
+.csvBlock {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  background: var(--color-slate-50);
+}
+
+.csvSummary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.csvHint {
+  font-size: 12px;
+  color: var(--fg2);
+  margin: 8px 0;
+}
+
+.csvTextarea {
+  width: 100%;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  color: var(--fg1);
+}
+
+.csvActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.csvErr {
+  font-size: 12px;
+  color: var(--color-danger-fg, #b91c1c);
+}
+
+/* ---------- Banners ---------- */
+
+.banner {
+  padding: 10px 12px;
+  border: 1px solid var(--color-danger-fg, #b91c1c);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-soft, #fee2e2);
+  color: var(--color-danger-fg, #b91c1c);
+  font-size: 13px;
+}
+
+.bannerOk {
+  padding: 10px 12px;
+  border: 1px solid var(--color-green-fg, #047857);
+  border-radius: var(--radius-md);
+  background: var(--color-green-soft, #d1fae5);
+  color: var(--color-green-fg, #047857);
+  font-size: 13px;
+}

@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate, formatRelativeShort } from '@/lib/formatters';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
+import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import {
   ClipboardCheckIcon,
@@ -75,6 +76,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     { data: registrations },
     { data: officialScores },
     aggregate,
+    aggregateAct,
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -143,6 +145,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('student_id', studentId)
       .order('test_date', { ascending: false }),
     loadDashboardAggregate(studentId),
+    loadDashboardAggregateAct(studentId),
   ]);
 
   if (rpcErr) {
@@ -350,7 +353,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           <div className={s.perfHeader}>
             <div className={s.sectionLabel}>
               <IconTile icon={PerformanceIcon} palette="cyan" size="sm" />
-              Performance · last 90 days
+              SAT performance · last 90 days
             </div>
             <Link
               href={`/tutor/students/${student.id}/stats`}
@@ -369,6 +372,52 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
               title="Reading & Writing"
               tone="rw"
               domains={toBreakdownDomains(aggregate.performance.rw.domains)}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* ---------- ACT performance ----------
+          Same layout shape as SAT — sections-as-domains,
+          categories-as-skills mapped onto the SkillBreakdownCard
+          shape. Hides when the student has no ACT attempts in the
+          90-day window (§3.4 "per-test-type sections hide when
+          there's no data"). When SAT has no data and ACT does,
+          this is the only performance card on the page; when both
+          have data, the two cards stack with their test-type
+          labels disambiguating them. */}
+      {aggregateAct && aggregateAct.totalAttempts > 0
+        && aggregateAct.performance.sections.length > 0 && (
+        <section className={s.perfSection}>
+          <div className={s.perfHeader}>
+            <div className={s.sectionLabel}>
+              <IconTile icon={PerformanceIcon} palette="cyan" size="sm" />
+              ACT performance · last 90 days
+            </div>
+            {aggregateAct.totalAttempts > 0 && (
+              <span className={s.cardHeaderLink}>
+                {aggregateAct.totalAttempts} attempt
+                {aggregateAct.totalAttempts === 1 ? '' : 's'}
+                {aggregateAct.performance.pct != null
+                  ? ` · ${aggregateAct.performance.pct}%`
+                  : ''}
+              </span>
+            )}
+          </div>
+          <div className={s.perfGrid}>
+            <SkillBreakdownCard
+              title="ACT"
+              tone="math"
+              domains={aggregateAct.performance.sections.map((sec) => ({
+                name: sec.label,
+                correct: sec.correct,
+                total: sec.total,
+                skills: sec.categories.map((c) => ({
+                  name: c.name,
+                  correct: c.correct,
+                  total: c.total,
+                })),
+              }))}
             />
           </div>
         </section>
