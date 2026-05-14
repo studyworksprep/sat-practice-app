@@ -15,7 +15,22 @@ import { notFound, redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
+import { ParseButton } from './ParseButton';
+import {
+  parseEnglish,
+  parseMath,
+  parseReading,
+  parseScience,
+  parseScaleAction,
+} from './actions';
 import s from '../Imports.module.css';
+
+const SECTION_ACTIONS = {
+  english: parseEnglish,
+  math: parseMath,
+  reading: parseReading,
+  science: parseScience,
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -139,20 +154,44 @@ export default async function ImportJobStatusPage({ params }) {
         </div>
 
         <div className={s.parseGrid}>
-          {SECTION_KEYS.map((sec) => (
-            <ParseTile
-              key={sec}
-              label={sectionLabel(sec)}
-              status={job[`${sec}_status`]}
-              disabled
-              note="Parser wires up in PR 10b"
-            />
-          ))}
+          {SECTION_KEYS.map((sec) => {
+            const status = job[`${sec}_status`];
+            const running = status === 'running';
+            const hasTestPdf = Boolean(job.test_pdf_url);
+            return (
+              <ParseTile
+                key={sec}
+                label={sectionLabel(sec)}
+                status={status}
+                jobId={jobId}
+                action={SECTION_ACTIONS[sec]}
+                disabled={!hasTestPdf || running}
+                note={
+                  !hasTestPdf
+                    ? 'Upload the test PDF to enable.'
+                    : status === 'completed'
+                      ? 'Re-running replaces existing drafts.'
+                      : null
+                }
+                confirmMessage={
+                  status === 'completed'
+                    ? 'Re-parse this section? Existing drafts will be replaced.'
+                    : null
+                }
+              />
+            );
+          })}
           <ParseTile
             label="Score conversion"
             status={job.scale_status}
-            disabled
-            note="Parser wires up in PR 10b"
+            jobId={jobId}
+            action={parseScaleAction}
+            disabled={!job.scale_url || job.scale_status === 'running'}
+            note={
+              !job.scale_url
+                ? 'Upload the score-conversion PDF to enable.'
+                : 'Writes directly to act_score_conversion.'
+            }
           />
         </div>
       </section>
@@ -196,7 +235,7 @@ function FileRow({ label, path, href }) {
   );
 }
 
-function ParseTile({ label, status, disabled, note }) {
+function ParseTile({ label, status, jobId, action, disabled, note, confirmMessage }) {
   return (
     <div className={s.parseTile}>
       <div className={s.parseTileHeader}>
@@ -205,9 +244,13 @@ function ParseTile({ label, status, disabled, note }) {
           {PARSE_STATUS_LABEL[status] ?? status}
         </span>
       </div>
-      <button type="button" className={s.btnSecondary} disabled={disabled}>
-        Parse
-      </button>
+      <ParseButton
+        jobId={jobId}
+        action={action}
+        label={status === 'completed' ? 'Re-parse' : 'Parse'}
+        disabled={disabled}
+        confirmMessage={confirmMessage}
+      />
       {note && <div className={s.parseTileNote}>{note}</div>}
     </div>
   );
