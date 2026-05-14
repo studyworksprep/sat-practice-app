@@ -1,0 +1,444 @@
+/* Admin → ACT → Imports → [jobId] → Review styles.
+ *
+ * Same hairline-card vocabulary as the rest of the admin
+ * (admin/page.js + admin/act/imports/Imports.module.css). The
+ * draft card collapses to a one-line summary by default and
+ * expands to show the parsed content plus an inline editor; the
+ * editor uses the same textarea/input shape as the SAT drafts
+ * editor so the affordances match.
+ */
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.backLink {
+  font-size: 13px;
+  color: var(--fg3);
+  text-decoration: none;
+  width: max-content;
+}
+.backLink:hover { color: var(--fg); }
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.h1 {
+  margin: 0;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.sub {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--fg3);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+  font-size: 12px;
+  text-decoration: none;
+}
+.chip:hover { background: var(--color-slate-50, #f8fafc); }
+.chipActive {
+  background: var(--fg);
+  color: var(--bg, white);
+  border-color: var(--fg);
+}
+.chipActive:hover { background: var(--fg); }
+.chipCount {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+  font-size: 11px;
+}
+
+.empty {
+  padding: 48px 24px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  background: var(--card);
+}
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.emptyBody {
+  font-size: 14px;
+  color: var(--fg3);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+}
+.sectionCount {
+  color: var(--fg3);
+  font-weight: 400;
+}
+
+.bulkWrap, .finalizeWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.bulkMessage {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.draftList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- Card ---------- */
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  overflow: hidden;
+}
+.cardApproved {
+  background: var(--color-success-soft, #ecfdf5);
+  border-color: var(--color-success-border, #a7f3d0);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.cardSummaryBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 13px;
+  color: var(--fg);
+  cursor: pointer;
+  text-align: left;
+  min-width: 0;
+}
+
+.cardOrdinal {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 36px;
+}
+
+.cardStatus {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-slate-100, #f1f5f9);
+  color: var(--fg3);
+}
+.statusToneParsing { background: #dbeafe; color: #1d4ed8; }
+.statusToneReady { background: #fef9c3; color: #854d0e; }
+.statusToneApproved { background: #dcfce7; color: #166534; }
+.statusToneRejected { background: #fee2e2; color: #b91c1c; }
+
+.cardCorrect, .cardDiff {
+  font-size: 12px;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+}
+
+.cardWarnBadge {
+  font-size: 11px;
+  color: #b91c1c;
+  background: #fee2e2;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.cardCaret {
+  margin-left: auto;
+  color: var(--fg3);
+  font-size: 12px;
+}
+
+.cardActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.cardBody {
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.warningList {
+  margin: 0;
+  padding: 8px 12px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  list-style: disc inside;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.previewLabel {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+.previewBody {
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 8px 12px;
+  background: var(--bg-subtle, #f8fafc);
+  border-radius: var(--radius-sm);
+  word-break: break-word;
+}
+.previewBody :global(img) {
+  max-width: min(420px, 100%);
+  height: auto;
+}
+
+.optionsPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.optionRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  background: var(--bg-subtle, #f8fafc);
+}
+.optionRowCorrect {
+  background: #ecfdf5;
+}
+.optionLabel {
+  font-weight: 700;
+  min-width: 18px;
+}
+.optionContent {
+  flex: 1;
+  word-break: break-word;
+}
+.optionContent :global(img) {
+  max-width: min(360px, 100%);
+  height: auto;
+}
+.correctTick {
+  color: #166534;
+  font-weight: 700;
+}
+
+.taxonomyPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.cardFooter {
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.cardError {
+  padding: 8px 10px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+/* ---------- Editor ---------- */
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--fg3);
+}
+.fieldHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.fieldHint {
+  color: var(--fg3);
+  font-size: 11px;
+}
+
+.uploadInline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.uploadingText { color: #2563eb; }
+.uploadErrorText { color: #b91c1c; }
+
+.textarea, .input {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--fg);
+  width: 100%;
+  resize: vertical;
+}
+.input { resize: none; }
+.mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+/* ---------- Buttons (local copies of Imports.module.css palette
+   so we don't have to import across the [jobId] dir tree) ----- */
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--fg);
+  color: var(--bg, white);
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.4;
+}
+.btnPrimary:hover:not(:disabled) { opacity: 0.92; }
+.btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--card);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  line-height: 1.4;
+}
+.btnSecondary:hover:not(:disabled) { background: var(--color-slate-50, #f8fafc); }
+.btnSecondary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--fg3);
+  border: 0;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.btnGhost:hover:not(:disabled) { color: var(--fg); }
+.btnGhost:disabled { opacity: 0.55; cursor: not-allowed; }
