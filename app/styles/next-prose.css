@@ -187,3 +187,28 @@ math[display="block"] {
   text-align: initial;
   vertical-align: baseline;
 }
+
+/* ----- .qref — ACT question-reference marker -----
+   The English + Reading parsers emit `<span class="qref" data-q="N">…</span>`
+   around the portion question N targets (English: the underlined
+   alternative; Reading: the line-referenced span). Default tone is
+   a subtle underline so the marker reads as part of the passage
+   even when its question isn't active. QuestionRenderer flips
+   .qref-active onto the marker whose data-q matches the rendered
+   question, lifting it into the highlighted treatment the digital
+   ACT uses for the same purpose. */
+.sw-prose .qref,
+.qref {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  border-radius: 2px;
+}
+.sw-prose .qref-active,
+.qref-active {
+  background: var(--color-warning-soft, #fef3c7);
+  color: var(--fg1, #111827);
+  box-shadow: 0 0 0 2px var(--color-warning-soft, #fef3c7);
+  text-decoration-color: var(--color-warning-border, #f59e0b);
+  text-decoration-thickness: 2px;
+}

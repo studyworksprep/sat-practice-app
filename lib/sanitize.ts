@@ -126,7 +126,12 @@ const HTML_TAGS = [
 const QUESTION_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: [...HTML_TAGS, ...MATHML_TAGS, ...NOTE_TAGS],
   allowedAttributes: {
-    '*': ['class', 'id', 'style', 'aria-label', 'role', ...SVG_ATTRS],
+    // `data-q` carries the ACT question-reference marker the
+    // renderer uses to highlight the relevant portion of a
+    // passage when its question is active. Sanitize-html does
+    // not auto-pass data-* attributes; the explicit allowlist
+    // is the supported pattern.
+    '*': ['class', 'id', 'style', 'aria-label', 'role', 'data-q', ...SVG_ATTRS],
     a: ['href', 'target', 'rel', 'class'],
     img: ['src', 'alt', 'width', 'height', 'class', 'style'],
     image: ['href', 'xlink:href', ...SVG_ATTRS],

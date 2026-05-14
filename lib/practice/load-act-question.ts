@@ -46,6 +46,7 @@ interface ActQuestionRow {
   stem_html: string;
   rationale_html: string | null;
   is_broken: boolean;
+  source_ordinal: number | null;
 }
 
 interface ActOptionRow {
@@ -78,7 +79,7 @@ export async function loadActQuestionContent(
     supabase
       .from('act_questions')
       .select(
-        'id, external_id, section, category, category_code, subcategory, subcategory_code, difficulty, question_type, stimulus_html, stem_html, rationale_html, is_broken',
+        'id, external_id, section, category, category_code, subcategory, subcategory_code, difficulty, question_type, stimulus_html, stem_html, rationale_html, is_broken, source_ordinal',
       )
       .eq('id', questionId)
       .maybeSingle(),
@@ -127,6 +128,12 @@ export async function loadActQuestionContent(
       options: vmOptions,
       layout: inferActLayoutMode(q.section),
       taxonomy: mapActTaxonomy(q),
+      // Highlight the [data-q="N"] span the parser emitted for
+      // this question — only meaningful on english + reading
+      // today, but every ACT row carries source_ordinal so we
+      // pass it through unconditionally. Renderer no-ops when
+      // the stimulus has no matching marker.
+      qrefOrdinal: q.source_ordinal ?? null,
     },
   };
 }
@@ -167,6 +174,7 @@ function makeEmptyVM(questionId: string): QuestionVM {
       difficulty: null,
       score_band: null,
     },
+    qrefOrdinal: null,
   };
 }
 
