@@ -237,6 +237,7 @@ export default async function AdminLandingPage() {
           <NavCard href="/admin/performance" title="Student performance" desc="Aggregate stats across cohorts." />
           <NavCard href="/admin/content" title="Score conversions + thresholds" desc="Test-level config + curves." />
           <NavCard href="/admin/act/score-conversion" title="ACT score conversion" desc="Raw → scaled tables per ACT form." />
+          <NavCard href="/admin/act/imports" title="ACT test imports" desc="Upload ACT PDFs, parse, review, approve." />
           <NavCard href="/admin/users/relationships" title="User relationships" desc="Teacher ↔ student assignments." />
           <NavCard href="/admin/users/codes" title="Signup codes" desc="Issue + audit invite codes." />
         </div>

@@ -97,6 +97,63 @@ export type Database = {
           },
         ]
       }
+      act_import_jobs: {
+        Row: {
+          answer_key_url: string | null
+          created_at: string
+          created_by: string
+          english_status: string
+          id: string
+          log_json: Json
+          math_html_url: string | null
+          math_status: string
+          reading_status: string
+          scale_status: string
+          scale_url: string | null
+          science_status: string
+          source_test: string
+          status: string
+          test_pdf_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          answer_key_url?: string | null
+          created_at?: string
+          created_by: string
+          english_status?: string
+          id?: string
+          log_json?: Json
+          math_html_url?: string | null
+          math_status?: string
+          reading_status?: string
+          scale_status?: string
+          scale_url?: string | null
+          science_status?: string
+          source_test: string
+          status?: string
+          test_pdf_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          answer_key_url?: string | null
+          created_at?: string
+          created_by?: string
+          english_status?: string
+          id?: string
+          log_json?: Json
+          math_html_url?: string | null
+          math_status?: string
+          reading_status?: string
+          scale_status?: string
+          scale_url?: string | null
+          science_status?: string
+          source_test?: string
+          status?: string
+          test_pdf_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       act_practice_test_attempts: {
         Row: {
           composite_score: number | null
@@ -152,6 +209,90 @@ export type Database = {
             columns: ["practice_session_id"]
             isOneToOne: false
             referencedRelation: "practice_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      act_question_drafts: {
+        Row: {
+          approved_to_id: string | null
+          category: string | null
+          category_code: string | null
+          created_at: string
+          difficulty: number | null
+          id: string
+          import_job_id: string
+          needs_figure: boolean
+          options_json: Json
+          parse_warnings: Json
+          rationale_html: string | null
+          section: string
+          source_ordinal: number
+          source_test: string
+          status: string
+          stem_html: string
+          stimulus_html: string | null
+          subcategory: string | null
+          subcategory_code: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_to_id?: string | null
+          category?: string | null
+          category_code?: string | null
+          created_at?: string
+          difficulty?: number | null
+          id?: string
+          import_job_id: string
+          needs_figure?: boolean
+          options_json?: Json
+          parse_warnings?: Json
+          rationale_html?: string | null
+          section: string
+          source_ordinal: number
+          source_test: string
+          status?: string
+          stem_html: string
+          stimulus_html?: string | null
+          subcategory?: string | null
+          subcategory_code?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_to_id?: string | null
+          category?: string | null
+          category_code?: string | null
+          created_at?: string
+          difficulty?: number | null
+          id?: string
+          import_job_id?: string
+          needs_figure?: boolean
+          options_json?: Json
+          parse_warnings?: Json
+          rationale_html?: string | null
+          section?: string
+          source_ordinal?: number
+          source_test?: string
+          status?: string
+          stem_html?: string
+          stimulus_html?: string | null
+          subcategory?: string | null
+          subcategory_code?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "act_question_drafts_approved_to_id_fkey"
+            columns: ["approved_to_id"]
+            isOneToOne: false
+            referencedRelation: "act_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "act_question_drafts_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "act_import_jobs"
             referencedColumns: ["id"]
           },
         ]
