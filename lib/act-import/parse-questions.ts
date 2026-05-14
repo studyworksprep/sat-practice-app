@@ -34,14 +34,29 @@ export interface RawParsedQuestion {
   subcategory_code?: string | null;
   difficulty?: number | null;
   is_modeling?: boolean | null;
+  /** Pre-PR-10d shape — still accepted as a fallback. */
   passage_index?: number | null;
   questions_in_passage?: number | null;
+  /** New shape (PR 10d): passage looked up by id from a sibling
+   *  passages[] array, populated into stimulus_html during
+   *  denormalization. */
+  passage_id?: string | null;
   stimulus_html?: string | null;
   stem_html: string;
   rationale_html?: string | null;
   options: RawParsedOption[];
   needs_figure?: boolean;
   parse_warnings?: string[];
+}
+
+export interface RawParsedPassage {
+  id: string;
+  html: string;
+}
+
+interface PassageReferencingResponse {
+  passages: RawParsedPassage[];
+  questions: RawParsedQuestion[];
 }
 
 export interface DraftInsertRow {
@@ -126,48 +141,92 @@ export async function parseSection(input: ParseSectionInput): Promise<ParseSecti
     }
   }
 
+  // Reading passages alone can exceed 30K tokens with 40
+  // questions and ~700-word passages, even with passage refs.
+  // Bump the ceiling for the passage-bearing sections so a long
+  // form doesn't trip max_tokens; math fits comfortably in the
+  // original cap.
+  const maxTokens = section === 'math' ? 32000 : 48000;
+
   const text = await callClaude({
     system: SECTION_PROMPTS[section],
     userBlocks,
-    maxTokens: 32000,
+    maxTokens,
   });
 
-  const raw = parseClaudeJson<RawParsedQuestion[]>(text);
-  if (!Array.isArray(raw)) {
-    throw new Error('Parser returned non-array JSON');
+  const parsed = parseClaudeJson<RawParsedQuestion[] | PassageReferencingResponse>(text);
+
+  // Two accepted shapes:
+  //   - Math (and any other section that returns a bare array):
+  //     raw is RawParsedQuestion[]. passages is empty.
+  //   - English/Reading/Science: raw is { passages, questions }
+  //     so the prompt can emit each passage once and the parser
+  //     denormalizes stimulus_html into every question that
+  //     references it. This is what unblocks Reading from
+  //     hitting max_tokens with 40 × full-passage repeats.
+  const isObjectShape = parsed !== null && !Array.isArray(parsed);
+  const rawQuestions: RawParsedQuestion[] = isObjectShape
+    ? (parsed as PassageReferencingResponse).questions ?? []
+    : (parsed as RawParsedQuestion[]);
+  const rawPassages: RawParsedPassage[] = isObjectShape
+    ? (parsed as PassageReferencingResponse).passages ?? []
+    : [];
+
+  if (!Array.isArray(rawQuestions)) {
+    throw new Error('Parser returned no questions array');
   }
+
+  // Map passage id → { html, indexInOrder } so we can both
+  // denormalize stimulus_html on every question and compute
+  // science's passage_index from declaration order.
+  const passageById = new Map<string, { html: string; index: number }>();
+  rawPassages.forEach((p, i) => {
+    if (p?.id) passageById.set(p.id, { html: p.html ?? '', index: i + 1 });
+  });
 
   const warnings: string[] = [];
-  const totalInSection = raw.length;
+  const totalInSection = rawQuestions.length;
 
   // Group science questions by passage so the rising-wave
-  // difficulty formula has its denominators.
-  const sciencePassageSizes = new Map<number, number>();
+  // difficulty formula has its denominators. New shape uses
+  // passage_id; legacy shape uses passage_index.
+  const sciencePassageSizes = new Map<string | number, number>();
   if (section === 'science') {
-    for (const q of raw) {
-      const p = q.passage_index ?? 0;
-      sciencePassageSizes.set(p, (sciencePassageSizes.get(p) ?? 0) + 1);
+    for (const q of rawQuestions) {
+      const key = q.passage_id ?? q.passage_index ?? 0;
+      sciencePassageSizes.set(key, (sciencePassageSizes.get(key) ?? 0) + 1);
     }
   }
-  const sciencePassageCount = sciencePassageSizes.size;
+  const sciencePassageCount = Math.max(passageById.size, sciencePassageSizes.size);
 
   // Per-passage "withinPassage" counters so consecutive ordinals
   // map to 1..N inside their passage.
-  const sciencePassageSeen = new Map<number, number>();
+  const sciencePassageSeen = new Map<string | number, number>();
 
-  const drafts: DraftInsertRow[] = raw.map((q) => {
+  const drafts: DraftInsertRow[] = rawQuestions.map((q) => {
     const ordinal = Number(q.source_ordinal);
     let difficulty: number | null = null;
+
+    // Resolve passage HTML + 1-based index.
+    let resolvedStimulus = q.stimulus_html?.trim() || null;
+    let passageIndex1Based: number | null = null;
+    if (q.passage_id && passageById.has(q.passage_id)) {
+      const p = passageById.get(q.passage_id)!;
+      resolvedStimulus = p.html?.trim() || null;
+      passageIndex1Based = p.index;
+    } else if (typeof q.passage_index === 'number') {
+      passageIndex1Based = q.passage_index;
+    }
 
     if (section === 'math') {
       difficulty = mathDifficulty(ordinal, totalInSection);
     } else if (section === 'science') {
-      const p = q.passage_index ?? 0;
-      const qsInPassage = q.questions_in_passage ?? sciencePassageSizes.get(p) ?? 0;
-      const within = (sciencePassageSeen.get(p) ?? 0) + 1;
-      sciencePassageSeen.set(p, within);
+      const key = q.passage_id ?? passageIndex1Based ?? 0;
+      const qsInPassage = q.questions_in_passage ?? sciencePassageSizes.get(key) ?? 0;
+      const within = (sciencePassageSeen.get(key) ?? 0) + 1;
+      sciencePassageSeen.set(key, within);
       difficulty = scienceDifficulty({
-        passageIndex: Math.max(0, p - 1),
+        passageIndex: Math.max(0, (passageIndex1Based ?? 1) - 1),
         passageCount: Math.max(1, sciencePassageCount),
         withinPassage: within,
         questionsInPassage: Math.max(1, qsInPassage),
@@ -195,7 +254,7 @@ export async function parseSection(input: ParseSectionInput): Promise<ParseSecti
       source_test: sourceTest,
       section,
       source_ordinal: ordinal,
-      stimulus_html: q.stimulus_html?.trim() || null,
+      stimulus_html: resolvedStimulus,
       stem_html: q.stem_html ?? '',
       rationale_html: q.rationale_html?.trim() || null,
       difficulty,
