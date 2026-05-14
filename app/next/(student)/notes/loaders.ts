@@ -393,16 +393,18 @@ export async function loadNote(
 export async function loadNoteForQuestion(
   supabase: SupabaseClient,
   questionId: string,
+  testType: 'sat' | 'act' = 'sat',
 ): Promise<StudentNote | null> {
-  // Per-question popover. test_type is implied by the question; PR 4
-  // will plumb it in. SAT-only for now matches every existing caller.
+  // Per-question popover. test_type forks SAT vs ACT (the same
+  // student_notes table holds both, scoped by the discriminator
+  // column added in PR 1).
   const { data, error } = await supabase
     .from('student_notes')
     .select(
       'id, user_id, question_id, title, body_json, body_text, tags, subject_code, domain_code, domain_name, skill_code, skill_name, created_at, updated_at',
     )
     .eq('question_id', questionId)
-    .eq('test_type', 'sat')
+    .eq('test_type', testType)
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -432,12 +434,13 @@ interface BatchedStudentNote {
 export async function loadStudentNotesByQuestion(
   supabase: SupabaseClient,
   questionIds: string[],
+  testType: 'sat' | 'act' = 'sat',
 ): Promise<Map<string, BatchedStudentNote>> {
   const out = new Map<string, BatchedStudentNote>();
   if (!questionIds || questionIds.length === 0) return out;
 
-  // Batch per-question fetch. Same per-question scope as loadNoteForQuestion;
-  // SAT-only for now (PR 4 will branch / pass test_type from session).
+  // Batch per-question fetch. test_type forks SAT vs ACT against the
+  // shared table's discriminator (added in PR 1).
   const { data, error } = await supabase
     .from('student_notes')
     .select(
@@ -445,7 +448,7 @@ export async function loadStudentNotesByQuestion(
     )
     .in('question_id', questionIds)
     .not('question_id', 'is', null)
-    .eq('test_type', 'sat')
+    .eq('test_type', testType)
     .order('updated_at', { ascending: false });
   if (error || !data) return out;
 

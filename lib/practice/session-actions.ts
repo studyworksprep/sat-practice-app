@@ -22,6 +22,7 @@ import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
+import { gradeActMcq } from '@/lib/practice/load-act-question';
 import type { ActionResult, QuestionType } from '@/lib/types';
 
 type SubmitAnswerResult = ActionResult<{
@@ -79,13 +80,15 @@ export async function submitAnswer(
   const selectedOptionId = formData.get('optionId');
   const responseText = (formData.get('responseText') ?? '').toString().trim();
 
-  // Load the session and verify ownership + position.
-  // filter_criteria.assignment_id is set when startAssignmentPractice
-  // created this session — we read it here to decide whether to run
-  // the assignment-completion check after recording the attempt.
+  // Load the session and verify ownership + position. We pull
+  // test_type so the grading + write paths fork between SAT (queries
+  // questions_v2 + writes attempts) and ACT (act_questions /
+  // act_answer_options + act_attempts). See §3.4 — the loader / write-
+  // action layer is where the fork lives, the action interface stays
+  // unified.
   const { data: session, error: sessionErr } = await supabase
     .from('practice_sessions')
-    .select('id, user_id, question_ids, filter_criteria, created_at')
+    .select('id, user_id, question_ids, filter_criteria, created_at, test_type')
     .eq('id', sessionId)
     .maybeSingle();
   if (sessionErr || !session) return actionFail('Session not found');
@@ -98,119 +101,151 @@ export async function submitAnswer(
     return actionFail('Invalid session position');
   }
   const questionId = questionIds[position];
+  const isAct = session.test_type === 'act';
+  const sessionFloor = session.created_at ?? '1970-01-01T00:00:00Z';
 
-  // Look up the question from v2. question_type + rationale_html +
-  // correct_answer (jsonb) all live on the single row.
-  const { data: question } = await supabase
-    .from('questions_v2')
-    .select('question_type, rationale_html, correct_answer')
-    .eq('id', questionId)
-    .maybeSingle();
-  if (!question) return actionFail('Question not found');
-
-  const isSpr = question.question_type === 'spr';
-  const correct = question.correct_answer;
-
-  if (isSpr && !responseText) {
-    return actionFail('Please enter an answer before submitting.');
-  }
-  if (!isSpr && !selectedOptionId) {
-    return actionFail('Please select an option before submitting.');
-  }
-
-  // Grade the submission against correct_answer (jsonb).
   let isCorrect = false;
-  if (isSpr) {
-    isCorrect = gradeSprAnswer(responseText, correct);
-  } else if (selectedOptionId) {
-    isCorrect = gradeMcqAnswer(String(selectedOptionId), correct);
-  }
+  let questionType: QuestionType = 'mcq';
+  let correctOptionIdOut: string | null = null;
+  let correctAnswerDisplay: string | null = null;
+  let rationaleHtml: string | null = null;
 
-  // First-attempt-wins. Re-submits in the same session let the
-  // student keep trying without polluting the record. Look up
-  // any existing attempt for this question since the session
-  // started; if one exists, skip the insert and only return the
-  // current submission's grading. The server-rendered review
-  // page reads the earliest attempt per question, so the
-  // record stays anchored to the first try.
-  const { data: existing } = await supabase
-    .from('attempts')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('question_id', questionId)
-    .gte('created_at', session.created_at ?? '1970-01-01T00:00:00Z')
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  let recorded = false;
-  if (!existing) {
-    const { error: insertErr } = await supabase.from('attempts').insert({
-      user_id: user.id,
-      question_id: questionId,
-      is_correct: isCorrect,
-      selected_option_id: null,
-      response_text: isSpr ? responseText : String(selectedOptionId),
-      source: 'practice',
-    });
-    if (insertErr) {
-      return actionFail(`Failed to record attempt: ${insertErr.message}`);
+  if (isAct) {
+    // ACT is MCQ-only today. selectedOptionId carries the
+    // act_answer_options.id UUID; we grade by looking up the
+    // question's correct option and comparing UUIDs.
+    if (!selectedOptionId) {
+      return actionFail('Please select an option before submitting.');
     }
-    recorded = true;
-  }
+    const grade = await gradeActMcq(supabase, questionId, String(selectedOptionId));
+    isCorrect = grade.isCorrect;
+    correctOptionIdOut = grade.correctOptionId;
 
-  // Upsert question_status for dashboard stats. Fire-and-forget-ish:
-  // if it fails we still return the grading result to the student.
-  // The attempts insert is the authoritative record.
-  try {
-    await supabase.rpc('upsert_question_status_after_attempt', {
-      p_user_id: user.id,
-      p_question_id: questionId,
-      p_is_correct: isCorrect,
-    });
-  } catch {
-    // Legacy helper may not exist; ignore. Dashboard stats degrade gracefully.
-  }
+    const { data: questionRow } = await supabase
+      .from('act_questions')
+      .select('rationale_html')
+      .eq('id', questionId)
+      .maybeSingle();
+    if (!questionRow) return actionFail('Question not found');
+    rationaleHtml = applyWatermark(
+      (questionRow as { rationale_html: string | null }).rationale_html ?? '',
+      user.id,
+    );
 
-  // Assignment auto-completion. If this session was started from an
-  // assignment, check whether every question in that assignment now
-  // has an attempt from this student and, if so, set completed_at on
-  // the junction row. Any attempt counts — correct or not — matching
-  // the "student has engaged with every question" semantics.
-  // Best-effort: a failure here does not block returning the grading
-  // result to the student.
-  const assignmentId: string | undefined = session.filter_criteria?.assignment_id;
-  if (assignmentId) {
+    // First-attempt-wins inside the session window.
+    const { data: existing } = await supabase
+      .from('act_attempts')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('question_id', questionId)
+      .gte('created_at', sessionFloor)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (!existing) {
+      const { error: insertErr } = await supabase.from('act_attempts').insert({
+        user_id: user.id,
+        question_id: questionId,
+        selected_option_id: String(selectedOptionId),
+        is_correct: isCorrect,
+        source: 'practice',
+      });
+      if (insertErr) {
+        return actionFail(`Failed to record attempt: ${insertErr.message}`);
+      }
+    }
+  } else {
+    // SAT path. Look up the question from v2 — question_type +
+    // rationale_html + correct_answer (jsonb) all live on the
+    // single row.
+    const { data: question } = await supabase
+      .from('questions_v2')
+      .select('question_type, rationale_html, correct_answer')
+      .eq('id', questionId)
+      .maybeSingle();
+    if (!question) return actionFail('Question not found');
+
+    const isSpr = question.question_type === 'spr';
+    const correct = question.correct_answer;
+    questionType = question.question_type as QuestionType;
+
+    if (isSpr && !responseText) {
+      return actionFail('Please enter an answer before submitting.');
+    }
+    if (!isSpr && !selectedOptionId) {
+      return actionFail('Please select an option before submitting.');
+    }
+
+    if (isSpr) {
+      isCorrect = gradeSprAnswer(responseText, correct);
+    } else if (selectedOptionId) {
+      isCorrect = gradeMcqAnswer(String(selectedOptionId), correct);
+    }
+
+    correctOptionIdOut = !isSpr ? extractMcqCorrectId(correct) : null;
+    correctAnswerDisplay = isSpr ? formatSprCorrect(correct) : null;
+    rationaleHtml = applyWatermark(question.rationale_html, user.id);
+
+    // First-attempt-wins inside the session window.
+    const { data: existing } = await supabase
+      .from('attempts')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('question_id', questionId)
+      .gte('created_at', sessionFloor)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (!existing) {
+      const { error: insertErr } = await supabase.from('attempts').insert({
+        user_id: user.id,
+        question_id: questionId,
+        is_correct: isCorrect,
+        selected_option_id: null,
+        response_text: isSpr ? responseText : String(selectedOptionId),
+        source: 'practice',
+      });
+      if (insertErr) {
+        return actionFail(`Failed to record attempt: ${insertErr.message}`);
+      }
+    }
+
+    // Dashboard stats — SAT-side legacy helper. Best-effort; if it
+    // fails the attempts insert remains authoritative.
     try {
-      await markAssignmentCompletedIfDone(supabase, user.id, assignmentId);
+      await supabase.rpc('upsert_question_status_after_attempt', {
+        p_user_id: user.id,
+        p_question_id: questionId,
+        p_is_correct: isCorrect,
+      });
     } catch {
-      // Swallow — the student's attempt is recorded either way.
+      // Legacy helper may not exist; ignore. Dashboard stats degrade gracefully.
     }
   }
 
-  // Dashboard cache invalidation moved off the submit hot path.
-  // updateTag() forces the calling route (the practice runner) to
-  // wait for the invalidation, which was triggering a full RSC
-  // refresh of the runner page after every submit — Suspense
-  // boundary fired, the runner skeleton flashed, the question +
-  // Desmos panels visibly blanked then re-rendered. The dashboard
-  // already TTL-caches at 60 s in loadDashboardAggregate, so it
-  // refreshes naturally; the worst case is a student sees stats
-  // from up to a minute ago when they navigate back to /dashboard.
-  // Acceptable in exchange for a smooth submit experience.
+  // Assignment auto-completion. SAT-only path today — ACT assignments
+  // are forward-wired but no surface ships yet, so markAssignment...
+  // is keyed off the SAT attempts table.
+  if (!isAct) {
+    const assignmentId: string | undefined = session.filter_criteria?.assignment_id;
+    if (assignmentId) {
+      try {
+        await markAssignmentCompletedIfDone(supabase, user.id, assignmentId);
+      } catch {
+        // Swallow — the student's attempt is recorded either way.
+      }
+    }
+  }
 
   return {
     ok: true,
     isCorrect,
-    questionType: question.question_type as QuestionType,
-    correctOptionId: !isSpr ? extractMcqCorrectId(correct) : null,
-    // For SPR questions, the display string shown in the reviewed
-    // state ("The correct answer was: 12.5 or 25/2"). For MCQ this
-    // is null — the UI highlights the correct option radio instead.
-    correctAnswerDisplay: isSpr ? formatSprCorrect(correct) : null,
-    // Watermark the rationale too. This is the only place rationale
-    // ever crosses the wire to the client.
-    rationaleHtml: applyWatermark(question.rationale_html, user.id),
+    questionType,
+    correctOptionId: correctOptionIdOut,
+    correctAnswerDisplay,
+    rationaleHtml,
   };
 }
 

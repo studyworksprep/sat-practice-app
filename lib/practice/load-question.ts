@@ -36,6 +36,15 @@ import { loadDesmosSavedState } from '@/lib/practice/load-desmos-saved-state';
 import { loadConceptTags } from '@/lib/practice/load-concept-tags';
 import { loadQuestionNotes } from '@/lib/practice/load-question-notes';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
+import { isCalculatorEligible } from '@/lib/practice/act-taxonomy';
+import {
+  loadActQuestionContent,
+  loadActLastAttempt,
+  loadActSessionAttempts,
+  loadActPublishedFlags,
+  buildActMapItems,
+  loadActReviewData,
+} from '@/lib/practice/load-act-question';
 import type { UserRole } from '@/lib/types';
 
 const DESMOS_DOMAINS = new Set(['H', 'P', 'Q', 'S']);
@@ -282,126 +291,173 @@ export async function loadQuestion(
     && !!(session.filter_criteria as Record<string, unknown>).assignment_id;
   const sessionCreatedAt = session.created_at ?? '1970-01-01T00:00:00Z';
 
-  const lastAttemptQuery = supabase
-    .from('attempts')
-    .select('id, is_correct, selected_option_id, response_text, created_at')
-    .eq('user_id', userId)
-    .eq('question_id', questionId);
-  const sessionAttemptsQuery = supabase
-    .from('attempts')
-    .select('question_id, is_correct, created_at')
-    .eq('user_id', userId)
-    .in('question_id', questionIds);
-  if (isAssignmentSession) {
-    lastAttemptQuery.gte('created_at', sessionCreatedAt);
-    sessionAttemptsQuery.gte('created_at', sessionCreatedAt);
-  }
-
-  const [
-    { data: question },
-    { data: lastAttempt },
-    { data: sessionAttempts },
-    { data: sessionPublished },
-  ] = await Promise.all([
-    supabase
-      .from('questions_v2')
-      .select(
-        'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_code, domain_name, skill_code, skill_name, difficulty, score_band, display_code, is_broken, is_published, deleted_at',
-      )
-      .eq('id', questionId)
-      .maybeSingle(),
-    lastAttemptQuery
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    sessionAttemptsQuery
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('questions_v2')
-      .select('id, is_published, deleted_at, domain_code')
-      .in('id', questionIds),
-  ]);
-
+  // Fork on the session's test_type. SAT reads questions_v2 + attempts;
+  // ACT reads act_questions + act_answer_options + act_attempts.
+  // Same shape comes out the other side so the per-question side-fetches
+  // below + the QuestionPayload return shape are unchanged.
+  const isAct = session.test_type === 'act';
+  const since = isAssignmentSession ? sessionCreatedAt : null;
   const markedSet = new Set<number>(
     Array.isArray(session.marked_positions) ? session.marked_positions : [],
   );
-  const mapItems = buildMapItems({
-    questionIds,
-    publishedRows: sessionPublished ?? [],
-    attempts: sessionAttempts ?? [],
-    markedSet,
-  });
 
-  const questionRemoved = !question || question.deleted_at || !question.is_published;
-  if (questionRemoved) {
-    return { kind: 'removed', mapItems, total: questionIds.length, sessionMode };
-  }
+  let questionVM: QuestionVM;
+  let mapItems: MapItem[];
+  let initialAttempt: InitialAttempt | null;
+  let desmosEligible: boolean;
 
-  const stimulusHtml = applyWatermark(
-    question.stimulus_rendered ?? question.stimulus_html,
-    userId,
-  );
-  const stemHtml = applyWatermark(
-    question.stem_rendered ?? question.stem_html,
-    userId,
-  );
+  if (isAct) {
+    const [contentResult, lastAttempt, sessionAttempts, publishedById] = await Promise.all([
+      loadActQuestionContent(supabase, questionId, userId),
+      loadActLastAttempt(supabase, userId, questionId, since),
+      loadActSessionAttempts(supabase, userId, questionIds, since),
+      loadActPublishedFlags(supabase, questionIds),
+    ]);
 
-  const optionsSource = Array.isArray(question.options_rendered)
-    ? question.options_rendered
-    : Array.isArray(question.options)
-      ? question.options
-      : [];
-  const wmOptions: QuestionOption[] = optionsSource.map((opt: Record<string, unknown>, idx: number) => {
-    const label = (opt.label as string | undefined) ?? (opt.id as string | undefined) ?? String.fromCharCode(65 + idx);
-    const content =
-      (opt.content_html_rendered as string | undefined)
-      ?? (opt.content_html as string | undefined)
-      ?? (opt.text as string | undefined)
-      ?? '';
-    return {
-      id: label,
-      ordinal: idx,
-      label,
-      content_html: applyWatermark(content, userId),
+    mapItems = buildActMapItems({ questionIds, publishedById, attempts: sessionAttempts, markedSet });
+
+    if (!contentResult || contentResult.isRemoved) {
+      return { kind: 'removed', mapItems, total: questionIds.length, sessionMode };
+    }
+
+    questionVM = contentResult.vm;
+    desmosEligible = isCalculatorEligible(questionVM.taxonomy.domain_code);
+
+    let reviewData: Awaited<ReturnType<typeof loadActReviewData>> = null;
+    if (lastAttempt) {
+      reviewData = await loadActReviewData(supabase, userId, questionId);
+    }
+
+    initialAttempt = lastAttempt
+      ? {
+          isCorrect: lastAttempt.is_correct,
+          selectedOptionId: lastAttempt.selected_option_id,
+          responseText: null, // ACT is MCQ-only — no typed response.
+          submittedAt: lastAttempt.created_at,
+          correctOptionId: reviewData?.correctOptionId ?? null,
+          correctAnswerDisplay: reviewData?.correctAnswerDisplay ?? null,
+          rationaleHtml: reviewData?.rationaleHtml ?? null,
+        }
+      : null;
+  } else {
+    const lastAttemptQuery = supabase
+      .from('attempts')
+      .select('id, is_correct, selected_option_id, response_text, created_at')
+      .eq('user_id', userId)
+      .eq('question_id', questionId);
+    const sessionAttemptsQuery = supabase
+      .from('attempts')
+      .select('question_id, is_correct, created_at')
+      .eq('user_id', userId)
+      .in('question_id', questionIds);
+    if (since) {
+      lastAttemptQuery.gte('created_at', since);
+      sessionAttemptsQuery.gte('created_at', since);
+    }
+
+    const [
+      { data: question },
+      { data: lastAttempt },
+      { data: sessionAttempts },
+      { data: sessionPublished },
+    ] = await Promise.all([
+      supabase
+        .from('questions_v2')
+        .select(
+          'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_code, domain_name, skill_code, skill_name, difficulty, score_band, display_code, is_broken, is_published, deleted_at',
+        )
+        .eq('id', questionId)
+        .maybeSingle(),
+      lastAttemptQuery
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      sessionAttemptsQuery
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('questions_v2')
+        .select('id, is_published, deleted_at, domain_code')
+        .in('id', questionIds),
+    ]);
+
+    mapItems = buildMapItems({
+      questionIds,
+      publishedRows: sessionPublished ?? [],
+      attempts: sessionAttempts ?? [],
+      markedSet,
+    });
+
+    const questionRemoved = !question || question.deleted_at || !question.is_published;
+    if (questionRemoved) {
+      return { kind: 'removed', mapItems, total: questionIds.length, sessionMode };
+    }
+
+    const stimulusHtml = applyWatermark(
+      question.stimulus_rendered ?? question.stimulus_html,
+      userId,
+    );
+    const stemHtml = applyWatermark(
+      question.stem_rendered ?? question.stem_html,
+      userId,
+    );
+
+    const optionsSource = Array.isArray(question.options_rendered)
+      ? question.options_rendered
+      : Array.isArray(question.options)
+        ? question.options
+        : [];
+    const wmOptions: QuestionOption[] = optionsSource.map((opt: Record<string, unknown>, idx: number) => {
+      const label = (opt.label as string | undefined) ?? (opt.id as string | undefined) ?? String.fromCharCode(65 + idx);
+      const content =
+        (opt.content_html_rendered as string | undefined)
+        ?? (opt.content_html as string | undefined)
+        ?? (opt.text as string | undefined)
+        ?? '';
+      return {
+        id: label,
+        ordinal: idx,
+        label,
+        content_html: applyWatermark(content, userId),
+      };
+    });
+
+    questionVM = {
+      questionId: question.id,
+      externalId: question.display_code ?? null,
+      questionType: question.question_type,
+      stimulusHtml,
+      stemHtml,
+      options: wmOptions,
+      layout: inferLayoutMode(question.domain_code),
+      taxonomy: {
+        domain_code: question.domain_code ?? null,
+        domain_name: question.domain_name ?? null,
+        skill_code: question.skill_code ?? null,
+        skill_name: question.skill_name ?? null,
+        difficulty: question.difficulty ?? null,
+        score_band: question.score_band ?? null,
+      },
     };
-  });
 
-  const questionVM: QuestionVM = {
-    questionId: question.id,
-    externalId: question.display_code ?? null,
-    questionType: question.question_type,
-    stimulusHtml,
-    stemHtml,
-    options: wmOptions,
-    layout: inferLayoutMode(question.domain_code),
-    taxonomy: {
-      domain_code: question.domain_code ?? null,
-      domain_name: question.domain_name ?? null,
-      skill_code: question.skill_code ?? null,
-      skill_name: question.skill_name ?? null,
-      difficulty: question.difficulty ?? null,
-      score_band: question.score_band ?? null,
-    },
-  };
+    let reviewData: Awaited<ReturnType<typeof loadReviewData>> | null = null;
+    if (lastAttempt) {
+      reviewData = await loadReviewData({ supabase, userId, questionId });
+    }
 
-  let reviewData: Awaited<ReturnType<typeof loadReviewData>> | null = null;
-  if (lastAttempt) {
-    reviewData = await loadReviewData({ supabase, userId, questionId });
+    initialAttempt = lastAttempt
+      ? {
+          isCorrect: lastAttempt.is_correct,
+          selectedOptionId: lastAttempt.selected_option_id,
+          responseText: lastAttempt.response_text,
+          submittedAt: lastAttempt.created_at,
+          correctOptionId: reviewData?.correctOptionId ?? null,
+          correctAnswerDisplay: reviewData?.correctAnswerDisplay ?? null,
+          rationaleHtml: reviewData?.rationaleHtml ?? null,
+        }
+      : null;
+
+    desmosEligible = DESMOS_DOMAINS.has(question.domain_code ?? '');
   }
-
-  const initialAttempt: InitialAttempt | null = lastAttempt
-    ? {
-        isCorrect: lastAttempt.is_correct,
-        selectedOptionId: lastAttempt.selected_option_id,
-        responseText: lastAttempt.response_text,
-        submittedAt: lastAttempt.created_at,
-        correctOptionId: reviewData?.correctOptionId ?? null,
-        correctAnswerDisplay: reviewData?.correctAnswerDisplay ?? null,
-        rationaleHtml: reviewData?.rationaleHtml ?? null,
-      }
-    : null;
-
-  const desmosEligible = DESMOS_DOMAINS.has(question.domain_code ?? '');
 
   // Side-fetches for the per-question payload. Run in parallel — the
   // tutor-tool branches are no-ops for student callers since
@@ -409,13 +465,15 @@ export async function loadQuestion(
   // since the Error Log is a student-private surface.
   const [desmos, conceptTags, questionNotes, errorNoteRow, studentNoteRow] = await Promise.all([
     desmosEligible
-      ? loadDesmosSavedState({ questionId, role })
+      ? loadDesmosSavedState({ questionId, role, testType: session.test_type })
       : Promise.resolve<DesmosPayload>({ savedState: null, canSave: false }),
-    includeTutorTools
+    // Concept tags are an SAT-only feature today — the join table FKs
+    // to v1 questions. Skip for ACT.
+    includeTutorTools && !isAct
       ? loadConceptTags({ questionId, role })
       : Promise.resolve(null),
     includeTutorTools
-      ? loadQuestionNotes({ questionId, role, userId })
+      ? loadQuestionNotes({ questionId, role, userId, testType: session.test_type })
       : Promise.resolve(null),
     supabase
       .from('question_error_notes')
