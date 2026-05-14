@@ -47,9 +47,18 @@ Return a single JSON OBJECT with two keys: { "passages": [...], "questions": [..
 Each passage gets a stable id ("p1", "p2", ...) and full HTML. Each question references its passage by passage_id.
 DO NOT repeat the full passage in each question — this is how token budgets get blown.
 
+QUESTION-REFERENCE MARKERS (CRITICAL — the runner uses these):
+In the ACT source PDF, each underlined portion is followed by a small numeral indicating which question it belongs to (e.g. "the lake [3] looked still" means question 3 is about that underlined span). DO NOT keep those bracketed numerals visible in the passage HTML. Instead, wrap each underlined span in a marker:
+
+  <span class="qref" data-q="N">underlined text</span>
+
+where N is the question's source_ordinal. The runner highlights the [data-q="N"] span when question N is active, so the student sees the same thing they'd see on the ACT digital interface — the underlined portion lights up as they navigate to its question. Drop the numeral itself; the marker carries that information.
+
+If a question is a directed question about the passage as a whole (no specific underlined span), no marker is needed and stem_html should phrase the question as it appears in the source (e.g. "Which of the following best summarizes the second paragraph?").
+
 For each question:
 - passage_id: which passage this question belongs to.
-- stem_html: the question text itself (often just "1." with the underlined-portion alternatives below, or a directed question like "Which of the following best...")
+- stem_html: the question text itself. For underlined-portion questions, the stem is often just the question number with a short directive ("1.") and the four alternatives are A/B/C/D. The underlined text itself stays in the passage (inside its qref marker), NOT in the stem.
 - options: A/B/C/D (4 options for ACT English). The first option is typically "NO CHANGE".
 
 Difficulty: leave null. ACT does not label English difficulty and we backfill via student performance later.
@@ -102,9 +111,28 @@ Return a single JSON OBJECT with two keys: { "passages": [...], "questions": [..
 Each passage gets a stable id ("p1", "p2", "p3", "p4") and full HTML. Each question references its passage by passage_id.
 DO NOT repeat the full passage in each question — Reading passages are long and this blows the output budget.
 
+LINE NUMBERS AND QUESTION-REFERENCE MARKERS (CRITICAL):
+ACT Reading source PDFs print line numbers in the margin every 5 lines, and many questions reference them ("In line 23, the author..."). The digital test does NOT show line numbers — it highlights the referenced span directly. Match that UX:
+
+1. DROP line numbers entirely from the passage HTML. Do not emit <sup>5</sup>, [5], "Line 5:", or any other in-passage marker. The passage HTML should read as clean prose.
+
+2. For each question that targets a specific line, line range, phrase, or word, wrap the referenced span in the passage with:
+
+     <span class="qref" data-q="N">referenced text</span>
+
+   where N is the question's source_ordinal. The runner highlights [data-q="N"] when question N is active, so the student sees the line-referenced text light up exactly where it is in the passage.
+
+3. REWRITE the question stem to point at the highlighted span rather than the line number. Replace:
+   - "in line 23"           → "in the highlighted text"
+   - "the word X (line 5)"  → "the highlighted word X"
+   - "lines 14–17 suggest"  → "the highlighted sentence suggests"
+   The rewritten stem should read naturally and the highlight does the locating work.
+
+4. For questions about the whole passage (main idea, tone, structure questions with no specific line reference), no marker is needed and the stem stays as-is.
+
 For each question:
 - passage_id: which of the 4 passages.
-- stem_html: the question text.
+- stem_html: the rewritten question text (with line-number references replaced as above).
 - options: A/B/C/D (4 options).
 
 Difficulty: leave null. ACT does not label Reading difficulty.
@@ -114,7 +142,7 @@ ${SHARED_INSTRUCTIONS}
 OUTPUT SHAPE:
 {
   "passages": [
-    { "id": "p1", "html": "<passage HTML; paragraphs as <p>; line numbers as <sup>5</sup> if present>" },
+    { "id": "p1", "html": "<passage HTML; paragraphs as <p>; NO line numbers; qref markers wrap line-referenced spans>" },
     ...
   ],
   "questions": [

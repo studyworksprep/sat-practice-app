@@ -90,6 +90,12 @@ export interface QuestionVM {
   options: QuestionOption[];
   layout: string;
   taxonomy: QuestionTaxonomy;
+  /** ACT question-reference ordinal. The renderer highlights
+   *  the matching `[data-q="N"]` span inside the stimulus when
+   *  this is set — the marker is emitted by the import parser
+   *  for English (underlined portions) and Reading (line-
+   *  referenced spans). Null on questions without a marker. */
+  qrefOrdinal: number | null;
 }
 
 export interface InitialAttempt {
@@ -450,6 +456,9 @@ export async function loadQuestion(
         difficulty: question.difficulty ?? null,
         score_band: question.score_band ?? null,
       },
+      // SAT side has no qref markers — passages don't carry
+      // ACT-style underlined-portion numerals or line references.
+      qrefOrdinal: null,
     };
 
     let reviewData: Awaited<ReturnType<typeof loadReviewData>> | null = null;
