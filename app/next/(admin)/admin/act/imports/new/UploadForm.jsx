@@ -24,7 +24,13 @@ const SLOTS = [
     name: 'math_html',
     label: 'Math section — Mathpix HTML',
     accept: 'text/html,.html,.htm',
-    hint: 'Optional. When present, the math parser uses this as the structured source (LaTeX equations preserved) and falls back to vision only for diagrams.',
+    hint: 'Optional. When present, the math parser uses this as the structured source (LaTeX equations preserved) and the Mathpix-embedded figures get rehosted to the public bucket so no manual figure upload is needed.',
+  },
+  {
+    name: 'science_html',
+    label: 'Science section — Mathpix HTML',
+    accept: 'text/html,.html,.htm',
+    hint: 'Optional. Same pipeline as math: figures get rehosted from Mathpix data URLs to public bucket URLs, and chemistry/math-like notation comes through as LaTeX rather than vision OCR.',
   },
   {
     name: 'answer_key',

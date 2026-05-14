@@ -65,7 +65,7 @@ export default async function ImportJobStatusPage({ params }) {
   const { data: job } = await supabase
     .from('act_import_jobs')
     .select(
-      'id, source_test, status, test_pdf_url, math_html_url, answer_key_url, scale_url, ' +
+      'id, source_test, status, test_pdf_url, math_html_url, science_html_url, answer_key_url, scale_url, ' +
       'english_status, math_status, reading_status, science_status, scale_status, ' +
       'log_json, created_at, updated_at',
     )
@@ -81,15 +81,16 @@ export default async function ImportJobStatusPage({ params }) {
     .select('id', { count: 'exact', head: true })
     .eq('import_job_id', jobId);
 
-  // Signed-URL helpers for the four uploaded files so the admin
+  // Signed-URL helpers for the uploaded files so the admin
   // can re-verify the upload landed correctly. 5 min expiry is
   // plenty for a click-through download.
   const signedUrls = await Promise.all(
     [
-      ['test_pdf_url',   job.test_pdf_url],
-      ['math_html_url',  job.math_html_url],
-      ['answer_key_url', job.answer_key_url],
-      ['scale_url',      job.scale_url],
+      ['test_pdf_url',     job.test_pdf_url],
+      ['math_html_url',    job.math_html_url],
+      ['science_html_url', job.science_html_url],
+      ['answer_key_url',   job.answer_key_url],
+      ['scale_url',        job.scale_url],
     ].map(async ([slot, path]) => {
       if (!path) return [slot, null];
       const { data } = await supabase.storage
@@ -133,10 +134,11 @@ export default async function ImportJobStatusPage({ params }) {
           <div className={s.h2}>Uploaded files</div>
         </div>
         <ul className={s.fileList}>
-          <FileRow label="Whole-test PDF"          path={job.test_pdf_url}    href={urls.test_pdf_url} />
-          <FileRow label="Math (Mathpix HTML)"     path={job.math_html_url}   href={urls.math_html_url} />
-          <FileRow label="Answer key"              path={job.answer_key_url}  href={urls.answer_key_url} />
-          <FileRow label="Score conversion"        path={job.scale_url}       href={urls.scale_url} />
+          <FileRow label="Whole-test PDF"          path={job.test_pdf_url}      href={urls.test_pdf_url} />
+          <FileRow label="Math (Mathpix HTML)"     path={job.math_html_url}     href={urls.math_html_url} />
+          <FileRow label="Science (Mathpix HTML)"  path={job.science_html_url}  href={urls.science_html_url} />
+          <FileRow label="Answer key"              path={job.answer_key_url}    href={urls.answer_key_url} />
+          <FileRow label="Score conversion"        path={job.scale_url}         href={urls.scale_url} />
         </ul>
       </section>
 

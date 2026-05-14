@@ -188,7 +188,9 @@ DO NOT repeat the full passage HTML on each question.
 
 For each passage HTML:
 - Include any reproducible tables inline (<table>).
-- Mark figures that can't be reproduced as <img src="" alt="Figure N — to be uploaded" />. The questions parser sets needs_figure: true on every question whose passage carries an unfilled figure.
+- If a Mathpix HTML export is attached alongside the test PDF, its <img src="https://…"> tags point at figures already uploaded to a public bucket. COPY each passage's figure <img> verbatim into that passage's stimulus HTML. These URLs are stable and renderable as-is; do NOT replace them with placeholders.
+- For chemistry / unit / math-like notation that the Mathpix HTML supplies as LaTeX, prefer the Mathpix source over re-OCR'ing from the PDF vision.
+- For figures NOT covered by the Mathpix HTML and that you can describe but not reconstruct, emit <img src="" alt="Figure N — to be uploaded" /> and set needs_figure: true on every question whose passage carries an unfilled figure.
 
 For each question:
 - passage_id: which passage.
