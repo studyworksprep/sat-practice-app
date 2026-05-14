@@ -84,6 +84,17 @@
 .btnSecondary:hover:not(:disabled) { background: var(--color-slate-50); }
 .btnSecondary:disabled { opacity: 0.55; cursor: not-allowed; }
 
+.parseError {
+  margin-top: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--color-danger-fg, #b91c1c);
+  background: var(--color-danger-soft, #fee2e2);
+  border-radius: var(--radius-sm);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .deleteBtn {
   display: inline-flex;
   align-items: center;
