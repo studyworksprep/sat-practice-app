@@ -42,35 +42,49 @@ ACT ENGLISH CATEGORY HIERARCHY:
 2. "Knowledge of Language" (code: "KL") — no subcategories
 3. "Conventions of Standard English" (code: "CSE") — subcategories: "Sentence Structure and Formation" (SSF), "Punctuation" (PUN), "Usage" (USE)
 
+CRITICAL OUTPUT SHAPE — emit passages ONCE then reference by id:
+Return a single JSON OBJECT with two keys: { "passages": [...], "questions": [...] }.
+Each passage gets a stable id ("p1", "p2", ...) and full HTML. Each question references its passage by passage_id.
+DO NOT repeat the full passage in each question — this is how token budgets get blown.
+
 For each question:
-- stimulus_html: the full passage paragraph(s) shared by this run of questions (include the underlined-portion markers as <u> or similar). Repeat the full passage on each question that uses it — duplication is fine; we will dedupe at promotion time.
-- stem_html: the question text itself (often just "1." with the underlined portion alternatives below, or a directed question like "Which of the following best...")
+- passage_id: which passage this question belongs to.
+- stem_html: the question text itself (often just "1." with the underlined-portion alternatives below, or a directed question like "Which of the following best...")
 - options: A/B/C/D (4 options for ACT English). The first option is typically "NO CHANGE".
 
 Difficulty: leave null. ACT does not label English difficulty and we backfill via student performance later.
 
 ${SHARED_INSTRUCTIONS}
 
-OUTPUT SHAPE per question:
+OUTPUT SHAPE:
 {
-  "source_ordinal": <int>,
-  "section": "english",
-  "category_code": "POW" | "KL" | "CSE",
-  "category": "Production of Writing" | "Knowledge of Language" | "Conventions of Standard English",
-  "subcategory_code": "TD" | "OUC" | "" | "SSF" | "PUN" | "USE",
-  "subcategory": "<full name or empty string>",
-  "difficulty": null,
-  "stimulus_html": "<passage HTML>",
-  "stem_html": "<question text HTML>",
-  "rationale_html": "",
-  "options": [
-    { "label": "A", "content_html": "...", "is_correct": <bool> },
-    { "label": "B", "content_html": "...", "is_correct": <bool> },
-    { "label": "C", "content_html": "...", "is_correct": <bool> },
-    { "label": "D", "content_html": "...", "is_correct": <bool> }
+  "passages": [
+    { "id": "p1", "html": "<full passage HTML, with <u> underlines for marked portions>" },
+    ...
   ],
-  "needs_figure": false,
-  "parse_warnings": []
+  "questions": [
+    {
+      "source_ordinal": <int>,
+      "section": "english",
+      "passage_id": "p1",
+      "category_code": "POW" | "KL" | "CSE",
+      "category": "Production of Writing" | "Knowledge of Language" | "Conventions of Standard English",
+      "subcategory_code": "TD" | "OUC" | "" | "SSF" | "PUN" | "USE",
+      "subcategory": "<full name or empty string>",
+      "difficulty": null,
+      "stem_html": "<question text HTML>",
+      "rationale_html": "",
+      "options": [
+        { "label": "A", "content_html": "...", "is_correct": <bool> },
+        { "label": "B", "content_html": "...", "is_correct": <bool> },
+        { "label": "C", "content_html": "...", "is_correct": <bool> },
+        { "label": "D", "content_html": "...", "is_correct": <bool> }
+      ],
+      "needs_figure": false,
+      "parse_warnings": []
+    },
+    ...
+  ]
 }`;
 
 export const READING_SYSTEM = `You are an expert at parsing ACT Reading section test content from a PDF.
@@ -83,8 +97,13 @@ ACT READING CATEGORY HIERARCHY:
 3. "Integration of Knowledge and Ideas" (code: "IKI")
 No subcategories on Reading.
 
+CRITICAL OUTPUT SHAPE — emit passages ONCE then reference by id:
+Return a single JSON OBJECT with two keys: { "passages": [...], "questions": [...] }.
+Each passage gets a stable id ("p1", "p2", "p3", "p4") and full HTML. Each question references its passage by passage_id.
+DO NOT repeat the full passage in each question — Reading passages are long and this blows the output budget.
+
 For each question:
-- stimulus_html: the full passage HTML (paragraphs preserved as <p>...</p>; line numbers as <sup>5</sup> in-text if present in the source). Repeat the passage on each of the 10 questions that share it.
+- passage_id: which of the 4 passages.
 - stem_html: the question text.
 - options: A/B/C/D (4 options).
 
@@ -92,26 +111,35 @@ Difficulty: leave null. ACT does not label Reading difficulty.
 
 ${SHARED_INSTRUCTIONS}
 
-OUTPUT SHAPE per question:
+OUTPUT SHAPE:
 {
-  "source_ordinal": <int>,
-  "section": "reading",
-  "category_code": "KID" | "CS" | "IKI",
-  "category": "Key Ideas and Details" | "Craft and Structure" | "Integration of Knowledge and Ideas",
-  "subcategory_code": "",
-  "subcategory": "",
-  "difficulty": null,
-  "stimulus_html": "<passage HTML>",
-  "stem_html": "<question text HTML>",
-  "rationale_html": "",
-  "options": [
-    { "label": "A", "content_html": "...", "is_correct": <bool> },
-    { "label": "B", "content_html": "...", "is_correct": <bool> },
-    { "label": "C", "content_html": "...", "is_correct": <bool> },
-    { "label": "D", "content_html": "...", "is_correct": <bool> }
+  "passages": [
+    { "id": "p1", "html": "<passage HTML; paragraphs as <p>; line numbers as <sup>5</sup> if present>" },
+    ...
   ],
-  "needs_figure": false,
-  "parse_warnings": []
+  "questions": [
+    {
+      "source_ordinal": <int>,
+      "section": "reading",
+      "passage_id": "p1",
+      "category_code": "KID" | "CS" | "IKI",
+      "category": "Key Ideas and Details" | "Craft and Structure" | "Integration of Knowledge and Ideas",
+      "subcategory_code": "",
+      "subcategory": "",
+      "difficulty": null,
+      "stem_html": "<question text HTML>",
+      "rationale_html": "",
+      "options": [
+        { "label": "A", "content_html": "...", "is_correct": <bool> },
+        { "label": "B", "content_html": "...", "is_correct": <bool> },
+        { "label": "C", "content_html": "...", "is_correct": <bool> },
+        { "label": "D", "content_html": "...", "is_correct": <bool> }
+      ],
+      "needs_figure": false,
+      "parse_warnings": []
+    },
+    ...
+  ]
 }`;
 
 export const SCIENCE_SYSTEM = `You are an expert at parsing ACT Science section test content from a PDF.
@@ -124,39 +152,54 @@ ACT SCIENCE CATEGORY HIERARCHY:
 3. "Evaluation of Models, Inferences, and Experimental Results" (code: "EMI")
 No subcategories on Science.
 
-PASSAGE GROUPING (CRITICAL): include passage_index (1-based) and questions_in_passage on every question so the import pipeline can compute progressive difficulty correctly. Questions within a passage are ordered by their source ordinal.
+CRITICAL OUTPUT SHAPE — emit passages ONCE then reference by id:
+Return a single JSON OBJECT with two keys: { "passages": [...], "questions": [...] }.
+Passage ids are "p1", "p2", ... in the order they appear in the test (the import pipeline reads this order to compute the rising-wave difficulty progression). Each question references its passage by passage_id.
+DO NOT repeat the full passage HTML on each question.
+
+For each passage HTML:
+- Include any reproducible tables inline (<table>).
+- Mark figures that can't be reproduced as <img src="" alt="Figure N — to be uploaded" />. The questions parser sets needs_figure: true on every question whose passage carries an unfilled figure.
 
 For each question:
-- stimulus_html: the passage HTML. Include any reproducible tables inline (HTML <table>). Mark figures that can't be reproduced as <img src="" alt="Figure N — to be uploaded" /> and set needs_figure: true on every question whose stimulus depends on that figure.
+- passage_id: which passage.
 - stem_html: the question text.
 - options: A/B/C/D (4 options).
+- needs_figure: true if this question's answer depends on the missing figure(s) in its passage.
 
-Difficulty: leave null. The import pipeline computes Science difficulty from passage_index + within_passage position using a rising-wave formula; do not set it here.
+Difficulty: leave null. The import pipeline computes Science difficulty from passage order + within-passage position using a rising-wave formula; do not set it here.
 
 ${SHARED_INSTRUCTIONS}
 
-OUTPUT SHAPE per question:
+OUTPUT SHAPE:
 {
-  "source_ordinal": <int>,
-  "section": "science",
-  "category_code": "IOD" | "SI" | "EMI",
-  "category": "Interpretation of Data" | "Scientific Investigation" | "Evaluation of Models, Inferences, and Experimental Results",
-  "subcategory_code": "",
-  "subcategory": "",
-  "difficulty": null,
-  "passage_index": <1-based int>,
-  "questions_in_passage": <int>,
-  "stimulus_html": "<passage HTML>",
-  "stem_html": "<question text HTML>",
-  "rationale_html": "",
-  "options": [
-    { "label": "A", "content_html": "...", "is_correct": <bool> },
-    { "label": "B", "content_html": "...", "is_correct": <bool> },
-    { "label": "C", "content_html": "...", "is_correct": <bool> },
-    { "label": "D", "content_html": "...", "is_correct": <bool> }
+  "passages": [
+    { "id": "p1", "html": "<passage HTML with tables + figure placeholders>" },
+    ...
   ],
-  "needs_figure": <bool>,
-  "parse_warnings": []
+  "questions": [
+    {
+      "source_ordinal": <int>,
+      "section": "science",
+      "passage_id": "p1",
+      "category_code": "IOD" | "SI" | "EMI",
+      "category": "Interpretation of Data" | "Scientific Investigation" | "Evaluation of Models, Inferences, and Experimental Results",
+      "subcategory_code": "",
+      "subcategory": "",
+      "difficulty": null,
+      "stem_html": "<question text HTML>",
+      "rationale_html": "",
+      "options": [
+        { "label": "A", "content_html": "...", "is_correct": <bool> },
+        { "label": "B", "content_html": "...", "is_correct": <bool> },
+        { "label": "C", "content_html": "...", "is_correct": <bool> },
+        { "label": "D", "content_html": "...", "is_correct": <bool> }
+      ],
+      "needs_figure": <bool>,
+      "parse_warnings": []
+    },
+    ...
+  ]
 }`;
 
 export const MATH_SYSTEM = `You are an expert at parsing ACT Math section test content from a PDF.
