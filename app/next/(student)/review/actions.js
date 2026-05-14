@@ -22,6 +22,7 @@ import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { buildWeakQueue } from '@/lib/practice/weak-queue';
+import { buildWeakQueueAct } from '@/lib/practice/weak-queue-act';
 
 const MAX_DRILL_SIZE = 25;
 const MIN_DRILL_SIZE = 5;
@@ -103,12 +104,12 @@ function clampSize(raw) {
   return Math.min(Math.max(n, MIN_DRILL_SIZE), MAX_DRILL_SIZE);
 }
 
-async function startReviewSession(supabase, userId, questionIds, filterMeta) {
+async function startReviewSession(supabase, userId, questionIds, filterMeta, testType = 'sat') {
   const { data: session, error } = await supabase
     .from('practice_sessions')
     .insert({
       user_id: userId,
-      test_type: 'sat',
+      test_type: testType,
       mode: 'review',
       question_ids: questionIds,
       current_position: 0,
@@ -121,4 +122,83 @@ async function startReviewSession(supabase, userId, questionIds, filterMeta) {
     return actionFail(`Failed to create review session: ${error?.message ?? 'unknown'}`);
   }
   redirect(`/practice/s/${session.id}/0`);
+}
+
+// ──────────────────────────────────────────────────────────────
+// ACT counterparts. Same scoring formula as SAT (the weak-queue-act
+// helper carries the per-section adjustment), same drill flow, same
+// review-session creation — only the candidate pool + test_type
+// stamp differ. The runner forks on session.test_type (PR 5).
+// ──────────────────────────────────────────────────────────────
+
+export async function createActWeakQueueDrill(_prevState, formData) {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase } = ctx;
+
+  const rl = await rateLimit(`review-start:${user.id}`, {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) {
+    return actionFail('Too many review sessions started. Please wait a moment.');
+  }
+
+  const size = clampSize(formData.get('size'));
+  const scored = await buildWeakQueueAct(supabase, user.id);
+  if (scored.length === 0) {
+    return actionFail(
+      'Nothing to review in ACT yet. Finish some ACT practice first — anything you get wrong will show up here.',
+    );
+  }
+
+  const questionIds = scored.slice(0, size).map((r) => r.question_id);
+  return startReviewSession(
+    supabase, user.id, questionIds,
+    { kind: 'weak_queue', size },
+    'act',
+  );
+}
+
+export async function createActCategoryDrill(_prevState, formData) {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase } = ctx;
+
+  const rl = await rateLimit(`review-skill:${user.id}`, {
+    limit: 20,
+    windowMs: 60_000,
+  });
+  if (!rl.ok) {
+    return actionFail('Too many review sessions started. Please wait a moment.');
+  }
+
+  // Field name stays `skill` so the existing SkillDrillButton form
+  // can be reused without branching. The value carries the ACT
+  // category (the equivalent of an SAT skill in the rendering shape).
+  const categoryName = String(formData.get('skill') ?? '').trim();
+  if (!categoryName) return actionFail('Missing category.');
+  const size = clampSize(formData.get('size'));
+
+  const scored = await buildWeakQueueAct(supabase, user.id, { categoryName });
+  if (scored.length === 0) {
+    return actionFail(`No questions to review in ${categoryName} yet.`);
+  }
+
+  const questionIds = scored.slice(0, size).map((r) => r.question_id);
+  return startReviewSession(
+    supabase, user.id, questionIds,
+    { kind: 'category', category: categoryName, size },
+    'act',
+  );
 }

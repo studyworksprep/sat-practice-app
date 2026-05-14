@@ -27,7 +27,16 @@ export default async function ReviewErrorLogPage() {
   if (profile.role === 'admin') redirect('/admin');
   if (profile.role === 'practice') redirect('/subscribe');
 
-  const rows = await loadErrorNotes({ supabase, userId: user.id });
+  // SAT and ACT entries live in the same question_error_notes
+  // table, scoped by test_type. We pull both and merge by
+  // updatedAt desc — the unified review surface per §3.4.
+  const [satRows, actRows] = await Promise.all([
+    loadErrorNotes({ supabase, userId: user.id, testType: 'sat' }),
+    loadErrorNotes({ supabase, userId: user.id, testType: 'act' }),
+  ]);
+  const rows = [...satRows, ...actRows].sort(
+    (a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''),
+  );
 
   return (
     <main className={s.container}>
