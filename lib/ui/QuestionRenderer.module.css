@@ -176,6 +176,25 @@
   color: var(--fg1);
 }
 
+/* Figure-image sizing. Question content can carry `<img>` tags
+   (ACT geometry diagrams, math plots, ACT English passage figures,
+   etc.). The author-supplied inline `max-width: 100%` lets the
+   image fill its parent's width, which on a wide pane reads as
+   "blow out the question card." Cap figures to ~480px so a small
+   diagram doesn't dominate the screen. Authors who want a
+   different size can override via an explicit width attribute,
+   which the sanitizer preserves. */
+.stem img,
+.stimulus img,
+.stimulusColumn img,
+.optionContent img {
+  display: block;
+  max-width: min(480px, 100%);
+  height: auto;
+  margin: 12px 0;
+}
+.optionContent img { margin: 6px 0; }
+
 /* ---------- Option list ---------- */
 
 .optionsFieldset {

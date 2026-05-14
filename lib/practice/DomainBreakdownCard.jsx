@@ -84,13 +84,20 @@ export function DomainBreakdownCard({ title, tone, domains }) {
   );
 }
 
-// SAT domain code → 'RW' | 'MATH'. Math codes are H/P/Q/S; RW
-// codes are INI/CAS/EOI/SEC. Anything else maps to MATH so it
-// gets rendered alongside the unknown bucket rather than
-// vanishing.
-const MATH_DOMAIN_CODES = new Set(['H', 'P', 'Q', 'S']);
+// Domain code → 'RW' | 'MATH' bucket. SAT math codes are H/P/Q/S
+// and RW codes are INI/CAS/EOI/SEC. ACT carries the section string
+// in the same slot via the loader fork (lib/practice/load-act-question.ts)
+// — 'math' / 'science' route to MATH, 'english' / 'reading' route
+// to RW so the existing 2-column SkillBreakdownCard layout keeps
+// working unchanged. Unknown codes fall through to MATH (safer
+// default than RW, since most unknowns historically come from
+// math-side legacy taxonomy).
+const MATH_DOMAIN_CODES = new Set(['H', 'P', 'Q', 'S', 'math', 'science']);
+const RW_DOMAIN_CODES = new Set(['CAS', 'EOI', 'INI', 'SEC', 'english', 'reading']);
 
 export function subjectFromDomainCode(code) {
   if (!code) return null;
-  return MATH_DOMAIN_CODES.has(code) ? 'MATH' : 'RW';
+  if (MATH_DOMAIN_CODES.has(code)) return 'MATH';
+  if (RW_DOMAIN_CODES.has(code)) return 'RW';
+  return 'MATH';
 }

@@ -22,16 +22,21 @@ import { Card } from '@/lib/ui/Card';
 import { IconTile } from '@/lib/ui/IconTile';
 import { QuestionBankIcon } from '@/lib/ui/icons';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
-import s from './StartInteractive.module.css';
+import s from './StartInteractiveAct.module.css';
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 50;
 const DEFAULT_SIZE = 10;
 
+// ACT difficulty is a 1–5 scale, not SAT's 1–3. The chips reuse
+// the SAT difficulty palette (easy / medium / hard) but spread
+// across all five levels: 1 = easiest, 5 = hardest.
 const DIFFICULTY_OPTIONS = [
-  { value: 1, label: 'Easy',   chipClass: 'chipDiffEasy' },
-  { value: 2, label: 'Medium', chipClass: 'chipDiffMed' },
-  { value: 3, label: 'Hard',   chipClass: 'chipDiffHard' },
+  { value: 1, label: '1 · Easiest', chipClass: 'chipDiffEasy' },
+  { value: 2, label: '2',           chipClass: 'chipDiffEasy' },
+  { value: 3, label: '3',           chipClass: 'chipDiffMed'  },
+  { value: 4, label: '4',           chipClass: 'chipDiffHard' },
+  { value: 5, label: '5 · Hardest', chipClass: 'chipDiffHard' },
 ];
 
 const ORDER_OPTIONS = [

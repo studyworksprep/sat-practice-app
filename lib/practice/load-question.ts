@@ -47,7 +47,10 @@ import {
 } from '@/lib/practice/load-act-question';
 import type { UserRole } from '@/lib/types';
 
-const DESMOS_DOMAINS = new Set(['H', 'P', 'Q', 'S']);
+// Mirrors CALCULATOR_DOMAINS in PracticeInteractive / ReviewInteractive.
+// Drives whether the loader fires loadDesmosSavedState — SAT math
+// codes + ACT 'math'.
+const DESMOS_DOMAINS = new Set(['H', 'P', 'Q', 'S', 'math']);
 
 export type SessionMode = 'practice' | 'training' | 'review';
 export type MapItemStatus = 'unanswered' | 'correct' | 'incorrect' | 'removed';
@@ -161,6 +164,16 @@ export interface QuestionPayload {
   /** Whether the current position is marked-for-review on the
    *  session row. Drives the runner's toggle-button highlight. */
   marked: boolean;
+  /** ACT practice-test session — null for everything else. When set,
+   *  the runner renders a SectionTimer pegged to deadlineIso and
+   *  auto-submits the set on expiry; on Submit Set the action returns
+   *  an act_practice_test_attempts id and the runner routes to the
+   *  ACT results page. See docs/architecture-plan.md §3.4. */
+  practiceTest: {
+    deadlineIso: string | null;
+    sectionLabel: string | null;
+    sourceTest: string | null;
+  } | null;
 }
 
 export type LoadQuestionResult =
@@ -517,6 +530,22 @@ export async function loadQuestion(
       }
     : null;
 
+  // Extract the practice-test payload off the session row's
+  // filter_criteria. ACT practice tests carry kind='practice_test'
+  // + source_test + sectionsOnly + deadlineAt; the runner reads
+  // these to render a SectionTimer and route Submit Set to the ACT
+  // results page (PR 7).
+  const fcAny = session.filter_criteria as Record<string, unknown> | null;
+  const fcKind = typeof fcAny?.kind === 'string' ? fcAny.kind : null;
+  const isPracticeTest = isAct && fcKind === 'practice_test';
+  const practiceTest = isPracticeTest
+    ? {
+        deadlineIso: typeof fcAny?.deadlineAt === 'string' ? fcAny.deadlineAt : null,
+        sectionLabel: typeof fcAny?.sectionsOnly === 'string' ? fcAny.sectionsOnly : null,
+        sourceTest: typeof fcAny?.source_test === 'string' ? fcAny.source_test : null,
+      }
+    : null;
+
   return {
     kind: 'ok',
     payload: {
@@ -532,6 +561,7 @@ export async function loadQuestion(
       questionNotes,
       errorNote,
       studentNote,
+      practiceTest,
       marked: markedSet.has(position),
     },
   };

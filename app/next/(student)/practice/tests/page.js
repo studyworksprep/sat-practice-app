@@ -1,7 +1,7 @@
 // Student → practice-tests hub.
 //
 // Landing this page shows, at a glance:
-//   - Header + page intro
+//   - Header + page intro + SAT/ACT tabs
 //   - At-a-glance stats strip (tests taken, latest composite,
 //     best composite, trend since previous)
 //   - Resume callout when a test is mid-flight
@@ -10,22 +10,40 @@
 //   - Performance trend: recent composite scores as a mini chart
 //   - Full history table at the bottom
 //
-// All data is loaded server-side in one shot.
+// Test-type slice. SAT-first tabs per docs/architecture-plan.md §3.4:
+// ?test=act flips the page to the ACT hub. ACT practice tests are
+// virtual constructs over act_questions sliced by source_test — no
+// 7-table parallel family; the launcher writes a practice_sessions
+// row with test_type='act' + filter_criteria.kind='practice_test'.
 
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { TestLauncher } from '@/lib/practice/TestLauncher';
+import { ActTestsHub } from '@/lib/practice/ActTestsHub';
 import s from './PracticeTestsPage.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PracticeTestsPage() {
+export default async function PracticeTestsPage({ searchParams }) {
   const { user, profile, supabase } = await requireUser();
 
   if (profile.role === 'admin') redirect('/admin');
   if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
+
+  // ?test=sat|act slice — SAT-first. Anything malformed lands on SAT.
+  const sp = (await searchParams) ?? {};
+  const testParam = typeof sp.test === 'string' ? sp.test.toLowerCase() : '';
+  const testType = testParam === 'act' ? 'act' : 'sat';
+
+  if (testType === 'act') {
+    return <ActPracticeTestsPage user={user} supabase={supabase} />;
+  }
+  return <SatPracticeTestsPage user={user} supabase={supabase} />;
+}
+
+async function SatPracticeTestsPage({ user, supabase }) {
 
   const [
     { data: completedRows },
@@ -91,6 +109,8 @@ export default async function PracticeTestsPage() {
           progress and history are below the launcher.
         </p>
       </header>
+
+      <TestTypeTabs current="sat" />
 
       <StatsStrip stats={stats} />
 
@@ -459,4 +479,112 @@ function formatDate(iso) {
     month: 'short',
     day: 'numeric',
   });
+}
+
+// ──────────────────────────────────────────────────────────────
+// Tabs above both hubs. Server-rendered links per §3.4 — switching
+// tabs is just navigation, no client state. SAT first.
+// ──────────────────────────────────────────────────────────────
+
+function TestTypeTabs({ current }) {
+  return (
+    <nav className={s.tabs} aria-label="Test type">
+      <Link
+        href="/practice/tests"
+        className={`${s.tab} ${current === 'sat' ? s.tabActive : ''}`}
+        aria-current={current === 'sat' ? 'page' : undefined}
+      >
+        SAT
+      </Link>
+      <Link
+        href="/practice/tests?test=act"
+        className={`${s.tab} ${current === 'act' ? s.tabActive : ''}`}
+        aria-current={current === 'act' ? 'page' : undefined}
+      >
+        ACT
+      </Link>
+    </nav>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// ACT hub. Loads the distinct ACT forms (one card per source_test),
+// the student's past ACT practice-test attempts, and any in-progress
+// ACT practice-test session. Hands data to ActTestsHub.
+// ──────────────────────────────────────────────────────────────
+
+async function ActPracticeTestsPage({ user, supabase }) {
+  // Pull every non-broken ACT question. Buckets by source_test ×
+  // section so the hub can render "Math · 45 questions" per card,
+  // even on a form that ships multiple sections. The volume is small
+  // (~231 today); a single paginated read covers it.
+  const [
+    { data: questionRows },
+    { data: attemptRows },
+    { data: inProgress },
+  ] = await Promise.all([
+    supabase
+      .from('act_questions')
+      .select('source_test, section, source_ordinal')
+      .eq('is_broken', false)
+      .not('source_test', 'is', null),
+    supabase
+      .from('act_practice_test_attempts')
+      .select('id, source_test, status, started_at, finished_at, english_scaled, math_scaled, reading_scaled, science_scaled, composite_score')
+      .eq('user_id', user.id)
+      .eq('status', 'completed')
+      .order('finished_at', { ascending: false }),
+    supabase
+      .from('practice_sessions')
+      .select('id, current_position, question_ids, last_activity_at, filter_criteria')
+      .eq('user_id', user.id)
+      .eq('test_type', 'act')
+      .eq('status', 'in_progress')
+      .filter('filter_criteria->>kind', 'eq', 'practice_test')
+      .gt('expires_at', new Date().toISOString())
+      .order('last_activity_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  // Bucket per (source_test, section).
+  const formAcc = new Map();
+  for (const row of questionRows ?? []) {
+    let f = formAcc.get(row.source_test);
+    if (!f) {
+      f = { source_test: row.source_test, sectionCounts: new Map(), total: 0 };
+      formAcc.set(row.source_test, f);
+    }
+    f.total += 1;
+    f.sectionCounts.set(row.section, (f.sectionCounts.get(row.section) ?? 0) + 1);
+  }
+
+  const forms = Array.from(formAcc.values())
+    .map((f) => ({
+      sourceTest: f.source_test,
+      total: f.total,
+      sections: Array.from(f.sectionCounts.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([section, count]) => ({ section, count })),
+    }))
+    .sort((a, b) => a.sourceTest.localeCompare(b.sourceTest));
+
+  const resumeInfo = inProgress
+    ? {
+        sessionId: inProgress.id,
+        position: inProgress.current_position,
+        total: Array.isArray(inProgress.question_ids) ? inProgress.question_ids.length : 0,
+        sourceTest: inProgress.filter_criteria?.source_test ?? null,
+        deadlineAt: inProgress.filter_criteria?.deadlineAt ?? null,
+      }
+    : null;
+
+  return (
+    <ActTestsHub
+      forms={forms}
+      attempts={attemptRows ?? []}
+      resumeInfo={resumeInfo}
+      tabs={<TestTypeTabs current="act" />}
+    />
+  );
 }

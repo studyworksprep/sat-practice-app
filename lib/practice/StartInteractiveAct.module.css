@@ -1,0 +1,379 @@
+/* =============================================================
+   StartInteractiveAct — ACT practice-launcher styles. Sibling of
+   StartInteractive.module.css. Same general feel (rounded card,
+   chip rows, section grid) but rebuilt for the ACT shape:
+   section panels instead of math/RW columns, no score-band row,
+   five-step difficulty scale, no question-search bar.
+
+   Long-term, the filter-form primitives (chips, section rows,
+   controls row) should be extracted into a test-agnostic module
+   so SAT and ACT consume one set of classes. For now both files
+   stay self-contained.
+============================================================= */
+
+.main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---------- Resume banner ---------- */
+
+.resumeBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-app-accent-soft);
+}
+
+.resumeText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+  color: var(--fg1);
+}
+
+.resumeMeta {
+  font-size: 12px;
+  color: var(--fg2);
+}
+
+.resumeBtn {
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.resumeBtn:hover { opacity: 0.92; }
+
+/* ---------- Card frame ---------- */
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cardHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cardTitle {
+  font-family: var(--font-serif, inherit);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg1);
+}
+
+.cardSub {
+  font-size: 13px;
+  color: var(--fg2);
+  max-width: 60ch;
+  margin-top: 2px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---------- Section grid ----------
+   Each ACT section is a stacked row: header (clickable to select
+   the whole section), then a small toggle for the category list,
+   then the categories themselves. Two columns at wider widths;
+   single column on phone-width. */
+
+.domainsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 720px) {
+  .domainsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.domainBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+}
+
+.domainRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg1);
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background var(--dur-fast) var(--ease-std);
+}
+
+.domainRow:hover {
+  background: var(--color-slate-50);
+}
+
+.domainRowOn {
+  color: var(--color-app-accent);
+}
+
+.domainRowOn .domainCount {
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+}
+
+.domainName {
+  flex: 1;
+  min-width: 0;
+}
+
+.domainCount {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: var(--color-slate-100);
+  color: var(--fg2);
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.skillsToggle {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  padding: 4px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg3);
+  cursor: pointer;
+}
+
+.skillsToggle:hover {
+  color: var(--fg1);
+}
+
+.skillList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.skillRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--fg2);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.skillRow:hover {
+  background: var(--color-slate-50);
+  color: var(--fg1);
+}
+
+.skillRowOn {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+  font-weight: 600;
+}
+
+.skillCount {
+  font-size: 11px;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+}
+
+.skillRowOn .skillCount {
+  color: var(--color-app-accent);
+}
+
+/* ---------- Chip row ---------- */
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
+}
+
+.chip:hover {
+  color: var(--fg1);
+  background: var(--color-slate-50);
+}
+
+.chipOn {
+  border-color: var(--color-app-accent);
+  background: var(--color-app-accent-soft);
+  color: var(--color-app-accent);
+}
+
+/* Difficulty tones — palette only, the chip class toggles via
+   chipOn for selected state. */
+.chipDiffEasy.chipOn {
+  border-color: var(--color-green-fg, #047857);
+  background: var(--color-green-soft, #d1fae5);
+  color: var(--color-green-fg, #047857);
+}
+
+.chipDiffMed.chipOn {
+  border-color: var(--color-amber-fg, #b45309);
+  background: var(--color-amber-soft, #fef3c7);
+  color: var(--color-amber-fg, #b45309);
+}
+
+.chipDiffHard.chipOn {
+  border-color: var(--color-danger-fg, #b91c1c);
+  background: var(--color-danger-soft, #fee2e2);
+  color: var(--color-danger-fg, #b91c1c);
+}
+
+/* ---------- Controls row ---------- */
+
+.controlsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.controlLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+
+.sizeInput {
+  width: 80px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.orderSelect {
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--fg1);
+  background: var(--bg-white);
+}
+
+.matchLine {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--fg2);
+}
+
+.matchErr {
+  color: var(--color-danger-fg, #b91c1c);
+}
+
+.startBtn {
+  padding: 9px 18px;
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.startBtn:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.startBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---------- Errors ---------- */
+
+.formError {
+  padding: 10px 12px;
+  border: 1px solid var(--color-danger-fg, #b91c1c);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-soft, #fee2e2);
+  color: var(--color-danger-fg, #b91c1c);
+  font-size: 13px;
+}

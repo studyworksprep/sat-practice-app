@@ -1,0 +1,175 @@
+/* =============================================================
+   ACT practice-test results page. Section breakdown + composite
+   tile + link out to the unified question-by-question review.
+============================================================= */
+
+.container {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+
+.h1 {
+  font-family: var(--font-serif, inherit);
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--fg1);
+}
+
+.sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--fg2);
+}
+
+.h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--fg1);
+}
+
+/* ---------- Composite hero ---------- */
+
+.compositeCard {
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.compositeLabel {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+
+.compositeValue {
+  font-family: var(--font-serif, inherit);
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-app-accent);
+}
+
+.compositeValueMissing {
+  font-family: var(--font-serif, inherit);
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--fg3);
+}
+
+.compositeSub {
+  font-size: 13px;
+  color: var(--fg2);
+}
+
+/* ---------- Section tiles ---------- */
+
+.card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.sectionTile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+}
+
+.sectionTileLabel {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+
+.sectionTileScaled {
+  font-family: var(--font-serif, inherit);
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--fg1);
+}
+
+.sectionTileRaw {
+  font-size: 13px;
+  color: var(--fg2);
+  font-variant-numeric: tabular-nums;
+}
+
+.scaledPending {
+  font-size: 11px;
+  color: var(--fg3);
+  font-style: italic;
+}
+
+.scaledNote {
+  font-size: 12px;
+  color: var(--fg3);
+  font-style: italic;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+}
+
+/* ---------- Review link ---------- */
+
+.reviewBody {
+  margin: 0;
+  font-size: 14px;
+  color: var(--fg2);
+}
+
+.reviewLink {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--color-app-accent);
+}
