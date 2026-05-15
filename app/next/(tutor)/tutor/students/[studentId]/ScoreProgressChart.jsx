@@ -11,6 +11,7 @@
 // site, not inside the chart, so the chart stays full-width
 // inside narrow side-column slots.
 
+import { parseLocalOrIso } from '@/lib/formatters';
 import s from './StudentDetail.module.css';
 
 const VIEWBOX_W = 720;
@@ -31,7 +32,7 @@ export function ScoreProgressChart({ scores, targetScore }) {
   // Sort oldest → newest so the polyline reads left-to-right.
   const points = scores
     .filter((s) => s.composite_score != null && s.test_date)
-    .map((s) => ({ ms: Date.parse(s.test_date), score: Number(s.composite_score), type: s.test_type ?? 'SAT' }))
+    .map((s) => ({ ms: parseLocalOrIso(s.test_date).getTime(), score: Number(s.composite_score), type: s.test_type ?? 'SAT' }))
     .filter((p) => Number.isFinite(p.ms) && Number.isFinite(p.score))
     .sort((a, b) => a.ms - b.ms);
 
