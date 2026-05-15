@@ -349,6 +349,42 @@
   font-style: italic;
 }
 
+.fileRowRight {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fileUploadWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fileUploadBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--card);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  line-height: 1.4;
+}
+.fileUploadBtn:hover:not(:disabled) { background: var(--color-slate-50, #f8fafc); }
+.fileUploadBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.fileUploadError {
+  font-size: 11px;
+  color: var(--color-danger-fg, #b91c1c);
+  max-width: 200px;
+  word-break: break-word;
+}
+
 /* Parse-section tiles */
 
 .parseGrid {

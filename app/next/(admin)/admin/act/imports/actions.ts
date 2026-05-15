@@ -24,21 +24,12 @@ import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import type { ActionResult } from '@/lib/types';
-
-const BUCKET = 'act-imports';
-
-// Allowed inputs per file slot. The PDF slots stay strict so a
-// stray image upload fails loudly; math_html_url accepts both
-// .html and .htm.
-const ALLOWED: Record<string, RegExp> = {
-  test_pdf:     /\.pdf$/i,
-  math_html:    /\.html?$/i,
-  science_html: /\.html?$/i,
-  answer_key:   /\.pdf$/i,
-  scale:        /\.pdf$/i,
-};
-
-const SIZE_LIMIT = 50 * 1024 * 1024; // 50 MB per file — well above a typical ACT PDF.
+import {
+  ALLOWED_EXT,
+  SLOT_TO_COLUMN,
+  SIZE_LIMIT,
+  BUCKET,
+} from '@/lib/act-import/upload-slots';
 
 /**
  * Create a new import job. Uploads any files present in the
@@ -66,10 +57,10 @@ export async function createImportJob(
   // Validate every present file before doing any uploads so the
   // worst case is a single rejected form, not a half-uploaded job.
   const uploads: Array<{ slot: string; file: File }> = [];
-  for (const slot of Object.keys(ALLOWED)) {
+  for (const slot of Object.keys(ALLOWED_EXT)) {
     const f = formData.get(slot);
     if (!(f instanceof File) || f.size === 0) continue; // missing slot
-    if (!ALLOWED[slot].test(f.name)) {
+    if (!ALLOWED_EXT[slot].test(f.name)) {
       return actionFail(`${slot}: unexpected file extension (${f.name})`);
     }
     if (f.size > SIZE_LIMIT) {
@@ -102,13 +93,6 @@ export async function createImportJob(
   // we use the bucket-relative path (not a public URL — the
   // bucket is private and reads go through getSignedUrl).
   const urlUpdates: Record<string, string> = {};
-  const SLOT_TO_COLUMN: Record<string, string> = {
-    test_pdf:     'test_pdf_url',
-    math_html:    'math_html_url',
-    science_html: 'science_html_url',
-    answer_key:   'answer_key_url',
-    scale:        'scale_url',
-  };
 
   for (const { slot, file } of uploads) {
     const safeName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');

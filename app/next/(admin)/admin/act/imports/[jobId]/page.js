@@ -16,13 +16,29 @@ import { requireRole } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import { ParseButton } from './ParseButton';
+import { FileUploadButton } from './FileUploadButton';
 import {
   parseEnglish,
   parseMath,
   parseReading,
   parseScience,
   parseScaleAction,
+  addJobFile,
 } from './actions';
+
+// Slot config the file-row upload affordance needs: which
+// MIME / extension the picker accepts per slot. Kept inline
+// here (rather than imported from lib/act-import/upload-slots)
+// so the page module stays Server-Component-only — the client
+// island that calls addJobFile receives the accept string as a
+// plain prop.
+const SLOT_ACCEPT = {
+  test_pdf:     'application/pdf,.pdf',
+  math_html:    'text/html,.html,.htm',
+  science_html: 'text/html,.html,.htm',
+  answer_key:   'application/pdf,.pdf',
+  scale:        'application/pdf,.pdf',
+};
 import s from '../Imports.module.css';
 
 const SECTION_ACTIONS = {
@@ -134,11 +150,11 @@ export default async function ImportJobStatusPage({ params }) {
           <div className={s.h2}>Uploaded files</div>
         </div>
         <ul className={s.fileList}>
-          <FileRow label="Whole-test PDF"          path={job.test_pdf_url}      href={urls.test_pdf_url} />
-          <FileRow label="Math (Mathpix HTML)"     path={job.math_html_url}     href={urls.math_html_url} />
-          <FileRow label="Science (Mathpix HTML)"  path={job.science_html_url}  href={urls.science_html_url} />
-          <FileRow label="Answer key"              path={job.answer_key_url}    href={urls.answer_key_url} />
-          <FileRow label="Score conversion"        path={job.scale_url}         href={urls.scale_url} />
+          <FileRow jobId={jobId} slot="test_pdf"     label="Whole-test PDF"          path={job.test_pdf_url}      href={urls.test_pdf_url} />
+          <FileRow jobId={jobId} slot="math_html"    label="Math (Mathpix HTML)"     path={job.math_html_url}     href={urls.math_html_url} />
+          <FileRow jobId={jobId} slot="science_html" label="Science (Mathpix HTML)"  path={job.science_html_url}  href={urls.science_html_url} />
+          <FileRow jobId={jobId} slot="answer_key"   label="Answer key"              path={job.answer_key_url}    href={urls.answer_key_url} />
+          <FileRow jobId={jobId} slot="scale"        label="Score conversion"        path={job.scale_url}         href={urls.scale_url} />
         </ul>
       </section>
 
@@ -222,17 +238,26 @@ export default async function ImportJobStatusPage({ params }) {
   );
 }
 
-function FileRow({ label, path, href }) {
+function FileRow({ jobId, slot, label, path, href }) {
   return (
     <li className={s.fileRow}>
       <span className={s.fileLabel}>{label}</span>
-      {path ? (
-        <a href={href} target="_blank" rel="noreferrer" className={s.fileLink}>
-          {path.split('/').slice(1).join('/')} ↗
-        </a>
-      ) : (
-        <span className={s.fileMissing}>not uploaded</span>
-      )}
+      <span className={s.fileRowRight}>
+        {path ? (
+          <a href={href} target="_blank" rel="noreferrer" className={s.fileLink}>
+            {path.split('/').slice(1).join('/')} ↗
+          </a>
+        ) : (
+          <span className={s.fileMissing}>not uploaded</span>
+        )}
+        <FileUploadButton
+          jobId={jobId}
+          slot={slot}
+          accept={SLOT_ACCEPT[slot]}
+          hasExisting={Boolean(path)}
+          action={addJobFile}
+        />
+      </span>
     </li>
   );
 }

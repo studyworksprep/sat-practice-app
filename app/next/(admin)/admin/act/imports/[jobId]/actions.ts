@@ -31,6 +31,12 @@ import type { ActionResult } from '@/lib/types';
 import { parseSection } from '@/lib/act-import/parse-questions';
 import { parseScale } from '@/lib/act-import/parse-scale';
 import type { ActSection } from '@/lib/practice/act-taxonomy';
+import {
+  ALLOWED_EXT,
+  SLOT_TO_COLUMN,
+  SIZE_LIMIT,
+  BUCKET as IMPORTS_BUCKET,
+} from '@/lib/act-import/upload-slots';
 
 interface LogEntry {
   ts: string;
@@ -272,4 +278,82 @@ export async function parseScaleAction(
     revalidatePath(`/admin/act/imports/${jobId}`);
     return actionFail(message);
   }
+}
+
+// ─── addJobFile ─────────────────────────────────────────────────
+//
+// Upload a single source file onto an existing job. Used when
+// the admin started a job before some upload was ready
+// (typical case: Mathpix-export the science HTML after the test
+// PDF + answer key are already in place) and wants to add it
+// without recreating the job. Replaces the prior file in that
+// slot if one was already uploaded — same upsert semantics as
+// createImportJob.
+//
+// The slot config (ALLOWED_EXT, SIZE_LIMIT, SLOT_TO_COLUMN,
+// BUCKET) is shared with createImportJob via
+// lib/act-import/upload-slots.ts so both paths agree on
+// validation and storage layout.
+
+export async function addJobFile(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  let ctx;
+  try {
+    ctx = await requireRole(['admin']);
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { supabase } = ctx as { supabase: any };
+
+  const jobId = String(formData.get('job_id') ?? '').trim();
+  const slot = String(formData.get('slot') ?? '').trim();
+  if (!jobId) return actionFail('job_id required');
+  if (!slot || !(slot in ALLOWED_EXT)) {
+    return actionFail(`Unknown slot: ${slot}`);
+  }
+
+  const f = formData.get('file');
+  if (!(f instanceof File) || f.size === 0) {
+    return actionFail('No file selected.');
+  }
+  if (!ALLOWED_EXT[slot].test(f.name)) {
+    return actionFail(`Unexpected file extension for ${slot}: ${f.name}`);
+  }
+  if (f.size > SIZE_LIMIT) {
+    return actionFail(
+      `File too large: ${Math.round(f.size / 1024 / 1024)} MB > 50 MB limit`,
+    );
+  }
+
+  // Sanity-check the job exists before doing any storage work.
+  const { data: job } = await supabase
+    .from('act_import_jobs')
+    .select('id')
+    .eq('id', jobId)
+    .maybeSingle();
+  if (!job) return actionFail('Job not found');
+
+  const safeName = f.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
+  const path = `${jobId}/${slot}-${safeName}`;
+  const { error: uploadErr } = await supabase.storage
+    .from(IMPORTS_BUCKET)
+    .upload(path, f, { upsert: true, contentType: f.type || undefined });
+  if (uploadErr) {
+    return actionFail(`Upload failed: ${uploadErr.message}`);
+  }
+
+  const { error: updateErr } = await supabase
+    .from('act_import_jobs')
+    .update({ [SLOT_TO_COLUMN[slot]]: path })
+    .eq('id', jobId);
+  if (updateErr) {
+    return actionFail(`Could not save file path: ${updateErr.message}`);
+  }
+
+  revalidatePath(`/admin/act/imports/${jobId}`);
+  return actionOk({ path });
 }
