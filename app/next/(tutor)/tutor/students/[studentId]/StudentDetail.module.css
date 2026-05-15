@@ -315,6 +315,7 @@
   padding: 0;
   margin: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
 }
 
@@ -328,6 +329,7 @@
   border: 1px solid var(--border);
   text-decoration: none;
   color: inherit;
+  min-width: 0;
   transition: background var(--dur-fast) var(--ease-std);
 }
 .assignmentRow:hover { background: var(--color-slate-50); }
@@ -389,6 +391,7 @@
   font-size: 11px;
   color: var(--color-diff-easy-fg);
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .reportPill {
@@ -402,6 +405,7 @@
   color: var(--tile-success-fg);
   border: 1px solid color-mix(in oklab, var(--tile-success-fg) 28%, transparent);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .assignmentRow:hover .reportPill {
   background: var(--tile-success-fg);
