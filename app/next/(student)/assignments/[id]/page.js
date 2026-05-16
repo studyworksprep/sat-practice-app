@@ -73,6 +73,7 @@ export default async function AssignmentDetailPage({ params }) {
         due_date,
         archived_at,
         deleted_at,
+        created_at,
         question_ids,
         filter_criteria,
         lesson_id,
@@ -134,6 +135,13 @@ export default async function AssignmentDetailPage({ params }) {
   // may not exist in every environment, and attempts is the
   // authoritative source. Client-side reduction picks the most
   // recent attempt per question for the ✓/✗ display.
+  //
+  // Floor: any attempt at-or-after the assignment's created_at counts
+  // as in-assignment progress, regardless of context (assignment
+  // runner, self-directed session, practice test). Earlier attempts
+  // on the same question are excluded so a freshly-created assignment
+  // starts with every question Unanswered. Same rule on the tutor
+  // surfaces.
   let questionRows = null;
   if (assignment.assignment_type === 'questions') {
     const questionIds = Array.isArray(assignment.question_ids) ? assignment.question_ids : [];
@@ -144,6 +152,7 @@ export default async function AssignmentDetailPage({ params }) {
         supabase,
         questionIds,
       );
+      const assignmentFloor = assignment.created_at ?? '1970-01-01T00:00:00Z';
       const [qRes, aRes] = await Promise.all([
         supabase
           .from('questions_v2')
@@ -154,6 +163,7 @@ export default async function AssignmentDetailPage({ params }) {
           .select('question_id, is_correct, created_at')
           .eq('user_id', user.id)
           .in('question_id', attemptQuestionIds)
+          .gte('created_at', assignmentFloor)
           .order('created_at', { ascending: false }),
       ]);
       const byId = new Map((qRes.data ?? []).map((q) => [q.id, q]));

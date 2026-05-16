@@ -75,6 +75,14 @@ export default async function TutorAssignmentDetailPage({ params }) {
     questionIds,
   );
 
+  // Floor: every attempt at-or-after the assignment's created_at on
+  // one of its questions counts toward this student's progress on
+  // this assignment, regardless of context (assignment runner,
+  // self-directed practice, practice test). A freshly-created
+  // assignment therefore starts every question Unanswered for every
+  // student. Same rule on the student + training pages.
+  const assignmentFloor = assignment.created_at ?? '1970-01-01T00:00:00Z';
+
   // Two parallel reads: per-student attempts (latest wins for the
   // correctness flag) and the question metadata so the Questions
   // section below can show display_code + skill + per-question
@@ -87,6 +95,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
           .select('user_id, question_id, is_correct, created_at')
           .in('user_id', studentIds)
           .in('question_id', attemptQuestionIds)
+          .gte('created_at', assignmentFloor)
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] }),
     questionIds.length > 0
@@ -113,25 +122,15 @@ export default async function TutorAssignmentDetailPage({ params }) {
   const questionMeta = new Map(
     (questionMetaRes.data ?? []).map((q) => [q.id, q]),
   );
-  // Two session maps. They serve different needs:
-  //
-  //   reportSessionByUser — drives the per-row "Report" link.
-  //     Prefers a completed session if any exist, otherwise falls
-  //     back to the most recent in-progress one so the tutor can
-  //     at least click through to see in-flight work.
-  //   latestSessionByUser — drives the done / correct counts.
-  //     Always the most recent session (any status), so progress
-  //     reflects what the student is actively doing right now,
-  //     not a stale completed run from before they restarted.
-  //
-  // sessionRowsRes is ordered by created_at desc, so the first
-  // occurrence per user is the latest.
+  // Drives the per-row "Report" link. Prefers a completed session
+  // if any exist, otherwise falls back to the most recent in-progress
+  // one so the tutor can at least click through to see in-flight
+  // work. sessionRowsRes is ordered by created_at desc, so the first
+  // occurrence per user is the latest. Floor for done/correct counts
+  // is the assignment itself (assignmentFloor) — not session-derived
+  // — so this map only affects the link, not the numbers.
   const reportSessionByUser = new Map();
-  const latestSessionByUser = new Map();
   for (const r of sessionRowsRes.data ?? []) {
-    if (!latestSessionByUser.has(r.user_id)) {
-      latestSessionByUser.set(r.user_id, r);
-    }
     const existing = reportSessionByUser.get(r.user_id);
     if (!existing) {
       reportSessionByUser.set(r.user_id, r);
@@ -140,57 +139,40 @@ export default async function TutorAssignmentDetailPage({ params }) {
     }
   }
 
-  // Per-(user, qid) chronological attempt list — needed so we can
-  // pick the earliest attempt that landed inside the student's
-  // own assignment session, not just the latest cross-session one.
-  // Without this scoping a student who'd answered one of these
-  // questions in some unrelated practice session would be counted
-  // as "done" before they ever opened this assignment, and the
-  // cohort accuracy stat at the top would lump those in with the
-  // genuine in-assignment attempts. attempts came back desc; flip
-  // to asc so .find returns the earliest match.
-  const attemptsAsc = attemptRows.slice().reverse();
-  const attemptsByPairAsc = new Map();
-  for (const r of attemptsAsc) {
+  // The attempts query is already filtered to created_at >=
+  // assignmentFloor, so every row here is in-window. Pick the
+  // earliest attempt per (student, question) — matches the
+  // first-attempt-wins gate the runner enforces inside a session,
+  // applied across the whole assignment window. attempts came back
+  // desc; flipping to asc lets the first write into the per-pair
+  // map win.
+  const firstAttemptByPair = new Map();
+  for (let i = attemptRows.length - 1; i >= 0; i -= 1) {
+    const r = attemptRows[i];
     const qKey = v2ByLegacy.get(r.question_id) ?? r.question_id;
     const key = `${r.user_id}::${qKey}`;
-    if (!attemptsByPairAsc.has(key)) attemptsByPairAsc.set(key, []);
-    attemptsByPairAsc.get(key).push(r);
+    if (!firstAttemptByPair.has(key)) firstAttemptByPair.set(key, r);
   }
 
   const statusByStudent = new Map();
   const statusByQuestion = new Map();  // qid (v2) → { done, correct }
   let cohortDone = 0;
   let cohortCorrect = 0;
-  // For each student, count attempts on the assignment's questions.
-  // We scope to attempts at-or-after a per-student floor:
-  //   - if a linked session exists, that session's created_at;
-  //   - otherwise, the assignment's own created_at.
-  // Earlier unrelated attempts on the same question (a student who
-  // happened to have practiced one of these questions before this
-  // assignment was created) are explicitly excluded so the
-  // assignment surface treats every question as brand-new for the
-  // student — matching the runner and the per-student report page.
-  const assignmentFloor = assignment.created_at ?? '1970-01-01T00:00:00Z';
   for (const studentId of studentIds) {
-    const session = latestSessionByUser.get(studentId);
-    const floor = session?.created_at ?? assignmentFloor;
     for (const qid of questionIds) {
       const qKey = v2ByLegacy.get(qid) ?? qid;
-      const arr = attemptsByPairAsc.get(`${studentId}::${qKey}`) ?? [];
-      if (arr.length === 0) continue;
-      const inSession = arr.find((att) => att.created_at >= floor);
-      if (!inSession) continue;
+      const att = firstAttemptByPair.get(`${studentId}::${qKey}`);
+      if (!att) continue;
       const t = statusByStudent.get(studentId) ?? { done: 0, correct: 0 };
       t.done += 1;
-      if (inSession.is_correct) t.correct += 1;
+      if (att.is_correct) t.correct += 1;
       statusByStudent.set(studentId, t);
       const q = statusByQuestion.get(qKey) ?? { done: 0, correct: 0 };
       q.done += 1;
-      if (inSession.is_correct) q.correct += 1;
+      if (att.is_correct) q.correct += 1;
       statusByQuestion.set(qKey, q);
       cohortDone += 1;
-      if (inSession.is_correct) cohortCorrect += 1;
+      if (att.is_correct) cohortCorrect += 1;
     }
   }
 
