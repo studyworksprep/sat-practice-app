@@ -20,6 +20,7 @@ import { formatDate, formatRelativeShort } from '@/lib/formatters';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
+import { buildArchiveSummary } from '@/lib/practice/superscore';
 import {
   ClipboardCheckIcon,
   InboxIcon,
@@ -72,6 +73,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     { count: v1AttemptCount },
     { data: assignmentJunctions },
     { data: testAttemptRows },
+    { data: completedTestRowsForScore },
     { data: sessionRows },
     { data: registrations },
     { data: officialScores },
@@ -115,6 +117,17 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId)
       .order('started_at', { ascending: false })
       .limit(RECENT_TESTS_LIMIT),
+    // Every completed practice test, no limit. Feeds the
+    // starting / final score math (buildArchiveSummary) — the
+    // recent-tests query above caps at 10 for the display list,
+    // which would under-count the "highest practice composite
+    // overall" fallback and miss the practice test closest to
+    // start_date for older students.
+    supabase
+      .from('practice_test_attempts_v2')
+      .select('started_at, finished_at, composite_score, rw_scaled, math_scaled')
+      .eq('user_id', studentId)
+      .eq('status', 'completed'),
     // SAT-only practice sessions for this student.
     supabase
       .from('practice_sessions')
@@ -186,6 +199,41 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     accuracy: total > 0 ? Math.round((correct / total) * 100) : null,
     lastActivityAt: row.last_activity_at,
   };
+
+  // Starting / final / impact / reach — same math the Roster's
+  // past-students view uses, computed live so a tutor sees what
+  // the summary would be without having to archive the student.
+  // Helper is tolerant of empty inputs; rw_scaled / math_scaled
+  // are passed through under the rw_score / math_score keys it
+  // expects, matching the Roster page's mapping. Cast at the
+  // boundary because superscore.js's destructure defaults read
+  // as never[] from a strict TS caller.
+  type CompletedTestRow = {
+    started_at: string | null;
+    finished_at: string | null;
+    composite_score: number | null;
+    rw_scaled: number | null;
+    math_scaled: number | null;
+  };
+  const practiceTestsForScore = ((completedTestRowsForScore ?? []) as CompletedTestRow[]).map((r) => ({
+    finished_at: r.finished_at,
+    started_at: r.started_at,
+    composite_score: r.composite_score,
+    rw_score: r.rw_scaled,
+    math_score: r.math_scaled,
+  }));
+  const scoreSummary: {
+    startingScore: number | null;
+    finalScore: number | null;
+    impact: number | null;
+    targetReachPct: number | null;
+  } = buildArchiveSummary({
+    officialScores: officialScores ?? [],
+    practiceTests: practiceTestsForScore,
+    startDate: student.effectiveStartDate,
+    targetScore: student.targetScore,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
 
   // Test attempts — keep status-aware, surface scores on completed
   // ones, link by status.
@@ -306,6 +354,36 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
            when start_date hasn't been set explicitly. */}
       <section className={s.statsRow}>
         <StatTile label="Target" value={student.targetScore ?? '—'} />
+        <StatTile
+          label="Starting score"
+          value={scoreSummary.startingScore ?? '—'}
+        />
+        <StatTile
+          label="Final score"
+          value={scoreSummary.finalScore ?? '—'}
+        />
+        <StatTile
+          label="Impact"
+          value={
+            scoreSummary.impact == null
+              ? '—'
+              : scoreSummary.impact > 0
+                ? `+${scoreSummary.impact}`
+                : String(scoreSummary.impact)
+          }
+          tone={impactTone(scoreSummary.impact)}
+        />
+        {student.targetScore != null && (
+          <StatTile
+            label="Target reach"
+            value={
+              scoreSummary.targetReachPct == null
+                ? '—'
+                : `${scoreSummary.targetReachPct}%`
+            }
+            tone={reachTone(scoreSummary.targetReachPct)}
+          />
+        )}
         <StatTile
           label="Start date"
           value={student.effectiveStartDate ? (formatDate(student.effectiveStartDate) ?? '—') : '—'}
@@ -756,6 +834,20 @@ function accuracyTone(pct: number | null): 'good' | 'ok' | 'bad' | undefined {
   if (pct == null) return undefined;
   if (pct >= 80) return 'good';
   if (pct >= 50) return 'ok';
+  return 'bad';
+}
+
+function impactTone(delta: number | null): 'good' | 'bad' | undefined {
+  if (delta == null || delta === 0) return undefined;
+  return delta > 0 ? 'good' : 'bad';
+}
+
+// Roster's archived view uses a four-step scale (hit / close / mid /
+// low). Three-step here to fit the StatTile palette (good / ok / bad).
+function reachTone(pct: number | null): 'good' | 'ok' | 'bad' | undefined {
+  if (pct == null) return undefined;
+  if (pct >= 100) return 'good';
+  if (pct >= 90) return 'ok';
   return 'bad';
 }
 
