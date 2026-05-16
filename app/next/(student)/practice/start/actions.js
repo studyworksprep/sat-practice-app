@@ -418,20 +418,71 @@ function parseActFilters(formData) {
 }
 
 async function loadActCandidateIds(supabase, filters) {
+  // Section + category compose as a UNION, not an intersection.
+  // The launcher's design (see StartInteractiveAct.jsx) treats
+  // them as independent — picking section=English alone means
+  // "all English"; picking category=PHM alone means "PHM only";
+  // picking both means "all English OR all PHM." The earlier
+  // AND-everything pattern returned 0 when the user selected a
+  // section + a category from a different section, which is a
+  // legitimate launcher state the UI allows.
+  //
+  // We resolve sections and categories as separate fetches and
+  // union the IDs. Difficulty is still an AND filter inside each
+  // branch — selecting "easy" should narrow the union, not
+  // expand it.
   try {
-    const rows = await fetchAll((from, to) => {
-      let query = supabase
-        .from('act_questions')
-        .select('id')
-        .eq('is_broken', false);
+    const { sections, categories, difficulties } = filters;
+    const applyDifficulty = (q) =>
+      difficulties.length ? q.in('difficulty', difficulties) : q;
 
-      if (filters.sections.length)     query = query.in('section',     filters.sections);
-      if (filters.categories.length)   query = query.in('category',    filters.categories);
-      if (filters.difficulties.length) query = query.in('difficulty',  filters.difficulties);
+    const idSet = new Set();
+    let anyBranchRan = false;
 
-      return query.range(from, to);
-    });
-    return rows.map((r) => r.id);
+    if (sections.length) {
+      anyBranchRan = true;
+      const rows = await fetchAll((from, to) => {
+        let q = supabase
+          .from('act_questions')
+          .select('id')
+          .eq('is_broken', false)
+          .in('section', sections);
+        q = applyDifficulty(q);
+        return q.range(from, to);
+      });
+      for (const r of rows) idSet.add(r.id);
+    }
+
+    if (categories.length) {
+      anyBranchRan = true;
+      const rows = await fetchAll((from, to) => {
+        let q = supabase
+          .from('act_questions')
+          .select('id')
+          .eq('is_broken', false)
+          .in('category', categories);
+        q = applyDifficulty(q);
+        return q.range(from, to);
+      });
+      for (const r of rows) idSet.add(r.id);
+    }
+
+    if (!anyBranchRan) {
+      // No section or category narrowing — fetch the global pool
+      // (with difficulty filter, if any). Matches the legacy
+      // behavior before this change for the empty-filter case.
+      const rows = await fetchAll((from, to) => {
+        let q = supabase
+          .from('act_questions')
+          .select('id')
+          .eq('is_broken', false);
+        q = applyDifficulty(q);
+        return q.range(from, to);
+      });
+      for (const r of rows) idSet.add(r.id);
+    }
+
+    return Array.from(idSet);
   } catch {
     return null;
   }
