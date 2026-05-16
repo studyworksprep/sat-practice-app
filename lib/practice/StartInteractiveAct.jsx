@@ -71,8 +71,13 @@ export function StartInteractiveAct({
   // a section without drilling into categories means "any category in
   // this section." Picking categories without picking the section is
   // implicitly section-scoped because the category names are unique
-  // per section in current ACT data; we still send the section name
+  // per section in current ACT data; we still send the section code
   // when present for an explicit filter.
+  //
+  // selectedSections holds ACT section *codes* ('english' | 'math'
+  // | 'reading' | 'science'), not display names — those are the
+  // strings act_questions.section stores and that the server-side
+  // resolver compares against.
   const [selectedSections,      setSelectedSections]      = useState(() => new Set());
   const [selectedCategories,    setSelectedCategories]    = useState(() => new Set());
   const [expandedSections,      setExpandedSections]      = useState(() => new Set());
@@ -152,11 +157,17 @@ export function StartInteractiveAct({
   // reveals its categories for fine-tuning. When a section has any
   // category selected, the section row reads as "selected" even
   // without the bulk toggle on.
-  function toggleSection(sectionName) {
+  // sectionCode is the lowercase ACT section identifier
+  // ('english' | 'math' | 'reading' | 'science') that matches
+  // act_questions.section — NOT the human-readable display name.
+  // The filter resolver compares this verbatim against the DB
+  // column, so the codes have to flow through identity-preserved
+  // from the launcher to the Server Action.
+  function toggleSection(sectionCode) {
     setSelectedSections((prev) => {
       const next = new Set(prev);
-      if (next.has(sectionName)) next.delete(sectionName);
-      else next.add(sectionName);
+      if (next.has(sectionCode)) next.delete(sectionCode);
+      else next.add(sectionCode);
       return next;
     });
     // Bulk-toggle: clear any per-category narrowing inside this
@@ -164,7 +175,7 @@ export function StartInteractiveAct({
     // self-consistent.
     setSelectedCategories((prev) => {
       const next = new Set(prev);
-      const sec = sections.find((x) => x.name === sectionName);
+      const sec = sections.find((x) => x.section === sectionCode);
       if (sec) for (const c of sec.categories) next.delete(c.name);
       return next;
     });
@@ -237,15 +248,15 @@ export function StartInteractiveAct({
           <div className={s.domainsGrid}>
             {sections.map((sec) => {
               const isSelected =
-                selectedSections.has(sec.name)
+                selectedSections.has(sec.section)
                 || sec.categories.some((c) => selectedCategories.has(c.name));
-              const isExpanded = expandedSections.has(sec.name);
+              const isExpanded = expandedSections.has(sec.section);
               return (
-                <div key={sec.name} className={s.domainBlock}>
+                <div key={sec.section} className={s.domainBlock}>
                   <button
                     type="button"
                     className={`${s.domainRow} ${isSelected ? s.domainRowOn : ''}`}
-                    onClick={() => toggleSection(sec.name)}
+                    onClick={() => toggleSection(sec.section)}
                   >
                     <span className={s.domainName}>{sec.name}</span>
                     <span className={s.domainCount}>{sec.count}</span>
@@ -254,7 +265,7 @@ export function StartInteractiveAct({
                     <button
                       type="button"
                       className={s.skillsToggle}
-                      onClick={() => toggleExpandSection(sec.name)}
+                      onClick={() => toggleExpandSection(sec.section)}
                       aria-expanded={isExpanded}
                     >
                       {isExpanded ? 'Hide categories ▴' : `Categories (${sec.categories.length}) ▾`}
