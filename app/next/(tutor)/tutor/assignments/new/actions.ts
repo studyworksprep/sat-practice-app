@@ -311,9 +311,20 @@ function allocateByWeight(weights: number[], size: number): number[] {
   const leftover = size - floored.reduce((a, b) => a + b, 0);
 
   if (leftover > 0) {
+    // Largest-remainder distribution. When fractional parts tie
+    // (uniform weights with size < N is the common case — every
+    // selection raw = size/N, every frac equal), break ties with
+    // a per-call random tag rather than ascending index. Without
+    // this, the first-added selections systematically win the
+    // entire leftover allocation, which is why a tutor who hit
+    // "Add all in domain" for Reading and then Math at size=10
+    // could end up with 0 Math questions: 10 RW indices precede
+    // every Math index, so the 10 leftover units all go to RW.
+    // The tiebreaker is independent per build so two assignments
+    // with the same shape don't always pull the same skills.
     const order = raw
-      .map((r, i) => ({ i, frac: r - Math.floor(r) }))
-      .sort((a, b) => b.frac - a.frac);
+      .map((r, i) => ({ i, frac: r - Math.floor(r), tieBreak: Math.random() }))
+      .sort((a, b) => b.frac - a.frac || a.tieBreak - b.tieBreak);
     for (let k = 0; k < leftover; k += 1) {
       floored[order[k % order.length].i] += 1;
     }
