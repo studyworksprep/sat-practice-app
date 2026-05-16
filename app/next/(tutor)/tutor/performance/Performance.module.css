@@ -313,3 +313,161 @@
   font-weight: 700;
   flex-shrink: 0;
 }
+
+/* ---------- Cohort student summary table ---------- */
+
+.cohortDivider {
+  height: 1px;
+  background: var(--border);
+  margin: var(--s4) 0 var(--s3) 0;
+}
+
+.cohortTableHead {
+  margin-bottom: var(--s2);
+}
+
+.h3 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.cohortToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: var(--s2);
+}
+
+.cohortToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--fg1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.cohortSelect {
+  padding: 6px 10px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--fg1);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.cohortCount {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--fg2);
+  font-variant-numeric: tabular-nums;
+}
+
+.cohortTableWrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: auto;
+}
+
+.cohortTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cohortTh, .cohortThNum {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg2);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.cohortThNum { text-align: right; }
+
+.cohortRow td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.cohortRow:last-child td { border-bottom: none; }
+.cohortRow:hover { background: var(--color-slate-50); }
+
+.cohortRowInactive { opacity: 0.65; }
+
+.cohortTd { color: var(--fg1); }
+.cohortTdNum {
+  text-align: right;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.cohortNameLink {
+  color: var(--color-app-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.cohortNameLink:hover { text-decoration: underline; }
+
+.cohortArchivedTag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg2);
+  background: var(--color-slate-100, #f1f5f9);
+  border-radius: 999px;
+}
+
+.cohortMuted { color: var(--fg3, #999); }
+
+.cohortImpactPositive { color: var(--color-success-fg, #047857); font-weight: 700; }
+.cohortImpactNegative { color: var(--color-danger-fg, #b91c1c);  font-weight: 700; }
+
+.cohortReachHit   { color: var(--color-success-fg, #047857); font-weight: 700; }
+.cohortReachClose { color: var(--color-app-accent, #0284c7); font-weight: 700; }
+.cohortReachMid   { color: var(--color-amber-fg, #b45309);   font-weight: 700; }
+.cohortReachLow   { color: var(--color-danger-fg, #b91c1c);  font-weight: 700; }
+
+.cohortPager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s2);
+  margin-top: var(--s2);
+  font-size: 13px;
+}
+
+.cohortPagerBtn {
+  padding: 6px 12px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--fg1);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cohortPagerBtn:hover:not(:disabled) {
+  background: var(--color-slate-50);
+}
+.cohortPagerBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cohortPagerInfo {
+  color: var(--fg2);
+  font-variant-numeric: tabular-nums;
+}

@@ -25,10 +25,9 @@ import {
   ReadingWritingIcon,
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
-import { Sparkline } from '@/lib/ui/Sparkline';
-import { Delta } from '@/lib/ui/Delta';
 import { loadRosterPerformance, sortSkills } from './loader';
 import { PerformanceSortToolbar } from './PerformanceSortToolbar';
+import { CohortStudentsTable } from './CohortStudentsTable';
 import { WeeklyTrendChart } from '@/lib/practice/WeeklyTrendChart';
 import s from './Performance.module.css';
 
@@ -99,55 +98,19 @@ export default async function TutorPerformancePage({ searchParams }) {
           }
         />
         <StatTile
-          label="Cohort attempts"
-          value={data.totalAttempts.toLocaleString()}
-          sub={
-            data.totalAttempts === 0
-              ? 'Nothing recorded'
-              : `Across ${data.skills.length} skill${data.skills.length === 1 ? '' : 's'}`
-          }
-          spark={
-            data.trend?.length > 0 ? (
-              <Sparkline
-                data={data.trend}
-                field="attempts"
-                tone="cyan"
-                ariaLabel="Cohort weekly attempt volume"
-              />
-            ) : null
-          }
-          delta={
-            data.trend?.length >= 2 ? (() => {
-              const last = data.trend[data.trend.length - 1];
-              const prev = data.trend[data.trend.length - 2];
-              return (
-                <Delta
-                  current={last?.attempts ?? 0}
-                  prior={prev?.attempts ?? 0}
-                  format="count"
-                  suffix="vs last week"
-                />
-              );
-            })() : null
-          }
-        />
-        <StatTile
           label="Lookback window"
           value={`${data.windowDays}d`}
           sub="Practice attempts only"
         />
-        <StatTile
-          label="Skills evaluated"
-          value={data.skills.length}
-          sub={
-            data.skills.length === 0
-              ? 'Need 5+ cohort attempts'
-              : 'Min 5 cohort attempts each'
-          }
-        />
       </div>
 
-      {/* Cohort progress — weekly trend over the lookback window */}
+      {/* Cohort progress — weekly trend over the lookback window
+          plus the per-student starting / final / impact summary
+          (same numbers the per-student detail page and the Roster's
+          past-students view show). The student table includes
+          archived students behind a toggle so a tutor can scan the
+          whole arc — current active progress plus prior outcomes —
+          in one place. */}
       <section className={s.card}>
         <div className={s.cardHead}>
           <div>
@@ -170,6 +133,17 @@ export default async function TutorPerformancePage({ searchParams }) {
         ) : (
           <WeeklyTrendChart trend={data.trend} />
         )}
+
+        <div className={s.cohortDivider} />
+        <div className={s.cohortTableHead}>
+          <h3 className={s.h3}>Per-student summary</h3>
+          <p className={s.cardHint}>
+            Starting / final score and impact for each student on your
+            roster, computed live from official scores and practice
+            tests. Same math the Roster's past-students view uses.
+          </p>
+        </div>
+        <CohortStudentsTable students={data.students} />
       </section>
 
       {/* Skill heatmap */}
