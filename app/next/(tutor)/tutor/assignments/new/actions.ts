@@ -311,9 +311,20 @@ function allocateByWeight(weights: number[], size: number): number[] {
   const leftover = size - floored.reduce((a, b) => a + b, 0);
 
   if (leftover > 0) {
+    // Largest-remainder distribution. When fractional parts tie
+    // (the common case is uniform weights with size < N: every
+    // selection raw = size/N, every frac equal), break ties with
+    // a per-call random tag rather than ascending array index.
+    // Without this, a tutor who hit "Add all in domain" for
+    // Reading first and then Math at size=10 with all weights=1
+    // ended up with 0 Math questions: every leftover unit went
+    // to the first leftover-many indices in input order, which
+    // were entirely RW. The random tiebreaker spreads the units
+    // across the tied set in expectation. Two assignments built
+    // with the same shape get independent draws.
     const order = raw
-      .map((r, i) => ({ i, frac: r - Math.floor(r) }))
-      .sort((a, b) => b.frac - a.frac);
+      .map((r, i) => ({ i, frac: r - Math.floor(r), tieBreak: Math.random() }))
+      .sort((a, b) => b.frac - a.frac || a.tieBreak - b.tieBreak);
     for (let k = 0; k < leftover; k += 1) {
       floored[order[k % order.length].i] += 1;
     }
