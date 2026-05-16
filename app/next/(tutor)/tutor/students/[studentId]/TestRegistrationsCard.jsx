@@ -5,7 +5,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatDate } from '@/lib/formatters';
+import { formatDate, parseLocalOrIso } from '@/lib/formatters';
 import { addTestRegistration, removeTestRegistration } from './actions';
 import s from './StudentDetail.module.css';
 
@@ -13,8 +13,8 @@ export function TestRegistrationsCard({ studentId, registrations }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const now = Date.now();
-  const upcoming = registrations.filter((r) => Date.parse(r.test_date) > now);
-  const past = registrations.filter((r) => Date.parse(r.test_date) <= now);
+  const upcoming = registrations.filter((r) => parseLocalOrIso(r.test_date).getTime() > now);
+  const past = registrations.filter((r) => parseLocalOrIso(r.test_date).getTime() <= now);
 
   return (
     <section className={s.card}>

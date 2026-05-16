@@ -7,6 +7,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { addOfficialScore, removeOfficialScore } from './actions';
+import { parseLocalOrIso } from '@/lib/formatters';
 import s from './StudentDetail.module.css';
 
 const RW_DOMAINS = [
@@ -280,6 +281,6 @@ function DomainSelect({ k, label, value, onChange }) {
 
 function formatScoreDate(iso) {
   if (!iso) return '';
-  const d = new Date(iso);
+  const d = parseLocalOrIso(iso);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
