@@ -33,7 +33,7 @@ export default async function TutorTrainingAssignmentDetailPage({ params }) {
       .from('assignments_v2')
       .select(`
         id, teacher_id, assignment_type, title, description,
-        due_date, archived_at, deleted_at, question_ids,
+        due_date, archived_at, deleted_at, created_at, question_ids,
         filter_criteria, lesson_id, practice_test_id,
         lesson:lessons (id, title, description),
         practice_test:practice_tests_v2 (id, code, name)
@@ -66,6 +66,10 @@ export default async function TutorTrainingAssignmentDetailPage({ params }) {
 
   // For questions-type assignments, load per-question status from
   // attempts (latest attempt wins for correctness).
+  //
+  // Floor: any attempt by this trainee on the assignment's questions
+  // at-or-after the assignment's created_at counts, regardless of
+  // context. Mirrors the student detail page and the tutor preview.
   let questionRows = null;
   if (assignment.assignment_type === 'questions') {
     const questionIds = Array.isArray(assignment.question_ids) ? assignment.question_ids : [];
@@ -76,6 +80,7 @@ export default async function TutorTrainingAssignmentDetailPage({ params }) {
         supabase,
         questionIds,
       );
+      const assignmentFloor = assignment.created_at ?? '1970-01-01T00:00:00Z';
       const [qRes, aRes] = await Promise.all([
         supabase
           .from('questions_v2')
@@ -86,6 +91,7 @@ export default async function TutorTrainingAssignmentDetailPage({ params }) {
           .select('question_id, is_correct, created_at')
           .eq('user_id', user.id)
           .in('question_id', attemptQuestionIds)
+          .gte('created_at', assignmentFloor)
           .order('created_at', { ascending: false }),
       ]);
       const byId = new Map((qRes.data ?? []).map((q) => [q.id, q]));
