@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
-import { formatDate } from '@/lib/formatters';
+import { formatDate, isPastDueDate } from '@/lib/formatters';
 import s from './TrainingAssignments.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -359,7 +359,7 @@ async function loadAssignmentsData(supabase, userId) {
   let totalCorrect = 0;
 
   for (const r of rows) {
-    r.isOverdue = Boolean(r.due_date && !r.student_completed_at && Date.parse(r.due_date) < now);
+    r.isOverdue = Boolean(r.due_date && !r.student_completed_at && isPastDueDate(r.due_date, now));
 
     if (r.assignment_type === 'questions') {
       const qs = Array.isArray(r.question_ids) ? r.question_ids : [];

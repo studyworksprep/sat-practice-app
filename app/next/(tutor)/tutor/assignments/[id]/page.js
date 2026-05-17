@@ -14,7 +14,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
-import { formatDate } from '@/lib/formatters';
+import { formatDate, isPastDueDate } from '@/lib/formatters';
 import { addAssignmentMembers, submitAssignmentOnBehalf } from './actions';
 import { AddMembersPicker } from './AddMembersPicker';
 import { SubmitOnBehalfButton } from './SubmitOnBehalfButton';
@@ -278,7 +278,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
   // eslint-disable-next-line react-hooks/purity
   const nowMs = Date.now();
   const isOverdue =
-    assignment.due_date && Date.parse(assignment.due_date) < nowMs;
+    assignment.due_date && isPastDueDate(assignment.due_date, nowMs);
 
   return (
     <main className={s.container}>

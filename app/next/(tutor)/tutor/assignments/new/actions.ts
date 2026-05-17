@@ -89,8 +89,13 @@ export async function createAssignment(
 
   const title = String(formData.get('title') || '').trim() || null;
   const description = String(formData.get('description') || '').trim() || null;
+  // assignments_v2.due_date is a calendar `date`. The form field is
+  // an <input type="date">, which already submits bare YYYY-MM-DD —
+  // pass it through unchanged. (Previously we round-tripped through
+  // new Date(...).toISOString(), which silently anchored every date
+  // to midnight UTC and produced an off-by-one in every renderer.)
   const dueDateRaw = String(formData.get('due_date') || '').trim();
-  const dueDate = dueDateRaw ? new Date(dueDateRaw).toISOString() : null;
+  const dueDate = /^\d{4}-\d{2}-\d{2}$/.test(dueDateRaw) ? dueDateRaw : null;
 
   const studentIds = formData
     .getAll('student_id')
