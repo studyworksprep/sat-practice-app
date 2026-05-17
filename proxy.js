@@ -278,10 +278,16 @@ export async function proxy(request) {
   requestHeaders.set('x-ui-tree', uiTree);
 
   let response;
-  if (uiTree === 'next' && !treeAgnostic) {
+  if (uiTree === 'next' && !treeAgnostic && !isApiRoute && !isNextAsset) {
     // Rewrite /foo -> /next/foo. Browser URL unchanged; Next.js serves
     // the file under app/next/foo. This is the Phase 1 on-ramp; the
     // new tree is an empty stub until Phase 2 fills it in.
+    //
+    // API routes are explicitly excluded: rewriting /api/signup to
+    // /next/api/signup falls through to the app/next/[...slug] catch-
+    // all page, which renders an HTML 200 — the caller's res.json()
+    // then throws and the form shows "Something went wrong" while the
+    // signup never executed. Same logic for already-/next/* paths.
     const url = request.nextUrl.clone();
     url.pathname = `/next${pathname === '/' ? '' : pathname}`;
     response = NextResponse.rewrite(url, {
