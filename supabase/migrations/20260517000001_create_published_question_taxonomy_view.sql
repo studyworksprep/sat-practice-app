@@ -25,10 +25,12 @@ select
   skill_name,
   count(*)::int                                                          as question_count,
   array_agg(distinct score_band) filter (where score_band is not null)   as score_bands,
-  array_agg(distinct difficulty) filter (where difficulty is not null)   as difficulties
+  array_agg(distinct difficulty) filter (where difficulty is not null)   as difficulties,
+  max(domain_code)                                                       as domain_code
 from public.questions_v2
 where is_published = true
   and is_broken    = false
+  and deleted_at  is null
   and domain_name is not null
   and skill_name  is not null
 group by domain_name, skill_name;

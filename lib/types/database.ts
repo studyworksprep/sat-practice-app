@@ -3627,6 +3627,7 @@ export type Database = {
       published_question_taxonomy: {
         Row: {
           difficulties: number[] | null
+          domain_code: string | null
           domain_name: string | null
           question_count: number | null
           score_bands: number[] | null
