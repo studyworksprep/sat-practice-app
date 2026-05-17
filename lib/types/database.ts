@@ -2443,20 +2443,6 @@ export type Database = {
             referencedRelation: "student_practice_stats"
             referencedColumns: ["user_id"]
           },
-          {
-            foreignKeyName: "question_notes_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_notes_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
-          },
         ]
       }
       question_status: {
@@ -3635,6 +3621,16 @@ export type Database = {
           last_name?: string | null
           role?: string | null
           tutor_name?: string | null
+        }
+        Relationships: []
+      }
+      published_question_taxonomy: {
+        Row: {
+          difficulties: number[] | null
+          domain_name: string | null
+          question_count: number | null
+          score_bands: number[] | null
+          skill_name: string | null
         }
         Relationships: []
       }
