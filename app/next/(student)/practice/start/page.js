@@ -28,6 +28,9 @@ import { StartInteractiveAct } from '@/lib/practice/StartInteractiveAct';
 import { domainSection } from '@/lib/ui/question-layout';
 import { ACT_SECTIONS, sectionLabel } from '@/lib/practice/act-taxonomy';
 import { fetchAll } from '@/lib/supabase/fetchAll';
+// fetchAll is still used by the ACT launcher below; the SAT side
+// reads the pre-aggregated public.published_question_taxonomy view
+// instead.
 import s from './PracticeStart.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -58,45 +61,32 @@ export default async function PracticeStartPage({ searchParams }) {
 // ──────────────────────────────────────────────────────────────
 
 async function SatLauncher({ user, supabase }) {
-  // Domain / skill lookup. v2 has taxonomy inline on questions_v2
-  // so no separate taxonomy table join. We paginate through every
-  // published row so the per-domain totals are never silently
-  // truncated by PostgREST's max-rows cap (see
-  // docs/architecture-plan.md Finding #1).
-  const questionRows = await fetchAll((from, to) =>
-    supabase
-      .from('questions_v2')
-      .select('domain_name, domain_code, skill_name, score_band')
-      .eq('is_published', true)
-      .eq('is_broken', false)
-      .is('deleted_at', null)
-      .not('domain_name', 'is', null)
-      .range(from, to),
-  );
+  // Domain / skill lookup. v2 has taxonomy inline on questions_v2,
+  // and public.published_question_taxonomy rolls that up to one row
+  // per skill so the launcher reads ~30 rows in one round-trip
+  // instead of paging through every published question (see
+  // docs/architecture-plan.md Finding #1 and the New Assignment
+  // loader for the same pattern). question_count is per-skill;
+  // domain totals are derived client-side as their sum.
+  const { data: taxonomyRows } = await supabase
+    .from('published_question_taxonomy')
+    .select('domain_name, skill_name, question_count, score_bands, domain_code');
 
   const domainMap = new Map();
   const scoreBandSet = new Set();
-  for (const row of questionRows) {
-    if (row.domain_name) {
-      let entry = domainMap.get(row.domain_name);
-      if (!entry) {
-        entry = {
-          code: row.domain_code ?? null,
-          skills: new Map(),
-          total: 0,
-        };
-        domainMap.set(row.domain_name, entry);
-      }
-      entry.total += 1;
-      if (row.domain_code && !entry.code) entry.code = row.domain_code;
-      if (row.skill_name) {
-        entry.skills.set(
-          row.skill_name,
-          (entry.skills.get(row.skill_name) ?? 0) + 1,
-        );
-      }
+  for (const row of taxonomyRows ?? []) {
+    let entry = domainMap.get(row.domain_name);
+    if (!entry) {
+      entry = {
+        code: row.domain_code ?? null,
+        skills: new Map(),
+        total: 0,
+      };
+      domainMap.set(row.domain_name, entry);
     }
-    if (row.score_band != null) scoreBandSet.add(row.score_band);
+    entry.total += row.question_count ?? 0;
+    entry.skills.set(row.skill_name, row.question_count ?? 0);
+    for (const sb of row.score_bands ?? []) scoreBandSet.add(sb);
   }
   const domains = Array.from(domainMap.entries())
     .map(([name, e]) => ({
