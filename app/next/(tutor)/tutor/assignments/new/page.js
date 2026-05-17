@@ -9,7 +9,6 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { fetchAll } from '@/lib/supabase/fetchAll';
 import { createAssignment } from './actions';
 import { NewAssignmentInteractive } from './NewAssignmentInteractive';
 import styles from './NewAssignmentInteractive.module.css';
@@ -31,14 +30,17 @@ export default async function NewAssignmentPage() {
   // and the form's target toggle is hidden for them.
   const isManagerScope = profile.role === 'manager' || profile.role === 'admin';
 
-  // Taxonomy + difficulty/score-band distribution for the filter
-  // form. We paginate so per-skill counts are never truncated by
-  // PostgREST's max-rows cap — the `.limit(5000)` we used before
-  // was the "db-max-rows silent-truncation" pattern the
-  // architecture plan explicitly flags (Finding #1).
+  // Taxonomy for the question-filter form comes from the
+  // published_question_taxonomy view — a DB-side GROUP BY over
+  // questions_v2 that returns ~30 rows (one per skill) with the
+  // score bands and difficulty list pre-aggregated. The old
+  // fetchAll(questions_v2) shipped ~3,400 rows over 4 round-trips
+  // and aggregated client-side; the view brings that down to one
+  // round-trip and a ~3KB payload, which was the dominant cost in
+  // the New Assignment page's initial load.
   const [
     { data: studentsRaw },
-    questionRows,
+    { data: taxonomyRows },
     { data: practiceTests },
     { data: lessons },
     { data: teacherJunctions },
@@ -47,15 +49,9 @@ export default async function NewAssignmentPage() {
       .from('student_practice_stats')
       .select('user_id, first_name, last_name, email')
       .order('last_name', { ascending: true, nullsFirst: false }),
-    fetchAll((from, to) =>
-      supabase
-        .from('questions_v2')
-        .select('domain_name, skill_name, difficulty, score_band')
-        .eq('is_published', true)
-        .eq('is_broken', false)
-        .not('domain_name', 'is', null)
-        .range(from, to),
-    ),
+    supabase
+      .from('published_question_taxonomy')
+      .select('domain_name, skill_name, question_count, score_bands, difficulties'),
     supabase
       .from('practice_tests_v2')
       .select('id, code, name')
@@ -104,41 +100,27 @@ export default async function NewAssignmentPage() {
       email: s.email,
     }));
 
-  // Taxonomy aggregation. For each (domain, skill) pair we track
-  // which score bands actually have published questions, so the
-  // form can only show bands the tutor could realistically select.
-  // Also a global difficulty list (difficulty is applied
-  // assignment-wide, not per-skill).
-  const skillMap = {};        // domain → skill → Set(scoreBands)
-  const skillCount = {};      // domain → skill → questions count
+  // Reshape the pre-aggregated taxonomy rows (one per skill) into
+  // the nested domain → skills[] structure the picker expects, and
+  // collect the global difficulty list across skills. Difficulty
+  // is applied assignment-wide, not per-skill, so the union across
+  // skills is what the picker shows.
+  const byDomain = new Map();
   const difficultiesSet = new Set();
-  for (const row of questionRows) {
-    if (!row.domain_name || !row.skill_name) continue;
-    if (!skillMap[row.domain_name]) {
-      skillMap[row.domain_name] = {};
-      skillCount[row.domain_name] = {};
-    }
-    if (!skillMap[row.domain_name][row.skill_name]) {
-      skillMap[row.domain_name][row.skill_name] = new Set();
-      skillCount[row.domain_name][row.skill_name] = 0;
-    }
-    if (row.score_band != null) {
-      skillMap[row.domain_name][row.skill_name].add(row.score_band);
-    }
-    skillCount[row.domain_name][row.skill_name] += 1;
-    if (row.difficulty != null) difficultiesSet.add(row.difficulty);
+  for (const r of taxonomyRows ?? []) {
+    if (!byDomain.has(r.domain_name)) byDomain.set(r.domain_name, []);
+    byDomain.get(r.domain_name).push({
+      name: r.skill_name,
+      scoreBands: [...(r.score_bands ?? [])].sort((a, b) => a - b),
+      count: r.question_count ?? 0,
+    });
+    for (const d of r.difficulties ?? []) difficultiesSet.add(d);
   }
-  const domains = Object.keys(skillMap)
-    .sort()
-    .map((domain) => ({
-      name: domain,
-      skills: Object.keys(skillMap[domain])
-        .sort()
-        .map((skill) => ({
-          name: skill,
-          scoreBands: Array.from(skillMap[domain][skill]).sort((a, b) => a - b),
-          count: skillCount[domain][skill],
-        })),
+  const domains = Array.from(byDomain.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, skills]) => ({
+      name,
+      skills: skills.sort((a, b) => a.name.localeCompare(b.name)),
     }));
   const difficulties = Array.from(difficultiesSet).sort((a, b) => a - b);
 

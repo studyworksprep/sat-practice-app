@@ -14,8 +14,15 @@
 // caller's roster ids are the only gate on whose data the RPC
 // sees. We pull rosterIds from student_practice_stats (also
 // RLS-scoped) before calling.
+//
+// The cohort student table on the page reads from profiles
+// directly so it can include archived students (the
+// student_practice_stats view excludes them); same RLS-via-
+// can_view scope applies. The Roster page uses the same shape.
 
-export const PERFORMANCE_WINDOW_DAYS = 90;
+import { buildArchiveSummary } from '@/lib/practice/superscore';
+
+export const PERFORMANCE_WINDOW_DAYS = 30;
 
 const MIN_SKILL_ATTEMPTS = 5;
 const MIN_STUDENT_ATTEMPTS_PER_SKILL = 3;
@@ -27,16 +34,30 @@ const NUM_WEEKS = Math.ceil(PERFORMANCE_WINDOW_DAYS / 7);
  * @param {object} supabase  - RLS-scoped Supabase client.
  */
 export async function loadRosterPerformance(supabase) {
-  // 1) Roster from the RLS-scoped view. user_ids only — the
-  //    rest of the row is ignored.
-  const { data: rosterRows } = await supabase
-    .from('student_practice_stats')
-    .select('user_id');
+  // 1) Two roster reads in parallel:
+  //    - student_practice_stats for the skill / trend RPC inputs
+  //      (matches prior behavior — view drops inactive students
+  //      from the heatmap)
+  //    - profiles for the cohort student table (needs is_active +
+  //      start_date + target so the table can include archived
+  //      students behind a toggle and compute archive summaries).
+  const [
+    { data: rosterRows },
+    { data: profileRows },
+  ] = await Promise.all([
+    supabase.from('student_practice_stats').select('user_id'),
+    supabase
+      .from('profiles')
+      .select('id, first_name, last_name, email, target_sat_score, start_date, created_at, is_active')
+      .eq('role', 'student'),
+  ]);
+
   const rosterIds = (rosterRows ?? [])
     .map((r) => r.user_id)
     .filter(Boolean);
+  const profileIds = (profileRows ?? []).map((p) => p.id).filter(Boolean);
 
-  if (rosterIds.length === 0) {
+  if (rosterIds.length === 0 && profileIds.length === 0) {
     return {
       rosterSize: 0,
       studentsWithActivity: 0,
@@ -44,11 +65,15 @@ export async function loadRosterPerformance(supabase) {
       windowDays: PERFORMANCE_WINDOW_DAYS,
       skills: [],
       trend: emptyTrend(),
+      students: [],
     };
   }
 
-  // 2) Two RPCs in parallel — the skill aggregation and the
-  //    weekly trend. Neither depends on the other.
+  // 2) RPCs (skills + weekly trend) and per-student score data
+  //    (officials + completed practice tests) in parallel. The
+  //    score lookups feed buildArchiveSummary for every student
+  //    in the cohort, so a tutor sees the same starting / final
+  //    summary they'd see on the per-student detail page.
   const sinceIso = new Date(
     Date.now() - PERFORMANCE_WINDOW_DAYS * 24 * 60 * 60 * 1000,
   ).toISOString();
@@ -56,22 +81,86 @@ export async function loadRosterPerformance(supabase) {
   const [
     { data: skillRows, error: skillErr },
     { data: trendRows, error: trendErr },
+    { data: officialRows },
+    { data: practiceRows },
   ] = await Promise.all([
-    supabase.rpc('get_roster_skill_performance', {
-      p_roster: rosterIds,
-      p_since: sinceIso,
-      p_min_skill_attempts: MIN_SKILL_ATTEMPTS,
-      p_min_student_attempts: MIN_STUDENT_ATTEMPTS_PER_SKILL,
-      p_struggling_threshold: STRUGGLING_THRESHOLD,
-    }),
-    supabase.rpc('get_roster_weekly_trend', {
-      p_roster: rosterIds,
-      p_num_weeks: NUM_WEEKS,
-    }),
+    rosterIds.length > 0
+      ? supabase.rpc('get_roster_skill_performance', {
+          p_roster: rosterIds,
+          p_since: sinceIso,
+          p_min_skill_attempts: MIN_SKILL_ATTEMPTS,
+          p_min_student_attempts: MIN_STUDENT_ATTEMPTS_PER_SKILL,
+          p_struggling_threshold: STRUGGLING_THRESHOLD,
+        })
+      : Promise.resolve({ data: [], error: null }),
+    rosterIds.length > 0
+      ? supabase.rpc('get_roster_weekly_trend', {
+          p_roster: rosterIds,
+          p_num_weeks: NUM_WEEKS,
+        })
+      : Promise.resolve({ data: [], error: null }),
+    profileIds.length > 0
+      ? supabase
+          .from('sat_official_scores')
+          .select('student_id, test_date, rw_score, math_score, composite_score')
+          .in('student_id', profileIds)
+      : Promise.resolve({ data: [] }),
+    profileIds.length > 0
+      ? supabase
+          .from('practice_test_attempts_v2')
+          .select('user_id, finished_at, started_at, composite_score, rw_scaled, math_scaled')
+          .in('user_id', profileIds)
+          .eq('status', 'completed')
+      : Promise.resolve({ data: [] }),
   ]);
 
   if (skillErr) throw skillErr;
   if (trendErr) throw trendErr;
+
+  // Group score rows per student, then compute archive summary
+  // for every cohort member. effectiveStartDate falls back to
+  // created_at to match the rest of the app (Roster + per-student
+  // detail page use the same fallback).
+  const officialByStudent = new Map();
+  const practiceByStudent = new Map();
+  for (const r of officialRows ?? []) {
+    const arr = officialByStudent.get(r.student_id) ?? [];
+    arr.push(r);
+    officialByStudent.set(r.student_id, arr);
+  }
+  for (const r of practiceRows ?? []) {
+    const arr = practiceByStudent.get(r.user_id) ?? [];
+    arr.push({
+      finished_at: r.finished_at,
+      started_at: r.started_at,
+      composite_score: r.composite_score,
+      rw_score: r.rw_scaled,
+      math_score: r.math_scaled,
+    });
+    practiceByStudent.set(r.user_id, arr);
+  }
+
+  const students = (profileRows ?? []).map((p) => {
+    const effectiveStart = p.start_date ?? p.created_at ?? null;
+    const summary = buildArchiveSummary({
+      officialScores: officialByStudent.get(p.id) ?? [],
+      practiceTests: practiceByStudent.get(p.id) ?? [],
+      startDate: effectiveStart,
+      targetScore: p.target_sat_score,
+    });
+    return {
+      id: p.id,
+      firstName: p.first_name ?? null,
+      lastName: p.last_name ?? null,
+      email: p.email ?? null,
+      isActive: p.is_active !== false, // null → active
+      targetScore: p.target_sat_score ?? null,
+      startingScore: summary.startingScore,
+      finalScore: summary.finalScore,
+      impact: summary.impact,
+      targetReachPct: summary.targetReachPct,
+    };
+  });
 
   const skills = (skillRows ?? []).map((r) => ({
     skill_code: r.skill_code,
@@ -119,6 +208,7 @@ export async function loadRosterPerformance(supabase) {
     windowDays: PERFORMANCE_WINDOW_DAYS,
     skills,
     trend,
+    students,
   };
 }
 

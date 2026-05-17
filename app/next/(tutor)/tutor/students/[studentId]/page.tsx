@@ -20,6 +20,7 @@ import { formatDate, formatRelativeShort } from '@/lib/formatters';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
+import { buildArchiveSummary } from '@/lib/practice/superscore';
 import {
   ClipboardCheckIcon,
   InboxIcon,
@@ -72,6 +73,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     { count: v1AttemptCount },
     { data: assignmentJunctions },
     { data: testAttemptRows },
+    { data: completedTestRowsForScore },
     { data: sessionRows },
     { data: registrations },
     { data: officialScores },
@@ -115,6 +117,17 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId)
       .order('started_at', { ascending: false })
       .limit(RECENT_TESTS_LIMIT),
+    // Every completed practice test, no limit. Feeds the
+    // starting / final score math (buildArchiveSummary) — the
+    // recent-tests query above caps at 10 for the display list,
+    // which would under-count the "highest practice composite
+    // overall" fallback and miss the practice test closest to
+    // start_date for older students.
+    supabase
+      .from('practice_test_attempts_v2')
+      .select('started_at, finished_at, composite_score, rw_scaled, math_scaled')
+      .eq('user_id', studentId)
+      .eq('status', 'completed'),
     // SAT-only practice sessions for this student.
     supabase
       .from('practice_sessions')
@@ -186,6 +199,41 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     accuracy: total > 0 ? Math.round((correct / total) * 100) : null,
     lastActivityAt: row.last_activity_at,
   };
+
+  // Starting / final / impact / reach — same math the Roster's
+  // past-students view uses, computed live so a tutor sees what
+  // the summary would be without having to archive the student.
+  // Helper is tolerant of empty inputs; rw_scaled / math_scaled
+  // are passed through under the rw_score / math_score keys it
+  // expects, matching the Roster page's mapping. Cast at the
+  // boundary because superscore.js's destructure defaults read
+  // as never[] from a strict TS caller.
+  type CompletedTestRow = {
+    started_at: string | null;
+    finished_at: string | null;
+    composite_score: number | null;
+    rw_scaled: number | null;
+    math_scaled: number | null;
+  };
+  const practiceTestsForScore = ((completedTestRowsForScore ?? []) as CompletedTestRow[]).map((r) => ({
+    finished_at: r.finished_at,
+    started_at: r.started_at,
+    composite_score: r.composite_score,
+    rw_score: r.rw_scaled,
+    math_score: r.math_scaled,
+  }));
+  const scoreSummary: {
+    startingScore: number | null;
+    finalScore: number | null;
+    impact: number | null;
+    targetReachPct: number | null;
+  } = buildArchiveSummary({
+    officialScores: officialScores ?? [],
+    practiceTests: practiceTestsForScore,
+    startDate: student.effectiveStartDate,
+    targetScore: student.targetScore,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
 
   // Test attempts — keep status-aware, surface scores on completed
   // ones, link by status.
@@ -299,43 +347,103 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* ---------- Stat tiles ----------
-           Target + Start date sit at the front since both are
-           tutor-editable (single combined modal at the right).
-           Effective start date defaults to the signup timestamp
-           when start_date hasn't been set explicitly. */}
-      <section className={s.statsRow}>
-        <StatTile label="Target" value={student.targetScore ?? '—'} />
-        <StatTile
-          label="Start date"
-          value={student.effectiveStartDate ? (formatDate(student.effectiveStartDate) ?? '—') : '—'}
-          subtitle={student.startDate ? undefined : 'defaults to signup'}
-        />
-        <StatTile
-          label="Accuracy"
-          value={student.accuracy != null ? `${student.accuracy}%` : '—'}
-          subtitle={student.accuracy != null ? `${student.correctAttempts} / ${student.totalAttempts}` : undefined}
-          tone={accuracyTone(student.accuracy)}
-        />
-        <StatTile label="Total attempts" value={student.totalAttempts.toLocaleString()} />
-        <StatTile label="Last 7 days" value={student.weekAttempts} />
-        {daysToTest != null && (
-          <StatTile
-            label={daysToTest >= 0 ? 'Days to test' : 'Test date'}
-            value={daysToTest >= 0 ? daysToTest : 'Past'}
-            subtitle={student.satTestDate ? formatDate(student.satTestDate) ?? undefined : undefined}
-          />
-        )}
-        <StatTile
-          label="Last activity"
-          value={formatRelativeShort(student.lastActivityAt) ?? '—'}
-        />
-        <div className={s.statsRowAction}>
+      {/* ---------- Snapshot card ----------
+           Single profile card grouping every header-row metric so
+           the page doesn't open on a wall of pills. Two columns:
+           activity (start date, attempts, last activity, etc.) on
+           the left, score progression (target / starting / final /
+           impact / reach) on the right. Effective start date
+           defaults to the signup timestamp when start_date hasn't
+           been set explicitly. Edit pill lives in the card header
+           since both editable fields (target + start date) sit in
+           the right column. */}
+      <section className={s.snapshotCard}>
+        <div className={s.snapshotHead}>
+          <h2 className={s.snapshotTitle}>Snapshot</h2>
           <EditTargetStartButton
             studentId={student.id}
             targetScore={student.targetScore ?? null}
             startDate={profileRow?.start_date ?? null}
           />
+        </div>
+        <div className={s.snapshotCols}>
+          <div className={s.snapshotCol}>
+            <div className={s.snapshotColTitle}>Activity</div>
+            <dl className={s.snapshotList}>
+              <ProfileRow
+                label="Start date"
+                value={student.effectiveStartDate
+                  ? (formatDate(student.effectiveStartDate) ?? '—')
+                  : '—'}
+                sub={student.startDate ? undefined : 'defaults to signup'}
+              />
+              {daysToTest != null && (
+                <ProfileRow
+                  label={daysToTest >= 0 ? 'Days to test' : 'Test date'}
+                  value={daysToTest >= 0 ? daysToTest : 'Past'}
+                  sub={student.satTestDate
+                    ? formatDate(student.satTestDate) ?? undefined
+                    : undefined}
+                />
+              )}
+              <ProfileRow
+                label="Last activity"
+                value={formatRelativeShort(student.lastActivityAt) ?? '—'}
+              />
+              <ProfileRow
+                label="Accuracy"
+                value={student.accuracy != null ? `${student.accuracy}%` : '—'}
+                sub={student.accuracy != null
+                  ? `${student.correctAttempts} / ${student.totalAttempts}`
+                  : undefined}
+                tone={accuracyTone(student.accuracy)}
+              />
+              <ProfileRow
+                label="Total attempts"
+                value={student.totalAttempts.toLocaleString()}
+              />
+              <ProfileRow
+                label="Last 7 days"
+                value={student.weekAttempts}
+              />
+            </dl>
+          </div>
+          <div className={s.snapshotCol}>
+            <div className={s.snapshotColTitle}>Scores</div>
+            <dl className={s.snapshotList}>
+              <ProfileRow label="Target" value={student.targetScore ?? '—'} />
+              <ProfileRow
+                label="Starting score"
+                value={scoreSummary.startingScore ?? '—'}
+              />
+              <ProfileRow
+                label="Final score"
+                value={scoreSummary.finalScore ?? '—'}
+              />
+              <ProfileRow
+                label="Impact"
+                value={
+                  scoreSummary.impact == null
+                    ? '—'
+                    : scoreSummary.impact > 0
+                      ? `+${scoreSummary.impact}`
+                      : String(scoreSummary.impact)
+                }
+                tone={impactTone(scoreSummary.impact)}
+              />
+              {student.targetScore != null && (
+                <ProfileRow
+                  label="Target reach"
+                  value={
+                    scoreSummary.targetReachPct == null
+                      ? '—'
+                      : `${scoreSummary.targetReachPct}%`
+                  }
+                  tone={reachTone(scoreSummary.targetReachPct)}
+                />
+              )}
+            </dl>
+          </div>
         </div>
       </section>
 
@@ -677,24 +785,26 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
 
 // ──────────────────────────────────────────────────────────────
 
-interface StatTileProps {
+interface ProfileRowProps {
   label: string;
   value: number | string;
-  subtitle?: string;
+  sub?: string;
   tone?: 'good' | 'ok' | 'bad';
 }
-function StatTile({ label, value, subtitle, tone }: StatTileProps) {
-  const cls = [
-    s.statCard,
-    tone === 'good' ? s.statGood : null,
-    tone === 'ok'   ? s.statOk   : null,
-    tone === 'bad'  ? s.statBad  : null,
+function ProfileRow({ label, value, sub, tone }: ProfileRowProps) {
+  const valueCls = [
+    s.snapshotRowValueMain,
+    tone === 'good' ? s.snapshotRowGood : null,
+    tone === 'ok'   ? s.snapshotRowOk   : null,
+    tone === 'bad'  ? s.snapshotRowBad  : null,
   ].filter(Boolean).join(' ');
   return (
-    <div className={cls}>
-      <div className={s.statValue}>{value}</div>
-      <div className={s.statLabel}>{label}</div>
-      {subtitle && <div className={s.statSub}>{subtitle}</div>}
+    <div className={s.snapshotRow}>
+      <dt className={s.snapshotRowLabel}>{label}</dt>
+      <dd className={s.snapshotRowValue}>
+        <div className={valueCls}>{value}</div>
+        {sub && <div className={s.snapshotRowSub}>{sub}</div>}
+      </dd>
     </div>
   );
 }
@@ -756,6 +866,20 @@ function accuracyTone(pct: number | null): 'good' | 'ok' | 'bad' | undefined {
   if (pct == null) return undefined;
   if (pct >= 80) return 'good';
   if (pct >= 50) return 'ok';
+  return 'bad';
+}
+
+function impactTone(delta: number | null): 'good' | 'bad' | undefined {
+  if (delta == null || delta === 0) return undefined;
+  return delta > 0 ? 'good' : 'bad';
+}
+
+// Roster's archived view uses a four-step scale (hit / close / mid /
+// low). Three-step here to fit the StatTile palette (good / ok / bad).
+function reachTone(pct: number | null): 'good' | 'ok' | 'bad' | undefined {
+  if (pct == null) return undefined;
+  if (pct >= 100) return 'good';
+  if (pct >= 90) return 'ok';
   return 'bad';
 }
 

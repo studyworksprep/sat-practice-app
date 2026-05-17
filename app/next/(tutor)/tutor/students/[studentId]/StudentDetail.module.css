@@ -65,24 +65,106 @@
   font-size: 13px;
 }
 
-/* ---------- Stat tiles ---------- */
+/* ---------- Snapshot card ---------- */
 
-.statsRow {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: var(--s3);
+.snapshotCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s4);
 }
 
-/* Small action row aligned with the stat tiles — currently hosts
-   the Edit target / start date trigger so a tutor can update the
-   two most-touched profile fields right next to where they're
-   displayed. */
-.statsRowAction {
+.snapshotHead {
   display: flex;
-  justify-content: flex-end;
-  margin-top: var(--s2);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2);
+  margin-bottom: var(--s3);
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--border);
 }
 
+.snapshotTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.snapshotCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s4) var(--s5);
+}
+
+@media (max-width: 640px) {
+  .snapshotCols { grid-template-columns: 1fr; }
+}
+
+.snapshotCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  min-width: 0;
+}
+
+.snapshotColTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.snapshotList {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.snapshotRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: var(--s2);
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.snapshotRow:last-child { border-bottom: none; }
+
+.snapshotRowLabel {
+  font-size: 13px;
+  color: var(--fg2);
+  margin: 0;
+}
+
+.snapshotRowValue {
+  margin: 0;
+  text-align: right;
+  min-width: 0;
+}
+
+.snapshotRowValueMain {
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.005em;
+}
+
+.snapshotRowSub {
+  font-size: 11px;
+  color: var(--fg3);
+  margin-top: 2px;
+}
+
+.snapshotRowGood { color: var(--color-diff-easy-fg); }
+.snapshotRowOk   { color: var(--color-diff-med-fg); }
+.snapshotRowBad  { color: var(--color-diff-hard-fg); }
+
+/* editPill is the Edit target / start trigger; lives in the
+   snapshot card header today, owned by EditTargetStartModal. */
 .editPill {
   background: transparent;
   border: 1px solid var(--border-strong);
@@ -103,43 +185,6 @@
   border-color: var(--color-app-accent);
   color: var(--color-app-accent);
 }
-
-.statCard {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.statValue {
-  font-size: 26px;
-  font-weight: 750;
-  letter-spacing: -0.01em;
-  color: var(--fg1);
-  font-variant-numeric: tabular-nums;
-}
-
-.statLabel {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--fg3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.statSub {
-  font-size: 11px;
-  color: var(--fg3);
-  margin-top: 2px;
-}
-
-.statGood .statValue { color: var(--color-diff-easy-fg); }
-.statOk   .statValue { color: var(--color-diff-med-fg); }
-.statBad  .statValue { color: var(--color-diff-hard-fg); }
 
 /* ---------- Generic card ---------- */
 
