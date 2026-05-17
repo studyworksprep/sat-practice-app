@@ -347,73 +347,103 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* ---------- Stat tiles ----------
-           Target + Start date sit at the front since both are
-           tutor-editable (single combined modal at the right).
-           Effective start date defaults to the signup timestamp
-           when start_date hasn't been set explicitly. */}
-      <section className={s.statsRow}>
-        <StatTile label="Target" value={student.targetScore ?? '—'} />
-        <StatTile
-          label="Starting score"
-          value={scoreSummary.startingScore ?? '—'}
-        />
-        <StatTile
-          label="Final score"
-          value={scoreSummary.finalScore ?? '—'}
-        />
-        <StatTile
-          label="Impact"
-          value={
-            scoreSummary.impact == null
-              ? '—'
-              : scoreSummary.impact > 0
-                ? `+${scoreSummary.impact}`
-                : String(scoreSummary.impact)
-          }
-          tone={impactTone(scoreSummary.impact)}
-        />
-        {student.targetScore != null && (
-          <StatTile
-            label="Target reach"
-            value={
-              scoreSummary.targetReachPct == null
-                ? '—'
-                : `${scoreSummary.targetReachPct}%`
-            }
-            tone={reachTone(scoreSummary.targetReachPct)}
-          />
-        )}
-        <StatTile
-          label="Start date"
-          value={student.effectiveStartDate ? (formatDate(student.effectiveStartDate) ?? '—') : '—'}
-          subtitle={student.startDate ? undefined : 'defaults to signup'}
-        />
-        <StatTile
-          label="Accuracy"
-          value={student.accuracy != null ? `${student.accuracy}%` : '—'}
-          subtitle={student.accuracy != null ? `${student.correctAttempts} / ${student.totalAttempts}` : undefined}
-          tone={accuracyTone(student.accuracy)}
-        />
-        <StatTile label="Total attempts" value={student.totalAttempts.toLocaleString()} />
-        <StatTile label="Last 7 days" value={student.weekAttempts} />
-        {daysToTest != null && (
-          <StatTile
-            label={daysToTest >= 0 ? 'Days to test' : 'Test date'}
-            value={daysToTest >= 0 ? daysToTest : 'Past'}
-            subtitle={student.satTestDate ? formatDate(student.satTestDate) ?? undefined : undefined}
-          />
-        )}
-        <StatTile
-          label="Last activity"
-          value={formatRelativeShort(student.lastActivityAt) ?? '—'}
-        />
-        <div className={s.statsRowAction}>
+      {/* ---------- Snapshot card ----------
+           Single profile card grouping every header-row metric so
+           the page doesn't open on a wall of pills. Two columns:
+           activity (start date, attempts, last activity, etc.) on
+           the left, score progression (target / starting / final /
+           impact / reach) on the right. Effective start date
+           defaults to the signup timestamp when start_date hasn't
+           been set explicitly. Edit pill lives in the card header
+           since both editable fields (target + start date) sit in
+           the right column. */}
+      <section className={s.snapshotCard}>
+        <div className={s.snapshotHead}>
+          <h2 className={s.snapshotTitle}>Snapshot</h2>
           <EditTargetStartButton
             studentId={student.id}
             targetScore={student.targetScore ?? null}
             startDate={profileRow?.start_date ?? null}
           />
+        </div>
+        <div className={s.snapshotCols}>
+          <div className={s.snapshotCol}>
+            <div className={s.snapshotColTitle}>Activity</div>
+            <dl className={s.snapshotList}>
+              <ProfileRow
+                label="Start date"
+                value={student.effectiveStartDate
+                  ? (formatDate(student.effectiveStartDate) ?? '—')
+                  : '—'}
+                sub={student.startDate ? undefined : 'defaults to signup'}
+              />
+              {daysToTest != null && (
+                <ProfileRow
+                  label={daysToTest >= 0 ? 'Days to test' : 'Test date'}
+                  value={daysToTest >= 0 ? daysToTest : 'Past'}
+                  sub={student.satTestDate
+                    ? formatDate(student.satTestDate) ?? undefined
+                    : undefined}
+                />
+              )}
+              <ProfileRow
+                label="Last activity"
+                value={formatRelativeShort(student.lastActivityAt) ?? '—'}
+              />
+              <ProfileRow
+                label="Accuracy"
+                value={student.accuracy != null ? `${student.accuracy}%` : '—'}
+                sub={student.accuracy != null
+                  ? `${student.correctAttempts} / ${student.totalAttempts}`
+                  : undefined}
+                tone={accuracyTone(student.accuracy)}
+              />
+              <ProfileRow
+                label="Total attempts"
+                value={student.totalAttempts.toLocaleString()}
+              />
+              <ProfileRow
+                label="Last 7 days"
+                value={student.weekAttempts}
+              />
+            </dl>
+          </div>
+          <div className={s.snapshotCol}>
+            <div className={s.snapshotColTitle}>Scores</div>
+            <dl className={s.snapshotList}>
+              <ProfileRow label="Target" value={student.targetScore ?? '—'} />
+              <ProfileRow
+                label="Starting score"
+                value={scoreSummary.startingScore ?? '—'}
+              />
+              <ProfileRow
+                label="Final score"
+                value={scoreSummary.finalScore ?? '—'}
+              />
+              <ProfileRow
+                label="Impact"
+                value={
+                  scoreSummary.impact == null
+                    ? '—'
+                    : scoreSummary.impact > 0
+                      ? `+${scoreSummary.impact}`
+                      : String(scoreSummary.impact)
+                }
+                tone={impactTone(scoreSummary.impact)}
+              />
+              {student.targetScore != null && (
+                <ProfileRow
+                  label="Target reach"
+                  value={
+                    scoreSummary.targetReachPct == null
+                      ? '—'
+                      : `${scoreSummary.targetReachPct}%`
+                  }
+                  tone={reachTone(scoreSummary.targetReachPct)}
+                />
+              )}
+            </dl>
+          </div>
         </div>
       </section>
 
@@ -755,24 +785,26 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
 
 // ──────────────────────────────────────────────────────────────
 
-interface StatTileProps {
+interface ProfileRowProps {
   label: string;
   value: number | string;
-  subtitle?: string;
+  sub?: string;
   tone?: 'good' | 'ok' | 'bad';
 }
-function StatTile({ label, value, subtitle, tone }: StatTileProps) {
-  const cls = [
-    s.statCard,
-    tone === 'good' ? s.statGood : null,
-    tone === 'ok'   ? s.statOk   : null,
-    tone === 'bad'  ? s.statBad  : null,
+function ProfileRow({ label, value, sub, tone }: ProfileRowProps) {
+  const valueCls = [
+    s.snapshotRowValueMain,
+    tone === 'good' ? s.snapshotRowGood : null,
+    tone === 'ok'   ? s.snapshotRowOk   : null,
+    tone === 'bad'  ? s.snapshotRowBad  : null,
   ].filter(Boolean).join(' ');
   return (
-    <div className={cls}>
-      <div className={s.statValue}>{value}</div>
-      <div className={s.statLabel}>{label}</div>
-      {subtitle && <div className={s.statSub}>{subtitle}</div>}
+    <div className={s.snapshotRow}>
+      <dt className={s.snapshotRowLabel}>{label}</dt>
+      <dd className={s.snapshotRowValue}>
+        <div className={valueCls}>{value}</div>
+        {sub && <div className={s.snapshotRowSub}>{sub}</div>}
+      </dd>
     </div>
   );
 }
