@@ -38,7 +38,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
-import { formatDate } from '@/lib/formatters';
+import { formatDate, isPastDueDate } from '@/lib/formatters';
 import { Button } from '@/lib/ui/Button';
 import { startAssignmentPractice } from './actions';
 import { StartAssignmentButton } from './AssignmentInteractive';
@@ -197,7 +197,7 @@ export default async function AssignmentDetailPage({ params }) {
   const isOverdue =
     assignment.due_date &&
     enrolled.completed_at == null &&
-    Date.parse(assignment.due_date) < Date.now();
+    isPastDueDate(assignment.due_date);
 
   return (
     <main style={{ maxWidth: 800, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' }}>

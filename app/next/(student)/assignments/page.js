@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
-import { formatDate } from '@/lib/formatters';
+import { formatDate, isPastDueDate } from '@/lib/formatters';
 import s from './AssignmentsPage.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -451,7 +451,7 @@ async function loadAssignmentsData(supabase, userId) {
 
   for (const r of rows) {
     r.isOverdue = Boolean(
-      r.due_date && !r.student_completed_at && Date.parse(r.due_date) < now,
+      r.due_date && !r.student_completed_at && isPastDueDate(r.due_date, now),
     );
     r.teacher = teacherById.get(r.teacher_id) ?? null;
 

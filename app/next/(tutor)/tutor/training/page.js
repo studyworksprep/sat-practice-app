@@ -15,6 +15,7 @@ import { requireUser } from '@/lib/api/auth';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import { buildWeakQueue } from '@/lib/practice/weak-queue';
 import { StudyCountdown } from '@/lib/practice/StudyCountdown';
+import { formatDate, isPastDueDate } from '@/lib/formatters';
 import s from './TrainingDashboard.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -356,8 +357,8 @@ export default async function TutorTrainingDashboardPage() {
                   >
                     <span className={s.assignmentTitle}>{title}</span>
                     {a.due_date && (
-                      <span className={isOverdue(a.due_date, nowMs) ? s.dueOverdue : s.due}>
-                        Due {formatRowDate(a.due_date)}
+                      <span className={isPastDueDate(a.due_date, nowMs) ? s.dueOverdue : s.due}>
+                        Due {formatDate(a.due_date)}
                       </span>
                     )}
                   </Link>
@@ -531,10 +532,6 @@ function accTone(pct) {
   if (pct >= 80) return 'good';
   if (pct >= 50) return 'ok';
   return 'warn';
-}
-
-function isOverdue(iso, nowMs) {
-  return Boolean(iso && Date.parse(iso) < nowMs);
 }
 
 function formatRowDate(iso) {

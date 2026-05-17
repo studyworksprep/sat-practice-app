@@ -16,7 +16,7 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
-import { formatDate, formatRelativeShort } from '@/lib/formatters';
+import { formatDate, formatRelativeShort, isPastDueDate } from '@/lib/formatters';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
@@ -582,7 +582,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                             </span>
                           )}
                           {a.due_date && (
-                            <span className={isOverdue(a.due_date) && !a.completed_at ? s.dueOverdue : s.due}>
+                            <span className={isPastDueDate(a.due_date) && !a.completed_at ? s.dueOverdue : s.due}>
                               Due {formatDate(a.due_date)}
                             </span>
                           )}
@@ -883,9 +883,6 @@ function reachTone(pct: number | null): 'good' | 'ok' | 'bad' | undefined {
   return 'bad';
 }
 
-function isOverdue(iso: string): boolean {
-  return Date.parse(iso) < Date.now();
-}
 
 function daysUntil(iso: string | null): number | null {
   if (!iso) return null;

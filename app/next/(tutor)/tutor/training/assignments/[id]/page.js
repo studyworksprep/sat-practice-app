@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
-import { formatDate } from '@/lib/formatters';
+import { formatDate, isPastDueDate } from '@/lib/formatters';
 import { startTrainingAssignment } from './actions';
 import { StartTrainingButton } from './StartTrainingButton';
 import s from './AssignmentDetail.module.css';
@@ -125,7 +125,7 @@ export default async function TutorTrainingAssignmentDetailPage({ params }) {
   const isOverdue =
     assignment.due_date
     && enrolled.completed_at == null
-    && Date.parse(assignment.due_date) < nowMs;
+    && isPastDueDate(assignment.due_date, nowMs);
 
   return (
     <main className={s.container}>

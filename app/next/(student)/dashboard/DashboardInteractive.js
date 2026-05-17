@@ -16,6 +16,7 @@ import { StudyCountdown } from '@/lib/practice/StudyCountdown';
 import { WeeklyTrendChart } from '@/lib/practice/WeeklyTrendChart';
 import { Sparkline } from '@/lib/ui/Sparkline';
 import { Delta } from '@/lib/ui/Delta';
+import { formatDate, isPastDueDate } from '@/lib/formatters';
 import {
   ClipboardCheckIcon,
   GoalIcon,
@@ -143,8 +144,8 @@ export function DashboardInteractive({
                 <Link href={`/assignments/${a.id}`} className={s.assignmentRow}>
                   <span className={s.assignmentTitle}>{a.title}</span>
                   {a.due_date && (
-                    <span className={isOverdue(a.due_date) ? s.dueOverdue : s.due}>
-                      Due {formatRowDate(a.due_date)}
+                    <span className={isPastDueDate(a.due_date) ? s.dueOverdue : s.due}>
+                      Due {formatDate(a.due_date)}
                     </span>
                   )}
                 </Link>
@@ -502,10 +503,6 @@ function bannerStatusLine(stats, daysToTest) {
     bits.push(`${daysToTest} day${daysToTest === 1 ? '' : 's'} to test day`);
   }
   return bits.join(' · ');
-}
-
-function isOverdue(iso) {
-  return Date.parse(iso) < Date.now();
 }
 
 function daysUntil(iso) {

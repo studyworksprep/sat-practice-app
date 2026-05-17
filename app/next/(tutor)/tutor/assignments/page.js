@@ -30,7 +30,7 @@ import { requireUser } from '@/lib/api/auth';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { ClipboardCheckIcon, InboxIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
-import { formatShortDate } from '@/lib/formatters';
+import { formatShortDate, isPastDueDate } from '@/lib/formatters';
 import { ArchiveButton } from './ArchiveButton';
 import { AssignmentsToolbar } from './AssignmentsToolbar';
 import { filterAndSort, paginate } from './helpers';
@@ -244,7 +244,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
   // eslint-disable-next-line react-hooks/purity
   const nowMs = Date.now();
   const overdueCount = enrichedActive.filter(
-    (a) => a.due_date && Date.parse(a.due_date) < nowMs,
+    (a) => a.due_date && isPastDueDate(a.due_date, nowMs),
   ).length;
 
   // Apply search + sort + pagination to each section. Stats above
@@ -434,7 +434,7 @@ function AssignmentRow({ row, nowMs, archived = false }) {
     ?? 'Assignment';
   const subtitle = displaySubtitle(row);
   const isOverdue =
-    !archived && row.due_date && Date.parse(row.due_date) < nowMs;
+    !archived && row.due_date && isPastDueDate(row.due_date, nowMs);
   const isSingle = row.studentCount === 1;
   const single = row.single;
 
