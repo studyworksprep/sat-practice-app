@@ -525,6 +525,8 @@ async function markAssignmentCompletedIfDone(
     .eq('assignment_id', assignmentId)
     .eq('student_id', userId)
     .is('completed_at', null);
+
+  await closeOpenSessionsForAssignment(supabase, userId, assignmentId);
 }
 
 // Submit Set companion to markAssignmentCompletedIfDone. The
@@ -555,6 +557,31 @@ async function markAssignmentCompletedOnSubmit(
     .update({ completed_at: new Date().toISOString() })
     .eq('assignment_id', assignmentId)
     .eq('student_id', userId);
+
+  await closeOpenSessionsForAssignment(supabase, userId, assignmentId);
+}
+
+// Flip every in_progress practice_session for this (user, assignment)
+// to completed. Called by both completion-marker paths above so the
+// session table can't lag the assignment table. Without this, an
+// assignment row's completed_at can be set while a sibling session
+// stays in_progress, which the tutor students page treats as "report
+// not ready" and hides the deep-link.
+async function closeOpenSessionsForAssignment(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  userId: string,
+  assignmentId: string,
+): Promise<void> {
+  await supabase
+    .from('practice_sessions')
+    .update({
+      status: 'completed',
+      last_activity_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('status', 'in_progress')
+    .eq('filter_criteria->>assignment_id', assignmentId);
 }
 
 // MCQ grading against v2's object-shaped correct_answer:
