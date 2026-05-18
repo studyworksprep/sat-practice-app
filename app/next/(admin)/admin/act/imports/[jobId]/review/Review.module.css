@@ -29,7 +29,7 @@
   text-decoration: none;
   width: max-content;
 }
-.backLink:hover { color: var(--fg); }
+.backLink:hover { color: var(--fg1); }
 
 .titleRow {
   display: flex;
@@ -65,18 +65,18 @@
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--fg);
+  background: var(--bg-white);
+  color: var(--fg1);
   font-size: 12px;
   text-decoration: none;
 }
-.chip:hover { background: var(--color-slate-50, #f8fafc); }
+.chip:hover { background: var(--color-slate-50); }
 .chipActive {
-  background: var(--fg);
-  color: var(--bg, white);
-  border-color: var(--fg);
+  background: var(--color-app-accent);
+  color: #fff;
+  border-color: var(--color-app-accent);
 }
-.chipActive:hover { background: var(--fg); }
+.chipActive:hover { background: var(--color-app-accent-hover); }
 .chipCount {
   font-variant-numeric: tabular-nums;
   opacity: 0.7;
@@ -133,6 +133,24 @@
   font-size: 12px;
   color: var(--fg3);
 }
+.skippedList {
+  margin: 4px 0 0;
+  padding: 8px 12px;
+  background: var(--color-danger-soft, #fee2e2);
+  color: var(--color-danger-fg, #991b1b);
+  border-radius: var(--radius-sm);
+  list-style: none;
+  font-size: 11px;
+  line-height: 1.5;
+  max-width: 360px;
+  text-align: left;
+  word-break: break-word;
+}
+.skippedList li + li {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
 
 .draftList {
   display: flex;
@@ -173,7 +191,7 @@
   border: 0;
   padding: 0;
   font-size: 13px;
-  color: var(--fg);
+  color: var(--fg1);
   cursor: pointer;
   text-align: left;
   min-width: 0;
@@ -348,7 +366,7 @@
 .fieldLabel {
   font-size: 12px;
   font-weight: 600;
-  color: var(--fg);
+  color: var(--fg1);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -372,8 +390,8 @@
   padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--card);
-  color: var(--fg);
+  background: var(--bg-white);
+  color: var(--fg1);
   width: 100%;
   resize: vertical;
 }
@@ -399,15 +417,18 @@
   padding: 6px 14px;
   font-size: 13px;
   font-weight: 600;
-  background: var(--fg);
-  color: var(--bg, white);
-  border: 0;
+  background: var(--color-app-accent);
+  color: #fff;
+  border: 1px solid var(--color-app-accent);
   border-radius: var(--radius-sm);
   cursor: pointer;
   text-decoration: none;
   line-height: 1.4;
 }
-.btnPrimary:hover:not(:disabled) { opacity: 0.92; }
+.btnPrimary:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
 .btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .btnSecondary {
@@ -417,14 +438,14 @@
   padding: 6px 14px;
   font-size: 13px;
   font-weight: 600;
-  background: var(--card);
-  color: var(--fg);
-  border: 1px solid var(--border);
+  background: var(--bg-white);
+  color: var(--fg1);
+  border: 1px solid var(--border-strong, var(--border));
   border-radius: var(--radius-sm);
   cursor: pointer;
   line-height: 1.4;
 }
-.btnSecondary:hover:not(:disabled) { background: var(--color-slate-50, #f8fafc); }
+.btnSecondary:hover:not(:disabled) { background: var(--color-slate-50); }
 .btnSecondary:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .btnGhost {
@@ -435,10 +456,10 @@
   font-size: 13px;
   font-weight: 500;
   background: transparent;
-  color: var(--fg3);
+  color: var(--fg2);
   border: 0;
   cursor: pointer;
   line-height: 1.4;
 }
-.btnGhost:hover:not(:disabled) { color: var(--fg); }
+.btnGhost:hover:not(:disabled) { color: var(--fg1); }
 .btnGhost:disabled { opacity: 0.55; cursor: not-allowed; }
