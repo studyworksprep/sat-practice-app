@@ -75,18 +75,19 @@ async function signInAs(page: Page, persona: 'student' | 'tutor') {
   // cookies have been set by /auth/callback. Wait until the
   // browser is back on the app domain and off any /auth/* path,
   // which is the post-callback /dashboard landing.
+  //
+  // Note: do NOT waitForLoadState('networkidle') here. Vercel
+  // Analytics + the proxy's background session refresh keep the
+  // network busy past the 30s test timeout, so networkidle never
+  // fires on the dashboard. page.goto already waited for the
+  // final navigation's 'load' event, which is enough — the
+  // session cookies are in place by then.
   await page.goto(`/auth/demo/${persona}`);
   await page.waitForURL(
     (url) => !url.hostname.includes('supabase.co')
       && !url.pathname.startsWith('/auth/'),
     { timeout: 20_000 },
   );
-  // Belt-and-suspenders: the session-cookie write happens during
-  // the /auth/callback response, but the SSR of the next page may
-  // race with the cookie being readable. A tiny settle delay
-  // avoids a Heisenbug where the first screenshot captures the
-  // logged-out state of the next render.
-  await page.waitForLoadState('networkidle');
 }
 
 async function captureShot(page: Page, shot: Shot) {
@@ -94,12 +95,16 @@ async function captureShot(page: Page, shot: Shot) {
   if (shot.waitFor) {
     await page.waitForSelector(shot.waitFor, { timeout: 15_000 });
   } else {
-    await page.waitForLoadState('networkidle');
+    // domcontentloaded over networkidle: Vercel Analytics +
+    // proxy session-refresh keep the page from ever reaching
+    // network idle, so networkidle hangs until the test
+    // timeout.
+    await page.waitForLoadState('domcontentloaded');
   }
   await page.addStyleTag({ content: shot.hideCss ?? STABILIZE_CSS });
   // Small settle delay for late-binding animations (skeletons
   // fading out, charts easing into their final state).
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(1200);
   const out = path.join(OUT_DIR, shot.filename);
   await page.screenshot({ path: out, fullPage: true });
 }
