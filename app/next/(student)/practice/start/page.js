@@ -188,14 +188,14 @@ async function ActLauncher({ user, supabase }) {
   const actRows = await fetchAll((from, to) =>
     supabase
       .from('act_questions')
-      .select('section, category')
+      .select('section, category, subcategory')
       .eq('is_broken', false)
       .range(from, to),
   );
 
-  // Bucket per (section, category). The canonical section order
-  // (ACT_SECTIONS) ensures English → Math → Reading → Science even
-  // when only some sections have data.
+  // Bucket per (section, category, subcategory). The canonical
+  // section order (ACT_SECTIONS) ensures English → Math → Reading
+  // → Science even when only some sections have data.
   const sectionAcc = new Map();
   for (const row of actRows) {
     if (!row.section) continue;
@@ -206,7 +206,18 @@ async function ActLauncher({ user, supabase }) {
     }
     sec.count += 1;
     if (row.category) {
-      sec.categories.set(row.category, (sec.categories.get(row.category) ?? 0) + 1);
+      let cat = sec.categories.get(row.category);
+      if (!cat) {
+        cat = { count: 0, subcategories: new Map() };
+        sec.categories.set(row.category, cat);
+      }
+      cat.count += 1;
+      if (row.subcategory) {
+        cat.subcategories.set(
+          row.subcategory,
+          (cat.subcategories.get(row.subcategory) ?? 0) + 1,
+        );
+      }
     }
   }
 
@@ -220,10 +231,18 @@ async function ActLauncher({ user, supabase }) {
         count: entry.count,
         // Categories sorted by count desc — biggest bucket first so
         // the student sees the most-likely picks at the top of the
-        // expanded list.
+        // expanded list. Subcategories within each category get the
+        // same treatment; categories with no labeled subcategories
+        // (Reading, Science, Math IES) just send an empty array.
         categories: Array.from(entry.categories.entries())
-          .sort((a, b) => b[1] - a[1])
-          .map(([name, count]) => ({ name, count })),
+          .sort((a, b) => b[1].count - a[1].count)
+          .map(([name, cat]) => ({
+            name,
+            count: cat.count,
+            subcategories: Array.from(cat.subcategories.entries())
+              .sort((a, b) => b[1] - a[1])
+              .map(([subName, subCount]) => ({ name: subName, count: subCount })),
+          })),
       };
     });
 
