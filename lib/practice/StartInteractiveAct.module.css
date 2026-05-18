@@ -235,6 +235,64 @@
   color: var(--color-app-accent);
 }
 
+/* Subcategory drilldown. One level deeper than the category
+   list — same vocabulary but indented + smaller so the
+   hierarchy reads at a glance. */
+.subcategoriesToggle {
+  align-self: flex-start;
+  margin-left: 18px;
+  border: none;
+  background: transparent;
+  padding: 2px 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg3);
+  cursor: pointer;
+}
+.subcategoriesToggle:hover {
+  color: var(--fg1);
+}
+
+.subcategoryList {
+  list-style: none;
+  padding: 0 0 0 18px;
+  margin: 4px 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 1px solid var(--border);
+}
+
+.subcategoryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--fg2);
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+.subcategoryRow:hover {
+  background: var(--color-slate-50);
+  color: var(--fg1);
+}
+.subcategoryRowOn {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+  font-weight: 600;
+}
+.subcategoryRowOn .skillCount {
+  color: var(--color-app-accent);
+}
+
 /* ---------- Chip row ---------- */
 
 .chipRow {

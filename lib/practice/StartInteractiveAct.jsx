@@ -49,9 +49,12 @@ const ORDER_OPTIONS = [
 /**
  * @param {object} props
  * @param {Array<{ section: string, name: string, count: number,
- *   categories: Array<{ name: string, count: number }> }>}
+ *   categories: Array<{ name: string, count: number,
+ *     subcategories: Array<{ name: string, count: number }> }> }>}
  *   props.sections - one entry per ACT section that has data, sorted
  *   in the canonical English → Math → Reading → Science order.
+ *   subcategories[] is empty when none are labeled (Reading, Science,
+ *   and Math's "Integrating Essential Skills" category).
  * @param {{ sessionId: string, position: number, total: number,
  *   lastActivityAt: string }|null} [props.resumeInfo] - active ACT
  *   session for the Resume card.
@@ -80,7 +83,9 @@ export function StartInteractiveAct({
   // resolver compares against.
   const [selectedSections,      setSelectedSections]      = useState(() => new Set());
   const [selectedCategories,    setSelectedCategories]    = useState(() => new Set());
+  const [selectedSubcategories, setSelectedSubcategories] = useState(() => new Set());
   const [expandedSections,      setExpandedSections]      = useState(() => new Set());
+  const [expandedCategories,    setExpandedCategories]    = useState(() => new Set());
   const [selectedDifficulties,  setSelectedDifficulties]  = useState(() => new Set());
   const [unansweredOnly,        setUnansweredOnly]        = useState(false);
   const [order,                 setOrder]                 = useState('display_code');
@@ -100,6 +105,7 @@ export function StartInteractiveAct({
         const fd = buildFormData({
           sections: selectedSections,
           categories: selectedCategories,
+          subcategories: selectedSubcategories,
           difficulties: selectedDifficulties,
           unansweredOnly,
           order,
@@ -118,8 +124,8 @@ export function StartInteractiveAct({
     // order/size don't affect candidate count — excluded.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    selectedSections, selectedCategories, selectedDifficulties,
-    unansweredOnly, countAvailableAction,
+    selectedSections, selectedCategories, selectedSubcategories,
+    selectedDifficulties, unansweredOnly, countAvailableAction,
   ]);
 
   // ── Submit ─────────────────────────────────────────────────
@@ -133,6 +139,7 @@ export function StartInteractiveAct({
     const fd = buildFormData({
       sections: selectedSections,
       categories: selectedCategories,
+      subcategories: selectedSubcategories,
       difficulties: selectedDifficulties,
       unansweredOnly,
       order,
@@ -170,13 +177,21 @@ export function StartInteractiveAct({
       else next.add(sectionCode);
       return next;
     });
-    // Bulk-toggle: clear any per-category narrowing inside this
-    // section when the section toggles off, so the form stays
-    // self-consistent.
+    // Bulk-toggle: clear any per-category / subcategory narrowing
+    // inside this section when the section toggles off, so the
+    // form stays self-consistent.
+    const sec = sections.find((x) => x.section === sectionCode);
+    if (!sec) return;
     setSelectedCategories((prev) => {
       const next = new Set(prev);
-      const sec = sections.find((x) => x.section === sectionCode);
-      if (sec) for (const c of sec.categories) next.delete(c.name);
+      for (const c of sec.categories) next.delete(c.name);
+      return next;
+    });
+    setSelectedSubcategories((prev) => {
+      const next = new Set(prev);
+      for (const c of sec.categories) {
+        for (const sub of c.subcategories ?? []) next.delete(sub.name);
+      }
       return next;
     });
   }
@@ -184,17 +199,51 @@ export function StartInteractiveAct({
   function toggleCategory(categoryName) {
     setSelectedCategories((prev) => {
       const next = new Set(prev);
-      if (next.has(categoryName)) next.delete(categoryName);
-      else next.add(categoryName);
+      if (next.has(categoryName)) {
+        next.delete(categoryName);
+      } else {
+        next.add(categoryName);
+      }
+      return next;
+    });
+    // If we just unchecked the category, clear any subcategories
+    // under it so the filter doesn't keep narrower picks pinned
+    // to a hidden parent.
+    setSelectedSubcategories((prev) => {
+      // Look up the category to find its subcategory names.
+      const cat = findCategory(sections, categoryName);
+      if (!cat || !selectedCategories.has(categoryName)) return prev;
+      // selectedCategories still reflects the pre-toggle state;
+      // if it HAD the category, the click just removed it.
+      const next = new Set(prev);
+      for (const sub of cat.subcategories ?? []) next.delete(sub.name);
       return next;
     });
   }
 
-  function toggleExpandSection(sectionName) {
+  function toggleSubcategory(subcategoryName) {
+    setSelectedSubcategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(subcategoryName)) next.delete(subcategoryName);
+      else next.add(subcategoryName);
+      return next;
+    });
+  }
+
+  function toggleExpandSection(sectionCode) {
     setExpandedSections((prev) => {
       const next = new Set(prev);
-      if (next.has(sectionName)) next.delete(sectionName);
-      else next.add(sectionName);
+      if (next.has(sectionCode)) next.delete(sectionCode);
+      else next.add(sectionCode);
+      return next;
+    });
+  }
+
+  function toggleExpandCategory(categoryName) {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryName)) next.delete(categoryName);
+      else next.add(categoryName);
       return next;
     });
   }
@@ -274,17 +323,52 @@ export function StartInteractiveAct({
                   {isExpanded && sec.categories.length > 0 && (
                     <ul className={s.skillList}>
                       {sec.categories.map((cat) => {
-                        const on = selectedCategories.has(cat.name);
+                        const catOn =
+                          selectedCategories.has(cat.name)
+                          || (cat.subcategories ?? []).some((sub) => selectedSubcategories.has(sub.name));
+                        const catExpanded = expandedCategories.has(cat.name);
+                        const hasSubs = (cat.subcategories ?? []).length > 0;
                         return (
                           <li key={cat.name}>
                             <button
                               type="button"
-                              className={`${s.skillRow} ${on ? s.skillRowOn : ''}`}
+                              className={`${s.skillRow} ${catOn ? s.skillRowOn : ''}`}
                               onClick={() => toggleCategory(cat.name)}
                             >
                               <span>{cat.name}</span>
                               <span className={s.skillCount}>{cat.count}</span>
                             </button>
+                            {hasSubs && (
+                              <button
+                                type="button"
+                                className={s.subcategoriesToggle}
+                                onClick={() => toggleExpandCategory(cat.name)}
+                                aria-expanded={catExpanded}
+                              >
+                                {catExpanded
+                                  ? 'Hide subcategories ▴'
+                                  : `Subcategories (${cat.subcategories.length}) ▾`}
+                              </button>
+                            )}
+                            {hasSubs && catExpanded && (
+                              <ul className={s.subcategoryList}>
+                                {cat.subcategories.map((sub) => {
+                                  const subOn = selectedSubcategories.has(sub.name);
+                                  return (
+                                    <li key={sub.name}>
+                                      <button
+                                        type="button"
+                                        className={`${s.subcategoryRow} ${subOn ? s.subcategoryRowOn : ''}`}
+                                        onClick={() => toggleSubcategory(sub.name)}
+                                      >
+                                        <span>{sub.name}</span>
+                                        <span className={s.skillCount}>{sub.count}</span>
+                                      </button>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            )}
                           </li>
                         );
                       })}
@@ -381,15 +465,28 @@ function resolveSize(text) {
   return Math.min(MAX_SIZE, Math.max(MIN_SIZE, n));
 }
 
-function buildFormData({ sections, categories, difficulties, unansweredOnly, order, size }) {
+function buildFormData({ sections, categories, subcategories, difficulties, unansweredOnly, order, size }) {
   const fd = new FormData();
   for (const sec of sections) fd.append('section', sec);
   for (const cat of categories) fd.append('category', cat);
+  for (const sub of subcategories ?? []) fd.append('subcategory', sub);
   for (const d of difficulties) fd.append('difficulty', String(d));
   if (unansweredOnly) fd.set('unanswered_only', '1');
   fd.set('order', order);
   fd.set('size', String(size));
   return fd;
+}
+
+// Locate a category entry inside the section tree by its
+// display name. Used to find subcategory names to clear when
+// a parent category is unchecked.
+function findCategory(sectionsArr, categoryName) {
+  for (const sec of sectionsArr) {
+    for (const cat of sec.categories) {
+      if (cat.name === categoryName) return cat;
+    }
+  }
+  return null;
 }
 
 // next/navigation throws a redirect "error" by design when a Server
