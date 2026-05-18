@@ -296,11 +296,14 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       return bAt - aAt;
     });
 
-  // Latest completed practice_session per assignment, so the
-  // assignment row can deep-link to the report when one exists.
-  // One IN-query covers every assignment shown on the page; in
-  // JS we keep only the most recent completed session per
-  // assignment_id.
+  // Best practice_session per assignment for deep-linking the report.
+  // The assignment's own completed_at is the source of truth for whether
+  // the work is done; the session status can lag (assignment auto-completes
+  // when all underlying attempts exist, even if the session was never
+  // explicitly finalized). So we accept any session here and let the
+  // per-row `completed_at && reportSessionId` gate downstream decide
+  // whether to render the link. Prefer completed > in_progress > other
+  // when multiple sessions exist for one assignment.
   const assignmentIdsForSessions = assignments
     .map((a) => a.id)
     .filter((id): id is string => typeof id === 'string');
@@ -310,15 +313,20 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .from('practice_sessions')
       .select('id, status, created_at, filter_criteria')
       .eq('user_id', studentId)
-      .eq('status', 'completed')
       .eq('test_type', 'sat')
       .in('filter_criteria->>assignment_id', assignmentIdsForSessions)
       .order('created_at', { ascending: false });
+    const statusRank = (s: string | null | undefined) =>
+      s === 'completed' ? 0 : s === 'in_progress' ? 1 : 2;
+    const bestStatusByAssignment = new Map<string, string>();
     for (const r of sessionRows ?? []) {
       const fc = r.filter_criteria as { assignment_id?: string } | null;
       const aid = typeof fc?.assignment_id === 'string' ? fc.assignment_id : null;
-      if (aid && !reportSessionByAssignment.has(aid)) {
+      if (!aid) continue;
+      const prev = bestStatusByAssignment.get(aid);
+      if (!prev || statusRank(r.status) < statusRank(prev)) {
         reportSessionByAssignment.set(aid, r.id);
+        bestStatusByAssignment.set(aid, r.status);
       }
     }
   }
