@@ -69,14 +69,24 @@ const STABILIZE_CSS = `
 `;
 
 async function signInAs(page: Page, persona: 'student' | 'tutor') {
-  // /auth/demo/<persona> mints a magic-link session server-side
-  // and redirects to the persona's home. By the time waitForURL
-  // resolves we have valid cookies in this browser context for
-  // the duration of the spec.
+  // /auth/demo/<persona> bounces through Supabase /verify and
+  // /auth/callback. A naive "not /auth/demo/*" predicate would
+  // resolve on the Supabase /verify hop, before our session
+  // cookies have been set by /auth/callback. Wait until the
+  // browser is back on the app domain and off any /auth/* path,
+  // which is the post-callback /dashboard landing.
   await page.goto(`/auth/demo/${persona}`);
-  await page.waitForURL((url) => !url.pathname.startsWith('/auth/demo/'), {
-    timeout: 15_000,
-  });
+  await page.waitForURL(
+    (url) => !url.hostname.includes('supabase.co')
+      && !url.pathname.startsWith('/auth/'),
+    { timeout: 20_000 },
+  );
+  // Belt-and-suspenders: the session-cookie write happens during
+  // the /auth/callback response, but the SSR of the next page may
+  // race with the cookie being readable. A tiny settle delay
+  // avoids a Heisenbug where the first screenshot captures the
+  // logged-out state of the next render.
+  await page.waitForLoadState('networkidle');
 }
 
 async function captureShot(page: Page, shot: Shot) {
@@ -94,9 +104,25 @@ async function captureShot(page: Page, shot: Shot) {
   await page.screenshot({ path: out, fullPage: true });
 }
 
+// After signInAs, the page should be on the persona's home —
+// /dashboard for student, /tutor/dashboard for tutor. If it
+// landed somewhere else (login form, error page, /?confirmed=…),
+// the magic-link verify didn't establish the session, and every
+// subsequent screenshot would capture the wrong page. Fail loud
+// here instead of silently producing bad shots.
+async function assertSignedIn(page: Page, persona: 'student' | 'tutor') {
+  const expectedHome = persona === 'student' ? '/dashboard' : '/tutor/dashboard';
+  const here = new URL(page.url()).pathname;
+  expect(
+    here,
+    `Expected to land on ${expectedHome} after /auth/demo/${persona}, got ${here}`,
+  ).toBe(expectedHome);
+}
+
 test.describe('marketing screenshots — student', () => {
   test('capture student surfaces', async ({ page }) => {
     await signInAs(page, 'student');
+    await assertSignedIn(page, 'student');
     for (const shot of STUDENT_SHOTS) {
       await captureShot(page, shot);
     }
@@ -107,6 +133,7 @@ test.describe('marketing screenshots — student', () => {
 test.describe('marketing screenshots — tutor', () => {
   test('capture tutor surfaces', async ({ page }) => {
     await signInAs(page, 'tutor');
+    await assertSignedIn(page, 'tutor');
     for (const shot of TUTOR_SHOTS) {
       await captureShot(page, shot);
     }

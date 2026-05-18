@@ -34,15 +34,31 @@ const MUTATION_ATTEMPTS = [
 ];
 
 test.describe('demo accounts are read-only', () => {
-  test('proxy rejects every mutation method', async ({ page, request }) => {
+  test('proxy rejects every mutation method', async ({ page }) => {
     // Mint a demo student session via the auto-login route, then
-    // reuse its cookies for the raw API request.
+    // reuse its cookies for the raw API request. Use the page's
+    // BrowserContext's request handle — the bare `request` fixture
+    // is a separate APIRequestContext with its own cookie jar, so
+    // calling `request.fetch(...)` would hit the API anonymously
+    // and the proxy gate (which is only for authenticated demo
+    // sessions) wouldn't fire.
     await page.goto('/auth/demo/student');
-    await page.waitForURL((url) => !url.pathname.startsWith('/auth/demo/'));
+    // Wait until the auth chain has settled at /dashboard (or
+    // wherever sw_demo_next pointed). A naive "not /auth/demo/*"
+    // resolves on the Supabase /verify hop, before our session
+    // cookies land. Wait specifically for the app domain and a
+    // non-/auth path.
+    await page.waitForURL(
+      (url) => !url.hostname.includes('supabase.co')
+        && !url.pathname.startsWith('/auth/'),
+      { timeout: 20_000 },
+    );
+
+    const ctxRequest = page.context().request;
 
     for (const m of MUTATION_ATTEMPTS) {
       if (EXEMPT_PREFIXES.some((p) => m.path.startsWith(p))) continue;
-      const res = await request.fetch(m.path, {
+      const res = await ctxRequest.fetch(m.path, {
         method: m.method,
         data: m.method === 'GET' ? undefined : {},
       });

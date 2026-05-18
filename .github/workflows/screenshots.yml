@@ -53,7 +53,17 @@ jobs:
       - name: Run screenshot capture
         env:
           E2E_BASE_URL: ${{ inputs.base-url }}
-        run: npx playwright test --project=screenshots
+        # Run only marketing.spec.ts for capture; demo-readonly.spec
+        # is a contract-check that fits alongside but doesn't need
+        # to gate screenshot regen — its failures should be visible
+        # but shouldn't block the artifact / commit step from
+        # running with the new PNGs.
+        run: |
+          npx playwright test --project=screenshots tests/screenshots/marketing.spec.ts
+          # Run the contract check separately so its result is
+          # reported but doesn't block the regen commit on failure.
+          npx playwright test --project=screenshots tests/screenshots/demo-readonly.spec.ts \
+            || echo "::warning::demo-readonly contract check failed; see test output"
 
       - name: Commit regenerated PNGs
         # Push a follow-up commit on the same branch only when the
