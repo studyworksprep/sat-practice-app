@@ -14,6 +14,8 @@
 import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/browser';
+import { sanitizeQuestionHtml } from '@/lib/sanitize';
+import { useMathTypeset, useQrefHighlight } from '@/lib/ui/preview-effects';
 import s from './Review.module.css';
 
 const STATUS_TONE = {
@@ -176,9 +178,18 @@ export function DraftCard({
           {!editing ? (
             <>
               {draft.stimulus_html && (
-                <DraftFieldPreview label="Stimulus" html={draft.stimulus_html} />
+                <DraftFieldPreview
+                  label="Stimulus"
+                  html={draft.stimulus_html}
+                  qrefOrdinal={draft.source_ordinal}
+                  draftId={draft.id}
+                />
               )}
-              <DraftFieldPreview label="Stem" html={draft.stem_html} />
+              <DraftFieldPreview
+                label="Stem"
+                html={draft.stem_html}
+                draftId={draft.id}
+              />
               <div className={s.optionsPreview}>
                 {opts.map((o, i) => (
                   <div
@@ -186,16 +197,20 @@ export function DraftCard({
                     className={`${s.optionRow} ${o.is_correct ? s.optionRowCorrect : ''}`}
                   >
                     <span className={s.optionLabel}>{o.label}</span>
-                    <span
-                      className={s.optionContent}
-                      dangerouslySetInnerHTML={{ __html: o.content_html ?? '' }}
+                    <OptionContent
+                      html={o.content_html}
+                      contentKey={`${draft.id}-${i}`}
                     />
                     {o.is_correct && <span className={s.correctTick}>✓</span>}
                   </div>
                 ))}
               </div>
               {draft.rationale_html && (
-                <DraftFieldPreview label="Rationale" html={draft.rationale_html} />
+                <DraftFieldPreview
+                  label="Rationale"
+                  html={draft.rationale_html}
+                  draftId={draft.id}
+                />
               )}
               <div className={s.taxonomyPreview}>
                 <span><strong>Category:</strong> {draft.category ?? '—'}{draft.category_code ? ` (${draft.category_code})` : ''}</span>
@@ -300,12 +315,51 @@ export function DraftCard({
   );
 }
 
-function DraftFieldPreview({ label, html }) {
+// Preview render block — mirrors the runner's HtmlBlock behavior
+// so admins reviewing a draft see what the student will see:
+//   - sanitizeQuestionHtml strips anything outside the question
+//     content profile (data-q on the qref marker is preserved).
+//   - sw-prose class triggers the global typography rules in
+//     app/styles/next-prose.css, including table borders / row
+//     bands the science parser uses for data tables.
+//   - useMathTypeset retypesets MathJax expressions on mount and
+//     whenever the draft id changes. The math parser emits
+//     `\\( ... \\)` LaTeX; without this pass it renders as raw
+//     escape sequences and the admin can't sanity-check the math.
+//   - useQrefHighlight (stimulus only) lights up the
+//     `[data-q="N"]` span matching this draft's source_ordinal
+//     so the English underline / Reading line-reference is
+//     visible in the preview, not just in the runner.
+function DraftFieldPreview({ label, html, qrefOrdinal, draftId }) {
+  const ref = useRef(null);
+  const safe = sanitizeQuestionHtml(html ?? '');
+  useMathTypeset(ref, `${draftId}-${label}`);
+  useQrefHighlight(ref, qrefOrdinal ?? null, `${draftId}-${label}`);
   return (
     <div className={s.preview}>
       <div className={s.previewLabel}>{label}</div>
-      <div className={s.previewBody} dangerouslySetInnerHTML={{ __html: html ?? '' }} />
+      <div
+        ref={ref}
+        className={`${s.previewBody} sw-prose`}
+        dangerouslySetInnerHTML={{ __html: safe }}
+      />
     </div>
+  );
+}
+
+// Per-option rendered content. Mirrors DraftFieldPreview but
+// uses sw-option-content rather than sw-prose so option-level
+// type sizing kicks in, matching the runner's OptionsList.
+function OptionContent({ html, contentKey }) {
+  const ref = useRef(null);
+  const safe = sanitizeQuestionHtml(html ?? '');
+  useMathTypeset(ref, contentKey);
+  return (
+    <span
+      ref={ref}
+      className={`${s.optionContent} sw-option-content`}
+      dangerouslySetInnerHTML={{ __html: safe }}
+    />
   );
 }
 
