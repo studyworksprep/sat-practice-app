@@ -316,6 +316,16 @@ export async function loadQuestion(
   // below + the QuestionPayload return shape are unchanged.
   const isAct = session.test_type === 'act';
   const since = isAssignmentSession ? sessionCreatedAt : null;
+  // ACT practice sessions get a stricter lastAttempt scope than
+  // the question-map data does: a fresh session shouldn't
+  // pre-fill the runner with an answer the student submitted in
+  // a different surface (Error Log → review, an earlier
+  // solo-practice session, etc.). Map colors keep their existing
+  // global scope so a question previously answered correctly
+  // still shows green on the question map — the student just
+  // doesn't see their old radio pre-selected on the question
+  // itself. SAT path keeps its existing semantics.
+  const sinceForLastAttempt = isAct ? sessionCreatedAt : since;
   const markedSet = new Set<number>(
     Array.isArray(session.marked_positions) ? session.marked_positions : [],
   );
@@ -328,7 +338,7 @@ export async function loadQuestion(
   if (isAct) {
     const [contentResult, lastAttempt, sessionAttempts, publishedById] = await Promise.all([
       loadActQuestionContent(supabase, questionId, userId),
-      loadActLastAttempt(supabase, userId, questionId, since),
+      loadActLastAttempt(supabase, userId, questionId, sinceForLastAttempt),
       loadActSessionAttempts(supabase, userId, questionIds, since),
       loadActPublishedFlags(supabase, questionIds),
     ]);
