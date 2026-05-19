@@ -158,8 +158,6 @@ function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
         settingsMenu: true,
         zoomButtons: true,
         forceEnableGeometryFunctions: true,
-        degreeMode: true,
-        clearIntoDegreeMode: true,
         images: false,
         folders: false,
         notes: false,
