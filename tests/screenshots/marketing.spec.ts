@@ -38,12 +38,23 @@ type Shot = {
   // synced 3s ago") that would change between runs and produce
   // noisy git diffs. Injected before the snap.
   hideCss?: string;
+  // Optional scroll target before screenshot. When set, we
+  // capture a viewport-sized PNG at the given scroll position
+  // instead of the default fullPage capture. Lets two distinct
+  // screenshots come off the same URL.
+  //
+  //   'top'                 — scrollY = 0, viewport snap
+  //   number                — scrollY = N pixels, viewport snap
+  //   selector string       — scrollIntoView the selector
+  //   undefined (default)   — fullPage snap, no scroll override
+  scrollTo?: 'top' | number | string;
 };
 
 // Fixed UUIDs from the create-demo-accounts migration. We
 // reference them by name so the spec stays readable.
 const DEMO_ROSTER_STUDENT_ID = '00000000-0000-0000-0000-000000d30101';   // Imani Bellweather
 const DEMO_TUTOR_ID           = '00000000-0000-0000-0000-000000d30002';   // Morgan Reyes
+const DEMO_TEST_ATTEMPT_ID    = '00000000-0000-0000-0000-00000d3a4001';   // demo.student's PT4 attempt
 
 const STUDENT_SHOTS: Shot[] = [
   {
@@ -61,6 +72,34 @@ const STUDENT_SHOTS: Shot[] = [
   {
     filename: 'review-hub.png',
     path: '/review',
+  },
+  // ── Score-report views.
+  //
+  //   introview = top of the results page (scaled scores, per-
+  //   section breakdown).
+  //   bestview  = further down (Opportunity Index, slowest
+  //   questions, per-skill bars).
+  //
+  // Both render off the same URL today; the slideshow uses two
+  // screenshots to spotlight the top-of-page summary vs the deep-
+  // analytics block. We capture both by toggling scroll position
+  // before the snap.
+  {
+    // Top of the page: composite score + per-section scaled
+    // scores + initial domain breakdown.
+    filename: 'score-report-introview.png',
+    path: `/practice/test/attempt/${DEMO_TEST_ATTEMPT_ID}/results`,
+    scrollTo: 'top',
+  },
+  {
+    // Further down: Opportunity Index, per-skill bars, timing
+    // analytics. Hard-coded scroll-Y because the page uses
+    // CSS-module class names (hashed in prod), so we can't
+    // selector-target the section reliably. If the section
+    // moves substantially, adjust this offset.
+    filename: 'score-report-bestview.png',
+    path: `/practice/test/attempt/${DEMO_TEST_ATTEMPT_ID}/results`,
+    scrollTo: 900,
   },
 ];
 
@@ -183,8 +222,30 @@ async function captureShot(page: Page, shot: Shot) {
   // Small settle delay for late-binding animations (skeletons
   // fading out, charts easing into their final state).
   await page.waitForTimeout(1200);
+
   const out = path.join(OUT_DIR, shot.filename);
-  await page.screenshot({ path: out, fullPage: true });
+
+  if (shot.scrollTo !== undefined) {
+    // Viewport-sized capture, scrolled to the requested position.
+    // Lets two distinct screenshots come from the same URL.
+    if (shot.scrollTo === 'top') {
+      await page.evaluate(() => window.scrollTo(0, 0));
+    } else if (typeof shot.scrollTo === 'number') {
+      await page.evaluate((y) => window.scrollTo(0, y), shot.scrollTo);
+    } else {
+      // String → CSS selector. scrollIntoView puts the element at
+      // the top of the viewport.
+      await page.evaluate((sel) => {
+        const el = document.querySelector(sel);
+        if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }, shot.scrollTo);
+    }
+    // A second settle for the scroll to render.
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: out, fullPage: false });
+  } else {
+    await page.screenshot({ path: out, fullPage: true });
+  }
 }
 
 // After signInAs, the page should be on the persona's home —
