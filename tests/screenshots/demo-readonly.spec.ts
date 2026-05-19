@@ -42,16 +42,18 @@ test.describe('demo accounts are read-only', () => {
     // calling `request.fetch(...)` would hit the API anonymously
     // and the proxy gate (which is only for authenticated demo
     // sessions) wouldn't fire.
+    test.setTimeout(60_000);
     await page.goto('/auth/demo/student');
-    // Wait until the auth chain has settled at /dashboard (or
-    // wherever sw_demo_next pointed). A naive "not /auth/demo/*"
-    // resolves on the Supabase /verify hop, before our session
-    // cookies land. Wait specifically for the app domain and a
-    // non-/auth path.
+    // Wait specifically for /dashboard. The auth chain may go
+    // through /auth/callback (happy path) or land on the Site URL
+    // with a fragment that HomeClient.useAuthFragmentBounce then
+    // redirects from. Either way, the post-sign-in URL is
+    // /dashboard. A looser "any non-/auth/* URL" predicate would
+    // fire on the Site-URL hop before the client-side bounce runs.
     await page.waitForURL(
-      (url) => !url.hostname.includes('supabase.co')
-        && !url.pathname.startsWith('/auth/'),
-      { timeout: 20_000 },
+      (url) => url.pathname === '/dashboard'
+        && !url.hostname.includes('supabase.co'),
+      { timeout: 30_000 },
     );
 
     const ctxRequest = page.context().request;
