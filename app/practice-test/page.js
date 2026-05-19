@@ -46,12 +46,7 @@ export default async function PracticeTestListPage() {
 
   const trainingContent = (
     <>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-        <h1 className="h1" style={{ marginBottom: 4 }}>Practice Tests</h1>
-        <a href="/help/practice-tests" className="muted" style={{ fontSize: 13, textDecoration: 'none' }}>
-          How to take a practice test →
-        </a>
-      </div>
+      <h1 className="h1" style={{ marginBottom: 4 }}>Practice Tests</h1>
       <p className="muted small" style={{ marginBottom: 28 }}>
         Full-length, adaptive SAT practice tests with timed modules.
       </p>

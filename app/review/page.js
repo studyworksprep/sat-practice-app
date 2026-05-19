@@ -507,12 +507,7 @@ export default function ReviewPage() {
   return (
     <main className="container">
       <div className="card">
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-          <div className="h1">Review</div>
-          <a href="/help/review-tools" className="muted" style={{ fontSize: 13, textDecoration: 'none' }}>
-            How to use these tools →
-          </a>
-        </div>
+        <div className="h1">Review</div>
 
         {/* Tab switcher */}
         <div style={{ display: 'flex', gap: 0, marginTop: 8, marginBottom: 14, borderBottom: '1px solid var(--border)', flexWrap: 'wrap' }}>

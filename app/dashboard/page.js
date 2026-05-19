@@ -10,11 +10,5 @@ export default async function DashboardPage() {
   if (profile?.role === 'teacher' || profile?.role === 'manager') redirect('/teacher');
   if (profile?.role === 'admin') return <AdminDashboard />;
   const studentName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || null;
-  return (
-    <DashboardClient
-      email={user.email}
-      studentName={studentName}
-      accountCreatedAt={profile?.created_at || null}
-    />
-  );
+  return <DashboardClient email={user.email} studentName={studentName} />;
 }

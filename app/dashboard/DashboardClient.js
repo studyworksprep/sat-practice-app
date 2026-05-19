@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTestType } from '../../lib/TestTypeContext';
 import { savePracticeSession } from '../../lib/practiceSessionStorage';
-import HelpDashboardBanner from '../../components/HelpDashboardBanner';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
 const SUBJECT_LABEL = { rw: 'R&W', RW: 'R&W', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
@@ -658,7 +657,7 @@ function ActDashboardView({ email }) {
 
 // ── Main ──
 
-export default function DashboardClient({ email, studentName, accountCreatedAt }) {
+export default function DashboardClient({ email, studentName }) {
   const { testType } = useTestType();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -732,8 +731,6 @@ export default function DashboardClient({ email, studentName, accountCreatedAt }
 
   return (
     <main className="container dbMain">
-
-      <HelpDashboardBanner accountCreatedAt={accountCreatedAt} />
 
       {/* ── Banner ── */}
       <div className="card dbBanner">
