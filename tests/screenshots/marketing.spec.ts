@@ -40,11 +40,23 @@ type Shot = {
   hideCss?: string;
 };
 
+// Fixed UUIDs from the create-demo-accounts migration. We
+// reference them by name so the spec stays readable.
+const DEMO_ROSTER_STUDENT_ID = '00000000-0000-0000-0000-000000d30101';   // Imani Bellweather
+const DEMO_TUTOR_ID           = '00000000-0000-0000-0000-000000d30002';   // Morgan Reyes
+
 const STUDENT_SHOTS: Shot[] = [
   {
     filename: 'student-dashboard-1.png',
     path: '/dashboard',
     waitFor: '[data-testid="dashboard-banner"], main',
+  },
+  {
+    // Practice-history visualization. The slideshow uses this as
+    // "Track Your Progress Over Time" — every session + test
+    // charted. /practice/history is the natural source.
+    filename: 'student-dashboard-2.png',
+    path: '/practice/history',
   },
   {
     filename: 'review-hub.png',
@@ -53,11 +65,69 @@ const STUDENT_SHOTS: Shot[] = [
 ];
 
 const TUTOR_SHOTS: Shot[] = [
+  // ── Teacher persona (signed in as the demo manager, who is
+  //    their own teacher of record — the (tutor) layout serves
+  //    both roles).
   {
+    filename: 'teacher-dashboard-1.png',
+    path: '/tutor/dashboard',
+  },
+  {
+    // "Manage students" surface — the slideshow's second teacher
+    // shot is the roster management screen.
+    filename: 'teacher-dashboard-2.png',
+    path: '/tutor/roster',
+  },
+  // ── Per-student detail. The 1a/1b/2a/2b/3 variants in the
+  //    slideshow are different tabs / scroll positions on the
+  //    same page — capture each URL once; the slideshow already
+  //    chooses a sensible default tab to render. If we later
+  //    want truly distinct views, add `hideCss` or click some
+  //    UI before the snap.
+  {
+    filename: 'teacher-student-detail-1a.png',
+    path: `/tutor/students/${DEMO_ROSTER_STUDENT_ID}`,
+  },
+  {
+    filename: 'teacher-student-detail-1b.png',
+    path: `/tutor/students/${DEMO_ROSTER_STUDENT_ID}`,
+  },
+  {
+    filename: 'teacher-student-detail-2a.png',
+    path: `/tutor/students/${DEMO_ROSTER_STUDENT_ID}/stats`,
+  },
+  {
+    filename: 'teacher-student-detail-2b.png',
+    path: `/tutor/students/${DEMO_ROSTER_STUDENT_ID}/stats`,
+  },
+  {
+    filename: 'teacher-student-detail-3.png',
+    path: `/tutor/students/${DEMO_ROSTER_STUDENT_ID}`,
+  },
+  // ── Manager persona (team-level views).
+  {
+    // "Team roster" in the marketing deck = the list of teachers
+    // the manager oversees. /tutor/teachers is the right surface;
+    // /tutor/roster is the per-teacher student roster.
     filename: 'manager-team-roster.png',
-    path: '/tutor/team',
+    path: '/tutor/teachers',
+  },
+  {
+    filename: 'manager-tutor-activity.png',
+    path: `/tutor/teachers/${DEMO_TUTOR_ID}`,
+  },
+  {
+    filename: 'manager-roster-reports.png',
+    path: '/tutor/performance',
   },
 ];
+
+// NOTE: score-report-introview.png and score-report-bestview.png
+// reference /practice/test/attempt/<id>/results, which needs a
+// completed practice_test_attempts_v2 row in the seed data. The
+// current seed only populates `attempts` + `practice_sessions`;
+// extend scripts/seed-demo-data.mjs (or the SQL seed) to add a
+// completed test attempt before adding those entries here.
 
 // Hide elements with timestamps or progress bars whose exact
 // values change run-over-run. Keeps git diffs of regenerated
