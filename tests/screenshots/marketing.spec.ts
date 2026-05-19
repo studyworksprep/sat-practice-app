@@ -70,23 +70,31 @@ const STABILIZE_CSS = `
 
 async function signInAs(page: Page, persona: 'student' | 'tutor') {
   // /auth/demo/<persona> bounces through Supabase /verify and
-  // /auth/callback. A naive "not /auth/demo/*" predicate would
-  // resolve on the Supabase /verify hop, before our session
-  // cookies have been set by /auth/callback. Wait until the
-  // browser is back on the app domain and off any /auth/* path,
-  // which is the post-callback /dashboard landing.
+  // /auth/callback. There are two possible landing chains we
+  // need to wait through:
   //
-  // Note: do NOT waitForLoadState('networkidle') here. Vercel
-  // Analytics + the proxy's background session refresh keep the
-  // network busy past the 30s test timeout, so networkidle never
-  // fires on the dashboard. page.goto already waited for the
-  // final navigation's 'load' event, which is enough — the
-  // session cookies are in place by then.
+  //   Happy path  — Supabase accepts our redirect_to=/auth/callback
+  //                 and /auth/callback uses the sw_demo_next cookie:
+  //                 ends at /dashboard (or /tutor/dashboard).
+  //
+  //   Fallback    — Supabase rejects redirect_to against its
+  //                 project allowlist and falls back to Site URL
+  //                 with the session in the URL fragment. The
+  //                 client-side useAuthFragmentBounce in HomeClient
+  //                 then setSessions and window.location.replace's
+  //                 to /dashboard. For tutor that lands on
+  //                 /dashboard first, then the (student) layout
+  //                 redirects manager → /tutor/dashboard.
+  //
+  // The naive "any non-/auth/* URL" predicate fires on the Site URL
+  // fallback before the client-side bounce runs. Wait specifically
+  // for the persona's expected final URL.
+  const expectedHome = persona === 'student' ? '/dashboard' : '/tutor/dashboard';
   await page.goto(`/auth/demo/${persona}`);
   await page.waitForURL(
-    (url) => !url.hostname.includes('supabase.co')
-      && !url.pathname.startsWith('/auth/'),
-    { timeout: 20_000 },
+    (url) => url.pathname === expectedHome
+      && !url.hostname.includes('supabase.co'),
+    { timeout: 30_000 },
   );
 }
 
@@ -124,8 +132,15 @@ async function assertSignedIn(page: Page, persona: 'student' | 'tutor') {
   ).toBe(expectedHome);
 }
 
+// Default per-test timeout from playwright.config.ts is 30s, which
+// isn't enough for sign-in (up to 30s in the Site-URL-fallback +
+// client-bounce branch) plus a fan-out of waits-per-shot. Bump to
+// 90s so a slow capture run doesn't fail spuriously.
+const TEST_TIMEOUT_MS = 90_000;
+
 test.describe('marketing screenshots — student', () => {
   test('capture student surfaces', async ({ page }) => {
+    test.setTimeout(TEST_TIMEOUT_MS);
     await signInAs(page, 'student');
     await assertSignedIn(page, 'student');
     for (const shot of STUDENT_SHOTS) {
@@ -137,6 +152,7 @@ test.describe('marketing screenshots — student', () => {
 
 test.describe('marketing screenshots — tutor', () => {
   test('capture tutor surfaces', async ({ page }) => {
+    test.setTimeout(TEST_TIMEOUT_MS);
     await signInAs(page, 'tutor');
     await assertSignedIn(page, 'tutor');
     for (const shot of TUTOR_SHOTS) {

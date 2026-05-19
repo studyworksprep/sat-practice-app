@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 // GET /auth/demo/student   — signs the browser in as demo.student@studyworks.demo
 // GET /auth/demo/tutor     — signs the browser in as demo.tutor@studyworks.demo
@@ -11,18 +11,19 @@ import { createServiceClient } from '@/lib/supabase/server';
 // matching seeded data.
 //
 // Mechanism. We use the Supabase admin API to generate a
-// magic-link `action_link` (a Supabase /verify URL with the
-// hashed token already baked in), then 302-redirect the
-// browser to it. Supabase /verify exchanges the token for a
-// session and redirects to our existing /auth/callback?code=…
-// endpoint, which is the same code path a real magic-link click
-// uses. This avoids the route having to write session cookies
-// itself, which is fragile across @supabase/ssr versions.
+// magic-link `hashed_token`, then exchange it server-side via
+// verifyOtp({ token_hash, type: 'email' }) — the same code path
+// signup-confirmation uses. The session cookies are written
+// directly onto THIS response by @supabase/ssr's cookies
+// adapter, so we control where the user lands next (a clean
+// 302 to dest) and the auth chain never bounces through
+// Supabase's /verify redirect, which insists on returning the
+// session in the URL fragment for type=magiclink.
 //
 // Read-only guarantee. Demo accounts carry profiles.is_demo=true,
 // which the create-accounts migration mirrors into the JWT's
-// app_metadata. The proxy gates every non-GET request that
-// carries that flag (proxy.js), and the DB enforces it
+// app_metadata. The proxy gates every non-GET request to /api/*
+// that carries that flag (proxy.js), and the DB enforces it
 // authoritatively via the demo_readonly_* restrictive policies.
 // So even though we mint a real session here, the session can't
 // do anything destructive.
@@ -86,20 +87,6 @@ export async function GET(request, { params }) {
         ? requested
         : cfg.home;
 
-    // Where Supabase's /verify endpoint should redirect after it
-    // mints the session. /auth/callback handles the code-for-
-    // session exchange via exchangeCodeForSession() and then
-    // forwards to either ?next=, the demo-specific cookie set
-    // below, or the role-appropriate home.
-    //
-    // Do NOT append a query string to the redirect_to — Supabase
-    // checks redirect_to against an allowlist, and many projects
-    // configure exact-match URLs without query params. Anything
-    // unmatched falls back to the project's Site URL, which dumps
-    // the session in the URL fragment at `/`. We carry the demo
-    // destination via the `sw_demo_next` cookie instead.
-    const callback = new URL('/auth/callback', url.origin);
-
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return plainError(
         'Server is missing SUPABASE_SERVICE_ROLE_KEY.',
@@ -107,29 +94,51 @@ export async function GET(request, { params }) {
       );
     }
 
+    // 1) Mint a magic-link hashed_token via the admin API.
+    //    generateLink returns properties.hashed_token even when
+    //    no email is sent. We never use the action_link itself —
+    //    the previous version of this route 302'd the browser to
+    //    Supabase /verify, but for type=magiclink that endpoint
+    //    insists on returning the session as a URL fragment
+    //    (implicit flow), which our server-side /auth/callback
+    //    can't read. Exchanging the token server-side avoids the
+    //    fragment dance entirely.
     const service = createServiceClient();
-    const { data, error } = await service.auth.admin.generateLink({
+    const { data, error: linkErr } = await service.auth.admin.generateLink({
       type: 'magiclink',
       email: cfg.email,
-      options: { redirectTo: callback.toString() },
     });
-    if (error || !data?.properties?.action_link) {
+    if (linkErr || !data?.properties?.hashed_token) {
       return plainError(
-        'Could not generate a demo session link.',
+        'Could not generate a demo session token.',
         500,
-        error?.message,
+        linkErr?.message,
       );
     }
 
-    const response = NextResponse.redirect(data.properties.action_link);
-    response.cookies.set('sw_demo_next', dest, {
-      path: '/',
-      maxAge: 300,
-      sameSite: 'lax',
-      httpOnly: true,
-      secure: true,
+    // 2) Exchange the hashed_token for a session. type='email' is
+    //    the verifier for hashed tokens from generateLink — type=
+    //    'magiclink' there expects the (unhashed) email_otp, not
+    //    the hashed_token, and was the silent-failure cause of
+    //    the earlier verifyOtp attempt. The cookie-aware client
+    //    writes the session cookies through @supabase/ssr's
+    //    adapter onto THIS response (we're in a route handler so
+    //    cookies() is writable), which is what makes the next
+    //    page render see the demo session.
+    const supabase = await createClient();
+    const { error: verifyErr } = await supabase.auth.verifyOtp({
+      token_hash: data.properties.hashed_token,
+      type: 'email',
     });
-    return response;
+    if (verifyErr) {
+      return plainError(
+        'Could not verify the demo session token.',
+        500,
+        verifyErr.message,
+      );
+    }
+
+    return NextResponse.redirect(new URL(dest, url.origin));
   } catch (err) {
     return plainError(
       'Unexpected error while starting the demo session.',
