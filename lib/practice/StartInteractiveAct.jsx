@@ -18,7 +18,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { Card } from '@/lib/ui/Card';
 import { IconTile } from '@/lib/ui/IconTile';
 import { QuestionBankIcon } from '@/lib/ui/icons';
 import s from './StartInteractiveAct.module.css';
@@ -167,45 +166,55 @@ export function StartInteractiveAct({
   const actualSize = count == null ? size : Math.min(count, size);
   const canSubmit = !isSubmitting && count !== 0;
 
-  // Category + subcategory are treated as two parallel paths to
-  // the same content. The category checkbox = "everything in this
-  // category"; the subcategory dropdown = "just these narrower
-  // buckets". Picking one mode clears the other so the form
-  // never carries redundant filters.
-
+  // Category + subcategory state.
+  //
+  // For categories WITHOUT subcategories (Math IES, Reading,
+  // Science): the category is its own leaf, tracked in
+  // selectedCategories. Sent to the server as `category=...`.
+  //
+  // For categories WITH subcategories (Math PHM, the three
+  // English categories): clicking the category checkbox is
+  // sugar for "select all of this category's subcategories",
+  // so selectedSubcategories is the single source of truth.
+  // The category checkbox visual state is derived: on when
+  // every sub is selected, partial when some-but-not-all,
+  // off when none. selectedCategories never holds parent
+  // category names with subs — keeps the submitted form tidy
+  // and makes the sub checkboxes inside the dropdown flip
+  // on/off in sync with the parent click.
   function toggleCategory(category) {
-    const isOn = selectedCategories.has(category.name);
-    setSelectedCategories((prev) => {
-      const next = new Set(prev);
-      if (isOn) next.delete(category.name);
-      else next.add(category.name);
-      return next;
-    });
-    // Turning ON the category clears its subcategory picks
-    // (the category check already covers them). Turning OFF
-    // also clears them — the student is removing this whole
-    // bucket from consideration.
+    const subs = category.subcategories ?? [];
+    if (subs.length === 0) {
+      // Leaf category: toggle in selectedCategories.
+      const isOn = selectedCategories.has(category.name);
+      setSelectedCategories((prev) => {
+        const next = new Set(prev);
+        if (isOn) next.delete(category.name);
+        else next.add(category.name);
+        return next;
+      });
+      return;
+    }
+    // Parent category with subs: select-all / clear-all
+    // semantics. Partial state acts as "complete the
+    // selection" (standard tristate UX) — flip to all-on.
+    const allOn = subs.every((sub) => selectedSubcategories.has(sub.name));
     setSelectedSubcategories((prev) => {
-      if (!(category.subcategories ?? []).length) return prev;
       const next = new Set(prev);
-      for (const sub of category.subcategories) next.delete(sub.name);
+      if (allOn) {
+        for (const sub of subs) next.delete(sub.name);
+      } else {
+        for (const sub of subs) next.add(sub.name);
+      }
       return next;
     });
   }
 
-  function toggleSubcategory(subName, parentCategoryName) {
+  function toggleSubcategory(subName) {
     setSelectedSubcategories((prev) => {
       const next = new Set(prev);
       if (next.has(subName)) next.delete(subName);
       else next.add(subName);
-      return next;
-    });
-    // If the parent category was checked as a whole, switching
-    // to per-subcategory mode clears the bulk check.
-    setSelectedCategories((prev) => {
-      if (!prev.has(parentCategoryName)) return prev;
-      const next = new Set(prev);
-      next.delete(parentCategoryName);
       return next;
     });
   }
@@ -238,7 +247,12 @@ export function StartInteractiveAct({
         </section>
       )}
 
-      <Card>
+      {/* Filter card. Plain styled div rather than the Card
+          primitive because Card defaults to tone='soft' which
+          paints a slate-50 background — we want the launcher
+          card to read as a clean white surface against the
+          page background. */}
+      <div className={s.card}>
         <div className={s.cardHeader}>
           <div className={s.cardHeaderLeft}>
             <IconTile icon={QuestionBankIcon} palette="cyan" size="md" />
@@ -345,7 +359,7 @@ export function StartInteractiveAct({
             </div>
           )}
         </form>
-      </Card>
+      </div>
     </main>
   );
 }
@@ -372,11 +386,20 @@ function SectionBlock({
       <ul className={s.categoryList}>
         {section.categories.map((cat) => {
           const hasSubs = (cat.subcategories ?? []).length > 0;
-          const categoryOn = selectedCategories.has(cat.name);
           const selectedSubs = hasSubs
             ? cat.subcategories.filter((sub) => selectedSubcategories.has(sub.name))
             : [];
-          const partial = !categoryOn && selectedSubs.length > 0;
+          // For categories with subs, the checkbox state is
+          // derived from the sub picks: on iff all subs are
+          // selected, partial iff some-but-not-all. For leaf
+          // categories (no subs) we still consult
+          // selectedCategories directly.
+          const categoryOn = hasSubs
+            ? selectedSubs.length === cat.subcategories.length
+            : selectedCategories.has(cat.name);
+          const partial = hasSubs
+            ? selectedSubs.length > 0 && selectedSubs.length < cat.subcategories.length
+            : false;
           return (
             <li key={cat.name} className={s.categoryItem}>
               <label className={`${s.categoryRow} ${categoryOn ? s.categoryRowOn : ''} ${partial ? s.categoryRowPartial : ''}`}>
@@ -410,7 +433,7 @@ function SectionBlock({
                               type="checkbox"
                               className={s.checkbox}
                               checked={subOn}
-                              onChange={() => onToggleSubcategory(sub.name, cat.name)}
+                              onChange={() => onToggleSubcategory(sub.name)}
                             />
                             <span className={s.subcategoryName}>{sub.name}</span>
                             <span className={s.subcategoryCount}>{sub.count}</span>

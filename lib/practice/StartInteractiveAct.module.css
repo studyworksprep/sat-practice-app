@@ -61,7 +61,19 @@
 
 .resumeBtn:hover { opacity: 0.92; }
 
-/* ---------- Card frame ---------- */
+/* ---------- Card frame ----------
+   Plain white surface for the filter card. Bypasses the Card
+   primitive because that defaults to a slate-50 background.
+   Shadow + border give the white card visible separation from
+   the page bg (#f9fafb) without needing to darken the page. */
+
+.card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 20px 22px;
+}
 
 .cardHeader {
   display: flex;
