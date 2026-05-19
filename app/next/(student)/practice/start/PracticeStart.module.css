@@ -3,20 +3,30 @@
    SAT-first per docs/architecture-plan.md §3.4. The tabs are a
    light row of links above the existing StartInteractive layout;
    they don't compete visually with the form below.
+
+   Tabs are aligned to the same max-width (1180px) as both
+   launcher cards, with the active tab styled as a paper folder
+   tab that visually connects to the filter card below. The
+   bottom border + connecting overlap reads as one continuous
+   surface from tab to card.
 ============================================================= */
 
 .tabs {
+  /* Centered, capped at the launcher's max-width so the tabs
+     sit above the filter card rather than hugging the body
+     edge on wide screens. */
+  max-width: 1180px;
+  margin: 0 auto -1px;
+  padding: 12px 24px 0;
   display: flex;
   gap: 4px;
-  padding: 8px 0 0;
-  margin-bottom: -8px;
   border-bottom: 1px solid var(--border);
 }
 
 .tab {
   display: inline-flex;
   align-items: center;
-  padding: 8px 16px;
+  padding: 8px 18px;
   border: 1px solid transparent;
   border-bottom: none;
   border-top-left-radius: var(--radius-md);
@@ -28,7 +38,8 @@
   text-decoration: none;
   transition: background var(--dur-fast) var(--ease-std),
               color var(--dur-fast) var(--ease-std),
-              border-color var(--dur-fast) var(--ease-std);
+              border-color var(--dur-fast) var(--ease-std),
+              box-shadow var(--dur-fast) var(--ease-std);
 }
 
 .tab:hover {
@@ -37,15 +48,22 @@
 }
 
 .tabActive {
-  background: var(--card);
+  background: var(--bg-white);
   border-color: var(--border);
   color: var(--fg1);
-  /* Pull the active tab down one pixel so it overlaps the bottom
-     border of the tabs row — the classic "selected tab connects
-     to the panel below" look. */
+  /* Pull the active tab down one pixel so it overlaps the
+     tabs-row bottom border — the classic folder-tab effect
+     that visually connects the tab to the card below. */
   margin-bottom: -1px;
+  /* Subtle lift so the tab reads as a paper edge, not a flat
+     button. The shadow is asymmetric (stronger on top and
+     sides, none below) so the bottom edge can dissolve into
+     the card. */
+  box-shadow: 0 -1px 2px rgba(15, 23, 42, 0.04),
+              -1px 0 2px rgba(15, 23, 42, 0.03),
+              1px 0 2px rgba(15, 23, 42, 0.03);
 }
 
 .tabActive:hover {
-  background: var(--card);
+  background: var(--bg-white);
 }

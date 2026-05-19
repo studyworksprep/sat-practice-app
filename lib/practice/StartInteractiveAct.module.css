@@ -12,7 +12,9 @@
 ============================================================= */
 
 .main {
-  max-width: 980px;
+  /* Match the SAT launcher's max-width so the filter card lines
+     up with the tabs and the rest of the new tree. */
+  max-width: 1180px;
   margin: 0 auto;
   padding: 24px 24px 64px;
   display: flex;
@@ -95,201 +97,239 @@
   gap: 20px;
 }
 
-/* ---------- Section grid ----------
-   Each ACT section is a stacked row: header (clickable to select
-   the whole section), then a small toggle for the category list,
-   then the categories themselves. Two columns at wider widths;
-   single column on phone-width. */
+/* ---------- Sections + categories ----------
+   Each ACT section renders as a labeled block: section name as
+   a header above its category list. Categories appear as rows
+   with checkboxes shown by default — matches the SAT launcher
+   where domains are visible inside their Math / R&W column
+   labels. Categories with named subcategories carry a "▾"
+   dropdown that opens a panel of subcategory checkboxes.
 
-.domainsGrid {
+   No inner card boundaries — the parent <Card> is the only
+   surface, so the whole filter reads as one unified white
+   block. */
+
+.sectionsGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: 20px;
 }
 
-@media (min-width: 720px) {
-  .domainsGrid {
+@media (min-width: 760px) {
+  .sectionsGrid {
     grid-template-columns: 1fr 1fr;
+    gap: 28px 32px;
   }
 }
 
-.domainBlock {
+.sectionBlock {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-white);
 }
 
-.domainRow {
+.sectionHeader {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding: 6px 0;
-  border: none;
-  background: transparent;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--fg1);
-  text-align: left;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: background var(--dur-fast) var(--ease-std);
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-serif, inherit);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg2);
 }
 
-.domainRow:hover {
-  background: var(--color-slate-50);
-}
-
-.domainRowOn {
-  color: var(--color-app-accent);
-}
-
-.domainRowOn .domainCount {
-  background: var(--color-app-accent);
-  color: var(--bg-white);
-}
-
-.domainName {
+.sectionHeaderName {
   flex: 1;
   min-width: 0;
 }
 
-.domainCount {
+.sectionHeaderCount {
+  font-family: var(--font-sans, inherit);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
   background: var(--color-slate-100);
   color: var(--fg2);
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 999px;
-  white-space: nowrap;
 }
 
-.skillsToggle {
-  align-self: flex-start;
-  border: none;
-  background: transparent;
-  padding: 4px 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--fg3);
-  cursor: pointer;
-}
-
-.skillsToggle:hover {
-  color: var(--fg1);
-}
-
-.skillList {
+.categoryList {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  border-top: 1px solid var(--border);
-  padding-top: 8px;
+  gap: 2px;
 }
 
-.skillRow {
+.categoryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.categoryRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
-  padding: 6px 8px;
+  padding: 8px 10px;
   border: 1px solid transparent;
-  background: transparent;
   border-radius: var(--radius-sm);
   font-family: inherit;
-  font-size: 13px;
-  color: var(--fg2);
-  text-align: left;
-  cursor: pointer;
-  width: 100%;
-}
-
-.skillRow:hover {
-  background: var(--color-slate-50);
+  font-size: 14px;
   color: var(--fg1);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std);
 }
 
-.skillRowOn {
+.categoryRow:hover {
+  background: var(--color-slate-50);
+}
+
+.categoryRowOn {
   background: var(--color-app-accent-soft);
   border-color: var(--color-app-accent);
   color: var(--color-app-accent);
   font-weight: 600;
 }
+.categoryRowOn:hover {
+  background: var(--color-app-accent-soft);
+}
 
-.skillCount {
+.categoryRowPartial {
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
+.categoryName {
+  flex: 1;
+  min-width: 0;
+}
+
+.categoryCount {
   font-size: 11px;
   color: var(--fg3);
   font-variant-numeric: tabular-nums;
 }
 
-.skillRowOn .skillCount {
+.categoryRowOn .categoryCount,
+.categoryRowPartial .categoryCount {
   color: var(--color-app-accent);
 }
 
-/* Subcategory drilldown. One level deeper than the category
-   list — same vocabulary but indented + smaller so the
-   hierarchy reads at a glance. */
-.subcategoriesToggle {
-  align-self: flex-start;
-  margin-left: 18px;
-  border: none;
-  background: transparent;
-  padding: 2px 0 4px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--fg3);
+/* The native checkbox is styled to look like a small square
+   indicator, matching the rest of the form's button visuals.
+   The :indeterminate state shows a dash so partial states
+   (some-but-not-all subcategories selected) read clearly. */
+.checkbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--color-app-accent);
   cursor: pointer;
 }
-.subcategoriesToggle:hover {
+
+/* Subcategory dropdown using <details> for native disclosure.
+   Indented under the category row with a left rail border so
+   the parent → child relationship reads at a glance. */
+.subcategoryDropdown {
+  margin: 2px 0 6px 28px;
+  padding: 0 0 0 12px;
+  border-left: 1px solid var(--border);
+}
+
+.subcategorySummary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg3);
+  cursor: pointer;
+  user-select: none;
+}
+.subcategorySummary::-webkit-details-marker {
+  display: none;
+}
+.subcategorySummary::after {
+  content: '▾';
+  font-size: 10px;
+  margin-left: 2px;
+  color: var(--fg3);
+}
+.subcategoryDropdown[open] .subcategorySummary::after {
+  transform: rotate(180deg);
+}
+.subcategorySummary:hover {
   color: var(--fg1);
+  background: var(--color-slate-50);
+}
+
+.subcategoryBadge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  padding: 1px 6px;
+  border-radius: 999px;
+  text-transform: none;
 }
 
 .subcategoryList {
   list-style: none;
-  padding: 0 0 0 18px;
-  margin: 4px 0 6px;
+  padding: 4px 0 4px;
+  margin: 4px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  border-left: 1px solid var(--border);
+  gap: 1px;
 }
 
 .subcategoryRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
-  padding: 4px 8px;
+  padding: 5px 8px;
   border: 1px solid transparent;
-  background: transparent;
   border-radius: var(--radius-sm);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--fg2);
-  text-align: left;
   cursor: pointer;
-  width: 100%;
 }
 .subcategoryRow:hover {
   background: var(--color-slate-50);
   color: var(--fg1);
 }
 .subcategoryRowOn {
-  background: var(--color-app-accent-soft);
-  border-color: var(--color-app-accent);
   color: var(--color-app-accent);
   font-weight: 600;
 }
-.subcategoryRowOn .skillCount {
+
+.subcategoryName {
+  flex: 1;
+  min-width: 0;
+}
+
+.subcategoryCount {
+  font-size: 11px;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+}
+.subcategoryRowOn .subcategoryCount {
   color: var(--color-app-accent);
 }
 
