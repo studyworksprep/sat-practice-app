@@ -276,6 +276,14 @@ export default function PracticePage() {
         </div>
       )}
 
+      {!isPrivilegedRole && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6, marginBottom: -2 }}>
+          <a href="/help/question-bank" className="muted" style={{ fontSize: 13, textDecoration: 'none' }}>
+            How to use the Question Bank →
+          </a>
+        </div>
+      )}
+
       {/* Full-width filter panel */}
       <Filters onChange={setFilters} onStartSession={handleStartSession} userRole={userRole} />
       {msg && <Toast kind={msg?.kind} message={msg?.text} />}

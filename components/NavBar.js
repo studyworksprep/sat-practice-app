@@ -223,6 +223,7 @@ export default function NavBar({ uiTree = 'legacy' }) {
                 {!isPractice && <Link href="/practice-test">Tests</Link>}
                 <Link href="/practice">Question Bank</Link>
                 {!isPractice && <Link href="/review">Review</Link>}
+                {!isTeacher && <Link href="/help">Help</Link>}
                 {(isAdmin || isManager) && <Link href="/teachers">Teachers</Link>}
               </div>
             )}
