@@ -20,26 +20,28 @@ export const HELP_ARTICLES = [
       {
         heading: 'What Studyworks is for',
         html: `
-<p>Studyworks is your home base for SAT and ACT practice. Everything here is built around three things:</p>
+<p>Welcome — glad you're here. Studyworks is your home base for SAT and ACT practice, and the goal of this Help section is to make sure you can use it confidently on your own.</p>
+<p>The whole platform is built around three things:</p>
 <ul>
-  <li><strong>Practice the right questions</strong> — focused sessions on the skills you most need to work on.</li>
-  <li><strong>Capture what you got wrong</strong> — every mistake becomes a Note or an Error Log entry you can come back to.</li>
-  <li><strong>Take full-length practice tests</strong> — adaptive SAT and ACT simulations so you can track real score progress.</li>
+  <li><strong>Practice the right questions.</strong> Instead of grinding through random sets, you'll run focused sessions on the specific skills that are limiting your score right now.</li>
+  <li><strong>Turn each lesson into something you'll remember.</strong> Studyworks gives you three different study tools — Flashcards, Error Log entries, and Notes — so you can capture every kind of learning in the place where it'll be most useful later.</li>
+  <li><strong>Measure progress with realistic practice tests.</strong> Full-length, adaptive simulations of the digital SAT and the ACT, so you always know where you actually stand.</li>
 </ul>
-<p>You don't need a tutor to use it well. The guides in this Help section walk you through every tab in the top nav, plus a study routine you can run on your own.</p>
+<p>You don't need a tutor to use any of this well — plenty of students hit big score gains on their own. The articles in this Help section walk you through every tab in the top nav, explain the three study tools and when to use each, and lay out a self-study routine you can follow week by week. Skim what's useful; come back when something new comes up.</p>
         `,
       },
       {
         heading: 'Your first week — do this',
         html: `
+<p>This is the simple loop. Don't worry about being perfect — just get the rhythm started.</p>
 <ol>
-  <li><strong>Take a baseline practice test.</strong> Open the <a href="/practice/tests"><em>Practice tests</em></a> tab and complete one full-length test. This gives you a starting score and tells the platform what to recommend.</li>
-  <li><strong>Check your Dashboard.</strong> Look at your weakest skills in the Performance grid — these are what to work on first.</li>
-  <li><strong>Run a Practice session every day.</strong> Open <a href="/practice/start"><em>Practice</em></a>, filter to one of your weak skills, and do 10-15 questions. Build the habit.</li>
-  <li><strong>Use Notes after every miss.</strong> When you get a question wrong, the runner lets you write a quick Error Log entry. Do it — it's the difference between forgetting the mistake and fixing it.</li>
-  <li><strong>Re-test every two weeks.</strong> Take another practice test to measure progress.</li>
+  <li><strong>Take a baseline practice test.</strong> Open the <a href="/practice/tests"><em>Practice tests</em></a> tab and complete one full-length test under realistic conditions. It feels intimidating before you do it, but it's the single most useful thing you can do in week one: it gives you a starting score, tells the platform what to recommend, and makes the rest of your prep concrete.</li>
+  <li><strong>Spend half an hour with your Dashboard.</strong> Look at the Performance grid — those segmented bars show your accuracy on every skill. The red and yellow segments are where the points are hiding. Pick two or three skills to focus on first.</li>
+  <li><strong>Run a Practice session each weekday.</strong> Open <a href="/practice/start"><em>Practice</em></a>, click the skills you chose, and do 10-15 questions. Some days it'll feel hard — that's the point. The questions you struggle with are the ones teaching you something.</li>
+  <li><strong>Capture every miss with the right tool.</strong> Studyworks gives you three ways to save what you learn: <strong>Flashcards</strong> for a term or formula you didn't know, <strong>Error Log</strong> for a process mistake or a trap you fell for, and <strong>Notes</strong> for a topic you need to actually learn. Choosing well takes about ten seconds and pays off for the rest of your prep — see the <a href="/help/notes">Notes guide</a> for examples.</li>
+  <li><strong>Re-test every two weeks.</strong> Take another practice test, compare the score, and adjust which skills you're targeting. Real movement shows up over weeks, not days, so don't panic if a single session goes badly.</li>
 </ol>
-<p>That's the whole loop. The rest of this Help section explains each piece in detail.</p>
+<p>That's the whole loop. Everything else in this Help section explains pieces of it in more detail — read whichever ones feel relevant when a question comes up.</p>
         `,
       },
       {
@@ -115,14 +117,16 @@ export const HELP_ARTICLES = [
       {
         heading: 'Performance grid',
         html: `
-<p>Two columns — <strong>Math</strong> and <strong>Reading &amp; Writing</strong> — each split by domain (Algebra, Advanced Math, Information and Ideas, Standard English Conventions, etc.). Each domain expands to show your accuracy on individual skills.</p>
+<p>This is the most useful section on the Dashboard — the one to come back to whenever you're not sure what to practice next.</p>
+<p>You'll see two columns: <strong>Math</strong> and <strong>Reading &amp; Writing</strong>. Each one is broken into domains (Algebra, Advanced Math, Information and Ideas, Standard English Conventions, and so on). Inside each domain bar you'll see <strong>colored segments</strong> — one per skill in that domain. The width of a segment shows how much you've practiced that skill; the color shows how well you're doing on it.</p>
 <p>Color tones:</p>
 <ul>
-  <li><strong>Green</strong> (80%+): you have this. Maintain.</li>
-  <li><strong>Yellow / amber</strong> (50-79%): inconsistent. More reps will fix this.</li>
-  <li><strong>Red</strong> (under 50%): a real weakness. Prioritize.</li>
+  <li><strong>Green</strong> (80%+): you have this skill. Maintain it with the occasional question; don't waste time grinding here.</li>
+  <li><strong>Yellow / amber</strong> (50-79%): you know it, but inconsistently. More reps will turn this green — these skills usually give the fastest gains.</li>
+  <li><strong>Red</strong> (under 50%): a real weakness. Slow down, read the rationales carefully, and treat anything you don't understand as a topic to actually learn (a Note), not just to re-attempt.</li>
 </ul>
-<p>Take an ACT? An ACT performance card appears here too, with the same shape. If you've never attempted an ACT question, the ACT card is hidden.</p>
+<p>Hover or tap a segment to see which skill it represents and your accuracy on it. When you're picking what to practice, scan for the red and yellow segments inside the domains you care about most.</p>
+<p>Take ACT questions too? A separate ACT performance card appears here with the same shape. If you've never attempted an ACT question, that card stays hidden so the page doesn't feel cluttered.</p>
         `,
       },
       {
@@ -149,29 +153,30 @@ export const HELP_ARTICLES = [
       {
         heading: 'Starting a session',
         html: `
-<p>Open the <em>Practice</em> tab. On the start page you'll see:</p>
+<p>Open the <em>Practice</em> tab. The filter panel lays out everything you need to pick what to work on:</p>
 <ul>
-  <li><strong>Subject toggle</strong> — Math or Reading &amp; Writing. (Take the ACT? Switch tests at the top.)</li>
-  <li><strong>Domain &amp; Skill filters</strong> — narrow to one skill or a cluster of related skills. <em>This is the high-leverage move</em>: 15 questions on one skill teaches more than 15 random questions.</li>
-  <li><strong>Difficulty</strong> — Easy, Medium, Hard. Match your level, then push up.</li>
-  <li><strong>Score band</strong> — 1 through 7. Score bands tell you which scoring tier the question discriminates (see <a href="/help/scores">Understanding Your Scores</a>).</li>
-  <li><strong>Session size + order</strong> — set how many questions, then hit <strong>Start</strong>.</li>
+  <li><strong>Math and Reading &amp; Writing columns</strong> — the two subjects sit side by side. You can pick skills from one column, the other, or both. There's no toggle, so a mixed session (a little Math, a little R&amp;W) is one click away if that's what you want. If you also practice ACT questions, switch tests with the tab at the top.</li>
+  <li><strong>Domain &amp; Skill filters</strong> — each domain expands to show its individual skills. <em>This is the high-leverage move</em>: a session of 15 questions on one skill teaches you far more than 15 random questions across the whole test. When in doubt, pick the weakest skill you can see on your Dashboard and click just that one.</li>
+  <li><strong>Difficulty</strong> — Easy, Medium, or Hard. Match your current level, then push up when you start getting most questions right. Mixing in one or two harder questions per session is fine; an all-Hard session early on usually just frustrates.</li>
+  <li><strong>Score band</strong> — a precise 1-to-7 difficulty rating that lines up with the public Easy/Medium/Hard buckets. See <a href="/help/scores">Understanding Your Scores</a> for the full mapping.</li>
+  <li><strong>Session size and order</strong> — pick how many questions and whether you want them randomized, then hit <strong>Start</strong>. A live counter shows how many questions match your filters before you commit.</li>
 </ul>
-<p>If you have a session already in progress, a <strong>Resume</strong> card appears at the top instead — you can pick up where you left off.</p>
+<p>If you already have a session in progress, a <strong>Resume</strong> card appears at the top so you can pick up exactly where you left off. Studyworks remembers your spot, your answers, and any notes you wrote, so it's safe to close the tab whenever you need to.</p>
         `,
       },
       {
         heading: 'Inside the session — what each control does',
         html: `
+<p>The runner is intentionally similar to the real digital SAT so the layout feels familiar on test day. Here's what each piece does:</p>
 <ul>
-  <li><strong>Question chips</strong> at the top — jump to any question in the session.</li>
-  <li><strong>Mark for review</strong> — flag a question to come back to. The flag persists into the post-session report.</li>
-  <li><strong>Desmos</strong> — the embedded calculator (Math). Same one you'll use on the digital SAT. Use it.</li>
-  <li><strong>Reference sheet</strong> — formula reference (Math).</li>
-  <li><strong>Error Log button</strong> — after you submit an answer, write a quick note about what tripped you up. Stored as a Note tied to that question. <strong>This is the single most useful habit you can build</strong> — see <a href="/help/notes">Notes</a>.</li>
-  <li><strong>Rationale</strong> — every question has a written explanation. Read it even when you got it right, especially if you guessed.</li>
+  <li><strong>Question chips at the bottom</strong> — small numbered chips along the bottom of the page let you jump to any question in the session. Chips fill in as you answer; flagged questions get a marker so they're easy to find later.</li>
+  <li><strong>Mark for review</strong> — flag a question to come back to. The flag persists into the post-session report and into your Marked filter on the Practice page.</li>
+  <li><strong>Reveal Answer</strong> — once you've committed to a choice, hitting <strong>Reveal Answer</strong> shows both the correct answer and the full written rationale. Always read the rationale, even on questions you got right — sometimes you'll discover you got there for the wrong reason, which is a silent score leak worth fixing.</li>
+  <li><strong>Desmos calculator</strong> — the same embedded calculator you'll use on the digital SAT (Math only). Use it on every practice session; muscle memory matters on test day.</li>
+  <li><strong>Reference sheet</strong> — the Math formula sheet, one click away. Keep using it even when you remember the formula — it teaches you to find what you need fast.</li>
+  <li><strong>Error Log button</strong> — appears after you reveal the answer. One of three places to capture what you learned from the question (Flashcards and Notes are the other two; see the <a href="/help/notes">Notes guide</a> for which to use when).</li>
 </ul>
-<p>You can leave a session and come back. Progress saves automatically.</p>
+<p>You can leave a session at any time and come back. Progress saves automatically — your answers, your reveals, and your notes are all preserved.</p>
         `,
       },
       {
@@ -248,50 +253,55 @@ export const HELP_ARTICLES = [
     order: 5,
     sections: [
       {
-        heading: 'Why Notes matters more than new questions',
+        heading: 'Why the Notes tab matters more than new questions',
         html: `
-<p>The single biggest difference between students who improve fast and students who plateau is what they do with their wrong answers. Doing more questions while forgetting the same mistakes is a treadmill. Capturing and revisiting mistakes is how the score moves.</p>
-<p>The <a href="/notes">Notes</a> tab is the platform's home for that. It has three things in one place:</p>
-<ul>
-  <li><strong>Notes</strong> — free-form, rich-text notes you write.</li>
-  <li><strong>Error Log</strong> — one entry per question you got wrong, with your explanation of what went wrong.</li>
-  <li><strong>Flashcards</strong> — vocab, formulas, and rules in a spaced-repetition flow.</li>
-</ul>
+<p>The single biggest difference between students who improve fast and students who plateau isn't talent or hours — it's what they do with what they get wrong. Doing more questions while forgetting the same mistakes is a treadmill: a lot of effort, not much movement. Capturing what you learn from each miss is what actually moves the score.</p>
+<p>That's what the <a href="/notes">Notes</a> tab is for. It gives you <strong>three different study tools</strong> in one place, and the most important thing to learn is which one to reach for in which situation. Read the next section carefully — this is the part most students miss.</p>
         `,
       },
       {
-        heading: 'Notes — free-form study material',
+        heading: 'Choosing the right tool — Flashcards vs Error Log vs Notes',
         html: `
-<p>A Note is a rich-text document. You can format text, embed math, draw diagrams (Excalidraw), and tag the note with arbitrary labels. Each note can optionally be linked to a specific question — when it is, the platform auto-fills the subject, domain, and skill so you can filter on them later.</p>
-<p>Useful for:</p>
-<ul>
-  <li>Summary sheets for a topic ("Geometry circle rules")</li>
-  <li>Vocabulary lists with example sentences</li>
-  <li>Working through hard problems in your own words</li>
-  <li>Strategy reminders to read before a practice test</li>
-</ul>
-<p>Open <a href="/notes">/notes</a> to see all your notes; click <strong>+ New note</strong> to create one. Use the sidebar to filter by subject, domain, skill, or tag.</p>
+<p>When you get a question wrong (or get it right but feel shaky about it), ask yourself: <em>what specifically did I just learn?</em> The answer points to one of three tools.</p>
+<p><strong>📇 Flashcard</strong> — use this when the lesson is a single piece of information you need to remember on demand. A vocabulary word and its definition. A geometry formula. A grammar rule like "semicolons join two independent clauses." Flashcards are best at the small, atomic stuff: one fact per card, drilled into long-term memory through repetition. If you can write it as a question-and-answer pair, it belongs on a flashcard.</p>
+<p><strong>🔁 Error Log</strong> — use this when the lesson is about your <em>process</em>: a trap you fell for, a step you skipped, a misread, a wrong assumption. "I assumed 'except' meant the same as 'such as.'" "I solved for x but the question asked for 2x." "I picked the most extreme answer choice without checking." Error Log entries aren't about content you didn't know — they're about the specific habit you want to change. Next time you face the same kind of question, your past note pops up and reminds you not to make the same move.</p>
+<p><strong>📓 Notes</strong> — use this when the lesson is a concept that needs explaining, not just memorizing. A multi-step solution method. A topic you genuinely don't understand yet. Anything with multiple parts, examples, diagrams, or worked steps. Notes are full rich-text documents: you can format text, embed math, draw diagrams, and tag the note with the topic it covers. Use them when a flashcard would feel too small and an Error Log entry wouldn't say enough.</p>
+<p>If you're not sure which one applies, ask: <em>could I explain this on a single index card? could I sum it up as "next time, do X instead of Y"? or does it actually need a paragraph?</em> The right tool is usually obvious once you frame it that way.</p>
         `,
       },
       {
-        heading: 'Error Log — one entry per missed question',
+        heading: 'Notes — for concepts you need to actually learn',
         html: `
-<p>When you get a question wrong in a Practice session, the runner gives you an <strong>Error Log</strong> button. Click it and write a short note about <em>why</em> you missed it — content gap? Misread the question? Bad guess? The note saves to your Error Log, attached to that question.</p>
-<p>Why this matters: weeks later, when you see the same question again in Smart Review or a Common Errors drill, your past note pops up. "Right — I misread 'except'. Don't do it this time." That's how a mistake actually stops happening.</p>
-<p>Two places to look at the Error Log:</p>
+<p>A Note is a full rich-text document. You can format text, embed math notation, draw diagrams with Excalidraw, and tag the note with any labels you like. Each note can be linked to a specific question; when it is, the subject, domain, and skill auto-fill so you can filter on them later.</p>
+<p>Good things to make a Note about:</p>
 <ul>
-  <li><a href="/notes/error-log"><strong>/notes/error-log</strong></a> — the management view. Skim the full list, see latest-correct vs latest-wrong counts, expand any entry to see the original question.</li>
-  <li><a href="/review/error-log"><strong>/review/error-log</strong></a> — the study view. Each entry is fully expanded with the question, options, rationale, and your note side by side. Use this for a sit-down review session.</li>
+  <li>A topic-level summary sheet — "How to handle systems of equations word problems," with the method, two worked examples, and the traps to watch for.</li>
+  <li>A vocabulary list with example sentences in context (better than flashcards once the word has multiple shades of meaning).</li>
+  <li>A hard problem worked through in your own words, so the explanation makes sense to <em>you</em>.</li>
+  <li>A pre-test checklist — strategies, timing notes, reminders to read before a practice test.</li>
 </ul>
-<p><strong>Habit to build:</strong> write an Error Log note for every wrong answer for the first month. It feels tedious; it's the highest-leverage habit on the platform.</p>
+<p>Open <a href="/notes">/notes</a> to see everything you've written. Click <strong>+ New note</strong> to start a new one. The sidebar lets you filter by subject, domain, skill, or any tag you've used.</p>
         `,
       },
       {
-        heading: 'Flashcards — short bursts, spaced repetition',
+        heading: 'Error Log — for fixing your process',
         html: `
-<p>The <a href="/notes/flashcards">Flashcards</a> page shows your flashcard sets — both your own and the default vocab sets. Each card tracks a 0-5 mastery score; cards you miss come back more often.</p>
-<p>Best used in 5-10 minute bursts: on the bus, between classes, before bed. Not a replacement for question practice, but a real boost on vocab- and formula-heavy content.</p>
-<p>To create your own set: open <a href="/notes/flashcards">/notes/flashcards</a>, click <strong>+ New set</strong>, then add cards.</p>
+<p>When you reveal the answer on a Practice question, you'll see an <strong>Error Log</strong> button. Click it and write a short note about <em>why</em> you missed it — focusing on the move you made, not the content you didn't know. The entry saves to your Error Log, attached to the question.</p>
+<p>The magic happens weeks later. The next time that question shows up — in Smart Review, a Common Errors drill, or just by happening across it again — your past note appears alongside it. "Right: I misread 'except' last time." "Right: I forgot to convert the units." That moment of remembering is what actually changes the habit. Without the note, you'd quietly make the same mistake again.</p>
+<p>Two places to look at your Error Log:</p>
+<ul>
+  <li><strong><a href="/notes/error-log">/notes/error-log</a></strong> — the management view. A tight list of every entry, with counts showing where you're now getting things right vs still slipping up. Expand any row to see the original question. Good for "what's in my error log right now?"</li>
+  <li><strong><a href="/review/error-log">/review/error-log</a></strong> — the study view. Each entry is fully expanded with the question, options, rationale, and your note side by side. Best for a sit-down review session a few days before the test.</li>
+</ul>
+<p>One thing to keep in mind: not every wrong answer belongs in the Error Log. If the lesson is "I didn't know what 'apocryphal' means," that's a flashcard, not a process note. The Error Log is most useful when you treat it as a journal of decisions you want to make differently next time.</p>
+        `,
+      },
+      {
+        heading: 'Flashcards — for terms, formulas, and rules',
+        html: `
+<p>The <a href="/notes/flashcards">Flashcards</a> page shows your flashcard sets — both the ones you create and the default vocab and formula sets Studyworks ships with. Each card tracks a 0-5 mastery score; cards you miss come back more often, so the ones you actually need to learn get more reps automatically.</p>
+<p>Flashcards work best in short bursts: five minutes on the bus, ten minutes between classes, a few minutes before bed. They're not a replacement for question practice, but for vocab- and formula-heavy content they're the fastest way to lock in the basics.</p>
+<p>To create your own set, open <a href="/notes/flashcards">/notes/flashcards</a>, click <strong>+ New set</strong>, give it a name, and start adding cards. A good rule of thumb: one fact per card, written so the front genuinely needs the back to answer it. "What does 'ephemeral' mean?" is a good card. "Tell me about vocabulary" is not.</p>
         `,
       },
     ],
@@ -386,52 +396,65 @@ export const HELP_ARTICLES = [
       {
         heading: 'The plan, in one paragraph',
         html: `
-<p>Each week: <strong>practice four days, review one day, rest two days</strong>. Take a full <a href="/practice/tests">practice test</a> every other Saturday. Adjust which skills you target after each test. Keep this up for 8-12 weeks and you'll see 100+ points of improvement.</p>
+<p>Each week: <strong>practice four days, review one day, rest two days</strong>. Take a full <a href="/practice/tests">practice test</a> every other Saturday. Adjust which skills you target after each test. Stick with this for 8 to 12 weeks and you'll see 100+ points of real improvement on the SAT — not because the plan is magic, but because consistent, focused practice with proper review is what actually works. The rest of this article walks through what each kind of day looks like.</p>
         `,
       },
       {
         heading: 'A normal weekday (about 30 minutes)',
         html: `
+<p>Aim for thirty solid minutes most days. Even on busy days, ten focused minutes is better than zero — momentum is the thing that compounds.</p>
 <ol>
-  <li><strong>5 minutes:</strong> Open the <a href="/dashboard">Dashboard</a>, look at your weakest domain in the Performance grid.</li>
-  <li><strong>20 minutes:</strong> Open <a href="/practice/start">Practice</a>, filter to that skill, and run a 10-15 question session. <strong>Write an Error Log note for every question you get wrong</strong> — this is non-negotiable.</li>
-  <li><strong>5 minutes:</strong> A quick Flashcards burst (<a href="/notes/flashcards">/notes/flashcards</a>) — vocab or formulas, whichever is weaker.</li>
+  <li><strong>5 minutes — pick a skill.</strong> Open the <a href="/dashboard">Dashboard</a> and look at the segmented bars in the Performance grid. Find a red or yellow segment in a skill that matters for your target score, and that's what you're working on today. Don't overthink it; whichever weak skill catches your eye is fine.</li>
+  <li><strong>20 minutes — practice it.</strong> Open <a href="/practice/start">Practice</a>, click just that skill, and run a 10-15 question session. Take the questions seriously: read carefully, work them out, then hit <strong>Reveal Answer</strong>. After each question — including the ones you got right — pause and ask: <em>what did I learn?</em>
+    <ul>
+      <li>If the answer is "a term, formula, or rule I didn't know" → add a Flashcard.</li>
+      <li>If the answer is "I made a process mistake or fell for a trap" → write an Error Log entry.</li>
+      <li>If the answer is "a concept I need to actually learn" → start a Note.</li>
+      <li>If the answer is "I knew it, just made sure" → great, move on.</li>
+    </ul>
+    Most questions need nothing; the ones that do, capture in the right place. The <a href="/help/notes">Notes guide</a> has more examples if you're not sure which to pick.
+  </li>
+  <li><strong>5 minutes — flashcards.</strong> A quick burst at <a href="/notes/flashcards">/notes/flashcards</a> — vocab or formulas, whichever is weaker right now. Five minutes a day adds up to real fluency over a couple of months.</li>
 </ol>
         `,
       },
       {
         heading: 'Review day (about 45 minutes)',
         html: `
-<p>Once a week, swap out a practice day for review.</p>
+<p>Once a week — Sunday tends to work well — trade a practice day for a review day. The goal here isn't to do new questions; it's to lock in what you've already seen.</p>
 <ol>
-  <li><strong>20 minutes:</strong> Open <a href="/review">Review</a> and run a <strong>Weak questions drill</strong> — let the platform pick what you most need to see again.</li>
-  <li><strong>15 minutes:</strong> Open <a href="/review/error-log">/review/error-log</a>. Read through your last two weeks of error notes. You'll notice patterns — that's the point.</li>
-  <li><strong>10 minutes:</strong> Pick one pattern and run a focused Practice session on that exact skill.</li>
+  <li><strong>20 minutes — Weak Queue drill.</strong> Open <a href="/review">Review</a> and run the <strong>Weak questions drill</strong>. The platform picks the questions you most need to see again, based on what you've recently gotten wrong, what you historically struggle with, and what's gone stale. This is the closest thing to a personal tutor on the platform — let it do its job.</li>
+  <li><strong>15 minutes — re-read your Error Log.</strong> Open <a href="/review/error-log">/review/error-log</a> and skim through your last week or two of entries. You're looking for patterns: the same trap showing up multiple times, the same kind of careless slip, the same content gap. Patterns are gold — once you can name a habit, you can change it.</li>
+  <li><strong>10 minutes — focused fix.</strong> Pick one pattern you noticed and run a small, targeted Practice session on the exact skill or question type involved. Five well-chosen questions on the thing you keep missing beats fifty random ones.</li>
 </ol>
+<p>If you also want to spend a few minutes on Notes you've written — re-reading a topic summary, working through a Note on a complex concept — Sunday is a good time for that too.</p>
         `,
       },
       {
         heading: 'Practice test weeks',
         html: `
-<p>Every other Saturday (or whichever day you can get 3 uninterrupted hours):</p>
+<p>Every other Saturday (or whichever day you can carve out three uninterrupted hours), take a full <a href="/practice/tests">practice test</a>. Two-week spacing is the sweet spot: often enough to see real movement, not so often that you burn out or stop processing what you've learned in between.</p>
 <ol>
-  <li>Take a full <a href="/practice/tests">practice test</a>. Real conditions — quiet, no phone, on-screen Desmos only.</li>
-  <li>Same day or next day, spend at least an hour reviewing every wrong answer. Write Error Log notes.</li>
-  <li>Update what skills you're targeting based on what you missed.</li>
+  <li><strong>Take it under real conditions.</strong> Quiet room, no phone, on-screen Desmos only, no peeking at your notes. The point is to find out where you actually stand — making it easier on yourself just hides the things you'd most want to know about.</li>
+  <li><strong>Review it thoroughly within 24 hours.</strong> Plan at least an hour for review, ideally the same day. Go through every question you got wrong <em>and every question you guessed on but got right</em>. For each one, decide what you learned and capture it with the right tool — flashcard, Error Log entry, or Note. This step is where the actual point-gain comes from.</li>
+  <li><strong>Update your focus areas.</strong> Whatever showed up as a weakness becomes one of your priority skills for the next two weeks. Then start the weekly cycle again.</li>
 </ol>
         `,
       },
       {
         heading: 'Common mistakes self-studiers make',
         html: `
+<p>You're going to make some of these — everyone does. Knowing what they are in advance just makes it easier to course-correct.</p>
 <ul>
-  <li><strong>Doing too many new questions, too little review.</strong> Review is where the score comes from.</li>
-  <li><strong>Skipping the Error Log button.</strong> A wrong answer with no note is a wrong answer you will get wrong again.</li>
-  <li><strong>Not timing yourself.</strong> Untimed practice teaches you to be slow.</li>
-  <li><strong>Avoiding hard questions.</strong> If everything you do is Easy/Medium, your score won't move past mid-range. Spend at least a third of your practice on Hard.</li>
-  <li><strong>Skipping the rationale when you got it right.</strong> Right-for-the-wrong-reason is the most common silent score leak.</li>
-  <li><strong>Cramming.</strong> 30 minutes a day for 8 weeks beats 4 hours on a Sunday.</li>
+  <li><strong>Doing too many new questions, too little review.</strong> New questions feel productive — you can count them, you can see the bar fill up — but the actual learning happens when you sit with the questions you already attempted. Aim for at least a quarter of your time spent on review.</li>
+  <li><strong>Capturing nothing after a missed question.</strong> A wrong answer you don't reflect on is a wrong answer you'll repeat. Capture each one — but with the right tool (see above), not by reflex into the Error Log.</li>
+  <li><strong>Putting everything in the Error Log.</strong> The opposite mistake. If the lesson is "I didn't know what 'cogent' means," that's a flashcard, not an Error Log entry. Each tool gets less useful when you misuse it.</li>
+  <li><strong>Not timing yourself.</strong> The SAT is partly a time-management test. Untimed practice quietly teaches you to be slow. Even if you don't run a strict timer, glance at the clock and notice when you're taking too long.</li>
+  <li><strong>Avoiding hard questions.</strong> If everything you do is Easy or Medium, your score won't move past the mid-range. Push into Hard at least a third of the time — yes, it feels uncomfortable; that's the part doing the work.</li>
+  <li><strong>Skipping the rationale when you got it right.</strong> Right-for-the-wrong-reason is the most common silent score leak. It takes thirty seconds to read; do it.</li>
+  <li><strong>Cramming.</strong> Thirty minutes a day for eight weeks beats four hours on a Sunday. Your brain consolidates between sessions, not during them.</li>
 </ul>
+<p>If you fall off the routine for a few days, just start again. Nobody who improved meaningfully on this test did it with a perfect streak — they did it by getting back to the work after the breaks.</p>
         `,
       },
     ],
@@ -459,14 +482,14 @@ export const HELP_ARTICLES = [
       {
         heading: 'Score Bands (1-7) on questions',
         html: `
-<p>Every question is labeled with a Score Band that roughly tells you who gets it right:</p>
+<p>Every question on the platform is labeled with both a public difficulty (Easy / Medium / Hard) and a more precise <strong>Score Band</strong> from 1 to 7. Think of the Score Band as a finer-grained ruler for the same thing the Easy/Medium/Hard labels measure — they map to each other directly:</p>
 <ul>
-  <li><strong>Band 1-2:</strong> Easy. Most students at any score level get these.</li>
-  <li><strong>Band 3-4:</strong> Medium. Differentiates 500-650 scorers.</li>
-  <li><strong>Band 5-6:</strong> Hard. Differentiates 650-750 scorers.</li>
-  <li><strong>Band 7:</strong> Hardest. What separates 750+ from 700.</li>
+  <li><strong>Bands 1-3 — Easy.</strong> Foundational questions most students get right regardless of their target score. Band 1 is the gentlest end of Easy; Band 3 is Easy bordering on Medium.</li>
+  <li><strong>Bands 4-5 — Medium.</strong> The core of the test. Band 4 questions differentiate students in the 500-600 range; Band 5 starts to separate 600-700 scorers.</li>
+  <li><strong>Bands 6-7 — Hard.</strong> The high-end questions. Band 6 is what separates 650-750 scorers; Band 7 is the hardest material on the test, where 750+ scorers earn their last points.</li>
 </ul>
-<p>If you want a 700, be solid on Bands 1-5. Going for 750+? You need Band 6 and at least some Band 7.</p>
+<p>Why bother with the finer scale? Because "Medium" is a wide bucket. A Band 4 question and a Band 5 question can both be labeled Medium, but they behave very differently for your prep: getting consistent on Band 4 will pull a mid-500s student into the 600s, while drilling Band 5 is what carries that same student from the 600s into the 700s. If you can, target the Band right at the edge of where you currently get most questions right — that's the zone where new points get won.</p>
+<p>Quick guide: aiming for 700? Get reliably right on Bands 1-5. Aiming for 750+? You need to be solid on Band 6 and start landing some Band 7.</p>
         `,
       },
       {
