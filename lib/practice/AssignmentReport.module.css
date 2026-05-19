@@ -415,3 +415,68 @@
   border-top: 1px dashed var(--border);
   width: 100%;
 }
+
+/* Re-attempt history. Surfaced below the question card when the
+   student has more than one attempt on the same item, so a tutor
+   can see how the answer evolved after the initial response. */
+.attemptsPanel {
+  margin-top: var(--s3);
+  padding: var(--s3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+}
+.attemptsLabel {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  margin-bottom: var(--s2);
+}
+.attemptsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.attemptsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--fg2);
+}
+.attemptOrdinal {
+  font-weight: 600;
+  color: var(--fg1);
+  min-width: 6.5em;
+}
+.attemptChoice {
+  color: var(--fg2);
+}
+.attemptTime {
+  color: var(--fg3);
+  font-size: 12px;
+  margin-left: auto;
+}
+.attemptCorrect,
+.attemptWrong {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.attemptCorrect {
+  background: var(--tile-success-bg);
+  color: var(--tile-success-fg);
+}
+.attemptWrong {
+  background: var(--tile-danger-bg);
+  color: var(--tile-danger-fg);
+}
