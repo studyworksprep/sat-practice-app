@@ -125,10 +125,25 @@ export function BluebookBatchInteractive({
           correctCounts: r.parsed?.correctCounts ?? null,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || `Upload failed (${res.status})`);
+      // Read the body as text first — the upload endpoint sometimes
+      // returns an HTML error page (Next.js default 500 page) when the
+      // handler throws an unexpected exception. Trying JSON.parse on
+      // HTML produces a confusing "Unexpected token '<'" error; this
+      // path surfaces the actual response so the cause is visible.
+      const text = await res.text();
+      let data: { composite_score?: number; questions_imported?: number; error?: string } = {};
+      try { data = text ? JSON.parse(text) : {}; } catch { /* not JSON */ }
+      if (!res.ok) {
+        const msg = data.error
+          || `Upload failed (HTTP ${res.status})${text && !text.startsWith('{') ? ` — server returned ${text.slice(0, 200).replace(/\s+/g, ' ')}` : ''}`;
+        throw new Error(msg);
+      }
       updateRow(r.key, {
-        status: { kind: 'ok', composite: data.composite_score, message: data.questions_imported ? `${data.questions_imported} qs imported` : 'score recorded' },
+        status: {
+          kind: 'ok',
+          composite: data.composite_score,
+          message: data.questions_imported ? `${data.questions_imported} qs imported` : 'score recorded',
+        },
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
