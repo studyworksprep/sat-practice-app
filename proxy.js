@@ -278,10 +278,17 @@ export async function proxy(request) {
   requestHeaders.set('x-ui-tree', uiTree);
 
   let response;
-  if (uiTree === 'next' && !treeAgnostic) {
+  if (uiTree === 'next' && !treeAgnostic && !isApiRoute) {
     // Rewrite /foo -> /next/foo. Browser URL unchanged; Next.js serves
     // the file under app/next/foo. This is the Phase 1 on-ramp; the
     // new tree is an empty stub until Phase 2 fills it in.
+    //
+    // API routes are excluded: there is no /next/api/* tree (route
+    // handlers live at /app/api/* and serve both trees), and rewriting
+    // an API request to /next/api/... falls into the catchall page,
+    // which 307s to /dashboard — silently dropping the original POST.
+    // Backend handlers branch internally if they need to know the
+    // caller's tree (via the x-ui-tree header set below).
     const url = request.nextUrl.clone();
     url.pathname = `/next${pathname === '/' ? '' : pathname}`;
     response = NextResponse.rewrite(url, {
