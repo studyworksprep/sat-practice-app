@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/lib/ui/Button';
 // parseBluebookHtml is a JS module from the legacy tree; it parses
 // `.htm` exports into { testName, testDate, questions, correctCounts }.
 // Loaded lazily inside the change handler so the page itself stays
 // server-rendered and the parser bundle only loads when needed.
 import s from '../../forms.module.css';
+import btn from '@/lib/ui/Button.module.css';
 
 interface StudentOption { id: string; label: string }
 interface TestOption    { id: string; code: string; name: string }
@@ -166,16 +166,22 @@ export function BluebookBatchInteractive({
       ))}
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <Button variant="secondary" onClick={addRow} disabled={submitting}>
+        <button
+          type="button"
+          className={`${btn.base} ${btn.md} ${btn.secondary}`}
+          onClick={addRow}
+          disabled={submitting}
+        >
           + Add row
-        </Button>
-        <Button
-          variant="primary"
+        </button>
+        <button
+          type="button"
+          className={`${btn.base} ${btn.md} ${btn.primary}`}
           onClick={uploadAll}
           disabled={submitting || totalReady === 0}
         >
           {submitting ? 'Uploading…' : `Upload ${totalReady} row${totalReady === 1 ? '' : 's'}`}
-        </Button>
+        </button>
       </div>
     </section>
   );
@@ -307,9 +313,14 @@ function RowCard({
             {composite != null ? `Composite ${composite}` : ''}
           </div>
           {canRemove && (
-            <Button variant="remove" size="sm" onClick={onRemove} disabled={status.kind === 'uploading'}>
+            <button
+              type="button"
+              className={`${btn.base} ${btn.sm} ${btn.remove}`}
+              onClick={onRemove}
+              disabled={status.kind === 'uploading'}
+            >
               Remove
-            </Button>
+            </button>
           )}
         </div>
 
