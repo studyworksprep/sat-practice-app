@@ -454,6 +454,13 @@ export function AssignmentReport({
               </button>
             </div>
           )}
+
+          {!selected.missing && (selected.additionalAttempts?.length ?? 0) > 0 && (
+            <AdditionalAttempts
+              attempts={selected.additionalAttempts}
+              options={selected.options ?? []}
+            />
+          )}
         </section>
       )}
       </div>
@@ -532,6 +539,76 @@ function splitDomainsBySubject(byDomain) {
 function skillRank(sk) {
   if (sk.total <= 0) return Number.POSITIVE_INFINITY;
   return sk.correct / sk.total;
+}
+
+function AdditionalAttempts({ attempts, options }) {
+  // Map of option id (the MCQ label, or option.id for ACT) → label
+  // so we can render "Selected B" rather than the raw uuid for ACT.
+  const labelById = new Map();
+  for (const opt of options ?? []) {
+    if (opt?.id != null) labelById.set(opt.id, opt.label ?? opt.id);
+  }
+  return (
+    <div className={s.attemptsPanel}>
+      <div className={s.attemptsLabel}>
+        Additional attempts ({attempts.length})
+      </div>
+      <ol className={s.attemptsList}>
+        {attempts.map((a, idx) => {
+          const ordinal = ordinalLabel(idx + 2);
+          const choice = a.responseText
+            ? a.responseText
+            : a.selectedOptionId != null
+              ? (labelById.get(a.selectedOptionId) ?? a.selectedOptionId)
+              : null;
+          return (
+            <li key={`${a.submittedAt}-${idx}`} className={s.attemptsRow}>
+              <span className={s.attemptOrdinal}>{ordinal} attempt</span>
+              <span
+                className={
+                  a.isCorrect ? s.attemptCorrect : s.attemptWrong
+                }
+              >
+                {a.isCorrect ? 'Correct' : 'Incorrect'}
+              </span>
+              {choice != null && (
+                <span className={s.attemptChoice}>
+                  Answered <strong>{choice}</strong>
+                </span>
+              )}
+              <span className={s.attemptTime}>
+                {formatAttemptTimestamp(a.submittedAt)}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
+function ordinalLabel(n) {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1: return `${n}st`;
+    case 2: return `${n}nd`;
+    case 3: return `${n}rd`;
+    default: return `${n}th`;
+  }
+}
+
+function formatAttemptTimestamp(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 }
 
 function formatSessionDate(iso) {
