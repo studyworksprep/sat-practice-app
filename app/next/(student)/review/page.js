@@ -178,7 +178,10 @@ export default async function StudentReviewPage() {
         <p className={s.sub}>
           A focused study surface for the days before your test.
           Drill your weakest questions, fix your most common errors,
-          and keep your flashcards fresh.
+          and keep your flashcards fresh.{' '}
+          <a href="/help/review" style={{ color: 'var(--color-app-accent, #4f46e5)', textDecoration: 'none', fontWeight: 600 }}>
+            How to use the Review tab →
+          </a>
         </p>
       </header>
 

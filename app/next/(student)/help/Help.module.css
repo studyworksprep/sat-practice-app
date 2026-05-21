@@ -1,0 +1,194 @@
+/* Help section — student tree.
+   Matches the visual conventions of Notes / Review pages: a
+   centered main column with section cards, soft border + radius
+   tokens from globals. */
+
+.container {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.backLink {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--fg2, #666);
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+.backLink:hover { color: var(--fg, #111); }
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg2, #666);
+  margin-bottom: 6px;
+}
+
+.h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--fg, #1a1a1a);
+  margin: 0 0 8px;
+}
+
+.lead {
+  font-size: 15px;
+  color: var(--fg2, #555);
+  margin: 0 0 28px;
+  max-width: 640px;
+  line-height: 1.55;
+}
+
+/* ── Welcome banner shown when ?welcome=1 is set ── */
+.welcomeBanner {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%);
+  border: 1px solid var(--accent, #4f46e5);
+  border-radius: var(--radius-md, 10px);
+  padding: 18px 22px;
+  margin-bottom: 28px;
+}
+.welcomeBannerTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--accent, #4f46e5);
+  margin-bottom: 6px;
+}
+.welcomeBannerBody {
+  font-size: 14px;
+  color: var(--fg2, #555);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Index list ── */
+.articleGrid {
+  display: grid;
+  gap: 10px;
+}
+.articleCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--bg-white, #fff);
+  border: 1px solid var(--border, #e4e7eb);
+  border-radius: var(--radius-md, 10px);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 120ms, box-shadow 120ms, transform 120ms;
+}
+.articleCard:hover {
+  border-color: var(--accent, #4f46e5);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.articleIcon {
+  font-size: 24px;
+  line-height: 1;
+  margin-top: 2px;
+}
+.articleBody {
+  flex: 1;
+  min-width: 0;
+}
+.articleTitle {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--fg, #1a1a1a);
+  margin-bottom: 2px;
+}
+.articleBlurb {
+  font-size: 13px;
+  color: var(--fg2, #666);
+  margin: 0;
+  line-height: 1.45;
+}
+.articleArrow {
+  align-self: center;
+  color: var(--accent, #4f46e5);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* ── Article page ── */
+.articleHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.articleHeaderIcon { font-size: 32px; line-height: 1; }
+
+.section {
+  margin-bottom: 28px;
+}
+.sectionHeading {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fg, #1a1a1a);
+  margin: 0 0 10px;
+}
+
+.body {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--fg, #222);
+}
+.body p { margin: 0 0 12px; }
+.body ul, .body ol { margin: 0 0 12px; padding-left: 22px; }
+.body li { margin-bottom: 6px; }
+.body strong { color: var(--fg, #111); }
+.body a { color: var(--accent, #4f46e5); }
+.body a:hover { text-decoration: underline; }
+
+.articleFooter {
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border, #e4e7eb);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.footerBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--border, #d0d4da);
+  color: var(--fg, #1a1a1a);
+  background: var(--bg-white, #fff);
+}
+.footerBtn:hover { border-color: var(--accent, #4f46e5); }
+.footerBtnPrimary {
+  background: var(--accent, #4f46e5);
+  color: #fff;
+  border-color: var(--accent, #4f46e5);
+}
+.footerBtnPrimary:hover { filter: brightness(0.95); }
+
+/* Fallback "still have questions" footer card on the index. */
+.stillStuck {
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: var(--bg-soft, #f7f8fb);
+  border: 1px solid var(--border, #e4e7eb);
+  border-radius: var(--radius-md, 10px);
+}
+.stillStuckTitle {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.stillStuckBody {
+  font-size: 13px;
+  color: var(--fg2, #666);
+  margin: 0;
+  line-height: 1.5;
+}
+.stillStuckBody a { color: var(--accent, #4f46e5); }

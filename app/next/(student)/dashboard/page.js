@@ -83,7 +83,7 @@ export default async function StudentDashboardPage() {
     loadDashboardAggregateAct(user.id),
     supabase
       .from('profiles')
-      .select('first_name, last_name, target_sat_score, high_school, graduation_year, sat_test_date')
+      .select('first_name, last_name, target_sat_score, high_school, graduation_year, sat_test_date, created_at')
       .eq('id', user.id)
       .maybeSingle(),
     // Recent completed practice sessions (in-progress / abandoned
@@ -429,6 +429,7 @@ export default async function StudentDashboardPage() {
       assignmentsTotal={pendingTotalCount}
       resumeInfo={resumeInfo}
       todayMs={nowMs}
+      accountCreatedAt={fullProfile?.created_at ?? null}
       updateTargetScoreAction={updateTargetScore}
     />
   );
