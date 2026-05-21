@@ -9,7 +9,10 @@
 //   - skill_selections : JSON string of
 //       [{ domain, skill, scoreBands: number[], weight: number }, ...]
 //   - difficulty[]     : optional global difficulty filter
-//   - unanswered_only  : reserved (not yet wired)
+//   - unanswered_only  : "1" to keep only questions none of the
+//       assignment's students have attempted. Any attempt by any
+//       selected student disqualifies a question, so the set is new
+//       to every student.
 //   - size             : int 1..MAX_QUESTIONS
 //
 // We materialize question_ids at creation time by weighted sampling:
@@ -25,9 +28,10 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { requireUser } from '@/lib/api/auth';
+import { requireUser, requireServiceRole } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
+import { fetchAll } from '@/lib/supabase/fetchAll';
 import type { ActionResult } from '@/lib/types';
 
 const MAX_QUESTIONS = 50;
@@ -112,7 +116,7 @@ export async function createAssignment(
 
   let typePayload: PayloadResult;
   if (assignmentType === 'questions') {
-    typePayload = await buildQuestionsPayload(supabase, formData);
+    typePayload = await buildQuestionsPayload(supabase, formData, studentIds);
   } else if (assignmentType === 'practice_test') {
     typePayload = await buildPracticeTestPayload(supabase, formData);
   } else {
@@ -166,8 +170,11 @@ export async function createAssignment(
 // Questions payload: per-skill weighted sampling.
 // ──────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function buildQuestionsPayload(supabase: any, formData: FormData): Promise<PayloadResult> {
+async function buildQuestionsPayload(
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  formData: FormData,
+  studentIds: string[],
+): Promise<PayloadResult> {
   const selections = parseSkillSelections(formData.get('skill_selections'));
   const difficulties = formData
     .getAll('difficulty')
@@ -179,6 +186,10 @@ async function buildQuestionsPayload(supabase: any, formData: FormData): Promise
     Math.max(Number.isFinite(rawSize) ? Math.floor(rawSize) : 10, 1),
     MAX_QUESTIONS,
   );
+
+  // "Not attempted" filter: when on, drop any question that any of
+  // the assignment's students already has an attempt row for.
+  const unansweredOnly = String(formData.get('unanswered_only') || '') === '1';
 
   if (selections.length === 0) {
     return { ok: false, error: 'Pick at least one skill.' };
@@ -194,32 +205,54 @@ async function buildQuestionsPayload(supabase: any, formData: FormData): Promise
   // Fetch candidates per selection in parallel. Each query applies
   // that skill's own score-band filter plus the global difficulty
   // filter; the is_published + is_broken=false gate is shared.
-  const candidatePools = await Promise.all(
-    selections.map(async (sel) => {
-      let q = supabase
-        .from('questions_v2')
-        .select('id')
-        .eq('is_published', true)
-        .eq('is_broken', false)
-        .eq('domain_name', sel.domain)
-        .eq('skill_name', sel.skill);
+  // When the "not attempted" filter is on, the students' attempt
+  // history is fetched alongside so the two waves overlap.
+  const [candidatePools, attempted] = await Promise.all([
+    Promise.all(
+      selections.map(async (sel) => {
+        let q = supabase
+          .from('questions_v2')
+          .select('id')
+          .eq('is_published', true)
+          .eq('is_broken', false)
+          .eq('domain_name', sel.domain)
+          .eq('skill_name', sel.skill);
 
-      if (sel.scoreBands.length > 0) {
-        q = q.in('score_band', sel.scoreBands);
-      }
-      if (difficulties.length > 0) {
-        q = q.in('difficulty', difficulties);
-      }
+        if (sel.scoreBands.length > 0) {
+          q = q.in('score_band', sel.scoreBands);
+        }
+        if (difficulties.length > 0) {
+          q = q.in('difficulty', difficulties);
+        }
 
-      const { data, error } = await q.limit(500);
-      if (error) return { ids: [] as string[], error: error.message };
-      return { ids: (data ?? []).map((r: { id: string }) => r.id) };
-    }),
-  );
+        const { data, error } = await q.limit(500);
+        if (error) return { ids: [] as string[], error: error.message };
+        return { ids: (data ?? []).map((r: { id: string }) => r.id) };
+      }),
+    ),
+    unansweredOnly
+      ? fetchAttemptedIds(studentIds)
+      : Promise.resolve<{ ids: Set<string>; error?: string }>({
+          ids: new Set<string>(),
+        }),
+  ]);
 
   const firstErr = candidatePools.find((p) => p.error);
   if (firstErr) {
     return { ok: false, error: `Failed to load questions: ${firstErr.error}` };
+  }
+  if (attempted.error) {
+    return { ok: false, error: `Failed to check attempt history: ${attempted.error}` };
+  }
+
+  // Drop every candidate any selected student has already attempted,
+  // so a "not attempted" set is genuinely new to all of them. Done
+  // before sampling so the deficit-redistribution below works
+  // against the post-filter pools.
+  if (unansweredOnly && attempted.ids.size > 0) {
+    for (const pool of candidatePools) {
+      pool.ids = pool.ids.filter((id: string) => !attempted.ids.has(id));
+    }
   }
 
   // Sample per skill; if any skill's pool is smaller than its
@@ -252,7 +285,12 @@ async function buildQuestionsPayload(supabase: any, formData: FormData): Promise
   }
 
   if (picked.size === 0) {
-    return { ok: false, error: 'No questions match those filters.' };
+    return {
+      ok: false,
+      error: unansweredOnly
+        ? 'No unattempted questions match those filters — every matching question has already been attempted by one of the selected students.'
+        : 'No questions match those filters.',
+    };
   }
 
   const questionIds = Array.from(picked);
@@ -266,9 +304,59 @@ async function buildQuestionsPayload(supabase: any, formData: FormData): Promise
         skillSelections: selections,
         difficulties,
         size,
+        unansweredOnly,
       },
     },
   };
+}
+
+// Collect every question_id that any of the given students has at
+// least one `attempts` row for. A question counts as "attempted" for
+// the set if even one selected student has touched it, so the Set is
+// the union across all students.
+//
+// Uses a service-role client: a teacher's RLS scope can't read a
+// student's attempts. Pages via fetchAll rather than a single capped
+// query — PostgREST silently truncates at max-rows (the db-max-rows
+// bug the rebuild exists to kill; see CLAUDE.md, Finding #1).
+//
+// Only v2-era attempts match: `attempts.question_id` holds whichever
+// id space the question was practiced under, and v1 ids never collide
+// with questions_v2 ids, so legacy v1 practice is not considered.
+async function fetchAttemptedIds(
+  studentIds: string[],
+): Promise<{ ids: Set<string>; error?: string }> {
+  const ids = new Set<string>();
+  if (studentIds.length === 0) return { ids };
+
+  let service;
+  try {
+    ({ service } = await requireServiceRole(
+      'assignment-create: exclude questions students have already attempted',
+      { allowedRoles: ['teacher', 'manager', 'admin'] },
+    ));
+  } catch (err) {
+    if (err instanceof ApiError) return { ids, error: err.message };
+    return { ids, error: 'Could not verify permission to read attempt history.' };
+  }
+
+  try {
+    const rows = await fetchAll<{ question_id: string }>((from: number, to: number) =>
+      service
+        .from('attempts')
+        .select('question_id')
+        .in('user_id', studentIds)
+        .order('id', { ascending: true })
+        .range(from, to),
+    );
+    for (const r of rows) ids.add(r.question_id);
+  } catch (err) {
+    return {
+      ids,
+      error: err instanceof Error ? err.message : 'Failed to load attempt history.',
+    };
+  }
+  return { ids };
 }
 
 function parseSkillSelections(raw: FormDataEntryValue | null): SkillSelection[] {

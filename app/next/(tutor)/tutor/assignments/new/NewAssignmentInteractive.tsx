@@ -150,6 +150,9 @@ export function NewAssignmentInteractive({
   const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>([]);
   const [globalDifficulties, setGlobalDifficulties] = useState<Set<number>>(new Set());
   const [skillSearch, setSkillSearch] = useState('');
+  // When on, the Server Action drops any question a selected student
+  // has already attempted (see actions.ts buildQuestionsPayload).
+  const [unattemptedOnly, setUnattemptedOnly] = useState(false);
 
   const visiblePeople = target === 'trainees' ? teachers : students;
   const peopleLabel = target === 'trainees' ? 'Trainees' : 'Students';
@@ -607,6 +610,28 @@ export function NewAssignmentInteractive({
               </div>
             </div>
           )}
+
+          {/* Not-attempted filter */}
+          <div style={{ marginTop: '16px' }}>
+            <div className={styles.controlLabel}>Attempt status</div>
+            <label className={styles.notAttempted}>
+              <input
+                type="checkbox"
+                name="unanswered_only"
+                value="1"
+                checked={unattemptedOnly}
+                onChange={(e) => setUnattemptedOnly(e.target.checked)}
+              />
+              <span className={styles.notAttemptedText}>
+                <span>Only questions not yet attempted</span>
+                <span className={styles.muted}>
+                  {selectedStudents.size > 1
+                    ? `Excludes any question already attempted by any of the ${selectedStudents.size} selected students.`
+                    : 'Excludes any question already attempted by a selected student.'}
+                </span>
+              </span>
+            </label>
+          </div>
 
           <div className={styles.fieldRow} style={{ marginTop: '16px' }}>
             <label className={styles.fieldLabel} htmlFor="size">
