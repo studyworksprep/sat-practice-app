@@ -88,6 +88,14 @@ work. It is deleted with the rest of the legacy tree in Stage C.
 
 ### Stage A — Close parity gaps (non-destructive) — IN PROGRESS
 
+- [x] Stop minting new legacy users. `profiles.ui_version` was
+      created with `default 'legacy'` and `handle_new_user` inserts
+      profiles without naming the column, so every signup became a
+      legacy user — which made the Stage B "100% on next"
+      precondition unreachable. Migration
+      `20260521000000_default_ui_version_next.sql` flips the column
+      default to `next`. Needs to be applied to the dev + prod
+      databases to take effect (see §5).
 - [x] Port `/features/*` marketing decks into `app/next/features/*`
       (6 pages; verbatim copies, `@/`-aliased imports, no layout —
       `app/next/layout.js` already supplies the `data-tree="next"`
@@ -211,7 +219,14 @@ the repo:
 **Did (Stage A, non-destructive):** ported the 6 `/features/*`
 marketing pages into `app/next/features/*`, dropped `/features` from
 the proxy's tree-agnostic list, added the `features-parity` anon
-regression spec, and wrote this plan.
+regression spec, flipped the `profiles.ui_version` column default to
+`next` (migration `20260521000000`), and wrote this plan.
+
+**Migration apply caveat:** `20260521000000_default_ui_version_next.sql`
+is committed but not applied here — schema changes land on the dev
+database first and reach prod through the team's deploy process
+(`docs/runbook.md` → "Applying a hotfix migration"). New signups keep
+defaulting to `legacy` until it is applied to production.
 
 **Did not:** delete anything (Stages C/D are destructive and gated on
 explicit sign-off + the Stage B precondition), and did not author the
