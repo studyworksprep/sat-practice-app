@@ -382,6 +382,7 @@ export async function createActSession(_prev, formData) {
       filter_criteria: {
         sections:       filters.sections,
         categories:     filters.categories,
+        subcategories:  filters.subcategories,
         difficulties:   filters.difficulties,
         unansweredOnly: filters.unansweredOnly,
         order:          filters.order,
@@ -402,6 +403,7 @@ export async function createActSession(_prev, formData) {
 function parseActFilters(formData) {
   const sections       = formData.getAll('section').filter(Boolean).map(String);
   const categories     = formData.getAll('category').filter(Boolean).map(String);
+  const subcategories  = formData.getAll('subcategory').filter(Boolean).map(String);
   const difficulties   = formData.getAll('difficulty').map(Number).filter(Number.isFinite);
   const unansweredOnly = formData.get('unanswered_only') === '1';
   const rawOrder       = String(formData.get('order') ?? 'display_code');
@@ -414,25 +416,21 @@ function parseActFilters(formData) {
     Math.max(Number.isFinite(rawSize) ? Math.floor(rawSize) : 10, 1),
     MAX_SESSION_SIZE,
   );
-  return { sections, categories, difficulties, unansweredOnly, order, size };
+  return { sections, categories, subcategories, difficulties, unansweredOnly, order, size };
 }
 
 async function loadActCandidateIds(supabase, filters) {
-  // Section + category compose as a UNION, not an intersection.
-  // The launcher (StartInteractiveAct.jsx) treats them as
+  // Section + category + subcategory compose as a UNION, not
+  // an intersection. The launcher treats the three tiers as
   // independent — picking section=english alone means "all
   // English"; picking category=PHM alone means "PHM only";
-  // picking both means "all English OR all PHM." The earlier
-  // AND-everything pattern returned 0 when the user selected a
-  // section + a category from a different section, which is a
-  // legitimate launcher state the UI allows.
+  // picking subcategory=Algebra alone means just that bucket.
+  // A combo of any tiers OR's the buckets together.
   //
-  // We resolve sections and categories as separate fetches and
-  // union the IDs. Difficulty is still an AND filter inside each
-  // branch — selecting "easy" should narrow the union, not
-  // expand it.
+  // Difficulty stays an AND filter inside each branch —
+  // selecting "easy" narrows the union, not expand it.
   try {
-    const { sections, categories, difficulties } = filters;
+    const { sections, categories, subcategories, difficulties } = filters;
     const applyDifficulty = (q) =>
       difficulties.length ? q.in('difficulty', difficulties) : q;
 
@@ -467,10 +465,25 @@ async function loadActCandidateIds(supabase, filters) {
       for (const r of rows) idSet.add(r.id);
     }
 
+    if (subcategories && subcategories.length) {
+      anyBranchRan = true;
+      const rows = await fetchAll((from, to) => {
+        let q = supabase
+          .from('act_questions')
+          .select('id')
+          .eq('is_broken', false)
+          .in('subcategory', subcategories);
+        q = applyDifficulty(q);
+        return q.range(from, to);
+      });
+      for (const r of rows) idSet.add(r.id);
+    }
+
     if (!anyBranchRan) {
-      // No section or category narrowing — fetch the global pool
-      // (with difficulty filter, if any). Matches the behavior
-      // before this change for the empty-filter case.
+      // No section, category, or subcategory narrowing — fetch
+      // the global pool (with difficulty filter, if any).
+      // Matches the behavior before this change for the
+      // empty-filter case.
       const rows = await fetchAll((from, to) => {
         let q = supabase
           .from('act_questions')

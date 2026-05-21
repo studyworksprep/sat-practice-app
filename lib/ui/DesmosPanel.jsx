@@ -63,7 +63,6 @@ export function DesmosPanel({ isOpen, storageKey, onCalcReady }) {
     calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
       autosize: true, keypad: true, expressions: true, settingsMenu: true,
       zoomButtons: true, forceEnableGeometryFunctions: true,
-      degreeMode: true, clearIntoDegreeMode: true,
       images: false, folders: false, notes: false, links: false,
       restrictedFunctions: false,
     });

@@ -25,6 +25,7 @@ import {
   ProgressIcon,
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
+import { HelpDashboardBanner } from '../help/HelpDashboardBanner';
 import s from './Dashboard.module.css';
 
 export function DashboardInteractive({
@@ -41,6 +42,7 @@ export function DashboardInteractive({
   assignmentsTotal = 0,
   resumeInfo,
   todayMs,
+  accountCreatedAt = null,
   updateTargetScoreAction,
 }) {
   const [optimisticTarget, setOptimisticTarget] = useOptimistic(
@@ -63,6 +65,8 @@ export function DashboardInteractive({
 
   return (
     <main className={s.main}>
+      <HelpDashboardBanner accountCreatedAt={accountCreatedAt} />
+
       {/* ---------- Banner ---------- */}
       <section className={s.banner}>
         <div className={s.bannerText}>

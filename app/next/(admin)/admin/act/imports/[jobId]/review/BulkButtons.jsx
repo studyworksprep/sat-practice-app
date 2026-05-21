@@ -19,20 +19,26 @@ export function BulkApproveButton({ jobId, section, action, disabled }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState(null);
+  const [skippedDetails, setSkippedDetails] = useState([]);
 
   function onClick() {
     if (!window.confirm(
       `Approve every pending ${section} draft? Skipped drafts (no correct answer, no category, etc.) will stay pending so you can fix them.`,
     )) return;
     setMessage(null);
+    setSkippedDetails([]);
     const fd = new FormData();
     fd.set('job_id', jobId);
     fd.set('section', section);
     startTransition(async () => {
       const res = await action(null, fd);
       if (res?.ok) {
-        const { approved, skipped } = res.data ?? {};
+        const { approved = 0, skipped = 0, skippedDetails: details = [] } = res.data ?? {};
         setMessage(`Approved ${approved}${skipped ? ` · skipped ${skipped}` : ''}.`);
+        // Surface the first batch of skip reasons inline so the
+        // admin can act on them without digging into network /
+        // server logs. The action caps the array at 10 already.
+        setSkippedDetails(Array.isArray(details) ? details : []);
         router.refresh();
       } else {
         setMessage(res?.error ?? 'Bulk approve failed');
@@ -51,6 +57,15 @@ export function BulkApproveButton({ jobId, section, action, disabled }) {
         {pending ? 'Approving…' : 'Approve all pending'}
       </button>
       {message && <div className={s.bulkMessage}>{message}</div>}
+      {skippedDetails.length > 0 && (
+        <ul className={s.skippedList}>
+          {skippedDetails.map((d, i) => (
+            <li key={i}>
+              <strong>Q{d.ordinal}</strong> ({d.section}): {d.reason}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

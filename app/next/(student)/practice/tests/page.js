@@ -106,7 +106,10 @@ async function SatPracticeTestsPage({ user, supabase }) {
         <h1 className={s.h1}>Practice tests</h1>
         <p className={s.sub}>
           Full-length SAT simulations under timed conditions. Your
-          progress and history are below the launcher.
+          progress and history are below the launcher.{' '}
+          <a href="/help/practice-tests" style={{ color: 'var(--color-app-accent, #4f46e5)', textDecoration: 'none', fontWeight: 600 }}>
+            How to take a practice test →
+          </a>
         </p>
       </header>
 

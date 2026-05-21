@@ -18,10 +18,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { Card } from '@/lib/ui/Card';
 import { IconTile } from '@/lib/ui/IconTile';
 import { QuestionBankIcon } from '@/lib/ui/icons';
-import { sectionLabel } from '@/lib/practice/act-taxonomy';
 import s from './StartInteractiveAct.module.css';
 
 const MIN_SIZE = 1;
@@ -49,9 +47,12 @@ const ORDER_OPTIONS = [
 /**
  * @param {object} props
  * @param {Array<{ section: string, name: string, count: number,
- *   categories: Array<{ name: string, count: number }> }>}
+ *   categories: Array<{ name: string, count: number,
+ *     subcategories: Array<{ name: string, count: number }> }> }>}
  *   props.sections - one entry per ACT section that has data, sorted
  *   in the canonical English → Math → Reading → Science order.
+ *   subcategories[] is empty when none are labeled (Reading, Science,
+ *   and Math's "Integrating Essential Skills" category).
  * @param {{ sessionId: string, position: number, total: number,
  *   lastActivityAt: string }|null} [props.resumeInfo] - active ACT
  *   session for the Resume card.
@@ -78,9 +79,22 @@ export function StartInteractiveAct({
   // | 'reading' | 'science'), not display names — those are the
   // strings act_questions.section stores and that the server-side
   // resolver compares against.
-  const [selectedSections,      setSelectedSections]      = useState(() => new Set());
+  // Sections render as static labels above their category lists
+  // (mirrors the SAT launcher's Math / R&W group labels above
+  // their domains). The student selects through categories +
+  // subcategories rather than toggling sections directly.
+  //
+  // selectedCategories: free-text category names, sent verbatim
+  //   to the server as `category=...`. Mutually exclusive with
+  //   per-subcategory picks inside the same category — picking
+  //   a category clears its subcategories, picking a subcategory
+  //   clears the category bit.
+  // selectedSubcategories: free-text subcategory names, sent as
+  //   `subcategory=...`. Only populated when the student wants
+  //   to narrow inside a category that has subcategories
+  //   (Math PHM, the three English categories).
   const [selectedCategories,    setSelectedCategories]    = useState(() => new Set());
-  const [expandedSections,      setExpandedSections]      = useState(() => new Set());
+  const [selectedSubcategories, setSelectedSubcategories] = useState(() => new Set());
   const [selectedDifficulties,  setSelectedDifficulties]  = useState(() => new Set());
   const [unansweredOnly,        setUnansweredOnly]        = useState(false);
   const [order,                 setOrder]                 = useState('display_code');
@@ -98,8 +112,8 @@ export function StartInteractiveAct({
     countTimer.current = setTimeout(() => {
       startCount(async () => {
         const fd = buildFormData({
-          sections: selectedSections,
           categories: selectedCategories,
+          subcategories: selectedSubcategories,
           difficulties: selectedDifficulties,
           unansweredOnly,
           order,
@@ -118,8 +132,8 @@ export function StartInteractiveAct({
     // order/size don't affect candidate count — excluded.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    selectedSections, selectedCategories, selectedDifficulties,
-    unansweredOnly, countAvailableAction,
+    selectedCategories, selectedSubcategories,
+    selectedDifficulties, unansweredOnly, countAvailableAction,
   ]);
 
   // ── Submit ─────────────────────────────────────────────────
@@ -131,8 +145,8 @@ export function StartInteractiveAct({
     setIsSubmitting(true);
     setSubmitState(null);
     const fd = buildFormData({
-      sections: selectedSections,
       categories: selectedCategories,
+      subcategories: selectedSubcategories,
       difficulties: selectedDifficulties,
       unansweredOnly,
       order,
@@ -152,49 +166,55 @@ export function StartInteractiveAct({
   const actualSize = count == null ? size : Math.min(count, size);
   const canSubmit = !isSubmitting && count !== 0;
 
-  // Section row helpers. Same affordance as the SAT side: clicking the
-  // section row toggles the whole section. Expanding the section row
-  // reveals its categories for fine-tuning. When a section has any
-  // category selected, the section row reads as "selected" even
-  // without the bulk toggle on.
-  // sectionCode is the lowercase ACT section identifier
-  // ('english' | 'math' | 'reading' | 'science') that matches
-  // act_questions.section — NOT the human-readable display name.
-  // The filter resolver compares this verbatim against the DB
-  // column, so the codes have to flow through identity-preserved
-  // from the launcher to the Server Action.
-  function toggleSection(sectionCode) {
-    setSelectedSections((prev) => {
+  // Category + subcategory state.
+  //
+  // For categories WITHOUT subcategories (Math IES, Reading,
+  // Science): the category is its own leaf, tracked in
+  // selectedCategories. Sent to the server as `category=...`.
+  //
+  // For categories WITH subcategories (Math PHM, the three
+  // English categories): clicking the category checkbox is
+  // sugar for "select all of this category's subcategories",
+  // so selectedSubcategories is the single source of truth.
+  // The category checkbox visual state is derived: on when
+  // every sub is selected, partial when some-but-not-all,
+  // off when none. selectedCategories never holds parent
+  // category names with subs — keeps the submitted form tidy
+  // and makes the sub checkboxes inside the dropdown flip
+  // on/off in sync with the parent click.
+  function toggleCategory(category) {
+    const subs = category.subcategories ?? [];
+    if (subs.length === 0) {
+      // Leaf category: toggle in selectedCategories.
+      const isOn = selectedCategories.has(category.name);
+      setSelectedCategories((prev) => {
+        const next = new Set(prev);
+        if (isOn) next.delete(category.name);
+        else next.add(category.name);
+        return next;
+      });
+      return;
+    }
+    // Parent category with subs: select-all / clear-all
+    // semantics. Partial state acts as "complete the
+    // selection" (standard tristate UX) — flip to all-on.
+    const allOn = subs.every((sub) => selectedSubcategories.has(sub.name));
+    setSelectedSubcategories((prev) => {
       const next = new Set(prev);
-      if (next.has(sectionCode)) next.delete(sectionCode);
-      else next.add(sectionCode);
-      return next;
-    });
-    // Bulk-toggle: clear any per-category narrowing inside this
-    // section when the section toggles off, so the form stays
-    // self-consistent.
-    setSelectedCategories((prev) => {
-      const next = new Set(prev);
-      const sec = sections.find((x) => x.section === sectionCode);
-      if (sec) for (const c of sec.categories) next.delete(c.name);
+      if (allOn) {
+        for (const sub of subs) next.delete(sub.name);
+      } else {
+        for (const sub of subs) next.add(sub.name);
+      }
       return next;
     });
   }
 
-  function toggleCategory(categoryName) {
-    setSelectedCategories((prev) => {
+  function toggleSubcategory(subName) {
+    setSelectedSubcategories((prev) => {
       const next = new Set(prev);
-      if (next.has(categoryName)) next.delete(categoryName);
-      else next.add(categoryName);
-      return next;
-    });
-  }
-
-  function toggleExpandSection(sectionName) {
-    setExpandedSections((prev) => {
-      const next = new Set(prev);
-      if (next.has(sectionName)) next.delete(sectionName);
-      else next.add(sectionName);
+      if (next.has(subName)) next.delete(subName);
+      else next.add(subName);
       return next;
     });
   }
@@ -227,7 +247,12 @@ export function StartInteractiveAct({
         </section>
       )}
 
-      <Card>
+      {/* Filter card. Plain styled div rather than the Card
+          primitive because Card defaults to tone='soft' which
+          paints a slate-50 background — we want the launcher
+          card to read as a clean white surface against the
+          page background. */}
+      <div className={s.card}>
         <div className={s.cardHeader}>
           <div className={s.cardHeaderLeft}>
             <IconTile icon={QuestionBankIcon} palette="cyan" size="md" />
@@ -242,57 +267,23 @@ export function StartInteractiveAct({
         </div>
 
         <form onSubmit={onSubmit} className={s.form}>
-          {/* Section grid — 4 sections rendered as rows. Hides sections
-              with no data so the form doesn't show empty buckets for
-              Reading / Science until those land. */}
-          <div className={s.domainsGrid}>
-            {sections.map((sec) => {
-              const isSelected =
-                selectedSections.has(sec.section)
-                || sec.categories.some((c) => selectedCategories.has(c.name));
-              const isExpanded = expandedSections.has(sec.section);
-              return (
-                <div key={sec.section} className={s.domainBlock}>
-                  <button
-                    type="button"
-                    className={`${s.domainRow} ${isSelected ? s.domainRowOn : ''}`}
-                    onClick={() => toggleSection(sec.section)}
-                  >
-                    <span className={s.domainName}>{sec.name}</span>
-                    <span className={s.domainCount}>{sec.count}</span>
-                  </button>
-                  {sec.categories.length > 0 && (
-                    <button
-                      type="button"
-                      className={s.skillsToggle}
-                      onClick={() => toggleExpandSection(sec.section)}
-                      aria-expanded={isExpanded}
-                    >
-                      {isExpanded ? 'Hide categories ▴' : `Categories (${sec.categories.length}) ▾`}
-                    </button>
-                  )}
-                  {isExpanded && sec.categories.length > 0 && (
-                    <ul className={s.skillList}>
-                      {sec.categories.map((cat) => {
-                        const on = selectedCategories.has(cat.name);
-                        return (
-                          <li key={cat.name}>
-                            <button
-                              type="button"
-                              className={`${s.skillRow} ${on ? s.skillRowOn : ''}`}
-                              onClick={() => toggleCategory(cat.name)}
-                            >
-                              <span>{cat.name}</span>
-                              <span className={s.skillCount}>{cat.count}</span>
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </div>
-              );
-            })}
+          {/* Sections render as group labels above their category
+              lists — mirrors the SAT launcher's Math / R&W headers.
+              Categories are visible by default with real checkboxes;
+              when a category has subcategories (Math PHM, the three
+              English categories) a small dropdown reveals
+              per-subcategory checkboxes for narrowing. */}
+          <div className={s.sectionsGrid}>
+            {sections.map((sec) => (
+              <SectionBlock
+                key={sec.section}
+                section={sec}
+                selectedCategories={selectedCategories}
+                selectedSubcategories={selectedSubcategories}
+                onToggleCategory={toggleCategory}
+                onToggleSubcategory={toggleSubcategory}
+              />
+            ))}
           </div>
 
           {/* Difficulty + unanswered-only chip row. */}
@@ -368,12 +359,98 @@ export function StartInteractiveAct({
             </div>
           )}
         </form>
-      </Card>
+      </div>
     </main>
   );
 }
 
 // ──────────────────────────────────────────────────────────────
+
+// One ACT section block: header label + category rows. Each
+// category row carries a checkbox; categories with named
+// subcategories also get a "Subcategories ▾" dropdown that
+// opens a panel of per-subcategory checkboxes.
+function SectionBlock({
+  section,
+  selectedCategories,
+  selectedSubcategories,
+  onToggleCategory,
+  onToggleSubcategory,
+}) {
+  return (
+    <div className={s.sectionBlock}>
+      <div className={s.sectionHeader}>
+        <span className={s.sectionHeaderName}>{section.name}</span>
+        <span className={s.sectionHeaderCount}>{section.count}</span>
+      </div>
+      <ul className={s.categoryList}>
+        {section.categories.map((cat) => {
+          const hasSubs = (cat.subcategories ?? []).length > 0;
+          const selectedSubs = hasSubs
+            ? cat.subcategories.filter((sub) => selectedSubcategories.has(sub.name))
+            : [];
+          // For categories with subs, the checkbox state is
+          // derived from the sub picks: on iff all subs are
+          // selected, partial iff some-but-not-all. For leaf
+          // categories (no subs) we still consult
+          // selectedCategories directly.
+          const categoryOn = hasSubs
+            ? selectedSubs.length === cat.subcategories.length
+            : selectedCategories.has(cat.name);
+          const partial = hasSubs
+            ? selectedSubs.length > 0 && selectedSubs.length < cat.subcategories.length
+            : false;
+          return (
+            <li key={cat.name} className={s.categoryItem}>
+              <label className={`${s.categoryRow} ${categoryOn ? s.categoryRowOn : ''} ${partial ? s.categoryRowPartial : ''}`}>
+                <input
+                  type="checkbox"
+                  className={s.checkbox}
+                  checked={categoryOn}
+                  ref={(el) => {
+                    if (el) el.indeterminate = partial;
+                  }}
+                  onChange={() => onToggleCategory(cat)}
+                />
+                <span className={s.categoryName}>{cat.name}</span>
+                <span className={s.categoryCount}>{cat.count}</span>
+              </label>
+              {hasSubs && (
+                <details className={s.subcategoryDropdown}>
+                  <summary className={s.subcategorySummary}>
+                    <span>Subcategories</span>
+                    {selectedSubs.length > 0 && (
+                      <span className={s.subcategoryBadge}>{selectedSubs.length}</span>
+                    )}
+                  </summary>
+                  <ul className={s.subcategoryList}>
+                    {cat.subcategories.map((sub) => {
+                      const subOn = selectedSubcategories.has(sub.name);
+                      return (
+                        <li key={sub.name}>
+                          <label className={`${s.subcategoryRow} ${subOn ? s.subcategoryRowOn : ''}`}>
+                            <input
+                              type="checkbox"
+                              className={s.checkbox}
+                              checked={subOn}
+                              onChange={() => onToggleSubcategory(sub.name)}
+                            />
+                            <span className={s.subcategoryName}>{sub.name}</span>
+                            <span className={s.subcategoryCount}>{sub.count}</span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </details>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
 
 function resolveSize(text) {
   const n = parseInt(text, 10);
@@ -381,10 +458,10 @@ function resolveSize(text) {
   return Math.min(MAX_SIZE, Math.max(MIN_SIZE, n));
 }
 
-function buildFormData({ sections, categories, difficulties, unansweredOnly, order, size }) {
+function buildFormData({ categories, subcategories, difficulties, unansweredOnly, order, size }) {
   const fd = new FormData();
-  for (const sec of sections) fd.append('section', sec);
   for (const cat of categories) fd.append('category', cat);
+  for (const sub of subcategories ?? []) fd.append('subcategory', sub);
   for (const d of difficulties) fd.append('difficulty', String(d));
   if (unansweredOnly) fd.set('unanswered_only', '1');
   fd.set('order', order);

@@ -34,15 +34,33 @@ const MUTATION_ATTEMPTS = [
 ];
 
 test.describe('demo accounts are read-only', () => {
-  test('proxy rejects every mutation method', async ({ page, request }) => {
+  test('proxy rejects every mutation method', async ({ page }) => {
     // Mint a demo student session via the auto-login route, then
-    // reuse its cookies for the raw API request.
+    // reuse its cookies for the raw API request. Use the page's
+    // BrowserContext's request handle — the bare `request` fixture
+    // is a separate APIRequestContext with its own cookie jar, so
+    // calling `request.fetch(...)` would hit the API anonymously
+    // and the proxy gate (which is only for authenticated demo
+    // sessions) wouldn't fire.
+    test.setTimeout(60_000);
     await page.goto('/auth/demo/student');
-    await page.waitForURL((url) => !url.pathname.startsWith('/auth/demo/'));
+    // Wait specifically for /dashboard. The auth chain may go
+    // through /auth/callback (happy path) or land on the Site URL
+    // with a fragment that HomeClient.useAuthFragmentBounce then
+    // redirects from. Either way, the post-sign-in URL is
+    // /dashboard. A looser "any non-/auth/* URL" predicate would
+    // fire on the Site-URL hop before the client-side bounce runs.
+    await page.waitForURL(
+      (url) => url.pathname === '/dashboard'
+        && !url.hostname.includes('supabase.co'),
+      { timeout: 30_000 },
+    );
+
+    const ctxRequest = page.context().request;
 
     for (const m of MUTATION_ATTEMPTS) {
       if (EXEMPT_PREFIXES.some((p) => m.path.startsWith(p))) continue;
-      const res = await request.fetch(m.path, {
+      const res = await ctxRequest.fetch(m.path, {
         method: m.method,
         data: m.method === 'GET' ? undefined : {},
       });

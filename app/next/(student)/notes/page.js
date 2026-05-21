@@ -46,7 +46,10 @@ export default async function StudentNotesIndex({ searchParams }) {
         <div>
           <h1 className={s.pageTitle}>My notes</h1>
           <p className={s.pageSubtitle}>
-            Private to you. Nothing here is shared with tutors or other students.
+            Private to you. Nothing here is shared with tutors or other students.{' '}
+            <a href="/help/notes" style={{ color: 'var(--color-app-accent, #4f46e5)', textDecoration: 'none', fontWeight: 600 }}>
+              How Notes &amp; Error Log work →
+            </a>
           </p>
         </div>
         <Link href="/notes/new" className={s.btnPrimary}>

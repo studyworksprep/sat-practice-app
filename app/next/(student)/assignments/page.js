@@ -414,20 +414,25 @@ async function loadAssignmentsData(supabase, userId) {
     (questionsRes.data ?? []).map((q) => [q.id, q.difficulty]),
   );
 
-  // First-attempt-per-question from the full attempts list (already
-  // ordered asc). "First attempt wins" matches how the review page
-  // treats session performance. Attempts on legacy v1 ids get
-  // re-keyed to the v2 id they map to so per-question lookups by
-  // the v2 id (which is what assignment.question_ids carries) work
-  // for both eras.
-  const firstAttemptByQid = new Map();
+  // Bucket attempts by qid (re-keying any legacy v1 ids to the v2
+  // id they map to). Each bucket stays in chronological order
+  // because the attempts query is `.order('created_at', asc)`. We
+  // keep every attempt — not just the first — because the
+  // per-assignment loop below applies a per-row created_at floor
+  // and picks the first attempt at-or-after that floor. Counting
+  // every all-time attempt as "done" would credit attempts from
+  // before the assignment existed (the bug this scoping fixes;
+  // matches the floor the detail page already uses, e3115ef).
+  const attemptsByQid = new Map();
   for (const a of attemptsRes.data ?? []) {
     const key = v2ByLegacy.get(a.question_id) ?? a.question_id;
-    if (!firstAttemptByQid.has(key)) {
-      firstAttemptByQid.set(key, a);
+    let arr = attemptsByQid.get(key);
+    if (!arr) {
+      arr = [];
+      attemptsByQid.set(key, arr);
     }
+    arr.push(a);
   }
-  const attemptedSet = new Set(firstAttemptByQid.keys());
 
   // Latest session per assignment (sessions are ordered desc, so
   // the first one we see for an assignment_id is the latest).
@@ -458,13 +463,21 @@ async function loadAssignmentsData(supabase, userId) {
     if (r.assignment_type === 'questions') {
       const qs = Array.isArray(r.question_ids) ? r.question_ids : [];
       r.total_count = qs.length;
-      r.done_count = qs.filter((qid) => attemptedSet.has(qid)).length;
 
-      // Completed-row difficulty aggregation.
+      // Per-assignment floor: an attempt counts only if it landed
+      // at-or-after the assignment was created. Same rule the
+      // detail page uses (e3115ef). Without this floor, prior
+      // history on the same question_id would credit progress
+      // toward an assignment that didn't exist yet.
+      const floor = r.created_at ? Date.parse(r.created_at) : 0;
+      let done = 0;
       const buckets = { 1: { correct: 0, total: 0 }, 2: { correct: 0, total: 0 }, 3: { correct: 0, total: 0 } };
       for (const qid of qs) {
-        const attempt = firstAttemptByQid.get(qid);
+        const attempts = attemptsByQid.get(qid);
+        if (!attempts) continue;
+        const attempt = attempts.find((x) => Date.parse(x.created_at) >= floor);
         if (!attempt) continue;
+        done += 1;
         const d = difficultyById.get(qid);
         const key = d === 1 || d === 2 || d === 3 ? d : 3;  // treat 4/5 as Hard
         buckets[key].total += 1;
@@ -472,6 +485,7 @@ async function loadAssignmentsData(supabase, userId) {
         totalAttempted += 1;
         if (attempt.is_correct) totalCorrect += 1;
       }
+      r.done_count = done;
       r.difficultyAccuracy = buckets;
     }
 
