@@ -150,7 +150,7 @@ export async function loadDashboardAggregateAct(
   }
 
   const qids = Array.from(earliestByQid.keys());
-  let metaById = new Map<string, QuestionMetaRow>();
+  const metaById = new Map<string, QuestionMetaRow>();
   if (qids.length > 0) {
     const { data: questionRows } = await supabase
       .from('act_questions')
