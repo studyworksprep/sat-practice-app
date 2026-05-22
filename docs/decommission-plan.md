@@ -94,8 +94,9 @@ work. It is deleted with the rest of the legacy tree in Stage C.
       legacy user — which made the Stage B "100% on next"
       precondition unreachable. Migration
       `20260521000000_default_ui_version_next.sql` flips the column
-      default to `next`. Needs to be applied to the dev + prod
-      databases to take effect (see §5).
+      default to `next`. **Applied to production 2026-05-21**
+      (out-of-band, via Supabase MCP); replays on dev via
+      `supabase db reset`.
 - [x] Port `/features/*` marketing decks into `app/next/features/*`
       (6 pages; verbatim copies, `@/`-aliased imports, no layout —
       `app/next/layout.js` already supplies the `data-tree="next"`
@@ -219,14 +220,11 @@ the repo:
 **Did (Stage A, non-destructive):** ported the 6 `/features/*`
 marketing pages into `app/next/features/*`, dropped `/features` from
 the proxy's tree-agnostic list, added the `features-parity` anon
-regression spec, flipped the `profiles.ui_version` column default to
-`next` (migration `20260521000000`), and wrote this plan.
-
-**Migration apply caveat:** `20260521000000_default_ui_version_next.sql`
-is committed but not applied here — schema changes land on the dev
-database first and reach prod through the team's deploy process
-(`docs/runbook.md` → "Applying a hotfix migration"). New signups keep
-defaulting to `legacy` until it is applied to production.
+regression spec, wrote this plan, and flipped the
+`profiles.ui_version` column default to `next` — migration
+`20260521000000`, applied directly to production 2026-05-21. At
+apply time all 66 prod users were already on `next`; the prior
+`legacy` default would have regressed the next signup.
 
 **Did not:** delete anything (Stages C/D are destructive and gated on
 explicit sign-off + the Stage B precondition), and did not author the

@@ -19,6 +19,12 @@
 -- auth.users app_metadata, so the JWT carries it from the first
 -- token issued. Existing profile rows are untouched: this changes
 -- only the default for future inserts, not any current value.
+--
+-- Applied out-of-band to production (project noqtadytxyslkoetchrs)
+-- on 2026-05-21 via the Supabase MCP, per docs/runbook.md "Applying
+-- a hotfix migration". At apply time all 66 prod users were already
+-- on 'next'; this stops the next signup from regressing to legacy.
+-- Replays normally on dev via `supabase db reset`.
 
 alter table public.profiles
   alter column ui_version set default 'next';
