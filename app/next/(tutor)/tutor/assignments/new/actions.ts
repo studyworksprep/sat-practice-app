@@ -28,7 +28,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { requireUser, requireServiceRole } from '@/lib/api/auth';
+import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { fetchAll } from '@/lib/supabase/fetchAll';
@@ -231,7 +231,7 @@ async function buildQuestionsPayload(
       }),
     ),
     unansweredOnly
-      ? fetchAttemptedIds(studentIds)
+      ? fetchAttemptedIds(supabase, studentIds)
       : Promise.resolve<{ ids: Set<string>; error?: string }>({
           ids: new Set<string>(),
         }),
@@ -315,34 +315,27 @@ async function buildQuestionsPayload(
 // the set if even one selected student has touched it, so the Set is
 // the union across all students.
 //
-// Uses a service-role client: a teacher's RLS scope can't read a
-// student's attempts. Pages via fetchAll rather than a single capped
-// query — PostgREST silently truncates at max-rows (the db-max-rows
-// bug the rebuild exists to kill; see CLAUDE.md, Finding #1).
+// Runs on the caller's RLS-scoped client. The attempts_select policy
+// is `can_view(user_id)`, which already grants a teacher their own
+// students' (and a manager their trainees') attempt rows — i.e. every
+// person the New Assignment picker can list — so no service-role
+// bypass is needed. Paged via fetchAll rather than a single capped
+// query, since PostgREST silently truncates at max-rows (the
+// db-max-rows bug the rebuild exists to kill; CLAUDE.md, Finding #1).
 //
 // Only v2-era attempts match: `attempts.question_id` holds whichever
 // id space the question was practiced under, and v1 ids never collide
 // with questions_v2 ids, so legacy v1 practice is not considered.
 async function fetchAttemptedIds(
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   studentIds: string[],
 ): Promise<{ ids: Set<string>; error?: string }> {
   const ids = new Set<string>();
   if (studentIds.length === 0) return { ids };
 
-  let service;
-  try {
-    ({ service } = await requireServiceRole(
-      'assignment-create: exclude questions students have already attempted',
-      { allowedRoles: ['teacher', 'manager', 'admin'] },
-    ));
-  } catch (err) {
-    if (err instanceof ApiError) return { ids, error: err.message };
-    return { ids, error: 'Could not verify permission to read attempt history.' };
-  }
-
   try {
     const rows = await fetchAll<{ question_id: string }>((from: number, to: number) =>
-      service
+      supabase
         .from('attempts')
         .select('question_id')
         .in('user_id', studentIds)
