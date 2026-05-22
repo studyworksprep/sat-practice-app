@@ -155,12 +155,39 @@ cross-check below.
       `NavBar.js`, `FeatureSlideshow.js` once relocated, etc.) and
       `lib/practiceSessionStorage.js` (legacy-only — 6 importers, all
       legacy).
-- [ ] Delete the ~88 legacy-only `/api/*` route handlers. **Keep**
-      `/api/webhooks/*`, `/api/external/*`, `/api/public/*`,
-      `/api/signup`, `/api/billing/*`, and `/api/practice-tests` —
-      these have external callers or are still called by the next
-      tree. Cross-check each `/api/*` segment against next-tree
-      `fetch(` sites before deleting.
+- [ ] Delete the 89 legacy-only `/api/*` route handlers. **API
+      cross-check done** — `app/next/`, `lib/`, and the only two
+      `components/` files the next tree imports (`FeatureSlideshow`,
+      `HtmlBlock`) were swept for every `fetch`/`sendBeacon`. The
+      next tree's entire `/api/*` surface is 6 routes; `lib/` calls
+      none (its `*-actions.*` files only mention `/api/` in
+      "replaces the legacy ..." comments). **Keep exactly these 12:**
+
+      _External / non-browser callers (6):_
+      `/api/webhooks/stripe`, `/api/external/score-report/[attemptId]`,
+      `/api/external/student-summary/[studentId]`,
+      `/api/public/students/[studentId]/practice-data`,
+      `/api/public/students/provision`, `/api/public/students/search`.
+
+      _Still called by the next tree (6):_
+      `/api/signup` (HomeClient), `/api/billing/create-checkout`
+      (SubscribeClient), `/api/billing/create-portal`
+      (ManagePortalButton), `/api/practice-tests` (UploadBluebookCard),
+      `/api/teacher/student/[studentId]/upload-bluebook`
+      (UploadBluebookCard + BluebookBatchInteractive),
+      `/api/practice-test/time-ping` (TestRunnerInteractive
+      `sendBeacon` — can't be a Server Action).
+
+      Note: the keep-list routes are nested inside otherwise-legacy
+      segments — `/api/billing/status`, every `/api/teacher/student/
+      [studentId]/*` except `upload-bluebook`, and every
+      `/api/practice-tests/*` sub-route are legacy-only. Delete at the
+      route-file level, not by directory.
+- [ ] Update the e2e suite: `tests/e2e/api-auth.*.spec.ts` and
+      `helpers/fixtures.ts` assert against legacy-only routes
+      (`/api/me`, `/api/dashboard`, `/api/admin/users`,
+      `/api/teacher/*`, …) — repoint or drop those cases when the
+      routes are deleted.
 - [ ] Promote `app/next/*` to the route root (or keep the rewrite
       indefinitely — decide during Stage C). Simplify `proxy.js`:
       remove the tree resolver, the `x-ui-tree` header, the
