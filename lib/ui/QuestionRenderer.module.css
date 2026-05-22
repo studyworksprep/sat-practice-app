@@ -186,14 +186,27 @@
    which the sanitizer preserves. */
 .stem img,
 .stimulus img,
-.stimulusColumn img,
-.optionContent img {
+.stimulusColumn img {
   display: block;
   max-width: min(480px, 100%);
   height: auto;
   margin: 12px 0;
 }
-.optionContent img { margin: 6px 0; }
+
+/* Answer-choice figures (ACT matrix / geometry diagrams) sit in a
+   stacked list, so they need a far tighter cap than stem figures.
+   The author-supplied inline `max-width: 100%` would otherwise let
+   an SVG with no intrinsic width/height stretch to the full pane
+   width — hence !important to win over that inline style, and a
+   max-height so a tall/square figure can't dominate the card. */
+.optionContent img {
+  display: block;
+  max-width: min(280px, 100%) !important;
+  max-height: 120px !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 6px 0;
+}
 
 /* ---------- Option list ---------- */
 
