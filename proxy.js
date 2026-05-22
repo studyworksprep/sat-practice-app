@@ -64,22 +64,20 @@ async function readKillSwitch(supabase) {
 }
 
 // Paths that always serve from the legacy tree, regardless of
-// ui_version. Two flavors live here:
-//   - Route handlers under /auth that exchange Supabase codes for
-//     sessions and redirect. They have no UI; one copy is enough.
-//   - Marketing pages (features tour) that have no next-tree
-//     counterpart yet. Subscribe, account/billing, login, and
-//     /auth/update-password used to live here too; once the next
-//     tree picked up matching pages they were dropped so a next
-//     user lands on the new-tree version instead of the legacy
-//     copy.
-// Without this list, a next-default user hitting /features/students
-// would be rewritten to a path that doesn't exist in app/next/*
-// and fall into the catchall. Keep the list narrow.
+// ui_version. These are route handlers under /auth that exchange
+// Supabase codes for sessions and redirect — they have no UI, so
+// one copy is enough.
+//
+// /features (the marketing tour) used to live here because it had
+// no next-tree counterpart. The decks were ported into
+// app/next/features/* during the Phase 6 decommission prep, so
+// /features now participates in the normal rewrite flow: next users
+// get the new-tree version, legacy users the legacy copy. Subscribe,
+// account/billing, login, and /auth/update-password came off this
+// list the same way once the next tree picked up matching pages.
 const TREE_AGNOSTIC_PREFIXES = [
   '/auth/callback',
   '/auth/demo',
-  '/features',
 ];
 
 function isTreeAgnostic(pathname) {
