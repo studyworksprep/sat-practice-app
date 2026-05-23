@@ -183,6 +183,18 @@ export default async function TutorAssignmentsPage({ searchParams }) {
     const studentCount = junc.length;
     const completedJunc = junc.filter((j) => j.completed_at);
 
+    // Displayable name per student on the assignment, used by the
+    // toolbar's search. Built for every row (single AND group) so a
+    // tutor searching "Jane" finds her on cohort assignments too.
+    const studentNames = junc
+      .map(
+        (j) =>
+          [j.student?.first_name, j.student?.last_name].filter(Boolean).join(' ')
+          || j.student?.email
+          || '',
+      )
+      .filter(Boolean);
+
     let single = null;
     if (studentCount === 1) {
       const j = junc[0];
@@ -226,6 +238,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
       ...a,
       studentCount,
       completedCount: completedJunc.length,
+      studentNames,
       single,
     };
   });
