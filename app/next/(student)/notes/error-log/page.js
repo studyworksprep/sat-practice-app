@@ -16,6 +16,7 @@ import { NotesIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { SafeHtml } from '@/lib/ui/SafeHtml';
 import { NotesNav } from '../NotesNav';
+import { HelpButton } from '../../help/HelpButton';
 import s from './ErrorLog.module.css';
 import notesS from '../Notes.module.css';
 
@@ -43,7 +44,10 @@ export default async function StudentErrorLogManagePage() {
         <div className={s.titleRow}>
           <IconTile icon={NotesIcon} palette="amber" size="md" />
           <div>
-            <h1 className={s.h1}>Error log</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <h1 className={s.h1}>Error log</h1>
+              <HelpButton slug="error-log" />
+            </div>
             <p className={s.sub}>
               Your notes on questions you got wrong, newest first.
               Click <strong>Show question</strong> to reopen the

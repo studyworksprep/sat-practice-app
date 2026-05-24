@@ -12,6 +12,7 @@ import { LayersIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import { ensureDefaultSets } from '@/lib/practice/flashcards-helpers';
 import { NotesNav } from '../NotesNav';
+import { HelpButton } from '../../help/HelpButton';
 import { CreateSetForm } from './CreateSetForm';
 import s from './Flashcards.module.css';
 import notesS from '../Notes.module.css';
@@ -66,7 +67,10 @@ export default async function FlashcardsLandingPage() {
         <div className={s.titleRow}>
           <IconTile icon={LayersIcon} palette="violet" size="md" />
           <div>
-            <h1 className={s.h1}>Flashcards</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <h1 className={s.h1}>Flashcards</h1>
+              <HelpButton slug="flashcards" />
+            </div>
             <p className={s.sub}>
               Your private terms + vocabulary library. Pick a set
               to manage cards or start a review session — the
