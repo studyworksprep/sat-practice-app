@@ -23,6 +23,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
 import { updateTargetScore } from './actions';
@@ -74,6 +75,7 @@ export default async function StudentDashboardPage() {
     { data: nextRegistrationRow },
     { data: assignmentLinkedSessions },
     { data: recentAttempts },
+    hasTutor,
   ] = await Promise.all([
     loadDashboardAggregate(user.id),
     // Sibling ACT aggregator. Returns zeroed totals when the
@@ -179,6 +181,10 @@ export default async function StudentDashboardPage() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(RECENT_ATTEMPTS_CAP),
+    // Self-studiers (no row in teacher_student_assignments) skip
+    // the Pending Assignments panel below — it would always be
+    // empty for them and just adds noise.
+    hasAssignedTutor(supabase, user.id),
   ]);
 
   // Weekly accuracy trend for the "Your weekly progress" card.
@@ -427,6 +433,7 @@ export default async function StudentDashboardPage() {
       recentlyFinished={recentlyFinished}
       assignments={pendingAssignments}
       assignmentsTotal={pendingTotalCount}
+      hasTutor={hasTutor}
       resumeInfo={resumeInfo}
       todayMs={nowMs}
       accountCreatedAt={fullProfile?.created_at ?? null}
