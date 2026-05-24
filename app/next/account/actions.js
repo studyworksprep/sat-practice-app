@@ -11,15 +11,14 @@
 //      auth → profile sync. We do not touch it here.
 //
 //   3. Teacher connection — student enters a code (the
-//      teacher's profiles.teacher_invite_code). We look up the
-//      teacher, insert into teacher_student_assignments, and —
-//      crucially — if the teacher is a Studyworks tutor
-//      (subscription_exempt = true on their profile), we flip
-//      the student's own subscription_exempt to true. After that
-//      flip, the student keeps access even if they cancel an
-//      existing subscription. Adding a non-exempt (external)
-//      teacher just creates the assignment; access still depends
-//      on their subscription.
+//      teacher's profiles.teacher_invite_code). The lookup,
+//      assignment insert, and one-way subscription_exempt flip
+//      live in the link_self_to_teacher_by_code SECURITY DEFINER
+//      RPC (migration 20260524000000) so the privilege boundary
+//      is in SQL, not in Node. Adding a Studyworks tutor's code
+//      keeps the student on access even if they cancel a paid
+//      subscription later; adding a non-Studyworks teacher just
+//      links them for assignments.
 //
 // All actions use the { ok, data | error } envelope from
 // lib/api/response.js and are consumed via useActionState in the
@@ -28,7 +27,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { requireUser, requireServiceRole } from '@/lib/api/auth';
+import { requireUser } from '@/lib/api/auth';
 import { actionOk, actionFail, ApiError } from '@/lib/api/response';
 
 function trimOrNull(raw) {
@@ -142,23 +141,22 @@ export async function updateEmail(_prev, formData) {
 /**
  * Link the caller to a teacher via the teacher's invite code.
  *
- * Flow:
- *   1. Look up the teacher by profiles.teacher_invite_code. The
- *      lookup runs under service-role because RLS otherwise
- *      hides teacher rows from students — we need to resolve
- *      the code without leaking which teachers exist (the only
- *      thing we tell the student is "valid / invalid").
- *   2. Upsert into teacher_student_assignments. Idempotent — if
- *      the student is already linked, that's fine.
- *   3. If the teacher is a Studyworks tutor (subscription_exempt
- *      = true on their profile), flip the student's
- *      subscription_exempt to true. This is one-way: we never
- *      flip it back from this surface, so canceling a paid
- *      subscription later still leaves the student with access.
+ * Delegates the entire transaction to the
+ * link_self_to_teacher_by_code(p_code) SECURITY DEFINER RPC
+ * (migration 20260524000000). The function:
  *
- * Only students can add a teacher code through this surface.
- * Teachers / managers / admins manage their own rosters through
- * the tutor / admin trees.
+ *   1. Reads auth.uid() internally — the student_id can't be
+ *      spoofed by the caller.
+ *   2. Resolves the code, validates the caller's role, inserts
+ *      the assignment, and one-way flips subscription_exempt
+ *      when the teacher is a Studyworks tutor, all in one
+ *      transaction.
+ *   3. Returns a jsonb { ok, error? | teacher_id, ... } envelope
+ *      so we never have to parse Postgres exception messages
+ *      for the user-visible "bad code" cases.
+ *
+ * The Node side stays on the user-scoped client — no service-
+ * role bypass lives in this file.
  */
 export async function addTeacherCode(_prev, formData) {
   let ctx;
@@ -169,74 +167,27 @@ export async function addTeacherCode(_prev, formData) {
     return actionFail('Unexpected error loading user');
   }
 
-  if (!['student', 'practice'].includes(ctx.profile.role ?? '')) {
-    return actionFail('Only students can add a teacher code here');
-  }
-
   const code = trimOrNull(formData.get('code'));
   if (!code) return actionFail('Enter a teacher code');
-  const normalized = code.toUpperCase();
 
-  // Service role needed because RLS would hide the teacher's
-  // profile row from a student doing the lookup. The reason is
-  // narrow: resolve one code to one teacher; nothing else is
-  // exposed back to the caller.
-  let svcCtx;
-  try {
-    svcCtx = await requireServiceRole('student resolves teacher_invite_code → teacher_id');
-  } catch (err) {
-    if (err instanceof ApiError) return err.toActionResult();
-    return actionFail('Unexpected error');
-  }
+  const { data, error } = await ctx.supabase.rpc(
+    'link_self_to_teacher_by_code',
+    { p_code: code },
+  );
 
-  const { data: teacher, error: lookupErr } = await svcCtx.service
-    .from('profiles')
-    .select('id, first_name, last_name, subscription_exempt, role')
-    .eq('teacher_invite_code', normalized)
-    .maybeSingle();
-
-  if (lookupErr) return actionFail(`Failed to resolve code: ${lookupErr.message}`);
-  if (!teacher) {
-    return actionFail('That code did not match a teacher. Double-check with your teacher and try again.');
-  }
-  if (teacher.id === ctx.user.id) {
-    return actionFail('That is your own teacher code');
-  }
-  if (!['teacher', 'manager', 'admin'].includes(teacher.role)) {
-    return actionFail('That code does not belong to a teacher');
-  }
-
-  // Idempotent link. onConflict targets the composite key so
-  // re-submitting the same code is a no-op (and not an error).
-  const { error: assignErr } = await svcCtx.service
-    .from('teacher_student_assignments')
-    .upsert(
-      { teacher_id: teacher.id, student_id: ctx.user.id },
-      { onConflict: 'teacher_id,student_id' },
-    );
-  if (assignErr) return actionFail(`Failed to link: ${assignErr.message}`);
-
-  // Studyworks tutors are flagged via profiles.subscription_exempt.
-  // Linking to one of them flips the student's own exempt flag so
-  // they keep access even if a paid subscription is later canceled.
-  let grantedExemption = false;
-  if (teacher.subscription_exempt === true && ctx.profile.subscription_exempt !== true) {
-    const { error: flipErr } = await svcCtx.service
-      .from('profiles')
-      .update({ subscription_exempt: true })
-      .eq('id', ctx.user.id);
-    if (flipErr) return actionFail(`Linked, but failed to grant access: ${flipErr.message}`);
-    grantedExemption = true;
+  if (error) return actionFail(`Failed to link: ${error.message}`);
+  if (!data || data.ok !== true) {
+    return actionFail(data?.error ?? 'Failed to link');
   }
 
   revalidatePath('/account');
   return actionOk({
     teacher: {
-      id: teacher.id,
-      first_name: teacher.first_name,
-      last_name: teacher.last_name,
-      exempt: teacher.subscription_exempt === true,
+      id: data.teacher_id,
+      first_name: data.teacher_first_name,
+      last_name: data.teacher_last_name,
+      exempt: data.teacher_exempt === true,
     },
-    grantedExemption,
+    grantedExemption: data.granted_exemption === true,
   });
 }

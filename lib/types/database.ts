@@ -2024,6 +2024,7 @@ export type Database = {
           tutor_name: string | null
           ui_version: string
           user_type: string | null
+          welcome_email_sent_at: string | null
         }
         Insert: {
           banned_at?: string | null
@@ -2048,6 +2049,7 @@ export type Database = {
           tutor_name?: string | null
           ui_version?: string
           user_type?: string | null
+          welcome_email_sent_at?: string | null
         }
         Update: {
           banned_at?: string | null
@@ -2072,6 +2074,7 @@ export type Database = {
           tutor_name?: string | null
           ui_version?: string
           user_type?: string | null
+          welcome_email_sent_at?: string | null
         }
         Relationships: []
       }
@@ -3874,6 +3877,7 @@ export type Database = {
         Args: { p_assignment_id: string; p_teacher_id: string }
         Returns: boolean
       }
+      link_self_to_teacher_by_code: { Args: { p_code: string }; Returns: Json }
       list_visible_users: {
         Args: { role_filter?: string }
         Returns: {
