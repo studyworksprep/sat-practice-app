@@ -254,7 +254,7 @@ export const HELP_ARTICLES = [
     title: 'Notes, Error Log & Flashcards',
     blurb: 'The Notes tab is where you turn mistakes into improvement. Read this.',
     summary: 'The Notes tab is your study hub. It gives you three different tools for capturing what you learn: Flashcards for terms and formulas, Error Log entries for process mistakes and traps, and Notes for concepts that need a real explanation. Choosing the right tool for each lesson is the single highest-leverage habit on the platform — this article walks through when to use which.',
-    icon: '📝',
+    icon: '📓',
     order: 5,
     sections: [
       {
@@ -268,8 +268,8 @@ export const HELP_ARTICLES = [
         heading: 'Choosing the right tool — Flashcards vs Error Log vs Notes',
         html: `
 <p>When you get a question wrong (or get it right but feel shaky about it), ask yourself: <em>what specifically did I just learn?</em> The answer points to one of three tools.</p>
-<p><strong>📇 Flashcard</strong> — use this when the lesson is a single piece of information you need to remember on demand. A vocabulary word and its definition. A geometry formula. A grammar rule like "semicolons join two independent clauses." Flashcards are best at the small, atomic stuff: one fact per card, drilled into long-term memory through repetition. If you can write it as a question-and-answer pair, it belongs on a flashcard.</p>
-<p><strong>🔁 Error Log</strong> — use this when the lesson is about your <em>process</em>: a trap you fell for, a step you skipped, a misread, a wrong assumption. "I assumed 'except' meant the same as 'such as.'" "I solved for x but the question asked for 2x." "I picked the most extreme answer choice without checking." Error Log entries aren't about content you didn't know — they're about the specific habit you want to change. Next time you face the same kind of question, your past note pops up and reminds you not to make the same move.</p>
+<p><strong>📇 Flashcard</strong> — use this when the lesson is a single piece of information you need to remember on demand. A vocabulary word and its definition. A geometry formula. A grammar rule like "semicolons join two independent clauses." Flashcards are best at the small, atomic stuff: one fact per card, drilled into long-term memory through repetition. If you can write it as a question-and-answer pair, it belongs on a flashcard. <a href="/help/flashcards">Full guide to Flashcards →</a></p>
+<p><strong>🔍 Error Log</strong> — use this when the lesson is about your <em>process</em>: a trap you fell for, a step you skipped, a misread, a wrong assumption. "I assumed 'except' meant the same as 'such as.'" "I solved for x but the question asked for 2x." "I picked the most extreme answer choice without checking." Error Log entries aren't about content you didn't know — they're about the specific habit you want to change. Next time you face the same kind of question, your past note pops up and reminds you not to make the same move. <a href="/help/error-log">Full guide to the Error Log →</a></p>
 <p><strong>📓 Notes</strong> — use this when the lesson is a concept that needs explaining, not just memorizing. A multi-step solution method. A topic you genuinely don't understand yet. Anything with multiple parts, examples, diagrams, or worked steps. Notes are full rich-text documents: you can format text, embed math, draw diagrams, and tag the note with the topic it covers. Use them when a flashcard would feel too small and an Error Log entry wouldn't say enough.</p>
 <p>If you're not sure which one applies, ask: <em>could I explain this on a single index card? could I sum it up as "next time, do X instead of Y"? or does it actually need a paragraph?</em> The right tool is usually obvious once you frame it that way.</p>
         `,
@@ -285,28 +285,168 @@ export const HELP_ARTICLES = [
   <li>A hard problem worked through in your own words, so the explanation makes sense to <em>you</em>.</li>
   <li>A pre-test checklist — strategies, timing notes, reminders to read before a practice test.</li>
 </ul>
-<p>Open <a href="/notes">/notes</a> to see everything you've written. Click <strong>+ New note</strong> to start a new one. The sidebar lets you filter by subject, domain, skill, or any tag you've used.</p>
+<p>Open <a href="/notes">/notes</a> to see everything you've written. Click <strong>+ New note</strong> to start a new one. The sidebar lets you filter by subject, domain, skill, or any tag you've used. When you write a Note about something you also want to drill from memory (a formula, a term), make a Flashcard for it as well — the two tools complement each other.</p>
         `,
       },
       {
-        heading: 'Error Log — for fixing your process',
+        heading: 'Where to go next',
         html: `
-<p>When you reveal the answer on a Practice question, you'll see an <strong>Error Log</strong> button. Click it and write a short note about <em>why</em> you missed it — focusing on the move you made, not the content you didn't know. The entry saves to your Error Log, attached to the question.</p>
-<p>The magic happens weeks later. The next time that question shows up — in Smart Review, a Common Errors drill, or just by happening across it again — your past note appears alongside it. "Right: I misread 'except' last time." "Right: I forgot to convert the units." That moment of remembering is what actually changes the habit. Without the note, you'd quietly make the same mistake again.</p>
-<p>Two places to look at your Error Log:</p>
+<p>Each of the three tools has its own dedicated guide with the full details, examples, and common pitfalls:</p>
 <ul>
-  <li><strong><a href="/notes/error-log">/notes/error-log</a></strong> — the management view. A tight list of every entry, with counts showing where you're now getting things right vs still slipping up. Expand any row to see the original question. Good for "what's in my error log right now?"</li>
-  <li><strong><a href="/review/error-log">/review/error-log</a></strong> — the study view. Each entry is fully expanded with the question, options, rationale, and your note side by side. Best for a sit-down review session a few days before the test.</li>
+  <li><a href="/help/error-log"><strong>Error Log</strong></a> — how to write entries that actually change your habits, and how to use the two views (manage vs study).</li>
+  <li><a href="/help/flashcards"><strong>Flashcards</strong></a> — how the spaced-repetition mastery system works, and how to write cards that actually teach you something.</li>
+  <li><a href="/help/study-routine"><strong>Study Routine</strong></a> — how all three tools fit into a weekly self-study plan.</li>
 </ul>
-<p>One thing to keep in mind: not every wrong answer belongs in the Error Log. If the lesson is "I didn't know what 'apocryphal' means," that's a flashcard, not a process note. The Error Log is most useful when you treat it as a journal of decisions you want to make differently next time.</p>
+        `,
+      },
+    ],
+  },
+  {
+    slug: 'error-log',
+    title: 'Error Log',
+    blurb: 'A journal of process mistakes you don\'t want to repeat — one entry per missed question.',
+    summary: 'The Error Log is a per-question journal of process mistakes — traps you fell for, steps you skipped, assumptions you made. It\'s most useful for changing your habits over time. This guide covers how to write a good entry, when to use it (and when to reach for a Flashcard or Note instead), and how to use the two Error Log views in your weekly routine.',
+    icon: '🔍',
+    order: 6,
+    sections: [
+      {
+        heading: 'What the Error Log is',
+        html: `
+<p>The Error Log is a running journal of what you got wrong — but with a specific focus. Each entry is <strong>tied to a single question</strong> and lives at <a href="/notes/error-log">/notes/error-log</a>. There's one entry per question, so re-attempting the same question later updates the existing entry rather than creating a new one.</p>
+<p>You'll create most entries straight from the Practice runner: after you reveal the answer on a question, click the <strong>Error Log</strong> button and write a short note about what happened. You can also edit existing entries later from the management view if you want to add a follow-up thought.</p>
         `,
       },
       {
-        heading: 'Flashcards — for terms, formulas, and rules',
+        heading: 'When to use the Error Log (vs the other tools)',
         html: `
-<p>The <a href="/notes/flashcards">Flashcards</a> page shows your flashcard sets — both the ones you create and the default vocab and formula sets Studyworks ships with. Each card tracks a 0-5 mastery score; cards you miss come back more often, so the ones you actually need to learn get more reps automatically.</p>
-<p>Flashcards work best in short bursts: five minutes on the bus, ten minutes between classes, a few minutes before bed. They're not a replacement for question practice, but for vocab- and formula-heavy content they're the fastest way to lock in the basics.</p>
-<p>To create your own set, open <a href="/notes/flashcards">/notes/flashcards</a>, click <strong>+ New set</strong>, give it a name, and start adding cards. A good rule of thumb: one fact per card, written so the front genuinely needs the back to answer it. "What does 'ephemeral' mean?" is a good card. "Tell me about vocabulary" is not.</p>
+<p>The Error Log is for <strong>process mistakes</strong> — the kind where the lesson is about a decision you'd want to make differently next time. It is <em>not</em> for content gaps. Use the right tool for the right kind of mistake:</p>
+<ul>
+  <li>"I didn't know what 'cogent' means." → That's a <a href="/help/flashcards">Flashcard</a>, not an Error Log entry.</li>
+  <li>"I don't really understand how to solve systems of equations word problems." → That's a <a href="/help/notes">Note</a>, not an Error Log entry.</li>
+  <li>"I assumed 'except' meant the same as 'such as.'" ✅ Error Log.</li>
+  <li>"I solved for x but the question asked for 2x." ✅ Error Log.</li>
+  <li>"I picked the most extreme answer choice without checking the others." ✅ Error Log.</li>
+  <li>"I started writing the equation before reading the last sentence of the prompt." ✅ Error Log.</li>
+</ul>
+<p>If you find yourself writing an Error Log entry that's really about a content gap, copy the lesson into a Flashcard or Note instead. The Error Log gets more useful — not less — when you keep it focused on process.</p>
+        `,
+      },
+      {
+        heading: 'How to write a useful entry',
+        html: `
+<p>An entry doesn't need to be long. Aim for one or two sentences, focused on the move you made (or didn't) — the thing you'd want to do differently next time.</p>
+<p>Useful template: <em>"Next time, [do this] instead of [what I did]."</em></p>
+<p>Examples:</p>
+<ul>
+  <li>"Next time, circle the word the question actually asks for before solving — I solved for x but the prompt wanted 2x."</li>
+  <li>"Next time, read all four answer choices before committing. I jumped at (A) because it 'looked right' and missed that (C) was exactly what the passage said."</li>
+  <li>"Next time, convert the units in the first step. I worked the whole problem in feet and the answer choices were in inches."</li>
+</ul>
+<p>What to avoid:</p>
+<ul>
+  <li><strong>Don't just restate the right answer.</strong> "The answer is C" doesn't help you next time. <em>Why</em> you didn't pick C is what matters.</li>
+  <li><strong>Don't be vague.</strong> "I was careless" doesn't teach you anything. "I assumed 'few' and 'a few' meant the same thing" does.</li>
+  <li><strong>Don't apologize to yourself in the note.</strong> You're writing for your future self in the middle of a study session — they need the lesson, not the guilt.</li>
+</ul>
+        `,
+      },
+      {
+        heading: 'The two Error Log views',
+        html: `
+<p>The same entries are surfaced in two places, with different layouts depending on what you're trying to do:</p>
+<ul>
+  <li><strong><a href="/notes/error-log">/notes/error-log</a> — Manage view.</strong> A tight list of every entry, with three counters at the top: total entries, how many you're still getting wrong on your latest attempt, and how many you've fixed (latest attempt correct). Each row shows the question metadata plus your note; click <strong>Show question</strong> to expand the original question inline. This is the view to scan when you want to ask "what's currently in my Error Log?" or "which entries should I clean up or update?"</li>
+  <li><strong><a href="/review/error-log">/review/error-log</a> — Study view.</strong> Each entry is fully expanded with the question stem, answer choices, official rationale, and your note all visible at once. Best for a sit-down review session — make a coffee, open this view, and read top to bottom for half an hour a few days before your test.</li>
+</ul>
+<p>Both views combine SAT and ACT entries into a single unified list, sorted newest first.</p>
+        `,
+      },
+      {
+        heading: 'How to use it in your routine',
+        html: `
+<p>The Error Log compounds over time — its value grows as you build the habit of contributing to it and re-reading it. Some patterns that work:</p>
+<ul>
+  <li><strong>Contribute in real time.</strong> Write the entry the moment you reveal the answer, while your reasoning is fresh. If you wait a day, you'll forget what you were thinking.</li>
+  <li><strong>Re-read weekly.</strong> Once a week (review day is perfect), open <a href="/review/error-log">/review/error-log</a> and read your most recent entries. You're looking for <em>patterns</em>: the same trap showing up again, the same kind of careless slip, the same content gap leaking through.</li>
+  <li><strong>Promote patterns into focused practice.</strong> When you notice a pattern ("I keep falling for absolute-value sign errors"), spend the next Practice session on that exact thing. The Error Log is most useful when it changes what you study next.</li>
+  <li><strong>Skim it the night before a practice test.</strong> Not to cram, but to put your most common mistakes back at the top of your mind. Ten minutes is plenty.</li>
+</ul>
+        `,
+      },
+    ],
+  },
+  {
+    slug: 'flashcards',
+    title: 'Flashcards',
+    blurb: 'For terms, formulas, and rules — anything you need to remember on demand.',
+    summary: 'Flashcards are for the small, atomic stuff: one fact per card, drilled into long-term memory through spaced repetition. This guide covers how the mastery system works, when to reach for a flashcard vs a Note, how to write cards that actually teach you something, and how to fit a few minutes of card review into your day.',
+    icon: '📇',
+    order: 7,
+    sections: [
+      {
+        heading: 'What flashcards are good for',
+        html: `
+<p>Flashcards are best at one thing: turning a small piece of information into something you can recall instantly under test pressure. Use them when the lesson is atomic — a single fact, term, formula, or rule that you need to know cold.</p>
+<p>Great flashcard material:</p>
+<ul>
+  <li>Vocabulary words and their definitions (especially the SAT vocab that shows up in Words in Context questions).</li>
+  <li>Math formulas you need to recall without thinking — the quadratic formula, area of a trapezoid, exponent rules.</li>
+  <li>Grammar rules with one clean takeaway — "use 'whom' as the object of a verb or preposition."</li>
+  <li>Common SAT/ACT conventions — the order of operations on Roman-numeral questions, what "least possible value" implies for the answer choices.</li>
+</ul>
+<p>Not great flashcard material:</p>
+<ul>
+  <li>Multi-step procedures (use a <a href="/help/notes">Note</a> instead — flashcards can't carry diagrams or worked examples well).</li>
+  <li>"How to think about" a topic — that's a Note, not a card.</li>
+  <li>Words with multiple shades of meaning that depend on context — better captured as a Note with example sentences.</li>
+  <li>Process mistakes you want to stop making — those belong in the <a href="/help/error-log">Error Log</a>, where they appear next to the question that taught you the lesson.</li>
+</ul>
+        `,
+      },
+      {
+        heading: 'How the mastery system works',
+        html: `
+<p>Each card carries a <strong>mastery score from 0 to 5</strong>. Brand-new cards start at 0; correctly answering a card during review raises its mastery, missing it lowers it. The review picker weights cards by mastery — the lower your mastery on a card, the more often it'll come up.</p>
+<p>What this means in practice: you don't have to manage which cards to drill. Just review the set and let the system surface the ones you don't know yet. Cards you've mastered will still appear occasionally so the memory stays fresh, but they won't dominate your time.</p>
+<p>The Flashcards page shows an <strong>average mastery</strong> for each set as a percentage. It's a useful at-a-glance signal: a set sitting at 30% needs more reps; a set at 90% is mostly maintenance and you might be better off spending time on a different set.</p>
+        `,
+      },
+      {
+        heading: 'Your sets and the default sets',
+        html: `
+<p>Open <a href="/notes/flashcards">/notes/flashcards</a> and you'll see two kinds of sets:</p>
+<ul>
+  <li><strong>Default sets</strong> — vocabulary and formula sets Studyworks ships with, available to every student. Good starting point for vocab review even before you start making your own cards.</li>
+  <li><strong>Your sets</strong> — sets you create yourself, private to your account.</li>
+</ul>
+<p>For each set, you'll see two actions: <strong>Manage</strong> (add, edit, or delete cards) and <strong>Review</strong> (start a review session — the mastery-weighted picker chooses which cards to show).</p>
+        `,
+      },
+      {
+        heading: 'How to write a good flashcard',
+        html: `
+<p>The single most common flashcard mistake is putting too much on one card. The point of a card is to test recall of one specific thing; bigger cards are harder to remember <em>and</em> harder to actually drill, because you can't tell whether you got "most of it right" or not.</p>
+<p>Rules of thumb:</p>
+<ul>
+  <li><strong>One fact per card.</strong> "What does 'ephemeral' mean?" is a card. "Tell me about vocabulary" is not.</li>
+  <li><strong>Make the front genuinely need the back.</strong> If the front of the card is enough to answer itself, the card teaches nothing. "When semicolons are used" is too easy; "Joining two independent clauses without a conjunction requires which punctuation?" is testable.</li>
+  <li><strong>Phrase the front as a question or a prompt</strong>, not a label. Pulls your brain into recall mode instead of pattern-matching mode.</li>
+  <li><strong>For vocabulary, add an example sentence on the back.</strong> The definition tells you what the word means; an example sentence shows you how it actually behaves.</li>
+  <li><strong>For formulas, write the front as a situation, not the formula itself.</strong> "Area of a trapezoid" is fine, but "You're given the two parallel sides and the height of a trapezoid; how do you find the area?" trains the recall you actually need on the test.</li>
+</ul>
+        `,
+      },
+      {
+        heading: 'Fitting flashcards into your routine',
+        html: `
+<p>Flashcards work best in short, frequent bursts — much better than one long session per week. Five minutes on the bus, ten minutes between classes, a few minutes before bed: that's the rhythm.</p>
+<p>A workable pattern:</p>
+<ul>
+  <li><strong>Once a week — set creation.</strong> Make new cards from the vocab and formulas you collected in your Practice sessions and Notes that week. Aim for 5-10 new cards per session; resist the urge to mass-import a 500-word list (you won't actually drill them all).</li>
+  <li><strong>Most days — short review.</strong> Five to ten minutes on the set you're currently building mastery on. The mastery system handles which cards you see; you just hit Review.</li>
+  <li><strong>Before a practice test or the real test.</strong> A few minutes of formula review on test morning is genuinely useful — it loads the formulas into immediate recall while the test is in front of you.</li>
+</ul>
+<p>One small thing: don't skip a card just because you're not sure. Make a guess, then check. Guessing-and-checking trains recall in a way that "I'll come back to this" never does.</p>
         `,
       },
     ],
@@ -317,7 +457,7 @@ export const HELP_ARTICLES = [
     blurb: 'Common Errors, Weak Queue, and the pre-test study surface.',
     summary: 'The Review tab is a focused study surface for the days before your test. It gives you two active drill tools — Common Errors and the Weak Questions drill — plus links into long-form re-reading of your saved Notes, Error Log, and Flashcards. Lean on it most heavily in the final two weeks before test day.',
     icon: '🔁',
-    order: 6,
+    order: 8,
     sections: [
       {
         heading: 'What the Review tab is for',
@@ -361,7 +501,7 @@ export const HELP_ARTICLES = [
     blurb: 'When a tutor has assigned specific work.',
     summary: 'If you have a tutor on Studyworks, Assignments is where their work for you shows up — pending at the top, completed below. This guide covers how to work through one and what to do if you don\'t have a tutor (short version: skip this article and use the self-study routine).',
     icon: '📋',
-    order: 7,
+    order: 9,
     sections: [
       {
         heading: 'Do you have a tutor on the platform?',
@@ -399,7 +539,7 @@ export const HELP_ARTICLES = [
     blurb: 'A concrete weekly plan you can run on your own.',
     summary: 'A concrete weekly routine for students prepping without a tutor: four practice days, one review day, two rest days, with a full-length practice test every other Saturday. This article walks through what a normal weekday looks like, what to do on review day, how to handle practice-test weeks, and the most common mistakes to avoid.',
     icon: '🗓️',
-    order: 8,
+    order: 10,
     sections: [
       {
         heading: 'The plan, in one paragraph',
@@ -473,7 +613,7 @@ export const HELP_ARTICLES = [
     blurb: 'What difficulty levels, score bands, and practice-test scores actually mean.',
     summary: 'A plain-English guide to how the SAT and ACT are scored, what difficulty levels and Score Bands (1-7) actually mean, why the digital SAT\'s second module adapts, and how to set a realistic goal based on your baseline.',
     icon: '🎯',
-    order: 9,
+    order: 11,
     sections: [
       {
         heading: 'The digital SAT score, in plain English',
@@ -595,7 +735,7 @@ export const HELP_ARTICLES = [
     blurb: 'Common questions and what to do when something looks wrong.',
     summary: 'Quick answers to the questions that come up most often: a question marked wrong, the calculator not loading, an interrupted practice test, missing assignments, and a few common what-should-I-do-now questions about pacing and when to take the real SAT.',
     icon: '❓',
-    order: 11,
+    order: 12,
     sections: [
       {
         heading: 'I think a question is marked wrong',
