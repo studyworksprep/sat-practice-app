@@ -8,11 +8,11 @@
 //   1. Update practice_test_attempts_v2 with the supplied scaled
 //      scores + composite. The student's own runner result is
 //      overwritten by the tutor's correction — that's the whole
-//      point of this dialog. RLS on practice_test_attempts_v2
-//      allows tutors to write attempts owned by their students,
-//      but the legacy route used the service-role client because
-//      the same dialog needs to work for managers/admins reviewing
-//      arbitrary students. Match that here.
+//      point of this dialog. The practice_test_attempts_v2 UPDATE
+//      policy (ptav2_update_self) is self-or-admin only, so a
+//      teacher or manager correcting a student's attempt has no
+//      RLS path — the write goes through the service-role client
+//      below.
 //
 //   2. Upsert a row into score_conversion keyed by
 //      (test_id, section, module1_correct, module2_correct). Future

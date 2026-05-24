@@ -32,16 +32,14 @@ export function paginate(rows, page) {
   };
 }
 
+// Match the needle against the displayable name of any student on
+// the assignment. Searching titles + descriptions used to be in
+// scope here, but the student name is what tutors actually use the
+// box for — so it's now the only field considered.
 function matchesSearch(row, needle) {
-  const fields = [
-    row.title,
-    row.description,
-    row.lesson?.title,
-    row.practice_test?.name,
-    row.single?.name,
-  ];
-  for (const f of fields) {
-    if (typeof f === 'string' && f.toLowerCase().includes(needle)) return true;
+  const names = Array.isArray(row.studentNames) ? row.studentNames : [];
+  for (const n of names) {
+    if (typeof n === 'string' && n.toLowerCase().includes(needle)) return true;
   }
   return false;
 }
