@@ -1,0 +1,147 @@
+/* HelpButton — a small amber pill with a "?" glyph that opens a modal.
+   The amber/gold palette is intentional: it makes these visually
+   distinct from the blue/grey navigation links and arrow-suffixed
+   page links so a student doesn't mistake "open help" for "go to
+   another page." */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #b45309;
+  border: 1px solid #fbbf24;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 120ms, border-color 120ms, color 120ms;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.button:hover {
+  background: #ffedd5;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.button:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+.icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Modal ─────────────────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+  animation: fadeIn 120ms ease-out;
+}
+
+.card {
+  background: var(--bg-white, #fff);
+  border-radius: 12px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  animation: slideUp 160ms ease-out;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border, #e4e7eb);
+}
+
+.headerIcon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg, #1a1a1a);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--fg2, #888);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.closeBtn:hover { background: var(--bg-soft, #f3f4f6); color: var(--fg, #111); }
+
+.body {
+  padding: 14px 18px 4px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--fg, #222);
+}
+.body p { margin: 0 0 10px; }
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 18px 16px;
+}
+
+.footerBtn {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #d0d4da);
+  background: var(--bg-white, #fff);
+  color: var(--fg, #1a1a1a);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.footerBtn:hover { border-color: var(--accent, #4f46e5); }
+
+.footerBtnPrimary {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #fff;
+}
+.footerBtnPrimary:hover {
+  background: #d97706;
+  border-color: #d97706;
+  color: #fff;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

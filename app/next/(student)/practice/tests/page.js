@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { TestLauncher } from '@/lib/practice/TestLauncher';
 import { ActTestsHub } from '@/lib/practice/ActTestsHub';
+import { HelpButton } from '@/app/next/(student)/help/HelpButton';
 import s from './PracticeTestsPage.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -103,13 +104,13 @@ async function SatPracticeTestsPage({ user, supabase }) {
     <main className={s.container}>
       <header className={s.header}>
         <div className={s.eyebrow}>Practice tests</div>
-        <h1 className={s.h1}>Practice tests</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <h1 className={s.h1}>Practice tests</h1>
+          <HelpButton slug="practice-tests" />
+        </div>
         <p className={s.sub}>
           Full-length SAT simulations under timed conditions. Your
-          progress and history are below the launcher.{' '}
-          <a href="/help/practice-tests" style={{ color: 'var(--color-app-accent, #4f46e5)', textDecoration: 'none', fontWeight: 600 }}>
-            How to take a practice test →
-          </a>
+          progress and history are below the launcher.
         </p>
       </header>
 
