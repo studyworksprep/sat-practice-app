@@ -416,6 +416,12 @@
     top: var(--s4);
     max-height: calc(100vh - var(--s5));
     overflow-y: auto;
+    /* Reserve scrollbar space even when it's not visible. Without
+       this, the grid's aspect-ratio cells form a feedback loop
+       with overflow-y: auto — scrollbar appears, container narrows,
+       cells (1fr + aspect-ratio: 1) shorten, grid no longer
+       overflows, scrollbar disappears, repeat. */
+    scrollbar-gutter: stable;
   }
 }
 
