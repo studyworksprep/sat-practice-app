@@ -72,7 +72,7 @@ export function AppNav({ user, links, rightExtras = null }) {
           {user?.role && (
             <span className={s.roleBadge}>{user.role}</span>
           )}
-          <Link href="/account/billing" className={s.billingLink}>Account</Link>
+          <Link href="/account" className={s.billingLink}>Account</Link>
           <button
             type="button"
             onClick={handleSignOut}
