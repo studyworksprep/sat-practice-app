@@ -17,14 +17,26 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
+import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
+import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
+import { ConceptTags } from './ConceptTags';
+import { DesmosSavedStateButton } from './DesmosSavedStateButton';
+import { ErrorLogButton } from './ErrorLogButton';
+import { FlashcardsButton } from './FlashcardsButton';
+import { QuestionNotes } from './QuestionNotes';
 import { subjectFromDomainCode } from './DomainBreakdownCard';
 import { QuestionMapGrid } from './QuestionMapGrid';
 import { ReportHero } from './ReportHero';
 import { SkillBreakdownCard } from './SkillBreakdownCard';
 import s from './GroupAssignmentReport.module.css';
+
+// Mirrors AssignmentReport: the calculator + reference sheet only
+// apply to math questions, so we gate the right-side toolbar on the
+// question's domain code.
+const MATH_DOMAIN_CODES_FOR_CALC = new Set(['H', 'P', 'Q', 'S']);
 
 export function GroupAssignmentReport({
   assignment,
@@ -32,7 +44,19 @@ export function GroupAssignmentReport({
   items,
   metrics,
   backHref,
+  desmosCanSave = false,
+  conceptTagsCatalog = null,
+  conceptTagsCanTag = false,
+  conceptTagsCanDelete = false,
+  questionNotesCanView = false,
+  questionNotesIsAdmin = false,
+  currentUserId = null,
 }) {
+  // Live Desmos calc handle for the saved-state button. One panel
+  // serves every selected question — same pattern AssignmentReport
+  // uses.
+  const calcRef = useRef(null);
+  const [refOpen, setRefOpen] = useState(false);
   const groups = useMemo(
     () => [{
       key: 'all',
@@ -268,6 +292,49 @@ export function GroupAssignmentReport({
                   )}
                 </span>
               </div>
+              <div className={s.questionHeaderRight}>
+                {!selected.missing
+                  && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '')
+                  && (desmosCanSave || selected.desmosSavedState != null) && (
+                  <DesmosSavedStateButton
+                    key={`desmos-${selected.questionId}`}
+                    questionId={selected.questionId}
+                    initialSavedState={selected.desmosSavedState ?? null}
+                    canSave={desmosCanSave}
+                    calcRef={calcRef}
+                  />
+                )}
+                {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
+                  <ReferenceSheetButton
+                    open={refOpen}
+                    onOpenChange={setRefOpen}
+                  />
+                )}
+                {!selected.missing && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '') && (
+                  <FloatingCalculator
+                    storageKey={`desmos:group-report:${assignment.id}`}
+                    onCalcReady={(c) => { calcRef.current = c; }}
+                  />
+                )}
+                {questionNotesCanView && !selected.missing && (
+                  <QuestionNotes
+                    key={`notes-${selected.questionId}`}
+                    questionId={selected.questionId}
+                    initialNotes={selected.questionNotes ?? []}
+                    isAdmin={questionNotesIsAdmin}
+                    currentUserId={currentUserId}
+                    canView={questionNotesCanView}
+                  />
+                )}
+                <FlashcardsButton />
+                {!selected.missing && (
+                  <ErrorLogButton
+                    key={`elog-${selected.questionId}`}
+                    questionId={selected.questionId}
+                    initialNote={selected.errorNote ?? null}
+                  />
+                )}
+              </div>
             </div>
 
             <CohortBreakdown
@@ -293,6 +360,20 @@ export function GroupAssignmentReport({
                   correctAnswerDisplay: selected.reveal.correctAnswerDisplay,
                   rationaleHtml: selected.reveal.rationaleHtml,
                 } : null}
+                controlsNode={
+                  conceptTagsCanTag && conceptTagsCatalog ? (
+                    <div className={s.tutorTools}>
+                      <ConceptTags
+                        key={`tags-${selected.questionId}`}
+                        questionId={selected.questionId}
+                        initialTags={conceptTagsCatalog}
+                        initialQuestionTagIds={selected.conceptTagIds ?? []}
+                        canTag={conceptTagsCanTag}
+                        canDelete={conceptTagsCanDelete}
+                      />
+                    </div>
+                  ) : null
+                }
               />
             )}
 

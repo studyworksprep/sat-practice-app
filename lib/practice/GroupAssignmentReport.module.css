@@ -234,6 +234,13 @@
   gap: 10px;
   min-width: 0;
 }
+.questionHeaderRight {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
 
 .questionNum {
   font-family: var(--font-serif);
@@ -280,6 +287,17 @@
   color: var(--fg3);
   font-style: italic;
   margin: 0;
+}
+
+/* Concept-tags strip — rendered through QuestionRenderer's
+   controlsNode slot so it sits beneath the answer choices in the
+   same column rather than below the entire two-pane card. Mirrors
+   AssignmentReport.module.css. */
+.tutorTools {
+  margin-top: var(--s2);
+  padding-top: var(--s3);
+  border-top: 1px dashed var(--border);
+  width: 100%;
 }
 
 /* ---------- Cohort breakdown panel (per-question) ----------

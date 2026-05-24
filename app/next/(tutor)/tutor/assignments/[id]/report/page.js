@@ -24,7 +24,16 @@ import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
+import { resolveLegacyQuestionIds } from '@/lib/practice/legacy-id-map';
+import { loadQuestionNotesByQuestion } from '@/lib/practice/load-question-notes';
 import { GroupAssignmentReport } from '@/lib/practice/GroupAssignmentReport';
+
+// Mirrors the constants in build-session-review.js. The cohort
+// report doesn't go through that builder (it's aggregated, not
+// per-attempt), so the role gates live here too.
+const MATH_DOMAIN_CODES = new Set(['H', 'P', 'Q', 'S']);
+const DESMOS_CAN_SAVE_ROLES = new Set(['manager', 'admin']);
+const CONCEPT_TAGS_CAN_TAG_ROLES = new Set(['manager', 'admin']);
 
 export const dynamic = 'force-dynamic';
 
@@ -317,6 +326,94 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
   // tutor will most want to spend the meeting on.
   const wrongQuestionCount = items.filter((it) => it.cohort.incorrect.length > 0).length;
 
+  // Extra per-question payloads to bring the cohort report's
+  // question view up to parity with the per-student AssignmentReport:
+  // concept tags (manager/admin), Desmos saved state (math), and
+  // org-scoped tutor notes. Mirrors the logic in
+  // build-session-review.js so the same UI props line up.
+  const presentQids = items
+    .filter((it) => !it.missing)
+    .map((it) => it.questionId);
+
+  const conceptTagsCanTag = CONCEPT_TAGS_CAN_TAG_ROLES.has(profile.role);
+  const conceptTagsCanDelete = profile.role === 'admin';
+  let conceptTagsCatalog = null;
+  const conceptTagIdsByQid = new Map();
+  if (conceptTagsCanTag && presentQids.length > 0) {
+    // question_concept_tags rows are keyed against v1 question ids
+    // (legacy FK target). Pull the v1↔v2 map for the visible v2 ids
+    // and query against the union; map results back to v2 keys when
+    // assigning conceptTagIds to items.
+    const v1ByV2 = await resolveLegacyQuestionIds(supabase, presentQids);
+    const v2ByV1 = new Map();
+    for (const [v2, v1] of v1ByV2) v2ByV1.set(v1, v2);
+    const lookupQids = [...presentQids, ...Array.from(v2ByV1.keys())];
+
+    const [{ data: catalog }, { data: links }] = await Promise.all([
+      supabase
+        .from('concept_tags')
+        .select('id, name')
+        .order('name', { ascending: true }),
+      lookupQids.length > 0
+        ? supabase
+            .from('question_concept_tags')
+            .select('question_id, tag_id')
+            .in('question_id', lookupQids)
+        : Promise.resolve({ data: [] }),
+    ]);
+    conceptTagsCatalog = catalog ?? [];
+    for (const r of links ?? []) {
+      const v2Qid = v2ByV1.get(r.question_id) ?? r.question_id;
+      const arr = conceptTagIdsByQid.get(v2Qid) ?? [];
+      if (!arr.includes(r.tag_id)) arr.push(r.tag_id);
+      conceptTagIdsByQid.set(v2Qid, arr);
+    }
+  } else if (conceptTagsCanTag) {
+    // Manager/admin viewing an empty-or-all-missing report still
+    // gets the catalog so the empty state stays consistent.
+    const { data: catalog } = await supabase
+      .from('concept_tags')
+      .select('id, name')
+      .order('name', { ascending: true });
+    conceptTagsCatalog = catalog ?? [];
+  }
+
+  const desmosCanSave = DESMOS_CAN_SAVE_ROLES.has(profile.role);
+  const desmosStateByQid = new Map();
+  const mathQuestionIds = items
+    .filter((it) => !it.missing && MATH_DOMAIN_CODES.has(it.taxonomy?.domain_code ?? ''))
+    .map((it) => it.questionId);
+  if (mathQuestionIds.length > 0) {
+    const { data: savedStates } = await supabase
+      .from('desmos_saved_states')
+      .select('question_id, state_json')
+      .in('question_id', mathQuestionIds)
+      .eq('test_type', 'sat');
+    for (const r of savedStates ?? []) {
+      desmosStateByQid.set(r.question_id, r.state_json);
+    }
+  }
+
+  const notesBundle = await loadQuestionNotesByQuestion({
+    questionIds: presentQids,
+    role: profile.role,
+    userId: user.id,
+  });
+
+  // Attach the per-question extras inline so the client island gets
+  // a single uniform item shape — same approach build-session-review
+  // takes for the per-student report.
+  for (const it of items) {
+    if (it.missing) continue;
+    if (conceptTagsCanTag) it.conceptTagIds = conceptTagIdsByQid.get(it.questionId) ?? [];
+    if (MATH_DOMAIN_CODES.has(it.taxonomy?.domain_code ?? '')) {
+      it.desmosSavedState = desmosStateByQid.get(it.questionId) ?? null;
+    }
+    if (notesBundle.canView) {
+      it.questionNotes = notesBundle.notesByQid.get(it.questionId) ?? [];
+    }
+  }
+
   return (
     <GroupAssignmentReport
       assignment={{
@@ -356,6 +453,13 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
           })),
       }}
       backHref={`/tutor/assignments/${assignmentId}`}
+      desmosCanSave={desmosCanSave}
+      conceptTagsCatalog={conceptTagsCatalog}
+      conceptTagsCanTag={conceptTagsCanTag}
+      conceptTagsCanDelete={conceptTagsCanDelete}
+      questionNotesCanView={notesBundle.canView}
+      questionNotesIsAdmin={notesBundle.isAdmin}
+      currentUserId={user.id}
     />
   );
 }
