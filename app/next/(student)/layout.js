@@ -13,6 +13,7 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { requireUser } from '@/lib/api/auth';
+import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
 import { AppNav } from '@/lib/ui/AppNav';
 import { STUDENT_LINKS, tutorLinksForRole } from '@/lib/ui/nav-links';
 
@@ -33,7 +34,7 @@ function isSharedInfraPath(pathname) {
 }
 
 export default async function StudentTreeLayout({ children }) {
-  const { user, profile } = await requireUser();
+  const { user, profile, supabase } = await requireUser();
   const pathname = (await headers()).get('x-pathname') ?? '';
   const sharedInfra = isSharedInfraPath(pathname);
 
@@ -60,7 +61,18 @@ export default async function StudentTreeLayout({ children }) {
   // surfaces they can't use.
   const isTutor = sharedInfra
     && (profile.role === 'teacher' || profile.role === 'manager' || profile.role === 'admin');
-  const links = isTutor ? tutorLinksForRole(profile.role) : STUDENT_LINKS;
+  let links = isTutor ? tutorLinksForRole(profile.role) : STUDENT_LINKS;
+
+  // Self-studying students (no tutor on the platform) never see
+  // assignments — drop the tab so the nav doesn't advertise an
+  // empty surface. Skip the check on shared-infra paths since
+  // the nav there isn't STUDENT_LINKS anyway.
+  if (!isTutor && profile.role === 'student') {
+    const hasTutor = await hasAssignedTutor(supabase, user.id);
+    if (!hasTutor) {
+      links = links.filter((l) => l.href !== '/assignments');
+    }
+  }
 
   return (
     <>

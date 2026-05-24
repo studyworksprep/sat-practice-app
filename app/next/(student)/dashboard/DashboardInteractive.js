@@ -40,6 +40,11 @@ export function DashboardInteractive({
   recentlyFinished,
   assignments,
   assignmentsTotal = 0,
+  // False for self-studying students (no row in
+  // teacher_student_assignments). The Pending Assignments section
+  // is hidden in that case — an always-empty "You're all caught up"
+  // card just adds noise to a page that doesn't need it.
+  hasTutor = false,
   resumeInfo,
   todayMs,
   accountCreatedAt = null,
@@ -121,7 +126,9 @@ export function DashboardInteractive({
           InboxIcon's gold palette) makes it the obvious next action
           item without overwhelming the rest of the page. Newest
           first, top 3; the See all link exposes the full inbox at
-          /assignments. */}
+          /assignments. Hidden entirely for self-studiers — no tutor
+          means no assignments will ever appear here. */}
+      {hasTutor && (
       <section className={`${s.card} ${s.pendingCard}`}>
         <div className={s.cardHeader}>
           <div>
@@ -158,6 +165,7 @@ export function DashboardInteractive({
           </ul>
         )}
       </section>
+      )}
 
       {/* ---------- Stats row ---------- */}
       <section className={s.statsRow}>
