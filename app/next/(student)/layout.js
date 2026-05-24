@@ -13,6 +13,8 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { requireUser } from '@/lib/api/auth';
+import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
+import { maybeSendWelcomeEmail } from '@/lib/email/maybeSendWelcomeEmail';
 import { AppNav } from '@/lib/ui/AppNav';
 import { STUDENT_LINKS, tutorLinksForRole } from '@/lib/ui/nav-links';
 
@@ -33,7 +35,7 @@ function isSharedInfraPath(pathname) {
 }
 
 export default async function StudentTreeLayout({ children }) {
-  const { user, profile } = await requireUser();
+  const { user, profile, supabase } = await requireUser();
   const pathname = (await headers()).get('x-pathname') ?? '';
   const sharedInfra = isSharedInfraPath(pathname);
 
@@ -60,7 +62,30 @@ export default async function StudentTreeLayout({ children }) {
   // surfaces they can't use.
   const isTutor = sharedInfra
     && (profile.role === 'teacher' || profile.role === 'manager' || profile.role === 'admin');
-  const links = isTutor ? tutorLinksForRole(profile.role) : STUDENT_LINKS;
+  let links = isTutor ? tutorLinksForRole(profile.role) : STUDENT_LINKS;
+
+  // Self-studying students (no tutor on the platform) never see
+  // assignments — drop the tab so the nav doesn't advertise an
+  // empty surface. Skip the check on shared-infra paths since
+  // the nav there isn't STUDENT_LINKS anyway.
+  if (!isTutor && profile.role === 'student') {
+    const hasTutor = await hasAssignedTutor(supabase, user.id);
+    if (!hasTutor) {
+      links = links.filter((l) => l.href !== '/assignments');
+    }
+  }
+
+  // Post-confirmation welcome email. The home page (`/`) was the
+  // original hook for this, but the login form does a client-side
+  // router.push('/dashboard') after sign-in, so `/` never renders
+  // server-side for the newly-confirmed student. Moving the call
+  // here means it fires on the first authenticated student-tree
+  // page (almost always /dashboard). Idempotent (gated on
+  // profiles.welcome_email_sent_at IS NULL with a compare-and-swap
+  // stamp) so firing on every render is safe.
+  if (profile.role === 'student') {
+    await maybeSendWelcomeEmail({ userId: user.id, email: user.email });
+  }
 
   return (
     <>

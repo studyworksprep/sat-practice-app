@@ -111,12 +111,12 @@ export function AssignmentsToolbar({
     <div className={s.toolbar}>
       <div className={s.controlsRow}>
         <label className={s.searchLabel}>
-          <span className={s.srOnly}>Search assignments</span>
+          <span className={s.srOnly}>Search by student name</span>
           <input
             type="search"
             value={q}
             onChange={onQChange}
-            placeholder="Search title, description, or student…"
+            placeholder="Search by student name…"
             className={s.search}
             autoComplete="off"
           />

@@ -461,6 +461,31 @@
   color: white;
 }
 
+/* ---------- Not-attempted filter ---------- */
+
+.notAttempted {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  cursor: pointer;
+  font-size: 13px;
+}
+.notAttempted:hover { border-color: var(--color-app-accent); }
+.notAttempted input { margin-top: 2px; flex-shrink: 0; }
+
+.notAttemptedText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-weight: 500;
+  color: var(--fg1);
+}
+.notAttemptedText .muted { font-weight: 400; font-size: 12px; }
+
 /* ---------- Preview + submit ---------- */
 
 .preview {

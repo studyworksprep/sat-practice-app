@@ -1,0 +1,302 @@
+/* Account settings page. Three stacked Card sections under a
+   single header. Tokens come from next-tokens.css; visual
+   sibling to /account/billing. */
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 20px 60px;
+  font-family: var(--font-sans);
+  color: var(--fg1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--color-navy-900);
+  margin: 0;
+}
+
+.card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionHead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.h2 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+  margin: 0;
+}
+
+.sectionSub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg2);
+  line-height: 1.5;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-soft, rgba(0,0,0,0.08));
+  margin: 4px 0;
+}
+
+/* ---------- Forms ---------- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 520px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+}
+
+.input {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-white);
+  color: var(--fg1);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease-std);
+}
+
+.input:focus {
+  border-color: var(--color-app-accent);
+}
+
+.help {
+  font-size: 12px;
+  color: var(--fg3, var(--fg2));
+  line-height: 1.4;
+}
+
+.formActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.successMsg {
+  font-size: 13px;
+  color: #166534;
+}
+
+.errorMsg {
+  font-size: 13px;
+  color: #991b1b;
+}
+
+/* ---------- Teachers list ---------- */
+
+.teacherList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.teacherRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--color-slate-50, var(--bg));
+  border-radius: var(--radius-sm);
+  gap: 12px;
+}
+
+.teacherIdent {
+  display: flex;
+  flex-direction: column;
+}
+
+.teacherName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.teacherEmail {
+  font-size: 12px;
+  color: var(--fg2);
+}
+
+.empty {
+  padding: 12px;
+  background: var(--color-slate-50, var(--bg));
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--fg2);
+}
+
+.codeRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.codeInput {
+  flex: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-variant: tabular-nums;
+}
+
+/* ---------- Subscription status ---------- */
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusLabel {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--fg1);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dotActive {
+  background: #22c55e;
+}
+
+.dotInactive {
+  background: #dc2626;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+
+.pillExempt {
+  background: rgba(22, 163, 74, 0.10);
+  color: #166534;
+}
+
+.pillRole,
+.pillSub {
+  background: rgba(79, 124, 224, 0.10);
+  color: var(--color-app-accent);
+}
+
+.subDetails {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-slate-50, var(--bg));
+  border-radius: var(--radius-sm);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.rowLabel {
+  color: var(--fg2);
+}
+
+.rowValue {
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.toneGood { color: #166534; }
+.toneAccent { color: var(--color-app-accent); }
+.toneWarn { color: #dc2626; }
+
+.cancelNote {
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: #92400e;
+}
+
+.exemptNote {
+  padding: 12px;
+  background: rgba(22, 163, 74, 0.06);
+  border: 1px solid rgba(22, 163, 74, 0.20);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: #166534;
+  line-height: 1.6;
+}

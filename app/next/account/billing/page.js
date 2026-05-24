@@ -124,6 +124,16 @@ export default async function BillingPage() {
             </Button>
           )}
         </section>
+
+        {subscription && (
+          <div className={s.cancelHelp}>
+            To cancel, switch plans, or update your card, click <strong>Manage
+            Subscription</strong> above — you'll be taken to our secure billing
+            portal. Cancellations take effect at the end of the current billing
+            period. Full walkthrough in the <a href="/help/billing">Billing &amp;
+            Subscription</a> help article.
+          </div>
+        )}
       </Card>
     </main>
   );

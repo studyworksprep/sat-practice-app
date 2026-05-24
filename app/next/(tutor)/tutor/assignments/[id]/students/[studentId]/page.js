@@ -97,12 +97,6 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       ? `/tutor/teachers/${studentId}`
       : `/tutor/students/${studentId}`;
 
-  // forceRebuild collapses path 1 (real session) into path 2
-  // (synthetic) so the rebuild button always pulls the full
-  // attempt history. Without it the page still prefers a real
-  // session if one exists.
-  const realSession = forceRebuild ? null : realSessionOrNull;
-
   const questionIds = Array.isArray(assignment.question_ids)
     ? assignment.question_ids.filter(Boolean)
     : [];
@@ -119,6 +113,53 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       />
     );
   }
+
+  // Expand the assignment's question pool to cover v1 ids that map
+  // to the same v2 question. We need this either way: the synthetic
+  // path uses it as its query set, and the canonical-vs-rebuild
+  // auto-detect below counts attempts against it.
+  const { allIds } = await expandToAttemptIds(supabase, questionIds);
+  const assignmentFloor = assignment.created_at ?? '1970-01-01T00:00:00Z';
+
+  // Auto-rebuild detection. The canonical session row is whichever
+  // completed v2 session for this (student, assignment) ran most
+  // recently — fine when that one session captures the whole
+  // assignment, but it under-counts when:
+  //   • the student worked the assignment across multiple sessions
+  //     (the latest is a subset of the full picture), or
+  //   • some attempts were recorded against pre-cutover v1
+  //     question ids that the canonical builder's v2-keyed query
+  //     skips over (it does v1→v2 mapping on session.question_ids,
+  //     not on the student's attempt rows).
+  // Compare attempt counts: rebuild scans the assignment's full
+  // pool (v1+v2 union); canonical sees only what the session row
+  // carries. If rebuild finds strictly more, the canonical view is
+  // incomplete and we flip to the synthetic path silently.
+  const sessionQids = realSessionOrNull?.question_ids ?? [];
+  const [{ count: rebuildCountRaw }, { count: canonicalCountRaw }] = await Promise.all([
+    supabase
+      .from('attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', studentId)
+      .in('question_id', allIds)
+      .gte('created_at', assignmentFloor),
+    realSessionOrNull && sessionQids.length > 0
+      ? supabase
+          .from('attempts')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', studentId)
+          .in('question_id', sessionQids)
+          .gte('created_at', assignmentFloor)
+      : Promise.resolve({ count: 0 }),
+  ]);
+  const rebuildCount = rebuildCountRaw ?? 0;
+  const canonicalCount = canonicalCountRaw ?? 0;
+  const autoRebuild = realSessionOrNull != null && rebuildCount > canonicalCount;
+
+  // forceRebuild (URL flag) and autoRebuild (incompleteness
+  // detected above) both collapse path 1 into path 2 so the
+  // tutor always sees the most complete view of the work.
+  const realSession = (forceRebuild || autoRebuild) ? null : realSessionOrNull;
 
   // Path 1 — real v2 session. Same render as /tutor/sessions/[id].
   if (realSession) {
@@ -152,21 +193,10 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
     );
   }
 
-  // Path 2 — synthetic session. Confirm the student has at
-  // least one attempt on any of the assignment's questions
-  // (including v1 ids that map to the same v2 question) before
-  // we render a report. An empty state for "they really haven't
-  // touched this yet" is friendlier than an all-Unanswered
-  // report card.
-  const { allIds } = await expandToAttemptIds(supabase, questionIds);
-  const { count: attemptCount } = await supabase
-    .from('attempts')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', studentId)
-    .in('question_id', allIds)
-    .gte('created_at', assignment.created_at ?? '1970-01-01');
-
-  if (!attemptCount) {
+  // Path 2 — synthetic session. Empty-state when the student has
+  // genuinely no attempts (friendlier than an all-Unanswered card).
+  // Reuses the rebuildCount above instead of an extra round trip.
+  if (!rebuildCount) {
     return (
       <EmptyReport
         ownerName={ownerName}

@@ -1,22 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '../../../lib/supabase/server';
+import { maybeSendWelcomeEmail } from '../../../lib/email/maybeSendWelcomeEmail';
 
 // GET /auth/callback
-// Handles the token exchange after email confirmation / OAuth /
-// password-recovery redirects.
-//
-// Inbound shapes:
-//   1. ?code=<pkce-code>  — server-side exchange via
-//                           exchangeCodeForSession(). Used by
-//                           email confirmation and password-reset
-//                           flows.
-//   2. ?next=/foo         — forwarded to after the exchange. Used
-//                           by password-reset flows to land the
-//                           user on /auth/update-password.
-//
-// The demo auto-login at /auth/demo/[persona] exchanges its
-// magic-link token server-side directly (verifyOtp) and does not
-// route through this callback.
+// Handles the PKCE token exchange for password-recovery and any
+// future custom email templates that point here. The default
+// Supabase signup-confirmation flow does NOT route through this
+// endpoint — it goes through /auth/v1/verify and redirects to the
+// site URL — so the welcome-email send actually fires from the
+// home page server component. The call here is defense in depth
+// in case the email template is later customized to use PKCE.
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
@@ -24,10 +17,16 @@ export async function GET(request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       if (next) return NextResponse.redirect(`${origin}${next}`);
-      // Otherwise this is an email confirmation — show success message
+
+      const userId = data?.user?.id;
+      const email = data?.user?.email;
+      if (userId && email) {
+        await maybeSendWelcomeEmail({ userId, email, origin });
+      }
+
       return NextResponse.redirect(`${origin}/?confirmed=true`);
     }
   }

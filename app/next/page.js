@@ -12,7 +12,9 @@
 // sees the confirmation message before logging in.
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { requireUser } from '@/lib/api/auth';
+import { maybeSendWelcomeEmail } from '@/lib/email/maybeSendWelcomeEmail';
 import { HomeClient } from './HomeClient';
 
 export const dynamic = 'force-dynamic';
@@ -31,11 +33,26 @@ export default async function NextTreeRoot(props) {
     return <HomeClient emailConfirmed="error" />;
   }
 
+  let user = null;
   let profile = null;
   try {
-    ({ profile } = await requireUser());
+    ({ user, profile } = await requireUser());
   } catch {
     // No session — fall through to the landing page below.
+  }
+
+  // Post-confirmation welcome email. Supabase's verify endpoint
+  // 302-redirects here with a session cookie set, which is the
+  // only reliable signal we get that a new student just confirmed.
+  // The helper is idempotent (gated on
+  // profiles.welcome_email_sent_at IS NULL) so re-renders are
+  // harmless.
+  if (user) {
+    const hdrs = await headers();
+    const proto = hdrs.get('x-forwarded-proto') || 'https';
+    const host = hdrs.get('x-forwarded-host') || hdrs.get('host');
+    const origin = host ? `${proto}://${host}` : undefined;
+    await maybeSendWelcomeEmail({ userId: user.id, email: user.email, origin });
   }
 
   if (profile) {

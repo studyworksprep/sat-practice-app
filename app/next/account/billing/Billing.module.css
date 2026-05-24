@@ -150,6 +150,20 @@
   align-items: center;
 }
 
+.cancelHelp {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--color-slate-50, var(--bg));
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--fg2);
+}
+
+.cancelHelp a {
+  color: var(--color-app-accent);
+}
+
 .errorBanner {
   margin-top: 8px;
   width: 100%;
