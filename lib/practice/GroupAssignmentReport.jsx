@@ -287,8 +287,8 @@ export function GroupAssignmentReport({
                   {selected.taxonomy?.skill_name && (
                     <> · {selected.taxonomy.skill_name}</>
                   )}
-                  {selected.taxonomy?.difficulty != null && (
-                    <> · diff {selected.taxonomy.difficulty}</>
+                  {selected.taxonomy?.score_band != null && (
+                    <> · Band {selected.taxonomy.score_band}</>
                   )}
                 </span>
               </div>

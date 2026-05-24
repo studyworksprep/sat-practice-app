@@ -101,7 +101,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
     questionIds.length > 0
       ? supabase
           .from('questions_v2')
-          .select('id, display_code, domain_name, skill_name, difficulty')
+          .select('id, display_code, domain_name, skill_name, score_band')
           .in('id', questionIds)
       : Promise.resolve({ data: [] }),
     // Latest practice session per student for this assignment.
@@ -559,10 +559,10 @@ export default async function TutorAssignmentDetailPage({ params }) {
                           <span>{meta.skill_name}</span>
                         </>
                       )}
-                      {meta?.difficulty != null && (
+                      {meta?.score_band != null && (
                         <>
                           <span className={s.muted}> · </span>
-                          <span>diff {meta.difficulty}</span>
+                          <span>Band {meta.score_band}</span>
                         </>
                       )}
                     </div>
