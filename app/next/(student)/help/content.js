@@ -533,12 +533,69 @@ export const HELP_ARTICLES = [
     ],
   },
   {
+    slug: 'billing',
+    title: 'Billing & Subscription',
+    blurb: 'Plans, your free trial, and exactly how to cancel.',
+    icon: '💳',
+    order: 10,
+    sections: [
+      {
+        heading: 'Plans and the free trial',
+        html: `
+<p>Studyworks runs on a simple subscription. Every new account starts with a <strong>7-day free trial</strong> — full access, no charge until the trial ends. You can cancel any time during the trial and you won't be billed.</p>
+<ul>
+  <li><strong>Student plan</strong> — $12.99 / month. Everything in the platform: unlimited Practice sessions, full-length adaptive practice tests, Notes, Error Log, Flashcards, and Review drills.</li>
+  <li><strong>Teacher plan</strong> — $29.99 / month. Adds tutor tools (rosters, assignments, student reports). Not what most students need.</li>
+</ul>
+<p>If your tutor or school works with Studyworks Prep directly, your account may be <strong>sponsored</strong> — full access at no cost, no subscription required. You'll see "Exempt" on your <a href="/account/billing">Billing</a> page if that applies to you.</p>
+        `,
+      },
+      {
+        heading: 'How to cancel your subscription',
+        html: `
+<p>Cancellation is self-serve and takes about 30 seconds. You won't lose anything you've created — your notes, error log entries, and practice history stay on your account in case you come back later.</p>
+<ol>
+  <li>Sign in and open <a href="/account/billing"><strong>Billing</strong></a> from your account menu (or go directly to <a href="/account/billing">/account/billing</a>).</li>
+  <li>Click the <strong>Manage Subscription</strong> button. This opens our secure billing portal (hosted by Stripe).</li>
+  <li>In the portal, click <strong>Cancel plan</strong>. You'll see a confirmation showing the date your access ends.</li>
+</ol>
+<p>You keep full access until the end of the period you've already paid for. After that, your account becomes read-only — you can still sign in to view your notes and history, but practice sessions and tests are paused until you resubscribe.</p>
+<p>To cancel <em>during the free trial</em>, follow the same steps. As long as you cancel before the trial end date shown on the Billing page, no charge is made.</p>
+        `,
+      },
+      {
+        heading: 'Updating payment, switching plans, or resubscribing',
+        html: `
+<p>The same <strong>Manage Subscription</strong> button handles all of these:</p>
+<ul>
+  <li><strong>Update card</strong> — replace the card on file, fix an expiration, change billing address.</li>
+  <li><strong>Switch plans</strong> — student to teacher or back. Prorating is automatic.</li>
+  <li><strong>Resume after canceling</strong> — if you're still inside your paid period, the portal lets you reactivate without a new trial. If your access has lapsed, go to <a href="/subscribe">/subscribe</a> and pick a plan again.</li>
+</ul>
+<p>Invoices and payment receipts are emailed to you automatically. You can also download them from inside the billing portal.</p>
+        `,
+      },
+      {
+        heading: "If something looks wrong",
+        html: `
+<p>A few things to check first if your account status seems off:</p>
+<ul>
+  <li>The <a href="/account/billing">Billing</a> page shows your live status — plan, next billing date, trial end date, and whether a cancellation is scheduled.</li>
+  <li>If you just signed up and the page says "No active subscription," your trial may not have finished setting up — refresh, or sign out and back in.</li>
+  <li>If you canceled but were still charged, check the date: cancellations stop the <em>next</em> charge, they don't refund the current period automatically.</li>
+</ul>
+<p>For anything else — billing questions, accidental charges, account issues — email <a href="mailto:support@studyworksprep.com">support@studyworksprep.com</a> and we'll sort it out.</p>
+        `,
+      },
+    ],
+  },
+  {
     slug: 'faq',
     title: 'FAQ & Troubleshooting',
     blurb: 'Common questions and what to do when something looks wrong.',
     summary: 'Quick answers to the questions that come up most often: a question marked wrong, the calculator not loading, an interrupted practice test, missing assignments, and a few common what-should-I-do-now questions about pacing and when to take the real SAT.',
     icon: '❓',
-    order: 10,
+    order: 11,
     sections: [
       {
         heading: 'I think a question is marked wrong',
@@ -591,9 +648,15 @@ export const HELP_ARTICLES = [
         `,
       },
       {
+        heading: 'How do I cancel my subscription?',
+        html: `
+<p>Open <a href="/account/billing">Billing</a>, click <strong>Manage Subscription</strong>, and choose <strong>Cancel plan</strong> in the portal. You keep access through the end of the period you've already paid for. Full walkthrough — including how to cancel during the free trial without being charged — in the <a href="/help/billing">Billing &amp; Subscription</a> article.</p>
+        `,
+      },
+      {
         heading: 'Still stuck?',
         html: `
-<p>If you have a tutor, message them. Otherwise, check back here as we add more guides.</p>
+<p>If you have a tutor, message them. Otherwise, email <a href="mailto:support@studyworksprep.com">support@studyworksprep.com</a> — we read every message.</p>
         `,
       },
     ],
