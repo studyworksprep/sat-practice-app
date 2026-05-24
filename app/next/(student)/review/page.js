@@ -49,6 +49,7 @@ import {
 } from './actions';
 import { WeakQueueLauncher } from './WeakQueueLauncher';
 import { SkillDrillButton } from './SkillDrillButton';
+import { HelpButton } from '@/app/next/(student)/help/HelpButton';
 import s from './Review.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -174,14 +175,14 @@ export default async function StudentReviewPage() {
     <main className={s.container}>
       <header className={s.header}>
         <div className={s.eyebrow}>Review</div>
-        <h1 className={s.h1}>Review</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <h1 className={s.h1}>Review</h1>
+          <HelpButton slug="review" />
+        </div>
         <p className={s.sub}>
           A focused study surface for the days before your test.
           Drill your weakest questions, fix your most common errors,
-          and keep your flashcards fresh.{' '}
-          <a href="/help/review" style={{ color: 'var(--color-app-accent, #4f46e5)', textDecoration: 'none', fontWeight: 600 }}>
-            How to use the Review tab →
-          </a>
+          and keep your flashcards fresh.
         </p>
       </header>
 

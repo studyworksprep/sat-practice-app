@@ -13,6 +13,7 @@ import { loadNotesIndex } from './loaders';
 import { NotesListInteractive } from './NotesListInteractive';
 import { NotesNav } from './NotesNav';
 import { deleteNote } from './actions';
+import { HelpButton } from '../help/HelpButton';
 import s from './Notes.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -44,12 +45,12 @@ export default async function StudentNotesIndex({ searchParams }) {
       <NotesNav />
       <header className={s.pageHeader}>
         <div>
-          <h1 className={s.pageTitle}>My notes</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <h1 className={s.pageTitle}>My notes</h1>
+            <HelpButton slug="notes" />
+          </div>
           <p className={s.pageSubtitle}>
-            Private to you. Nothing here is shared with tutors or other students.{' '}
-            <a href="/help/notes" style={{ color: 'var(--color-app-accent, #4f46e5)', textDecoration: 'none', fontWeight: 600 }}>
-              How Notes &amp; Error Log work →
-            </a>
+            Private to you. Nothing here is shared with tutors or other students.
           </p>
         </div>
         <Link href="/notes/new" className={s.btnPrimary}>
