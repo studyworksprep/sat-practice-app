@@ -302,7 +302,7 @@ export default function PracticePage() {
         </p>
       ) : (
         <div className="card" style={{ marginTop: 12, minWidth: 320 }}>
-          <div className="row" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="sw-row" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div className="h2">Questions</div>
               <p className="muted small" style={{ marginTop: 0 }}>
@@ -366,7 +366,7 @@ export default function PracticePage() {
 
           <hr />
 
-          <div className="row" style={{ justifyContent: 'space-between' }}>
+          <div className="sw-row" style={{ justifyContent: 'space-between' }}>
             <button
               className="btn secondary"
               onClick={() => setPage((p) => Math.max(0, p - 1))}

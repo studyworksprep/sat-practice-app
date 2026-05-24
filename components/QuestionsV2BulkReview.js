@@ -160,7 +160,7 @@ export default function QuestionsV2BulkReview() {
 
   return (
     <div>
-      <div className="row" style={{ alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
+      <div className="sw-row" style={{ alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
         <h2 className="h2" style={{ margin: 0 }}>V2 Bulk Review</h2>
         <span className="muted small">
           Review and apply Claude's HTML cleanup suggestions from{' '}
@@ -169,7 +169,7 @@ export default function QuestionsV2BulkReview() {
       </div>
 
       {/* Classification tabs + counts */}
-      <div className="row" style={{ gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+      <div className="sw-row" style={{ gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
         {[
           { key: 'trivial', label: 'Trivial', color: '#15803d' },
           { key: 'non_trivial', label: 'Non-trivial', color: '#b45309' },
@@ -207,7 +207,7 @@ export default function QuestionsV2BulkReview() {
 
       {/* Bulk action bar */}
       <div
-        className="row"
+        className="sw-row"
         style={{
           gap: 8,
           alignItems: 'center',
@@ -340,7 +340,7 @@ export default function QuestionsV2BulkReview() {
       {/* Pagination */}
       {suggestions.length > 0 && (
         <div
-          className="row"
+          className="sw-row"
           style={{
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -457,7 +457,7 @@ function SuggestionCard({ suggestion, selected, onToggle, busy, onApply, onRejec
   return (
     <div className="card" style={{ marginBottom: 12 }}>
       <div
-        className="row"
+        className="sw-row"
         style={{
           justifyContent: 'space-between',
           alignItems: 'center',

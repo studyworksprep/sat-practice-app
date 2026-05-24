@@ -164,7 +164,7 @@ export default function LoginPage() {
                 {forgotLoading ? 'Sending…' : 'Forgot password?'}
               </button>
             </div>
-            <div className="row" style={{ marginTop: 12 }}>
+            <div className="sw-row" style={{ marginTop: 12 }}>
               <button className="btn" type="submit">Log in</button>
             </div>
             <Toast kind={loginMsg?.kind} message={loginMsg?.text} />
@@ -187,7 +187,7 @@ export default function LoginPage() {
               <option value="exploring">just exploring</option>
             </select>
 
-            <div className="row" style={{ gap: 12, marginTop: 0 }}>
+            <div className="sw-row" style={{ gap: 12, marginTop: 0 }}>
               <div style={{ flex: 1 }}>
                 <label>First name</label>
                 <input className="input" value={firstName} onChange={e => setFirstName(e.target.value)} required />
@@ -241,7 +241,7 @@ export default function LoginPage() {
                 <label>High school</label>
                 <input className="input" value={highSchool} onChange={e => setHighSchool(e.target.value)} />
 
-                <div className="row" style={{ gap: 12, marginTop: 0 }}>
+                <div className="sw-row" style={{ gap: 12, marginTop: 0 }}>
                   <div style={{ flex: 1 }}>
                     <label>Graduation year</label>
                     <select className="input" value={graduationYear} onChange={e => setGraduationYear(e.target.value)}>
@@ -283,7 +283,7 @@ export default function LoginPage() {
               </>
             )}
 
-            <div className="row" style={{ marginTop: 16 }}>
+            <div className="sw-row" style={{ marginTop: 16 }}>
               <button className="btn" type="submit" disabled={loading}>
                 {loading ? 'Creating account…' : 'Create account'}
               </button>

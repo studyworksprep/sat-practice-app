@@ -223,7 +223,7 @@ export default function ActPracticePage() {
     <main className="container">
       {/* ACT Filters */}
       <div className="card" style={{ padding: '16px 20px' }}>
-        <div className="row" style={{ alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div className="sw-row" style={{ alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div className="h2" style={{ margin: 0 }}>ACT Question Bank</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <label style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
@@ -391,7 +391,7 @@ export default function ActPracticePage() {
         </p>
       ) : (
         <div className="card" style={{ marginTop: 12, minWidth: 320 }}>
-          <div className="row" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="sw-row" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div className="h2">Questions</div>
               <p className="muted small" style={{ marginTop: 0 }}>
@@ -443,7 +443,7 @@ export default function ActPracticePage() {
             </div>
           )}
           <hr />
-          <div className="row" style={{ justifyContent: 'space-between' }}>
+          <div className="sw-row" style={{ justifyContent: 'space-between' }}>
             <button className="btn secondary" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0 || loading}>
               Prev
             </button>

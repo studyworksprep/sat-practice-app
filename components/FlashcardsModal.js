@@ -203,7 +203,7 @@ export default function FlashcardsModal({ open, onClose, onMessage }) {
         style={{ maxWidth: 560 }}
       >
         <div
-          className="row"
+          className="sw-row"
           style={{
             justifyContent: 'space-between',
             alignItems: 'flex-start',
@@ -301,7 +301,7 @@ export default function FlashcardsModal({ open, onClose, onMessage }) {
             />
 
             <div
-              className="row"
+              className="sw-row"
               style={{ gap: 8, justifyContent: 'flex-end', alignItems: 'center' }}
             >
               {justSaved && (
@@ -383,7 +383,7 @@ export default function FlashcardsModal({ open, onClose, onMessage }) {
             {/* Paginator — shown whenever there's more than one page. */}
             {totalCards > PAGE_SIZE && (
               <div
-                className="row"
+                className="sw-row"
                 style={{
                   justifyContent: 'space-between',
                   alignItems: 'center',

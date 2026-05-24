@@ -792,7 +792,7 @@ export default function ActQuestionDetailPage() {
         return (
           <div className="modalOverlay" onClick={() => setShowMap(false)} role="dialog" aria-modal="true" aria-label="Question map">
             <div className="modalCard" onClick={(e) => e.stopPropagation()}>
-              <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div className="sw-row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
                 <div style={{ display: 'grid', gap: 4 }}>
                   <div className="h2" style={{ margin: 0 }}>Question Map</div>
                   <div className="muted small">
@@ -817,7 +817,7 @@ export default function ActQuestionDetailPage() {
 
               <hr />
 
-              <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div className="sw-row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
                 <div className="btnRow">
                   <button className="btn secondary" onClick={() => loadMapPage(mapOffset - MAP_PAGE_SIZE)} disabled={mapOffset <= 0}>Prev</button>
                   <button className="btn secondary" onClick={() => loadMapPage(mapOffset + MAP_PAGE_SIZE)} disabled={mapOffset + MAP_PAGE_SIZE >= totalItems}>Next</button>
@@ -882,7 +882,7 @@ export default function ActQuestionDetailPage() {
       {showCorrectModal && (
         <div className="modalOverlay" onClick={() => setShowCorrectModal(false)} role="dialog" aria-modal="true" aria-label="Correction form">
           <div className="modalCard correctModal" onClick={(e) => e.stopPropagation()}>
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="sw-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="h2" style={{ margin: 0 }}>Flag &amp; Correct Question</div>
               <button className="btn secondary" onClick={() => setShowCorrectModal(false)}>Close</button>
             </div>
@@ -954,7 +954,7 @@ export default function ActQuestionDetailPage() {
             <hr />
             <div className="correctFields">
               <div className="h3" style={{ margin: '0 0 8px' }}>Taxonomy</div>
-              <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+              <div className="sw-row" style={{ gap: 12, flexWrap: 'wrap' }}>
                 <label className="correctLabel" style={{ flex: '1 1 120px' }}>
                   <span className="correctLabelText">Section</span>
                   <select
@@ -1004,7 +1004,7 @@ export default function ActQuestionDetailPage() {
                 const selectedCat = cats.find(c => (c.category_code || c.category) === correctForm.category_code);
                 const subs = selectedCat?.subcategories || [];
                 return (
-                  <div className="row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+                  <div className="sw-row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
                     <label className="correctLabel" style={{ flex: '1 1 200px' }}>
                       <span className="correctLabelText">Category</span>
                       <select
@@ -1056,7 +1056,7 @@ export default function ActQuestionDetailPage() {
               })() : <p className="muted small">Loading taxonomy options...</p>}
             </div>
 
-            <div className="row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <div className="sw-row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
               <button className="btn secondary" onClick={() => setShowCorrectModal(false)} disabled={correctSubmitting}>
                 Cancel
               </button>

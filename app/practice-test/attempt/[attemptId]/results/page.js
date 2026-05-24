@@ -1282,7 +1282,7 @@ export default function ResultsPage() {
                 placeholder="Write notes about your error — what did you get wrong and why?"
                 rows={3}
               />
-              <div className="row" style={{ gap: 8, marginTop: 8 }}>
+              <div className="sw-row" style={{ gap: 8, marginTop: 8 }}>
                 <button className="btn primary" onClick={saveErrorLog} disabled={errorLogSaving || !errorLogText.trim()}>
                   {errorLogSaving ? 'Saving...' : errorLogSaved ? 'Saved' : 'Save Note'}
                 </button>
