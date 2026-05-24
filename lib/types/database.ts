@@ -3877,6 +3877,7 @@ export type Database = {
         Args: { p_assignment_id: string; p_teacher_id: string }
         Returns: boolean
       }
+      link_self_to_teacher_by_code: { Args: { p_code: string }; Returns: Json }
       list_visible_users: {
         Args: { role_filter?: string }
         Returns: {
