@@ -283,7 +283,7 @@ export default function LandingClient({ emailConfirmed }) {
                 <option value="exploring">just exploring</option>
               </select>
 
-              <div className="row" style={{ gap: 12, marginTop: 0 }}>
+              <div className="sw-row" style={{ gap: 12, marginTop: 0 }}>
                 <div style={{ flex: 1 }}>
                   <label>First name</label>
                   <input className="input" value={firstName} onChange={e => setFirstName(e.target.value)} required />
@@ -361,7 +361,7 @@ export default function LandingClient({ emailConfirmed }) {
                   <label>High school</label>
                   <input className="input" value={highSchool} onChange={e => setHighSchool(e.target.value)} />
 
-                  <div className="row" style={{ gap: 12, marginTop: 0 }}>
+                  <div className="sw-row" style={{ gap: 12, marginTop: 0 }}>
                     <div style={{ flex: 1 }}>
                       <label>Graduation year</label>
                       <select className="input" value={graduationYear} onChange={e => setGraduationYear(e.target.value)}>

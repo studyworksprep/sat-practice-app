@@ -152,7 +152,7 @@ export default function UpdatePasswordPage() {
               </button>
             </div>
 
-            <div className="row" style={{ marginTop: 16 }}>
+            <div className="sw-row" style={{ marginTop: 16 }}>
               <button className="btn" type="submit" disabled={saving}>
                 {saving ? 'Saving…' : 'Update password'}
               </button>

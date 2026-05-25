@@ -78,6 +78,18 @@
 .sw-prose table.table { border: 0; margin: 12px 0; }
 .sw-prose table.table > tbody > tr > td { border: 0; padding: 0; }
 
+/* Defense-in-depth against global-utility/QTI-class collisions.
+   QTI source authors every <tr> as <tr class="row "> and every
+   <tbody> as <tbody class="tbody ">. A bare global rule on either
+   class name (e.g. an old `.row { display: flex }` utility) would
+   yank the row out of table layout and shatter the grid. Pin
+   table-internal layout back to its defaults inside .sw-prose so
+   future name clashes can't break stimulus tables again. */
+.sw-prose tr { display: table-row; gap: 0; }
+.sw-prose tbody { display: table-row-group; }
+.sw-prose thead { display: table-header-group; }
+.sw-prose tfoot { display: table-footer-group; }
+
 .sw-prose table.table_WithBorder {
   border-collapse: collapse;
   margin: 8px auto;

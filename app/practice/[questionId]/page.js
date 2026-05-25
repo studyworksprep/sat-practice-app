@@ -1317,7 +1317,7 @@ export default function PracticeQuestionPage() {
         {index1 ?? '—'}
       </div>
 
-      <div className="row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+      <div className="sw-row" style={{ alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {isTeacherMode ? (
           <button
             type="button"
@@ -1534,7 +1534,7 @@ export default function PracticeQuestionPage() {
           })}
       </div>
 
-      <div className="row" style={{ gap: 10, marginTop: 14 }}>
+      <div className="sw-row" style={{ gap: 10, marginTop: 14 }}>
         {isTeacherMode ? (
           <button className="btn primary" onClick={() => { setGaveUp(true); setShowExplanation(true); }}>
             {gaveUp ? 'Answer Revealed' : 'Show Answer'}
@@ -1606,7 +1606,7 @@ export default function PracticeQuestionPage() {
             placeholder="Write notes about your error — what did you get wrong and why?"
             rows={3}
           />
-          <div className="row" style={{ gap: 8, marginTop: 8 }}>
+          <div className="sw-row" style={{ gap: 8, marginTop: 8 }}>
             <button className="btn primary" onClick={saveErrorLog} disabled={errorLogSaving || !errorLogText.trim()}>
               {errorLogSaving ? 'Saving…' : errorLogSaved ? 'Saved' : 'Save Note'}
             </button>
@@ -1622,7 +1622,7 @@ export default function PracticeQuestionPage() {
       <div className="srOnly">Your answer</div>
 
       {gotCorrect ? (
-        <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+        <div className="sw-row" style={{ gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
           <span className="pill" style={{ borderColor: '#15803d', background: '#f0fdf4' }}>
             <span style={{ color: '#15803d' }}>Result</span>{' '}
             <span className="kbd" style={{ color: '#15803d', fontWeight: 700 }}>Correct</span>
@@ -1630,14 +1630,14 @@ export default function PracticeQuestionPage() {
         </div>
       ) : wrongTexts.length > 0 ? (
         <div style={{ marginTop: 8 }}>
-          <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="sw-row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <span className="pill" style={{ borderColor: 'var(--danger, #dc2626)', background: '#fee2e2' }}>
               <span style={{ color: 'var(--danger, #dc2626)' }}>Result</span>{' '}
               <span className="kbd" style={{ color: 'var(--danger, #dc2626)', fontWeight: 700 }}>Incorrect</span>
             </span>
           </div>
           {gaveUp && correctText ? (
-            <div className="row" style={{ gap: 8, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
+            <div className="sw-row" style={{ gap: 8, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
               <span className="pill">
                 <span className="muted">Correct answer</span>{' '}
                 <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
@@ -1648,7 +1648,7 @@ export default function PracticeQuestionPage() {
       ) : isTeacherMode && gaveUp ? (
         <div style={{ marginTop: 8 }}>
           {studentResponseText && studentLastIsCorrect === false && (
-            <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+            <div className="sw-row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
               <span className="pill" style={{ borderColor: 'var(--danger, #dc2626)', background: '#fee2e2' }}>
                 <span style={{ color: 'var(--danger, #dc2626)' }}>Student answered</span>{' '}
                 <span className="kbd" style={{ color: 'var(--danger, #dc2626)', fontWeight: 700 }}>{studentResponseText}</span>
@@ -1656,7 +1656,7 @@ export default function PracticeQuestionPage() {
             </div>
           )}
           {studentResponseText && studentLastIsCorrect === true && (
-            <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+            <div className="sw-row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
               <span className="pill" style={{ borderColor: '#15803d', background: '#f0fdf4' }}>
                 <span style={{ color: '#15803d' }}>Student answered</span>{' '}
                 <span className="kbd" style={{ color: '#15803d', fontWeight: 700 }}>{studentResponseText}</span>
@@ -1664,7 +1664,7 @@ export default function PracticeQuestionPage() {
             </div>
           )}
           {correctText && (
-            <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="sw-row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <span className="pill">
                 <span className="muted">Correct answer</span>{' '}
                 <span className="kbd">{formatCorrectText(correctText)?.join(' or ')}</span>
@@ -1684,7 +1684,7 @@ export default function PracticeQuestionPage() {
         style={{ marginTop: 10 }}
       />
 
-      <div className="row" style={{ gap: 10, marginTop: 14 }}>
+      <div className="sw-row" style={{ gap: 10, marginTop: 14 }}>
         {isTeacherMode ? (
           <button className="btn primary" onClick={() => { setGaveUp(true); setShowExplanation(true); }}>
             {gaveUp ? 'Answer Revealed' : 'Show Answer'}
@@ -1752,7 +1752,7 @@ export default function PracticeQuestionPage() {
             placeholder="Write notes about your error — what did you get wrong and why?"
             rows={3}
           />
-          <div className="row" style={{ gap: 8, marginTop: 8 }}>
+          <div className="sw-row" style={{ gap: 8, marginTop: 8 }}>
             <button className="btn primary" onClick={saveErrorLog} disabled={errorLogSaving || !errorLogText.trim()}>
               {errorLogSaving ? 'Saving…' : errorLogSaved ? 'Saved' : 'Save Note'}
             </button>
@@ -2085,7 +2085,7 @@ export default function PracticeQuestionPage() {
           aria-label="Question map"
         >
           <div className="modalCard" onClick={(e) => e.stopPropagation()}>
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div className="sw-row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'grid', gap: 4 }}>
                 <div className="h2" style={{ margin: 0 }}>
                   Question Map
@@ -2131,7 +2131,7 @@ export default function PracticeQuestionPage() {
 
             <hr />
 
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div className="sw-row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div className="btnRow">
                 <button
                   className="btn secondary"
@@ -2253,7 +2253,7 @@ export default function PracticeQuestionPage() {
           aria-label="Correction form"
         >
           <div className="modalCard correctModal" onClick={(e) => e.stopPropagation()}>
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="sw-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="h2" style={{ margin: 0 }}>Flag &amp; Correct Question</div>
               <button className="btn secondary" onClick={() => setShowCorrectModal(false)}>Close</button>
             </div>
@@ -2321,7 +2321,7 @@ export default function PracticeQuestionPage() {
             <hr />
             <div className="correctFields">
               <div className="h3" style={{ margin: '0 0 8px' }}>Taxonomy</div>
-              <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+              <div className="sw-row" style={{ gap: 12, flexWrap: 'wrap' }}>
                 <label className="correctLabel" style={{ flex: '1 1 120px' }}>
                   <span className="correctLabelText">Difficulty</span>
                   <select
@@ -2360,7 +2360,7 @@ export default function PracticeQuestionPage() {
                   t => t.domain_code === correctForm.domain_code || t.domain_name === correctForm.domain_name
                 );
                 return (
-                  <div className="row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+                  <div className="sw-row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
                     <label className="correctLabel" style={{ flex: '1 1 200px' }}>
                       <span className="correctLabelText">Domain</span>
                       <select
@@ -2408,7 +2408,7 @@ export default function PracticeQuestionPage() {
               })() : <p className="muted small">Loading taxonomy options…</p>}
             </div>
 
-            <div className="row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+            <div className="sw-row" style={{ gap: 10, marginTop: 16, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
               <button className="btn secondary" onClick={() => setShowCorrectModal(false)} disabled={correctSubmitting}>
                 Cancel
               </button>

@@ -569,7 +569,7 @@ export default function StatsClient({ email, fetchUrl, backUrl, backLabel, title
       <div className="card">
         <div className="h2" style={{ marginBottom: 8 }}>Export Data</div>
         <p className="muted small" style={{ marginTop: 0 }}>Download your practice data as CSV files.</p>
-        <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+        <div className="sw-row" style={{ gap: 8, flexWrap: 'wrap' }}>
           {data?.recentSessions?.length > 0 && (
             <button
               className="btn secondary"

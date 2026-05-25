@@ -95,7 +95,7 @@ function QuestionV2Card({ question, index, onFix }) {
             </span>
           ) : null}
         </div>
-        <div className="row" style={{ alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <div className="sw-row" style={{ alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           <span className="pill">
             <span className="muted">Type</span>{' '}
             <span className="kbd">{qType.toUpperCase() || '—'}</span>
@@ -231,7 +231,7 @@ function QuestionV2Card({ question, index, onFix }) {
       ) : (
         <>
           <div className="srOnly">Correct answer</div>
-          <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 4 }}>
+          <div className="sw-row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 4 }}>
             {correctTextArr && correctTextArr.length > 0 ? (
               <span className="pill" style={{ borderColor: '#15803d', background: '#f0fdf4' }}>
                 <span style={{ color: '#15803d' }}>Correct answer</span>{' '}
@@ -256,7 +256,7 @@ function QuestionV2Card({ question, index, onFix }) {
 
       {/* ── Explanation toggle ── */}
       {question.rationale_html ? (
-        <div className="row" style={{ gap: 10, marginTop: 14 }}>
+        <div className="sw-row" style={{ gap: 10, marginTop: 14 }}>
           <button
             type="button"
             className="btn secondary"

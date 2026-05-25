@@ -403,6 +403,12 @@ a{
   margin: 12px 0;
   font-size: 15px;
 }
+/* See note in next-prose.css — guard QTI stimulus tables against
+   future global-utility name collisions on tr/tbody/thead/tfoot. */
+.prose tr { display: table-row; gap: 0; }
+.prose tbody { display: table-row-group; }
+.prose thead { display: table-header-group; }
+.prose tfoot { display: table-footer-group; }
 .prose th, .prose td{
   border: 1px solid var(--border);
   padding: 8px 12px;
@@ -1356,15 +1362,16 @@ label{
    Rows / Flex Utilities
 ================================ */
 
-.row{
+/* Namespaced to avoid colliding with QTI-authored class names that
+   appear inside question stimulus_html (e.g. <tr class="row "> from
+   College Board APIP source). A bare `.row` rule turned every QTI
+   table row into a flex container with a 12px gap, wrecking the
+   table grid. Renamed to `.sw-row` to match the existing sw-* prefix
+   convention (sw-prose, sw-option-content, sw-reveal-row). */
+.sw-row{
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.col{
-  flex: 1;
-  min-width: 260px;
 }
 
 hr{

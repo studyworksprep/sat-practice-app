@@ -250,7 +250,7 @@ export default function TeacherReviewPage() {
     return (
       <div style={{ marginTop: 8 }}>
         {studentResponseText ? (
-          <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
+          <div className="sw-row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
             <span className="pill">
               <span className="muted">Student answered</span>{' '}
               <span className="kbd">{studentResponseText}</span>
@@ -260,7 +260,7 @@ export default function TeacherReviewPage() {
           <p className="muted small">No answer recorded.</p>
         )}
         {showAnswer && accepted && (
-          <div className="row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="sw-row" style={{ gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <span className="pill">
               <span className="muted">Correct answer</span>{' '}
               <span className="kbd">{accepted.join(' or ')}</span>
@@ -272,7 +272,7 @@ export default function TeacherReviewPage() {
   };
 
   const NavButtons = () => (
-    <div className="row" style={{ gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+    <div className="sw-row" style={{ gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
       <button className="btn secondary" onClick={() => goToIndex(index1 - 1)} disabled={prevDisabled}>
         Prev
       </button>
@@ -334,7 +334,7 @@ export default function TeacherReviewPage() {
         aria-label="Question map"
       >
         <div className="modalCard" onClick={(e) => e.stopPropagation()}>
-          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <div className="sw-row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
             <div style={{ display: 'grid', gap: 4 }}>
               <div className="h2" style={{ margin: 0 }}>Question Map</div>
               <div className="muted small">
@@ -348,7 +348,7 @@ export default function TeacherReviewPage() {
 
           <hr />
 
-          <div className="row" style={{ justifyContent: 'flex-end', marginBottom: 4 }}>
+          <div className="sw-row" style={{ justifyContent: 'flex-end', marginBottom: 4 }}>
             <div className="pill">
               <span className="muted">Current</span> <span className="kbd">{index1 ?? '—'}</span>
             </div>
@@ -442,7 +442,7 @@ export default function TeacherReviewPage() {
       </div>
 
       {/* Info pills */}
-      <div className="row" style={{ gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+      <div className="sw-row" style={{ gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
         {data?.taxonomy?.domain_name && (
           <span className="pill"><span className="muted">Domain</span> <span className="kbd">{data.taxonomy.domain_name}</span></span>
         )}

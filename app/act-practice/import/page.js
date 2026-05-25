@@ -388,7 +388,7 @@ export default function ActImportPage() {
                       {/* Taxonomy fields */}
                       <div className="correctFields">
                         <div className="h3" style={{ margin: '0 0 8px' }}>Taxonomy</div>
-                        <div className="row" style={{ gap: 12, flexWrap: 'wrap' }}>
+                        <div className="sw-row" style={{ gap: 12, flexWrap: 'wrap' }}>
                           <label className="correctLabel" style={{ flex: '1 1 120px' }}>
                             <span className="correctLabelText">Section</span>
                             <select
@@ -446,7 +446,7 @@ export default function ActImportPage() {
                           const selectedCat = cats.find(c => (c.category_code || c.category) === q.category_code);
                           const subs = selectedCat?.subcategories || [];
                           return (
-                            <div className="row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+                            <div className="sw-row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
                               <label className="correctLabel" style={{ flex: '1 1 200px' }}>
                                 <span className="correctLabelText">Category</span>
                                 <select
@@ -492,7 +492,7 @@ export default function ActImportPage() {
                         })() : null}
 
                         {/* Allow typing in category/subcategory if not in dropdown list */}
-                        <div className="row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+                        <div className="sw-row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
                           <label className="correctLabel" style={{ flex: '1 1 200px' }}>
                             <span className="correctLabelText">Category Code (text)</span>
                             <input
