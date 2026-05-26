@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '../../../lib/supabase/server';
+import {
+  sendAdminSignupNotification,
+  sendTeacherNewStudentNotification,
+} from '../../../lib/email/signupNotifications';
 import crypto from 'crypto';
 
 function generateInviteCode() {
@@ -56,10 +60,11 @@ export async function POST(request) {
   // and check if the teacher is exempt (Studyworks teacher)
   let teacherProfileId = null;
   let studentTeacherExempt = false;
+  let linkedTeacher = null;
   if (userType === 'student' && teacherCode?.trim()) {
     const { data: teacherProfile, error: tErr } = await svc
       .from('profiles')
-      .select('id, subscription_exempt')
+      .select('id, email, first_name, subscription_exempt')
       .eq('teacher_invite_code', teacherCode.trim().toUpperCase())
       .maybeSingle();
 
@@ -68,6 +73,7 @@ export async function POST(request) {
     }
     teacherProfileId = teacherProfile.id;
     studentTeacherExempt = teacherProfile.subscription_exempt === true;
+    linkedTeacher = teacherProfile;
   }
 
   // Build user metadata (will be read by handle_new_user trigger)
@@ -133,6 +139,37 @@ export async function POST(request) {
         { teacher_id: teacherProfileId, student_id: authData.user.id },
         { onConflict: 'teacher_id,student_id' },
       );
+  }
+
+  // Fire internal signup notifications (soft failure — never blocks the
+  // signup response if email infra is down or unconfigured).
+  const origin = request.headers.get('origin') || undefined;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin;
+  await sendAdminSignupNotification({
+    email,
+    firstName: metadata.first_name,
+    lastName: metadata.last_name,
+    userType,
+    highSchool: metadata.high_school,
+    graduationYear: metadata.graduation_year,
+    targetSatScore: metadata.target_sat_score,
+    teacherCode: teacherCode?.trim() || null,
+    teacherEmail: linkedTeacher?.email || null,
+    subscriptionExempt: metadata.subscription_exempt === true,
+  });
+
+  if (linkedTeacher?.email) {
+    await sendTeacherNewStudentNotification({
+      teacherEmail: linkedTeacher.email,
+      teacherFirstName: linkedTeacher.first_name,
+      studentEmail: email,
+      studentFirstName: metadata.first_name,
+      studentLastName: metadata.last_name,
+      highSchool: metadata.high_school,
+      graduationYear: metadata.graduation_year,
+      targetSatScore: metadata.target_sat_score,
+      siteUrl,
+    });
   }
 
   // Determine if the new user needs a subscription
