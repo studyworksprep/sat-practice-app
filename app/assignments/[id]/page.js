@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { savePracticeSession } from '../../../lib/practiceSessionStorage';
+import { isPastDueDate } from '../../../lib/formatters';
 
 const DIFF_LABEL = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
 const DIFF_COLORS = { 1: '#4caf50', 2: '#f0a830', 3: '#e05252' };
@@ -92,7 +93,7 @@ export default function AssignmentDetailPage() {
   const total = questions.length;
   const donePct = total > 0 ? Math.round((done / total) * 100) : 0;
   const accPct = done > 0 ? Math.round((correct / done) * 100) : null;
-  const isOverdue = assignment.due_date && new Date(assignment.due_date) < new Date();
+  const isOverdue = isPastDueDate(assignment.due_date);
   const incomplete = questions.filter(q => !q.is_done);
 
   return (

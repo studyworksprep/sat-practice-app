@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { savePracticeSession } from '../../lib/practiceSessionStorage';
+import { parseLocalOrIso, isPastDueDate } from '../../lib/formatters';
 
 // ─── Constants ────────────────────────────────────────────
 export const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
@@ -39,7 +40,7 @@ export function displayName(s) {
 
 export function formatDate(iso) {
   if (!iso) return '';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return parseLocalOrIso(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export function formatDateTime(iso) {
@@ -1316,7 +1317,7 @@ export function AssignmentsPanel({ students }) {
     );
   }
 
-  const isOverdue = (due) => due && new Date(due) < new Date();
+  const isOverdue = (due) => isPastDueDate(due);
 
   return (
     <div>
@@ -1663,8 +1664,8 @@ export function StudentDetail({ studentId, onBack }) {
             )}
             {(() => {
               const now = new Date();
-              const upcoming = registrations.filter(r => new Date(r.test_date) > now);
-              const past = registrations.filter(r => new Date(r.test_date) <= now);
+              const upcoming = registrations.filter(r => parseLocalOrIso(r.test_date) > now);
+              const past = registrations.filter(r => parseLocalOrIso(r.test_date) <= now);
               return (upcoming.length > 0 || past.length > 0) ? (
                 <div className="tchRegSection">
                   {upcoming.length > 0 && (
@@ -1672,7 +1673,7 @@ export function StudentDetail({ studentId, onBack }) {
                       <span className="tchProfileLabel" style={{ marginBottom: 4 }}>Upcoming SATs</span>
                       {upcoming.map(r => (
                         <div key={r.id} className="tchRegItem">
-                          <span>{new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <span>{parseLocalOrIso(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
                           <button className="tchRegDelete" onClick={() => deleteRegistration(r.id)} title="Remove">&times;</button>
                         </div>
                       ))}
@@ -1683,7 +1684,7 @@ export function StudentDetail({ studentId, onBack }) {
                       <span className="tchProfileLabel" style={{ marginBottom: 4, color: 'var(--muted)' }}>Past SATs</span>
                       {past.map(r => (
                         <div key={r.id} className="tchRegItem past">
-                          <span>{new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <span>{parseLocalOrIso(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
                           <button className="tchRegDelete" onClick={() => deleteRegistration(r.id)} title="Remove">&times;</button>
                         </div>
                       ))}
@@ -1701,7 +1702,7 @@ export function StudentDetail({ studentId, onBack }) {
                     return (
                       <div key={s.id} style={{ marginBottom: hasDomains ? 12 : 0 }}>
                         <div className="tchScoreItem">
-                          <span className="tchScoreDate">{new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                          <span className="tchScoreDate">{parseLocalOrIso(s.test_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                           <span className="tchScoreComposite">{s.composite_score}</span>
                           <span className="tchScoreBreakdown">
                             {s.test_type && s.test_type !== 'SAT' ? <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--accent)', marginRight: 4 }}>{s.test_type}</span> : null}
@@ -1743,7 +1744,7 @@ export function StudentDetail({ studentId, onBack }) {
               <div style={{ maxHeight: 360, overflowY: 'auto' }}>
                 {data.studentAssignments.map(a => {
                   const donePct = a.question_count > 0 ? Math.round((a.completed_count / a.question_count) * 100) : 0;
-                  const isOverdue = a.due_date && new Date(a.due_date) < new Date();
+                  const isOverdue = isPastDueDate(a.due_date);
                   const isMarkedComplete = !!a.completed_at;
                   function openAssignmentSession() {
                     const qids = a.question_ids || [];
