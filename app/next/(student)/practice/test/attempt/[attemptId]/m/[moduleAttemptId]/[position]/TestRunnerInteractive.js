@@ -155,12 +155,17 @@ export function TestRunnerInteractive({
   }, [moduleInfo.startedAt, moduleInfo.timeLimitSeconds]);
 
   // ── Per-question stopwatch ─────────────────────────────────
-  // lastSaveTimeRef tracks the last moment we successfully synced
-  // time to the server. Every save sends the delta since then.
-  // The ref only advances AFTER a save returns 200 — on failure
-  // or exception, the delta stays pending and rolls into the
-  // next attempt. Resets when moduleItemId changes so question-
-  // level timing is independent of navigation.
+  // lastSaveTimeRef tracks the last moment whose elapsed seconds
+  // we've already committed to a save. Every save sends the delta
+  // since then. The ref advances OPTIMISTICALLY — at the moment
+  // we compute the delta, before the round-trip resolves — so a
+  // concurrent beacon or save can't read the same baseline and
+  // bill the same seconds twice. The cost is that a failed save
+  // drops the delta on the floor; we accept that small leak in
+  // exchange for closing the lost-update race that was inflating
+  // attempts.time_spent_ms past the module's wall-clock allotment.
+  // Resets when moduleItemId changes so question-level timing is
+  // independent of navigation.
   const lastSaveTimeRef = useRef(Date.now());
   useEffect(() => {
     lastSaveTimeRef.current = Date.now();
@@ -178,6 +183,10 @@ export function TestRunnerInteractive({
       const now = Date.now();
       const deltaMs = Math.max(0, now - lastSaveTimeRef.current);
       if (deltaMs < 500) return;
+      // Advance the baseline BEFORE queuing the beacon so a
+      // concurrent flushSave can't read the same baseline and
+      // double-bill these seconds.
+      lastSaveTimeRef.current = now;
       try {
         const payload = JSON.stringify({
           moduleAttemptId,
@@ -185,12 +194,7 @@ export function TestRunnerInteractive({
           timeSpentMs: deltaMs,
         });
         const blob = new Blob([payload], { type: 'application/json' });
-        // sendBeacon returns false if the user agent can't queue
-        // it (payload too large / quota hit). We don't retry —
-        // visibilitychange fires earlier than unload on most
-        // browsers, so there's usually a second chance.
-        const ok = navigator.sendBeacon('/api/practice-test/time-ping', blob);
-        if (ok) lastSaveTimeRef.current = now;
+        navigator.sendBeacon('/api/practice-test/time-ping', blob);
       } catch { /* sendBeacon unsupported — ignore */ }
     }
 
@@ -213,6 +217,12 @@ export function TestRunnerInteractive({
   const flushSave = useCallback(async (answer) => {
     const now = Date.now();
     const deltaMs = Math.max(0, now - lastSaveTimeRef.current);
+    // Advance the baseline before awaiting the round-trip. If a
+    // visibilitychange beacon fires while this action is in
+    // flight, it'll see a fresh baseline and won't re-bill these
+    // seconds. A failed save loses this delta — acceptable to
+    // prevent the double-count that was inflating module totals.
+    if (deltaMs > 0) lastSaveTimeRef.current = now;
     const fd = new FormData();
     fd.set('moduleAttemptId', moduleAttemptId);
     fd.set('moduleItemId', moduleItemId);
@@ -226,15 +236,11 @@ export function TestRunnerInteractive({
       const res = await recordItemAnswerAction(null, fd);
       if (!res?.ok) {
         setSaveError(res?.error ?? 'Could not save');
-        // Keep the delta pending — next save attempts to re-send.
         return;
       }
       setSaveError(null);
-      lastSaveTimeRef.current = now;
     } catch (err) {
       setSaveError(err.message ?? String(err));
-      // Same fallback: leave lastSaveTimeRef alone so the delta
-      // survives the failure.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleAttemptId, moduleItemId, question.questionType, recordItemAnswerAction]);
@@ -301,15 +307,16 @@ export function TestRunnerInteractive({
     const now = Date.now();
     const deltaMs = Math.max(0, now - lastSaveTimeRef.current);
     if (deltaMs < 500) return;
+    // Advance the baseline immediately — same anti-double-bill
+    // reasoning as flushSave / fireBeacon.
+    lastSaveTimeRef.current = now;
     const fd = new FormData();
     fd.set('moduleAttemptId', moduleAttemptId);
     fd.set('moduleItemId', moduleItemId);
     fd.set('timeSpentMs', String(deltaMs));
     (async () => {
-      try {
-        const res = await recordItemAnswerAction(null, fd);
-        if (res?.ok) lastSaveTimeRef.current = now;
-      } catch { /* leave the ref alone; next save retries */ }
+      try { await recordItemAnswerAction(null, fd); }
+      catch { /* fire-and-forget */ }
     })();
   }
 
@@ -371,14 +378,13 @@ export function TestRunnerInteractive({
       const now = Date.now();
       const deltaMs = Math.max(0, now - lastSaveTimeRef.current);
       if (deltaMs >= 500) {
+        lastSaveTimeRef.current = now;
         const fd = new FormData();
         fd.set('moduleAttemptId', moduleAttemptId);
         fd.set('moduleItemId', moduleItemId);
         fd.set('timeSpentMs', String(deltaMs));
-        try {
-          const res = await recordItemAnswerAction(null, fd);
-          if (res?.ok) lastSaveTimeRef.current = now;
-        } catch { /* swallow — pausing should still proceed */ }
+        try { await recordItemAnswerAction(null, fd); }
+        catch { /* swallow — pausing should still proceed */ }
       }
     }
     const fd = new FormData();

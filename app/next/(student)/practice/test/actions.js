@@ -191,7 +191,7 @@ export async function recordItemAnswer(_prev, formData) {
   const { data: moduleAttempt } = await supabase
     .from('practice_test_module_attempts_v2')
     .select(`
-      id, finished_at, started_at,
+      id, finished_at, started_at, paused_at,
       practice_test_attempt_id,
       practice_test_module:practice_test_modules_v2(time_limit_seconds),
       practice_test_attempt:practice_test_attempts_v2(user_id, status, time_multiplier)
@@ -204,6 +204,12 @@ export async function recordItemAnswer(_prev, formData) {
   if (moduleAttempt.practice_test_attempt.status !== 'in_progress') {
     return actionFail('Test is not in progress');
   }
+  // Time-only writes against a paused module would bill seconds
+  // the student wasn't actually testing for. An answer-bearing
+  // write shouldn't happen on a paused module either (the runner
+  // is unmounted while paused), but if it does, reject it for
+  // the same reason.
+  if (moduleAttempt.paused_at) return actionFail('Module is paused');
 
   // Timer check — reject writes past the grace period. Applies the
   // student's accommodation multiplier to the base time limit.
