@@ -3,6 +3,7 @@ import { requireUser } from '@/lib/api/auth';
 import { legacyApiRoute } from '@/lib/api/response';
 import { createServiceClient } from '../../../lib/supabase/server';
 import { computeTestScores } from '../../../lib/testScoreHelper';
+import { parseLocalOrIso } from '../../../lib/formatters';
 
 // Score-band weight: higher bands are harder questions
 const BAND_WEIGHT = { 1: 1.0, 2: 1.2, 3: 1.4, 4: 1.6, 5: 1.8, 6: 2.0, 7: 2.2 };
@@ -193,7 +194,7 @@ export const GET = legacyApiRoute(async () => {
 
   // ── SAT registrations ──
   const now = new Date();
-  const upcomingRegistrations = (satRegistrations || []).filter(r => new Date(r.test_date) > now);
+  const upcomingRegistrations = (satRegistrations || []).filter(r => parseLocalOrIso(r.test_date) > now);
   const nextSatDate = upcomingRegistrations.length > 0 ? upcomingRegistrations[0].test_date : null;
 
   // ── Streak calculation ──

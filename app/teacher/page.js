@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { displayName, formatDate, formatDateTime, relativeTime, pct, pctColor, TrendIndicator } from './shared';
+import { parseLocalOrIso, isPastDueDate } from '../../lib/formatters';
 import { savePracticeSession } from '../../lib/practiceSessionStorage';
 
 // ─── Main teacher dashboard page ─────────────────────────
@@ -258,12 +259,12 @@ function TeacherDashboard() {
                 <p className="muted small" style={{ padding: '4px 0', margin: 0 }}>No upcoming SAT registrations.</p>
               ) : (
                 <div className="tchAlertList" style={{ maxHeight: 300, overflowY: 'auto' }}>
-                  {[...upcomingRegistrations].sort((a, b) => new Date(a.test_date) - new Date(b.test_date)).map((r, i) => (
+                  {[...upcomingRegistrations].sort((a, b) => parseLocalOrIso(a.test_date) - parseLocalOrIso(b.test_date)).map((r, i) => (
                     <button key={i} className="tchAlertItem" style={{ cursor: 'pointer', background: 'none', border: 'none', width: '100%', textAlign: 'left' }} onClick={() => goToStudent(r.student_id)}>
                       <div className="tchAlertItemInfo">
                         <span className="tchAlertItemName">{r.student_name}</span>
                         <span className="tchAlertItemMeta">
-                          {new Date(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                          {parseLocalOrIso(r.test_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                           {r.days_until != null && (
                             <span style={{ color: r.days_until <= 7 ? 'var(--danger)' : r.days_until <= 30 ? 'var(--amber)' : 'var(--muted)', fontWeight: 600, marginLeft: 6 }}>
                               {r.days_until === 0 ? 'Today' : r.days_until === 1 ? 'Tomorrow' : `in ${r.days_until}d`}
@@ -285,12 +286,11 @@ function TeacherDashboard() {
               ) : (() => {
                 const pageRows = activeAssignmentRows.slice(assignmentPage * ASSIGNMENTS_PER_PAGE, (assignmentPage + 1) * ASSIGNMENTS_PER_PAGE);
                 const totalPages = Math.ceil(activeAssignmentRows.length / ASSIGNMENTS_PER_PAGE);
-                const now = new Date();
                 return (
                   <>
                     <div className="tchAlertList">
                       {pageRows.map((r, i) => {
-                        const isPastDue = r.due_date && new Date(r.due_date) < now;
+                        const isPastDue = isPastDueDate(r.due_date);
                         const isComplete = r.question_count > 0 && r.completed_count >= r.question_count;
                         function openAssignmentReview() {
                           const qids = r.question_ids || [];
@@ -355,7 +355,7 @@ function TeacherDashboard() {
                                   color: isPastDue && !isComplete ? 'var(--danger)' : 'var(--muted)',
                                 }}>
                                   {isPastDue && !isComplete ? 'Past due · ' : ''}
-                                  {new Date(r.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  {parseLocalOrIso(r.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                 </span>
                               )}
                               <button

@@ -3,6 +3,7 @@ import { createServiceClient } from '../../../../lib/supabase/server';
 import { requireRole } from '@/lib/api/auth';
 import { legacyApiRoute } from '@/lib/api/response';
 import { computeTestScores } from '../../../../lib/testScoreHelper';
+import { parseLocalOrIso } from '../../../../lib/formatters';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
 
@@ -351,7 +352,7 @@ export const GET = legacyApiRoute(async () => {
   // ── Upcoming SAT registrations ──
   const now = Date.now();
   const upcomingRegistrations = (registrations || []).map(r => {
-    const testTime = new Date(r.test_date).getTime();
+    const testTime = parseLocalOrIso(r.test_date).getTime();
     const daysUntil = Math.ceil((testTime - now) / 86400000);
     return {
       student_id: r.student_id,

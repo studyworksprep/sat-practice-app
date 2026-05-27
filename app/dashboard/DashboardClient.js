@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTestType } from '../../lib/TestTypeContext';
 import { savePracticeSession } from '../../lib/practiceSessionStorage';
+import { parseLocalOrIso, isPastDueDate } from '../../lib/formatters';
 
 const MATH_CODES = new Set(['H', 'P', 'S', 'Q']);
 const SUBJECT_LABEL = { rw: 'R&W', RW: 'R&W', math: 'Math', m: 'Math', M: 'Math', MATH: 'Math' };
@@ -365,7 +366,7 @@ const SessionCard = memo(function SessionCard({ session, index }) {
 
 // ── Assignments Card ──
 const AssignmentsCard = memo(function AssignmentsCard({ assignments }) {
-  const isOverdue = (due) => due && new Date(due) < new Date();
+  const isOverdue = (due) => isPastDueDate(due);
   return (
     <div className="card dbAssignmentsCard">
       <div className="h2" style={{ marginBottom: 12 }}>Your Assignments</div>
@@ -855,7 +856,7 @@ export default function DashboardClient({ email, studentName }) {
               {data.officialScores.map((s) => (
                 <div key={s.id} className="dbOfficialScoreRow">
                   <span className="dbOfficialScoreDate">
-                    {new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+                    {parseLocalOrIso(s.test_date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
                   </span>
                   <span className="dbOfficialScoreComposite">{s.composite_score}</span>
                   <span className="dbOfficialScoreBreakdown">R&W {s.rw_score} · M {s.math_score}</span>
@@ -899,7 +900,7 @@ export default function DashboardClient({ email, studentName }) {
                         <circle cx={toX(i)} cy={toY(s.rw_score)} r="2" fill="#6b9bd2" />
                         <circle cx={toX(i)} cy={toY(s.math_score)} r="2" fill="#9b8ec4" />
                         <text x={toX(i)} y={h - 4} textAnchor="middle" fontSize="7" fill="var(--muted)">
-                          {new Date(s.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
+                          {parseLocalOrIso(s.test_date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}
                         </text>
                       </g>
                     ))}
@@ -948,7 +949,7 @@ export default function DashboardClient({ email, studentName }) {
           <div className="card" style={{ marginBottom: 16, padding: '16px 20px' }}>
             <div className="h2" style={{ marginBottom: 4 }}>Official Test Domain Analysis</div>
             <p className="muted small" style={{ marginBottom: 12 }}>
-              Based on most recent official score ({new Date(latest.test_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', year: '2-digit' })})
+              Based on most recent official score ({parseLocalOrIso(latest.test_date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })})
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
