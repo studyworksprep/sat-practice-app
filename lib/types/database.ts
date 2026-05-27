@@ -1171,6 +1171,91 @@ export type Database = {
           },
         ]
       }
+      lesson_pack_questions: {
+        Row: {
+          added_at: string
+          pack_id: string
+          position: number
+          question_id: string
+        }
+        Insert: {
+          added_at?: string
+          pack_id: string
+          position: number
+          question_id: string
+        }
+        Update: {
+          added_at?: string
+          pack_id?: string
+          position?: number
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_pack_questions_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_pack_questions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_packs: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_packs_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_packs_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_packs_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       lesson_progress: {
         Row: {
           check_answers: Json

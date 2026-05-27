@@ -1,0 +1,246 @@
+/* =============================================================
+   Tutor → Lesson Packs list. Mirrors the assignments-list
+   vocabulary (container, eyebrow + serif H1, sectioned cards,
+   IconTile section heads) so the two surfaces feel like the
+   same neighborhood of the app.
+============================================================= */
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+.breadcrumb {
+  font-size: 12px;
+  color: var(--fg3);
+}
+.breadcrumb a {
+  color: var(--fg3);
+  text-decoration: none;
+  font-weight: 600;
+}
+.breadcrumb a:hover { color: var(--fg1); }
+
+/* ---------- Header ---------- */
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  padding: var(--s2) 0;
+}
+.headerLeft { min-width: 0; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s2);
+}
+.sub {
+  color: var(--fg3);
+  font-size: 14px;
+  margin: 0;
+  max-width: 720px;
+}
+
+/* ---------- New pack form ---------- */
+
+.newForm {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px 18px;
+  display: grid;
+  gap: 10px;
+}
+.newFormRow { display: block; }
+.newFormLabel {
+  display: grid;
+  gap: 4px;
+}
+.newFormLabelText {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.newFormInput,
+.newFormTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--fg1);
+  background: var(--bg-white);
+}
+.newFormTextarea { resize: vertical; min-height: 50px; }
+
+.newFormFooter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.newFormBtn {
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  background: var(--color-app-accent);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+}
+.newFormBtn:hover:not(:disabled) { background: var(--color-app-accent-hover); }
+.newFormBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.newFormError {
+  color: var(--color-danger);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---------- Section + list ---------- */
+
+.section { display: grid; gap: var(--s3); }
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+  margin: 0;
+}
+
+.cardList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.cardRow {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+.packCard {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--dur-fast) var(--ease-std),
+              box-shadow var(--dur-fast) var(--ease-std);
+}
+.packCard:hover {
+  border-color: var(--color-app-accent);
+  box-shadow: var(--shadow-md);
+}
+.packTop {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.packTitle {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--fg1);
+  flex: 1;
+  min-width: 0;
+}
+.packCount {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+}
+.packSub {
+  font-size: 13px;
+  color: var(--fg2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.packMeta {
+  font-size: 11px;
+  color: var(--fg3);
+}
+
+.deleteBtn {
+  align-self: stretch;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-danger);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.deleteBtn:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
+.deleteBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ---------- Empty ---------- */
+
+.emptyCard {
+  background: var(--card);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  text-align: center;
+}
+.emptyTitle {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--fg1);
+  margin-bottom: 4px;
+}
+.emptyBody {
+  font-size: 13px;
+  color: var(--fg3);
+}

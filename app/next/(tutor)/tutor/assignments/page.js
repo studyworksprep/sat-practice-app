@@ -283,9 +283,14 @@ export default async function TutorAssignmentsPage({ searchParams }) {
             group assignments roll up the cohort.
           </p>
         </div>
-        <Link href="/tutor/assignments/new" className={s.newBtn}>
-          + New assignment
-        </Link>
+        <div className={s.headerActions}>
+          <Link href="/tutor/lesson-packs" className={s.secondaryBtn}>
+            Lesson packs
+          </Link>
+          <Link href="/tutor/assignments/new" className={s.newBtn}>
+            + New assignment
+          </Link>
+        </div>
       </header>
 
       <div className={s.statsStrip}>
