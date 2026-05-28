@@ -40,7 +40,12 @@ import { ReportHero } from './ReportHero';
 import { formatDuration } from './format-duration';
 import s from './AssignmentReport.module.css';
 
-const MATH_DOMAIN_CODES_FOR_CALC = new Set(['H', 'P', 'Q', 'S']);
+// Domain codes that get the math toolkit (Desmos + reference
+// sheet). 'H','P','Q','S' are SAT math domains; 'math' is the
+// ACT section literal. Mirrors DESMOS_DOMAINS in load-question.ts
+// — the runner uses that one. Worth merging if a third surface
+// shows up.
+const MATH_DOMAIN_CODES_FOR_CALC = new Set(['H', 'P', 'Q', 'S', 'math']);
 
 
 export function AssignmentReport({
