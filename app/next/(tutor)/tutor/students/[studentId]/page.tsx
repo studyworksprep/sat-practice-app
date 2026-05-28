@@ -93,20 +93,24 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .from('practice_test_attempts')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', studentId),
-    // SAT-only assignments inbox for this student.
+    // Assignments inbox for this student. Includes both SAT and
+    // ACT — the parent assignment row carries its own test_type so
+    // each tile can show an ACT/SAT badge. Was SAT-only until ACT
+    // sessions started landing for students without their tutors
+    // seeing them.
     supabase
       .from('assignment_students_v2')
       .select(`
         completed_at,
         assignment:assignments_v2 (
           id, assignment_type, title, due_date, archived_at, deleted_at, created_at,
-          question_ids,
+          question_ids, test_type,
           lesson:lessons (title),
           practice_test:practice_tests_v2 (name)
         )
       `)
       .eq('student_id', studentId)
-      .eq('test_type', 'sat'),
+      .in('test_type', ['sat', 'act']),
     supabase
       .from('practice_test_attempts_v2')
       .select(`
@@ -128,13 +132,14 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .select('started_at, finished_at, composite_score, rw_scaled, math_scaled')
       .eq('user_id', studentId)
       .eq('status', 'completed'),
-    // SAT-only practice sessions for this student.
+    // Practice sessions for this student, SAT + ACT. The row now
+    // carries test_type so the list can badge ACT sessions.
     supabase
       .from('practice_sessions')
-      .select('id, created_at, question_ids, current_position, status')
+      .select('id, created_at, question_ids, current_position, status, test_type')
       .eq('user_id', studentId)
       .eq('mode', 'practice')
-      .eq('test_type', 'sat')
+      .in('test_type', ['sat', 'act'])
       .neq('status', 'abandoned')
       // Exclude assignment-linked sessions — those already surface
       // in the Assignments list above (each completed assignment
@@ -261,6 +266,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         createdAt: r.created_at,
         total: totalQ,
         completed: r.status === 'completed',
+        testType: (r.test_type ?? 'sat') as string,
       };
     });
 
@@ -278,6 +284,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     deleted_at: string | null;
     created_at: string | null;
     question_ids: unknown;
+    test_type: string | null;
     lesson: { title: string | null } | null;
     practice_test: { name: string | null } | null;
     completed_at: string | null;
@@ -313,7 +320,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .from('practice_sessions')
       .select('id, status, created_at, filter_criteria')
       .eq('user_id', studentId)
-      .eq('test_type', 'sat')
+      .in('test_type', ['sat', 'act'])
       .in('filter_criteria->>assignment_id', assignmentIdsForSessions)
       .order('created_at', { ascending: false });
     const statusRank = (s: string | null | undefined) =>
@@ -579,6 +586,9 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                         className={a.completed_at ? `${s.assignmentRow} ${s.assignmentRowDone}` : s.assignmentRow}
                       >
                         <span className={s.assignmentType}>{a.assignment_type}</span>
+                        {a.test_type === 'act' && (
+                          <span className={s.actPill}>ACT</span>
+                        )}
                         <span className={s.assignmentTitle}>
                           {title}
                           {n != null && <span className={s.assignmentCount}> · {n} q{n === 1 ? '' : 's'}</span>}
@@ -696,6 +706,9 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                       <div className={s.sessionRowLeft}>
                         <div className={s.sessionRowDate}>
                           {formatRelativeShort(row.createdAt) ?? '—'}
+                          {row.testType === 'act' && (
+                            <span className={s.actPill}>ACT</span>
+                          )}
                         </div>
                         <div className={s.sessionRowMeta}>
                           {row.total} question{row.total === 1 ? '' : 's'}
