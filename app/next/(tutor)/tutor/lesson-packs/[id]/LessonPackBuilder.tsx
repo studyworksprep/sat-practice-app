@@ -49,6 +49,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { SafeHtml } from '@/lib/ui/SafeHtml';
+import { useMathTypeset } from '@/lib/ui/preview-effects';
 import {
   addQuestionToPack,
   removeQuestionFromPack,
@@ -83,18 +84,23 @@ type Filters = {
   skill: string;
   difficulty: number[];
   type: '' | 'mcq' | 'spr';
+  tagIds: string[];
 };
+
+type ConceptTag = { id: string; name: string };
 
 export function LessonPackBuilder({
   pack,
   initialQuestions,
   initialLibrary,
   taxonomy,
+  conceptTags,
 }: {
   pack: { id: string; name: string; description: string | null };
   initialQuestions: PackQuestion[];
   initialLibrary: LibraryPage;
   taxonomy: Array<{ domain: string; skill: string }>;
+  conceptTags: ConceptTag[];
 }) {
   const [name, setName] = useState(pack.name);
   const [description, setDescription] = useState(pack.description ?? '');
@@ -111,7 +117,11 @@ export function LessonPackBuilder({
     skill: '',
     difficulty: [],
     type: '',
+    tagIds: [],
   });
+  const [tagPickerOpen, setTagPickerOpen] = useState(false);
+  const [tagQuery, setTagQuery] = useState('');
+  const canFilterByTags = conceptTags.length > 0;
   const [searching, startSearch] = useTransition();
   const [searchError, setSearchError] = useState<string | null>(null);
 
@@ -165,6 +175,7 @@ export function LessonPackBuilder({
           skill: next.skill || undefined,
           difficulty: next.difficulty.length > 0 ? next.difficulty : undefined,
           questionType: next.type || '',
+          tagIds: next.tagIds.length > 0 ? next.tagIds : undefined,
           page,
           excludeIds,
         });
@@ -212,9 +223,25 @@ export function LessonPackBuilder({
   }
 
   function clearFilters() {
-    const next: Filters = { q: '', domain: '', skill: '', difficulty: [], type: '' };
+    const next: Filters = {
+      q: '',
+      domain: '',
+      skill: '',
+      difficulty: [],
+      type: '',
+      tagIds: [],
+    };
     setFilters(next);
+    setTagQuery('');
     runSearch(next, 1);
+  }
+
+  function toggleTag(tagId: string) {
+    const has = filters.tagIds.includes(tagId);
+    const next = has
+      ? filters.tagIds.filter((x) => x !== tagId)
+      : [...filters.tagIds, tagId];
+    updateFilter('tagIds', next);
   }
 
   function goToPage(p: number) {
@@ -440,6 +467,16 @@ export function LessonPackBuilder({
                   {d === 1 ? 'Easy' : d === 2 ? 'Medium' : 'Hard'}
                 </label>
               ))}
+              {canFilterByTags && (
+                <button
+                  type="button"
+                  onClick={() => setTagPickerOpen((o) => !o)}
+                  className={`${s.tagsBtn} ${filters.tagIds.length > 0 ? s.tagsBtnActive : ''}`}
+                  aria-expanded={tagPickerOpen}
+                >
+                  Tags{filters.tagIds.length > 0 ? ` · ${filters.tagIds.length}` : ''}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={clearFilters}
@@ -449,12 +486,29 @@ export function LessonPackBuilder({
                   !filters.domain &&
                   !filters.skill &&
                   !filters.type &&
-                  filters.difficulty.length === 0
+                  filters.difficulty.length === 0 &&
+                  filters.tagIds.length === 0
                 }
               >
                 Clear
               </button>
             </div>
+            {canFilterByTags && tagPickerOpen && (
+              <TagPicker
+                allTags={conceptTags}
+                selectedIds={filters.tagIds}
+                onToggle={toggleTag}
+                query={tagQuery}
+                onQueryChange={setTagQuery}
+              />
+            )}
+            {filters.tagIds.length > 0 && !tagPickerOpen && (
+              <SelectedTagChips
+                allTags={conceptTags}
+                selectedIds={filters.tagIds}
+                onRemove={toggleTag}
+              />
+            )}
             {searchError && <div className={s.statusError}>{searchError}</div>}
           </div>
 
@@ -690,12 +744,105 @@ function RowMeta({ q }: { q: Question }) {
 }
 
 function RowPreview({ html }: { html: string | null }) {
+  // Stem HTML often contains \(...\) / \[...\] / inline MathML;
+  // useMathTypeset runs the MathJax pass after the sanitized HTML
+  // is in the DOM so a tutor sees rendered division bars, fractions,
+  // and exponents — not the raw TeX source. The ref + dependencyKey
+  // pattern matches QuestionRenderer's usage.
+  const ref = useRef<HTMLDivElement | null>(null);
+  useMathTypeset(ref, html ?? '');
   if (!html) {
     return <div className={s.previewEmpty}>No stem text on file.</div>;
   }
   return (
-    <div className={s.preview}>
+    <div ref={ref} className={s.preview}>
       <SafeHtml html={html} kind="question" />
+    </div>
+  );
+}
+
+function TagPicker({
+  allTags,
+  selectedIds,
+  onToggle,
+  query,
+  onQueryChange,
+}: {
+  allTags: ConceptTag[];
+  selectedIds: string[];
+  onToggle: (id: string) => void;
+  query: string;
+  onQueryChange: (q: string) => void;
+}) {
+  const needle = query.trim().toLowerCase();
+  const filtered = needle
+    ? allTags.filter((t) => t.name.toLowerCase().includes(needle))
+    : allTags;
+  const selectedSet = new Set(selectedIds);
+  // Selected tags float to the top so the active filter is always
+  // in view even when the user scrolls the catalog.
+  const selected = filtered.filter((t) => selectedSet.has(t.id));
+  const unselected = filtered.filter((t) => !selectedSet.has(t.id));
+
+  return (
+    <div className={s.tagPicker}>
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => onQueryChange(e.target.value)}
+        placeholder="Filter tags…"
+        className={s.tagPickerSearch}
+        aria-label="Filter tag list"
+      />
+      <div className={s.tagPickerList}>
+        {filtered.length === 0 ? (
+          <div className={s.tagPickerEmpty}>No tags match.</div>
+        ) : (
+          [...selected, ...unselected].map((t) => {
+            const on = selectedSet.has(t.id);
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => onToggle(t.id)}
+                className={`${s.tagChip} ${on ? s.tagChipOn : ''}`}
+                aria-pressed={on}
+              >
+                {on && <span aria-hidden="true">✓ </span>}
+                {t.name}
+              </button>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SelectedTagChips({
+  allTags,
+  selectedIds,
+  onRemove,
+}: {
+  allTags: ConceptTag[];
+  selectedIds: string[];
+  onRemove: (id: string) => void;
+}) {
+  const byId = new Map(allTags.map((t) => [t.id, t.name]));
+  return (
+    <div className={s.selectedTags}>
+      <span className={s.filterLabel}>Tags:</span>
+      {selectedIds.map((id) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => onRemove(id)}
+          className={`${s.tagChip} ${s.tagChipOn}`}
+          aria-label={`Remove tag ${byId.get(id) ?? id}`}
+        >
+          {byId.get(id) ?? '?'} <span aria-hidden="true">×</span>
+        </button>
+      ))}
     </div>
   );
 }
