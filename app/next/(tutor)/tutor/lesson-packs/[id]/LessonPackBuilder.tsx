@@ -66,6 +66,7 @@ type Question = {
   domain_name: string | null;
   skill_name: string | null;
   difficulty: number | null;
+  score_band: number | null;
   stem_html: string | null;
 };
 
@@ -82,10 +83,21 @@ type Filters = {
   q: string;
   domain: string;
   skill: string;
-  difficulty: number[];
+  scoreBands: number[];
   type: '' | 'mcq' | 'spr';
   tagIds: string[];
 };
+
+// Score-band buckets shown on the row badge and reflected in the
+// filter chip colors. Bands 1-3 are easy, 4-5 medium, 6-7 hard.
+// `null` (no band on file) gets neutral styling.
+function scoreBandBucket(band: number | null): 'easy' | 'med' | 'hard' | null {
+  if (band == null) return null;
+  if (band <= 3) return 'easy';
+  if (band <= 5) return 'med';
+  return 'hard';
+}
+const SCORE_BANDS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 type ConceptTag = { id: string; name: string };
 
@@ -115,7 +127,7 @@ export function LessonPackBuilder({
     q: '',
     domain: '',
     skill: '',
-    difficulty: [],
+    scoreBands: [],
     type: '',
     tagIds: [],
   });
@@ -173,8 +185,8 @@ export function LessonPackBuilder({
           q: next.q || undefined,
           domain: next.domain || undefined,
           skill: next.skill || undefined,
-          difficulty: next.difficulty.length > 0 ? next.difficulty : undefined,
           questionType: next.type || '',
+          scoreBands: next.scoreBands.length > 0 ? next.scoreBands : undefined,
           tagIds: next.tagIds.length > 0 ? next.tagIds : undefined,
           page,
           excludeIds,
@@ -214,12 +226,12 @@ export function LessonPackBuilder({
     }
   }
 
-  function toggleDifficulty(d: number) {
-    const has = filters.difficulty.includes(d);
+  function toggleScoreBand(b: number) {
+    const has = filters.scoreBands.includes(b);
     const next = has
-      ? filters.difficulty.filter((x) => x !== d)
-      : [...filters.difficulty, d].sort();
-    updateFilter('difficulty', next);
+      ? filters.scoreBands.filter((x) => x !== b)
+      : [...filters.scoreBands, b].sort();
+    updateFilter('scoreBands', next);
   }
 
   function clearFilters() {
@@ -227,7 +239,7 @@ export function LessonPackBuilder({
       q: '',
       domain: '',
       skill: '',
-      difficulty: [],
+      scoreBands: [],
       type: '',
       tagIds: [],
     };
@@ -456,17 +468,23 @@ export function LessonPackBuilder({
               </select>
             </div>
             <div className={s.filterRow}>
-              <span className={s.filterLabel}>Difficulty</span>
-              {[1, 2, 3].map((d) => (
-                <label key={d} className={s.checkPill}>
-                  <input
-                    type="checkbox"
-                    checked={filters.difficulty.includes(d)}
-                    onChange={() => toggleDifficulty(d)}
-                  />
-                  {d === 1 ? 'Easy' : d === 2 ? 'Medium' : 'Hard'}
-                </label>
-              ))}
+              <span className={s.filterLabel}>Score band</span>
+              {SCORE_BANDS.map((b) => {
+                const bucket = scoreBandBucket(b);
+                const active = filters.scoreBands.includes(b);
+                return (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => toggleScoreBand(b)}
+                    className={`${s.bandChip} ${s[`bandChip_${bucket}`]} ${active ? s.bandChipOn : ''}`}
+                    aria-pressed={active}
+                    aria-label={`Score band ${b}`}
+                  >
+                    {b}
+                  </button>
+                );
+              })}
               {canFilterByTags && (
                 <button
                   type="button"
@@ -486,7 +504,7 @@ export function LessonPackBuilder({
                   !filters.domain &&
                   !filters.skill &&
                   !filters.type &&
-                  filters.difficulty.length === 0 &&
+                  filters.scoreBands.length === 0 &&
                   filters.tagIds.length === 0
                 }
               >
@@ -722,16 +740,18 @@ function PackRow({
 }
 
 function RowMeta({ q }: { q: Question }) {
-  const diffLabel =
-    q.difficulty === 1 ? 'Easy' : q.difficulty === 2 ? 'Medium' : q.difficulty === 3 ? 'Hard' : null;
+  const bucket = scoreBandBucket(q.score_band);
   return (
     <div className={s.rowMeta}>
       <div className={s.rowTopLine}>
         <span className={s.code}>{q.display_code ?? q.id.slice(0, 8)}</span>
         <span className={s.typeBadge}>{q.question_type?.toUpperCase()}</span>
-        {diffLabel && (
-          <span className={`${s.diffBadge} ${s[`diff_${q.difficulty}`]}`}>
-            {diffLabel}
+        {bucket && (
+          <span
+            className={`${s.bandBadge} ${s[`bandBadge_${bucket}`]}`}
+            title={`Score band ${q.score_band}`}
+          >
+            Band {q.score_band}
           </span>
         )}
       </div>

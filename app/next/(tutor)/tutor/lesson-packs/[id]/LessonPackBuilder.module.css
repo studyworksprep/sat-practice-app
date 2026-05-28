@@ -365,7 +365,7 @@
   color: var(--fg3);
   text-transform: uppercase;
 }
-.diffBadge {
+.bandBadge {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -374,19 +374,61 @@
   border-radius: var(--radius-pill);
   border: 1px solid;
 }
-.diff_1 {
+.bandBadge_easy {
   background: var(--color-diff-easy-bg);
   color: var(--color-diff-easy-fg);
   border-color: var(--color-diff-easy-bd);
 }
-.diff_2 {
+.bandBadge_med {
   background: var(--color-diff-med-bg);
   color: var(--color-diff-med-fg);
   border-color: var(--color-diff-med-bd);
 }
-.diff_3 {
+.bandBadge_hard {
   background: var(--color-danger-bg);
   color: var(--color-diff-hard-fg);
+  border-color: var(--color-danger);
+}
+
+/* Filter chips for the seven score bands. Default state shows the
+   bucket color faintly (border + soft tint); active state fills
+   the chip so a selected band reads at a glance. */
+.bandChip {
+  min-width: 28px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  background: var(--bg-white);
+  cursor: pointer;
+  text-align: center;
+}
+.bandChip_easy {
+  color: var(--color-diff-easy-fg);
+  border-color: var(--color-diff-easy-bd);
+}
+.bandChip_med {
+  color: var(--color-diff-med-fg);
+  border-color: var(--color-diff-med-bd);
+}
+.bandChip_hard {
+  color: var(--color-diff-hard-fg);
+  border-color: var(--color-danger);
+}
+.bandChip:hover { filter: brightness(0.97); }
+.bandChipOn.bandChip_easy {
+  background: var(--color-diff-easy-bg);
+  border-color: var(--color-diff-easy-fg);
+}
+.bandChipOn.bandChip_med {
+  background: var(--color-diff-med-bg);
+  border-color: var(--color-diff-med-fg);
+}
+.bandChipOn.bandChip_hard {
+  background: var(--color-danger-bg);
   border-color: var(--color-danger);
 }
 .rowSubLine {

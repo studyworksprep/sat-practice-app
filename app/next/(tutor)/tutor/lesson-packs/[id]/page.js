@@ -61,7 +61,7 @@ export default async function LessonPackBuilderPage({ params }) {
       question_id, position,
       question:questions_v2 (
         id, display_code, question_type, domain_name, skill_name,
-        difficulty, stem_html
+        difficulty, score_band, stem_html
       )
     `,
     )
@@ -77,6 +77,7 @@ export default async function LessonPackBuilderPage({ params }) {
       domain_name: r.question.domain_name,
       skill_name: r.question.skill_name,
       difficulty: r.question.difficulty,
+      score_band: r.question.score_band,
       stem_html: r.question.stem_html,
       position: r.position,
     }));
@@ -88,7 +89,7 @@ export default async function LessonPackBuilderPage({ params }) {
   let libraryQuery = supabase
     .from('questions_v2')
     .select(
-      'id, display_code, question_type, domain_name, skill_name, difficulty, stem_html',
+      'id, display_code, question_type, domain_name, skill_name, difficulty, score_band, stem_html',
       { count: 'exact' },
     )
     .eq('is_published', true)
