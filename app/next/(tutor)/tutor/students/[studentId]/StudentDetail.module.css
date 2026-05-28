@@ -392,6 +392,23 @@
   flex-shrink: 0;
 }
 
+/* ACT pill — surfaces only on rows whose test_type is 'act' so SAT
+   (the platform default) stays unbadged. Sits next to the type
+   pill on assignment rows and next to the date on session rows. */
+.actPill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-app-accent);
+  padding: 2px 8px;
+  background: var(--color-app-accent-soft, var(--color-slate-100));
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
 .assignmentTitle {
   flex: 1;
   min-width: 0;

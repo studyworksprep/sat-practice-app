@@ -87,7 +87,12 @@ export async function loadActQuestionContent(
       .from('act_answer_options')
       .select('id, question_id, ordinal, label, content_html, is_correct')
       .eq('question_id', questionId)
-      .order('ordinal', { ascending: true }),
+      // Sort by label (A,B,C,D) rather than ordinal. Two ACT
+      // imports landed with all four options sharing the same
+      // ordinal — see migration fix_act_option_ordinals.sql for
+      // the one-shot data repair. Sorting by label is the cheap
+      // defense against any similar import slip-up in the future.
+      .order('label', { ascending: true }),
   ]);
 
   if (!question) return null;

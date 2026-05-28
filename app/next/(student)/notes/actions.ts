@@ -117,11 +117,30 @@ function normTax(value: string | null | undefined): string | null {
 
 /** Pull subject / domain / skill from a question, normalize, and
  *  derive subject_code from domain_code if the row doesn't have
- *  one. Used to seed a freshly-linked note's taxonomy. */
+ *  one. Used to seed a freshly-linked note's taxonomy. For ACT,
+ *  reads from act_questions and treats `section` as both the
+ *  subject and the domain (same mapping load-act-question.ts uses
+ *  to feed the shared QuestionTaxonomy shape). */
 async function taxonomyForQuestion(
   supabase: SupabaseClient,
   questionId: string,
+  testType: 'sat' | 'act',
 ): Promise<NoteTaxonomy> {
+  if (testType === 'act') {
+    const { data } = await supabase
+      .from('act_questions')
+      .select('section, category, category_code')
+      .eq('id', questionId)
+      .maybeSingle();
+    const section = normTax(data?.section);
+    return {
+      subjectCode: section,
+      domainCode:  section,
+      domainName:  section ? section.charAt(0).toUpperCase() + section.slice(1) : null,
+      skillCode:   normTax(data?.category_code),
+      skillName:   normTax(data?.category),
+    };
+  }
   const { data } = await supabase
     .from('questions_v2')
     .select('domain_code, domain_name, skill_code, skill_name')
@@ -265,6 +284,29 @@ async function resolveQuestionV2Id(
   return v2?.id ? (v2.id as string) : null;
 }
 
+/** Resolve a question id for the notes feature, returning both the
+ *  resolved id and which question table the row belongs to. SAT
+ *  questions are walked v1 → v2 through question_id_map (the
+ *  existing behavior); ACT questions are looked up directly in
+ *  act_questions. student_notes has no FK on question_id, so
+ *  either id space stores fine — we just need to know which
+ *  test_type to write alongside it. */
+async function resolveQuestionForNotes(
+  supabase: SupabaseClient,
+  qid: string | null | undefined,
+): Promise<{ id: string; testType: 'sat' | 'act' } | null> {
+  if (!qid) return null;
+  const v2Id = await resolveQuestionV2Id(supabase, qid);
+  if (v2Id) return { id: v2Id, testType: 'sat' };
+  const { data: act } = await supabase
+    .from('act_questions')
+    .select('id')
+    .eq('id', qid)
+    .maybeSingle();
+  if (act?.id) return { id: act.id as string, testType: 'act' };
+  return null;
+}
+
 /** Create a new note. Returns the freshly persisted row. */
 export async function createNote(
   input: CreateInput,
@@ -278,14 +320,15 @@ export async function createNote(
   if ('error' in ctx) return actionFail(ctx.error);
   const { user, supabase } = ctx as { user: { id: string }; supabase: SupabaseClient };
 
-  // Resolve any v1 question id forward to its v2 counterpart
-  // before write — student_notes.question_id carries an FK on
-  // questions_v2(id), so passing a v1 id straight through fails
-  // the constraint.
-  const resolvedQid = await resolveQuestionV2Id(supabase, input.questionId);
+  // Walk a v1 question id forward to its v2 counterpart, OR resolve
+  // an ACT question id, before the write. student_notes accepts
+  // either id space — test_type tags which one.
+  const resolved = await resolveQuestionForNotes(supabase, input.questionId);
+  const resolvedQid = resolved?.id ?? null;
+  const testType: 'sat' | 'act' = resolved?.testType ?? 'sat';
 
-  const seed = resolvedQid
-    ? await taxonomyForQuestion(supabase, resolvedQid)
+  const seed = resolved
+    ? await taxonomyForQuestion(supabase, resolved.id, resolved.testType)
     : null;
   const tax = resolveTaxonomy(input, null, seed);
 
@@ -296,7 +339,7 @@ export async function createNote(
     body_json: doc,
     body_text: input.bodyText,
     tags: sanitizeTags(input.tags),
-    test_type: 'sat',
+    test_type: testType,
     ...taxonomyToColumns(tax),
   };
 
@@ -344,13 +387,14 @@ export async function updateNote(
         skillName:   existing.skill_name,
       }
     : null;
-  // Same v1→v2 translation as createNote — students editing a
-  // note tied to a pre-cutover question would otherwise hit an FK
-  // violation on the questions_v2 reference.
-  const resolvedQid = await resolveQuestionV2Id(supabase, input.questionId);
+  // Same id translation as createNote — but here we also keep the
+  // ACT id space intact so a student editing a note tied to an ACT
+  // question doesn't have its question link silently dropped.
+  const resolved = await resolveQuestionForNotes(supabase, input.questionId);
+  const resolvedQid = resolved?.id ?? null;
 
-  const seed = resolvedQid
-    ? await taxonomyForQuestion(supabase, resolvedQid)
+  const seed = resolved
+    ? await taxonomyForQuestion(supabase, resolved.id, resolved.testType)
     : null;
   const tax = resolveTaxonomy(input, existingTax, seed);
 
@@ -417,18 +461,19 @@ export async function upsertNoteForQuestion(
   if ('error' in ctx) return actionFail(ctx.error);
   const { user, supabase } = ctx as { user: { id: string }; supabase: SupabaseClient };
 
-  // Walk a v1 question id forward to its v2 counterpart before
-  // touching student_notes — the table's FK is on questions_v2(id).
-  // Also use the resolved id for the existing-note lookup so the
-  // upsert finds a row written under the v2 id.
-  const resolvedQid = await resolveQuestionV2Id(supabase, input.questionId);
-  if (!resolvedQid) {
+  // Resolve the question id and figure out which test_type tag
+  // belongs on the note. SAT questions walk through question_id_map;
+  // ACT questions look up directly in act_questions.
+  const resolved = await resolveQuestionForNotes(supabase, input.questionId);
+  if (!resolved) {
     return actionFail('That question is no longer in the bank, so a per-question note can\'t be saved against it.');
   }
+  const resolvedQid = resolved.id;
+  const testType = resolved.testType;
 
-  // Per-question existing-note lookup. The unique key on (user, question)
-  // is per-test-type — PR 4 will plumb test_type from the calling
-  // session for ACT support.
+  // Per-question existing-note lookup. test_type scopes the lookup
+  // so a future SAT/ACT id collision (vanishingly unlikely with
+  // UUIDs, but the schema permits it) doesn't cross-pollinate.
   const { data: existing } = await supabase
     .from('student_notes')
     .select(
@@ -436,7 +481,7 @@ export async function upsertNoteForQuestion(
     )
     .eq('user_id', user.id)
     .eq('question_id', resolvedQid)
-    .eq('test_type', 'sat')
+    .eq('test_type', testType)
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -468,7 +513,7 @@ export async function upsertNoteForQuestion(
   // subsequent saves the existing row's stickiness wins per Option A.
   const seed = existing
     ? null
-    : await taxonomyForQuestion(supabase, resolvedQid);
+    : await taxonomyForQuestion(supabase, resolvedQid, testType);
   const tax = resolveTaxonomy(input, existingTax, seed);
 
   if (existing) {
@@ -500,7 +545,7 @@ export async function upsertNoteForQuestion(
       body_json: doc,
       body_text: input.bodyText,
       tags: [],
-      test_type: 'sat',
+      test_type: testType,
       ...taxonomyToColumns(tax),
     })
     .select(
