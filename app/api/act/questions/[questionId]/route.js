@@ -19,7 +19,8 @@ export const GET = legacyApiRoute(async (_request, props) => {
       .from('act_answer_options')
       .select('id, ordinal, label, content_html, is_correct')
       .eq('question_id', questionId)
-      .order('ordinal', { ascending: true }),
+      // Sort by label, not ordinal — see fix_act_option_ordinals.sql.
+      .order('label', { ascending: true }),
   ]);
 
   const { data: question, error: qErr } = questionResult;
