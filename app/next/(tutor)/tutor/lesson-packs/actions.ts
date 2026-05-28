@@ -275,7 +275,7 @@ export async function searchQuestions(input: {
   q?: string;
   domain?: string;
   skill?: string;
-  difficulty?: number[];
+  scoreBands?: number[];
   questionType?: 'mcq' | 'spr' | '';
   tagIds?: string[];
   page?: number;
@@ -290,6 +290,7 @@ export async function searchQuestions(input: {
         domain_name: string | null;
         skill_name: string | null;
         difficulty: number | null;
+        score_band: number | null;
         stem_html: string | null;
       }>;
       total: number;
@@ -326,7 +327,7 @@ export async function searchQuestions(input: {
   let query = ctx.supabase
     .from('questions_v2')
     .select(
-      'id, display_code, question_type, domain_name, skill_name, difficulty, stem_html',
+      'id, display_code, question_type, domain_name, skill_name, difficulty, score_band, stem_html',
       { count: 'exact' },
     )
     .eq('is_published', true)
@@ -347,8 +348,8 @@ export async function searchQuestions(input: {
   }
   if (input.domain) query = query.eq('domain_name', input.domain);
   if (input.skill) query = query.eq('skill_name', input.skill);
-  if (input.difficulty && input.difficulty.length > 0) {
-    query = query.in('difficulty', input.difficulty);
+  if (input.scoreBands && input.scoreBands.length > 0) {
+    query = query.in('score_band', input.scoreBands);
   }
   if (input.questionType) query = query.eq('question_type', input.questionType);
   if (input.excludeIds && input.excludeIds.length > 0) {
