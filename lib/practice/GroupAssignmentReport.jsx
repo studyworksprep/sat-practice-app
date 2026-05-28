@@ -36,7 +36,9 @@ import s from './GroupAssignmentReport.module.css';
 // Mirrors AssignmentReport: the calculator + reference sheet only
 // apply to math questions, so we gate the right-side toolbar on the
 // question's domain code.
-const MATH_DOMAIN_CODES_FOR_CALC = new Set(['H', 'P', 'Q', 'S']);
+// 'H','P','Q','S' are SAT math domains; 'math' is the ACT section
+// literal. Mirrors DESMOS_DOMAINS in load-question.ts.
+const MATH_DOMAIN_CODES_FOR_CALC = new Set(['H', 'P', 'Q', 'S', 'math']);
 
 export function GroupAssignmentReport({
   assignment,
