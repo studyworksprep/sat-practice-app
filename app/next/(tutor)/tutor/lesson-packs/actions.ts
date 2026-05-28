@@ -17,6 +17,12 @@ import type { ActionResult, Fail } from '@/lib/types';
 const MAX_QUESTIONS_PER_PACK = 200;
 const SEARCH_PAGE_SIZE = 25;
 
+// Concept tags are admin-curated and the rest of the app gates the
+// surface to manager/admin (see lib/practice/question-search-actions
+// for the canonical list). We mirror that here so the pack-builder
+// tag picker doesn't widen access to who-sees-what tags.
+const TAG_SEARCH_ROLES = new Set(['manager', 'admin']);
+
 type Ctx = {
   user: { id: string };
   profile: { role: string };
@@ -239,18 +245,11 @@ export async function reorderPackQuestions(
     );
   }
 
-  // Two-phase shuffle: bump everything to negative positions first
-  // so the unique (pack_id, position) constraint never trips mid-
-  // update. (No unique index exists today but the same approach is
-  // forward-compatible if we add one later.)
-  for (let i = 0; i < orderedQuestionIds.length; i += 1) {
-    const { error } = await ctx.supabase
-      .from('lesson_pack_questions')
-      .update({ position: -1 - i })
-      .eq('pack_id', packId)
-      .eq('question_id', orderedQuestionIds[i]);
-    if (error) return actionFail(`Failed to stage reorder: ${error.message}`);
-  }
+  // No unique constraint on (pack_id, position), so we can update
+  // each row's position directly in one pass. (An earlier two-phase
+  // shuffle through negative positions tripped the position >= 0
+  // check constraint; the staging step was forward-compat defense
+  // for a unique index we never added.)
   for (let i = 0; i < orderedQuestionIds.length; i += 1) {
     const { error } = await ctx.supabase
       .from('lesson_pack_questions')
@@ -278,6 +277,7 @@ export async function searchQuestions(input: {
   skill?: string;
   difficulty?: number[];
   questionType?: 'mcq' | 'spr' | '';
+  tagIds?: string[];
   page?: number;
   excludeIds?: string[];
 }): Promise<
@@ -304,6 +304,25 @@ export async function searchQuestions(input: {
   const page = Math.max(1, Math.floor(input.page ?? 1));
   const offset = (page - 1) * SEARCH_PAGE_SIZE;
 
+  // Resolve tag filters before the main query — tags live on the v1
+  // junction table (question_concept_tags) keyed by legacy question
+  // ids, so we walk question_id_map to get v2 ids and AND-intersect
+  // across tags. An empty intersection short-circuits the whole
+  // search.
+  const tagIds = (input.tagIds ?? []).filter(Boolean);
+  let tagFilteredV2Ids: string[] | null = null;
+  if (tagIds.length > 0) {
+    if (!TAG_SEARCH_ROLES.has(ctx.profile.role)) {
+      return actionFail('Concept-tag filtering is not available for your role.');
+    }
+    const intersection = await intersectTaggedV2Ids(ctx.supabase, tagIds);
+    if (intersection == null) return actionFail('Failed to resolve tag filter.');
+    if (intersection.size === 0) {
+      return actionOk({ rows: [], total: 0, page, pageSize: SEARCH_PAGE_SIZE });
+    }
+    tagFilteredV2Ids = Array.from(intersection);
+  }
+
   let query = ctx.supabase
     .from('questions_v2')
     .select(
@@ -312,6 +331,8 @@ export async function searchQuestions(input: {
     )
     .eq('is_published', true)
     .eq('is_broken', false);
+
+  if (tagFilteredV2Ids) query = query.in('id', tagFilteredV2Ids);
 
   const q = (input.q ?? '').trim();
   if (q) {
@@ -384,4 +405,93 @@ export async function listDomainsAndSkills(): Promise<
     a.domain === b.domain ? a.skill.localeCompare(b.skill) : a.domain.localeCompare(b.domain),
   );
   return actionOk(out);
+}
+
+// ─── listConceptTags ────────────────────────────────────────
+// Returns the concept-tag catalog so the builder can render a
+// chip-style tag picker. Restricted to manager+admin to match the
+// existing question-search surface; teachers get an empty list and
+// the UI hides the "Tags" button.
+export async function listConceptTags(): Promise<
+  ActionResult<{ data: Array<{ id: string; name: string }> }>
+> {
+  const ctx = await ensureTutor();
+  if ('ok' in ctx) return ctx;
+  if (!TAG_SEARCH_ROLES.has(ctx.profile.role)) {
+    return actionOk([]);
+  }
+  const { data, error } = await ctx.supabase
+    .from('concept_tags')
+    .select('id, name')
+    .order('name', { ascending: true });
+  if (error) return actionFail(`Failed to load tags: ${error.message}`);
+  return actionOk((data ?? []) as Array<{ id: string; name: string }>);
+}
+
+// ─── intersectTaggedV2Ids ──────────────────────────────────
+// concept_tags ⇢ question_concept_tags (v1 ids) ⇢ question_id_map
+// ⇢ v2 ids. AND across tags is the intersection of per-tag v2 sets.
+// Mirrors the resolver in lib/practice/question-search-actions.ts;
+// extracted here rather than imported so this module can stay
+// self-contained while the lib helper migrates.
+async function intersectTaggedV2Ids(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  tagIds: string[],
+): Promise<Set<string> | null> {
+  const { data: linkRows, error: linkErr } = await supabase
+    .from('question_concept_tags')
+    .select('tag_id, question_id')
+    .in('tag_id', tagIds);
+  if (linkErr) return null;
+
+  const v1IdsByTag = new Map<string, Set<string>>();
+  const allV1Ids = new Set<string>();
+  for (const row of linkRows ?? []) {
+    if (!row?.tag_id || !row?.question_id) continue;
+    let bucket = v1IdsByTag.get(row.tag_id);
+    if (!bucket) {
+      bucket = new Set();
+      v1IdsByTag.set(row.tag_id, bucket);
+    }
+    bucket.add(row.question_id);
+    allV1Ids.add(row.question_id);
+  }
+  for (const tagId of tagIds) {
+    if (!v1IdsByTag.has(tagId)) return new Set();
+  }
+
+  const v1ToV2 = new Map<string, string>();
+  if (allV1Ids.size > 0) {
+    const { data: mapRows, error: mapErr } = await supabase
+      .from('question_id_map')
+      .select('old_question_id, new_question_id')
+      .in('old_question_id', Array.from(allV1Ids));
+    if (mapErr) return null;
+    for (const row of mapRows ?? []) {
+      if (row?.old_question_id && row?.new_question_id) {
+        v1ToV2.set(row.old_question_id, row.new_question_id);
+      }
+    }
+  }
+
+  const v2SetsByTag: Set<string>[] = [];
+  for (const tagId of tagIds) {
+    const v1Set = v1IdsByTag.get(tagId) ?? new Set();
+    const v2Set = new Set<string>();
+    for (const v1Id of v1Set) {
+      const v2Id = v1ToV2.get(v1Id);
+      if (v2Id) v2Set.add(v2Id);
+    }
+    v2SetsByTag.push(v2Set);
+  }
+  if (v2SetsByTag.length === 0) return new Set();
+  v2SetsByTag.sort((a, b) => a.size - b.size);
+  const out = new Set(v2SetsByTag[0]);
+  for (let i = 1; i < v2SetsByTag.length; i += 1) {
+    for (const id of out) {
+      if (!v2SetsByTag[i].has(id)) out.delete(id);
+    }
+  }
+  return out;
 }

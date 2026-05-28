@@ -127,6 +127,19 @@ export default async function LessonPackBuilderPage({ params }) {
       : a.domain.localeCompare(b.domain),
   );
 
+  // Concept-tag catalog — only manager+admin see this surface in
+  // the rest of the app, so we mirror that gate here. Teachers get
+  // an empty list and the builder hides the Tags button entirely.
+  const canSeeTags = ['manager', 'admin'].includes(profile.role);
+  let conceptTags = [];
+  if (canSeeTags) {
+    const { data: tagRows } = await supabase
+      .from('concept_tags')
+      .select('id, name')
+      .order('name', { ascending: true });
+    conceptTags = tagRows ?? [];
+  }
+
   return (
     <main className={s.container}>
       <nav className={s.breadcrumb}>
@@ -147,6 +160,7 @@ export default async function LessonPackBuilderPage({ params }) {
           pageSize: INITIAL_LIBRARY_PAGE_SIZE,
         }}
         taxonomy={taxonomy}
+        conceptTags={conceptTags}
       />
     </main>
   );

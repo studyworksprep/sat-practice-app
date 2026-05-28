@@ -222,17 +222,111 @@
 }
 .clearBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* ---------- Tag filter ---------- */
+
+.tagsBtn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg1);
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+}
+.tagsBtn:hover { border-color: var(--color-app-accent); color: var(--color-app-accent); }
+.tagsBtnActive {
+  background: var(--color-app-accent);
+  color: #fff;
+  border-color: var(--color-app-accent);
+}
+.tagsBtnActive:hover { color: #fff; }
+
+.tagPicker {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.tagPickerSearch {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--fg1);
+  background: var(--bg-white);
+}
+.tagPickerList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.tagPickerEmpty {
+  padding: 8px;
+  color: var(--fg3);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.selectedTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.tagChip {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg1);
+  background: var(--bg-white);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.tagChip:hover {
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+.tagChipOn {
+  background: var(--color-app-accent-soft, var(--color-app-accent));
+  color: var(--color-app-accent);
+  border-color: var(--color-app-accent);
+}
+.tagChipOn:hover {
+  background: var(--color-app-accent);
+  color: #fff;
+}
+
 /* ---------- Row list ---------- */
 
+/* Flex column (not grid) so individual rows stay content-sized
+   even when the pane has lots of empty space — earlier `display:
+   grid` with `flex: 1` parent let grid distribute the leftover
+   vertical space across rows, ballooning every tile when only a
+   few results were visible. */
 .rowList {
   list-style: none;
   margin: 0;
   padding: 4px;
   overflow-y: auto;
   flex: 1;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
+  min-height: 0;
 }
+.row { flex: 0 0 auto; }
 .row {
   background: var(--bg-white);
   border: 1px solid var(--border);
