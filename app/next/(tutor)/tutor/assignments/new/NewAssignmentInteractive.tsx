@@ -41,7 +41,7 @@ type DomainTaxonomy = {
 
 type PersonOption = { id: string; name: string; email: string | null };
 type PracticeTestOption = { id: string; label: string };
-type LessonOption = { id: string; title: string };
+type LessonPackOption = { id: string; name: string; questionCount: number };
 
 type CreateAction = (
   prev: ActionResult | null,
@@ -59,7 +59,7 @@ interface Props {
   domains: DomainTaxonomy[];
   difficulties: number[];
   practiceTests: PracticeTestOption[];
-  lessons: LessonOption[];
+  lessonPacks: LessonPackOption[];
   createAction: CreateAction;
 }
 
@@ -89,7 +89,7 @@ export function NewAssignmentInteractive({
   domains,
   difficulties,
   practiceTests,
-  lessons,
+  lessonPacks,
   createAction,
 }: Props) {
   const [state, submitAction, isPending] = useActionState<ActionResult | null, FormData>(
@@ -98,7 +98,7 @@ export function NewAssignmentInteractive({
   );
 
   const hasTeachers = teachers.length > 0;
-  const [assignmentType, setAssignmentType] = useState<'questions' | 'practice_test' | 'lesson'>(
+  const [assignmentType, setAssignmentType] = useState<'questions' | 'practice_test' | 'lesson_pack'>(
     'questions',
   );
 
@@ -295,7 +295,7 @@ export function NewAssignmentInteractive({
           {[
             { value: 'questions', label: 'Questions' },
             { value: 'practice_test', label: 'Practice test' },
-            { value: 'lesson', label: 'Lesson' },
+            { value: 'lesson_pack', label: 'Lesson pack' },
           ].map((t) => (
             <label
               key={t.value}
@@ -722,23 +722,28 @@ export function NewAssignmentInteractive({
         </section>
       )}
 
-      {assignmentType === 'lesson' && (
+      {assignmentType === 'lesson_pack' && (
         <section className={styles.card}>
-          <div className={styles.sectionLabel}>Lesson</div>
-          {lessons.length === 0 ? (
-            <p className={styles.empty}>No published lessons yet.</p>
+          <div className={styles.sectionLabel}>Lesson pack</div>
+          {lessonPacks.length === 0 ? (
+            <p className={styles.empty}>
+              You don&apos;t have any lesson packs with questions yet.{' '}
+              <a href="/tutor/lesson-packs">Create one →</a>
+            </p>
           ) : (
             <div className={styles.fieldRow}>
-              <label className={styles.fieldLabel} htmlFor="lesson_id">Lesson</label>
+              <label className={styles.fieldLabel} htmlFor="lesson_pack_id">Pack</label>
               <select
-                id="lesson_id"
-                name="lesson_id"
+                id="lesson_pack_id"
+                name="lesson_pack_id"
                 className={styles.select}
                 defaultValue=""
               >
-                <option value="" disabled>Select a lesson…</option>
-                {lessons.map((l) => (
-                  <option key={l.id} value={l.id}>{l.title}</option>
+                <option value="" disabled>Select a pack…</option>
+                {lessonPacks.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} · {p.questionCount} question{p.questionCount === 1 ? '' : 's'}
+                  </option>
                 ))}
               </select>
             </div>

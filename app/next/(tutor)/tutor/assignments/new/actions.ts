@@ -48,6 +48,7 @@ type PayloadRow = {
   question_ids?: string[];
   practice_test_id?: string;
   lesson_id?: string;
+  lesson_pack_id?: string;
   filter_criteria?: Record<string, unknown>;
 };
 
@@ -87,11 +88,11 @@ export async function createAssignment(
   }
 
   const assignmentType = String(formData.get('assignment_type') || '');
-  if (!['questions', 'practice_test', 'lesson'].includes(assignmentType)) {
+  if (!['questions', 'practice_test', 'lesson', 'lesson_pack'].includes(assignmentType)) {
     return actionFail('Select an assignment type.');
   }
 
-  const title = String(formData.get('title') || '').trim() || null;
+  let title = String(formData.get('title') || '').trim() || null;
   const description = String(formData.get('description') || '').trim() || null;
   // assignments_v2.due_date is a calendar `date`. The form field is
   // an <input type="date">, which already submits bare YYYY-MM-DD —
@@ -119,11 +120,29 @@ export async function createAssignment(
     typePayload = await buildQuestionsPayload(supabase, formData, studentIds);
   } else if (assignmentType === 'practice_test') {
     typePayload = await buildPracticeTestPayload(supabase, formData);
+  } else if (assignmentType === 'lesson_pack') {
+    typePayload = await buildLessonPackPayload(supabase, formData, user.id);
   } else {
     typePayload = await buildLessonPayload(supabase, formData);
   }
   if (!typePayload.ok) {
     return actionFail(typePayload.error);
+  }
+
+  // Lesson-pack assignments default their title to the pack's name
+  // so every downstream read site (assignment lists, dashboards,
+  // student detail) renders a real label without needing a new
+  // lesson_packs join. Tutor's explicit title still wins.
+  if (assignmentType === 'lesson_pack' && !title) {
+    const packId = typePayload.row.lesson_pack_id;
+    if (packId) {
+      const { data: pack } = await supabase
+        .from('lesson_packs')
+        .select('name')
+        .eq('id', packId)
+        .maybeSingle();
+      if (pack?.name) title = pack.name;
+    }
   }
 
   const { data: assignment, error: insertErr } = await supabase
@@ -479,5 +498,71 @@ async function buildLessonPayload(
   return {
     ok: true,
     row: { lesson_id: lessonId },
+  };
+}
+
+// ──────────────────────────────────────────────────────────────
+// Lesson-pack payload: snapshot the pack's questions into
+// question_ids in position order. Students get a stable snapshot
+// at the moment of assignment — pack edits afterwards don't
+// retroactively change what's already been handed out.
+// RLS on lesson_packs is owner-only, so the maybeSingle below
+// silently returns nothing if a teacher tries to assign someone
+// else's pack id; that surfaces as "Pack not found" rather than
+// leaking ownership info.
+// ──────────────────────────────────────────────────────────────
+async function buildLessonPackPayload(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  formData: FormData,
+  teacherId: string,
+): Promise<PayloadResult> {
+  const packId = String(formData.get('lesson_pack_id') || '').trim();
+  if (!packId) return { ok: false, error: 'Select a lesson pack.' };
+
+  const { data: pack } = await supabase
+    .from('lesson_packs')
+    .select('id, teacher_id')
+    .eq('id', packId)
+    .maybeSingle();
+  if (!pack) return { ok: false, error: 'Lesson pack not found.' };
+  // RLS would already have hidden a pack the caller doesn't own
+  // from a SELECT, but admins (who can read everyone's packs)
+  // reach here too — the explicit owner check keeps an admin
+  // who accidentally enters someone else's pack id from creating
+  // a cross-tutor assignment that nobody can manage.
+  if (pack.teacher_id !== teacherId) {
+    return { ok: false, error: 'You can only assign your own lesson packs.' };
+  }
+
+  const { data: rows, error } = await supabase
+    .from('lesson_pack_questions')
+    .select('question_id, position')
+    .eq('pack_id', packId)
+    .order('position', { ascending: true });
+  if (error) return { ok: false, error: `Failed to read pack: ${error.message}` };
+
+  const questionIds = (rows ?? []).map((r: { question_id: string }) => r.question_id);
+  if (questionIds.length === 0) {
+    return { ok: false, error: 'Pick a pack that has at least one question.' };
+  }
+  if (questionIds.length > MAX_QUESTIONS) {
+    return {
+      ok: false,
+      error: `Packs over ${MAX_QUESTIONS} questions can't be assigned in one go.`,
+    };
+  }
+
+  return {
+    ok: true,
+    row: {
+      lesson_pack_id: packId,
+      question_ids: questionIds,
+      filter_criteria: {
+        type: 'lesson_pack',
+        lesson_pack_id: packId,
+        size: questionIds.length,
+      },
+    },
   };
 }
