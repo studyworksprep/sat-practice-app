@@ -143,7 +143,10 @@ export default async function AssignmentDetailPage({ params }) {
   // starts with every question Unanswered. Same rule on the tutor
   // surfaces.
   let questionRows = null;
-  if (assignment.assignment_type === 'questions') {
+  // lesson_pack stores a materialized question_ids snapshot just
+  // like a 'questions' assignment, so the data-loading and
+  // rendering path is identical from here down.
+  if (assignment.assignment_type === 'questions' || assignment.assignment_type === 'lesson_pack') {
     const questionIds = Array.isArray(assignment.question_ids) ? assignment.question_ids : [];
     if (questionIds.length > 0) {
       // Expand to include legacy v1 ids so attempts predating the
@@ -231,7 +234,8 @@ export default async function AssignmentDetailPage({ params }) {
       </header>
 
       <section style={{ marginTop: '1.5rem' }}>
-        {assignment.assignment_type === 'questions' && (
+        {(assignment.assignment_type === 'questions'
+          || assignment.assignment_type === 'lesson_pack') && (
           <QuestionsView
             assignment={assignment}
             rows={questionRows ?? []}

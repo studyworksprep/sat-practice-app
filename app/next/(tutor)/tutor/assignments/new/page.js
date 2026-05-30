@@ -42,7 +42,8 @@ export default async function NewAssignmentPage() {
     { data: studentsRaw },
     { data: taxonomyRows },
     { data: practiceTests },
-    { data: lessons },
+    { data: lessonPacksRaw },
+    { data: lessonPackQuestionRows },
     { data: teacherJunctions },
   ] = await Promise.all([
     supabase
@@ -58,11 +59,20 @@ export default async function NewAssignmentPage() {
       .eq('is_published', true)
       .is('deleted_at', null)
       .order('name', { ascending: true }),
+    // Lesson packs owned by this teacher. RLS on lesson_packs is
+    // owner-only, so we don't need an explicit teacher_id filter,
+    // but adding it lets admins (who can see every pack) still get
+    // an empty list here rather than a cross-tutor menu.
     supabase
-      .from('lessons')
-      .select('id, title, status')
-      .eq('status', 'published')
-      .order('title', { ascending: true }),
+      .from('lesson_packs')
+      .select('id, name, updated_at')
+      .eq('teacher_id', user.id)
+      .order('updated_at', { ascending: false }),
+    // One bulk junction query so we can show each pack's question
+    // count in the picker without N+1.
+    supabase
+      .from('lesson_pack_questions')
+      .select('pack_id'),
     isManagerScope
       ? supabase
           .from('manager_teacher_assignments')
@@ -70,6 +80,23 @@ export default async function NewAssignmentPage() {
           .eq('manager_id', user.id)
       : Promise.resolve({ data: [] }),
   ]);
+
+  // Bucket junction rows by pack id so the picker shows "12
+  // questions" next to each option.
+  const countByPack = new Map();
+  for (const r of lessonPackQuestionRows ?? []) {
+    countByPack.set(r.pack_id, (countByPack.get(r.pack_id) ?? 0) + 1);
+  }
+  const lessonPacks = (lessonPacksRaw ?? [])
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      questionCount: countByPack.get(p.id) ?? 0,
+    }))
+    // Empty packs aren't assignable (server action would reject
+    // them too), so drop them from the picker entirely rather than
+    // letting a tutor pick one and bounce off a validation error.
+    .filter((p) => p.questionCount > 0);
 
   // Resolve the teacher rows once we know which ids. profile_cards
   // doesn't expose email; the picker uses email as a fallback when
@@ -133,7 +160,7 @@ export default async function NewAssignmentPage() {
         <div className={styles.eyebrow}>Assignment · New</div>
         <h1 className={styles.h1}>New assignment</h1>
         <p className={styles.sub}>
-          Give your students a question set, a practice test, or a lesson.
+          Give your students a question set, a practice test, or one of your lesson packs.
         </p>
       </header>
 
@@ -143,7 +170,7 @@ export default async function NewAssignmentPage() {
         domains={domains}
         difficulties={difficulties}
         practiceTests={(practiceTests ?? []).map((pt) => ({ id: pt.id, label: pt.name ?? pt.code ?? pt.id }))}
-        lessons={(lessons ?? []).map((l) => ({ id: l.id, title: l.title ?? 'Lesson' }))}
+        lessonPacks={lessonPacks}
         createAction={createAssignment}
       />
     </main>
