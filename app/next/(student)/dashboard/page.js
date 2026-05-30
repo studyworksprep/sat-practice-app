@@ -386,7 +386,7 @@ export default async function StudentDashboardPage() {
   for (const a of completedAssignments.slice(0, RECENT_FINISHED_PER_TYPE)) {
     const sessionId = latestSessionByAssignment.get(a.id) ?? null;
     let metric = 'Completed';
-    if (a.assignment_type === 'questions' && Array.isArray(a.question_ids)) {
+    if ((a.assignment_type === 'questions' || a.assignment_type === 'lesson_pack') && Array.isArray(a.question_ids)) {
       const qidSet = new Set(a.question_ids);
       const firstByQid = new Map();
       for (const at of recentAttempts ?? []) {
