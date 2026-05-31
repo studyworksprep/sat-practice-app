@@ -24,6 +24,7 @@ import {
   updateBlockContentFromDraft,
 } from '@/lib/lesson/editor-utils.mjs';
 import { validateLessonBlocks } from '@/lib/lesson/lesson-validation.mjs';
+import { BlockBodyEditor } from './BlockBodyEditor';
 import a from '../../../admin.module.css';
 import f from '../../../forms.module.css';
 
@@ -122,6 +123,7 @@ function BlocksSection({ lessonId, initialBlocks, action }) {
     JSON.stringify(initialBlocks[0]?.content ?? {}, null, 2),
   );
   const [jsonError, setJsonError] = useState(null);
+  const [editorMode, setEditorMode] = useState('form');
   const [savedSnapshot, setSavedSnapshot] = useState(() =>
     JSON.stringify(recomputeSortOrders(initialBlocks)),
   );
@@ -169,6 +171,43 @@ function BlocksSection({ lessonId, initialBlocks, action }) {
     }
     setJsonError(null);
     setBlocks(result.blocks);
+  }
+
+  // Form-mode edits write a structured content object straight into
+  // the block, and keep the JSON draft in sync so toggling to the
+  // JSON tab shows the same thing.
+  function onContentChange(nextContent) {
+    const next = [...blocks];
+    next[selectedIndex] = { ...next[selectedIndex], content: nextContent };
+    setBlocks(next);
+    setJsonDraft(JSON.stringify(nextContent ?? {}, null, 2));
+    setJsonError(null);
+  }
+
+  // Changing a block's type resets its content to a starter for the
+  // new type (same behavior as the legacy editor) so the form has a
+  // valid shape to render.
+  function onChangeType(nextType) {
+    const selected = blocks[selectedIndex];
+    if (!selected || nextType === selected.block_type) return;
+    if (
+      !confirm(
+        `Change this block to "${nextType}"? Its content will be reset to a ${nextType} starter.`,
+      )
+    ) {
+      return;
+    }
+    const starter = createStarterBlock(nextType, selectedIndex);
+    const next = [...blocks];
+    next[selectedIndex] = {
+      ...next[selectedIndex],
+      block_type: nextType,
+      content: starter.content,
+    };
+    setBlocks(next);
+    setJsonDraft(JSON.stringify(starter.content ?? {}, null, 2));
+    setJsonError(null);
+    setEditorMode('form');
   }
 
   function addBlock(type) {
@@ -263,6 +302,10 @@ function BlocksSection({ lessonId, initialBlocks, action }) {
               jsonDraft={jsonDraft}
               jsonError={jsonError}
               onJsonChange={onJsonChange}
+              onContentChange={onContentChange}
+              onChangeType={onChangeType}
+              editorMode={editorMode}
+              onSetMode={setEditorMode}
               validation={validation}
             />
           ) : (
@@ -313,8 +356,14 @@ function BlockList({ blocks, selectedIndex, onSelect, onAdd, onMove, onDuplicate
         <Button type="button" variant="secondary" size="sm" onClick={() => onAdd('text')}>
           + Text
         </Button>
+        <Button type="button" variant="secondary" size="sm" onClick={() => onAdd('video')}>
+          + Video
+        </Button>
         <Button type="button" variant="secondary" size="sm" onClick={() => onAdd('check')}>
           + Check
+        </Button>
+        <Button type="button" variant="secondary" size="sm" onClick={() => onAdd('question_link')}>
+          + Question
         </Button>
         <Button
           type="button"
@@ -372,7 +421,17 @@ function BlockList({ blocks, selectedIndex, onSelect, onAdd, onMove, onDuplicate
   );
 }
 
-function BlockEditor({ block, jsonDraft, jsonError, onJsonChange, validation }) {
+function BlockEditor({
+  block,
+  jsonDraft,
+  jsonError,
+  onJsonChange,
+  onContentChange,
+  onChangeType,
+  editorMode,
+  onSetMode,
+  validation,
+}) {
   const blockId = block?.id ?? block?.content?.id ?? null;
   const blockIssues = [
     ...validation.errors.filter((e) => e.blockId === blockId),
@@ -384,17 +443,55 @@ function BlockEditor({ block, jsonDraft, jsonError, onJsonChange, validation }) 
       <div style={S.editorHead}>
         <span style={S.editorType}>{block.block_type}</span>
         <code style={S.editorId}>{blockId ?? '—'}</code>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+          <Button
+            type="button"
+            variant={editorMode === 'form' ? 'primary' : 'secondary'}
+            size="sm"
+            onClick={() => onSetMode('form')}
+          >
+            Form
+          </Button>
+          <Button
+            type="button"
+            variant={editorMode === 'json' ? 'primary' : 'secondary'}
+            size="sm"
+            onClick={() => onSetMode('json')}
+          >
+            JSON
+          </Button>
+        </div>
       </div>
-      <label className={f.label}>
-        <span className={f.labelText}>Block content (JSON)</span>
-        <textarea
-          value={jsonDraft}
-          onChange={(e) => onJsonChange(e.target.value)}
-          spellCheck={false}
-          className={f.input}
-          style={S.textarea}
-        />
+
+      <label className={f.label} style={{ maxWidth: 240 }}>
+        <span className={f.labelText}>Block type</span>
+        <select
+          className={f.select}
+          value={block.block_type}
+          onChange={(e) => onChangeType(e.target.value)}
+        >
+          <option value="text">text</option>
+          <option value="video">video</option>
+          <option value="check">check</option>
+          <option value="question_link">question_link</option>
+          <option value="desmos_interactive">desmos_interactive</option>
+        </select>
       </label>
+
+      {editorMode === 'form' ? (
+        <BlockBodyEditor block={block} onChange={onContentChange} />
+      ) : (
+        <label className={f.label}>
+          <span className={f.labelText}>Block content (JSON)</span>
+          <textarea
+            value={jsonDraft}
+            onChange={(e) => onJsonChange(e.target.value)}
+            spellCheck={false}
+            className={f.input}
+            style={S.textarea}
+          />
+        </label>
+      )}
       {jsonError && (
         <div style={S.errorBox}>JSON parse error: {jsonError}</div>
       )}

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Script from 'next/script';
+import { desmosCalculatorSrc } from '@/lib/config/desmos';
 import Link from 'next/link';
 import HtmlBlock from '../../../../components/HtmlBlock';
 import QuestionNotes from '../../../../components/QuestionNotes';
@@ -606,16 +607,12 @@ function DesmosPopup({ isOpen, onClose, questionId: qId }) {
 
   if (!isOpen) return null;
 
-  const apiKey =
-    (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_DESMOS_API_KEY) ||
-    'bac289385bcd4778a682276b95f5f116';
-
   const edgeStyle = (cursor) => ({ position: 'absolute', zIndex: 2, cursor });
 
   return (
     <>
       <Script
-        src={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${apiKey}`}
+        src={desmosCalculatorSrc()}
         strategy="afterInteractive"
         onLoad={() => setReady(true)}
       />
