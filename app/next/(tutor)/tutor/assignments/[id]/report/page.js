@@ -68,11 +68,12 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
 
   if (!assignment || assignment.deleted_at) notFound();
 
-  // Group reports only make sense for question-pool assignments.
-  // Lesson + practice-test assignments don't have the per-question
-  // attempt grain we'd need to aggregate, so kick those back to
-  // the detail page with a friendly empty state.
-  if (assignment.assignment_type !== 'questions') {
+  // Group reports run on the per-question attempt grain. Both
+  // 'questions' assignments and 'lesson_pack' assignments
+  // materialize question_ids the same way, so the aggregator
+  // doesn't need to branch — only this gate does.
+  if (assignment.assignment_type !== 'questions'
+      && assignment.assignment_type !== 'lesson_pack') {
     return (
       <EmptyReport
         title={assignment.title ?? 'Assignment'}
