@@ -97,7 +97,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
   // Identify single-student questions-type assignments — these get
   // the per-student attempt query so the tile shows real progress.
   const singleStudentRows = allAssignments
-    .filter((a) => a.assignment_type === 'questions')
+    .filter((a) => (a.assignment_type === 'questions' || a.assignment_type === 'lesson_pack'))
     .map((a) => ({ a, junc: byAssignment.get(a.id) ?? [] }))
     .filter((p) => p.junc.length === 1);
 
@@ -208,7 +208,7 @@ export default async function TutorAssignmentsPage({ searchParams }) {
       const total = Array.isArray(a.question_ids) ? a.question_ids.length : 0;
       const sessionInfo =
         sessionByAssignmentUser.get(`${a.id}::${j.student_id}`) ?? null;
-      if (a.assignment_type === 'questions' && total > 0) {
+      if ((a.assignment_type === 'questions' || a.assignment_type === 'lesson_pack') && total > 0) {
         for (const qid of a.question_ids) {
           const arr = attemptsByPairAsc.get(`${j.student_id}::${qid}`) ?? [];
           if (arr.length === 0) continue;
@@ -470,7 +470,7 @@ function AssignmentRow({ row, nowMs, archived = false }) {
   let progressPct = null;
   let progressText = null;
   if (isSingle && single) {
-    if (row.assignment_type === 'questions' && single.total > 0) {
+    if ((row.assignment_type === 'questions' || row.assignment_type === 'lesson_pack') && single.total > 0) {
       progressPct = Math.round((single.done / single.total) * 100);
       const accuracyPct =
         single.done > 0 ? Math.round((single.correct / single.done) * 100) : null;
@@ -539,7 +539,7 @@ function AssignmentRow({ row, nowMs, archived = false }) {
 
 function displaySubtitle(row) {
   if (row.description) return row.description;
-  if (row.assignment_type === 'questions') {
+  if ((row.assignment_type === 'questions' || row.assignment_type === 'lesson_pack')) {
     const n = Array.isArray(row.question_ids) ? row.question_ids.length : 0;
     return n === 0 ? null : `${n} question${n === 1 ? '' : 's'}`;
   }

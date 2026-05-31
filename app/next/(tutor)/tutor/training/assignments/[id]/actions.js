@@ -58,7 +58,11 @@ export async function startTrainingAssignment(_prevState, formData) {
   if (!assignment || assignment.deleted_at) {
     return actionFail('Assignment not found');
   }
-  if (assignment.assignment_type !== 'questions') {
+  // 'lesson_pack' assignments materialize their pack's question
+  // ids into question_ids at creation, so they take the same
+  // start-a-session path as 'questions'.
+  if (assignment.assignment_type !== 'questions'
+      && assignment.assignment_type !== 'lesson_pack') {
     return actionFail('This assignment type is not a question set.');
   }
 

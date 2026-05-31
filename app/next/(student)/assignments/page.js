@@ -174,8 +174,12 @@ function PendingCard({ row }) {
   const subtitle = displaySubtitle(row);
   const dueLabel = row.due_date ? formatDate(row.due_date) : null;
   const teacher = teacherName(row.teacher);
+  // lesson_pack carries the same question_ids shape as 'questions',
+  // so it gets the same per-question progress + accuracy treatment.
+  const isQuestionLike =
+    row.assignment_type === 'questions' || row.assignment_type === 'lesson_pack';
   const pct =
-    row.assignment_type === 'questions' && row.total_count > 0
+    isQuestionLike && row.total_count > 0
       ? row.done_count / row.total_count
       : null;
 
@@ -245,7 +249,7 @@ function CompletedCard({ row }) {
           </>
         )}
       </div>
-      {row.assignment_type === 'questions' && row.difficultyAccuracy && (
+      {isQuestionLike && row.difficultyAccuracy && (
         <DifficultyBreakdown buckets={row.difficultyAccuracy} />
       )}
       {row.assignment_type === 'practice_test' && (
@@ -345,7 +349,11 @@ async function loadAssignmentsData(supabase, userId) {
   const teacherIds = Array.from(
     new Set(rows.map((r) => r.teacher_id).filter(Boolean)),
   );
-  const questionRows = rows.filter((r) => r.assignment_type === 'questions');
+  // lesson_pack materializes question_ids the same way 'questions'
+  // does, so both go through the per-question aggregation below.
+  const questionRows = rows.filter(
+    (r) => r.assignment_type === 'questions' || r.assignment_type === 'lesson_pack',
+  );
   const allQuestionIds = Array.from(
     new Set(
       questionRows.flatMap((r) =>
@@ -460,7 +468,7 @@ async function loadAssignmentsData(supabase, userId) {
     );
     r.teacher = teacherById.get(r.teacher_id) ?? null;
 
-    if (r.assignment_type === 'questions') {
+    if (r.assignment_type === 'questions' || r.assignment_type === 'lesson_pack') {
       const qs = Array.isArray(r.question_ids) ? r.question_ids : [];
       r.total_count = qs.length;
 
@@ -546,7 +554,7 @@ function displayTitle(row) {
 
 function displaySubtitle(row) {
   if (row.description) return row.description;
-  if (row.assignment_type === 'questions') {
+  if (row.assignment_type === 'questions' || row.assignment_type === 'lesson_pack') {
     const n = Array.isArray(row.question_ids) ? row.question_ids.length : 0;
     return n === 0 ? null : `${n} question${n === 1 ? '' : 's'}`;
   }
