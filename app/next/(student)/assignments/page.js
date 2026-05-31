@@ -174,12 +174,8 @@ function PendingCard({ row }) {
   const subtitle = displaySubtitle(row);
   const dueLabel = row.due_date ? formatDate(row.due_date) : null;
   const teacher = teacherName(row.teacher);
-  // lesson_pack carries the same question_ids shape as 'questions',
-  // so it gets the same per-question progress + accuracy treatment.
-  const isQuestionLike =
-    row.assignment_type === 'questions' || row.assignment_type === 'lesson_pack';
   const pct =
-    isQuestionLike && row.total_count > 0
+    isQuestionLikeRow(row) && row.total_count > 0
       ? row.done_count / row.total_count
       : null;
 
@@ -223,6 +219,12 @@ function PendingCard({ row }) {
 // Falls back to the assignment detail page otherwise.
 // ──────────────────────────────────────────────────────────────
 
+// lesson_pack carries the same question_ids shape as 'questions',
+// so per-question progress + accuracy treat them the same.
+function isQuestionLikeRow(row) {
+  return row.assignment_type === 'questions' || row.assignment_type === 'lesson_pack';
+}
+
 function CompletedCard({ row }) {
   const title = displayTitle(row);
   const teacher = teacherName(row.teacher);
@@ -249,7 +251,7 @@ function CompletedCard({ row }) {
           </>
         )}
       </div>
-      {isQuestionLike && row.difficultyAccuracy && (
+      {isQuestionLikeRow(row) && row.difficultyAccuracy && (
         <DifficultyBreakdown buckets={row.difficultyAccuracy} />
       )}
       {row.assignment_type === 'practice_test' && (
