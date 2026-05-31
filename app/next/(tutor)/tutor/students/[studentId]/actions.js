@@ -354,6 +354,8 @@ export async function addOfficialScore(_prev, formData) {
  * tables. Service role is required: RLS only grants DELETE on these
  * tables to admins (ptav2_admin_delete), so a tutor session can't
  * issue the deletes directly.
+ *
+ * @returns {Promise<import('@/lib/types').ActionResult<{ data: { id: string } }>>}
  */
 export async function deleteStudentPracticeTest(_prev, formData) {
   const studentId = String(formData.get('student_id') ?? '');

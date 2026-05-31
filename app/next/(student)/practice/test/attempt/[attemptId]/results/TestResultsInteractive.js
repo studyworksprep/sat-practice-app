@@ -18,6 +18,7 @@ import { recalculateScore } from '@/lib/practice-test/score-actions';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
+import { BrokenButton } from '@/lib/practice/BrokenButton';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { ErrorLogButton } from '@/lib/practice/ErrorLogButton';
@@ -73,6 +74,10 @@ export function TestResultsInteractive({
   // attempts of the same test hit the lookup. Hidden for students.
   const canRecalculate =
     viewerRole === 'teacher' || viewerRole === 'manager' || viewerRole === 'admin';
+  // Broken flag/edit is manager+admin only — matches the legacy
+  // gate and loadBrokenData's EDIT_ROLES. Teachers reviewing a test
+  // don't get to mutate the shared question bank.
+  const canFlagBroken = viewerRole === 'manager' || viewerRole === 'admin';
   const [showScoreDialog, setShowScoreDialog] = useState(false);
   const router = useRouter();
 
@@ -500,6 +505,14 @@ export function TestResultsInteractive({
                 </div>
               )}
               <FlashcardsButton />
+              {canFlagBroken && !selected.missing && (
+                <BrokenButton
+                  key={`broken-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  canEdit
+                  lazy
+                />
+              )}
             </div>
           </div>
 

@@ -188,6 +188,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
         questionNotesCanView={view.questionNotesCanView}
         questionNotesIsAdmin={view.questionNotesIsAdmin}
         currentUserId={view.currentUserId}
+        canFlagBroken={['manager', 'admin'].includes(profile.role)}
         rebuildHref={`/tutor/assignments/${assignmentId}/students/${studentId}?rebuild=1`}
       />
     );
@@ -247,6 +248,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       questionNotesCanView={view.questionNotesCanView}
       questionNotesIsAdmin={view.questionNotesIsAdmin}
       currentUserId={view.currentUserId}
+      canFlagBroken={['manager', 'admin'].includes(profile.role)}
     />
   );
 }
