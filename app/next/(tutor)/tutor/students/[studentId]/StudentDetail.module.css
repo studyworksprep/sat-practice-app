@@ -244,7 +244,15 @@
   gap: var(--s2);
 }
 
+.testRowWrap {
+  display: flex;
+  align-items: stretch;
+  gap: var(--s2);
+}
+
 .testRow {
+  flex: 1;
+  min-width: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -257,6 +265,25 @@
   color: inherit;
   transition: all var(--dur-fast) var(--ease-std);
 }
+
+.deleteBtn {
+  flex-shrink: 0;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-danger);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.deleteBtn:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
+.deleteBtn:disabled { opacity: 0.55; cursor: not-allowed; }
 .testRow:hover {
   background: var(--bg-white);
   border-color: var(--border);
