@@ -29,6 +29,7 @@ import {
   TestIcon,
 } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
+import { DeletePracticeTestButton } from './DeletePracticeTestButton';
 import { EditTargetStartButton } from './EditTargetStartModal';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 import { MigrateToNextButton } from './MigrateToNextButton';
@@ -632,7 +633,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
             ) : (
               <ul className={s.testList}>
                 {testRows.map((t) => (
-                  <li key={t.id}>
+                  <li key={t.id} className={s.testRowWrap}>
                     <Link
                       href={t.status === 'completed'
                         ? `/tutor/students/${student.id}/tests/${t.id}/results`
@@ -677,6 +678,11 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                         )}
                       </div>
                     </Link>
+                    <DeletePracticeTestButton
+                      studentId={student.id}
+                      attemptId={t.id}
+                      testName={t.testName}
+                    />
                   </li>
                 ))}
               </ul>

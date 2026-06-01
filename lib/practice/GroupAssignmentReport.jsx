@@ -24,6 +24,7 @@ import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { ConceptTags } from './ConceptTags';
 import { DesmosSavedStateButton } from './DesmosSavedStateButton';
+import { BrokenButton } from './BrokenButton';
 import { ErrorLogButton } from './ErrorLogButton';
 import { FlashcardsButton } from './FlashcardsButton';
 import { QuestionNotes } from './QuestionNotes';
@@ -53,6 +54,7 @@ export function GroupAssignmentReport({
   questionNotesCanView = false,
   questionNotesIsAdmin = false,
   currentUserId = null,
+  canFlagBroken = false,
 }) {
   // Live Desmos calc handle for the saved-state button. One panel
   // serves every selected question — same pattern AssignmentReport
@@ -334,6 +336,14 @@ export function GroupAssignmentReport({
                     key={`elog-${selected.questionId}`}
                     questionId={selected.questionId}
                     initialNote={selected.errorNote ?? null}
+                  />
+                )}
+                {canFlagBroken && !selected.missing && (
+                  <BrokenButton
+                    key={`broken-${selected.questionId}`}
+                    questionId={selected.questionId}
+                    canEdit
+                    lazy
                   />
                 )}
               </div>

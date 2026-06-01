@@ -27,6 +27,7 @@ import { useState, useTransition } from 'react';
 import {
   flagQuestionBroken,
   saveQuestionCorrections,
+  loadBrokenDataAction,
 } from './broken-actions';
 import s from './BrokenButton.module.css';
 
@@ -43,10 +44,21 @@ const SCORE_BAND_OPTIONS = [
 ];
 
 /**
+ * Two ways to supply the modal's data:
+ *   - Eager: pass raw / rendered / taxonomy / renderedSourceHash as
+ *     props. The dedicated review pages do this — they load one
+ *     question server-side already.
+ *   - Lazy: pass `lazy` (and skip the data props). Used by the
+ *     report surfaces, which render dozens of questions; the data is
+ *     fetched via loadBrokenDataAction only when the manager opens
+ *     the modal, so a heavy report page doesn't ship source HTML for
+ *     every question up front.
+ *
  * @param {object} props
  * @param {string} props.questionId
  * @param {boolean} [props.canEdit=false]
  * @param {boolean} [props.initialIsBroken=false]
+ * @param {boolean} [props.lazy=false] - fetch data on open instead of from props
  * @param {object|null} [props.raw]
  * @param {object|null} [props.rendered]
  * @param {object|null} [props.taxonomy]
@@ -56,6 +68,7 @@ export function BrokenButton({
   questionId,
   canEdit = false,
   initialIsBroken = false,
+  lazy = false,
   raw = null,
   rendered = null,
   taxonomy = null,
@@ -65,8 +78,40 @@ export function BrokenButton({
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(null);
   const [pending, startTransition] = useTransition();
+  // Eager callers seed the modal data immediately; lazy callers fill
+  // this in on first open via loadBrokenDataAction.
+  const [data, setData] = useState(
+    lazy ? null : { raw, rendered, taxonomy, renderedSourceHash },
+  );
+  const [loading, setLoading] = useState(false);
 
   if (!canEdit) return null;
+
+  function handleOpen() {
+    setError(null);
+    if (data || !lazy) {
+      setOpen(true);
+      return;
+    }
+    setLoading(true);
+    startTransition(async () => {
+      const res = await loadBrokenDataAction({ questionId });
+      setLoading(false);
+      if (!res?.ok) {
+        window.alert(res?.error ?? 'Could not load question data.');
+        return;
+      }
+      const d = res.data ?? {};
+      setData({
+        raw: d.raw ?? null,
+        rendered: d.rendered ?? null,
+        taxonomy: d.taxonomy ?? null,
+        renderedSourceHash: d.renderedSourceHash ?? null,
+      });
+      setIsBroken(!!d.isBroken);
+      setOpen(true);
+    });
+  }
 
   const btnCls = [s.iconBtn, isBroken ? s.iconBtnBroken : null]
     .filter(Boolean).join(' ');
@@ -76,7 +121,8 @@ export function BrokenButton({
       <button
         type="button"
         className={btnCls}
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
+        disabled={loading}
         title={isBroken ? 'Flagged broken' : 'Inspect / flag broken'}
         aria-label={isBroken ? 'Question flagged broken' : 'Inspect or flag question'}
       >
@@ -89,17 +135,17 @@ export function BrokenButton({
             strokeLinejoin="round"
           />
         </svg>
-        <span>{isBroken ? 'Broken' : 'Broken?'}</span>
+        <span>{loading ? '…' : isBroken ? 'Broken' : 'Broken?'}</span>
       </button>
 
-      {open && (
+      {open && data && (
         <BrokenModal
           questionId={questionId}
           isBroken={isBroken}
-          raw={raw}
-          rendered={rendered}
-          taxonomy={taxonomy}
-          renderedSourceHash={renderedSourceHash}
+          raw={data.raw}
+          rendered={data.rendered}
+          taxonomy={data.taxonomy}
+          renderedSourceHash={data.renderedSourceHash}
           pending={pending}
           error={error}
           startTransition={startTransition}

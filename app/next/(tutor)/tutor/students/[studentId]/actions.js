@@ -334,6 +334,118 @@ export async function addOfficialScore(_prev, formData) {
   return actionOk({ score: data });
 }
 
+/**
+ * Delete a student's practice test attempt (v2) — for a tutor to
+ * clear out an erroneous, broken, or accidentally-uploaded test.
+ *
+ * Authorization: caller must be a tutor / manager / admin who can
+ * view the student (can_view via authorizeStudentEdit). The attempt
+ * is then re-confirmed to belong to that student before anything is
+ * deleted, so a tutor can't pass an attempt id from a student they
+ * don't have access to.
+ *
+ * In-progress attempts are not deletable — a student may be actively
+ * taking it. Abandon or complete it first.
+ *
+ * The delete cascades by hand because the shared `attempts` rows are
+ * referenced *by* the item-attempt linker (FK points at attempts), so
+ * the DB cascade alone would orphan them. Order mirrors the legacy
+ * /api/practice-tests/attempt/[attemptId] DELETE route, but on the v2
+ * tables. Service role is required: RLS only grants DELETE on these
+ * tables to admins (ptav2_admin_delete), so a tutor session can't
+ * issue the deletes directly.
+ *
+ * @returns {Promise<import('@/lib/types').ActionResult<{ data: { id: string } }>>}
+ */
+export async function deleteStudentPracticeTest(_prev, formData) {
+  const studentId = String(formData.get('student_id') ?? '');
+  const attemptId = String(formData.get('attempt_id') ?? '');
+  if (!studentId || !attemptId) return actionFail('student_id and attempt_id required');
+
+  const auth = await authorizeStudentEdit(studentId);
+  if (!auth.ok) return auth.result;
+
+  // Re-confirm the attempt belongs to this student. The session
+  // client + RLS (ptav2_select uses can_view) means a tutor only
+  // sees rows they're allowed to; the user_id filter pins it to the
+  // student whose page this delete was issued from.
+  const { data: attempt, error: attErr } = await auth.ctx.supabase
+    .from('practice_test_attempts_v2')
+    .select('id, user_id, status')
+    .eq('id', attemptId)
+    .eq('user_id', studentId)
+    .maybeSingle();
+  if (attErr) return actionFail(attErr.message);
+  if (!attempt) return actionFail('Test not found or not accessible');
+  if (attempt.status === 'in_progress') {
+    return actionFail('Cannot delete a test that is still in progress.');
+  }
+
+  let svcCtx;
+  try {
+    svcCtx = await requireServiceRole(
+      `${auth.ctx.profile.role}: delete practice_test attempt ${attemptId} for student ${studentId}`,
+      { allowedRoles: ['teacher', 'manager', 'admin'] },
+    );
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+  const service = svcCtx.service;
+
+  // 1. Module-attempt ids for this attempt.
+  const { data: moduleAttempts, error: maErr } = await service
+    .from('practice_test_module_attempts_v2')
+    .select('id')
+    .eq('practice_test_attempt_id', attemptId);
+  if (maErr) return actionFail(maErr.message);
+
+  const moduleAttemptIds = (moduleAttempts ?? []).map((ma) => ma.id);
+
+  if (moduleAttemptIds.length > 0) {
+    // 2. Linked per-question `attempts` ids, captured before the
+    //    item-attempt linker rows are removed.
+    const { data: itemAttempts } = await service
+      .from('practice_test_item_attempts_v2')
+      .select('attempt_id')
+      .in('practice_test_module_attempt_id', moduleAttemptIds);
+    const sharedAttemptIds = (itemAttempts ?? []).map((ia) => ia.attempt_id).filter(Boolean);
+
+    // 3. Item-attempt linkers (FK to attempts lives here, so these go first).
+    const { error: iaDelErr } = await service
+      .from('practice_test_item_attempts_v2')
+      .delete()
+      .in('practice_test_module_attempt_id', moduleAttemptIds);
+    if (iaDelErr) return actionFail(iaDelErr.message);
+
+    // 4. The shared per-question attempt rows, now unreferenced.
+    if (sharedAttemptIds.length > 0) {
+      const { error: aDelErr } = await service
+        .from('attempts')
+        .delete()
+        .in('id', sharedAttemptIds);
+      if (aDelErr) return actionFail(aDelErr.message);
+    }
+
+    // 5. Module attempts.
+    const { error: maDelErr } = await service
+      .from('practice_test_module_attempts_v2')
+      .delete()
+      .eq('practice_test_attempt_id', attemptId);
+    if (maDelErr) return actionFail(maDelErr.message);
+  }
+
+  // 6. The attempt itself.
+  const { error: delErr } = await service
+    .from('practice_test_attempts_v2')
+    .delete()
+    .eq('id', attemptId);
+  if (delErr) return actionFail(delErr.message);
+
+  revalidatePath(`/tutor/students/${studentId}`);
+  return actionOk({ id: attemptId });
+}
+
 export async function removeOfficialScore(_prev, formData) {
   const studentId = String(formData.get('student_id') ?? '');
   const id = String(formData.get('id') ?? '');

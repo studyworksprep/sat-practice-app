@@ -460,6 +460,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
       questionNotesCanView={notesBundle.canView}
       questionNotesIsAdmin={notesBundle.isAdmin}
       currentUserId={user.id}
+      canFlagBroken={['manager', 'admin'].includes(profile.role)}
     />
   );
 }
