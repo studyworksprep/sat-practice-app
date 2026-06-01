@@ -6,6 +6,7 @@ import StorageHygiene from '../components/StorageHygiene';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
 import { TestTypeProvider } from '../lib/TestTypeContext';
+import { desmosCalculatorSrc } from '../lib/config/desmos';
 
 // Self-hosted Google Fonts via next/font. The bundler downloads
 // them at build time, scopes the @font-face to a hashed class on
@@ -65,11 +66,7 @@ export default async function RootLayout({ children }) {
             this preload would mismatch that, so the preload would be
             ignored and the script would re-fetch from scratch — adding
             latency and, on flaky networks, tripping ERR_TIMED_OUT. */}
-        <link
-          rel="preload"
-          href={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${process.env.NEXT_PUBLIC_DESMOS_API_KEY || 'bac289385bcd4778a682276b95f5f116'}`}
-          as="script"
-        />
+        <link rel="preload" href={desmosCalculatorSrc()} as="script" />
 
         {/* MathJax config: enable both MathML and TeX input so
             content authored either way renders. TeX uses the
@@ -104,7 +101,7 @@ export default async function RootLayout({ children }) {
         <Script
           id="desmos-calculator-script"
           strategy="afterInteractive"
-          src={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${process.env.NEXT_PUBLIC_DESMOS_API_KEY || 'bac289385bcd4778a682276b95f5f116'}`}
+          src={desmosCalculatorSrc()}
         />
       </head>
       <body>

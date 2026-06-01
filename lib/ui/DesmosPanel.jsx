@@ -28,10 +28,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import s from './DesmosPanel.module.css';
-
-const DESMOS_API_KEY =
-  process.env.NEXT_PUBLIC_DESMOS_API_KEY ||
-  'bac289385bcd4778a682276b95f5f116';
+import { desmosCalculatorSrc } from '../config/desmos';
 
 const SAVE_DEBOUNCE_MS = 2000;
 
@@ -144,7 +141,7 @@ export function DesmosPanel({ isOpen, storageKey, onCalcReady }) {
   return (
     <>
       <Script
-        src={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${DESMOS_API_KEY}`}
+        src={desmosCalculatorSrc()}
         strategy="afterInteractive"
         onLoad={() => setReady(true)}
       />

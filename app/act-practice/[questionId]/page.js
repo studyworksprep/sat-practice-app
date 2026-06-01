@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
+import { desmosCalculatorSrc } from '@/lib/config/desmos';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '../../../components/Toast';
@@ -113,14 +114,10 @@ function DesmosPanel({ isOpen, storageKey, calcInstanceRef }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const apiKey =
-    (typeof process !== 'undefined' && process?.env?.NEXT_PUBLIC_DESMOS_API_KEY) ||
-    'bac289385bcd4778a682276b95f5f116';
-
   return (
     <>
       <Script
-        src={`https://www.desmos.com/api/v1.11/calculator.js?apiKey=${apiKey}`}
+        src={desmosCalculatorSrc()}
         strategy="afterInteractive"
         onLoad={() => setReady(true)}
       />
