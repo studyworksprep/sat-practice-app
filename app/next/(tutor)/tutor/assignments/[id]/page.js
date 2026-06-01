@@ -61,8 +61,14 @@ export default async function TutorAssignmentDetailPage({ params }) {
   // new tree doesn't maintain). Latest attempt per (user, question)
   // wins for the correctness flag — matches the runner's review
   // behavior. Also feed the cohort-wide accuracy stat at the top.
+  // lesson_pack carries the same question_ids snapshot as
+  // 'questions', so every per-question section on this page treats
+  // them the same. One predicate, used everywhere below.
+  const isQuestionLike =
+    assignment.assignment_type === 'questions'
+    || assignment.assignment_type === 'lesson_pack';
   const questionIds =
-    assignment.assignment_type === 'questions' && Array.isArray(assignment.question_ids)
+    isQuestionLike && Array.isArray(assignment.question_ids)
       ? assignment.question_ids
       : [];
   const studentIds = (junctionRows ?? []).map((r) => r.student_id);
@@ -303,7 +309,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
         {assignment.description && (
           <p className={s.description}>{assignment.description}</p>
         )}
-        {assignment.assignment_type === 'questions' && students.length > 0 && (
+        {isQuestionLike && students.length > 0 && (
           <div className={s.headerActions}>
             <Link
               href={`/tutor/assignments/${assignment.id}/report`}
@@ -324,7 +330,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
           sub={completionPct == null ? 'No students assigned' : `${completionPct}%`}
           tone="good"
         />
-        {assignment.assignment_type === 'questions' && (
+        {isQuestionLike && (
           <StatTile
             label="Questions"
             value={totalQuestions}
@@ -335,7 +341,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
             }
           />
         )}
-        {assignment.assignment_type === 'questions' && cohortAccuracyPct != null && (
+        {isQuestionLike && cohortAccuracyPct != null && (
           <StatTile
             label="Cohort accuracy"
             value={`${cohortAccuracyPct}%`}
@@ -378,7 +384,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
               <thead>
                 <tr>
                   <th className={s.th}>Student</th>
-                  {assignment.assignment_type === 'questions' && (
+                  {isQuestionLike && (
                     <>
                       <th className={s.thNum}>Done</th>
                       <th className={s.thProgress}>Progress</th>
@@ -386,7 +392,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
                     </>
                   )}
                   <th className={s.th}>Completed</th>
-                  {assignment.assignment_type === 'questions' && (
+                  {isQuestionLike && (
                     <th className={s.th}>Report</th>
                   )}
                 </tr>
@@ -402,7 +408,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
                       ? Math.round((stu.correct / stu.done) * 100)
                       : null;
                   const reportHref =
-                    assignment.assignment_type === 'questions'
+                    isQuestionLike
                       ? `/tutor/assignments/${assignment.id}/students/${stu.id}`
                       : null;
                   return (
@@ -426,7 +432,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
                         </Link>
                         {stu.email && <div className={s.email}>{stu.email}</div>}
                       </td>
-                      {assignment.assignment_type === 'questions' && (
+                      {isQuestionLike && (
                         <>
                           <td className={s.tdNum}>
                             {stu.done}
@@ -471,7 +477,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
                           <span className={s.muted}>—</span>
                         )}
                       </td>
-                      {assignment.assignment_type === 'questions' && (
+                      {isQuestionLike && (
                         <td className={s.td}>
                           <Link
                             href={reportHref}
@@ -490,7 +496,7 @@ export default async function TutorAssignmentDetailPage({ params }) {
         )}
       </section>
 
-      {assignment.assignment_type === 'questions' && questionIds.length > 0 && (
+      {isQuestionLike && questionIds.length > 0 && (
         <section className={s.card}>
           <div className={s.cardHeader}>
             <div>
