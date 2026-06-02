@@ -61,15 +61,20 @@ export default async function LessonPackBuilderPage({ params }) {
       question_id, position,
       question:questions_v2 (
         id, display_code, question_type, domain_name, skill_name,
-        difficulty, score_band, stem_html
+        difficulty, score_band, stem_html, is_published, is_broken
       )
     `,
     )
     .eq('pack_id', id)
     .order('position', { ascending: true });
 
+  // Hide pack rows whose underlying question has been unpublished
+  // or flagged broken after it was added. The junction row stays in
+  // place (deleting it would change pack contents without the
+  // tutor's input); we just don't render it. If the question is
+  // later re-published, it'll reappear next time the pack is opened.
   const packQuestions = (junctionRows ?? [])
-    .filter((r) => r.question)
+    .filter((r) => r.question && r.question.is_published && !r.question.is_broken)
     .map((r) => ({
       id: r.question.id,
       display_code: r.question.display_code,

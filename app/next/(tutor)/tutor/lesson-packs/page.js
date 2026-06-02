@@ -40,12 +40,19 @@ export default async function TutorLessonPacksPage() {
     .eq('teacher_id', user.id)
     .order('updated_at', { ascending: false });
 
+  // Count only junction rows whose underlying question is still
+  // available (published + not broken). !inner forces the embed to
+  // drop rows that don't satisfy the filter — without it, eq()
+  // filters on the embed are advisory and unmatched rows come
+  // back as `question: null`.
   const packIds = (packs ?? []).map((p) => p.id);
   const { data: junctionRows } = packIds.length
     ? await supabase
         .from('lesson_pack_questions')
-        .select('pack_id')
+        .select('pack_id, question:questions_v2!inner(id)')
         .in('pack_id', packIds)
+        .eq('question.is_published', true)
+        .eq('question.is_broken', false)
     : { data: [] };
 
   const countByPack = new Map();

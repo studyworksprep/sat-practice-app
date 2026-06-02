@@ -535,16 +535,28 @@ async function buildLessonPackPayload(
     return { ok: false, error: 'You can only assign your own lesson packs.' };
   }
 
+  // !inner drops junction rows whose underlying question has been
+  // unpublished or flagged broken since it was added to the pack,
+  // so a snapshot can never include a question that won't load for
+  // the student. The pack viewer applies the same filter, so the
+  // assignment matches what the tutor saw at the moment they hit
+  // create.
   const { data: rows, error } = await supabase
     .from('lesson_pack_questions')
-    .select('question_id, position')
+    .select('question_id, position, question:questions_v2!inner(id)')
     .eq('pack_id', packId)
+    .eq('question.is_published', true)
+    .eq('question.is_broken', false)
     .order('position', { ascending: true });
   if (error) return { ok: false, error: `Failed to read pack: ${error.message}` };
 
   const questionIds = (rows ?? []).map((r: { question_id: string }) => r.question_id);
   if (questionIds.length === 0) {
-    return { ok: false, error: 'Pick a pack that has at least one question.' };
+    return {
+      ok: false,
+      error:
+        'This pack has no available questions to assign — every question in it has been unpublished or flagged.',
+    };
   }
   if (questionIds.length > MAX_QUESTIONS) {
     return {
