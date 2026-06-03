@@ -69,14 +69,24 @@ export async function POST(request) {
         if (!existing) break;
 
         const status = mapStripeStatus(subscription.status);
+
+        // As of Stripe API version 2025-03-31.basil (the default for the
+        // stripe-node v22 SDK this app pins), current_period_start/end were
+        // removed from the top-level Subscription object and live on each
+        // subscription item instead. Read from the item, falling back to the
+        // legacy top-level fields so this keeps working across API versions.
+        const item = subscription.items?.data?.[0];
+        const periodStart = subscription.current_period_start ?? item?.current_period_start;
+        const periodEnd = subscription.current_period_end ?? item?.current_period_end;
+
         await supabase
           .from('subscriptions')
           .update({
             stripe_subscription_id: subscription.id,
             status,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            current_period_start: unixToIso(periodStart),
+            current_period_end: unixToIso(periodEnd),
+            trial_end: unixToIso(subscription.trial_end),
             cancel_at_period_end: subscription.cancel_at_period_end || false,
             updated_at: new Date().toISOString(),
           })
@@ -126,6 +136,13 @@ export async function POST(request) {
   }
 
   return NextResponse.json({ received: true });
+}
+
+// Convert a Stripe Unix timestamp (seconds) to an ISO string, tolerating
+// missing/invalid values so a webhook never 500s on a bad date.
+function unixToIso(unixSeconds) {
+  if (typeof unixSeconds !== 'number' || !Number.isFinite(unixSeconds)) return null;
+  return new Date(unixSeconds * 1000).toISOString();
 }
 
 function mapStripeStatus(stripeStatus) {
