@@ -84,6 +84,31 @@ export async function startAssignmentPractice(_prevState, formData) {
     return actionFail('This assignment has no questions.');
   }
 
+  // Resume an existing in-progress session for this assignment instead
+  // of minting a new one. The runner scopes a question's saved answer
+  // to the session's created_at (load-question.ts: `since =
+  // sessionCreatedAt` for assignment sessions). A brand-new session
+  // starts that window "now", so the answers the student already
+  // submitted in their earlier session fall before the floor and the
+  // runner renders blank tiles / "0 answered" on Continue. Pick the
+  // earliest in-progress session so the window floor sits before all
+  // prior attempts, and drop the student back at their saved cursor.
+  // "Start" (no prior session) and "Redo" (prior session is completed,
+  // not in_progress) both fall through to a fresh session below.
+  const { data: resumable } = await supabase
+    .from('practice_sessions')
+    .select('id, current_position')
+    .eq('user_id', user.id)
+    .eq('test_type', 'sat')
+    .eq('status', 'in_progress')
+    .eq('filter_criteria->>assignment_id', assignmentId)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (resumable) {
+    redirect(`/practice/s/${resumable.id}/${resumable.current_position ?? 0}`);
+  }
+
   const { data: session, error: insertErr } = await supabase
     .from('practice_sessions')
     .insert({
