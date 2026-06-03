@@ -3,8 +3,10 @@
 //
 // URL: /practice/history
 //
-// One row per practice_sessions row (mode='practice' only —
-// review-mode and tutor-training sessions don't belong here).
+// One row per practice_sessions row (mode='practice' or 'review'
+// — a Weak Questions Drill is just a practice session assembled by
+// a pre-determined scheme, so it lists here like any other;
+// tutor-training sessions don't belong here).
 // Each row shows the session date, its size, the student's
 // correct-count at the time, and a Review button linking to
 // /practice/review/[sessionId].
@@ -37,7 +39,9 @@ export default async function PracticeHistoryPage() {
   if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
 
-  // 1) All practice-mode sessions for this user. RLS scopes to
+  // 1) All self-guided sessions for this user — practice plus
+  //    review drills, which are practice sessions built from the
+  //    weak-questions scheme. RLS scopes to
   //    user_id = auth.uid(); the extra .eq('user_id', ...) is
   //    belt-and-suspenders / makes the query intent explicit.
   //    SAT-only — ACT history will live on its own list once the
@@ -46,7 +50,7 @@ export default async function PracticeHistoryPage() {
     .from('practice_sessions')
     .select('id, created_at, question_ids, current_position, mode, filter_criteria, status')
     .eq('user_id', user.id)
-    .eq('mode', 'practice')
+    .in('mode', ['practice', 'review'])
     .eq('test_type', 'sat')
     .neq('status', 'abandoned')
     .order('created_at', { ascending: false })

@@ -290,24 +290,36 @@ export async function loadQuestion(
       });
   }
 
-  // Assignment sessions act like a fresh attempt: historical
-  // attempts on these question ids from other sessions don't pre-
-  // seed the answer state and don't count toward this session's
-  // "answered N of M" progress. Without this, a student who'd
-  // already done one of the questions in a prior practice session
-  // would land on the question pre-filled (with feedback / Reveal
-  // unlocked) and the navigator would mark it complete before
+  // Assignment sessions and review drills act like a fresh attempt:
+  // historical attempts on these question ids from other sessions
+  // don't pre-seed the answer state and don't count toward this
+  // session's "answered N of M" progress. Without this, a student
+  // who'd already done one of the questions in a prior practice
+  // session would land on the question pre-filled (with feedback /
+  // Reveal unlocked) and the navigator would mark it complete before
   // they'd touched it in this session.
+  //
+  // Review drills (mode='review' — the Weak Questions Drill, skill
+  // drills, ACT category drills) especially need this: the queue is
+  // built entirely from questions the student has already gotten
+  // wrong, so EVERY question carries a prior attempt. With the old
+  // history-aware scope those drills loaded every question pre-filled
+  // with the previous (usually wrong) answer and Reveal already
+  // unlocked — the student never got to re-attempt anything.
   //
   // Regular practice (mode='practice' without an assignment_id) and
   // training stay history-aware so the "you got this right last
   // time" affordance keeps working there. The submit-side already
-  // uses the same created_at gate to avoid double-recording, so
-  // this just brings the load-side into agreement with it.
+  // uses the same created_at gate to avoid double-recording, so this
+  // just brings the load-side into agreement with it — a re-attempt
+  // in the drill records a new attempt that feeds back into the
+  // weak-queue scoring next time.
   const isAssignmentSession =
     !!session.filter_criteria
     && typeof session.filter_criteria === 'object'
     && !!(session.filter_criteria as Record<string, unknown>).assignment_id;
+  const isReviewSession = sessionMode === 'review';
+  const isFreshAttemptSession = isAssignmentSession || isReviewSession;
   const sessionCreatedAt = session.created_at ?? '1970-01-01T00:00:00Z';
 
   // Fork on the session's test_type. SAT reads questions_v2 + attempts;
@@ -315,7 +327,7 @@ export async function loadQuestion(
   // Same shape comes out the other side so the per-question side-fetches
   // below + the QuestionPayload return shape are unchanged.
   const isAct = session.test_type === 'act';
-  const since = isAssignmentSession ? sessionCreatedAt : null;
+  const since = isFreshAttemptSession ? sessionCreatedAt : null;
   // ACT practice sessions get a stricter lastAttempt scope than
   // the question-map data does: a fresh session shouldn't
   // pre-fill the runner with an answer the student submitted in

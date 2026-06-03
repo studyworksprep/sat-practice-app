@@ -133,13 +133,16 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .select('started_at, finished_at, composite_score, rw_scaled, math_scaled')
       .eq('user_id', studentId)
       .eq('status', 'completed'),
-    // Practice sessions for this student, SAT + ACT. The row now
-    // carries test_type so the list can badge ACT sessions.
+    // Self-guided sessions for this student, SAT + ACT. Includes
+    // review-mode Weak Questions Drills — a drill is just a practice
+    // session built from the weak-questions scheme, so it surfaces
+    // here like any other. The row carries test_type so the list can
+    // badge ACT sessions.
     supabase
       .from('practice_sessions')
       .select('id, created_at, question_ids, current_position, status, test_type')
       .eq('user_id', studentId)
-      .eq('mode', 'practice')
+      .in('mode', ['practice', 'review'])
       .in('test_type', ['sat', 'act'])
       .neq('status', 'abandoned')
       // Exclude assignment-linked sessions — those already surface
