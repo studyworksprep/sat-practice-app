@@ -476,10 +476,19 @@ export async function loadQuestion(
       reviewData = await loadReviewData({ supabase, userId, questionId });
     }
 
+    // v2 MCQ answers are persisted in attempts.response_text (the
+    // option label); selected_option_id is a legacy v1 FK column that
+    // stays null for v2. Derive the selected option from response_text
+    // for MCQ so the previously chosen tile re-highlights on Continue.
+    // SPR keeps selectedOptionId null and reads its typed answer from
+    // responseText. Honor selected_option_id first in case it's ever set.
+    const isSprQuestion = question.question_type === 'spr';
     initialAttempt = lastAttempt
       ? {
           isCorrect: lastAttempt.is_correct,
-          selectedOptionId: lastAttempt.selected_option_id,
+          selectedOptionId:
+            lastAttempt.selected_option_id ??
+            (isSprQuestion ? null : lastAttempt.response_text),
           responseText: lastAttempt.response_text,
           submittedAt: lastAttempt.created_at,
           correctOptionId: reviewData?.correctOptionId ?? null,
