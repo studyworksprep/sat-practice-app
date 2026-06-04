@@ -18,6 +18,7 @@
 
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
+import { WEAK_ACCURACY_THRESHOLD } from '@/lib/practice/weak-queue';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const IN_CHUNK_SIZE = 400;
@@ -179,41 +180,89 @@ export async function buildWeakQueueAct(
 interface CommonErrorRow {
   skill_name: string;   // ACT category
   domain_name: string;  // ACT section label
-  wrong: number;
+  weak: number;
   total: number;
   accuracy: number;
 }
 
-/** Compute per-category aggregate stats from a list of ACT attempts +
- *  a meta map. Same shape as commonErrorsFromAttempts so the Common
- *  Errors card can render either side without branching. */
+/** Compute per-category Common Errors rows from a list of ACT
+ *  attempts + a meta map. Same distinct-question, still-weak logic
+ *  as the SAT commonErrorsFromAttempts (ACT has no v1/v2 split, so
+ *  questions key directly on question_id) — see that function for
+ *  the rationale. Same output shape so the Common Errors card can
+ *  render either side without branching. Attempts must carry
+ *  created_at so the most-recent attempt per question is known. */
 export function commonErrorsFromActAttempts(
-  attempts: Array<{ question_id: string; is_correct: boolean | null }>,
+  attempts: Array<{ question_id: string; is_correct: boolean | null; created_at: string }>,
   metaById: Map<string, { category: string | null; section: string | null }>,
 ): CommonErrorRow[] {
-  const byCategory = new Map<string, { skill_name: string; domain_name: string; wrong: number; total: number }>();
+  // 1) Collapse to per-question stats, tracking recency.
+  const byQuestion = new Map<string, {
+    category: string;
+    section: string | null;
+    count: number;
+    correct: number;
+    last_at: string | null;
+    last_is_correct: boolean | null;
+  }>();
   for (const a of attempts) {
     const q = metaById.get(a.question_id);
     if (!q || !q.category) continue;
-    let row = byCategory.get(q.category);
+    let st = byQuestion.get(a.question_id);
+    if (!st) {
+      st = {
+        category: q.category,
+        section: q.section,
+        count: 0,
+        correct: 0,
+        last_at: null,
+        last_is_correct: null,
+      };
+      byQuestion.set(a.question_id, st);
+    }
+    st.count += 1;
+    if (a.is_correct) st.correct += 1;
+    if (st.last_at == null || a.created_at >= st.last_at) {
+      st.last_at = a.created_at;
+      st.last_is_correct = !!a.is_correct;
+    }
+  }
+
+  // 2) Group by category, counting only the still-weak questions.
+  const byCategory = new Map<string, {
+    skill_name: string; domain_name: string;
+    weak: number; total: number; attempts: number; correctAttempts: number;
+  }>();
+  for (const st of byQuestion.values()) {
+    let row = byCategory.get(st.category);
     if (!row) {
       row = {
-        skill_name: q.category,
-        domain_name: q.section ? sectionLabel(q.section) : '',
-        wrong: 0,
+        skill_name: st.category,
+        domain_name: st.section ? sectionLabel(st.section) : '',
+        weak: 0,
         total: 0,
+        attempts: 0,
+        correctAttempts: 0,
       };
-      byCategory.set(q.category, row);
+      byCategory.set(st.category, row);
     }
     row.total += 1;
-    if (!a.is_correct) row.wrong += 1;
+    row.attempts += st.count;
+    row.correctAttempts += st.correct;
+    const accuracy = st.count > 0 ? st.correct / st.count : 0;
+    const lastCorrect = st.last_is_correct === true;
+    if (!lastCorrect || accuracy < WEAK_ACCURACY_THRESHOLD) row.weak += 1;
   }
+
   const out = Array.from(byCategory.values()).map((r) => ({
-    ...r,
-    accuracy: r.total > 0 ? (r.total - r.wrong) / r.total : 1,
+    skill_name: r.skill_name,
+    domain_name: r.domain_name,
+    weak: r.weak,
+    total: r.total,
+    accuracy: r.attempts > 0 ? r.correctAttempts / r.attempts : 1,
   }));
   out.sort((a, b) => {
-    if (b.wrong !== a.wrong) return b.wrong - a.wrong;
+    if (b.weak !== a.weak) return b.weak - a.weak;
     return a.accuracy - b.accuracy;
   });
   return out;
