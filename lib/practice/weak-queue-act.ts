@@ -18,7 +18,7 @@
 
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
-import { WEAK_ACCURACY_THRESHOLD } from '@/lib/practice/weak-queue';
+import { isStillWeak } from '@/lib/practice/weak-queue';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const IN_CHUNK_SIZE = 400;
@@ -122,18 +122,20 @@ export async function buildWeakQueueAct(
     st.last_at = a.created_at;
   }
 
-  // 3) Only questions the student has missed at least once.
-  const missedIds = Array.from(statsByQid.values())
-    .filter((r) => r.any_wrong)
+  // 3) Keep only still-weak questions (missed at least once and not
+  //    yet recovered) so mastered questions graduate out of the
+  //    queue and the drill advances. Mirrors the SAT buildWeakQueue.
+  const candidateIds = Array.from(statsByQid.values())
+    .filter((r) => r.any_wrong && isStillWeak(r))
     .map((r) => r.question_id);
-  if (missedIds.length === 0) return [];
+  if (candidateIds.length === 0) return [];
 
-  const metaById = await resolveActQuestionMeta(supabase, missedIds);
+  const metaById = await resolveActQuestionMeta(supabase, candidateIds);
   const now = Date.now();
   const byId = new Map<string, ScoredEntry>();
 
   for (const stat of statsByQid.values()) {
-    if (!stat.any_wrong) continue;
+    if (!stat.any_wrong || !isStillWeak(stat)) continue;
     const q = metaById.get(stat.question_id);
     if (!q) continue;
     if (options.categoryName && q.category !== options.categoryName) continue;
@@ -249,9 +251,7 @@ export function commonErrorsFromActAttempts(
     row.total += 1;
     row.attempts += st.count;
     row.correctAttempts += st.correct;
-    const accuracy = st.count > 0 ? st.correct / st.count : 0;
-    const lastCorrect = st.last_is_correct === true;
-    if (!lastCorrect || accuracy < WEAK_ACCURACY_THRESHOLD) row.weak += 1;
+    if (isStillWeak(st)) row.weak += 1;
   }
 
   const out = Array.from(byCategory.values()).map((r) => ({
