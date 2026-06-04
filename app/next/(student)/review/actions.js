@@ -21,7 +21,7 @@ import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
-import { buildWeakQueue } from '@/lib/practice/weak-queue';
+import { buildWeakQueue, selectDrillQuestionIds } from '@/lib/practice/weak-queue';
 import { buildWeakQueueAct } from '@/lib/practice/weak-queue-act';
 
 const MAX_DRILL_SIZE = 25;
@@ -54,7 +54,7 @@ export async function createWeakQueueDrill(_prevState, formData) {
     );
   }
 
-  const questionIds = scored.slice(0, size).map((r) => r.question_id);
+  const questionIds = selectDrillQuestionIds(scored, size);
   return startReviewSession(supabase, user.id, questionIds, {
     kind: 'weak_queue',
     size,
@@ -88,7 +88,7 @@ export async function createSkillDrill(_prevState, formData) {
     return actionFail(`No questions to review in ${skillName} yet.`);
   }
 
-  const questionIds = scored.slice(0, size).map((r) => r.question_id);
+  const questionIds = selectDrillQuestionIds(scored, size);
   return startReviewSession(supabase, user.id, questionIds, {
     kind: 'skill',
     skill: skillName,
@@ -157,7 +157,7 @@ export async function createActWeakQueueDrill(_prevState, formData) {
     );
   }
 
-  const questionIds = scored.slice(0, size).map((r) => r.question_id);
+  const questionIds = selectDrillQuestionIds(scored, size);
   return startReviewSession(
     supabase, user.id, questionIds,
     { kind: 'weak_queue', size },
@@ -195,7 +195,7 @@ export async function createActCategoryDrill(_prevState, formData) {
     return actionFail(`No questions to review in ${categoryName} yet.`);
   }
 
-  const questionIds = scored.slice(0, size).map((r) => r.question_id);
+  const questionIds = selectDrillQuestionIds(scored, size);
   return startReviewSession(
     supabase, user.id, questionIds,
     { kind: 'category', category: categoryName, size },

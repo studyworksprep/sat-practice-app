@@ -135,7 +135,7 @@ export default async function StudentReviewPage() {
   );
 
   const commonErrors = commonErrorsFromAttempts(attemptsRaw, metaById)
-    .filter((row) => row.wrong > 0)
+    .filter((row) => row.weak > 0)
     .slice(0, COMMON_ERRORS_TOP_N);
 
   // ACT side — same shape (skill_name carries category, domain_name
@@ -148,7 +148,7 @@ export default async function StudentReviewPage() {
     actAttemptedQids,
   );
   const actCommonErrors = commonErrorsFromActAttempts(actAttemptsRaw, actMetaById)
-    .filter((row) => row.wrong > 0)
+    .filter((row) => row.weak > 0)
     .slice(0, COMMON_ERRORS_TOP_N);
 
   // Whether to show test-type headers. When the student only has
@@ -322,8 +322,8 @@ function ReviewCommonErrors({ commonErrors, labelKind, createAction }) {
             <span>Common errors</span>
           </div>
           <div className={s.cardHint}>
-            {pluralNoun.charAt(0).toUpperCase() + pluralNoun.slice(1)} where you&apos;ve missed the most. Click one
-            to drill that {noun} only.
+            {pluralNoun.charAt(0).toUpperCase() + pluralNoun.slice(1)} with the most questions still tripping
+            you up. Click one to drill that {noun} only.
           </div>
         </div>
         <span className={s.cardTag}>
@@ -349,7 +349,7 @@ function ReviewCommonErrors({ commonErrors, labelKind, createAction }) {
                     <span className={s.skillDomain}>{row.domain_name}</span>
                   )}
                   <span className={s.skillStats}>
-                    {row.wrong} wrong of {row.total} attempts ·{' '}
+                    {row.weak} of {row.total} question{row.total === 1 ? '' : 's'} still weak ·{' '}
                     {Math.round(row.accuracy * 100)}% accuracy
                   </span>
                 </div>

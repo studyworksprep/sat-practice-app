@@ -89,7 +89,7 @@ export default async function TutorTrainingReviewPage() {
   );
 
   const commonErrors = commonErrorsFromAttempts(attemptsRaw, metaById)
-    .filter((row) => row.wrong > 0)
+    .filter((row) => row.weak > 0)
     .slice(0, COMMON_ERRORS_TOP_N);
 
   let flashcardTotal = 0;
@@ -128,7 +128,7 @@ export default async function TutorTrainingReviewPage() {
           <div>
             <div className={s.h2}>Common errors</div>
             <div className={s.cardHint}>
-              Skills where you&apos;ve missed the most. Click one to drill that skill only.
+              Skills with the most questions still tripping you up. Click one to drill that skill only.
             </div>
           </div>
           <span className={s.cardTag}>
@@ -154,7 +154,7 @@ export default async function TutorTrainingReviewPage() {
                       <span className={s.skillDomain}>{row.domain_name}</span>
                     )}
                     <span className={s.skillStats}>
-                      {row.wrong} wrong of {row.total} attempts ·{' '}
+                      {row.weak} of {row.total} question{row.total === 1 ? '' : 's'} still weak ·{' '}
                       {Math.round(row.accuracy * 100)}% accuracy
                     </span>
                   </div>
