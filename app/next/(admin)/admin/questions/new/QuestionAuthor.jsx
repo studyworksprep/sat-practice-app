@@ -22,28 +22,51 @@ function letter(i) {
 }
 
 let optionSeq = 0;
-function newOption() {
+function newOption(initialHtml) {
   optionSeq += 1;
-  return { id: `opt-${optionSeq}`, doc: null };
+  return { id: `opt-${optionSeq}`, doc: null, initialHtml: initialHtml ?? null };
 }
 
-export function QuestionAuthor() {
-  const [questionType, setQuestionType] = useState('mcq');
-  const [subject, setSubject] = useState('math');
-  const [domainCode, setDomainCode] = useState('');
-  const [skillCode, setSkillCode] = useState('');
-  const [difficulty, setDifficulty] = useState('');
-  const [scoreBand, setScoreBand] = useState('');
+function initialOptions(initial) {
+  if (initial?.options?.length) {
+    return initial.options.map((o) => newOption(o.contentHtml));
+  }
+  return [newOption(), newOption(), newOption(), newOption()];
+}
 
+function subjectForInitial(initial) {
+  if (initial?.subject) return initial.subject;
+  const dom = findDomain(initial?.domainCode);
+  return dom?.subjectCode ?? 'math';
+}
+
+/**
+ * @param {object} [props.initial]  Pre-filled values (e.g. an AI-generated
+ *   draft). Editor surfaces take HTML strings (stimulusHtml/stemHtml/
+ *   rationaleHtml and options[].contentHtml); the rest are scalars.
+ * @param {string} [props.source]   'studyworks' (default) or 'generated'.
+ * @param {string} [props.submitLabel]
+ */
+export function QuestionAuthor({ initial = null, source = 'studyworks', submitLabel = 'Create question' }) {
+  const [questionType, setQuestionType] = useState(initial?.questionType ?? 'mcq');
+  const [subject, setSubject] = useState(() => subjectForInitial(initial));
+  const [domainCode, setDomainCode] = useState(initial?.domainCode ?? '');
+  const [skillCode, setSkillCode] = useState(initial?.skillCode ?? '');
+  const [difficulty, setDifficulty] = useState(initial?.difficulty != null ? String(initial.difficulty) : '');
+  const [scoreBand, setScoreBand] = useState(initial?.scoreBand != null ? String(initial.scoreBand) : '');
+
+  // The editors are seeded via initialContent (HTML) and emit their
+  // parsed ProseMirror JSON on mount, so these hold JSON even before
+  // the admin makes an edit.
   const [stimulusDoc, setStimulusDoc] = useState(null);
   const [stemDoc, setStemDoc] = useState(null);
   const [rationaleDoc, setRationaleDoc] = useState(null);
 
-  const [options, setOptions] = useState(() => [newOption(), newOption(), newOption(), newOption()]);
-  const [correctIndex, setCorrectIndex] = useState(0);
+  const [options, setOptions] = useState(() => initialOptions(initial));
+  const [correctIndex, setCorrectIndex] = useState(initial?.correctIndex ?? 0);
 
-  const [sprAnswers, setSprAnswers] = useState('');
-  const [sprTolerance, setSprTolerance] = useState('');
+  const [sprAnswers, setSprAnswers] = useState(initial?.sprAnswers ?? '');
+  const [sprTolerance, setSprTolerance] = useState(initial?.sprTolerance ?? '');
 
   const [error, setError] = useState(null);
   const [pending, startTransition] = useTransition();
@@ -88,6 +111,7 @@ export function QuestionAuthor() {
       stem: stemDoc,
       stimulus: stimulusDoc,
       rationale: rationaleDoc,
+      source,
     };
     if (questionType === 'mcq') {
       payload.options = options.map((o, i) => ({ label: letter(i), doc: o.doc }));
@@ -106,6 +130,13 @@ export function QuestionAuthor() {
 
   return (
     <form onSubmit={onSubmit} style={S.form}>
+      {initial?.figureNote && (
+        <div style={S.figureBanner}>
+          <strong>Figure needed:</strong> {initial.figureNote} Use the image
+          button (🖼) in the relevant editor to upload it.
+        </div>
+      )}
+
       {/* ── Metadata ─────────────────────────────────────────── */}
       <section style={S.card}>
         <h2 style={S.cardTitle}>Classification</h2>
@@ -154,7 +185,7 @@ export function QuestionAuthor() {
       <section style={S.card}>
         <h2 style={S.cardTitle}>Stimulus <span style={S.optional}>optional — passage, data table, or setup</span></h2>
         <RichEditor
-          initialContent={null}
+          initialContent={initial?.stimulusHtml ?? null}
           onChange={setStimulusDoc}
           tools={{ tables: true, images: true, displayMath: true }}
           placeholder="Passage, table, figure, or a standalone equation…"
@@ -165,7 +196,7 @@ export function QuestionAuthor() {
       <section style={S.card}>
         <h2 style={S.cardTitle}>Question stem <span style={S.required}>required</span></h2>
         <RichEditor
-          initialContent={null}
+          initialContent={initial?.stemHtml ?? null}
           onChange={setStemDoc}
           tools={{ tables: false, images: true, displayMath: false }}
           placeholder="The question sentence — What…, Which…, If…"
@@ -190,7 +221,7 @@ export function QuestionAuthor() {
                 </label>
                 <div style={{ flex: 1 }}>
                   <RichEditor
-                    initialContent={null}
+                    initialContent={opt.initialHtml ?? null}
                     onChange={(doc) => updateOptionDoc(opt.id, doc)}
                     tools={{ tables: false, images: true, displayMath: true }}
                     placeholder="Answer choice…"
@@ -231,7 +262,7 @@ export function QuestionAuthor() {
       <section style={S.card}>
         <h2 style={S.cardTitle}>Rationale <span style={S.optional}>optional — shown on review</span></h2>
         <RichEditor
-          initialContent={null}
+          initialContent={initial?.rationaleHtml ?? null}
           onChange={setRationaleDoc}
           tools={{ tables: true, images: true, displayMath: true }}
           placeholder="Why the correct answer is correct…"
@@ -242,11 +273,11 @@ export function QuestionAuthor() {
 
       <div style={S.footer}>
         <div style={S.footerNote}>
-          Saved as <code>source = studyworks</code>, <strong>unpublished</strong>.
+          Saved as <code>source = {source}</code>, <strong>unpublished</strong>.
           You can publish it from the question page afterward.
         </div>
         <button type="submit" disabled={pending} style={S.submitBtn}>
-          {pending ? 'Saving…' : 'Create question'}
+          {pending ? 'Saving…' : submitLabel}
         </button>
       </div>
     </form>
@@ -264,6 +295,7 @@ function Labeled({ label, children }) {
 
 const S = {
   form: { display: 'flex', flexDirection: 'column', gap: '1.25rem' },
+  figureBanner: { padding: '0.6rem 0.85rem', background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', borderRadius: 8, fontSize: '0.9rem', lineHeight: 1.5 },
   card: { border: '1px solid #e5e7eb', borderRadius: 10, padding: '1rem 1.25rem', background: '#fff' },
   cardTitle: { fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#374151', margin: '0 0 0.75rem' },
   optional: { fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: '#9ca3af', marginLeft: '0.5rem' },

@@ -35,6 +35,10 @@ export async function createQuestion(payload) {
     return fail('Pick a question type.');
   }
 
+  // Authored content is 'studyworks'; AI-generated alternates are
+  // 'generated'. Both are admin-authored and unpublished by default.
+  const source = payload?.source === 'generated' ? 'generated' : 'studyworks';
+
   // ── Taxonomy (names resolved from the canonical table) ──────────
   const domain = findDomain(payload?.domain_code);
   if (!domain) return fail('Pick a domain.');
@@ -135,7 +139,7 @@ export async function createQuestion(payload) {
     skill_name: skill.name,
     difficulty: difficulty === 'empty' ? null : difficulty,
     score_band: scoreBand === 'empty' ? null : scoreBand,
-    source: 'studyworks',
+    source,
     is_published: false,
     stem_rendered: rendered.stem_rendered,
     stimulus_rendered: rendered.stimulus_rendered,

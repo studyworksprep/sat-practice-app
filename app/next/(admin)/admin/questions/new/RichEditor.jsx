@@ -63,13 +63,16 @@ export function RichEditor({
   const extensions = [
     StarterKit.configure(STARTER_KIT_OPTS),
     MathInline,
+    // MathBlock is always registered so a display equation in loaded /
+    // pre-filled content is never dropped on parse; the toolbar's insert
+    // button is what `displayMath` gates.
+    MathBlock,
     // getApi only reads the ref when a math node view is clicked, never
     // during render. TipTap mounts node views in a separate React root,
     // so a ref bridge (not context) is the way to reach them.
     // eslint-disable-next-line react-hooks/refs
     MathPopoverBridge.configure({ getApi }),
   ];
-  if (displayMath) extensions.push(MathBlock);
   if (tables) {
     extensions.push(TableKit.configure({ table: { resizable: false } }));
   }
@@ -99,6 +102,15 @@ export function RichEditor({
       setPopover({ pos, latex: latex || '', display: !!display });
     };
   });
+
+  // Emit the initial parsed document once so the parent holds JSON for
+  // pre-filled (e.g. AI-generated) content even before the admin edits.
+  const emittedInitial = useRef(false);
+  useEffect(() => {
+    if (!editor || emittedInitial.current) return;
+    emittedInitial.current = true;
+    onChange?.(editor.getJSON());
+  }, [editor, onChange]);
 
   if (!editor) {
     return <div className={s.editorShell} style={{ minHeight }} />;

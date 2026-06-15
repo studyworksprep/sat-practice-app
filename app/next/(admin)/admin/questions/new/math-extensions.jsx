@@ -79,7 +79,13 @@ export const MathInline = Node.create({
   atom: true,
   selectable: true,
   addAttributes() {
-    return { latex: { default: '' } };
+    return {
+      latex: {
+        default: '',
+        parseHTML: (el) => el.getAttribute('data-latex') || '',
+        renderHTML: (attrs) => ({ 'data-latex': attrs.latex || '' }),
+      },
+    };
   },
   parseHTML() {
     return [{ tag: 'span[data-math-inline]' }];
@@ -99,7 +105,13 @@ export const MathBlock = Node.create({
   selectable: true,
   draggable: true,
   addAttributes() {
-    return { latex: { default: '' } };
+    return {
+      latex: {
+        default: '',
+        parseHTML: (el) => el.getAttribute('data-latex') || '',
+        renderHTML: (attrs) => ({ 'data-latex': attrs.latex || '' }),
+      },
+    };
   },
   parseHTML() {
     return [{ tag: 'div[data-math-block]' }];

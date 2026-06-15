@@ -167,6 +167,11 @@ export async function QuestionReviewPage({ questionId, chrome }) {
             label="Next →"
             title="Older question (created_at descending)"
           />
+          {chrome.generateHref && (
+            <Link href={chrome.generateHref} style={S.generateBtn} title="Write an original alternate question with AI">
+              ✨ Generate alternate version with AI
+            </Link>
+          )}
           {!question.is_published && <Pill tone="warn">Unpublished</Pill>}
           {question.is_broken && <Pill tone="danger">Flagged</Pill>}
           {brokenData.canEdit && (
@@ -311,4 +316,14 @@ const S = {
   h1: { fontSize: '1.5rem', fontWeight: 700, margin: 0 },
   sub: { color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem' },
   article: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
+  generateBtn: {
+    display: 'inline-block',
+    padding: '0.3rem 0.7rem',
+    borderRadius: 6,
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    background: '#7c3aed',
+    color: '#fff',
+    textDecoration: 'none',
+  },
 };

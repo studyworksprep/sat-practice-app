@@ -17,6 +17,7 @@ export default async function AdminQuestionDetailPage({ params }) {
         backHref: '/admin/questions',
         backLabel: 'Admin · Questions',
         baseHref: '/admin/questions',
+        generateHref: `/admin/questions/${questionId}/generate`,
       }}
     />
   );
