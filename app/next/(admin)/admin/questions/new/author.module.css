@@ -1,0 +1,133 @@
+.editorShell {
+  position: relative;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 8px 8px 0 0;
+}
+
+.toolBtn {
+  min-width: 1.9rem;
+  height: 1.9rem;
+  padding: 0 0.45rem;
+  font-size: 0.8rem;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  cursor: pointer;
+  line-height: 1;
+}
+.toolBtn:hover { background: #f3f4f6; }
+.toolBtnActive { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+
+.sep {
+  width: 1px;
+  height: 1.2rem;
+  background: #e5e7eb;
+  margin: 0 0.25rem;
+}
+
+.prose {
+  padding: 0.6rem 0.75rem;
+  min-height: 2.75rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  outline: none;
+}
+.prose:focus { outline: none; }
+.prose p { margin: 0 0 0.5rem; }
+.prose p:last-child { margin-bottom: 0; }
+
+/* Table editing surface — borders so structure is visible while
+   authoring. The saved HTML carries no inline styles; the bank's own
+   stylesheet renders stimulus_table at read time. */
+.prose table {
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+  width: auto;
+}
+.prose th,
+.prose td {
+  border: 1px solid #9ca3af;
+  padding: 0.3rem 0.6rem;
+  text-align: left;
+  min-width: 3rem;
+}
+.prose th { background: #f3f4f6; font-weight: 600; }
+.prose .selectedCell { background: #eff6ff; }
+.prose img { max-width: 100%; height: auto; }
+
+/* Math node views (global class names from NodeViewWrapper). */
+.editorShell :global(.sw-math-inline) {
+  display: inline-block;
+  padding: 0 2px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.editorShell :global(.sw-math-inline:hover),
+.editorShell :global(.sw-math-inline[data-selected='true']) {
+  background: #fef3c7;
+  outline: 1px solid #fcd34d;
+}
+.editorShell :global(.sw-math-block) {
+  display: block;
+  text-align: center;
+  margin: 0.5rem 0;
+  padding: 0.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.editorShell :global(.sw-math-block:hover),
+.editorShell :global(.sw-math-block[data-selected='true']) {
+  background: #fef3c7;
+  outline: 1px solid #fcd34d;
+}
+.editorShell :global(.sw-math-raw) {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  color: #b45309;
+}
+
+.popover {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fffbeb;
+}
+.popoverLabel { font-size: 0.75rem; font-weight: 600; color: #92400e; text-transform: uppercase; letter-spacing: 0.04em; }
+.popoverBtns { display: flex; gap: 0.5rem; }
+
+.primaryBtn {
+  padding: 0.35rem 0.85rem;
+  background: #2563eb; color: #fff;
+  border: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer;
+}
+.ghostBtn {
+  padding: 0.35rem 0.85rem;
+  background: #fff; color: #374151;
+  border: 1px solid #d1d5db; border-radius: 6px; font-weight: 500; font-size: 0.85rem; cursor: pointer;
+}
+
+.placeholder {
+  position: absolute;
+  top: 3.1rem;
+  left: 0.85rem;
+  color: #9ca3af;
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.uploadErr { padding: 0.4rem 0.75rem; color: #991b1b; font-size: 0.8rem; }
