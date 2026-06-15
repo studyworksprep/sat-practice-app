@@ -146,16 +146,23 @@ legacy page route blocks deletion.
 Still owed before deletion: the per-segment `/api/*` `fetch(`
 cross-check below.
 
-- [ ] Delete legacy route dirs: `app/practice`, `app/act-practice`,
-      `app/practice-test`, `app/dashboard`, `app/teacher`,
-      `app/teachers`, `app/review`, `app/assignments`, `app/learn`,
-      `app/flashcards`, `app/account`, `app/admin`, `app/login`,
-      `app/subscribe`, `app/bugs`, `app/features`.
-- [ ] Delete legacy-only `components/` (`AdminDashboard.js`,
-      `NavBar.js`, `FeatureSlideshow.js` once relocated, etc.) and
-      `lib/practiceSessionStorage.js` (legacy-only — 6 importers, all
-      legacy).
-- [ ] Delete the 89 legacy-only `/api/*` route handlers. **API
+- [x] **Delete legacy route dirs** (16 dirs + `app/page.js` +
+      `app/auth/update-password`). Kept `app/auth/callback`,
+      `app/auth/demo` (tree-agnostic route handlers), and the root-
+      level `layout.js`, `global-error.js`, `globals.css`, `styles/`.
+      Simplified `app/layout.js`: dropped `NavBar`, `StorageHygiene`,
+      `TestTypeProvider` and the `x-ui-tree` header plumbing; declared
+      `export const dynamic = 'force-dynamic'` so per-request auth
+      reads don't trip static prerendering.
+- [x] **Delete legacy-only `components/`** (13 files —
+      `AdminDashboard`, `ConceptTags`, `DesmosStateButton`, `Filters`,
+      `FlashcardsModal`, `LandingClient`, `NavBar`, `QuestionNotes`,
+      `QuestionsV2BulkReview`, `QuestionsV2Preview`, `SessionTimer`,
+      `StorageHygiene`, `Toast`). Kept `FeatureSlideshow.js` and
+      `HtmlBlock.js` — the only two the next tree imports.
+      Also deleted `lib/practiceSessionStorage.js` and
+      `lib/TestTypeContext.js` (legacy-only).
+- [x] **Delete the 89 legacy-only `/api/*` route handlers.** **API
       cross-check done** — `app/next/`, `lib/`, and the only two
       `components/` files the next tree imports (`FeatureSlideshow`,
       `HtmlBlock`) were swept for every `fetch`/`sendBeacon`. The
@@ -183,20 +190,27 @@ cross-check below.
       [studentId]/*` except `upload-bluebook`, and every
       `/api/practice-tests/*` sub-route are legacy-only. Delete at the
       route-file level, not by directory.
-- [ ] Update the e2e suite: `tests/e2e/api-auth.*.spec.ts` and
-      `helpers/fixtures.ts` assert against legacy-only routes
-      (`/api/me`, `/api/dashboard`, `/api/admin/users`,
-      `/api/teacher/*`, …) — repoint or drop those cases when the
-      routes are deleted.
+- [x] **Update the e2e suite.** Deleted `api-auth.{anon,student,
+      teacher}.spec.ts` — the auth-matrix tested legacy `/api/*` role
+      consistency across many routes; with the keep-list down to 12,
+      most user-gated, the matrix is overkill. Trimmed
+      `helpers/fixtures.ts` to just the `USERS` export (still used by
+      `page-auth.teacher.spec.ts`).
+
+**Verified after each deletion commit:** lint 0 errors, typecheck
+clean, `next build` exit 0. The build output confirms exactly the 12
+keep-list routes remain in the `/api/*` segment and zero legacy URL
+paths in the page tree.
+
+**Deferred follow-up (out of scope for the deletion sweep):**
 - [ ] Promote `app/next/*` to the route root (or keep the rewrite
-      indefinitely — decide during Stage C). Simplify `proxy.js`:
-      remove the tree resolver, the `x-ui-tree` header, the
-      kill-switch read, `TREE_AGNOSTIC_PREFIXES`, `isTreeAgnostic`,
-      `resolveUiTree`, `userTreeFromJwt`.
+      indefinitely). Simplify `proxy.js`: remove the tree resolver,
+      the `x-ui-tree` header, the kill-switch read,
+      `TREE_AGNOSTIC_PREFIXES`, `isTreeAgnostic`, `resolveUiTree`,
+      `userTreeFromJwt`. Functional today; cleanup, not a blocker.
 - [ ] Flip the next-tree design tokens from `[data-tree="next"]` back
       to `:root` and drop the wrapping `<div data-tree="next">` in
-      `app/next/layout.js` (and the now-redundant root-layout NavBar
-      gate).
+      `app/next/layout.js`. Pairs naturally with the promotion above.
 
 ### Stage D — Schema & flag cleanup (destructive — needs sign-off)
 
