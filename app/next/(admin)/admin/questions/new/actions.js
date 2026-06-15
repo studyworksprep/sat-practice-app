@@ -1,10 +1,16 @@
 'use server';
 
 // Server Action for the admin question-authoring page. Takes the
-// editor's structured payload (ProseMirror JSON per surface + the
-// taxonomy / answer metadata), serializes each surface to clean bank
-// HTML, pre-renders the math server-side, and inserts a new
-// questions_v2 row.
+// already-serialized bank HTML (the editor serializes ProseMirror JSON
+// to clean bank HTML on the client, via lib/content/bank-html.ts) plus
+// the taxonomy / answer metadata, pre-renders the math server-side, and
+// inserts a new questions_v2 row.
+//
+// Why the client serializes: ProseMirror JSON passed straight through a
+// Server Action argument is turned into a "temporary client reference"
+// by React's flight serializer (the math node attrs can't be read with
+// `.latex` on the server). Sending the final HTML strings keeps only
+// plain, serializable data on the wire.
 //
 // Invariants for authored questions:
 //   - source        = 'studyworks'   (distinguishes in-house content)
@@ -19,12 +25,15 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
-import { docToBankHtml, docToBankHtmlOrNull } from '@/lib/content/bank-html';
 import { findDomain, findSkill } from '@/lib/practice/sat-taxonomy';
 import { renderRow } from '@/lib/content/render-math.mjs';
 
 function fail(message) {
   return { error: message };
+}
+
+function cleanHtml(v) {
+  return typeof v === 'string' && v.trim() ? v : null;
 }
 
 export async function createQuestion(payload) {
@@ -51,11 +60,11 @@ export async function createQuestion(payload) {
   const scoreBand = normalizeInt(payload?.score_band, 1, 7);
   if (scoreBand === 'invalid') return fail('Score band must be 1–7.');
 
-  // ── Content surfaces → bank HTML ────────────────────────────────
-  const stemHtml = docToBankHtml(payload?.stem, 'stem');
+  // ── Content surfaces (pre-serialized bank HTML from the client) ──
+  const stemHtml = cleanHtml(payload?.stem_html);
   if (!stemHtml) return fail('The question stem is required.');
-  const stimulusHtml = docToBankHtmlOrNull(payload?.stimulus, 'stimulus');
-  const rationaleHtml = docToBankHtmlOrNull(payload?.rationale, 'rationale');
+  const stimulusHtml = cleanHtml(payload?.stimulus_html);
+  const rationaleHtml = cleanHtml(payload?.rationale_html);
 
   // ── Options + correct answer ────────────────────────────────────
   let options = null;
@@ -66,7 +75,7 @@ export async function createQuestion(payload) {
     const built = [];
     for (let i = 0; i < rawOptions.length; i++) {
       const label = (rawOptions[i]?.label || String.fromCharCode(65 + i)).trim();
-      const contentHtml = docToBankHtml(rawOptions[i]?.doc, 'option');
+      const contentHtml = cleanHtml(rawOptions[i]?.content_html);
       if (!contentHtml) return fail(`Option ${label} is empty.`);
       built.push({ label, ordinal: i + 1, content_html: contentHtml });
     }

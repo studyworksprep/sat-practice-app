@@ -10,6 +10,7 @@
 import { useMemo, useState, useTransition } from 'react';
 import { RichEditor } from './RichEditor';
 import { domainsForSubject, findDomain } from '@/lib/practice/sat-taxonomy';
+import { docToBankHtml, docToBankHtmlOrNull } from '@/lib/content/bank-html';
 import { createQuestion } from './actions';
 
 const SUBJECTS = [
@@ -108,13 +109,19 @@ export function QuestionAuthor({ initial = null, source = 'studyworks', submitLa
       skill_code: skillCode,
       difficulty,
       score_band: scoreBand,
-      stem: stemDoc,
-      stimulus: stimulusDoc,
-      rationale: rationaleDoc,
+      // Serialize to clean bank HTML on the client so only plain strings
+      // cross the Server Action boundary (raw ProseMirror JSON would be
+      // wrapped as a temporary client reference and fail server-side).
+      stem_html: docToBankHtml(stemDoc, 'stem'),
+      stimulus_html: docToBankHtmlOrNull(stimulusDoc, 'stimulus'),
+      rationale_html: docToBankHtmlOrNull(rationaleDoc, 'rationale'),
       source,
     };
     if (questionType === 'mcq') {
-      payload.options = options.map((o, i) => ({ label: letter(i), doc: o.doc }));
+      payload.options = options.map((o, i) => ({
+        label: letter(i),
+        content_html: docToBankHtml(o.doc, 'option'),
+      }));
       payload.correct_option_label = letter(correctIndex);
     } else {
       payload.spr_answers = sprAnswers.split('\n').map((s) => s.trim()).filter(Boolean);
