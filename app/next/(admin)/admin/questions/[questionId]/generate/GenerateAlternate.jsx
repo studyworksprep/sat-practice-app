@@ -14,6 +14,7 @@ export function GenerateAlternate({ sourceId }) {
   const [status, setStatus] = useState('idle'); // idle | loading | ready | error
   const [error, setError] = useState(null);
   const [initial, setInitial] = useState(null);
+  const [notes, setNotes] = useState('');
   const [genKey, setGenKey] = useState(0);
 
   async function generate() {
@@ -30,6 +31,7 @@ export function GenerateAlternate({ sourceId }) {
         throw new Error(data.error || `Request failed (${res.status})`);
       }
       setInitial(buildInitial(data));
+      setNotes(typeof data.generated?.distractor_notes === 'string' ? data.generated.distractor_notes : '');
       setGenKey((k) => k + 1);
       setStatus('ready');
     } catch (e) {
@@ -64,6 +66,11 @@ export function GenerateAlternate({ sourceId }) {
         </span>
         <button type="button" onClick={generate} style={S.regenBtn}>↻ Regenerate</button>
       </div>
+      {notes && (
+        <div style={S.notes}>
+          <strong>Distractor logic (verify):</strong> {notes}
+        </div>
+      )}
       <QuestionAuthor
         key={genKey}
         initial={initial}
@@ -106,5 +113,6 @@ const S = {
   genBtn: { padding: '0.6rem 1.2rem', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' },
   regenBtn: { padding: '0.4rem 0.85rem', background: '#fff', color: '#6d28d9', border: '1px solid #ddd6fe', borderRadius: 6, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' },
   readyBar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', padding: '0.6rem 0.85rem', marginBottom: '1rem', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: 8, color: '#5b21b6', fontSize: '0.9rem' },
+  notes: { padding: '0.6rem 0.85rem', marginBottom: '1rem', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, color: '#92400e', fontSize: '0.85rem', lineHeight: 1.5 },
   error: { padding: '0.6rem 0.85rem', marginBottom: '1rem', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: 8, fontSize: '0.9rem' },
 };

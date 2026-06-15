@@ -20,6 +20,10 @@ import {
 // as an unpublished source='generated' row via the createQuestion
 // Server Action.
 
+// Adaptive-thinking generation can run longer than the platform default,
+// so give the serverless function more headroom.
+export const maxDuration = 60;
+
 export const POST = legacyApiRoute(async (request) => {
   const { service: admin } = await requireServiceRole(
     'admin questions-v2 generate — read a question to seed AI generation',
@@ -44,12 +48,18 @@ export const POST = legacyApiRoute(async (request) => {
   const userPayload = buildSourcePayload(row);
 
   try {
+    // Adaptive thinking lets the model actually work the algebra and the
+    // trap-procedure construction before it answers, which materially
+    // improves distractor quality. (Forced tool_choice is incompatible
+    // with thinking, so we use auto + a firm "call the tool once"
+    // instruction and validate the tool_use came back.)
     const response = await fetchClaudeMessages({
       model: GENERATE_MODEL,
-      max_tokens: 8000,
+      max_tokens: 16000,
+      thinking: { type: 'adaptive' },
       system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
       tools: [RETURN_GENERATED_QUESTION_TOOL],
-      tool_choice: { type: 'tool', name: RETURN_GENERATED_QUESTION_TOOL.name },
+      tool_choice: { type: 'auto' },
       messages: [{ role: 'user', content: JSON.stringify(userPayload) }],
     });
 
@@ -161,6 +171,7 @@ function normalizeGenerated(g, questionType) {
     rationale_html: typeof g.rationale_html === 'string' ? g.rationale_html : null,
     options: questionType === 'mcq' ? options : [],
     spr_answers: Array.isArray(g.spr_answers) ? g.spr_answers.map(String).filter(Boolean) : [],
+    distractor_notes: typeof g.distractor_notes === 'string' ? g.distractor_notes : '',
     figure_needed: g.figure_needed === true,
     figure_description: typeof g.figure_description === 'string' ? g.figure_description : null,
   };
