@@ -9,7 +9,7 @@
 // being torn down — none of those should clobber a real equation.
 
 import type { Editor } from '@tiptap/react';
-import { readMathFieldValue } from '@/app/next/(student)/notes/MathNode';
+import { readMathFieldValue } from '@/app/(student)/notes/MathNode';
 
 export function syncMathNodesFromDom(editor: Editor): void {
   const { state, view } = editor;

@@ -13,16 +13,16 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import dynamicImport from 'next/dynamic';
 import Link from 'next/link';
-import { upsertNoteForQuestion } from '@/app/next/(student)/notes/actions';
+import { upsertNoteForQuestion } from '@/app/(student)/notes/actions';
 import type { NoteDoc, NoteTaxonomy } from '@/lib/types';
 import { domainSection } from '@/lib/ui/question-layout';
 import { ToolButton } from '@/lib/ui/ToolButton';
 import s from './QuestionNotes.module.css';
-import type { NoteEditorSavePayload } from '@/app/next/(student)/notes/NoteEditor';
+import type { NoteEditorSavePayload } from '@/app/(student)/notes/NoteEditor';
 
 const NoteEditor = dynamicImport(
   () =>
-    import('@/app/next/(student)/notes/NoteEditor').then((m) => m.NoteEditor),
+    import('@/app/(student)/notes/NoteEditor').then((m) => m.NoteEditor),
   {
     ssr: false,
     loading: () => <div style={{ padding: 16, fontSize: 13 }}>Loading editor…</div>,

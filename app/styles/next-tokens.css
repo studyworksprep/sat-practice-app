@@ -1,21 +1,19 @@
 /* =============================================================
-   Studyworks design-system tokens — scoped to the new tree.
+   Studyworks design-system tokens.
    Ported from the Claude-Design handoff:
      studyworks-design-system/project/colors_and_type.css
 
-   Scoping strategy. Wrapped in [data-tree="next"] so legacy
-   pages — which still set their own :root variables in
-   globals.css with overlapping names (--bg, --card, --border,
-   --s1..5) — aren't affected. app/next/layout.js adds the
-   data-tree="next" attribute; every descendant inherits the
-   tokens below. When Phase 6 retires the legacy tree, flip
-   this block back to :root and drop the scoping attr.
+   Tokens live on :root since Phase 6 retired the legacy tree.
+   The previous [data-tree="next"] scoping is gone — there's no
+   second tree to isolate from. CSS module comments that still
+   reference [data-tree="next"] are cosmetic; the var lookups
+   resolve identically from :root.
 
    Add new variables here, never in component CSS modules.
    Component modules reference the variables via var(--foo).
 ============================================================= */
 
-[data-tree="next"] {
+:root {
   /* ---------- Brand ---------- */
   --color-brand-cyan:      #29B6E8;
   --color-brand-cyan-dark: #1D8FBF;

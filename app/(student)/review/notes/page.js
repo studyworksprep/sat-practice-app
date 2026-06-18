@@ -12,7 +12,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
-import { loadNotesForReview } from '@/app/next/(student)/notes/loaders';
+import { loadNotesForReview } from '@/app/(student)/notes/loaders';
 import { NotesReviewInteractive } from './NotesReviewInteractive';
 import s from './ReviewNotes.module.css';
 

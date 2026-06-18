@@ -7,7 +7,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { updateStudentProfile } from '@/app/next/(tutor)/tutor/roster/actions';
+import { updateStudentProfile } from '@/app/(tutor)/tutor/roster/actions';
 import s from './StudentDetail.module.css';
 
 /** Trigger + modal for the two profile fields a tutor reaches for

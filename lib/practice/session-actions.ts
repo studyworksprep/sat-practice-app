@@ -347,7 +347,7 @@ export async function submitPracticeSession(
   ) {
     try {
       const { finalizeActPracticeTest } = await import(
-        '@/app/next/(student)/practice/tests/actions'
+        '@/app/(student)/practice/tests/actions'
       );
       const res = await finalizeActPracticeTest(supabase, user.id, sessionId);
       if (res.ok) actAttemptId = res.attemptId;

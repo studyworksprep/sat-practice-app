@@ -202,15 +202,36 @@ clean, `next build` exit 0. The build output confirms exactly the 12
 keep-list routes remain in the `/api/*` segment and zero legacy URL
 paths in the page tree.
 
-**Deferred follow-up (out of scope for the deletion sweep):**
-- [ ] Promote `app/next/*` to the route root (or keep the rewrite
-      indefinitely). Simplify `proxy.js`: remove the tree resolver,
-      the `x-ui-tree` header, the kill-switch read,
-      `TREE_AGNOSTIC_PREFIXES`, `isTreeAgnostic`, `resolveUiTree`,
-      `userTreeFromJwt`. Functional today; cleanup, not a blocker.
-- [ ] Flip the next-tree design tokens from `[data-tree="next"]` back
-      to `:root` and drop the wrapping `<div data-tree="next">` in
-      `app/next/layout.js`. Pairs naturally with the promotion above.
+- [x] **Promote `app/next/*` to the route root.** `git mv` of every
+      `app/next/*` file and route-group dir up one level
+      (`app/(admin)`, `app/(student)`, `app/(tutor)`, `app/[...slug]`,
+      `app/page.js`, `app/error.js`, `app/HomeClient.jsx` etc.). The
+      old next-tree `layout.js` collapsed into `app/layout.js` (which
+      now imports the three next-* stylesheets directly). 13 stale
+      `@/app/next/...` import paths across `app/` and `lib/` were
+      mechanically rewritten to `@/app/...`.
+- [x] **Simplify `proxy.js`.** Dropped `KILL_SWITCH_TTL_MS`,
+      `killSwitchCache`, `readKillSwitch`, `TREE_AGNOSTIC_PREFIXES`,
+      `isTreeAgnostic`, `userTreeFromJwt`, `resolveUiTree`, the
+      `x-ui-tree` request header, and the entire `/foo` → `/next/foo`
+      rewrite branch. Kept everything still load-bearing: external/
+      webhook short-circuit, static-asset bypass, Supabase session
+      refresh, demo write lockdown, `x-pathname` (used by the
+      `(student)` layout), and the role/subscription routing.
+      `proxy.js` shrank from 318 lines to ~150. Updated
+      `BLOCKED_FOR_PRACTICE` and `SUBSCRIPTION_REQUIRED` to match
+      the live next-tree URLs (`/teacher` → `/tutor`, dropped the
+      dead `/practice-test`).
+- [x] **Flip design tokens** in `app/styles/next-tokens.css` from
+      `[data-tree="next"]` to `:root`. CSS module comments still
+      mention the old selector cosmetically; `var(--…)` lookups
+      resolve identically from `:root`. `next-prose.css` and
+      `next-tools.css` never used `data-tree` (they scope via
+      `.sw-*` class prefixes) — no change there.
+
+**Verified after the promotion:** lint 0 errors, typecheck clean,
+`next build` exit 0, 105 dynamic routes all served from `/` (no
+`/next/` paths in the build output).
 
 ### Stage D — Schema & flag cleanup (destructive — needs sign-off)
 

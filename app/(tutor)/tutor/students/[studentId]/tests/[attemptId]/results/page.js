@@ -14,7 +14,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireRole } from '@/lib/api/auth';
 import { loadTestResults } from '@/lib/practice-test/load-test-results';
 import { TestResultsInteractive } from
-  '@/app/next/(student)/practice/test/attempt/[attemptId]/results/TestResultsInteractive';
+  '@/app/(student)/practice/test/attempt/[attemptId]/results/TestResultsInteractive';
 
 export const dynamic = 'force-dynamic';
 

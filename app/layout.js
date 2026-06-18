@@ -1,4 +1,7 @@
 import './globals.css';
+import './styles/next-tokens.css';
+import './styles/next-prose.css';
+import './styles/next-tools.css';
 import { Inter, Playfair_Display } from 'next/font/google';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
@@ -23,7 +26,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata = {
-  title: 'SAT Practice',
+  title: 'Studyworks',
   description: 'Practice SAT questions with Supabase + Next.js',
 };
 

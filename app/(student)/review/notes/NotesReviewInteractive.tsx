@@ -10,7 +10,7 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import type { NoteForReview, NotesIndexFacets } from '@/app/next/(student)/notes/loaders';
+import type { NoteForReview, NotesIndexFacets } from '@/app/(student)/notes/loaders';
 import s from './ReviewNotes.module.css';
 
 interface Props {
