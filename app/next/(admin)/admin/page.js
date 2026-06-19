@@ -234,6 +234,7 @@ export default async function AdminLandingPage() {
         <div className={s.navGrid}>
           <NavCard href="/admin/users" title="User management" desc="Create, edit, and assign users." />
           <NavCard href="/admin/questions" title="Question content" desc="Browse and edit the question bank." />
+          <NavCard href="/admin/questions/new" title="Write a question" desc="Author a new Studyworks question." />
           <NavCard href="/admin/performance" title="Student performance" desc="Aggregate stats across cohorts." />
           <NavCard href="/admin/content" title="Score conversions + thresholds" desc="Test-level config + curves." />
           <NavCard href="/admin/bluebook-batch" title="Batch Bluebook upload" desc="Upload several Bluebook score reports at once." />

@@ -83,11 +83,16 @@ export default async function AdminQuestionsPage({ searchParams }) {
       </nav>
 
       <header className={a.header}>
-        <div className={a.eyebrow}>Admin · Questions</div>
-        <h1 className={a.h1}>Questions</h1>
-        <p className={a.sub}>
-          {total.toLocaleString()} match{total === 1 ? '' : 'es'} · page {page} of {lastPage}
-        </p>
+        <div style={S.headerRow}>
+          <div>
+            <div className={a.eyebrow}>Admin · Questions</div>
+            <h1 className={a.h1}>Questions</h1>
+            <p className={a.sub}>
+              {total.toLocaleString()} match{total === 1 ? '' : 'es'} · page {page} of {lastPage}
+            </p>
+          </div>
+          <Link href="/admin/questions/new" style={S.newBtn}>+ New question</Link>
+        </div>
       </header>
 
       <FilterBar current={{ q, broken, trimmed, hasmath }} />
@@ -266,6 +271,24 @@ function stripToSnippet(html, limit = 120) {
 // admin.module.css; the inline objects below cover the per-page
 // internals — filter bar, snippet column, pagination.
 const S = {
+  headerRow: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 16,
+    flexWrap: 'wrap',
+  },
+  newBtn: {
+    flexShrink: 0,
+    padding: '0.55rem 1rem',
+    background: '#16a34a',
+    color: '#fff',
+    borderRadius: 8,
+    fontWeight: 600,
+    fontSize: '0.9rem',
+    textDecoration: 'none',
+    whiteSpace: 'nowrap',
+  },
   filterBar: {
     display: 'flex',
     alignItems: 'center',
