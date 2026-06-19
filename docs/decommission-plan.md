@@ -6,7 +6,23 @@ current-state companion to `docs/architecture-plan.md` §4 Phase 6 —
 that section is the design intent; this file is what we actually do,
 in order, with the audit that justifies each step.
 
-_Started May 2026, branch `claude/legacy-tree-decommission-wKzyC`._
+_Started May 2026 on branch `claude/legacy-tree-decommission-wKzyC`;
+restarted June 2026 on branch `claude/legacy-tree-decommission-v2-wKzyC`
+after the original branch drifted ~90 commits / +10k LOC behind main
+and clean merge became impractical._
+
+> **Restart context (June 2026).** Stage A landed on main as part of
+> the original attempt: the `profiles.ui_version` column-default
+> migration is applied to prod, the `/features/*` decks are ported to
+> `app/next/features/*`, `/features` is off `proxy.js`'s
+> `TREE_AGNOSTIC_PREFIXES`, and `tests/e2e/features-parity.anon.spec.ts`
+> exists. Stages B (Verified by owner — see below), C, and D still
+> need execution. Before any Stage C deletion, the route-parity audit
+> and `/api/*` keep-list cross-check from the original attempt must be
+> **re-run against current main** — main accumulated significant
+> feature work (AI question generation, lesson packs, weak-drill
+> changes, manager-flag-as-broken, etc.) that may have added new pages
+> and/or new `/api/*` calls that change the inventory.
 
 ---
 
@@ -126,21 +142,27 @@ work. It is deleted with the rest of the legacy tree in Stage C.
       sweep). `tutorManagerDemoData.js` already lives in `lib/` and
       is safe.
 
-### Stage B — Verify the Phase 6 precondition (no code)
+### Stage B — Verify the Phase 6 precondition (no code) — COMPLETE
 
-Owner must confirm before Stage C — none of this is verifiable from
-the repo:
-
-- [ ] 100% of production users effectively on `next` (no account
-      still carrying `ui_version='legacy'`), held for 30+ days.
-- [ ] `feature_flags.force_ui_version='next'` for a 7-day window with
-      the legacy tree unreachable even by direct URL.
-- [ ] Dual-tree Playwright CI green for the full window.
-- [ ] `select count(*) from desmos_saved_states` — if non-zero,
-      schedule the v1→v2 `question_id` migration noted in
-      `docs/cutover-runbook.md` before legacy reads disappear.
+Owner-verified complete (June 2026): 100% of active production users
+have been on the next tree for ~30 days with no regressions. Stage C
+is unblocked.
 
 ### Stage C — Delete the legacy tree (destructive — needs sign-off)
+
+**Audit refresh required first.** Before any deletion, re-run the
+two audits the original attempt completed:
+
+- [ ] Re-audit page-route parity (legacy `app/*` → next `app/next/*`).
+      The original list cleared all 41 legacy routes; main may have
+      added new pages on either side.
+- [ ] Re-audit the `/api/*` cross-check (which routes are still called
+      by `app/next/`, `lib/`, and next-reachable `components/`). The
+      original keep-list was 12 routes (6 external/webhook + 6 used
+      by the next tree); main's new feature work may have shifted
+      either side.
+
+Then proceed with the deletion proper:
 
 - [ ] Delete legacy route dirs: `app/practice`, `app/act-practice`,
       `app/practice-test`, `app/dashboard`, `app/teacher`,
