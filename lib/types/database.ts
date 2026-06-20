@@ -2223,15 +2223,8 @@ export type Database = {
             foreignKeyName: "question_concept_tags_question_id_fkey"
             columns: ["question_id"]
             isOneToOne: false
-            referencedRelation: "questions"
+            referencedRelation: "questions_v2"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_concept_tags_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
           },
           {
             foreignKeyName: "question_concept_tags_tag_id_fkey"
