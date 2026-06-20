@@ -7,12 +7,9 @@
 
 import s from './Learn.module.css';
 
-export function LearnFilter({ tab, currentQuery, currentDomain, domains }) {
+export function LearnFilter({ currentQuery, currentDomain, domains }) {
   return (
     <form method="GET" action="/learn" className={s.filterRow}>
-      {tab && tab !== 'assigned' && (
-        <input type="hidden" name="tab" value={tab} />
-      )}
       <input
         type="text"
         name="q"

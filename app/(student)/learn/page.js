@@ -1,12 +1,11 @@
 // Student · Learn. Lesson library + entry point to the Getting
-// Started tutorial. Server Component — lessons, topics, progress,
-// and the "assigned to me" filter all resolve server-side; the
-// legacy version fetched /api/lessons three times from a useEffect.
+// Started tutorial. Server Component — lessons, topics, and
+// progress all resolve server-side; the legacy version fetched
+// /api/lessons three times from a useEffect.
 //
-// Filters drive off URL query params (?tab=assigned|library,
-// ?q=search, ?domain=X). The tiny filter form is a client island
-// that submits via <form method="GET">; everything else stays
-// on the server.
+// Filters drive off URL query params (?q=search, ?domain=X). The
+// tiny filter form is a client island that submits via <form
+// method="GET">; everything else stays on the server.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
@@ -20,7 +19,6 @@ const LESSON_LIST_LIMIT = 500;
 
 export default async function StudentLearnPage({ searchParams }) {
   const sp = (await searchParams) ?? {};
-  const tab = sp.tab === 'library' ? 'library' : 'assigned';
   const query = typeof sp.q === 'string' ? sp.q.trim() : '';
   const domainFilter = typeof sp.domain === 'string' ? sp.domain : '';
 
@@ -32,18 +30,17 @@ export default async function StudentLearnPage({ searchParams }) {
   }
   if (profile.role === 'practice') redirect('/subscribe');
 
-  // Pull the full library and the student's assignment list in
-  // parallel. The list size is bounded by LESSON_LIST_LIMIT
-  // because every row carries a small payload and the page filters
-  // in memory afterwards — once the library outgrows that bound,
-  // shift to keyset pagination.
-  const [lessonsRes, assignmentRows, allTopicsRes, domainListRes] = await Promise.all([
+  // Pull the full library and supporting metadata in parallel.
+  // The list size is bounded by LESSON_LIST_LIMIT because every
+  // row carries a small payload and the page filters in memory
+  // afterwards — once the library outgrows that bound, shift to
+  // keyset pagination.
+  const [lessonsRes, allTopicsRes, domainListRes] = await Promise.all([
     supabase
       .from('lessons')
       .select('id, title, description, author_id, status, visibility, created_at, updated_at')
       .order('updated_at', { ascending: false })
       .limit(LESSON_LIST_LIMIT),
-    fetchAssignedLessonIds(supabase, user.id),
     supabase
       .from('lesson_topics')
       .select('lesson_id, domain_name, skill_code'),
@@ -74,7 +71,6 @@ export default async function StudentLearnPage({ searchParams }) {
     fetchProgressMap(supabase, user.id, lessonIds),
   ]);
 
-  const assignedIds = new Set(assignmentRows);
   const domains = Array.from(new Set(
     (domainListRes.data ?? []).map((r) => r.domain_name).filter(Boolean),
   )).sort();
@@ -84,14 +80,9 @@ export default async function StudentLearnPage({ searchParams }) {
     author_name: authorMap.get(l.author_id) ?? 'Unknown',
     topics: topicsByLesson.get(l.id) ?? [],
     progress: progressMap.get(l.id) ?? null,
-    assigned: assignedIds.has(l.id),
   }));
 
-  const visibleByTab = tab === 'assigned'
-    ? enriched.filter((l) => l.assigned)
-    : enriched;
-
-  const filtered = visibleByTab.filter((l) => {
+  const filtered = enriched.filter((l) => {
     if (query) {
       const q = query.toLowerCase();
       const inTitle = (l.title ?? '').toLowerCase().includes(q);
@@ -103,9 +94,6 @@ export default async function StudentLearnPage({ searchParams }) {
     }
     return true;
   });
-
-  const assignedCount = enriched.filter((l) => l.assigned).length;
-  const libraryCount = enriched.length;
 
   return (
     <main className={s.page}>
@@ -129,30 +117,11 @@ export default async function StudentLearnPage({ searchParams }) {
         </Card>
       </a>
 
-      <nav className={s.tabs}>
-        <a
-          href={buildHref({ tab: 'assigned', q: query, domain: domainFilter })}
-          className={tab === 'assigned' ? `${s.tab} ${s.tabActive}` : s.tab}
-        >
-          Assigned to me ({assignedCount})
-        </a>
-        <a
-          href={buildHref({ tab: 'library', q: query, domain: domainFilter })}
-          className={tab === 'library' ? `${s.tab} ${s.tabActive}` : s.tab}
-        >
-          All content ({libraryCount})
-        </a>
-      </nav>
-
-      <LearnFilter tab={tab} currentQuery={query} currentDomain={domainFilter} domains={domains} />
+      <LearnFilter currentQuery={query} currentDomain={domainFilter} domains={domains} />
 
       {filtered.length === 0 ? (
         <Card className={s.emptyCard}>
-          <p className={s.emptyText}>
-            {tab === 'assigned'
-              ? 'No lessons assigned to you yet.'
-              : 'No lessons match those filters.'}
-          </p>
+          <p className={s.emptyText}>No lessons match those filters.</p>
         </Card>
       ) : (
         <div className={s.lessonList}>
@@ -199,29 +168,6 @@ export default async function StudentLearnPage({ searchParams }) {
       )}
     </main>
   );
-}
-
-function buildHref({ tab, q, domain }) {
-  const params = new URLSearchParams();
-  if (tab && tab !== 'assigned') params.set('tab', tab);
-  if (q) params.set('q', q);
-  if (domain) params.set('domain', domain);
-  const qs = params.toString();
-  return qs ? `/learn?${qs}` : '/learn';
-}
-
-async function fetchAssignedLessonIds(supabase, userId) {
-  const { data: myAssignments } = await supabase
-    .from('lesson_assignment_students')
-    .select('assignment_id')
-    .eq('student_id', userId);
-  if (!myAssignments || myAssignments.length === 0) return [];
-  const ids = myAssignments.map((a) => a.assignment_id);
-  const { data: assignmentRows } = await supabase
-    .from('lesson_assignments')
-    .select('lesson_id')
-    .in('id', ids);
-  return (assignmentRows ?? []).map((r) => r.lesson_id);
 }
 
 async function fetchAuthorMap(supabase, lessons) {
