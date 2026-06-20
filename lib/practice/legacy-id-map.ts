@@ -1,53 +1,15 @@
-// Tiny helper for surfaces that still write into v1-keyed tables.
-// concept_tags' question link table (question_concept_tags) FKs
-// to questions(id) — the legacy v1 table — so a v2 question_id
-// from the new tree must be translated to its v1 counterpart
-// before insert/delete. question_id_map carries the mapping
-// (old_question_id ↔ new_question_id, PK = old).
+// Bulk v2 → v1 question_id translator. Used by read paths that
+// still join attempts and other tables keyed by v1 question_ids
+// (assignment reports, practice-test results, session review).
 //
-// resolveLegacyQuestionId returns the v1 id for a given v2
-// questionId. Falls back to the input if it's already a v1 id
-// (caller passed straight through) or if no mapping exists
-// (post-cutover question with no v1 counterpart). Callers
-// should be prepared to surface a clean error when the FK
-// insert still fails — unmapped post-cutover questions can't
-// be tagged in the v1 schema.
+// question_id_map carries the mapping (old_question_id ↔
+// new_question_id, PK = old). Multiple v1 rows can map to the same
+// v2 row (different versions of the same question). Read paths
+// build the union of (v2 id, all v1 counterparts) to capture
+// activity recorded against any historical version.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabase = any;
-
-export async function resolveLegacyQuestionId(
-  supabase: AnySupabase,
-  questionId: string,
-): Promise<string> {
-  if (!questionId) return questionId;
-
-  // Cheap path — input is already a v1 id (= old_question_id).
-  const { data: asLegacy } = await supabase
-    .from('question_id_map')
-    .select('old_question_id')
-    .eq('old_question_id', questionId)
-    .limit(1)
-    .maybeSingle();
-  if (asLegacy?.old_question_id) return asLegacy.old_question_id as string;
-
-  // Treat as v2 and look up the earliest-migrated v1
-  // counterpart. Multiple v1 rows can map to the same v2 row
-  // (different versions of the same question). Earliest-by-
-  // migrated_at is a stable choice.
-  const { data: viaMap } = await supabase
-    .from('question_id_map')
-    .select('old_question_id')
-    .eq('new_question_id', questionId)
-    .order('migrated_at', { ascending: true })
-    .limit(1)
-    .maybeSingle();
-  if (viaMap?.old_question_id) return viaMap.old_question_id as string;
-
-  // Pass through — caller decides what to do with an
-  // unmapped id.
-  return questionId;
-}
 
 /**
  * Bulk variant for read paths. Returns a Map keyed by v2
