@@ -60,7 +60,6 @@ export interface AuthContext {
     id: string;
     role: UserRole;
     subscription_exempt?: boolean | null;
-    ui_version?: 'legacy' | 'next' | null;
     [key: string]: unknown;
   };
   /** Supabase server client — typed loosely here until lib/supabase

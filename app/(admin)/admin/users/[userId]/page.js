@@ -34,7 +34,7 @@ export default async function AdminUserDetailPage({ params }) {
   const { data: subject, error } = await supabase
     .from('profiles')
     .select(
-      'id, email, first_name, last_name, role, is_active, banned_at, subscription_exempt, target_sat_score, high_school, graduation_year, tutor_name, sat_test_date, created_at, ui_version',
+      'id, email, first_name, last_name, role, is_active, banned_at, subscription_exempt, target_sat_score, high_school, graduation_year, tutor_name, sat_test_date, created_at',
     )
     .eq('id', userId)
     .maybeSingle();
@@ -74,7 +74,6 @@ export default async function AdminUserDetailPage({ params }) {
           />
           {subject.email && <span style={S.email}>{subject.email}</span>}
           <span style={S.muted}>Joined {formatDate(subject.created_at) || '—'}</span>
-          <span style={S.muted}>UI: {subject.ui_version ?? 'legacy'}</span>
         </div>
       </header>
 

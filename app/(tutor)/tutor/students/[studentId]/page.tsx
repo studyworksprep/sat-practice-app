@@ -32,7 +32,6 @@ import { IconTile } from '@/lib/ui/IconTile';
 import { DeletePracticeTestButton } from './DeletePracticeTestButton';
 import { EditTargetStartButton } from './EditTargetStartModal';
 import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
-import { MigrateToNextButton } from './MigrateToNextButton';
 import { OfficialScoresCard } from './OfficialScoresCard';
 import { ScoreProgressChart } from './ScoreProgressChart';
 import { TestRegistrationsCard } from './TestRegistrationsCard';
@@ -87,7 +86,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId),
     supabase
       .from('profiles')
-      .select('practice_test_v2_imported_at, created_at, start_date, ui_version')
+      .select('practice_test_v2_imported_at, created_at, start_date')
       .eq('id', studentId)
       .maybeSingle(),
     supabase
@@ -800,14 +799,6 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           importedAt={profileRow?.practice_test_v2_imported_at ?? null}
           hasV1History={(v1AttemptCount ?? 0) > 0}
         />
-        {(profile.role === 'admin' || profile.role === 'manager') && (
-          <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed var(--border)' }}>
-            <MigrateToNextButton
-              studentId={student.id}
-              currentUiVersion={(profileRow as { ui_version?: string | null } | null)?.ui_version ?? null}
-            />
-          </div>
-        )}
       </section>
     </main>
   );
