@@ -503,6 +503,7 @@ export type Database = {
           filter_criteria: Json | null
           id: string
           lesson_id: string | null
+          lesson_pack_id: string | null
           practice_test_id: string | null
           question_ids: string[] | null
           teacher_id: string
@@ -522,6 +523,7 @@ export type Database = {
           filter_criteria?: Json | null
           id?: string
           lesson_id?: string | null
+          lesson_pack_id?: string | null
           practice_test_id?: string | null
           question_ids?: string[] | null
           teacher_id: string
@@ -541,6 +543,7 @@ export type Database = {
           filter_criteria?: Json | null
           id?: string
           lesson_id?: string | null
+          lesson_pack_id?: string | null
           practice_test_id?: string | null
           question_ids?: string[] | null
           teacher_id?: string
@@ -555,6 +558,13 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_v2_lesson_pack_id_fkey"
+            columns: ["lesson_pack_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_packs"
             referencedColumns: ["id"]
           },
           {
@@ -1033,106 +1043,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "flashcard_sets"
             referencedColumns: ["id"]
-          },
-        ]
-      }
-      lesson_assignment_students: {
-        Row: {
-          assignment_id: string
-          created_at: string | null
-          student_id: string
-        }
-        Insert: {
-          assignment_id: string
-          created_at?: string | null
-          student_id: string
-        }
-        Update: {
-          assignment_id?: string
-          created_at?: string | null
-          student_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lesson_assignment_students_assignment_id_fkey"
-            columns: ["assignment_id"]
-            isOneToOne: false
-            referencedRelation: "lesson_assignments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_assignment_students_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "profile_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_assignment_students_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_assignment_students_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_practice_stats"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      lesson_assignments: {
-        Row: {
-          created_at: string | null
-          due_date: string | null
-          id: string
-          lesson_id: string
-          teacher_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          due_date?: string | null
-          id?: string
-          lesson_id: string
-          teacher_id: string
-        }
-        Update: {
-          created_at?: string | null
-          due_date?: string | null
-          id?: string
-          lesson_id?: string
-          teacher_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lesson_assignments_lesson_id_fkey"
-            columns: ["lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_assignments_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "profile_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_assignments_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_assignments_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "student_practice_stats"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -2107,7 +2017,6 @@ export type Database = {
           target_sat_score: number | null
           teacher_invite_code: string | null
           tutor_name: string | null
-          ui_version: string
           user_type: string | null
           welcome_email_sent_at: string | null
         }
@@ -2132,7 +2041,6 @@ export type Database = {
           target_sat_score?: number | null
           teacher_invite_code?: string | null
           tutor_name?: string | null
-          ui_version?: string
           user_type?: string | null
           welcome_email_sent_at?: string | null
         }
@@ -2157,7 +2065,6 @@ export type Database = {
           target_sat_score?: number | null
           teacher_invite_code?: string | null
           tutor_name?: string | null
-          ui_version?: string
           user_type?: string | null
           welcome_email_sent_at?: string | null
         }
@@ -2530,69 +2437,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "student_practice_stats"
             referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      question_status: {
-        Row: {
-          attempts_count: number
-          correct_attempts_count: number
-          created_at: string
-          is_broken: boolean
-          is_done: boolean
-          last_attempt_at: string | null
-          last_is_correct: boolean | null
-          marked_for_review: boolean
-          notes: string | null
-          question_id: string
-          status_json: Json | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          attempts_count?: number
-          correct_attempts_count?: number
-          created_at?: string
-          is_broken?: boolean
-          is_done?: boolean
-          last_attempt_at?: string | null
-          last_is_correct?: boolean | null
-          marked_for_review?: boolean
-          notes?: string | null
-          question_id: string
-          status_json?: Json | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          attempts_count?: number
-          correct_attempts_count?: number
-          created_at?: string
-          is_broken?: boolean
-          is_done?: boolean
-          last_attempt_at?: string | null
-          last_is_correct?: boolean | null
-          marked_for_review?: boolean
-          notes?: string | null
-          question_id?: string
-          status_json?: Json | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "question_status_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_status_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
           },
         ]
       }

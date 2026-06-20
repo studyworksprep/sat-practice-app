@@ -1,19 +1,15 @@
 'use client';
 
 // Demo page for the Tutor Manager sales slideshow. Renders the same
-// "Teacher Training" profile that lives on the /teachers page when
-// you click into a tutor, but populated with the hypothetical
+// "Teacher Training" profile that lives on the tutor teachers page
+// when you click into a tutor, but populated with the hypothetical
 // featured-tutor data from lib/tutorManagerDemoData.js.
-//
-// JSX is duplicated (not imported) from app/teachers/page.js so the
-// live page doesn't need to refactor for the sake of marketing
-// screenshots.
 
 import { useState } from 'react';
 import {
   DEMO_FEATURED_TUTOR,
   DEMO_FEATURED_TRAINING,
-} from '../../../../../lib/tutorManagerDemoData';
+} from '@/lib/tutorManagerDemoData';
 
 function pctColor(p) {
   if (p === null || p === undefined) return undefined;

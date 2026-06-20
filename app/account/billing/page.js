@@ -1,141 +1,158 @@
-'use client';
+// Subscription status surface. Server Component — resolves access
+// from the database directly and only delegates to a client island
+// for the "Manage Subscription" button (which has to POST to
+// /api/billing/create-portal and follow the returned URL). The
+// legacy page fetched /api/billing/status in a useEffect, flashing
+// "Loading…" before the actual content rendered; this version
+// renders the final state in the first paint.
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { requireUser } from '@/lib/api/auth';
+import { userHasAccess } from '@/lib/subscription';
+import { Button } from '@/lib/ui/Button';
+import { Card } from '@/lib/ui/Card';
+import { ManagePortalButton } from './ManagePortalButton';
+import s from './Billing.module.css';
 
-export default function BillingPage() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [portalLoading, setPortalLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const dynamic = 'force-dynamic';
 
-  useEffect(() => {
-    fetch('/api/billing/status')
-      .then(r => r.json())
-      .then(d => setData(d))
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+export default async function BillingPage() {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch {
+    redirect('/login?next=/account/billing');
+  }
+  const { user, supabase } = ctx;
 
-  async function openPortal() {
-    setPortalLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/billing/create-portal', { method: 'POST' });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error || 'Failed to open portal');
-      window.location.href = d.url;
-    } catch (err) {
-      setError(err.message);
-      setPortalLoading(false);
-    }
+  const access = await userHasAccess(supabase, user.id);
+
+  let subscription = null;
+  if (access.reason === 'subscription') {
+    const { data } = await supabase
+      .from('subscriptions')
+      .select('plan, status, current_period_end, trial_end, cancel_at_period_end')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'trialing'])
+      .maybeSingle();
+    subscription = data;
   }
 
-  if (loading) {
-    return (
-      <main className="container" style={{ paddingTop: 48, textAlign: 'center' }}>
-        <p className="muted">Loading billing info...</p>
-      </main>
-    );
-  }
-
-  const sub = data?.subscription;
-  const reason = data?.reason;
+  const formatDate = (iso) =>
+    new Date(iso).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
 
   return (
-    <main className="container" style={{ maxWidth: 600, paddingTop: 40, paddingBottom: 60 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 className="h1" style={{ margin: 0 }}>Billing</h1>
-        <Link href="/dashboard" className="btn secondary">Dashboard</Link>
+    <main className={s.page}>
+      <div className={s.header}>
+        <h1 className={s.h1}>Billing</h1>
+        <Button href="/dashboard" variant="secondary" size="sm">Dashboard</Button>
       </div>
 
-      <div className="card" style={{ padding: 24 }}>
-        {/* Access status */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)', marginBottom: 4 }}>Account Status</div>
-          {data?.hasAccess ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-              <span style={{ fontWeight: 700, fontSize: 16, color: '#166534' }}>Active</span>
-              {reason === 'exempt' && <span className="pill" style={{ fontSize: 11, background: 'rgba(22,163,74,0.1)', color: '#166534' }}>Exempt</span>}
-              {reason === 'role' && <span className="pill" style={{ fontSize: 11, background: 'rgba(79,124,224,0.1)', color: 'var(--accent)' }}>{data.plan || 'Admin'}</span>}
-              {reason === 'subscription' && <span className="pill" style={{ fontSize: 11, background: 'rgba(79,124,224,0.1)', color: 'var(--accent)' }}>{sub?.plan || 'Subscribed'}</span>}
+      <Card className={s.card}>
+        <section className={s.statusBlock}>
+          <div className={s.eyebrow}>Account status</div>
+          {access.hasAccess ? (
+            <div className={s.statusRow}>
+              <span className={`${s.dot} ${s.dotActive}`} aria-hidden="true" />
+              <span className={s.statusLabel}>Active</span>
+              {access.reason === 'exempt' && (
+                <span className={`${s.pill} ${s.pillExempt}`}>Exempt</span>
+              )}
+              {access.reason === 'role' && (
+                <span className={`${s.pill} ${s.pillRole}`}>{access.plan || 'Admin'}</span>
+              )}
+              {access.reason === 'subscription' && (
+                <span className={`${s.pill} ${s.pillSub}`}>
+                  {subscription?.plan ?? 'Subscribed'}
+                </span>
+              )}
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#dc2626', display: 'inline-block' }} />
-              <span style={{ fontWeight: 700, fontSize: 16, color: '#991b1b' }}>No Active Subscription</span>
+            <div className={s.statusRow}>
+              <span className={`${s.dot} ${s.dotInactive}`} aria-hidden="true" />
+              <span className={s.statusLabel}>No active subscription</span>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Subscription details */}
-        {sub && (
-          <div style={{ display: 'grid', gap: 12, marginBottom: 20, padding: '16px', background: 'var(--surface)', borderRadius: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-              <span className="muted">Plan</span>
-              <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{sub.plan}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-              <span className="muted">Status</span>
-              <span style={{ fontWeight: 600, textTransform: 'capitalize', color: sub.status === 'active' ? '#166534' : sub.status === 'trialing' ? 'var(--accent)' : '#dc2626' }}>
-                {sub.status === 'trialing' ? 'Free Trial' : sub.status}
-              </span>
-            </div>
-            {sub.trial_end && sub.status === 'trialing' && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                <span className="muted">Trial Ends</span>
-                <span style={{ fontWeight: 600 }}>{new Date(sub.trial_end).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-              </div>
+        {subscription && (
+          <section className={s.subDetails}>
+            <Row label="Plan" value={subscription.plan} capitalize />
+            <Row
+              label="Status"
+              value={subscription.status === 'trialing' ? 'Free Trial' : subscription.status}
+              tone={
+                subscription.status === 'active' ? 'good'
+                : subscription.status === 'trialing' ? 'accent'
+                : 'warn'
+              }
+              capitalize
+            />
+            {subscription.trial_end && subscription.status === 'trialing' && (
+              <Row label="Trial ends" value={formatDate(subscription.trial_end)} />
             )}
-            {sub.current_period_end && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                <span className="muted">{sub.cancel_at_period_end ? 'Access Until' : 'Next Billing Date'}</span>
-                <span style={{ fontWeight: 600 }}>{new Date(sub.current_period_end).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-              </div>
+            {subscription.current_period_end && (
+              <Row
+                label={subscription.cancel_at_period_end ? 'Access until' : 'Next billing date'}
+                value={formatDate(subscription.current_period_end)}
+              />
             )}
-            {sub.cancel_at_period_end && (
-              <div style={{ padding: '8px 12px', background: '#fef3c7', borderRadius: 8, fontSize: 13, color: '#92400e' }}>
+            {subscription.cancel_at_period_end && (
+              <div className={s.cancelNote}>
                 Your subscription will cancel at the end of the current period.
               </div>
             )}
-          </div>
+          </section>
         )}
 
-        {/* Exempt message */}
-        {reason === 'exempt' && (
-          <div style={{ padding: '16px', background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: 10, marginBottom: 20 }}>
-            <p style={{ fontSize: 14, color: '#166534', margin: 0, lineHeight: 1.6 }}>
-              Your account has full platform access at no cost through Studyworks Prep. No subscription or payment is required.
-            </p>
-          </div>
+        {access.reason === 'exempt' && (
+          <section className={s.exemptNote}>
+            Your account has full platform access at no cost through Studyworks Prep. No
+            subscription or payment is required.
+          </section>
         )}
 
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {sub && (
-            <button
-              className="btn secondary"
-              onClick={openPortal}
-              disabled={portalLoading}
-              style={{ padding: '10px 20px', fontSize: 14 }}
-            >
-              {portalLoading ? 'Opening...' : 'Manage Subscription'}
-            </button>
+        <section className={s.actions}>
+          {subscription && <ManagePortalButton />}
+          {!access.hasAccess && (
+            <Button href="/subscribe" variant="primary" size="sm">
+              Choose a plan
+            </Button>
           )}
-          {!data?.hasAccess && (
-            <Link href="/subscribe" className="btn primary" style={{ padding: '10px 20px', fontSize: 14 }}>
-              Choose a Plan
-            </Link>
-          )}
-        </div>
+        </section>
 
-        {error && (
-          <div style={{ marginTop: 12, padding: '8px 12px', background: '#fee2e2', borderRadius: 8, fontSize: 13, color: '#991b1b' }}>
-            {error}
+        {subscription && (
+          <div className={s.cancelHelp}>
+            To cancel, switch plans, or update your card, click <strong>Manage
+            Subscription</strong> above — you'll be taken to our secure billing
+            portal. Cancellations take effect at the end of the current billing
+            period. Full walkthrough in the <a href="/help/billing">Billing &amp;
+            Subscription</a> help article.
           </div>
         )}
-      </div>
+      </Card>
     </main>
+  );
+}
+
+function Row({ label, value, tone, capitalize }) {
+  const valueCls = [
+    s.rowValue,
+    tone === 'good' ? s.toneGood : '',
+    tone === 'accent' ? s.toneAccent : '',
+    tone === 'warn' ? s.toneWarn : '',
+    capitalize ? s.capitalize : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  return (
+    <div className={s.row}>
+      <span className={s.rowLabel}>{label}</span>
+      <span className={valueCls}>{value}</span>
+    </div>
   );
 }

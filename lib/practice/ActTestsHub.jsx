@@ -15,7 +15,7 @@
 import { useTransition } from 'react';
 import Link from 'next/link';
 import { sectionLabel } from '@/lib/practice/act-taxonomy';
-import { startActPracticeTest } from '@/app/next/(student)/practice/tests/actions';
+import { startActPracticeTest } from '@/app/(student)/practice/tests/actions';
 import s from './ActTestsHub.module.css';
 
 /**

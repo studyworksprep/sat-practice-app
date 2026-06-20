@@ -2,14 +2,10 @@
 
 // Demo page for the Tutor Manager sales slideshow. Renders the same
 // "Team Roster grid + Student Performance by Teacher" view that lives
-// on /teachers, but populated with the hypothetical tutor team from
-// lib/tutorManagerDemoData.js.
-//
-// JSX is duplicated (not imported) from app/teachers/page.js so the
-// live page doesn't need to refactor for the sake of marketing
-// screenshots.
+// on the tutor teachers page, but populated with the hypothetical
+// tutor team from lib/tutorManagerDemoData.js.
 
-import { DEMO_TUTORS } from '../../../../../lib/tutorManagerDemoData';
+import { DEMO_TUTORS } from '@/lib/tutorManagerDemoData';
 
 function pctColor(p) {
   if (p === null || p === undefined) return undefined;

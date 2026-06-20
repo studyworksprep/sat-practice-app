@@ -217,18 +217,6 @@ export async function submitAnswer(
         return actionFail(`Failed to record attempt: ${insertErr.message}`);
       }
     }
-
-    // Dashboard stats — SAT-side legacy helper. Best-effort; if it
-    // fails the attempts insert remains authoritative.
-    try {
-      await supabase.rpc('upsert_question_status_after_attempt', {
-        p_user_id: user.id,
-        p_question_id: questionId,
-        p_is_correct: isCorrect,
-      });
-    } catch {
-      // Legacy helper may not exist; ignore. Dashboard stats degrade gracefully.
-    }
   }
 
   // Assignment auto-completion. SAT-only path today — ACT assignments
@@ -347,7 +335,7 @@ export async function submitPracticeSession(
   ) {
     try {
       const { finalizeActPracticeTest } = await import(
-        '@/app/next/(student)/practice/tests/actions'
+        '@/app/(student)/practice/tests/actions'
       );
       const res = await finalizeActPracticeTest(supabase, user.id, sessionId);
       if (res.ok) actAttemptId = res.attemptId;

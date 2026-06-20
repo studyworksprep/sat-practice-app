@@ -17,7 +17,6 @@
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
-import { resolveLegacyQuestionId } from './legacy-id-map';
 import type { ActionResult } from '@/lib/types';
 
 interface ConceptTagSummary {
@@ -49,29 +48,6 @@ export async function addConceptTag({
     throw e;
   }
 
-  // question_concept_tags.question_id FKs to the v1 questions
-  // table. The new-tree report passes v2 ids; translate now
-  // before any write so the FK insert succeeds. Fail cleanly
-  // when no v1 counterpart exists (post-cutover questions with
-  // no v1 row) instead of letting the raw FK error reach the
-  // user.
-  const legacyQuestionId = await resolveLegacyQuestionId(supabase, questionId);
-  if (legacyQuestionId === questionId) {
-    // No mapping found — verify the id actually exists in v1
-    // before attempting the insert. This produces a friendlier
-    // error than the raw FK violation.
-    const { data: legacyRow } = await supabase
-      .from('questions')
-      .select('id')
-      .eq('id', questionId)
-      .maybeSingle();
-    if (!legacyRow) {
-      return actionFail(
-        'Concept tags are pinned to the legacy questions table; this question has no v1 counterpart yet.',
-      );
-    }
-  }
-
   // Case-insensitive existing-tag lookup. ilike with no wildcard
   // matches the literal name regardless of casing.
   const { data: existing } = await supabase
@@ -97,7 +73,7 @@ export async function addConceptTag({
   const { error: linkErr } = await supabase
     .from('question_concept_tags')
     .upsert(
-      { question_id: legacyQuestionId, tag_id: tag!.id, created_by: user.id },
+      { question_id: questionId, tag_id: tag!.id, created_by: user.id },
       { onConflict: 'question_id,tag_id', ignoreDuplicates: true },
     );
   if (linkErr) return actionFail(linkErr.message);
@@ -128,14 +104,10 @@ export async function removeConceptTagFromQuestion({
     throw e;
   }
 
-  // Same v1 translation as the add path — the row was stored
-  // against the legacy id, so the delete must match on that.
-  const legacyQuestionId = await resolveLegacyQuestionId(supabase, questionId);
-
   const { error } = await supabase
     .from('question_concept_tags')
     .delete()
-    .eq('question_id', legacyQuestionId)
+    .eq('question_id', questionId)
     .eq('tag_id', tagId);
   if (error) return actionFail(error.message);
 
