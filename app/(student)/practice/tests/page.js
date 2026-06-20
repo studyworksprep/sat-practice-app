@@ -21,7 +21,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { TestLauncher } from '@/lib/practice/TestLauncher';
 import { ActTestsHub } from '@/lib/practice/ActTestsHub';
-import { HelpButton } from '@/app/next/(student)/help/HelpButton';
+import { HelpButton } from '@/app/(student)/help/HelpButton';
 import s from './PracticeTestsPage.module.css';
 
 export const dynamic = 'force-dynamic';

@@ -49,7 +49,7 @@ import {
 } from './actions';
 import { WeakQueueLauncher } from './WeakQueueLauncher';
 import { SkillDrillButton } from './SkillDrillButton';
-import { HelpButton } from '@/app/next/(student)/help/HelpButton';
+import { HelpButton } from '@/app/(student)/help/HelpButton';
 import s from './Review.module.css';
 
 export const dynamic = 'force-dynamic';
