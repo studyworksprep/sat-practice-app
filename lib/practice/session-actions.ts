@@ -506,7 +506,16 @@ async function markAssignmentCompletedIfDone(
     .eq('id', assignmentId)
     .maybeSingle();
   if (!assignment) return;
-  if (assignment.assignment_type !== 'questions') return;
+  // lesson_pack materializes its pack's question_ids into the same
+  // column at creation and is started / displayed / progressed exactly
+  // like a 'questions' assignment everywhere else (start action, detail
+  // page, list page). Gate completion on the same pair so a finished
+  // lesson_pack actually records completed_at — otherwise it stays
+  // "pending" forever, the detail CTA stays "Continue" instead of
+  // flipping to "Redo" + "View report", and Continue mints a fresh
+  // blank session past the answers' created_at floor.
+  if (assignment.assignment_type !== 'questions'
+      && assignment.assignment_type !== 'lesson_pack') return;
 
   const questionIds: string[] = Array.isArray(assignment.question_ids)
     ? assignment.question_ids
@@ -556,7 +565,11 @@ async function markAssignmentCompletedOnSubmit(
     .eq('id', assignmentId)
     .maybeSingle();
   if (!assignment) return;
-  if (assignment.assignment_type !== 'questions') return;
+  // lesson_pack is treated like 'questions' everywhere else; include it
+  // here too so Submit Set stamps completed_at (and closes the session)
+  // for a finished lesson_pack. See markAssignmentCompletedIfDone.
+  if (assignment.assignment_type !== 'questions'
+      && assignment.assignment_type !== 'lesson_pack') return;
 
   await supabase
     .from('assignment_students_v2')
