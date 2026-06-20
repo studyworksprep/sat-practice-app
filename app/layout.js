@@ -81,10 +81,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        {/* The data-tree="next" wrapper is the last surviving piece of the
-            parallel-build scoping. C-4 of the decommission flips next-tokens.css
-            from [data-tree="next"] to :root and removes this div. */}
-        <div data-tree="next">{children}</div>
+        {children}
         <Analytics />
       </body>
     </html>
