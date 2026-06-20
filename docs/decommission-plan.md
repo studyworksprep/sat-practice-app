@@ -164,10 +164,23 @@ Owner-verified complete (June 2026): 100% of active production users
 have been on the next tree for ~30 days with no regressions. Stage C
 is unblocked.
 
-### Stage C — Delete the legacy tree (destructive — needs sign-off)
+### Stage C — Delete the legacy tree (destructive — needs sign-off) — **COMPLETE**
+
+Shipped as four commits on this branch (June 2026):
+
+- `b674e65` Stage C-1: 27,852 lines / 62 files removed.
+- `151b961` Stage C-2: 13,358 lines / 88 routes removed.
+- `cf05c73` Stage C-3: 292 files moved + proxy rewrite + redirects.
+- `2a152c6` Stage C-4: 13 lines of token-scoping flip.
+
+Typecheck stable at the same 6 pre-existing LessonPackBuilder errors
+throughout. `npm run build` compiles cleanly; the only build-time
+failure observed (sandbox prerender of /auth/update-password) is
+environmental (missing `NEXT_PUBLIC_SUPABASE_URL` in the agent's
+container, not a code issue — same prerender would fail on main).
 
 **Audits refreshed June 2026** against current main. Findings below
-are the authoritative inventory for the deletion sub-steps.
+were the authoritative inventory used for the deletion sub-steps.
 
 #### C-1. Delete legacy route dirs
 
@@ -353,7 +366,32 @@ Actions rather than `/api/*` handlers — consistent with §3 of the
 architecture plan and a healthy signal that new feature work
 reduces API surface rather than growing it.
 
-**Pending owner sign-off:** Stage C-1 through C-4 deletions and
-Stage D schema cleanup. Both are destructive and require explicit
-go-ahead per the parallel-build discipline in
-`docs/architecture-plan.md` §3.6.
+**June 2026 — Stage C complete (this branch).** Four commits per
+the audit-refresh inventory. Net diff: ~41,000 lines removed, 292
+files renamed, 50% reduction in `proxy.js`, single-tree layout.
+
+**Followups not part of this branch:**
+- `tests/e2e/helpers/fixtures.ts` references /api/* routes that
+  were deleted in C-2 (admin/users, dashboard, teacher/*, billing/
+  status, etc.). The negative-test specs that iterate those arrays
+  will fail loudly in CI. The fix is not a simple route swap —
+  most of the surface that moved to Server Actions doesn't have a
+  GET-able equivalent to test with `request.get(url)`. The auth-
+  matrix testing strategy needs a redesign that leans more on
+  page-level role redirects (which still exist) and less on
+  /api/* GET probes.
+- `app/globals.css` (8235 lines) carries 8k lines of legacy
+  component CSS that no surviving element uses. For overlapping
+  token names (`--bg`, `--card`, etc.), `next-tokens.css` wins
+  because of import order, so functionally it's harmless. Trim to
+  baseline (html/body, *{box-sizing}, a{} reset) in a polish pass.
+- ~30 `*.module.css` files have doc-comment headers that still
+  reference `[data-tree="next"]` as the token source. Selector is
+  now `:root`. Cosmetic only.
+- Stale doc comments in app and lib that reference the old
+  `app/next/...` paths (the imports themselves were swept en
+  masse).
+
+**Pending owner sign-off:** Stage D schema & flag cleanup. Still
+destructive (drops production columns / triggers / tables) and
+requires explicit go-ahead.
