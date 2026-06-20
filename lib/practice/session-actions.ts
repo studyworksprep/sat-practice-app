@@ -226,7 +226,7 @@ export async function submitAnswer(
     const assignmentId: string | undefined = session.filter_criteria?.assignment_id;
     if (assignmentId) {
       try {
-        await markAssignmentCompletedIfDone(supabase, user.id, assignmentId);
+        await markAssignmentCompletedIfDone(supabase, user.id, assignmentId, sessionFloor);
       } catch {
         // Swallow — the student's attempt is recorded either way.
       }
@@ -462,8 +462,24 @@ export async function togglePracticeMark(
 // ──────────────────────────────────────────────────────────────
 //
 // "Completed" = the student has at least one attempt against every
-// question in the assignment's question_ids. Order-independent, so
-// skipping around or returning later both work correctly.
+// question in the assignment's question_ids, made within the current
+// assignment-attempt window (created_at >= sessionFloor). Order-
+// independent, so skipping around or returning later both work
+// correctly.
+//
+// The window floor is essential, not cosmetic. An assignment session
+// is a "fresh attempt": the runner scopes a question's saved answer to
+// session.created_at (load-question.ts: `since = sessionCreatedAt`),
+// and submitAttempt records a new attempt per session window for the
+// same reason. If completion counted all-time attempts instead, a
+// student who had already practiced these questions elsewhere would
+// trip completion on their first in-session answer — which flips the
+// in_progress session to 'completed' via closeOpenSessionsForAssignment.
+// Continue then can't find an in_progress session to resume, mints a
+// fresh one, and every in-window answer falls below the new floor:
+// the whole assignment renders undone. Scoping the count to the
+// session floor keeps this detector in agreement with what the student
+// actually answered in this attempt.
 //
 // We query attempts directly instead of question_status: the latter
 // is maintained by a legacy RPC that may not exist in every
@@ -482,6 +498,7 @@ async function markAssignmentCompletedIfDone(
   supabase: any,
   userId: string,
   assignmentId: string,
+  sessionFloor: string,
 ): Promise<void> {
   const { data: assignment } = await supabase
     .from('assignments_v2')
@@ -500,7 +517,8 @@ async function markAssignmentCompletedIfDone(
     .from('attempts')
     .select('question_id')
     .eq('user_id', userId)
-    .in('question_id', questionIds);
+    .in('question_id', questionIds)
+    .gte('created_at', sessionFloor);
 
   const distinct = new Set(
     ((attempted ?? []) as Array<{ question_id: string }>).map((r) => r.question_id),
