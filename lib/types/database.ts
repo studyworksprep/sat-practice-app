@@ -503,6 +503,7 @@ export type Database = {
           filter_criteria: Json | null
           id: string
           lesson_id: string | null
+          lesson_pack_id: string | null
           practice_test_id: string | null
           question_ids: string[] | null
           teacher_id: string
@@ -522,6 +523,7 @@ export type Database = {
           filter_criteria?: Json | null
           id?: string
           lesson_id?: string | null
+          lesson_pack_id?: string | null
           practice_test_id?: string | null
           question_ids?: string[] | null
           teacher_id: string
@@ -541,6 +543,7 @@ export type Database = {
           filter_criteria?: Json | null
           id?: string
           lesson_id?: string | null
+          lesson_pack_id?: string | null
           practice_test_id?: string | null
           question_ids?: string[] | null
           teacher_id?: string
@@ -555,6 +558,13 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_v2_lesson_pack_id_fkey"
+            columns: ["lesson_pack_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_packs"
             referencedColumns: ["id"]
           },
           {
@@ -2107,7 +2117,6 @@ export type Database = {
           target_sat_score: number | null
           teacher_invite_code: string | null
           tutor_name: string | null
-          ui_version: string
           user_type: string | null
           welcome_email_sent_at: string | null
         }
@@ -2132,7 +2141,6 @@ export type Database = {
           target_sat_score?: number | null
           teacher_invite_code?: string | null
           tutor_name?: string | null
-          ui_version?: string
           user_type?: string | null
           welcome_email_sent_at?: string | null
         }
@@ -2157,7 +2165,6 @@ export type Database = {
           target_sat_score?: number | null
           teacher_invite_code?: string | null
           tutor_name?: string | null
-          ui_version?: string
           user_type?: string | null
           welcome_email_sent_at?: string | null
         }
