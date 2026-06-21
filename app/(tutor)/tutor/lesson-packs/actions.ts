@@ -430,11 +430,8 @@ export async function listConceptTags(): Promise<
 }
 
 // ─── intersectTaggedV2Ids ──────────────────────────────────
-// concept_tags ⇢ question_concept_tags (v1 ids) ⇢ question_id_map
-// ⇢ v2 ids. AND across tags is the intersection of per-tag v2 sets.
-// Mirrors the resolver in lib/practice/question-search-actions.ts;
-// extracted here rather than imported so this module can stay
-// self-contained while the lib helper migrates.
+// question_concept_tags.question_id is v2-keyed (FK to questions_v2).
+// AND across tags is the intersection of per-tag id sets.
 async function intersectTaggedV2Ids(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
@@ -446,52 +443,27 @@ async function intersectTaggedV2Ids(
     .in('tag_id', tagIds);
   if (linkErr) return null;
 
-  const v1IdsByTag = new Map<string, Set<string>>();
-  const allV1Ids = new Set<string>();
+  const idsByTag = new Map<string, Set<string>>();
   for (const row of linkRows ?? []) {
     if (!row?.tag_id || !row?.question_id) continue;
-    let bucket = v1IdsByTag.get(row.tag_id);
+    let bucket = idsByTag.get(row.tag_id);
     if (!bucket) {
       bucket = new Set();
-      v1IdsByTag.set(row.tag_id, bucket);
+      idsByTag.set(row.tag_id, bucket);
     }
     bucket.add(row.question_id);
-    allV1Ids.add(row.question_id);
   }
   for (const tagId of tagIds) {
-    if (!v1IdsByTag.has(tagId)) return new Set();
+    if (!idsByTag.has(tagId)) return new Set();
   }
 
-  const v1ToV2 = new Map<string, string>();
-  if (allV1Ids.size > 0) {
-    const { data: mapRows, error: mapErr } = await supabase
-      .from('question_id_map')
-      .select('old_question_id, new_question_id')
-      .in('old_question_id', Array.from(allV1Ids));
-    if (mapErr) return null;
-    for (const row of mapRows ?? []) {
-      if (row?.old_question_id && row?.new_question_id) {
-        v1ToV2.set(row.old_question_id, row.new_question_id);
-      }
-    }
-  }
-
-  const v2SetsByTag: Set<string>[] = [];
-  for (const tagId of tagIds) {
-    const v1Set = v1IdsByTag.get(tagId) ?? new Set();
-    const v2Set = new Set<string>();
-    for (const v1Id of v1Set) {
-      const v2Id = v1ToV2.get(v1Id);
-      if (v2Id) v2Set.add(v2Id);
-    }
-    v2SetsByTag.push(v2Set);
-  }
-  if (v2SetsByTag.length === 0) return new Set();
-  v2SetsByTag.sort((a, b) => a.size - b.size);
-  const out = new Set(v2SetsByTag[0]);
-  for (let i = 1; i < v2SetsByTag.length; i += 1) {
+  const setsByTag = Array.from(idsByTag.values());
+  if (setsByTag.length === 0) return new Set();
+  setsByTag.sort((a, b) => a.size - b.size);
+  const out = new Set(setsByTag[0]);
+  for (let i = 1; i < setsByTag.length; i += 1) {
     for (const id of out) {
-      if (!v2SetsByTag[i].has(id)) out.delete(id);
+      if (!setsByTag[i].has(id)) out.delete(id);
     }
   }
   return out;
