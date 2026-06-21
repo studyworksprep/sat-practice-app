@@ -1415,48 +1415,6 @@ export type Database = {
         }
         Relationships: []
       }
-      practice_test_attempts: {
-        Row: {
-          adaptive_version: string | null
-          composite_score: number | null
-          finished_at: string | null
-          id: string
-          math_scaled: number | null
-          metadata: Json
-          practice_test_id: string
-          rw_scaled: number | null
-          started_at: string
-          status: string
-          user_id: string
-        }
-        Insert: {
-          adaptive_version?: string | null
-          composite_score?: number | null
-          finished_at?: string | null
-          id?: string
-          math_scaled?: number | null
-          metadata?: Json
-          practice_test_id: string
-          rw_scaled?: number | null
-          started_at?: string
-          status?: string
-          user_id: string
-        }
-        Update: {
-          adaptive_version?: string | null
-          composite_score?: number | null
-          finished_at?: string | null
-          id?: string
-          math_scaled?: number | null
-          metadata?: Json
-          practice_test_id?: string
-          rw_scaled?: number | null
-          started_at?: string
-          status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       practice_test_attempts_v2: {
         Row: {
           adaptive_version: string | null
@@ -1516,49 +1474,6 @@ export type Database = {
           },
         ]
       }
-      practice_test_item_attempts: {
-        Row: {
-          attempt_id: string
-          id: string
-          practice_test_module_attempt_id: string
-          practice_test_module_item_id: string
-        }
-        Insert: {
-          attempt_id: string
-          id?: string
-          practice_test_module_attempt_id: string
-          practice_test_module_item_id: string
-        }
-        Update: {
-          attempt_id?: string
-          id?: string
-          practice_test_module_attempt_id?: string
-          practice_test_module_item_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "practice_test_item_attempts_attempt_id_fkey"
-            columns: ["attempt_id"]
-            isOneToOne: false
-            referencedRelation: "attempts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "practice_test_item_attempts_practice_test_module_attempt_i_fkey"
-            columns: ["practice_test_module_attempt_id"]
-            isOneToOne: false
-            referencedRelation: "practice_test_module_attempts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "practice_test_item_attempts_practice_test_module_item_id_fkey"
-            columns: ["practice_test_module_item_id"]
-            isOneToOne: false
-            referencedRelation: "practice_test_module_items"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       practice_test_item_attempts_v2: {
         Row: {
           attempt_id: string
@@ -1601,54 +1516,6 @@ export type Database = {
             columns: ["attempt_id"]
             isOneToOne: false
             referencedRelation: "attempts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      practice_test_module_attempts: {
-        Row: {
-          correct_count: number | null
-          finished_at: string | null
-          id: string
-          metadata: Json
-          practice_test_attempt_id: string
-          practice_test_module_id: string
-          raw_score: number | null
-          started_at: string
-        }
-        Insert: {
-          correct_count?: number | null
-          finished_at?: string | null
-          id?: string
-          metadata?: Json
-          practice_test_attempt_id: string
-          practice_test_module_id: string
-          raw_score?: number | null
-          started_at?: string
-        }
-        Update: {
-          correct_count?: number | null
-          finished_at?: string | null
-          id?: string
-          metadata?: Json
-          practice_test_attempt_id?: string
-          practice_test_module_id?: string
-          raw_score?: number | null
-          started_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "practice_test_module_attempts_practice_test_attempt_id_fkey"
-            columns: ["practice_test_attempt_id"]
-            isOneToOne: false
-            referencedRelation: "practice_test_attempts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "practice_test_module_attempts_practice_test_module_id_fkey"
-            columns: ["practice_test_module_id"]
-            isOneToOne: false
-            referencedRelation: "practice_test_modules"
             referencedColumns: ["id"]
           },
         ]
