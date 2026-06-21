@@ -88,6 +88,34 @@ export async function startTrainingAssignment(_prevState, formData) {
     return actionFail('This assignment has no questions.');
   }
 
+  // Resume an existing in-progress training session for this assignment
+  // instead of minting a new one. Mirrors the student
+  // startAssignmentPractice fix: the runner scopes a question's saved
+  // answer to the session's created_at (load-question.ts: `since =
+  // sessionCreatedAt` for any session carrying
+  // filter_criteria.assignment_id, training mode included). A brand-new
+  // session starts that window "now", so answers submitted in the
+  // earlier session fall before the floor and Continue renders blank
+  // tiles / "0 answered". Pick the earliest in-progress session so the
+  // floor sits before all prior attempts, and drop the trainee back at
+  // their saved cursor. Constrained to mode='training' so it never
+  // resumes (or redirects the training URL into) a student-mode session
+  // the teacher might also hold for the same assignment.
+  const { data: resumable } = await supabase
+    .from('practice_sessions')
+    .select('id, current_position')
+    .eq('user_id', user.id)
+    .eq('test_type', 'sat')
+    .eq('mode', 'training')
+    .eq('status', 'in_progress')
+    .eq('filter_criteria->>assignment_id', assignmentId)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (resumable) {
+    redirect(`/tutor/training/practice/s/${resumable.id}/${resumable.current_position ?? 0}`);
+  }
+
   const { data: session, error: insertErr } = await supabase
     .from('practice_sessions')
     .insert({
