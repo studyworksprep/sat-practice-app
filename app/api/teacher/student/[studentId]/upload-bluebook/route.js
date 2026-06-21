@@ -1,72 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireServiceRole } from '@/lib/api/auth';
 import { legacyApiRoute } from '@/lib/api/response';
-import { computeScaledScore, isHardRoute } from '../../../../../../lib/scoreConversion';
-
-// Mirror a freshly-inserted v1 Bluebook upload into the v2 tables so
-// students already on `ui_version='next'` see the result. v2 ids are
-// intentionally aligned with v1 ids (same attempt/module/module_item
-// uuids; `attempts` is shared), so this is a per-attempt copy of the
-// same rows. Best-effort: a v2 mirror failure is logged but does not
-// fail the upload, since the v1 write — the canonical store on the
-// legacy tree — already succeeded.
-async function mirrorBluebookUploadToV2(service, v1AttemptId, uploadedBy) {
-  const { data: v1Attempt, error: aErr } = await service
-    .from('practice_test_attempts')
-    .select('id, user_id, practice_test_id, status, started_at, finished_at, composite_score, rw_scaled, math_scaled')
-    .eq('id', v1AttemptId)
-    .single();
-  if (aErr || !v1Attempt) {
-    return { ok: false, error: aErr?.message || 'v1 attempt not found' };
-  }
-
-  const { error: a2Err } = await service
-    .from('practice_test_attempts_v2')
-    .insert({
-      id: v1Attempt.id,
-      user_id: v1Attempt.user_id,
-      practice_test_id: v1Attempt.practice_test_id,
-      status: v1Attempt.status,
-      source: 'bluebook_upload',
-      started_at: v1Attempt.started_at,
-      finished_at: v1Attempt.finished_at,
-      composite_score: v1Attempt.composite_score,
-      rw_scaled: v1Attempt.rw_scaled,
-      math_scaled: v1Attempt.math_scaled,
-      uploaded_by: uploadedBy ?? null,
-    });
-  if (a2Err) return { ok: false, error: `v2 attempt: ${a2Err.message}` };
-
-  const { data: v1Modules, error: mErr } = await service
-    .from('practice_test_module_attempts')
-    .select('id, practice_test_attempt_id, practice_test_module_id, started_at, finished_at, correct_count, raw_score')
-    .eq('practice_test_attempt_id', v1AttemptId);
-  if (mErr) return { ok: false, error: `v1 module attempts: ${mErr.message}` };
-
-  if (v1Modules?.length) {
-    const { error: m2Err } = await service
-      .from('practice_test_module_attempts_v2')
-      .insert(v1Modules);
-    if (m2Err) return { ok: false, error: `v2 module attempts: ${m2Err.message}` };
-
-    const moduleAttemptIds = v1Modules.map(m => m.id);
-    const { data: v1Items, error: iErr } = await service
-      .from('practice_test_item_attempts')
-      .select('id, practice_test_module_attempt_id, practice_test_module_item_id, attempt_id')
-      .in('practice_test_module_attempt_id', moduleAttemptIds);
-    if (iErr) return { ok: false, error: `v1 item attempts: ${iErr.message}` };
-
-    if (v1Items?.length) {
-      const v2Items = v1Items.map(i => ({ ...i, marked_for_review: false }));
-      const { error: i2Err } = await service
-        .from('practice_test_item_attempts_v2')
-        .insert(v2Items);
-      if (i2Err) return { ok: false, error: `v2 item attempts: ${i2Err.message}` };
-    }
-  }
-
-  return { ok: true };
-}
+import { isHardRoute } from '../../../../../../lib/scoreConversion';
 
 // POST /api/teacher/student/[studentId]/upload-bluebook
 // Body: {
@@ -80,11 +15,18 @@ async function mirrorBluebookUploadToV2(service, v1AttemptId, uploadedBy) {
 //   correctCounts: { rw: { m1, m2, total }, math: { m1, m2, total } }
 // }
 //
+// Writes v2-native: practice_test_attempts_v2 (+ module_attempts_v2
+// + item_attempts_v2) plus the shared attempts rows. The legacy v1
+// dual-write + mirror that pre-dated the v2 attempt-family tables
+// is gone — every reader of the v1 tables now reads _v2, and the
+// v2 columns (source, uploaded_by, sections_only) carry what the
+// old metadata jsonb did.
+//
 // Creates:
-//  1. practice_test_attempt (completed)
-//  2. practice_test_module_attempts
-//  3. attempts + practice_test_item_attempts for each question
-//  4. Score conversion data entries (if scores provided)
+//  1. practice_test_attempts_v2 (completed)
+//  2. practice_test_module_attempts_v2 per submitted module
+//  3. attempts + practice_test_item_attempts_v2 per question
+//  4. score_conversion entries (if both per-section counts provided)
 export const POST = legacyApiRoute(async (request, props) => {
   const params = await props.params;
   const { studentId } = params;
@@ -123,37 +65,30 @@ export const POST = legacyApiRoute(async (request, props) => {
   }
 
   // ── Score-only mode (no Bluebook HTML uploaded) ──
-  // Creates only the practice_test_attempt for statistical tracking.
-  // No module attempts, item attempts, or score_conversion entries.
+  // Creates only the attempt row for statistical tracking. No
+  // module attempts, item attempts, or score_conversion entries.
   if (!questions?.length) {
     const now = test_date ? new Date(test_date + 'T12:00:00Z').toISOString() : new Date().toISOString();
 
     const { data: attempt, error: attemptErr } = await service
-      .from('practice_test_attempts')
+      .from('practice_test_attempts_v2')
       .insert({
         practice_test_id,
         user_id: studentId,
         status: 'completed',
+        source: 'bluebook_upload',
+        uploaded_by: user.id,
         started_at: now,
         finished_at: now,
         composite_score: composite || null,
         rw_scaled: rwScaled,
         math_scaled: mathScaled,
-        metadata: {
-          uploaded_by: user.id,
-          upload_source: 'score_only',
-        },
       })
       .select('id')
       .single();
 
     if (attemptErr) {
       return NextResponse.json({ error: `Failed to create attempt: ${attemptErr.message}` }, { status: 500 });
-    }
-
-    const mirror = await mirrorBluebookUploadToV2(service, attempt.id, user.id);
-    if (!mirror.ok) {
-      console.warn(`[upload-bluebook] v2 mirror failed for attempt ${attempt.id}: ${mirror.error}`);
     }
 
     return NextResponse.json({
@@ -220,38 +155,23 @@ export const POST = legacyApiRoute(async (request, props) => {
 
   const now = test_date ? new Date(test_date + 'T12:00:00Z').toISOString() : new Date().toISOString();
 
-  // Build submitted_modules metadata
-  const submittedModuleKeys = Object.keys(subjectModules);
-  const metaRoutes = {};
-  for (const key of submittedModuleKeys) {
-    const sm = subjectModules[key];
-    if (sm.moduleNumber === 2) {
-      const mod = findModule(sm.subjectCode, 2);
-      if (mod) {
-        const routeField = sm.subjectCode === 'RW' ? 'rw_route_code' : 'm_route_code';
-        metaRoutes[routeField] = mod.route_code;
-      }
-    }
-  }
-
-  // 1. Create the practice_test_attempt
+  // 1. Create the practice_test_attempts_v2 row. The "which modules
+  // were submitted" / "which route per module" data the old v1
+  // metadata jsonb held is now implicit in the v2 module_attempts
+  // rows below (route_code on each module is the route taken).
   const { data: attempt, error: attemptErr } = await service
-    .from('practice_test_attempts')
+    .from('practice_test_attempts_v2')
     .insert({
       practice_test_id,
       user_id: studentId,
       status: 'completed',
+      source: 'bluebook_upload',
+      uploaded_by: user.id,
       started_at: now,
       finished_at: now,
       composite_score: composite || null,
       rw_scaled: rwScaled,
       math_scaled: mathScaled,
-      metadata: {
-        submitted_modules: submittedModuleKeys,
-        ...metaRoutes,
-        uploaded_by: user.id,
-        upload_source: 'bluebook',
-      },
     })
     .select('id')
     .single();
@@ -261,88 +181,35 @@ export const POST = legacyApiRoute(async (request, props) => {
   }
 
   // 2. For each subject/module group, create module attempts and item attempts
-  for (const [key, sm] of Object.entries(subjectModules)) {
+  for (const sm of Object.values(subjectModules)) {
     const moduleRow = findModule(sm.subjectCode, sm.moduleNumber);
     if (!moduleRow) continue;
 
-    // Get module items to link questions
+    // _v2 module items expose question_id (v2) directly — no v1
+    // question_versions hop needed for the per-attempt write below.
     const { data: moduleItems } = await service
-      .from('practice_test_module_items')
-      .select('id, ordinal, question_version_id')
+      .from('practice_test_module_items_v2')
+      .select('id, ordinal, question_id')
       .eq('practice_test_module_id', moduleRow.id)
       .order('ordinal', { ascending: true });
 
-    // Get question versions for these items
-    const versionIds = (moduleItems || []).map(i => i.question_version_id);
-    const { data: versions } = versionIds.length
-      ? await service.from('question_versions').select('id, question_id').in('id', versionIds)
-      : { data: [] };
-
-    const versionToQid = {};
-    for (const v of versions || []) versionToQid[v.id] = v.question_id;
-
-    // Get correct answers for grading
-    const { data: correctAnswers } = versionIds.length
-      ? await service
-          .from('correct_answers')
-          .select('question_version_id, answer_type, correct_option_id, correct_text, correct_number, numeric_tolerance')
-          .in('question_version_id', versionIds)
-      : { data: [] };
-
-    const correctByVersion = {};
-    for (const ca of correctAnswers || []) correctByVersion[ca.question_version_id] = ca;
-
-    // Get answer options for MCQ matching
-    const { data: answerOptions } = versionIds.length
-      ? await service
-          .from('answer_options')
-          .select('id, question_version_id, label')
-          .in('question_version_id', versionIds)
-      : { data: [] };
-
-    const optionsByVersion = {};
-    for (const o of answerOptions || []) {
-      if (!optionsByVersion[o.question_version_id]) optionsByVersion[o.question_version_id] = [];
-      optionsByVersion[o.question_version_id].push(o);
-    }
-
     let correctCount = 0;
-    const versionToAttemptId = {};
+    const itemIdToAttemptId = {};
 
     // Match parsed questions to module items by ordinal
     for (const item of moduleItems || []) {
       const parsed = sm.questions.find(q => q.ordinal === item.ordinal);
-      const questionId = versionToQid[item.question_version_id];
+      const questionId = item.question_id;
       if (!questionId) continue;
 
-      // Determine correctness: use the parsed isCorrect from Bluebook
       const isCorrect = parsed?.isCorrect || false;
       if (isCorrect) correctCount += 1;
 
-      // Build the attempt record
-      let selectedOptionId = null;
-      let responseText = null;
-
-      if (parsed) {
-        if (parsed.questionType === 'mcq') {
-          // Match the student's letter answer (A/B/C/D) to an option id
-          const options = optionsByVersion[item.question_version_id] || [];
-          const matchedOption = options.find(o =>
-            o.label?.toUpperCase() === parsed.studentAnswer?.toUpperCase()
-          );
-          selectedOptionId = matchedOption?.id || null;
-
-          // Fallback: if no label match, try matching by ordinal (A=1, B=2, etc.)
-          if (!selectedOptionId && parsed.studentAnswer) {
-            const letterIndex = parsed.studentAnswer.toUpperCase().charCodeAt(0) - 65; // A=0, B=1, C=2, D=3
-            const byOrdinal = options.find(o => o.ordinal === letterIndex + 1);
-            selectedOptionId = byOrdinal?.id || null;
-          }
-        } else {
-          // SPR: store the numeric/text response
-          responseText = parsed.studentAnswer || null;
-        }
-      }
+      // v2 contract for attempts: response_text holds the student's answer
+      // (letter for MCQ, numeric/text for SPR); selected_option_id is a
+      // legacy v1 column that every other v2 write path leaves null and
+      // load-test-results already translates for historical rows.
+      const responseText = parsed?.studentAnswer ?? null;
 
       const { data: attemptRow } = await service
         .from('attempts')
@@ -350,7 +217,7 @@ export const POST = legacyApiRoute(async (request, props) => {
           user_id: studentId,
           question_id: questionId,
           is_correct: isCorrect,
-          selected_option_id: selectedOptionId,
+          selected_option_id: null,
           response_text: responseText,
           created_at: now,
           source: 'practice_test',
@@ -358,12 +225,12 @@ export const POST = legacyApiRoute(async (request, props) => {
         .select('id')
         .single();
 
-      if (attemptRow?.id) versionToAttemptId[item.question_version_id] = attemptRow.id;
+      if (attemptRow?.id) itemIdToAttemptId[item.id] = attemptRow.id;
     }
 
-    // Create practice_test_module_attempts
+    // Create practice_test_module_attempts_v2
     const { data: moduleAttemptRow, error: maErr } = await service
-      .from('practice_test_module_attempts')
+      .from('practice_test_module_attempts_v2')
       .insert({
         practice_test_attempt_id: attempt.id,
         practice_test_module_id: moduleRow.id,
@@ -371,24 +238,24 @@ export const POST = legacyApiRoute(async (request, props) => {
         finished_at: now,
         correct_count: correctCount,
         raw_score: correctCount,
-        metadata: { upload_source: 'bluebook' },
       })
       .select('id')
       .single();
 
     if (maErr) continue;
 
-    // Create practice_test_item_attempts
+    // Create practice_test_item_attempts_v2
     const itemAttemptRows = (moduleItems || [])
-      .filter(item => versionToAttemptId[item.question_version_id])
+      .filter(item => itemIdToAttemptId[item.id])
       .map(item => ({
         practice_test_module_attempt_id: moduleAttemptRow.id,
         practice_test_module_item_id: item.id,
-        attempt_id: versionToAttemptId[item.question_version_id],
+        attempt_id: itemIdToAttemptId[item.id],
+        marked_for_review: false,
       }));
 
     if (itemAttemptRows.length > 0) {
-      await service.from('practice_test_item_attempts').insert(itemAttemptRows);
+      await service.from('practice_test_item_attempts_v2').insert(itemAttemptRows);
     }
   }
 
@@ -413,11 +280,6 @@ export const POST = legacyApiRoute(async (request, props) => {
       module2_correct: correctCounts.math.m2,
       scaled_score: mathScaled,
     }, { onConflict: 'test_id,section,module1_correct,module2_correct' });
-  }
-
-  const mirror = await mirrorBluebookUploadToV2(service, attempt.id, user.id);
-  if (!mirror.ok) {
-    console.warn(`[upload-bluebook] v2 mirror failed for attempt ${attempt.id}: ${mirror.error}`);
   }
 
   return NextResponse.json({

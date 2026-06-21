@@ -6,12 +6,9 @@
 // dataset from lib/tutorManagerDemoData.js instead of live data.
 //
 // This exists so we can screenshot a "team roster" view without
-// leaking real student names for the marketing slideshow. The JSX is
-// duplicated (not imported) from AdminDashboard.js so the live
-// component doesn't need to become refactor-sensitive for the sake
-// of a few screenshots.
+// leaking real student names for the marketing slideshow.
 
-import { DEMO_TUTORS } from '../../../../../lib/tutorManagerDemoData';
+import { DEMO_TUTORS } from '@/lib/tutorManagerDemoData';
 
 export default function DemoTeamRosterPage() {
   return (

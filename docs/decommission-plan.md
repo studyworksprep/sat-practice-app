@@ -6,7 +6,23 @@ current-state companion to `docs/architecture-plan.md` §4 Phase 6 —
 that section is the design intent; this file is what we actually do,
 in order, with the audit that justifies each step.
 
-_Started May 2026, branch `claude/legacy-tree-decommission-wKzyC`._
+_Started May 2026 on branch `claude/legacy-tree-decommission-wKzyC`;
+restarted June 2026 on branch `claude/legacy-tree-decommission-v2-wKzyC`
+after the original branch drifted ~90 commits / +10k LOC behind main
+and clean merge became impractical._
+
+> **Restart context (June 2026).** Stage A landed on main as part of
+> the original attempt: the `profiles.ui_version` column-default
+> migration is applied to prod, the `/features/*` decks are ported to
+> `app/next/features/*`, `/features` is off `proxy.js`'s
+> `TREE_AGNOSTIC_PREFIXES`, and `tests/e2e/features-parity.anon.spec.ts`
+> exists. Stages B (Verified by owner — see below), C, and D still
+> need execution. Before any Stage C deletion, the route-parity audit
+> and `/api/*` keep-list cross-check from the original attempt must be
+> **re-run against current main** — main accumulated significant
+> feature work (AI question generation, lesson packs, weak-drill
+> changes, manager-flag-as-broken, etc.) that may have added new pages
+> and/or new `/api/*` calls that change the inventory.
 
 ---
 
@@ -67,20 +83,36 @@ not here.
 
 ## 2. Route-parity gaps and decisions
 
-Every legacy page route was matched to a next-tree equivalent. ~35
-routes have full parity. The gaps and their resolutions:
+Every legacy page route was matched to a next-tree equivalent.
+**41 legacy page routes** total (unchanged since May — the +90
+commits of main work added no new legacy pages). Most are 1:1 URL
+matches; the rest fall into renames, drops, and URL-shape changes:
 
-| Legacy route(s) | Decision | Status |
+| Legacy route(s) | Resolution | Status |
 |---|---|---|
 | `/features/*` (3 decks + 3 demo pages) | Port into the next tree | **Done — Stage A** |
-| `/bugs` (bug-report page) | Drop — bug reporting retired | Deleted in Stage C |
-| `/admin/bulk-reocr` | Drop — architecture plan never targeted it for port | Deleted in Stage C |
-| `/act-practice/import` | Already ported — ACT import moved to `app/next/(admin)/admin/act/imports/*` | No action |
-| `/account` (bare) | Not a real route (legacy only had `/account/billing`, which is ported) | No action |
+| `/bugs` | Drop — bug reporting retired | Deleted in Stage C |
+| `/admin/bulk-reocr` | Drop — never targeted for port | Deleted in Stage C |
+| `/dashboard/recommendations` | Drop — surface retired (no next-tree equivalent) | Deleted in Stage C |
+| `/account` (bare) | Not a real route (only `/account/billing` existed; ported) | No action |
+| `/act-practice/import` | Already ported to `app/next/(admin)/admin/act/imports/*` | No action |
+| `/teacher/*` (8 routes) | **URL rename** → `/tutor/*` (incl. `/tutor/dashboard`, `/tutor/roster`, `/tutor/performance`, `/tutor/teachers`, `/tutor/lesson-packs`, `/tutor/students/[id]/stats`, `/tutor/review/[id]`) | Redirect in `proxy.js` — Stage C |
+| `/teachers` | **URL rename** → `/tutor/teachers` (manager view) | Redirect in `proxy.js` — Stage C |
+| `/practice-test*` (3 routes) | **URL rename** → `/practice/test*` (and `/practice-test` → `/practice/tests`) | Redirect in `proxy.js` — Stage C (high-priority — emailed attempt URLs) |
+| `/practice` | **URL-shape change** → `/practice/start` (subject/picker page) | Redirect in `proxy.js` — Stage C |
+| `/practice/[questionId]` | **URL-shape change** → `/practice/s/[sessionId]/[position]` (single-question entry replaced by session-scoped flow) | Drop redirect (questionId → sessionId is not a mapping) — accept 404 |
+| `/act-practice` and `/act-practice/[questionId]` | **URL-shape change** — unified into `/practice/start` (SAT+ACT picker) and `/practice/s/[sessionId]/[position]` | Redirect `/act-practice` → `/practice/start`; drop `/act-practice/[questionId]` |
+| `/admin/lessons/[lessonId]/editor` | **URL rename** → `/admin/lessons/[lessonId]` (drops `/editor` suffix) | Redirect in `proxy.js` — Stage C |
+
+All other ~25 routes are 1:1 URL matches.
 
 `/bugs` is referenced only by the legacy `components/AdminDashboard.js`
-— no next-tree code links to it, so dropping it needs no Stage A
-work. It is deleted with the rest of the legacy tree in Stage C.
+— no next-tree code links to it. It is deleted with the rest of the
+legacy tree in Stage C.
+
+`/dashboard/recommendations` was missed by the May audit; the next
+tree has no equivalent and the recommendations surface is retired.
+Deleted with the rest of the legacy tree.
 
 ---
 
@@ -126,46 +158,129 @@ work. It is deleted with the rest of the legacy tree in Stage C.
       sweep). `tutorManagerDemoData.js` already lives in `lib/` and
       is safe.
 
-### Stage B — Verify the Phase 6 precondition (no code)
+### Stage B — Verify the Phase 6 precondition (no code) — COMPLETE
 
-Owner must confirm before Stage C — none of this is verifiable from
-the repo:
+Owner-verified complete (June 2026): 100% of active production users
+have been on the next tree for ~30 days with no regressions. Stage C
+is unblocked.
 
-- [ ] 100% of production users effectively on `next` (no account
-      still carrying `ui_version='legacy'`), held for 30+ days.
-- [ ] `feature_flags.force_ui_version='next'` for a 7-day window with
-      the legacy tree unreachable even by direct URL.
-- [ ] Dual-tree Playwright CI green for the full window.
-- [ ] `select count(*) from desmos_saved_states` — if non-zero,
-      schedule the v1→v2 `question_id` migration noted in
-      `docs/cutover-runbook.md` before legacy reads disappear.
+### Stage C — Delete the legacy tree (destructive — needs sign-off) — **COMPLETE**
 
-### Stage C — Delete the legacy tree (destructive — needs sign-off)
+Shipped as four commits on this branch (June 2026):
 
-- [ ] Delete legacy route dirs: `app/practice`, `app/act-practice`,
-      `app/practice-test`, `app/dashboard`, `app/teacher`,
-      `app/teachers`, `app/review`, `app/assignments`, `app/learn`,
-      `app/flashcards`, `app/account`, `app/admin`, `app/login`,
-      `app/subscribe`, `app/bugs`, `app/features`.
-- [ ] Delete legacy-only `components/` (`AdminDashboard.js`,
-      `NavBar.js`, `FeatureSlideshow.js` once relocated, etc.) and
-      `lib/practiceSessionStorage.js` (legacy-only — 6 importers, all
-      legacy).
-- [ ] Delete the ~88 legacy-only `/api/*` route handlers. **Keep**
-      `/api/webhooks/*`, `/api/external/*`, `/api/public/*`,
-      `/api/signup`, `/api/billing/*`, and `/api/practice-tests` —
-      these have external callers or are still called by the next
-      tree. Cross-check each `/api/*` segment against next-tree
-      `fetch(` sites before deleting.
-- [ ] Promote `app/next/*` to the route root (or keep the rewrite
-      indefinitely — decide during Stage C). Simplify `proxy.js`:
-      remove the tree resolver, the `x-ui-tree` header, the
-      kill-switch read, `TREE_AGNOSTIC_PREFIXES`, `isTreeAgnostic`,
-      `resolveUiTree`, `userTreeFromJwt`.
-- [ ] Flip the next-tree design tokens from `[data-tree="next"]` back
-      to `:root` and drop the wrapping `<div data-tree="next">` in
-      `app/next/layout.js` (and the now-redundant root-layout NavBar
-      gate).
+- `b674e65` Stage C-1: 27,852 lines / 62 files removed.
+- `151b961` Stage C-2: 13,358 lines / 88 routes removed.
+- `cf05c73` Stage C-3: 292 files moved + proxy rewrite + redirects.
+- `2a152c6` Stage C-4: 13 lines of token-scoping flip.
+
+Typecheck stable at the same 6 pre-existing LessonPackBuilder errors
+throughout. `npm run build` compiles cleanly; the only build-time
+failure observed (sandbox prerender of /auth/update-password) is
+environmental (missing `NEXT_PUBLIC_SUPABASE_URL` in the agent's
+container, not a code issue — same prerender would fail on main).
+
+**Audits refreshed June 2026** against current main. Findings below
+were the authoritative inventory used for the deletion sub-steps.
+
+#### C-1. Delete legacy route dirs
+
+- [ ] Delete: `app/practice`, `app/act-practice`, `app/practice-test`,
+      `app/dashboard`, `app/teacher`, `app/teachers`, `app/review`,
+      `app/assignments`, `app/learn`, `app/flashcards`, `app/account`,
+      `app/admin`, `app/login`, `app/subscribe`, `app/bugs`,
+      `app/features`. (16 dirs.)
+- [ ] Delete legacy-only `components/`: `AdminDashboard.js`,
+      `NavBar.js`, `FeatureSlideshow.js` (relocate to `lib/ui/` first
+      if any next-tree code still imports it — June audit shows
+      next-tree `/features/*` imports it, so move not delete),
+      `QuestionsV2*.js`, `ConceptTags.js`, `QuestionNotes.js`,
+      `DesmosStateButton.js`, `Filters.js`, `FlashcardsModal.js`,
+      `LandingClient.js`, `HtmlBlock.js` (check next-tree usage
+      first). And `lib/practiceSessionStorage.js` (legacy-only —
+      6 importers, all legacy).
+
+#### C-2. Delete legacy-only `/api/*` route handlers
+
+**Refreshed keep-list: 15 routes** (down from 16 — `/api/billing/status`
+demoted to delete after June re-audit confirmed no next-tree caller).
+**Delete count: 86** of 101 total handlers.
+
+KEEP:
+
+| Route | Why |
+|---|---|
+| `/api/webhooks/stripe` | Stripe webhook — external |
+| `/api/external/score-report/[attemptId]` | external bucket |
+| `/api/external/student-summary/[studentId]` | external bucket |
+| `/api/public/students/[studentId]/practice-data` | public bucket |
+| `/api/public/students/provision` | public bucket |
+| `/api/public/students/search` | public bucket |
+| `/api/signup` | `app/next/HomeClient.jsx` |
+| `/api/billing/create-checkout` | `app/next/subscribe/SubscribeClient.jsx` |
+| `/api/billing/create-portal` | `app/next/account/billing/ManagePortalButton.jsx` |
+| `/api/practice-tests` | `app/next/(tutor)/.../UploadBluebookCard.jsx` |
+| `/api/practice-test/time-ping` | `TestRunnerInteractive.js` (`sendBeacon`) |
+| `/api/teacher/student/[studentId]/upload-bluebook` | `UploadBluebookCard.jsx`, `BluebookBatchInteractive.tsx` |
+| `/api/admin/questions-v2/generate` | `GenerateAlternate.jsx` |
+| `/api/admin/sync-lessonworks` | `vercel.json` daily cron |
+
+DELETE — 86 routes spanning `act/*`, `admin/*` (excl. the two kept),
+`assignments/*`, `teacher/*` (excl. the upload-bluebook route),
+`practice-tests/*` (sub-routes; `/api/practice-tests` itself stays),
+`practice-test/*` (excl. `time-ping`), `lessons/*`, `flashcard-sets`,
+`flashcards*`, `questions*`, `review*`, `billing/status`, and the
+top-level `attempts`, `concept-tags`, `dashboard*`, `desmos-states`,
+`domain-counts`, `error-log`, `filters`, `me`, `progress`,
+`question-notes`, `recommendations`, `sat-vocabulary`, `status`,
+`time-analytics`. Each is called only from the legacy tree or
+legacy-only components (confirmed June audit).
+
+- [ ] Execute the deletions per the lists above.
+
+#### C-3. Promote `app/next/*` to the route root, add legacy redirects
+
+- [ ] `git mv` every `app/next/*` (excluding `app/next/api`, which
+      doesn't exist — `/api/*` lives at `app/api/*`) up to `app/*`.
+      Resolve any name collisions by deleting the legacy version
+      first (handled in C-1 above).
+- [ ] Simplify `proxy.js`: remove the tree resolver, `x-ui-tree`
+      header, kill-switch read, `TREE_AGNOSTIC_PREFIXES`,
+      `isTreeAgnostic`, `resolveUiTree`, `userTreeFromJwt`, and the
+      rewrite logic. The remaining responsibilities are session
+      refresh, role gating (`BLOCKED_FOR_PRACTICE`), subscription
+      gating, and the demo-account write lockdown.
+- [ ] Add legacy-URL redirects to `proxy.js` (308 permanent so
+      bookmarks and search engines update):
+      - `/teacher` → `/tutor/dashboard`
+      - `/teacher/content` → `/tutor/lesson-packs`
+      - `/teacher/content/[lessonId]` → `/tutor/lesson-packs/[id]`
+      - `/teacher/performance` → `/tutor/performance`
+      - `/teacher/review/[questionId]` → `/tutor/review/[questionId]`
+      - `/teacher/students` → `/tutor/roster`
+      - `/teacher/student/[studentId]/stats` → `/tutor/students/[studentId]/stats`
+      - `/teachers` → `/tutor/teachers`
+      - `/practice-test` → `/practice/tests`
+      - `/practice-test/attempt/[attemptId]` → `/practice/test/attempt/[attemptId]`
+        — high priority, emailed in score-report links
+      - `/practice-test/attempt/[attemptId]/results` → `/practice/test/attempt/[attemptId]/results`
+      - `/practice` → `/practice/start`
+      - `/act-practice` → `/practice/start`
+      - `/admin/lessons/[lessonId]/editor` → `/admin/lessons/[lessonId]`
+      Drop (accept 404, no clean mapping):
+      - `/practice/[questionId]` — questionId → sessionId is not a function
+      - `/act-practice/[questionId]` — same
+- [ ] Update `app/layout.js`: drop the `await headers()` /
+      `x-ui-tree` plumbing and pass NavBar without the prop, since
+      there's only one tree now.
+
+#### C-4. Drop the next-tree CSS scoping
+
+- [ ] Flip `app/styles/next-tokens.css` from `[data-tree="next"]`
+      back to `:root` (now that legacy `globals.css` token bleeding
+      is gone, there's nothing to scope around).
+- [ ] Drop the wrapping `<div data-tree="next">` in the (now-promoted)
+      `app/layout.js` (former `app/next/layout.js`) and the
+      `uiTree`-conditional NavBar gate.
 
 ### Stage D — Schema & flag cleanup (destructive — needs sign-off)
 
@@ -215,20 +330,68 @@ the repo:
 
 ---
 
-## 5. What this session did and did not do
+## 5. Session log
 
-**Did (Stage A, non-destructive):** ported the 6 `/features/*`
-marketing pages into `app/next/features/*`, dropped `/features` from
-the proxy's tree-agnostic list, added the `features-parity` anon
-regression spec, wrote this plan, and flipped the
-`profiles.ui_version` column default to `next` — migration
+**May 2026 — Stage A (original `wKzyC` branch, landed on main):**
+ported the 6 `/features/*` marketing pages into `app/next/features/*`,
+dropped `/features` from the proxy's tree-agnostic list, added the
+`features-parity` anon regression spec, wrote this plan, and flipped
+the `profiles.ui_version` column default to `next` — migration
 `20260521000000`, applied directly to production 2026-05-21. At
 apply time all 66 prod users were already on `next`; the prior
 `legacy` default would have regressed the next signup.
 
-**Did not:** delete anything (Stages C/D are destructive and gated on
-explicit sign-off + the Stage B precondition), and did not author the
-5 §3.5 critical-flow tests — those need a running app against the dev
-seed to write and validate real selectors, which a static session
-cannot do. They remain a Stage A checklist item for whoever has the
-seeded dev environment.
+**June 2026 — v2 restart (this branch, `v2-wKzyC`):** ran the route-
+parity and `/api/*` keep-list audits afresh against current main.
+Findings:
+- Legacy page count unchanged at 41. No new legacy pages added.
+- Surface `/api/*` count is now 101 handlers (was ~100 in May).
+  Keep-list moved from 12 → 15 routes; deletion count from 88 → 86.
+  New keep-promotions: `/api/admin/questions-v2/generate` (new
+  `GenerateAlternate.jsx`), `/api/teacher/student/[id]/upload-bluebook`
+  (now also called by `BluebookBatchInteractive.tsx`), and
+  `/api/admin/sync-lessonworks` (Vercel cron in `vercel.json` —
+  missed in May since no in-repo `fetch` exists).
+- New keep-demotion: `/api/billing/status` (next-tree billing page
+  explicitly stopped polling it; legacy is its only caller).
+- New drop: `/dashboard/recommendations` (no next-tree equivalent;
+  surface retired).
+- New redirect set noted: ~13 legacy URLs that rename in the next
+  tree (`/teacher/*` → `/tutor/*`, `/practice-test*` → `/practice/test*`,
+  etc.) get 308 redirects added to `proxy.js` in step C-3 so
+  bookmarks and emailed attempt links don't break.
+
+Lesson-pack and weak-drill features that shipped to main use Server
+Actions rather than `/api/*` handlers — consistent with §3 of the
+architecture plan and a healthy signal that new feature work
+reduces API surface rather than growing it.
+
+**June 2026 — Stage C complete (this branch).** Four commits per
+the audit-refresh inventory. Net diff: ~41,000 lines removed, 292
+files renamed, 50% reduction in `proxy.js`, single-tree layout.
+
+**Followups not part of this branch:**
+- `tests/e2e/helpers/fixtures.ts` references /api/* routes that
+  were deleted in C-2 (admin/users, dashboard, teacher/*, billing/
+  status, etc.). The negative-test specs that iterate those arrays
+  will fail loudly in CI. The fix is not a simple route swap —
+  most of the surface that moved to Server Actions doesn't have a
+  GET-able equivalent to test with `request.get(url)`. The auth-
+  matrix testing strategy needs a redesign that leans more on
+  page-level role redirects (which still exist) and less on
+  /api/* GET probes.
+- `app/globals.css` (8235 lines) carries 8k lines of legacy
+  component CSS that no surviving element uses. For overlapping
+  token names (`--bg`, `--card`, etc.), `next-tokens.css` wins
+  because of import order, so functionally it's harmless. Trim to
+  baseline (html/body, *{box-sizing}, a{} reset) in a polish pass.
+- ~30 `*.module.css` files have doc-comment headers that still
+  reference `[data-tree="next"]` as the token source. Selector is
+  now `:root`. Cosmetic only.
+- Stale doc comments in app and lib that reference the old
+  `app/next/...` paths (the imports themselves were swept en
+  masse).
+
+**Pending owner sign-off:** Stage D schema & flag cleanup. Still
+destructive (drops production columns / triggers / tables) and
+requires explicit go-ahead.

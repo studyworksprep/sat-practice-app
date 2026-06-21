@@ -5,7 +5,7 @@ import FeatureSlideshow, {
   SlideScreenshot,
   SlideFeatureRundown,
   SlidePricing,
-} from '../../../components/FeatureSlideshow';
+} from '@/components/FeatureSlideshow';
 
 // New structure (Apr 2026): every content slide carries a screenshot,
 // the second-to-last slide is a comprehensive feature rundown, and the
@@ -183,8 +183,8 @@ const slides = [
             label: 'Review & Retention',
             items: [
               { title: 'Smart Review', desc: 'Direct any student to targeted review of their most urgent past wrongs — the playbook every great tutor runs in the days before the test, now one click away.' },
-              { title: 'Error Log', desc: 'Students capture why they missed each question and how they\u2019ll prevent it next time; you see every entry.' },
-              { title: 'Flashcards', desc: 'Students can take notes on any concept, term, or formula you want them to remember — not just vocabulary. You can spot-check that they\u2019re actually doing it.' },
+              { title: 'Error Log', desc: 'Students capture why they missed each question and how they’ll prevent it next time; you see every entry.' },
+              { title: 'Flashcards', desc: 'Students can take notes on any concept, term, or formula you want them to remember — not just vocabulary. You can spot-check that they’re actually doing it.' },
               { title: 'Per-question notes', desc: 'Leave notes on any question for yourself or your students.' },
             ],
           },

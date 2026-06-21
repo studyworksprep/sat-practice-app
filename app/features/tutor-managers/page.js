@@ -5,7 +5,7 @@ import FeatureSlideshow, {
   SlideScreenshot,
   SlideFeatureRundown,
   SlideTieredPricing,
-} from '../../../components/FeatureSlideshow';
+} from '@/components/FeatureSlideshow';
 
 // Slide deck for the "Tutor Manager" persona.
 //
@@ -125,8 +125,8 @@ const slides = [
             label: 'Team Oversight',
             items: [
               { title: 'Live tutor roster', desc: 'Every tutor with their training progress and team-wide accuracy.' },
-              { title: 'Direct tutor-student assignment', desc: 'Pair students with tutors once they\u2019re ready for the field.' },
-              { title: 'Drop into any tutor\u2019s view', desc: 'See exactly what your team sees when they sit down to plan a session.' },
+              { title: 'Direct tutor-student assignment', desc: 'Pair students with tutors once they’re ready for the field.' },
+              { title: 'Drop into any tutor’s view', desc: 'See exactly what your team sees when they sit down to plan a session.' },
               { title: 'Team-wide reporting', desc: 'Roll-up views of training progress, scores, and student outcomes.' },
             ],
           },
@@ -157,7 +157,7 @@ const slides = [
           },
           {
             name: 'Team',
-            range: '2\u201310 tutors',
+            range: '2–10 tutors',
             price: '$24.99',
             period: 'per tutor / month',
             savings: 'Save 17%',
@@ -176,9 +176,9 @@ const slides = [
           'Manager dashboard & team training roster',
           'Assign practice questions and tests to tutors',
           'Per-tutor mastery and practice test tracking',
-          'Student\u2013tutor assignment and reassignment',
+          'Student–tutor assignment and reassignment',
           'Team-wide reporting and exportable CSVs',
-          'Drop-in access to any tutor\u2019s student view',
+          'Drop-in access to any tutor’s student view',
           'All student-facing practice tools',
         ]}
         note={{

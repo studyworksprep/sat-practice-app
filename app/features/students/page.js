@@ -5,7 +5,7 @@ import FeatureSlideshow, {
   SlideScreenshot,
   SlideFeatureRundown,
   SlidePricing,
-} from '../../../components/FeatureSlideshow';
+} from '@/components/FeatureSlideshow';
 
 // New structure (Apr 2026): every content slide carries a screenshot,
 // the second-to-last slide is a comprehensive feature rundown, and the
@@ -105,7 +105,7 @@ const slides = [
             items: [
               { title: 'Full-length adaptive Digital SAT tests', desc: 'Timed multi-module simulation that adapts to you.' },
               { title: 'Comprehensive score reports', desc: 'Scaled scores plus domain and skill breakdowns.' },
-              { title: 'Per-question timing metrics', desc: 'See where you\u2019re spending too long.' },
+              { title: 'Per-question timing metrics', desc: 'See where you’re spending too long.' },
               { title: 'Opportunity Index', desc: 'Prioritized list of what to study next.' },
               { title: 'Bluebook results upload', desc: 'Import your College Board scores for the same detailed reports.' },
             ],
@@ -113,7 +113,7 @@ const slides = [
           {
             label: 'Tools',
             items: [
-              { title: 'Integrated Desmos calculator', desc: 'The same calculator you\u2019ll use on test day.' },
+              { title: 'Integrated Desmos calculator', desc: 'The same calculator you’ll use on test day.' },
             ],
           },
           {

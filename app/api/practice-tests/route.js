@@ -59,8 +59,8 @@ export const GET = legacyApiRoute(async () => {
 
   // User's attempts
   const { data: attemptsRaw, error: attErr } = await supabase
-    .from('practice_test_attempts')
-    .select('id, practice_test_id, status, metadata, started_at, finished_at')
+    .from('practice_test_attempts_v2')
+    .select('id, practice_test_id, status, sections_only, started_at, finished_at')
     .eq('user_id', user.id)
     .order('started_at', { ascending: false });
 
@@ -82,7 +82,7 @@ export const GET = legacyApiRoute(async () => {
 
   if (completedIds.length > 0) {
     const { data: moduleAttempts } = await supabase
-      .from('practice_test_module_attempts')
+      .from('practice_test_module_attempts_v2')
       .select('practice_test_attempt_id, practice_test_module_id, correct_count')
       .in('practice_test_attempt_id', completedIds);
 
@@ -127,7 +127,7 @@ export const GET = legacyApiRoute(async () => {
     const sectionScores = {};
     let totalCorrect = 0;
     let totalQuestions = 0;
-    const sectionsMode = a.metadata?.sections; // 'rw', 'math', or undefined (both)
+    const sectionsMode = a.sections_only; // 'RW', 'MATH', or null (both)
 
     for (const subj of subjects) {
       const m1 = modData[`${subj}/1`] || { correct: 0 };

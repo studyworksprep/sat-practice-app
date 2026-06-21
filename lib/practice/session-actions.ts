@@ -217,18 +217,6 @@ export async function submitAnswer(
         return actionFail(`Failed to record attempt: ${insertErr.message}`);
       }
     }
-
-    // Dashboard stats — SAT-side legacy helper. Best-effort; if it
-    // fails the attempts insert remains authoritative.
-    try {
-      await supabase.rpc('upsert_question_status_after_attempt', {
-        p_user_id: user.id,
-        p_question_id: questionId,
-        p_is_correct: isCorrect,
-      });
-    } catch {
-      // Legacy helper may not exist; ignore. Dashboard stats degrade gracefully.
-    }
   }
 
   // Assignment auto-completion. SAT-only path today — ACT assignments
@@ -238,7 +226,7 @@ export async function submitAnswer(
     const assignmentId: string | undefined = session.filter_criteria?.assignment_id;
     if (assignmentId) {
       try {
-        await markAssignmentCompletedIfDone(supabase, user.id, assignmentId);
+        await markAssignmentCompletedIfDone(supabase, user.id, assignmentId, sessionFloor);
       } catch {
         // Swallow — the student's attempt is recorded either way.
       }
@@ -347,7 +335,7 @@ export async function submitPracticeSession(
   ) {
     try {
       const { finalizeActPracticeTest } = await import(
-        '@/app/next/(student)/practice/tests/actions'
+        '@/app/(student)/practice/tests/actions'
       );
       const res = await finalizeActPracticeTest(supabase, user.id, sessionId);
       if (res.ok) actAttemptId = res.attemptId;
@@ -474,8 +462,24 @@ export async function togglePracticeMark(
 // ──────────────────────────────────────────────────────────────
 //
 // "Completed" = the student has at least one attempt against every
-// question in the assignment's question_ids. Order-independent, so
-// skipping around or returning later both work correctly.
+// question in the assignment's question_ids, made within the current
+// assignment-attempt window (created_at >= sessionFloor). Order-
+// independent, so skipping around or returning later both work
+// correctly.
+//
+// The window floor is essential, not cosmetic. An assignment session
+// is a "fresh attempt": the runner scopes a question's saved answer to
+// session.created_at (load-question.ts: `since = sessionCreatedAt`),
+// and submitAttempt records a new attempt per session window for the
+// same reason. If completion counted all-time attempts instead, a
+// student who had already practiced these questions elsewhere would
+// trip completion on their first in-session answer — which flips the
+// in_progress session to 'completed' via closeOpenSessionsForAssignment.
+// Continue then can't find an in_progress session to resume, mints a
+// fresh one, and every in-window answer falls below the new floor:
+// the whole assignment renders undone. Scoping the count to the
+// session floor keeps this detector in agreement with what the student
+// actually answered in this attempt.
 //
 // We query attempts directly instead of question_status: the latter
 // is maintained by a legacy RPC that may not exist in every
@@ -494,6 +498,7 @@ async function markAssignmentCompletedIfDone(
   supabase: any,
   userId: string,
   assignmentId: string,
+  sessionFloor: string,
 ): Promise<void> {
   const { data: assignment } = await supabase
     .from('assignments_v2')
@@ -501,7 +506,16 @@ async function markAssignmentCompletedIfDone(
     .eq('id', assignmentId)
     .maybeSingle();
   if (!assignment) return;
-  if (assignment.assignment_type !== 'questions') return;
+  // lesson_pack materializes its pack's question_ids into the same
+  // column at creation and is started / displayed / progressed exactly
+  // like a 'questions' assignment everywhere else (start action, detail
+  // page, list page). Gate completion on the same pair so a finished
+  // lesson_pack actually records completed_at — otherwise it stays
+  // "pending" forever, the detail CTA stays "Continue" instead of
+  // flipping to "Redo" + "View report", and Continue mints a fresh
+  // blank session past the answers' created_at floor.
+  if (assignment.assignment_type !== 'questions'
+      && assignment.assignment_type !== 'lesson_pack') return;
 
   const questionIds: string[] = Array.isArray(assignment.question_ids)
     ? assignment.question_ids
@@ -512,7 +526,8 @@ async function markAssignmentCompletedIfDone(
     .from('attempts')
     .select('question_id')
     .eq('user_id', userId)
-    .in('question_id', questionIds);
+    .in('question_id', questionIds)
+    .gte('created_at', sessionFloor);
 
   const distinct = new Set(
     ((attempted ?? []) as Array<{ question_id: string }>).map((r) => r.question_id),
@@ -550,7 +565,11 @@ async function markAssignmentCompletedOnSubmit(
     .eq('id', assignmentId)
     .maybeSingle();
   if (!assignment) return;
-  if (assignment.assignment_type !== 'questions') return;
+  // lesson_pack is treated like 'questions' everywhere else; include it
+  // here too so Submit Set stamps completed_at (and closes the session)
+  // for a finished lesson_pack. See markAssignmentCompletedIfDone.
+  if (assignment.assignment_type !== 'questions'
+      && assignment.assignment_type !== 'lesson_pack') return;
 
   await supabase
     .from('assignment_students_v2')
