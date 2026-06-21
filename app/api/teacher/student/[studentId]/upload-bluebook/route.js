@@ -55,7 +55,7 @@ export const POST = legacyApiRoute(async (request, props) => {
 
   // Verify the practice test exists
   const { data: test, error: testErr } = await service
-    .from('practice_tests')
+    .from('practice_tests_v2')
     .select('id, name, code')
     .eq('id', practice_test_id)
     .maybeSingle();
@@ -106,7 +106,7 @@ export const POST = legacyApiRoute(async (request, props) => {
 
   // Fetch all modules for this practice test
   const { data: allModules } = await service
-    .from('practice_test_modules')
+    .from('practice_test_modules_v2')
     .select('id, subject_code, module_number, route_code')
     .eq('practice_test_id', practice_test_id)
     .order('subject_code')

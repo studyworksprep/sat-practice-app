@@ -1465,52 +1465,6 @@ export type Database = {
           },
         ]
       }
-      practice_test_module_items: {
-        Row: {
-          created_at: string
-          id: string
-          ordinal: number
-          practice_test_module_id: string
-          question_version_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          ordinal: number
-          practice_test_module_id: string
-          question_version_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          ordinal?: number
-          practice_test_module_id?: string
-          question_version_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "practice_test_module_items_practice_test_module_id_fkey"
-            columns: ["practice_test_module_id"]
-            isOneToOne: false
-            referencedRelation: "practice_test_modules"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "practice_test_module_items_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "question_versions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "practice_test_module_items_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_version_id"]
-          },
-        ]
-      }
       practice_test_module_items_v2: {
         Row: {
           created_at: string
@@ -1558,36 +1512,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      practice_test_modules: {
-        Row: {
-          created_at: string
-          id: string
-          module_number: number
-          practice_test_id: string
-          route_code: string
-          subject_code: string
-          time_limit_seconds: number
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          module_number: number
-          practice_test_id: string
-          route_code: string
-          subject_code: string
-          time_limit_seconds: number
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          module_number?: number
-          practice_test_id?: string
-          route_code?: string
-          subject_code?: string
-          time_limit_seconds?: number
-        }
-        Relationships: []
       }
       practice_test_modules_v2: {
         Row: {
@@ -1669,39 +1593,6 @@ export type Database = {
           subject_code?: string
           threshold?: number
           to_route_code?: string
-        }
-        Relationships: []
-      }
-      practice_tests: {
-        Row: {
-          adaptive_version: string | null
-          code: string
-          created_at: string
-          id: string
-          is_adaptive: boolean
-          is_frozen: boolean
-          is_published: boolean
-          name: string
-        }
-        Insert: {
-          adaptive_version?: string | null
-          code: string
-          created_at?: string
-          id?: string
-          is_adaptive?: boolean
-          is_frozen?: boolean
-          is_published?: boolean
-          name: string
-        }
-        Update: {
-          adaptive_version?: string | null
-          code?: string
-          created_at?: string
-          id?: string
-          is_adaptive?: boolean
-          is_frozen?: boolean
-          is_published?: boolean
-          name?: string
         }
         Relationships: []
       }
