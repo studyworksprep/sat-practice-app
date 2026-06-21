@@ -1831,111 +1831,6 @@ export type Database = {
         }
         Relationships: []
       }
-      question_assignment_students: {
-        Row: {
-          assignment_id: string
-          created_at: string | null
-          student_id: string
-        }
-        Insert: {
-          assignment_id: string
-          created_at?: string | null
-          student_id: string
-        }
-        Update: {
-          assignment_id?: string
-          created_at?: string | null
-          student_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "question_assignment_students_assignment_id_fkey"
-            columns: ["assignment_id"]
-            isOneToOne: false
-            referencedRelation: "question_assignments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_assignment_students_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "profile_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_assignment_students_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_assignment_students_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "student_practice_stats"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      question_assignments: {
-        Row: {
-          completed_at: string | null
-          created_at: string | null
-          description: string | null
-          due_date: string | null
-          filter_criteria: Json | null
-          id: string
-          question_ids: string[]
-          teacher_id: string
-          title: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string | null
-          description?: string | null
-          due_date?: string | null
-          filter_criteria?: Json | null
-          id?: string
-          question_ids?: string[]
-          teacher_id: string
-          title: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string | null
-          description?: string | null
-          due_date?: string | null
-          filter_criteria?: Json | null
-          id?: string
-          question_ids?: string[]
-          teacher_id?: string
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "question_assignments_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "profile_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_assignments_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_assignments_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "student_practice_stats"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
       question_availability: {
         Row: {
           difficulty: number
@@ -3463,10 +3358,6 @@ export type Database = {
         Returns: Json
       }
       is_admin: { Args: never; Returns: boolean }
-      is_assignment_teacher: {
-        Args: { p_assignment_id: string; p_teacher_id: string }
-        Returns: boolean
-      }
       is_demo: { Args: never; Returns: boolean }
       is_lesson_assignment_student: {
         Args: { p_assignment_id: string; p_student_id: string }
@@ -3478,10 +3369,6 @@ export type Database = {
       }
       is_lesson_author: { Args: { p_lesson_id: string }; Returns: boolean }
       is_manager: { Args: never; Returns: boolean }
-      is_student_assigned: {
-        Args: { p_assignment_id: string; p_student_id: string }
-        Returns: boolean
-      }
       is_teacher: { Args: never; Returns: boolean }
       is_v2_assignment_student: {
         Args: { p_assignment_id: string; p_student_id: string }
