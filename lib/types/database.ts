@@ -390,54 +390,6 @@ export type Database = {
         }
         Relationships: []
       }
-      answer_options: {
-        Row: {
-          content_html: string
-          content_text: string | null
-          created_at: string
-          id: string
-          label: string | null
-          metadata: Json | null
-          ordinal: number
-          question_version_id: string
-        }
-        Insert: {
-          content_html: string
-          content_text?: string | null
-          created_at?: string
-          id: string
-          label?: string | null
-          metadata?: Json | null
-          ordinal: number
-          question_version_id: string
-        }
-        Update: {
-          content_html?: string
-          content_text?: string | null
-          created_at?: string
-          id?: string
-          label?: string | null
-          metadata?: Json | null
-          ordinal?: number
-          question_version_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "answer_options_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "question_versions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "answer_options_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_version_id"]
-          },
-        ]
-      }
       assignment_students_v2: {
         Row: {
           assignment_id: string
@@ -817,64 +769,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      correct_answers: {
-        Row: {
-          answer_type: string
-          correct_number: number | null
-          correct_option_id: string | null
-          correct_option_ids: string[] | null
-          correct_text: string | null
-          created_at: string
-          id: string
-          numeric_tolerance: number | null
-          question_version_id: string
-        }
-        Insert: {
-          answer_type: string
-          correct_number?: number | null
-          correct_option_id?: string | null
-          correct_option_ids?: string[] | null
-          correct_text?: string | null
-          created_at?: string
-          id: string
-          numeric_tolerance?: number | null
-          question_version_id: string
-        }
-        Update: {
-          answer_type?: string
-          correct_number?: number | null
-          correct_option_id?: string | null
-          correct_option_ids?: string[] | null
-          correct_text?: string | null
-          created_at?: string
-          id?: string
-          numeric_tolerance?: number | null
-          question_version_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "correct_answers_correct_option_id_fkey"
-            columns: ["correct_option_id"]
-            isOneToOne: false
-            referencedRelation: "answer_options"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "correct_answers_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "question_versions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "correct_answers_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_version_id"]
-          },
-        ]
       }
       desmos_saved_states: {
         Row: {
@@ -3474,7 +3368,6 @@ export type Database = {
         Args: { p_assignment_id: string }
         Returns: boolean
       }
-      backfill_questions_v2_correct_labels: { Args: never; Returns: number }
       backfill_questions_v2_display_codes: { Args: never; Returns: number }
       can_view: { Args: { target: string }; Returns: boolean }
       can_view_from: {
@@ -3672,13 +3565,6 @@ export type Database = {
         Returns: {
           role: string
           user_id: string
-        }[]
-      }
-      migrate_questions_batch: {
-        Args: { batch_size?: number }
-        Returns: {
-          migrated_count: number
-          total_remaining: number
         }[]
       }
       migration_status: {
