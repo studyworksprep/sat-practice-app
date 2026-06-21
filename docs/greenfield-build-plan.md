@@ -354,7 +354,8 @@ table starts accumulating.
 
 **Deliverables:**
 - `tags`, `questions`, `question_versions`, `question_options`, `question_tags`,
-  `question_spr_answers`. Seed a representative slice of the 4k bank.
+  `question_spr_answers`. Seed the ~4k bank via the seeding pipeline in the
+  **Phase 2 appendix** below (a re-runnable, gated ETL — not a one-shot import).
 - `item_attempts` fact table; `practice_sessions` (server-side state) with opaque
   `/practice/s/[sessionId]/[position]` URLs.
 - Filter UI → session creation → **runner** → result screen.
@@ -371,6 +372,123 @@ React Compiler on the renderer.
 **Exit criteria:** Student practices a filtered set, answers persist to
 `item_attempts`, rationale appears only after submission, session resumes across
 reload/device, preview vs full gating verified. Playwright: practice flow.
+
+#### Phase 2 appendix — Question-bank seeding pipeline
+
+Seeding is the highest-risk data task in the build. Treat it as a **re-runnable
+validation pipeline with hard quality gates**, not a one-shot import. The core
+mindset: two sources at different trust levels, reconciled into clean, versioned
+rows where **nothing reaches a student until it passes validation**. A smaller
+fully-trustworthy bank beats a complete-but-broken one.
+
+**Inputs.** (a) The existing internal bank — has rationales and student attempt
+history, but quality drift (mixed math notation, missing figures, incomplete
+taxonomy). (b) The original CollegeBoard (CB) bank — authoritative content,
+metadata, figures, taxonomy; scrapable for structured content or exportable as
+PDFs. **Confirm IP/licensing/ToS rights to ingest CB content at scale before the
+scrape runs** — far cheaper to settle up front than after 4k items are ingested.
+
+**Source-of-truth reconciliation (decide per field, not wholesale):**
+
+| Field | Authoritative source | Rationale |
+|---|---|---|
+| Stimulus / stem / options | **CB** | Clean original; internal copies hold the format drift |
+| Figures / images | **CB or PDF** | Source-of-truth visuals; where "missing figure" is recovered |
+| Taxonomy (domain/skill, reporting category) | **CB** | Official; backfills incomplete internal taxonomy |
+| Answer key | **CB**, cross-checked vs historical p-values | CB correct; attempt data catches mis-keys |
+| Rationale / explanations | **Internal** | Your value-add — CB usually doesn't publish these |
+| Attempt history | **Internal only** | Migrate and relink — real cold-start metrics |
+| Difficulty | **Both** (store CB official *and* computed empirical) | One editorial, one observed |
+
+Principle: **CB wins on content/figures/taxonomy/key; internal wins on rationales
+and history.**
+
+**Provenance columns (add to schema):** `questions.source`,
+`questions.source_external_id`, `questions.import_batch`, plus per-recovered-asset
+keys. These make re-pulling from CB possible without clobbering internal edits,
+and carry attempt history to the correct new row.
+
+**Identity / matching (must happen first — no reconciliation without a join key):**
+1. Join on `source_external_id` where present (CB external question IDs).
+2. For internal rows lacking a CB id, fuzzy-match on a normalized stem hash
+   (strip math/whitespace/markup, then compare).
+3. Internal rows matching nothing in CB → "internal-only / unverifiable," held in
+   `draft`.
+
+**Pipeline stages (each writes a status; nothing is deleted):**
+
+```
+ingest → normalize → validate → triage → human review (ambiguous only) → load
+```
+
+This maps onto the `question_versions.status` machine
+(`draft → in_review → published`). Seeding creates the first published version per
+question; later re-imports that change content create **new versions, never
+in-place edits** (`item_attempts` reference the exact version seen). The pipeline
+is **idempotent and re-runnable** (upsert keyed by `source_external_id`, tracked
+by `import_batch`).
+
+**Validation checks (automated gate — all must pass for `published`):**
+- Every math fragment **renders under KaTeX in the pipeline** (catch parse errors
+  here, not in production). This eliminates the math-drift bug class at seed time.
+- Every referenced figure resolves to a stored asset.
+- MCQ has exactly one correct option; SPR has a valid accepted value + format.
+- Options non-empty; answer key present.
+- Taxonomy present (≥ domain + skill for SAT, ≥ reporting category for ACT).
+- Answer key cross-checks against historical p-values (see below).
+
+**Triage state machine:**
+- **Auto-pass** — passes all checks → `in_review` (spot-check) or `published`.
+- **Auto-fixable** — math notation normalizes, taxonomy backfills from CB → fix →
+  re-validate.
+- **Recoverable-with-source** — figure missing internally but present in CB/PDF →
+  recover asset → re-validate.
+- **Quarantine** — ambiguous stem, unrecoverable figure, or suspicious key →
+  never published; human queue or discard. Quarantined rows are simply invisible
+  to students, which is how a clean bank ships on day one without discarding work.
+
+**The three hard parts:**
+- **Math normalization.** Canonical stored form is **LaTeX (KaTeX-renderable)**,
+  with MathML generated at build for accessibility. A detector classifies each
+  fragment's current format (LaTeX / MathML / image / unicode / entities); a
+  converter maps it to canonical LaTeX; the KaTeX gate verifies the output.
+  Prefer CB's clean math over drifted internal copies.
+- **Figures.** Scan for figure references (img tags, "the figure shows,"
+  graph/coordinate language). Recover from the CB scrape, or **crop from the
+  CB-generated PDF** (PDFs preserve rendered figures as images even when their
+  math text is garbled — this is the PDF's best use). Store in object storage;
+  link by stable key. Unrecoverable → quarantine.
+- **Answer-key cross-check via attempt history.** Compute historical p-values
+  from migrated `item_attempts` into `item_stats`. Flag for human review any
+  question where the keyed answer's p-value ≈ 0 (likely mis-keyed), a distractor
+  is chosen *more often by high performers* than the key (classic mis-key
+  signature), or p-value ≈ 1.0 (trivial/low-value).
+
+**PDF role — deliberate, not primary.** PDF math extraction is lossy, so PDFs are
+**not** the content path. Use them for (a) figure recovery and (b) QA ground
+truth — render the normalized internal version side-by-side with the CB PDF for
+human diffing on the ambiguous bucket. Structured scrape is the content path;
+PDF is the visual-truth path.
+
+**AI-assisted cleanup (latest Claude models, always verifier- or human-gated).**
+Convert messy math to canonical LaTeX (then KaTeX-validate the output — model
+proposes, renderer disposes), detect missing-figure references, suggest missing
+taxonomy from CB-aligned content, draft missing rationales, flag ambiguous stems.
+Deterministically-confirmable fixes (math that now renders, taxonomy matching CB)
+may auto-flow; subjective outputs (drafted rationale, ambiguity call) require
+human sign-off before `published`. **The seed review queue is the first real
+workload of the Phase 5 authoring/review workflow** — build them to share it.
+
+**Rollout — pilot first.** Run a stratified ~150-question pilot spanning both
+tests, all domains, and all kinds (MCQ, SPR, passage). Hand-QA every one; measure
+auto-pass rate, the failure taxonomy, and the AI false-fix rate. Tune the
+validators against that, then run the full bank.
+
+**Appendix exit criteria:** A clean published core loads with provenance intact;
+quarantined items are tracked and invisible to students; every published math
+fragment passes KaTeX; every published figure resolves; the key cross-check has
+run and its flags are dispositioned; the pipeline re-runs idempotently against an
+updated CB pull without clobbering internal rationales or attempt links.
 
 ### Phase 3 — Metrics, mastery & review
 
