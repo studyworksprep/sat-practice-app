@@ -1465,52 +1465,6 @@ export type Database = {
           },
         ]
       }
-      practice_test_module_items: {
-        Row: {
-          created_at: string
-          id: string
-          ordinal: number
-          practice_test_module_id: string
-          question_version_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          ordinal: number
-          practice_test_module_id: string
-          question_version_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          ordinal?: number
-          practice_test_module_id?: string
-          question_version_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "practice_test_module_items_practice_test_module_id_fkey"
-            columns: ["practice_test_module_id"]
-            isOneToOne: false
-            referencedRelation: "practice_test_modules"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "practice_test_module_items_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "question_versions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "practice_test_module_items_question_version_id_fkey"
-            columns: ["question_version_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_version_id"]
-          },
-        ]
-      }
       practice_test_module_items_v2: {
         Row: {
           created_at: string
@@ -1558,36 +1512,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      practice_test_modules: {
-        Row: {
-          created_at: string
-          id: string
-          module_number: number
-          practice_test_id: string
-          route_code: string
-          subject_code: string
-          time_limit_seconds: number
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          module_number: number
-          practice_test_id: string
-          route_code: string
-          subject_code: string
-          time_limit_seconds: number
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          module_number?: number
-          practice_test_id?: string
-          route_code?: string
-          subject_code?: string
-          time_limit_seconds?: number
-        }
-        Relationships: []
       }
       practice_test_modules_v2: {
         Row: {
@@ -1669,39 +1593,6 @@ export type Database = {
           subject_code?: string
           threshold?: number
           to_route_code?: string
-        }
-        Relationships: []
-      }
-      practice_tests: {
-        Row: {
-          adaptive_version: string | null
-          code: string
-          created_at: string
-          id: string
-          is_adaptive: boolean
-          is_frozen: boolean
-          is_published: boolean
-          name: string
-        }
-        Insert: {
-          adaptive_version?: string | null
-          code: string
-          created_at?: string
-          id?: string
-          is_adaptive?: boolean
-          is_frozen?: boolean
-          is_published?: boolean
-          name: string
-        }
-        Update: {
-          adaptive_version?: string | null
-          code?: string
-          created_at?: string
-          id?: string
-          is_adaptive?: boolean
-          is_frozen?: boolean
-          is_published?: boolean
-          name?: string
         }
         Relationships: []
       }
@@ -1980,63 +1871,6 @@ export type Database = {
         }
         Relationships: []
       }
-      question_id_map: {
-        Row: {
-          migrated_at: string
-          new_question_id: string
-          old_question_id: string
-          old_version_id: string | null
-        }
-        Insert: {
-          migrated_at?: string
-          new_question_id: string
-          old_question_id: string
-          old_version_id?: string | null
-        }
-        Update: {
-          migrated_at?: string
-          new_question_id?: string
-          old_question_id?: string
-          old_version_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "question_id_map_new_question_id_fkey"
-            columns: ["new_question_id"]
-            isOneToOne: false
-            referencedRelation: "questions_v2"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_id_map_old_question_id_fkey"
-            columns: ["old_question_id"]
-            isOneToOne: true
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_id_map_old_question_id_fkey"
-            columns: ["old_question_id"]
-            isOneToOne: true
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
-          },
-          {
-            foreignKeyName: "question_id_map_old_version_id_fkey"
-            columns: ["old_version_id"]
-            isOneToOne: false
-            referencedRelation: "question_versions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_id_map_old_version_id_fkey"
-            columns: ["old_version_id"]
-            isOneToOne: false
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_version_id"]
-          },
-        ]
-      }
       question_notes: {
         Row: {
           author_id: string
@@ -2088,171 +1922,6 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
-      }
-      question_taxonomy: {
-        Row: {
-          difficulty: number
-          domain_code: string | null
-          domain_name: string | null
-          ibn: string | null
-          ppcc: string | null
-          program: string
-          question_id: string
-          score_band: number | null
-          score_band_range_cd: number | null
-          skill_code: string | null
-          skill_name: string | null
-          source_created_ms: number | null
-          source_updated_ms: number | null
-        }
-        Insert: {
-          difficulty: number
-          domain_code?: string | null
-          domain_name?: string | null
-          ibn?: string | null
-          ppcc?: string | null
-          program: string
-          question_id: string
-          score_band?: number | null
-          score_band_range_cd?: number | null
-          skill_code?: string | null
-          skill_name?: string | null
-          source_created_ms?: number | null
-          source_updated_ms?: number | null
-        }
-        Update: {
-          difficulty?: number
-          domain_code?: string | null
-          domain_name?: string | null
-          ibn?: string | null
-          ppcc?: string | null
-          program?: string
-          question_id?: string
-          score_band?: number | null
-          score_band_range_cd?: number | null
-          skill_code?: string | null
-          skill_name?: string | null
-          source_created_ms?: number | null
-          source_updated_ms?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "question_taxonomy_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_taxonomy_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
-          },
-        ]
-      }
-      question_versions: {
-        Row: {
-          attempt_count: number
-          correct_count: number
-          created_at: string
-          id: string
-          is_current: boolean
-          metadata: Json | null
-          question_id: string
-          question_type: string
-          rationale_html: string | null
-          stem_html: string
-          stimulus_html: string | null
-          version: number
-        }
-        Insert: {
-          attempt_count?: number
-          correct_count?: number
-          created_at?: string
-          id: string
-          is_current?: boolean
-          metadata?: Json | null
-          question_id: string
-          question_type: string
-          rationale_html?: string | null
-          stem_html: string
-          stimulus_html?: string | null
-          version: number
-        }
-        Update: {
-          attempt_count?: number
-          correct_count?: number
-          created_at?: string
-          id?: string
-          is_current?: boolean
-          metadata?: Json | null
-          question_id?: string
-          question_type?: string
-          rationale_html?: string | null
-          stem_html?: string
-          stimulus_html?: string | null
-          version?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "question_versions_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_versions_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "questions_current"
-            referencedColumns: ["question_id"]
-          },
-        ]
-      }
-      questions: {
-        Row: {
-          broken_at: string | null
-          broken_by: string | null
-          created_at: string
-          id: string
-          is_broken: boolean
-          is_test_only: boolean
-          question_id: string | null
-          source: string
-          source_external_id: string | null
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          broken_at?: string | null
-          broken_by?: string | null
-          created_at?: string
-          id: string
-          is_broken?: boolean
-          is_test_only?: boolean
-          question_id?: string | null
-          source?: string
-          source_external_id?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          broken_at?: string | null
-          broken_by?: string | null
-          created_at?: string
-          id?: string
-          is_broken?: boolean
-          is_test_only?: boolean
-          question_id?: string | null
-          source?: string
-          source_external_id?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       questions_v2: {
         Row: {
@@ -3213,26 +2882,6 @@ export type Database = {
           question_count: number | null
           score_bands: number[] | null
           skill_name: string | null
-        }
-        Relationships: []
-      }
-      questions_current: {
-        Row: {
-          difficulty: number | null
-          domain_code: string | null
-          domain_name: string | null
-          program: string | null
-          question_id: string | null
-          question_type: string | null
-          question_version_id: string | null
-          rationale_html: string | null
-          score_band_range_cd: number | null
-          skill_code: string | null
-          skill_name: string | null
-          source: string | null
-          source_external_id: string | null
-          stem_html: string | null
-          stimulus_html: string | null
         }
         Relationships: []
       }

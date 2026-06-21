@@ -244,38 +244,15 @@ function revalidateNotes() {
   revalidatePath('/practice', 'layout');
 }
 
-/** Resolve a question id passed in from the client to its
- *  questions_v2 row id. Pre-cutover content can carry v1 ids
- *  forward (from attempts, from old session payloads, from a
- *  student deep-linking an old report) — those need to be walked
- *  through question_id_map before they can be written to
- *  student_notes.question_id, which carries an FK on
- *  questions_v2(id). Without this step, students see a confusing
- *  "foreign key violation" error on save when the question they're
- *  noting still references a v1 uuid.
- *
- *  If the id is already a v2 id, question_id_map has no row for
- *  it and we return the input unchanged. If neither path matches
- *  (deleted question, bad input), we return null and the caller
- *  drops the question_id link rather than reject the save —
- *  losing the question link is a softer failure than losing the
- *  whole note.
- */
+/** Resolve a question id to its questions_v2 row id. student_notes
+ *  carries an FK on questions_v2(id), so we verify before writing —
+ *  if the id doesn't resolve (deleted question, bad input), the
+ *  caller drops the link rather than reject the save. */
 async function resolveQuestionV2Id(
   supabase: SupabaseClient,
   qid: string | null | undefined,
 ): Promise<string | null> {
   if (!qid) return null;
-  const { data: mapped } = await supabase
-    .from('question_id_map')
-    .select('new_question_id')
-    .eq('old_question_id', qid)
-    .maybeSingle();
-  if (mapped?.new_question_id) return mapped.new_question_id as string;
-  // Not in the map → either it's already a v2 id (the common case)
-  // or it points to a row that doesn't exist anywhere. Confirm it
-  // resolves on questions_v2 before returning, so the caller can
-  // null out the link instead of triggering a FK violation.
   const { data: v2 } = await supabase
     .from('questions_v2')
     .select('id')

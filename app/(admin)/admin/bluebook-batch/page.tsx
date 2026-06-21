@@ -29,7 +29,7 @@ export default async function AdminBluebookBatchPage() {
 
   const [{ data: tests }, { data: students }] = await Promise.all([
     supabase
-      .from('practice_tests')
+      .from('practice_tests_v2')
       .select('id, code, name')
       .order('code')
       .limit(50),
