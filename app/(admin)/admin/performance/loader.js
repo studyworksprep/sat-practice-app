@@ -161,7 +161,7 @@ async function loadScoreDistribution(supabase) {
   // platform grew past that. Page through instead.
   const data = await fetchAll((rangeFrom, rangeTo) =>
     supabase
-      .from('practice_test_attempts')
+      .from('practice_test_attempts_v2')
       .select('composite_score, rw_scaled, math_scaled')
       .eq('status', 'completed')
       .not('composite_score', 'is', null)

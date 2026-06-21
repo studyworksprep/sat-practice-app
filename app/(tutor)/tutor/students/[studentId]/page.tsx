@@ -22,7 +22,6 @@ import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggrega
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import { buildArchiveSummary } from '@/lib/practice/superscore';
 import {
-  ClipboardCheckIcon,
   InboxIcon,
   PencilIcon,
   PerformanceIcon,
@@ -31,7 +30,6 @@ import {
 import { IconTile } from '@/lib/ui/IconTile';
 import { DeletePracticeTestButton } from './DeletePracticeTestButton';
 import { EditTargetStartButton } from './EditTargetStartModal';
-import { ImportPracticeHistoryButton } from './ImportPracticeHistoryButton';
 import { OfficialScoresCard } from './OfficialScoresCard';
 import { ScoreProgressChart } from './ScoreProgressChart';
 import { TestRegistrationsCard } from './TestRegistrationsCard';
@@ -70,7 +68,6 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
   const [
     { data: studentRows, error: rpcErr },
     { data: profileRow },
-    { count: v1AttemptCount },
     { data: assignmentJunctions },
     { data: testAttemptRows },
     { data: completedTestRowsForScore },
@@ -86,13 +83,9 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId),
     supabase
       .from('profiles')
-      .select('practice_test_v2_imported_at, created_at, start_date')
+      .select('created_at, start_date')
       .eq('id', studentId)
       .maybeSingle(),
-    supabase
-      .from('practice_test_attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', studentId),
     // Assignments inbox for this student. Includes both SAT and
     // ACT — the parent assignment row carries its own test_type so
     // each tile can show an ACT/SAT badge. Was SAT-only until ACT
@@ -784,22 +777,6 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           <UploadBluebookCard studentId={student.id} />
         </aside>
       </div>
-
-      {/* ---------- Practice history v2 import — bottom strip,
-                    rarely needed once the cutover has run.       */}
-      <section className={`${s.card} ${s.footerCard}`}>
-        <div className={s.cardHeader}>
-          <div className={s.sectionLabel}>
-            <IconTile icon={ClipboardCheckIcon} palette="slate" size="sm" />
-            Practice history v2 import
-          </div>
-        </div>
-        <ImportPracticeHistoryButton
-          studentId={student.id}
-          importedAt={profileRow?.practice_test_v2_imported_at ?? null}
-          hasV1History={(v1AttemptCount ?? 0) > 0}
-        />
-      </section>
     </main>
   );
 }

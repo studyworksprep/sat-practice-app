@@ -77,7 +77,7 @@ export default async function AdminLandingPage() {
       .eq('source', 'practice')
       .gte('created_at', d30.toISOString()),
     supabase
-      .from('practice_test_attempts')
+      .from('practice_test_attempts_v2')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'completed')
       .gte('finished_at', d30.toISOString()),
