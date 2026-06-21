@@ -16,9 +16,8 @@ import { actionFail, actionOk, ApiError } from '@/lib/api/response';
 import type { ActionResult } from '@/lib/types';
 
 // desmos_saved_states.question_id is FK'd to questions_v2 (see
-// migration 20260505000001). The new tree always works in v2 ids,
-// but a few legacy callers still pass v1 uuids — translate via
-// question_id_map before writing so a stale id doesn't trip the FK.
+// migration 20260505000001). Verify the v2 row exists so a stale id
+// doesn't trip the FK and surface as a generic 500.
 async function resolveQuestionV2Id(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
@@ -30,13 +29,7 @@ async function resolveQuestionV2Id(
     .select('id')
     .eq('id', qid)
     .maybeSingle();
-  if (v2?.id) return v2.id as string;
-  const { data: mapped } = await supabase
-    .from('question_id_map')
-    .select('new_question_id')
-    .eq('old_question_id', qid)
-    .maybeSingle();
-  return mapped?.new_question_id ? (mapped.new_question_id as string) : null;
+  return v2?.id ? (v2.id as string) : null;
 }
 
 /** Save (upsert) a Desmos calculator state for a question.
