@@ -177,14 +177,12 @@ export async function listConceptTagsForSearch(): Promise<
 }
 
 // ──────────────────────────────────────────────────────────────
-// Internal: tag → v2-question-id resolver (AND-intersection).
+// Internal: tag → question-id resolver (AND-intersection).
 //
-// concept_tags are linked through question_concept_tags(question_id)
-// where question_id is a v1 id. v2 ids reach here, so each link
-// row gets translated through question_id_map(old → new) before
-// joining the per-tag sets. AND across tags is an intersection of
-// the per-tag id sets; no DB-side trick because PostgREST doesn't
-// expose intersect-style joins in a clean way for our shape.
+// question_concept_tags.question_id is v2-keyed (FK to questions_v2).
+// AND across tags is an intersection of the per-tag id sets; no
+// DB-side trick because PostgREST doesn't expose intersect-style
+// joins in a clean way for our shape.
 // ──────────────────────────────────────────────────────────────
 
 type SupabaseFromCtx = Awaited<ReturnType<typeof requireUser>>['supabase'];
@@ -193,71 +191,36 @@ async function intersectTaggedQuestionIds(
   supabase: SupabaseFromCtx,
   tagIds: string[],
 ): Promise<Set<string> | null> {
-  // Per-tag link rows. Use a single `.in('tag_id', tagIds)` to
-  // pull every matching link in one round-trip, then bucket by
-  // tag_id in JS — cheaper than N round-trips for N tags.
   const { data: linkRows, error: linkErr } = await supabase
     .from('question_concept_tags')
     .select('tag_id, question_id')
     .in('tag_id', tagIds);
   if (linkErr) return null;
 
-  const v1IdsByTag = new Map<string, Set<string>>();
-  const allV1Ids = new Set<string>();
+  const idsByTag = new Map<string, Set<string>>();
   for (const row of linkRows ?? []) {
     if (!row?.tag_id || !row?.question_id) continue;
-    let bucket = v1IdsByTag.get(row.tag_id);
+    let bucket = idsByTag.get(row.tag_id);
     if (!bucket) {
       bucket = new Set();
-      v1IdsByTag.set(row.tag_id, bucket);
+      idsByTag.set(row.tag_id, bucket);
     }
     bucket.add(row.question_id);
-    allV1Ids.add(row.question_id);
   }
 
-  // Any tag with no link rows yields an empty intersection — short-
-  // circuit so we don't bother round-tripping the id-map query.
+  // Any tag with no link rows yields an empty intersection.
   for (const tagId of tagIds) {
-    if (!v1IdsByTag.has(tagId)) return new Set();
+    if (!idsByTag.has(tagId)) return new Set();
   }
 
-  // Translate every v1 id we collected to its v2 counterpart in a
-  // single pass. A v1 id without a row in question_id_map predates
-  // the v2 migration; treat it as missing (not in v2) — the link
-  // can't safely surface a v2 question we can't identify.
-  const v1ToV2 = new Map<string, string>();
-  if (allV1Ids.size > 0) {
-    const { data: mapRows, error: mapErr } = await supabase
-      .from('question_id_map')
-      .select('old_question_id, new_question_id')
-      .in('old_question_id', Array.from(allV1Ids));
-    if (mapErr) return null;
-    for (const row of mapRows ?? []) {
-      if (row?.old_question_id && row?.new_question_id) {
-        v1ToV2.set(row.old_question_id, row.new_question_id);
-      }
-    }
-  }
-
-  // Build per-tag v2 id sets, then intersect.
-  const v2SetsByTag: Set<string>[] = [];
-  for (const tagId of tagIds) {
-    const v1Set = v1IdsByTag.get(tagId) ?? new Set();
-    const v2Set = new Set<string>();
-    for (const v1Id of v1Set) {
-      const v2Id = v1ToV2.get(v1Id);
-      if (v2Id) v2Set.add(v2Id);
-    }
-    v2SetsByTag.push(v2Set);
-  }
-
-  if (v2SetsByTag.length === 0) return new Set();
+  const setsByTag = Array.from(idsByTag.values());
+  if (setsByTag.length === 0) return new Set();
   // Start from the smallest set so the intersection loop is cheap.
-  v2SetsByTag.sort((a, b) => a.size - b.size);
-  const out = new Set(v2SetsByTag[0]);
-  for (let i = 1; i < v2SetsByTag.length; i += 1) {
+  setsByTag.sort((a, b) => a.size - b.size);
+  const out = new Set(setsByTag[0]);
+  for (let i = 1; i < setsByTag.length; i += 1) {
     for (const id of out) {
-      if (!v2SetsByTag[i].has(id)) out.delete(id);
+      if (!setsByTag[i].has(id)) out.delete(id);
     }
   }
   return out;

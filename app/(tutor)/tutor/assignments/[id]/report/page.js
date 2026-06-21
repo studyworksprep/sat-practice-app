@@ -24,7 +24,6 @@ import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { inferLayoutMode } from '@/lib/ui/question-layout';
-import { resolveLegacyQuestionIds } from '@/lib/practice/legacy-id-map';
 import { loadQuestionNotesByQuestion } from '@/lib/practice/load-question-notes';
 import { GroupAssignmentReport } from '@/lib/practice/GroupAssignmentReport';
 
@@ -341,33 +340,23 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
   let conceptTagsCatalog = null;
   const conceptTagIdsByQid = new Map();
   if (conceptTagsCanTag && presentQids.length > 0) {
-    // question_concept_tags rows are keyed against v1 question ids
-    // (legacy FK target). Pull the v1↔v2 map for the visible v2 ids
-    // and query against the union; map results back to v2 keys when
-    // assigning conceptTagIds to items.
-    const v1ByV2 = await resolveLegacyQuestionIds(supabase, presentQids);
-    const v2ByV1 = new Map();
-    for (const [v2, v1] of v1ByV2) v2ByV1.set(v1, v2);
-    const lookupQids = [...presentQids, ...Array.from(v2ByV1.keys())];
-
+    // question_concept_tags.question_id is v2-keyed (FK to questions_v2);
+    // direct IN.
     const [{ data: catalog }, { data: links }] = await Promise.all([
       supabase
         .from('concept_tags')
         .select('id, name')
         .order('name', { ascending: true }),
-      lookupQids.length > 0
-        ? supabase
-            .from('question_concept_tags')
-            .select('question_id, tag_id')
-            .in('question_id', lookupQids)
-        : Promise.resolve({ data: [] }),
+      supabase
+        .from('question_concept_tags')
+        .select('question_id, tag_id')
+        .in('question_id', presentQids),
     ]);
     conceptTagsCatalog = catalog ?? [];
     for (const r of links ?? []) {
-      const v2Qid = v2ByV1.get(r.question_id) ?? r.question_id;
-      const arr = conceptTagIdsByQid.get(v2Qid) ?? [];
+      const arr = conceptTagIdsByQid.get(r.question_id) ?? [];
       if (!arr.includes(r.tag_id)) arr.push(r.tag_id);
-      conceptTagIdsByQid.set(v2Qid, arr);
+      conceptTagIdsByQid.set(r.question_id, arr);
     }
   } else if (conceptTagsCanTag) {
     // Manager/admin viewing an empty-or-all-missing report still
