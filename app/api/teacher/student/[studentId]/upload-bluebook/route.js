@@ -265,84 +265,33 @@ export const POST = legacyApiRoute(async (request, props) => {
     const moduleRow = findModule(sm.subjectCode, sm.moduleNumber);
     if (!moduleRow) continue;
 
-    // Get module items to link questions
+    // Read from _v2 — same row ids and ordinals as the v1 table, but with
+    // question_id (v2) exposed directly instead of question_version_id (v1).
+    // Lets us skip the question_versions / correct_answers / answer_options
+    // join chain entirely.
     const { data: moduleItems } = await service
-      .from('practice_test_module_items')
-      .select('id, ordinal, question_version_id')
+      .from('practice_test_module_items_v2')
+      .select('id, ordinal, question_id')
       .eq('practice_test_module_id', moduleRow.id)
       .order('ordinal', { ascending: true });
 
-    // Get question versions for these items
-    const versionIds = (moduleItems || []).map(i => i.question_version_id);
-    const { data: versions } = versionIds.length
-      ? await service.from('question_versions').select('id, question_id').in('id', versionIds)
-      : { data: [] };
-
-    const versionToQid = {};
-    for (const v of versions || []) versionToQid[v.id] = v.question_id;
-
-    // Get correct answers for grading
-    const { data: correctAnswers } = versionIds.length
-      ? await service
-          .from('correct_answers')
-          .select('question_version_id, answer_type, correct_option_id, correct_text, correct_number, numeric_tolerance')
-          .in('question_version_id', versionIds)
-      : { data: [] };
-
-    const correctByVersion = {};
-    for (const ca of correctAnswers || []) correctByVersion[ca.question_version_id] = ca;
-
-    // Get answer options for MCQ matching
-    const { data: answerOptions } = versionIds.length
-      ? await service
-          .from('answer_options')
-          .select('id, question_version_id, label')
-          .in('question_version_id', versionIds)
-      : { data: [] };
-
-    const optionsByVersion = {};
-    for (const o of answerOptions || []) {
-      if (!optionsByVersion[o.question_version_id]) optionsByVersion[o.question_version_id] = [];
-      optionsByVersion[o.question_version_id].push(o);
-    }
-
     let correctCount = 0;
-    const versionToAttemptId = {};
+    const itemIdToAttemptId = {};
 
     // Match parsed questions to module items by ordinal
     for (const item of moduleItems || []) {
       const parsed = sm.questions.find(q => q.ordinal === item.ordinal);
-      const questionId = versionToQid[item.question_version_id];
+      const questionId = item.question_id;
       if (!questionId) continue;
 
-      // Determine correctness: use the parsed isCorrect from Bluebook
       const isCorrect = parsed?.isCorrect || false;
       if (isCorrect) correctCount += 1;
 
-      // Build the attempt record
-      let selectedOptionId = null;
-      let responseText = null;
-
-      if (parsed) {
-        if (parsed.questionType === 'mcq') {
-          // Match the student's letter answer (A/B/C/D) to an option id
-          const options = optionsByVersion[item.question_version_id] || [];
-          const matchedOption = options.find(o =>
-            o.label?.toUpperCase() === parsed.studentAnswer?.toUpperCase()
-          );
-          selectedOptionId = matchedOption?.id || null;
-
-          // Fallback: if no label match, try matching by ordinal (A=1, B=2, etc.)
-          if (!selectedOptionId && parsed.studentAnswer) {
-            const letterIndex = parsed.studentAnswer.toUpperCase().charCodeAt(0) - 65; // A=0, B=1, C=2, D=3
-            const byOrdinal = options.find(o => o.ordinal === letterIndex + 1);
-            selectedOptionId = byOrdinal?.id || null;
-          }
-        } else {
-          // SPR: store the numeric/text response
-          responseText = parsed.studentAnswer || null;
-        }
-      }
+      // v2 contract for attempts: response_text holds the student's answer
+      // (letter for MCQ, numeric/text for SPR); selected_option_id is a
+      // legacy v1 column that every other v2 write path leaves null and
+      // load-test-results already translates for historical rows.
+      const responseText = parsed?.studentAnswer ?? null;
 
       const { data: attemptRow } = await service
         .from('attempts')
@@ -350,7 +299,7 @@ export const POST = legacyApiRoute(async (request, props) => {
           user_id: studentId,
           question_id: questionId,
           is_correct: isCorrect,
-          selected_option_id: selectedOptionId,
+          selected_option_id: null,
           response_text: responseText,
           created_at: now,
           source: 'practice_test',
@@ -358,7 +307,7 @@ export const POST = legacyApiRoute(async (request, props) => {
         .select('id')
         .single();
 
-      if (attemptRow?.id) versionToAttemptId[item.question_version_id] = attemptRow.id;
+      if (attemptRow?.id) itemIdToAttemptId[item.id] = attemptRow.id;
     }
 
     // Create practice_test_module_attempts
@@ -380,11 +329,11 @@ export const POST = legacyApiRoute(async (request, props) => {
 
     // Create practice_test_item_attempts
     const itemAttemptRows = (moduleItems || [])
-      .filter(item => versionToAttemptId[item.question_version_id])
+      .filter(item => itemIdToAttemptId[item.id])
       .map(item => ({
         practice_test_module_attempt_id: moduleAttemptRow.id,
         practice_test_module_item_id: item.id,
-        attempt_id: versionToAttemptId[item.question_version_id],
+        attempt_id: itemIdToAttemptId[item.id],
       }));
 
     if (itemAttemptRows.length > 0) {
