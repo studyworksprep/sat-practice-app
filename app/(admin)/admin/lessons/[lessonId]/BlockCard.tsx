@@ -21,6 +21,7 @@ import { BlockBodyEditor } from './BlockBodyEditor';
 import { BlockPreview } from './BlockPreview';
 import { RichTextEditor } from './RichTextEditor';
 import { QuestionPicker } from './QuestionPicker';
+import { DesmosEditor } from './DesmosEditor';
 import { blockMetaFor } from './block-meta';
 
 type Issue = { severity?: string; message?: string; path?: string };
@@ -143,6 +144,10 @@ function BlockBody({
 
   if (block.block_type === 'question_link') {
     return <QuestionPicker content={content} onChange={onChangeContent} />;
+  }
+
+  if (block.block_type === 'desmos_interactive') {
+    return <DesmosEditor content={content} onChange={onChangeContent} />;
   }
 
   return <BlockBodyEditor block={block} onChange={onChangeContent} />;
