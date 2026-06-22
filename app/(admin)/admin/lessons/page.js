@@ -15,6 +15,7 @@ import { requireUser } from '@/lib/api/auth';
 import { Button } from '@/lib/ui/Button';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { formatDate } from '@/lib/formatters';
+import { createLesson } from './actions';
 import a from '../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -83,6 +84,24 @@ export default async function AdminLessonsPage({ searchParams }) {
         </div>
       )}
       {deleted && <div style={S.flash}>Lesson deleted.</div>}
+
+      <section className={a.section}>
+        <div style={S.cta}>
+          <div>
+            <h2 className={a.h2}>Create a lesson</h2>
+            <p className={a.help}>
+              Start from a blank lesson and build it visually — add text,
+              images, video, interactive questions, practice questions, and
+              Desmos interactions block by block.
+            </p>
+          </div>
+          <form action={createLesson}>
+            <Button type="submit" variant="primary">
+              Create lesson
+            </Button>
+          </form>
+        </div>
+      </section>
 
       <section className={a.section}>
         <div style={S.cta}>
