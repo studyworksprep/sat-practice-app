@@ -19,6 +19,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/lib/ui/Button';
 import { BlockBodyEditor } from './BlockBodyEditor';
 import { BlockPreview } from './BlockPreview';
+import { RichTextEditor } from './RichTextEditor';
+import { QuestionPicker } from './QuestionPicker';
 import { blockMetaFor } from './block-meta';
 
 type Issue = { severity?: string; message?: string; path?: string };
@@ -98,7 +100,7 @@ export function BlockCard({
 
       {editing ? (
         <div style={S.editor}>
-          <BlockBodyEditor block={block} onChange={onChangeContent} />
+          <BlockBody block={block} onChangeContent={onChangeContent} />
           <AdvancedJson content={block.content ?? {}} onChange={onChangeContent} />
         </div>
       ) : null}
@@ -115,6 +117,35 @@ export function BlockCard({
       ) : null}
     </div>
   );
+}
+
+// Per-type editing surface. The rich text and practice-question
+// blocks get their dedicated Phase 2 editors; everything else falls
+// back to the shared structured form (BlockBodyEditor). All of them
+// report a full replacement content object up to the canvas.
+function BlockBody({
+  block,
+  onChangeContent,
+}: {
+  block: Block;
+  onChangeContent: (next: Record<string, unknown>) => void;
+}) {
+  const content = (block.content ?? {}) as Record<string, unknown>;
+
+  if (block.block_type === 'text') {
+    return (
+      <RichTextEditor
+        html={typeof content.html === 'string' ? content.html : ''}
+        onChange={(html) => onChangeContent({ ...content, html })}
+      />
+    );
+  }
+
+  if (block.block_type === 'question_link') {
+    return <QuestionPicker content={content} onChange={onChangeContent} />;
+  }
+
+  return <BlockBodyEditor block={block} onChange={onChangeContent} />;
 }
 
 // Escape hatch for content fields the structured form doesn't cover

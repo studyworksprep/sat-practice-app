@@ -17,6 +17,9 @@ import { validateLessonBlocks } from '@/lib/lesson/lesson-validation.mjs';
 const VALID_STATUSES = new Set(['draft', 'published', 'archived']);
 const VALID_VISIBILITIES = new Set(['shared', 'private']);
 
+const QUESTION_CARD_COLUMNS =
+  'id, display_code, question_type, domain_name, skill_name, difficulty, score_band, stem_html';
+
 async function adminCtx() {
   return requireRole(['admin']);
 }
@@ -142,6 +145,66 @@ export async function saveLessonBlocks(_prev, formData) {
     blockCount: rows.length,
     warnings: validation.warnings ?? [],
   });
+}
+
+// Search the published question bank for the practice-question
+// (question_link) block picker. Called directly (object arg, not a
+// form action). Mirrors the tutor lesson-pack search but admin-gated
+// and trimmed to the fields the picker renders.
+export async function searchQuestionBank(input) {
+  let ctx;
+  try {
+    ctx = await adminCtx();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  let query = ctx.supabase
+    .from('questions_v2')
+    .select(QUESTION_CARD_COLUMNS, { count: 'exact' })
+    .eq('is_published', true)
+    .eq('is_broken', false);
+
+  const q = (input?.q ?? '').trim();
+  if (q) {
+    // Escape PostgREST's `or` separator + ilike escape char so a comma
+    // or backslash in the query can't break out of the expression.
+    const safe = q.replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/[()]/g, '');
+    query = query.or(`display_code.ilike.%${safe}%,stem_html.ilike.%${safe}%`);
+  }
+  if (input?.domain) query = query.eq('domain_name', input.domain);
+  if (input?.skill) query = query.eq('skill_name', input.skill);
+  if (input?.questionType) query = query.eq('question_type', input.questionType);
+
+  const { data, count, error } = await query
+    .order('display_code', { ascending: true, nullsFirst: false })
+    .range(0, 24);
+
+  if (error) return actionFail(`Search failed: ${error.message}`);
+  return actionOk({ rows: data ?? [], total: count ?? 0 });
+}
+
+// Single-question lookup so the picker (and the canvas preview) can
+// show the real stem for an already-linked question_id.
+export async function getQuestionById(id) {
+  let ctx;
+  try {
+    ctx = await adminCtx();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+  if (typeof id !== 'string' || !id) return actionFail('id required');
+
+  const { data, error } = await ctx.supabase
+    .from('questions_v2')
+    .select(QUESTION_CARD_COLUMNS)
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) return actionFail(`Lookup failed: ${error.message}`);
+  return actionOk({ question: data ?? null });
 }
 
 export async function deleteLesson(_prev, formData) {

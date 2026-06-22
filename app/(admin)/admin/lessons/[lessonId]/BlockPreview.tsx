@@ -12,10 +12,11 @@
 
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SafeHtml } from '@/lib/ui/SafeHtml';
 import { useMathTypeset } from '@/lib/ui/preview-effects';
 import { blockMetaFor } from './block-meta';
+import { getQuestionById } from './actions';
 
 type Block = {
   id?: string;
@@ -124,17 +125,65 @@ function CheckPreview({ block }: { block: Block }) {
   );
 }
 
+type QuestionCard = {
+  id: string;
+  display_code: string | null;
+  stem_html: string | null;
+  skill_name: string | null;
+};
+
 function QuestionLinkPreview({ block }: { block: Block }) {
   const qid = block.content?.question_id;
+  const ref = useRef<HTMLDivElement>(null);
+  const [card, setCard] = useState<QuestionCard | null>(null);
+  const [missing, setMissing] = useState(false);
+  useMathTypeset(ref, card?.stem_html ?? qid ?? '');
+
+  // Resolve the linked question's stem so the canvas shows the real
+  // embedded question, not just its id. Re-runs when the linked id
+  // changes (e.g. after picking a different question).
+  useEffect(() => {
+    // No id → nothing to fetch; the render guards on `!qid` first, so
+    // any stale card from a previous id is never shown.
+    if (!qid) return;
+    let alive = true;
+    (async () => {
+      const res = (await getQuestionById(qid)) as
+        | { ok: true; data: { question: QuestionCard | null } }
+        | { ok: false; error: string };
+      if (!alive) return;
+      if (res.ok) {
+        setCard(res.data.question);
+        setMissing(res.data.question == null);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [qid]);
+
   return (
-    <div style={S.linked}>
+    <div style={S.linked} ref={ref}>
       <div style={S.linkedIcon}>{blockMetaFor('question_link').icon}</div>
-      <div>
-        <div style={S.linkedTitle}>Practice question from the bank</div>
-        {qid ? (
-          <code style={S.code}>{qid}</code>
-        ) : (
+      <div style={{ minWidth: 0 }}>
+        <div style={S.linkedTitle}>
+          Practice question
+          {card?.display_code ? (
+            <code style={{ ...S.code, marginLeft: 8 }}>{card.display_code}</code>
+          ) : null}
+        </div>
+        {!qid ? (
           <span style={S.placeholder}>No question selected yet — click Edit to pick one.</span>
+        ) : missing ? (
+          <span style={S.placeholder}>
+            Linked id not found in the bank: <code style={S.code}>{qid}</code>
+          </span>
+        ) : card?.stem_html ? (
+          <div style={S.questionStem}>
+            <SafeHtml as="div" html={card.stem_html} />
+          </div>
+        ) : (
+          <code style={S.code}>{qid}</code>
         )}
       </div>
     </div>
@@ -237,6 +286,7 @@ const S: Record<string, React.CSSProperties> = {
   linkedTitle: { fontWeight: 600, color: 'var(--fg1)', marginBottom: 2 },
   code: { fontSize: 12, color: 'var(--fg2)' },
   metaRow: { marginTop: 6, fontSize: 12, color: 'var(--fg3)' },
+  questionStem: { marginTop: 4, fontSize: 14, color: 'var(--fg1)', maxHeight: 200, overflow: 'auto' },
 
   empty: { color: 'var(--fg3)', fontStyle: 'italic', fontSize: 13 },
   placeholder: { color: 'var(--fg3)', fontStyle: 'italic' },
