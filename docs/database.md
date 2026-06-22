@@ -55,30 +55,33 @@ Every migration file should be:
 
 - **Idempotent.** Use `create table if not exists`, `create or replace function`,
   `drop policy if exists` before `create policy`, etc., so replaying is safe.
-- **Additive through Phase 5.** See `docs/architecture-plan.md` §3.6. Don't drop
-  columns, rename tables, or delete data until Phase 6 Decommission. Build new
-  shapes alongside old ones; use views or triggers to bridge.
 - **RLS-conscious.** Any new table gets `alter table ... enable row level security`
   in the same migration, even if policies come in a follow-up.
 - **Self-documenting.** A short header comment explaining what the migration
   does and why future-you will thank current-you.
+- **v2 surface only.** Schema changes target the live tables
+  (`questions_v2`, `assignments_v2`, the `practice_test_*_v2` cluster,
+  etc.). Anything in the `_legacy` schema is historical artifact and
+  should not be referenced by new code or migrations except for
+  archival operations.
 
 ## Known drift
 
-Phase 1 added the three schema elements that existed in production but
-had no committed migration:
+None as of June 2026. The original drift items from Phase 1 are all
+resolved:
 
-- `supabase/migrations/20240101000000_create_practice_tests_schema.sql` —
-  seven `practice_test_*` tables. The file is reverse-engineered from
-  the code in `app/api/practice-tests/`. Before applying to a fresh dev
-  Supabase project, diff against `\d public.practice_test_*` from prod
-  to confirm column parity.
-- `supabase/migrations/20240101000001_create_get_question_neighbors_rpc.sql` —
-  placeholder `get_question_neighbors` function. The real body must be
-  dumped from production (see the header comment in that file) and
-  pasted in before the neighbors endpoint will work on a fresh DB.
-- `question_availability` — table exists in production with RLS enabled
-  but no policies. Decide in Phase 2 whether to document + populate, or drop.
+- The seven `practice_test_*` tables are committed to migrations and
+  the v1 originals are archived to `_legacy`; the live cluster
+  (`practice_tests_v2`, `practice_test_modules_v2`,
+  `practice_test_module_items_v2`, `practice_test_attempts_v2`,
+  `practice_test_module_attempts_v2`,
+  `practice_test_item_attempts_v2`, `practice_test_routing_rules`) is
+  what production reads.
+- The `get_question_neighbors` RPC was dropped as part of the v1
+  function audit (unreachable from app code, referenced retired
+  tables).
+- `question_availability` is still in `public` with RLS enabled and
+  no policies; pending the §3 Phase 3 review.
 
 ## Safe service-role usage
 
