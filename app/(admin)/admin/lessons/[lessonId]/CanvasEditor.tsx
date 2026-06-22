@@ -39,6 +39,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { Button } from '@/lib/ui/Button';
+import { LessonSlideshow } from '@/lib/ui/LessonSlideshow';
 import {
   createStarterBlock,
   duplicateBlock,
@@ -57,6 +58,14 @@ type Block = {
   sort_order?: number;
   content?: Record<string, unknown>;
 };
+
+// LessonSlideshow is untyped JS (its `blocks` default makes TS infer
+// never[]); alias it with the prop shape we actually pass.
+const Slideshow = LessonSlideshow as unknown as (props: {
+  blocks: Block[];
+  questionLinkHref: string | null;
+  showCompleteButton?: boolean;
+}) => React.ReactElement;
 
 let keyCounter = 0;
 function ensureIds(blocks: Block[]): Block[] {
@@ -80,6 +89,7 @@ export function CanvasEditor({
 }) {
   const [blocks, setBlocks] = useState<Block[]>(() => ensureIds(initialBlocks));
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [view, setView] = useState<'edit' | 'preview'>('edit');
   const [savedSnapshot, setSavedSnapshot] = useState(() =>
     JSON.stringify(ensureIds(initialBlocks)),
   );
@@ -115,6 +125,34 @@ export function CanvasEditor({
     }
     return map;
   }, [validation]);
+
+  const indexById = useMemo(() => {
+    const map: Record<string, number> = {};
+    blocks.forEach((b, i) => {
+      if (b.id) map[b.id] = i;
+    });
+    return map;
+  }, [blocks]);
+
+  // Warn before leaving with unsaved edits — the save is a full
+  // replace, so a lost tab loses the whole working set.
+  useEffect(() => {
+    if (!dirty) return undefined;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [dirty]);
+
+  function jumpToBlock(id: string) {
+    setView('edit');
+    setEditingId(id);
+    requestAnimationFrame(() => {
+      document.getElementById(`block-anchor-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
 
   function commit(next: Block[]) {
     setBlocks(recomputeSortOrders(next));
@@ -183,36 +221,60 @@ export function CanvasEditor({
               {validation.summary.warningCount === 1 ? '' : 's'}
             </span>
           ) : null}
+          <div style={S.viewToggle}>
+            <Button type="button" variant={view === 'edit' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('edit')}>
+              Edit
+            </Button>
+            <Button type="button" variant={view === 'preview' ? 'primary' : 'secondary'} size="sm" onClick={() => setView('preview')}>
+              Preview as student
+            </Button>
+          </div>
         </div>
       </div>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-        <SortableContext items={blocks.map((b) => b.id as string)} strategy={verticalListSortingStrategy}>
-          <div style={S.canvas}>
-            <AddBlockMenu onPick={(type) => insertAt(type, 0)} label={blocks.length === 0 ? '+ Add your first block' : '+ Add block'} />
-            {blocks.map((block, i) => (
-              <div key={block.id}>
-                <BlockCard
-                  block={block}
-                  index={i}
-                  editing={editingId === block.id}
-                  issues={issuesByBlock[block.id as string] ?? []}
-                  onToggleEdit={() => setEditingId((cur) => (cur === block.id ? null : (block.id ?? null)))}
-                  onChangeContent={(content) => updateContentAt(i, content)}
-                  onDuplicate={() => duplicateAt(i)}
-                  onDelete={() => removeAt(i)}
-                />
-                <AddBlockMenu onPick={(type) => insertAt(type, i + 1)} />
-              </div>
-            ))}
-            {blocks.length === 0 ? (
-              <p className={f.muted} style={{ textAlign: 'center', padding: 24 }}>
-                This lesson has no blocks yet. Add your first block above.
-              </p>
-            ) : null}
-          </div>
-        </SortableContext>
-      </DndContext>
+      {view === 'edit' ? (
+        <ValidationSummary validation={validation} indexById={indexById} onJump={jumpToBlock} />
+      ) : null}
+
+      {view === 'preview' ? (
+        <div style={S.preview}>
+          {blocks.length === 0 ? (
+            <p className={f.muted} style={{ textAlign: 'center', padding: 24 }}>
+              Nothing to preview yet — add a block first.
+            </p>
+          ) : (
+            <Slideshow blocks={blocks} questionLinkHref={null} showCompleteButton={false} />
+          )}
+        </div>
+      ) : (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={blocks.map((b) => b.id as string)} strategy={verticalListSortingStrategy}>
+            <div style={S.canvas}>
+              <AddBlockMenu onPick={(type) => insertAt(type, 0)} label={blocks.length === 0 ? '+ Add your first block' : '+ Add block'} />
+              {blocks.map((block, i) => (
+                <div key={block.id} id={`block-anchor-${block.id}`}>
+                  <BlockCard
+                    block={block}
+                    index={i}
+                    editing={editingId === block.id}
+                    issues={issuesByBlock[block.id as string] ?? []}
+                    onToggleEdit={() => setEditingId((cur) => (cur === block.id ? null : (block.id ?? null)))}
+                    onChangeContent={(content) => updateContentAt(i, content)}
+                    onDuplicate={() => duplicateAt(i)}
+                    onDelete={() => removeAt(i)}
+                  />
+                  <AddBlockMenu onPick={(type) => insertAt(type, i + 1)} />
+                </div>
+              ))}
+              {blocks.length === 0 ? (
+                <p className={f.muted} style={{ textAlign: 'center', padding: 24 }}>
+                  This lesson has no blocks yet. Add your first block above.
+                </p>
+              ) : null}
+            </div>
+          </SortableContext>
+        </DndContext>
+      )}
 
       <form action={formAction} style={S.saveRow}>
         <input type="hidden" name="lesson_id" value={lessonId} />
@@ -232,10 +294,108 @@ export function CanvasEditor({
   );
 }
 
+type Issue = {
+  severity?: string;
+  message?: string;
+  blockId?: string;
+  path?: string;
+  suggestion?: string;
+};
+
+// Lesson-wide list of validation issues, each linking to its block.
+// Errors first, then warnings; an issue whose blockId can't be
+// resolved to a current block (e.g. a branch target pointing at a
+// deleted id) is shown without a jump link.
+function ValidationSummary({
+  validation,
+  indexById,
+  onJump,
+}: {
+  validation: { errors?: Issue[]; warnings?: Issue[] };
+  indexById: Record<string, number>;
+  onJump: (id: string) => void;
+}) {
+  const errors = validation.errors ?? [];
+  const warnings = validation.warnings ?? [];
+  if (errors.length === 0 && warnings.length === 0) return null;
+  const all = [...errors, ...warnings];
+
+  return (
+    <div style={S.summary}>
+      <div style={S.summaryHead}>
+        Validation — {errors.length} error{errors.length === 1 ? '' : 's'}, {warnings.length} warning
+        {warnings.length === 1 ? '' : 's'}
+      </div>
+      <ul style={S.summaryList}>
+        {all.map((issue, i) => {
+          const idx = issue.blockId != null ? indexById[issue.blockId] : undefined;
+          const isErr = issue.severity === 'error';
+          return (
+            <li key={i} style={S.summaryItem}>
+              <button
+                type="button"
+                disabled={idx == null}
+                onClick={() => issue.blockId && onJump(issue.blockId)}
+                style={{ ...S.jumpBtn, ...(idx == null ? S.jumpBtnDisabled : null) }}
+              >
+                {idx != null ? `Block ${idx + 1}` : 'Lesson'}
+              </button>
+              <span style={isErr ? S.issueErrText : S.issueWarnText}>{issue.message}</span>
+              {issue.suggestion ? <span style={S.issueSuggest}>{issue.suggestion}</span> : null}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 const S: Record<string, React.CSSProperties> = {
   head: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
-  badges: { display: 'flex', gap: 6, flexWrap: 'wrap' },
+  badges: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' },
+  viewToggle: { display: 'flex', gap: 4, marginLeft: 8 },
   canvas: { display: 'flex', flexDirection: 'column', gap: 4, margin: '12px 0' },
+  preview: {
+    margin: '12px 0',
+    padding: 16,
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-lg, 12px)',
+    background: 'var(--bg-white, var(--card))',
+  },
+
+  summary: {
+    margin: '12px 0',
+    border: '1px solid var(--color-diff-med-bd)',
+    borderRadius: 'var(--radius-md)',
+    background: 'var(--color-diff-med-bg)',
+    padding: 10,
+  },
+  summaryHead: {
+    fontSize: 11,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+    color: 'var(--color-diff-med-fg)',
+    marginBottom: 6,
+  },
+  summaryList: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 },
+  summaryItem: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', fontSize: 12 },
+  jumpBtn: {
+    flexShrink: 0,
+    border: '1px solid var(--border-strong)',
+    borderRadius: 'var(--radius-pill)',
+    background: 'var(--card)',
+    padding: '0 8px',
+    fontSize: 11,
+    fontWeight: 700,
+    color: 'var(--color-app-accent)',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+  },
+  jumpBtnDisabled: { color: 'var(--fg3)', cursor: 'default' },
+  issueErrText: { color: 'var(--color-danger)' },
+  issueWarnText: { color: 'var(--color-diff-med-fg)' },
+  issueSuggest: { color: 'var(--fg3)', fontStyle: 'italic' },
 
   saveRow: {
     display: 'flex',
