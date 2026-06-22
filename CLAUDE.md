@@ -1,55 +1,94 @@
 # Studyworks — Architecture context for agents
 
 This file auto-loads at the start of every Claude Code session on
-this repo. It's the big-picture framing for why the current rebuild
-exists, so that every judgment call about how to build a feature is
-informed by that motivation — not re-litigated from scratch.
-
-The text below is copied verbatim from `docs/architecture-plan.md`
-§Executive Summary. Keep them in sync if either is edited.
+this repo. It captures the current operating state of the platform
+so judgment calls about how to build a feature are informed by
+where the rebuild actually stands — not by where it once was.
 
 ---
 
-## Executive Summary
+## Current state (June 2026)
 
-Studyworks works. Students practice, teachers see their rosters, managers oversee teams, admins curate content. But the platform has accumulated the kind of structural debt that every fast-shipping product accumulates, and most of the bugs we've fixed over the last month were downstream effects of that debt, not the real disease. A coherent rebuild after the `questions_v2` migration wraps up would let us:
+The Studyworks rebuild described in `docs/architecture-plan.md` is
+substantively complete. The platform is past the parallel-build
+period and runs as a single tree on the v2 schema.
 
-- **Cut the attack surface for the bugs we've actually been hitting.** The `db-max-rows` silent-truncation bug, the localStorage quota crash, the Stripe eager-init build failure, the `get_question_neighbors` RPC that doesn't exist in migrations — all five of these are symptoms of the same pattern: no shared helpers, no conventions, no drift detection.
-- **Make every new bug show up in one obvious place.** Right now "where does the admin check happen?" has at least five answers depending on which route you're in. That multiplies debugging time by 5x every time something goes wrong.
-- **Scale cleanly to thousands of users** without hitting the next class of silent-truncation or N+1 bugs, because the query patterns would be centralized.
-- **Ship new features faster** because the primitives would already exist — error boundaries, auth helpers, pagination, typed data fetching, a shared question renderer — instead of being re-invented per page.
+- **There is one app tree.** `app/next/*` was promoted to the route
+  root in Stage C (see `docs/decommission-plan.md`). The legacy
+  `app/` tree, `profiles.ui_version`, the
+  `feature_flags.force_ui_version` row, and the proxy's tree
+  resolver are all gone. The `feature_flags` table itself stays as
+  infrastructure for future rollouts.
+- **The v1 schema is archived to `_legacy`.** Public has zero v1
+  presence for questions, practice tests, assignments, or answers.
+  The 17 tables moved to `_legacy` cover the v1 question cluster
+  (`questions`, `question_versions`, `question_taxonomy`,
+  `question_id_map`), answer cluster (`answer_options`,
+  `correct_answers`), practice-test list + attempt clusters (6
+  tables), assignment clusters (4 tables), and `question_status`.
+  All historical rows are preserved for audit.
+- **`attempts.question_id` is exclusively v2-keyed.** The v1↔v2
+  translation helpers (`resolveLegacyQuestionIds`, `question_id_map`
+  walks, the union joins in DB functions) are gone. Any code that
+  reaches for them is reintroducing a retired pattern.
+- **The original schema-drift items are closed.** `practice_test_*`
+  and `get_question_neighbors` were committed to migrations and the
+  latter ultimately dropped. Any new DB object lives in a
+  timestamped file under `supabase/migrations/`.
 
-The top five concrete findings from the audit:
+What's still pending under the decommission plan:
 
-1. **100 API routes, 5+ distinct auth patterns, 51 routes with inline role checks.** Every route reimplements "is this user an admin?" in a slightly different way. This is by far the biggest source of cross-cutting risk.
-2. **79 bare `fetch()` calls in `useEffect` with zero abstraction.** No caching, no deduplication, no typed responses, no consistent error handling.
-3. **Dual question schemas still both in use** (v1 five-table + v2 single-table). The in-flight migration is the trigger for this plan, not the goal.
-4. **Schema drift from migrations:** the `practice_test_*` tables and the `get_question_neighbors` RPC both exist in the production database but are not defined in any committed migration file. A fresh database built from `supabase/migrations/` would be missing the entire practice test feature.
-5. **Seven source files over 1,000 lines** (two over 2,000) that do too many unrelated things in one place, making blast-radius analysis impossible when something breaks.
-
-The rebuild is not a big-bang rewrite. It's six phases, each independently shippable, each producing immediately visible improvements. The entire plan runs alongside the live product under the parallel-build discipline described in §3.6: a new `app/(next)/` route tree is built next to the existing tree, a `profiles.ui_version` flag routes users individually, and a `feature_flags` kill switch pins everyone back to `legacy` instantly if anything goes wrong. No phase before Phase 6 changes what a production user sees unless we deliberately flip their flag. Total duration depends on velocity, but none of the phases require taking the site down, pausing feature work, or risking a visible regression.
+- The 90-day hold on `_legacy` before the final drop.
+- Phase 3 schema normalizations (Phase 3 §§2–4): normalize
+  `questions_v2.options` into a child table, unify
+  `assignments_v2`/`assignment_students_v2` into a single
+  `assignments`/`assignment_students` pair shared with ACT,
+  universal audit columns + soft-delete.
+- Playwright dual-tree mode removal (cosmetic; no behavior impact).
 
 ---
 
-## If a proposed change would contradict the above, flag it
+## Rules for new work
 
-The rebuild exists specifically to escape the five findings above.
-Any change that would reintroduce one of them — a new inline role
-check, a new bare `fetch()` in `useEffect`, new v1-schema code, a
-new schema drift (a table/function in the DB with no migration), a
-new 1,000-line file — pauses for explicit approval first. Same rule
-for anything that breaks the parallel-build discipline: the legacy
-`app/` tree has to keep working, there can be no cross-tree
-dependencies, and the `profiles.ui_version` + `feature_flags`
-kill switch must stay functional.
+1. **v2 / live tables only.** Read and write the live surface:
+   `questions_v2`, `assignments_v2`, `assignment_students_v2`, the
+   `practice_test_*_v2` cluster, plus the always-current tables
+   (`attempts`, `practice_sessions`, `desmos_saved_states`,
+   `question_concept_tags`, `concept_tags`, `question_notes`,
+   `question_error_notes`, `student_notes`, `profiles`, etc.).
+   Reading any name in `_legacy` — or any retired v1 table by name —
+   is a violation. No `question_id_map` walks. No
+   `resolveLegacyQuestionIds`-shaped translation. If you find old
+   code that still does this, fix it; don't propagate the pattern.
 
-When in doubt, stop and ask. The cost of a pause-and-confirm is
-seconds; the cost of a silent violation that ends up in prod is
-measured in users.
+2. **Use the shared primitives.** Auth via `lib/api/auth.js`
+   (`requireUser`, `requireRole`, `requireServiceRole('reason')`);
+   never inline a role check. Server Actions return
+   `actionOk()`/`actionFail()` from `lib/api/response.ts`; API
+   routes wrap with `legacyApiRoute` and return `NextResponse.json`
+   of `ok()`/`fail()`. Pagination via `lib/api/paginate.js`.
+   Question rendering via `lib/ui/QuestionRenderer.js`. Server
+   Components for initial data; `useEffect+fetch` is a legacy
+   pattern.
+
+3. **Commit schema to migrations.** Every DB change is a timestamped
+   file under `supabase/migrations/`. After applying a migration,
+   regenerate `lib/types/database.ts` via the Supabase MCP
+   `generate_typescript_types` tool. The "schema in prod but not in
+   migrations" drift mode is closed; keep it closed.
+
+4. **Pause and confirm before reintroducing any retired pattern.**
+   Inline role checks, bare `fetch()` in `useEffect`, new
+   1,000-line files, schema drift, v1-table reads, or
+   `question_id_map` translation logic all warrant an explicit
+   ask first. The cost of pausing is seconds; the cost of a silent
+   reversion is measured in users.
+
+---
 
 ## TypeScript policy
 
-The new tree is in incremental TypeScript adoption. Rules:
+Conversion is ongoing as background work:
 
 - New files default to `.ts` / `.tsx`. Existing `.js` files keep
   working untouched (the tsconfig has `allowJs: true`,
@@ -62,10 +101,17 @@ The new tree is in incremental TypeScript adoption. Rules:
   auto-generated. Regenerate after every migration via the
   Supabase MCP `generate_typescript_types` tool (or
   `supabase gen types typescript`).
-- `npm run typecheck` runs `tsc --noEmit`; CI should run it too.
+- `npm run typecheck` runs `tsc --noEmit`; CI runs it too.
+
+---
 
 ## Further reading
 
-- `docs/architecture-plan.md` — master plan (§3.8 visibility, §4 phases)
-- `docs/runbook.md` — operational (includes parked deploy plan for Phase 2 step 9)
-- `docs/database.md` — schema overview
+- `docs/architecture-plan.md` — original rebuild design document.
+  The phased plan in §4 is now substantively shipped; the doc is
+  preserved as the historical record of intent.
+- `docs/decommission-plan.md` — legacy-tree decommission tracker.
+  Stages A, B, C complete; Stage D mostly complete (residue listed
+  in "Current state" above).
+- `docs/runbook.md` — operational runbook.
+- `docs/database.md` — schema operations + safe service-role usage.

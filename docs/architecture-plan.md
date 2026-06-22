@@ -4,6 +4,21 @@ _A top-to-bottom analysis of the current platform and a staged plan for a cohere
 
 _Written April 2026. Assumes the `questions_v2` schema migration is complete before this plan kicks off._
 
+> **Status as of June 2026.** The plan in §4 is substantively
+> shipped. Phases 1, 1.5, 2, 3, the next-tree side of Phase 4, and
+> Phase 5's Sentry / error-boundary / Server-Component conversions
+> landed across May/June 2026. The legacy `app/` tree was deleted
+> in Phase 6 / `docs/decommission-plan.md` Stage C (June 2026).
+> The v1 question + answer + assignment + practice-test schema is
+> archived to `_legacy` (Stage D, June 2026); see the
+> decommission-plan session log for the full scope. Remaining open
+> items: the 90-day `_legacy` drop window, the Phase 3 §§2–4 schema
+> normalizations (options child table, unified
+> `assignments`/`assignment_students` pair, universal soft-delete),
+> Playwright dual-tree-mode removal, and the §2-audit re-run to
+> confirm §6 targets. The Executive Summary below is preserved as
+> the original framing.
+
 ---
 
 ## Executive Summary

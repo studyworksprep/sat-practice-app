@@ -282,29 +282,45 @@ legacy-only components (confirmed June audit).
       `app/layout.js` (former `app/next/layout.js`) and the
       `uiTree`-conditional NavBar gate.
 
-### Stage D — Schema & flag cleanup (destructive — needs sign-off)
+### Stage D — Schema & flag cleanup (destructive — needs sign-off) — **MOSTLY COMPLETE**
 
-- [ ] Drop `profiles.ui_version` and the `force_ui_version`
+Most items shipped across two further branches in June 2026 (see §5
+session log for the commit chain). Two cosmetic items remain.
+
+- [x] Drop `profiles.ui_version` and the `force_ui_version`
       `feature_flags` row. Keep the `feature_flags` table.
-- [ ] Remove dual-write/continuous-sync triggers feeding
+- [x] Remove dual-write/continuous-sync triggers feeding
       `assignments_v2` from the legacy `question_assignments` /
-      `lesson_assignments` tables.
-- [ ] Archive v1 question tables + legacy SAT assignment tables to a
+      `lesson_assignments` tables. The `trg_question_assignment_v2_sync`
+      and `trg_qas_v2_sync` triggers and their `sync_*` functions
+      are dropped.
+- [x] Archive v1 question tables + legacy SAT assignment tables to a
       `_legacy` schema (`questions`, `question_versions`,
       `answer_options`, `correct_answers`, `question_taxonomy`,
       `question_assignments`, `question_assignment_students`).
-      90-day hold, then drop.
-- [ ] Retire `question_status`, its restored FK
+      Scope expanded during execution to also cover `question_id_map`,
+      the v1 `practice_test_*` list cluster (3 tables) and attempt
+      cluster (3 tables), and the two `lesson_assignment_*` tables.
+      90-day hold timer starts from each archive migration's apply
+      date; the final drop is a separate followup.
+- [x] Retire `question_status`, its restored FK
       (`question_status_question_id_fkey`), and the
       `upsert_question_status_after_attempt` RPC — all legacy-only.
-- [ ] Resolve the `question_concept_tags` v1-id FK noted in
+      Table archived to `_legacy`; the RPC was dropped earlier (it
+      no longer exists in `public`).
+- [x] Resolve the `question_concept_tags` v1-id FK noted in
       `docs/cutover-runbook.md` so concept tags can be written for
-      v2-only questions.
+      v2-only questions. Done by Stage D-7 (migration
+      `20260620140635_repoint_question_concept_tags_to_v2.sql`); a
+      follow-up commit removed the stale v1↔v2 translation logic
+      from 5 read paths (including a latent bug in
+      `intersectTaggedQuestionIds` / `intersectTaggedV2Ids` that
+      had silently returned empty intersections).
 - [ ] Remove the Playwright dual-tree mode; tests run once against
       the single tree.
 - [ ] Re-run the `docs/architecture-plan.md` §2 audit metrics and
       confirm every §6 target is hit.
-- [ ] Delete `docs/session-handoff.md` and `docs/cutover-runbook.md`
+- [x] Delete `docs/session-handoff.md` and `docs/cutover-runbook.md`
       (per-user cutover is moot once the legacy tree is gone).
 
 ---
@@ -392,6 +408,37 @@ files renamed, 50% reduction in `proxy.js`, single-tree layout.
   `app/next/...` paths (the imports themselves were swept en
   masse).
 
-**Pending owner sign-off:** Stage D schema & flag cleanup. Still
-destructive (drops production columns / triggers / tables) and
-requires explicit go-ahead.
+**Pending owner sign-off:** None. Stage D destructive work is done.
+The two remaining items (Playwright dual-tree mode, audit-metrics
+re-run) are non-destructive cosmetic followups.
+
+**June 2026 — Stage D mostly complete (across two branches,
+`claude/stage-e4-consolidate-attempts-question-id` and
+`claude/archive-v1-practice-test-module-items`, both merged).**
+
+Stage E-4 series + follow-ups normalized `attempts.question_id` to
+v2 across all 19,670 rows, audited the 11 v1-referencing DB
+functions (dropped 8, simplified 3 to drop the v1↔v2 union join),
+cleaned up the stale concept-tags translation in 5 read paths and
+fixed the latent tag-search bug it was masking, archived the
+v1 question + answer + assignment + practice-test clusters to
+`_legacy` (17 tables total when combined with prior archives),
+backfilled the 140 v1 ids still in `practice_sessions.question_ids`,
+and dropped the dead `questions_current` view. The
+`expandToAttemptIds` and `resolveQuestionV2Meta` helpers in
+`lib/practice/weak-queue.js` were simplified to drop the
+now-unnecessary `question_id_map` walks. After this work the
+`public` schema has zero v1 question/test/assignment surface; the
+13 v1 tables in `_legacy` (plus 4 already-archived from earlier
+work) hold the historical artifact. Final drop on `_legacy` is the
+90-day-hold followup; the timer starts on the most recent archive
+migration's apply date.
+
+Scope expanded beyond the original Stage D bullet list to also
+cover `question_id_map`, the v1 `practice_test_*` cluster (which
+mirrored `practice_tests_v2` / `practice_test_modules_v2` /
+`practice_test_module_items_v2` with no sync trigger and was kept
+parity manually until being repointed in this work), and three of
+the `lesson_*` artifacts. The wider scope was discovered during
+the audit phase and absorbed since the work was already trivially
+adjacent.
