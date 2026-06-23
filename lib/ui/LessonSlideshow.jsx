@@ -794,7 +794,12 @@ function DesmosInteractiveBlock({
       <div
         ref={hostRef}
         style={{
-          minHeight: 320,
+          // A *definite* height (not min-height) is required: Desmos's
+          // calculator fills its host with percentage/absolute heights,
+          // which resolve to zero against a min-height-only parent and
+          // render the calculator blank. See the matching definite
+          // height in the lesson editor's DesmosEditor.
+          height: 360,
           marginTop: 12,
           borderRadius: 8,
           overflow: 'hidden',
