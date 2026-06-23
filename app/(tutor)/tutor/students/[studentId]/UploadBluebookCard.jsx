@@ -7,14 +7,17 @@
 // just relay the call. Keeping the fetch lets us preserve the
 // file-parse-then-submit flow without round-tripping the parsed
 // payload through a Server Action's serialization boundary.
+//
+// The published-tests list is fetched server-side in page.tsx and
+// passed in — Server Component for initial data, no useEffect+fetch.
 
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import s from './StudentDetail.module.css';
 
-export function UploadBluebookCard({ studentId }) {
+export function UploadBluebookCard({ studentId, tests = [] }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   return (
@@ -32,6 +35,7 @@ export function UploadBluebookCard({ studentId }) {
       {open && (
         <UploadModal
           studentId={studentId}
+          tests={tests}
           onClose={() => setOpen(false)}
           onUploaded={() => { setOpen(false); router.refresh(); }}
         />
@@ -40,9 +44,7 @@ export function UploadBluebookCard({ studentId }) {
   );
 }
 
-function UploadModal({ studentId, onClose, onUploaded }) {
-  const [tests, setTests] = useState([]);
-  const [testsLoading, setTestsLoading] = useState(true);
+function UploadModal({ studentId, tests, onClose, onUploaded }) {
   const [selectedTestId, setSelectedTestId] = useState('');
   const [rwScore, setRwScore] = useState('');
   const [mathScore, setMathScore] = useState('');
@@ -52,14 +54,6 @@ function UploadModal({ studentId, onClose, onUploaded }) {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [pending, startTransition] = useTransition();
-
-  useEffect(() => {
-    fetch('/api/practice-tests')
-      .then((r) => r.json())
-      .then((d) => setTests(d.tests || []))
-      .catch(() => setTests([]))
-      .finally(() => setTestsLoading(false));
-  }, []);
 
   const composite = (Number(rwScore) || 0) + (Number(mathScore) || 0);
 
@@ -154,10 +148,9 @@ function UploadModal({ studentId, onClose, onUploaded }) {
               <select
                 value={selectedTestId}
                 onChange={(e) => setSelectedTestId(e.target.value)}
-                disabled={testsLoading}
                 className={s.input}
               >
-                <option value="">{testsLoading ? 'Loading…' : '— Select —'}</option>
+                <option value="">— Select —</option>
                 {tests.map((t) => (
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
