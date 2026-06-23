@@ -74,6 +74,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     { data: sessionRows },
     { data: registrations },
     { data: officialScores },
+    { data: publishedTests },
     aggregate,
     aggregateAct,
   ] = await Promise.all([
@@ -158,6 +159,12 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       `)
       .eq('student_id', studentId)
       .order('test_date', { ascending: false }),
+    supabase
+      .from('practice_tests_v2')
+      .select('id, name, code')
+      .eq('is_published', true)
+      .is('deleted_at', null)
+      .order('code', { ascending: true }),
     loadDashboardAggregate(studentId),
     loadDashboardAggregateAct(studentId),
   ]);
@@ -774,7 +781,10 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           />
 
           {/* Upload Bluebook (just the action trigger) */}
-          <UploadBluebookCard studentId={student.id} />
+          <UploadBluebookCard
+            studentId={student.id}
+            tests={(publishedTests ?? []) as Array<{ id: string; name: string; code: string | null }>}
+          />
         </aside>
       </div>
     </main>
