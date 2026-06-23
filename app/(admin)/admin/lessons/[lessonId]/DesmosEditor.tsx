@@ -18,6 +18,7 @@
 
 import { useRef, useState } from 'react';
 import { DesmosPanel } from '@/lib/ui/DesmosPanel';
+import { DESMOS_API_KEY } from '@/lib/config/desmos';
 import { Button } from '@/lib/ui/Button';
 import { cleanupDesmosContent } from '@/lib/lesson/desmos-form-utils.mjs';
 import { DesmosBlockEditor } from './DesmosBlockEditor';
@@ -135,11 +136,20 @@ export function DesmosEditor({
         </p>
 
         <div style={S.calcHost}>
-          <DesmosPanel isOpen storageKey={`lesson-desmos-author:${blockId}`} onCalcReady={onCalcReady} />
+          {DESMOS_API_KEY ? (
+            <DesmosPanel isOpen storageKey={`lesson-desmos-author:${blockId}`} onCalcReady={onCalcReady} />
+          ) : (
+            <div style={S.noKey}>
+              <strong>Desmos can’t load.</strong> The <code>NEXT_PUBLIC_DESMOS_API_KEY</code>{' '}
+              environment variable is not set, so the calculator script initialises without a key
+              and refuses to render — in both this editor and the student preview. Set the key in
+              your environment (see <code>.env.example</code>) and reload.
+            </div>
+          )}
         </div>
 
         <div style={S.captureRow}>
-          <Button type="button" variant="primary" size="sm" onClick={captureNow}>
+          <Button type="button" variant="primary" size="sm" onClick={captureNow} disabled={!DESMOS_API_KEY}>
             Capture target state from graph
           </Button>
           {note ? <span className={f.muted} style={{ fontSize: 12 }}>{note}</span> : null}
@@ -177,6 +187,13 @@ const S: Record<string, React.CSSProperties> = {
     borderRadius: 'var(--radius-md)',
     overflow: 'hidden',
     background: 'var(--bg-white, var(--card))',
+  },
+  noKey: {
+    padding: 16,
+    fontSize: 13,
+    lineHeight: 1.5,
+    color: 'var(--color-danger)',
+    background: 'var(--color-danger-bg, #fee2e2)',
   },
   captureRow: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
   capturedList: {
