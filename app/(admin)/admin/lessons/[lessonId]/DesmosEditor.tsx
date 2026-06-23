@@ -183,6 +183,11 @@ const S: Record<string, React.CSSProperties> = {
     background: 'var(--color-app-accent-bg, #eef)',
   },
   calcHost: {
+    // DesmosPanel fills its slot via height:100%, so it needs a parent
+    // with a *definite* height — otherwise its host collapses and the
+    // calculator renders blank. 640 matches the panel's own min-height
+    // (see DesmosPanel.module.css) so nothing is clipped.
+    height: 640,
     border: '1px solid var(--border)',
     borderRadius: 'var(--radius-md)',
     overflow: 'hidden',
