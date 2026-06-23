@@ -17,6 +17,9 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import s from './StudentDetail.module.css';
 
+/**
+ * @param {{ studentId: string, tests?: Array<{ id: string, name: string, code: string | null }> }} props
+ */
 export function UploadBluebookCard({ studentId, tests = [] }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
