@@ -14,11 +14,15 @@
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Image } from '@tiptap/extension-image';
 import { uploadFigure } from '@/lib/content/upload-figure-client';
+import { MathField } from '../../questions/new/MathField';
+import { MathInline, MathBlock, MathPopoverBridge } from './lesson-math-extensions';
+
+type Popover = { pos: number | null; latex: string; display: boolean };
 
 export function RichTextEditor({
   html,
@@ -32,8 +36,27 @@ export function RichTextEditor({
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  // Math popover state: pos === null means "insert new"; a number means
+  // "edit the existing node at this document position". draftLatex holds
+  // the in-progress MathLive value so confirming reads the latest edit.
+  const [popover, setPopover] = useState<Popover | null>(null);
+  const draftLatex = useRef('');
+  // Held in a ref so the node views (rendered out-of-tree) can reach the
+  // current "open popover" callback without re-creating the editor.
+  const openPopoverRef = useRef<((p: Popover) => void) | null>(null);
+  const getApi = useCallback(() => openPopoverRef.current, []);
+
   const editor = useEditor({
-    extensions: [StarterKit, Image.configure({ inline: false })],
+    extensions: [
+      StarterKit,
+      Image.configure({ inline: false }),
+      MathInline,
+      MathBlock,
+      // getApi is inferred as () => null from the JS extension's default
+      // option; cast to satisfy the option type while returning the live
+      // popover-opener at runtime.
+      MathPopoverBridge.configure({ getApi: getApi as unknown as () => null }),
+    ],
     content: html || '',
     immediatelyRender: false,
     editorProps: {
@@ -56,8 +79,48 @@ export function RichTextEditor({
     };
   }, [editor]);
 
+  // Keep the popover-opener fresh for the math node views to call.
+  useEffect(() => {
+    openPopoverRef.current = ({ pos, latex, display }: Popover) => {
+      draftLatex.current = latex || '';
+      setPopover({ pos, latex: latex || '', display: !!display });
+    };
+  });
+
   if (!editor) {
     return <div style={S.shell} />;
+  }
+
+  function openInsertMath(display: boolean) {
+    draftLatex.current = '';
+    setPopover({ pos: null, latex: '', display });
+  }
+
+  function confirmMath() {
+    if (!editor) return;
+    const latex = draftLatex.current.trim();
+    if (!latex) {
+      setPopover(null);
+      return;
+    }
+    if (popover?.pos == null) {
+      editor
+        .chain()
+        .focus()
+        .insertContent({ type: popover?.display ? 'mathBlock' : 'mathInline', attrs: { latex } })
+        .run();
+    } else {
+      const pos = popover.pos;
+      editor
+        .chain()
+        .focus()
+        .command(({ tr }) => {
+          tr.setNodeAttribute(pos, 'latex', latex);
+          return true;
+        })
+        .run();
+    }
+    setPopover(null);
   }
 
   async function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -99,11 +162,41 @@ export function RichTextEditor({
           ❝
         </Tool>
         <span style={S.sep} />
+        <button type="button" style={S.btn} title="Insert inline equation" onClick={() => openInsertMath(false)}>
+          √x
+        </button>
+        <button type="button" style={S.btn} title="Insert display equation" onClick={() => openInsertMath(true)}>
+          √x⏎
+        </button>
+        <span style={S.sep} />
         <button type="button" style={S.btn} title="Upload image" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
           {uploading ? '…' : '🖼'}
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={onPickImage} />
       </div>
+
+      {popover ? (
+        <div style={S.popover}>
+          <span style={S.popoverLabel}>
+            {popover.pos == null ? 'Insert' : 'Edit'} {popover.display ? 'display' : 'inline'} equation
+          </span>
+          <MathField
+            value={popover.latex}
+            onChange={(v: string) => {
+              draftLatex.current = v;
+            }}
+            onEnter={confirmMath}
+          />
+          <div style={S.popoverBtns}>
+            <button type="button" style={{ ...S.btn, ...S.btnPrimary }} onClick={confirmMath}>
+              {popover.pos == null ? 'Insert' : 'Update'}
+            </button>
+            <button type="button" style={S.btn} onClick={() => setPopover(null)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <EditorContent editor={editor} />
       {uploadErr ? <div style={S.err}>Image upload failed: {uploadErr}</div> : null}
@@ -170,5 +263,26 @@ const S: Record<string, React.CSSProperties> = {
     lineHeight: 1,
   },
   btnActive: { background: 'var(--color-app-accent-bg, #eef)', borderColor: 'var(--color-app-accent)', color: 'var(--color-app-accent)' },
+  btnPrimary: {
+    background: 'var(--color-app-accent, #4f7ce0)',
+    borderColor: 'var(--color-app-accent, #4f7ce0)',
+    color: '#fff',
+  },
   err: { color: 'var(--color-danger)', fontSize: 12, padding: '4px 10px' },
+  popover: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+    padding: 10,
+    borderBottom: '1px solid var(--border)',
+    background: 'var(--color-app-accent-bg, #eef)',
+  },
+  popoverLabel: {
+    fontSize: 11,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+    color: 'var(--color-navy-900)',
+  },
+  popoverBtns: { display: 'flex', gap: 8 },
 };
