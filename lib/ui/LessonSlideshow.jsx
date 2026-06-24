@@ -30,6 +30,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import HtmlBlock from '@/components/HtmlBlock';
+import { MathText } from '@/lib/ui/MathText';
 import {
   isLessonCompletionLocked,
   parseDesmosInteractiveContent,
@@ -477,7 +478,7 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
   return (
     <div style={{ ...S.card, border: `2px solid ${borderColor}` }}>
       <div style={S.kicker}>Knowledge Check</div>
-      <p style={S.checkPrompt}>{content.prompt}</p>
+      <MathText as="p" style={S.checkPrompt}>{content.prompt}</MathText>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {choices.map((choice, i) => {
@@ -531,7 +532,7 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
               >
                 {String.fromCharCode(65 + i)}
               </span>
-              <span>{choice}</span>
+              <MathText as="span">{choice}</MathText>
               {submitted && isCorrectChoice && (
                 <span
                   style={{
@@ -572,7 +573,7 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
 
       {showExplanation && content.explanation && (
         <div style={S.explanation}>
-          <strong>Explanation:</strong> {content.explanation}
+          <strong>Explanation:</strong> <MathText as="span">{content.explanation}</MathText>
         </div>
       )}
     </div>

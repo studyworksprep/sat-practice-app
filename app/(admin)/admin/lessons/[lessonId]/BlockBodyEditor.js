@@ -23,6 +23,7 @@ import {
   TextField,
   TextAreaField,
 } from './editor-fields';
+import { MathTextArea, MathTextField } from './math-fields';
 import f from '../../../forms.module.css';
 
 export function BlockBodyEditor({ block, onChange }) {
@@ -102,30 +103,31 @@ function CheckEditor({ content, onChange }) {
   }
 
   return (
-    <Section title="Knowledge check" hint="Select the radio next to the correct answer.">
+    <Section title="Knowledge check" hint="Select the radio next to the correct answer. Use √x to add math to the prompt, choices, or explanation.">
       <TextField label="Block id" value={content.id} onChange={(v) => set('id', v)} />
-      <TextAreaField label="Prompt" value={content.prompt} onChange={(v) => set('prompt', v)} rows={2} />
+      <MathTextArea label="Prompt" value={content.prompt} onChange={(v) => set('prompt', v)} rows={2} />
 
       <div className={f.label}>
         <span className={f.labelText}>Choices</span>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {choices.map((choice, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
               <input
                 type="radio"
                 name="correct_choice"
                 checked={i === correctIndex}
                 onChange={() => set('correct_index', i)}
                 title="Mark as correct answer"
+                style={{ marginBottom: 10 }}
               />
-              <input
-                type="text"
-                className={f.input}
-                value={choice ?? ''}
-                onChange={(e) => setChoice(i, e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <Button variant="remove" size="sm" disabled={choices.length <= 1} onClick={() => deleteChoice(i)}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <MathTextField
+                  label={`Choice ${String.fromCharCode(65 + i)}`}
+                  value={choice}
+                  onChange={(v) => setChoice(i, v)}
+                />
+              </div>
+              <Button variant="remove" size="sm" disabled={choices.length <= 1} onClick={() => deleteChoice(i)} style={{ marginBottom: 6 }}>
                 Delete
               </Button>
             </div>
@@ -137,7 +139,7 @@ function CheckEditor({ content, onChange }) {
         <Button variant="secondary" size="sm" onClick={addChoice}>+ Add choice</Button>
       </div>
 
-      <TextAreaField label="Explanation (shown after answering)" value={content.explanation} onChange={(v) => set('explanation', v)} rows={2} />
+      <MathTextArea label="Explanation (shown after answering)" value={content.explanation} onChange={(v) => set('explanation', v)} rows={2} />
     </Section>
   );
 }
