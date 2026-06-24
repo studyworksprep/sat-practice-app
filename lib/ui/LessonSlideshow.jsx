@@ -65,6 +65,11 @@ export function LessonSlideshow({
   const [debugByBlock, setDebugByBlock] = useState({});
   const [workflowDesmosContext, setWorkflowDesmosContext] = useState({});
   const [activeBranchState, setActiveBranchState] = useState(null);
+  // Where the currently-answered block should go on the next Continue.
+  // Set at answer time but applied only when the learner clicks
+  // Continue, so feedback stays visible and desmos answers can be
+  // retried. Shape: { fromIndex, nextIndex, activeBranchState }.
+  const [pendingAdvance, setPendingAdvance] = useState(null);
 
   const blockIndexById = useMemo(() => buildBlockIndexMap(blocks), [blocks]);
   const currentBlock = blocks[currentIndex] || null;
@@ -93,16 +98,22 @@ export function LessonSlideshow({
     onMarkBlockComplete?.(blockId);
   }
 
-  function recordCheckAnswer(blockId, payload) {
+  function recordCheckAnswer(blockId, payload, { markComplete = true } = {}) {
     setCheckAnswers((prev) => ({ ...prev, [blockId]: payload }));
-    setCompletedBlockIds((prev) => {
-      const next = new Set(prev);
-      next.add(blockId);
-      return next;
-    });
+    if (markComplete) {
+      setCompletedBlockIds((prev) => {
+        const next = new Set(prev);
+        next.add(blockId);
+        return next;
+      });
+    }
   }
 
-  function routeFromAnswer(block, isCorrect) {
+  // Record where an answered block should navigate next, but stay put:
+  // the learner reads the correct/incorrect feedback (and can retry a
+  // desmos block) before advancing. The footer Continue button applies
+  // this via goNext, honouring any on_correct/on_incorrect target.
+  function recordAnswerNav(block, isCorrect) {
     const result = resolveAnswerNavigation({
       block,
       isCorrect,
@@ -110,11 +121,22 @@ export function LessonSlideshow({
       totalBlocks: blocks.length,
       blockIndexById,
     });
-    setCurrentIndex(result.nextIndex);
-    setActiveBranchState(result.activeBranchState);
+    setPendingAdvance({
+      fromIndex: currentIndex,
+      nextIndex: result.nextIndex,
+      activeBranchState: result.activeBranchState,
+    });
   }
 
   function goNext() {
+    // First Continue after answering: jump to the recorded branch /
+    // linear target. Subsequent Continues use rejoin-aware navigation.
+    if (pendingAdvance && pendingAdvance.fromIndex === currentIndex) {
+      setCurrentIndex(pendingAdvance.nextIndex);
+      setActiveBranchState(pendingAdvance.activeBranchState);
+      setPendingAdvance(null);
+      return;
+    }
     const result = resolveContinueNavigation({
       blocks,
       currentIndex,
@@ -198,7 +220,7 @@ export function LessonSlideshow({
                   correct,
                 });
                 onSubmitCheck?.(currentBlock.id, selected, correct);
-                routeFromAnswer(currentBlock, correct);
+                recordAnswerNav(currentBlock, correct);
               }}
             />
           )}
@@ -214,13 +236,23 @@ export function LessonSlideshow({
               block={currentBlock}
               previousAnswer={checkAnswers[currentBlock.id]}
               onResult={(isCorrect) => {
-                recordCheckAnswer(currentBlock.id, {
-                  selected: null,
-                  correct: isCorrect,
-                  type: 'desmos_interactive',
-                });
+                // For a require_success block, only a correct answer
+                // completes it (and so unlocks Continue) — an incorrect
+                // attempt leaves it locked so the learner can retry.
+                const requireSuccess = Boolean(
+                  currentBlock.content?.progression?.require_success,
+                );
+                recordCheckAnswer(
+                  currentBlock.id,
+                  {
+                    selected: null,
+                    correct: isCorrect,
+                    type: 'desmos_interactive',
+                  },
+                  { markComplete: isCorrect || !requireSuccess },
+                );
                 onSubmitDesmos?.(currentBlock.id, isCorrect);
-                routeFromAnswer(currentBlock, isCorrect);
+                recordAnswerNav(currentBlock, isCorrect);
               }}
               onUnlock={() => {
                 setForceUnlockedBlockIds((prev) =>
