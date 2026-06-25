@@ -31,6 +31,7 @@ import {
   SelectField,
   CheckboxField,
 } from './editor-fields';
+import { MathTextArea } from './math-fields';
 import f from '../../../forms.module.css';
 
 const KNOWN_HINT_TRIGGERS = [
@@ -120,9 +121,9 @@ export function DesmosBlockEditor({ content, onChange }) {
       </Section>
 
       <Section title="Instructions">
-        <TextAreaField label="Instructions (HTML) *" value={data.instructions_html} onChange={(v) => patch({ instructions_html: v })} rows={3} />
+        <MathTextArea label="Instructions (HTML) *" value={data.instructions_html} onChange={(v) => patch({ instructions_html: v })} rows={3} />
         {!data.instructions_html && <span className={f.err}>Instructions are required.</span>}
-        <TextAreaField label="Caption (HTML)" value={data.caption_html} onChange={(v) => patch({ caption_html: v })} rows={2} />
+        <MathTextArea label="Caption (HTML)" value={data.caption_html} onChange={(v) => patch({ caption_html: v })} rows={2} />
       </Section>
 
       <Section title="Initial expressions" hint="Expressions pre-loaded into the calculator when the slide opens.">
@@ -205,8 +206,8 @@ export function DesmosBlockEditor({ content, onChange }) {
       </Section>
 
       <Section title="Feedback">
-        <TextAreaField label="Success message (HTML)" value={data.feedback?.success_message_html} onChange={(v) => patchNested('feedback.success_message_html', v)} rows={2} />
-        <TextAreaField label="Retry message (HTML)" value={data.feedback?.retry_message_html} onChange={(v) => patchNested('feedback.retry_message_html', v)} rows={2} />
+        <MathTextArea label="Success message (HTML)" value={data.feedback?.success_message_html} onChange={(v) => patchNested('feedback.success_message_html', v)} rows={2} />
+        <MathTextArea label="Retry message (HTML)" value={data.feedback?.retry_message_html} onChange={(v) => patchNested('feedback.retry_message_html', v)} rows={2} />
       </Section>
 
       <Section title="Targeted hints" hint="Shown when a specific mistake is detected.">
@@ -217,7 +218,7 @@ export function DesmosBlockEditor({ content, onChange }) {
               list[index] = { ...list[index], trigger: v };
               patchNested('feedback.targeted_hints', list);
             }} options={KNOWN_HINT_TRIGGERS} />
-            <TextAreaField label="Message (HTML)" value={hint.message_html} onChange={(v) => {
+            <MathTextArea label="Message (HTML)" value={hint.message_html} onChange={(v) => {
               const list = [...targetedHints];
               list[index] = { ...list[index], message_html: v };
               patchNested('feedback.targeted_hints', list);
@@ -252,7 +253,7 @@ export function DesmosBlockEditor({ content, onChange }) {
               list[index] = { ...list[index], min_attempts: Number(v || 1) };
               patchNested('feedback.attempt_based_hints', list);
             }} />
-            <TextAreaField label="Message (HTML)" value={hint.message_html} onChange={(v) => {
+            <MathTextArea label="Message (HTML)" value={hint.message_html} onChange={(v) => {
               const list = [...attemptHints];
               list[index] = { ...list[index], message_html: v };
               patchNested('feedback.attempt_based_hints', list);
@@ -268,7 +269,7 @@ export function DesmosBlockEditor({ content, onChange }) {
           </Button>
         </div>
         <NumberField label="Reveal solution after attempts" value={data.feedback?.reveal_solution_after_attempts ?? ''} onChange={(v) => patchNested('feedback.reveal_solution_after_attempts', v ? Number(v) : null)} />
-        <TextAreaField label="Solution (HTML)" value={data.feedback?.solution_html} onChange={(v) => patchNested('feedback.solution_html', v)} rows={2} />
+        <MathTextArea label="Solution (HTML)" value={data.feedback?.solution_html} onChange={(v) => patchNested('feedback.solution_html', v)} rows={2} />
       </Section>
 
       <Section title="Progression">

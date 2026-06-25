@@ -95,16 +95,31 @@ export function BlockCard({
         </div>
       </div>
 
-      <div style={S.body}>
-        <BlockPreview block={block} />
-      </div>
-
       {editing ? (
-        <div style={S.editor}>
-          <BlockBody block={block} onChangeContent={onChangeContent} />
-          <AdvancedJson content={block.content ?? {}} onChange={onChangeContent} />
+        <div style={S.editGrid}>
+          <div style={S.editPane}>
+            <div style={S.paneLabel}>Edit</div>
+            <div style={S.editInner}>
+              <BlockBody block={block} onChangeContent={onChangeContent} />
+              <AdvancedJson content={block.content ?? {}} onChange={onChangeContent} />
+            </div>
+          </div>
+          <div style={S.previewPane}>
+            <div style={S.previewBar}>
+              <span aria-hidden>👁</span>
+              <span>Preview</span>
+              <span style={S.previewSub}>what the learner sees</span>
+            </div>
+            <div style={S.previewInner}>
+              <BlockPreview block={block} />
+            </div>
+          </div>
         </div>
-      ) : null}
+      ) : (
+        <div style={S.body}>
+          <BlockPreview block={block} />
+        </div>
+      )}
 
       {issues.length > 0 ? (
         <ul style={S.issues}>
@@ -245,16 +260,66 @@ const S: Record<string, React.CSSProperties> = {
 
   body: { padding: '2px 4px 0 32px' },
 
-  editor: {
-    marginLeft: 32,
-    padding: 12,
+  // Editing: two responsive columns — the editor on the left, a
+  // clearly outlined live "Preview" box on the right. Collapses to a
+  // single column on narrow widths via auto-fit.
+  editGrid: {
+    marginTop: 10,
+    paddingTop: 12,
     borderTop: '1px solid var(--border)',
-    background: 'var(--bg-white, var(--card))',
-    borderRadius: 'var(--radius-md)',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+    gap: 16,
+    alignItems: 'start',
+  },
+  editPane: { display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 },
+  editInner: {
     display: 'flex',
     flexDirection: 'column',
     gap: 10,
+    padding: 12,
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-md)',
+    background: 'var(--bg-white, var(--card))',
   },
+  paneLabel: {
+    fontSize: 11,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+    color: 'var(--fg3)',
+  },
+  previewPane: {
+    minWidth: 0,
+    border: '2px solid var(--color-app-accent)',
+    borderRadius: 'var(--radius-lg, 12px)',
+    overflow: 'hidden',
+    background: 'var(--bg-white, #fff)',
+    position: 'sticky',
+    top: 12,
+  },
+  previewBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '6px 12px',
+    background: 'var(--color-app-accent-bg, #eef)',
+    borderBottom: '1px solid var(--color-app-accent)',
+    fontSize: 11,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+    color: 'var(--color-navy-900)',
+  },
+  previewSub: {
+    marginLeft: 'auto',
+    fontWeight: 500,
+    textTransform: 'none',
+    letterSpacing: 0,
+    color: 'var(--fg3)',
+    fontSize: 11,
+  },
+  previewInner: { padding: 14 },
 
   advanced: { marginTop: 4 },
   advancedSummary: { cursor: 'pointer', fontSize: 12, color: 'var(--fg3)', fontWeight: 600 },

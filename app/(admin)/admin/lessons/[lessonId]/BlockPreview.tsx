@@ -14,6 +14,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { SafeHtml } from '@/lib/ui/SafeHtml';
+import { MathText } from '@/lib/ui/MathText';
 import { useMathTypeset } from '@/lib/ui/preview-effects';
 import { blockMetaFor } from './block-meta';
 import { getQuestionById } from './actions';
@@ -103,14 +104,18 @@ function CheckPreview({ block }: { block: Block }) {
   const correctIndex = block.content?.correct_index ?? 0;
   return (
     <div style={S.check}>
-      <div style={S.prompt}>{prompt || <em style={S.placeholder}>No prompt yet</em>}</div>
+      {prompt ? (
+        <MathText as="div" style={S.prompt}>{prompt}</MathText>
+      ) : (
+        <div style={S.prompt}><em style={S.placeholder}>No prompt yet</em></div>
+      )}
       <ul style={S.choiceList}>
         {choices.map((choice, i) => {
           const correct = i === correctIndex;
           return (
             <li key={i} style={{ ...S.choice, ...(correct ? S.choiceCorrect : null) }}>
               <span style={S.choiceLetter}>{String.fromCharCode(65 + i)}</span>
-              <span>{choice}</span>
+              <MathText as="span">{choice}</MathText>
               {correct ? <span style={S.correctTag}>correct</span> : null}
             </li>
           );
