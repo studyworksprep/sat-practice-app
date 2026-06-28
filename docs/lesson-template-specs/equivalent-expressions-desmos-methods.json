@@ -1,0 +1,165 @@
+{
+  "title": "Equivalent Expressions: Graphing and Slider Methods in Desmos",
+  "description": "Two Desmos-based strategies for equivalent-expression questions — graph-and-match for one variable, and sliders for several variables — plus when each one applies.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "intro",
+      "html": "<h2>Equivalent Expressions with Desmos</h2><p>Some Advanced Math questions hand you an expression or equation and ask, <em>\"Which choice is equivalent?\"</em> You can always grind through the algebra — but when there are answer choices to compare against, Desmos gives you two fast, reliable shortcuts.</p><ul><li><strong>The graphing method</strong> — best when there is just <strong>one</strong> variable.</li><li><strong>The slider method</strong> — best when there are <strong>two or more</strong> variables.</li></ul><p>By the end of this lesson you'll know how to run each one and, just as important, when <em>not</em> to.</p>"
+    },
+
+    {
+      "kind": "text",
+      "id": "graph_intro",
+      "html": "<h2>Method 1: Graph and Match</h2><p>The idea is simple. Graph the original equation, then graph each answer choice one at a time. The choice whose graph lands <strong>exactly</strong> on top of the original is the equivalent one.</p><p>Two expressions are equivalent precisely when they produce the same output for every input — so their graphs are identical. That's what you're looking for: a perfect overlap, not just a similar shape.</p><p>Let's try it on a real question:</p><blockquote><p>Which expression is equivalent to \\(\\dfrac{4}{4x-5}-\\dfrac{1}{x+1}\\)?</p></blockquote><p>One of the choices is \\(\\dfrac{9}{(x+1)(4x-5)}\\). Let's graph the original against that choice and see if they match.</p>"
+    },
+    {
+      "kind": "graph_comparison_workflow",
+      "id": "graph_example",
+      "original_expression": "y=4/(4x-5)-1/(x+1)",
+      "candidate_expression": "y=9/((x+1)(4x-5))",
+      "prompt_html": "<p>We'll test the choice \\(\\dfrac{9}{(x+1)(4x-5)}\\) against the original. Follow the steps to enter both graphs and compare them.</p>",
+      "correct_html": "<p><strong>Exactly.</strong> The two graphs sit perfectly on top of each other, so \\(\\dfrac{9}{(x+1)(4x-5)}\\) is equivalent to the original. That's the answer.</p>",
+      "incorrect_html": "<p>Look again — every point of the candidate curve falls on the original curve, including the breaks at \\(x=-1\\) and \\(x=\\tfrac{5}{4}\\). A complete overlap like this means the expressions are equivalent.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "graph_recap",
+      "html": "<p>That's the whole technique. In a real test you'd keep the original on screen and type in each choice in turn; three of them will miss, and one will vanish right onto the original curve. That one is your answer.</p><p>Now the fine print — the three things that make or break this method.</p>"
+    },
+
+    {
+      "kind": "text",
+      "id": "graph_rule_variable",
+      "html": "<h3>Rule 1: The variable can always be \\(x\\)</h3><p>Desmos graphs in terms of \\(x\\). If a question is written with a different letter — say \\(t\\) or \\(n\\) — that's no problem: the letter is just a placeholder. You're free to rewrite the whole equation with \\(x\\) in its place, then graph as usual. Renaming the variable never changes whether two expressions are equivalent.</p>"
+    },
+    {
+      "kind": "branching_question",
+      "id": "check_variable",
+      "question_html": "<p>A question asks which expression is equivalent to \\(\\dfrac{3}{t-2}+\\dfrac{1}{t}\\), using the variable \\(t\\). You'd like to graph it. What should you do?</p>",
+      "choices": [
+        { "id": "a", "text": "Skip the graphing method — it only works when the question literally uses \\(x\\)." },
+        { "id": "b", "text": "Rewrite every \\(t\\) as \\(x\\), graph \\(\\dfrac{3}{x-2}+\\dfrac{1}{x}\\), and compare the choices the same way." },
+        { "id": "c", "text": "Graph it with \\(t\\) on the horizontal axis instead of \\(x\\)." }
+      ],
+      "correct_choice_id": "b",
+      "correct_html": "<p>Right. The variable's name is arbitrary, so swap \\(t\\) for \\(x\\) everywhere and graph normally.</p>",
+      "incorrect_html": "<p>Not quite. Desmos graphs in terms of \\(x\\), but the variable in the problem is just a placeholder. Replace every \\(t\\) with \\(x\\) — in the original and in the choices — and the method works exactly as before.</p>",
+      "rejoin_html": "<p>Takeaway: a single variable under any name can be renamed to \\(x\\) for graphing.</p>"
+    },
+
+    {
+      "kind": "text",
+      "id": "graph_rule_onevar",
+      "html": "<h3>Rule 2: Only one variable</h3><p>Graphing on the \\(xy\\)-plane shows one input (\\(x\\)) against one output (\\(y\\)). The moment an expression has <strong>two or more</strong> variables, there's no single curve to overlap, and the graph-and-match trick falls apart. When you spot a second variable, stop and reach for the slider method instead (coming up next).</p>"
+    },
+    {
+      "kind": "branching_question",
+      "id": "check_onevar",
+      "question_html": "<p>You need an expression equivalent to \\(5a^2b - 10ab^2\\), which contains the variables \\(a\\) and \\(b\\). Is the graph-and-match method a good fit?</p>",
+      "choices": [
+        { "id": "a", "text": "Yes — graph it like any other expression and look for the overlap." },
+        { "id": "b", "text": "No — there are two variables, so graphing won't give a single curve to compare. Use the slider method." }
+      ],
+      "correct_choice_id": "b",
+      "correct_html": "<p>Correct. Two variables means no single \\(x\\)-vs-\\(y\\) curve, so graph-and-match doesn't apply. Sliders are the move.</p>",
+      "incorrect_html": "<p>Reconsider. With both \\(a\\) and \\(b\\) in play there's no single curve to overlay, so graphing breaks down. This is exactly the case the slider method is built for.</p>",
+      "rejoin_html": "<p>Takeaway: one variable → graph; two or more → sliders.</p>"
+    },
+
+    {
+      "kind": "text",
+      "id": "graph_rule_choices",
+      "html": "<h3>Rule 3: You need answer choices to compare against</h3><p>Both Desmos methods work by <em>matching</em> — you compare the original to each choice. If a question simply says \"simplify\" or \"rewrite\" with no choices listed (a student-produced-response question, for instance), there's nothing to overlay against, and there's no way to know when you've matched. In that situation, fall back on algebra.</p>"
+    },
+    {
+      "kind": "branching_question",
+      "id": "check_choices",
+      "question_html": "<p>A grid-in (no answer choices) question asks you to write \\(\\dfrac{x^2-9}{x+3}\\) in simplest form. Should you graph and match?</p>",
+      "choices": [
+        { "id": "a", "text": "Yes — graph it and read the answer off the screen." },
+        { "id": "b", "text": "No — with no choices to compare against, there's nothing to match, so use algebra instead." }
+      ],
+      "correct_choice_id": "b",
+      "correct_html": "<p>Exactly. Matching needs something to match against. With no choices, simplify by hand (here, \\(x-3\\)).</p>",
+      "incorrect_html": "<p>Think about what \"match\" means. Without answer choices there's no second graph to overlap, so the method has nothing to confirm. Simplify algebraically instead.</p>",
+      "rejoin_html": "<p>Takeaway: no answer choices → no matching → use another method.</p>"
+    },
+
+    {
+      "kind": "text",
+      "id": "slider_intro",
+      "html": "<h2>Method 2: Sliders for Several Variables</h2><p>When an expression carries two or more variables, graphing stalls — even if the variables happen to be \\(x\\) and \\(y\\). Instead, turn each variable into a <strong>slider</strong> and compare <em>values</em>.</p><p>The plan:</p><ol><li>Type the original expression into Desmos and let it create a slider for each variable.</li><li>Type each answer choice on its own line.</li><li>Read off the numerical value of each. The choice that produces the <strong>same value</strong> as the original is the equivalent one.</li></ol><p>We'll use this question:</p><blockquote><p>Which expression is equivalent to \\(6x^8y^2+12x^2y^2\\)?</p></blockquote>"
+    },
+    {
+      "kind": "text",
+      "id": "slider_xy_rule",
+      "html": "<h3>One catch: Desmos won't make sliders for \\(x\\) and \\(y\\)</h3><p>Desmos treats \\(x\\) and \\(y\\) as graphing axes, so it refuses to turn them into sliders. The fix is to rename them to something adjacent — <strong>capital \\(X\\) and \\(Y\\)</strong> work perfectly. So before entering our question, rewrite</p><p>\\(6x^8y^2+12x^2y^2\\) as \\(6X^8Y^2+12X^2Y^2\\),</p><p>and rewrite every answer choice the same way. Now Desmos will happily build an \\(X\\) slider and a \\(Y\\) slider.</p>"
+    },
+    {
+      "kind": "slider_workflow",
+      "id": "slider_example",
+      "expression": "6X^8Y^2+12X^2Y^2",
+      "variables": ["X", "Y"],
+      "prompt_html": "<p>Enter the original expression (with capital \\(X\\) and \\(Y\\)), create a slider for each, then we'll test the choices against it.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "slider_compare",
+      "html": "<p>With the sliders set, type each rewritten choice on its own line and watch the values:</p><ul><li>\\(6X^2Y^2(2X^6)\\)</li><li>\\(6X^2Y^2(X^4)\\)</li><li>\\(6X^2Y^2(X^6+2)\\)</li><li>\\(6X^2Y^2(X^4+2)\\)</li></ul><p>Only \\(6X^2Y^2(X^6+2)\\) reports the same value as the original for the slider settings you chose. That's the equivalent expression — the answer.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "slider_rule_move",
+      "html": "<h3>Always move the sliders off 1</h3><p>Here's the trap. If every slider sits at its default value of \\(1\\), several different expressions can <em>accidentally</em> produce the same number — a coincidence, not real equivalence. To rule that out, drag each slider to a <strong>different, random</strong> value (try \\(X=3\\), \\(Y=-2\\), for example). A choice that still matches at messy, unequal values is genuinely equivalent, not just a lucky coincidence at \\(1\\).</p>"
+    },
+    {
+      "kind": "branching_question",
+      "id": "check_move_sliders",
+      "question_html": "<p>Why should you move the sliders away from \\(1\\) (and to different values from each other) before deciding which choice matches?</p>",
+      "choices": [
+        { "id": "a", "text": "Desmos can't evaluate an expression while a slider is set to 1." },
+        { "id": "b", "text": "At \\(1\\) (or equal values) a wrong choice can coincidentally equal the original; varied values expose those impostors." },
+        { "id": "c", "text": "Moving sliders makes the graph easier to see." }
+      ],
+      "correct_choice_id": "b",
+      "correct_html": "<p>Right. Distinct, non-1 values break coincidental matches, so only a truly equivalent choice keeps up.</p>",
+      "incorrect_html": "<p>The concern is false matches. At \\(1\\) — or any shared value — a non-equivalent choice can land on the same number by accident. Spreading the sliders to different, non-1 values weeds those out.</p>",
+      "rejoin_html": "<p>Takeaway: random, distinct slider values prevent coincidental matches.</p>"
+    },
+    {
+      "kind": "branching_question",
+      "id": "check_xy_swap",
+      "question_html": "<p>A multi-variable question is written with \\(x\\) and \\(y\\). To use the slider method, what do you do first?</p>",
+      "choices": [
+        { "id": "a", "text": "Nothing special — Desmos makes sliders for \\(x\\) and \\(y\\) like any other letter." },
+        { "id": "b", "text": "Replace \\(x\\) and \\(y\\) with capital \\(X\\) and \\(Y\\) (in the original and every choice) so Desmos will create sliders." },
+        { "id": "c", "text": "Switch to the graphing method instead." }
+      ],
+      "correct_choice_id": "b",
+      "correct_html": "<p>Correct. Desmos reserves \\(x\\) and \\(y\\) for the axes, so rename them to \\(X\\) and \\(Y\\) everywhere first.</p>",
+      "incorrect_html": "<p>Desmos won't turn \\(x\\) or \\(y\\) into sliders — they're the graphing axes. Rename them to capital \\(X\\) and \\(Y\\) (consistently across the original and all choices) and the sliders appear.</p>",
+      "rejoin_html": "<p>Takeaway: swap \\(x,y\\) for \\(X,Y\\) before adding sliders.</p>"
+    },
+    {
+      "kind": "branching_question",
+      "id": "check_slider_choices",
+      "question_html": "<p>The slider method shares one big limitation with the graphing method. Which is it?</p>",
+      "choices": [
+        { "id": "a", "text": "It only works when the expression has exactly two variables." },
+        { "id": "b", "text": "It needs answer choices to compare against — with nothing to match, there's no way to confirm a result." },
+        { "id": "c", "text": "It only works for polynomials." }
+      ],
+      "correct_choice_id": "b",
+      "correct_html": "<p>Exactly. Like graphing, the slider method is a matching tool — no choices, no match. Use algebra there.</p>",
+      "incorrect_html": "<p>Sliders handle any number of variables and many expression types. The real limit is the same as before: you need answer choices to compare against. Without them, fall back on algebra.</p>",
+      "rejoin_html": "<p>Takeaway: both Desmos methods require answer choices to compare against.</p>"
+    },
+
+    {
+      "kind": "text",
+      "id": "summary",
+      "html": "<h2>Choosing your method</h2><p>Quick decision guide for the next equivalent-expression question you see:</p><ul><li><strong>One variable + answer choices?</strong> Graph and match. Rename the variable to \\(x\\) if needed.</li><li><strong>Two or more variables + answer choices?</strong> Use sliders. Rename \\(x,y\\) to \\(X,Y\\), and move every slider to a different, non-1 value.</li><li><strong>No answer choices?</strong> Neither Desmos trick applies — there's nothing to match, so solve it with algebra.</li></ul><p>Pick the tool that fits what's in front of you, and these questions become fast and nearly mistake-proof.</p>"
+    }
+  ]
+}
