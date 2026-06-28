@@ -25,7 +25,8 @@ Produce **one JSON object** and nothing else:
 - `title` and `description` are recommended (missing → warning, not error).
 - `blocks` is required and must be a non-empty array.
 - Blocks render to the learner **top-to-bottom, one slide at a time**, in
-  array order. Design a linear sequence.
+  array order. A straight sequence is the default; questions can branch to
+  per-answer paths and merge back (see §4).
 
 Each entry in `blocks` is an object with a `kind` field that selects how it
 compiles. The kinds below are the only ones allowed.
@@ -74,8 +75,9 @@ video, and advanced Desmos. Shape:
   `correct_index` (required, **0-based** index into `choices`),
   `explanation` (optional, shown after answering).
 - The learner picks an answer, sees the explanation inline, then clicks
-  **Continue**. Do **not** add `on_correct_block_id` /
-  `on_incorrect_block_id` / `rejoin_at_block_id` (see §4).
+  **Continue**. For a simple linear question, that's all you need. To send
+  correct and incorrect answers down different paths, add branch fields —
+  see **§4 Branching**.
 
 **Video**:
 ```json
@@ -160,6 +162,29 @@ multi-step Desmos sequence. Use only if you specifically want that flow:
 ```
 (Use uppercase parameter letters like `A`, `B` so Desmos makes sliders.)
 
+### 2d. `branching_question` — send correct/incorrect answers different ways
+
+The easiest way to branch. You give a question and per-answer feedback; the
+importer builds the question plus a correct-feedback block, an
+incorrect-feedback block, and a shared rejoin block, all wired together.
+
+```json
+{
+  "kind": "branching_question",
+  "question_html": "<p>Is \\(x^2 \\ge 0\\) for every real \\(x\\)?</p>",
+  "choices": [ { "id": "yes", "text": "Yes" }, { "id": "no", "text": "No" } ],
+  "correct_choice_id": "yes",
+  "correct_html": "<p>Correct — a square is never negative.</p>",
+  "incorrect_html": "<p>Not quite — try squaring a few negatives.</p>",
+  "rejoin_html": "<p>Either way: squares are always \\(\\ge 0\\). Moving on.</p>"
+}
+```
+Required: `question_html`, `choices` (array of `{ id, text }`, ≥2),
+`correct_choice_id` (must equal one choice `id`). Optional: `correct_html`,
+`incorrect_html`, `rejoin_html`, `explanation_html`. At runtime the learner
+answers, clicks Continue, sees only the feedback for their answer, clicks
+Continue again, and lands on the rejoin block — then the lesson continues.
+
 ---
 
 ## 3. Math formatting
@@ -178,14 +203,46 @@ syntax like `y=2x+1`, **not** `\( \)` delimiters.
 
 ---
 
-## 4. Hard rules and gotchas
+## 4. Branching (optional: correct/incorrect paths)
 
-- **Linear only. Do NOT use branching.** The fields `on_correct_block_id`,
-  `on_incorrect_block_id`, and `rejoin_at_block_id` (and the
-  `branching_question` kind) are not reliable: after import the runtime
-  indexes blocks by database id, which no longer matches the spec ids, so
-  branch targets silently fall back to linear. Build a single forward
-  sequence and put feedback in each check's `explanation`.
+Branching lets a question route correct and incorrect answers to different
+blocks, then merge them back. Two ways:
+
+- **Easiest:** use the `branching_question` kind (§2d). Prefer this.
+- **Manual (raw_block):** put branch fields on a `check` block's `content`
+  and give every target block a stable `content.id` that the branch fields
+  reference **by content.id**:
+  - `on_correct_block_id`  → the `content.id` of the correct-feedback block
+  - `on_incorrect_block_id`→ the `content.id` of the incorrect-feedback block
+  - `rejoin_at_block_id`   → the `content.id` of the block both paths merge into
+
+  Order the blocks: the check first, then the correct-feedback block, then
+  the incorrect-feedback block, then the rejoin block, then the rest of the
+  lesson. Example:
+
+  ```json
+  { "kind": "raw_block", "block_type": "check", "content": {
+      "id": "q1", "prompt": "Slope of \\(y=3x-2\\)?",
+      "choices": ["2", "3", "-2"], "correct_index": 1,
+      "on_correct_block_id": "q1_ok", "on_incorrect_block_id": "q1_no", "rejoin_at_block_id": "q1_join" } },
+  { "kind": "raw_block", "block_type": "text", "content": { "id": "q1_ok",   "html": "<p>Right — the coefficient of x is the slope.</p>" } },
+  { "kind": "raw_block", "block_type": "text", "content": { "id": "q1_no",   "html": "<p>The slope is the coefficient of x, which is 3.</p>" } },
+  { "kind": "raw_block", "block_type": "text", "content": { "id": "q1_join", "html": "<p>Onward.</p>" } }
+  ```
+
+Rules for manual branching:
+- Branch fields reference **`content.id`s, not top-level `id`s.** Give each
+  target block a `content.id` and point the branch fields at those exact
+  strings.
+- Always set `rejoin_at_block_id` so the two paths merge; otherwise the
+  learner falls through into the other path's feedback.
+- A branch target that doesn't match any block's `content.id` silently
+  falls back to linear (the next block in order).
+
+---
+
+## 5. Hard rules and gotchas
+
 - **ids are optional.** The importer generates unique ids automatically. If
   you set an `id` on a block, keep it unique within the spec.
 - **`correct_index` is 0-based.**
@@ -201,7 +258,7 @@ syntax like `y=2x+1`, **not** `\( \)` delimiters.
 
 ---
 
-## 5. Complete example (copy-paste-ready)
+## 6. Complete example (copy-paste-ready)
 
 ```json
 {
@@ -241,7 +298,7 @@ syntax like `y=2x+1`, **not** `\( \)` delimiters.
 
 ---
 
-## 6. How to confirm it works
+## 7. How to confirm it works
 
 1. Admin → **Lessons → Import from JSON**. Paste the JSON. The page
    compiles and validates live and reports any errors before you import.
