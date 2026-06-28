@@ -65,6 +65,27 @@ const EMPTY_SCENE: ExcalidrawScene = {
   files: {},
 };
 
+/** Strip transient / non-JSON-safe fields from a captured Excalidraw
+ *  appState before it's persisted or re-fed to the editor.
+ *
+ *  `getAppState()` returns the full live state, which includes
+ *  `collaborators` as a `Map`. `JSON.stringify` turns a Map into `{}`,
+ *  and on reload Excalidraw's `restoreAppState` keeps that empty object
+ *  (it isn't `undefined`) instead of defaulting it back to a Map — so
+ *  the scene renderer's `appState.collaborators.forEach(...)` throws and
+ *  the whole note page fails to render. Dropping the field lets
+ *  Excalidraw rebuild it as a fresh Map. Applied on save (new scenes
+ *  stay clean) and on open (scenes saved before this fix are repaired
+ *  with no migration). */
+function sanitizeSceneAppState(
+  appState: Record<string, unknown> | null | undefined,
+): Record<string, unknown> {
+  if (!appState || typeof appState !== 'object') return {};
+  const copy = { ...appState };
+  delete copy.collaborators;
+  return copy;
+}
+
 // Cap on the serialized scene size before we refuse to save. 200KB
 // covers most student diagrams comfortably while keeping rows
 // retrievable in the cards-page batched read; anything bigger
@@ -160,7 +181,7 @@ function ExcalidrawModal({ initialScene, onSave, onCancel }: ExcalidrawModalProp
     setError(null);
     try {
       const elements = apiRef.current.getSceneElements();
-      const appState = apiRef.current.getAppState();
+      const appState = sanitizeSceneAppState(apiRef.current.getAppState());
       const files = apiRef.current.getFiles();
 
       const scene: ExcalidrawScene = { elements, appState, files };
@@ -253,7 +274,12 @@ function ExcalidrawNodeView({ node, updateAttributes, deleteNode, editor }: Node
 
   const scene: ExcalidrawScene = useMemo(() => {
     const raw = node.attrs.scene as ExcalidrawScene | null;
-    if (raw && Array.isArray(raw.elements)) return raw;
+    if (raw && Array.isArray(raw.elements)) {
+      // Sanitize on open too, so drawings saved before the save-path
+      // fix (whose appState.collaborators round-tripped to a plain
+      // object) don't crash Excalidraw when re-edited.
+      return { ...raw, appState: sanitizeSceneAppState(raw.appState) };
+    }
     return EMPTY_SCENE;
   }, [node.attrs.scene]);
   const svg = (node.attrs.svg as string) ?? '';
@@ -395,5 +421,67 @@ export function insertExcalidraw(editor: Editor): void {
   editor.chain().focus().insertContent({
     type: 'excalidraw',
     attrs: { scene: null, svg: '' },
+  }).run();
+}
+
+export interface ExcalidrawClipboardPayload {
+  elements?: unknown[];
+  files?: Record<string, unknown>;
+}
+
+/** Recognize an Excalidraw clipboard payload in pasted text. The
+ *  drawing tool writes `{"type":"excalidraw/clipboard", …}` to
+ *  text/plain on copy; without interception it lands in a note as raw
+ *  JSON text (and renders as raw text). Returns the parsed payload, or
+ *  null when the text isn't a single Excalidraw clipboard blob. */
+export function parseExcalidrawClipboard(
+  text: string,
+): ExcalidrawClipboardPayload | null {
+  const trimmed = text.trim();
+  if (!trimmed.startsWith('{') || !trimmed.includes('excalidraw/clipboard')) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(trimmed) as { type?: string } & ExcalidrawClipboardPayload;
+    if (parsed && parsed.type === 'excalidraw/clipboard') return parsed;
+  } catch {
+    // Not a single JSON object (e.g. several blobs concatenated from
+    // repeated pastes) — let the editor fall back to its default text
+    // paste rather than guess.
+  }
+  return null;
+}
+
+/** Convert an Excalidraw clipboard payload into a real drawing node,
+ *  rendering the SVG snapshot up front (lazy-loading the exporter the
+ *  same way the modal does) so the pasted drawing shows on the
+ *  read-only views immediately. Falls back to inserting the scene
+ *  without a snapshot if the export fails — the elements are still
+ *  intact and editable. */
+export async function insertExcalidrawFromClipboard(
+  editor: Editor,
+  payload: ExcalidrawClipboardPayload,
+): Promise<void> {
+  const elements = Array.isArray(payload.elements) ? payload.elements : [];
+  const files = payload.files ?? {};
+  const appState: Record<string, unknown> = { viewBackgroundColor: '#ffffff' };
+  const scene: ExcalidrawScene = { elements, appState, files };
+
+  let svg = '';
+  if (elements.length > 0) {
+    try {
+      const mod = await ensureExcalidraw();
+      if (mod) {
+        const svgEl = await mod.exportToSvg({ elements, appState, files, exportPadding: 8 });
+        svg = new XMLSerializer().serializeToString(svgEl);
+      }
+    } catch (err) {
+      console.error('Excalidraw clipboard import failed to render SVG', err);
+    }
+  }
+
+  editor.chain().focus().insertContent({
+    type: 'excalidraw',
+    attrs: { scene, svg },
   }).run();
 }

@@ -13,11 +13,16 @@
 
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { EditorContent, useEditor } from '@tiptap/react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { EditorContent, useEditor, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { MathExtension } from './MathNode';
-import { ExcalidrawExtension, insertExcalidraw } from './ExcalidrawNode';
+import {
+  ExcalidrawExtension,
+  insertExcalidraw,
+  insertExcalidrawFromClipboard,
+  parseExcalidrawClipboard,
+} from './ExcalidrawNode';
 import { docToPlainText, EMPTY_DOC } from '@/lib/notes/render';
 import { syncMathNodesFromDom } from '@/lib/notes/sync-math-nodes';
 import type { NoteDoc, NoteTaxonomy } from '@/lib/types';
@@ -78,6 +83,10 @@ export function NoteEditor({
     [initialDoc],
   );
 
+  // handlePaste runs after the editor exists, but the config closure is
+  // built before useEditor returns — read the instance through a ref.
+  const editorRef = useRef<Editor | null>(null);
+
   const editor = useEditor({
     extensions: [StarterKit, MathExtension, ExcalidrawExtension],
     content: startingDoc as unknown as object,
@@ -89,8 +98,25 @@ export function NoteEditor({
         'aria-label': 'Note editor',
         spellcheck: 'true',
       },
+      // Copying shapes out of the drawing tool puts an
+      // `{"type":"excalidraw/clipboard", …}` blob on text/plain. Without
+      // this, pasting it lands as raw JSON text and renders as raw text;
+      // instead, convert it into a real drawing node.
+      handlePaste: (_view, event) => {
+        const text = event.clipboardData?.getData('text/plain') ?? '';
+        const payload = parseExcalidrawClipboard(text);
+        if (!payload) return false;
+        event.preventDefault();
+        const ed = editorRef.current;
+        if (ed) void insertExcalidrawFromClipboard(ed, payload);
+        return true;
+      },
     },
   });
+
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   // External edit toggle (e.g. switching from preview to edit on the
   // detail page) needs to be propagated to the editor instance.
