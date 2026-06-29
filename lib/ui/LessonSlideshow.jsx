@@ -632,14 +632,18 @@ function DesmosInteractiveBlock({
   const [attempts, setAttempts] = useState(0);
   const [desmosMountError, setDesmosMountError] = useState(false);
 
-  let content = null;
-  let contentError = null;
-  try {
-    content = parseDesmosInteractiveContent(block.content || {});
-  } catch (err) {
-    content = null;
-    contentError = err.message;
-  }
+  // Memoize on block.content so `content` keeps a stable identity across
+  // re-renders. The mount effect below depends on `content`; without
+  // memoization every Check-Answer (which calls setState) produced a new
+  // content object, re-ran the effect, and destroyed + recreated the
+  // calculator — wiping whatever the learner had typed.
+  const { content, contentError } = useMemo(() => {
+    try {
+      return { content: parseDesmosInteractiveContent(block.content || {}), contentError: null };
+    } catch (err) {
+      return { content: null, contentError: err.message };
+    }
+  }, [block.content]);
 
   useEffect(() => {
     if (!content || !hostRef.current) return undefined;
