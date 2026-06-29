@@ -645,8 +645,22 @@ function DesmosInteractiveBlock({
     }
   }, [block.content]);
 
+  // Mount the Desmos calculator exactly once for this block and tear it
+  // down only when the component unmounts. This effect deliberately has
+  // an empty dependency list: re-running it (on any re-render, e.g. after
+  // Check Answer) would destroy + recreate the calculator and wipe what
+  // the learner typed. A *different* block remounts this component (the
+  // parent keys the slide by block id), so capturing `content` and the
+  // inherited workflow state at mount time is correct. The values are
+  // read through refs kept fresh below so the once-only mount still sees
+  // the latest seed data.
+  const seedRef = useRef({ content, inheritedWorkflowContext });
+  // Keep the seed fresh without re-running the mount effect.
   useEffect(() => {
-    if (!content || !hostRef.current) return undefined;
+    seedRef.current = { content, inheritedWorkflowContext };
+  });
+
+  useEffect(() => {
     if (typeof window === 'undefined') return undefined;
 
     let cancelled = false;
@@ -655,26 +669,22 @@ function DesmosInteractiveBlock({
 
     const tryMount = () => {
       if (cancelled || calculatorRef.current) return;
-      if (!window.Desmos?.GraphingCalculator) return;
+      const { content: c, inheritedWorkflowContext: inherited } = seedRef.current;
+      if (!c || !hostRef.current || !window.Desmos?.GraphingCalculator) return;
 
       const calculator = window.Desmos.GraphingCalculator(hostRef.current, {
-        expressions: content.calculator_options?.expressions ?? true,
-        lockViewport: content.calculator_options?.lockViewport ?? false,
-        sliders: content.calculator_options?.sliders ?? true,
+        expressions: c.calculator_options?.expressions ?? true,
+        lockViewport: c.calculator_options?.lockViewport ?? false,
+        sliders: c.calculator_options?.sliders ?? true,
       });
       calculatorRef.current = calculator;
       setDesmosMountError(false);
 
-      const shouldInherit = Boolean(
-        content.inherit_from_previous_workflow_desmos,
-      );
-      if (
-        shouldInherit &&
-        inheritedWorkflowContext?.state?.expressions?.list?.length
-      ) {
-        calculator.setState(inheritedWorkflowContext.state);
+      const shouldInherit = Boolean(c.inherit_from_previous_workflow_desmos);
+      if (shouldInherit && inherited?.state?.expressions?.list?.length) {
+        calculator.setState(inherited.state);
       } else {
-        for (const expr of content.initial_expressions || []) {
+        for (const expr of c.initial_expressions || []) {
           if (expr?.latex) {
             calculator.setExpression({ id: expr.id, latex: expr.latex });
           }
@@ -703,7 +713,8 @@ function DesmosInteractiveBlock({
         calculatorRef.current = null;
       }
     };
-  }, [content, inheritedWorkflowContext]);
+    // Mount once — see comment above. seedRef carries the latest content.
+  }, []);
 
   function extractStudentExpressions(calculator) {
     const expressionList = calculator?.getExpressions?.() || [];
