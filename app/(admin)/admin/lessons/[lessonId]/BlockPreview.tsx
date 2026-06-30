@@ -30,6 +30,8 @@ type Block = {
     choices?: string[];
     correct_index?: number;
     explanation?: string;
+    allow_retry?: boolean;
+    hint?: string;
     question_id?: string;
     title?: string;
     instructions_html?: string;
@@ -102,6 +104,8 @@ function CheckPreview({ block }: { block: Block }) {
   const prompt = block.content?.prompt ?? '';
   const choices = Array.isArray(block.content?.choices) ? block.content!.choices! : [];
   const correctIndex = block.content?.correct_index ?? 0;
+  const allowRetry = Boolean(block.content?.allow_retry);
+  const hint = block.content?.hint ?? '';
   return (
     <div style={S.check}>
       {prompt ? (
@@ -126,6 +130,13 @@ function CheckPreview({ block }: { block: Block }) {
           </li>
         ) : null}
       </ul>
+      {allowRetry ? (
+        <div style={S.metaRow}>
+          ↻ Retry until correct{hint ? (
+            <> · hint: <MathText as="span">{hint}</MathText></>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

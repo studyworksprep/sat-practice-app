@@ -82,10 +82,17 @@ export function LessonSlideshow({
 
   const currentIsLocked = Boolean(
     currentBlock &&
-      currentBlock.block_type === 'desmos_interactive' &&
-      currentBlock.content?.progression?.require_success &&
-      !completedBlockIds.has(currentBlock.id) &&
-      !forceUnlockedBlockIds.includes(currentBlock.id),
+      ((currentBlock.block_type === 'desmos_interactive' &&
+        currentBlock.content?.progression?.require_success &&
+        !completedBlockIds.has(currentBlock.id) &&
+        !forceUnlockedBlockIds.includes(currentBlock.id)) ||
+        // A retry check gates Continue until it's answered correctly,
+        // the same way a require_success desmos block does. It completes
+        // only on a correct answer (see the check onSubmit wiring), so a
+        // not-yet-completed retry check keeps the learner on the slide.
+        (currentBlock.block_type === 'check' &&
+          currentBlock.content?.allow_retry &&
+          !completedBlockIds.has(currentBlock.id))),
   );
 
   function recordBlockComplete(blockId) {
@@ -216,6 +223,14 @@ export function LessonSlideshow({
               block={currentBlock}
               previousAnswer={checkAnswers[currentBlock.id]}
               onSubmit={(selected, correct) => {
+                // In retry mode an incorrect attempt is purely a
+                // client-side nudge: it must not be persisted (the
+                // progress action marks any submitted check complete,
+                // which would let the gate be bypassed on reload) and
+                // must not arm navigation. Only a correct answer — or
+                // any answer when retry is off — finalizes the block.
+                const allowRetry = Boolean(currentBlock.content?.allow_retry);
+                if (allowRetry && !correct) return;
                 recordCheckAnswer(currentBlock.id, {
                   selected,
                   correct,
@@ -452,28 +467,58 @@ function getEmbedUrl(url) {
   return null;
 }
 
+// Knowledge-check renderer with two modes:
+//   - default (one-shot): the first submit reveals the correct answer
+//     and explanation and locks the block.
+//   - retry (content.allow_retry): a wrong answer shows a hint and lets
+//     the learner pick again without revealing the answer; the block
+//     reveals + locks only once they're correct. The parent gates
+//     Continue and completion on that correct answer.
 function CheckBlock({ block, previousAnswer, onSubmit }) {
-  const [selected, setSelected] = useState(previousAnswer?.selected ?? null);
-  const [submitted, setSubmitted] = useState(!!previousAnswer);
-  const [showExplanation, setShowExplanation] = useState(!!previousAnswer);
-
   const content = block.content || {};
   const choices = content.choices || [];
   const correctIdx = content.correct_index ?? 0;
+  const allowRetry = Boolean(content.allow_retry);
+  const hintHtml = content.hint || 'Not quite — take another look and try again.';
+
+  const [selected, setSelected] = useState(previousAnswer?.selected ?? null);
+  // `revealed` = block finalized: choices lock, correct answer + the
+  // explanation show. In retry mode this happens only once correct; in
+  // one-shot mode it happens on the first submit. A restored answer is
+  // revealed when it was correct, or whenever retry is off.
+  const [revealed, setRevealed] = useState(() => {
+    if (!previousAnswer) return false;
+    return allowRetry ? Boolean(previousAnswer.correct) : true;
+  });
+  // Set after a wrong attempt in retry mode: show the hint and keep the
+  // choices live. Cleared the moment the learner changes their pick.
+  const [showHint, setShowHint] = useState(false);
+
+  function handleSelect(i) {
+    if (revealed) return;
+    setSelected(i);
+    if (showHint) setShowHint(false);
+  }
 
   function handleSubmit() {
     if (selected === null) return;
     const isCorrect = selected === correctIdx;
-    setSubmitted(true);
-    setShowExplanation(true);
     onSubmit(selected, isCorrect);
+    if (allowRetry && !isCorrect) {
+      setShowHint(true);
+      return;
+    }
+    setShowHint(false);
+    setRevealed(true);
   }
 
-  const borderColor = submitted
+  const borderColor = revealed
     ? selected === correctIdx
       ? 'var(--success, #5ba876)'
       : 'var(--danger, #d97775)'
-    : 'var(--border, rgba(17,24,39,0.08))';
+    : showHint
+      ? 'var(--danger, #d97775)'
+      : 'var(--border, rgba(17,24,39,0.08))';
 
   return (
     <div style={{ ...S.card, border: `2px solid ${borderColor}` }}>
@@ -484,9 +529,13 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
         {choices.map((choice, i) => {
           const isCorrectChoice = i === correctIdx;
           const isSelected = i === selected;
+          // Flag a wrong pick in retry mode without giving away which
+          // choice is correct — that stays hidden until the learner
+          // gets there themselves.
+          const isWrongPick = showHint && isSelected && !isCorrectChoice;
           let bg = 'transparent';
           let border = '1px solid var(--border, #ddd)';
-          if (submitted) {
+          if (revealed) {
             if (isCorrectChoice) {
               bg = 'rgba(91,168,118,0.10)';
               border = '1px solid var(--success, #5ba876)';
@@ -494,6 +543,9 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
               bg = 'rgba(217,119,117,0.10)';
               border = '1px solid var(--danger, #d97775)';
             }
+          } else if (isWrongPick) {
+            bg = 'rgba(217,119,117,0.10)';
+            border = '1px solid var(--danger, #d97775)';
           } else if (isSelected) {
             bg = 'rgba(79,124,224,0.08)';
             border = '1px solid var(--color-app-accent, var(--accent, #4f7ce0))';
@@ -502,10 +554,8 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
             <button
               key={i}
               type="button"
-              onClick={() => {
-                if (!submitted) setSelected(i);
-              }}
-              disabled={submitted}
+              onClick={() => handleSelect(i)}
+              disabled={revealed}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -514,7 +564,7 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
                 borderRadius: 8,
                 background: bg,
                 border,
-                cursor: submitted ? 'default' : 'pointer',
+                cursor: revealed ? 'default' : 'pointer',
                 textAlign: 'left',
                 fontSize: 14,
                 width: '100%',
@@ -533,7 +583,7 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
                 {String.fromCharCode(65 + i)}
               </span>
               <MathText as="span">{choice}</MathText>
-              {submitted && isCorrectChoice && (
+              {revealed && isCorrectChoice && (
                 <span
                   style={{
                     marginLeft: 'auto',
@@ -544,7 +594,7 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
                   ✓
                 </span>
               )}
-              {submitted && isSelected && !isCorrectChoice && (
+              {((revealed && isSelected && !isCorrectChoice) || isWrongPick) && (
                 <span
                   style={{
                     marginLeft: 'auto',
@@ -560,18 +610,24 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
         })}
       </div>
 
-      {!submitted && (
+      {!revealed && (
         <button
           type="button"
           onClick={handleSubmit}
           disabled={selected === null}
           style={{ ...S.primaryBtn, marginTop: 12 }}
         >
-          Check Answer
+          {showHint ? 'Try Again' : 'Check Answer'}
         </button>
       )}
 
-      {showExplanation && content.explanation && (
+      {showHint && !revealed && (
+        <div style={S.hint} role="status" aria-live="polite">
+          <strong>Try again.</strong> <MathText as="span">{hintHtml}</MathText>
+        </div>
+      )}
+
+      {revealed && content.explanation && (
         <div style={S.explanation}>
           <strong>Explanation:</strong> <MathText as="span">{content.explanation}</MathText>
         </div>
@@ -966,6 +1022,14 @@ const S = {
     padding: '10px 14px',
     borderRadius: 6,
     background: 'rgba(0,0,0,0.04)',
+    fontSize: 14,
+  },
+  hint: {
+    marginTop: 12,
+    padding: '10px 14px',
+    borderRadius: 6,
+    background: 'rgba(217,119,117,0.10)',
+    border: '1px solid var(--danger, #d97775)',
     fontSize: 14,
   },
 

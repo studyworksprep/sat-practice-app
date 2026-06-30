@@ -26,7 +26,9 @@
         "prompt": "Quick check: are \\(x+x\\) and \\(x^2\\) equivalent?",
         "choices": ["Yes, they're equivalent", "No, they're not"],
         "correct_index": 1,
-        "explanation": "No. \\(x+x = 2x\\), which is not the same as \\(x^2\\). Try \\(x=3\\): \\(x+x=6\\) but \\(x^2=9\\). Since they differ for even one input, they're not equivalent."
+        "allow_retry": true,
+        "hint": "Pick a number for \\(x\\) and work out each expression. Do they land on the same value?",
+        "explanation": "Right — they're not equivalent. \\(x+x = 2x\\), which isn't the same as \\(x^2\\). Try \\(x=3\\): \\(x+x=6\\) but \\(x^2=9\\). Differing for even one input is enough."
       }
     },
 
@@ -64,7 +66,9 @@
         "prompt": "If two expressions are equivalent, what do their graphs look like?",
         "choices": ["Exactly the same curve", "A similar shape, just shifted over", "Two completely unrelated curves"],
         "correct_index": 0,
-        "explanation": "Same output at every input means the graphs sit perfectly on top of each other — one identical curve."
+        "allow_retry": true,
+        "hint": "If two expressions always give the same output, what must be true about every point on their graphs?",
+        "explanation": "Exactly — same output at every input means the graphs sit perfectly on top of each other, as one identical curve. That overlap is what you'll look for."
       }
     },
     {
@@ -85,7 +89,9 @@
         "prompt": "A question is written with the variable \\(t\\) instead of \\(x\\). To graph it, you should…",
         "choices": ["Give up — Desmos only understands \\(x\\)", "Rewrite every \\(t\\) as \\(x\\), then graph normally", "Graph \\(t\\) on the up–down axis"],
         "correct_index": 1,
-        "explanation": "The letter is just a placeholder. Replace every \\(t\\) with \\(x\\) — in the original and in the choices — and graph as usual."
+        "allow_retry": true,
+        "hint": "The variable's name is just a label. Does renaming it change which expressions are equal?",
+        "explanation": "Correct — the letter is just a placeholder. Replace every \\(t\\) with \\(x\\) (in the original and the choices) and graph as usual."
       }
     },
     {
@@ -121,7 +127,9 @@
         "prompt": "You need an expression equivalent to \\(5a^2b - 10ab^2\\), which has two variables, \\(a\\) and \\(b\\). Is graph-and-match a good fit?",
         "choices": ["Yes — graph it like any other expression", "No — with two variables there's no single curve to compare, so use sliders"],
         "correct_index": 1,
-        "explanation": "Two variables means no single \\(x\\)-vs-\\(y\\) curve to overlay. That's exactly what the slider method is for."
+        "allow_retry": true,
+        "hint": "Count the variables. Can a single curve on the \\(xy\\)-plane show two of them at once?",
+        "explanation": "Correct — two variables means there's no single \\(x\\)-vs-\\(y\\) curve to overlay. That's exactly what the slider method is for."
       }
     },
     {
@@ -137,7 +145,9 @@
         "prompt": "A grid-in question (no answer choices) asks you to write \\(\\dfrac{x^2-9}{x+3}\\) in simplest form. Should you graph and match?",
         "choices": ["Yes — graph it and read the answer off the screen", "No — with nothing to compare against, simplify with algebra"],
         "correct_index": 1,
-        "explanation": "Matching needs something to match against. With no choices, simplify by hand — here it's \\(x-3\\)."
+        "allow_retry": true,
+        "hint": "The method works by matching the original against a choice. Is there anything here to match against?",
+        "explanation": "Correct — matching needs something to match against. With no choices, simplify by hand; here it's \\(x-3\\)."
       }
     },
 
@@ -164,7 +174,9 @@
         "prompt": "Two expressions are equivalent. You plug the same numbers into both. The results will be…",
         "choices": ["The same number", "Different numbers", "Impossible to predict"],
         "correct_index": 0,
-        "explanation": "Equivalent means same value for any inputs — so feeding both the same numbers gives the same result. That's what we'll check with sliders."
+        "allow_retry": true,
+        "hint": "Go back to the definition of equivalent: same value for any inputs. So what happens with the same inputs?",
+        "explanation": "Correct — equivalent means the same value for any inputs, so feeding both the same numbers gives the same result. That's exactly what sliders let you check."
       }
     },
     {
@@ -185,7 +197,9 @@
         "prompt": "A multi-variable question is written with \\(x\\) and \\(y\\). To use sliders, what's the first thing you do?",
         "choices": ["Nothing — Desmos makes \\(x\\) and \\(y\\) sliders like any letter", "Rename \\(x\\) and \\(y\\) to capital \\(X\\) and \\(Y\\) everywhere", "Switch back to the graphing method"],
         "correct_index": 1,
-        "explanation": "Desmos keeps \\(x\\) and \\(y\\) for the axes, so rename them to \\(X\\) and \\(Y\\) — in the original and in every choice — and the sliders appear."
+        "allow_retry": true,
+        "hint": "Desmos reserves \\(x\\) and \\(y\\) for its axes. Will it turn those particular letters into sliders?",
+        "explanation": "Correct — Desmos keeps \\(x\\) and \\(y\\) for the axes, so rename them to \\(X\\) and \\(Y\\) (in the original and every choice) and the sliders appear."
       }
     },
     {
@@ -218,7 +232,9 @@
         "prompt": "Why move the sliders off \\(1\\), and to different values from each other?",
         "choices": ["Desmos can't compute when a slider is at \\(1\\)", "At \\(1\\) (or equal values), a wrong choice can match by coincidence — varied values expose it", "It makes the numbers smaller and easier to read"],
         "correct_index": 1,
-        "explanation": "Distinct, non-\\(1\\) values break accidental matches, so only a truly equivalent choice keeps up."
+        "allow_retry": true,
+        "hint": "Imagine every variable sitting at \\(1\\). Could a wrong choice land on the same number just by luck?",
+        "explanation": "Correct — at \\(1\\) (or equal values) a wrong choice can match by coincidence. Distinct, non-\\(1\\) values break those accidental matches, so only a truly equivalent choice keeps up."
       }
     },
     {
@@ -234,7 +250,9 @@
         "prompt": "The slider method shares one big limitation with the graphing method. Which is it?",
         "choices": ["It only works when there are exactly two variables", "It needs answer choices to compare against", "It only works for polynomials"],
         "correct_index": 1,
-        "explanation": "Both Desmos methods are matching tools. No answer choices means nothing to match, so you'd use algebra instead."
+        "allow_retry": true,
+        "hint": "Both Desmos methods work by comparing the original to something. What do they need in order to compare?",
+        "explanation": "Correct — both Desmos methods are matching tools. No answer choices means nothing to match, so you'd use algebra instead."
       }
     },
 

@@ -4,7 +4,8 @@
 // friendly form for that block_type:
 //   text          → body HTML
 //   video         → url + caption
-//   check         → prompt, choices (+ correct answer), explanation
+//   check         → prompt, choices (+ correct answer), explanation,
+//                   optional retry-until-correct mode with a hint
 //   question_link → question_id
 //   desmos_interactive → the rich DesmosBlockEditor
 //
@@ -140,6 +141,23 @@ function CheckEditor({ content, onChange }) {
       </div>
 
       <MathTextArea label="Explanation (shown after answering)" value={content.explanation} onChange={(v) => set('explanation', v)} rows={2} />
+
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+        <input
+          type="checkbox"
+          checked={Boolean(content.allow_retry)}
+          onChange={(e) => set('allow_retry', e.target.checked)}
+        />
+        <span className={f.labelText}>Let the learner retry until correct</span>
+      </label>
+      {content.allow_retry && (
+        <MathTextArea
+          label="Hint (shown after a wrong answer)"
+          value={content.hint}
+          onChange={(v) => set('hint', v)}
+          rows={2}
+        />
+      )}
     </Section>
   );
 }
