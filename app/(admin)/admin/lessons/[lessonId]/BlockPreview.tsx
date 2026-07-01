@@ -34,6 +34,7 @@ type Block = {
     title?: string;
     instructions_html?: string;
     validation?: { mode?: string };
+    button_label?: string;
   };
 };
 
@@ -56,7 +57,23 @@ export function BlockPreview({ block }: { block: Block }) {
   if (type === 'check') return <CheckPreview block={block} />;
   if (type === 'question_link') return <QuestionLinkPreview block={block} />;
   if (type === 'desmos_interactive') return <DesmosPreview block={block} />;
+  if (type === 'lesson_complete') return <LessonCompletePreview block={block} />;
   return <EmptyPreview label={`No preview for "${type}"`} />;
+}
+
+function LessonCompletePreview({ block }: { block: Block }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const html = block.content?.html ?? '';
+  const label = (block.content?.button_label as string) || 'Complete Lesson';
+  useMathTypeset(ref, html);
+  return (
+    <div ref={ref} style={S.complete}>
+      {html.trim() ? <SafeHtml as="div" html={html} /> : <span style={S.placeholder}>No closing message yet.</span>}
+      <div style={{ marginTop: 12 }}>
+        <span style={S.completeBtn}>🏁 {label}</span>
+      </div>
+    </div>
+  );
 }
 
 function TextPreview({ block }: { block: Block }) {
@@ -295,4 +312,27 @@ const S: Record<string, React.CSSProperties> = {
 
   empty: { color: 'var(--fg3)', fontStyle: 'italic', fontSize: 13 },
   placeholder: { color: 'var(--fg3)', fontStyle: 'italic' },
+
+  complete: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: 4,
+    padding: 12,
+    border: '1px solid var(--color-success, #5ba876)',
+    borderRadius: 'var(--radius-md)',
+    background: 'var(--color-success-bg, rgba(91,168,118,0.08))',
+  },
+  completeBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '8px 16px',
+    borderRadius: 'var(--radius-pill)',
+    background: 'var(--color-success, #5ba876)',
+    color: '#fff',
+    fontWeight: 700,
+    fontSize: 14,
+  },
 };

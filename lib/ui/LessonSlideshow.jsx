@@ -277,6 +277,13 @@ export function LessonSlideshow({
               }}
             />
           )}
+          {currentBlock.block_type === 'lesson_complete' && (
+            <LessonCompleteBlock
+              block={currentBlock}
+              isComplete={isComplete}
+              onComplete={handleMarkComplete}
+            />
+          )}
         </div>
       )}
 
@@ -336,18 +343,25 @@ export function LessonSlideshow({
         <span style={S.navLabel}>
           Block {Math.min(currentIndex + 1, blocks.length)} of {blocks.length}
         </span>
-        <button
-          type="button"
-          onClick={goNext}
-          disabled={currentIndex >= blocks.length - 1 || currentIsLocked}
-          style={S.navBtn}
-        >
-          Continue
-        </button>
+        {/* The lesson_complete block is a terminal — it carries its own
+            "Complete Lesson" button, so no Continue is shown on it. */}
+        {currentBlock?.block_type === 'lesson_complete' ? (
+          <span style={{ width: 96 }} aria-hidden />
+        ) : (
+          <button
+            type="button"
+            onClick={goNext}
+            disabled={currentIndex >= blocks.length - 1 || currentIsLocked}
+            style={S.navBtn}
+          >
+            Continue
+          </button>
+        )}
       </div>
 
       {showCompleteButton &&
         !isComplete &&
+        currentBlock?.block_type !== 'lesson_complete' &&
         currentIndex >= blocks.length - 1 && (
           <div style={S.completeWrap}>
             <button
@@ -382,6 +396,27 @@ function TextBlock({ block, isRead, onRead }) {
   return (
     <div style={S.card}>
       <HtmlBlock className="prose" html={block.content?.html || ''} />
+    </div>
+  );
+}
+
+// Terminal block: closing content plus a single "Complete Lesson" button
+// that finishes the lesson. No Continue button and no dead-end.
+function LessonCompleteBlock({ block, isComplete, onComplete }) {
+  const label = block.content?.button_label || 'Complete Lesson';
+  return (
+    <div style={S.card}>
+      <HtmlBlock className="prose" html={block.content?.html || ''} />
+      <div style={{ textAlign: 'center', marginTop: 12 }}>
+        <button
+          type="button"
+          onClick={onComplete}
+          disabled={isComplete}
+          style={S.completeBtn}
+        >
+          {isComplete ? 'Lesson Complete' : label}
+        </button>
+      </div>
     </div>
   );
 }

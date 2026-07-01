@@ -13,9 +13,11 @@ import { BLOCK_META, CREATABLE_BLOCK_TYPES, type LessonBlockType } from './block
 export function AddBlockMenu({
   onPick,
   label = '+ Add block',
+  disableCompletion = false,
 }: {
   onPick: (type: LessonBlockType) => void;
   label?: string;
+  disableCompletion?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -53,21 +55,25 @@ export function AddBlockMenu({
         <div style={S.menu} role="menu">
           {CREATABLE_BLOCK_TYPES.map((type) => {
             const meta = BLOCK_META[type];
+            const disabled = type === 'lesson_complete' && disableCompletion;
             return (
               <button
                 key={type}
                 type="button"
                 role="menuitem"
+                disabled={disabled}
                 onClick={() => {
                   onPick(type);
                   setOpen(false);
                 }}
-                style={S.item}
+                style={{ ...S.item, ...(disabled ? S.itemDisabled : null) }}
               >
                 <span style={S.itemIcon}>{meta.icon}</span>
                 <span style={S.itemText}>
                   <span style={S.itemLabel}>{meta.label}</span>
-                  <span style={S.itemBlurb}>{meta.blurb}</span>
+                  <span style={S.itemBlurb}>
+                    {disabled ? 'Already added — one completion block per lesson.' : meta.blurb}
+                  </span>
                 </span>
               </button>
             );
@@ -128,6 +134,7 @@ const S: Record<string, React.CSSProperties> = {
     textAlign: 'left',
     fontFamily: 'inherit',
   },
+  itemDisabled: { opacity: 0.5, cursor: 'not-allowed' },
   itemIcon: { fontSize: 18, lineHeight: 1.2 },
   itemText: { display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 },
   itemLabel: { fontWeight: 600, fontSize: 13, color: 'var(--fg1)' },

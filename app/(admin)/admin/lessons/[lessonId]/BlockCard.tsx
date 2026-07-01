@@ -86,7 +86,13 @@ export function BlockCard({
           <Button type="button" variant={editing ? 'primary' : 'secondary'} size="sm" onClick={onToggleEdit}>
             {editing ? 'Done' : 'Edit'}
           </Button>
-          <Button type="button" variant="secondary" size="sm" onClick={onDuplicate}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={onDuplicate}
+            disabled={block.block_type === 'lesson_complete'}
+          >
             Duplicate
           </Button>
           <Button type="button" variant="remove" size="sm" onClick={onDelete}>
@@ -165,7 +171,47 @@ function BlockBody({
     return <DesmosEditor content={content} onChange={onChangeContent} />;
   }
 
+  if (block.block_type === 'lesson_complete') {
+    return <LessonCompleteBodyEditor content={content} onChangeContent={onChangeContent} />;
+  }
+
   return <BlockBodyEditor block={block} onChange={onChangeContent} />;
+}
+
+// Editor for the terminal lesson_complete block: rich closing message +
+// the completion button's label.
+function LessonCompleteBodyEditor({
+  content,
+  onChangeContent,
+}: {
+  content: Record<string, unknown>;
+  onChangeContent: (next: Record<string, unknown>) => void;
+}) {
+  const buttonLabel = typeof content.button_label === 'string' ? content.button_label : 'Complete Lesson';
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <RichTextEditor
+        html={typeof content.html === 'string' ? content.html : ''}
+        onChange={(html) => onChangeContent({ ...content, html })}
+      />
+      <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg2)' }}>Button label</span>
+        <input
+          type="text"
+          value={buttonLabel}
+          onChange={(e) => onChangeContent({ ...content, button_label: e.target.value })}
+          placeholder="Complete Lesson"
+          style={{
+            padding: '6px 10px',
+            border: '1px solid var(--border)',
+            borderRadius: 6,
+            fontSize: 14,
+            fontFamily: 'inherit',
+          }}
+        />
+      </label>
+    </div>
+  );
 }
 
 // Escape hatch for content fields the structured form doesn't cover
