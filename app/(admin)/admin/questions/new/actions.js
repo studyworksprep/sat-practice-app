@@ -13,7 +13,9 @@
 // plain, serializable data on the wire.
 //
 // Invariants for authored questions:
-//   - source        = 'studyworks'   (distinguishes in-house content)
+//   - source        = writer's pick (defaults to 'studyworks' for
+//                     in-house content; the form lets writers pick
+//                     any existing source or type a new one)
 //   - is_published  = false          (never live until an admin flips
 //                                      it from the question detail page)
 //   - display_code is left NULL so the BEFORE INSERT trigger assigns
@@ -36,6 +38,33 @@ function cleanHtml(v) {
   return typeof v === 'string' && v.trim() ? v : null;
 }
 
+// Bank sources are user-defined labels rather than a fixed enum. Trim,
+// squeeze whitespace, and cap at 64 chars so a fat-finger doesn't
+// introduce a near-duplicate ("studyworks " vs "studyworks").
+function normalizeSource(v) {
+  if (typeof v !== 'string') return null;
+  const cleaned = v.trim().replace(/\s+/g, ' ');
+  if (!cleaned) return null;
+  return cleaned.slice(0, 64);
+}
+
+// Distinct sources already in the bank, for populating the authoring
+// dropdown. Always includes 'studyworks' as the default fallback so a
+// fresh install has at least one option.
+export async function listQuestionSources() {
+  const { supabase } = await requireRole(['admin']);
+  const { data, error } = await supabase
+    .from('questions_v2')
+    .select('source')
+    .not('source', 'is', null);
+  if (error) return ['studyworks'];
+  const set = new Set(['studyworks']);
+  for (const row of data ?? []) {
+    if (row?.source) set.add(row.source);
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b));
+}
+
 export async function createQuestion(payload) {
   const { supabase } = await requireRole(['admin']);
 
@@ -44,9 +73,12 @@ export async function createQuestion(payload) {
     return fail('Pick a question type.');
   }
 
-  // Authored content is 'studyworks'; AI-generated alternates are
-  // 'generated'. Both are admin-authored and unpublished by default.
-  const source = payload?.source === 'generated' ? 'generated' : 'studyworks';
+  // Writer picks the source from the authoring form (defaults to
+  // 'studyworks'). AI-generated alternates come in as 'generated'.
+  // The DB CHECK on questions_v2.source has been removed — arbitrary
+  // labels are allowed — but we still trim/cap the input so a
+  // fat-finger doesn't create a near-duplicate.
+  const source = normalizeSource(payload?.source) ?? 'studyworks';
 
   // ── Taxonomy (names resolved from the canonical table) ──────────
   const domain = findDomain(payload?.domain_code);
