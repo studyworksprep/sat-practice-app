@@ -79,6 +79,35 @@ video, and advanced Desmos. Shape:
   correct and incorrect answers down different paths, add branch fields —
   see **§4 Branching**.
 
+**Retry-until-correct checks** — add `allow_retry` to keep the learner on
+the question until they get it right, instead of revealing the answer on
+the first try:
+```json
+{
+  "kind": "raw_block",
+  "block_type": "check",
+  "content": {
+    "prompt": "What is the slope of \\(y = 3x - 2\\)?",
+    "choices": ["\\(-2\\)", "\\(2\\)", "\\(3\\)", "\\(\\tfrac{1}{3}\\)"],
+    "correct_index": 2,
+    "allow_retry": true,
+    "hint": "The slope is the number multiplied by \\(x\\).",
+    "explanation": "Right — the coefficient of \\(x\\) is the slope, so \\(3\\)."
+  }
+}
+```
+- `allow_retry` (optional boolean): when `true`, a wrong answer shows the
+  `hint` and a **Try Again** button and lets the learner pick again
+  **without** revealing the correct choice. The block reveals the answer
+  and the `explanation` only once they answer correctly.
+- `hint` (optional string, used only with `allow_retry`): the nudge shown
+  after a wrong answer. If omitted, a generic "take another look" message
+  is used. Use the `explanation` for the confirming message on success.
+- A retry check also **gates Continue**: the learner can't advance until
+  they answer correctly (the same way a `require_success` Desmos block
+  gates). Don't combine `allow_retry` with branch fields — retry keeps the
+  learner on the one block rather than routing them elsewhere.
+
 **Video**:
 ```json
 { "kind": "raw_block", "block_type": "video",
