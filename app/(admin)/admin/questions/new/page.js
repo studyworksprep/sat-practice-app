@@ -6,12 +6,15 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { QuestionAuthor } from './QuestionAuthor';
+import { listQuestionSources } from './actions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NewQuestionPage() {
   const { profile } = await requireUser();
   if (profile.role !== 'admin') redirect('/');
+
+  const availableSources = await listQuestionSources();
 
   return (
     <main style={S.main}>
@@ -31,7 +34,7 @@ export default async function NewQuestionPage() {
         </div>
       </header>
 
-      <QuestionAuthor />
+      <QuestionAuthor availableSources={availableSources} />
     </main>
   );
 }

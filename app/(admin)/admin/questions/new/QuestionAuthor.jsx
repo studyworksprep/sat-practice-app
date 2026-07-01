@@ -4,8 +4,13 @@
 // (stimulus / stem / rationale / per-option content) with the
 // taxonomy, difficulty, and answer-key controls, then hands a single
 // structured payload to the createQuestion Server Action, which does
-// the HTML serialization + insert. Authored rows are source =
-// 'studyworks' and unpublished by default.
+// the HTML serialization + insert. The writer picks a source from
+// the dropdown (or types a new one); default is 'studyworks'. Rows
+// are unpublished by default.
+//
+// When invoked with a fixed `source` prop (e.g. from the "generate
+// alternate" flow that always writes source='generated'), the
+// dropdown is suppressed and that source is used verbatim.
 
 import { useMemo, useState, useTransition } from 'react';
 import { RichEditor } from './RichEditor';
@@ -41,14 +46,36 @@ function subjectForInitial(initial) {
   return dom?.subjectCode ?? 'math';
 }
 
+const ADD_NEW_SOURCE = '__add_new__';
+
 /**
  * @param {object} [props.initial]  Pre-filled values (e.g. an AI-generated
  *   draft). Editor surfaces take HTML strings (stimulusHtml/stemHtml/
  *   rationaleHtml and options[].contentHtml); the rest are scalars.
- * @param {string} [props.source]   'studyworks' (default) or 'generated'.
+ * @param {string} [props.source]   When set, locks the source (used by the
+ *   "generate alternate" flow which always writes 'generated'). When
+ *   omitted, the form shows a source dropdown.
+ * @param {string[]} [props.availableSources]  Distinct existing sources
+ *   for the dropdown; ignored when `source` is set.
  * @param {string} [props.submitLabel]
  */
-export function QuestionAuthor({ initial = null, source = 'studyworks', submitLabel = 'Create question' }) {
+export function QuestionAuthor({
+  initial = null,
+  source = null,
+  availableSources = ['studyworks'],
+  submitLabel = 'Create question',
+}) {
+  const sourceLocked = typeof source === 'string' && source.length > 0;
+  const sourceOptions = useMemo(() => {
+    const set = new Set(['studyworks', ...(availableSources ?? [])]);
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [availableSources]);
+  const [selectedSource, setSelectedSource] = useState(
+    sourceLocked ? source : 'studyworks',
+  );
+  // Populated only while the writer is entering a brand-new source.
+  const [newSourceInput, setNewSourceInput] = useState('');
+  const isAddingSource = selectedSource === ADD_NEW_SOURCE;
   const [questionType, setQuestionType] = useState(initial?.questionType ?? 'mcq');
   const [subject, setSubject] = useState(() => subjectForInitial(initial));
   const [domainCode, setDomainCode] = useState(initial?.domainCode ?? '');
@@ -103,6 +130,20 @@ export function QuestionAuthor({ initial = null, source = 'studyworks', submitLa
     e.preventDefault();
     setError(null);
 
+    let submittedSource;
+    if (sourceLocked) {
+      submittedSource = source;
+    } else if (isAddingSource) {
+      const trimmed = newSourceInput.trim();
+      if (!trimmed) {
+        setError('Enter a name for the new source.');
+        return;
+      }
+      submittedSource = trimmed;
+    } else {
+      submittedSource = selectedSource;
+    }
+
     const payload = {
       question_type: questionType,
       domain_code: domainCode,
@@ -115,7 +156,7 @@ export function QuestionAuthor({ initial = null, source = 'studyworks', submitLa
       stem_html: docToBankHtml(stemDoc, 'stem'),
       stimulus_html: docToBankHtmlOrNull(stimulusDoc, 'stimulus'),
       rationale_html: docToBankHtmlOrNull(rationaleDoc, 'rationale'),
-      source,
+      source: submittedSource,
     };
     if (questionType === 'mcq') {
       payload.options = options.map((o, i) => ({
@@ -185,6 +226,32 @@ export function QuestionAuthor({ initial = null, source = 'studyworks', submitLa
               {[1, 2, 3, 4, 5, 6, 7].map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
           </Labeled>
+          {!sourceLocked && (
+            <Labeled label="Source">
+              <select
+                value={selectedSource}
+                onChange={(e) => {
+                  setSelectedSource(e.target.value);
+                  if (e.target.value !== ADD_NEW_SOURCE) setNewSourceInput('');
+                }}
+                style={S.select}
+              >
+                {sourceOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+                <option value={ADD_NEW_SOURCE}>+ Add new source…</option>
+              </select>
+              {isAddingSource && (
+                <input
+                  type="text"
+                  value={newSourceInput}
+                  onChange={(e) => setNewSourceInput(e.target.value)}
+                  placeholder="New source name"
+                  autoFocus
+                  maxLength={64}
+                  style={{ ...S.select, marginTop: '0.4rem' }}
+                />
+              )}
+            </Labeled>
+          )}
         </div>
       </section>
 
@@ -280,8 +347,17 @@ export function QuestionAuthor({ initial = null, source = 'studyworks', submitLa
 
       <div style={S.footer}>
         <div style={S.footerNote}>
-          Saved as <code>source = {source}</code>, <strong>unpublished</strong>.
-          You can publish it from the question page afterward.
+          Saved as{' '}
+          <code>
+            source ={' '}
+            {sourceLocked
+              ? source
+              : isAddingSource
+                ? (newSourceInput.trim() || '…')
+                : selectedSource}
+          </code>
+          , <strong>unpublished</strong>. You can publish it from the
+          question page afterward.
         </div>
         <button type="submit" disabled={pending} style={S.submitBtn}>
           {pending ? 'Saving…' : submitLabel}
