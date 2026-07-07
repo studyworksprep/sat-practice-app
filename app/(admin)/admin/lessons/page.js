@@ -16,6 +16,7 @@ import { Button } from '@/lib/ui/Button';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { formatDate } from '@/lib/formatters';
 import { createLesson } from './actions';
+import { DeleteLessonButton } from './DeleteLessonButton';
 import a from '../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -134,7 +135,7 @@ export default async function AdminLessonsPage({ searchParams }) {
                 <Th>Visibility</Th>
                 <Th style={{ textAlign: 'right' }}>Blocks</Th>
                 <Th>Updated</Th>
-                <Th style={{ width: 80 }} />
+                <Th style={{ width: 220 }}>Actions</Th>
               </tr>
             </thead>
             <tbody>
@@ -160,9 +161,15 @@ export default async function AdminLessonsPage({ searchParams }) {
                     {formatDate(l.updated_at) || '—'}
                   </Td>
                   <Td>
-                    <a href={`/admin/lessons/${l.id}`} style={S.link}>
-                      Edit
-                    </a>
+                    <div style={S.rowActions}>
+                      <a href={`/admin/lessons/${l.id}`} style={S.link}>
+                        Edit
+                      </a>
+                      <a href={`/admin/lessons/${l.id}/import`} style={S.link}>
+                        Import JSON
+                      </a>
+                      <DeleteLessonButton lessonId={l.id} title={l.title || ''} />
+                    </div>
                   </Td>
                 </tr>
               ))}
@@ -226,4 +233,5 @@ const S = {
     border: '1px solid var(--border)',
   },
   link: { color: 'var(--color-app-accent)', textDecoration: 'none', fontWeight: 600 },
+  rowActions: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
 };

@@ -15,7 +15,8 @@ export type LessonBlockType =
   | 'video'
   | 'check'
   | 'question_link'
-  | 'desmos_interactive';
+  | 'desmos_interactive'
+  | 'lesson_complete';
 
 export type BlockMeta = {
   type: LessonBlockType;
@@ -58,6 +59,12 @@ export const BLOCK_META: Record<LessonBlockType, BlockMeta> = {
     blurb: 'A Desmos graph that checks the learner reaches a target state.',
     icon: '📈',
   },
+  lesson_complete: {
+    type: 'lesson_complete',
+    label: 'Complete lesson',
+    blurb: 'A closing block with a "Complete Lesson" button. One per lesson, always last.',
+    icon: '🏁',
+  },
 };
 
 export const CREATABLE_BLOCK_TYPES: LessonBlockType[] = [
@@ -66,6 +73,7 @@ export const CREATABLE_BLOCK_TYPES: LessonBlockType[] = [
   'check',
   'question_link',
   'desmos_interactive',
+  'lesson_complete',
 ];
 
 export function blockMetaFor(type: string | undefined): BlockMeta {

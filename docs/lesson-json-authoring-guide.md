@@ -56,7 +56,7 @@ video, and advanced Desmos. Shape:
 ```
 
 `block_type` must be one of: `text`, `video`, `check`, `question_link`,
-`desmos_interactive`. The `content` object schemas:
+`desmos_interactive`, `lesson_complete`. The `content` object schemas:
 
 **Knowledge check (interactive question)** — answered inside the lesson:
 ```json
@@ -114,6 +114,17 @@ the first try:
   "content": { "url": "https://www.youtube.com/watch?v=VIDEO_ID", "caption": "Optional" } }
 ```
 - YouTube and Vimeo URLs auto-embed; other URLs render as a link.
+
+**Complete-lesson block** — the terminal block that ends the lesson:
+```json
+{ "kind": "raw_block", "block_type": "lesson_complete",
+  "content": { "html": "<p>You finished — nice work!</p>", "button_label": "Complete Lesson" } }
+```
+- `html` (closing message) and optional `button_label` (default "Complete
+  Lesson"). At runtime it shows the message and a button that finishes the
+  lesson — no Continue button, and it's not treated as a dead end.
+- **At most one per lesson, and it must be the very last block.** Optional
+  — omit it for lessons that just end on their last content block.
 
 **Question link** — embeds a real question from the question bank:
 ```json
@@ -279,7 +290,8 @@ Rules for manual branching:
 - **Don't invent `question_id`s.** Only use `question_link` with real bank
   UUIDs you were given.
 - **Valid `block_type` values:** `text`, `video`, `check`, `question_link`,
-  `desmos_interactive`. Nothing else.
+  `desmos_interactive`, `lesson_complete`. Nothing else.
+- **`lesson_complete` is optional, at most one, and must be the last block.**
 - **Escape JSON properly:** backslashes (`\\`), quotes (`\"`). The whole
   output must be valid JSON (no comments, no trailing commas).
 - Keep HTML minimal and well-formed; tables and exotic tags may be

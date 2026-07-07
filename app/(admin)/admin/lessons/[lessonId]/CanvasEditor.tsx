@@ -154,14 +154,38 @@ export function CanvasEditor({
     });
   }
 
+  const hasCompletion = blocks.some((b) => b.block_type === 'lesson_complete');
+
+  // The lesson_complete block is a terminal — keep it pinned as the last
+  // block no matter how blocks are inserted, dragged, or reordered.
+  function enforceCompletionLast(list: Block[]): Block[] {
+    const idx = list.findIndex((b) => b.block_type === 'lesson_complete');
+    if (idx < 0 || idx === list.length - 1) return list;
+    const copy = [...list];
+    const [terminal] = copy.splice(idx, 1);
+    copy.push(terminal);
+    return copy;
+  }
+
   function commit(next: Block[]) {
-    setBlocks(recomputeSortOrders(next));
+    setBlocks(recomputeSortOrders(enforceCompletionLast(next)));
   }
 
   function insertAt(type: LessonBlockType, index: number) {
+    // Only one completion block, and it always goes at the very end.
+    if (type === 'lesson_complete') {
+      if (hasCompletion) return;
+      const starter = createStarterBlock(type, blocks.length) as Block;
+      commit([...blocks, starter]);
+      setEditingId(starter.id ?? null);
+      return;
+    }
     const starter = createStarterBlock(type, index) as Block;
     const next = [...blocks];
-    next.splice(index, 0, starter);
+    // A normal block can't be inserted after the completion block.
+    const compIdx = next.findIndex((b) => b.block_type === 'lesson_complete');
+    const clamped = compIdx >= 0 ? Math.min(index, compIdx) : index;
+    next.splice(clamped, 0, starter);
     commit(next);
     setEditingId(starter.id ?? null);
   }
@@ -250,7 +274,7 @@ export function CanvasEditor({
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
           <SortableContext items={blocks.map((b) => b.id as string)} strategy={verticalListSortingStrategy}>
             <div style={S.canvas}>
-              <AddBlockMenu onPick={(type) => insertAt(type, 0)} label={blocks.length === 0 ? '+ Add your first block' : '+ Add block'} />
+              <AddBlockMenu onPick={(type) => insertAt(type, 0)} disableCompletion={hasCompletion} label={blocks.length === 0 ? '+ Add your first block' : '+ Add block'} />
               {blocks.map((block, i) => (
                 <div key={block.id} id={`block-anchor-${block.id}`}>
                   <BlockCard
@@ -263,7 +287,10 @@ export function CanvasEditor({
                     onDuplicate={() => duplicateAt(i)}
                     onDelete={() => removeAt(i)}
                   />
-                  <AddBlockMenu onPick={(type) => insertAt(type, i + 1)} />
+                  {/* Nothing can be inserted after the terminal block. */}
+                  {block.block_type !== 'lesson_complete' ? (
+                    <AddBlockMenu onPick={(type) => insertAt(type, i + 1)} disableCompletion={hasCompletion} />
+                  ) : null}
                 </div>
               ))}
               {blocks.length === 0 ? (
