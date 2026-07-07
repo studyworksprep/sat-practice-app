@@ -648,6 +648,28 @@ function normalizeText(s: unknown): string {
   return (s ?? '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
+// Strict numeric parser for SPR grading. Unlike parseFloat, this
+// rejects trailing garbage — parseFloat("23/60") returns 23, which
+// used to make "23/90" collide with "23/60" in the numeric fallback
+// below. Fraction strings like "a/b" are evaluated as a/b when both
+// sides are pure numbers; anything else that isn't a valid Number
+// returns NaN.
+function toStrictNumber(s: unknown): number {
+  const str = (s ?? '').toString().trim();
+  if (!str) return NaN;
+  const frac = str.match(/^(-?\d*\.?\d+)\/(-?\d*\.?\d+)$/);
+  if (frac) {
+    const num = Number(frac[1]);
+    const den = Number(frac[2]);
+    if (Number.isFinite(num) && Number.isFinite(den) && den !== 0) {
+      return num / den;
+    }
+    return NaN;
+  }
+  const n = Number(str);
+  return Number.isFinite(n) ? n : NaN;
+}
+
 // SPR grading against v2's object-shaped correct_answer:
 //   { text: "[\"1/14\", \".0714\"]",   // JSON-encoded array of strings
 //     number: 0.0714,                   // numeric value
@@ -706,13 +728,13 @@ function gradeSprAnswer(responseText: string, correct: unknown): boolean {
   const normalized = normalizeText(responseText);
   if (acceptableTexts.some((a) => normalizeText(a) === normalized)) return true;
 
-  const responseNum = parseFloat(responseText);
+  const responseNum = toStrictNumber(responseText);
   if (Number.isFinite(responseNum)) {
     if (numericTarget != null && Math.abs(responseNum - numericTarget) <= tolerance) {
       return true;
     }
     for (const entry of acceptableTexts) {
-      const entryNum = parseFloat(entry);
+      const entryNum = toStrictNumber(entry);
       if (Number.isFinite(entryNum) && Math.abs(responseNum - entryNum) <= tolerance) {
         return true;
       }
