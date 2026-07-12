@@ -30,6 +30,7 @@ Runs on every matched request. Detected: session refresh only.
 | `/api/teacher/student/[studentId]/upload-bluebook` | — | requireServiceRole |
 | `/api/webhooks/stripe` | POST | stripe signature + service client (RLS bypass) |
 | `/auth/callback` | GET | ⚠️ **none detected** |
+| `/auth/confirm/verify` | POST | ⚠️ **none detected** |
 | `/auth/demo/[persona]` | GET | service client (RLS bypass) |
 
 ## Server Actions
@@ -83,5 +84,6 @@ Entry points with **no detected guard** (verify each is
 deliberately public, or fix):
 
 - Route `/auth/callback` (app/auth/callback/route.js)
+- Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_14 route handlers, 40 server-action modules enumerated._
+_15 route handlers, 40 server-action modules enumerated._
