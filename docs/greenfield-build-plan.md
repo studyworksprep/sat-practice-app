@@ -1,5 +1,7 @@
 # SAT/ACT Practice & Learning Platform — Greenfield Build Plan
 
+> **Status: Historical — design reference.** A restart-from-scratch exploration; the continue-vs-restart decision landed on continuing the current app. Adopted ideas are tracked in `docs/upgrade-plan-2026-07.md` ("Relationship to the greenfield plan"); do not execute this document.
+
 _A self-contained implementation plan for building the platform from an empty
 repository and a fresh database. Hand this entire document to a new session._
 

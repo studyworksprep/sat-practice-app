@@ -29,9 +29,17 @@ export const USERS = {
   },
 } as const;
 
-/** /api routes the matrix lists under §3.1 (`requireUser`). A
- *  representative slice — full coverage lives on the matrix in
- *  docs/authorization-matrix.md, not in this file. */
+/** ⚠️ STALE (verified 2026-07-12): these route lists were written
+ *  against the hand-written 2026-05-04 authorization matrix (now at
+ *  docs/history/). Most listed routes no longer exist — their logic
+ *  moved to Server Actions — so the api-auth specs would assert
+ *  against 404s. Before activating the CI e2e job (E2E_SUPABASE_URL
+ *  secret), rewrite these fixtures against the GENERATED matrix
+ *  (docs/authorization-matrix.md): 14 real routes, plus
+ *  action-level auth coverage. Tracked in docs/upgrade-plan-2026-07.md
+ *  P0.5.
+ *
+ *  /api routes the old matrix listed under §3.1 (`requireUser`). */
 export const REQUIRE_USER_ROUTES = [
   '/api/me',
   '/api/dashboard',

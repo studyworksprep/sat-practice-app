@@ -1,5 +1,7 @@
 # Lesson JSON Authoring Guide (Import From JSON)
 
+> **Status: Living document.** Last verified: 2026-07-01 era (lesson_complete block type). Verify against `lib/lesson/lesson-validation` when in doubt.
+
 This document tells you exactly how to produce a JSON "LessonTemplateSpec"
 that the Studyworks admin **Lessons → Import from JSON** page accepts and
 compiles into a fully functional lesson. Follow it literally.

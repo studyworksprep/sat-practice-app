@@ -37,7 +37,7 @@ export async function loadQuestionAction(
   try {
     const ctx = await requireUser();
     user = ctx.user;
-    role = ctx.profile.role;
+    role = ctx.profile.role as UserRole;
     supabase = ctx.supabase;
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Authentication failed';

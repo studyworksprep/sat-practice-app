@@ -52,7 +52,7 @@ interface FlashcardSet {
   id: string;
   name: string;
   is_default: boolean;
-  created_at: string;
+  created_at: string | null;
   card_count: number;
 }
 
@@ -261,7 +261,7 @@ export async function updateFlashcard({
     throw e;
   }
 
-  const patch: Record<string, string> = {};
+  const patch: { front?: string; back?: string } = {};
   if (typeof front === 'string') {
     const t = front.trim();
     if (!t) return actionFail('Front cannot be empty');

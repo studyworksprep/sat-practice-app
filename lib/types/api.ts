@@ -46,24 +46,9 @@ export type ApiResult<T extends Record<string, unknown> = Record<string, unknown
 
 export type UserRole = 'practice' | 'student' | 'teacher' | 'manager' | 'admin';
 
-/** Shape returned by lib/api/auth.js requireUser(). Mirrors the
- *  current implementation's actual return so .ts callers don't
- *  have to re-derive it. Once auth.js itself migrates to .ts,
- *  this type definition moves alongside it. */
-export interface AuthContext {
-  user: {
-    id: string;
-    email?: string | null;
-    [key: string]: unknown;
-  };
-  profile: {
-    id: string;
-    role: UserRole;
-    subscription_exempt?: boolean | null;
-    [key: string]: unknown;
-  };
-  /** Supabase server client — typed loosely here until lib/supabase
-   *  helpers migrate. Use the client's own .from('table') chain for
-   *  per-query typing in the meantime. */
-  supabase: unknown;
-}
+/** The real AuthContext now lives beside its implementation in
+ *  lib/api/auth.ts (typed user, profile, and Database-generic
+ *  Supabase client). Re-exported here so existing
+ *  `import type { AuthContext } from '@/lib/types'` callers keep
+ *  working. */
+export type { AuthContext, AuthProfile } from '@/lib/api/auth';

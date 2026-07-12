@@ -11,7 +11,7 @@ import { rateLimit } from '@/lib/api/rateLimit';
  * service-role reads, so the bar is higher than for an ordinary
  * shared secret.
  */
-export function validateExternalApiKey(request) {
+export function validateExternalApiKey(request: Request): boolean {
   const key = request.headers.get('x-api-key');
   const expected = process.env.EXTERNAL_API_KEY;
   if (!key || !expected) return false;
@@ -33,11 +33,18 @@ export function validateExternalApiKey(request) {
  * The bucket key includes the caller IP so one misbehaving consumer
  * can't starve the others once per-consumer keys exist.
  */
-export async function requireExternalApiAccess(request, {
-  scope,
-  limit = 60,
-  windowMs = 60_000,
-} = {}) {
+export type ExternalApiAccess =
+  | { ok: true }
+  | { ok: false; status: number; error: string };
+
+export async function requireExternalApiAccess(
+  request: Request,
+  {
+    scope,
+    limit = 60,
+    windowMs = 60_000,
+  }: { scope?: string; limit?: number; windowMs?: number } = {},
+): Promise<ExternalApiAccess> {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     ?? 'unknown';
   const rl = await rateLimit(`external:${scope ?? 'default'}:${ip}`, {

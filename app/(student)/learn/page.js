@@ -109,8 +109,8 @@ export default async function StudentLearnPage({ searchParams }) {
               Getting Started: Your Guide to SAT Practice
             </div>
             <p className={s.gettingStartedSub}>
-              New here? Learn how to use the Question Bank, Practice Tests,
-              Flashcards, Smart Review, and more.
+              New here? Learn how to build practice sets, take practice
+              tests, run review drills, use flashcards, and more.
             </p>
           </div>
           <span className={s.gettingStartedArrow} aria-hidden="true">→</span>

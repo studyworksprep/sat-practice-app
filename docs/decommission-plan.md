@@ -1,5 +1,7 @@
 # Legacy tree decommission plan
 
+> **Status: Historical record** — accurate as of its date; not maintained. For current state see `CLAUDE.md` and `docs/upgrade-plan-2026-07.md`.
+
 The working checklist for retiring the legacy `app/` route tree and
 making `app/next/` the sole framework. This is the concrete,
 current-state companion to `docs/architecture-plan.md` §4 Phase 6 —

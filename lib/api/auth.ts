@@ -22,21 +22,41 @@
 //       (so the route can still enforce app-layer rules). The `reason` is
 //       logged for the service-role audit.
 //     - Use sparingly. Every call site is auditable via grep.
-//
-// This module is dormant until Phase 2 refactors each route tree onto it.
-// The shape of the return value is stable from day one so migrations can
-// happen incrementally without breaking callers.
 
 import { cache } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { createClient, createServiceClient } from '../supabase/server';
+import type { TypedSupabaseClient } from '../supabase/server';
+import type { UserRole } from '@/lib/types/api';
 import { ApiError } from './response';
 import { logger } from './logger';
+
+/** The profile shape every server entry point sees. `role` is cast to
+ *  the UserRole union exactly once, here at the seam — the DB CHECK
+ *  constraint on profiles.role guarantees the value set. */
+export interface AuthProfile {
+  id: string;
+  role: UserRole;
+  subscription_exempt: boolean | null;
+  first_name: string | null;
+  is_demo: boolean;
+}
+
+export interface AuthContext {
+  user: User;
+  profile: AuthProfile;
+  supabase: TypedSupabaseClient;
+}
+
+export interface ServiceRoleContext extends AuthContext {
+  service: TypedSupabaseClient;
+}
 
 // Wrapped in React.cache so layout + page in the same request share
 // one fetch. Before this, /dashboard cost 4 DB round-trips on every
 // nav (layout: auth + profile + first_name; page: auth + profile);
 // now it's 2. The cache scope is per-request, so no cross-user leak.
-const getUserAndProfile = cache(async () => {
+const getUserAndProfile = cache(async (): Promise<AuthContext> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -83,13 +103,25 @@ const getUserAndProfile = cache(async () => {
   return {
     user,
     profile: profile
-      ? { ...profile, is_demo: isDemo }
-      : { id: user.id, role: 'practice', is_demo: isDemo, first_name: null },
+      ? {
+          id: profile.id,
+          role: (profile.role ?? 'practice') as UserRole,
+          subscription_exempt: profile.subscription_exempt ?? null,
+          first_name: profile.first_name ?? null,
+          is_demo: isDemo,
+        }
+      : {
+          id: user.id,
+          role: 'practice',
+          subscription_exempt: null,
+          first_name: null,
+          is_demo: isDemo,
+        },
     supabase,
   };
 });
 
-export async function requireUser() {
+export async function requireUser(): Promise<AuthContext> {
   return getUserAndProfile();
 }
 
@@ -106,10 +138,8 @@ export async function requireUser() {
  *
  *   const ctx = await requireRole(['teacher', 'manager', 'admin']);
  *   await assertWriter(ctx);   // or just call requireWriter() solo
- *
- * @returns {Promise<{user, profile, supabase}>}
  */
-export async function requireWriter() {
+export async function requireWriter(): Promise<AuthContext> {
   const ctx = await getUserAndProfile();
   if (ctx.profile?.is_demo) {
     throw new ApiError('Demo accounts are read-only', 403);
@@ -122,7 +152,9 @@ export async function requireWriter() {
  * context (returned from requireRole / requireUser). Useful when
  * the route needs the role check first and the writer check second.
  */
-export function assertWriter(ctx) {
+export function assertWriter(
+  ctx: { profile?: { is_demo?: boolean } | null } | null | undefined,
+): void {
   if (ctx?.profile?.is_demo) {
     throw new ApiError('Demo accounts are read-only', 403);
   }
@@ -130,10 +162,11 @@ export function assertWriter(ctx) {
 
 /**
  * Throw unless the authenticated user has one of the allowed roles.
- * @param {string[]} allowedRoles - e.g. ['admin'] or ['teacher', 'admin']
- * @returns {Promise<{user, profile, supabase}>}
+ * e.g. requireRole(['admin']) or requireRole(['teacher', 'admin'])
  */
-export async function requireRole(allowedRoles) {
+export async function requireRole(
+  allowedRoles: readonly string[],
+): Promise<AuthContext> {
   if (!Array.isArray(allowedRoles) || allowedRoles.length === 0) {
     throw new ApiError('requireRole called without roles', 500);
   }
@@ -156,18 +189,16 @@ export async function requireRole(allowedRoles) {
  *
  * Not valid: "I forgot to write RLS for this table", "this is easier
  * than writing a policy". If in doubt, write the policy.
- *
- * @param {string} reason - Required. Audit-log message.
- * @param {object} [options]
- * @param {string[]} [options.allowedRoles] - If provided, also gate the caller.
- * @returns {Promise<{user, profile, supabase, service}>}
  */
-export async function requireServiceRole(reason, options = {}) {
+export async function requireServiceRole(
+  reason: string,
+  options: { allowedRoles?: readonly string[] } = {},
+): Promise<ServiceRoleContext> {
   if (!reason || typeof reason !== 'string') {
     throw new ApiError('requireServiceRole called without a reason', 500);
   }
 
-  let ctx;
+  let ctx: AuthContext;
   if (options.allowedRoles) {
     ctx = await requireRole(options.allowedRoles);
   } else {

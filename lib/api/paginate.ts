@@ -23,13 +23,40 @@
 export const MAX_PAGE_SIZE = 500;
 export const DEFAULT_PAGE_SIZE = 25;
 
-function clampPage(raw) {
+// Structural view of a PostgREST query builder — just the pieces this
+// helper touches. Keeps the helper decoupled from postgrest-js's deep
+// generic signatures while still flowing the row type through to
+// `items`.
+interface PageQuery<T> extends PromiseLike<{
+  data: T[] | null;
+  error: unknown;
+  count: number | null;
+}> {
+  order(column: string, opts: { ascending: boolean }): PageQuery<T>;
+  range(from: number, to: number): PageQuery<T>;
+}
+
+export interface PaginateOptions {
+  page?: number | string;
+  pageSize?: number | string;
+  order?: { column: string; ascending?: boolean };
+}
+
+export interface Page<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  total: number | null;
+  hasMore: boolean;
+}
+
+function clampPage(raw: unknown): number {
   const n = Number(raw);
   if (!Number.isFinite(n) || n < 1) return 1;
   return Math.floor(n);
 }
 
-function clampPageSize(raw) {
+function clampPageSize(raw: unknown): number {
   const n = Number(raw);
   if (!Number.isFinite(n) || n < 1) return DEFAULT_PAGE_SIZE;
   return Math.min(Math.floor(n), MAX_PAGE_SIZE);
@@ -43,15 +70,11 @@ function clampPageSize(raw) {
  * (or similar) for `total` to be populated. If the caller didn't request
  * a count, `total` will be `null` and `hasMore` falls back to a length
  * heuristic.
- *
- * @param {object} query - A Supabase PostgrestFilterBuilder
- * @param {object} opts
- * @param {number|string} [opts.page=1]
- * @param {number|string} [opts.pageSize=25]
- * @param {object} [opts.order] - { column: string, ascending?: boolean }
- * @returns {Promise<{items: any[], page: number, pageSize: number, total: number|null, hasMore: boolean}>}
  */
-export async function paginate(query, opts = {}) {
+export async function paginate<T>(
+  query: PageQuery<T>,
+  opts: PaginateOptions = {},
+): Promise<Page<T>> {
   const page = clampPage(opts.page ?? 1);
   const pageSize = clampPageSize(opts.pageSize ?? DEFAULT_PAGE_SIZE);
   const from = (page - 1) * pageSize;
@@ -75,11 +98,13 @@ export async function paginate(query, opts = {}) {
 /**
  * Count rows matching a query without fetching them. Uses the PostgREST
  * HEAD trick: `{ head: true, count: 'exact' }` returns just the count.
- *
- * @param {object} query - A Supabase PostgrestFilterBuilder
- * @returns {Promise<number>}
  */
-export async function countExact(query) {
+export async function countExact(query: {
+  select(
+    columns: string,
+    opts: { count: 'exact'; head: boolean },
+  ): PromiseLike<{ count: number | null; error: unknown }>;
+}): Promise<number> {
   const { count, error } = await query.select('*', { count: 'exact', head: true });
   if (error) throw error;
   return count ?? 0;

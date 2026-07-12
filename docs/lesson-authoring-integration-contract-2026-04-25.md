@@ -1,5 +1,7 @@
 # Lesson Authoring Integration Contract (2026-04-25)
 
+> **Status: Historical record** — accurate as of its date; not maintained. For current state see `CLAUDE.md` and `docs/upgrade-plan-2026-07.md`.
+
 This file captures the current, code-backed contract for importing externally generated lesson plans.
 
 ## 1) Working lesson example

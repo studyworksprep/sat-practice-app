@@ -1,10 +1,11 @@
 // Reusable lesson slideshow runtime.
 //
-// Extracted from app/learn/[lessonId]/page.js so admin preview
-// (and, eventually, the (next)-tree student viewer) can render
-// the same block-by-block playthrough — branching knowledge
-// checks, Desmos interactives, completion gating — without each
-// caller re-implementing the runtime.
+// Shared by the admin lesson preview AND the student viewer
+// (app/(student)/learn/[lessonId]/LessonViewerInteractive.jsx) —
+// both render the same block-by-block playthrough: branching
+// knowledge checks (on_correct/on_incorrect/rejoin, executed for
+// students via lib/lesson/runtime-navigation.mjs), Desmos
+// interactives, and completion gating.
 //
 // Side effects are wired through optional callbacks:
 //   onMarkBlockComplete(blockId)
