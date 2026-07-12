@@ -129,11 +129,19 @@ external API key; per-consumer rotatable keys; wire `lib/api/rateLimit`
 onto `app/api/public/*`, `app/api/external/*`, and `app/api/signup`;
 add per-student authorization to `external/score-report/[attemptId]`.
 
-**P0.7 Hygiene.** Timestamp-prefix the 42 bare migration files; drop
-the vestigial `classes`/`class_enrollments`/`class_invites`,
-`profile_cards`, and `stg_*` objects (after archival export); scrub
-stale `question_id_map`/`ui_version` comments; route stray
-`createServiceClient()` callers through `requireServiceRole`; fix the
+**P0.7 Hygiene.** Migration ordering: verification against
+production's `schema_migrations` showed the problem is bigger than
+the 42 bare filenames — only 6 of 151 local files match tracked
+versions (tracking began 2026-04-20; everything earlier was applied
+by hand under different stamps). Renaming files would deepen the
+drift, so the fix is a **baseline reset** (dump schema → archive the
+directory → `migration repair`), documented in
+`supabase/migrations/README.md` and scheduled as its own operation.
+Fold the vestigial-object drops (`classes`/`class_enrollments`/
+`class_invites`, `profile_cards`, `stg_*`) into that reset, after an
+archival export. Also: scrub stale `question_id_map`/`ui_version`
+comments; add audit-parity logging to the raw `createServiceClient()`
+call sites the wrapper can't serve (demo-tour loaders, cron); fix the
 README; regenerate the authorization matrix; **rewrite the
 getting-started tutorial and Help copy to match the shipped app**
 (it currently tells students to click tabs that don't exist).
