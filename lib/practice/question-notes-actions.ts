@@ -87,7 +87,7 @@ export async function addQuestionNote({
         || authorProfile.email
         || 'Unknown'
       : 'You',
-    authorRole: authorProfile?.role ?? null,
+    authorRole: (authorProfile?.role as UserRole | undefined) ?? null,
   };
 
   revalidatePath('/practice', 'layout');

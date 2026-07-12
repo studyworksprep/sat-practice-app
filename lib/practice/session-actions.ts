@@ -42,6 +42,21 @@ type SessionLifecycleResult = ActionResult<{
   actAttemptId?: string | null;
 }>;
 
+// practice_sessions.filter_criteria is jsonb; these are the keys the
+// session actions read from it. Written by session creation
+// (assignment start / practice-test start).
+type SessionFilterCriteria = {
+  assignment_id?: string;
+  kind?: string;
+} | null;
+
+function sessionCriteria(raw: unknown): SessionFilterCriteria {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    return raw as SessionFilterCriteria;
+  }
+  return null;
+}
+
 /**
  * Submit an answer for the current question in a practice session.
  * Handles both MCQ (optionId) and SPR (responseText) question types.
@@ -102,7 +117,7 @@ export async function submitAnswer(
   if (session.user_id !== user.id) return actionFail('Session not found');
 
   const questionIds: string[] = Array.isArray(session.question_ids)
-    ? session.question_ids
+    ? session.question_ids.filter((q): q is string => typeof q === 'string')
     : [];
   if (!Number.isInteger(position) || position < 0 || position >= questionIds.length) {
     return actionFail('Invalid session position');
@@ -206,7 +221,7 @@ export async function submitAnswer(
 
     correctOptionIdOut = !isSpr ? extractMcqCorrectId(correct) : null;
     correctAnswerDisplay = isSpr ? formatSprCorrect(correct) : null;
-    rationaleHtml = applyWatermark(question.rationale_html, user.id);
+    rationaleHtml = applyWatermark(question.rationale_html ?? '', user.id);
 
     // First-attempt-wins inside the session window (checked above,
     // concurrently with the question fetch).
@@ -235,7 +250,7 @@ export async function submitAnswer(
   // after() keeps the same semantics but runs it once the response
   // has been sent.
   if (!isAct) {
-    const assignmentId: string | undefined = session.filter_criteria?.assignment_id;
+    const assignmentId = sessionCriteria(session.filter_criteria)?.assignment_id;
     if (assignmentId) {
       after(async () => {
         try {
@@ -325,8 +340,7 @@ export async function submitPracticeSession(
   // question to have an attempt: hitting Submit Set means the
   // student/trainee considers the set done, and unanswered items
   // render as Unanswered on the review page.
-  const assignmentId: string | undefined =
-    session.filter_criteria?.assignment_id;
+  const assignmentId = sessionCriteria(session.filter_criteria)?.assignment_id;
   if (assignmentId) {
     // Deferred via after() — 3 DB round-trips of bookkeeping the
     // student's redirect-to-report must not wait on. Same best-effort
@@ -350,7 +364,7 @@ export async function submitPracticeSession(
   let actAttemptId: string | null = null;
   if (
     session.test_type === 'act'
-    && session.filter_criteria?.kind === 'practice_test'
+    && sessionCriteria(session.filter_criteria)?.kind === 'practice_test'
   ) {
     try {
       const { finalizeActPracticeTest } = await import(

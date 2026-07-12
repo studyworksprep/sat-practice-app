@@ -23,7 +23,9 @@
 import { revalidatePath } from 'next/cache';
 import { requireRole, requireServiceRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
-import type { ActionResult } from '@/lib/types';
+import type { ActionResult, Database } from '@/lib/types';
+
+type ProfilesUpdate = Database['public']['Tables']['profiles']['Update'];
 
 // sat_test_date is intentionally NOT in this allowlist. The
 // canonical home for test dates is sat_test_registrations on
@@ -110,7 +112,9 @@ export async function updateStudentProfile(
     return actionFail('Unexpected error');
   }
 
-  const { error } = await svc.from('profiles').update(updates).eq('id', studentId);
+  // `updates` keys come from the validated allowlist above, so the
+  // cast to the generated row-update type is sound.
+  const { error } = await svc.from('profiles').update(updates as ProfilesUpdate).eq('id', studentId);
   if (error) return actionFail(error.message);
 
   revalidatePath('/tutor/roster');

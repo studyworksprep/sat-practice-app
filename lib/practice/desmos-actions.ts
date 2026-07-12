@@ -13,7 +13,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
-import type { ActionResult } from '@/lib/types';
+import type { ActionResult, Json } from '@/lib/types';
 
 // desmos_saved_states.question_id is FK'd to questions_v2 (see
 // migration 20260505000001). Verify the v2 row exists so a stale id
@@ -64,7 +64,9 @@ export async function saveDesmosState({
     .upsert(
       {
         question_id: v2Id,
-        state_json: stateJson,
+        // Desmos getState() output is plain JSON-serializable data;
+        // the cast narrows Record<string, unknown> to the column type.
+        state_json: stateJson as Json,
         saved_by: profile.id,
         updated_at: new Date().toISOString(),
         test_type: 'sat',
