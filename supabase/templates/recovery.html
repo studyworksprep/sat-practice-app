@@ -1,0 +1,47 @@
+<!--
+  Canonical "Reset Password" email template.
+
+  This file is the source of truth for BOTH environments:
+    - Local dev: wired up via [auth.email.template.recovery] in
+      supabase/config.toml, so `supabase start` uses it automatically.
+    - Production: the hosted dashboard has no config-as-code, so this
+      body (and the subject from config.toml) must be pasted into
+      Authentication → Emails → Reset Password by hand. If you edit
+      this file, re-paste. See docs/runbook.md § Password reset flow.
+
+  Why the link goes to /auth/confirm with a token_hash instead of
+  Supabase's default {{ .ConfirmationURL }}: the ConfirmationURL/PKCE
+  flow only works when the link is opened in the same browser that
+  requested the reset (the PKCE code-verifier lives in that browser's
+  cookies). Opening the email on a phone, in a webview, or after a
+  mail scanner prefetched the link made the reset dead-end — see the
+  July 2026 incident in docs/runbook.md. verifyOtp({ token_hash })
+  is validated entirely server-side and works from any device. The
+  /auth/confirm page consumes the token only on an explicit button
+  press (a POST), so scanner prefetches can't burn it.
+-->
+<h2>Reset your Studyworks password</h2>
+
+<p>
+  Someone requested a password reset for your Studyworks account. If this
+  was you, click the button below to choose a new password.
+</p>
+
+<p>
+  <a
+    href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/update-password"
+    style="display:inline-block;padding:12px 24px;background:#1d4ed8;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:600"
+  >
+    Reset password
+  </a>
+</p>
+
+<p>
+  This link expires in one hour. If it has expired, you can request a new
+  one from the login page at {{ .SiteURL }}.
+</p>
+
+<p>
+  If you didn't request this, you can safely ignore this email — your
+  password will not change.
+</p>

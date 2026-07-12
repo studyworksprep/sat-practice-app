@@ -1,13 +1,17 @@
-// Password-reset landing — destination for the magic link supabase
-// sends from HomeClient's "Forgot password?" flow. /auth/callback
-// exchanges the recovery code for a session before redirecting here,
-// so by the time this page renders the user is authenticated; the
-// form just takes a new password and calls updateUser to rewrite
-// the credential.
+// Password-reset landing — destination after the recovery email's
+// /auth/confirm interstitial verifies the token (verifyOtp mints the
+// session server-side in /auth/confirm/verify). By the time this
+// page renders the user is authenticated; the form just takes a new
+// password and calls updateUser to rewrite the credential, then
+// revokes every other session for the account.
 //
 // If somebody lands here without a session (link expired, link
 // reused after sign-out, kill-switched), the form hides itself and
-// the user is prompted to request a fresh reset link.
+// the user is prompted to request a fresh reset link. The verify
+// endpoints also redirect here with ?error=invalid_link on a failed
+// or expired token — that forces the same state, even if the visitor
+// happens to hold an unrelated session, so an expired reset link
+// never silently offers to change whatever account is logged in.
 
 'use client';
 
@@ -35,7 +39,13 @@ export default function UpdatePasswordPage() {
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (cancelled) return;
-      setHasSession(!!data?.user);
+      // ?error=… from the verify endpoints forces the expired state
+      // even when a session exists — an expired reset link must never
+      // silently offer to change whatever account happens to be
+      // logged in. window.location instead of useSearchParams so the
+      // page doesn't need a Suspense boundary.
+      const linkError = new URLSearchParams(window.location.search).get('error');
+      setHasSession(linkError ? false : !!data?.user);
     })();
     return () => {
       cancelled = true;
@@ -55,11 +65,23 @@ export default function UpdatePasswordPage() {
     }
     setSaving(true);
     const { error } = await supabase.auth.updateUser({ password });
-    setSaving(false);
     if (error) {
+      setSaving(false);
       setMsg({ kind: 'err', text: error.message });
       return;
     }
+
+    // Revoke every other session for this account. If the reset was
+    // prompted by a compromised password, the attacker's session must
+    // not outlive it. Scope 'others' keeps the session created by the
+    // reset link alive. Best-effort: a failure here shouldn't strand
+    // the user after the password itself was already changed.
+    try {
+      await supabase.auth.signOut({ scope: 'others' });
+    } catch {
+      // ignore — password update already succeeded
+    }
+    setSaving(false);
 
     // Resolve a role-appropriate landing so the user doesn't end
     // up on a generic page after the reset succeeds.

@@ -336,3 +336,54 @@ The `demo-readonly.spec.ts` regression test runs in the screenshots
 project; it catches the proxy gate breaking but does not yet iterate
 every public-schema table. A SQL-level test that does is on the
 phase-2 follow-up list.
+
+## Password reset flow
+
+Recovery emails link to `/auth/confirm?token_hash=…&type=recovery&next=/auth/update-password`,
+where a button POSTs the token to `/auth/confirm/verify`. That handler calls
+`supabase.auth.verifyOtp({ type: 'recovery', token_hash })` server-side, mints
+the session cookies, and forwards to `/auth/update-password`, which updates the
+password and then revokes every other session for the account
+(`signOut({ scope: 'others' })`).
+
+Two design constraints, both learned the hard way (July 2026 incident — users
+were locked out for weeks and the failure was invisible):
+
+1. **No PKCE.** The previous flow (`resetPasswordForEmail` with a
+   `redirectTo` through `/auth/callback` + `exchangeCodeForSession`) only
+   worked when the emailed link was opened in the *same browser* that
+   requested the reset, because the PKCE code-verifier lives in that
+   browser's cookies. Phone-opens, webviews, and mail-scanner prefetches all
+   dead-ended silently. `verifyOtp({ token_hash })` has no such coupling.
+2. **Verify on POST, never on GET.** The token is single-use and mail
+   filters (Outlook SafeLinks etc.) prefetch every link in an email. The
+   `/auth/confirm` GET is inert; only the human-clicked form submission
+   spends the token.
+
+Failures now log (`password_reset_verify_failed`,
+`auth_code_exchange_failed` — search Vercel logs) and land on
+`/auth/update-password?error=invalid_link`, which shows the
+"request a new link" state.
+
+### Dashboard configuration (manual, per environment)
+
+The hosted dashboard has no config-as-code, so after any change to the
+canonical template at `supabase/templates/recovery.html`:
+
+1. Supabase dashboard → **Authentication → Emails → Reset Password**.
+2. Subject: `Reset your Studyworks password` (kept in `supabase/config.toml`
+   under `[auth.email.template.recovery]`).
+3. Body: paste the contents of `supabase/templates/recovery.html`
+   (the HTML comment header can be omitted).
+4. **Authentication → Sessions / Rate limits**: keep the email OTP expiry at
+   30–60 minutes (default 1 hour is acceptable; shorter is better) and leave
+   Supabase's built-in per-email rate limit on.
+
+If the dashboard template ever reverts to `{{ .ConfirmationURL }}`, the
+same-browser PKCE failure mode comes back. The signal that this happened:
+`auth.flow_state` rows with `authentication_method = 'recovery'` piling up
+with no matching sessions, and zero traffic on `/auth/update-password`.
+
+Local dev needs no manual step — `supabase/config.toml` points the local
+stack at the same template file, and Inbucket (port 54324) captures the
+emails.
