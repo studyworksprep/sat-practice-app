@@ -1,5 +1,7 @@
 # Studyworks database operations
 
+> **Status: Living document.** Last verified against code: 2026-07-12.
+
 Short runbook for anything that touches the Supabase database.
 
 ## Local dev
@@ -27,27 +29,42 @@ SUPABASE_SERVICE_ROLE_KEY=<printed by `supabase status`>
 
 ## Applying migrations
 
-Every schema change is a committed file under `supabase/migrations/`.
-Files are timestamped (`YYYYMMDDHHMMSS_description.sql`) so their order
-of application is deterministic.
+**Read `supabase/migrations/README.md` before touching this
+workflow.** The directory is an accurate *historical record* of
+schema changes, but it is NOT a replayable migration chain: 42 of the
+files have no timestamp prefix (the CLI skips them), two filename
+collisions exist, and production's migration-tracking table does not
+correspond to the local filenames.
 
-Reset a local database and replay every migration from scratch:
+Every schema change is a committed file under `supabase/migrations/`.
+New files are timestamped (`YYYYMMDDHHMMSS_description.sql`); the
+file is the reviewable artifact, and the Supabase MCP
+`apply_migration` call (which records its own version in the tracking
+table) is the source of truth for what production has applied.
+
+Reset a local database and replay the timestamped migrations (see the
+README caveats — this is not guaranteed to reproduce production
+schema):
 
 ```
 supabase db reset
 ```
 
-Push pending migrations to the linked remote project:
-
-```
-supabase db push
-```
+**Do NOT run `supabase db push` (or `migration up`) against
+production.** The CLI would treat over a hundred already-applied
+files as pending and attempt to re-apply years of DDL. A baseline
+reset that fixes this is scheduled (see
+`docs/upgrade-plan-2026-07.md` P0.7).
 
 Create a new migration scaffold:
 
 ```
 supabase migration new <description-in-kebab-case>
 ```
+
+After applying any migration, regenerate `lib/types/database.ts` via
+the Supabase MCP `generate_typescript_types` tool (or
+`supabase gen types typescript`).
 
 ## Writing a migration
 
@@ -67,8 +84,8 @@ Every migration file should be:
 
 ## Known drift
 
-None as of June 2026. The original drift items from Phase 1 are all
-resolved:
+The original "schema in prod but not in migrations" drift items from
+Phase 1 are resolved:
 
 - The seven `practice_test_*` tables are committed to migrations and
   the v1 originals are archived to `_legacy`; the live cluster
@@ -77,17 +94,28 @@ resolved:
   `practice_test_module_attempts_v2`,
   `practice_test_item_attempts_v2`, `practice_test_routing_rules`) is
   what production reads.
-- The `get_question_neighbors` RPC was dropped as part of the v1
-  function audit (unreachable from app code, referenced retired
-  tables).
-- `question_availability` is still in `public` with RLS enabled and
-  no policies; pending the §3 Phase 3 review.
+- The `get_question_neighbors` RPC was dropped
+  (`20240101000031_drop_get_question_neighbors.sql`).
+- `question_availability` is still in `public` with RLS enabled and a
+  permissive public-read SELECT policy (from
+  `add_performance_optimizations.sql`); it has no app-code consumers
+  and is pending review for retirement.
+
+One structural drift mode remains, documented and scheduled for a
+fix: the migrations directory does not correspond to production's
+migration-tracking table (verified 2026-07-12 — see
+`supabase/migrations/README.md`). Until the baseline reset lands,
+treat the directory as an audit log, apply new migrations via the
+MCP `apply_migration` tool, and never `db push` to production. Also
+pending from that audit: dropping the vestigial `classes`,
+`class_enrollments`, `class_invites` tables, the unused
+`profile_cards` view, and the 11 `stg_*` staging tables.
 
 ## Safe service-role usage
 
-Every service-role client (`createServiceClient()` or the new
-`requireServiceRole('reason')` helper in `lib/api/auth.js`) bypasses RLS.
-Before using one, ask:
+Every service-role client (`createServiceClient()` from
+`lib/supabase/server.ts`, or the `requireServiceRole('reason')` helper
+in `lib/api/auth.ts`) bypasses RLS. Before using one, ask:
 
 1. **Can this query run as the authenticated user against RLS?** If yes,
    do that instead. The RLS-scoped client is the default.
@@ -98,12 +126,28 @@ Before using one, ask:
    is bypassing RLS *and* the route has no application-layer role
    check, any authed user can see any row. That's a data leak.
 
-The Phase 2 refactor routes every bypass through `requireServiceRole('reason')`
-so every call site is audit-greppable and every reason is logged.
+Authenticated routes go through `requireServiceRole('reason')`, which
+logs a structured `service_role_bypass` event (with `reason`,
+`user_id`, `caller_role`) on every call. A handful of system-context
+call sites have no authenticated caller and use `createServiceClient()`
+directly instead: the Stripe webhook, the signup route, the demo
+auto-login route (`app/auth/demo/[persona]`), the lessonworks sync
+cron, and the external/public API-key routes. Those API-key routes
+(`app/api/external/*`, `app/api/public/*`) gate access via
+`requireExternalApiAccess` in `lib/externalAuth.ts` — a rate limit
+plus a constant-time (`timingSafeEqual`) API-key check — since the
+proxy skips session auth for them. Either way, every call site is
+audit-greppable.
 
-## Back-test helpers
+## Back-test helpers (historical)
 
-`scripts/can_view_backtest.mjs` compares the new `can_view(target)`
-function against the current helper stack. Run it against a dev database
-seeded from a prod snapshot before Phase 2 starts rewriting RLS policies.
-Expected output is "zero diffs".
+`scripts/can_view_backtest.mjs` compares the `can_view(target)`
+function against the pre-refactor helper stack
+(`teacher_can_view_student`, manager assignments, admin check, self
+check). It was the precondition gate for the Phase 2 RLS rewrite,
+which has since shipped — `can_view` landed in
+`20240101000004_create_can_view_function.sql` and the visibility
+policies switched onto it in
+`20240101000012_replace_visibility_policies_with_can_view.sql`. The
+script is read-only and kept for regression use; expected output is
+"zero diffs".

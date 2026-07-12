@@ -1,5 +1,7 @@
 # Studyworks Architecture Plan
 
+> **Status: Historical record** — accurate as of its date; not maintained. For current state see `CLAUDE.md` and `docs/upgrade-plan-2026-07.md`.
+
 _A top-to-bottom analysis of the current platform and a staged plan for a coherent rebuild._
 
 _Written April 2026. Assumes the `questions_v2` schema migration is complete before this plan kicks off._

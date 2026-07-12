@@ -502,7 +502,7 @@ async function loadActCandidateIds(supabase, filters) {
 }
 
 // "Unattempted only" against act_attempts. No legacy v1 era for ACT,
-// so no question_id_map translation — the unattempted check is a
+// so no legacy-id translation — the unattempted check is a
 // simple IN-set difference.
 async function dropAnsweredAct(supabase, userId, candidateIds) {
   if (candidateIds.length === 0) return candidateIds;

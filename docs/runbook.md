@@ -1,56 +1,33 @@
 # Studyworks runbook
 
+> **Status: Living document.** Last verified against code: 2026-07-12.
+
 Short operational playbook. Expand as new scenarios come up.
 
-## Parallel-build kill switch
+## Parallel-build kill switch — RETIRED
 
-See `docs/architecture-plan.md` §3.6. Two tiers of control over which
-UI tree a user sees:
-
-### Flip one user
-
-```sql
--- Internal testing
-update public.profiles set ui_version = 'next' where id = '<user-uuid>';
-
--- Rollback
-update public.profiles set ui_version = 'legacy' where id = '<user-uuid>';
-```
-
-The JWT `app_metadata.ui_version` is synced automatically by a trigger.
-The new value takes effect on the user's next auth-refresh round-trip
-(usually within a minute; sign-out + sign-in applies it immediately).
-
-### Force everyone one way (kill switch)
-
-```sql
--- Pin every user to the old tree. Use in a rollback.
-update public.feature_flags set value = 'legacy' where key = 'force_ui_version';
-
--- Pin every user to the new tree. Use during Phase 6 verification.
-update public.feature_flags set value = 'next'   where key = 'force_ui_version';
-
--- Let the per-user flag decide. Default behavior.
-update public.feature_flags set value = null     where key = 'force_ui_version';
-```
-
-The Next.js proxy (formerly middleware, renamed in Next 16) caches the
-flag for ~5 seconds per function instance. Worst-case lag from a flip
-to user-visible effect is ~5 seconds plus any cold-start time.
+The dual-tree kill switch no longer exists. The `app/next/*` tree was
+promoted to the route root in Stage C of the decommission
+(`docs/decommission-plan.md`); the per-user UI-version column, its JWT sync,
+and the `feature_flags` force-UI-version row were dropped by
+migrations `20260620132818`
+and `20260620154530` (re-cutover + legacy-table archival).
+There is one app tree; there is nothing to flip. The `feature_flags`
+table itself remains as infrastructure for future rollouts (no rows
+are read by the proxy today).
 
 ## Finding a bug report
 
 A student reports an error. Steps, in order:
 
-1. **Check Sentry** (Phase 1 deliverable) for the user id or request id
-   they pasted. If the stack trace is there, you have everything.
-2. **Check structured logs** (Phase 1 deliverable via `lib/api/logger.js`)
+1. **Check Sentry** for the user id or request id they pasted. If the
+   stack trace is there, you have everything.
+2. **Check structured logs** (emitted via `lib/api/logger.js`)
    for the request id.
-3. **Check `profiles.ui_version`** for the user. If it's `next`, the bug
-   may be in the rebuild tree. If it's `legacy`, the bug is in the
-   current product.
-4. **Try to reproduce on your own account** with the same `ui_version`.
-5. **If you can't reproduce**, flip a copy of the user's role/permissions
+3. **Try to reproduce on your own account** with the same role.
+   (There is no per-user UI-version switch anymore — everyone is
+   on the single app tree.)
+4. **If you can't reproduce**, flip a copy of the user's role/permissions
    (never reuse their actual account) and retry.
 
 ## Rolling back a deploy
@@ -64,59 +41,44 @@ the issue is code.
 
 ## Phase 2 step 9 branch deploy — DONE
 
-The RLS-refactor branch (plus everything that accumulated on top:
-Phase 3 assignment unification, Phase 4 primitives, profile_cards
-view) was deployed to production on Monday. Migrations 000011
-through 000024 are applied; `main` holds the merged code. The
-`app/next/` parallel tree is live behind `ui_version`.
-
-Post-deploy hotfixes, same day:
-- **000015 route_code case mapping** — v1's `practice_test_modules`
-  stores route codes as `EASY / HARD / BASE`; the original CASE in
-  000015 compared against lowercase literals and collapsed every
-  source row to `'std'`, colliding on the unique key. Fixed by
-  lower-casing + explicit base→std mapping.
-- **000024 restore question_status FK** — 000017 dropped
-  `question_status_question_id_fkey` on the premise that the column
-  might carry v2 UUIDs. In prod the column holds v1 UUIDs
-  exclusively (3210/3210), so the drop was defensively over-eager
-  and broke PostgREST's ability to resolve embedded
-  `question_status!left(...)` selects in legacy routes. Restored
-  the FK.
-
-If you need to roll back any of these selectively, the kill switch
-(`feature_flags.force_ui_version = 'legacy'`) pins everyone to
-the legacy tree but does NOT undo schema changes — those need
-targeted `drop policy` / `drop constraint` reverts.
-
-Remaining parked-for-Phase-6 items (not part of this deploy):
-- Enabling RLS on the legacy `practice_test_*` and v1 question
-  tables. The plan is to let them retire with the rest of the
-  legacy tree. See §3.6 parallel-build discipline extended to the
-  schema layer.
-- Retiring `question_status`, its restored FK, and the
-  `upsert_question_status_after_attempt` RPC. All legacy-only.
+Moved to `docs/history/2026-05-phase2-step9-deploy.md` (a record
+from the parallel-build period; the mechanisms it describes are
+retired).
 
 ## Applying a hotfix migration
 
-Migrations should always land through a PR and replay on dev first.
-If a production-only hotfix is unavoidable:
+**Read `supabase/migrations/README.md` first.** The migrations
+directory is an audit log, not a replayable chain, and production's
+migration-tracking table does not correspond to the local filenames.
+**Never run `supabase db push` (or `migration up`) against
+production** — it would attempt to re-apply years of already-applied
+DDL.
+
+Migrations should always land through a PR and be tested on a dev
+database first. If a production-only hotfix is unavoidable:
 
 1. Write the migration file under `supabase/migrations/YYYYMMDDHHMMSS_*.sql`
    with a clear header comment.
-2. Apply it manually via the Supabase SQL editor on production.
+2. Apply it via the Supabase MCP `apply_migration` tool (which records
+   its own version in the tracking table — that record is the source
+   of truth; the file is the reviewable artifact).
 3. Commit the migration file in a PR with a comment that the migration
    was applied out-of-band.
-4. Replay on dev (`supabase db reset`) to confirm it applies cleanly.
+4. Regenerate `lib/types/database.ts` via the Supabase MCP
+   `generate_typescript_types` tool.
 
 ## Seeding a dev database
 
 1. Start local Supabase: `supabase start`
-2. Reset the schema: `supabase db reset`. This replays every migration
-   from `supabase/migrations/` in order.
+2. Reset the schema: `supabase db reset`. This replays the timestamped
+   migrations from `supabase/migrations/`, but note the caveats in
+   `supabase/migrations/README.md`: 42 files have no timestamp prefix
+   (the CLI skips them) and there are two filename collisions, so a
+   from-scratch reset is not guaranteed to reproduce the production
+   schema. For a faithful dev copy, prefer a schema dump from prod.
 3. If you need realistic data, dump a sanitized snapshot from prod and
    `pg_restore` it into the local instance. The sanitization script is
-   (TODO Phase 2 deliverable).
+   (still TODO — no such script exists under `scripts/`).
 
 ## Negative-test scaffold (Playwright)
 
@@ -138,6 +100,7 @@ tests/e2e/
   api-auth.student.spec.ts     student → 403 on tutor + admin
   api-auth.teacher.spec.ts     teacher → 403 on admin + cross-roster
   page-auth.teacher.spec.ts    page-level redirects + 404s
+  features-parity.anon.spec.ts /features/* marketing pages render
 ```
 
 ### Required test users
@@ -186,8 +149,9 @@ local server step.
    - `*.anon.spec.ts` for anonymous
    - `*.student.spec.ts` / `*.teacher.spec.ts` / `*.admin.spec.ts`
      for role-bound tests (storage state loads automatically)
-4. Each project depends on `setup`, which runs `auth.setup.ts`
-   once per CI invocation.
+4. Each role-bound project (`student` / `teacher` / `admin`) depends
+   on `setup`, which runs `auth.setup.ts` once per CI invocation.
+   The `anonymous` project has no setup dependency.
 
 ### Limits of the scaffold
 
@@ -211,9 +175,9 @@ The app forwards unhandled exceptions to Sentry from four points:
    `legacyApiRoute()` (`lib/api/response.ts`) reports unexpected
    throws to Sentry with a `request_id` tag and `layer: route`.
    `ApiError` throws (intentional 4xx) are NOT reported.
-2. **Server Components, Server Actions, middleware.** Captured
-   automatically by Sentry's Next.js integration via
-   `instrumentation.ts` → `onRequestError`.
+2. **Server Components, Server Actions, the proxy (`proxy.js`,
+   Next 16's middleware).** Captured automatically by Sentry's
+   Next.js integration via `instrumentation.ts` → `onRequestError`.
 3. **Client error boundaries.** `lib/ui/ErrorScreen.js` calls
    `Sentry.captureException(error)` and shows the resulting event id
    to the user as "Reference: …" so a support ticket can be matched
@@ -251,23 +215,32 @@ end-to-end.
    Sentry event id. A support ticket that quotes that code can be
    linked back to the issue directly.
 3. The `caller_role` and `event=service_role_bypass` fields on
-   `lib/api/auth.js`'s audit log (for `requireServiceRole` calls)
+   `lib/api/auth.ts`'s audit log (for `requireServiceRole` calls)
    live in the same Vercel log stream — use them to spot bypasses
    that shouldn't be happening.
 
 ## Content protection incident response
 
-If a scraper is detected (via Sentry alert from `lib/api/rateLimit.js`
-or `lib/api/scraperSignals.js`):
+Scraper detection surfaces in the structured logs, not Sentry:
+`lib/api/rateLimit.js` rejections show up as 429s at the call sites
+that use it (the external/public API-key routes via
+`lib/externalAuth.ts`, signup, and several practice actions), and
+`lib/api/scraperSignals.js` emits `scraper_signal` log events.
+Note that `scraperSignals` is still in shadow mode and currently has
+no call sites wired up — cadence-based detection is aspirational
+until a route calls `check()`. No Sentry alert is wired for either
+module. If a scraper is detected (e.g. via log review or a rate-limit
+spike):
 
-1. Identify the offending user id from the alert payload.
+1. Identify the offending user id from the log lines.
 2. Look up their account in the Supabase Studio / SQL editor:
-   `select id, email, role, ui_version from profiles where id = '<id>';`
+   `select id, email, role from profiles where id = '<id>';`
 3. If the account is clearly a scraper (brand new, no real activity),
    deactivate: `update profiles set is_active = false where id = '<id>';`
 4. If it might be a power user hitting a false positive, widen the
-   rate-limit thresholds in `lib/api/rateLimit.js` first before taking
-   action on the account.
+   rate-limit thresholds first before taking action on the account
+   (defaults live in `lib/api/rateLimit.js`; per-route limits are
+   passed by each call site).
 5. File a Sentry-linked incident so the pattern is logged for future
    calibration.
 
@@ -282,9 +255,13 @@ pages screenshotted while signed in as one of two seeded accounts:
 Both carry `profiles.is_demo = true`. The DB-layer `demo_readonly_*`
 restrictive policies (see `20260511000000_demo_readonly_foundation.sql`)
 deny every INSERT / UPDATE / DELETE for sessions whose JWT carries
-`app_metadata.is_demo = true`. The proxy adds a second gate that
-returns 403 on any non-GET request from a demo session, so writes
-fail fast with a clean JSON error instead of a Postgres RLS error.
+`app_metadata.is_demo = true`. The proxy (`proxy.js`) adds a second
+gate that returns 403 on any non-GET/HEAD `/api/*` request from a
+demo session, so REST writes fail fast with a clean JSON error
+instead of a Postgres RLS error. Server Actions are deliberately NOT
+gated at the proxy (it can't tell read actions from write actions);
+demo writes through Server Actions still fail at the DB layer via
+RLS.
 
 ### First-time setup per environment
 
@@ -333,9 +310,10 @@ create policy demo_readonly_delete on public.<table>
 ```
 
 The `demo-readonly.spec.ts` regression test runs in the screenshots
-project; it catches the proxy gate breaking but does not yet iterate
-every public-schema table. A SQL-level test that does is on the
-phase-2 follow-up list.
+project; it catches the proxy gate breaking and spot-checks the DB
+lockdown with a direct REST insert, but does not yet iterate every
+public-schema table. A SQL-level test that does is on the follow-up
+list (unverified 2026-07-12).
 
 ## Password reset flow
 

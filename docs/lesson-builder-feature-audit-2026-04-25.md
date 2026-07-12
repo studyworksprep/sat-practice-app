@@ -1,5 +1,7 @@
 # Lesson Builder Feature Verification Audit (2026-04-25)
 
+> **Status: Historical record — CONTAINS A KNOWN ERROR.** Verified against code 2026-07-12: the claim that learner-side branching does not work is **wrong** — the student viewer executes authored branch/rejoin logic (`lib/lesson/runtime-navigation.mjs` via `LessonSlideshow`). Do not rely on this audit for current behavior.
+
 This audit verifies the requested lesson-builder capabilities against the current codebase.
 
 ## Results summary

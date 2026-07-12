@@ -36,6 +36,19 @@ jobs:
       - name: Unit tests
         run: npm run test:unit
 
+      - name: Code hygiene (TS ratchet + retired terms)
+        run: node scripts/check-code-hygiene.mjs
+
+      - name: Authorization matrix freshness
+        # Regenerates the matrix from code and fails if the committed
+        # copy is stale — the matrix can never drift from the code.
+        run: |
+          node scripts/generate-auth-matrix.mjs
+          git diff --exit-code docs/authorization-matrix.md || {
+            echo "::error::docs/authorization-matrix.md is stale — run 'node scripts/generate-auth-matrix.mjs' and commit the result."
+            exit 1
+          }
+
       - name: Syntax-check standalone scripts
         # node --check verifies each script parses without executing it.
         # This catches the class of bugs where a .mjs/.js script has a silent

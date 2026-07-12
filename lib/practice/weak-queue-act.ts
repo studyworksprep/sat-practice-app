@@ -12,7 +12,7 @@
 // the existing Common Errors card + WeakQueueLauncher render ACT
 // rows without knowing they're ACT.
 //
-// No v1/v2 question_id_map translation here — ACT has no legacy
+// No v1-to-v2 id translation here — ACT has no legacy
 // era. Every question_id in act_attempts is a native act_questions
 // uuid.
 

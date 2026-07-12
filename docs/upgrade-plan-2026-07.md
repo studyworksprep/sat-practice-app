@@ -1,5 +1,7 @@
 # Studyworks Upgrade Plan — July 2026
 
+> **Status: Living document — the active roadmap.** Last verified against code + production: 2026-07-12.
+
 ## Purpose and method
 
 This plan maps the path from the platform as it exists today to the
@@ -53,6 +55,22 @@ inform future decisions:
    security reasoning.
 
 ---
+
+### Relationship to the greenfield plan
+
+`docs/greenfield-build-plan.md` (a recent restart-from-scratch
+exploration; the continue-vs-restart decision landed on continue) was
+mined for this plan. Adopted items are marked *(greenfield …)* where
+they appear: the entitlement gate (1.5), attempt context columns
+(1.6), item stats + mis-key audit (1.7), bank quality gates (1.8),
+question-edit integrity decision (1.9), predicted score band (Phase 1
+acceptance), content efficacy (3.5), instant-next runner work (6.3b),
+and CI migration replay (cross-cutting standards). Deliberately NOT
+adopted: Zod-at-every-boundary and strict-TS-everywhere (incremental
+policy wins on a live app), the unified `supervision` edge table (two
+working junction tables; migration buys nothing), the full seeding
+pipeline (bank is live; only its validators carry over), and the
+offline sync queue (backlog, not a phase).
 
 ## The organizing idea: build the judgment layer
 
@@ -123,6 +141,12 @@ typeahead), and cache taxonomy/test/lesson-pack lists with
 **P0.5 CI enforcement.** Add `npm run typecheck`, the existing
 `tests/e2e/api-auth.*` / `page-auth.*` Playwright specs, and a unit
 runner for `lib/lesson/*.test.mjs` to `.github/workflows/ci.yml`.
+*Follow-up discovered 2026-07-12:* the e2e fixtures
+(`tests/e2e/helpers/fixtures.ts`) enumerate routes from the retired
+hand-written auth matrix — most no longer exist. Before activating
+the secret-gated e2e job, rewrite the fixtures against the generated
+`docs/authorization-matrix.md` and seed `studyworks-dev` (currently
+empty) with schema + dev users.
 
 **P0.6 Public surface hardening.** `crypto.timingSafeEqual` for the
 external API key; per-consumer rotatable keys; wire `lib/api/rateLimit`
@@ -139,8 +163,8 @@ directory → `migration repair`), documented in
 `supabase/migrations/README.md` and scheduled as its own operation.
 Fold the vestigial-object drops (`classes`/`class_enrollments`/
 `class_invites`, `profile_cards`, `stg_*`) into that reset, after an
-archival export. Also: scrub stale `question_id_map`/`ui_version`
-comments; add audit-parity logging to the raw `createServiceClient()`
+archival export. Also: scrub stale comments describing the retired v1
+id-translation map and UI-version switch; add audit-parity logging to the raw `createServiceClient()`
 call sites the wrapper can't serve (demo-tour loaders, cron); fix the
 README; regenerate the authorization matrix; **rewrite the
 getting-started tutorial and Help copy to match the shipped app**
@@ -192,9 +216,58 @@ per curriculum unit (the bank has 3,430 questions; distribution by
 skill must be verified, and units with thin coverage flagged as content
 debt for Phase 3's content workstream).
 
+**1.5 Entitlement as a first-class gate** *(adopted from the
+greenfield plan §2.6/Phase 1)*. Authorization already has one home
+(`can_view()`); licensing does not — subscription checks live ad hoc
+in `proxy.js`. Before the plan engine and SRS ship tier-gated
+features, build the second gate: an `entitlements` table separating
+**plan** (preview/standard/full) from **source** (stripe / sponsored /
+trial / manual), a `has_plan(uid, min_plan)` SQL function, and
+`requirePlan()` / `<Gated>` helpers. Encode the sponsored model (your
+tutoring company's students ride free via the roster edge) and define
+the **lapse policy** for students who leave a roster — currently
+unanswered anywhere. Migrate the existing `subscriptions`/
+`subscription_exempt` checks onto the new resolver.
+
+**1.6 Attempt context columns** *(greenfield §5.4)*. Add
+`context_type` (practice | test | assignment | lesson | review) and
+`context_id` to `attempts`, backfill from existing session/assignment
+linkage, and write both on every new attempt. Replaces the fragile
+session-window inference in `markAssignmentCompletedIfDone` with a
+direct query, and gives Phase 2 adherence and Phase 3
+lesson-embedded practice their attribution key.
+
+**1.7 Item statistics + mis-key audit** *(greenfield §5.5 + Phase 2
+appendix)*. Build `item_stats` (empirical p-value, distractor
+distribution, discrimination, avg time) from the existing 21.5k
+attempts. Run the **answer-key cross-check** once as an audit — flag
+any question whose keyed answer has p-value ≈ 0 or where high
+performers prefer a distractor (the classic mis-key signature) — then
+keep it as a scheduled report. Surface item stats to authors in the
+admin question views.
+
+**1.8 Bank quality gates** *(greenfield Phase 2 appendix, applied to
+the live bank)*. A re-runnable `scripts/validate-bank.mjs` over the
+3,430 published questions: every math fragment renders under KaTeX,
+every referenced figure resolves, MCQ has exactly one key, SPR has a
+valid accepted value, taxonomy present. Failures quarantine via the
+existing `question_availability` table rather than deletion.
+
+**1.9 Question-edit integrity — decision required** *(greenfield
+§5.2)*. v2 dropped question versioning, so editing a published
+question silently rewrites history under existing attempts — and the
+AI-drafts pipeline makes edits routine. Decide between: (a) full
+versioning (attempts reference the version seen — heavy retrofit),
+(b) snapshot-on-edit for published questions, or (c) minimum viable:
+`content_updated_at` + report-level "edited since attempted" flags.
+Do not leave it silent.
+
 Acceptance: a single RPC returns, for any student, a per-skill list
 with current mastery, 4-week trend, coverage status, and question/lesson
-availability — in one query.
+availability — in one query. Additionally: a **predicted score band**
+(via `score_conversion`) is computable per student — this becomes the
+student dashboard's headline number and the plan engine's progress
+denominator.
 
 ---
 
@@ -304,6 +377,13 @@ human review in the existing builder. Target ~40 units covered within
 the phase; leverage the already-working branch/rejoin runtime for
 check-remediation loops inside each lesson. Also author `hints` for the
 top ~500 highest-traffic questions.
+
+**3.5 Content efficacy** *(greenfield §5.9)*. Once lessons are being
+produced at volume, measure whether they work: pre/post accuracy per
+lesson skill (`feature_efficacy`, materialized from mastery
+snapshots), surfaced to authors and to the manager's
+instruction-gap view (Phase 5). This is the feedback loop that keeps
+the Phase 3.4 content investment honest.
 
 Acceptance: a student's day can be "10-min lesson → scaffolded drill →
 3 spaced reviews," generated automatically, with every element linked
@@ -438,6 +518,14 @@ mobile breakpoints to the runner surfaces (practice runner, test
 runner, roster each have a single media query today — they're the
 most-used surfaces and the least covered).
 
+**6.3b Instant-next in the runners** *(greenfield §4)*. P0 fixed
+server latency; this fixes perceived latency: pre-render the next
+question with React 19.2's `<Activity mode="hidden">` so "Next" is
+instant, View Transitions between questions, `useOptimistic` on
+submit/mark actions. Fits the content-protection design (question
+HTML is already server-rendered; only answers/rationales are gated
+behind submit).
+
 **6.4 First-run.** Onboarding wizard (target score → short diagnostic →
 first plan/practice set) replacing the read-the-help-articles model,
 folded into the Phase 2 self-serve flow.
@@ -450,7 +538,20 @@ folded into the Phase 2 self-serve flow.
   `lib/types/database.ts` (close the 42-file backlog in P0.7 first).
 - **New code is TypeScript**; new surfaces use Server Components +
   server actions with the shared primitives (`requireRole`,
-  `actionOk/actionFail`, `paginate`).
+  `actionOk/actionFail`, `paginate`). The seam modules
+  (`lib/supabase/server`, `lib/api/auth`, `lib/api/paginate`,
+  `lib/externalAuth`) are converted up front so types propagate into
+  every consumer, and a CI ratchet fails the build if the `.js`/
+  `.jsx` file count under `app/`+`lib/` grows. Scheduled
+  touch-it-convert-it conversions: `lib/mastery.js` (Phase 1),
+  `lib/practice/weak-queue.js` (Phase 3), `build-session-review.js` +
+  `load-test-results.js` (Phase 4 lazy-body refactor),
+  `nav-links.js` → typed sidebar config (Phase 6).
+- **The migration baseline reset** (P0.7 / `supabase/migrations/
+  README.md`) is complete only when CI **replays the full migration
+  set into a throwaway database and regenerates types on every PR**
+  *(greenfield rule 1)* — that check is what keeps the drift mode
+  closed permanently.
 - **One computation, one home**: the mastery formula's JS/SQL
   duplication gets a shared test vector before Phase 1 builds on it;
   the plan generator and SRS scheduler each live in one place with

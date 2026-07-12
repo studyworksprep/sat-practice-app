@@ -2,7 +2,7 @@
 //
 // Two flows:
 //   createWeakQueueDrill — picks the student's weakest questions
-//     across the whole bank (Smart Review scoring on v2) and starts
+//     across the whole bank (weak-queue priority scoring) and starts
 //     a review session.
 //   createSkillDrill     — same, but scoped to one skill_name
 //     (the Common Errors card sends the skill as a hidden field).
