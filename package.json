@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "validate-lessons": "node scripts/validate-lessons.mjs",
     "typecheck": "tsc --noEmit",
+    "test:unit": "node --test lib/lesson/*.test.mjs",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium",
     "test:e2e:ui": "playwright test --ui",
