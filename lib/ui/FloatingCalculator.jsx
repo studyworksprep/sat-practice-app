@@ -270,7 +270,7 @@ export function FloatingCalculator({
             </button>
           </div>
           <div className={s.body}>
-            <DesmosPanel isOpen storageKey={storageKey} onCalcReady={onCalcReady} />
+            <DesmosPanel isOpen fitToContainer storageKey={storageKey} onCalcReady={onCalcReady} />
           </div>
         </div>
       )}

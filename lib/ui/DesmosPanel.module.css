@@ -27,3 +27,14 @@
   flex: 1;
   min-height: 0;
 }
+
+/* fitToContainer variant: used when the host already has an
+   explicit, bounded height (e.g. FloatingCalculator's fixed-size
+   body). Dropping the 640px floor lets the calculator size to the
+   real container so its ancestor's overflow:hidden no longer clips
+   the bottom — where the Desmos on-screen keypad and its toggle
+   button live. Without this the keypad opens into the clipped-off
+   region and looks like it never pops up. */
+.panelFit {
+  min-height: 0;
+}
