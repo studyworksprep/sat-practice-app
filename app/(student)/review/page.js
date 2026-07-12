@@ -122,9 +122,8 @@ export default async function StudentReviewPage() {
 
   // Common Errors aggregation: reuse the question meta we'd need
   // anyway by grabbing the distinct question ids out of attempts
-  // and looking them up once. The helper translates v1-era
-  // attempt question_ids through question_id_map so legacy-only
-  // students' wrong questions resolve correctly.
+  // and looking them up once. attempts is exclusively v2-keyed,
+  // so this is a direct questions_v2 lookup.
   const attemptedQids = Array.from(
     new Set(attemptsRaw.map((a) => a.question_id)),
   );

@@ -194,9 +194,8 @@ export async function submitAssignmentOnBehalf(_prev, formData) {
       const { allIds } = await expandToAttemptIds(ctx.supabase, questionIds);
       if (allIds.length > 0) {
         // Earliest attempt the student has on any of the
-        // assignment's questions (v1 ids included via the
-        // question_id_map expansion above) becomes the
-        // synthetic session's start time. Anchoring there means
+        // assignment's questions becomes the synthetic
+        // session's start time. Anchoring there means
         // buildSessionReview's "attempts since session.created_at"
         // filter scoops up everything that should count.
         const { data: earliest } = await ctx.supabase

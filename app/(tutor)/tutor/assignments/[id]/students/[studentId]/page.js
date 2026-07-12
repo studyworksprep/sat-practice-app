@@ -9,11 +9,11 @@
 //      to /tutor/sessions/[sessionId].
 //   2. Synthetic session built from assignment.question_ids and
 //      assignment.created_at. Used when the student worked the
-//      questions outside the v2 runner (legacy practice flow,
+//      questions outside the v2 runner (multiple sessions,
 //      pre-cutover imports, manual "Submit for student" without
-//      a recorded session). buildSessionReview's expandLegacyIds
-//      flag pulls v1 attempts back in via question_id_map, so
-//      report stats line up with the cohort table.
+//      a recorded session), so report stats line up with the
+//      cohort table. attempts is exclusively v2-keyed — the old
+//      v1-expansion step is retired.
 //   3. Empty state when there are no attempts at all.
 //
 // Auth: tutor / manager / admin. RLS does the real authorization.
@@ -32,9 +32,9 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
   // ?rebuild=1 forces the synthetic-session path: skip the
   // latest-completed-session lookup and rebuild the report from
   // every attempt the student has on the assignment's question
-  // pool (with v1 ids included via question_id_map). Useful when
-  // the canonical session is missing data — e.g. multiple
-  // sessions, legacy imports, manual override side effects.
+  // pool. Useful when the canonical session is missing data —
+  // e.g. multiple sessions, legacy imports, manual override side
+  // effects.
   const forceRebuild = sp.rebuild === '1' || sp.rebuild === 'true';
   const { user, profile, supabase } = await requireUser();
 
