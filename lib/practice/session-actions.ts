@@ -17,6 +17,7 @@
 
 'use server';
 
+import { after } from 'next/server';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { rateLimit } from '@/lib/api/rateLimit';
@@ -70,17 +71,6 @@ export async function submitAnswer(
   }
   const { user, supabase } = ctx;
 
-  // Rate limit: 120 submits per minute per user. A real student does
-  // ~1 submit every 30–180 seconds, so 2/second is generous. Same
-  // limit applies to tutors in training mode.
-  const rl = await rateLimit(`practice-submit:${user.id}`, {
-    limit: 120,
-    windowMs: 60_000,
-  });
-  if (!rl.ok) {
-    return actionFail('Too many submissions. Please slow down.');
-  }
-
   const sessionId = String(formData.get('sessionId') ?? '');
   const position = Number(formData.get('position'));
   const selectedOptionId = formData.get('optionId');
@@ -92,11 +82,22 @@ export async function submitAnswer(
   // act_answer_options + act_attempts). See §3.4 — the loader / write-
   // action layer is where the fork lives, the action interface stays
   // unified.
-  const { data: session, error: sessionErr } = await supabase
-    .from('practice_sessions')
-    .select('id, user_id, question_ids, filter_criteria, created_at, test_type')
-    .eq('id', sessionId)
-    .maybeSingle();
+  //
+  // Rate limit (120 submits/min per user — a real student does ~1
+  // every 30–180s) runs concurrently with the session fetch: both are
+  // network round-trips with no data dependency, and nothing is
+  // written until both have resolved.
+  const [rl, { data: session, error: sessionErr }] = await Promise.all([
+    rateLimit(`practice-submit:${user.id}`, { limit: 120, windowMs: 60_000 }),
+    supabase
+      .from('practice_sessions')
+      .select('id, user_id, question_ids, filter_criteria, created_at, test_type')
+      .eq('id', sessionId)
+      .maybeSingle(),
+  ]);
+  if (!rl.ok) {
+    return actionFail('Too many submissions. Please slow down.');
+  }
   if (sessionErr || !session) return actionFail('Session not found');
   if (session.user_id !== user.id) return actionFail('Session not found');
 
@@ -123,31 +124,33 @@ export async function submitAnswer(
     if (!selectedOptionId) {
       return actionFail('Please select an option before submitting.');
     }
-    const grade = await gradeActMcq(supabase, questionId, String(selectedOptionId));
+    // Grade lookup, rationale fetch, and the first-attempt check all
+    // key off questionId alone — run them concurrently.
+    const [grade, { data: questionRow }, { data: existing }] = await Promise.all([
+      gradeActMcq(supabase, questionId, String(selectedOptionId)),
+      supabase
+        .from('act_questions')
+        .select('rationale_html')
+        .eq('id', questionId)
+        .maybeSingle(),
+      supabase
+        .from('act_attempts')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('question_id', questionId)
+        .gte('created_at', sessionFloor)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle(),
+    ]);
     isCorrect = grade.isCorrect;
     correctOptionIdOut = grade.correctOptionId;
 
-    const { data: questionRow } = await supabase
-      .from('act_questions')
-      .select('rationale_html')
-      .eq('id', questionId)
-      .maybeSingle();
     if (!questionRow) return actionFail('Question not found');
     rationaleHtml = applyWatermark(
       (questionRow as { rationale_html: string | null }).rationale_html ?? '',
       user.id,
     );
-
-    // First-attempt-wins inside the session window.
-    const { data: existing } = await supabase
-      .from('act_attempts')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('question_id', questionId)
-      .gte('created_at', sessionFloor)
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .maybeSingle();
 
     if (!existing) {
       const { error: insertErr } = await supabase.from('act_attempts').insert({
@@ -163,13 +166,25 @@ export async function submitAnswer(
     }
   } else {
     // SAT path. Look up the question from v2 — question_type +
-    // rationale_html + correct_answer (jsonb) all live on the
-    // single row.
-    const { data: question } = await supabase
-      .from('questions_v2')
-      .select('question_type, rationale_html, correct_answer')
-      .eq('id', questionId)
-      .maybeSingle();
+    // rationale_html + correct_answer (jsonb) all live on the single
+    // row. The first-attempt-wins check needs only questionId, so it
+    // runs concurrently with the question fetch.
+    const [{ data: question }, { data: existing }] = await Promise.all([
+      supabase
+        .from('questions_v2')
+        .select('question_type, rationale_html, correct_answer')
+        .eq('id', questionId)
+        .maybeSingle(),
+      supabase
+        .from('attempts')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('question_id', questionId)
+        .gte('created_at', sessionFloor)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle(),
+    ]);
     if (!question) return actionFail('Question not found');
 
     const isSpr = question.question_type === 'spr';
@@ -193,17 +208,8 @@ export async function submitAnswer(
     correctAnswerDisplay = isSpr ? formatSprCorrect(correct) : null;
     rationaleHtml = applyWatermark(question.rationale_html, user.id);
 
-    // First-attempt-wins inside the session window.
-    const { data: existing } = await supabase
-      .from('attempts')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('question_id', questionId)
-      .gte('created_at', sessionFloor)
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
+    // First-attempt-wins inside the session window (checked above,
+    // concurrently with the question fetch).
     if (!existing) {
       const { error: insertErr } = await supabase.from('attempts').insert({
         user_id: user.id,
@@ -222,14 +228,22 @@ export async function submitAnswer(
   // Assignment auto-completion. SAT-only path today — ACT assignments
   // are forward-wired but no surface ships yet, so markAssignment...
   // is keyed off the SAT attempts table.
+  //
+  // Deferred via after(): this bookkeeping chain is 4 more DB
+  // round-trips and the student's Correct/Incorrect feedback must not
+  // wait on it. It was already best-effort (errors swallowed);
+  // after() keeps the same semantics but runs it once the response
+  // has been sent.
   if (!isAct) {
     const assignmentId: string | undefined = session.filter_criteria?.assignment_id;
     if (assignmentId) {
-      try {
-        await markAssignmentCompletedIfDone(supabase, user.id, assignmentId, sessionFloor);
-      } catch {
-        // Swallow — the student's attempt is recorded either way.
-      }
+      after(async () => {
+        try {
+          await markAssignmentCompletedIfDone(supabase, user.id, assignmentId, sessionFloor);
+        } catch {
+          // Swallow — the student's attempt is recorded either way.
+        }
+      });
     }
   }
 
@@ -314,13 +328,18 @@ export async function submitPracticeSession(
   const assignmentId: string | undefined =
     session.filter_criteria?.assignment_id;
   if (assignmentId) {
-    try {
-      await markAssignmentCompletedOnSubmit(supabase, user.id, assignmentId);
-    } catch {
-      // Best-effort. The session is already completed; the only
-      // user-visible cost of a failure here is a stale completion
-      // timestamp on the assignment junction.
-    }
+    // Deferred via after() — 3 DB round-trips of bookkeeping the
+    // student's redirect-to-report must not wait on. Same best-effort
+    // semantics as before, just off the critical path.
+    after(async () => {
+      try {
+        await markAssignmentCompletedOnSubmit(supabase, user.id, assignmentId);
+      } catch {
+        // Best-effort. The session is already completed; the only
+        // user-visible cost of a failure here is a stale completion
+        // timestamp on the assignment junction.
+      }
+    });
   }
 
   // ACT practice tests: cache the scaled-score snapshot to

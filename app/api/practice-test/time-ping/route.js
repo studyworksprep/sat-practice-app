@@ -50,12 +50,22 @@ export async function POST(req) {
 
   // Verify ownership + that the module is still active — a closed
   // module shouldn't accept late time pings. Same semantics as
-  // the Server Action's guards.
-  const { data: moduleAttempt } = await supabase
-    .from('practice_test_module_attempts_v2')
-    .select('id, finished_at, paused_at, practice_test_attempt:practice_test_attempts_v2(user_id, status)')
-    .eq('id', moduleAttemptId)
-    .maybeSingle();
+  // the Server Action's guards. The item-attempt lookup keys off
+  // client ids only, so it runs concurrently; no write happens
+  // until the guards below pass.
+  const [{ data: moduleAttempt }, { data: existingItem }] = await Promise.all([
+    supabase
+      .from('practice_test_module_attempts_v2')
+      .select('id, finished_at, paused_at, practice_test_attempt:practice_test_attempts_v2(user_id, status)')
+      .eq('id', moduleAttemptId)
+      .maybeSingle(),
+    supabase
+      .from('practice_test_item_attempts_v2')
+      .select('id, attempt_id')
+      .eq('practice_test_module_attempt_id', moduleAttemptId)
+      .eq('practice_test_module_item_id', moduleItemId)
+      .maybeSingle(),
+  ]);
   if (!moduleAttempt) return NextResponse.json({ ok: false, error: 'not found' }, { status: 404 });
   if (moduleAttempt.practice_test_attempt.user_id !== user.id) {
     return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 });
@@ -70,14 +80,8 @@ export async function POST(req) {
     return NextResponse.json({ ok: true, skipped: true });
   }
 
-  // Find or create the item-attempt row, accumulate time.
-  const { data: existingItem } = await supabase
-    .from('practice_test_item_attempts_v2')
-    .select('id, attempt_id')
-    .eq('practice_test_module_attempt_id', moduleAttemptId)
-    .eq('practice_test_module_item_id', moduleItemId)
-    .maybeSingle();
-
+  // Find-or-create on the item-attempt row (fetched above),
+  // accumulate time.
   if (existingItem) {
     const { data: current } = await supabase
       .from('attempts')
