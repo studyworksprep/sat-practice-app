@@ -24,6 +24,17 @@
 // The calculator's script tag is injected globally from
 // app/layout.js so the window.Desmos constructor is available
 // here. We don't load it again.
+//
+// Sizing: by default the panel carries a 640px min-height floor so
+// it stays usable when it drives a grid track that would otherwise
+// collapse (the QuestionRenderer left-pane case). Pass
+// `fitToContainer` when the host already has its own bounded height
+// — e.g. FloatingCalculator's fixed-size, overflow:hidden body —
+// so the calculator sizes to the container instead of overflowing
+// it. Without this, the 640px floor pushes the calculator taller
+// than the visible area and the host clips the bottom, which is
+// exactly where Desmos anchors the on-screen keypad + its toggle,
+// so the keypad appears to never pop up.
 
 import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
@@ -32,7 +43,7 @@ import { desmosCalculatorSrc } from '../config/desmos';
 
 const SAVE_DEBOUNCE_MS = 2000;
 
-export function DesmosPanel({ isOpen, storageKey, onCalcReady }) {
+export function DesmosPanel({ isOpen, storageKey, onCalcReady, fitToContainer = false }) {
   const hostRef     = useRef(null);
   const calcRef     = useRef(null);
   const saveTimer   = useRef(null);
@@ -148,7 +159,7 @@ export function DesmosPanel({ isOpen, storageKey, onCalcReady }) {
       <aside
         aria-label="Graphing calculator"
         aria-hidden={!isOpen}
-        className={s.panel}
+        className={`${s.panel} ${fitToContainer ? s.panelFit : ''}`}
       >
         <div ref={hostRef} className={s.host} />
       </aside>
