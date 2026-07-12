@@ -37,7 +37,7 @@
 
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { validateExternalApiKey } from '@/lib/externalAuth';
+import { requireExternalApiAccess } from '@/lib/externalAuth';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
@@ -66,8 +66,13 @@ function isDuplicateEmailError(err) {
 }
 
 export async function POST(request) {
-  if (!validateExternalApiKey(request)) {
-    return NextResponse.json({ error: 'Invalid or missing API key' }, { status: 401 });
+  // Provisioning creates real auth users — keep the ceiling low.
+  const access = await requireExternalApiAccess(request, {
+    scope: 'provision',
+    limit: 20,
+  });
+  if (!access.ok) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
   let body;

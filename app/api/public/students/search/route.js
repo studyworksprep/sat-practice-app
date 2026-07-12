@@ -44,7 +44,7 @@
 
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { validateExternalApiKey } from '@/lib/externalAuth';
+import { requireExternalApiAccess } from '@/lib/externalAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,8 +69,14 @@ function escapeIlike(s) {
 }
 
 export async function GET(request) {
-  if (!validateExternalApiKey(request)) {
-    return NextResponse.json({ error: 'Invalid or missing API key' }, { status: 401 });
+  // Returns student PII — throttle hard so a leaked key can't be
+  // used for bulk roster scraping.
+  const access = await requireExternalApiAccess(request, {
+    scope: 'student-search',
+    limit: 30,
+  });
+  if (!access.ok) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
   const url = new URL(request.url);

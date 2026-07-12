@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '../../../../../lib/supabase/server';
-import { validateExternalApiKey } from '../../../../../lib/externalAuth';
+import { requireExternalApiAccess } from '../../../../../lib/externalAuth';
 import { generateScoreReportPdf } from '../../../../../lib/generateScoreReportPdf';
 import { loadTestResults } from '../../../../../lib/practice-test/load-test-results';
 
@@ -18,8 +18,12 @@ import { loadTestResults } from '../../../../../lib/practice-test/load-test-resu
 // carry the same information in normalized form.
 export async function GET(request, props) {
   const params = await props.params;
-  if (!validateExternalApiKey(request)) {
-    return NextResponse.json({ error: 'Invalid or missing API key' }, { status: 401 });
+  const access = await requireExternalApiAccess(request, {
+    scope: 'score-report',
+    limit: 30,
+  });
+  if (!access.ok) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
   const { attemptId } = params;
@@ -33,6 +37,17 @@ export async function GET(request, props) {
 
   if (attErr) return NextResponse.json({ error: attErr.message }, { status: 500 });
   if (!attempt) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  // Optional per-student scoping: when the caller supplies
+  // ?studentId=, the attempt must belong to that student. Existing
+  // consumers that omit it keep working; consumers that adopt it
+  // can no longer be tricked into fetching another student's report
+  // via a swapped attempt id.
+  const expectedStudent = new URL(request.url).searchParams.get('studentId');
+  if (expectedStudent && attempt.user_id !== expectedStudent) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   if (attempt.status !== 'completed') {
     return NextResponse.json({ error: 'Attempt not yet completed' }, { status: 400 });
   }
