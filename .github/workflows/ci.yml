@@ -30,6 +30,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test:unit
+
       - name: Syntax-check standalone scripts
         # node --check verifies each script parses without executing it.
         # This catches the class of bugs where a .mjs/.js script has a silent
@@ -50,3 +56,63 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role
           STRIPE_SECRET_KEY: sk_test_placeholder
           STRIPE_WEBHOOK_SECRET: whsec_placeholder
+
+  # Auth-boundary e2e suite (tests/e2e/api-auth.* + page-auth.*).
+  # Needs a real Supabase project seeded with the dev users from
+  # scripts/dev-seed-*.sql (see playwright.config.ts header), so it
+  # only runs when the E2E secrets are configured on the repo:
+  #   E2E_SUPABASE_URL / E2E_SUPABASE_ANON_KEY / E2E_SERVICE_ROLE_KEY
+  # Until those exist this job reports itself skipped rather than
+  # green, so a missing test environment is visible, not silent.
+  e2e-auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+    steps:
+      - name: Check for E2E environment
+        id: gate
+        run: |
+          if [ -n "$E2E_SUPABASE_URL" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::E2E secrets not configured — auth e2e suite skipped."
+          fi
+
+      - name: Check out
+        if: steps.gate.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        if: steps.gate.outputs.enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.gate.outputs.enabled == 'true'
+        run: npm ci
+
+      - name: Install Playwright browsers
+        if: steps.gate.outputs.enabled == 'true'
+        run: npm run test:e2e:install
+
+      - name: Run auth e2e suite
+        if: steps.gate.outputs.enabled == 'true'
+        run: npx playwright test --project=setup --project=anonymous --project=student --project=teacher --project=admin
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SERVICE_ROLE_KEY }}
+          STRIPE_SECRET_KEY: sk_test_placeholder
+          STRIPE_WEBHOOK_SECRET: whsec_placeholder
+
+      - name: Upload Playwright report
+        if: steps.gate.outputs.enabled == 'true' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

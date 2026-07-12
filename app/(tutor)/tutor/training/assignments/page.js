@@ -292,11 +292,9 @@ async function loadAssignmentsData(supabase, userId) {
   );
   const assignmentIds = rows.map((r) => r.id);
 
-  // Cover legacy v1 attempt ids that map to these v2 questions —
-  // training mostly serves on-platform tutors who hadn't done the
-  // legacy practice flow much, but the path stays correct either
-  // way and the extra round-trip is one query against
-  // question_id_map.
+  // expandToAttemptIds is an identity shim today (attempts is
+  // exclusively v2-keyed; the v1→v2 expansion it once did is
+  // retired) — it just dedupes the id list.
   const { allIds: attemptQuestionIds, v2ByLegacy } = await expandToAttemptIds(
     supabase,
     allQuestionIds,

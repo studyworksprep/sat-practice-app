@@ -14,10 +14,10 @@
 //     source_external_id, stem_html, stimulus_html.
 //   - Concept tags (`tagIds[]`) — manager+admin only. AND-combined
 //     with each other and with the text search. Tag links live on
-//     question_concept_tags(question_id) keyed by v1 ids, so the
-//     resolver translates each tag → v1 question_ids → v2
-//     question_ids (via question_id_map) and intersects across
-//     tags before handing the candidate set to the main query.
+//     question_concept_tags(question_id), v2-keyed, so each tag
+//     resolves directly to v2 question ids and the resolver
+//     intersects across tags before handing the candidate set to
+//     the main query.
 //
 // listConceptTagsForSearch returns the full tag catalog so the
 // QuestionSearch UI can render a searchable +Tag picker.

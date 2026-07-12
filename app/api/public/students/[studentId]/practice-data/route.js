@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '../../../../../../lib/supabase/server';
-import { validateExternalApiKey } from '../../../../../../lib/externalAuth';
+import { requireExternalApiAccess } from '../../../../../../lib/externalAuth';
 import { buildStudentPayload } from '../../../../../../lib/lessonworksSync';
 
 // GET /api/public/students/[studentId]/practice-data
@@ -9,8 +9,12 @@ import { buildStudentPayload } from '../../../../../../lib/lessonworksSync';
 // Authenticated via x-api-key header.
 export async function GET(request, props) {
   const params = await props.params;
-  if (!validateExternalApiKey(request)) {
-    return NextResponse.json({ error: 'Invalid or missing API key' }, { status: 401 });
+  const access = await requireExternalApiAccess(request, {
+    scope: 'practice-data',
+    limit: 60,
+  });
+  if (!access.ok) {
+    return NextResponse.json({ error: access.error }, { status: access.status });
   }
 
   const { studentId } = params;

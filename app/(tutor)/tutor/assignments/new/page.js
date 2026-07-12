@@ -46,9 +46,16 @@ export default async function NewAssignmentPage() {
     { data: lessonPackQuestionRows },
     { data: teacherJunctions },
   ] = await Promise.all([
+    // The picker needs names/emails only, so read profiles directly.
+    // (This used to select from student_practice_stats, whose
+    // profiles-LEFT JOIN-attempts GROUP BY forces a full attempts
+    // aggregation on every page load just to list names.) RLS on
+    // profiles applies the same can_view() visibility the
+    // security_invoker view relied on.
     supabase
-      .from('student_practice_stats')
-      .select('user_id, first_name, last_name, email')
+      .from('profiles')
+      .select('id, first_name, last_name, email')
+      .eq('role', 'student')
       .order('last_name', { ascending: true, nullsFirst: false }),
     supabase
       .from('published_question_taxonomy')
@@ -73,10 +80,13 @@ export default async function NewAssignmentPage() {
     supabase
       .from('lesson_pack_questions')
       .select('pack_id'),
+    // Embed the teacher profile through the FK so the Trainees
+    // picker fills from this one query instead of a junction read
+    // followed by a second profiles IN-lookup.
     isManagerScope
       ? supabase
           .from('manager_teacher_assignments')
-          .select('teacher_id')
+          .select('teacher:profiles!teacher_id(id, first_name, last_name, email)')
           .eq('manager_id', user.id)
       : Promise.resolve({ data: [] }),
   ]);
@@ -98,19 +108,13 @@ export default async function NewAssignmentPage() {
     // letting a tutor pick one and bounce off a validation error.
     .filter((p) => p.questionCount > 0);
 
-  // Resolve the teacher rows once we know which ids. profile_cards
-  // doesn't expose email; the picker uses email as a fallback when
-  // a teacher has no first/last name. profiles_select via
-  // can_view(id) covers the manager → teacher path that brings us
-  // here.
-  const teacherIds = (teacherJunctions ?? []).map((r) => r.teacher_id).filter(Boolean);
-  const { data: teacherCards } = teacherIds.length > 0
-    ? await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email')
-        .in('id', teacherIds)
-    : { data: [] };
-  const teachers = (teacherCards ?? [])
+  // Teacher rows arrive embedded on the junction query. profiles
+  // RLS via can_view(id) covers the manager → teacher path; the
+  // picker uses email as a fallback when a teacher has no
+  // first/last name.
+  const teachers = (teacherJunctions ?? [])
+    .map((r) => r.teacher)
+    .filter(Boolean)
     .map((t) => ({
       id: t.id,
       name: [t.first_name, t.last_name].filter(Boolean).join(' ') || t.email || 'Teacher',
@@ -121,7 +125,7 @@ export default async function NewAssignmentPage() {
   // Shape the students list for the picker.
   const students = (studentsRaw ?? [])
     .map((s) => ({
-      id: s.user_id,
+      id: s.id,
       name:
         [s.first_name, s.last_name].filter(Boolean).join(' ') || s.email || 'Student',
       email: s.email,

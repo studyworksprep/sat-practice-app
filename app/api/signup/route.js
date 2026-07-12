@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '../../../lib/supabase/server';
+import { rateLimit } from '../../../lib/api/rateLimit';
 import {
   sendAdminSignupNotification,
   sendTeacherNewStudentNotification,
@@ -13,6 +14,23 @@ function generateInviteCode() {
 }
 
 export async function POST(request) {
+  // Unauthenticated route that creates real auth users and validates
+  // invite codes — rate-limit per IP so it can't be used for account
+  // spam or teacher-code brute forcing. 10 signups/hour per IP is
+  // far above any legitimate household/classroom rate.
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? 'unknown';
+  const rl = await rateLimit(`signup:${ip}`, {
+    limit: 10,
+    windowMs: 3_600_000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Too many signup attempts. Please try again later.' },
+      { status: 429 },
+    );
+  }
+
   const body = await request.json();
   const {
     email, password, firstName, lastName, userType,

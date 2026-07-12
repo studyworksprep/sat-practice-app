@@ -188,16 +188,36 @@ export async function recordItemAnswer(_prev, formData) {
     return actionFail('Nothing to record');
   }
 
-  const { data: moduleAttempt } = await supabase
-    .from('practice_test_module_attempts_v2')
-    .select(`
-      id, finished_at, started_at, paused_at,
-      practice_test_attempt_id,
-      practice_test_module:practice_test_modules_v2(time_limit_seconds),
-      practice_test_attempt:practice_test_attempts_v2(user_id, status, time_multiplier)
-    `)
-    .eq('id', moduleAttemptId)
-    .maybeSingle();
+  // All three lookups key off client-supplied ids and are pure reads
+  // under RLS — run them concurrently. Nothing is written until every
+  // ownership/status check below has passed.
+  const [
+    { data: moduleAttempt },
+    { data: moduleItem },
+    { data: existingItem },
+  ] = await Promise.all([
+    supabase
+      .from('practice_test_module_attempts_v2')
+      .select(`
+        id, finished_at, started_at, paused_at,
+        practice_test_attempt_id,
+        practice_test_module:practice_test_modules_v2(time_limit_seconds),
+        practice_test_attempt:practice_test_attempts_v2(user_id, status, time_multiplier)
+      `)
+      .eq('id', moduleAttemptId)
+      .maybeSingle(),
+    supabase
+      .from('practice_test_module_items_v2')
+      .select('id, question:questions_v2(id, question_type, correct_answer)')
+      .eq('id', moduleItemId)
+      .maybeSingle(),
+    supabase
+      .from('practice_test_item_attempts_v2')
+      .select('id, attempt_id')
+      .eq('practice_test_module_attempt_id', moduleAttemptId)
+      .eq('practice_test_module_item_id', moduleItemId)
+      .maybeSingle(),
+  ]);
   if (!moduleAttempt) return actionFail('Module not found');
   if (moduleAttempt.practice_test_attempt.user_id !== user.id) return actionFail('Not allowed');
   if (moduleAttempt.finished_at) return actionFail('Module already submitted');
@@ -218,27 +238,13 @@ export async function recordItemAnswer(_prev, formData) {
   const limit   = moduleAttempt.practice_test_module.time_limit_seconds * mult + GRACE_SECONDS;
   if (elapsed > limit) return actionFail('Time is up for this module');
 
-  // Look up the question via the module-item row. The join gives
-  // us the correct_answer we need to grade.
-  const { data: moduleItem } = await supabase
-    .from('practice_test_module_items_v2')
-    .select('id, question:questions_v2(id, question_type, correct_answer)')
-    .eq('id', moduleItemId)
-    .maybeSingle();
+  // Question row (fetched above via the module-item join) gives us
+  // the correct_answer we need to grade.
   if (!moduleItem || !moduleItem.question) return actionFail('Question not found');
 
   const isCorrect = hasAnswer
     ? gradeAnswer(moduleItem.question, { optionId, responseText })
     : false;
-
-  // Check for an existing item-attempt so we can update in place
-  // rather than stack new rows when the student changes their mind.
-  const { data: existingItem } = await supabase
-    .from('practice_test_item_attempts_v2')
-    .select('id, attempt_id')
-    .eq('practice_test_module_attempt_id', moduleAttemptId)
-    .eq('practice_test_module_item_id', moduleItemId)
-    .maybeSingle();
 
   // Build the patch — answer fields only if an answer was sent,
   // so a time-only save doesn't blank out a student's previously

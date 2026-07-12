@@ -305,11 +305,10 @@ export async function searchQuestions(input: {
   const page = Math.max(1, Math.floor(input.page ?? 1));
   const offset = (page - 1) * SEARCH_PAGE_SIZE;
 
-  // Resolve tag filters before the main query — tags live on the v1
-  // junction table (question_concept_tags) keyed by legacy question
-  // ids, so we walk question_id_map to get v2 ids and AND-intersect
-  // across tags. An empty intersection short-circuits the whole
-  // search.
+  // Resolve tag filters before the main query — question_concept_tags
+  // is v2-keyed (FK to questions_v2), so each tag resolves directly
+  // to v2 question ids and we AND-intersect across tags. An empty
+  // intersection short-circuits the whole search.
   const tagIds = (input.tagIds ?? []).filter(Boolean);
   let tagFilteredV2Ids: string[] | null = null;
   if (tagIds.length > 0) {

@@ -1,5 +1,13 @@
 # Authorization matrix
 
+> **STALE — verified 2026-07-12.** This matrix predates the move of
+> most HTTP routes into Server Actions: many `/api/admin/*` and
+> `/api/teacher/*` routes listed below no longer exist as files, and
+> new actions have shipped since. Do not use it for security
+> reasoning until it is regenerated (tracked in
+> `docs/upgrade-plan-2026-07.md`, P0.7). The role/RLS *concepts* it
+> documents remain accurate.
+
 **Generated:** 2026-05-04
 **Scope:** every Server Action in `app/next/` + `lib/practice*/`, every
 client-callable RPC granted to `authenticated`, every `/api/*` route

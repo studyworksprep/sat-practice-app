@@ -13,7 +13,7 @@ import s from '../Learn.module.css';
 const LESSON = {
   title: 'Getting Started: Your Guide to SAT Practice',
   description:
-    "Learn how to use every feature of this platform — from the Question Bank and Practice Tests to Flashcards, Error Logs, Smart Review, and more — so you can make the most of your study time and improve your scores.",
+    'Learn how to use every feature of this platform — from practice sets and full practice tests to review drills, the error log, and flashcards — so you can make the most of your study time and improve your scores.',
 };
 
 const BLOCKS = [
@@ -24,13 +24,14 @@ const BLOCKS = [
       html: `
 <h2>Welcome to Your SAT Practice Platform</h2>
 <p>This lesson walks you through every tool available to help you prepare for the SAT. By the end you'll know exactly how to use each feature to build an effective study routine.</p>
-<p>Here's what we'll cover:</p>
+<p>Here's what we'll cover, matching the tabs in your navigation bar:</p>
 <ul>
   <li><strong>Dashboard</strong> — Your home base for tracking progress</li>
-  <li><strong>Question Bank</strong> — Practice individual questions with powerful filters</li>
-  <li><strong>Practice Tests</strong> — Full-length, timed, adaptive SAT simulations</li>
-  <li><strong>Review Tools</strong> — Smart Review, Error Log, and Flashcards</li>
-  <li><strong>Assignments</strong> — Work assigned by your teacher</li>
+  <li><strong>Practice</strong> — Build custom practice sets with powerful filters</li>
+  <li><strong>Practice tests</strong> — Full-length, timed, adaptive SAT simulations</li>
+  <li><strong>Assignments</strong> — Work assigned by your tutor</li>
+  <li><strong>Review</strong> — Targeted drills built from your mistakes</li>
+  <li><strong>Notes</strong> — Your notes, error log, and flashcards</li>
   <li><strong>Tips</strong> — How to build a study routine that actually works</li>
 </ul>
 <p>Let's get started!</p>`.trim(),
@@ -44,39 +45,36 @@ const BLOCKS = [
 <h2>Your Dashboard</h2>
 <p>The <strong>Dashboard</strong> is your home base. Here's what you'll find there:</p>
 
-<h3>Day Streak</h3>
-<p>Your streak counts consecutive days where you've practiced at least one question. Building a streak helps you stay consistent — even just 10 questions a day keeps the streak alive and adds up over time.</p>
+<h3>Start / Resume Banner</h3>
+<p>The banner at the top is your fastest way into work: <strong>Start practice</strong> opens the practice-set builder, and if you left a session unfinished you'll see a <strong>Resume session</strong> button that drops you right back where you stopped.</p>
 
-<h3>Goal Progress</h3>
-<p>If your teacher has set a target score, you'll see a progress bar tracking your current best score against that goal. This is based on your practice test results, so take tests regularly to see it update.</p>
+<h3>Pending Assignments</h3>
+<p>If you work with a tutor, your open assignments appear near the top with their due dates and completion progress, so you always know what's expected of you first.</p>
 
-<h3>Focus Areas</h3>
-<p>The dashboard highlights your <strong>weakest skills</strong> — the topics where your accuracy is lowest. Each one links directly to a filtered practice session so you can jump straight into working on what matters most.</p>
+<h3>Your Stats</h3>
+<p>Stat tiles summarize your recent work — questions answered, accuracy, and your activity this week — and a <strong>weekly trend</strong> shows how your accuracy is moving over time.</p>
 
 <h3>Performance Breakdown</h3>
-<p>You'll see separate sections for <strong>Reading &amp; Writing</strong> and <strong>Math</strong>, each broken down by domain (Algebra, Advanced Math, Craft and Structure, etc.). Expand any domain to see your accuracy on each skill. Color-coded bars make it easy to spot where you're strong (green) and where you need work (red/yellow).</p>
+<p>You'll see your accuracy broken down by <strong>Reading &amp; Writing</strong> and <strong>Math</strong> domains and skills (Algebra, Advanced Math, Craft and Structure, etc.). Color coding makes it easy to spot where you're strong and where you need work.</p>
 
-<h3>Activity Chart</h3>
-<p>The last 14 days of your practice are shown as a bar chart. Taller bars mean more questions; the color shows your accuracy that day. Use this to make sure you're practicing consistently.</p>
-
-<h3>Practice Test History &amp; Scores</h3>
-<p>Your most recent practice sessions and official test scores are displayed here. You can click any question tile to jump back to it in the Question Bank.</p>`.trim(),
+<h3>Target Score &amp; Countdown</h3>
+<p>Set your <strong>target score</strong> right on the dashboard, and if a test date is on file you'll see a countdown with a suggested split of your remaining study time. Recently finished sessions and your practice-test scores are listed here too, so you can watch your progress build.</p>`.trim(),
     },
   },
   {
     id: 'check-dashboard',
     block_type: 'check',
     content: {
-      prompt: 'What does the "Focus Areas" section on your Dashboard show you?',
+      prompt: 'What does the Performance Breakdown on your Dashboard show you?',
       choices: [
-        'Your highest-scoring topics',
-        'Your weakest skills, linked to filtered practice sessions',
-        'A list of all SAT domains',
-        "Your teacher's recommended study schedule",
+        'Only your practice-test composite scores',
+        'Your accuracy by domain and skill, color-coded to reveal weak areas',
+        'A list of every question on the platform',
+        "Your tutor's recommended study schedule",
       ],
       correct_index: 1,
       explanation:
-        'Focus Areas highlights the skills where your accuracy is lowest and links directly to practice sessions filtered to those topics — so you always know what to work on next.',
+        'The performance grid breaks your accuracy down by Reading & Writing and Math domains and skills, with color coding that makes your weakest areas easy to spot — so you always know what to work on next.',
     },
   },
   {
@@ -84,29 +82,27 @@ const BLOCKS = [
     block_type: 'text',
     content: {
       html: `
-<h2>The Question Bank</h2>
-<p>The <strong>Question Bank</strong> (click "Question Bank" in the top navigation) is your main practice tool. It contains every SAT question on the platform, and you can filter them in dozens of ways.</p>
+<h2>Practice Sets</h2>
+<p>The <strong>Practice</strong> tab is your main practice tool. Instead of browsing questions one by one, you build a <strong>practice set</strong>: choose your filters, see how many questions match, and start a focused session.</p>
 
-<h3>Filters</h3>
-<p>Use the filter panel to narrow down questions by:</p>
+<h3>Building a Set</h3>
+<p>Narrow down the question pool by:</p>
 <ul>
+  <li><strong>Domain:</strong> Major categories like Algebra, Advanced Math, Problem-Solving and Data Analysis, Geometry (Math) or Information and Ideas, Craft and Structure, Expression of Ideas, Standard English Conventions (R&amp;W)</li>
+  <li><strong>Skill:</strong> Fine-grained skills within each domain</li>
   <li><strong>Difficulty:</strong> Easy, Medium, or Hard</li>
   <li><strong>Score Band:</strong> Levels 1–7, corresponding to estimated score ranges</li>
-  <li><strong>Domain:</strong> Major categories like Algebra, Advanced Math, Problem-Solving and Data Analysis, Geometry (Math) or Information and Ideas, Craft and Structure, Expression of Ideas, Standard English Conventions (R&amp;W)</li>
-  <li><strong>Topic/Skill:</strong> Fine-grained skills within each domain</li>
-  <li><strong>Status:</strong> Show only questions you got wrong, marked for review, or haven't attempted yet</li>
-  <li><strong>Search:</strong> Find questions by ID or keyword</li>
+  <li><strong>Unattempted only:</strong> Skip questions you've already seen</li>
 </ul>
-<p><strong>Pro tip:</strong> Use the "Wrong only" filter regularly to revisit questions you've missed. Research shows that reviewing mistakes is one of the most effective ways to improve.</p>
+<p>The page shows a live count of matching questions as you adjust filters, so you always know how much material is available before you start.</p>
 
 <h3>Answering Questions</h3>
-<p>When you open a question, you'll see:</p>
+<p>Inside a session — laid out to feel like the real digital SAT — you'll see:</p>
 <ul>
   <li>The question stem (and a reading passage for R&amp;W questions)</li>
-  <li>Multiple-choice options with a <strong>cross-out</strong> feature — click the X next to any choice to eliminate it, just like you would on the real SAT</li>
-  <li>A <strong>Submit</strong> button to check your answer</li>
-  <li>If you get it wrong, the incorrect choice is crossed out and you can try again (retry-until-correct)</li>
-  <li>After answering correctly, you'll see the explanation</li>
+  <li>Multiple-choice options with a <strong>cross-out</strong> feature to eliminate choices, just like on test day</li>
+  <li>A <strong>Submit</strong> button — after you submit, you're told whether you were correct and shown the full explanation</li>
+  <li>A question map to jump between questions, plus <strong>mark for review</strong> to flag ones you want to come back to</li>
 </ul>
 
 <h3>Tools</h3>
@@ -116,27 +112,24 @@ const BLOCKS = [
   <li><strong>SAT Math Reference Sheet</strong> — Contains all the formulas provided on test day (area, volume, circle equations, etc.)</li>
 </ul>
 
-<h3>Marking for Review</h3>
-<p>Click the <strong>star icon (★)</strong> on any question to mark it for review. Marked questions appear in your Smart Review queue and can be filtered in the Question Bank. Use this for questions you found tricky or want to revisit later.</p>
-
 <h3>Error Log Notes</h3>
-<p>After answering a question, click <strong>"Add to Error Log"</strong> to write a note about what you got wrong and why. This forces you to reflect on your mistake — which is one of the most powerful study techniques. Your notes are saved and accessible from the Review page.</p>`.trim(),
+<p>When you review a finished session, you can add an <strong>error log</strong> note on any question — what you got wrong and why. This forces you to reflect on your mistake, which is one of the most powerful study techniques. Your notes collect in the error log under the Notes tab.</p>`.trim(),
     },
   },
   {
     id: 'check-qbank',
     block_type: 'check',
     content: {
-      prompt: 'Which of these is NOT a filter available in the Question Bank?',
+      prompt: 'Which of these is NOT a filter available when building a practice set?',
       choices: [
         'Difficulty (Easy, Medium, Hard)',
-        'Wrong-only questions',
+        'Unattempted only',
         'Teacher rating',
-        'Domain and topic/skill',
+        'Domain and skill',
       ],
       correct_index: 2,
       explanation:
-        'The Question Bank filters include difficulty, score band, domain, topic, status flags (wrong-only, marked, undone), and search — but there\'s no "teacher rating" filter.',
+        'Practice-set filters include domain, skill, difficulty, score band, and "unattempted only" — but there\'s no "teacher rating" filter.',
     },
   },
   {
@@ -145,7 +138,7 @@ const BLOCKS = [
     content: {
       html: `
 <h2>Practice Tests</h2>
-<p>Click <strong>"Tests"</strong> in the navigation to access full-length SAT practice tests. These simulate the real digital SAT experience as closely as possible.</p>
+<p>Click <strong>"Practice tests"</strong> in the navigation to access full-length SAT practice tests. These simulate the real digital SAT experience as closely as possible.</p>
 
 <h3>Test Structure</h3>
 <p>Each practice test follows the real SAT format:</p>
@@ -200,37 +193,29 @@ const BLOCKS = [
     block_type: 'text',
     content: {
       html: `
-<h2>Review Tools</h2>
-<p>The <strong>Review</strong> page (click "Review" in the navigation) has three powerful tabs:</p>
+<h2>Review &amp; Notes</h2>
+<p>The <strong>Review</strong> page is where you turn mistakes into improvement. Its most powerful tools are the two drills at the top:</p>
 
-<h3>Smart Review</h3>
-<p>Smart Review uses an algorithm to prioritize which questions you should review next. It considers:</p>
+<h3>Common Errors</h3>
+<p>The skills where you've missed the most questions, each with a <strong>one-click drill</strong> — click a skill and the app builds a practice session targeting exactly that weakness.</p>
+
+<h3>Weak Questions Drill</h3>
+<p>A mixed drill built from the questions you should revisit most. The app prioritizes them using:</p>
 <ul>
-  <li><strong>Correctness:</strong> Questions you got wrong are prioritized highest</li>
-  <li><strong>Accuracy:</strong> Skills where you have low accuracy get more weight</li>
+  <li><strong>Correctness:</strong> Questions you got wrong recently rank highest</li>
+  <li><strong>Accuracy:</strong> Questions you've historically struggled with get more weight</li>
   <li><strong>Time decay:</strong> Questions you haven't seen in a while rise in priority</li>
   <li><strong>Difficulty:</strong> Harder questions get a slight bonus (they're worth more on the real test)</li>
-  <li><strong>Marked for review:</strong> Questions you've starred get a priority boost</li>
 </ul>
-<p>The result is a ranked list of the 50 most important questions for you to review right now. Click any question to jump directly to it in the Question Bank.</p>
+<p>Once you've shown you can answer a question reliably, it graduates out of the drill — so the queue always reflects your <em>current</em> weaknesses.</p>
 
-<h3>Error Log</h3>
-<p>Your Error Log collects every note you've written about mistakes. Each entry shows:</p>
+<h3>Review Materials</h3>
+<p>Below the drills, Review links to your study materials, which you manage under the <strong>Notes</strong> tab:</p>
 <ul>
-  <li>Whether you eventually got the question right (✓) or wrong (✗)</li>
-  <li>The domain and skill</li>
-  <li>Your notes about what went wrong</li>
-</ul>
-<p>Reviewing your Error Log regularly is incredibly valuable — it helps you see <strong>patterns</strong> in your mistakes. Are you consistently making careless algebra errors? Misreading passage evidence? Your Error Log will reveal these patterns.</p>
-
-<h3>Flashcards</h3>
-<p>The Flashcards tab lets you:</p>
-<ul>
-  <li><strong>Create custom flashcard sets</strong> — Add your own terms and definitions for concepts you want to memorize</li>
-  <li><strong>Study SAT Vocabulary</strong> — 10 pre-made sets of common SAT words are already loaded</li>
-</ul>
-<p>When studying a set, cards are presented in a click-to-flip format. After each card, rate your mastery from 0 (no clue) to 5 (perfect). The system uses <strong>weighted randomization</strong> — cards you rate lower appear more often, so you spend more time on what you don't know.</p>
-<p>Your mastery percentage is tracked per set with a color-coded progress bar (green ≥ 70%, yellow ≥ 40%, red &lt; 40%).</p>`.trim(),
+  <li><strong>Error Log</strong> — every note you've written about a mistake, with the domain and skill. Reviewing it regularly reveals <strong>patterns</strong>: careless algebra slips? Misread passage evidence? The log will show you.</li>
+  <li><strong>Notes</strong> — your own rich-text study notes, which can link to specific questions.</li>
+  <li><strong>Flashcards</strong> — custom sets plus SAT vocabulary. Cards flip on click; after each card you rate your mastery from 0 (no clue) to 5 (perfect), and <strong>weighted randomization</strong> shows lower-rated cards more often, so you spend time on what you don't know yet.</li>
+</ul>`.trim(),
     },
   },
   {
@@ -255,23 +240,22 @@ const BLOCKS = [
     content: {
       html: `
 <h2>Assignments</h2>
-<p>If you have a teacher, they can assign you specific sets of questions to complete. Assignments appear on your <strong>Dashboard</strong> under the Assignments section.</p>
+<p>If you work with a tutor, they can assign you question sets, lesson packs, or full practice tests. Everything lives under the <strong>Assignments</strong> tab, and pending work is also surfaced on your Dashboard.</p>
 
 <h3>How Assignments Work</h3>
 <ol>
-  <li>Your teacher creates an assignment with a set of questions and (optionally) a due date</li>
-  <li>The assignment appears on your Dashboard with its title, due date, and your completion progress</li>
-  <li>Click the assignment to see all the questions and your progress on each one</li>
-  <li>Click <strong>"Start Assignment"</strong> (or "Continue" if you've already started) to work through the questions</li>
-  <li>Each question shows a colored indicator: green ✓ (correct), red ✗ (wrong), or a number (not yet attempted)</li>
+  <li>Your tutor creates an assignment and (optionally) sets a due date</li>
+  <li>It appears in your Assignments list with its title, due date, and your completion progress</li>
+  <li>Open the assignment to see the details, then <strong>Start</strong> (or <strong>Continue</strong> if you've already begun) to work through it</li>
+  <li>When you finish everything, the assignment is marked complete automatically — you can also submit the set explicitly when you're done</li>
+  <li>After finishing, you can <strong>redo</strong> an assignment for another pass, and view your report for it</li>
 </ol>
 
 <h3>Tips for Assignments</h3>
 <ul>
-  <li>Check for new assignments regularly — your teacher may add them at any time</li>
-  <li>Pay attention to <strong>due dates</strong>. Overdue assignments are highlighted in red</li>
-  <li>Your teacher can see your completion percentage and accuracy, so do your best work</li>
-  <li>If you get a question wrong, you can retry it — use the retry-until-correct approach to make sure you understand the concept before moving on</li>
+  <li>Check for new assignments regularly — your tutor may add them at any time</li>
+  <li>Pay attention to <strong>due dates</strong> — overdue assignments are flagged</li>
+  <li>Your tutor sees your completion and accuracy, and will often review your work with you in your next session — so answer honestly rather than guessing quickly; the mistakes are what make the review valuable</li>
 </ul>`.trim(),
     },
   },
@@ -285,16 +269,16 @@ const BLOCKS = [
 
 <h3>Daily Practice (15–30 minutes)</h3>
 <ol>
-  <li><strong>Start with Smart Review</strong> — Review 5–10 questions from the top of your Smart Review queue. These are the questions the system has identified as most important for you right now.</li>
-  <li><strong>Work on Focus Areas</strong> — Do 10–20 questions from your weakest skills (your Dashboard highlights these). Use the Question Bank filters to target specific domains and skills.</li>
-  <li><strong>Complete Assignments</strong> — If your teacher has assigned work, prioritize that.</li>
+  <li><strong>Complete Assignments first</strong> — If your tutor has assigned work, prioritize that.</li>
+  <li><strong>Run a Review drill</strong> — Start the <strong>Weak questions drill</strong> or a <strong>Common errors</strong> skill drill on the Review page. These target the questions and skills the app has identified as most important for you right now.</li>
+  <li><strong>Build a practice set</strong> — Do 10–20 questions from your weakest domains (your Dashboard's performance grid highlights these) using the Practice filters.</li>
 </ol>
 
 <h3>Weekly Review (30–60 minutes)</h3>
 <ol>
   <li><strong>Read your Error Log</strong> — Look for patterns in your mistakes. Are they conceptual (you don't understand the topic) or careless (you know it but keep slipping)?</li>
   <li><strong>Study Flashcards</strong> — Spend 10–15 minutes on vocabulary and concept cards, especially low-mastery ones.</li>
-  <li><strong>Review marked questions</strong> — Go through questions you've starred and make sure you can solve them confidently.</li>
+  <li><strong>Check your dashboard trend</strong> — Is your weekly accuracy moving up? Which domains are still lagging?</li>
 </ol>
 
 <h3>Every 1–2 Weeks</h3>
@@ -306,10 +290,10 @@ const BLOCKS = [
 
 <h3>Key Principles</h3>
 <ul>
-  <li><strong>Consistency beats intensity.</strong> 20 minutes every day is better than 3 hours once a week. Keep your streak alive!</li>
+  <li><strong>Consistency beats intensity.</strong> 20 minutes every day is better than 3 hours once a week.</li>
   <li><strong>Focus on weaknesses.</strong> It's tempting to practice what you're already good at, but the biggest score gains come from improving your weakest areas.</li>
   <li><strong>Review mistakes actively.</strong> Don't just read the explanation — write a note in your Error Log about what you'll do differently next time.</li>
-  <li><strong>Use the tools together.</strong> The Question Bank, Smart Review, Error Log, and Flashcards are designed to work as a system. Each one reinforces the others.</li>
+  <li><strong>Use the tools together.</strong> Practice sets, the Review drills, the Error Log, and Flashcards are designed to work as a system. Each one reinforces the others.</li>
 </ul>`.trim(),
     },
   },
@@ -322,12 +306,12 @@ const BLOCKS = [
       choices: [
         'Take a full practice test',
         'Create new flashcard sets',
-        'Start with Smart Review to review priority questions',
+        'Complete any assignments from your tutor, then run a Review drill',
         'Read through the entire Error Log',
       ],
       correct_index: 2,
       explanation:
-        "Starting each daily session with Smart Review ensures you're always revisiting the questions the algorithm has identified as most important for your improvement — keeping your weakest areas top of mind.",
+        'Assigned work comes first, and then a Weak-questions or Common-errors drill from the Review page — those drills revisit the questions and skills the app has identified as most important for your improvement.',
     },
   },
   {
@@ -340,23 +324,27 @@ const BLOCKS = [
 <table style="width:100%; border-collapse:collapse; margin:12px 0;">
   <tr style="border-bottom:1px solid #ddd;">
     <td style="padding:8px; font-weight:bold;">Dashboard</td>
-    <td style="padding:8px;">Your stats, streak, focus areas, scores, and assignments</td>
+    <td style="padding:8px;">Your stats, performance grid, scores, target, and pending work</td>
   </tr>
   <tr style="border-bottom:1px solid #ddd;">
-    <td style="padding:8px; font-weight:bold;">Question Bank</td>
-    <td style="padding:8px;">Practice individual questions with filters, tools, and error notes</td>
+    <td style="padding:8px; font-weight:bold;">Practice</td>
+    <td style="padding:8px;">Build filtered practice sets with SAT-style tools</td>
   </tr>
   <tr style="border-bottom:1px solid #ddd;">
-    <td style="padding:8px; font-weight:bold;">Tests</td>
+    <td style="padding:8px; font-weight:bold;">Practice tests</td>
     <td style="padding:8px;">Full-length, timed, adaptive SAT practice tests</td>
   </tr>
   <tr style="border-bottom:1px solid #ddd;">
+    <td style="padding:8px; font-weight:bold;">Assignments</td>
+    <td style="padding:8px;">Question sets, lesson packs, and tests from your tutor</td>
+  </tr>
+  <tr style="border-bottom:1px solid #ddd;">
     <td style="padding:8px; font-weight:bold;">Review</td>
-    <td style="padding:8px;">Smart Review queue, Error Log notes, and Flashcards</td>
+    <td style="padding:8px;">Weak-question and common-error drills + review materials</td>
   </tr>
   <tr>
-    <td style="padding:8px; font-weight:bold;">Assignments</td>
-    <td style="padding:8px;">Teacher-assigned question sets (on your Dashboard)</td>
+    <td style="padding:8px; font-weight:bold;">Notes</td>
+    <td style="padding:8px;">Your notes, Error Log, and Flashcards</td>
   </tr>
 </table>
 <p>The most important thing is to <strong>start practicing consistently</strong>. Even a few questions a day will add up. Good luck — you've got this!</p>`.trim(),

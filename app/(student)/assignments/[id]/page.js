@@ -20,13 +20,9 @@
 //                     the runner. When filter_criteria.sections is
 //                     'rw' or 'math' we append ?sections=<v>; the
 //                     launch picker pre-fills from that but the
-//                     student can still override. Earlier revisions
+//                     student can still override. (Earlier revisions
 //                     linked to the legacy /practice-test?test=<id>
-//                     URL with external=true, but for ui_version=
-//                     'next' users the middleware rewrites that to
-//                     /next/practice-test, which has no concrete
-//                     route and falls through to the [...slug]
-//                     catch-all → redirect('/dashboard').
+//                     URL, retired with the v1 tree.)
 //
 //   'lesson'        — shows the lesson title + description. Lessons
 //                     are not fully implemented yet; the row is

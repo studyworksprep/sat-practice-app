@@ -263,8 +263,7 @@ async function resolveQuestionV2Id(
 
 /** Resolve a question id for the notes feature, returning both the
  *  resolved id and which question table the row belongs to. SAT
- *  questions are walked v1 → v2 through question_id_map (the
- *  existing behavior); ACT questions are looked up directly in
+ *  ids verify directly against questions_v2; ACT ids against
  *  act_questions. student_notes has no FK on question_id, so
  *  either id space stores fine — we just need to know which
  *  test_type to write alongside it. */
@@ -439,8 +438,8 @@ export async function upsertNoteForQuestion(
   const { user, supabase } = ctx as { user: { id: string }; supabase: SupabaseClient };
 
   // Resolve the question id and figure out which test_type tag
-  // belongs on the note. SAT questions walk through question_id_map;
-  // ACT questions look up directly in act_questions.
+  // belongs on the note. SAT ids verify against questions_v2;
+  // ACT ids against act_questions.
   const resolved = await resolveQuestionForNotes(supabase, input.questionId);
   if (!resolved) {
     return actionFail('That question is no longer in the bank, so a per-question note can\'t be saved against it.');
