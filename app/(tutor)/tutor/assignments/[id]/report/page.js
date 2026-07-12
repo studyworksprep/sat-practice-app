@@ -337,58 +337,57 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
 
   const conceptTagsCanTag = CONCEPT_TAGS_CAN_TAG_ROLES.has(profile.role);
   const conceptTagsCanDelete = profile.role === 'admin';
-  let conceptTagsCatalog = null;
-  const conceptTagIdsByQid = new Map();
-  if (conceptTagsCanTag && presentQids.length > 0) {
-    // question_concept_tags.question_id is v2-keyed (FK to questions_v2);
-    // direct IN.
-    const [{ data: catalog }, { data: links }] = await Promise.all([
-      supabase
-        .from('concept_tags')
-        .select('id, name')
-        .order('name', { ascending: true }),
-      supabase
-        .from('question_concept_tags')
-        .select('question_id, tag_id')
-        .in('question_id', presentQids),
-    ]);
-    conceptTagsCatalog = catalog ?? [];
-    for (const r of links ?? []) {
-      const arr = conceptTagIdsByQid.get(r.question_id) ?? [];
-      if (!arr.includes(r.tag_id)) arr.push(r.tag_id);
-      conceptTagIdsByQid.set(r.question_id, arr);
-    }
-  } else if (conceptTagsCanTag) {
-    // Manager/admin viewing an empty-or-all-missing report still
-    // gets the catalog so the empty state stays consistent.
-    const { data: catalog } = await supabase
-      .from('concept_tags')
-      .select('id, name')
-      .order('name', { ascending: true });
-    conceptTagsCatalog = catalog ?? [];
-  }
-
   const desmosCanSave = DESMOS_CAN_SAVE_ROLES.has(profile.role);
-  const desmosStateByQid = new Map();
   const mathQuestionIds = items
     .filter((it) => !it.missing && MATH_DOMAIN_CODES.has(it.taxonomy?.domain_code ?? ''))
     .map((it) => it.questionId);
-  if (mathQuestionIds.length > 0) {
-    const { data: savedStates } = await supabase
-      .from('desmos_saved_states')
-      .select('question_id, state_json')
-      .in('question_id', mathQuestionIds)
-      .eq('test_type', 'sat');
-    for (const r of savedStates ?? []) {
-      desmosStateByQid.set(r.question_id, r.state_json);
-    }
+
+  // Concept tags (manager/admin — catalog loads even for an
+  // empty-or-all-missing report so the empty state stays
+  // consistent; question_concept_tags.question_id is v2-keyed),
+  // Desmos saved states (math), and org-scoped tutor notes are
+  // independent — one concurrent batch instead of a serial tail.
+  const [
+    { data: conceptCatalog },
+    { data: conceptLinks },
+    { data: savedStates },
+    notesBundle,
+  ] = await Promise.all([
+    conceptTagsCanTag
+      ? supabase.from('concept_tags').select('id, name').order('name', { ascending: true })
+      : Promise.resolve({ data: null }),
+    conceptTagsCanTag && presentQids.length > 0
+      ? supabase
+          .from('question_concept_tags')
+          .select('question_id, tag_id')
+          .in('question_id', presentQids)
+      : Promise.resolve({ data: [] }),
+    mathQuestionIds.length > 0
+      ? supabase
+          .from('desmos_saved_states')
+          .select('question_id, state_json')
+          .in('question_id', mathQuestionIds)
+          .eq('test_type', 'sat')
+      : Promise.resolve({ data: [] }),
+    loadQuestionNotesByQuestion({
+      questionIds: presentQids,
+      role: profile.role,
+      userId: user.id,
+    }),
+  ]);
+
+  const conceptTagsCatalog = conceptTagsCanTag ? (conceptCatalog ?? []) : null;
+  const conceptTagIdsByQid = new Map();
+  for (const r of conceptLinks ?? []) {
+    const arr = conceptTagIdsByQid.get(r.question_id) ?? [];
+    if (!arr.includes(r.tag_id)) arr.push(r.tag_id);
+    conceptTagIdsByQid.set(r.question_id, arr);
   }
 
-  const notesBundle = await loadQuestionNotesByQuestion({
-    questionIds: presentQids,
-    role: profile.role,
-    userId: user.id,
-  });
+  const desmosStateByQid = new Map();
+  for (const r of savedStates ?? []) {
+    desmosStateByQid.set(r.question_id, r.state_json);
+  }
 
   // Attach the per-question extras inline so the client island gets
   // a single uniform item shape — same approach build-session-review
