@@ -127,9 +127,12 @@ export function HomeClient({ emailConfirmed }) {
     }
     setForgotLoading(true);
     setLoginMsg(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
-    });
+    // No redirectTo: the recovery email template links straight to
+    // /auth/confirm with a token_hash (supabase/templates/recovery.html),
+    // which verifies server-side and works from any browser or device —
+    // unlike the PKCE redirect flow, which required the link to be
+    // opened in this same browser and silently dead-ended otherwise.
+    const { error } = await supabase.auth.resetPasswordForEmail(loginEmail);
     setForgotLoading(false);
     if (error) {
       setLoginMsg({ kind: 'err', text: error.message });
