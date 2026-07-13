@@ -3031,6 +3031,20 @@ export type Database = {
           week_start: string
         }[]
       }
+      get_predicted_score_band: {
+        Args: { p_student: string; p_test_type?: string }
+        Returns: {
+          math_accuracy: number
+          math_attempts: number
+          math_scaled: number
+          rw_accuracy: number
+          rw_attempts: number
+          rw_scaled: number
+          total_high: number
+          total_low: number
+          total_scaled: number
+        }[]
+      }
       get_question_outline_counts_v2: {
         Args: {
           p_difficulty?: number
@@ -3085,6 +3099,23 @@ export type Database = {
           mastery: number
           skill_code: string
           test_type: string
+        }[]
+      }
+      get_student_coverage: {
+        Args: { p_student: string; p_test_type?: string }
+        Returns: {
+          attempts_count: number
+          domain_code: string
+          mastery: number
+          mastery_4w_ago: number
+          mastery_threshold: number
+          peak_mastery: number
+          questions_available: number
+          sequence: number
+          skill_code: string
+          status: string
+          title: string
+          trend_4w: number
         }[]
       }
       get_student_dashboard_stats: {
@@ -3169,6 +3200,10 @@ export type Database = {
         Returns: string
       }
       redeem_class_invite: { Args: { invite_code: string }; Returns: string }
+      sat_scaled_for_raw: {
+        Args: { p_raw: number; p_section: string }
+        Returns: number
+      }
       snapshot_all_skill_mastery: {
         Args: { p_asof?: string; p_test_type?: string }
         Returns: number
