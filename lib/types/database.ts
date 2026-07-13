@@ -551,6 +551,8 @@ export type Database = {
       }
       attempts: {
         Row: {
+          context_id: string | null
+          context_type: string | null
           created_at: string
           id: string
           is_correct: boolean
@@ -563,6 +565,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          context_id?: string | null
+          context_type?: string | null
           created_at?: string
           id?: string
           is_correct: boolean
@@ -575,6 +579,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          context_id?: string | null
+          context_type?: string | null
           created_at?: string
           id?: string
           is_correct?: boolean
