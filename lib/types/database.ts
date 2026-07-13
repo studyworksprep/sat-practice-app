@@ -770,6 +770,48 @@ export type Database = {
         }
         Relationships: []
       }
+      curriculum_units: {
+        Row: {
+          created_at: string
+          domain_code: string
+          expected_minutes: number
+          id: string
+          mastery_threshold: number
+          prerequisite_unit_ids: string[]
+          sequence: number
+          skill_code: string
+          test_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          domain_code: string
+          expected_minutes?: number
+          id?: string
+          mastery_threshold?: number
+          prerequisite_unit_ids?: string[]
+          sequence: number
+          skill_code: string
+          test_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          domain_code?: string
+          expected_minutes?: number
+          id?: string
+          mastery_threshold?: number
+          prerequisite_unit_ids?: string[]
+          sequence?: number
+          skill_code?: string
+          test_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       desmos_saved_states: {
         Row: {
           created_at: string
