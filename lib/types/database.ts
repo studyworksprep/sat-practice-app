@@ -870,6 +870,45 @@ export type Database = {
           },
         ]
       }
+      entitlements: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          granted_by: string | null
+          id: string
+          note: string | null
+          plan: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          note?: string | null
+          plan: string
+          source: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          note?: string | null
+          plan?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       feature_flags: {
         Row: {
           description: string | null
@@ -3097,6 +3136,7 @@ export type Database = {
         }
         Returns: number
       }
+      effective_plan: { Args: { p_user: string }; Returns: string }
       get_practice_volume_by_week: {
         Args: { weeks?: number }
         Returns: {
@@ -3223,6 +3263,10 @@ export type Database = {
           total_unique_attempted: number
         }[]
       }
+      has_plan: {
+        Args: { p_min_plan: string; p_user: string }
+        Returns: boolean
+      }
       import_student_practice_history: {
         Args: { p_student_id: string }
         Returns: Json
@@ -3269,6 +3313,7 @@ export type Database = {
           total_questions: number
         }[]
       }
+      plan_rank: { Args: { p_plan: string }; Returns: number }
       questions_v2_section_prefix: {
         Args: { domain_code: string }
         Returns: string
