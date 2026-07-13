@@ -38,6 +38,15 @@ of already-applied DDL.
   already-applied in production.
 - The directory currently serves as an **audit log**, not a
   replayable migration chain. Treat it that way.
+- **Never verify a live DB object against a repo file.** Functions
+  and views have been redefined in production after their repo file
+  was written (e.g. `get_student_dashboard_stats` — a repo file
+  carries a mastery-computing variant; the live function computes
+  plain accuracy). To check what production actually runs, query the
+  live catalog via MCP:
+  `select pg_get_functiondef(p.oid) from pg_proc p join pg_namespace n
+  on n.oid = p.pronamespace where n.nspname='public' and
+  p.proname='<fn>';`
 
 ## The fix (scheduled operation — see docs/upgrade-plan-2026-07.md P0.7)
 

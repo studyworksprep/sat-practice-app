@@ -19,16 +19,23 @@ so explicitly (see "Corrections to the record").
 
 ### Verified current state (the short version)
 
+Row counts are **as of 2026-07-12** — production is live and counts
+drift daily; treat them as scale indicators, not invariants. DB
+*objects* (functions, views) must be verified against the live
+catalog (`pg_get_functiondef` via MCP), never against repo migration
+files — the directory is not a faithful mirror (see
+`supabase/migrations/README.md`).
+
 | Fact | Evidence |
 |---|---|
 | 66 students, 7 tutors, 2 managers, 1 admin in production | `profiles` row counts |
-| Practice loop is the living product: 21,541 attempts, 568 sessions, 223 assignments, 129 v2 test attempts | production row counts |
+| Practice loop is the living product: ~21.5k attempts, 568 sessions, 223 assignments, 129 v2 test attempts | production row counts |
 | **Lesson system has zero student usage**: 4 lessons, 93 blocks, **0 `lesson_progress` rows** | production row counts |
-| 3,430 published-bank questions with inline taxonomy (`domain_code`, `skill_code`, `difficulty` 1–3, `score_band` 1–7) | `questions_v2` schema + counts |
+| 3,430 `questions_v2` rows (3,381 published/not-broken/not-deleted) with inline taxonomy (`domain_code`, `skill_code`, `difficulty` 1–3, `score_band` 1–7); 29 distinct (domain, skill) tuples. SAT-only — ACT questions/attempts live in the parallel `act_questions`/`act_attempts` tables | production schema + counts |
 | No study-plan tables, columns, or UI anywhere | migrations + `lib/types/database.ts` + full-tree grep |
 | No spaced-repetition scheduler; only recency-weighted ranking (`lib/practice/weak-queue.js:186-190`) and flashcard weighted-random (`FlashcardReviewInteractive.jsx:18-30`) | code |
 | No per-skill time-series anywhere; all skill aggregates are current-window, computed live (`get_roster_skill_performance`, `get_student_dashboard_stats`) | migration SQL |
-| Mastery model exists (`lib/mastery.js`) but is never persisted; recomputed on read, duplicated in SQL (`20260505000000_dashboard_stats_with_mastery.sql:101-158`) | code |
+| Mastery model exists **only** in `lib/mastery.js` (invoked solely by the Lessonworks sync); never persisted. The **live** `get_student_dashboard_stats` returns plain correct/total per skill — **no mastery computation**. (A repo migration file carries a mastery variant, but production's function was later replaced; verified via `pg_get_functiondef` 2026-07-13.) | live DB catalog + code |
 | No hint/scaffold field on `questions_v2`; feedback is binary reveal-after-submit | schema + `PracticeInteractive.js` |
 | No weak-skill → lesson recommendation path; the join key exists (`lesson_topics(domain_name, skill_code)` shares the `questions_v2` code space) but is used only for display chips | code |
 | **Lesson branching DOES run for students** — `on_correct_block_id` / `on_incorrect_block_id` / `rejoin_at_block_id` in `lesson_blocks.content` JSONB, executed by `lib/lesson/runtime-navigation.mjs` via the student's `LessonSlideshow` | code |
@@ -183,12 +190,17 @@ feature reads instead of recomputes.
 **1.1 Persist mastery as a time-series.** New table
 `skill_mastery_snapshots(student_id, test_type, domain_code,
 skill_code, snapshot_date, mastery, attempts_count, correct_count,
-avg_difficulty)`. Populated by a nightly job (Supabase scheduled edge
-function or `pg_cron`) running the existing mastery formula — the SQL
-version already exists in `20260505000000_dashboard_stats_with_mastery.sql`
-and should become the single implementation (drop the duplicated JS
-path in `lib/mastery.js` or make it a thin mirror with a shared test
-vector). Backfill from the 21.5k historical attempts so trends exist on
+avg_difficulty)` — `test_type` because SAT attempts live in `attempts`
+and ACT attempts in `act_attempts`; the snapshot job reads both.
+Populated by a nightly job (Supabase scheduled edge function or
+`pg_cron`). The mastery formula exists **only** in `lib/mastery.js`
+(the live `get_student_dashboard_stats` computes plain accuracy —
+verified against the live catalog 2026-07-13, correcting an earlier
+claim here that a SQL twin existed). So: port the JS formula to SQL
+fresh, pin both implementations to a **shared test vector** (unit
+tests on the JS side; a fixture query on the SQL side), and keep
+`lib/mastery.js` as a thin verified mirror or retire it once callers
+move. Backfill from the ~21.5k historical attempts so trends exist on
 day one.
 - Unlocks: per-skill trend charts, "improving least" answers, tutor
   effectiveness metrics (Phase 5), plan re-pacing (Phase 2).
@@ -212,7 +224,7 @@ N points from its peak — the retention signal spaced repetition
   feeds the student's progress map.
 
 **1.4 Content-coverage audit.** One-time report: questions and lessons
-per curriculum unit (the bank has 3,430 questions; distribution by
+per curriculum unit (the bank has 3,381 published questions; distribution by
 skill must be verified, and units with thin coverage flagged as content
 debt for Phase 3's content workstream).
 
@@ -248,7 +260,7 @@ admin question views.
 
 **1.8 Bank quality gates** *(greenfield Phase 2 appendix, applied to
 the live bank)*. A re-runnable `scripts/validate-bank.mjs` over the
-3,430 published questions: every math fragment renders under KaTeX,
+3,381 published questions: every math fragment renders under KaTeX,
 every referenced figure resolves, MCQ has exactly one key, SPR has a
 valid accepted value, taxonomy present. Failures quarantine via the
 existing `question_availability` table rather than deletion.
@@ -552,8 +564,9 @@ folded into the Phase 2 self-serve flow.
   set into a throwaway database and regenerates types on every PR**
   *(greenfield rule 1)* — that check is what keeps the drift mode
   closed permanently.
-- **One computation, one home**: the mastery formula's JS/SQL
-  duplication gets a shared test vector before Phase 1 builds on it;
+- **One computation, one home**: the mastery formula (today only in
+  `lib/mastery.js`) gets a shared test vector before Phase 1 ports it
+  to SQL, so the two implementations can never drift silently;
   the plan generator and SRS scheduler each live in one place with
   unit tests wired into CI (enabled by P0.5).
 - **Feature flags**: the `feature_flags` table was deliberately kept —
