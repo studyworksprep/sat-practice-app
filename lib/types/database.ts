@@ -1981,6 +1981,68 @@ export type Database = {
           },
         ]
       }
+      question_content_history: {
+        Row: {
+          correct_answer: Json | null
+          difficulty: number | null
+          domain_code: string | null
+          edited_by: string | null
+          id: string
+          options: Json | null
+          prior_updated_at: string | null
+          question_id: string
+          question_type: string | null
+          rationale_html: string | null
+          score_band: number | null
+          skill_code: string | null
+          snapshotted_at: string
+          stem_html: string | null
+          stimulus_html: string | null
+        }
+        Insert: {
+          correct_answer?: Json | null
+          difficulty?: number | null
+          domain_code?: string | null
+          edited_by?: string | null
+          id?: string
+          options?: Json | null
+          prior_updated_at?: string | null
+          question_id: string
+          question_type?: string | null
+          rationale_html?: string | null
+          score_band?: number | null
+          skill_code?: string | null
+          snapshotted_at?: string
+          stem_html?: string | null
+          stimulus_html?: string | null
+        }
+        Update: {
+          correct_answer?: Json | null
+          difficulty?: number | null
+          domain_code?: string | null
+          edited_by?: string | null
+          id?: string
+          options?: Json | null
+          prior_updated_at?: string | null
+          question_id?: string
+          question_type?: string | null
+          rationale_html?: string | null
+          score_band?: number | null
+          skill_code?: string | null
+          snapshotted_at?: string
+          stem_html?: string | null
+          stimulus_html?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_content_history_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       question_error_notes: {
         Row: {
           body: string
@@ -3314,6 +3376,10 @@ export type Database = {
         }[]
       }
       plan_rank: { Args: { p_plan: string }; Returns: number }
+      question_edited_since: {
+        Args: { p_question: string; p_since: string }
+        Returns: boolean
+      }
       questions_v2_section_prefix: {
         Args: { domain_code: string }
         Returns: string
