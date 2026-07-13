@@ -1,46 +1,27 @@
-// Student → 403 on every tutor + admin API route.
+// Student → blocked from every tutor + admin surface.
 //
-// Covers matrix §3.2 (role-gated) from the wrong-role angle. A
-// student cookie is valid auth (so requireUser passes) but
-// requireRole should reject before any data is touched.
+// Rewritten 2026-07-13 against the generated matrix. Role-gating no
+// longer lives on GET-able HTTP routes (it moved to Server Actions +
+// the route-group layouts), so the real "wrong role" boundary is
+// page-level: a student cookie is valid auth, but the (tutor) and
+// (admin) layouts must not render their surface to a student.
 //
-// This is the most common authorization-regression class:
-// "tutor route accidentally accepts students because someone
-// swapped requireRole for requireUser." The matrix anchors say
-// every one of these should 403, never 200-with-empty-payload.
+// This is the most common authorization-regression class — "a tutor/
+// admin surface accidentally accepts students." The privileged heading
+// must never appear; whether the layout redirects, 403s, or 404s is
+// an implementation detail, so we assert the heading is absent.
 
 import { test, expect } from '@playwright/test';
-import { ROLE_GATED_ROUTES, STUDENT_SCOPED_ROUTES, USERS } from './helpers/fixtures';
+import { ADMIN_ONLY_PAGES, TUTOR_PAGES } from './helpers/fixtures';
 
-test.describe('Student authenticated', () => {
-  // Tutor/admin role-gated routes — student is NOT in the allowed
-  // set for any of these.
-  for (const { url } of ROLE_GATED_ROUTES) {
-    test(`403 GET ${url}`, async ({ request }) => {
-      const res = await request.get(url);
-      expect(res.status(), `unexpected ${res.status()} for ${url}`).toBe(403);
+test.describe('Student authenticated — role boundary', () => {
+  for (const { path, heading } of [...ADMIN_ONLY_PAGES, ...TUTOR_PAGES]) {
+    test(`student does not see ${path}`, async ({ page }) => {
+      await page.goto(path);
+      await expect(
+        page.getByRole('heading', { name: heading }),
+        `student should not see the privileged heading at ${path}`,
+      ).toHaveCount(0);
     });
   }
-
-  // Student-scoped tutor routes — same shape, with one of the
-  // tutor's own students as the URL parameter so an authorization
-  // hole can't be hidden behind "the student happens to not be on
-  // a roster, so RLS drops the row."
-  for (const url of STUDENT_SCOPED_ROUTES(USERS.student1.id)) {
-    test(`403 GET ${url}`, async ({ request }) => {
-      const res = await request.get(url);
-      expect(res.status(), `unexpected ${res.status()} for ${url}`).toBe(403);
-    });
-  }
-
-  // Page-level: student should not reach the tutor dashboard. The
-  // (tutor) layout's role gate redirects elsewhere.
-  test('student visiting /tutor/dashboard does not see tutor content', async ({ page }) => {
-    const res = await page.goto('/tutor/dashboard');
-    expect(res, 'navigation should resolve').not.toBeNull();
-    // Either redirected away (200 on a different page) or 403/404 —
-    // any of those is acceptable. Definitely should NOT show the
-    // tutor dashboard heading.
-    await expect(page.getByRole('heading', { name: /tutor dashboard/i })).toHaveCount(0);
-  });
 });
