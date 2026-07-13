@@ -2317,6 +2317,48 @@ export type Database = {
         }
         Relationships: []
       }
+      skill_mastery_snapshots: {
+        Row: {
+          attempts_count: number
+          avg_difficulty: number | null
+          correct_count: number
+          created_at: string
+          domain_code: string
+          id: string
+          mastery: number
+          skill_code: string
+          snapshot_date: string
+          student_id: string
+          test_type: string
+        }
+        Insert: {
+          attempts_count?: number
+          avg_difficulty?: number | null
+          correct_count?: number
+          created_at?: string
+          domain_code: string
+          id?: string
+          mastery: number
+          skill_code: string
+          snapshot_date: string
+          student_id: string
+          test_type?: string
+        }
+        Update: {
+          attempts_count?: number
+          avg_difficulty?: number | null
+          correct_count?: number
+          created_at?: string
+          domain_code?: string
+          id?: string
+          mastery?: number
+          skill_code?: string
+          snapshot_date?: string
+          student_id?: string
+          test_type?: string
+        }
+        Relationships: []
+      }
       stg_answer_options_new: {
         Row: {
           label: string | null
@@ -2913,12 +2955,26 @@ export type Database = {
         Returns: boolean
       }
       backfill_questions_v2_display_codes: { Args: never; Returns: number }
+      backfill_skill_mastery_snapshots: {
+        Args: { p_test_type?: string }
+        Returns: number
+      }
       can_view: { Args: { target: string }; Returns: boolean }
       can_view_from: {
         Args: { target: string; viewer: string }
         Returns: boolean
       }
       can_view_lesson: { Args: { p_lesson_id: string }; Returns: boolean }
+      compute_mastery_score: {
+        Args: {
+          p_attempts_count: number
+          p_recent_correct: number
+          p_recent_total: number
+          p_weighted_correct: number
+          p_weighted_total: number
+        }
+        Returns: number
+      }
       get_practice_volume_by_week: {
         Args: { weeks?: number }
         Returns: {
@@ -2969,6 +3025,18 @@ export type Database = {
           correct: number
           end_iso: string
           start_iso: string
+        }[]
+      }
+      get_skill_mastery_asof: {
+        Args: { p_asof: string; p_student: string; p_test_type?: string }
+        Returns: {
+          attempts_count: number
+          avg_difficulty: number
+          correct_count: number
+          domain_code: string
+          mastery: number
+          skill_code: string
+          test_type: string
         }[]
       }
       get_student_dashboard_stats: {
@@ -3035,6 +3103,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      mastery_weight: {
+        Args: { p_difficulty: number; p_score_band: number }
+        Returns: number
+      }
       migration_status: {
         Args: never
         Returns: {
@@ -3049,6 +3121,10 @@ export type Database = {
         Returns: string
       }
       redeem_class_invite: { Args: { invite_code: string }; Returns: string }
+      snapshot_all_skill_mastery: {
+        Args: { p_asof?: string; p_test_type?: string }
+        Returns: number
+      }
       stg_clear_practice_test: { Args: { p_code: string }; Returns: undefined }
       student_has_lesson_assignment: {
         Args: { p_lesson_id: string; p_student_id: string }

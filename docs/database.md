@@ -111,6 +111,31 @@ pending from that audit: dropping the vestigial `classes`,
 `class_enrollments`, `class_invites` tables, the unused
 `profile_cards` view, and the 11 `stg_*` staging tables.
 
+## Scheduled jobs
+
+**Mastery snapshots (`skill_mastery_snapshots`, upgrade plan §1.1).**
+The per-skill mastery time series is populated by
+`public.snapshot_all_skill_mastery(current_date)` — one row per
+(student, test_type, domain, skill) as of the given date. History was
+seeded once via `public.backfill_skill_mastery_snapshots('sat')`
+(activity-day resolution). The mastery formula lives in
+`public.compute_mastery_score` (SQL) and `lib/mastery.ts`
+(`masteryFromAggregates`), pinned to the shared vector
+`lib/mastery.fixtures.json` — change all three together.
+
+The nightly trigger is **not yet scheduled**: `pg_cron` is available
+but not installed in the production project (verified 2026-07-13). To
+enable, install the extension and schedule:
+
+```sql
+select cron.schedule('nightly-mastery', '15 7 * * *',
+  $$ select public.snapshot_all_skill_mastery(current_date) $$);
+```
+
+(Alternatively, a Vercel cron can hit an authenticated endpoint that
+calls the function via the service role.) Until then, run
+`snapshot_all_skill_mastery(current_date)` on demand to refresh.
+
 ## Safe service-role usage
 
 Every service-role client (`createServiceClient()` from
