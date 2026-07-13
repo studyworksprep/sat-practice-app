@@ -551,6 +551,8 @@ export type Database = {
       }
       attempts: {
         Row: {
+          context_id: string | null
+          context_type: string | null
           created_at: string
           id: string
           is_correct: boolean
@@ -563,6 +565,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          context_id?: string | null
+          context_type?: string | null
           created_at?: string
           id?: string
           is_correct: boolean
@@ -575,6 +579,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          context_id?: string | null
+          context_type?: string | null
           created_at?: string
           id?: string
           is_correct?: boolean
@@ -770,6 +776,48 @@ export type Database = {
         }
         Relationships: []
       }
+      curriculum_units: {
+        Row: {
+          created_at: string
+          domain_code: string
+          expected_minutes: number
+          id: string
+          mastery_threshold: number
+          prerequisite_unit_ids: string[]
+          sequence: number
+          skill_code: string
+          test_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          domain_code: string
+          expected_minutes?: number
+          id?: string
+          mastery_threshold?: number
+          prerequisite_unit_ids?: string[]
+          sequence: number
+          skill_code: string
+          test_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          domain_code?: string
+          expected_minutes?: number
+          id?: string
+          mastery_threshold?: number
+          prerequisite_unit_ids?: string[]
+          sequence?: number
+          skill_code?: string
+          test_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       desmos_saved_states: {
         Row: {
           created_at: string
@@ -821,6 +869,45 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      entitlements: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          granted_by: string | null
+          id: string
+          note: string | null
+          plan: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          note?: string | null
+          plan: string
+          source: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          note?: string | null
+          plan?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       feature_flags: {
         Row: {
@@ -936,6 +1023,56 @@ export type Database = {
             columns: ["set_id"]
             isOneToOne: false
             referencedRelation: "flashcard_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_stats: {
+        Row: {
+          avg_time_ms: number | null
+          computed_at: string
+          discrimination: number | null
+          distractor_dist: Json | null
+          key_label: string | null
+          modal_label: string | null
+          n_attempts: number
+          n_correct: number
+          n_timed: number
+          p_value: number | null
+          question_id: string
+        }
+        Insert: {
+          avg_time_ms?: number | null
+          computed_at?: string
+          discrimination?: number | null
+          distractor_dist?: Json | null
+          key_label?: string | null
+          modal_label?: string | null
+          n_attempts?: number
+          n_correct?: number
+          n_timed?: number
+          p_value?: number | null
+          question_id: string
+        }
+        Update: {
+          avg_time_ms?: number | null
+          computed_at?: string
+          discrimination?: number | null
+          distractor_dist?: Json | null
+          key_label?: string | null
+          modal_label?: string | null
+          n_attempts?: number
+          n_correct?: number
+          n_timed?: number
+          p_value?: number | null
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_stats_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "questions_v2"
             referencedColumns: ["id"]
           },
         ]
@@ -1844,6 +1981,68 @@ export type Database = {
           },
         ]
       }
+      question_content_history: {
+        Row: {
+          correct_answer: Json | null
+          difficulty: number | null
+          domain_code: string | null
+          edited_by: string | null
+          id: string
+          options: Json | null
+          prior_updated_at: string | null
+          question_id: string
+          question_type: string | null
+          rationale_html: string | null
+          score_band: number | null
+          skill_code: string | null
+          snapshotted_at: string
+          stem_html: string | null
+          stimulus_html: string | null
+        }
+        Insert: {
+          correct_answer?: Json | null
+          difficulty?: number | null
+          domain_code?: string | null
+          edited_by?: string | null
+          id?: string
+          options?: Json | null
+          prior_updated_at?: string | null
+          question_id: string
+          question_type?: string | null
+          rationale_html?: string | null
+          score_band?: number | null
+          skill_code?: string | null
+          snapshotted_at?: string
+          stem_html?: string | null
+          stimulus_html?: string | null
+        }
+        Update: {
+          correct_answer?: Json | null
+          difficulty?: number | null
+          domain_code?: string | null
+          edited_by?: string | null
+          id?: string
+          options?: Json | null
+          prior_updated_at?: string | null
+          question_id?: string
+          question_type?: string | null
+          rationale_html?: string | null
+          score_band?: number | null
+          skill_code?: string | null
+          snapshotted_at?: string
+          stem_html?: string | null
+          stimulus_html?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_content_history_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       question_error_notes: {
         Row: {
           body: string
@@ -2314,6 +2513,48 @@ export type Database = {
           learnability?: number
           skill_code?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      skill_mastery_snapshots: {
+        Row: {
+          attempts_count: number
+          avg_difficulty: number | null
+          correct_count: number
+          created_at: string
+          domain_code: string
+          id: string
+          mastery: number
+          skill_code: string
+          snapshot_date: string
+          student_id: string
+          test_type: string
+        }
+        Insert: {
+          attempts_count?: number
+          avg_difficulty?: number | null
+          correct_count?: number
+          created_at?: string
+          domain_code: string
+          id?: string
+          mastery: number
+          skill_code: string
+          snapshot_date: string
+          student_id: string
+          test_type?: string
+        }
+        Update: {
+          attempts_count?: number
+          avg_difficulty?: number | null
+          correct_count?: number
+          created_at?: string
+          domain_code?: string
+          id?: string
+          mastery?: number
+          skill_code?: string
+          snapshot_date?: string
+          student_id?: string
+          test_type?: string
         }
         Relationships: []
       }
@@ -2850,6 +3091,30 @@ export type Database = {
       }
     }
     Views: {
+      item_miskey_audit: {
+        Row: {
+          discrimination: number | null
+          display_code: string | null
+          distractor_dist: Json | null
+          domain_code: string | null
+          flag: string | null
+          key_label: string | null
+          modal_label: string | null
+          n_attempts: number | null
+          p_value: number | null
+          question_id: string | null
+          skill_code: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_stats_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_cards: {
         Row: {
           first_name: string | null
@@ -2913,18 +3178,47 @@ export type Database = {
         Returns: boolean
       }
       backfill_questions_v2_display_codes: { Args: never; Returns: number }
+      backfill_skill_mastery_snapshots: {
+        Args: { p_test_type?: string }
+        Returns: number
+      }
       can_view: { Args: { target: string }; Returns: boolean }
       can_view_from: {
         Args: { target: string; viewer: string }
         Returns: boolean
       }
       can_view_lesson: { Args: { p_lesson_id: string }; Returns: boolean }
+      compute_mastery_score: {
+        Args: {
+          p_attempts_count: number
+          p_recent_correct: number
+          p_recent_total: number
+          p_weighted_correct: number
+          p_weighted_total: number
+        }
+        Returns: number
+      }
+      effective_plan: { Args: { p_user: string }; Returns: string }
       get_practice_volume_by_week: {
         Args: { weeks?: number }
         Returns: {
           practice_count: number
           test_count: number
           week_start: string
+        }[]
+      }
+      get_predicted_score_band: {
+        Args: { p_student: string; p_test_type?: string }
+        Returns: {
+          math_accuracy: number
+          math_attempts: number
+          math_scaled: number
+          rw_accuracy: number
+          rw_attempts: number
+          rw_scaled: number
+          total_high: number
+          total_low: number
+          total_scaled: number
         }[]
       }
       get_question_outline_counts_v2: {
@@ -2971,6 +3265,35 @@ export type Database = {
           start_iso: string
         }[]
       }
+      get_skill_mastery_asof: {
+        Args: { p_asof: string; p_student: string; p_test_type?: string }
+        Returns: {
+          attempts_count: number
+          avg_difficulty: number
+          correct_count: number
+          domain_code: string
+          mastery: number
+          skill_code: string
+          test_type: string
+        }[]
+      }
+      get_student_coverage: {
+        Args: { p_student: string; p_test_type?: string }
+        Returns: {
+          attempts_count: number
+          domain_code: string
+          mastery: number
+          mastery_4w_ago: number
+          mastery_threshold: number
+          peak_mastery: number
+          questions_available: number
+          sequence: number
+          skill_code: string
+          status: string
+          title: string
+          trend_4w: number
+        }[]
+      }
       get_student_dashboard_stats: {
         Args: {
           p_lookback_start: string
@@ -3001,6 +3324,10 @@ export type Database = {
           total_correct: number
           total_unique_attempted: number
         }[]
+      }
+      has_plan: {
+        Args: { p_min_plan: string; p_user: string }
+        Returns: boolean
       }
       import_student_practice_history: {
         Args: { p_student_id: string }
@@ -3035,6 +3362,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      mastery_weight: {
+        Args: { p_difficulty: number; p_score_band: number }
+        Returns: number
+      }
       migration_status: {
         Args: never
         Returns: {
@@ -3044,11 +3375,25 @@ export type Database = {
           total_questions: number
         }[]
       }
+      plan_rank: { Args: { p_plan: string }; Returns: number }
+      question_edited_since: {
+        Args: { p_question: string; p_since: string }
+        Returns: boolean
+      }
       questions_v2_section_prefix: {
         Args: { domain_code: string }
         Returns: string
       }
       redeem_class_invite: { Args: { invite_code: string }; Returns: string }
+      refresh_item_stats: { Args: never; Returns: number }
+      sat_scaled_for_raw: {
+        Args: { p_raw: number; p_section: string }
+        Returns: number
+      }
+      snapshot_all_skill_mastery: {
+        Args: { p_asof?: string; p_test_type?: string }
+        Returns: number
+      }
       stg_clear_practice_test: { Args: { p_code: string }; Returns: undefined }
       student_has_lesson_assignment: {
         Args: { p_lesson_id: string; p_student_id: string }

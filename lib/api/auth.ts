@@ -179,6 +179,36 @@ export async function requireRole(
 }
 
 /**
+ * Throw unless the authenticated user holds at least `minPlan`
+ * (preview < standard < full). This is the LICENSING gate — the
+ * companion to requireRole's authorization gate (§1.5). It resolves via
+ * the SQL has_plan()/effective_plan() resolver, which today reproduces
+ * the legacy role+exempt+subscription access exactly (parity-verified),
+ * with sponsored access derived live from the roster edge. Throws 402
+ * when the plan is insufficient.
+ *
+ * The live enforcement path (proxy.js) is not yet switched onto this
+ * resolver — that's gated behind the `entitlements_gate` feature flag.
+ * Use requirePlan on NEW tier-gated surfaces (plan engine, SRS).
+ */
+export async function requirePlan(
+  minPlan: 'preview' | 'standard' | 'full',
+): Promise<AuthContext> {
+  const ctx = await getUserAndProfile();
+  const { data, error } = await ctx.supabase.rpc('has_plan', {
+    p_user: ctx.user.id,
+    p_min_plan: minPlan,
+  });
+  if (error) {
+    throw new ApiError('Failed to resolve entitlement', 500);
+  }
+  if (!data) {
+    throw new ApiError('This feature requires an upgraded plan', 402);
+  }
+  return ctx;
+}
+
+/**
  * Return a service-role Supabase client for routes that genuinely need
  * to bypass RLS. The `reason` argument is mandatory and is logged on
  * every call so it can be audited. The caller is still authenticated

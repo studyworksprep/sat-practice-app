@@ -57,6 +57,30 @@ function sessionCriteria(raw: unknown): SessionFilterCriteria {
   return null;
 }
 
+// Attribution for a new attempt (§1.6). Refines the coarse
+// attempts.source into the specific context that drove the attempt, so
+// Phase 2 adherence and Phase 3 lesson practice can attribute directly
+// instead of re-inferring from session windows. context_id points at
+// the driving entity: the assignment for assignment work, else the
+// session itself.
+function deriveAttemptContext(session: {
+  id: string;
+  mode?: string | null;
+  filter_criteria?: unknown;
+}): { context_type: string; context_id: string } {
+  const fc = sessionCriteria(session.filter_criteria);
+  if (fc?.assignment_id) {
+    return { context_type: 'assignment', context_id: fc.assignment_id };
+  }
+  if (session.mode === 'training') {
+    return { context_type: 'training', context_id: session.id };
+  }
+  if (session.mode === 'review' || fc?.kind === 'weak_queue') {
+    return { context_type: 'review', context_id: session.id };
+  }
+  return { context_type: 'practice', context_id: session.id };
+}
+
 /**
  * Submit an answer for the current question in a practice session.
  * Handles both MCQ (optionId) and SPR (responseText) question types.
@@ -106,7 +130,7 @@ export async function submitAnswer(
     rateLimit(`practice-submit:${user.id}`, { limit: 120, windowMs: 60_000 }),
     supabase
       .from('practice_sessions')
-      .select('id, user_id, question_ids, filter_criteria, created_at, test_type')
+      .select('id, user_id, question_ids, filter_criteria, created_at, test_type, mode')
       .eq('id', sessionId)
       .maybeSingle(),
   ]);
@@ -226,6 +250,7 @@ export async function submitAnswer(
     // First-attempt-wins inside the session window (checked above,
     // concurrently with the question fetch).
     if (!existing) {
+      const attemptContext = deriveAttemptContext(session);
       const { error: insertErr } = await supabase.from('attempts').insert({
         user_id: user.id,
         question_id: questionId,
@@ -233,6 +258,8 @@ export async function submitAnswer(
         selected_option_id: null,
         response_text: isSpr ? responseText : String(selectedOptionId),
         source: 'practice',
+        context_type: attemptContext.context_type,
+        context_id: attemptContext.context_id,
       });
       if (insertErr) {
         return actionFail(`Failed to record attempt: ${insertErr.message}`);

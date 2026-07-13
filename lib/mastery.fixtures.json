@@ -1,0 +1,15 @@
+{
+  "_comment": "Shared test vector pinning the mastery formula. Asserted on the JS side by lib/mastery.test.mjs (masteryFromAggregates) and on the SQL side by public.compute_mastery_score (migration 20260713120000). If you change the formula, regenerate expected values and update all three. Inputs are chosen away from rounding boundaries so float noise cannot flip a case.",
+  "cases": [
+    { "name": "10 correct, no recency",           "weightedCorrect": 10,  "weightedTotal": 10,  "attemptsCount": 10,  "recentTotal": 0,  "recentCorrect": 0,  "expected": 78 },
+    { "name": "10 correct, recency bonus",         "weightedCorrect": 10,  "weightedTotal": 10,  "attemptsCount": 10,  "recentTotal": 5,  "recentCorrect": 5,  "expected": 82 },
+    { "name": "15/20 weighted, high volume",       "weightedCorrect": 15,  "weightedTotal": 20,  "attemptsCount": 20,  "recentTotal": 0,  "recentCorrect": 0,  "expected": 71 },
+    { "name": "low volume + recency",              "weightedCorrect": 2,   "weightedTotal": 3,   "attemptsCount": 3,   "recentTotal": 3,  "recentCorrect": 3,  "expected": 25 },
+    { "name": "caps at 100",                       "weightedCorrect": 100, "weightedTotal": 100, "attemptsCount": 200, "recentTotal": 50, "recentCorrect": 50, "expected": 100 },
+    { "name": "zero weighted total",               "weightedCorrect": 0,   "weightedTotal": 0,   "attemptsCount": 5,   "recentTotal": 0,  "recentCorrect": 0,  "expected": 0 },
+    { "name": "zero correct, positive total",      "weightedCorrect": 0,   "weightedTotal": 7.65, "attemptsCount": 3,  "recentTotal": 0,  "recentCorrect": 0,  "expected": 0 },
+    { "name": "recent 2/3 not above 70pct",        "weightedCorrect": 8,   "weightedTotal": 10,  "attemptsCount": 10,  "recentTotal": 3,  "recentCorrect": 2,  "expected": 62 },
+    { "name": "recent count below 3",              "weightedCorrect": 9,   "weightedTotal": 9,   "attemptsCount": 9,   "recentTotal": 2,  "recentCorrect": 2,  "expected": 74 },
+    { "name": "mixed fractional weights + bonus",  "weightedCorrect": 6.4, "weightedTotal": 9.2, "attemptsCount": 12,  "recentTotal": 6,  "recentCorrect": 5,  "expected": 61 }
+  ]
+}

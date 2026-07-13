@@ -20,9 +20,8 @@ import { join, relative } from 'node:path';
 const ROOT = new URL('..', import.meta.url).pathname;
 
 // ── 1. TypeScript ratchet ────────────────────────────────────────────
-// Baseline last lowered 2026-07-12 (seam conversions: supabase/server,
-// api/auth, api/paginate, externalAuth).
-const JS_FILE_BASELINE = 315;
+// Baseline last lowered 2026-07-13 (§1.1: lib/mastery.js → lib/mastery.ts).
+const JS_FILE_BASELINE = 314;
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {

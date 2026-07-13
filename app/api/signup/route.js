@@ -59,9 +59,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Teacher code is required.' }, { status: 400 });
     }
 
+    // NOTE: `exempt` was removed from this select — the column does not
+    // exist in production, so selecting it errored and broke teacher
+    // self-signup entirely (§1.5 audit). A valid, unused teacher
+    // registration code is admin-issued to a Studyworks tutor, who is
+    // staff and should get access, so a valid code grants exemption.
+    // (Under the §1.5 entitlements model teacher access is role-based;
+    // confirm the intended per-code policy with the owner.)
     const { data: codeRow, error: codeErr } = await svc
       .from('teacher_codes')
-      .select('id, used_by, exempt')
+      .select('id, used_by')
       .eq('code', teacherCode.trim())
       .maybeSingle();
 
@@ -71,7 +78,7 @@ export async function POST(request) {
     if (codeRow.used_by) {
       return NextResponse.json({ error: 'This teacher code has already been used.' }, { status: 400 });
     }
-    teacherCodeExempt = codeRow.exempt === true;
+    teacherCodeExempt = true;
   }
 
   // If student provided a teacher invite code, validate it exists
