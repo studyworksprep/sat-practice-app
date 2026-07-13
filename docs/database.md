@@ -136,6 +136,23 @@ select cron.schedule('nightly-mastery', '15 7 * * *',
 calls the function via the service role.) Until then, run
 `snapshot_all_skill_mastery(current_date)` on demand to refresh.
 
+**Item statistics (`item_stats`, §1.7).** Empirical per-question stats
+(p-value, distractor distribution, discrimination) are recomputed by
+`public.refresh_item_stats()` — the denormalized
+`questions_v2.attempt_count` is stale and must NOT be used for p-values.
+Not scheduled; run on demand (or wire alongside the nightly mastery
+job). The mis-key report is the view `public.item_miskey_audit`
+(staff-only) — review before changing any answer key.
+
+**Entitlements switchover (`entitlements`, §1.5).** The licensing
+resolver `has_plan()`/`effective_plan()` is built and parity-verified
+against today's access, but the live enforcement path (`proxy.js`,
+`lib/subscription.js`) is NOT switched onto it yet — that's gated by the
+`feature_flags` row `entitlements_gate` (currently `off`). Flipping it to
+`on` activates the resolver (and the owner-chosen live-derived sponsored
+policy: roster removal revokes access immediately). Flip only after
+re-verifying parity and running the e2e auth specs.
+
 ## Safe service-role usage
 
 Every service-role client (`createServiceClient()` from
