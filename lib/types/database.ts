@@ -988,6 +988,56 @@ export type Database = {
           },
         ]
       }
+      item_stats: {
+        Row: {
+          avg_time_ms: number | null
+          computed_at: string
+          discrimination: number | null
+          distractor_dist: Json | null
+          key_label: string | null
+          modal_label: string | null
+          n_attempts: number
+          n_correct: number
+          n_timed: number
+          p_value: number | null
+          question_id: string
+        }
+        Insert: {
+          avg_time_ms?: number | null
+          computed_at?: string
+          discrimination?: number | null
+          distractor_dist?: Json | null
+          key_label?: string | null
+          modal_label?: string | null
+          n_attempts?: number
+          n_correct?: number
+          n_timed?: number
+          p_value?: number | null
+          question_id: string
+        }
+        Update: {
+          avg_time_ms?: number | null
+          computed_at?: string
+          discrimination?: number | null
+          distractor_dist?: Json | null
+          key_label?: string | null
+          modal_label?: string | null
+          n_attempts?: number
+          n_correct?: number
+          n_timed?: number
+          p_value?: number | null
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_stats_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_blocks: {
         Row: {
           block_type: string
@@ -2940,6 +2990,30 @@ export type Database = {
       }
     }
     Views: {
+      item_miskey_audit: {
+        Row: {
+          discrimination: number | null
+          display_code: string | null
+          distractor_dist: Json | null
+          domain_code: string | null
+          flag: string | null
+          key_label: string | null
+          modal_label: string | null
+          n_attempts: number | null
+          p_value: number | null
+          question_id: string | null
+          skill_code: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_stats_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_cards: {
         Row: {
           first_name: string | null
@@ -3200,6 +3274,7 @@ export type Database = {
         Returns: string
       }
       redeem_class_invite: { Args: { invite_code: string }; Returns: string }
+      refresh_item_stats: { Args: never; Returns: number }
       sat_scaled_for_raw: {
         Args: { p_raw: number; p_section: string }
         Returns: number
