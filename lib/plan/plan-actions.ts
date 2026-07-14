@@ -13,10 +13,116 @@
 
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
-import { generatePlan } from './generate-plan';
-import type { PlanSection, SkillState } from './generate-plan';
+import { generatePlan, repacePlan } from './generate-plan';
+import type {
+  ExistingTask,
+  PlanSection,
+  PlanTaskSource,
+  PlanTaskType,
+  SkillState,
+} from './generate-plan';
 import type { ActionResult } from '@/lib/types';
-import type { Json } from '@/lib/types/database';
+import type { Database, Json } from '@/lib/types/database';
+
+// ── Shared internals ──────────────────────────────────────────────
+
+type SupabaseCtx = Awaited<ReturnType<typeof requireUser>>['supabase'];
+type PlanInputRow = Database['public']['Functions']['get_plan_inputs']['Returns'][number];
+
+/** get_plan_inputs row → the generator's SkillState. */
+function mapSkillRow(r: PlanInputRow): SkillState {
+  return {
+    domainCode: r.domain_code,
+    skillCode: r.skill_code,
+    section: (r.section === 'math' ? 'math' : 'reading_writing') as PlanSection,
+    mastery: r.mastery,
+    attemptsCount: r.attempts_count ?? 0,
+    coverageStatus: r.coverage_status ?? 'not_started',
+    masteryThreshold: r.mastery_threshold ?? 80,
+    learnability: r.learnability,
+    expectedMinutes: r.expected_minutes ?? 60,
+    sequence: r.sequence ?? 0,
+    questionsAvailable: r.questions_available ?? 0,
+    hasLesson: r.has_lesson ?? false,
+  };
+}
+
+function numFromJson(obj: unknown, key: string): number | null {
+  if (obj && typeof obj === 'object' && typeof (obj as Record<string, unknown>)[key] === 'number') {
+    return (obj as Record<string, number>)[key];
+  }
+  return null;
+}
+
+interface DraftTaskWrite {
+  weekIndex: number;
+  scheduledDate: string;
+  taskType: PlanTaskType;
+  payload: Record<string, unknown>;
+  source: PlanTaskSource;
+}
+
+/**
+ * Replace any prior draft for (student, test_type) and write a new one
+ * plus its tasks. Shared by generateStudyPlan (§2.2) and proposeRepace
+ * (§2.5). The active plan (if any) is untouched — a draft is reviewed and
+ * activated separately. RLS on both tables gates every write.
+ */
+async function writeDraftPlan(
+  supabase: SupabaseCtx,
+  meta: {
+    studentId: string;
+    createdBy: string;
+    testType: 'sat' | 'act';
+    goalScore: number;
+    startingScore: number | null;
+    testDate: string;
+    weeklyHours: number;
+  },
+  tasks: DraftTaskWrite[],
+): Promise<{ ok: true; planId: string } | { ok: false; error: string }> {
+  await supabase
+    .from('study_plans')
+    .delete()
+    .eq('student_id', meta.studentId)
+    .eq('test_type', meta.testType)
+    .eq('status', 'draft');
+
+  const { data: plan, error: planErr } = await supabase
+    .from('study_plans')
+    .insert({
+      student_id: meta.studentId,
+      created_by: meta.createdBy,
+      test_type: meta.testType,
+      goal_score: meta.goalScore,
+      starting_score: meta.startingScore,
+      test_date: meta.testDate,
+      status: 'draft',
+      config: { weekly_hours: meta.weeklyHours },
+    })
+    .select('id')
+    .single();
+  if (planErr || !plan) {
+    return { ok: false, error: planErr?.message ?? 'unknown error' };
+  }
+
+  const taskRows = tasks.map((t) => ({
+    plan_id: plan.id,
+    week_index: t.weekIndex,
+    scheduled_date: t.scheduledDate,
+    task_type: t.taskType,
+    payload: t.payload as unknown as Json,
+    status: 'pending',
+    source: t.source,
+  }));
+  const { error: taskErr } = await supabase.from('plan_tasks').insert(taskRows);
+  if (taskErr) {
+    // Don't leave an empty draft behind if the tasks fail to write.
+    await supabase.from('study_plans').delete().eq('id', plan.id);
+    return { ok: false, error: taskErr.message };
+  }
+  return { ok: true, planId: plan.id };
+}
 
 type GenerateStudyPlanResult = ActionResult<{
   planId: string;
@@ -69,20 +175,7 @@ export async function generateStudyPlan(
     p_test_type: testType,
   });
   if (inErr) return actionFail(`Could not load skill data: ${inErr.message}`);
-  const skills: SkillState[] = (rows ?? []).map((r) => ({
-    domainCode: r.domain_code,
-    skillCode: r.skill_code,
-    section: (r.section === 'math' ? 'math' : 'reading_writing') as PlanSection,
-    mastery: r.mastery,
-    attemptsCount: r.attempts_count ?? 0,
-    coverageStatus: r.coverage_status ?? 'not_started',
-    masteryThreshold: r.mastery_threshold ?? 80,
-    learnability: r.learnability,
-    expectedMinutes: r.expected_minutes ?? 60,
-    sequence: r.sequence ?? 0,
-    questionsAvailable: r.questions_available ?? 0,
-    hasLesson: r.has_lesson ?? false,
-  }));
+  const skills: SkillState[] = (rows ?? []).map(mapSkillRow);
   if (skills.length === 0) {
     return actionFail('No curriculum is defined for this test type yet.');
   }
@@ -108,53 +201,24 @@ export async function generateStudyPlan(
     skills,
   });
 
-  // Replace any prior draft for this (student, test_type), then write the
-  // new draft + its tasks. The active plan (if any) is untouched — a draft
-  // is reviewed and activated separately (§2.4).
-  await supabase
-    .from('study_plans')
-    .delete()
-    .eq('student_id', studentId)
-    .eq('test_type', testType)
-    .eq('status', 'draft');
-
-  const { data: plan, error: planErr } = await supabase
-    .from('study_plans')
-    .insert({
-      student_id: studentId,
-      created_by: user.id,
-      test_type: testType,
-      goal_score: args.goalScore,
-      starting_score: startingScore,
-      test_date: args.testDate,
-      status: 'draft',
-      config: { weekly_hours: args.weeklyHours },
-    })
-    .select('id')
-    .single();
-  if (planErr || !plan) {
-    return actionFail(`Could not create the plan: ${planErr?.message ?? 'unknown error'}`);
-  }
-
-  const taskRows = draft.tasks.map((t) => ({
-    plan_id: plan.id,
-    week_index: t.weekIndex,
-    scheduled_date: t.scheduledDate,
-    task_type: t.taskType,
-    payload: t.payload as unknown as Json,
-    status: 'pending',
-    source: t.source,
-  }));
-  const { error: taskErr } = await supabase.from('plan_tasks').insert(taskRows);
-  if (taskErr) {
-    // Don't leave an empty draft behind if the tasks fail to write.
-    await supabase.from('study_plans').delete().eq('id', plan.id);
-    return actionFail(`Could not create the plan's tasks: ${taskErr.message}`);
-  }
+  const written = await writeDraftPlan(
+    supabase,
+    {
+      studentId,
+      createdBy: user.id,
+      testType,
+      goalScore: args.goalScore,
+      startingScore,
+      testDate: args.testDate,
+      weeklyHours: args.weeklyHours,
+    },
+    draft.tasks,
+  );
+  if (!written.ok) return actionFail(`Could not create the plan: ${written.error}`);
 
   return {
     ok: true,
-    planId: plan.id,
+    planId: written.planId,
     weeks: draft.weeks,
     taskCount: draft.tasks.length,
     rationale: draft.rationale,
@@ -193,4 +257,166 @@ export async function activatePlan(planId: string): Promise<ActivatePlanResult> 
   if (!data) return actionFail('Plan not found or not accessible.');
 
   return { ok: true, planId: data, status: 'active' };
+}
+
+export interface ProposeRepaceArgs {
+  /** Defaults to the caller (self-serve); a tutor/job passes a student id. */
+  studentId?: string;
+  testType?: 'sat' | 'act';
+  /**
+   * Self-serve students get auto-apply ("the app acting as the tutor",
+   * §2.5): the re-paced draft is activated immediately. Tutored students
+   * leave it false so the tutor reviews the draft on the Study Plan page.
+   * The caller (UI / future weekly job) owns this routing decision.
+   */
+  autoApply?: boolean;
+  driftThreshold?: number;
+}
+
+type ProposeRepaceResult = ActionResult<{
+  repaced: boolean;
+  reason: string;
+  driftPoints: number | null;
+  planId?: string;
+  applied?: boolean;
+  weeks?: number;
+  taskCount?: number;
+}>;
+
+/**
+ * Re-pace a student's active plan (§2.5). Compares the student's current
+ * predicted score against the plan's implied trajectory; if drift exceeds
+ * the threshold, regenerates the remaining horizon (preserving tutor
+ * edits) as a fresh draft — and, for self-serve callers, activates it.
+ * A no-op success is returned when there's no active plan or no drift.
+ */
+export async function proposeRepace(args: ProposeRepaceArgs = {}): Promise<ProposeRepaceResult> {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase, profile } = ctx;
+  if (profile?.is_demo) return actionFail('Demo accounts are read-only');
+
+  const studentId = args.studentId ?? user.id;
+  const testType = args.testType ?? 'sat';
+
+  // The active plan is what we re-pace against.
+  const { data: active, error: activeErr } = await supabase
+    .from('study_plans')
+    .select('id, goal_score, starting_score, test_date, config, created_at')
+    .eq('student_id', studentId)
+    .eq('test_type', testType)
+    .eq('status', 'active')
+    .maybeSingle();
+  if (activeErr) return actionFail(`Could not load the active plan: ${activeErr.message}`);
+  if (!active) {
+    return { ok: true, repaced: false, reason: 'No active plan to re-pace.', driftPoints: null };
+  }
+  if (!active.test_date || active.goal_score == null) {
+    return {
+      ok: true,
+      repaced: false,
+      reason: 'The active plan is missing a goal or test date.',
+      driftPoints: null,
+    };
+  }
+
+  // Its tasks — needed to preserve the tutor's manual edits.
+  const { data: taskRows } = await supabase
+    .from('plan_tasks')
+    .select('week_index, scheduled_date, task_type, payload, source, status')
+    .eq('plan_id', active.id);
+  const existingTasks: ExistingTask[] = (taskRows ?? []).map((t) => ({
+    weekIndex: t.week_index,
+    scheduledDate: t.scheduled_date,
+    taskType: t.task_type as PlanTaskType,
+    payload: (t.payload ?? {}) as Record<string, unknown>,
+    source: (t.source ?? 'generated') as PlanTaskSource,
+    status: (t.status ?? 'pending') as 'pending' | 'completed' | 'skipped',
+  }));
+
+  // Current per-skill state + current predicted score.
+  const { data: inputRows, error: inErr } = await supabase.rpc('get_plan_inputs', {
+    p_student: studentId,
+    p_test_type: testType,
+  });
+  if (inErr) return actionFail(`Could not load skill data: ${inErr.message}`);
+  const skills: SkillState[] = (inputRows ?? []).map(mapSkillRow);
+
+  const { data: band } = await supabase.rpc('get_predicted_score_band', {
+    p_student: studentId,
+    p_test_type: testType,
+  });
+  const currentScore = band?.[0]?.total_scaled ?? null;
+
+  // Week-0 anchor: the earliest scheduled task, else the plan's creation date.
+  const scheduledDates = existingTasks
+    .map((t) => t.scheduledDate)
+    .filter((d): d is string => Boolean(d))
+    .sort();
+  const planStart = scheduledDates[0] ?? String(active.created_at).slice(0, 10);
+  const weeklyHours = numFromJson(active.config, 'weekly_hours') ?? 5;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const result = repacePlan({
+    today,
+    planStart,
+    testDate: active.test_date,
+    startingScore: active.starting_score,
+    goalScore: active.goal_score,
+    currentScore,
+    weeklyHours,
+    testType,
+    skills,
+    existingTasks,
+    driftThreshold: args.driftThreshold,
+  });
+
+  if (!result.shouldRepace || !result.tasks) {
+    return { ok: true, repaced: false, reason: result.reason, driftPoints: result.driftPoints };
+  }
+
+  // Write the regenerated plan as a fresh draft (baseline = current score).
+  const written = await writeDraftPlan(
+    supabase,
+    {
+      studentId,
+      createdBy: user.id,
+      testType,
+      goalScore: active.goal_score,
+      startingScore: currentScore,
+      testDate: active.test_date,
+      weeklyHours,
+    },
+    result.tasks,
+  );
+  if (!written.ok) return actionFail(`Could not write the re-paced plan: ${written.error}`);
+
+  // Self-serve auto-apply activates the draft immediately; tutored students
+  // leave it as a draft for review.
+  let applied = false;
+  if (args.autoApply) {
+    const { error: actErr } = await supabase.rpc('activate_study_plan', {
+      p_plan_id: written.planId,
+    });
+    if (actErr) {
+      return actionFail(`Re-paced draft saved, but auto-apply failed: ${actErr.message}`);
+    }
+    applied = true;
+  }
+
+  return {
+    ok: true,
+    repaced: true,
+    reason: result.reason,
+    driftPoints: result.driftPoints,
+    planId: written.planId,
+    applied,
+    weeks: result.weeks ?? undefined,
+    taskCount: result.tasks.length,
+  };
 }

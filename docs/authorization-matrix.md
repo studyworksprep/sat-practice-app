@@ -68,7 +68,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/training/practice/actions.js` | `createTrainingSession`, `countAvailable` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/review/actions.js` | `createTrainingWeakQueueDrill`, `createTrainingSkillDrill` | requireUser + rateLimit |
 | `app/account/actions.js` | `updateProfile`, `updateEmail`, `addTeacherCode` | requireUser |
-| `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan` | requireUser |
+| `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan`, `proposeRepace` | requireUser |
 | `lib/practice-test/score-actions.ts` | `recalculateScore` | requireServiceRole |
 | `lib/practice/broken-actions.js` | `loadBrokenDataAction`, `flagQuestionBroken`, `saveQuestionCorrections` | requireRole[admin|manager] |
 | `lib/practice/concept-tags-actions.ts` | `addConceptTag`, `removeConceptTagFromQuestion` | requireRole[admin|manager] |

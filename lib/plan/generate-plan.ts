@@ -1,12 +1,14 @@
-// Deterministic study-plan generator (upgrade plan §2.2).
+// Deterministic plan engine (upgrade plan §2.2 + §2.5).
 //
-// PURE function: given a student's per-skill state + goal + timeframe, it
-// returns a week-by-week list of tasks. No I/O, and `today` is an input
-// (never Date.now()), so it is fully reproducible and unit-testable — the
-// same pattern as lib/mastery.ts. The DB layer that assembles the inputs
-// (from get_student_coverage §1.3 + curriculum_units §1.2) and writes
-// study_plans / plan_tasks is a separate thin wrapper, built with the
-// intake flow (§2.4).
+// PURE functions: given a student's per-skill state + goal + timeframe,
+// generatePlan() returns a week-by-week list of tasks, and repacePlan()
+// decides whether an active plan has drifted enough to regenerate its
+// remaining weeks (preserving the tutor's edits). No I/O, and `today` is
+// an input (never Date.now()), so both are fully reproducible and
+// unit-testable — the same pattern as lib/mastery.ts. The DB layer that
+// assembles the inputs (from get_student_coverage §1.3 + curriculum_units
+// §1.2) and writes study_plans / plan_tasks is a separate thin wrapper
+// (lib/plan/plan-actions.ts), built with the intake flow (§2.4).
 //
 // "Deterministic first, model-assisted later" (§2.2): this is the
 // deterministic v1 — transparent heuristics a tutor can reason about and
@@ -23,6 +25,10 @@ export type PlanTaskType =
   | 'flashcards';
 
 export type PlanSection = 'math' | 'reading_writing';
+
+/** Who authored a task. The generator only emits 'generated'; re-pacing
+ *  (§2.5) preserves 'tutor' tasks and a student can add 'student' ones. */
+export type PlanTaskSource = 'generated' | 'tutor' | 'student';
 
 /** One skill's current state — the shape get_student_coverage (§1.3)
  *  joined with curriculum_units (§1.2) + skill_learnability provides. */
@@ -57,7 +63,7 @@ export interface PlanTaskDraft {
   scheduledDate: string;           // ISO yyyy-mm-dd
   taskType: PlanTaskType;
   payload: Record<string, unknown>;
-  source: 'generated';
+  source: PlanTaskSource;
 }
 
 export interface PlanDraft {
@@ -242,11 +248,14 @@ export function generatePlan(input: PlanInput): PlanDraft {
       }
     }
 
-    // Spread the week's tasks across its 7 days.
+    // Spread the week's tasks across its 7 days. The horizon is rounded up
+    // to whole weeks, so the final week can run a few days past the test
+    // date — clamp to it so nothing is ever scheduled after test day.
     const n = weekTasks.length;
     weekTasks.forEach((t, idx) => {
       const dayOffset = n <= 1 ? 0 : Math.round((idx * 6) / (n - 1));
-      tasks.push({ ...t, scheduledDate: addDays(weekStart, dayOffset) });
+      const sched = addDays(weekStart, dayOffset);
+      tasks.push({ ...t, scheduledDate: sched > input.testDate ? input.testDate : sched });
     });
   }
 
@@ -260,4 +269,149 @@ export function generatePlan(input: PlanInput): PlanDraft {
     `Full practice tests every ${cadence} weeks, tightening near test day.`;
 
   return { weeks, tasks, rationale };
+}
+
+// ── Re-pacing (§2.5) ──────────────────────────────────────────────
+//
+// repacePlan compares where the student ACTUALLY is (current predicted
+// score) against where the active plan IMPLIED they'd be by now (a linear
+// trajectory from the plan's starting score to its goal over its horizon).
+// If the gap exceeds a threshold, it regenerates the REMAINING horizon
+// (today → test date) from the student's current skill state — while
+// preserving the tutor's manual edits so "regeneration never clobbers
+// human judgment" (§2.4/§2.5). Routing (self-serve auto-apply vs. tutor
+// approval queue) is a caller concern; this only decides IF re-pacing is
+// warranted and, if so, produces the new task set.
+
+/** Drift past this many scaled points (in either direction) warrants a
+ *  re-pace. ~half an SAT section's worth of trajectory error. */
+export const DEFAULT_DRIFT_THRESHOLD = 40;
+
+/** An existing plan_tasks row, as the re-pacer needs to see it. */
+export interface ExistingTask {
+  weekIndex: number;
+  scheduledDate: string | null;
+  taskType: PlanTaskType;
+  payload: Record<string, unknown>;
+  source: PlanTaskSource;
+  status: 'pending' | 'completed' | 'skipped';
+}
+
+export interface RepaceInput {
+  today: string;                 // ISO yyyy-mm-dd (as-of)
+  planStart: string;             // ISO — the plan's week-0 anchor
+  testDate: string;              // ISO
+  startingScore: number | null;  // baseline captured when the plan was made
+  goalScore: number;
+  currentScore: number | null;   // current predicted total (get_predicted_score_band)
+  weeklyHours: number;
+  testType: 'sat' | 'act';
+  skills: SkillState[];          // current per-skill state (get_plan_inputs)
+  existingTasks: ExistingTask[]; // the active plan's tasks (for tutor-edit preservation)
+  driftThreshold?: number;       // default DEFAULT_DRIFT_THRESHOLD
+  practiceTestCadenceWeeks?: number;
+}
+
+export interface RepaceResult {
+  shouldRepace: boolean;
+  reason: string;
+  /** expected − actual, in scaled points. Positive = behind schedule,
+   *  negative = ahead. null when it can't be computed. */
+  driftPoints: number | null;
+  /** The regenerated task set (fresh 'generated' tasks over the remaining
+   *  horizon + preserved 'tutor' tasks). null when no re-pace. */
+  tasks: PlanTaskDraft[] | null;
+  weeks: number | null;
+}
+
+function skillCodeOf(payload: Record<string, unknown>): string | null {
+  const v = payload?.skill_code;
+  return typeof v === 'string' ? v : null;
+}
+
+/** A tutor task worth carrying into the regenerated plan: hand-authored,
+ *  still open, and not already past (a stale overdue tutor task is dropped
+ *  rather than resurrected into week 0). Undated tutor tasks are kept. */
+function isPreservableTutorTask(t: ExistingTask, today: string): boolean {
+  if (t.source !== 'tutor') return false;
+  if (t.status !== 'pending') return false;
+  if (t.scheduledDate && t.scheduledDate < today) return false;
+  return true;
+}
+
+export function repacePlan(input: RepaceInput): RepaceResult {
+  const threshold = input.driftThreshold ?? DEFAULT_DRIFT_THRESHOLD;
+
+  const noRepace = (reason: string, driftPoints: number | null = null): RepaceResult => ({
+    shouldRepace: false,
+    reason,
+    driftPoints,
+    tasks: null,
+    weeks: null,
+  });
+
+  // Guardrails: nothing to pace against.
+  if (daysBetween(input.today, input.testDate) <= 0) {
+    return noRepace('Test date has passed — no re-pacing.');
+  }
+  if (input.startingScore == null || input.currentScore == null) {
+    return noRepace('Not enough score history to judge trajectory yet.');
+  }
+
+  // Implied trajectory: linear from starting → goal across the plan's full
+  // horizon. Expected = where that line sits at today's elapsed fraction.
+  const span = Math.max(1, daysBetween(input.planStart, input.testDate));
+  const elapsed = clamp(daysBetween(input.planStart, input.today) / span, 0, 1);
+  const expected = input.startingScore + elapsed * (input.goalScore - input.startingScore);
+  const driftPoints = Math.round(expected - input.currentScore);
+
+  if (Math.abs(driftPoints) < threshold) {
+    return noRepace('On track — actual score is within tolerance of plan.', driftPoints);
+  }
+
+  // Re-pace warranted. Preserve the tutor's open, future edits and keep the
+  // generator from re-scheduling any skill a tutor task already owns.
+  const preserved = input.existingTasks.filter((t) => isPreservableTutorTask(t, input.today));
+  const tutorOwnedSkills = new Set(
+    preserved.map((t) => skillCodeOf(t.payload)).filter((c): c is string => Boolean(c)),
+  );
+  const skillsForGenerator = input.skills.filter((s) => !tutorOwnedSkills.has(s.skillCode));
+
+  const regen = generatePlan({
+    goalScore: input.goalScore,
+    startingScore: input.currentScore, // regenerate from where the student IS now
+    testDate: input.testDate,
+    today: input.today,
+    weeklyHours: input.weeklyHours,
+    testType: input.testType,
+    skills: skillsForGenerator,
+    practiceTestCadenceWeeks: input.practiceTestCadenceWeeks,
+  });
+
+  // Re-attach preserved tutor tasks, remapping their week index onto the
+  // regenerated plan's numbering (week 0 = the week containing `today`).
+  const preservedTasks: PlanTaskDraft[] = preserved.map((t) => {
+    const dayOffset = t.scheduledDate ? daysBetween(input.today, t.scheduledDate) : 0;
+    const weekIndex = clamp(Math.floor(Math.max(0, dayOffset) / 7), 0, Math.max(0, regen.weeks - 1));
+    return {
+      weekIndex,
+      scheduledDate: t.scheduledDate ?? addDays(input.today, weekIndex * 7),
+      taskType: t.taskType,
+      payload: t.payload,
+      source: 'tutor',
+    };
+  });
+
+  const direction = driftPoints > 0 ? 'behind' : 'ahead of';
+  return {
+    shouldRepace: true,
+    reason:
+      `${Math.abs(driftPoints)} points ${direction} the plan's trajectory ` +
+      `(expected ~${Math.round(expected)}, actual ${input.currentScore}). ` +
+      `Regenerated the remaining ${regen.weeks} weeks` +
+      (preservedTasks.length ? `, keeping ${preservedTasks.length} tutor task(s).` : '.'),
+    driftPoints,
+    tasks: [...regen.tasks, ...preservedTasks],
+    weeks: regen.weeks,
+  };
 }
