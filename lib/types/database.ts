@@ -3264,6 +3264,7 @@ export type Database = {
       }
     }
     Functions: {
+      activate_study_plan: { Args: { p_plan_id: string }; Returns: string }
       assignment_has_visible_student: {
         Args: { p_assignment_id: string }
         Returns: boolean

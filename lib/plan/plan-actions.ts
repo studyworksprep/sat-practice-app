@@ -160,3 +160,37 @@ export async function generateStudyPlan(
     rationale: draft.rationale,
   };
 }
+
+type ActivatePlanResult = ActionResult<{ planId: string; status: 'active' }>;
+
+/**
+ * Promote a reviewed DRAFT plan to the student's live plan (§2.4). The
+ * heavy lifting — archiving any prior active plan and flipping this one
+ * to active in a single transaction — is done by the activate_study_plan
+ * SQL function so the one-active unique index is never violated. RLS on
+ * study_plans decides who may activate (the student, or a tutor with a
+ * visible student); an invisible plan surfaces as "not accessible".
+ */
+export async function activatePlan(planId: string): Promise<ActivatePlanResult> {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { supabase, profile } = ctx;
+  if (profile?.is_demo) return actionFail('Demo accounts are read-only');
+
+  if (!planId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId)) {
+    return actionFail('A valid plan id is required.');
+  }
+
+  const { data, error } = await supabase.rpc('activate_study_plan', {
+    p_plan_id: planId,
+  });
+  if (error) return actionFail(error.message);
+  if (!data) return actionFail('Plan not found or not accessible.');
+
+  return { ok: true, planId: data, status: 'active' };
+}
