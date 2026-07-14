@@ -1398,6 +1398,59 @@ export type Database = {
           },
         ]
       }
+      plan_tasks: {
+        Row: {
+          completed_at: string | null
+          completed_via: string | null
+          created_at: string
+          id: string
+          payload: Json
+          plan_id: string
+          scheduled_date: string | null
+          source: string
+          status: string
+          task_type: string
+          updated_at: string
+          week_index: number
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_via?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          plan_id: string
+          scheduled_date?: string | null
+          source?: string
+          status?: string
+          task_type: string
+          updated_at?: string
+          week_index?: number
+        }
+        Update: {
+          completed_at?: string | null
+          completed_via?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          plan_id?: string
+          scheduled_date?: string | null
+          source?: string
+          status?: string
+          task_type?: string
+          updated_at?: string
+          week_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_tasks_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "study_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_sessions: {
         Row: {
           created_at: string
@@ -2912,6 +2965,48 @@ export type Database = {
           title?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      study_plans: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          goal_score: number | null
+          id: string
+          starting_score: number | null
+          status: string
+          student_id: string
+          test_date: string | null
+          test_type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          goal_score?: number | null
+          id?: string
+          starting_score?: number | null
+          status?: string
+          student_id: string
+          test_date?: string | null
+          test_type?: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          goal_score?: number | null
+          id?: string
+          starting_score?: number | null
+          status?: string
+          student_id?: string
+          test_date?: string | null
+          test_type?: string
+          updated_at?: string
         }
         Relationships: []
       }
