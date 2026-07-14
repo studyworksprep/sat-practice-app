@@ -15,12 +15,12 @@
 // means the admin overview, not the tutor dashboard.
 
 import { redirect } from 'next/navigation';
-import { requireUser } from '@/lib/api/auth';
+import { requireUserPage } from '@/lib/api/auth';
 import { AppNav } from '@/lib/ui/AppNav';
 import { tutorLinksForRole } from '@/lib/ui/nav-links';
 
 export default async function AdminTreeLayout({ children }) {
-  const { user, profile } = await requireUser();
+  const { user, profile } = await requireUserPage();
 
   // Admin-only. Other roles bounce to their natural landing page.
   if (profile.role !== 'admin') {

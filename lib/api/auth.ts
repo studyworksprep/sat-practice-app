@@ -24,6 +24,7 @@
 //     - Use sparingly. Every call site is auditable via grep.
 
 import { cache } from 'react';
+import { redirect } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { createClient, createServiceClient } from '../supabase/server';
 import type { TypedSupabaseClient } from '../supabase/server';
@@ -123,6 +124,22 @@ const getUserAndProfile = cache(async (): Promise<AuthContext> => {
 
 export async function requireUser(): Promise<AuthContext> {
   return getUserAndProfile();
+}
+
+/**
+ * Page/layout variant of requireUser. On an auth failure it redirects to
+ * /login instead of throwing — a thrown ApiError in a Server Component
+ * renders a 500 error page, but an anonymous visitor to a signed-in-only
+ * page should simply be sent to login. API routes keep requireUser (they
+ * need the 401 status, not a redirect).
+ */
+export async function requireUserPage(): Promise<AuthContext> {
+  try {
+    return await getUserAndProfile();
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) redirect('/login');
+    throw err;
+  }
 }
 
 /**
