@@ -1,14 +1,28 @@
 // Shared anchors for the negative-test specs.
 //
-// Test user UUIDs come from the dev seed
-// (scripts/dev-seed-practice-test-v2.sql +
-// scripts/dev-seed-ui-preview.sql) so a regression that swaps the
-// seed values surfaces here, not on a flaky-looking 404.
+// Rewritten 2026-07-13 against the GENERATED authorization matrix
+// (docs/authorization-matrix.md) — the previous route lists were
+// written against the retired hand-written 2026-05-04 matrix and
+// pointed at /api/* paths whose logic has since moved to Server
+// Actions (so they 404 now). Closes the P0.5 follow-up.
 //
-// Roster shape (kept narrow on purpose — the negative tests don't
-// need the full cohort):
-//   teacher  -> student1 (assigned)
-//   teacher  -> student2 (NOT assigned — drives cross-roster cases)
+// What the e2e auth suite can actually assert:
+//   - HTTP routes: the matrix has 15 route handlers; the ones with a
+//     testable *negative* are requireUser (anon → 401) and
+//     requireExternalApiAccess (no API key → 401). Role-gating for the
+//     rest lives in Server Actions, which are invoked via Next's action
+//     protocol (a `next-action` header + encoded args), not plain GET/
+//     POST — so they're covered at the PAGE level below, not by URL.
+//   - Page-level role protection (proxy.js + the route-group layouts):
+//     the real, user-visible access boundary. A wrong-role user must not
+//     reach an admin/tutor surface.
+//
+// Test user UUIDs come from the dev seed
+// (scripts/dev-seed-practice-test-v2.sql + scripts/dev-seed-ui-preview.sql;
+// password `devseed123`). Roster shape:
+//   teacher -> student1 (assigned)
+//   teacher -> student2 (NOT assigned — drives the cross-roster case in
+//                        page-auth.teacher.spec.ts)
 
 export const USERS = {
   admin: {
@@ -29,47 +43,40 @@ export const USERS = {
   },
 } as const;
 
-/** ⚠️ STALE (verified 2026-07-12): these route lists were written
- *  against the hand-written 2026-05-04 authorization matrix (now at
- *  docs/history/). Most listed routes no longer exist — their logic
- *  moved to Server Actions — so the api-auth specs would assert
- *  against 404s. Before activating the CI e2e job (E2E_SUPABASE_URL
- *  secret), rewrite these fixtures against the GENERATED matrix
- *  (docs/authorization-matrix.md): 14 real routes, plus
- *  action-level auth coverage. Tracked in docs/upgrade-plan-2026-07.md
- *  P0.5.
- *
- *  /api routes the old matrix listed under §3.1 (`requireUser`). */
-export const REQUIRE_USER_ROUTES = [
-  '/api/me',
-  '/api/dashboard',
-  '/api/dashboard/stats',
-  '/api/practice-tests',
-  '/api/assignments',
-  '/api/attempts',
-  '/api/billing/status',
+/** HTTP routes guarded by requireUser (generated matrix). An anonymous
+ *  caller must get 401 before any work. Method matters — these only
+ *  export the verb listed, so a wrong verb would 405 and mask the auth
+ *  check. */
+export const REQUIRE_USER_ROUTES: ReadonlyArray<{ url: string; method: 'GET' | 'POST' }> = [
+  { url: '/api/billing/create-checkout', method: 'POST' },
+  { url: '/api/billing/create-portal', method: 'POST' },
+  { url: '/api/practice-test/time-ping', method: 'POST' },
 ];
 
-/** /api routes the matrix lists under §3.2 (role-gated). */
-export const ROLE_GATED_ROUTES: Array<{
-  url: string;
-  allowed: ReadonlyArray<'admin' | 'teacher' | 'manager'>;
-}> = [
-  { url: '/api/admin/users',                  allowed: ['admin'] },
-  { url: '/api/admin/teacher-codes',          allowed: ['admin'] },
-  { url: '/api/admin/platform-stats',         allowed: ['admin'] },
-  { url: '/api/admin/score-conversion?test_id=00000000-0000-0000-0000-000000000000', allowed: ['admin'] },
-  { url: '/api/teacher/dashboard',            allowed: ['teacher', 'manager', 'admin'] },
-  { url: '/api/teacher/students',             allowed: ['teacher', 'manager', 'admin'] },
-  { url: '/api/teacher/assignment-feed',      allowed: ['teacher', 'manager', 'admin'] },
+/** HTTP routes guarded by requireExternalApiAccess (API-key auth; the
+ *  proxy skips session auth for these). A caller with no key gets 401
+ *  (lib/externalAuth.ts). A placeholder UUID is fine — the key check
+ *  fails before the id is ever used. */
+export const EXTERNAL_KEY_ROUTES: ReadonlyArray<{ url: string; method: 'GET' }> = [
+  { url: '/api/external/score-report/00000000-0000-0000-0000-000000000000', method: 'GET' },
+  { url: '/api/public/students/00000000-0000-0000-0000-000000000000/practice-data', method: 'GET' },
+  { url: '/api/public/students/search?q=test', method: 'GET' },
 ];
 
-/** Routes scoped to a specific student by URL parameter. The
- *  matrix calls these out under §3.2 / §3.3 — Tutor A trying to
- *  read Tutor B's student should 403, not 200-with-empty. */
-export const STUDENT_SCOPED_ROUTES = (studentId: string) => [
-  `/api/teacher/student/${studentId}/dashboard`,
-  `/api/teacher/student/${studentId}/stats`,
-  `/api/teacher/student/${studentId}/scores`,
-  `/api/teacher/student/${studentId}/registrations`,
+/** Pages only an admin may reach. A signed-in non-admin (student or
+ *  teacher) must be redirected/blocked by the (admin) layout — never see
+ *  the admin surface. Anonymous callers are redirected to /login. */
+export const ADMIN_ONLY_PAGES: ReadonlyArray<{ path: string; heading: RegExp }> = [
+  { path: '/admin/users', heading: /users/i },
 ];
+
+/** Pages tutors (teacher/manager/admin) reach and students must not.
+ *  The (tutor) layout role gate is the boundary. */
+export const TUTOR_PAGES: ReadonlyArray<{ path: string; heading: RegExp }> = [
+  { path: '/tutor/dashboard', heading: /tutor dashboard/i },
+  { path: '/tutor/roster', heading: /roster/i },
+];
+
+/** A page that requires a signed-in user of any role. Anonymous callers
+ *  land on /login (the layout's requireUser redirects). */
+export const REQUIRE_USER_PAGE = '/dashboard';

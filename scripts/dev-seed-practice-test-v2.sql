@@ -6,21 +6,11 @@
 -- The script is idempotent (stable UUIDs + ON CONFLICT), so it's
 -- safe to re-run after tweaking.
 
--- ============================================================
--- 0. Dev-DB GRANTS PARITY (production has these out-of-band).
---    A separate grants-drift migration would fix this permanently;
---    for now this section bootstraps the dev DB so the seed and
---    the app queries work. Safe to re-run.
--- ============================================================
-grant select                         on public.profiles                    to authenticated;
-grant select                         on public.teacher_student_assignments to authenticated;
-grant select                         on public.manager_teacher_assignments to authenticated;
-grant select                         on public.class_enrollments           to authenticated;
-grant select                         on public.classes                    to authenticated;
-grant select, insert, update, delete on public.attempts                   to authenticated;
-grant select, insert, update, delete on public.question_status            to authenticated;
-grant select                         on public.questions                  to authenticated;
-grant select                         on public.practice_test_attempts     to authenticated;
+-- Grants: the dev DB's API-role grants (anon/authenticated/service_role
+-- on schema public, RLS-gated) are restored out-of-band during dev-DB
+-- setup, not seeded here. The old per-table grants in this slot referenced
+-- v1 tables (questions, question_status, practice_test_attempts) that the
+-- Stage C decommission archived to _legacy — they no longer exist here.
 
 -- ============================================================
 -- 1. USERS (auth.users + profiles)
@@ -47,17 +37,17 @@ insert into auth.users (
 on conflict (id) do nothing;
 
 -- Profiles are auto-created by trigger when auth.users rows land.
--- Upsert to set the shape we want for tests. ui_version='next'
--- routes these users to the new-tree pages.
+-- Upsert to set the shape we want for tests. (ui_version is gone — the
+-- Stage C decommission collapsed the app to a single tree, so there is
+-- no per-user UI routing column anymore.)
 insert into public.profiles (
   id, role, email, first_name, last_name,
-  is_active, target_sat_score, high_school, graduation_year,
-  ui_version
+  is_active, target_sat_score, high_school, graduation_year
 ) values
-  ('11111111-1111-1111-1111-111111111111', 'admin',   'admin@test.studyworks',    'Test', 'Admin',   true, null, null, null, 'next'),
-  ('22222222-2222-2222-2222-222222222222', 'teacher', 'teacher@test.studyworks',  'Test', 'Teacher', true, null, null, null, 'next'),
-  ('33333333-3333-3333-3333-333333333333', 'student', 'student1@test.studyworks', 'Stu',  'One',     true, 1400, 'Test High', 2026, 'next'),
-  ('44444444-4444-4444-4444-444444444444', 'student', 'student2@test.studyworks', 'Stu',  'Two',     true, 1200, 'Test High', 2025, 'next')
+  ('11111111-1111-1111-1111-111111111111', 'admin',   'admin@test.studyworks',    'Test', 'Admin',   true, null, null, null),
+  ('22222222-2222-2222-2222-222222222222', 'teacher', 'teacher@test.studyworks',  'Test', 'Teacher', true, null, null, null),
+  ('33333333-3333-3333-3333-333333333333', 'student', 'student1@test.studyworks', 'Stu',  'One',     true, 1400, 'Test High', 2026),
+  ('44444444-4444-4444-4444-444444444444', 'student', 'student2@test.studyworks', 'Stu',  'Two',     true, 1200, 'Test High', 2025)
 on conflict (id) do update set
   role             = excluded.role,
   email            = excluded.email,
@@ -66,8 +56,7 @@ on conflict (id) do update set
   is_active        = excluded.is_active,
   target_sat_score = excluded.target_sat_score,
   high_school      = excluded.high_school,
-  graduation_year  = excluded.graduation_year,
-  ui_version       = excluded.ui_version;
+  graduation_year  = excluded.graduation_year;
 
 -- Set a real bcrypt password hash so these users can sign in.
 -- Password: devseed123  (intentionally weak — dev-only credentials).
@@ -110,30 +99,10 @@ values ('22222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-3333333
 on conflict do nothing;
 
 -- ============================================================
--- 2a. Questions (v1) SHIM ROWS.
---     The `attempts` table has a FK to public.questions(id). That FK
---     survived the v1→v2 question migration in the dev DB; production
---     may have dropped it out-of-band. To seed attempts in the dev DB
---     without also fixing that drift right now, we insert minimal v1
---     `questions` rows with the SAME UUIDs we use for questions_v2.
---     The app-layer reads the actual content from questions_v2; the
---     v1 row exists only as the FK target for attempts.
--- ============================================================
-
-insert into public.questions (id) values
-  ('a0000001-0000-0000-0000-000000000001'),
-  ('a0000002-0000-0000-0000-000000000002'),
-  ('a0000003-0000-0000-0000-000000000003'),
-  ('a0000004-0000-0000-0000-000000000004'),
-  ('a0000005-0000-0000-0000-000000000005'),
-  ('a0000006-0000-0000-0000-000000000006'),
-  ('a0000007-0000-0000-0000-000000000007'),
-  ('a0000008-0000-0000-0000-000000000008')
-on conflict (id) do nothing;
-
--- ============================================================
--- 2b. QUESTIONS v2 — eight across four domains, varied difficulty
---     and score band, one flagged broken for the content page.
+-- 2. QUESTIONS v2 — eight across four domains, varied difficulty
+--    and score band, one flagged broken for the content page.
+--    (The old v1 `questions` shim is gone: attempts no longer has an
+--    FK to public.questions, and that table was archived to _legacy.)
 -- ============================================================
 
 insert into public.questions_v2 (
@@ -235,17 +204,9 @@ insert into public.attempts (id, user_id, question_id, is_correct, selected_opti
   ('b0000006-0000-0000-0000-000000000006', '33333333-3333-3333-3333-333333333333', 'a0000007-0000-0000-0000-000000000007', false, null, '"C"', 55000, 'practice', now() - interval '18 days')
 on conflict (id) do nothing;
 
--- question_status rows mirror the attempts — needed for any
--- dashboard/filter logic that reads question_status (unanswered
--- filter, last_is_correct, etc.).
-insert into public.question_status (user_id, question_id, is_done, attempts_count, correct_attempts_count, last_attempt_at, last_is_correct) values
-  ('33333333-3333-3333-3333-333333333333', 'a0000001-0000-0000-0000-000000000001', true, 1, 1, now() - interval '2 days',  true),
-  ('33333333-3333-3333-3333-333333333333', 'a0000002-0000-0000-0000-000000000002', true, 1, 0, now() - interval '5 days',  false),
-  ('33333333-3333-3333-3333-333333333333', 'a0000003-0000-0000-0000-000000000003', true, 1, 1, now() - interval '7 days',  true),
-  ('33333333-3333-3333-3333-333333333333', 'a0000005-0000-0000-0000-000000000005', true, 1, 0, now() - interval '10 days', false),
-  ('33333333-3333-3333-3333-333333333333', 'a0000006-0000-0000-0000-000000000006', true, 1, 1, now() - interval '14 days', true),
-  ('33333333-3333-3333-3333-333333333333', 'a0000007-0000-0000-0000-000000000007', true, 1, 0, now() - interval '18 days', false)
-on conflict (user_id, question_id) do nothing;
+-- (question_status was a v1 table, archived to _legacy by the Stage C
+-- decommission. The live surface derives done/last-correct state from
+-- `attempts` directly, so no separate seeding is needed here.)
 
 -- ============================================================
 -- 4. PRACTICE TEST v2 — one adaptive test, four modules, items

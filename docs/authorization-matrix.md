@@ -63,10 +63,12 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/lesson-packs/actions.ts` | `createPack`, `renamePack`, `deletePack`, `addQuestionToPack`, `removeQuestionFromPack`, `reorderPackQuestions`, `searchQuestions`, `listDomainsAndSkills`, `listConceptTags` | requireUser + rateLimit |
 | `app/(tutor)/tutor/roster/actions.ts` | `updateStudentProfile` | requireRole[admin|manager|teacher] + requireServiceRole |
 | `app/(tutor)/tutor/students/[studentId]/actions.js` | `importStudentPracticeHistory`, `addTestRegistration`, `removeTestRegistration`, `addOfficialScore`, `deleteStudentPracticeTest`, `removeOfficialScore` | requireUser + requireServiceRole |
+| `app/(tutor)/tutor/students/[studentId]/plan/actions.ts` | `generatePlanAction`, `activatePlanAction` | requireUser |
 | `app/(tutor)/tutor/training/assignments/[id]/actions.js` | `startTrainingAssignment` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/practice/actions.js` | `createTrainingSession`, `countAvailable` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/review/actions.js` | `createTrainingWeakQueueDrill`, `createTrainingSkillDrill` | requireUser + rateLimit |
 | `app/account/actions.js` | `updateProfile`, `updateEmail`, `addTeacherCode` | requireUser |
+| `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan`, `proposeRepace` | requireUser |
 | `lib/practice-test/score-actions.ts` | `recalculateScore` | requireServiceRole |
 | `lib/practice/broken-actions.js` | `loadBrokenDataAction`, `flagQuestionBroken`, `saveQuestionCorrections` | requireRole[admin|manager] |
 | `lib/practice/concept-tags-actions.ts` | `addConceptTag`, `removeConceptTagFromQuestion` | requireRole[admin|manager] |
@@ -86,4 +88,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_15 route handlers, 40 server-action modules enumerated._
+_15 route handlers, 42 server-action modules enumerated._

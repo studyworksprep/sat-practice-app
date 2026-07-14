@@ -378,11 +378,16 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       <section className={s.snapshotCard}>
         <div className={s.snapshotHead}>
           <h2 className={s.snapshotTitle}>Snapshot</h2>
-          <EditTargetStartButton
-            studentId={student.id}
-            targetScore={student.targetScore ?? null}
-            startDate={profileRow?.start_date ?? null}
-          />
+          <div className={s.snapshotHeadActions}>
+            <Link href={`/tutor/students/${student.id}/plan`} className={s.cardHeaderLink}>
+              Study plan →
+            </Link>
+            <EditTargetStartButton
+              studentId={student.id}
+              targetScore={student.targetScore ?? null}
+              startDate={profileRow?.start_date ?? null}
+            />
+          </div>
         </div>
         <div className={s.snapshotCols}>
           <div className={s.snapshotCol}>

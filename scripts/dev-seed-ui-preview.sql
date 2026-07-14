@@ -42,18 +42,16 @@ on conflict (id) do nothing;
 
 insert into public.profiles (
   id, role, email, first_name, last_name,
-  is_active, target_sat_score, high_school, graduation_year,
-  ui_version
+  is_active, target_sat_score, high_school, graduation_year
 ) values
-  ('55555555-5555-5555-5555-555555555555', 'student', 'student3@test.studyworks', 'Stu', 'Three', true, 1500, 'Test High',  2026, 'next'),
-  ('66666666-6666-6666-6666-666666666666', 'student', 'student4@test.studyworks', 'Stu', 'Four',  true, 1100, 'Other High', 2027, 'next'),
-  ('77777777-7777-7777-7777-777777777777', 'student', 'student5@test.studyworks', 'Stu', 'Five',  true, 1350, 'Test High',  2026, 'next')
+  ('55555555-5555-5555-5555-555555555555', 'student', 'student3@test.studyworks', 'Stu', 'Three', true, 1500, 'Test High',  2026),
+  ('66666666-6666-6666-6666-666666666666', 'student', 'student4@test.studyworks', 'Stu', 'Four',  true, 1100, 'Other High', 2027),
+  ('77777777-7777-7777-7777-777777777777', 'student', 'student5@test.studyworks', 'Stu', 'Five',  true, 1350, 'Test High',  2026)
 on conflict (id) do update set
   role=excluded.role, email=excluded.email, first_name=excluded.first_name,
   last_name=excluded.last_name, is_active=excluded.is_active,
   target_sat_score=excluded.target_sat_score,
-  high_school=excluded.high_school, graduation_year=excluded.graduation_year,
-  ui_version=excluded.ui_version;
+  high_school=excluded.high_school, graduation_year=excluded.graduation_year;
 
 update auth.users
 set encrypted_password = crypt('devseed123', gen_salt('bf', 10))
@@ -230,26 +228,29 @@ on conflict (assignment_id, student_id) do nothing;
 --              was set directly by the junction insert above.
 -- ============================================================
 
+-- Stable ids + ON CONFLICT so this block is idempotent like the rest
+-- of the script (the header's "stable UUIDs" claim). ids b1* avoid
+-- collision with script 1's b0* attempts.
 insert into public.attempts (
-  user_id, question_id, is_correct, response_text, source, created_at
+  id, user_id, question_id, is_correct, response_text, source, created_at
 ) values
   -- student1 — 3 of 5
-  ('33333333-3333-3333-3333-333333333333', 'a0000001-0000-0000-0000-000000000001', true,  'A', 'practice', now() - interval '3 days'),
-  ('33333333-3333-3333-3333-333333333333', 'a0000002-0000-0000-0000-000000000002', false, 'B', 'practice', now() - interval '2 days 5 hours'),
-  ('33333333-3333-3333-3333-333333333333', 'a0000003-0000-0000-0000-000000000003', true,  'C', 'practice', now() - interval '1 day'),
+  ('b1000001-0000-0000-0000-000000000001', '33333333-3333-3333-3333-333333333333', 'a0000001-0000-0000-0000-000000000001', true,  'A', 'practice', now() - interval '3 days'),
+  ('b1000002-0000-0000-0000-000000000002', '33333333-3333-3333-3333-333333333333', 'a0000002-0000-0000-0000-000000000002', false, 'B', 'practice', now() - interval '2 days 5 hours'),
+  ('b1000003-0000-0000-0000-000000000003', '33333333-3333-3333-3333-333333333333', 'a0000003-0000-0000-0000-000000000003', true,  'C', 'practice', now() - interval '1 day'),
 
   -- student2 — 5 of 5 (4 correct, 1 wrong)
-  ('44444444-4444-4444-4444-444444444444', 'a0000001-0000-0000-0000-000000000001', true,  'A', 'practice', now() - interval '2 days'),
-  ('44444444-4444-4444-4444-444444444444', 'a0000002-0000-0000-0000-000000000002', true,  'A', 'practice', now() - interval '2 days 1 hour'),
-  ('44444444-4444-4444-4444-444444444444', 'a0000003-0000-0000-0000-000000000003', true,  'C', 'practice', now() - interval '1 day 22 hours'),
-  ('44444444-4444-4444-4444-444444444444', 'a0000004-0000-0000-0000-000000000004', false, '12', 'practice', now() - interval '1 day 5 hours'),
-  ('44444444-4444-4444-4444-444444444444', 'a0000005-0000-0000-0000-000000000005', true,  'D', 'practice', now() - interval '8 hours'),
+  ('b1000004-0000-0000-0000-000000000004', '44444444-4444-4444-4444-444444444444', 'a0000001-0000-0000-0000-000000000001', true,  'A', 'practice', now() - interval '2 days'),
+  ('b1000005-0000-0000-0000-000000000005', '44444444-4444-4444-4444-444444444444', 'a0000002-0000-0000-0000-000000000002', true,  'A', 'practice', now() - interval '2 days 1 hour'),
+  ('b1000006-0000-0000-0000-000000000006', '44444444-4444-4444-4444-444444444444', 'a0000003-0000-0000-0000-000000000003', true,  'C', 'practice', now() - interval '1 day 22 hours'),
+  ('b1000007-0000-0000-0000-000000000007', '44444444-4444-4444-4444-444444444444', 'a0000004-0000-0000-0000-000000000004', false, '12', 'practice', now() - interval '1 day 5 hours'),
+  ('b1000008-0000-0000-0000-000000000008', '44444444-4444-4444-4444-444444444444', 'a0000005-0000-0000-0000-000000000005', true,  'D', 'practice', now() - interval '8 hours'),
 
   -- student3 — a couple of generic practice attempts so the dashboard
   -- "Total attempts" + "Last activity" aren't zero.
-  ('55555555-5555-5555-5555-555555555555', 'a0000007-0000-0000-0000-000000000007', false, 'A', 'practice', now() - interval '4 hours'),
-  ('55555555-5555-5555-5555-555555555555', 'a0000008-0000-0000-0000-000000000008', true,  'B', 'practice', now() - interval '2 hours')
-;
+  ('b1000009-0000-0000-0000-000000000009', '55555555-5555-5555-5555-555555555555', 'a0000007-0000-0000-0000-000000000007', false, 'A', 'practice', now() - interval '4 hours'),
+  ('b100000a-0000-0000-0000-00000000000a', '55555555-5555-5555-5555-555555555555', 'a0000008-0000-0000-0000-000000000008', true,  'B', 'practice', now() - interval '2 hours')
+on conflict (id) do nothing;
 
 -- ============================================================
 -- 6. SCORE CONVERSION — a handful of rows so the admin page's

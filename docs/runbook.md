@@ -140,6 +140,45 @@ Default target is `http://localhost:3000`; the config boots
 preview instead, set `E2E_BASE_URL=<url>` and the config skips the
 local server step.
 
+### Activating the e2e auth job (CI)
+
+The `e2e-auth` job in `.github/workflows/ci.yml` is the enforced
+"no access regressions" gate (see the plan's cross-cutting standards).
+It is **secret-gated**: with no `E2E_SUPABASE_URL` secret it reports
+itself *skipped* (not green), so a missing test environment is visible
+rather than silently passing. To make it live:
+
+1. **Pick/prepare an E2E Supabase project.** `studyworks-dev` (us-east-2)
+   is the intended target and is currently **empty**. Load the schema
+   into it. The migrations directory is not replayable (see
+   `supabase/migrations/README.md`), so dump production's schema and
+   apply it:
+
+   ```
+   supabase db dump --project-ref <prod-ref> --schema public -f e2e-schema.sql
+   psql "$E2E_DB_URL" -f e2e-schema.sql
+   ```
+
+   (Once P0.7's baseline reset lands, use that baseline instead of a
+   fresh dump.)
+
+2. **Create the four dev users + seed data.** The specs log in through
+   the real `/login` form, so the auth users must exist first. Create
+   `admin@ / teacher@ / student1@ / student2@test.studyworks` (password
+   `devseed123`) with the fixed UUIDs in `tests/e2e/helpers/fixtures.ts`
+   via the Supabase Auth admin API, then run
+   `scripts/dev-seed-practice-test-v2.sql` + `scripts/dev-seed-ui-preview.sql`
+   (profiles, the teacher→student1 roster edge, and practice data).
+
+3. **Add the three repo secrets** (Settings → Secrets → Actions):
+   `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SERVICE_ROLE_KEY`
+   pointing at that project. The job then runs `setup + anonymous +
+   student + teacher + admin` on every PR.
+
+The specs themselves (fixtures + `api-auth.*` / `page-auth.*`) were
+rewritten against the generated matrix on 2026-07-13 and are ready;
+only the seeded environment + secrets remain.
+
 ### Adding a test
 
 1. Add the rule to `docs/authorization-matrix.md` first.

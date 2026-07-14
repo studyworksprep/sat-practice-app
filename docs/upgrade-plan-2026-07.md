@@ -145,15 +145,21 @@ Target: submit round-trip under ~200 ms perceived.
 typeahead), and cache taxonomy/test/lesson-pack lists with
 `unstable_cache` + tags.
 
-**P0.5 CI enforcement.** Add `npm run typecheck`, the existing
-`tests/e2e/api-auth.*` / `page-auth.*` Playwright specs, and a unit
-runner for `lib/lesson/*.test.mjs` to `.github/workflows/ci.yml`.
-*Follow-up discovered 2026-07-12:* the e2e fixtures
-(`tests/e2e/helpers/fixtures.ts`) enumerate routes from the retired
-hand-written auth matrix — most no longer exist. Before activating
-the secret-gated e2e job, rewrite the fixtures against the generated
-`docs/authorization-matrix.md` and seed `studyworks-dev` (currently
-empty) with schema + dev users.
+**P0.5 CI enforcement.** *Mostly done (2026-07-13).* The
+`lint-and-build` CI job now runs `npm run typecheck`, `npm run
+test:unit`, the code-hygiene ratchet, auth-matrix freshness, and
+script syntax-checks. The auth-boundary e2e job (`e2e-auth`) exists but
+is **secret-gated and dormant**: it reports itself *skipped* (not
+green) until `E2E_SUPABASE_URL` / `E2E_SUPABASE_ANON_KEY` /
+`E2E_SERVICE_ROLE_KEY` are configured on the repo. The stale fixtures
+were **rewritten against the generated matrix on 2026-07-13**
+(`tests/e2e/helpers/fixtures.ts` + the `api-auth.*` specs now target the
+real 15-route HTTP surface + page-level role boundaries; role-gating
+that moved to Server Actions is covered at the page level, not by URL).
+Remaining to make the gate live (see `docs/runbook.md` "Activating the
+e2e auth job"): **seed `studyworks-dev`** (currently empty) with the
+production schema + the four dev users, then **add the three E2E
+secrets** so the job runs on every PR.
 
 **P0.6 Public surface hardening.** `crypto.timingSafeEqual` for the
 external API key; per-consumer rotatable keys; wire `lib/api/rateLimit`
@@ -548,6 +554,19 @@ folded into the Phase 2 self-serve flow.
 
 - **Every schema change** is a timestamped migration + regenerated
   `lib/types/database.ts` (close the 42-file backlog in P0.7 first).
+- **No access regressions.** Any change to the access path — `proxy.js`,
+  `lib/api/auth`, `lib/subscription`, the `entitlements`/`has_plan`
+  resolver, RLS on user-scoped tables, or a route/action guard — must
+  confirm it does not remove access for a currently-entitled user
+  *before merge*. For licensing/authorization changes, verify parity
+  against the current access set (as §1.5 did: `has_plan` matched
+  today's access for all 76 users, 0 mismatches) **and** run the e2e
+  auth suite (`tests/e2e/api-auth.*` + `page-auth.*`) against a seeded
+  environment. This is a manual pre-merge gate until the secret-gated
+  `e2e-auth` CI job is active (P0.5); once active it enforces the same
+  boundary automatically on every PR. New user-facing access changes
+  ride behind a `feature_flags` row so the switch is reversible without
+  a deploy (as the §1.5 `entitlements_gate` does).
 - **New code is TypeScript**; new surfaces use Server Components +
   server actions with the shared primitives (`requireRole`,
   `actionOk/actionFail`, `paginate`). The seam modules

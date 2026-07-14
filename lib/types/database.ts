@@ -1398,6 +1398,59 @@ export type Database = {
           },
         ]
       }
+      plan_tasks: {
+        Row: {
+          completed_at: string | null
+          completed_via: string | null
+          created_at: string
+          id: string
+          payload: Json
+          plan_id: string
+          scheduled_date: string | null
+          source: string
+          status: string
+          task_type: string
+          updated_at: string
+          week_index: number
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_via?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          plan_id: string
+          scheduled_date?: string | null
+          source?: string
+          status?: string
+          task_type: string
+          updated_at?: string
+          week_index?: number
+        }
+        Update: {
+          completed_at?: string | null
+          completed_via?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          plan_id?: string
+          scheduled_date?: string | null
+          source?: string
+          status?: string
+          task_type?: string
+          updated_at?: string
+          week_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_tasks_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "study_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_sessions: {
         Row: {
           created_at: string
@@ -1409,6 +1462,7 @@ export type Database = {
           last_activity_at: string
           marked_positions: number[]
           mode: string
+          plan_task_id: string | null
           question_ids: Json
           status: string
           test_type: string
@@ -1424,6 +1478,7 @@ export type Database = {
           last_activity_at?: string
           marked_positions?: number[]
           mode?: string
+          plan_task_id?: string | null
           question_ids?: Json
           status?: string
           test_type?: string
@@ -1439,12 +1494,21 @@ export type Database = {
           last_activity_at?: string
           marked_positions?: number[]
           mode?: string
+          plan_task_id?: string | null
           question_ids?: Json
           status?: string
           test_type?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "practice_sessions_plan_task_id_fkey"
+            columns: ["plan_task_id"]
+            isOneToOne: false
+            referencedRelation: "plan_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       practice_test_attempts_v2: {
         Row: {
@@ -1453,6 +1517,7 @@ export type Database = {
           finished_at: string | null
           id: string
           math_scaled: number | null
+          plan_task_id: string | null
           practice_test_id: string
           rw_scaled: number | null
           sections_only: string | null
@@ -1469,6 +1534,7 @@ export type Database = {
           finished_at?: string | null
           id?: string
           math_scaled?: number | null
+          plan_task_id?: string | null
           practice_test_id: string
           rw_scaled?: number | null
           sections_only?: string | null
@@ -1485,6 +1551,7 @@ export type Database = {
           finished_at?: string | null
           id?: string
           math_scaled?: number | null
+          plan_task_id?: string | null
           practice_test_id?: string
           rw_scaled?: number | null
           sections_only?: string | null
@@ -1496,6 +1563,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "practice_test_attempts_v2_plan_task_id_fkey"
+            columns: ["plan_task_id"]
+            isOneToOne: false
+            referencedRelation: "plan_tasks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "practice_test_attempts_v2_practice_test_id_fkey"
             columns: ["practice_test_id"]
@@ -2915,6 +2989,48 @@ export type Database = {
         }
         Relationships: []
       }
+      study_plans: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          goal_score: number | null
+          id: string
+          starting_score: number | null
+          status: string
+          student_id: string
+          test_date: string | null
+          test_type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          goal_score?: number | null
+          id?: string
+          starting_score?: number | null
+          status?: string
+          student_id: string
+          test_date?: string | null
+          test_type?: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          goal_score?: number | null
+          id?: string
+          starting_score?: number | null
+          status?: string
+          student_id?: string
+          test_date?: string | null
+          test_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
@@ -3169,6 +3285,7 @@ export type Database = {
       }
     }
     Functions: {
+      activate_study_plan: { Args: { p_plan_id: string }; Returns: string }
       assignment_has_visible_student: {
         Args: { p_assignment_id: string }
         Returns: boolean
@@ -3199,6 +3316,23 @@ export type Database = {
         Returns: number
       }
       effective_plan: { Args: { p_user: string }; Returns: string }
+      get_plan_inputs: {
+        Args: { p_student: string; p_test_type?: string }
+        Returns: {
+          attempts_count: number
+          coverage_status: string
+          domain_code: string
+          expected_minutes: number
+          has_lesson: boolean
+          learnability: number
+          mastery: number
+          mastery_threshold: number
+          questions_available: number
+          section: string
+          sequence: number
+          skill_code: string
+        }[]
+      }
       get_practice_volume_by_week: {
         Args: { weeks?: number }
         Returns: {

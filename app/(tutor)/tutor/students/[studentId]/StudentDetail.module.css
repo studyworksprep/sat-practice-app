@@ -85,6 +85,12 @@
   border-bottom: 1px solid var(--border);
 }
 
+.snapshotHeadActions {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
 .snapshotTitle {
   margin: 0;
   font-size: 15px;
