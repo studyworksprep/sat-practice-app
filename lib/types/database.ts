@@ -1462,6 +1462,7 @@ export type Database = {
           last_activity_at: string
           marked_positions: number[]
           mode: string
+          plan_task_id: string | null
           question_ids: Json
           status: string
           test_type: string
@@ -1477,6 +1478,7 @@ export type Database = {
           last_activity_at?: string
           marked_positions?: number[]
           mode?: string
+          plan_task_id?: string | null
           question_ids?: Json
           status?: string
           test_type?: string
@@ -1492,12 +1494,21 @@ export type Database = {
           last_activity_at?: string
           marked_positions?: number[]
           mode?: string
+          plan_task_id?: string | null
           question_ids?: Json
           status?: string
           test_type?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "practice_sessions_plan_task_id_fkey"
+            columns: ["plan_task_id"]
+            isOneToOne: false
+            referencedRelation: "plan_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       practice_test_attempts_v2: {
         Row: {
@@ -1506,6 +1517,7 @@ export type Database = {
           finished_at: string | null
           id: string
           math_scaled: number | null
+          plan_task_id: string | null
           practice_test_id: string
           rw_scaled: number | null
           sections_only: string | null
@@ -1522,6 +1534,7 @@ export type Database = {
           finished_at?: string | null
           id?: string
           math_scaled?: number | null
+          plan_task_id?: string | null
           practice_test_id: string
           rw_scaled?: number | null
           sections_only?: string | null
@@ -1538,6 +1551,7 @@ export type Database = {
           finished_at?: string | null
           id?: string
           math_scaled?: number | null
+          plan_task_id?: string | null
           practice_test_id?: string
           rw_scaled?: number | null
           sections_only?: string | null
@@ -1549,6 +1563,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "practice_test_attempts_v2_plan_task_id_fkey"
+            columns: ["plan_task_id"]
+            isOneToOne: false
+            referencedRelation: "plan_tasks"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "practice_test_attempts_v2_practice_test_id_fkey"
             columns: ["practice_test_id"]
