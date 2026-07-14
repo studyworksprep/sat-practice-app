@@ -3294,6 +3294,23 @@ export type Database = {
         Returns: number
       }
       effective_plan: { Args: { p_user: string }; Returns: string }
+      get_plan_inputs: {
+        Args: { p_student: string; p_test_type?: string }
+        Returns: {
+          attempts_count: number
+          coverage_status: string
+          domain_code: string
+          expected_minutes: number
+          has_lesson: boolean
+          learnability: number
+          mastery: number
+          mastery_threshold: number
+          questions_available: number
+          section: string
+          sequence: number
+          skill_code: string
+        }[]
+      }
       get_practice_volume_by_week: {
         Args: { weeks?: number }
         Returns: {
