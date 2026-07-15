@@ -61,6 +61,20 @@ where id in (
   '77777777-7777-7777-7777-777777777777'
 );
 
+-- GoTrue's Go SQL scanner can't read NULL token columns (login fails with
+-- "converting NULL to string is unsupported" → "Database error querying
+-- schema"). A direct auth.users insert leaves them NULL — normalize to ''.
+update auth.users set
+  confirmation_token         = coalesce(confirmation_token, ''),
+  recovery_token             = coalesce(recovery_token, ''),
+  email_change               = coalesce(email_change, ''),
+  email_change_token_new     = coalesce(email_change_token_new, ''),
+  email_change_token_current = coalesce(email_change_token_current, ''),
+  phone_change               = coalesce(phone_change, ''),
+  phone_change_token         = coalesce(phone_change_token, ''),
+  reauthentication_token     = coalesce(reauthentication_token, '')
+where email like '%@test.studyworks';
+
 insert into auth.identities (
   id, user_id, provider_id, provider, identity_data,
   last_sign_in_at, created_at, updated_at

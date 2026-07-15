@@ -13,12 +13,12 @@
 // identity when the admin moves between subtrees.
 
 import { redirect } from 'next/navigation';
-import { requireUser } from '@/lib/api/auth';
+import { requireUserPage } from '@/lib/api/auth';
 import { AppNav } from '@/lib/ui/AppNav';
 import { tutorLinksForRole } from '@/lib/ui/nav-links';
 
 export default async function TutorTreeLayout({ children }) {
-  const { user, profile } = await requireUser();
+  const { user, profile } = await requireUserPage();
 
   if (profile.role === 'student' || profile.role === 'practice') redirect('/dashboard');
   if (!['teacher', 'manager', 'admin'].includes(profile.role)) redirect('/');

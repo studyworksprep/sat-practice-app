@@ -12,7 +12,7 @@
 
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
-import { requireUser } from '@/lib/api/auth';
+import { requireUserPage } from '@/lib/api/auth';
 import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
 import { maybeSendWelcomeEmail } from '@/lib/email/maybeSendWelcomeEmail';
 import { AppNav } from '@/lib/ui/AppNav';
@@ -35,7 +35,7 @@ function isSharedInfraPath(pathname) {
 }
 
 export default async function StudentTreeLayout({ children }) {
-  const { user, profile, supabase } = await requireUser();
+  const { user, profile, supabase } = await requireUserPage();
   const pathname = (await headers()).get('x-pathname') ?? '';
   const sharedInfra = isSharedInfraPath(pathname);
 

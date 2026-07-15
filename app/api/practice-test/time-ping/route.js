@@ -25,6 +25,14 @@ import { requireUser } from '@/lib/api/auth';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
+  // Auth first — before touching the (untrusted) request body — so an
+  // unauthenticated caller always gets 401 regardless of payload, and no
+  // input is processed for a request that will be rejected anyway.
+  let ctx;
+  try { ctx = await requireUser(); }
+  catch { return NextResponse.json({ ok: false, error: 'unauth' }, { status: 401 }); }
+  const { user, supabase } = ctx;
+
   let body;
   try {
     body = await req.json();
@@ -42,11 +50,6 @@ export async function POST(req) {
   if (!moduleAttemptId || !moduleItemId || timeDelta === 0) {
     return NextResponse.json({ ok: true, skipped: true });
   }
-
-  let ctx;
-  try { ctx = await requireUser(); }
-  catch { return NextResponse.json({ ok: false, error: 'unauth' }, { status: 401 }); }
-  const { user, supabase } = ctx;
 
   // Verify ownership + that the module is still active — a closed
   // module shouldn't accept late time pings. Same semantics as

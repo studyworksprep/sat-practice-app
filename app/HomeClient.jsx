@@ -272,8 +272,9 @@ export function HomeClient({ emailConfirmed }) {
           {tab === 'login' ? (
             <form onSubmit={onLogin} className={s.form}>
               <div className={s.field}>
-                <label className={s.label}>Email</label>
+                <label className={s.label} htmlFor="login-email">Email</label>
                 <input
+                  id="login-email"
                   className={s.input}
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
@@ -283,9 +284,10 @@ export function HomeClient({ emailConfirmed }) {
                 />
               </div>
               <div className={s.field}>
-                <label className={s.label}>Password</label>
+                <label className={s.label} htmlFor="login-password">Password</label>
                 <div className={s.passwordWrap}>
                   <input
+                    id="login-password"
                     className={s.input}
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
