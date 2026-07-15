@@ -173,7 +173,16 @@ export async function proxy(request) {
         return NextResponse.redirect(url);
       }
 
-      if (needsSubCheck && !justCheckedOut && !['admin', 'manager'].includes(role) && !profile?.subscription_exempt) {
+      // Staff roles (admin, manager, teacher) get full access via a role
+      // bypass — the subscription gate is for students / practice users, not
+      // the people who run the tutor tree. This matches the entitlements
+      // design (supabase/migrations/20260713220000_entitlements.sql: "Staff
+      // (admin/manager/teacher) get 'full' via a role bypass"). Historically
+      // only admin/manager were listed here and teachers relied on
+      // subscription_exempt=true being set at provisioning time; a teacher
+      // without that flag was wrongly bounced to /subscribe off /tutor/*,
+      // which is exactly what the e2e-auth teacher suite catches.
+      if (needsSubCheck && !justCheckedOut && !['admin', 'manager', 'teacher'].includes(role) && !profile?.subscription_exempt) {
         const { data: sub } = await supabase
           .from('subscriptions')
           .select('status')
