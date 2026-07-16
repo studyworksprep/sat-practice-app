@@ -16,6 +16,7 @@ import { RoleTag } from '@/lib/ui/RoleTag';
 import { StatusBadge } from '@/lib/ui/StatusBadge';
 import { SubscriptionBadge } from '@/lib/ui/SubscriptionBadge';
 import { Table, Th, Td } from '@/lib/ui/Table';
+import { InviteStudentForm } from './InviteStudentForm';
 import { UsersFilter } from './UsersFilter';
 import { UsersNav } from './UsersNav';
 import a from '../../admin.module.css';
@@ -74,6 +75,7 @@ export default async function AdminUsersPage({ searchParams }) {
     managerCountResult,
     adminCountResult,
     practiceCountResult,
+    tutorsResult,
   ] = await Promise.all([
     q,
     countRole('student'),
@@ -81,6 +83,13 @@ export default async function AdminUsersPage({ searchParams }) {
     countRole('manager'),
     countRole('admin'),
     countRole('practice'),
+    // Tutor options for the "Invite student" form.
+    supabase
+      .from('profiles')
+      .select('id, first_name, last_name, email')
+      .in('role', ['teacher', 'manager'])
+      .order('email')
+      .limit(500),
   ]);
 
   const { data: users, error } = usersResult;
@@ -131,6 +140,22 @@ export default async function AdminUsersPage({ searchParams }) {
       </header>
 
       <UsersNav current="list" />
+
+      <section className={a.section}>
+        <h2 className={a.h2}>Invite a student</h2>
+        <p className={a.sub}>
+          Generates a single-use invitation code bound to the student&apos;s
+          email, assigns them to the chosen tutor at signup, and emails the
+          invitation. Studyworks students join only this way — codes can&apos;t
+          be shared. Track invitations on the Codes tab.
+        </p>
+        <InviteStudentForm
+          tutors={(tutorsResult.data ?? []).map((t) => ({
+            id: t.id,
+            label: [t.first_name, t.last_name].filter(Boolean).join(' ') || t.email,
+          }))}
+        />
+      </section>
 
       <section>
         <UsersFilter currentRole={roleFilter} currentQuery={query} roleTally={roleTally} />

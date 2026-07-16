@@ -80,24 +80,75 @@ export async function POST(request) {
     teacherCodeExempt = true;
   }
 
-  // If student provided a teacher invite code, validate it exists
-  // and check if the teacher is exempt (Studyworks teacher)
+  // Student codes resolve in two tiers (owner policy 2026-07-16):
+  //
+  //   1. student_invite_codes — admin-issued, SINGLE-USE, EMAIL-BOUND
+  //      invitations. The only path to sponsored (free) access: valid
+  //      once, and only for the invited email, so a shared or reused
+  //      code fails HERE — at code-entry time — and the student still
+  //      lands in the normal subscribe/trial flow.
+  //   2. profiles.teacher_invite_code — the tutor's permanent multi-use
+  //      code, now ROSTER-ONLY, and rejected outright for Studyworks
+  //      (exempt) tutors (their roster edge grants sponsored access
+  //      under the entitlements model, so a shareable code must not
+  //      create it). Outside tutors keep it for self-serve rostering;
+  //      their students subscribe regardless, so sharing grants nothing.
   let teacherProfileId = null;
   let studentTeacherExempt = false;
   let linkedTeacher = null;
+  let studentInviteId = null;
   if (userType === 'student' && teacherCode?.trim()) {
-    const { data: teacherProfile, error: tErr } = await svc
-      .from('profiles')
-      .select('id, email, first_name, subscription_exempt')
-      .eq('teacher_invite_code', teacherCode.trim().toUpperCase())
-      .maybeSingle();
+    const normalized = teacherCode.trim().toUpperCase();
 
-    if (tErr || !teacherProfile) {
-      return NextResponse.json({ error: 'Invalid teacher code. Please check with your teacher and try again.' }, { status: 400 });
+    const { data: invite, error: invErr } = await svc
+      .from('student_invite_codes')
+      .select('id, email, teacher_id, used_by')
+      .eq('code', normalized)
+      .maybeSingle();
+    if (invErr) {
+      return NextResponse.json({ error: 'Could not validate the code. Please try again.' }, { status: 400 });
     }
-    teacherProfileId = teacherProfile.id;
-    studentTeacherExempt = teacherProfile.subscription_exempt === true;
-    linkedTeacher = teacherProfile;
+
+    if (invite) {
+      if (invite.used_by) {
+        return NextResponse.json({ error: 'This invitation code has already been used.' }, { status: 400 });
+      }
+      if (invite.email.trim().toLowerCase() !== email.trim().toLowerCase()) {
+        return NextResponse.json({
+          error: 'This invitation was issued to a different email address. Sign up with the email your invitation was sent to, or ask your tutor for a new invitation.',
+        }, { status: 400 });
+      }
+      const { data: teacherProfile, error: tErr } = await svc
+        .from('profiles')
+        .select('id, email, first_name, subscription_exempt')
+        .eq('id', invite.teacher_id)
+        .maybeSingle();
+      if (tErr || !teacherProfile) {
+        return NextResponse.json({ error: 'This invitation is no longer valid — its tutor account was removed.' }, { status: 400 });
+      }
+      teacherProfileId = teacherProfile.id;
+      studentTeacherExempt = teacherProfile.subscription_exempt === true;
+      linkedTeacher = teacherProfile;
+      studentInviteId = invite.id;
+    } else {
+      const { data: teacherProfile, error: tErr } = await svc
+        .from('profiles')
+        .select('id, email, first_name, subscription_exempt')
+        .eq('teacher_invite_code', normalized)
+        .maybeSingle();
+
+      if (tErr || !teacherProfile) {
+        return NextResponse.json({ error: 'Invalid teacher code. Please check with your teacher and try again.' }, { status: 400 });
+      }
+      if (teacherProfile.subscription_exempt === true) {
+        return NextResponse.json({
+          error: "This tutor's students join by personal invitation. Ask your tutor to have an invitation sent to your email — or sign up without a code and subscribe.",
+        }, { status: 400 });
+      }
+      teacherProfileId = teacherProfile.id;
+      studentTeacherExempt = false;
+      linkedTeacher = teacherProfile;
+    }
   }
 
   // Build user metadata (will be read by handle_new_user trigger)
@@ -174,14 +225,35 @@ export async function POST(request) {
     }
   }
 
-  // Auto-assign student to teacher if they provided a valid invite code
+  // Auto-assign student to teacher if they provided a valid code, and
+  // burn the single-use invitation. Both writes surface errors — a
+  // silent failure here either strands the student off-roster or
+  // leaves a sponsored invitation redeemable twice.
   if (userType === 'student' && teacherProfileId && authData?.user?.id) {
-    await svc
+    const { error: rosterErr } = await svc
       .from('teacher_student_assignments')
       .upsert(
         { teacher_id: teacherProfileId, student_id: authData.user.id },
         { onConflict: 'teacher_id,student_id' },
       );
+    if (rosterErr) {
+      console.error(`[signup] failed to roster ${email} to teacher ${teacherProfileId}:`, rosterErr.message);
+    }
+
+    if (studentInviteId) {
+      const { data: burned, error: burnErr } = await svc
+        .from('student_invite_codes')
+        .update({ used_by: authData.user.id, used_at: new Date().toISOString() })
+        .eq('id', studentInviteId)
+        .is('used_by', null)
+        .select('id');
+      if (burnErr || !burned?.length) {
+        console.error(
+          `[signup] failed to mark student invitation as used for ${email}:`,
+          burnErr?.message ?? 'invitation already claimed (concurrent signup?)',
+        );
+      }
+    }
   }
 
   // Fire internal signup notifications (soft failure — never blocks the
