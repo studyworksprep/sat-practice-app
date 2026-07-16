@@ -68,6 +68,7 @@ export const EXTERNAL_KEY_ROUTES: ReadonlyArray<{ url: string; method: 'GET' }> 
  *  the admin surface. Anonymous callers are redirected to /login. */
 export const ADMIN_ONLY_PAGES: ReadonlyArray<{ path: string; heading: RegExp }> = [
   { path: '/admin/users', heading: /users/i },
+  { path: '/admin/lessons/generate', heading: /generate lesson with ai/i },
 ];
 
 /** Pages tutors (teacher/manager/admin) reach and students must not.
