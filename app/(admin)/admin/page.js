@@ -115,8 +115,8 @@ export default async function AdminLandingPage() {
           {profile.first_name ? `Hi, ${profile.first_name}` : 'Admin'}
         </h1>
         <p className={s.sub}>
-          Studyworks platform overview. Use the navigation up top to
-          drill into specific areas.
+          Studyworks platform overview. Use the navigation to drill
+          into specific areas.
         </p>
       </header>
 

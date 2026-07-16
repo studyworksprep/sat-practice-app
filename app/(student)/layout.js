@@ -1,9 +1,15 @@
-// Student-tree shared shell. Mounts the AppNav at the top of every
-// student-facing page in the new tree (dashboard, practice runner,
-// review, history, assignments). See docs/architecture-plan.md
-// §3.6 — the new tree owns its own layouts independently of the
-// legacy tree, so adding a sticky nav here doesn't touch a single
-// legacy page.
+// Student-tree shared shell. Mounts the app chrome at the top of
+// every student-facing page in the new tree (dashboard, practice
+// runner, review, history, assignments). See
+// docs/architecture-plan.md §3.6 — the new tree owns its own layouts
+// independently of the legacy tree.
+//
+// Chrome: the sidebar_shell feature flag decides between the legacy
+// top AppNav and the Phase 6.1 AppShell sidebar (lib/flags-server).
+// Live runner surfaces (the session runner and the practice-test
+// module runner) render bare under the sidebar — the suppression
+// check lives INSIDE AppShell (client-side pathname), because
+// layouts don't re-render on soft navigation.
 //
 // requireUser() runs once per request to populate the nav. It also
 // double-gates role: an admin or teacher who somehow lands on a
@@ -15,8 +21,15 @@ import { headers } from 'next/headers';
 import { requireUserPage } from '@/lib/api/auth';
 import { hasAssignedTutor } from '@/lib/api/hasAssignedTutor';
 import { maybeSendWelcomeEmail } from '@/lib/email/maybeSendWelcomeEmail';
+import { sidebarEnabledFor } from '@/lib/flags-server';
 import { AppNav } from '@/lib/ui/AppNav';
-import { STUDENT_LINKS, tutorLinksForRole } from '@/lib/ui/nav-links';
+import { AppShell } from '@/lib/ui/AppSidebar';
+import {
+  STUDENT_LINKS,
+  studentSections,
+  tutorLinksForRole,
+  tutorSectionsForRole,
+} from '@/lib/ui/nav-links';
 
 // Shared-infra surfaces: students use them, but so do teachers /
 // managers / admins (e.g. tutors taking a practice test from
@@ -40,7 +53,7 @@ export default async function StudentTreeLayout({ children }) {
   const sharedInfra = isSharedInfraPath(pathname);
 
   // Bounce non-students out of this tree. Same gates the individual
-  // page.js files apply, but lifted here so the AppNav doesn't
+  // page.js files apply, but lifted here so the nav doesn't
   // momentarily flash as a student before we redirect. Skip for
   // shared-infra paths so tutors taking a practice test from their
   // own training tree aren't bounced mid-launch.
@@ -68,8 +81,9 @@ export default async function StudentTreeLayout({ children }) {
   // assignments — drop the tab so the nav doesn't advertise an
   // empty surface. Skip the check on shared-infra paths since
   // the nav there isn't STUDENT_LINKS anyway.
+  let hasTutor = true;
   if (!isTutor && profile.role === 'student') {
-    const hasTutor = await hasAssignedTutor(supabase, user.id);
+    hasTutor = await hasAssignedTutor(supabase, user.id);
     if (!hasTutor) {
       links = links.filter((l) => l.href !== '/assignments');
     }
@@ -85,6 +99,17 @@ export default async function StudentTreeLayout({ children }) {
   // stamp) so firing on every render is safe.
   if (profile.role === 'student') {
     await maybeSendWelcomeEmail({ userId: user.id, email: user.email });
+  }
+
+  if (await sidebarEnabledFor(navUser.role)) {
+    const sections = isTutor
+      ? tutorSectionsForRole(profile.role)
+      : studentSections({ hasTutor });
+    return (
+      <AppShell user={navUser} sections={sections}>
+        {children}
+      </AppShell>
+    );
   }
 
   return (

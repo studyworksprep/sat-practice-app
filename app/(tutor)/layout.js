@@ -1,8 +1,14 @@
 // Tutor-tree shared shell. Mirrors the student layout's role —
-// mounts the AppNav at the top of every tutor-facing new-tree
-// page (dashboard, student detail, assignments, training) and
-// keeps the role gate in one place so individual page.js files
-// don't need to re-check it.
+// mounts the app chrome on every tutor-facing new-tree page
+// (dashboard, student detail, assignments, training) and keeps the
+// role gate in one place so individual page.js files don't need to
+// re-check it.
+//
+// Chrome: the sidebar_shell feature flag decides between the legacy
+// top AppNav and the Phase 6.1 AppShell sidebar (lib/flags-server).
+// Live runner surfaces (the tutor training runner) render bare — the
+// suppression check lives INSIDE AppShell (client-side pathname),
+// because layouts don't re-render on soft navigation.
 //
 // Admins land here too: they need to see their teachers' and
 // managers' views during test drives, so the layout accepts
@@ -14,8 +20,10 @@
 
 import { redirect } from 'next/navigation';
 import { requireUserPage } from '@/lib/api/auth';
+import { sidebarEnabledFor } from '@/lib/flags-server';
 import { AppNav } from '@/lib/ui/AppNav';
-import { tutorLinksForRole } from '@/lib/ui/nav-links';
+import { AppShell } from '@/lib/ui/AppSidebar';
+import { tutorLinksForRole, tutorSectionsForRole } from '@/lib/ui/nav-links';
 
 export default async function TutorTreeLayout({ children }) {
   const { user, profile } = await requireUserPage();
@@ -28,6 +36,14 @@ export default async function TutorTreeLayout({ children }) {
     role: profile.role,
     firstName: profile.first_name ?? null,
   };
+
+  if (await sidebarEnabledFor(profile.role)) {
+    return (
+      <AppShell user={navUser} sections={tutorSectionsForRole(profile.role)}>
+        {children}
+      </AppShell>
+    );
+  }
 
   return (
     <>
