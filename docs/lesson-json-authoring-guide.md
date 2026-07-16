@@ -10,6 +10,12 @@ The importer is the source of truth: `lib/lesson/template-import.mjs`
 (parser/compiler) + `lib/lesson/lesson-validation.mjs` (validator). On
 import, errors block the import; warnings do not.
 
+> Related: **Lessons → Generate with AI** (`/admin/lessons/generate`)
+> drafts a lesson from a free-form brief instead of a JSON spec. It
+> emits text / check / video-placeholder / question_link blocks
+> through its own mapper (`lib/admin/lessonGenMapper.ts`) and runs
+> the same `validateLessonBlocks` gate before saving a draft.
+
 ---
 
 ## 1. Output format

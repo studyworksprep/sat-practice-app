@@ -107,6 +107,23 @@ export default async function AdminLessonsPage({ searchParams }) {
       <section className={a.section}>
         <div style={S.cta}>
           <div>
+            <h2 className={a.h2}>Generate with AI</h2>
+            <p className={a.help}>
+              Describe the lesson you want — topic, audience, objectives,
+              length — and Claude drafts it as text sections, comprehension
+              checks, video placeholders, and practice-question links. The
+              draft opens in the block editor for review before publishing.
+            </p>
+          </div>
+          <a href="/admin/lessons/generate">
+            <Button variant="primary">✨ Generate lesson</Button>
+          </a>
+        </div>
+      </section>
+
+      <section className={a.section}>
+        <div style={S.cta}>
+          <div>
             <h2 className={a.h2}>Import from JSON</h2>
             <p className={a.help}>
               Paste a LessonTemplateSpec — title, description, and a list
