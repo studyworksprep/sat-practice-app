@@ -25,7 +25,6 @@ export interface StudentInvitationDetails {
 }
 
 export function renderStudentInvitationEmail({
-  email,
   code,
   teacherName,
   siteUrl,
@@ -40,9 +39,8 @@ export function renderStudentInvitationEmail({
       <h1 style="font-size:18px;margin:0 0 12px 0;">You're invited to Studyworks</h1>
       <p style="font-size:14px;line-height:1.6;margin:0 0 16px 0;">
         ${escapeHtml(teacherName)} set you up with a Studyworks account for
-        SAT practice. Sign up with this email address
-        (<strong>${escapeHtml(email)}</strong>) and enter your invitation
-        code — it's personal to you and works once.
+        SAT practice. Create your account — any email you like — and enter
+        your invitation code. It's personal to you and works once.
       </p>
       <p style="font-size:24px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;letter-spacing:0.12em;background:#f1f5f9;border-radius:6px;padding:12px 16px;text-align:center;margin:0 0 16px 0;">
         ${escapeHtml(code)}
@@ -61,7 +59,7 @@ export function renderStudentInvitationEmail({
     "You're invited to Studyworks",
     '',
     `${teacherName} set you up with a Studyworks account for SAT practice.`,
-    `Sign up with this email address (${email}) and enter your invitation code — it's personal to you and works once.`,
+    "Create your account — any email you like — and enter your invitation code. It's personal to you and works once.",
     '',
     `Invitation code: ${code}`,
     '',

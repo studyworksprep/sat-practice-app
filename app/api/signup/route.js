@@ -82,11 +82,14 @@ export async function POST(request) {
 
   // Student codes resolve in two tiers (owner policy 2026-07-16):
   //
-  //   1. student_invite_codes — admin-issued, SINGLE-USE, EMAIL-BOUND
-  //      invitations. The only path to sponsored (free) access: valid
-  //      once, and only for the invited email, so a shared or reused
-  //      code fails HERE — at code-entry time — and the student still
-  //      lands in the normal subscribe/trial flow.
+  //   1. student_invite_codes — admin-issued, SINGLE-USE invitations.
+  //      The only path to sponsored (free) access: valid exactly once,
+  //      so a reused code fails HERE — at code-entry time — and the
+  //      student still lands in the normal subscribe/trial flow. The
+  //      invited email is the CONTACT POINT, not a lock: students often
+  //      sign up under a different address than the family contact
+  //      (owner decision 2026-07-16), and the Codes tracker records who
+  //      actually claimed each code for after-the-fact review.
   //   2. profiles.teacher_invite_code — the tutor's permanent multi-use
   //      code, now ROSTER-ONLY, and rejected outright for Studyworks
   //      (exempt) tutors (their roster edge grants sponsored access
@@ -112,11 +115,6 @@ export async function POST(request) {
     if (invite) {
       if (invite.used_by) {
         return NextResponse.json({ error: 'This invitation code has already been used.' }, { status: 400 });
-      }
-      if (invite.email.trim().toLowerCase() !== email.trim().toLowerCase()) {
-        return NextResponse.json({
-          error: 'This invitation was issued to a different email address. Sign up with the email your invitation was sent to, or ask your tutor for a new invitation.',
-        }, { status: 400 });
       }
       const { data: teacherProfile, error: tErr } = await svc
         .from('profiles')

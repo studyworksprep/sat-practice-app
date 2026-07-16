@@ -7,14 +7,17 @@
 -- (roster edge + subscription_exempt), so students can share it.
 --
 -- Fix, per owner decision: sponsored (free) student access is granted
--- ONLY through admin-issued, single-use, email-bound invitation codes:
+-- ONLY through admin-issued, single-use invitation codes:
 --
 --   * An admin invites a student from /admin/users (email + tutor).
 --     The system generates a code, emails the invitation, and tracks
 --     the code on /admin/users/codes (claimed when / by whom / tutor).
---   * At signup the code is valid once, and only for the invited email
---     — a shared or reused code fails at code-entry time, so the
---     student still lands in the normal subscribe/trial flow.
+--   * At signup the code is valid exactly once — a reused code fails
+--     at code-entry time, so the student still lands in the normal
+--     subscribe/trial flow. The invited email is the CONTACT POINT,
+--     not a lock (students often sign up under a different address
+--     than the family contact); the tracker's claimed-by column is
+--     the audit record of who actually redeemed each code.
 --   * The multi-use teacher_invite_code becomes ROSTER-ONLY and stops
 --     working entirely for Studyworks (exempt) tutors — otherwise a
 --     shared code would still grant sponsored access via the roster
@@ -30,8 +33,9 @@ create table if not exists public.student_invite_codes (
   code       text not null unique,
   -- The tutor the invited student will roster to.
   teacher_id uuid not null references public.profiles(id) on delete cascade,
-  -- The invited student's email — the code only works for this address
-  -- (stored lowercase; compared case-insensitively at signup).
+  -- The invited student's contact email (recorded for the tracker; the
+  -- code itself is redeemable from any signup address — used_by is the
+  -- record of who claimed it).
   email      text not null,
   created_by uuid references public.profiles(id) on delete set null,
   used_by    uuid references public.profiles(id) on delete set null,
@@ -40,10 +44,11 @@ create table if not exists public.student_invite_codes (
 );
 
 comment on table public.student_invite_codes is
-  'Admin-issued, single-use, email-bound student invitations. The ONLY '
-  'path to sponsored (free) student access — the multi-use '
-  'teacher_invite_code is roster-only and rejected for Studyworks '
-  '(exempt) tutors. Owner policy 2026-07-16.';
+  'Admin-issued, single-use student invitations. The ONLY path to '
+  'sponsored (free) student access — the multi-use teacher_invite_code '
+  'is roster-only and rejected for Studyworks (exempt) tutors. The '
+  'email column is the invited contact point, not a lock; used_by '
+  'records who actually claimed the code. Owner policy 2026-07-16.';
 
 create index if not exists student_invite_codes_teacher_idx
   on public.student_invite_codes (teacher_id);

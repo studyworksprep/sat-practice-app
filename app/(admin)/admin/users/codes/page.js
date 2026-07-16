@@ -67,8 +67,8 @@ export default async function AdminUserCodesPage() {
         <h1 className={a.h1}>Signup codes</h1>
         <p className={a.sub}>
           Teacher Codes identify Studyworks tutors (consumed once at signup).
-          Student Invitations are single-use, email-bound codes issued from
-          the Users page — the only way a sponsored student joins.
+          Student Invitations are single-use codes issued from the Users
+          page — the only way a sponsored student joins.
         </p>
       </header>
 
@@ -143,9 +143,11 @@ export default async function AdminUserCodesPage() {
       <Section title={`Student Invitations (${invitesOpen} open · ${invitesClaimed} claimed)`}>
         <p className={f.formHint}>
           Issued from the <a href="/admin/users" style={S.userLink}>Users page</a> —
-          each code is bound to one email, works once, and assigns the
-          student to its tutor at signup. Revoking an open invitation
-          invalidates the code immediately.
+          each code works exactly once and assigns the student to its tutor
+          at signup. The invited email is the contact point; students may
+          sign up under a different address, so the Claimed-by column is the
+          record of who actually redeemed each code. Revoking an open
+          invitation invalidates it immediately.
         </p>
 
         {(invites ?? []).length === 0 ? (

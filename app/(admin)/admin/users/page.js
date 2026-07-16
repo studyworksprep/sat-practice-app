@@ -144,10 +144,11 @@ export default async function AdminUsersPage({ searchParams }) {
       <section className={a.section}>
         <h2 className={a.h2}>Invite a student</h2>
         <p className={a.sub}>
-          Generates a single-use invitation code bound to the student&apos;s
-          email, assigns them to the chosen tutor at signup, and emails the
-          invitation. Studyworks students join only this way — codes can&apos;t
-          be shared. Track invitations on the Codes tab.
+          Generates a single-use invitation code, emails it to the student,
+          and assigns them to the chosen tutor at signup. The email is the
+          contact point — students may sign up under a different address;
+          each code works exactly once, and the Codes tab tracks who
+          claimed it.
         </p>
         <InviteStudentForm
           tutors={(tutorsResult.data ?? []).map((t) => ({
