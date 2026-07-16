@@ -13,7 +13,7 @@ const BLOCKED_FOR_PRACTICE = [
 ];
 
 // Routes that require an active subscription (or exemption).
-const SUBSCRIPTION_REQUIRED = ['/practice', '/review', '/dashboard', '/tutor'];
+const SUBSCRIPTION_REQUIRED = ['/practice', '/review', '/dashboard', '/tutor', '/today'];
 
 // Routes that are always accessible (no subscription check).
 const ALWAYS_ACCESSIBLE = ['/', '/login', '/subscribe', '/features', '/account', '/auth'];

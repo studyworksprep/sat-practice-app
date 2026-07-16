@@ -102,9 +102,21 @@ export default async function StudentTreeLayout({ children }) {
   }
 
   if (await sidebarEnabledFor(navUser.role)) {
-    const sections = isTutor
-      ? tutorSectionsForRole(profile.role)
-      : studentSections({ hasTutor });
+    let sections;
+    if (isTutor) {
+      sections = tutorSectionsForRole(profile.role);
+    } else {
+      // Today (§2.3) anchors the sidebar only when the student has an
+      // active plan — without one the link would open an empty surface.
+      // Head-count against the partial one-active-plan index, so this
+      // per-request check stays ~free.
+      const { count } = await supabase
+        .from('study_plans')
+        .select('id', { count: 'exact', head: true })
+        .eq('student_id', user.id)
+        .eq('status', 'active');
+      sections = studentSections({ hasTutor, hasPlan: (count ?? 0) > 0 });
+    }
     return (
       <AppShell user={navUser} sections={sections}>
         {children}
