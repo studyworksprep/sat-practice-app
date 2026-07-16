@@ -52,35 +52,36 @@ import {
 } from './icons';
 import s from './AppSidebar.module.css';
 
+type IconComponent = ComponentType<{ size?: number; className?: string }>;
+
 // The icon components live in untyped icons.jsx, whose un-defaulted
 // `className` destructure makes TS infer it as a *required* prop —
-// ComponentType<any> sidesteps that artifact (IconTile passes the
-// real props).
-type IconComponent = ComponentType<any>;
+// normalize each one through `unknown` once, here at the seam.
+const asIcon = (icon: unknown): IconComponent => icon as IconComponent;
 
 // nav-links.ts stays JSX-free (unit-testable under node --test), so
 // links carry string icon keys and this map owns the components.
 const NAV_ICONS: Record<NavIconName, IconComponent> = {
-  dashboard: BarChartIcon,
-  practice: PencilIcon,
-  test: TestIcon,
-  inbox: InboxIcon,
-  notes: BookmarkIcon,
-  review: TargetIcon,
-  learn: GraduationCapIcon,
-  help: InformationIcon,
-  roster: RosterIcon,
-  performance: PerformanceIcon,
-  train: PencilIcon,
-  teachers: TutorIcon,
-  users: UsersIcon,
-  questions: QuestionBankIcon,
-  lessons: BookOpenIcon,
+  dashboard: asIcon(BarChartIcon),
+  practice: asIcon(PencilIcon),
+  test: asIcon(TestIcon),
+  inbox: asIcon(InboxIcon),
+  notes: asIcon(BookmarkIcon),
+  review: asIcon(TargetIcon),
+  learn: asIcon(GraduationCapIcon),
+  help: asIcon(InformationIcon),
+  roster: asIcon(RosterIcon),
+  performance: asIcon(PerformanceIcon),
+  train: asIcon(PencilIcon),
+  teachers: asIcon(TutorIcon),
+  users: asIcon(UsersIcon),
+  questions: asIcon(QuestionBankIcon),
+  lessons: asIcon(BookOpenIcon),
 };
 
-// Aliased through IconComponent for the same reason as NAV_ICONS.
-const ChevronLeft: IconComponent = ChevronLeftIcon;
-const ChevronRight: IconComponent = ChevronRightIcon;
+// Aliased through the same seam as NAV_ICONS.
+const ChevronLeft = asIcon(ChevronLeftIcon);
+const ChevronRight = asIcon(ChevronRightIcon);
 
 const COLLAPSE_KEY = 'sw:sidebar-collapsed';
 
