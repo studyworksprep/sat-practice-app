@@ -17,7 +17,7 @@
 | P0.6 public surface hardening | **Done** | 2026-07-12 | |
 | P0.7 hygiene | Partial | 2026-07-12 | comment scrub, service-role audit, README, matrix, tutorial done; **migration baseline reset + vestigial drops still pending** (scheduled op) |
 | 1.1–1.9 knowledge model | **Done** | 2026-07-13 | PR #189; live in production (snapshots, curriculum, coverage, entitlements infra, attempt context, item stats, bank gate, snapshot-on-edit) |
-| 1.5 tutor-onboarding policy | **Done** | 2026-07-16 | Owner policy encoded: admin-issued `teacher_codes` = Studyworks tutor (free, `subscription_exempt`); codeless teacher signup reopened for outside tutors (paid); sponsorship qualified — only a Studyworks tutor's roster edge grants a student free access. Resolver corrected (`20260716150000`, parity 0/0 across 77 users; **prod apply pending owner**); proxy's blanket teacher bypass reverted |
+| 1.5 tutor-onboarding policy | **Done** | 2026-07-16 | Owner policy encoded: admin-issued `teacher_codes` = Studyworks tutor (free, `subscription_exempt`); codeless teacher signup reopened for outside tutors (paid); sponsorship qualified — only a Studyworks tutor's roster edge grants a student free access. Resolver corrected (`20260716150000`) and **applied to production 2026-07-16** (owner-authorized; live-catalog verified; retention 0 lose / 0 gain across 77 users); proxy's blanket teacher bypass reverted |
 | 1.5 `entitlements_gate` flip | Open | — | owner decision; needs the proxy/lib-subscription **wiring PR** first (the flag is not consulted anywhere yet), then a fresh parity check |
 | 2.1 plan schema | **Done** | 2026-07-14 | |
 | 2.2 generator | **Done** | 2026-07-14 | deterministic v1 |
