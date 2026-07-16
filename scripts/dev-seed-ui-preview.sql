@@ -91,10 +91,16 @@ where u.id in (
 )
 on conflict (id) do nothing;
 
--- Assign all 5 students to the teacher.
+-- Assign student3–5 to the teacher. student2 (4444…) is DELIBERATELY NOT
+-- on the roster: it is the reserved "not on the teacher's roster" fixture
+-- for the e2e-auth suite (tests/e2e/helpers/fixtures.ts +
+-- page-auth.teacher.spec.ts "<not-on-roster> 404s"). studyworks-dev doubles
+-- as the CI e2e database, so assigning student2 here makes it visible via
+-- can_view() and breaks that access-control test. student2 still gets an
+-- assignment + attempts below, which makes it a stronger 404 fixture — a
+-- student with real history whom the teacher must still not be able to see.
 insert into public.teacher_student_assignments (teacher_id, student_id)
 values
-  ('22222222-2222-2222-2222-222222222222', '44444444-4444-4444-4444-444444444444'),
   ('22222222-2222-2222-2222-222222222222', '55555555-5555-5555-5555-555555555555'),
   ('22222222-2222-2222-2222-222222222222', '66666666-6666-6666-6666-666666666666'),
   ('22222222-2222-2222-2222-222222222222', '77777777-7777-7777-7777-777777777777')
