@@ -31,6 +31,7 @@
 // AppSidebar owns the key → component map.
 
 export type NavIconName =
+  | 'today'
   | 'dashboard'
   | 'practice'
   | 'test'
@@ -75,6 +76,13 @@ export interface NavSection {
 // Defined once and composed into both the flat lists (AppNav) and
 // the sections (AppSidebar) so a route change edits one place.
 
+// Today is the study plan's daily surface (§2.3) and the sidebar's
+// anchor item. Sidebar-only, like Learn — the flag-off AppNav must stay
+// byte-identical to the pre-sidebar chrome — and only offered when the
+// student actually has an active plan (studentSections's hasPlan).
+const STUDENT_TODAY: NavLink = {
+  href: '/today', label: 'Today', icon: 'today',
+};
 const STUDENT_DASHBOARD: NavLink = {
   href: '/dashboard', label: 'Dashboard', icon: 'dashboard',
 };
@@ -261,15 +269,18 @@ export function tutorLinksForRole(role: string): NavItem[] {
 
 /** Student sidebar. `hasTutor: false` drops the Assignments link —
  *  self-studying students never see assignments (mirrors the AppNav
- *  behavior in app/(student)/layout.js). */
+ *  behavior in app/(student)/layout.js). `hasPlan: true` puts Today at
+ *  the top as the anchor item (§2.3); without an active plan the link
+ *  would open an empty surface, so it stays hidden. */
 export function studentSections(
-  { hasTutor = true }: { hasTutor?: boolean } = {},
+  { hasTutor = true, hasPlan = false }: { hasTutor?: boolean; hasPlan?: boolean } = {},
 ): NavSection[] {
   const practice = hasTutor
     ? [STUDENT_PRACTICE, STUDENT_TESTS, STUDENT_ASSIGNMENTS]
     : [STUDENT_PRACTICE, STUDENT_TESTS];
+  const anchor = hasPlan ? [STUDENT_TODAY, STUDENT_DASHBOARD] : [STUDENT_DASHBOARD];
   return [
-    { title: null, links: [STUDENT_DASHBOARD] },
+    { title: null, links: anchor },
     { title: 'Practice', links: practice },
     { title: 'Study', links: [STUDENT_REVIEW, STUDENT_NOTES, STUDENT_LEARN] },
     { title: null, links: [STUDENT_HELP] },

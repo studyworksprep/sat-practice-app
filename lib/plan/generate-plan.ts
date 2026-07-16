@@ -86,13 +86,15 @@ function clamp(x: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, x));
 }
 
-function addDays(iso: string, n: number): string {
+// Exported for the plan-family modules (lib/plan/today.ts) so the
+// date arithmetic has one home — same UTC-anchored day math everywhere.
+export function addDays(iso: string, n: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
 }
 
-function daysBetween(aIso: string, bIso: string): number {
+export function daysBetween(aIso: string, bIso: string): number {
   const a = new Date(`${aIso}T00:00:00Z`).getTime();
   const b = new Date(`${bIso}T00:00:00Z`).getTime();
   return Math.round((b - a) / 86_400_000);
