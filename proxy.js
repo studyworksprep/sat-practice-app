@@ -1,5 +1,34 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { entitlementsGateEnabled } from './lib/flags';
+
+// entitlements_gate (§1.5 switchover): when 'on', the subscription gate
+// below resolves access through the has_plan() SQL resolver instead of
+// the legacy role/exempt/subscription checks. The flag value is cached
+// per server instance for a short TTL so the hot path costs one
+// feature_flags point-read every ~30s, not one per request; a flip
+// therefore propagates within TTL. Any read failure counts as 'off'
+// (legacy path) — a broken flag read must never change who gets in.
+const ENTITLEMENTS_GATE_TTL_MS = 30_000;
+let entitlementsGateCache = { enabled: false, expiresAt: 0 };
+
+async function entitlementsGateOn(supabase) {
+  const now = Date.now();
+  if (now < entitlementsGateCache.expiresAt) return entitlementsGateCache.enabled;
+  let enabled = false;
+  try {
+    const { data } = await supabase
+      .from('feature_flags')
+      .select('value')
+      .eq('key', 'entitlements_gate')
+      .maybeSingle();
+    enabled = entitlementsGateEnabled(data?.value);
+  } catch {
+    enabled = false;
+  }
+  entitlementsGateCache = { enabled, expiresAt: now + ENTITLEMENTS_GATE_TTL_MS };
+  return enabled;
+}
 
 // Routes that practice-only users cannot access. They get redirected to
 // /practice/start (the picker — what was /practice in the legacy tree).
@@ -183,15 +212,33 @@ export async function proxy(request) {
       // teacher-role users here, following the entitlements migration's
       // "staff = admin/manager/teacher" comment — that doctrine was wrong
       // for outside tutors and is corrected in the resolver too.)
-      if (needsSubCheck && !justCheckedOut && !['admin', 'manager'].includes(role) && !profile?.subscription_exempt) {
-        const { data: sub } = await supabase
-          .from('subscriptions')
-          .select('status')
-          .eq('user_id', user.id)
-          .in('status', ['active', 'trialing'])
-          .maybeSingle();
+      //
+      // entitlements_gate ON routes this decision through has_plan() —
+      // the single §1.5 resolver (parity-verified 0/0 against the legacy
+      // checks). A resolver ERROR falls back to the legacy checks below
+      // rather than deciding access off a failed query.
+      if (needsSubCheck && !justCheckedOut) {
+        let denied = null;
 
-        if (!sub) {
+        if (await entitlementsGateOn(supabase)) {
+          const { data: hasFull, error: planErr } = await supabase.rpc('has_plan', {
+            p_user: user.id,
+            p_min_plan: 'full',
+          });
+          if (!planErr) denied = !hasFull;
+        }
+
+        if (denied === null && !['admin', 'manager'].includes(role) && !profile?.subscription_exempt) {
+          const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('status')
+            .eq('user_id', user.id)
+            .in('status', ['active', 'trialing'])
+            .maybeSingle();
+          denied = !sub;
+        }
+
+        if (denied) {
           const url = request.nextUrl.clone();
           url.pathname = '/subscribe';
           return NextResponse.redirect(url);
