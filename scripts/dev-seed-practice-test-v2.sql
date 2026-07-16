@@ -58,6 +58,16 @@ on conflict (id) do update set
   high_school      = excluded.high_school,
   graduation_year  = excluded.graduation_year;
 
+-- The seed teacher is a STUDYWORKS tutor: subscription_exempt is the org
+-- marker (set in production by redeeming an admin-issued teacher_codes
+-- invitation at signup). The proxy's subscription gate lets exempt
+-- teachers through; a non-exempt teacher is an OUTSIDE tutor and gets
+-- routed to the teacher plan — so without this flag the whole
+-- page-auth.teacher e2e suite would bounce to /subscribe.
+update public.profiles
+set subscription_exempt = true
+where id = '22222222-2222-2222-2222-222222222222';
+
 -- Set a real bcrypt password hash so these users can sign in.
 -- Password: devseed123  (intentionally weak — dev-only credentials).
 update auth.users

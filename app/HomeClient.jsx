@@ -141,7 +141,11 @@ export function HomeClient({ emailConfirmed }) {
     setLoginMsg({ kind: 'ok', text: 'Password reset email sent! Check your inbox.' });
   }
 
-  const willNeedSubscription = userType === 'student' && !teacherCode?.trim();
+  // Students without a Studyworks tutor's invite code and teachers
+  // without a Studyworks registration code both land on a paid plan
+  // after verifying their email.
+  const willNeedSubscription =
+    (userType === 'student' || userType === 'teacher') && !teacherCode?.trim();
   const isExploringType = userType === 'exploring';
 
   async function onSignup(e) {
@@ -459,22 +463,34 @@ export function HomeClient({ emailConfirmed }) {
 
               {userType === 'teacher' && (
                 <div className={s.field}>
-                  <label className={s.label}>Teacher code</label>
+                  <label className={s.label}>
+                    Studyworks tutor code (if you have one)
+                  </label>
                   <input
                     className={s.input}
                     value={teacherCode}
                     onChange={(e) => setTeacherCode(e.target.value)}
-                    required
-                    placeholder="Enter the code provided to you"
+                    placeholder="Optional — from your invitation email"
                   />
                 </div>
               )}
 
               {willNeedSubscription && !isExploringType && (
                 <div className={s.trialNote}>
-                  <span className={s.trialNoteEmph}>7-day free trial</span> — full access to the question bank,
-                  practice tests, and analytics. After your trial it’s $12.99/month. Cancel anytime.
-                  Have a teacher code? Enter it above for free access.
+                  {userType === 'teacher' ? (
+                    <>
+                      <span className={s.trialNoteEmph}>7-day free trial</span> — the full
+                      teacher toolkit: student roster, custom assignments, and score
+                      tracking. After your trial it’s $29.99/month. Cancel anytime.
+                      Studyworks tutor? Enter your invitation code above for free access.
+                    </>
+                  ) : (
+                    <>
+                      <span className={s.trialNoteEmph}>7-day free trial</span> — full access to the question bank,
+                      practice tests, and analytics. After your trial it’s $12.99/month. Cancel anytime.
+                      Have a teacher code? Enter it above for free access.
+                    </>
+                  )}
                 </div>
               )}
 

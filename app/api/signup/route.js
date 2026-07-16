@@ -52,20 +52,19 @@ export async function POST(request) {
 
   const svc = createServiceClient();
 
-  // Validate teacher registration code if signing up as teacher
+  // Teacher registration code — the Studyworks-tutor marker (owner
+  // policy, 2026-07-16). An admin-issued teacher_codes row identifies a
+  // Studyworks tutor: one tutor per code, used_by/used_at tracked, and a
+  // valid code grants subscription_exempt=true (free access for as long
+  // as they use the app). A teacher signing up WITHOUT a code is an
+  // outside tutor — role=teacher, no exemption — and the proxy routes
+  // them to the teacher subscription plan.
+  //
+  // A code that IS provided but invalid or already used still errors:
+  // silently downgrading a mistyped Studyworks invitation into a paid
+  // signup would be worse than asking the tutor to re-check their email.
   let teacherCodeExempt = false;
-  if (userType === 'teacher') {
-    if (!teacherCode) {
-      return NextResponse.json({ error: 'Teacher code is required.' }, { status: 400 });
-    }
-
-    // NOTE: `exempt` was removed from this select — the column does not
-    // exist in production, so selecting it errored and broke teacher
-    // self-signup entirely (§1.5 audit). A valid, unused teacher
-    // registration code is admin-issued to a Studyworks tutor, who is
-    // staff and should get access, so a valid code grants exemption.
-    // (Under the §1.5 entitlements model teacher access is role-based;
-    // confirm the intended per-code policy with the owner.)
+  if (userType === 'teacher' && teacherCode?.trim()) {
     const { data: codeRow, error: codeErr } = await svc
       .from('teacher_codes')
       .select('id, used_by')
@@ -141,19 +140,38 @@ export async function POST(request) {
     await anonClient.auth.resend({ type: 'signup', email });
   }
 
-  // Mark teacher registration code as used + auto-generate invite code
+  // Mark the redeemed Studyworks code as used (one tutor per code) and
+  // auto-generate a student invite code for EVERY teacher — outside
+  // tutors invite students too; their students just don't inherit an
+  // exemption (see studentTeacherExempt above).
   if (userType === 'teacher' && authData?.user?.id) {
-    await svc
-      .from('teacher_codes')
-      .update({ used_by: authData.user.id, used_at: new Date().toISOString() })
-      .eq('code', teacherCode.trim());
+    if (teacherCodeExempt) {
+      // `.is('used_by', null)` re-asserts one-tutor-per-code at write
+      // time (the pre-createUser check can race a concurrent signup).
+      // These writes used to be fire-and-forget; a failure here means a
+      // Studyworks code stays redeemable, so it must at least be loud.
+      const { data: stamped, error: stampErr } = await svc
+        .from('teacher_codes')
+        .update({ used_by: authData.user.id, used_at: new Date().toISOString() })
+        .eq('code', teacherCode.trim())
+        .is('used_by', null)
+        .select('id');
+      if (stampErr || !stamped?.length) {
+        console.error(
+          `[signup] failed to mark teacher code as used for ${email}:`,
+          stampErr?.message ?? 'code already claimed (concurrent signup?)',
+        );
+      }
+    }
 
-    // Auto-generate a teacher invite code so students can connect
     const inviteCode = generateInviteCode();
-    await svc
+    const { error: inviteErr } = await svc
       .from('profiles')
       .update({ teacher_invite_code: inviteCode })
       .eq('id', authData.user.id);
+    if (inviteErr) {
+      console.error(`[signup] failed to set teacher_invite_code for ${email}:`, inviteErr.message);
+    }
   }
 
   // Auto-assign student to teacher if they provided a valid invite code

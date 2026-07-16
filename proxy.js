@@ -173,16 +173,17 @@ export async function proxy(request) {
         return NextResponse.redirect(url);
       }
 
-      // Staff roles (admin, manager, teacher) get full access via a role
-      // bypass — the subscription gate is for students / practice users, not
-      // the people who run the tutor tree. This matches the entitlements
-      // design (supabase/migrations/20260713220000_entitlements.sql: "Staff
-      // (admin/manager/teacher) get 'full' via a role bypass"). Historically
-      // only admin/manager were listed here and teachers relied on
-      // subscription_exempt=true being set at provisioning time; a teacher
-      // without that flag was wrongly bounced to /subscribe off /tutor/*,
-      // which is exactly what the e2e-auth teacher suite catches.
-      if (needsSubCheck && !justCheckedOut && !['admin', 'manager', 'teacher'].includes(role) && !profile?.subscription_exempt) {
+      // Access rule (owner policy, 2026-07-16): admin/manager are staff and
+      // always pass. Teachers are NOT unconditionally staff — a Studyworks
+      // tutor carries subscription_exempt=true (set by redeeming an
+      // admin-issued teacher_codes invitation at signup) and passes via the
+      // exempt check below; an OUTSIDE tutor has no exemption and needs the
+      // teacher subscription plan, exactly like a self-serve student needs
+      // the student plan. (A 2026-07-15 change briefly bypassed all
+      // teacher-role users here, following the entitlements migration's
+      // "staff = admin/manager/teacher" comment — that doctrine was wrong
+      // for outside tutors and is corrected in the resolver too.)
+      if (needsSubCheck && !justCheckedOut && !['admin', 'manager'].includes(role) && !profile?.subscription_exempt) {
         const { data: sub } = await supabase
           .from('subscriptions')
           .select('status')
