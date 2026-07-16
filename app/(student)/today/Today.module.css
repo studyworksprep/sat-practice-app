@@ -1,0 +1,331 @@
+/* =============================================================
+   Today (§2.3) — the plan's daily surface. Follows the dashboard-
+   era card language (rounded cards, soft shadows, navy/gold
+   tokens from next-tokens.css) so it reads as a first-class
+   sibling of /dashboard.
+============================================================= */
+
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+  font-family: var(--font-sans);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+/* ---------- Header ---------- */
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+}
+
+.h1 {
+  margin: 2px 0 0;
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 32px;
+  color: var(--color-navy-900);
+}
+
+.headerPills {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.pill {
+  font-size: 12px;
+  color: var(--fg2);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+}
+
+.pill strong { color: var(--color-navy-900); }
+
+.pillCountdown {
+  background: var(--color-app-highlight-soft);
+  border-color: transparent;
+  color: var(--color-gold-800);
+  font-weight: 600;
+}
+
+/* ---------- Error ---------- */
+
+.errorCard {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: var(--radius-md, 10px);
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+/* ---------- Done today ---------- */
+
+.doneList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.doneRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 13px;
+  color: var(--fg3);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 10px);
+  padding: 8px 14px;
+}
+
+.doneCheck {
+  color: var(--color-success-700, #15803d);
+  font-weight: 700;
+}
+
+.doneTitle {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-slate-300);
+}
+
+.doneTag {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-success-700, #15803d);
+}
+
+/* ---------- Task cards ---------- */
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+
+.taskCard {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 14px);
+  padding: 18px 20px;
+  box-shadow: 0 1px 2px rgb(16 42 67 / 0.04);
+}
+
+/* The first card is "the thing to do" — a touch more presence. */
+.taskCardPrimary {
+  border-color: var(--color-gold-300);
+  box-shadow: 0 2px 10px rgb(16 42 67 / 0.07);
+}
+
+.taskIcon { flex: 0 0 auto; }
+
+.taskBody {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.taskTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.taskTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+}
+
+.overduePill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-gold-800);
+  background: var(--color-app-highlight-soft);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+}
+
+.taskMeta {
+  margin-top: 3px;
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.taskWhy { color: var(--fg2); }
+
+.taskMinutes {
+  color: var(--fg3);
+  white-space: nowrap;
+}
+
+.taskActions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.startBtn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-navy-900);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 22px;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+
+.startBtn:hover { background: var(--color-navy-700); }
+
+.doneBtn {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std);
+}
+
+.doneBtn:hover {
+  background: var(--color-slate-100);
+  color: var(--fg1);
+}
+
+.startBtn:focus-visible,
+.doneBtn:focus-visible {
+  outline: 2px solid var(--color-navy-500);
+  outline-offset: 2px;
+}
+
+/* ---------- Caught-up / empty states ---------- */
+
+.caughtUpCard,
+.emptyCard {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 14px);
+  padding: 28px;
+  text-align: center;
+}
+
+.caughtUpTitle,
+.emptyTitle {
+  margin: 0;
+  font-size: 18px;
+  color: var(--color-navy-900);
+}
+
+.caughtUpSub,
+.emptyBody {
+  margin: 8px auto 0;
+  max-width: 46ch;
+  font-size: 13px;
+  color: var(--fg2);
+  line-height: 1.55;
+}
+
+.inlineLink {
+  color: var(--color-navy-700);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---------- Week progress ---------- */
+
+.weekCard {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 14px);
+  padding: 16px 20px;
+}
+
+.weekHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s2);
+  margin-bottom: 10px;
+}
+
+.weekLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+}
+
+.weekCount {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.weekBar {
+  height: 8px;
+  background: var(--color-slate-100);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.weekFill {
+  height: 100%;
+  background: var(--color-gold-500);
+  border-radius: var(--radius-pill);
+  transition: width var(--dur-fast) var(--ease-std);
+}
+
+/* ---------- Narrow viewports ---------- */
+
+@media (max-width: 560px) {
+  .container { padding: 20px 14px 48px; }
+  .taskCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .taskActions {
+    flex-direction: row;
+    width: 100%;
+  }
+  .startBtn { flex: 1 1 auto; }
+}
