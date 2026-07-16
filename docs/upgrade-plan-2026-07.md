@@ -1,6 +1,42 @@
 # Studyworks Upgrade Plan — July 2026
 
-> **Status: Living document — the active roadmap.** Last verified against code + production: 2026-07-12.
+> **Status: Living document — the active roadmap.** Baseline verified
+> against code + production: 2026-07-12. Delivery is tracked in the
+> **Status ledger** below (last updated 2026-07-16) — every phase PR
+> updates it, per the docs rules.
+
+## Status ledger (updated 2026-07-16)
+
+| Item | Status | Landed | Notes |
+|---|---|---|---|
+| P0.1 region colocation | **Done** | 2026-07-12 | `pdx1` |
+| P0.2 submit-path latency | **Done** | 2026-07-12 | |
+| P0.3 report de-waterfall | **Done** | 2026-07-12 | |
+| P0.4 assignment-creation load | **Done** | 2026-07-12 | |
+| P0.5 CI enforcement | **Done** | 2026-07-15 | typecheck/unit/hygiene 07-12; e2e-auth gate **live and enforcing** after PRs #191–#193 (31/31 on every PR) |
+| P0.6 public surface hardening | **Done** | 2026-07-12 | |
+| P0.7 hygiene | Partial | 2026-07-12 | comment scrub, service-role audit, README, matrix, tutorial done; **migration baseline reset + vestigial drops still pending** (scheduled op) |
+| 1.1–1.9 knowledge model | **Done** | 2026-07-13 | PR #189; live in production (snapshots, curriculum, coverage, entitlements infra, attempt context, item stats, bank gate, snapshot-on-edit) |
+| 1.5 `entitlements_gate` flip | Open | — | owner decision; **unblocked** now that the e2e gate enforces |
+| 2.1 plan schema | **Done** | 2026-07-14 | |
+| 2.2 generator | **Done** | 2026-07-14 | deterministic v1 |
+| 2.3 student "Today" | **Done** | 2026-07-16 | PR #196; drill starts stamp `plan_task_id`, auto-completion verified end-to-end |
+| 2.4 tutor surfaces | Partial | 2026-07-14 | generate/review/activate shipped; **plan editor (drag/swap/manual tasks) + adherence view pending** |
+| 2.5 re-pacing | Partial | 2026-07-14 | engine + `proposeRepace` shipped; **scheduled weekly job pending** |
+| Phase 2 acceptance | Open | — | self-serve signup→plan→first task needs §6.4 intake |
+| Phase 3 pedagogy loop | Open | — | 3.4 content workstream can start any time |
+| Phase 4 tutor cockpit | Open | — | |
+| Phase 5 manager layer | Open | — | |
+| 6.1 sidebar shell | **Done** | 2026-07-16 | PR #194, behind `sidebar_shell` (dev `all`; **production has no flag row = off — rollout is applying the flag migration + staging `staff` → `all`**). Student footer countdown/streak strip still open |
+| 6.2 design language / runner spec | Open | — | |
+| 6.3 access & comfort | Partial | 2026-07-16 | `:focus-visible` on the new chrome only; zoom + runner breakpoints open |
+| 6.3b instant-next runners | Open | — | |
+| 6.4 first-run wizard | Open | — | |
+
+Dev-environment notes that affect local testing: studyworks-dev has
+`sidebar_shell='all'`, the 29-row `curriculum_units` seed (completed
+2026-07-16 — the committed migration's seed had never been applied
+there), and an active 48-task test plan on student1.
 
 ## Purpose and method
 
@@ -19,8 +55,11 @@ so explicitly (see "Corrections to the record").
 
 ### Verified current state (the short version)
 
-Row counts are **as of 2026-07-12** — production is live and counts
-drift daily; treat them as scale indicators, not invariants. DB
+This table is the **2026-07-12 baseline snapshot** the plan was written
+against — where the Status ledger above records later delivery, the
+ledger wins (e.g. study-plan tables, CI enforcement, and the sidebar
+now exist). Row counts are as of 2026-07-12 — production is live and
+counts drift daily; treat them as scale indicators, not invariants. DB
 *objects* (functions, views) must be verified against the live
 catalog (`pg_get_functiondef` via MCP), never against repo migration
 files — the directory is not a faithful mirror (see
@@ -156,10 +195,11 @@ were **rewritten against the generated matrix on 2026-07-13**
 (`tests/e2e/helpers/fixtures.ts` + the `api-auth.*` specs now target the
 real 15-route HTTP surface + page-level role boundaries; role-gating
 that moved to Server Actions is covered at the page level, not by URL).
-Remaining to make the gate live (see `docs/runbook.md` "Activating the
-e2e auth job"): **seed `studyworks-dev`** (currently empty) with the
-production schema + the four dev users, then **add the three E2E
-secrets** so the job runs on every PR.
+*Update 2026-07-15: the gate is live.* studyworks-dev was seeded, the
+three E2E secrets configured, and the suite greened end-to-end (PRs
+#191–#193: Node 22 + login-form labels + layout auth; the teacher
+subscription-gate bypass in proxy.js; the student2 not-on-roster seed
+fix). The e2e-auth job now enforces the auth boundary on every PR.
 
 **P0.6 Public surface hardening.** `crypto.timingSafeEqual` for the
 external API key; per-consumer rotatable keys; wire `lib/api/rateLimit`
@@ -597,15 +637,15 @@ folded into the Phase 2 self-serve flow.
 
 ## Sequencing summary
 
-| Phase | Duration | Can parallelize with |
-|---|---|---|
-| 0 — Feel & trust | 1–2 wk | — (do first) |
-| 6 — Sidebar + design | 2–3 wk | Phase 1 |
-| 1 — Knowledge model | 2–3 wk | Phase 6 |
-| 2 — Plan engine | 3–4 wk | Phase 3 content authoring |
-| 3 — Pedagogy loop | 3–4 wk | Phase 2 (schema up front) |
-| 4 — Tutor cockpit | 2–3 wk | Phase 5 |
-| 5 — Manager layer | 2 wk | Phase 4 |
+| Phase | Duration | Can parallelize with | Status (2026-07-16) |
+|---|---|---|---|
+| 0 — Feel & trust | 1–2 wk | — (do first) | Done, except P0.7 baseline reset |
+| 6 — Sidebar + design | 2–3 wk | Phase 1 | 6.1 shell done (flag-gated); 6.2–6.4 open |
+| 1 — Knowledge model | 2–3 wk | Phase 6 | Done; `entitlements_gate` flip pending |
+| 2 — Plan engine | 3–4 wk | Phase 3 content authoring | Core done incl. Today; editor/adherence/job open |
+| 3 — Pedagogy loop | 3–4 wk | Phase 2 (schema up front) | Open |
+| 4 — Tutor cockpit | 2–3 wk | Phase 5 | Open |
+| 5 — Manager layer | 2 wk | Phase 4 | Open |
 
 Roughly a 4–5 month arc for the full vision, with the app noticeably
 faster and cleaner after week 2, and the transformative student-facing
