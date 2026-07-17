@@ -138,3 +138,104 @@
 .badge_full_test { background: #fef3f2; color: #b42318; }
 .badge_review { background: #fffbeb; color: #b45309; }
 .badge_practice_set { background: #f0f9ff; color: #0369a1; }
+
+/* ── Task state (editor shows history locked) ── */
+.taskDone .taskTitle { color: var(--fg3); }
+.taskDone .badge { opacity: 0.6; }
+.taskSkipped { opacity: 0.55; }
+.sourceTag,
+.doneTag,
+.skippedTag {
+  display: inline-block;
+  margin-left: var(--s2);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  vertical-align: middle;
+}
+.sourceTag { background: #fdf6e3; color: #92600a; }
+.doneTag { background: #ecfdf5; color: #047857; }
+.skippedTag { background: var(--color-slate-100); color: var(--fg3); }
+
+/* ── Editor controls ── */
+.weekHead { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); }
+.taskControls { display: inline-flex; align-items: center; gap: var(--s1); flex: 0 0 auto; }
+.inlineForm { display: inline-flex; align-items: center; gap: var(--s1); }
+.editSelect,
+.editInput {
+  padding: 2px var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+  color: var(--fg2);
+  font-size: 0.78rem;
+  max-width: 150px;
+}
+.editSelect:focus,
+.editInput:focus {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 1px;
+}
+.removeBtn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--bg-white);
+  color: var(--fg3);
+  font-size: 0.85rem;
+  line-height: 1;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.removeBtn:hover { color: var(--color-diff-hard-fg, #b42318); border-color: currentColor; }
+.removeBtn:disabled { opacity: 0.5; cursor: default; }
+.weekBtn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--bg-white);
+  color: var(--fg2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px var(--s2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.weekBtn:hover { border-color: var(--color-app-accent); color: var(--color-app-accent); }
+.weekBtn:disabled { opacity: 0.55; cursor: default; }
+.editError { color: var(--color-diff-hard-fg, #b42318); font-size: 0.75rem; }
+
+.addForm {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  margin-top: var(--s3);
+  padding-top: var(--s3);
+}
+.addLabel { font-size: 0.8rem; font-weight: 600; color: var(--fg2); }
+
+/* ── Adherence (§2.4) ── */
+.adherenceRow { display: flex; align-items: center; gap: var(--s2); margin: 0 0 var(--s3); }
+.adherenceChip {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px var(--s2);
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-100);
+  color: var(--fg2);
+}
+.adherence_on_track { background: #ecfdf5; color: #047857; }
+.adherence_behind { background: #fef3f2; color: #b42318; }
+.adherence_ahead { background: #eef2ff; color: #4338ca; }
+.adherence_not_started { background: var(--color-slate-100); color: var(--fg3); }
+.adherenceDetail { color: var(--fg3); font-size: 0.85rem; }

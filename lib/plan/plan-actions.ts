@@ -14,38 +14,19 @@
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, ApiError } from '@/lib/api/response';
 import { generatePlan, repacePlan } from './generate-plan';
+import { mapSkillRow } from './plan-inputs';
 import type {
   ExistingTask,
-  PlanSection,
   PlanTaskSource,
   PlanTaskType,
   SkillState,
 } from './generate-plan';
 import type { ActionResult } from '@/lib/types';
-import type { Database, Json } from '@/lib/types/database';
+import type { Json } from '@/lib/types/database';
 
 // ── Shared internals ──────────────────────────────────────────────
 
 type SupabaseCtx = Awaited<ReturnType<typeof requireUser>>['supabase'];
-type PlanInputRow = Database['public']['Functions']['get_plan_inputs']['Returns'][number];
-
-/** get_plan_inputs row → the generator's SkillState. */
-function mapSkillRow(r: PlanInputRow): SkillState {
-  return {
-    domainCode: r.domain_code,
-    skillCode: r.skill_code,
-    section: (r.section === 'math' ? 'math' : 'reading_writing') as PlanSection,
-    mastery: r.mastery,
-    attemptsCount: r.attempts_count ?? 0,
-    coverageStatus: r.coverage_status ?? 'not_started',
-    masteryThreshold: r.mastery_threshold ?? 80,
-    learnability: r.learnability,
-    expectedMinutes: r.expected_minutes ?? 60,
-    sequence: r.sequence ?? 0,
-    questionsAvailable: r.questions_available ?? 0,
-    hasLesson: r.has_lesson ?? false,
-  };
-}
 
 function numFromJson(obj: unknown, key: string): number | null {
   if (obj && typeof obj === 'object' && typeof (obj as Record<string, unknown>)[key] === 'number') {

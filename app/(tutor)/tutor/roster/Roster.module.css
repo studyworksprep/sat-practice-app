@@ -126,6 +126,25 @@
 
 .muted { color: var(--fg3, #999); }
 
+/* ── Plan adherence chip (§2.4) ── */
+.planChip {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px var(--s2, 8px);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--color-slate-100, #f1f5f9);
+  color: var(--fg2, #555);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.plan_on_track { background: #ecfdf5; color: #047857; }
+.plan_behind { background: #fef3f2; color: #b42318; }
+.plan_ahead { background: #eef2ff; color: #4338ca; }
+.plan_not_started { background: var(--color-slate-100, #f1f5f9); color: var(--fg3, #999); }
+
 .nameLink {
   color: var(--color-app-accent);
   text-decoration: none;

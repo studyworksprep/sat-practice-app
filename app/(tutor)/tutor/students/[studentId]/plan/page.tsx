@@ -15,8 +15,19 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { generatePlanAction, activatePlanAction } from './actions';
+import { adherenceSummaryLine, ADHERENCE_LABELS, computeAdherence } from '@/lib/plan/adherence';
+import {
+  generatePlanAction,
+  activatePlanAction,
+  addTaskAction,
+  moveTaskAction,
+  regenerateWeekAction,
+  removeTaskAction,
+  swapSkillAction,
+} from './actions';
 import { GeneratePlanForm, ActivatePlanButton } from './StudyPlanInteractive';
+import { AddTaskForm, RegenerateWeekButton, TaskControls } from './PlanEditor';
+import type { UnitOption } from './PlanEditor';
 import styles from './StudyPlan.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -62,43 +73,100 @@ function studentName(p: { first_name: string | null; last_name: string | null; e
   return [p.first_name, p.last_name].filter(Boolean).join(' ') || p.email || 'Student';
 }
 
-/** Render one plan's tasks grouped by week — the reviewable schedule. */
-function PlanWeeks({ tasks }: { tasks: TaskRow[] }) {
+/** Render one plan's tasks grouped by week — the reviewable, editable
+ *  schedule (§2.4). Controls appear on open tasks only; completed and
+ *  skipped rows are history and render locked. */
+function PlanWeeks({
+  tasks,
+  planId,
+  studentId,
+  units,
+}: {
+  tasks: TaskRow[];
+  planId: string;
+  studentId: string;
+  units: UnitOption[];
+}) {
   const byWeek = new Map<number, TaskRow[]>();
   for (const t of tasks) {
     if (!byWeek.has(t.week_index)) byWeek.set(t.week_index, []);
     byWeek.get(t.week_index)!.push(t);
   }
   const weeks = [...byWeek.keys()].sort((a, b) => a - b);
+  const weekCount = weeks.length ? weeks[weeks.length - 1] + 1 : 1;
 
   return (
-    <ol className={styles.weeks}>
-      {weeks.map((w) => (
-        <li key={w} className={styles.week}>
-          <div className={styles.weekHead}>Week {w + 1}</div>
-          <ul className={styles.tasks}>
-            {byWeek.get(w)!.map((t) => {
-              const title = str(t.payload, 'title') ?? TASK_LABELS[t.task_type] ?? t.task_type;
-              const why = str(t.payload, 'why');
-              return (
-                <li key={t.id} className={styles.task}>
-                  <span className={`${styles.badge} ${styles[`badge_${t.task_type}`] ?? ''}`}>
-                    {TASK_LABELS[t.task_type] ?? t.task_type}
-                  </span>
-                  <div className={styles.taskBody}>
-                    <div className={styles.taskTitle}>{title}</div>
-                    {why ? <div className={styles.taskWhy}>{why}</div> : null}
-                  </div>
-                  {t.scheduled_date ? (
-                    <time className={styles.taskDate}>{t.scheduled_date}</time>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-        </li>
-      ))}
-    </ol>
+    <>
+      <ol className={styles.weeks}>
+        {weeks.map((w) => (
+          <li key={w} className={styles.week}>
+            <div className={styles.weekHead}>
+              <span>Week {w + 1}</span>
+              <RegenerateWeekButton
+                planId={planId}
+                studentId={studentId}
+                weekIndex={w}
+                action={regenerateWeekAction}
+              />
+            </div>
+            <ul className={styles.tasks}>
+              {byWeek.get(w)!.map((t) => {
+                const title = str(t.payload, 'title') ?? TASK_LABELS[t.task_type] ?? t.task_type;
+                const why = str(t.payload, 'why');
+                const open = t.status === 'pending';
+                const stateClass =
+                  t.status === 'completed'
+                    ? styles.taskDone
+                    : t.status === 'skipped'
+                      ? styles.taskSkipped
+                      : '';
+                return (
+                  <li key={t.id} className={`${styles.task} ${stateClass}`}>
+                    <span className={`${styles.badge} ${styles[`badge_${t.task_type}`] ?? ''}`}>
+                      {TASK_LABELS[t.task_type] ?? t.task_type}
+                    </span>
+                    <div className={styles.taskBody}>
+                      <div className={styles.taskTitle}>
+                        {title}
+                        {t.source !== 'generated' ? (
+                          <span className={styles.sourceTag}>{t.source === 'tutor' ? 'tutor' : 'student'}</span>
+                        ) : null}
+                        {t.status === 'completed' ? <span className={styles.doneTag}>done</span> : null}
+                        {t.status === 'skipped' ? <span className={styles.skippedTag}>skipped</span> : null}
+                      </div>
+                      {why ? <div className={styles.taskWhy}>{why}</div> : null}
+                    </div>
+                    {open ? (
+                      <TaskControls
+                        taskId={t.id}
+                        studentId={studentId}
+                        weekIndex={t.week_index}
+                        weekCount={weekCount}
+                        canSwap={t.task_type === 'drill' || t.task_type === 'lesson'}
+                        units={units}
+                        moveAction={moveTaskAction}
+                        swapAction={swapSkillAction}
+                        removeAction={removeTaskAction}
+                      />
+                    ) : null}
+                    {t.scheduled_date ? (
+                      <time className={styles.taskDate}>{t.scheduled_date}</time>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </li>
+        ))}
+      </ol>
+      <AddTaskForm
+        planId={planId}
+        studentId={studentId}
+        weekCount={weekCount}
+        units={units}
+        action={addTaskAction}
+      />
+    </>
   );
 }
 
@@ -142,6 +210,30 @@ export default async function StudentPlanPage({ params }: PageProps) {
       tasksByPlan.get(t.plan_id)!.push(t);
     }
   }
+
+  // Unit options for the editor's skill selects (swap + manual drill/lesson).
+  const { data: unitRows } = await supabase
+    .from('curriculum_units')
+    .select('domain_code, skill_code, title')
+    .eq('test_type', 'sat')
+    .order('sequence', { ascending: true });
+  const units: UnitOption[] = (unitRows ?? []).map((u) => ({
+    domainCode: u.domain_code,
+    skillCode: u.skill_code,
+    title: u.title,
+  }));
+
+  // Adherence (§2.4): completion vs. schedule on the active plan.
+  const today = new Date().toISOString().slice(0, 10);
+  const adherence = active
+    ? computeAdherence(
+        (tasksByPlan.get(active.id) ?? []).map((t) => ({
+          scheduledDate: t.scheduled_date,
+          status: t.status as 'pending' | 'completed' | 'skipped',
+        })),
+        today,
+      )
+    : null;
 
   const name = studentName(student);
   const defaults = {
@@ -190,7 +282,7 @@ export default async function StudentPlanPage({ params }: PageProps) {
             </div>
             <ActivatePlanButton planId={draft.id} studentId={studentId} action={activatePlanAction} />
           </div>
-          <PlanWeeks tasks={tasksByPlan.get(draft.id) ?? []} />
+          <PlanWeeks tasks={tasksByPlan.get(draft.id) ?? []} planId={draft.id} studentId={studentId} units={units} />
         </section>
       ) : null}
 
@@ -202,7 +294,15 @@ export default async function StudentPlanPage({ params }: PageProps) {
             {active.goal_score ? ` · toward ${active.goal_score}` : ''}
             {active.test_date ? ` · test ${active.test_date}` : ''}
           </p>
-          <PlanWeeks tasks={tasksByPlan.get(active.id) ?? []} />
+          {adherence ? (
+            <p className={styles.adherenceRow}>
+              <span className={`${styles.adherenceChip} ${styles[`adherence_${adherence.status}`] ?? ''}`}>
+                {ADHERENCE_LABELS[adherence.status]}
+              </span>
+              <span className={styles.adherenceDetail}>{adherenceSummaryLine(adherence)}</span>
+            </p>
+          ) : null}
+          <PlanWeeks tasks={tasksByPlan.get(active.id) ?? []} planId={active.id} studentId={studentId} units={units} />
         </section>
       ) : null}
 

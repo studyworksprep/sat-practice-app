@@ -29,10 +29,18 @@ import { QuickEditModal } from './QuickEditModal';
 import { updateStudentProfile } from './actions';
 import s from './Roster.module.css';
 
+// How urgently a plan state needs tutor attention, for the plan sort:
+// behind (most) → not started → on track → ahead → no plan (least).
+const PLAN_URGENCY = { behind: 0, not_started: 1, on_track: 2, ahead: 3 };
+function planUrgency(st) {
+  return st.plan ? PLAN_URGENCY[st.plan.status] ?? 4 : 5;
+}
+
 // Sort definitions for the active view.
 const ACTIVE_SORTS = {
   name:    { label: 'Name (A→Z)',         cmp: (a, b) => nameOf(a).localeCompare(nameOf(b)) },
   nameDesc:{ label: 'Name (Z→A)',         cmp: (a, b) => nameOf(b).localeCompare(nameOf(a)) },
+  plan:    { label: 'Plan (behind first)', cmp: (a, b) => planUrgency(a) - planUrgency(b) || (b.plan?.overdueCount ?? 0) - (a.plan?.overdueCount ?? 0) },
   target:  { label: 'Target ↑',           cmp: (a, b) => (a.targetScore ?? 0) - (b.targetScore ?? 0) },
   targetDesc: { label: 'Target ↓',        cmp: (a, b) => (b.targetScore ?? 0) - (a.targetScore ?? 0) },
   graduation:  { label: 'Class (oldest)', cmp: (a, b) => (a.graduationYear ?? 9999) - (b.graduationYear ?? 9999) },
@@ -171,6 +179,7 @@ function ActiveTable({ students, canEdit, onEdit }) {
             <th className={s.th}>Name</th>
             <th className={s.th}>Email</th>
             <th className={s.thNum}>Target</th>
+            <th className={s.th}>Plan</th>
             <th className={s.th}>School</th>
             <th className={s.thNum}>Class</th>
             <th className={s.thAction} aria-label="Actions" />
@@ -186,6 +195,19 @@ function ActiveTable({ students, canEdit, onEdit }) {
               </td>
               <td className={s.td}>{st.email ?? <span className={s.muted}>—</span>}</td>
               <td className={s.tdNum}>{st.targetScore ?? '—'}</td>
+              <td className={s.td}>
+                {st.plan ? (
+                  <Link
+                    href={`/tutor/students/${st.id}/plan`}
+                    className={`${s.planChip} ${s[`plan_${st.plan.status}`] ?? ''}`}
+                    title={st.plan.line}
+                  >
+                    {st.plan.label}
+                  </Link>
+                ) : (
+                  <span className={s.muted}>—</span>
+                )}
+              </td>
               <td className={s.td}>{st.highSchool ?? <span className={s.muted}>—</span>}</td>
               <td className={s.tdNum}>{st.graduationYear ?? '—'}</td>
               <td className={s.tdAction}>

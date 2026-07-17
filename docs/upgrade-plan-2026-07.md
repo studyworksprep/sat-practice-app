@@ -24,13 +24,13 @@
 | 2.1 plan schema | **Done** | 2026-07-14 | |
 | 2.2 generator | **Done** | 2026-07-14 | deterministic v1 |
 | 2.3 student "Today" | **Done** | 2026-07-16 | PR #196; drill starts stamp `plan_task_id`, auto-completion verified end-to-end |
-| 2.4 tutor surfaces | Partial | 2026-07-14 | generate/review/activate shipped; **plan editor (drag/swap/manual tasks) + adherence view pending** |
+| 2.4 tutor surfaces | **Done** | 2026-07-17 | generate/review/activate (07-14) + **plan editor & adherence**: move-to-week, swap unit, remove, add manual task (all stamping `plan_tasks.source`), regenerate-a-week (`regenerateWeekTasks` — preserves tutor tasks + completed history); adherence (`lib/plan/adherence.ts`, one home) as on-track/behind/ahead on the plan page and a sortable Plan column on the roster. Editor uses selects rather than drag — same verbs, no client drag dependency |
 | 2.5 re-pacing | Partial | 2026-07-14 | engine + `proposeRepace` shipped; **scheduled weekly job pending** |
 | Phase 2 acceptance | Open | — | self-serve signup→plan→first task needs §6.4 intake |
 | Phase 3 pedagogy loop | Open | — | 3.4 content workstream can start any time |
 | Phase 4 tutor cockpit | Open | — | |
 | Phase 5 manager layer | Open | — | |
-| 6.1 sidebar shell | **Done** | 2026-07-16 | PR #194, behind `sidebar_shell` (dev `all`). **Production staged `staff` 2026-07-17** (flag migration applied + row set; live-verified — manager persona gets the sidebar, student keeps top nav). Remaining: flip prod `staff` → `all` after the staff soak; student footer countdown/streak strip still open |
+| 6.1 sidebar shell | **Done** | 2026-07-16 | PR #194, behind `sidebar_shell` (dev `all`). **Production rolled out 2026-07-17**: flag migration applied, staged `staff` (manager persona live-verified), then `all` same day (student persona live-verified). Student footer countdown/streak strip still open |
 | 6.2 design language / runner spec | Open | — | |
 | 6.3 access & comfort | Partial | 2026-07-16 | `:focus-visible` on the new chrome only; zoom + runner breakpoints open |
 | 6.3b instant-next runners | Open | — | |
