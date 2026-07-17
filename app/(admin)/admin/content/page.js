@@ -67,6 +67,10 @@ export default async function AdminContentPage({ searchParams }) {
           <a href="/admin/content/drafts" className={a.link}>→ Content drafts</a>
           {' '}— staged fixes for questions_v2 rows, side-by-side review + promote.
         </p>
+        <p className={a.sub}>
+          <a href="/admin/content/units" className={a.link}>→ Curriculum unit coverage</a>
+          {' '}— the §3.4 lesson-production worklist, weakest coverage first.
+        </p>
       </header>
 
       <Section
