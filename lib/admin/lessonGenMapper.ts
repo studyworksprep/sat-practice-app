@@ -16,6 +16,11 @@ import type { Json } from '@/lib/types';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { parseDesmosInteractiveContent } from '@/lib/lesson/desmos-interactive.mjs';
+// Shared .mjs figure renderer (unit-tested via node --test); no type
+// declarations.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { renderFigureSvg } from '@/lib/figures/figure-renderer.mjs';
 
 export interface GeneratedLessonBlock {
   type?: string;
@@ -42,6 +47,9 @@ export interface GeneratedLessonBlock {
   desmos_success_message?: string;
   desmos_retry_message?: string;
   desmos_solution?: string;
+  // figure
+  figure?: unknown;
+  figure_caption?: string;
 }
 
 export interface GeneratedLesson {
@@ -58,6 +66,9 @@ export interface QuestionHint {
 
 /** Resolves a taxonomy hint to a published questions_v2 id, or null. */
 export type ResolveQuestion = (hint: QuestionHint) => Promise<string | null>;
+
+/** Uploads a rendered figure SVG and returns its public URL. */
+export type UploadFigureSvg = (svg: string) => Promise<string>;
 
 export interface MappedBlockRow {
   sort_order: number;
@@ -81,6 +92,7 @@ function escapeHtml(input: string): string {
 export async function generatedLessonToBlocks(
   generated: GeneratedLesson,
   resolveQuestion: ResolveQuestion,
+  uploadFigureSvg?: UploadFigureSvg,
 ): Promise<MappedLesson> {
   const warnings: string[] = [];
   const out: Array<Omit<MappedBlockRow, 'sort_order'>> = [];
@@ -228,6 +240,44 @@ export async function generatedLessonToBlocks(
       }
 
       out.push({ block_type: 'desmos_interactive', content: content as unknown as Json });
+      continue;
+    }
+
+    if (raw.type === 'figure') {
+      const caption =
+        typeof raw.figure_caption === 'string' && raw.figure_caption.trim()
+          ? raw.figure_caption.trim()
+          : '';
+      // Render → upload → embed as a plain <img> text block. Plain
+      // p/img/em markup (no <figure> wrapper) so the block round-trips
+      // through the TipTap editor unharmed.
+      try {
+        if (!uploadFigureSvg) throw new Error('no figure upload configured');
+        const rendered = renderFigureSvg(raw.figure) as {
+          svg: string;
+          width: number;
+          warnings: string[];
+        };
+        for (const w of rendered.warnings) warnings.push(`${label}: ${w}`);
+        const url = await uploadFigureSvg(rendered.svg);
+        const html = sanitizeQuestionHtml(
+          `<p><img src="${escapeHtml(url)}" alt="${escapeHtml(caption || 'Geometry figure')}" width="${rendered.width}" /></p>` +
+            (caption ? `<p><em>${escapeHtml(caption)}</em></p>` : ''),
+        );
+        out.push({ block_type: 'text', content: { id, html } });
+      } catch (e) {
+        // Keep the lesson flowing: fall back to the caption (or a
+        // placeholder note) so the admin sees where the figure was
+        // meant to go.
+        const note = caption || 'A figure was planned here but could not be rendered.';
+        out.push({
+          block_type: 'text',
+          content: { id, html: `<p><em>[Figure: ${escapeHtml(note)}]</em></p>` },
+        });
+        warnings.push(
+          `${label}: figure could not be rendered/uploaded (${e instanceof Error ? e.message : 'unknown'}) — inserted a placeholder note.`,
+        );
+      }
       continue;
     }
 

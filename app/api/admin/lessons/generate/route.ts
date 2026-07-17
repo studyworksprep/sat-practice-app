@@ -1,6 +1,7 @@
 import { apiRoute, ok, fail } from '@/lib/api/response';
 import { requireRole } from '@/lib/api/auth';
 import { fetchClaudeMessages, extractToolUse } from '@/lib/admin/claude';
+import { uploadSvgFigure } from '@/lib/content/upload-figure-server';
 import {
   LESSON_GEN_MODEL,
   LESSON_INFO_PLACEHOLDER,
@@ -144,7 +145,12 @@ export const POST = apiRoute(async (request: Request) => {
     return (await run(true)) ?? (hint.difficulty != null ? run(false) : null);
   };
 
-  const mapped = await generatedLessonToBlocks(generated, resolveQuestion);
+  // Figures render server-side (deterministic SVG) and land in the
+  // shared question-figures bucket, content-addressed — same store
+  // the editor's manual image upload uses.
+  const mapped = await generatedLessonToBlocks(generated, resolveQuestion, (svg) =>
+    uploadSvgFigure(ctx.supabase, svg),
+  );
   if (mapped.blocks.length === 0) {
     return fail('Every generated block was invalid. Try regenerating.', 502);
   }

@@ -43,6 +43,7 @@ Lesson-level structure:
 - Open with a short, motivating introduction: what the student will be able to DO by the end, and why it pays off on test day.
 - For each important math strategy, include a multiple-choice math problem solvable with that exact strategy. If the brief suggests a question, write a similar one.
 - Visual ideas (graphs, intercepts, intersections) must never live in prose alone: the EXPLORE step has the student produce the graph themselves in a desmos_activity block, and the CONFIRM step refers to what they saw there. Where a short video would genuinely add something beyond that (an animation, a walkthrough), add a video placeholder describing what it must show — sparingly.
+- Geometry ideas (triangles, circles, angle relationships) get a figure block wherever the student needs to see the configuration — typically in the PREDICT or CONFIRM step. Give exact coordinates so the figure is drawn to scale.
 - End with retrieval, then practice: 1-2 closing check blocks that make the student recall the core principles from earlier in the lesson from memory (interleave concepts if there are several), then suggest 1-3 practice questions from the bank matching the skill.
 
 Tone: clear, encouraging, plainly worded, for a high-school student. Short sentences, concrete numbers over abstraction.
@@ -71,6 +72,7 @@ Think the lesson through — plan the arc, work every example and check question
 - \`video\` — a placeholder for a video an admin will source later. Set \`video_topic\` to a precise description of what the video must show. Never invent a URL.
 - \`question_suggestion\` — a pointer to a real practice question in the bank. Provide \`domain_name\` and \`skill_name\` copied EXACTLY from the taxonomy below, optionally \`difficulty\` (1 easy, 2 medium, 3 hard), and a one-sentence \`note\` saying why this practice fits here. Never invent question ids.
 - \`desmos_activity\` — an interactive Desmos calculator embedded in the lesson; the student works in it without leaving the page. This is the preferred vehicle for the exploration step of any graphable idea. Write \`desmos_instructions\` as exact, concrete steps (what to type, what to look at). Optionally preload \`desmos_initial_expressions\`. When there is one specific expression (or set) the student must produce, set \`desmos_expected\` to exactly what they should type plus 3-6 \`desmos_test_values\` (x-values that distinguish right from wrong answers numerically), and provide \`desmos_success_message\`, \`desmos_retry_message\`, and a \`desmos_solution\` walkthrough. Omit \`desmos_expected\` entirely for open exploration. Desmos expressions use plain calculator syntax — \`y=x^2-2x-15\`, \`f(x)=\\sqrt{x}\`, \`a=1\` — NOT \\( … \\) inline-math delimiters. At most one desmos_activity per major idea.
+- \`figure\` — a static geometry diagram (triangle, circle, transversal, polygon), rendered server-side from your declarative \`figure\` spec into a styled image. Use it whenever the student must SEE a geometric configuration; do NOT use it for function graphs (that is desmos_activity's job). You supply exact coordinates (mathematical orientation, y increases upward) and the renderer draws to scale — compute coordinates that make the figure honest (a 37° angle must actually be 37°). Label text is PLAIN text ("35°", "x + 2", "r = 5") — no LaTeX delimiters, no HTML. Keep figures clean: at most ~8 labeled elements. Provide a short \`figure_caption\` when the figure needs context.
 
 ## Taxonomy (exact domain: skill names — copy them verbatim)
 
@@ -136,7 +138,7 @@ export const RETURN_GENERATED_LESSON_TOOL = {
           properties: {
             type: {
               type: 'string',
-              enum: ['text', 'check', 'video', 'question_suggestion', 'desmos_activity'],
+              enum: ['text', 'check', 'video', 'question_suggestion', 'desmos_activity', 'figure'],
             },
             // text
             html: {
@@ -210,6 +212,119 @@ export const RETURN_GENERATED_LESSON_TOOL = {
               type: 'string',
               description:
                 'desmos_activity: HTML walkthrough revealed after repeated misses. Only meaningful with desmos_expected.',
+            },
+            // figure
+            figure: {
+              type: 'object',
+              description:
+                'figure blocks: declarative geometry spec, rendered server-side to a styled to-scale image. Coordinates are mathematical (y up). Point refs are point names or {x, y} literals.',
+              properties: {
+                points: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      name: { type: 'string' },
+                      x: { type: 'number' },
+                      y: { type: 'number' },
+                      label: { type: 'string', description: 'defaults to the point name' },
+                      label_dir: {
+                        type: 'string',
+                        enum: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
+                      },
+                      dot: { type: 'boolean' },
+                    },
+                    required: ['x', 'y'],
+                  },
+                },
+                segments: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      from: { description: 'point name or {x, y}' },
+                      to: { description: 'point name or {x, y}' },
+                      dashed: { type: 'boolean' },
+                      ticks: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 3,
+                        description: 'congruence tick marks at the midpoint',
+                      },
+                      label: { type: 'string', description: 'plain text, e.g. a side length' },
+                      label_dir: {
+                        type: 'string',
+                        enum: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
+                      },
+                      arrow_start: { type: 'boolean' },
+                      arrow_end: { type: 'boolean' },
+                    },
+                    required: ['from', 'to'],
+                  },
+                },
+                polygons: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      vertices: { type: 'array', minItems: 3 },
+                      fill: { type: 'boolean', description: 'light gray shading' },
+                    },
+                    required: ['vertices'],
+                  },
+                },
+                circles: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      center: { description: 'point name or {x, y}' },
+                      radius: { type: 'number' },
+                      dashed: { type: 'boolean' },
+                      fill: { type: 'boolean' },
+                    },
+                    required: ['center', 'radius'],
+                  },
+                },
+                angle_marks: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      vertex: { description: 'point name or {x, y}' },
+                      from: { description: 'a point on the first ray' },
+                      to: { description: 'a point on the second ray' },
+                      label: { type: 'string', description: 'plain text, e.g. "35°"' },
+                      right_angle: {
+                        type: 'boolean',
+                        description: 'draw the square mark instead of an arc',
+                      },
+                    },
+                    required: ['vertex', 'from', 'to'],
+                  },
+                },
+                labels: {
+                  type: 'array',
+                  description: 'free-floating text labels',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      x: { type: 'number' },
+                      y: { type: 'number' },
+                      text: { type: 'string' },
+                    },
+                    required: ['x', 'y', 'text'],
+                  },
+                },
+                axes: {
+                  type: 'boolean',
+                  description: 'draw x/y coordinate axes through the origin',
+                },
+              },
+            },
+            figure_caption: {
+              type: 'string',
+              description: 'figure blocks: one short plain-text sentence shown under the figure.',
             },
             // question_suggestion
             domain_name: {
