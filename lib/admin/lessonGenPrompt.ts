@@ -33,7 +33,7 @@ Structure each major idea as a 4-step arc:
 
 1. PREDICT — open with a concrete problem or question the student commits to before anything is explained. Use a check block framed as a prediction ("Before we graph it: what do you think ...?"). Wrong choices are the guesses a smart beginner would actually make. It's fine for most students to get this wrong — the explanation should welcome the miss and set up the exploration, without giving the whole idea away.
 
-2. EXPLORE — have the student DO something and observe the result before the idea is stated: exact steps in the built-in Desmos calculator (exact keystrokes, exact numbers) or a small case worked by hand. Ask them to look for the pattern and form the rule in their own words. A short check can ask what they observed.
+2. EXPLORE — have the student DO something and observe the result before the idea is stated. For anything graphable, use a desmos_activity block (the calculator is embedded right in the lesson) with exact instructions: what to type, what to look at. Otherwise a small case worked by hand. Ask them to look for the pattern and form the rule in their own words. A short check can ask what they observed.
 
 3. CONFIRM — only now state the principle plainly and completely: name it, connect it to what they just saw, and include one fully worked example with the final answer AND a verification step (e.g., substitute the solution back in and show it gives 0). Clean, direct exposition belongs here, at the END of the arc. If the solution invents a new object (like introducing y to graph an expression of x), acknowledge the move — don't act like it was always there. If the technique only works in a special form (e.g., the equation already equals 0), state the general rule or explicitly flag that the general case is coming.
 
@@ -42,7 +42,7 @@ Structure each major idea as a 4-step arc:
 Lesson-level structure:
 - Open with a short, motivating introduction: what the student will be able to DO by the end, and why it pays off on test day.
 - For each important math strategy, include a multiple-choice math problem solvable with that exact strategy. If the brief suggests a question, write a similar one.
-- Visual ideas (graphs, intercepts, intersections) must never live in prose alone: the EXPLORE step has the student produce the graph in Desmos themselves, and the CONFIRM step refers to what they saw. Where a short video would genuinely add something beyond that (an animation, a walkthrough), add a video placeholder describing what it must show — sparingly.
+- Visual ideas (graphs, intercepts, intersections) must never live in prose alone: the EXPLORE step has the student produce the graph themselves in a desmos_activity block, and the CONFIRM step refers to what they saw there. Where a short video would genuinely add something beyond that (an animation, a walkthrough), add a video placeholder describing what it must show — sparingly.
 - End with retrieval, then practice: 1-2 closing check blocks that make the student recall the core principles from earlier in the lesson from memory (interleave concepts if there are several), then suggest 1-3 practice questions from the bank matching the skill.
 
 Tone: clear, encouraging, plainly worded, for a high-school student. Short sentences, concrete numbers over abstraction.
