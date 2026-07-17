@@ -145,13 +145,15 @@ job). The mis-key report is the view `public.item_miskey_audit`
 (staff-only) — review before changing any answer key.
 
 **Entitlements switchover (`entitlements`, §1.5).** The licensing
-resolver `has_plan()`/`effective_plan()` is built and parity-verified
-against today's access, but the live enforcement path (`proxy.js`,
-`lib/subscription.js`) is NOT switched onto it yet — that's gated by the
-`feature_flags` row `entitlements_gate` (currently `off`). Flipping it to
-`on` activates the resolver (and the owner-chosen live-derived sponsored
-policy: roster removal revokes access immediately). Flip only after
-re-verifying parity and running the e2e auth specs.
+resolver `has_plan()`/`effective_plan()` is **live**: the
+`entitlements_gate` flag was flipped `on` in production 2026-07-17
+(after re-verifying parity — 0 lose / 0 gain across 78 users — and a
+33/33 e2e auth run against dev soaking `on`). The enforcement path
+(`proxy.js`, `lib/subscription.js`) consults the resolver, which also
+activates the owner-chosen live-derived sponsored policy: roster
+removal revokes access immediately. Resolver errors fall back to the
+legacy verdict. Rollback is `update feature_flags set value='off'
+where key='entitlements_gate'` (propagates within the 30s cache).
 
 ## Safe service-role usage
 
