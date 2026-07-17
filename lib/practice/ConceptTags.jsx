@@ -8,9 +8,10 @@
 // add / remove animations. Mutations go through the
 // concept-tags-actions Server Actions, never bare fetch.
 //
-// Role surfaces (matches legacy behavior):
-//   - manager + admin: see chips, can add tags
-//   - admin only:      can also click × to remove a tag from the question
+// Role surfaces:
+//   - manager + admin: see chips, can add tags, can click × to
+//     remove a tag from the question (remove was widened from
+//     admin-only 2026-07)
 //   - teacher:         currently invisible (read-only Phase 6 follow-up)
 //   - student:         never mounted
 
