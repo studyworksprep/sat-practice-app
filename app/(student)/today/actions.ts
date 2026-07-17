@@ -12,12 +12,16 @@
 //        one). Completion is automatic via the natural full_test match.
 //   lesson → the specific lesson when payload/lesson_topics resolve one,
 //        else the Learn library filtered to the task's domain.
-//   review / vocab / flashcards → their hubs.
+//   review → a session built from the §3.1 spaced-repetition queue (due
+//        questions + decayed-skill micro-drills; weak-queue fallback),
+//        plan_task_id set → completion is automatic. Falls back to the
+//        hub only when there's nothing to draw.
+//   vocab / flashcards → their hubs.
 //
-// Lessons/review/vocab/flashcards have no completion event yet (lessons
-// don't spawn sessions; SRS queues arrive with Phase 3), so those tasks
-// carry a manual "Mark done" (markTaskDone, completed_via='manual') —
-// the schema documented exactly this escape hatch.
+// Lessons/vocab/flashcards (and a dry-queue review) have no completion
+// event, so those tasks carry a manual "Mark done" (markTaskDone,
+// completed_via='manual') — the schema documented exactly this escape
+// hatch.
 //
 // Both actions are plain <form action> handlers: on failure they redirect
 // back to /today?error=… (no client island needed); on success they
@@ -33,11 +37,20 @@ import { requireUser } from '@/lib/api/auth';
 import { rateLimit } from '@/lib/api/rateLimit';
 import { MANUAL_COMPLETE_TYPES } from '@/lib/plan/today';
 import { SAT_TAXONOMY } from '@/lib/practice/sat-taxonomy';
+import {
+  buildReviewSessionQuestionIds,
+  getDueReviewItems,
+  syncDecayedSkillReviews,
+} from '@/lib/review/queue';
+// Weak-queue is the fallback when the SRS queue is dry — its priority
+// scoring is the same intake policy the queue itself grew out of.
+import { buildWeakQueue, selectDrillQuestionIds } from '@/lib/practice/weak-queue';
 import type { PlanTaskType } from '@/lib/plan/generate-plan';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DEFAULT_DRILL_COUNT = 8;
 const MAX_DRILL_COUNT = 50;
+const REVIEW_TASK_SIZE = 10;
 
 function fail(message: string): never {
   redirect(`/today?error=${encodeURIComponent(message)}`);
@@ -220,7 +233,61 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       break;
     }
 
-    case 'review':
+    case 'review': {
+      // §3.1: a plan review task draws from the spaced-repetition
+      // queue — due question items plus micro-drills for decayed
+      // skills — and runs as a normal mode='review' session with
+      // plan_task_id stamped, so trg_plan_task_from_session finally
+      // completes review tasks automatically. When the queue (and the
+      // weak-queue fallback) is dry, fall through to the hub, where
+      // the manual "Mark done" escape hatch still applies.
+      if (plan.testType !== 'sat') {
+        redirect('/review');
+      }
+      const rl = await rateLimit(`practice-start:${user.id}`, { limit: 20, windowMs: 60_000 });
+      if (!rl.ok) fail('Too many session starts. Please wait a moment and try again.');
+
+      const nowIso = new Date().toISOString();
+      try {
+        await syncDecayedSkillReviews(supabase, user.id);
+      } catch { /* best-effort — question items still flow */ }
+      const due = await getDueReviewItems(supabase, user.id, nowIso);
+      let questionIds = await buildReviewSessionQuestionIds(
+        supabase, user.id, due, REVIEW_TASK_SIZE,
+      );
+      if (questionIds.length === 0) {
+        const scored = await buildWeakQueue(supabase, user.id);
+        questionIds = selectDrillQuestionIds(scored, REVIEW_TASK_SIZE);
+      }
+      if (questionIds.length === 0) {
+        redirect('/review');
+      }
+
+      const { data: session, error: insErr } = await supabase
+        .from('practice_sessions')
+        .insert({
+          user_id: user.id,
+          test_type: 'sat',
+          mode: 'review',
+          question_ids: questionIds,
+          current_position: 0,
+          plan_task_id: task.id,
+          filter_criteria: {
+            kind: 'srs_due',
+            source: 'study_plan',
+            plan_task_id: task.id,
+            size: questionIds.length,
+          },
+        })
+        .select('id')
+        .single();
+      if (insErr || !session) {
+        fail(`Could not start the review: ${insErr?.message ?? 'unknown error'}`);
+      }
+      redirect(`/practice/s/${session.id}/0`);
+      break;
+    }
+
     case 'vocab':
       redirect('/review');
       break;

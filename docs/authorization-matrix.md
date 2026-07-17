@@ -61,6 +61,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(student)/practice/test/actions.js` | `startTestAttempt`, `recordItemAnswer`, `toggleMarkForReview`, `pauseTestModule`, `resumeTestModule`, `finishModule` | requireUser + rateLimit |
 | `app/(student)/practice/tests/actions.ts` | `startActPracticeTest`, `finalizeActPracticeTest` | requireUser + rateLimit |
 | `app/(student)/review/actions.js` | `createWeakQueueDrill`, `createSkillDrill`, `createActWeakQueueDrill`, `createActCategoryDrill` | requireUser + rateLimit |
+| `app/(student)/review/queue-actions.ts` | `createDueReviewSession` | requireUser + rateLimit |
 | `app/(student)/today/actions.ts` | `startPlanTask`, `markTaskDone` | requireUser + rateLimit |
 | `app/(student)/welcome/actions.ts` | `saveGoalAction`, `startDiagnosticAction`, `generateFirstPlanAction`, `activateFirstPlanAction` | requireUser + rateLimit |
 | `app/(tutor)/tutor/assignments/[id]/actions.js` | `addAssignmentMembers`, `submitAssignmentOnBehalf`, `archiveAssignment` | requireUser |
@@ -94,4 +95,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_17 route handlers, 46 server-action modules enumerated._
+_17 route handlers, 47 server-action modules enumerated._

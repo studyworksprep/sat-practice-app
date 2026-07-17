@@ -2433,6 +2433,51 @@ export type Database = {
           },
         ]
       }
+      review_queue: {
+        Row: {
+          created_at: string
+          due_at: string
+          ease: number
+          id: string
+          interval_days: number
+          item_ref: string
+          item_type: string
+          lapses: number
+          last_result: string | null
+          last_reviewed_at: string | null
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          due_at?: string
+          ease?: number
+          id?: string
+          interval_days?: number
+          item_ref: string
+          item_type: string
+          lapses?: number
+          last_result?: string | null
+          last_reviewed_at?: string | null
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          due_at?: string
+          ease?: number
+          id?: string
+          interval_days?: number
+          item_ref?: string
+          item_type?: string
+          lapses?: number
+          last_result?: string | null
+          last_reviewed_at?: string | null
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sat_official_scores: {
         Row: {
           composite_score: number

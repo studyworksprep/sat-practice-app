@@ -1,6 +1,8 @@
-// Flashcards review client island. Weighted-random picker (lower
-// mastery → more likely), click-to-flip card surface, mastery
-// rating row that doubles as the "next" trigger after rating.
+// Flashcards review client island. Due-first picker (§3.1 spaced
+// repetition: cards whose schedule says they're due come first,
+// oldest due first; the rest fall back to weighted-random by
+// mastery), click-to-flip card surface, mastery rating row that
+// doubles as the "next" trigger after rating.
 //
 // History is held locally as an array — going Back walks the
 // student through cards they've already seen this session, going
@@ -8,7 +10,7 @@
 
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { rateFlashcard } from '@/lib/practice/flashcards-actions';
 import { MASTERY_LABELS } from '@/lib/practice/flashcards-helpers';
@@ -29,11 +31,25 @@ function pickWeightedRandom(cards, excludeId) {
   return pool[pool.length - 1];
 }
 
-export function FlashcardReviewInteractive({ setId, setName, initialCards }) {
+// Due cards first (server orders them oldest-due first), then the
+// legacy weighted-random pool. `dueIds` shrinks as cards are rated.
+function pickNextCard(cards, excludeId, dueIds) {
+  for (const id of dueIds) {
+    if (id === excludeId) continue;
+    const card = cards.find((c) => String(c.id) === String(id));
+    if (card) return card;
+  }
+  return pickWeightedRandom(cards, excludeId);
+}
+
+export function FlashcardReviewInteractive({ setId, setName, initialCards, dueCardIds = [] }) {
   const [cards, setCards] = useState(initialCards);
+  // Cards still owed a review this session. A ref mirrors the state
+  // for the pickers so goNext doesn't need the array in its deps.
+  const dueRemaining = useRef(dueCardIds);
   const [history, setHistory] = useState(() => {
     if (initialCards.length === 0) return [];
-    const first = pickWeightedRandom(initialCards, null);
+    const first = pickNextCard(initialCards, null, dueCardIds);
     return first ? [first] : [];
   });
   const [historyIdx, setHistoryIdx] = useState(initialCards.length === 0 ? -1 : 0);
@@ -60,7 +76,7 @@ export function FlashcardReviewInteractive({ setId, setName, initialCards }) {
       // session — don't re-roll the random pick.
       setHistoryIdx(historyIdx + 1);
     } else {
-      const next = pickWeightedRandom(cards, card?.id);
+      const next = pickNextCard(cards, card?.id, dueRemaining.current);
       if (!next) return;
       // Always read the freshest version of the card from `cards`
       // so a just-rated card carries its new mastery into the
@@ -115,6 +131,11 @@ export function FlashcardReviewInteractive({ setId, setName, initialCards }) {
         setSelectedMastery(null);
         return;
       }
+      // Rating reschedules the card server-side — it's no longer due
+      // this session.
+      dueRemaining.current = dueRemaining.current.filter(
+        (id) => String(id) !== String(card.id),
+      );
       const updated = res.data?.card;
       if (updated) {
         setCards((prev) =>
