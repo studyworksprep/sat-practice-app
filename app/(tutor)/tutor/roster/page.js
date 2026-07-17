@@ -48,16 +48,23 @@ export default async function TutorRosterPage() {
   // student's active plan with its task statuses; computeAdherence
   // (the same implementation the plan page uses) classifies each as
   // on-track / behind / ahead so the roster answers "who needs a
-  // nudge?" at a glance.
+  // nudge?" at a glance. Draft plans ride along as the review signal:
+  // a draft parked on a student (tutor-generated, or proposed by the
+  // §2.5 weekly re-pace job) surfaces as a "review draft" chip.
   const { data: planRows } = await supabase
     .from('study_plans')
-    .select('student_id, plan_tasks(status, scheduled_date)')
-    .eq('status', 'active')
+    .select('student_id, status, plan_tasks(status, scheduled_date)')
+    .in('status', ['active', 'draft'])
     .eq('test_type', 'sat');
 
   const today = new Date().toISOString().slice(0, 10);
   const adherenceByStudent = new Map();
+  const draftStudents = new Set();
   for (const plan of planRows ?? []) {
+    if (plan.status === 'draft') {
+      draftStudents.add(plan.student_id);
+      continue;
+    }
     const summary = computeAdherence(
       (plan.plan_tasks ?? []).map((t) => ({
         scheduledDate: t.scheduled_date,
@@ -87,6 +94,7 @@ export default async function TutorRosterPage() {
       effectiveStartDate: startDate ?? p.created_at ?? null,
       isActive: p.is_active !== false, // null → treat as active
       plan: adherenceByStudent.get(p.id) ?? null,
+      hasPlanDraft: draftStudents.has(p.id),
     };
   });
 

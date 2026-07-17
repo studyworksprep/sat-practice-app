@@ -25,7 +25,7 @@
 | 2.2 generator | **Done** | 2026-07-14 | deterministic v1 |
 | 2.3 student "Today" | **Done** | 2026-07-16 | PR #196; drill starts stamp `plan_task_id`, auto-completion verified end-to-end |
 | 2.4 tutor surfaces | **Done** | 2026-07-17 | generate/review/activate (07-14) + **plan editor & adherence**: move-to-week, swap unit, remove, add manual task (all stamping `plan_tasks.source`), regenerate-a-week (`regenerateWeekTasks` — preserves tutor tasks + completed history); adherence (`lib/plan/adherence.ts`, one home) as on-track/behind/ahead on the plan page and a sortable Plan column on the roster. Editor uses selects rather than drag — same verbs, no client drag dependency |
-| 2.5 re-pacing | Partial | 2026-07-14 | engine + `proposeRepace` shipped; **scheduled weekly job pending** |
+| 2.5 re-pacing | **Done** | 2026-07-17 | engine + `proposeRepace` (07-14); **weekly job live**: Vercel cron Mondays 11:00 UTC → `/api/cron/repace` (CRON_SECRET contract, same as the lessonworks cron; admin can trigger manually with `?threshold=N`). Orchestration extracted to `lib/plan/repace-runner.ts` (one home; `proposeRepace` and the cron share it). Routing per spec: tutored student → draft + roster "Review draft" chip; self-serve → auto-apply + Today-page "plan was updated" note (system drafts carry `created_by = null`). Verified in dev: no-drift no-op, forced re-pace preserved tutor tasks and parked a draft for review, 401 on bad/missing secret |
 | Phase 2 acceptance | Open | — | self-serve signup→plan→first task needs §6.4 intake |
 | Phase 3 pedagogy loop | Open | — | 3.4 content workstream can start any time |
 | Phase 4 tutor cockpit | Open | — | |

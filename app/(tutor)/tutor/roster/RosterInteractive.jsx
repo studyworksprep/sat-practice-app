@@ -204,9 +204,17 @@ function ActiveTable({ students, canEdit, onEdit }) {
                   >
                     {st.plan.label}
                   </Link>
-                ) : (
-                  <span className={s.muted}>—</span>
-                )}
+                ) : null}
+                {st.hasPlanDraft ? (
+                  <Link
+                    href={`/tutor/students/${st.id}/plan`}
+                    className={`${s.planChip} ${s.planDraft}`}
+                    title="A draft plan is waiting for your review"
+                  >
+                    Review draft
+                  </Link>
+                ) : null}
+                {!st.plan && !st.hasPlanDraft ? <span className={s.muted}>—</span> : null}
               </td>
               <td className={s.td}>{st.highSchool ?? <span className={s.muted}>—</span>}</td>
               <td className={s.tdNum}>{st.graduationYear ?? '—'}</td>

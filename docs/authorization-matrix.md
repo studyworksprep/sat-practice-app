@@ -22,6 +22,7 @@ Runs on every matched request. Detected: session refresh only.
 | `/api/admin/sync-lessonworks` | — | requireRole[admin] + service client (RLS bypass) |
 | `/api/billing/create-checkout` | — | requireUser |
 | `/api/billing/create-portal` | — | requireUser |
+| `/api/cron/repace` | — | requireRole[admin] + service client (RLS bypass) |
 | `/api/external/score-report/[attemptId]` | GET | requireExternalApiAccess + service client (RLS bypass) |
 | `/api/practice-test/time-ping` | POST | requireUser |
 | `/api/public/students/[studentId]/practice-data` | GET | requireExternalApiAccess + service client (RLS bypass) |
@@ -92,4 +93,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_16 route handlers, 45 server-action modules enumerated._
+_17 route handlers, 45 server-action modules enumerated._

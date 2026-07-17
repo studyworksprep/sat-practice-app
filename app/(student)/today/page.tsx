@@ -63,7 +63,7 @@ export default async function TodayPage({ searchParams }: PageProps) {
   // The student's live plan. SAT first if a student somehow has both.
   const { data: plan } = await supabase
     .from('study_plans')
-    .select('id, test_type, goal_score, test_date, config')
+    .select('id, test_type, goal_score, test_date, config, created_by, created_at')
     .eq('student_id', user.id)
     .eq('status', 'active')
     .order('test_type', { ascending: false }) // 'sat' > 'act'
@@ -111,6 +111,13 @@ export default async function TodayPage({ searchParams }: PageProps) {
   const today = new Date().toISOString().slice(0, 10);
   const view = buildTodayView(tasks, today, plan.test_date);
 
+  // §2.5: the weekly job auto-applies re-paced plans for self-serve
+  // students, marked by created_by = null. Tell the student their plan
+  // changed (for its first week) rather than silently reshuffling.
+  const planAgeDays =
+    (Date.parse(today) - Date.parse(String(plan.created_at).slice(0, 10))) / 86_400_000;
+  const wasAutoRepaced = plan.created_by == null && planAgeDays <= 7;
+
   return (
     <main className={s.container}>
       <Header
@@ -118,6 +125,13 @@ export default async function TodayPage({ searchParams }: PageProps) {
         daysToTest={view.daysToTest}
         goalScore={plan.goal_score}
       />
+
+      {wasAutoRepaced && (
+        <div className={s.repaceNote}>
+          Your plan was updated this week to match your progress — the
+          schedule below reflects where you are now.
+        </div>
+      )}
 
       {sp.error && (
         <div className={s.errorCard} role="alert">{sp.error}</div>

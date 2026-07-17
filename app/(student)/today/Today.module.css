@@ -76,6 +76,17 @@
   font-size: 13px;
 }
 
+/* ---------- Plan-updated note (§2.5 auto re-pace) ---------- */
+
+.repaceNote {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #3730a3;
+  border-radius: var(--radius-md, 10px);
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
 /* ---------- Done today ---------- */
 
 .doneList {
