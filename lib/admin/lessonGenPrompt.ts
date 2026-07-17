@@ -57,6 +57,7 @@ Think the lesson through — plan the arc, work every example and check question
 - \`check\` — a multiple-choice comprehension check: \`prompt\`, 2-5 \`choices\` (plain text or inline LaTeX), \`correct_index\` (0-based), \`explanation\`. Solve the check yourself and confirm exactly one choice is correct. Wrong choices must come from real misconceptions or predictable slips, never filler.
 - \`video\` — a placeholder for a video an admin will source later. Set \`video_topic\` to a precise description of what the video must show. Never invent a URL.
 - \`question_suggestion\` — a pointer to a real practice question in the bank. Provide \`domain_name\` and \`skill_name\` copied EXACTLY from the taxonomy below, optionally \`difficulty\` (1 easy, 2 medium, 3 hard), and a one-sentence \`note\` saying why this practice fits here. Never invent question ids.
+- \`desmos_activity\` — an interactive Desmos calculator embedded in the lesson; the student works in it without leaving the page. This is the preferred vehicle for the exploration step of any graphable idea. Write \`desmos_instructions\` as exact, concrete steps (what to type, what to look at). Optionally preload \`desmos_initial_expressions\`. When there is one specific expression (or set) the student must produce, set \`desmos_expected\` to exactly what they should type plus 3-6 \`desmos_test_values\` (x-values that distinguish right from wrong answers numerically), and provide \`desmos_success_message\`, \`desmos_retry_message\`, and a \`desmos_solution\` walkthrough. Omit \`desmos_expected\` entirely for open exploration. Desmos expressions use plain calculator syntax — \`y=x^2-2x-15\`, \`f(x)=\\sqrt{x}\`, \`a=1\` — NOT \\( … \\) inline-math delimiters. At most one desmos_activity per major idea.
 
 ## Taxonomy (exact domain: skill names — copy them verbatim)
 
@@ -122,7 +123,7 @@ export const RETURN_GENERATED_LESSON_TOOL = {
           properties: {
             type: {
               type: 'string',
-              enum: ['text', 'check', 'video', 'question_suggestion'],
+              enum: ['text', 'check', 'video', 'question_suggestion', 'desmos_activity'],
             },
             // text
             html: {
@@ -154,6 +155,48 @@ export const RETURN_GENERATED_LESSON_TOOL = {
             video_topic: {
               type: 'string',
               description: 'video blocks: what the video must cover; an admin adds the URL later.',
+            },
+            // desmos_activity
+            desmos_title: {
+              type: 'string',
+              description: 'desmos_activity: short title shown above the calculator.',
+            },
+            desmos_instructions: {
+              type: 'string',
+              description:
+                'desmos_activity: HTML instructions — exact, concrete steps: what to type, what to look at.',
+            },
+            desmos_initial_expressions: {
+              type: 'array',
+              items: { type: 'string' },
+              description:
+                'desmos_activity: expressions preloaded into the calculator, plain Desmos syntax (e.g. "y=x^2-2x-15"). Often empty so the student types everything.',
+            },
+            desmos_expected: {
+              type: 'array',
+              items: { type: 'string' },
+              description:
+                'desmos_activity: the expression(s) the student must end up entering, written exactly as they should type them (e.g. "y=(x+1)(x-3)"). Omit entirely for open exploration.',
+            },
+            desmos_test_values: {
+              type: 'array',
+              items: { type: 'number' },
+              description:
+                'desmos_activity: 3-6 x-values used to numerically verify the student’s expression matches desmos_expected. Choose values that distinguish right from plausible-wrong answers.',
+            },
+            desmos_success_message: {
+              type: 'string',
+              description: 'desmos_activity: short HTML shown when the check passes.',
+            },
+            desmos_retry_message: {
+              type: 'string',
+              description:
+                'desmos_activity: short HTML shown when the check fails — nudge, do not reveal.',
+            },
+            desmos_solution: {
+              type: 'string',
+              description:
+                'desmos_activity: HTML walkthrough revealed after repeated misses. Only meaningful with desmos_expected.',
             },
             // question_suggestion
             domain_name: {

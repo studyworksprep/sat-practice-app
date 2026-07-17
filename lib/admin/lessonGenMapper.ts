@@ -11,6 +11,11 @@
 
 import { sanitizeQuestionHtml } from '@/lib/sanitize';
 import type { Json } from '@/lib/types';
+// Shared .mjs desmos contract (also used by the editor + validator);
+// no type declarations.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { parseDesmosInteractiveContent } from '@/lib/lesson/desmos-interactive.mjs';
 
 export interface GeneratedLessonBlock {
   type?: string;
@@ -28,6 +33,15 @@ export interface GeneratedLessonBlock {
   skill_name?: string;
   difficulty?: number | null;
   note?: string;
+  // desmos_activity
+  desmos_title?: string;
+  desmos_instructions?: string;
+  desmos_initial_expressions?: unknown[];
+  desmos_expected?: unknown[];
+  desmos_test_values?: unknown[];
+  desmos_success_message?: string;
+  desmos_retry_message?: string;
+  desmos_solution?: string;
 }
 
 export interface GeneratedLesson {
@@ -47,7 +61,7 @@ export type ResolveQuestion = (hint: QuestionHint) => Promise<string | null>;
 
 export interface MappedBlockRow {
   sort_order: number;
-  block_type: 'text' | 'check' | 'video' | 'question_link' | 'lesson_complete';
+  block_type: 'text' | 'check' | 'video' | 'question_link' | 'desmos_interactive' | 'lesson_complete';
   content: Json;
 }
 
@@ -128,6 +142,92 @@ export async function generatedLessonToBlocks(
           caption: topic ? `Video placeholder: ${topic}` : 'Video placeholder',
         },
       });
+      continue;
+    }
+
+    if (raw.type === 'desmos_activity') {
+      const instructions = sanitizeQuestionHtml(
+        typeof raw.desmos_instructions === 'string' ? raw.desmos_instructions : '',
+      );
+      if (!instructions.trim()) {
+        warnings.push(`${label}: empty Desmos instructions — dropped.`);
+        continue;
+      }
+      const strings = (v: unknown): string[] =>
+        (Array.isArray(v) ? v : [])
+          .filter((s): s is string => typeof s === 'string' && s.trim() !== '')
+          .map((s) => s.trim());
+      const expected = strings(raw.desmos_expected);
+      const testValues = (Array.isArray(raw.desmos_test_values) ? raw.desmos_test_values : [])
+        .filter((n): n is number => typeof n === 'number' && Number.isFinite(n));
+      const success = sanitizeQuestionHtml(
+        typeof raw.desmos_success_message === 'string' && raw.desmos_success_message.trim()
+          ? raw.desmos_success_message
+          : '<p>Nice — that&rsquo;s exactly it.</p>',
+      );
+      const retry = sanitizeQuestionHtml(
+        typeof raw.desmos_retry_message === 'string' && raw.desmos_retry_message.trim()
+          ? raw.desmos_retry_message
+          : '<p>Not quite yet — reread the instructions and check signs, parentheses, and exponents.</p>',
+      );
+      const solution =
+        typeof raw.desmos_solution === 'string' && raw.desmos_solution.trim()
+          ? sanitizeQuestionHtml(raw.desmos_solution)
+          : '';
+
+      // Two shapes: a checked activity (expected expression + numeric
+      // equivalence test) or open exploration (state mode, nothing
+      // gated). require_success stays false in both — an AI-authored
+      // equivalence check that is subtly wrong must never hard-block
+      // a student; admins can flip the gate on in the editor.
+      const content = {
+        id,
+        title:
+          typeof raw.desmos_title === 'string' && raw.desmos_title.trim()
+            ? raw.desmos_title.trim()
+            : 'Try it in Desmos',
+        instructions_html: instructions,
+        caption_html: '',
+        initial_expressions: strings(raw.desmos_initial_expressions).map((latex) => ({ latex })),
+        calculator_options: { expressions: true, lockViewport: false, sliders: true },
+        goal:
+          expected.length > 1
+            ? { type: 'multi_expression', required_count: expected.length }
+            : { type: 'enter_expression' },
+        validation:
+          expected.length > 0
+            ? {
+                mode: 'equivalent',
+                expected,
+                test_values: testValues.length > 0 ? testValues : [-2, -1, 0, 1, 2, 3],
+              }
+            : { mode: 'state', state_rules: { min_expressions: 0 } },
+        feedback: {
+          success_message_html: success,
+          retry_message_html: retry,
+          ...(expected.length > 0 && solution
+            ? { reveal_solution_after_attempts: 3, solution_html: solution }
+            : {}),
+        },
+        progression: { require_success: false },
+      };
+
+      try {
+        parseDesmosInteractiveContent(content);
+      } catch (e) {
+        // Keep the pedagogical intent as plain instructions instead of
+        // failing the lesson on a malformed activity.
+        out.push({
+          block_type: 'text',
+          content: { id, html: `<p><strong>Try it in Desmos:</strong></p>${instructions}` },
+        });
+        warnings.push(
+          `${label}: invalid Desmos activity (${e instanceof Error ? e.message : 'unknown'}) — kept the instructions as a text block.`,
+        );
+        continue;
+      }
+
+      out.push({ block_type: 'desmos_interactive', content: content as unknown as Json });
       continue;
     }
 
