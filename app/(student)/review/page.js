@@ -44,10 +44,17 @@ import { StudyCountdown } from '@/lib/practice/StudyCountdown';
 import { BookOpenIcon, LayersIcon, NotesIcon, SparklesIcon, TargetIcon } from '@/lib/ui/icons';
 import { IconTile } from '@/lib/ui/IconTile';
 import {
+  getDueReviewItems,
+  summarizeDue,
+  syncDecayedSkillReviews,
+} from '@/lib/review/queue';
+import {
   createWeakQueueDrill, createSkillDrill,
   createActWeakQueueDrill, createActCategoryDrill,
 } from './actions';
+import { createDueReviewSession } from './queue-actions';
 import { WeakQueueLauncher } from './WeakQueueLauncher';
+import { DueReviewLauncher } from './DueReviewLauncher';
 import { SkillDrillButton } from './SkillDrillButton';
 import { HelpButton } from '@/app/(student)/help/HelpButton';
 import s from './Review.module.css';
@@ -63,6 +70,17 @@ export default async function StudentReviewPage() {
   if (profile.role === 'admin') redirect('/admin');
   if (profile.role === 'teacher' || profile.role === 'manager') redirect('/tutor/dashboard');
   if (profile.role === 'practice') redirect('/subscribe');
+
+  // Spaced-repetition queue (§3.1). Reconcile decayed-skill items
+  // against the coverage function before counting what's due — the
+  // sync is best-effort (a failure just means the count leans on
+  // question/flashcard items until the next visit).
+  const nowIso = new Date().toISOString();
+  try {
+    await syncDecayedSkillReviews(supabase, user.id);
+  } catch { /* best-effort */ }
+  const dueItems = await getDueReviewItems(supabase, user.id, nowIso);
+  const dueSummary = summarizeDue(dueItems);
 
   // Parallel: extended profile (for sat_test_date), SAT scored
   // weak queue + raw attempts + question meta, ACT versions of the
@@ -187,6 +205,13 @@ export default async function StudentReviewPage() {
 
       <StudyCountdown isoDate={extendedProfile?.sat_test_date ?? null} />
 
+      {/* ---------- Due for review (§3.1 spaced repetition) ---------- */}
+      {/* The SRS queue's daily surface: questions you missed coming
+          back on schedule, plus micro-drills for skills the coverage
+          model says are slipping. Flashcard dues are listed for
+          awareness but reviewed in their own flip flow. */}
+      <DueReviewCard summary={dueSummary} />
+
       {/* ---------- Review materials ---------- */}
       {/* Quick links into the three review surfaces — usually the
           first thing a student wants to do when they land here.
@@ -300,6 +325,63 @@ export default async function StudentReviewPage() {
       )}
 
     </main>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+
+function DueReviewCard({ summary }) {
+  const drillable = summary.questions + summary.skills;
+  const parts = [];
+  if (summary.questions > 0) {
+    parts.push(`${summary.questions} question${summary.questions === 1 ? '' : 's'}`);
+  }
+  if (summary.skills > 0) {
+    parts.push(`${summary.skills} slipping skill${summary.skills === 1 ? '' : 's'}`);
+  }
+  if (summary.flashcards > 0) {
+    parts.push(`${summary.flashcards} flashcard${summary.flashcards === 1 ? '' : 's'}`);
+  }
+  return (
+    <section className={s.card}>
+      <div className={s.cardHeader}>
+        <div>
+          <div className={s.h2}>
+            <IconTile icon={SparklesIcon} palette="violet" size="md" />
+            <span>Due for review</span>
+          </div>
+          <div className={s.cardHint}>
+            Spaced repetition: what you missed comes back right when
+            you&apos;re about to forget it. Do today&apos;s reviews and
+            they space further out.
+          </div>
+        </div>
+        <span className={s.cardTag}>
+          {summary.total.toLocaleString()} due
+        </span>
+      </div>
+      {summary.total === 0 ? (
+        <div className={s.empty}>
+          <div className={s.emptyTitle}>All caught up.</div>
+          <div className={s.emptyBody}>
+            Nothing is due right now. Missed questions and slipping
+            skills queue themselves up here automatically as you
+            practice.
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className={s.cardHint}>{parts.join(' · ')} due today.</div>
+          {drillable > 0 && <DueReviewLauncher createAction={createDueReviewSession} />}
+          {drillable === 0 && summary.flashcards > 0 && (
+            <div className={s.cardHint}>
+              Head to <Link href="/notes/flashcards">your flashcards</Link> to
+              review the due cards.
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 

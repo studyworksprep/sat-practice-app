@@ -135,10 +135,12 @@ export function buildTodayView(
   };
 }
 
-/** Task types with no automatic completion path yet: lessons don't spawn
- *  sessions, and review/vocab/flashcards queues arrive with Phase 3 SRS.
- *  These get a manual "Mark done" on the Today card; drills and full
- *  tests complete themselves via the plan_task triggers. */
+/** Task types that keep a manual "Mark done" on the Today card: lessons
+ *  don't spawn sessions, vocab/flashcards have no completion event, and
+ *  review — though it normally spawns an auto-completing SRS session
+ *  (§3.1) — still needs the escape hatch for the dry-queue fallback.
+ *  Drills and full tests complete themselves via the plan_task
+ *  triggers. */
 export const MANUAL_COMPLETE_TYPES: readonly PlanTaskType[] = [
   'lesson',
   'review',

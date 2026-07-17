@@ -18,8 +18,10 @@
 
 'use server';
 
+import { after } from 'next/server';
 import { requireUser } from '@/lib/api/auth';
 import { actionFail, actionOk, ApiError } from '@/lib/api/response';
+import { recordFlashcardRating, removeQueueItem } from '@/lib/review/queue';
 import type { ActionResult } from '@/lib/types';
 
 const DEFAULT_SETS = ['My Math', 'My Reading'];
@@ -317,6 +319,15 @@ export async function deleteFlashcard({
     .eq('id', cardId);
   if (error) return actionFail(error.message);
 
+  // review_queue.item_ref carries no FK — the app layer owns the
+  // cleanup (§3.1). Best-effort: an orphaned queue row is invisible
+  // (the review picker joins against live cards) and self-limits.
+  after(async () => {
+    try {
+      await removeQueueItem(supabase, user.id, 'flashcard', cardId);
+    } catch { /* swallow */ }
+  });
+
   return actionOk({ deletedId: cardId });
 }
 
@@ -348,13 +359,24 @@ export async function rateFlashcard({
     return actionFail('Card not found');
   }
 
+  const ratedAt = new Date().toISOString();
   const { data: card, error } = await supabase
     .from('flashcards')
-    .update({ mastery, reviewed_at: new Date().toISOString() })
+    .update({ mastery, reviewed_at: ratedAt })
     .eq('id', cardId)
     .select('id, front, back, mastery, created_at, reviewed_at')
     .single();
   if (error) return actionFail(error.message);
+
+  // Spaced-repetition intake (§3.1): the rating feeds the card's
+  // due-date schedule, which replaces weighted-random as the review
+  // picker's primary policy. Deferred + best-effort — the rating is
+  // saved either way.
+  after(async () => {
+    try {
+      await recordFlashcardRating(supabase, user.id, cardId, mastery, ratedAt);
+    } catch { /* swallow */ }
+  });
 
   return actionOk({ card: card as Flashcard });
 }

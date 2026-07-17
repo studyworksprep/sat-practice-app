@@ -24,6 +24,7 @@ import { rateLimit } from '@/lib/api/rateLimit';
 import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 import { gradeActMcq } from '@/lib/practice/load-act-question';
+import { recordQuestionOutcome } from '@/lib/review/queue';
 import type { ActionResult, QuestionType } from '@/lib/types';
 
 type SubmitAnswerResult = ActionResult<{
@@ -264,6 +265,22 @@ export async function submitAnswer(
       if (insertErr) {
         return actionFail(`Failed to record attempt: ${insertErr.message}`);
       }
+
+      // Spaced-repetition intake (§3.1): a wrong answer enqueues the
+      // question for review; a correct answer advances it if it was
+      // already queued. Keyed to the attempt insert (first-attempt-
+      // wins), so re-answers inside one session can't move the
+      // schedule. Deferred + best-effort like the assignment
+      // bookkeeping below — queue upkeep never delays or breaks the
+      // student's Correct/Incorrect feedback.
+      const answeredAt = new Date().toISOString();
+      after(async () => {
+        try {
+          await recordQuestionOutcome(supabase, user.id, questionId, isCorrect, answeredAt);
+        } catch {
+          // Swallow — the attempt is recorded either way.
+        }
+      });
     }
   }
 
