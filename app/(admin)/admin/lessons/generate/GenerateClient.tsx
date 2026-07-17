@@ -1,6 +1,8 @@
 'use client';
 
-// Two-input driver for AI lesson generation:
+// Two-phase driver for AI lesson generation.
+//
+// Compose phase — two inputs:
 //
 //   1. Lesson brief — free-form description of the lesson to write.
 //   2. Prompt template (collapsed under "advanced") — the shared,
@@ -9,15 +11,20 @@
 //      admins; generation always uses the textarea's CURRENT text,
 //      saved or not, so an admin can experiment per-run.
 //
-// Generation posts to /api/admin/lessons/generate, which writes the
-// draft lesson + blocks server-side and returns { lessonId }; we then
-// navigate straight into the existing block editor.
+// Preview phase — generation posts to /api/admin/lessons/generate,
+// which returns the draft (raw tool payload + mapped blocks) WITHOUT
+// writing to the DB. The admin reviews a read-only render of the
+// whole lesson (DraftPreview) and can loop: type feedback → the same
+// route revises the draft via Claude → preview updates. Only
+// "Continue to editor" persists the lesson (saveGeneratedLesson) and
+// navigates into the existing block editor.
 
 import { useActionState, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/lib/ui/Button';
 import { LESSON_INFO_PLACEHOLDER } from '@/lib/admin/lessonGenPrompt';
-import { savePromptTemplate, resetPromptTemplate } from './actions';
+import { savePromptTemplate, resetPromptTemplate, saveGeneratedLesson } from './actions';
+import { DraftPreview, type DraftBlock } from './DraftPreview';
 import f from '../../../forms.module.css';
 
 interface GenerateClientProps {
@@ -30,6 +37,19 @@ interface ValidationIssue {
   message?: string;
 }
 
+interface DraftState {
+  // Raw return_generated_lesson payload — echoed back to the route on
+  // each revision turn so Claude revises rather than regenerates.
+  generated: unknown;
+  title: string;
+  description: string | null;
+  blocks: DraftBlock[];
+  warnings: string[];
+  // Bumped on every successful (re)generation; keys DraftPreview so
+  // its local feedback box clears when a revision lands.
+  version: number;
+}
+
 export function GenerateClient({ initialTemplate, isCustomized }: GenerateClientProps) {
   const router = useRouter();
   const [brief, setBrief] = useState('');
@@ -38,9 +58,10 @@ export function GenerateClient({ initialTemplate, isCustomized }: GenerateClient
   const [baseline, setBaseline] = useState(initialTemplate);
   const [customized, setCustomized] = useState(isCustomized);
 
-  const [status, setStatus] = useState<'idle' | 'generating' | 'error'>('idle');
+  const [busy, setBusy] = useState<'idle' | 'generating' | 'revising' | 'saving'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationIssue[]>([]);
+  const [draft, setDraft] = useState<DraftState | null>(null);
 
   const [resetPending, startReset] = useTransition();
   const [saveState, saveAction, savePending] = useActionState(
@@ -70,22 +91,32 @@ export function GenerateClient({ initialTemplate, isCustomized }: GenerateClient
     });
   }
 
-  async function generate() {
-    setStatus('generating');
+  // Shared by initial generation and revision turns — both hit the
+  // same route and hand back the same draft shape.
+  async function callGenerate(payload: Record<string, unknown>, mode: 'generating' | 'revising') {
+    setBusy(mode);
     setError(null);
     setValidationErrors([]);
     try {
       const res = await fetch('/api/admin/lessons/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonInfo: brief, template }),
+        body: JSON.stringify(payload),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.ok) {
         setValidationErrors(Array.isArray(json.validationErrors) ? json.validationErrors : []);
         throw new Error(json.error || `Request failed (${res.status})`);
       }
-      router.push(`/admin/lessons/${json.data.lessonId}`);
+      setDraft((prev) => ({
+        generated: json.data.generated,
+        title: json.data.title,
+        description: json.data.description ?? null,
+        blocks: json.data.blocks ?? [],
+        warnings: json.data.warnings ?? [],
+        version: (prev?.version ?? 0) + 1,
+      }));
+      window.scrollTo({ top: 0 });
     } catch (e) {
       setError(
         e instanceof TypeError
@@ -94,8 +125,66 @@ export function GenerateClient({ initialTemplate, isCustomized }: GenerateClient
             ? e.message
             : String(e),
       );
-      setStatus('error');
+    } finally {
+      setBusy('idle');
     }
+  }
+
+  function generate() {
+    void callGenerate({ lessonInfo: brief, template }, 'generating');
+  }
+
+  function requestChanges(feedback: string) {
+    if (!draft) return;
+    void callGenerate(
+      { lessonInfo: brief, currentLesson: draft.generated, feedback },
+      'revising',
+    );
+  }
+
+  async function confirmDraft() {
+    if (!draft) return;
+    setBusy('saving');
+    setError(null);
+    setValidationErrors([]);
+    const result = await saveGeneratedLesson({
+      title: draft.title,
+      description: draft.description,
+      blocks: draft.blocks,
+    });
+    if (result?.ok && result.data && typeof result.data.lessonId === 'string') {
+      // Keep busy='saving' through the navigation so the button
+      // doesn't flicker back to idle.
+      router.push(`/admin/lessons/${result.data.lessonId}`);
+      return;
+    }
+    setError(result?.ok === false ? result.error : 'Failed to save the lesson.');
+    setBusy('idle');
+  }
+
+  function discardDraft() {
+    setDraft(null);
+    setError(null);
+    setValidationErrors([]);
+    window.scrollTo({ top: 0 });
+  }
+
+  if (draft) {
+    return (
+      <DraftPreview
+        key={draft.version}
+        title={draft.title}
+        description={draft.description}
+        blocks={draft.blocks}
+        warnings={draft.warnings}
+        busy={busy === 'revising' || busy === 'saving' ? busy : 'idle'}
+        error={error}
+        validationErrors={validationErrors}
+        onRequestChanges={requestChanges}
+        onConfirm={confirmDraft}
+        onDiscard={discardDraft}
+      />
+    );
   }
 
   return (
@@ -165,22 +254,22 @@ export function GenerateClient({ initialTemplate, isCustomized }: GenerateClient
           type="button"
           variant="primary"
           onClick={generate}
-          disabled={status === 'generating' || briefMissing || placeholderMissing}
+          disabled={busy === 'generating' || briefMissing || placeholderMissing}
         >
-          {status === 'generating'
+          {busy === 'generating'
             ? 'Generating… (can take 1–2 minutes)'
-            : status === 'error'
+            : error
               ? '✨ Try again'
               : '✨ Generate lesson'}
         </Button>
-        {briefMissing && status !== 'generating' && (
+        {briefMissing && busy !== 'generating' && (
           <span className={f.muted} style={S.hint}>
             Write a lesson brief to enable generation.
           </span>
         )}
       </div>
 
-      {status === 'error' && error && (
+      {error && busy !== 'generating' && (
         <div style={S.error}>
           <div>{error}</div>
           {validationErrors.length > 0 && (

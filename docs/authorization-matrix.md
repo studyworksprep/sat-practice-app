@@ -48,7 +48,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/import/actions.js` | `importBlocksIntoLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/actions.js` | `createLesson` | requireRole[admin] |
-| `app/(admin)/admin/lessons/generate/actions.ts` | `savePromptTemplate`, `resetPromptTemplate` | requireRole[admin] |
+| `app/(admin)/admin/lessons/generate/actions.ts` | `savePromptTemplate`, `resetPromptTemplate`, `saveGeneratedLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/import/actions.js` | `createLessonFromSpec` | requireRole[admin] |
 | `app/(admin)/admin/questions/new/actions.js` | `listQuestionSources`, `createQuestion` | requireRole[admin] |
 | `app/(admin)/admin/users/[userId]/actions.js` | `updateProfileFields`, `changeRole`, `toggleActive`, `banUser`, `unbanUser`, `deleteUser`, `assignTeacherStudent`, `unassignTeacherStudent`, `assignManagerTeacher`, `unassignManagerTeacher` | requireRole[admin] + requireServiceRole |

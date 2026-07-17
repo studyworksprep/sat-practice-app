@@ -6,6 +6,7 @@ import {
   LESSON_INFO_PLACEHOLDER,
   SYSTEM_PROMPT,
   RETURN_GENERATED_LESSON_TOOL,
+  buildRevisionUserMessage,
 } from '@/lib/admin/lessonGenPrompt';
 import {
   generatedLessonToBlocks,
@@ -21,12 +22,23 @@ import { validateLessonBlocks } from '@/lib/lesson/lesson-validation.mjs';
 // ============================================================
 // POST /api/admin/lessons/generate
 // ============================================================
-// Admin-only. Body: { lessonInfo, template }. Substitutes the lesson
-// brief into the prompt template, asks Claude for a full lesson via
-// the return_generated_lesson tool, maps + validates the result, and
-// atomically inserts a draft `lessons` row plus its `lesson_blocks`
-// (mirroring createLessonFromSpec in the import flow). Returns
-// { lessonId, warnings } so the client can open the block editor.
+// Admin-only. Two modes, both returning the draft WITHOUT writing to
+// the DB — the client shows a read-only preview and only persists via
+// the saveGeneratedLesson Server Action once the admin confirms:
+//
+//   Initial:  { lessonInfo, template } — substitutes the lesson brief
+//             into the prompt template and asks Claude for a full
+//             lesson via the return_generated_lesson tool.
+//   Revision: { lessonInfo, currentLesson, feedback } — replays the
+//             previous return_generated_lesson payload with the
+//             admin's preview feedback and asks for the complete
+//             revised lesson.
+//
+// Either way the payload is mapped + validated and the response is
+// ok({ generated, title, description, blocks, warnings }) —
+// `generated` is the raw tool payload the client must echo back for
+// the next revision turn; `blocks` are the mapped lesson_blocks rows
+// the preview renders and the save action persists.
 //
 // This is an API route (not a Server Action) so it can carry its own
 // maxDuration: an opus-class model writing a 10-20 minute lesson with
@@ -36,6 +48,8 @@ export const maxDuration = 300;
 interface GenerateBody {
   lessonInfo?: unknown;
   template?: unknown;
+  currentLesson?: unknown;
+  feedback?: unknown;
 }
 
 export const POST = apiRoute(async (request: Request) => {
@@ -50,17 +64,28 @@ export const POST = apiRoute(async (request: Request) => {
 
   const lessonInfo = typeof body.lessonInfo === 'string' ? body.lessonInfo.trim() : '';
   const template = typeof body.template === 'string' ? body.template : '';
+  const feedback = typeof body.feedback === 'string' ? body.feedback.trim() : '';
+  const isRevision = feedback !== '';
+
   if (!lessonInfo) {
     return fail('Describe the lesson you want in the lesson brief.', 400);
   }
-  if (!template.includes(LESSON_INFO_PLACEHOLDER)) {
-    return fail(
-      `The prompt template must contain ${LESSON_INFO_PLACEHOLDER} so the lesson brief can be inserted.`,
-      400,
-    );
-  }
 
-  const userMessage = template.replaceAll(LESSON_INFO_PLACEHOLDER, lessonInfo);
+  let userMessage: string;
+  if (isRevision) {
+    if (typeof body.currentLesson !== 'object' || body.currentLesson === null) {
+      return fail('A revision needs the current lesson draft.', 400);
+    }
+    userMessage = buildRevisionUserMessage(lessonInfo, body.currentLesson, feedback);
+  } else {
+    if (!template.includes(LESSON_INFO_PLACEHOLDER)) {
+      return fail(
+        `The prompt template must contain ${LESSON_INFO_PLACEHOLDER} so the lesson brief can be inserted.`,
+        400,
+      );
+    }
+    userMessage = template.replaceAll(LESSON_INFO_PLACEHOLDER, lessonInfo);
+  }
 
   // Adaptive thinking materially improves lesson coherence (the model
   // plans the arc and works the examples before writing). Forced
@@ -136,42 +161,14 @@ export const POST = apiRoute(async (request: Request) => {
       ? generated.description.trim()
       : null;
 
-  const { data: lesson, error: insertLessonErr } = await ctx.supabase
-    .from('lessons')
-    .insert({
-      author_id: ctx.user.id,
-      title: generated.title.trim(),
-      description,
-      visibility: 'shared',
-      status: 'draft',
-    })
-    .select('id')
-    .single();
-
-  if (insertLessonErr || !lesson) {
-    return fail(`Failed to create lesson: ${insertLessonErr?.message ?? 'unknown'}`, 500);
-  }
-
-  const blockRows = mapped.blocks.map((b) => ({
-    lesson_id: lesson.id,
-    sort_order: b.sort_order,
-    block_type: b.block_type,
-    content: b.content,
-  }));
-
-  const { error: insertBlocksErr } = await ctx.supabase
-    .from('lesson_blocks')
-    .insert(blockRows);
-
-  if (insertBlocksErr) {
-    // Roll back the lesson row so we don't leave an empty husk.
-    await ctx.supabase.from('lessons').delete().eq('id', lesson.id);
-    return fail(`Failed to insert blocks: ${insertBlocksErr.message}`, 500);
-  }
-
+  // Nothing is written to the DB here — the client previews this
+  // draft (repeating through revision turns as needed) and persists
+  // it via saveGeneratedLesson only when the admin confirms.
   return ok({
-    lessonId: lesson.id,
-    blockCount: mapped.blocks.length,
+    generated,
+    title: generated.title.trim(),
+    description,
+    blocks: mapped.blocks,
     warnings: [...mapped.warnings, ...(validation.warnings ?? [])],
   });
 });
