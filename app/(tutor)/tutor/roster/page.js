@@ -18,6 +18,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { adherenceSummaryLine, ADHERENCE_LABELS, computeAdherence } from '@/lib/plan/adherence';
 import { buildArchiveSummary } from '@/lib/practice/superscore';
 import { RosterInteractive } from './RosterInteractive';
 import s from './Roster.module.css';
@@ -43,6 +44,35 @@ export default async function TutorRosterPage() {
     .order('last_name', { ascending: true, nullsFirst: false })
     .order('first_name', { ascending: true, nullsFirst: false });
 
+  // Plan adherence (§2.4): one RLS-scoped join pulls every visible
+  // student's active plan with its task statuses; computeAdherence
+  // (the same implementation the plan page uses) classifies each as
+  // on-track / behind / ahead so the roster answers "who needs a
+  // nudge?" at a glance.
+  const { data: planRows } = await supabase
+    .from('study_plans')
+    .select('student_id, plan_tasks(status, scheduled_date)')
+    .eq('status', 'active')
+    .eq('test_type', 'sat');
+
+  const today = new Date().toISOString().slice(0, 10);
+  const adherenceByStudent = new Map();
+  for (const plan of planRows ?? []) {
+    const summary = computeAdherence(
+      (plan.plan_tasks ?? []).map((t) => ({
+        scheduledDate: t.scheduled_date,
+        status: t.status,
+      })),
+      today,
+    );
+    adherenceByStudent.set(plan.student_id, {
+      status: summary.status,
+      label: ADHERENCE_LABELS[summary.status],
+      line: adherenceSummaryLine(summary),
+      overdueCount: summary.overdueCount,
+    });
+  }
+
   const baseStudents = (rows ?? []).map((p) => {
     const startDate = p.start_date ?? null;
     return {
@@ -56,6 +86,7 @@ export default async function TutorRosterPage() {
       startDate,
       effectiveStartDate: startDate ?? p.created_at ?? null,
       isActive: p.is_active !== false, // null → treat as active
+      plan: adherenceByStudent.get(p.id) ?? null,
     };
   });
 

@@ -138,6 +138,50 @@ function whyForDrill(s: SkillState): string {
   return headroom ? `~${headroom} points of headroom to mastery` : 'Weak skill worth reinforcing';
 }
 
+// ── Task payload builders ─────────────────────────────────────────
+//
+// One home for the payload shapes, shared by the generator below and
+// the tutor plan editor (§2.4 — manual adds and skill swaps go through
+// these so an edited task is indistinguishable in shape from a
+// generated one, and the runner/completion path treats both alike).
+
+/** The minimal skill identity the payload builders need — a full
+ *  SkillState qualifies, and the editor can supply a bare unit. */
+export interface SkillRef {
+  domainCode: string;
+  skillCode: string;
+  expectedMinutes?: number;
+}
+
+export function buildDrillPayload(s: SkillRef, why: string): Record<string, unknown> {
+  const label = `${s.domainCode}/${s.skillCode}`;
+  return {
+    domain_code: s.domainCode,
+    skill_code: s.skillCode,
+    // Same shape practice_sessions.filter_criteria uses, so the
+    // existing runner + completion path is reused (§2.1).
+    filter_criteria: {
+      domain_code: s.domainCode,
+      skill_code: s.skillCode,
+      count: DRILL_QUESTION_COUNT,
+    },
+    title: `Drill: ${label}`,
+    minutes: Math.min(s.expectedMinutes ?? AVG_TASK_MINUTES, AVG_TASK_MINUTES),
+    why,
+  };
+}
+
+export function buildLessonPayload(s: SkillRef, why: string): Record<string, unknown> {
+  const label = `${s.domainCode}/${s.skillCode}`;
+  return {
+    domain_code: s.domainCode,
+    skill_code: s.skillCode,
+    title: `Lesson: ${label}`,
+    minutes: s.expectedMinutes ?? AVG_TASK_MINUTES,
+    why,
+  };
+}
+
 export function generatePlan(input: PlanInput): PlanDraft {
   const cadence = input.practiceTestCadenceWeeks ?? DEFAULT_CADENCE_WEEKS;
   const totalDays = Math.max(1, daysBetween(input.today, input.testDate));
@@ -212,40 +256,20 @@ export function generatePlan(input: PlanInput): PlanDraft {
     for (let i = 0; i < slots && ranked.length > 0; i++) {
       const s = ranked[cursor % ranked.length];
       cursor++;
-      const label = `${s.domainCode}/${s.skillCode}`;
       if (s.hasLesson && isWeak(s) && !lessonsScheduled.has(s.skillCode)) {
         lessonsScheduled.add(s.skillCode);
         weekTasks.push({
           weekIndex: w,
           taskType: 'lesson',
           source: 'generated',
-          payload: {
-            domain_code: s.domainCode,
-            skill_code: s.skillCode,
-            title: `Lesson: ${label}`,
-            minutes: s.expectedMinutes,
-            why: 'Learn it first — weak but improvable',
-          },
+          payload: buildLessonPayload(s, 'Learn it first — weak but improvable'),
         });
       } else {
         weekTasks.push({
           weekIndex: w,
           taskType: 'drill',
           source: 'generated',
-          payload: {
-            domain_code: s.domainCode,
-            skill_code: s.skillCode,
-            // Same shape practice_sessions.filter_criteria uses, so the
-            // existing runner + completion path is reused (§2.1).
-            filter_criteria: {
-              domain_code: s.domainCode,
-              skill_code: s.skillCode,
-              count: DRILL_QUESTION_COUNT,
-            },
-            title: `Drill: ${label}`,
-            minutes: Math.min(s.expectedMinutes, AVG_TASK_MINUTES),
-            why: whyForDrill(s),
-          },
+          payload: buildDrillPayload(s, whyForDrill(s)),
         });
       }
     }
@@ -416,4 +440,58 @@ export function repacePlan(input: RepaceInput): RepaceResult {
     tasks: [...regen.tasks, ...preservedTasks],
     weeks: regen.weeks,
   };
+}
+
+// ── Single-week regeneration (§2.4 editor) ────────────────────────
+//
+// "Regenerate a week": re-runs the full generator on the student's
+// CURRENT skill state over the plan's original grid (week 0 = the
+// plan's start), then returns only the target week's fresh tasks. The
+// caller replaces that week's still-pending GENERATED tasks with these;
+// tutor-authored tasks and completed/skipped history stay untouched, so
+// regeneration never clobbers human judgment (§2.4) or the record.
+// Skills a kept task in that week already covers are excluded from the
+// generator so the fresh tasks never duplicate them.
+
+export interface RegenerateWeekInput {
+  weekIndex: number;
+  planStart: string;             // ISO — the plan's week-0 anchor
+  testDate: string;              // ISO
+  goalScore: number;
+  startingScore: number | null;
+  weeklyHours: number;
+  testType: 'sat' | 'act';
+  skills: SkillState[];          // current per-skill state (get_plan_inputs)
+  /** The plan's current tasks (all weeks). */
+  existingTasks: ExistingTask[];
+  practiceTestCadenceWeeks?: number;
+}
+
+/** A task in the target week that survives regeneration: hand-authored,
+ *  or already resolved (completed/skipped history is never rewritten). */
+export function survivesWeekRegeneration(t: ExistingTask): boolean {
+  return t.source !== 'generated' || t.status !== 'pending';
+}
+
+export function regenerateWeekTasks(input: RegenerateWeekInput): PlanTaskDraft[] {
+  const weekTasks = input.existingTasks.filter((t) => t.weekIndex === input.weekIndex);
+  const keptSkills = new Set(
+    weekTasks
+      .filter(survivesWeekRegeneration)
+      .map((t) => skillCodeOf(t.payload))
+      .filter((c): c is string => Boolean(c)),
+  );
+
+  const regen = generatePlan({
+    goalScore: input.goalScore,
+    startingScore: input.startingScore,
+    testDate: input.testDate,
+    today: input.planStart, // original grid, so week N stays week N
+    weeklyHours: input.weeklyHours,
+    testType: input.testType,
+    skills: input.skills.filter((s) => !keptSkills.has(s.skillCode)),
+    practiceTestCadenceWeeks: input.practiceTestCadenceWeeks,
+  });
+
+  return regen.tasks.filter((t) => t.weekIndex === input.weekIndex);
 }
