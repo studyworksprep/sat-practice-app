@@ -3,9 +3,10 @@
 // Loads the shared prompt template (stored override in
 // ai_prompt_templates, else the code-side default) and mounts the
 // client component with the two input areas. Generation posts to
-// /api/admin/lessons/generate, which creates a draft lesson and its
-// blocks; the client then navigates into the existing block editor
-// for review.
+// /api/admin/lessons/generate, which returns the draft without
+// persisting it; the client shows a read-only preview with a
+// feedback→revise loop, and only "Continue to editor" saves the
+// lesson and opens the existing block editor.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
@@ -46,8 +47,9 @@ export default async function AdminLessonsGeneratePage() {
           Describe the lesson you want — topic, audience, objectives, length,
           source material — and Claude drafts it as text sections,
           comprehension checks, video placeholders, and practice-question
-          links. The draft opens in the block editor for review; nothing is
-          visible to students until you publish it.
+          links. You&rsquo;ll get a read-only preview first: send Claude
+          feedback until the draft looks right, then continue to the block
+          editor. Nothing is visible to students until you publish it.
         </p>
       </header>
 

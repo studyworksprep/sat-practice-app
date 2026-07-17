@@ -75,6 +75,29 @@ ${TAXONOMY_LINES}
 
 Always respond by invoking return_generated_lesson.`;
 
+// Builds the user message for a revision turn: the admin reviewed
+// the draft in the preview step and typed feedback. The current
+// draft is replayed as its return_generated_lesson payload so the
+// model revises in place instead of regenerating from scratch.
+export function buildRevisionUserMessage(
+  lessonInfo: string,
+  currentLesson: unknown,
+  feedback: string,
+): string {
+  return `You previously drafted the SAT-prep lesson below by calling \`return_generated_lesson\`. An admin has reviewed the draft and left feedback.
+
+Original lesson brief:
+${lessonInfo}
+
+Current lesson draft (your previous return_generated_lesson payload):
+${JSON.stringify(currentLesson, null, 2)}
+
+Admin feedback:
+${feedback}
+
+Apply the feedback and call \`return_generated_lesson\` exactly once with the COMPLETE revised lesson — every block, not only the changed ones. Leave blocks the feedback does not touch unchanged, and keep every convention from the system prompt.`;
+}
+
 export const RETURN_GENERATED_LESSON_TOOL = {
   name: 'return_generated_lesson',
   description:
