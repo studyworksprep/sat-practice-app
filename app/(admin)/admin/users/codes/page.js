@@ -1,9 +1,15 @@
 // Admin users → Codes. Two operational tools:
 //
-// - Teacher Codes: bulk admin-created signup tokens. Anyone signing
-//   up with one becomes a teacher.
-// - Teacher Invite Codes: a per-teacher personal code students can
-//   use during signup to auto-assign to that teacher.
+// - Teacher Codes: bulk admin-created signup tokens identifying
+//   STUDYWORKS tutors. Anyone signing up with one becomes an exempt
+//   (free) teacher. Single-use, tracked.
+// - Student Invitations: admin-issued, single-use, email-bound codes
+//   (created from the Users page) that assign a student to a tutor at
+//   signup and grant sponsored access. The tracker below shows each
+//   code, who claimed it and when, and the tutor it belongs to.
+//   (This replaced the retired per-teacher multi-use invite-code
+//   manager — those codes were shareable bearer tokens for free
+//   access; see the 2026-07-16 owner policy.)
 //
 // Server Component shell. Forms post directly to Server Actions.
 
@@ -13,12 +19,7 @@ import { formatDate } from '@/lib/formatters';
 import { Button } from '@/lib/ui/Button';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { UsersNav } from '../UsersNav';
-import {
-  createTeacherCode,
-  revokeTeacherCode,
-  setTeacherInviteCode,
-  clearTeacherInviteCode,
-} from './actions';
+import { createTeacherCode, revokeTeacherCode, revokeStudentInvite } from './actions';
 import a from '../../../admin.module.css';
 import f from '../../../forms.module.css';
 
@@ -33,23 +34,27 @@ export default async function AdminUserCodesPage() {
     redirect('/');
   }
 
-  const [{ data: codes }, { data: teachers }] = await Promise.all([
+  const [{ data: codes }, { data: invites }] = await Promise.all([
     supabase
       .from('teacher_codes')
       .select('id, code, used_by, used_at, created_at, used_by_profile:profiles!teacher_codes_used_by_fkey(id, first_name, last_name, email)')
       .order('created_at', { ascending: false })
       .limit(500),
     supabase
-      .from('profiles')
-      .select('id, first_name, last_name, email, teacher_invite_code')
-      .in('role', ['teacher', 'manager', 'admin'])
-      .order('email')
-      .limit(1000),
+      .from('student_invite_codes')
+      .select(`
+        id, code, email, used_by, used_at, created_at,
+        teacher:profiles!student_invite_codes_teacher_id_fkey(id, first_name, last_name, email),
+        claimed_by:profiles!student_invite_codes_used_by_fkey(id, first_name, last_name, email)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(500),
   ]);
 
   const codesAvailable = (codes ?? []).filter((c) => !c.used_by).length;
   const codesUsed = (codes ?? []).length - codesAvailable;
-  const teachersWithCodes = (teachers ?? []).filter((t) => t.teacher_invite_code).length;
+  const invitesOpen = (invites ?? []).filter((i) => !i.used_by).length;
+  const invitesClaimed = (invites ?? []).length - invitesOpen;
 
   return (
     <main className={a.container}>
@@ -61,9 +66,9 @@ export default async function AdminUserCodesPage() {
         <div className={a.eyebrow}>Admin · Codes</div>
         <h1 className={a.h1}>Signup codes</h1>
         <p className={a.sub}>
-          Teacher Codes are bulk admin-created tokens (consumed at signup).
-          Teacher Invite Codes are per-teacher personal codes students enter
-          during signup to auto-assign to that teacher.
+          Teacher Codes identify Studyworks tutors (consumed once at signup).
+          Student Invitations are single-use codes issued from the Users
+          page — the only way a sponsored student joins.
         </p>
       </header>
 
@@ -135,68 +140,81 @@ export default async function AdminUserCodesPage() {
         )}
       </Section>
 
-      <Section title={`Teacher Invite Codes (${teachersWithCodes} of ${teachers?.length ?? 0} teachers have a code)`}>
+      <Section title={`Student Invitations (${invitesOpen} open · ${invitesClaimed} claimed)`}>
         <p className={f.formHint}>
-          Each teacher can have one invite code. Generate a fresh one by
-          submitting an empty value.
+          Issued from the <a href="/admin/users" style={S.userLink}>Users page</a> —
+          each code works exactly once and assigns the student to its tutor
+          at signup. The invited email is the contact point; students may
+          sign up under a different address, so the Claimed-by column is the
+          record of who actually redeemed each code. Revoking an open
+          invitation invalidates it immediately.
         </p>
 
-        <Table>
-          <thead>
-            <tr>
-              <Th>Teacher</Th>
-              <Th>Current code</Th>
-              <Th>Set / regenerate</Th>
-              <Th style={{ width: 80 }} />
-            </tr>
-          </thead>
-          <tbody>
-            {(teachers ?? []).map((t) => (
-              <tr key={t.id}>
-                <Td>
-                  <a href={`/admin/users/${t.id}`} style={S.userLink}>
-                    {displayName(t) || t.email}
-                  </a>
-                </Td>
-                <Td style={S.code}>
-                  {t.teacher_invite_code ?? (
-                    <span style={{ color: 'var(--fg3)' }}>—</span>
-                  )}
-                </Td>
-                <Td>
-                  <form action={setTeacherInviteCode} style={S.inlineForm}>
-                    <input type="hidden" name="teacher_id" value={t.id} />
-                    <input
-                      name="code"
-                      type="text"
-                      placeholder={t.teacher_invite_code
-                        ? 'New code or blank to rotate'
-                        : 'Code or blank for auto'}
-                      className={f.input}
-                      style={{ textTransform: 'uppercase', fontSize: 12, maxWidth: 200 }}
-                    />
-                    <Button type="submit" variant="primary" size="sm">
-                      {t.teacher_invite_code ? 'Change' : 'Generate'}
-                    </Button>
-                  </form>
-                </Td>
-                <Td>
-                  {t.teacher_invite_code && (
-                    <form action={clearTeacherInviteCode}>
-                      <input type="hidden" name="teacher_id" value={t.id} />
-                      <Button type="submit" variant="remove" size="sm">Clear</Button>
-                    </form>
-                  )}
-                </Td>
-              </tr>
-            ))}
-            {(teachers ?? []).length === 0 && (
+        {(invites ?? []).length === 0 ? (
+          <p className={f.empty}>No student invitations yet.</p>
+        ) : (
+          <Table>
+            <thead>
               <tr>
-                <Td colSpan={4} className={f.empty}>No teachers found.</Td>
+                <Th>Code</Th>
+                <Th>Invited email</Th>
+                <Th>Tutor</Th>
+                <Th>Status</Th>
+                <Th>Claimed by</Th>
+                <Th>Claimed</Th>
+                <Th>Created</Th>
+                <Th style={{ width: 80 }} />
               </tr>
-            )}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {(invites ?? []).map((i) => (
+                <tr key={i.id}>
+                  <Td style={S.code}>{i.code}</Td>
+                  <Td>{i.email}</Td>
+                  <Td>
+                    {i.teacher ? (
+                      <a href={`/admin/users/${i.teacher.id}`} style={S.userLink}>
+                        {displayName(i.teacher) || i.teacher.email}
+                      </a>
+                    ) : (
+                      '—'
+                    )}
+                  </Td>
+                  <Td>
+                    {i.used_by ? (
+                      <span style={{ ...S.statusPill, ...S.statusUsed }}>Claimed</span>
+                    ) : (
+                      <span style={{ ...S.statusPill, ...S.statusAvail }}>Open</span>
+                    )}
+                  </Td>
+                  <Td>
+                    {i.used_by ? (
+                      <a href={`/admin/users/${i.used_by}`} style={S.userLink}>
+                        {displayName(i.claimed_by) || i.claimed_by?.email || i.used_by.slice(0, 8)}
+                      </a>
+                    ) : (
+                      '—'
+                    )}
+                  </Td>
+                  <Td style={{ color: 'var(--fg3)', fontSize: 12 }}>
+                    {i.used_at ? formatDate(i.used_at) : '—'}
+                  </Td>
+                  <Td style={{ color: 'var(--fg3)', fontSize: 12 }}>
+                    {formatDate(i.created_at) || '—'}
+                  </Td>
+                  <Td>
+                    {!i.used_by && (
+                      <form action={revokeStudentInvite}>
+                        <input type="hidden" name="id" value={i.id} />
+                        <Button type="submit" variant="remove" size="sm">Revoke</Button>
+                      </form>
+                    )}
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
       </Section>
     </main>
   );
@@ -221,7 +239,6 @@ function displayName(p) {
 // admin.module.css; form bits from forms.module.css. Only the
 // per-cell code/link/status-pill styles are unique here.
 const S = {
-  inlineForm: { display: 'flex', gap: 6, alignItems: 'center' },
   code: {
     fontFamily: 'var(--font-mono)',
     fontWeight: 700,

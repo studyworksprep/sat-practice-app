@@ -450,7 +450,9 @@ export function HomeClient({ emailConfirmed }) {
                     </div>
                   </div>
                   <div className={s.field}>
-                    <label className={s.label}>Teacher code (if provided by your teacher)</label>
+                    <label className={s.label}>
+                      Invitation or teacher code (if you received one)
+                    </label>
                     <input
                       className={s.input}
                       value={teacherCode}
