@@ -2,10 +2,10 @@
 
 > **Status: Living document — the active roadmap.** Baseline verified
 > against code + production: 2026-07-12. Delivery is tracked in the
-> **Status ledger** below (last updated 2026-07-16) — every phase PR
+> **Status ledger** below (last updated 2026-07-17) — every phase PR
 > updates it, per the docs rules.
 
-## Status ledger (updated 2026-07-16)
+## Status ledger (updated 2026-07-17)
 
 | Item | Status | Landed | Notes |
 |---|---|---|---|
@@ -20,7 +20,7 @@
 | 1.5 tutor-onboarding policy | **Done** | 2026-07-16 | Owner policy encoded: admin-issued `teacher_codes` = Studyworks tutor (free, `subscription_exempt`); codeless teacher signup reopened for outside tutors (paid); sponsorship qualified — only a Studyworks tutor's roster edge grants a student free access. Resolver corrected (`20260716150000`) and **applied to production 2026-07-16** (owner-authorized; live-catalog verified; retention 0 lose / 0 gain across 77 users); proxy's blanket teacher bypass reverted |
 | 1.5 `entitlements_gate` wiring | **Done** | 2026-07-16 | proxy.js + `userHasAccess` consult the flag (30s cache; resolver errors fall back to legacy; provenance fields preserved for the billing UI). Verified both ways in dev: e2e 33/33 under **off** and **on**; sponsored access live-derived under on (rostered student passes, unrostered bounces); rollback restores legacy exactly |
 | 1.5 student invitations | **Done** | 2026-07-16 | Incident response (a shared multi-use tutor code granted a stranger free access; account revoked same day): sponsored student intake moved to **admin-issued, single-use invitation codes** (`student_invite_codes`, migration `20260716210000` — **applied to production 2026-07-16**, owner-authorized, ahead of the PR #201 deploy). Invite from /admin/users (email + tutor → code + welcome email); the invited email is the contact point, not a lock (students may sign up under another address) — the tracker on /admin/users/codes records claimed when/by whom/tutor. The multi-use `teacher_invite_code` is roster-only and **rejected for Studyworks tutors** at signup AND in-app; outside tutors keep it (their students pay). Full matrix verified live in dev; e2e 33/33 |
-| 1.5 `entitlements_gate` flip | Open | — | now genuinely a one-word switch (`update feature_flags set value='on' where key='entitlements_gate'`; rollback `'off'`, propagates within the 30s cache). Owner decision; recommended order: dev soak `on` → prod flip. Retention re-verified 2026-07-16: 0 lose / 0 gain across 77 users |
+| 1.5 `entitlements_gate` flip | **Done** | 2026-07-17 | **ON in production** (owner-authorized). Preconditions re-run same day: parity 0 lose / 0 gain across 78 users on live prod data; e2e auth suite 33/33 against dev soaking `on`. Live-verified post-flip via both demo personas (tutor + student load their dashboards; no `/subscribe` bounce). Rollback remains `value='off'`, propagates within the 30s cache |
 | 2.1 plan schema | **Done** | 2026-07-14 | |
 | 2.2 generator | **Done** | 2026-07-14 | deterministic v1 |
 | 2.3 student "Today" | **Done** | 2026-07-16 | PR #196; drill starts stamp `plan_task_id`, auto-completion verified end-to-end |
@@ -30,7 +30,7 @@
 | Phase 3 pedagogy loop | Open | — | 3.4 content workstream can start any time |
 | Phase 4 tutor cockpit | Open | — | |
 | Phase 5 manager layer | Open | — | |
-| 6.1 sidebar shell | **Done** | 2026-07-16 | PR #194, behind `sidebar_shell` (dev `all`; **production has no flag row = off — rollout is applying the flag migration + staging `staff` → `all`**). Student footer countdown/streak strip still open |
+| 6.1 sidebar shell | **Done** | 2026-07-16 | PR #194, behind `sidebar_shell` (dev `all`). **Production staged `staff` 2026-07-17** (flag migration applied + row set; live-verified — manager persona gets the sidebar, student keeps top nav). Remaining: flip prod `staff` → `all` after the staff soak; student footer countdown/streak strip still open |
 | 6.2 design language / runner spec | Open | — | |
 | 6.3 access & comfort | Partial | 2026-07-16 | `:focus-visible` on the new chrome only; zoom + runner breakpoints open |
 | 6.3b instant-next runners | Open | — | |
@@ -44,7 +44,15 @@ marked `subscription_exempt` (Studyworks marker; required by the
 teacher e2e suite), and — since 2026-07-16 — production's
 `on_auth_user_created` profile trigger (it never came over with the
 schema dump, so dev signups used to create auth users with no
-profiles).
+profiles). Dev's `entitlements_gate` is `on` (left soaking since the
+2026-07-17 prod flip). Known dev seed drift: the demo accounts
+(`demo.student@`/`demo.tutor@studyworks.demo`) are mis-seeded — role
+`practice`, not `subscription_exempt`, no entitlement — so the local
+`screenshots` Playwright project (marketing captures + demo-readonly)
+fails with a bounce to /subscribe under legacy AND gate paths alike
+(A/B-verified 2026-07-17, pre-existing, not a gate regression). CI is
+unaffected (it runs only the auth specs). Fix is re-seeding dev's demo
+accounts to match production's (role + exempt flags).
 
 ## Purpose and method
 
