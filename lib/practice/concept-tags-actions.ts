@@ -3,9 +3,11 @@
 // 'DELETE' }) calls inside components/ConceptTags.js so the new-
 // tree island uses React 19's action machinery.
 //
-// Same role gating as the API route:
-//   - Add (POST): manager / admin
-//   - Remove from question (DELETE with questionId): admin only
+// Role gating:
+//   - Add: manager / admin
+//   - Remove from question: manager / admin (widened from admin-only
+//     2026-07; the RLS delete policy on question_concept_tags was
+//     widened to is_manager() in the same change)
 //
 // Tag rename and tag-wide deletion (PATCH and DELETE without
 // questionId on the API route) aren't surfaced through the
@@ -98,7 +100,7 @@ export async function removeConceptTagFromQuestion({
 
   let supabase;
   try {
-    ({ supabase } = await requireRole(['admin']));
+    ({ supabase } = await requireRole(['manager', 'admin']));
   } catch (e) {
     if (e instanceof ApiError) return actionFail(e.message);
     throw e;

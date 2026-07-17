@@ -336,7 +336,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
     .map((it) => it.questionId);
 
   const conceptTagsCanTag = CONCEPT_TAGS_CAN_TAG_ROLES.has(profile.role);
-  const conceptTagsCanDelete = profile.role === 'admin';
+  const conceptTagsCanDelete = CONCEPT_TAGS_CAN_TAG_ROLES.has(profile.role);
   const desmosCanSave = DESMOS_CAN_SAVE_ROLES.has(profile.role);
   const mathQuestionIds = items
     .filter((it) => !it.missing && MATH_DOMAIN_CODES.has(it.taxonomy?.domain_code ?? ''))
