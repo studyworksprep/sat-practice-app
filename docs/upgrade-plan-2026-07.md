@@ -30,7 +30,7 @@
 | Phase 3 pedagogy loop | Open | — | 3.4 content workstream can start any time |
 | Phase 4 tutor cockpit | Open | — | |
 | Phase 5 manager layer | Open | — | |
-| 6.1 sidebar shell | **Done** | 2026-07-16 | PR #194, behind `sidebar_shell` (dev `all`). **Production staged `staff` 2026-07-17** (flag migration applied + row set; live-verified — manager persona gets the sidebar, student keeps top nav). Remaining: flip prod `staff` → `all` after the staff soak; student footer countdown/streak strip still open |
+| 6.1 sidebar shell | **Done** | 2026-07-16 | PR #194, behind `sidebar_shell` (dev `all`). **Production rolled out 2026-07-17**: flag migration applied, staged `staff` (manager persona live-verified on the sidebar, student on top nav), then `all` same day (student persona live-verified on the sidebar). Student footer countdown/streak strip still open |
 | 6.2 design language / runner spec | Open | — | |
 | 6.3 access & comfort | Partial | 2026-07-16 | `:focus-visible` on the new chrome only; zoom + runner breakpoints open |
 | 6.3b instant-next runners | Open | — | |
