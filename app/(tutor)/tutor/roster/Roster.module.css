@@ -144,6 +144,7 @@
 .plan_behind { background: #fef3f2; color: #b42318; }
 .plan_ahead { background: #eef2ff; color: #4338ca; }
 .plan_not_started { background: var(--color-slate-100, #f1f5f9); color: var(--fg3, #999); }
+.planDraft { background: #fffbeb; color: #b45309; margin-left: 4px; }
 
 .nameLink {
   color: var(--color-app-accent);
