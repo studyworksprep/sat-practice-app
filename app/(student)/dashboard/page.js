@@ -76,6 +76,7 @@ export default async function StudentDashboardPage() {
     { data: assignmentLinkedSessions },
     { data: recentAttempts },
     hasTutor,
+    { data: activePlanRow },
   ] = await Promise.all([
     loadDashboardAggregate(user.id),
     // Sibling ACT aggregator. Returns zeroed totals when the
@@ -185,6 +186,15 @@ export default async function StudentDashboardPage() {
     // the Pending Assignments panel below — it would always be
     // empty for them and just adds noise.
     hasAssignedTutor(supabase, user.id),
+    // Active study plan? Drives the §6.4 setup callout — students
+    // without a plan get pointed at the first-run wizard.
+    supabase
+      .from('study_plans')
+      .select('id')
+      .eq('student_id', user.id)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   // Weekly accuracy trend for the "Your weekly progress" card.
@@ -438,6 +448,7 @@ export default async function StudentDashboardPage() {
       todayMs={nowMs}
       accountCreatedAt={fullProfile?.created_at ?? null}
       updateTargetScoreAction={updateTargetScore}
+      hasActivePlan={Boolean(activePlanRow)}
     />
   );
 }
