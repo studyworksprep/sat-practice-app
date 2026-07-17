@@ -28,3 +28,13 @@ export function resolveSidebarStage(
   if (value === 'staff') return STAFF_ROLES.includes(role ?? '');
   return false;
 }
+
+/** Interpret a raw feature_flags.value for the entitlements_gate flag
+ *  (§1.5 switchover). Exactly 'on' routes the live access gate through
+ *  the has_plan()/effective_plan() resolver; anything else — 'off', a
+ *  missing row, an unreadable read, a typo — keeps the legacy
+ *  role/exempt/subscription checks, so rollback is one word and a bad
+ *  flag write can never lock users out. */
+export function entitlementsGateEnabled(value: string | null | undefined): boolean {
+  return value === 'on';
+}
