@@ -45,6 +45,21 @@
   overflow: hidden;
 }
 
+/* Study-plan setup callout (§6.4) */
+.planCallout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  border: 1px solid var(--color-app-accent);
+  border-radius: 14px;
+  padding: 16px 20px;
+  background: #fbfaf7;
+}
+.planCalloutTitle { font-weight: 600; color: var(--fg1); font-size: 0.95rem; }
+.planCalloutBody { color: var(--fg2); font-size: 0.85rem; margin-top: 2px; max-width: 52ch; }
+
 .banner::before {
   content: "";
   position: absolute;

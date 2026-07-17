@@ -26,7 +26,7 @@
 | 2.3 student "Today" | **Done** | 2026-07-16 | PR #196; drill starts stamp `plan_task_id`, auto-completion verified end-to-end |
 | 2.4 tutor surfaces | **Done** | 2026-07-17 | generate/review/activate (07-14) + **plan editor & adherence**: move-to-week, swap unit, remove, add manual task (all stamping `plan_tasks.source`), regenerate-a-week (`regenerateWeekTasks` — preserves tutor tasks + completed history); adherence (`lib/plan/adherence.ts`, one home) as on-track/behind/ahead on the plan page and a sortable Plan column on the roster. Editor uses selects rather than drag — same verbs, no client drag dependency |
 | 2.5 re-pacing | **Done** | 2026-07-17 | engine + `proposeRepace` (07-14); **weekly job live**: Vercel cron Mondays 11:00 UTC → `/api/cron/repace` (CRON_SECRET contract, same as the lessonworks cron; admin can trigger manually with `?threshold=N`). Orchestration extracted to `lib/plan/repace-runner.ts` (one home; `proposeRepace` and the cron share it). Routing per spec: tutored student → draft + roster "Review draft" chip; self-serve → auto-apply + Today-page "plan was updated" note (system drafts carry `created_by = null`). Verified in dev: no-drift no-op, forced re-pace preserved tutor tasks and parked a draft for review, 401 on bad/missing secret |
-| Phase 2 acceptance | Open | — | self-serve signup→plan→first task needs §6.4 intake |
+| Phase 2 acceptance | **Met** | 2026-07-17 | Demonstrated end-to-end in dev via the §6.4 wizard: goal → short diagnostic (6 questions in dev's small bank; ~16 in prod) → mastery snapshot → generated 12-week plan → activate → Today's first task, with the first task matching the diagnostic's weakest skill. No human involvement |
 | Phase 3 pedagogy loop | Open | — | 3.4 content workstream can start any time |
 | Phase 4 tutor cockpit | Open | — | |
 | Phase 5 manager layer | Open | — | |
@@ -34,7 +34,7 @@
 | 6.2 design language / runner spec | Open | — | |
 | 6.3 access & comfort | Partial | 2026-07-16 | `:focus-visible` on the new chrome only; zoom + runner breakpoints open |
 | 6.3b instant-next runners | Open | — | |
-| 6.4 first-run wizard | Open | — | |
+| 6.4 first-run wizard | **Done** | 2026-07-17 | `/welcome`: stateless step machine (goal → quick diagnostic → build/activate plan), every visit derives the step from data so it survives leaving mid-flow. Diagnostic = a balanced cross-domain practice session (`lib/plan/diagnostic.ts`, tested) through the normal runner; finishing it feeds the new `snapshot_student_skill_mastery` DB function (applied to dev + prod) so the first plan reflects diagnostic performance immediately. Skippable (`?skip=1`); entry points: dashboard callout when no active plan + Today empty state. Verified live in dev: first task matched the diagnostic's weakest skill |
 
 Dev-environment notes that affect local testing: studyworks-dev has
 `sidebar_shell='all'`, the 29-row `curriculum_units` seed (completed

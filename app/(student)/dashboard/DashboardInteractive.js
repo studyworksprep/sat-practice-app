@@ -49,6 +49,8 @@ export function DashboardInteractive({
   todayMs,
   accountCreatedAt = null,
   updateTargetScoreAction,
+  // §6.4: no active study plan → point at the first-run wizard.
+  hasActivePlan = false,
 }) {
   const [optimisticTarget, setOptimisticTarget] = useOptimistic(
     stats.targetScore,
@@ -109,6 +111,22 @@ export function DashboardInteractive({
           </Link>
         </div>
       </section>
+
+      {/* ---------- Study-plan setup callout (§6.4) ---------- */}
+      {!hasActivePlan && (
+        <section className={s.planCallout}>
+          <div>
+            <div className={s.planCalloutTitle}>You don&apos;t have a study plan yet</div>
+            <div className={s.planCalloutBody}>
+              Three steps — target, quick diagnostic, plan — and the app
+              opens each day to exactly what to do next.
+            </div>
+          </div>
+          <Link href="/welcome" className={s.btnPrimary}>
+            Set up my plan
+          </Link>
+        </section>
+      )}
 
       {/* ---------- Test-date countdown ---------- */}
       {stats.satTestDate && (

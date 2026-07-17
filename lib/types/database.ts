@@ -3674,6 +3674,10 @@ export type Database = {
         Args: { p_asof?: string; p_test_type?: string }
         Returns: number
       }
+      snapshot_student_skill_mastery: {
+        Args: { p_asof?: string; p_student: string; p_test_type?: string }
+        Returns: number
+      }
       stg_clear_practice_test: { Args: { p_code: string }; Returns: undefined }
       student_has_lesson_assignment: {
         Args: { p_lesson_id: string; p_student_id: string }
