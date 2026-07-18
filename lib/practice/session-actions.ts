@@ -25,6 +25,7 @@ import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 import { gradeActMcq } from '@/lib/practice/load-act-question';
 import { recordQuestionOutcome } from '@/lib/review/queue';
+import { recommendLessonsForSkills } from '@/lib/lesson/recommend';
 import type { ActionResult, QuestionType } from '@/lib/types';
 
 type SubmitAnswerResult = ActionResult<{
@@ -543,6 +544,252 @@ export async function togglePracticeMark(
   if (error) return actionFail(`Could not update mark: ${error.message}`);
 
   return { ok: true, sessionId, position, marked: !isMarked };
+}
+
+// ──────────────────────────────────────────────────────────────
+// Dynamic detours (§3.2)
+// ──────────────────────────────────────────────────────────────
+//
+// When a student misses repeatedly mid-session, the runner offers a
+// step back instead of marching on: append a lower-difficulty
+// same-skill question to the walk, or link out to the skill's tagged
+// lesson (§3.3 resolver). Two actions: a read-only probe the client
+// calls when a miss streak hits the threshold (so the card only
+// offers options that actually exist), and the injection itself.
+//
+// Session-model constraints (why this is append-only):
+// - marked_positions is a positional int[] and the review report maps
+//   question_ids by index — inserting mid-array would silently shift
+//   both. Appending is invisible to them.
+// - Completion is `position >= question_ids.length` in the loader, so
+//   a longer walk just moves the finish line; the plan-task trigger
+//   keys on plan_task_id only.
+// - The runner client owns the return hop (answer the detour, then
+//   jump back to where the student left off) — see
+//   PracticeInteractive's detourReturnRef.
+//
+// Student practice/review sessions only: training is tutor self-drill
+// (no scaffolding, and /learn is a student route), and the test runner
+// is a separate component that never reaches these actions (Bluebook
+// parity). SAT only — the detour queries read questions_v2.
+
+const DETOUR_MAX_PER_SESSION = 2;
+const DETOUR_MODES = new Set(['practice', 'review']);
+// Unrated questions are treated as hardest, so a detour from an
+// unrated question may offer any rated one.
+const DETOUR_UNRATED_DIFFICULTY = 4;
+
+type DetourSession = {
+  id: string;
+  question_ids: string[];
+  filter_criteria: Record<string, unknown>;
+  detour_count: number;
+};
+
+type DetourOptionsResult = ActionResult<{
+  easierAvailable: boolean;
+  lesson: { lessonId: string; title: string } | null;
+}>;
+
+type DetourInjectResult = ActionResult<{
+  // Index of the appended question and the new walk length.
+  position: number;
+  total: number;
+}>;
+
+/** Load + guard a session for detour actions. Returns null (with a
+ *  reason) rather than throwing so both actions fail soft. */
+async function loadDetourSession(
+  supabase: Awaited<ReturnType<typeof requireUser>>['supabase'],
+  userId: string,
+  sessionId: string,
+): Promise<{ session: DetourSession; error: null } | { session: null; error: string }> {
+  const { data: session } = await supabase
+    .from('practice_sessions')
+    .select('id, user_id, status, mode, test_type, question_ids, filter_criteria')
+    .eq('id', sessionId)
+    .maybeSingle();
+  if (!session || session.user_id !== userId) {
+    return { session: null, error: 'Session not found' };
+  }
+  if (session.status !== 'in_progress') {
+    return { session: null, error: 'Session not in progress' };
+  }
+  if (session.test_type !== 'sat' || !DETOUR_MODES.has(session.mode ?? '')) {
+    return { session: null, error: 'Detours are not available in this session' };
+  }
+  const fc =
+    session.filter_criteria && typeof session.filter_criteria === 'object'
+    && !Array.isArray(session.filter_criteria)
+      ? (session.filter_criteria as Record<string, unknown>)
+      : {};
+  const detourCountRaw = fc.detour_count;
+  const detourCount = typeof detourCountRaw === 'number' && Number.isInteger(detourCountRaw)
+    ? detourCountRaw
+    : 0;
+  if (detourCount >= DETOUR_MAX_PER_SESSION) {
+    return { session: null, error: 'No more detours in this session' };
+  }
+  const questionIds: string[] = Array.isArray(session.question_ids)
+    ? session.question_ids.filter((q): q is string => typeof q === 'string')
+    : [];
+  return {
+    session: { id: session.id, question_ids: questionIds, filter_criteria: fc, detour_count: detourCount },
+    error: null,
+  };
+}
+
+/** Current question's taxonomy, for the easier-candidate query. */
+async function loadDetourAnchor(
+  supabase: Awaited<ReturnType<typeof requireUser>>['supabase'],
+  questionIds: string[],
+  position: number,
+) {
+  if (!Number.isInteger(position) || position < 0 || position >= questionIds.length) {
+    return null;
+  }
+  const { data: q } = await supabase
+    .from('questions_v2')
+    .select('id, skill_code, difficulty')
+    .eq('id', questionIds[position])
+    .maybeSingle();
+  if (!q?.skill_code) return null;
+  return { skillCode: q.skill_code, difficulty: q.difficulty ?? DETOUR_UNRATED_DIFFICULTY };
+}
+
+/** Easier same-skill candidates, easiest first, excluding the walk. */
+async function findEasierCandidates(
+  supabase: Awaited<ReturnType<typeof requireUser>>['supabase'],
+  anchor: { skillCode: string; difficulty: number },
+  excludeIds: string[],
+  limit: number,
+) {
+  const { data } = await supabase
+    .from('questions_v2')
+    .select('id, difficulty, display_code')
+    .eq('skill_code', anchor.skillCode)
+    .eq('is_published', true)
+    .eq('is_broken', false)
+    .is('deleted_at', null)
+    .not('difficulty', 'is', null)
+    .lt('difficulty', anchor.difficulty)
+    .order('difficulty', { ascending: true })
+    .order('display_code', { ascending: true })
+    .limit(limit + excludeIds.length);
+  const excluded = new Set(excludeIds);
+  return (data ?? []).filter((q) => !excluded.has(q.id)).slice(0, limit);
+}
+
+/**
+ * Probe what a detour could offer at this position: whether an easier
+ * same-skill question exists, and whether the skill has a tagged
+ * published lesson. Read-only; the client calls it once when a miss
+ * streak hits the threshold, and only renders the card when at least
+ * one option exists.
+ */
+export async function getDetourOptions(
+  _prev: unknown,
+  formData: FormData,
+): Promise<DetourOptionsResult> {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase } = ctx;
+
+  const sessionId = String(formData.get('sessionId') ?? '');
+  const position = Number(formData.get('position') ?? -1);
+  const loaded = await loadDetourSession(supabase, user.id, sessionId);
+  if (!loaded.session) return actionFail(loaded.error);
+
+  const anchor = await loadDetourAnchor(supabase, loaded.session.question_ids, position);
+  if (!anchor) return actionFail('No skill attached to this question');
+
+  const [candidates, lessonRecs] = await Promise.all([
+    findEasierCandidates(supabase, anchor, loaded.session.question_ids, 1),
+    recommendLessonsForSkills(supabase, [anchor.skillCode]),
+  ]);
+  const lesson = lessonRecs.get(anchor.skillCode)?.[0] ?? null;
+
+  return {
+    ok: true,
+    easierAvailable: candidates.length > 0,
+    lesson: lesson ? { lessonId: lesson.lessonId, title: lesson.title } : null,
+  };
+}
+
+/**
+ * Append a lower-difficulty same-skill question to the session walk.
+ * Prefers questions the student has never attempted. Capped at
+ * DETOUR_MAX_PER_SESSION per session (tracked on filter_criteria) so
+ * a rough day can't balloon a 10-question drill indefinitely.
+ */
+export async function injectEasierQuestion(
+  _prev: unknown,
+  formData: FormData,
+): Promise<DetourInjectResult> {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+  const { user, supabase } = ctx;
+
+  const rl = await rateLimit(`detour:${user.id}`, { limit: 10, windowMs: 60_000 });
+  if (!rl.ok) return actionFail('Too many detours. Please slow down.');
+
+  const sessionId = String(formData.get('sessionId') ?? '');
+  const position = Number(formData.get('position') ?? -1);
+  const loaded = await loadDetourSession(supabase, user.id, sessionId);
+  if (!loaded.session) return actionFail(loaded.error);
+  const { session } = loaded;
+
+  const anchor = await loadDetourAnchor(supabase, session.question_ids, position);
+  if (!anchor) return actionFail('No skill attached to this question');
+
+  const candidates = await findEasierCandidates(
+    supabase, anchor, session.question_ids, 25,
+  );
+  if (candidates.length === 0) {
+    return actionFail('No easier question available for this skill');
+  }
+
+  // Prefer a question the student has never attempted — the detour
+  // should rebuild footing on fresh ground, not replay old answers.
+  const candidateIds = candidates.map((c) => c.id);
+  const { data: answered } = await supabase
+    .from('attempts')
+    .select('question_id')
+    .eq('user_id', user.id)
+    .in('question_id', candidateIds);
+  const answeredSet = new Set((answered ?? []).map((r) => r.question_id));
+  const pick = candidates.find((c) => !answeredSet.has(c.id)) ?? candidates[0];
+
+  const newIndex = session.question_ids.length;
+  const priorPositions = Array.isArray(session.filter_criteria.detour_positions)
+    ? session.filter_criteria.detour_positions
+    : [];
+  const { error } = await supabase
+    .from('practice_sessions')
+    .update({
+      question_ids: [...session.question_ids, pick.id],
+      filter_criteria: {
+        ...session.filter_criteria,
+        detour_count: session.detour_count + 1,
+        detour_positions: [...priorPositions, newIndex],
+      },
+      last_activity_at: new Date().toISOString(),
+    })
+    .eq('id', sessionId)
+    .eq('status', 'in_progress');
+  if (error) return actionFail(`Could not add the question: ${error.message}`);
+
+  return { ok: true, position: newIndex, total: newIndex + 1 };
 }
 
 // ──────────────────────────────────────────────────────────────

@@ -16,6 +16,7 @@ import { Button } from '@/lib/ui/Button';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { formatDate } from '@/lib/formatters';
 import { createLesson } from './actions';
+import { refreshEfficacy } from './efficacy-actions';
 import { DeleteLessonButton } from './DeleteLessonButton';
 import a from '../../admin.module.css';
 
@@ -34,7 +35,7 @@ export default async function AdminLessonsPage({ searchParams }) {
     redirect('/');
   }
 
-  const [{ data: lessons }, { data: blockCounts }] = await Promise.all([
+  const [{ data: lessons }, { data: blockCounts }, { data: efficacyRows }] = await Promise.all([
     supabase
       .from('lessons')
       .select('id, title, description, status, visibility, author_id, created_at, updated_at')
@@ -43,11 +44,42 @@ export default async function AdminLessonsPage({ searchParams }) {
     supabase
       .from('lesson_blocks')
       .select('lesson_id'),
+    // §3.5 content efficacy — per (lesson, skill) pre/post accuracy
+    // around lesson completion, materialized by
+    // refresh_feature_efficacy(). Sparse until lessons + completions
+    // accumulate; rows simply show "—" until then.
+    supabase
+      .from('feature_efficacy')
+      .select('lesson_id, skill_code, pre_attempts, pre_correct, post_attempts, post_correct, students, refreshed_at'),
   ]);
 
   const countByLesson = {};
   for (const row of blockCounts ?? []) {
     countByLesson[row.lesson_id] = (countByLesson[row.lesson_id] ?? 0) + 1;
+  }
+
+  // Roll skills up per lesson: attempts-weighted pre/post accuracy,
+  // paired-student count summed across skills, per-skill detail for
+  // the cell tooltip.
+  const efficacyByLesson = {};
+  let efficacyRefreshedAt = null;
+  for (const r of efficacyRows ?? []) {
+    const e = efficacyByLesson[r.lesson_id]
+      ?? (efficacyByLesson[r.lesson_id] = {
+        preAttempts: 0, preCorrect: 0, postAttempts: 0, postCorrect: 0,
+        students: 0, skills: [],
+      });
+    e.preAttempts += r.pre_attempts ?? 0;
+    e.preCorrect += r.pre_correct ?? 0;
+    e.postAttempts += r.post_attempts ?? 0;
+    e.postCorrect += r.post_correct ?? 0;
+    e.students += r.students ?? 0;
+    e.skills.push(
+      `${r.skill_code}: ${pct(r.pre_correct, r.pre_attempts)} → ${pct(r.post_correct, r.post_attempts)} (${r.students} student${r.students === 1 ? '' : 's'})`,
+    );
+    if (!efficacyRefreshedAt || (r.refreshed_at && r.refreshed_at > efficacyRefreshedAt)) {
+      efficacyRefreshedAt = r.refreshed_at;
+    }
   }
 
   const authorIds = [...new Set((lessons ?? []).map((l) => l.author_id).filter(Boolean))];
@@ -85,6 +117,12 @@ export default async function AdminLessonsPage({ searchParams }) {
         </div>
       )}
       {deleted && <div style={S.flash}>Lesson deleted.</div>}
+      {sp.efficacy === '1' && <div style={S.flash}>Efficacy refreshed.</div>}
+      {typeof sp.efficacy_error === 'string' && sp.efficacy_error && (
+        <div style={S.flashError}>
+          Efficacy refresh failed: {sp.efficacy_error}
+        </div>
+      )}
 
       <section className={a.section}>
         <div style={S.cta}>
@@ -139,7 +177,22 @@ export default async function AdminLessonsPage({ searchParams }) {
       </section>
 
       <section className={a.section}>
-        <h2 className={a.h2}>All lessons ({lessons?.length ?? 0})</h2>
+        <div style={S.cta}>
+          <div>
+            <h2 className={a.h2}>All lessons ({lessons?.length ?? 0})</h2>
+            <p className={a.help}>
+              Efficacy = first-attempt practice accuracy on each lesson&rsquo;s
+              tagged skills, before → after students completed the lesson
+              (paired students only).
+              {efficacyRefreshedAt
+                ? ` Last refreshed ${formatDate(efficacyRefreshedAt)}.`
+                : ' Not computed yet.'}
+            </p>
+          </div>
+          <form action={refreshEfficacy}>
+            <Button type="submit" variant="secondary">Refresh efficacy</Button>
+          </form>
+        </div>
         {(lessons ?? []).length === 0 ? (
           <p className={a.help}>No lessons yet.</p>
         ) : (
@@ -151,6 +204,7 @@ export default async function AdminLessonsPage({ searchParams }) {
                 <Th>Status</Th>
                 <Th>Visibility</Th>
                 <Th style={{ textAlign: 'right' }}>Blocks</Th>
+                <Th>Efficacy</Th>
                 <Th>Updated</Th>
                 <Th style={{ width: 220 }}>Actions</Th>
               </tr>
@@ -174,6 +228,9 @@ export default async function AdminLessonsPage({ searchParams }) {
                   <Td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                     {countByLesson[l.id] ?? 0}
                   </Td>
+                  <Td>
+                    <EfficacyCell entry={efficacyByLesson[l.id]} />
+                  </Td>
                   <Td style={{ color: 'var(--fg3)', fontSize: 12 }}>
                     {formatDate(l.updated_at) || '—'}
                   </Td>
@@ -196,6 +253,39 @@ export default async function AdminLessonsPage({ searchParams }) {
       </section>
     </main>
   );
+}
+
+// §3.5 efficacy cell — attempts-weighted pre → post accuracy across
+// the lesson's tagged skills, with the per-skill split in the title
+// tooltip. "—" until the lesson has paired completion data.
+function EfficacyCell({ entry }) {
+  if (!entry || entry.preAttempts === 0 || entry.postAttempts === 0) {
+    return <span style={{ color: 'var(--fg3)' }}>—</span>;
+  }
+  const pre = pct(entry.preCorrect, entry.preAttempts);
+  const post = pct(entry.postCorrect, entry.postAttempts);
+  const improved = entry.postCorrect / entry.postAttempts
+    >= entry.preCorrect / entry.preAttempts;
+  return (
+    <span
+      title={entry.skills.join('\n')}
+      style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}
+    >
+      {pre} → <strong style={{
+        color: improved ? 'var(--color-diff-easy-fg)' : 'var(--color-diff-hard-fg)',
+      }}
+      >{post}
+      </strong>
+      <span style={{ color: 'var(--fg3)', fontSize: 12 }}>
+        {' '}· {entry.students} student{entry.students === 1 ? '' : 's'}
+      </span>
+    </span>
+  );
+}
+
+function pct(correct, attempts) {
+  if (!attempts) return '—';
+  return `${Math.round((correct / attempts) * 100)}%`;
 }
 
 function statusStyle(status) {
@@ -233,6 +323,14 @@ const S = {
     background: 'var(--color-success-bg)',
     color: 'var(--color-diff-easy-fg)',
     border: '1px solid var(--color-success)',
+    borderRadius: 'var(--radius-md)',
+    fontSize: 13,
+  },
+  flashError: {
+    padding: '10px 14px',
+    background: 'var(--color-diff-hard-bg, #fef2f2)',
+    color: 'var(--color-diff-hard-fg)',
+    border: '1px solid var(--color-diff-hard-fg)',
     borderRadius: 'var(--radius-md)',
     fontSize: 13,
   },

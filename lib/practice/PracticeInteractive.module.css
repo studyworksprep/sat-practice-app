@@ -309,6 +309,41 @@
   color: var(--color-gold-700, #a16207);
 }
 
+/* §3.2 dynamic detour — the "step back?" offer after repeated
+   misses. Violet family so it reads as a different voice from the
+   amber hints (a structural suggestion, not a content nudge). */
+.detourPanel {
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: var(--color-violet-50, #f5f3ff);
+  border: 1px solid var(--color-violet-200, #ddd6fe);
+  border-radius: var(--radius-md);
+}
+.detourTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-violet-700, #6d28d9);
+  margin-bottom: 4px;
+}
+.detourBody {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.detourActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.detourLessonLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+}
+.detourLessonLink:hover { text-decoration: underline; }
+
 /* Save & exit — neutral pill at the right edge of the header,
    mirroring the test runner's control (TestRunner.module.css
    .saveExitBtn). Rendered as a Link, so reset anchor styling. */
