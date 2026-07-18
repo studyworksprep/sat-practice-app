@@ -31,6 +31,11 @@
 // test doesn't need to mock auth.
 
 import { applyWatermark } from '@/lib/content/watermark';
+// Shared .mjs MathJax renderer (also used by the drafts preview);
+// no type declarations.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { safeRender } from '@/lib/content/render-math.mjs';
 import { loadReviewData } from '@/lib/practice/load-review-data';
 import { loadDesmosSavedState } from '@/lib/practice/load-desmos-saved-state';
 import { loadConceptTags } from '@/lib/practice/load-concept-tags';
@@ -96,6 +101,11 @@ export interface QuestionVM {
    *  for English (underlined portions) and Reading (line-
    *  referenced spans). Null on questions without a marker. */
   qrefOrdinal: number | null;
+  /** §3.2 progressive hints — ordered, gentlest first, watermarked
+   *  like the other content fields. Served to the PRACTICE runner
+   *  only: the test runner has its own loader that never selects
+   *  the column (Bluebook parity). Empty on ACT questions. */
+  hints: string[];
 }
 
 export interface InitialAttempt {
@@ -405,7 +415,7 @@ export async function loadQuestion(
       supabase
         .from('questions_v2')
         .select(
-          'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_code, domain_name, skill_code, skill_name, difficulty, score_band, display_code, is_broken, is_published, deleted_at',
+          'id, question_type, stimulus_html, stem_html, options, stimulus_rendered, stem_rendered, options_rendered, domain_code, domain_name, skill_code, skill_name, difficulty, score_band, display_code, hints, is_broken, is_published, deleted_at',
         )
         .eq('id', questionId)
         .maybeSingle(),
@@ -481,6 +491,12 @@ export async function loadQuestion(
       // SAT side has no qref markers — passages don't carry
       // ACT-style underlined-portion numerals or line references.
       qrefOrdinal: null,
+      // Math-render on the fly: hints have no *_rendered companion
+      // column (they're short), so LaTeX goes through the shared
+      // MathJax pass here. safeRender degrades to the raw string.
+      hints: ((Array.isArray(question.hints) ? question.hints : []) as unknown[])
+        .filter((h): h is string => typeof h === 'string' && h.trim() !== '')
+        .map((h) => applyWatermark(safeRender(h, `hint:${question.id}`), userId)),
     };
 
     let reviewData: Awaited<ReturnType<typeof loadReviewData>> | null = null;

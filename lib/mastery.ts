@@ -17,6 +17,10 @@ export const MASTERY_BAND_WEIGHT: Record<number, number> = {
   1: 0.7, 2: 0.85, 3: 1.0, 4: 1.15, 5: 1.3, 6: 1.5, 7: 1.7,
 };
 export const VOLUME_CURVE = 0.15;
+/** §3.2: a correct answer reached with hints contributes half its
+ *  weight to weightedCorrect (weightedTotal unchanged). Mirrored in
+ *  SQL inside get_skill_mastery_asof (migration 20260718121000). */
+export const HINT_CORRECT_FACTOR = 0.5;
 
 /** Per-attempt weight: difficulty weight × score-band weight. Unknown or
  *  null difficulty falls back to 1.0; unknown or null band to 1.15 —
@@ -60,6 +64,9 @@ export interface MasteryAttempt {
   question_id: string;
   is_correct: boolean;
   created_at: string | number | Date;
+  /** §3.2: hints revealed before answering (attempts.response_json
+   *  hints_used). Omitted/null/0 = unassisted. */
+  hints_used?: number | null;
 }
 
 export interface MasteryTaxEntry {
@@ -87,7 +94,9 @@ export function computeMastery(
     const tax = taxMap[a.question_id];
     const w = masteryWeight(tax?.difficulty, tax?.score_band);
     weightedTotal += w;
-    if (a.is_correct) weightedCorrect += w;
+    if (a.is_correct) {
+      weightedCorrect += (a.hints_used ?? 0) > 0 ? w * HINT_CORRECT_FACTOR : w;
+    }
   }
 
   // Recency bonus: +5% if recent (14-day) accuracy > 70% with 3+ attempts.

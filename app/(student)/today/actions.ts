@@ -137,14 +137,17 @@ export async function startPlanTask(formData: FormData): Promise<void> {
         MAX_DRILL_COUNT,
       );
 
-      // Candidates from the inline v2 taxonomy, in the deterministic
-      // display_code walk the practice launcher also defaults to.
+      // Candidates from the inline v2 taxonomy, easy→hard (§3.2
+      // difficulty ramping — the drill warms up before it bites;
+      // unknown difficulty sorts last), display_code as the
+      // deterministic tiebreak.
       let query = supabase
         .from('questions_v2')
         .select('id, display_code')
         .eq('is_published', true)
         .eq('is_broken', false)
         .is('deleted_at', null)
+        .order('difficulty', { ascending: true, nullsFirst: false })
         .order('display_code', { ascending: true })
         .limit(500);
       query = skillCode ? query.eq('skill_code', skillCode) : query.eq('domain_code', domainCode!);
