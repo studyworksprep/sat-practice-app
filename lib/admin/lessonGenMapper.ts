@@ -50,6 +50,10 @@ export interface GeneratedLessonBlock {
   // figure
   figure?: unknown;
   figure_caption?: string;
+  // graph_image
+  graph_expressions?: unknown[];
+  graph_viewport?: unknown;
+  graph_caption?: string;
 }
 
 export interface GeneratedLesson {
@@ -76,9 +80,21 @@ export interface MappedBlockRow {
   content: Json;
 }
 
+// A graph_image block the server cannot render (the Desmos API is
+// browser-only). The mapper emits a placeholder text block and one of
+// these; the preview client renders + screenshots + uploads it, then
+// swaps the final <img> html into the block matched by blockId.
+export interface PendingGraph {
+  blockId: string;
+  expressions: string[];
+  viewport: { xmin: number; xmax: number; ymin: number; ymax: number } | null;
+  caption: string;
+}
+
 export interface MappedLesson {
   blocks: MappedBlockRow[];
   warnings: string[];
+  pendingGraphs: PendingGraph[];
 }
 
 function escapeHtml(input: string): string {
@@ -89,6 +105,12 @@ function escapeHtml(input: string): string {
     .replace(/"/g, '&quot;');
 }
 
+function cleanStrings(v: unknown): string[] {
+  return (Array.isArray(v) ? v : [])
+    .filter((s): s is string => typeof s === 'string' && s.trim() !== '')
+    .map((s) => s.trim());
+}
+
 export async function generatedLessonToBlocks(
   generated: GeneratedLesson,
   resolveQuestion: ResolveQuestion,
@@ -96,6 +118,7 @@ export async function generatedLessonToBlocks(
 ): Promise<MappedLesson> {
   const warnings: string[] = [];
   const out: Array<Omit<MappedBlockRow, 'sort_order'>> = [];
+  const pendingGraphs: PendingGraph[] = [];
   const source = Array.isArray(generated?.blocks) ? generated.blocks : [];
 
   for (let i = 0; i < source.length; i++) {
@@ -165,11 +188,7 @@ export async function generatedLessonToBlocks(
         warnings.push(`${label}: empty Desmos instructions — dropped.`);
         continue;
       }
-      const strings = (v: unknown): string[] =>
-        (Array.isArray(v) ? v : [])
-          .filter((s): s is string => typeof s === 'string' && s.trim() !== '')
-          .map((s) => s.trim());
-      const expected = strings(raw.desmos_expected);
+      const expected = cleanStrings(raw.desmos_expected);
       const testValues = (Array.isArray(raw.desmos_test_values) ? raw.desmos_test_values : [])
         .filter((n): n is number => typeof n === 'number' && Number.isFinite(n));
       const success = sanitizeQuestionHtml(
@@ -200,7 +219,7 @@ export async function generatedLessonToBlocks(
             : 'Try it in Desmos',
         instructions_html: instructions,
         caption_html: '',
-        initial_expressions: strings(raw.desmos_initial_expressions).map((latex) => ({ latex })),
+        initial_expressions: cleanStrings(raw.desmos_initial_expressions).map((latex) => ({ latex })),
         calculator_options: { expressions: true, lockViewport: false, sliders: true },
         goal:
           expected.length > 1
@@ -281,6 +300,45 @@ export async function generatedLessonToBlocks(
       continue;
     }
 
+    if (raw.type === 'graph_image') {
+      const expressions = cleanStrings(raw.graph_expressions);
+      const caption =
+        typeof raw.graph_caption === 'string' && raw.graph_caption.trim()
+          ? raw.graph_caption.trim()
+          : '';
+      if (expressions.length === 0) {
+        warnings.push(`${label}: graph_image with no expressions — dropped.`);
+        continue;
+      }
+      const vp = (raw.graph_viewport ?? null) as Record<string, unknown> | null;
+      const n = (k: string): number | null =>
+        vp && typeof vp[k] === 'number' && Number.isFinite(vp[k]) ? (vp[k] as number) : null;
+      const xmin = n('xmin');
+      const xmax = n('xmax');
+      const ymin = n('ymin');
+      const ymax = n('ymax');
+      const viewport =
+        xmin !== null && xmax !== null && ymin !== null && ymax !== null && xmin < xmax && ymin < ymax
+          ? { xmin, xmax, ymin, ymax }
+          : null;
+
+      // Desmos renders only in a browser, so the server emits a
+      // placeholder text block plus a PendingGraph; the preview client
+      // screenshots + uploads and swaps in the final <img> html
+      // (matched by content id) before the lesson can be saved.
+      out.push({
+        block_type: 'text',
+        content: {
+          id,
+          html:
+            '<p><em>[Rendering graph image…]</em></p>' +
+            (caption ? `<p><em>${escapeHtml(caption)}</em></p>` : ''),
+        },
+      });
+      pendingGraphs.push({ blockId: id, expressions, viewport, caption });
+      continue;
+    }
+
     if (raw.type === 'question_suggestion') {
       const domainName = typeof raw.domain_name === 'string' ? raw.domain_name.trim() : '';
       const skillName = typeof raw.skill_name === 'string' ? raw.skill_name.trim() : '';
@@ -336,5 +394,6 @@ export async function generatedLessonToBlocks(
   return {
     blocks: out.map((b, i) => ({ ...b, sort_order: i })),
     warnings,
+    pendingGraphs,
   };
 }

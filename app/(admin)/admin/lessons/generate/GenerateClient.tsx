@@ -19,12 +19,14 @@
 // "Continue to editor" persists the lesson (saveGeneratedLesson) and
 // navigates into the existing block editor.
 
-import { useActionState, useState, useTransition } from 'react';
+import { useActionState, useCallback, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/lib/ui/Button';
 import { LESSON_INFO_PLACEHOLDER } from '@/lib/admin/lessonGenPrompt';
 import { savePromptTemplate, resetPromptTemplate, saveGeneratedLesson } from './actions';
 import { DraftPreview, type DraftBlock } from './DraftPreview';
+import { GraphImageResolver } from './GraphImageResolver';
+import type { PendingGraph } from '@/lib/admin/lessonGenMapper';
 import f from '../../../forms.module.css';
 
 interface GenerateClientProps {
@@ -45,8 +47,13 @@ interface DraftState {
   description: string | null;
   blocks: DraftBlock[];
   warnings: string[];
+  // graph_image blocks still waiting for the browser-side Desmos
+  // screenshot; the resolver swaps their html into `blocks` and
+  // drains this list. Saving is gated until it is empty.
+  pendingGraphs: PendingGraph[];
   // Bumped on every successful (re)generation; keys DraftPreview so
-  // its local feedback box clears when a revision lands.
+  // its local feedback box clears when a revision lands, and keys the
+  // resolver so a revision restarts with a fresh processed-set.
   version: number;
 }
 
@@ -114,6 +121,7 @@ export function GenerateClient({ initialTemplate, isCustomized }: GenerateClient
         description: json.data.description ?? null,
         blocks: json.data.blocks ?? [],
         warnings: json.data.warnings ?? [],
+        pendingGraphs: Array.isArray(json.data.pendingGraphs) ? json.data.pendingGraphs : [],
         version: (prev?.version ?? 0) + 1,
       }));
       window.scrollTo({ top: 0 });
@@ -142,8 +150,30 @@ export function GenerateClient({ initialTemplate, isCustomized }: GenerateClient
     );
   }
 
+  // Swap a resolved (or failed-with-note) graph image into its draft
+  // block and drain the pending list. Failures also surface as a
+  // draft warning so the admin knows to attach an image in the editor.
+  const handleGraphResult = useCallback((blockId: string, html: string, ok: boolean) => {
+    setDraft((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        blocks: prev.blocks.map((b) =>
+          b.content?.id === blockId ? { ...b, content: { ...b.content, html } } : b,
+        ),
+        pendingGraphs: prev.pendingGraphs.filter((g) => g.blockId !== blockId),
+        warnings: ok
+          ? prev.warnings
+          : [
+              ...prev.warnings,
+              'A graph image could not be rendered — a placeholder note was inserted; add an image in the editor.',
+            ],
+      };
+    });
+  }, []);
+
   async function confirmDraft() {
-    if (!draft) return;
+    if (!draft || draft.pendingGraphs.length > 0) return;
     setBusy('saving');
     setError(null);
     setValidationErrors([]);
@@ -171,19 +201,29 @@ export function GenerateClient({ initialTemplate, isCustomized }: GenerateClient
 
   if (draft) {
     return (
-      <DraftPreview
-        key={draft.version}
-        title={draft.title}
-        description={draft.description}
-        blocks={draft.blocks}
-        warnings={draft.warnings}
-        busy={busy === 'revising' || busy === 'saving' ? busy : 'idle'}
-        error={error}
-        validationErrors={validationErrors}
-        onRequestChanges={requestChanges}
-        onConfirm={confirmDraft}
-        onDiscard={discardDraft}
-      />
+      <>
+        {draft.pendingGraphs.length > 0 && (
+          <GraphImageResolver
+            key={`resolver-${draft.version}`}
+            graphs={draft.pendingGraphs}
+            onResult={handleGraphResult}
+          />
+        )}
+        <DraftPreview
+          key={`preview-${draft.version}`}
+          title={draft.title}
+          description={draft.description}
+          blocks={draft.blocks}
+          warnings={draft.warnings}
+          pendingGraphCount={draft.pendingGraphs.length}
+          busy={busy === 'revising' || busy === 'saving' ? busy : 'idle'}
+          error={error}
+          validationErrors={validationErrors}
+          onRequestChanges={requestChanges}
+          onConfirm={confirmDraft}
+          onDiscard={discardDraft}
+        />
+      </>
     );
   }
 
