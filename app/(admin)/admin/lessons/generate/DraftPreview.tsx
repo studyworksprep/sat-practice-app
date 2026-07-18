@@ -33,6 +33,8 @@ interface DraftPreviewProps {
   description: string | null;
   blocks: DraftBlock[];
   warnings: string[];
+  /** graph_image blocks still rendering in the browser — saving is gated until 0. */
+  pendingGraphCount: number;
   busy: 'idle' | 'revising' | 'saving';
   error: string | null;
   validationErrors: ValidationIssue[];
@@ -46,6 +48,7 @@ export function DraftPreview({
   description,
   blocks,
   warnings,
+  pendingGraphCount,
   busy,
   error,
   validationErrors,
@@ -152,8 +155,17 @@ export function DraftPreview({
           >
             {busy === 'revising' ? 'Revising… (can take 1–2 minutes)' : '✨ Request changes'}
           </Button>
-          <Button type="button" variant="primary" onClick={onConfirm} disabled={isBusy}>
-            {busy === 'saving' ? 'Opening editor…' : 'Continue to editor →'}
+          <Button
+            type="button"
+            variant="primary"
+            onClick={onConfirm}
+            disabled={isBusy || pendingGraphCount > 0}
+          >
+            {busy === 'saving'
+              ? 'Opening editor…'
+              : pendingGraphCount > 0
+                ? `Rendering ${pendingGraphCount} graph image${pendingGraphCount === 1 ? '' : 's'}…`
+                : 'Continue to editor →'}
           </Button>
           <button type="button" onClick={handleDiscard} disabled={isBusy} style={S.discard}>
             Discard draft

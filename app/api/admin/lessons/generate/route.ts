@@ -175,6 +175,9 @@ export const POST = apiRoute(async (request: Request) => {
     title: generated.title.trim(),
     description,
     blocks: mapped.blocks,
+    // graph_image blocks the client must render via the browser-only
+    // Desmos API and swap into `blocks` before saving.
+    pendingGraphs: mapped.pendingGraphs,
     warnings: [...mapped.warnings, ...(validation.warnings ?? [])],
   });
 });
