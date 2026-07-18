@@ -139,6 +139,9 @@ export async function loadActQuestionContent(
       // pass it through unconditionally. Renderer no-ops when
       // the stimulus has no matching marker.
       qrefOrdinal: q.source_ordinal ?? null,
+      // §3.2 hints are SAT-only (questions_v2.hints); ACT rows
+      // carry none.
+      hints: [],
     },
   };
 }
@@ -180,6 +183,7 @@ function makeEmptyVM(questionId: string): QuestionVM {
       score_band: null,
     },
     qrefOrdinal: null,
+    hints: [],
   };
 }
 

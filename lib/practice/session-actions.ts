@@ -115,6 +115,13 @@ export async function submitAnswer(
   const position = Number(formData.get('position'));
   const selectedOptionId = formData.get('optionId');
   const responseText = (formData.get('responseText') ?? '').toString().trim();
+  // §3.2: how many progressive hints the student revealed before
+  // answering. Clamped defensively — the client can't send more than
+  // the question has, but the attempt record shouldn't trust it.
+  const hintsUsedRaw = Number(formData.get('hintsUsed') ?? 0);
+  const hintsUsed = Number.isInteger(hintsUsedRaw)
+    ? Math.max(0, Math.min(hintsUsedRaw, 10))
+    : 0;
 
   // Load the session and verify ownership + position. We pull
   // test_type so the grading + write paths fork between SAT (queries
@@ -261,6 +268,10 @@ export async function submitAnswer(
         source: 'practice',
         context_type: attemptContext.context_type,
         context_id: attemptContext.context_id,
+        // §3.2 hint usage. Only set when hints were used — mastery
+        // (get_skill_mastery_asof) half-weights hint-assisted
+        // corrects, and a null response_json means unassisted.
+        response_json: hintsUsed > 0 ? { hints_used: hintsUsed } : null,
       });
       if (insertErr) {
         return actionFail(`Failed to record attempt: ${insertErr.message}`);

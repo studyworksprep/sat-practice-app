@@ -40,7 +40,7 @@ export default async function DraftEditorPage({ params }) {
     .from('question_content_drafts')
     .select(`
       id, question_id, status, notes,
-      stem_html, stimulus_html, rationale_html, options,
+      stem_html, stimulus_html, rationale_html, options, hints,
       created_at, updated_at, created_by, promoted_at
     `)
     .eq('id', draftId)
@@ -155,6 +155,12 @@ function DraftEditor({ draft }) {
         <FieldWithUpload label="stimulus_html" name="stimulus_html" defaultValue={draft.stimulus_html ?? ''} />
         <FieldWithUpload label="rationale_html" name="rationale_html" defaultValue={draft.rationale_html ?? ''} />
         <OptionsEditor initialOptions={draft.options} name="options" />
+        <Field
+          label="hints (§3.2 — one per line, gentlest first; inline HTML + LaTeX ok)"
+          name="hints"
+          value={Array.isArray(draft.hints) ? draft.hints.join('\n') : ''}
+          rows={4}
+        />
         <Field label="notes" name="notes" value={draft.notes} rows={3} />
         <label style={S.label}>
           status

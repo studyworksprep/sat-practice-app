@@ -41,6 +41,18 @@ function parseOptionsOrThrow(raw) {
   return parsed;
 }
 
+// §3.2 hints textarea → jsonb array. One hint per non-empty line
+// (hints are short inline-HTML nudges — newlines inside a hint are
+// not supported by design). Empty textarea = NULL = "no change",
+// matching the other draft fields.
+function parseHintLines(raw) {
+  if (raw == null || String(raw).trim() === '') return null;
+  return String(raw)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '');
+}
+
 export async function saveDraft(draftId, formData) {
   const { supabase } = await requireRole(['admin']);
 
@@ -52,6 +64,7 @@ export async function saveDraft(draftId, formData) {
   const status         = emptyToNull(formData.get('status')) ?? 'pending';
 
   const options = parseOptionsOrThrow(options_raw);
+  const hints = parseHintLines(formData.get('hints'));
 
   const { error } = await supabase
     .from('question_content_drafts')
@@ -60,6 +73,7 @@ export async function saveDraft(draftId, formData) {
       stimulus_html,
       rationale_html,
       options,
+      hints,
       notes,
       status,
       // created_by isn't updated on save — it's set at creation
@@ -80,7 +94,7 @@ export async function promoteDraft(draftId) {
   // are non-null (only those get copied).
   const { data: draft, error: loadErr } = await supabase
     .from('question_content_drafts')
-    .select('id, question_id, status, stem_html, stimulus_html, rationale_html, options')
+    .select('id, question_id, status, stem_html, stimulus_html, rationale_html, options, hints')
     .eq('id', draftId)
     .maybeSingle();
 
@@ -92,6 +106,9 @@ export async function promoteDraft(draftId) {
   if (draft.stimulus_html  != null) update.stimulus_html  = draft.stimulus_html;
   if (draft.rationale_html != null) update.rationale_html = draft.rationale_html;
   if (draft.options        != null) update.options        = draft.options;
+  // §3.2 hints — jsonb array, no rendered-column companion (hints
+  // render client-side through sanitizeQuestionHtml, unrendered).
+  if (draft.hints          != null) update.hints          = draft.hints;
 
   if (Object.keys(update).length === 0) {
     throw new Error('draft has no non-NULL fields to promote');

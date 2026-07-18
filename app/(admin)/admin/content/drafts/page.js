@@ -20,7 +20,7 @@ export default async function DraftsListPage() {
     .from('question_content_drafts')
     .select(`
       id, question_id, status, notes, created_at, updated_at,
-      stem_html, stimulus_html, rationale_html, options,
+      stem_html, stimulus_html, rationale_html, options, hints,
       question:questions_v2(display_code, question_type)
     `)
     .neq('status', 'promoted')
@@ -35,13 +35,14 @@ export default async function DraftsListPage() {
     updated_at: d.updated_at,
     display_code: d.question?.display_code ?? null,
     question_type: d.question?.question_type ?? null,
-    // "Touches" — which of the four fields the draft proposes to
+    // "Touches" — which content fields the draft proposes to
     // change. NULL means "leave as-is"; non-null means "replace".
     touches: [
       d.stem_html      != null && 'stem',
       d.stimulus_html  != null && 'stimulus',
       d.rationale_html != null && 'rationale',
       d.options        != null && 'options',
+      d.hints          != null && 'hints',
     ].filter(Boolean).join(', ') || '—',
   }));
 

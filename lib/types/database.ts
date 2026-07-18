@@ -2046,6 +2046,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          hints: Json | null
           id: string
           notes: string | null
           options: Json | null
@@ -2063,6 +2064,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          hints?: Json | null
           id?: string
           notes?: string | null
           options?: Json | null
@@ -2080,6 +2082,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          hints?: Json | null
           id?: string
           notes?: string | null
           options?: Json | null
@@ -2259,6 +2262,7 @@ export type Database = {
           display_code: string | null
           domain_code: string | null
           domain_name: string | null
+          hints: Json
           id: string
           is_broken: boolean
           is_published: boolean
@@ -2297,6 +2301,7 @@ export type Database = {
           display_code?: string | null
           domain_code?: string | null
           domain_name?: string | null
+          hints?: Json
           id?: string
           is_broken?: boolean
           is_published?: boolean
@@ -2335,6 +2340,7 @@ export type Database = {
           display_code?: string | null
           domain_code?: string | null
           domain_name?: string | null
+          hints?: Json
           id?: string
           is_broken?: boolean
           is_published?: boolean
