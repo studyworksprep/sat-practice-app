@@ -70,6 +70,42 @@
   margin: 0 0 var(--s3);
 }
 
+/* ---------- Lesson recommendations (§3.3 "Learn it first") ---------- */
+
+.lessonRecList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.lessonRecRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-slate-50);
+}
+
+.lessonRecText {
+  font-size: 14px;
+  color: var(--fg2);
+}
+
+.lessonRecLink {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-app-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.lessonRecLink:hover { text-decoration: underline; }
+
 /* ---------- Metrics ---------- */
 
 .metrics {

@@ -45,6 +45,7 @@ import {
 // Weak-queue is the fallback when the SRS queue is dry — its priority
 // scoring is the same intake policy the queue itself grew out of.
 import { buildWeakQueue, selectDrillQuestionIds } from '@/lib/practice/weak-queue';
+import { recommendLessonsForSkills } from '@/lib/lesson/recommend';
 import type { PlanTaskType } from '@/lib/plan/generate-plan';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -209,24 +210,13 @@ export async function startPlanTask(formData: FormData): Promise<void> {
       const lessonId = str(payload, 'lesson_id');
       if (lessonId && UUID_RE.test(lessonId)) redirect(`/learn/${lessonId}`);
 
-      // Resolve by skill code via lesson_topics (§3.3's join key).
+      // Resolve by skill code via the shared §3.3 recommender
+      // (lesson_topics → published lessons).
       const skillCode = str(payload, 'skill_code');
       if (skillCode) {
-        const { data: topics } = await supabase
-          .from('lesson_topics')
-          .select('lesson_id')
-          .eq('skill_code', skillCode)
-          .limit(10);
-        const ids = (topics ?? []).map((t) => t.lesson_id);
-        if (ids.length > 0) {
-          const { data: lessons } = await supabase
-            .from('lessons')
-            .select('id')
-            .in('id', ids)
-            .eq('status', 'published')
-            .limit(1);
-          if (lessons?.[0]) redirect(`/learn/${lessons[0].id}`);
-        }
+        const recs = await recommendLessonsForSkills(supabase, [skillCode]);
+        const rec = recs.get(skillCode)?.[0];
+        if (rec) redirect(`/learn/${rec.lessonId}`);
       }
 
       // Fall back to the library, filtered to the task's domain.
