@@ -50,7 +50,7 @@ export default async function PracticeReviewPage({ params }) {
   if (questionIds.length === 0) notFound();
 
   const {
-    sessionMeta, items, metrics, timing, assignment,
+    sessionMeta, items, metrics, timing, assignment, lessonRecommendations,
     desmosCanSave, conceptTagsCatalog, conceptTagsCanTag, conceptTagsCanDelete,
     questionNotesCanView, questionNotesIsAdmin, currentUserId,
   } = await buildSessionReview({ supabase, user, role: profile.role, session });
@@ -62,6 +62,7 @@ export default async function PracticeReviewPage({ params }) {
       metrics={metrics}
       timing={timing}
       assignment={assignment}
+      lessonRecommendations={lessonRecommendations ?? []}
       desmosCanSave={desmosCanSave}
       conceptTagsCatalog={conceptTagsCatalog}
       conceptTagsCanTag={conceptTagsCanTag}

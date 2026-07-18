@@ -48,6 +48,7 @@ import {
   summarizeDue,
   syncDecayedSkillReviews,
 } from '@/lib/review/queue';
+import { recommendLessonsForSkills } from '@/lib/lesson/recommend';
 import {
   createWeakQueueDrill, createSkillDrill,
   createActWeakQueueDrill, createActCategoryDrill,
@@ -148,12 +149,23 @@ export default async function StudentReviewPage() {
   const metaById = await resolveQuestionV2Meta(
     supabase,
     attemptedQids,
-    'id, skill_name, domain_name, is_published, is_broken, deleted_at',
+    'id, skill_name, skill_code, domain_name, is_published, is_broken, deleted_at',
   );
 
   const commonErrors = commonErrorsFromAttempts(attemptsRaw, metaById)
     .filter((row) => row.weak > 0)
     .slice(0, COMMON_ERRORS_TOP_N);
+
+  // §3.3 "Learn it first": if a published lesson is tagged to a
+  // common-error skill, offer it beside the drill button. Sparse
+  // lesson_topics coverage just means rows render without a link.
+  const lessonRecs = await recommendLessonsForSkills(
+    supabase,
+    commonErrors.map((row) => row.skill_code),
+  );
+  for (const row of commonErrors) {
+    row.lesson = (row.skill_code && lessonRecs.get(row.skill_code)?.[0]) || null;
+  }
 
   // ACT side — same shape (skill_name carries category, domain_name
   // carries section label) so the existing render markup is reused.
@@ -441,10 +453,21 @@ function ReviewCommonErrors({ commonErrors, labelKind, createAction }) {
                   />
                 </div>
               </div>
-              <SkillDrillButton
-                skillName={row.skill_name}
-                createAction={createAction}
-              />
+              <div className={s.skillActions}>
+                <SkillDrillButton
+                  skillName={row.skill_name}
+                  createAction={createAction}
+                />
+                {row.lesson && (
+                  <Link
+                    href={`/learn/${row.lesson.lessonId}`}
+                    className={s.skillLessonLink}
+                    title={row.lesson.title}
+                  >
+                    Learn it first →
+                  </Link>
+                )}
+              </div>
             </li>
           ))}
         </ul>
