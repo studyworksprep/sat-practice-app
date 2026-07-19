@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -957,6 +957,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      feature_efficacy: {
+        Row: {
+          lesson_id: string
+          post_accuracy: number | null
+          post_attempts: number
+          post_correct: number
+          pre_accuracy: number | null
+          pre_attempts: number
+          pre_correct: number
+          refreshed_at: string
+          skill_code: string
+          students: number
+        }
+        Insert: {
+          lesson_id: string
+          post_accuracy?: number | null
+          post_attempts?: number
+          post_correct?: number
+          pre_accuracy?: number | null
+          pre_attempts?: number
+          pre_correct?: number
+          refreshed_at?: string
+          skill_code: string
+          students?: number
+        }
+        Update: {
+          lesson_id?: string
+          post_accuracy?: number | null
+          post_attempts?: number
+          post_correct?: number
+          pre_accuracy?: number | null
+          pre_attempts?: number
+          pre_correct?: number
+          refreshed_at?: string
+          skill_code?: string
+          students?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_efficacy_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       feature_flags: {
         Row: {
@@ -3716,6 +3763,7 @@ export type Database = {
         Returns: string
       }
       redeem_class_invite: { Args: { invite_code: string }; Returns: string }
+      refresh_feature_efficacy: { Args: never; Returns: number }
       refresh_item_stats: { Args: never; Returns: number }
       sat_scaled_for_raw: {
         Args: { p_raw: number; p_section: string }
