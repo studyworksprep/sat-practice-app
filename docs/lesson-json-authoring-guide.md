@@ -1,6 +1,6 @@
 # Lesson JSON Authoring Guide (Import From JSON)
 
-> **Status: Living document.** Last verified: 2026-07-01 era (lesson_complete block type). Verify against `lib/lesson/lesson-validation` when in doubt.
+> **Status: Living document.** Last verified: 2026-07-19 (added the Phase 3.2 optional Desmos hint/solution fields; expanded state_rules). Verify against `lib/lesson/lesson-validation` when in doubt.
 
 This document tells you exactly how to produce a JSON "LessonTemplateSpec"
 that the Studyworks admin **Lessons → Import from JSON** page accepts and
@@ -12,9 +12,11 @@ import, errors block the import; warnings do not.
 
 > Related: **Lessons → Generate with AI** (`/admin/lessons/generate`)
 > drafts a lesson from a free-form brief instead of a JSON spec. It
-> emits text / check / video-placeholder / question_link blocks
-> through its own mapper (`lib/admin/lessonGenMapper.ts`) and runs
-> the same `validateLessonBlocks` gate before saving a draft.
+> emits text / check / video-placeholder / question_link /
+> desmos_interactive blocks (plus figure and graph images rendered
+> into text blocks) through its own mapper
+> (`lib/admin/lessonGenMapper.ts`) and runs the same
+> `validateLessonBlocks` gate before saving a draft.
 
 ---
 
@@ -182,6 +184,34 @@ Required: `instructions_html`, `initial_expressions` (array, may be `[]`),
 - When `progression.require_success` is `true`, the learner cannot continue
   until they enter a correct answer (they get retries).
 
+**Optional fields** (all may be omitted; the schema above stays valid):
+
+- `feedback.targeted_hints` — array of `{ "trigger": "...", "message_html":
+  "<p>...</p>" }`. When a wrong attempt matches a trigger, its message is
+  shown instead of the generic `retry_message_html`. Valid triggers:
+  `missing_y_equals`, `uses_forbidden_variables`,
+  `likely_parentheses_error`, `too_many_expressions`,
+  `too_few_expressions`, `missing_required_slider`, `slider_not_moved`,
+  `slider_still_default`, `missing_second_expression`,
+  `expressions_not_comparable`.
+- `feedback.attempt_based_hints` — array of `{ "min_attempts": N,
+  "message_html": "<p>...</p>" }` (`min_attempts` ≥ 1): escalating nudges
+  once the learner has failed at least N attempts.
+- `feedback.reveal_solution_after_attempts` (integer ≥ 1) +
+  `feedback.solution_html` — after that many failed attempts, the solution
+  HTML is offered so the learner is never hard-stuck.
+- `validation.state_rules` supports more than the three keys shown above:
+  `must_include_variables`, `must_not_include_variables`,
+  `allow_text_only_expressions`, `required_sliders`,
+  `require_slider_creation`, `require_slider_movement`,
+  `slider_initial_values` (map of name → number), and
+  `forbid_default_slider_values_on_submit`.
+- `goal.roles` — array labeling the expected expressions (e.g.
+  `["original", "candidate"]` in the graph-comparison workflow). Rarely
+  needed by hand; the convenience kinds set it for you.
+- `validation.comparison` — only the value `"equivalent"` is accepted;
+  used with `mode: "compare_expressions"`.
+
 ### 2c. Desmos convenience kinds (easier than raw_block)
 
 **`desmos_enter_expression`** — ask the learner to type one expression:
@@ -298,7 +328,10 @@ Rules for manual branching:
 - **Don't invent `question_id`s.** Only use `question_link` with real bank
   UUIDs you were given.
 - **Valid `block_type` values:** `text`, `video`, `check`, `question_link`,
-  `desmos_interactive`, `lesson_complete`. Nothing else.
+  `desmos_interactive`, `lesson_complete`. Nothing else. (Neither the
+  compiler nor the validator flags an unknown type up front — it fails at
+  save time against the database's CHECK constraint, with a much less
+  helpful error. Stick to the list.)
 - **`lesson_complete` is optional, at most one, and must be the last block.**
 - **Escape JSON properly:** backslashes (`\\`), quotes (`\"`). The whole
   output must be valid JSON (no comments, no trailing commas).
