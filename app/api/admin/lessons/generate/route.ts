@@ -167,6 +167,21 @@ export const POST = apiRoute(async (request: Request) => {
       ? generated.description.trim()
       : null;
 
+  // validateLessonBlocks emits issue OBJECTS ({severity, code,
+  // message, blockId, path, suggestion}); the preview renders the
+  // warnings array as plain strings, so flatten them to text here
+  // alongside the mapper's string warnings. Rendering the raw object
+  // was crashing the preview ("Objects are not valid as a React
+  // child") whenever the validator had any advisory warning.
+  const issueText = (w: {
+    blockId?: string | null;
+    message?: string;
+    suggestion?: string | null;
+  }): string =>
+    `${w?.blockId ? `${w.blockId}: ` : ''}${w?.message ?? ''}${
+      w?.suggestion ? ` — ${w.suggestion}` : ''
+    }`;
+
   // Nothing is written to the DB here — the client previews this
   // draft (repeating through revision turns as needed) and persists
   // it via saveGeneratedLesson only when the admin confirms.
@@ -178,6 +193,6 @@ export const POST = apiRoute(async (request: Request) => {
     // graph_image blocks the client must render via the browser-only
     // Desmos API and swap into `blocks` before saving.
     pendingGraphs: mapped.pendingGraphs,
-    warnings: [...mapped.warnings, ...(validation.warnings ?? [])],
+    warnings: [...mapped.warnings, ...(validation.warnings ?? []).map(issueText)],
   });
 });
