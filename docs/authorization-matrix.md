@@ -48,6 +48,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/import/actions.js` | `importBlocksIntoLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/actions.js` | `createLesson` | requireRole[admin] |
+| `app/(admin)/admin/lessons/efficacy-actions.ts` | `refreshEfficacy` | requireServiceRole |
 | `app/(admin)/admin/lessons/generate/actions.ts` | `savePromptTemplate`, `resetPromptTemplate`, `saveGeneratedLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/import/actions.js` | `createLessonFromSpec` | requireRole[admin] |
 | `app/(admin)/admin/questions/new/actions.js` | `listQuestionSources`, `createQuestion` | requireRole[admin] |
@@ -85,7 +86,7 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/practice/load-question-action.ts` | `loadQuestionAction` | requireUser |
 | `lib/practice/question-notes-actions.ts` | `addQuestionNote`, `updateQuestionNote`, `deleteQuestionNote` | requireRole[admin|manager|teacher] |
 | `lib/practice/question-search-actions.ts` | `searchQuestions`, `listConceptTagsForSearch` | requireUser |
-| `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `abandonPracticeSession`, `togglePracticeMark` | requireUser + rateLimit |
+| `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `abandonPracticeSession`, `togglePracticeMark`, `getDetourOptions`, `injectEasierQuestion` | requireUser + rateLimit |
 
 ## Attention list
 
@@ -95,4 +96,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_17 route handlers, 47 server-action modules enumerated._
+_17 route handlers, 48 server-action modules enumerated._
