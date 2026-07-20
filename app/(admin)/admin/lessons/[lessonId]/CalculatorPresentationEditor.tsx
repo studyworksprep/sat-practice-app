@@ -36,7 +36,7 @@ export function CalculatorPresentationEditor({
   const calculator: Presentation = raw && typeof raw === 'object' && !Array.isArray(raw)
     ? raw as Presentation
     : {};
-  const display = calculator.display ?? 'available';
+  const display = calculator.display ?? 'open';
   const mode = calculator.mode ?? 'scratch';
 
   function patch(next: Partial<Presentation>) {
