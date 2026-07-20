@@ -57,6 +57,22 @@ interface DraftState {
   version: number;
 }
 
+// Warnings render as plain <li> text. The route now sends strings,
+// but normalize anyway — a validator issue OBJECT reaching React as a
+// child crashes the whole preview, which is exactly the failure this
+// page must never repeat.
+function warningText(w: unknown): string {
+  if (typeof w === 'string') return w;
+  if (w && typeof w === 'object') {
+    const o = w as { blockId?: unknown; message?: unknown; suggestion?: unknown };
+    const msg = typeof o.message === 'string' ? o.message : JSON.stringify(w);
+    return `${typeof o.blockId === 'string' && o.blockId ? `${o.blockId}: ` : ''}${msg}${
+      typeof o.suggestion === 'string' && o.suggestion ? ` — ${o.suggestion}` : ''
+    }`;
+  }
+  return String(w);
+}
+
 export function GenerateClient({ initialTemplate, isCustomized }: GenerateClientProps) {
   const router = useRouter();
   const [brief, setBrief] = useState('');
@@ -115,15 +131,23 @@ export function GenerateClient({ initialTemplate, isCustomized }: GenerateClient
         setValidationErrors(Array.isArray(json.validationErrors) ? json.validationErrors : []);
         throw new Error(json.error || `Request failed (${res.status})`);
       }
-      setDraft((prev) => ({
-        generated: json.data.generated,
-        title: json.data.title,
-        description: json.data.description ?? null,
-        blocks: json.data.blocks ?? [],
-        warnings: json.data.warnings ?? [],
-        pendingGraphs: Array.isArray(json.data.pendingGraphs) ? json.data.pendingGraphs : [],
-        version: (prev?.version ?? 0) + 1,
-      }));
+      // Validate the payload shape HERE, inside the try/catch — the
+      // setDraft updater runs during render, where a throw escalates
+      // to the segment error boundary (full-page error, draft lost)
+      // instead of the inline retry message.
+      const data = json.data ?? {};
+      if (typeof data.title !== 'string' || !Array.isArray(data.blocks)) {
+        throw new Error('The generator returned an unexpected response. Try again.');
+      }
+      const next: Omit<DraftState, 'version'> = {
+        generated: data.generated,
+        title: data.title,
+        description: typeof data.description === 'string' ? data.description : null,
+        blocks: data.blocks,
+        warnings: (Array.isArray(data.warnings) ? data.warnings : []).map(warningText),
+        pendingGraphs: Array.isArray(data.pendingGraphs) ? data.pendingGraphs : [],
+      };
+      setDraft((prev) => ({ ...next, version: (prev?.version ?? 0) + 1 }));
       window.scrollTo({ top: 0 });
     } catch (e) {
       setError(

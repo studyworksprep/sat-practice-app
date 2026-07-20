@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { Button } from '@/lib/ui/Button';
 import { BlockPreview } from '../[lessonId]/BlockPreview';
 import { blockMetaFor } from '../[lessonId]/block-meta';
+import { DraftBlockBoundary } from './DraftBlockBoundary';
 import f from '../../../forms.module.css';
 
 export interface DraftBlock {
@@ -103,14 +104,16 @@ export function DraftPreview({
               <div style={S.blockLabel}>
                 <span aria-hidden>{meta.icon}</span> {meta.label}
               </div>
-              {isVideoPlaceholder ? (
-                <div style={S.videoPlaceholder}>
-                  {String(block.content?.caption ?? '') ||
-                    'Video placeholder — a URL is added in the editor.'}
-                </div>
-              ) : (
-                <BlockPreview block={{ block_type: block.block_type, content: block.content }} />
-              )}
+              <DraftBlockBoundary blockType={block.block_type} blockIndex={i}>
+                {isVideoPlaceholder ? (
+                  <div style={S.videoPlaceholder}>
+                    {String(block.content?.caption ?? '') ||
+                      'Video placeholder — a URL is added in the editor.'}
+                  </div>
+                ) : (
+                  <BlockPreview block={{ block_type: block.block_type, content: block.content }} />
+                )}
+              </DraftBlockBoundary>
             </section>
           );
         })}
