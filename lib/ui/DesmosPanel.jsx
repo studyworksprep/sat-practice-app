@@ -39,9 +39,10 @@
 import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import s from './DesmosPanel.module.css';
-import { desmosCalculatorSrc } from '../config/desmos';
+import { DESMOS_API_KEY, desmosCalculatorSrc } from '../config/desmos';
 
 const SAVE_DEBOUNCE_MS = 2000;
+const LOAD_TIMEOUT_MS = 10000;
 
 /**
  * @param {{
@@ -71,6 +72,9 @@ export function DesmosPanel({
   const activeStorageKeyRef = useRef(storageKey || null);
   const seedRef = useRef({ initialState, initialExpressions });
   const [ready, setReady] = useState(false);
+  const [loadError, setLoadError] = useState(
+    DESMOS_API_KEY ? null : 'missing-key',
+  );
 
   // Keep the callback ref fresh without forcing the init effect
   // to re-run on every parent rerender.
@@ -82,8 +86,21 @@ export function DesmosPanel({
   // If Desmos was loaded in an earlier page (via the global script
   // tag in app/layout.js), the constructor is already on window.
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Desmos) setReady(true);
+    if (typeof window !== 'undefined' && window.Desmos) {
+      setReady(true);
+      setLoadError(null);
+    }
   }, []);
+
+  // Do not leave an unexplained blank panel when the external script is
+  // blocked, misconfigured, or unavailable. A timeout also catches cases
+  // where the global layout script fails before this component's Script
+  // callback can report an error.
+  useEffect(() => {
+    if (ready || !DESMOS_API_KEY) return undefined;
+    const timer = setTimeout(() => setLoadError('load-failed'), LOAD_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [ready]);
 
   // Init the calculator once the script is ready. Recreated only
   // if the storageKey changes (e.g. student navigated to a new
@@ -224,13 +241,44 @@ export function DesmosPanel({
       <Script
         src={desmosCalculatorSrc()}
         strategy="afterInteractive"
-        onLoad={() => setReady(true)}
+        onLoad={() => {
+          if (!DESMOS_API_KEY) {
+            setLoadError('missing-key');
+            return;
+          }
+          if (typeof window !== 'undefined' && window.Desmos) {
+            setReady(true);
+            setLoadError(null);
+          } else {
+            setLoadError('load-failed');
+          }
+        }}
+        onError={() => setLoadError(DESMOS_API_KEY ? 'load-failed' : 'missing-key')}
       />
       <aside
         aria-label="Graphing calculator"
         aria-hidden={!isOpen}
         className={`${s.panel} ${fitToContainer ? s.panelFit : ''}`}
       >
+        {!ready && (
+          <div className={s.status} role="status">
+            <strong className={s.statusTitle}>
+              {loadError ? 'Graphing calculator unavailable' : 'Loading graphing calculator…'}
+            </strong>
+            {loadError === 'missing-key' && (
+              <p className={s.statusText}>
+                This environment is missing its Desmos API key. Configure{' '}
+                <code>NEXT_PUBLIC_DESMOS_API_KEY</code> and restart or redeploy the app.
+              </p>
+            )}
+            {loadError === 'load-failed' && (
+              <p className={s.statusText}>
+                The Desmos script did not load. Check the configured API key, its allowed
+                domains, and network access to desmos.com.
+              </p>
+            )}
+          </div>
+        )}
         <div ref={hostRef} className={s.host} />
       </aside>
     </>
