@@ -1,5 +1,10 @@
 .pane {
   min-width: 0;
+  /* DesmosPanel's fit-to-container variant uses height: 100%. A definite
+     desktop height is required for that percentage to resolve; min-height
+     alone leaves the flex item's height indefinite and can collapse the
+     calculator host to zero. Mobile breakpoints provide their own heights. */
+  height: 620px;
   min-height: 620px;
   overflow: hidden;
   border: 1px solid var(--border, #ddd);
@@ -84,7 +89,7 @@
 .body {
   flex: 1;
   min-height: 0;
-  height: 570px;
+  height: auto;
 }
 
 @media (max-width: 980px) {
