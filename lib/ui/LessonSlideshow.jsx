@@ -29,11 +29,14 @@
 
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import HtmlBlock from '@/components/HtmlBlock';
 import { MathText } from '@/lib/ui/MathText';
+import { LessonCalculatorPane } from '@/lib/ui/LessonCalculatorPane';
+import slideshowStyles from './LessonSlideshow.module.css';
 import {
   isLessonCompletionLocked,
+  normalizeLessonCalculatorPresentation,
   parseDesmosInteractiveContent,
   validateDesmosSubmission,
 } from '@/lib/lesson/desmos-interactive.mjs';
@@ -56,6 +59,7 @@ export function LessonSlideshow({
   showProgressBar = true,
   showCompleteButton = true,
   debugMode = false,
+  calculatorStoragePrefix = 'lesson-desmos',
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [completedBlockIds, setCompletedBlockIds] = useState(
@@ -72,9 +76,36 @@ export function LessonSlideshow({
   // Continue, so feedback stays visible and desmos answers can be
   // retried. Shape: { fromIndex, nextIndex, activeBranchState }.
   const [pendingAdvance, setPendingAdvance] = useState(null);
+  const [lessonCalculator, setLessonCalculator] = useState(null);
+  const [calculatorOpenOverride, setCalculatorOpenOverride] = useState(null);
 
   const blockIndexById = useMemo(() => buildBlockIndexMap(blocks), [blocks]);
   const currentBlock = blocks[currentIndex] || null;
+  const baseCalculatorPresentation = useMemo(
+    () => normalizeLessonCalculatorPresentation(currentBlock),
+    [currentBlock],
+  );
+  const calculatorPresentation = useMemo(() => {
+    if (
+      currentBlock?.block_type === 'desmos_interactive' &&
+      currentBlock.content?.inherit_from_previous_workflow_desmos
+    ) {
+      const inherited = workflowDesmosContext[currentBlock.content?.workflow_id];
+      if (inherited?.state) {
+        return { ...baseCalculatorPresentation, initial_state: inherited.state };
+      }
+    }
+    return baseCalculatorPresentation;
+  }, [baseCalculatorPresentation, currentBlock, workflowDesmosContext]);
+  const currentCalculatorOverride = calculatorOpenOverride?.blockId === currentBlock?.id
+    ? calculatorOpenOverride.open
+    : null;
+  const calculatorOpen = calculatorPresentation.display !== 'hidden' && (
+    currentCalculatorOverride ?? calculatorPresentation.display === 'open'
+  );
+  const calculatorStorageKey = `${calculatorStoragePrefix}:${calculatorPresentation.scope}${
+    calculatorPresentation.seed_version ? `:${calculatorPresentation.seed_version}` : ''
+  }`;
 
   const progressPct =
     blocks.length > 0
@@ -183,7 +214,21 @@ export function LessonSlideshow({
   }
 
   return (
-    <div style={S.container}>
+    <div className={`${slideshowStyles.workspace} ${calculatorOpen ? '' : slideshowStyles.workspaceSingle}`}>
+      <div className={slideshowStyles.lessonColumn}>
+      <div style={S.container}>
+      {calculatorPresentation.display !== 'hidden' && !calculatorOpen && (
+        <div className={slideshowStyles.calculatorToggleRow}>
+          <button
+            type="button"
+            className={slideshowStyles.calculatorToggle}
+            onClick={() => setCalculatorOpenOverride({ blockId: currentBlock?.id, open: true })}
+          >
+            Open Desmos
+            {calculatorPresentation.required ? ' · required' : ''}
+          </button>
+        </div>
+      )}
       {showProgressBar && (
         <div style={S.progressRow}>
           <div style={S.progressTrack}>
@@ -251,6 +296,7 @@ export function LessonSlideshow({
           {currentBlock.block_type === 'desmos_interactive' && (
             <DesmosInteractiveBlock
               block={currentBlock}
+              calculator={lessonCalculator}
               previousAnswer={checkAnswers[currentBlock.id]}
               onResult={(isCorrect) => {
                 // For a require_success block, only a correct answer
@@ -278,9 +324,6 @@ export function LessonSlideshow({
                     : [...prev, currentBlock.id],
                 );
               }}
-              inheritedWorkflowContext={
-                workflowDesmosContext[currentBlock.content?.workflow_id]
-              }
               onCaptureWorkflowContext={(payload) =>
                 captureWorkflowDesmosState(currentBlock, payload)
               }
@@ -395,6 +438,17 @@ export function LessonSlideshow({
         <div style={S.completeBanner}>
           <span style={S.completeText}>Lesson Complete!</span>
         </div>
+      )}
+      </div>
+      </div>
+      {calculatorPresentation.display !== 'hidden' && (
+        <LessonCalculatorPane
+          open={calculatorOpen}
+          presentation={calculatorPresentation}
+          storageKey={calculatorStorageKey}
+          onClose={() => setCalculatorOpenOverride({ blockId: currentBlock?.id, open: false })}
+          onCalcReady={setLessonCalculator}
+        />
       )}
     </div>
   );
@@ -705,16 +759,14 @@ function QuestionLinkBlock({ block, isComplete, hrefFor }) {
 
 function DesmosInteractiveBlock({
   block,
+  calculator,
   previousAnswer,
   onResult,
   onUnlock,
   onDebug,
   onCaptureWorkflowContext,
-  inheritedWorkflowContext,
   debugMode = false,
 }) {
-  const hostRef = useRef(null);
-  const calculatorRef = useRef(null);
   const [feedbackState, setFeedbackState] = useState(
     previousAnswer?.correct ? 'success' : 'idle',
   );
@@ -722,13 +774,9 @@ function DesmosInteractiveBlock({
   const [progressiveHintHtml, setProgressiveHintHtml] = useState('');
   const [solutionHtml, setSolutionHtml] = useState('');
   const [attempts, setAttempts] = useState(0);
-  const [desmosMountError, setDesmosMountError] = useState(false);
 
-  // Memoize on block.content so `content` keeps a stable identity across
-  // re-renders. The mount effect below depends on `content`; without
-  // memoization every Check-Answer (which calls setState) produced a new
-  // content object, re-ran the effect, and destroyed + recreated the
-  // calculator — wiping whatever the learner had typed.
+  // Parse once per authored content object; feedback rerenders should not
+  // repeat schema work while the shared calculator remains mounted.
   const { content, contentError } = useMemo(() => {
     try {
       return { content: parseDesmosInteractiveContent(block.content || {}), contentError: null };
@@ -736,77 +784,6 @@ function DesmosInteractiveBlock({
       return { content: null, contentError: err.message };
     }
   }, [block.content]);
-
-  // Mount the Desmos calculator exactly once for this block and tear it
-  // down only when the component unmounts. This effect deliberately has
-  // an empty dependency list: re-running it (on any re-render, e.g. after
-  // Check Answer) would destroy + recreate the calculator and wipe what
-  // the learner typed. A *different* block remounts this component (the
-  // parent keys the slide by block id), so capturing `content` and the
-  // inherited workflow state at mount time is correct. The values are
-  // read through refs kept fresh below so the once-only mount still sees
-  // the latest seed data.
-  const seedRef = useRef({ content, inheritedWorkflowContext });
-  // Keep the seed fresh without re-running the mount effect.
-  useEffect(() => {
-    seedRef.current = { content, inheritedWorkflowContext };
-  });
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    let cancelled = false;
-    let intervalId = null;
-    let timeoutId = null;
-
-    const tryMount = () => {
-      if (cancelled || calculatorRef.current) return;
-      const { content: c, inheritedWorkflowContext: inherited } = seedRef.current;
-      if (!c || !hostRef.current || !window.Desmos?.GraphingCalculator) return;
-
-      const calculator = window.Desmos.GraphingCalculator(hostRef.current, {
-        expressions: c.calculator_options?.expressions ?? true,
-        lockViewport: c.calculator_options?.lockViewport ?? false,
-        sliders: c.calculator_options?.sliders ?? true,
-      });
-      calculatorRef.current = calculator;
-      setDesmosMountError(false);
-
-      const shouldInherit = Boolean(c.inherit_from_previous_workflow_desmos);
-      if (shouldInherit && inherited?.state?.expressions?.list?.length) {
-        calculator.setState(inherited.state);
-      } else {
-        for (const expr of c.initial_expressions || []) {
-          if (expr?.latex) {
-            calculator.setExpression({ id: expr.id, latex: expr.latex });
-          }
-        }
-      }
-
-      if (intervalId) clearInterval(intervalId);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-
-    tryMount();
-    if (!calculatorRef.current) {
-      intervalId = setInterval(tryMount, 200);
-      timeoutId = setTimeout(() => {
-        if (!calculatorRef.current) setDesmosMountError(true);
-        if (intervalId) clearInterval(intervalId);
-      }, 5000);
-    }
-
-    return () => {
-      cancelled = true;
-      if (intervalId) clearInterval(intervalId);
-      if (timeoutId) clearTimeout(timeoutId);
-      if (calculatorRef.current) {
-        calculatorRef.current.destroy();
-        calculatorRef.current = null;
-      }
-    };
-    // Mount once — see comment above. seedRef carries the latest content.
-  }, []);
 
   function extractStudentExpressions(calculator) {
     const expressionList = calculator?.getExpressions?.() || [];
@@ -832,7 +809,6 @@ function DesmosInteractiveBlock({
   }
 
   function evaluateWithDesmos(rawExpression, x) {
-    const calculator = calculatorRef.current;
     if (!calculator || !calculator.HelperExpression) return NaN;
 
     const expression = toEvaluableExpression(rawExpression);
@@ -852,11 +828,11 @@ function DesmosInteractiveBlock({
   }
 
   function handleCheck() {
-    if (!content || !calculatorRef.current) return;
+    if (!content || !calculator) return;
     const nextAttempts = attempts + 1;
     setAttempts(nextAttempts);
 
-    const entered = extractStudentExpressions(calculatorRef.current);
+    const entered = extractStudentExpressions(calculator);
     const sliderNames = entered
       .map((row) => {
         const match = String(row.latex || '')
@@ -872,7 +848,7 @@ function DesmosInteractiveBlock({
       attempts: nextAttempts,
     });
     onCaptureWorkflowContext?.({
-      state: calculatorRef.current?.getState?.() || null,
+      state: calculator.getState?.() || null,
       expressions: entered,
       capturedAt: Date.now(),
     });
@@ -931,33 +907,22 @@ function DesmosInteractiveBlock({
         <h3 style={{ margin: '0 0 10px', fontSize: 18 }}>{content.title}</h3>
       )}
       <HtmlBlock className="prose" html={content.instructions_html} />
-      <div
-        ref={hostRef}
-        style={{
-          // A *definite* height (not min-height) is required: Desmos's
-          // calculator fills its host with percentage/absolute heights,
-          // which resolve to zero against a min-height-only parent and
-          // render the calculator blank. See the matching definite
-          // height in the lesson editor's DesmosEditor.
-          height: 360,
-          marginTop: 12,
-          borderRadius: 8,
-          overflow: 'hidden',
-          border: '1px solid var(--border, #ddd)',
-        }}
-      />
+      <div style={S.calculatorCallout}>
+        Complete this activity in the Desmos pane, then check your work here.
+      </div>
       {content.caption_html && (
         <HtmlBlock className="prose muted" html={content.caption_html} />
       )}
-      {desmosMountError && (
+      {!calculator && (
         <p style={{ color: 'var(--danger, #d97775)', fontSize: 13 }}>
-          Desmos failed to load. Refresh and try again.
+          Desmos is still loading. If it does not appear, refresh and try again.
         </p>
       )}
 
       <button
         type="button"
         onClick={handleCheck}
+        disabled={!calculator}
         style={{ ...S.primaryBtn, marginTop: 10 }}
       >
         Check Answer
@@ -1082,6 +1047,15 @@ const S = {
     background: 'rgba(217,119,117,0.10)',
     border: '1px solid var(--danger, #d97775)',
     fontSize: 14,
+  },
+  calculatorCallout: {
+    marginTop: 12,
+    padding: '10px 12px',
+    borderRadius: 8,
+    border: '1px solid var(--color-app-accent, #4f7ce0)',
+    background: 'var(--color-app-accent-bg, rgba(79,124,224,0.08))',
+    color: 'var(--fg2, #374151)',
+    fontSize: 13,
   },
 
   primaryBtn: {

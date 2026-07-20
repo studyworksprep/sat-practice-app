@@ -1,0 +1,387 @@
+{
+  "title": "Solve Equations by Graphing: Find the x-Intercepts",
+  "description": "Use Desmos to turn one-variable equations into graphs, read solutions from x-intercepts, and handle different variables and exact answer choices.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "explore_first_graph",
+      "html": "<h2>Let the graph show you the answers</h2><p>We are going to learn one useful SAT move: solving an equation by looking at where a graph meets the x-axis.</p><p>The graph of \\(x^2-5x+6\\) is already open. Click the two places where it crosses the horizontal axis. What x-values do you see?</p><blockquote><p>Take a minute to explore before you continue. You are looking for two labeled points.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click both x-intercepts",
+        "initial_expressions": [
+          { "id": "starter_curve", "latex": "x^2-5x+6" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "read_first_graph",
+      "block_type": "check",
+      "content": {
+        "prompt": "The graph meets the x-axis at \\((2,0)\\) and \\((3,0)\\). Which x-values make \\(x^2-5x+6\\) equal \\(0\\)?",
+        "choices": [
+          "\\(x=2\\) and \\(x=3\\)",
+          "\\(x=0\\) and \\(x=6\\)",
+          "\\(x=-2\\) and \\(x=-3\\)",
+          "Only \\(x=0\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "At each labeled point, use the horizontal coordinate—the first number.",
+        "explanation": "Exactly. At \\(x=2\\) and \\(x=3\\), the graph has height \\(0\\). That means both values make the expression equal zero."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Use the graph as evidence",
+        "initial_expressions": [
+          { "id": "first_check_curve", "latex": "x^2-5x+6" }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "define_x_intercept",
+      "html": "<h2>What an x-intercept tells you</h2><p>An <strong>x-intercept</strong> is a point where a graph meets the x-axis. Every point on the x-axis has a vertical coordinate of \\(0\\).</p><p>So if the graph of an expression passes through \\((r,0)\\), that expression equals \\(0\\) when \\(x=r\\). The x-coordinate is the solution.</p><p>One helpful Desmos detail: you may type a bare expression such as <strong>x^2-5x+6</strong>. You do not have to put <strong>y=</strong> in front of it.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Intercepts have height zero",
+        "initial_expressions": [
+          { "id": "definition_curve", "latex": "x^2-5x+6" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "intercept_meaning_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A graph of an expression has an x-intercept at \\((-1,0)\\). What must be true?",
+        "choices": [
+          "The expression equals \\(0\\) when \\(x=-1\\).",
+          "The expression equals \\(-1\\) when \\(x=0\\).",
+          "The graph must have another intercept at \\(x=1\\).",
+          "The point must be the graph's lowest point."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "What is the vertical coordinate at every point on the x-axis?",
+        "explanation": "Right. The point \\((-1,0)\\) says that the graph's height is zero at \\(x=-1\\), so \\(-1\\) solves the equation."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "core_steps",
+      "html": "<h2>The four-step move</h2><ol><li><strong>Get zero on one side.</strong> Move everything else to the other side.</li><li><strong>Graph the nonzero side.</strong> Type that expression into Desmos; <strong>y=</strong> is optional.</li><li><strong>Find every x-intercept.</strong> Click each place where the graph meets the x-axis.</li><li><strong>Report the x-values.</strong> Use the variable from the original question.</li></ol><p>If the graph is hard to read, zoom in. If the choices use square roots or fractions, compare their decimal values with the intercepts.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "rearrange_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "You want to solve \\(x^2+1=4x\\) with x-intercepts. Which expression should you graph?",
+        "choices": [
+          "\\(x^2-4x+1\\)",
+          "\\(x^2+4x+1\\)",
+          "\\(x^2+1\\)",
+          "\\(4x\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Move \\(4x\\) to the left so the right side becomes zero.",
+        "explanation": "Yes. Subtracting \\(4x\\) from both sides gives \\(x^2-4x+1=0\\), so graph \\(x^2-4x+1\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "explore_rearranged_graph",
+      "html": "<h2>Now read the rearranged graph</h2><p>The graph of \\(x^2-4x+1\\) is ready. Click both x-intercepts and record the decimals to three places.</p><p>Those are also the solutions to the original equation \\(x^2+1=4x\\), because each intercept is a place where the difference between the two sides is zero.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Solve x² + 1 = 4x",
+        "initial_expressions": [
+          { "id": "rearranged_curve", "latex": "x^2-4x+1" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "rearranged_solution_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The x-intercepts are about \\(0.268\\) and \\(3.732\\). What does that tell you about \\(x^2+1=4x\\)?",
+        "choices": [
+          "Its solutions are approximately \\(x=0.268\\) and \\(x=3.732\\).",
+          "Its y-intercepts are \\(0.268\\) and \\(3.732\\).",
+          "Only \\(3.732\\) works because it is positive.",
+          "The graph cannot tell us anything about the original equation."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The graphed expression is zero exactly when the two sides of the original equation are equal.",
+        "explanation": "Correct. Both intercepts make \\(x^2-4x+1\\) equal zero, so both make \\(x^2+1\\) equal \\(4x\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Check the intercepts",
+        "initial_expressions": [
+          { "id": "rearranged_check_curve", "latex": "x^2-4x+1" }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "different_variable",
+      "html": "<h2>What if the problem uses a different letter?</h2><p>Desmos uses \\(x\\) as the horizontal input. If the equation uses \\(t\\), \\(p\\), or another letter, temporarily replace that letter with \\(x\\) when you graph.</p><p>For \\(t^2-5t+4=0\\), graph \\(x^2-5x+4\\). The graphing letter changed, but the original question did not. Your final answers should still use \\(t\\).</p><p>Click the two intercepts in the preset graph before moving on.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Let x stand in for t",
+        "initial_expressions": [
+          { "id": "variable_swap_curve", "latex": "x^2-5x+4" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "different_variable_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The graph crosses the x-axis at \\(x=1\\) and \\(x=4\\). What should you report for \\(t^2-5t+4=0\\)?",
+        "choices": [
+          "\\(t=1\\) and \\(t=4\\)",
+          "\\(x=1\\) and \\(x=4\\), because the original variable no longer matters",
+          "\\(t=0\\) and \\(t=5\\)",
+          "This method cannot be used with \\(t\\)."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The x in Desmos was only standing in for the original variable.",
+        "explanation": "Exactly. Translate back to the original letter: \\(t=1\\) and \\(t=4\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "irrational_exploration",
+      "html": "<h2>When the graph gives decimals but the choices do not</h2><p>For \\(x^2-7=0\\), Desmos shows intercepts near \\(-2.646\\) and \\(2.646\\). The answer choices may use square roots instead.</p><p>Use the preset graph to confirm the intercepts. On the next screen, Desmos will calculate the positive size of several exact choices so you can match the decimals.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Estimate both solutions",
+        "initial_expressions": [
+          { "id": "irrational_curve", "latex": "x^2-7" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "irrational_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The intercepts are approximately \\(-2.646\\) and \\(2.646\\). Which exact answer matches?",
+        "choices": [
+          "\\(x=\\pm\\sqrt{7}\\)",
+          "\\(x=\\pm 7\\)",
+          "\\(x=\\pm\\frac{\\sqrt{14}}{2}\\)",
+          "\\(x=\\frac{7}{2}\\) only"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Type each positive value into Desmos yourself: \\(\\sqrt{7}\\), \\(\\frac{\\sqrt{14}}{2}\\), and \\(\\frac{7}{2}\\). Which one is about \\(2.646\\)? Then check whether you need both signs.",
+        "explanation": "Yes. Desmos shows \\(\\sqrt{7}\\approx2.646\\), so the two intercepts match \\(x=\\pm\\sqrt{7}\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Type and compare the exact choices",
+        "initial_expressions": [],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "graph_visibility_controls",
+      "html": "<h2>How to show one graph at a time</h2><p>Each expression row has a colored circle on its far left. Click that circle to turn the graph off; click it again to turn the graph back on.</p><p><img src=\"/images/desmos-graph-visibility-toggle.svg\" alt=\"An arrow points to the colored circle at the far left of a Desmos expression row. Click this circle to turn that graph on or off.\" width=\"760\" /></p><p>A practice graph is loaded but turned off. Click its faded circle so the graph appears, then click it once more so it disappears. This does not delete the expression.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Practice turning a graph on and off",
+        "initial_expressions": [
+          { "id": "toggle_practice", "latex": "x^2-4", "hidden": true }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "solution_counts_exploration",
+      "html": "<h2>Two solutions, one solution, or none?</h2><p>Three graphs are loaded and turned off. Use the colored circles you just practiced with to turn on one graph at a time. Count its x-intercepts, then turn it off before you try the next one:</p><ul><li>\\(x^2-5x+6\\)</li><li>\\((x-3)^2\\)</li><li>\\(x^2+4\\)</li></ul><p>The number of distinct x-intercepts is the number of distinct real solutions. If you think there are none, zoom or pan once before you commit—the intercept might be outside the current window.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Toggle and compare",
+        "initial_expressions": [
+          { "id": "two_roots", "latex": "x^2-5x+6", "hidden": true },
+          { "id": "one_root", "latex": "(x-3)^2", "hidden": true },
+          { "id": "no_roots", "latex": "x^2+4", "hidden": true }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "solution_counts_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Match the equations to their numbers of distinct real solutions.",
+        "choices": [
+          "\\(x^2-5x+6=0\\): two; \\((x-3)^2=0\\): one; \\(x^2+4=0\\): none",
+          "All three have two because all three contain \\(x^2\\).",
+          "The first has one, the second has two, and the third has none.",
+          "The first has two, the second has none, and the third has one."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Count crossings and touches. A touch still gives one x-value; a graph that never meets the axis gives none.",
+        "explanation": "Right. Crossing twice gives two solutions, touching once gives one distinct solution, and never meeting the axis gives no real solutions."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Use the three graphs",
+        "initial_expressions": [
+          { "id": "count_two", "latex": "x^2-5x+6" },
+          { "id": "count_one", "latex": "(x-3)^2" },
+          { "id": "count_none", "latex": "x^2+4" }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "when_to_use",
+      "html": "<h2>When is this tool worth using?</h2><p>Graphing is especially handy when factoring looks messy, the question asks for an approximation, or the answer choices can be checked quickly as decimals.</p><p>For something simple like \\(x+2=5\\), regular algebra is faster. And if a question asks for a proof, a graph by itself is not enough.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "method_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which situation is the best fit for solving with x-intercepts?",
+        "choices": [
+          "The equation is hard to factor, and the question asks for approximate real solutions.",
+          "The equation is \\(x+2=5\\), and an exact answer is required.",
+          "The question asks you to prove an identity for every real number.",
+          "The question asks for a written algebraic proof."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Look for the situation where a quick visual approximation saves work.",
+        "explanation": "Exactly. Graphing is most useful when the algebra is awkward and a visual or approximate answer meets the question's needs."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_prompt",
+      "html": "<h2>Put the whole move together</h2><p>Solve \\(3p^2-5p-4=2\\). You will need to:</p><ol><li>get zero on one side,</li><li>use \\(x\\) in place of \\(p\\) in Desmos,</li><li>read both intercepts, and</li><li>match those decimals to an exact choice.</li></ol><p>The next block asks you to build the graph yourself.</p>"
+    },
+    {
+      "kind": "desmos_enter_expression",
+      "id": "transfer_graph",
+      "title": "Build the graph",
+      "instructions_html": "<p>Rearrange \\(3p^2-5p-4=2\\), replace \\(p\\) with \\(x\\), and type the resulting expression.</p><p>You may enter it as a bare expression—no <strong>y=</strong> is required.</p>",
+      "expression": "3x^2-5x-6",
+      "expected_expression": "3x^2-5x-6",
+      "test_values": [-3, -1, 0, 2, 4],
+      "require_success": true
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_exact_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The graph gives \\(p\\approx-0.808\\) and \\(p\\approx2.475\\). Which exact choice matches?",
+        "choices": [
+          "\\(p=\\frac{5\\pm\\sqrt{97}}{6}\\)",
+          "\\(p=\\frac{-5\\pm\\sqrt{97}}{6}\\)",
+          "\\(p=\\frac{5\\pm\\sqrt{97}}{3}\\)",
+          "\\(p=\\frac{5\\pm\\sqrt{47}}{6}\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Type the two values from one answer choice into Desmos. If they are not close to \\(-0.808\\) and \\(2.475\\), erase them and try the next choice.",
+        "explanation": "Correct. \\(\\frac{5-\\sqrt{97}}{6}\\approx-0.808\\) and \\(\\frac{5+\\sqrt{97}}{6}\\approx2.475\\), so the matching exact choice is \\(p=\\frac{5\\pm\\sqrt{97}}{6}\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Evaluate each candidate yourself",
+        "initial_expressions": [],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, what is the correct order for solving an equation with x-intercepts?",
+        "choices": [
+          "Get zero on one side; graph the other side; find every x-intercept; report the x-values using the original variable; check precision and restrictions.",
+          "Graph only the original left side; read the y-intercept; round it to the closest choice.",
+          "Replace every number with x; find the vertex; use its height as the answer.",
+          "Graph any similar expression and choose the intercept closest to zero."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Think: zero first, graph second, intercepts third, then translate and check.",
+        "explanation": "You have it. That sequence keeps the equation equivalent and turns each x-intercept into a valid solution."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You have a new SAT tool</h2><p>You can now rearrange an equation, graph a bare expression in Desmos, read every x-intercept, translate back to the original variable, and compare decimal intercepts with exact choices.</p><p>The best way to make this stick is to use it again soon on a problem that does not tell you which method to choose.</p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}

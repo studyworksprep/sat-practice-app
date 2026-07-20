@@ -1,6 +1,6 @@
 # Lesson JSON Authoring Guide (Import From JSON)
 
-> **Status: Living document.** Last verified: 2026-07-19 (added the Phase 3.2 optional Desmos hint/solution fields; expanded state_rules). Verify against `lib/lesson/lesson-validation` when in doubt.
+> **Status: Living document.** Last verified: 2026-07-19 (shared lesson calculator and preset graphs). Verify against `lib/lesson/lesson-validation` when in doubt.
 
 This document tells you exactly how to produce a JSON "LessonTemplateSpec"
 that the Studyworks admin **Lessons → Import from JSON** page accepts and
@@ -228,7 +228,8 @@ Required: `instructions_html`, `initial_expressions` (array, may be `[]`),
 ```
 Required: `title`, `instructions_html`, `expression`. Optional:
 `expected_expression` (defaults to `expression`), `test_values`,
-`require_success`.
+`require_success`, `initial_state` (an opaque state captured by the lesson
+editor), and `initial_expressions`.
 
 **`graph_comparison_workflow`** and **`slider_workflow`** expand into a
 multi-step Desmos sequence. Use only if you specifically want that flow:
@@ -265,6 +266,54 @@ Continue again, and lands on the rejoin block — then the lesson continues.
 
 ---
 
+### 2e. Calculator presentation on ordinary blocks
+
+Desmos is available as a persistent scratch calculator on ordinary lesson
+blocks by default. Add a top-level `calculator` object to a block spec to
+change its visibility or load a premade graph. The importer copies this
+object into the compiled block's content.
+
+```json
+{
+  "kind": "text",
+  "html": "<p>Explore the graph, then explain what its intercepts mean.</p>",
+  "calculator": {
+    "display": "open",
+    "mode": "preset",
+    "title": "Explore the intercepts",
+    "initial_expressions": [
+      { "id": "reference", "latex": "y=x^2-5x+6" }
+    ],
+    "editable": false,
+    "resettable": true,
+    "lock_viewport": false
+  }
+}
+```
+
+- `display`: `hidden`, `available`, or `open`. Default: `open` for every
+  ordinary block. Interactive Desmos blocks also open automatically with
+  their controlled activity state.
+- `mode`: `scratch` or `preset`. Default: `scratch`.
+- `title`: optional calculator-pane heading.
+- `initial_expressions`: optional expression rows for JSON-authored presets.
+  Add `"hidden": true` to an expression row when the learner should turn
+  that graph on during an exploration.
+- `initial_state`: optional complete state captured from Desmos in the visual
+  lesson editor. Treat it as opaque; do not hand-edit it.
+- `editable`: when false, hides the expression list while preserving graph
+  tracing and exploration.
+- `resettable`: controls the pane's Reset button. Default: true.
+- `lock_viewport`: prevents panning and zooming when true.
+
+Interactive Desmos blocks always open the controlled calculator and use an
+isolated block or workflow state. Their state never shares expressions with
+the learner's ordinary scratch calculator. To give an interactive block a
+complete starting graph, add `initial_state` directly to its content (or use
+the visual editor's **Capture starting graph** button).
+
+---
+
 ## 3. Math formatting
 
 Write math with LaTeX delimiters inside any text/HTML/prompt/choice field:
@@ -277,7 +326,8 @@ In JSON, every backslash must be escaped, so `\(` is written `\\(`:
 ```
 Math renders for the learner and in the editor preview. Desmos
 *expressions* (the `expression` / `expected` fields) use plain calculator
-syntax like `y=2x+1`, **not** `\( \)` delimiters.
+syntax like `2x+1` or `y=2x+1`, **not** `\( \)` delimiters. Desmos can graph
+a bare expression, so `y=` is optional unless the equation itself needs it.
 
 ---
 

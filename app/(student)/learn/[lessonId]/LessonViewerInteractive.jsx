@@ -39,6 +39,7 @@ export function LessonViewerInteractive({
       onMarkComplete={() => markLessonComplete(lessonId)}
       questionLinkHref={(qid) => `/practice/${qid}`}
       debugMode={debug}
+      calculatorStoragePrefix={`lesson-desmos:${lessonId}`}
     />
   );
 }

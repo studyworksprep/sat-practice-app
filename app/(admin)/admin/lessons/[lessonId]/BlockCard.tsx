@@ -22,6 +22,7 @@ import { BlockPreview } from './BlockPreview';
 import { RichTextEditor } from './RichTextEditor';
 import { QuestionPicker } from './QuestionPicker';
 import { DesmosEditor } from './DesmosEditor';
+import { CalculatorPresentationEditor } from './CalculatorPresentationEditor';
 import { blockMetaFor } from './block-meta';
 
 type Issue = { severity?: string; message?: string; path?: string };
@@ -107,6 +108,13 @@ export function BlockCard({
             <div style={S.paneLabel}>Edit</div>
             <div style={S.editInner}>
               <BlockBody block={block} onChangeContent={onChangeContent} />
+              {block.block_type !== 'desmos_interactive' && block.block_type !== 'lesson_complete' ? (
+                <CalculatorPresentationEditor
+                  blockId={block.id || `block-${index + 1}`}
+                  content={block.content ?? {}}
+                  onChange={onChangeContent}
+                />
+              ) : null}
               <AdvancedJson content={block.content ?? {}} onChange={onChangeContent} />
             </div>
           </div>

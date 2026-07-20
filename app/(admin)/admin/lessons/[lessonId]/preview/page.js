@@ -77,6 +77,7 @@ export default async function AdminLessonPreviewPage({ params, searchParams }) {
           questionLinkHref={null}
           showCompleteButton={false}
           debugMode={debug}
+          calculatorStoragePrefix={`lesson-preview-desmos:${lessonId}`}
         />
       </section>
     </main>

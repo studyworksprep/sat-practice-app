@@ -1,0 +1,46 @@
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(380px, 0.88fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.workspaceSingle {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lessonColumn {
+  min-width: 0;
+}
+
+.calculatorToggleRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.calculatorToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--color-app-accent, #4f7ce0);
+  border-radius: 8px;
+  background: var(--card, #fff);
+  color: var(--color-app-accent, #4f7ce0);
+  padding: 7px 11px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.calculatorToggle:hover {
+  background: var(--color-app-accent-bg, #eef2ff);
+}
+
+@media (max-width: 800px) {
+  .workspace,
+  .workspaceSingle {
+    display: block;
+  }
+}
