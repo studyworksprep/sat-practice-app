@@ -173,6 +173,25 @@ export function DesmosPanel({
     scheduleResize();
   }, [isOpen]);
 
+  // Desmos can initialize while a persistent panel is hidden. In that case
+  // its host measures 0 x 0 and a one-off resize on the React visibility
+  // change can still run before CSS grid has assigned the newly-open pane a
+  // real width. Observe the host itself so hidden-to-visible transitions,
+  // responsive grid changes, sidebars, and draggable panel resizing all
+  // resize the calculator after layout settles.
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!ready || !host || typeof ResizeObserver === 'undefined') return undefined;
+
+    const observer = new ResizeObserver((entries) => {
+      const rect = entries[0]?.contentRect;
+      if (!rect || rect.width <= 0 || rect.height <= 0) return;
+      scheduleResize();
+    });
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [ready]);
+
   function scheduleResize() {
     if (!calcRef.current) return;
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
