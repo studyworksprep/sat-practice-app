@@ -123,6 +123,23 @@ export function DesmosEditor({
     );
   }
 
+  function captureStartingGraph() {
+    const state = calcRef.current?.getState?.();
+    if (!state || typeof state !== 'object') {
+      setNote('The calculator is still loading — give it a moment and try again.');
+      return;
+    }
+    emit({ ...content, initial_state: state });
+    setNote('Captured the complete starting graph for the learner.');
+  }
+
+  function clearStartingGraph() {
+    const next = { ...content };
+    delete next.initial_state;
+    emit(next);
+    setNote('Removed the captured starting graph.');
+  }
+
   return (
     <div style={S.wrap}>
       <section style={S.capture}>
@@ -137,7 +154,13 @@ export function DesmosEditor({
 
         <div style={S.calcHost}>
           {DESMOS_API_KEY ? (
-            <DesmosPanel isOpen storageKey={`lesson-desmos-author:${blockId}`} onCalcReady={onCalcReady} />
+            <DesmosPanel
+              isOpen
+              storageKey={`lesson-desmos-author:${blockId}`}
+              initialState={(content.initial_state as Record<string, unknown>) ?? null}
+              initialExpressions={Array.isArray(content.initial_expressions) ? content.initial_expressions : []}
+              onCalcReady={onCalcReady}
+            />
           ) : (
             <div style={S.noKey}>
               <strong>Desmos can’t load.</strong> The <code>NEXT_PUBLIC_DESMOS_API_KEY</code>{' '}
@@ -152,6 +175,14 @@ export function DesmosEditor({
           <Button type="button" variant="primary" size="sm" onClick={captureNow} disabled={!DESMOS_API_KEY}>
             Capture target state from graph
           </Button>
+          <Button type="button" variant="secondary" size="sm" onClick={captureStartingGraph} disabled={!DESMOS_API_KEY}>
+            Capture starting graph
+          </Button>
+          {content.initial_state ? (
+            <Button type="button" variant="remove" size="sm" onClick={clearStartingGraph}>
+              Remove starting graph
+            </Button>
+          ) : null}
           {note ? <span className={f.muted} style={{ fontSize: 12 }}>{note}</span> : null}
         </div>
 

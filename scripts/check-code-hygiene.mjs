@@ -16,8 +16,9 @@
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 // ── 1. TypeScript ratchet ────────────────────────────────────────────
 // Baseline last lowered 2026-07-15 (§6.1: lib/ui/nav-links.js →
@@ -90,7 +91,7 @@ const scanFiles = [
 
 const hits = [];
 for (const file of scanFiles) {
-  const rel = relative(ROOT, file);
+  const rel = relative(ROOT, file).replaceAll('\\', '/');
   if (ALLOWLIST_PREFIXES.some((p) => rel.startsWith(p))) continue;
   const text = readFileSync(file, 'utf8');
   for (const term of RETIRED_TERMS) {

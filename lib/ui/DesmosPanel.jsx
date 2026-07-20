@@ -43,17 +43,41 @@ import { desmosCalculatorSrc } from '../config/desmos';
 
 const SAVE_DEBOUNCE_MS = 2000;
 
-export function DesmosPanel({ isOpen, storageKey, onCalcReady, fitToContainer = false }) {
+/**
+ * @param {{
+ *   isOpen: boolean,
+ *   storageKey?: string,
+ *   onCalcReady?: (calculator: any | null) => void,
+ *   fitToContainer?: boolean,
+ *   initialState?: any,
+ *   initialExpressions?: any[],
+ *   calculatorOptions?: Record<string, any>
+ * }} props
+ */
+export function DesmosPanel({
+  isOpen,
+  storageKey,
+  onCalcReady,
+  fitToContainer = false,
+  initialState = null,
+  initialExpressions = [],
+  calculatorOptions = {},
+}) {
   const hostRef     = useRef(null);
   const calcRef     = useRef(null);
   const saveTimer   = useRef(null);
   const rafRef      = useRef(null);
   const onReadyRef  = useRef(onCalcReady);
+  const activeStorageKeyRef = useRef(storageKey || null);
+  const seedRef = useRef({ initialState, initialExpressions });
   const [ready, setReady] = useState(false);
 
   // Keep the callback ref fresh without forcing the init effect
   // to re-run on every parent rerender.
   useEffect(() => { onReadyRef.current = onCalcReady; }, [onCalcReady]);
+  useEffect(() => {
+    seedRef.current = { initialState, initialExpressions };
+  }, [initialState, initialExpressions]);
 
   // If Desmos was loaded in an earlier page (via the global script
   // tag in app/layout.js), the constructor is already on window.
@@ -75,7 +99,8 @@ export function DesmosPanel({ isOpen, storageKey, onCalcReady, fitToContainer = 
       restrictedFunctions: false,
     });
 
-    restoreFromLocalStorage();
+    activeStorageKeyRef.current = storageKey || null;
+    restoreOrSeed(activeStorageKeyRef.current);
     scheduleResize();
     // Observe changes → debounced save.
     calcRef.current.observeEvent?.('change', () => scheduleSave());
@@ -91,22 +116,44 @@ export function DesmosPanel({ isOpen, storageKey, onCalcReady, fitToContainer = 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
-  // On storageKey change (new question), load the saved state for
-  // that key, falling back to a blank calculator if nothing is
-  // saved. Happens without tearing down the instance.
+  // Save the outgoing calculator scope before loading the incoming
+  // block/workflow scope. The active-key ref prevents a pending save
+  // from writing stale state under the newly-rendered key.
   useEffect(() => {
     if (!calcRef.current) return;
-    restoreFromLocalStorage();
+    const nextKey = storageKey || null;
+    const previousKey = activeStorageKeyRef.current;
+    if (nextKey === previousKey) return;
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    saveToLocalStorage(previousKey);
+    activeStorageKeyRef.current = nextKey;
+    restoreOrSeed(nextKey);
     scheduleResize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey]);
+
+  useEffect(() => {
+    if (!calcRef.current) return;
+    try {
+      calcRef.current.updateSettings?.({
+        expressions: calculatorOptions.expressions ?? true,
+        lockViewport: calculatorOptions.lockViewport ?? false,
+        sliders: calculatorOptions.sliders ?? true,
+        keypad: calculatorOptions.expressions ?? true,
+        zoomButtons: calculatorOptions.lockViewport !== true,
+      });
+      scheduleResize();
+    } catch {}
+  }, [ready, calculatorOptions.expressions, calculatorOptions.lockViewport, calculatorOptions.sliders]);
 
   // When the panel visibility changes, ask Desmos to resize so
   // layout is correct after the container dimensions change.
   useEffect(() => {
     if (!isOpen || !calcRef.current) return;
     scheduleResize();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   function scheduleResize() {
@@ -117,12 +164,12 @@ export function DesmosPanel({ isOpen, storageKey, onCalcReady, fitToContainer = 
     });
   }
 
-  function saveToLocalStorage() {
-    if (!calcRef.current || !storageKey) return;
+  function saveToLocalStorage(key = activeStorageKeyRef.current) {
+    if (!calcRef.current || !key) return;
     try {
       const st = calcRef.current.getState();
       if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem(storageKey, JSON.stringify(st));
+        window.localStorage.setItem(key, JSON.stringify(st));
       }
     } catch {}
   }
@@ -132,21 +179,44 @@ export function DesmosPanel({ isOpen, storageKey, onCalcReady, fitToContainer = 
     saveTimer.current = setTimeout(saveToLocalStorage, SAVE_DEBOUNCE_MS);
   }
 
-  function restoreFromLocalStorage() {
-    if (!calcRef.current || !storageKey) return;
+  function applySeed() {
+    if (!calcRef.current) return;
+    const seed = seedRef.current || {};
     try {
-      if (typeof window === 'undefined' || !window.localStorage) return;
-      const raw = window.localStorage.getItem(storageKey);
+      if (seed.initialState && typeof seed.initialState === 'object') {
+        calcRef.current.setState(seed.initialState, { allowUndo: false });
+      } else {
+        calcRef.current.setBlank?.({ allowUndo: false });
+        const expressions = Array.isArray(seed.initialExpressions)
+          ? seed.initialExpressions.filter((expr) => expr?.latex)
+          : [];
+        if (expressions.length > 0) calcRef.current.setExpressions?.(expressions);
+      }
+      const defaultState = calcRef.current.getState?.();
+      if (defaultState) calcRef.current.setDefaultState?.(defaultState);
+      calcRef.current.clearHistory?.();
+    } catch {}
+  }
+
+  function restoreOrSeed(key = activeStorageKeyRef.current) {
+    if (!calcRef.current) return;
+    try {
+      if (typeof window === 'undefined' || !window.localStorage || !key) {
+        applySeed();
+        return;
+      }
+      const raw = window.localStorage.getItem(key);
       if (!raw) {
-        // No saved state for this key — clear to a blank calculator
-        // rather than letting stale expressions from a previous key
-        // leak in.
-        calcRef.current.setBlank?.();
+        applySeed();
         return;
       }
       const st = JSON.parse(raw);
       calcRef.current.setState(st, { allowUndo: false });
-    } catch {}
+      calcRef.current.setDefaultState?.(seedRef.current?.initialState || st);
+      calcRef.current.clearHistory?.();
+    } catch {
+      applySeed();
+    }
   }
 
   return (

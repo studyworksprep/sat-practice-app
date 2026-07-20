@@ -251,7 +251,7 @@
 /* ── Lesson viewer ([lessonId]/page.js + getting-started/page.js) ── */
 
 .viewerPage {
-  max-width: 800px;
+  max-width: 1380px;
   margin: 0 auto;
   padding: 24px 20px 80px;
   font-family: var(--font-sans);
