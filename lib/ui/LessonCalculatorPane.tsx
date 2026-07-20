@@ -16,6 +16,7 @@ type Presentation = {
     expressions?: boolean;
     lockViewport?: boolean;
     sliders?: boolean;
+    keypadActivated?: boolean;
   };
   resettable: boolean;
   required: boolean;
@@ -30,6 +31,7 @@ type Calculator = {
   getState?: () => Record<string, unknown>;
   clearHistory?: () => void;
   resize?: () => void;
+  focusFirstExpression?: () => void;
 };
 
 export function LessonCalculatorPane({
@@ -69,6 +71,9 @@ export function LessonCalculatorPane({
       if (state) calculator.setDefaultState?.(state);
       calculator.clearHistory?.();
       calculator.resize?.();
+      if (presentation.calculator_options.keypadActivated) {
+        requestAnimationFrame(() => calculator.focusFirstExpression?.());
+      }
     } catch {}
   }
 

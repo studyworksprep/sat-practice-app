@@ -213,17 +213,29 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "Compare the values Desmos shows for a, b, and c with \\(2.646\\), then check whether you need both signs.",
+        "hint": "Type each positive value into Desmos yourself: \\(\\sqrt{7}\\), \\(\\frac{\\sqrt{14}}{2}\\), and \\(\\frac{7}{2}\\). Which one is about \\(2.646\\)? Then check whether you need both signs.",
         "explanation": "Yes. Desmos shows \\(\\sqrt{7}\\approx2.646\\), so the two intercepts match \\(x=\\pm\\sqrt{7}\\)."
       },
       "calculator": {
         "display": "open",
+        "mode": "scratch",
+        "title": "Type and compare the exact choices",
+        "initial_expressions": [],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "graph_visibility_controls",
+      "html": "<h2>How to show one graph at a time</h2><p>Each expression row has a colored circle on its far left. Click that circle to turn the graph off; click it again to turn the graph back on.</p><p><img src=\"/images/desmos-graph-visibility-toggle.svg\" alt=\"An arrow points to the colored circle at the far left of a Desmos expression row. Click this circle to turn that graph on or off.\" width=\"760\" /></p><p>A practice graph is loaded but turned off. Click its faded circle so the graph appears, then click it once more so it disappears. This does not delete the expression.</p>",
+      "calculator": {
+        "display": "open",
         "mode": "preset",
-        "title": "Compare the exact choices",
+        "title": "Practice turning a graph on and off",
         "initial_expressions": [
-          { "id": "choice_a", "latex": "a=\\sqrt{7}" },
-          { "id": "choice_b", "latex": "b=\\frac{\\sqrt{14}}{2}" },
-          { "id": "choice_c", "latex": "c=\\frac{7}{2}" }
+          { "id": "toggle_practice", "latex": "x^2-4", "hidden": true }
         ],
         "editable": true,
         "resettable": true,
@@ -233,15 +245,15 @@
     {
       "kind": "text",
       "id": "solution_counts_exploration",
-      "html": "<h2>Two solutions, one solution, or none?</h2><p>Three graphs are loaded. Turn them on one at a time and count their x-intercepts:</p><ul><li>\\(x^2-5x+6\\) crosses twice.</li><li>\\((x-3)^2\\) touches once and turns around.</li><li>\\(x^2+4\\) never reaches the x-axis.</li></ul><p>The number of distinct x-intercepts is the number of distinct real solutions. If you think there are none, zoom or pan once before you commit—the intercept might be outside the current window.</p>",
+      "html": "<h2>Two solutions, one solution, or none?</h2><p>Three graphs are loaded and turned off. Use the colored circles you just practiced with to turn on one graph at a time. Count its x-intercepts, then turn it off before you try the next one:</p><ul><li>\\(x^2-5x+6\\)</li><li>\\((x-3)^2\\)</li><li>\\(x^2+4\\)</li></ul><p>The number of distinct x-intercepts is the number of distinct real solutions. If you think there are none, zoom or pan once before you commit—the intercept might be outside the current window.</p>",
       "calculator": {
         "display": "open",
         "mode": "preset",
         "title": "Toggle and compare",
         "initial_expressions": [
-          { "id": "two_roots", "latex": "x^2-5x+6" },
-          { "id": "one_root", "latex": "(x-3)^2" },
-          { "id": "no_roots", "latex": "x^2+4" }
+          { "id": "two_roots", "latex": "x^2-5x+6", "hidden": true },
+          { "id": "one_root", "latex": "(x-3)^2", "hidden": true },
+          { "id": "no_roots", "latex": "x^2+4", "hidden": true }
         ],
         "editable": true,
         "resettable": true,
@@ -331,19 +343,14 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "Desmos has evaluated the four individual values. Find the pair near \\(-0.808\\) and \\(2.475\\).",
+        "hint": "Type the two values from one answer choice into Desmos. If they are not close to \\(-0.808\\) and \\(2.475\\), erase them and try the next choice.",
         "explanation": "Correct. \\(\\frac{5-\\sqrt{97}}{6}\\approx-0.808\\) and \\(\\frac{5+\\sqrt{97}}{6}\\approx2.475\\), so the matching exact choice is \\(p=\\frac{5\\pm\\sqrt{97}}{6}\\)."
       },
       "calculator": {
         "display": "open",
-        "mode": "preset",
-        "title": "Evaluate the exact candidates",
-        "initial_expressions": [
-          { "id": "candidate_1", "latex": "a=\\frac{5-\\sqrt{97}}{6}" },
-          { "id": "candidate_2", "latex": "b=\\frac{5+\\sqrt{97}}{6}" },
-          { "id": "candidate_3", "latex": "c=\\frac{-5-\\sqrt{97}}{6}" },
-          { "id": "candidate_4", "latex": "d=\\frac{-5+\\sqrt{97}}{6}" }
-        ],
+        "mode": "scratch",
+        "title": "Evaluate each candidate yourself",
+        "initial_expressions": [],
         "editable": true,
         "resettable": true,
         "lock_viewport": false

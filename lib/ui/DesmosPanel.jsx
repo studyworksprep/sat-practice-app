@@ -111,6 +111,7 @@ export function DesmosPanel({
 
     calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
       autosize: true, keypad: true, expressions: true, settingsMenu: true,
+      keypadActivated: calculatorOptions.keypadActivated ?? false,
       zoomButtons: true, forceEnableGeometryFunctions: true,
       images: false, folders: false, notes: false, links: false,
       restrictedFunctions: false,
@@ -160,11 +161,17 @@ export function DesmosPanel({
         lockViewport: calculatorOptions.lockViewport ?? false,
         sliders: calculatorOptions.sliders ?? true,
         keypad: calculatorOptions.expressions ?? true,
+        keypadActivated: calculatorOptions.keypadActivated ?? false,
         zoomButtons: calculatorOptions.lockViewport !== true,
       });
+      if (isOpen && calculatorOptions.keypadActivated) {
+        requestAnimationFrame(() => {
+          try { calcRef.current?.focusFirstExpression?.(); } catch {}
+        });
+      }
       scheduleResize();
     } catch {}
-  }, [ready, calculatorOptions.expressions, calculatorOptions.lockViewport, calculatorOptions.sliders]);
+  }, [ready, isOpen, calculatorOptions.expressions, calculatorOptions.keypadActivated, calculatorOptions.lockViewport, calculatorOptions.sliders]);
 
   // When the panel visibility changes, ask Desmos to resize so
   // layout is correct after the container dimensions change.

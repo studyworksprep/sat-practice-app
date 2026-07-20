@@ -267,6 +267,8 @@ object into the compiled block's content.
 - `mode`: `scratch` or `preset`. Default: `scratch`.
 - `title`: optional calculator-pane heading.
 - `initial_expressions`: optional expression rows for JSON-authored presets.
+  Add `"hidden": true` to an expression row when the learner should turn
+  that graph on during an exploration.
 - `initial_state`: optional complete state captured from Desmos in the visual
   lesson editor. Treat it as opaque; do not hand-edit it.
 - `editable`: when false, hides the expression list while preserving graph
