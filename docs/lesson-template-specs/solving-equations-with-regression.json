@@ -5,11 +5,11 @@
     {
       "kind": "text",
       "id": "explore_regression_result",
-      "html": "<h2>Let Desmos solve for a letter</h2><p>The calculator shows <strong>3n+4~19</strong>. Look below the expression for the value Desmos assigns to \\(n\\) and for the RMSE.</p><blockquote><p><strong>Before you continue:</strong> substitute the reported value into \\(3n+4\\) and check whether the result is \\(19\\).</p></blockquote>",
+      "html": "<h2>Notice the value Desmos finds</h2><p>The calculator shows <strong>3n+4~19</strong>. You do not need to understand the <strong>~</strong> symbol yet; the lesson will explain it next.</p><p>Look below the expression and find the value Desmos assigns to \\(n\\).</p><blockquote><p><strong>Before you continue:</strong> substitute that value into \\(3n+4\\). Check whether the result is \\(19\\).</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
-        "title": "Inspect the value and RMSE",
+        "title": "Find the assigned value",
         "initial_expressions": [
           {
             "id": "first_regression",
@@ -26,22 +26,22 @@
       "id": "exploration_check",
       "block_type": "check",
       "content": {
-        "prompt": "What result should Desmos report for \\(3n+4\\sim19\\)?",
+        "prompt": "What value did Desmos assign to \\(n\\), and which value makes \\(3n+4=19\\) true?",
         "choices": [
-          "\\(n=19\\), with RMSE equal to \\(5\\)",
-          "\\(n=-5\\), because regression reverses the sign",
-          "\\(n=5\\), with RMSE equal to \\(0\\) or extremely close to \\(0\\)",
-          "No value, because regression works only with \\(x\\)"
+          "\\(n=19\\)",
+          "\\(n=-5\\)",
+          "\\(n=5\\)",
+          "\\(n=3\\)"
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Substitute \\(n=5\\) into the left side, and inspect the RMSE shown by Desmos.",
-        "explanation": "Right. \\(3(5)+4=19\\), and an RMSE of \\(0\\) - or a tiny number in scientific notation - shows that regression found an excellent match."
+        "hint": "Substitute each choice into \\(3n+4\\). Which one produces \\(19\\)?",
+        "explanation": "Right. Desmos assigns \\(n=5\\), and \\(3(5)+4=19\\). <strong>Next, you will learn what the ~ symbol told Desmos to do.</strong>"
       },
       "calculator": {
         "display": "open",
         "mode": "preset",
-        "title": "Use the regression output",
+        "title": "Check the assigned value",
         "initial_expressions": [
           {
             "id": "first_regression_check",
@@ -84,12 +84,17 @@
     {
       "kind": "text",
       "id": "four_step_process",
-      "html": "<h2>A four-step process</h2><ol><li><strong>Choose the variable.</strong> Keep it if it is not lowercase x or y; otherwise use uppercase X or Y.</li><li><strong>Replace = with ~.</strong> Enter the two sides as a regression.</li><li><strong>Read the assignment and RMSE.</strong> An RMSE of 0, or a tiny value such as \\(10^{-12}\\), signals a strong match.</li><li><strong>Translate and check.</strong> Use the original variable name and substitute the value into the equation.</li></ol><p>Regression leaves the value assigned to the variable, so you can use it in later calculator lines.</p>"
+      "html": "<h2>A four-step process</h2><ol><li><strong>Choose the variable.</strong> Keep it if it is not lowercase x or y; otherwise use uppercase X or Y.</li><li><strong>Replace = with ~.</strong> Enter the two sides as a regression.</li><li><strong>Read the assigned value.</strong> Desmos displays the value it found for the variable.</li><li><strong>Translate and check.</strong> Use the original variable name and substitute the value into the equation.</li></ol><p><strong>One more calculator result needs an explanation:</strong> Desmos also displays RMSE. The next block explains what that number means.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "what_rmse_means",
+      "html": "<h2>What does RMSE mean?</h2><p><strong>RMSE</strong> stands for <strong>root mean square error</strong>. You do not need to calculate it. In this lesson, use it as a quick measure of how closely the two sides of the regression match.</p><ul><li><strong>RMSE = 0:</strong> the two sides match exactly.</li><li><strong>A tiny RMSE</strong>, such as \\(2.1\\times10^{-13}\\): the sides match extremely closely, with only numerical rounding.</li><li><strong>A noticeably larger RMSE:</strong> inspect the setup before trusting the result.</li></ul><blockquote><p><strong>What to look for:</strong> after reading the assigned variable value, confirm that RMSE is zero or extremely close to zero.</p></blockquote>"
     },
     {
       "kind": "text",
       "id": "model_one_solution",
-      "html": "<h2>Model: one equation, one solution</h2><p>Suppose you need to solve \\(3r-8=28\\).</p><ol><li><strong>Keep \\(r\\).</strong> It is an acceptable regression variable.</li><li><strong>Enter 3r-8~28.</strong></li><li><strong>Read the result.</strong> Desmos reports \\(r=12\\) and an RMSE at or extremely close to zero.</li><li><strong>Check the solution.</strong> \\(3(12)-8=28\\).</li></ol>",
+      "html": "<h2>Model: one equation, one solution</h2><p>Suppose you need to solve \\(3r-8=28\\).</p><ol><li><strong>Keep \\(r\\).</strong> It is an acceptable regression variable.</li><li><strong>Enter 3r-8~28.</strong></li><li><strong>Read the assigned value.</strong> Desmos reports \\(r=12\\).</li><li><strong>Inspect RMSE.</strong> It is zero or extremely close to zero.</li><li><strong>Check the solution.</strong> \\(3(12)-8=28\\).</li></ol>",
       "calculator": {
         "display": "open",
         "mode": "preset",
