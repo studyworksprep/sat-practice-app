@@ -49,7 +49,7 @@ Lesson-level structure:
 
 Tone: clear, encouraging, plainly worded, for a high-school student. Short sentences, concrete numbers over abstraction.
 
-Length: unless the brief says otherwise, a 10-20 minute lesson. Depth beats coverage: fewer ideas taken through the full predict-explore-confirm-check arc are better than more ideas merely explained.
+Length: unless the brief says otherwise, a 10-20 minute lesson, typically using 15-35 short blocks when the topic needs a full strategy treatment. Use the additional room to slow down, isolate one action per block, and check important variations; never pad merely to reach a count. Depth beats coverage: fewer ideas taken through the full predict-explore-confirm-check arc are better than more ideas merely explained.
 
 General note: The Desmos calculator is built into the SAT. It graphs equations of x and y without simplifying first. To graph y = ______, the student doesn't need to type "y=" — Desmos assumes it for any expression of x. Assume the student knows this; don't re-explain it in the lesson.
 
@@ -69,7 +69,7 @@ Think the lesson through — plan the arc, work every example and check question
 ## Block types
 
 - \`text\` — a teaching section. \`html\` holds clean HTML.
-- \`check\` — a multiple-choice comprehension check: \`prompt\`, 2-5 \`choices\` (plain text or inline LaTeX), \`correct_index\` (0-based), \`explanation\`. Solve the check yourself and confirm exactly one choice is correct. Wrong choices must come from real misconceptions or predictable slips, never filler.
+- \`check\` — a multiple-choice comprehension check: \`prompt\`, 2-5 \`choices\` (plain text or inline LaTeX), \`correct_index\` (0-based), \`explanation\`. Solve the check yourself and confirm exactly one choice is correct. Wrong choices must come from real misconceptions or predictable slips, never filler. Across the complete lesson, deliberately distribute correct answers among the available choice positions. Do not default to index 0, do not use an obvious repeating sequence, and always update \`correct_index\` after reordering choices.
 - \`video\` — a placeholder for a video an admin will source later. Set \`video_topic\` to a precise description of what the video must show. Never invent a URL.
 - \`question_suggestion\` — a pointer to a real practice question in the bank. Provide \`domain_name\` and \`skill_name\` copied EXACTLY from the taxonomy below, optionally \`difficulty\` (1 easy, 2 medium, 3 hard), and a one-sentence \`note\` saying why this practice fits here. Never invent question ids.
 - \`desmos_activity\` — an interactive Desmos calculator embedded in the lesson; the student works in it without leaving the page. This is the preferred vehicle for the exploration step of any graphable idea. Write \`desmos_instructions\` as exact, concrete steps (what to type, what to look at). Optionally preload \`desmos_initial_expressions\`. When there is one specific expression (or set) the student must produce, set \`desmos_expected\` to exactly what they should type plus 3-6 \`desmos_test_values\` (x-values that distinguish right from wrong answers numerically), and provide \`desmos_success_message\`, \`desmos_retry_message\`, and a \`desmos_solution\` walkthrough. Omit \`desmos_expected\` entirely for open exploration. Desmos expressions use plain calculator syntax — \`y=x^2-2x-15\`, \`f(x)=\\sqrt{x}\`, \`a=1\` — NOT \\( … \\) inline-math delimiters. At most one desmos_activity per major idea.
@@ -170,7 +170,7 @@ export const RETURN_GENERATED_LESSON_TOOL = {
             correct_index: {
               type: 'integer',
               minimum: 0,
-              description: 'check blocks: 0-based index of the correct choice.',
+              description: 'check blocks: 0-based index of the correct choice. Vary this position across checks; do not default every answer to index 0.',
             },
             explanation: {
               type: 'string',
