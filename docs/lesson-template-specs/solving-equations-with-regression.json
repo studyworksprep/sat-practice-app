@@ -33,7 +33,7 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Substitute \\(n=5\\) into the left side, and inspect the RMSE shown by Desmos.",
-        "explanation": "Right. \\(3(5)+4=19\\), and an RMSE of \\(0\\)â€”or a tiny number in scientific notationâ€”shows that regression found an excellent match."
+        "explanation": "Right. \\(3(5)+4=19\\), and an RMSE of \\(0\\) - or a tiny number in scientific notation - shows that regression found an excellent match."
       },
       "calculator": {
         "display": "open",
@@ -153,7 +153,7 @@
     {
       "kind": "text",
       "id": "explore_multiple_solutions",
-      "html": "<h2>One result does not mean one solution</h2><p>Now inspect <strong>z^2~25</strong>. The equation \\(z^2=25\\) has two solutions, but regression normally reports only one valueâ€”the first match it finds.</p><p>Record the value Desmos gives you. Then mentally check whether its opposite also satisfies the original equation.</p>",
+      "html": "<h2>One result does not mean one solution</h2><p>Now inspect <strong>z^2~25</strong>. The equation \\(z^2=25\\) has two solutions, but regression normally reports only one value - the first match it finds.</p><p>Record the value Desmos gives you. Then mentally check whether its opposite also satisfies the original equation.</p>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -221,7 +221,7 @@
     {
       "kind": "text",
       "id": "systems_rule",
-      "html": "<h2>Several variables: use definitions plus one regression</h2><p>For a system, only <strong>one</strong> line can use <strong>~</strong>. Every other relationship must define one variable directly.</p><p>For the system \\(a+b=15\\) and \\(a^2+b^2=117\\), enter:</p><ul><li><strong>a=15-b</strong> â€” a definition Desmos understands</li><li><strong>a^2+b^2~117</strong> â€” the one regression</li></ul><p>Do not enter <strong>a+b=15</strong> as the supporting line. Rewrite it so a single variable stands alone. Also, do not define the same variable on two different lines.</p>"
+      "html": "<h2>Several variables: use definitions plus one regression</h2><p>For a system, only <strong>one</strong> line can use <strong>~</strong>. Every other relationship must define one variable directly.</p><p>For the system \\(a+b=15\\) and \\(a^2+b^2=117\\), enter:</p><ul><li><strong>a=15-b</strong>  -  a definition Desmos understands</li><li><strong>a^2+b^2~117</strong>  -  the one regression</li></ul><p>Do not enter <strong>a+b=15</strong> as the supporting line. Rewrite it so a single variable stands alone. Also, do not define the same variable on two different lines.</p>"
     },
     {
       "kind": "raw_block",
