@@ -11,7 +11,10 @@
         "mode": "preset",
         "title": "Inspect the value and RMSE",
         "initial_expressions": [
-          { "id": "first_regression", "latex": "3n+4\\sim19" }
+          {
+            "id": "first_regression",
+            "latex": "3n+4\\sim19"
+          }
         ],
         "editable": true,
         "resettable": true,
@@ -25,12 +28,12 @@
       "content": {
         "prompt": "What result should Desmos report for \\(3n+4\\sim19\\)?",
         "choices": [
-          "\\(n=5\\), with RMSE equal to \\(0\\) or extremely close to \\(0\\)",
           "\\(n=19\\), with RMSE equal to \\(5\\)",
           "\\(n=-5\\), because regression reverses the sign",
+          "\\(n=5\\), with RMSE equal to \\(0\\) or extremely close to \\(0\\)",
           "No value, because regression works only with \\(x\\)"
         ],
-        "correct_index": 0,
+        "correct_index": 2,
         "allow_retry": true,
         "hint": "Substitute \\(n=5\\) into the left side, and inspect the RMSE shown by Desmos.",
         "explanation": "Right. \\(3(5)+4=19\\), and an RMSE of \\(0\\) - or a tiny number in scientific notation - shows that regression found an excellent match."
@@ -40,7 +43,10 @@
         "mode": "preset",
         "title": "Use the regression output",
         "initial_expressions": [
-          { "id": "first_regression_check", "latex": "3n+4\\sim19" }
+          {
+            "id": "first_regression_check",
+            "latex": "3n+4\\sim19"
+          }
         ],
         "editable": false,
         "resettable": true,
@@ -59,12 +65,12 @@
       "content": {
         "prompt": "Which Desmos entry correctly uses regression to solve \\(4x-9=23\\)?",
         "choices": [
-          "\\(4X-9\\sim23\\)",
           "\\(4x-9\\sim23\\)",
+          "\\(4X-9\\sim23\\)",
           "\\(4y-9\\sim23\\)",
           "\\(4X-9=23\\sim0\\)"
         ],
-        "correct_index": 0,
+        "correct_index": 1,
         "allow_retry": true,
         "hint": "Lowercase x and y already have special graphing roles in Desmos. Use the simplest acceptable stand-in.",
         "explanation": "Correct. Uppercase \\(X\\) is an acceptable temporary variable. After Desmos finds \\(X=8\\), report \\(x=8\\)."
@@ -84,8 +90,14 @@
         "mode": "preset",
         "title": "Follow the four steps",
         "initial_expressions": [
-          { "id": "model_regression", "latex": "3r-8\\sim28" },
-          { "id": "reuse_assignment", "latex": "2r+1" }
+          {
+            "id": "model_regression",
+            "latex": "3r-8\\sim28"
+          },
+          {
+            "id": "reuse_assignment",
+            "latex": "2r+1"
+          }
         ],
         "editable": true,
         "resettable": true,
@@ -99,12 +111,12 @@
       "content": {
         "prompt": "Desmos reports a variable value and RMSE \\(=2.1\\times10^{-13}\\). How should you interpret that RMSE?",
         "choices": [
-          "It is effectively zero, so regression produced a very close match.",
           "It means the variable equals \\(2.1\\times10^{-13}\\).",
           "It means there are \\(13\\) solutions.",
-          "It proves that regression found every possible solution."
+          "It proves that regression found every possible solution.",
+          "It is effectively zero, so regression produced a very close match."
         ],
-        "correct_index": 0,
+        "correct_index": 3,
         "allow_retry": true,
         "hint": "Scientific notation with a large negative exponent represents a number extremely close to zero.",
         "explanation": "Exactly. A tiny RMSE is normal numerical rounding and indicates that the two sides match extremely closely. It does not tell you how many solutions exist."
@@ -119,22 +131,36 @@
         "title": "Enter a regression",
         "instructions_html": "<p>Use regression to solve \\(5q+7=42\\). Enter the equation with <strong>~</strong> in place of <strong>=</strong>.</p>",
         "initial_expressions": [],
-        "goal": { "type": "enter_expression", "required_count": 1 },
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
         "validation": {
           "mode": "normalized",
-          "expected": ["5q+7\\sim42"],
-          "state_rules": { "min_expressions": 1, "max_expressions": 1, "require_visible_only": true }
+          "expected": [
+            "5q+7\\sim42"
+          ],
+          "state_rules": {
+            "min_expressions": 1,
+            "max_expressions": 1,
+            "require_visible_only": true
+          }
         },
         "feedback": {
           "success_message_html": "<p>Nice. Desmos can now adjust \\(q\\) until the two sides match.</p>",
           "retry_message_html": "<p>Keep both sides unchanged and replace only the equals sign with <strong>~</strong>.</p>",
           "attempt_based_hints": [
-            { "min_attempts": 2, "message_html": "<p>Type <strong>5q+7~42</strong>.</p>" }
+            {
+              "min_attempts": 2,
+              "message_html": "<p>Type <strong>5q+7~42</strong>.</p>"
+            }
           ],
           "reveal_solution_after_attempts": 3,
           "solution_html": "<p>The required entry is <strong>5q+7~42</strong>.</p>"
         },
-        "progression": { "require_success": true }
+        "progression": {
+          "require_success": true
+        }
       }
     },
     {
@@ -143,7 +169,12 @@
       "block_type": "check",
       "content": {
         "prompt": "What value should the regression \\(5q+7\\sim42\\) assign to \\(q\\)?",
-        "choices": ["\\(q=7\\)", "\\(q=5\\)", "\\(q=9.8\\)", "\\(q=35\\)"],
+        "choices": [
+          "\\(q=7\\)",
+          "\\(q=5\\)",
+          "\\(q=9.8\\)",
+          "\\(q=35\\)"
+        ],
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Check which choice makes \\(5q+7\\) equal \\(42\\).",
@@ -159,7 +190,10 @@
         "mode": "preset",
         "title": "Notice what regression returns",
         "initial_expressions": [
-          { "id": "two_solution_regression", "latex": "z^2\\sim25" }
+          {
+            "id": "two_solution_regression",
+            "latex": "z^2\\sim25"
+          }
         ],
         "editable": true,
         "resettable": true,
@@ -173,12 +207,12 @@
       "content": {
         "prompt": "Regression reports \\(z=5\\) for \\(z^2\\sim25\\). What can you conclude?",
         "choices": [
-          "\\(z=5\\) is a solution, but regression has not shown that it is the only solution.",
           "\\(z=5\\) must be the only real solution.",
+          "\\(z=5\\) is a solution, but regression has not shown that it is the only solution.",
           "\\(z=-5\\) cannot be a solution because Desmos did not report it.",
           "The equation has no exact solution because regression is numerical."
         ],
-        "correct_index": 0,
+        "correct_index": 1,
         "allow_retry": true,
         "hint": "Regression generally returns one match, even when more than one exists.",
         "explanation": "Right. Both \\(5^2\\) and \\((-5)^2\\) equal \\(25\\). A single regression result is not a complete count of the solutions."
@@ -193,7 +227,10 @@
         "mode": "preset",
         "title": "Restrict the regression search",
         "initial_expressions": [
-          { "id": "negative_solution", "latex": "z^2\\sim25\\left\\{z<0\\right\\}" }
+          {
+            "id": "negative_solution",
+            "latex": "z^2\\sim25\\left\\{z<0\\right\\}"
+          }
         ],
         "editable": true,
         "resettable": true,
@@ -207,12 +244,12 @@
       "content": {
         "prompt": "You already found the positive solution of \\(w^2=49\\). Which entry directs regression to look for a negative solution?",
         "choices": [
-          "\\(w^2\\sim49\\;\\{w<0\\}\\)",
           "\\(w^2\\sim49\\;\\{w>0\\}\\)",
           "\\(w^2=49\\;\\{w<0\\}\\)",
-          "\\(w^2\\sim-49\\)"
+          "\\(w^2\\sim-49\\)",
+          "\\(w^2\\sim49\\;\\{w<0\\}\\)"
         ],
-        "correct_index": 0,
+        "correct_index": 3,
         "allow_retry": true,
         "hint": "Keep the original two sides and restrict the variable to values below zero.",
         "explanation": "Correct. The restriction \\(\\{w<0\\}\\) tells regression to search only among negative values, leading to \\(w=-7\\)."
@@ -230,12 +267,12 @@
       "content": {
         "prompt": "Which pair correctly enters the system \\(p+q=14\\) and \\(p^2+q^2=106\\) for regression?",
         "choices": [
-          "\\(p=14-q\\) and \\(p^2+q^2\\sim106\\)",
           "\\(p+q=14\\) and \\(p^2+q^2\\sim106\\)",
           "\\(p+q\\sim14\\) and \\(p^2+q^2\\sim106\\)",
+          "\\(p=14-q\\) and \\(p^2+q^2\\sim106\\)",
           "\\(p=14-q\\) and \\(p=\\sqrt{106-q^2}\\)"
         ],
-        "correct_index": 0,
+        "correct_index": 2,
         "allow_retry": true,
         "hint": "Use exactly one regression. Rewrite the other equation as a definition of one variable.",
         "explanation": "Exactly. \\(p=14-q\\) is a definition, and \\(p^2+q^2\\sim106\\) is the system's single regression."
@@ -250,8 +287,14 @@
         "mode": "preset",
         "title": "One definition, one regression",
         "initial_expressions": [
-          { "id": "system_definition", "latex": "m=11-n" },
-          { "id": "system_regression", "latex": "m^2+n^2\\sim61" }
+          {
+            "id": "system_definition",
+            "latex": "m=11-n"
+          },
+          {
+            "id": "system_regression",
+            "latex": "m^2+n^2\\sim61"
+          }
         ],
         "editable": true,
         "resettable": true,
@@ -288,12 +331,12 @@
       "content": {
         "prompt": "Which question is the best fit for regression?",
         "choices": [
-          "Find one value of \\(k\\) that satisfies an equation, then use that value in \\(3k-1\\).",
           "Find the sum of all real solutions of a quadratic equation.",
           "Determine whether a quadratic has zero, one, or two real solutions.",
-          "List every intersection produced by two equations."
+          "List every intersection produced by two equations.",
+          "Find one value of \\(k\\) that satisfies an equation, then use that value in \\(3k-1\\)."
         ],
-        "correct_index": 0,
+        "correct_index": 3,
         "allow_retry": true,
         "hint": "Look for a task where one solution is enough and keeping the variable assigned helps with the next step.",
         "explanation": "Exactly. Regression supplies one value and leaves it assigned to \\(k\\), which makes the follow-up calculation immediate. The other tasks require complete information about all solutions."
@@ -313,24 +356,49 @@
         "title": "Build the two-line system",
         "instructions_html": "<p>Enter <strong>u=13-v</strong> on one line and <strong>u^2+v^2~85</strong> on the other.</p>",
         "initial_expressions": [],
-        "goal": { "type": "multi_expression", "required_count": 2, "roles": ["definition", "regression"] },
+        "goal": {
+          "type": "multi_expression",
+          "required_count": 2,
+          "roles": [
+            "definition",
+            "regression"
+          ]
+        },
         "validation": {
           "mode": "normalized",
-          "expected": ["u=13-v", "u^{2}+v^{2}\\sim85"],
-          "state_rules": { "min_expressions": 2, "max_expressions": 2, "require_visible_only": true }
+          "expected": [
+            "u=13-v",
+            "u^{2}+v^{2}\\sim85"
+          ],
+          "state_rules": {
+            "min_expressions": 2,
+            "max_expressions": 2,
+            "require_visible_only": true
+          }
         },
         "feedback": {
           "success_message_html": "<p>Well built: one definition and one regression, with no variable defined twice.</p>",
           "retry_message_html": "<p>Use exactly two lines. Isolate \\(u\\) in the linear equation and use <strong>~</strong> only in the quadratic equation.</p>",
           "targeted_hints": [
-            { "trigger": "too_many_expressions", "message_html": "<p>Use only two lines: one definition and one regression.</p>" },
-            { "trigger": "too_few_expressions", "message_html": "<p>You need both the definition and the regression.</p>" },
-            { "trigger": "missing_second_expression", "message_html": "<p>Add the second relationship on its own line.</p>" }
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>Use only two lines: one definition and one regression.</p>"
+            },
+            {
+              "trigger": "too_few_expressions",
+              "message_html": "<p>You need both the definition and the regression.</p>"
+            },
+            {
+              "trigger": "missing_second_expression",
+              "message_html": "<p>Add the second relationship on its own line.</p>"
+            }
           ],
           "reveal_solution_after_attempts": 3,
           "solution_html": "<p>Enter <strong>u=13-v</strong> and <strong>u^2+v^2~85</strong>.</p>"
         },
-        "progression": { "require_success": true }
+        "progression": {
+          "require_success": true
+        }
       }
     },
     {
@@ -340,12 +408,12 @@
       "content": {
         "prompt": "The system has the ordered-pair solutions \\((6,7)\\) and \\((7,6)\\). If regression reports \\(u=6\\) and \\(v=7\\), what should you conclude?",
         "choices": [
-          "\\((6,7)\\) is a valid solution, but regression has not shown that it is the only solution.",
           "\\((6,7)\\) is the only solution because it appeared first.",
+          "\\((6,7)\\) is a valid solution, but regression has not shown that it is the only solution.",
           "\\((7,6)\\) is invalid because regression did not report it.",
           "The RMSE must be large because two solutions exist."
         ],
-        "correct_index": 0,
+        "correct_index": 1,
         "allow_retry": true,
         "hint": "Remember what regression returns when several matches are possible.",
         "explanation": "Correct. Regression found one valid pair. If the question required every pair, graphing or another complete method would be safer."
@@ -358,12 +426,12 @@
       "content": {
         "prompt": "Without looking back, which summary gives the correct regression strategy?",
         "choices": [
-          "Use an acceptable variable, replace one equals sign with ~, read the assignment and RMSE, restrict the range only when useful, and switch methods when every solution matters.",
           "Always use lowercase x, replace every equals sign with ~, and treat the first result as the only solution.",
           "Use two regressions for a system, ignore RMSE, and define the same variable on several lines.",
+          "Use an acceptable variable, replace one equals sign with ~, read the assignment and RMSE, restrict the range only when useful, and switch methods when every solution matters.",
           "Use regression only to count solutions, then erase the assigned values before later calculations."
         ],
-        "correct_index": 0,
+        "correct_index": 2,
         "allow_retry": true,
         "hint": "Recall the variable rule, the one-regression rule, and the difference between finding one solution and finding all solutions.",
         "explanation": "You have it. Regression is a fast one-solution tool, especially when you will reuse the assigned value, but it is not a complete solution-counting method."
