@@ -1,11 +1,11 @@
 {
   "title": "Solve Equations with Regression in Desmos",
-  "description": "Use the regression symbol to solve equations and small systems, restrict the search for another solution, and recognize when graphing is the better method.",
+  "description": "Use the regression symbol to solve equations and small systems, interpret assigned values and RMSE, build systems with definitions, restrict a search, and recognize when graphing is the better method.",
   "blocks": [
     {
       "kind": "text",
       "id": "explore_regression_result",
-      "html": "<h2>Let Desmos solve for a letter</h2><p>The calculator shows <strong>3n+4~19</strong>. Look below the expression for the value Desmos assigns to \\(n\\) and for the RMSE.</p><blockquote><p>Before you continue, substitute the reported value into \\(3n+4\\) and check whether the result is \\(19\\).</p></blockquote>",
+      "html": "<h2>Let Desmos solve for a letter</h2><p>The calculator shows <strong>3n+4~19</strong>. Look below the expression for the value Desmos assigns to \\(n\\) and for the RMSE.</p><blockquote><p><strong>Before you continue:</strong> substitute the reported value into \\(3n+4\\) and check whether the result is \\(19\\).</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -55,8 +55,13 @@
     },
     {
       "kind": "text",
-      "id": "name_the_tool",
-      "html": "<h2>The regression move</h2><p>In Desmos, the regression symbol <strong>~</strong> asks the calculator to adjust an undefined variable until the two sides match as closely as possible. This can turn an equation into a quick numerical solve.</p><p>Regression works directly when the unknown is a letter other than lowercase \\(x\\) or \\(y\\). If the problem uses \\(x\\) or \\(y\\), temporarily change it to uppercase \\(X\\) or \\(Y\\), then translate the result back.</p><p>For example, enter <strong>2X+7~21</strong> to solve \\(2x+7=21\\). Desmos assigns \\(X=7\\), so the original answer is \\(x=7\\).</p>"
+      "id": "what_regression_does",
+      "html": "<h2>What regression means</h2><p>In Desmos, the <strong>regression symbol</strong> is <strong>~</strong>. It asks the calculator to adjust an unknown value until the two sides match as closely as possible.</p><p><strong>Your action:</strong> replace the equation's equals sign with <strong>~</strong>. For example, enter <strong>3n+4~19</strong> instead of \\(3n+4=19\\).</p><p>The value Desmos assigns to \\(n\\) is a numerical solution of the equation.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "acceptable_variables",
+      "html": "<h2>Choose a variable Desmos can adjust</h2><p>A <strong>variable</strong> is the letter whose value can change. Regression can directly adjust letters such as \\(n\\), \\(r\\), or \\(t\\).</p><p>Lowercase \\(x\\) and \\(y\\) already have special graphing jobs in Desmos. If the equation uses either one, <strong>temporarily replace it with uppercase \\(X\\) or \\(Y\\)</strong>.</p><p>Example: enter <strong>2X+7~21</strong> to solve \\(2x+7=21\\). Desmos assigns \\(X=7\\), so <strong>translate back and report \\(x=7\\)</strong>.</p>"
     },
     {
       "kind": "raw_block",
@@ -84,7 +89,7 @@
     {
       "kind": "text",
       "id": "model_one_solution",
-      "html": "<h2>Model: one equation, one solution</h2><p>Suppose you need to solve \\(3r-8=28\\).</p><ol><li>The variable \\(r\\) is acceptable, so keep it.</li><li>Enter <strong>3r-8~28</strong>.</li><li>Desmos reports \\(r=12\\) and an RMSE at or extremely close to zero.</li><li>Check: \\(3(12)-8=28\\).</li></ol><p>Because \\(r\\) stays assigned, another line such as <strong>2r+1</strong> immediately evaluates to \\(25\\).</p>",
+      "html": "<h2>Model: one equation, one solution</h2><p>Suppose you need to solve \\(3r-8=28\\).</p><ol><li><strong>Keep \\(r\\).</strong> It is an acceptable regression variable.</li><li><strong>Enter 3r-8~28.</strong></li><li><strong>Read the result.</strong> Desmos reports \\(r=12\\) and an RMSE at or extremely close to zero.</li><li><strong>Check the solution.</strong> \\(3(12)-8=28\\).</li></ol>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -92,6 +97,25 @@
         "initial_expressions": [
           {
             "id": "model_regression",
+            "latex": "3r-8\\sim28"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "reuse_assigned_value",
+      "html": "<h2>The value stays assigned</h2><p>After regression finds \\(r=12\\), Desmos remembers that assignment. You do not need to type \\(12\\) again in every later step.</p><p><strong>Try it now:</strong> inspect the second calculator line, <strong>2r+1</strong>. Because \\(r\\) is still assigned, Desmos evaluates it as \\(2(12)+1=25\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Reuse the assigned value",
+        "initial_expressions": [
+          {
+            "id": "reuse_regression",
             "latex": "3r-8\\sim28"
           },
           {
@@ -184,7 +208,7 @@
     {
       "kind": "text",
       "id": "explore_multiple_solutions",
-      "html": "<h2>One result does not mean one solution</h2><p>Now inspect <strong>z^2~25</strong>. The equation \\(z^2=25\\) has two solutions, but regression normally reports only one value - the first match it finds.</p><p>Record the value Desmos gives you. Then mentally check whether its opposite also satisfies the original equation.</p>",
+      "html": "<h2>One result does not mean one solution</h2><p>Now inspect <strong>z^2~25</strong>. The equation \\(z^2=25\\) has two solutions, but regression normally reports only one value - the first match it finds.</p><p><strong>Before you continue:</strong> record the value Desmos gives you. Then mentally check whether its opposite also satisfies the original equation.</p>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -221,7 +245,7 @@
     {
       "kind": "text",
       "id": "restrict_the_search",
-      "html": "<h2>Search a known range with braces</h2><p>If you know where another solution lives, add a restriction in braces. To force the search toward the negative solution of \\(z^2=25\\), enter <strong>z^2~25 {z&lt;0}</strong>.</p><p>The braces tell Desmos where the regression is allowed to look. You might instead use a bounded range such as <strong>{2&lt;z&lt;6}</strong>.</p><p>This works when you already know a useful region. It is not a reliable way to discover every solution when you do not know how many regions to search.</p>",
+      "html": "<h2>Search a known range with braces</h2><p><strong>If you know where another solution lives, add a restriction in braces.</strong> To force the search toward the negative solution of \\(z^2=25\\), enter <strong>z^2~25 {z&lt;0}</strong>.</p><p>The braces tell Desmos where the regression is allowed to look. You might instead use a bounded range such as <strong>{2&lt;z&lt;6}</strong>.</p><p>This works when you already know a useful region. It is not a reliable way to discover every solution when you do not know how many regions to search.</p>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -257,15 +281,61 @@
     },
     {
       "kind": "text",
-      "id": "systems_rule",
-      "html": "<h2>Several variables: use definitions plus one regression</h2><p>For a system, only <strong>one</strong> line can use <strong>~</strong>. Every other relationship must define one variable directly.</p><p>For the system \\(a+b=15\\) and \\(a^2+b^2=117\\), enter:</p><ul><li><strong>a=15-b</strong>  -  a definition Desmos understands</li><li><strong>a^2+b^2~117</strong>  -  the one regression</li></ul><p>Do not enter <strong>a+b=15</strong> as the supporting line. Rewrite it so a single variable stands alone. Also, do not define the same variable on two different lines.</p>"
+      "id": "what_is_a_system",
+      "html": "<h2>What is a system?</h2><p>A <strong>system of equations</strong> is a group of two or more equations that use the same variables and must all be true at the same time.</p><p>A <strong>solution to a system</strong> gives one value for each variable. Those values must make <strong>every equation</strong> in the system true.</p><p>Example: \\((p,q)=(6,4)\\) solves the system \\(p+q=10\\) and \\(p-q=2\\), because \\(6+4=10\\) and \\(6-4=2\\).</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "system_meaning_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which ordered pair solves both equations in the system \\(a+b=9\\) and \\(a-b=3\\)?",
+        "choices": [
+          "\\((a,b)=(3,6)\\)",
+          "\\((a,b)=(6,3)\\)",
+          "\\((a,b)=(9,3)\\)",
+          "\\((a,b)=(6,-3)\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Substitute each pair into both equations. A system solution must make both equations true.",
+        "explanation": "Correct. \\(6+3=9\\) and \\(6-3=3\\), so \\((6,3)\\) satisfies the entire system."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "definition_vs_equation",
+      "html": "<h2>Definition versus equation</h2><p>An <strong>equation</strong> says that two expressions have the same value, such as \\(a+b=15\\). Neither variable is isolated.</p><p>A <strong>definition</strong> gives one variable directly in terms of other values, such as \\(a=15-b\\). The variable being defined is <strong>alone on the left side</strong>.</p><p>These two statements contain the same relationship, but Desmos needs the second form as a supporting line for a regression system.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "definition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which line is written as a definition of \\(b\\)?",
+        "choices": [
+          "\\(a+b=15\\)",
+          "\\(15=a+b\\)",
+          "\\(b=15-a\\)",
+          "\\(a=15-b\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "A definition of b must have b alone on the left side.",
+        "explanation": "Right. \\(b=15-a\\) directly defines \\(b\\) using \\(a\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "one_regression_rule",
+      "html": "<h2>Use exactly one regression line</h2><p>When you enter a system with regression, <strong>exactly one line uses ~</strong>. Every other line must be a definition.</p><p>For \\(a+b=15\\) and \\(a^2+b^2=117\\), one valid setup is:</p><ul><li><strong>a=15-b</strong> - the definition</li><li><strong>a^2+b^2~117</strong> - the one regression</li></ul><p><strong>Do not enter two regression lines.</strong> Desmos needs the definitions to connect the variables to the single regression.</p>"
     },
     {
       "kind": "raw_block",
       "id": "system_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which pair correctly enters the system \\(p+q=14\\) and \\(p^2+q^2=106\\) for regression?",
+        "prompt": "Which pair follows the rule <strong>one definition plus one regression</strong> for \\(p+q=14\\) and \\(p^2+q^2=106\\)?",
         "choices": [
           "\\(p+q=14\\) and \\(p^2+q^2\\sim106\\)",
           "\\(p+q\\sim14\\) and \\(p^2+q^2\\sim106\\)",
@@ -274,32 +344,14 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Use exactly one regression. Rewrite the other equation as a definition of one variable.",
-        "explanation": "Exactly. \\(p=14-q\\) is a definition, and \\(p^2+q^2\\sim106\\) is the system's single regression."
+        "hint": "Look for exactly one line with a variable alone on the left and exactly one line using ~.",
+        "explanation": "Exactly. \\(p=14-q\\) is the definition, and \\(p^2+q^2\\sim106\\) is the single regression."
       }
     },
     {
       "kind": "text",
       "id": "choose_regression_line",
-      "html": "<h2>Choose the easiest setup</h2><p>Make the hardest equation to rearrange your regression line. Turn the easier equations into definitions.</p><p>There is one more useful rule: if your first draft defines a variable twice, change one of those definitions into the regression instead. Each variable can be defined only once.</p><p>For \\(m+n=11\\) and \\(m^2+n^2=61\\), the linear equation is easy to rearrange, so use <strong>m=11-n</strong> and <strong>m^2+n^2~61</strong>. Regression will return one ordered pair, such as \\((m,n)=(5,6)\\) or \\((6,5)\\).</p>",
-      "calculator": {
-        "display": "open",
-        "mode": "preset",
-        "title": "One definition, one regression",
-        "initial_expressions": [
-          {
-            "id": "system_definition",
-            "latex": "m=11-n"
-          },
-          {
-            "id": "system_regression",
-            "latex": "m^2+n^2\\sim61"
-          }
-        ],
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
-      }
+      "html": "<h2>Choose which equation becomes the regression</h2><p>First ask: <strong>Which equation would be harder to rearrange so one variable is alone?</strong></p><p>Use that harder equation as the regression. Rewrite the easier equation as a definition.</p><p>For \\(c+d=20\\) and \\(c^3+cd^2=350\\), the linear equation is easy to rewrite as \\(c=20-d\\). The nonlinear equation is harder to rearrange, so enter it as <strong>c^3+cd^2~350</strong>.</p>"
     },
     {
       "kind": "raw_block",
@@ -317,6 +369,52 @@
         "allow_retry": true,
         "hint": "Rearrange the easy linear equation and reserve the one regression for the harder relationship.",
         "explanation": "Correct. The linear equation gives a clean definition, leaving the harder nonlinear equation as the single regression."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "define_once_rule",
+      "html": "<h2>Define each variable only once</h2><p>A variable can have only <strong>one definition</strong> in the calculator setup.</p><p>For example, do not enter both \\(c=20-d\\) and \\(c=\\sqrt[3]{350-cd^2}\\). Both lines try to define \\(c\\), so Desmos cannot use them together as intended.</p><p><strong>If a variable would be defined twice:</strong> keep the easier definition and change the other relationship into the one regression line.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "define_once_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which setup avoids defining the same variable twice?",
+        "choices": [
+          "\\(m=11-n\\) and \\(m=\\sqrt{61-n^2}\\)",
+          "\\(m+n\\sim11\\) and \\(m^2+n^2\\sim61\\)",
+          "\\(m+n=11\\) and \\(m^2+n^2\\sim61\\)",
+          "\\(m=11-n\\) and \\(m^2+n^2\\sim61\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Look for one definition of m and one regression. Do not define m on two lines.",
+        "explanation": "Correct. \\(m=11-n\\) defines \\(m\\) once, and \\(m^2+n^2\\sim61\\) is the one regression."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "model_complete_system",
+      "html": "<h2>Model the complete system setup</h2><p>For \\(m+n=11\\) and \\(m^2+n^2=61\\):</p><ol><li><strong>Rewrite the easy equation:</strong> \\(m=11-n\\).</li><li><strong>Use the harder equation as the regression:</strong> \\(m^2+n^2\\sim61\\).</li><li><strong>Read one ordered pair:</strong> Desmos may report \\((m,n)=(5,6)\\) or \\((6,5)\\).</li><li><strong>Check both original equations</strong> with the reported pair.</li></ol>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Inspect one definition and one regression",
+        "initial_expressions": [
+          {
+            "id": "system_definition",
+            "latex": "m=11-n"
+          },
+          {
+            "id": "system_regression",
+            "latex": "m^2+n^2\\sim61"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
       }
     },
     {
@@ -345,7 +443,7 @@
     {
       "kind": "text",
       "id": "transfer_prompt",
-      "html": "<h2>Put the system process together</h2><p>Solve the system \\(u+v=13\\) and \\(u^2+v^2=85\\) with regression.</p><p>On the next screen, enter exactly two lines: turn the easier equation into a definition, and make the harder equation the one regression. Do not define either variable twice.</p>"
+      "html": "<h2>Put the system process together</h2><p><strong>Do not solve this in the scratch calculator yet.</strong> Your task will begin in the required calculator on the next screen.</p><p>The system is \\(u+v=13\\) and \\(u^2+v^2=85\\).</p><blockquote><p><strong>On the next screen:</strong> enter exactly two lines. Rewrite the easier equation as one definition, then use the harder equation as the one regression. Make sure no variable is defined twice.</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -354,7 +452,7 @@
       "content": {
         "type": "desmos_interactive",
         "title": "Build the two-line system",
-        "instructions_html": "<p>Enter <strong>u=13-v</strong> on one line and <strong>u^2+v^2~85</strong> on the other.</p>",
+        "instructions_html": "<p><strong>Now build the system in this calculator.</strong></p><ol><li>Enter <strong>u=13-v</strong> on one line.</li><li>Enter <strong>u^2+v^2~85</strong> on the other line.</li><li>Then submit your work.</li></ol>",
         "initial_expressions": [],
         "goal": {
           "type": "multi_expression",
