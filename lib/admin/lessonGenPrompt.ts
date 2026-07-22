@@ -49,7 +49,7 @@ Lesson-level structure:
 
 Tone: clear, encouraging, plainly worded, for a high-school student. Short sentences, concrete numbers over abstraction.
 
-Length: unless the brief says otherwise, a 10-20 minute lesson, typically using 15-35 short blocks when the topic needs a full strategy treatment. Use the additional room to slow down, isolate one action per block, and check important variations; never pad merely to reach a count. Depth beats coverage: fewer ideas taken through the full predict-explore-confirm-check arc are better than more ideas merely explained.
+Length: unless the brief says otherwise, a 10-20 minute lesson, typically using 15-40 short blocks when the topic needs a full strategy treatment. Use the additional room to slow down, isolate one action per block, and check important variations; never pad merely to reach a count. Depth beats coverage: fewer ideas taken through the full predict-explore-confirm-check arc are better than more ideas merely explained.
 
 General note: The Desmos calculator is built into the SAT. It graphs equations of x and y without simplifying first. To graph y = ______, the student doesn't need to type "y=" — Desmos assumes it for any expression of x. Assume the student knows this; don't re-explain it in the lesson.
 
