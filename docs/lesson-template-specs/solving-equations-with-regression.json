@@ -1,0 +1,317 @@
+{
+  "title": "Solve Equations with Regression: The ~ Trick",
+  "description": "Use the Desmos regression symbol (~) to solve equations and simple systems, restrict the search when there is more than one solution, and decide when regression beats graphing.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "explore_first_regression",
+      "html": "<h2>Replace = with ~ and watch</h2><p>Desmos has a hidden superpower: it can solve equations for you. The trick is a symbol called the <strong>regression symbol</strong> — the tilde <strong>~</strong>.</p><p>The calculator is open with the line <strong>3n+5~20</strong> already typed. That is the equation \\(3n+5=20\\) with ~ in place of =. Look underneath the line: Desmos reports a value for \\(n\\) and an error score labeled <strong>RMSE</strong>.</p><blockquote><p>Take a moment before you continue: what value of \\(n\\) did Desmos find, and what is the RMSE?</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "See what ~ does",
+        "initial_expressions": [
+          { "id": "starter_regression", "latex": "3n+5\\sim20" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "read_first_regression",
+      "block_type": "check",
+      "content": {
+        "prompt": "The regression \\(3n+5\\sim20\\) asked Desmos to solve \\(3n+5=20\\). What value of \\(n\\) did it find?",
+        "choices": [
+          "\\(n=5\\)",
+          "\\(n\\approx8.33\\)",
+          "\\(n=-5\\)",
+          "\\(n=15\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Look directly under the regression line in the calculator — Desmos printed the value it found.",
+        "explanation": "Right. Desmos reports \\(n=5\\), and it checks out: \\(3(5)+5=20\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Use the result as evidence",
+        "initial_expressions": [
+          { "id": "first_check_regression", "latex": "3n+5\\sim20" }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "explain_tilde_and_rmse",
+      "html": "<h2>What ~ actually tells Desmos</h2><p>The ~ symbol says: <em>find a value for the unknown letter that makes the two sides match as closely as possible.</em> When an equation has an exact solution, the match is perfect.</p><p><strong>RMSE</strong> is Desmos's score for how far off the match is. Read it like this:</p><ul><li>RMSE \\(=0\\): a perfect match — the value shown really solves the equation.</li><li>RMSE shown in scientific notation with a big negative exponent, like \\(1.4\\times10^{-12}\\): that is a rounding-dust distance from zero. Treat it as a perfect match too.</li><li>RMSE that is clearly not small, like \\(2.7\\): Desmos could not make the sides match — be suspicious of the value it shows.</li></ul><p>One rule before you try it on everything: this works for any letter <strong>except lowercase \\(x\\) and \\(y\\)</strong>. Desmos reserves those two for graphing. We will deal with that on the next screen.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "rmse_meaning_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "You type \\(7k-3\\sim11\\) and Desmos reports \\(k=2\\) with RMSE \\(=3.2\\times10^{-14}\\). What should you conclude?",
+        "choices": [
+          "The match is essentially perfect, so \\(k=2\\) solves \\(7k-3=11\\).",
+          "The RMSE is not exactly \\(0\\), so \\(k=2\\) is not a real solution.",
+          "The answer is off by \\(3.2\\times10^{-14}\\), so report a value slightly less than \\(2\\).",
+          "Desmos failed, so you should start over with a different method."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "How big is \\(3.2\\times10^{-14}\\) written as a decimal? Count the zeros.",
+        "explanation": "Exactly. \\(3.2\\times10^{-14}\\) is \\(0.000000000000032\\) — rounding dust. An RMSE of \\(0\\) or a tiny number in scientific notation both mean the regression found a genuine solution."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "rename_x_and_y",
+      "html": "<h2>When the variable is x (or y)</h2><p>There is one catch. Desmos reserves lowercase \\(x\\) and \\(y\\) for graphing, so a line like <strong>5x-3~12</strong> will not solve anything.</p><p>The fix is quick: swap in a letter Desmos is not using. The easiest choice is the <strong>capital version of the same letter</strong> — capital <strong>X</strong> for \\(x\\), capital <strong>Y</strong> for \\(y\\). To Desmos, \\(X\\) and \\(x\\) are completely different symbols.</p><p>The calculator shows <strong>5X-3~12</strong>, standing in for \\(5x-3=12\\). Check the value and the RMSE. Then remember the last step: the question still uses \\(x\\), so your final answer is \\(x=3\\), not \\(X=3\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Capital X stands in for x",
+        "initial_expressions": [
+          { "id": "capital_x_regression", "latex": "5X-3\\sim12" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "rename_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "You want Desmos to solve \\(5x-3=12\\) for you. Which entry works?",
+        "choices": [
+          "\\(5X-3\\sim12\\)",
+          "\\(5x-3\\sim12\\)",
+          "\\(5X-3=12\\)",
+          "\\(y\\sim5x-3\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Two things must both be true: the = must become ~, and the unknown cannot be a letter Desmos reserves for graphing.",
+        "explanation": "Yes. Capital \\(X\\) avoids the reserved lowercase \\(x\\), and ~ tells Desmos to solve. It finds \\(X=3\\), which you report as \\(x=3\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "core_steps",
+      "html": "<h2>The regression move</h2><ol><li><strong>Rename if needed.</strong> If the variable is \\(x\\) or \\(y\\), capitalize it: \\(X\\) or \\(Y\\).</li><li><strong>Swap = for ~.</strong> Type the equation otherwise exactly as written — no rearranging needed.</li><li><strong>Read the value</strong> Desmos reports for the variable.</li><li><strong>Check the RMSE.</strong> It should be \\(0\\) or a tiny number in scientific notation.</li><li><strong>Answer with the original variable.</strong></li></ol><p>Step 2 is what makes this tool so fast. Graphing makes you move everything to one side first; regression takes the equation as-is.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "multiple_solutions_explore",
+      "html": "<h2>What if the equation has two solutions?</h2><p>The equation \\(m^2=9\\) has two solutions: \\(3\\) and \\(-3\\). But a regression reports only <strong>one</strong> — the first solution it happens to find.</p><p>Two lines are set up in the calculator. The first is the plain regression <strong>m^2~9</strong>. The second adds curly braces: <strong>m^2~9 {m&lt;0}</strong>. The braces tell Desmos to search for a solution <em>only</em> where \\(m&lt;0\\).</p><p>Compare the two results. The plain line shows just one of the two solutions. The restricted line has no choice: it must report \\(m=-3\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Aim the search with braces",
+        "initial_expressions": [
+          { "id": "plain_regression", "latex": "m^2\\sim9" },
+          { "id": "restricted_regression", "latex": "m^2\\sim9\\left\\{m<0\\right\\}" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "restriction_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The equation \\(u^2=25\\) has solutions \\(5\\) and \\(-5\\). The regression \\(u^2\\sim25\\) reported \\(u=5\\), but the question needs the negative solution. What should you type?",
+        "choices": [
+          "\\(u^2\\sim25\\ \\{u&lt;0\\}\\)",
+          "\\(u^2\\sim25\\ \\{u&gt;0\\}\\)",
+          "\\(u^2\\sim-25\\)",
+          "\\(-u^2\\sim25\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The braces describe where the solution you want lives. Where on the number line is the negative solution?",
+        "explanation": "Right. \\(\\{u&lt;0\\}\\) restricts the search to negative numbers, so Desmos must report \\(u=-5\\). Moving the minus sign into the equation changes the equation itself — \\(u^2=-25\\) has no real solutions at all."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "systems_rules",
+      "html": "<h2>Two unknowns? Regression can still do it</h2><p>Suppose a question gives you a system: \\(b=2a+1\\) and \\(3a+b=16\\). Regression can solve it, but Desmos enforces three rules:</p><ol><li><strong>Only one line gets a ~.</strong> Every other equation must be entered as a <em>definition</em>: one letter alone on the left, like \\(b=2a+1\\). A line like \\(a+b=16\\) is <em>not</em> a definition — it does not tell Desmos what any single letter equals, so Desmos cannot use it.</li><li><strong>No letter can be defined twice.</strong> Two lines that both start with \\(b=\\) will produce an error.</li><li><strong>Pick the right line for the ~.</strong> Give the ~ to the equation that is hardest to rearrange into a definition — or, if two equations would define the same letter, make one of those two the regression.</li></ol>"
+    },
+    {
+      "kind": "text",
+      "id": "systems_explore",
+      "html": "<h2>Try it: two equations, one ~</h2><p>The calculator has the system set up: the definition <strong>b=2a+1</strong> and the regression <strong>3a+b~16</strong>. Desmos substitutes the definition into the regression and solves for \\(a\\). Check the value it found.</p><p>Now the best part: after a regression, the solution <strong>stays stored</strong> in the variables. On a new empty line, type <strong>b</strong> — Desmos shows its value instantly. Then type <strong>a+b</strong> on another line.</p><p>You can keep computing with the solution — exactly what a multi-step SAT problem needs.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "One ~, the rest definitions",
+        "initial_expressions": [
+          { "id": "system_definition", "latex": "b=2a+1" },
+          { "id": "system_regression", "latex": "3a+b\\sim16" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "stored_values_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "You just solved the system: \\(a=3\\) and \\(b=7\\), and both values are still stored. You type \\(2a+b\\) on a new line. What does Desmos show?",
+        "choices": [
+          "\\(13\\)",
+          "\\(10\\)",
+          "\\(20\\)",
+          "\\(17\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Desmos still remembers \\(a=3\\) and \\(b=7\\). Substitute them into \\(2a+b\\) — and mind which letter gets doubled.",
+        "explanation": "Yes: \\(2(3)+7=13\\). Because the regression leaves the solution stored, any follow-up quantity is one line of typing."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "system_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A question gives the system \\(m+n=12\\) and \\(m^2-n=18\\). Which setup follows the regression rules?",
+        "choices": [
+          "\\(n=12-m\\) as a definition, and \\(m^2-n\\sim18\\) as the regression",
+          "\\(m+n\\sim12\\) and \\(m^2-n\\sim18\\) — two regressions",
+          "\\(m+n=12\\) typed exactly as written, and \\(m^2-n\\sim18\\)",
+          "\\(n=12-m\\) and \\(n=m^2-18\\) — two definitions, no regression"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Count the ~ symbols: there must be exactly one. Every other line needs a single letter alone on one side, and no letter defined twice.",
+        "explanation": "Right. \\(m+n=12\\) rearranges easily into the definition \\(n=12-m\\), so the harder equation gets the ~. Two regressions break the one-~ rule; \\(m+n=12\\) as written is not a definition Desmos can use; and the last setup defines \\(n\\) twice and gives Desmos nothing to solve."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "when_to_use",
+      "html": "<h2>Choosing the right tool</h2><p><strong>Reach for regression when:</strong></p><ul><li>You need <em>one</em> solution and any solution will do — regression hands you the first one it finds.</li><li>You will <em>use</em> the solution in later steps — regression leaves the value stored in the variable, ready for the next line.</li></ul><p><strong>Reach for graphing (x-intercepts) instead when:</strong></p><ul><li>You need <em>all</em> the solutions — for example, \"what is the sum of the solutions?\" Regression shows only one, and it is easy to forget the others exist.</li><li>The question is about <em>how many</em> solutions there are — none, one, or two. Counting x-intercepts answers that at a glance; a single regression result cannot.</li></ul>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "method_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which question is the best fit for the regression method?",
+        "choices": [
+          "If \\(3(v+4)-2=19\\), what is the value of \\(6v\\)?",
+          "What is the sum of all solutions of \\(w^2-5w+4=0\\)?",
+          "For which value of \\(c\\) does \\(x^2+cx+9=0\\) have exactly one solution?",
+          "How many distinct real solutions does \\(z^2+6=0\\) have?"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Regression shines when one solution is enough and you will compute with it afterward.",
+        "explanation": "Right. The first question has a single solution and asks for \\(6v\\) — regression solves it and keeps \\(v\\) stored so you can type \\(6v\\) immediately. The other three need all the solutions or a count of solutions, which is graphing territory."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_regression",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Your turn: solve with ~",
+        "instructions_html": "<p>Solve \\(6w-7=2w+9\\) using regression.</p><p>Type the equation on one line exactly as written, replacing the = with <strong>~</strong>. No rearranging needed — that is the whole point.</p>",
+        "initial_expressions": [],
+        "goal": { "type": "enter_expression", "required_count": 1 },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "6w-7\\sim2w+9",
+            "2w+9\\sim6w-7",
+            "4w\\sim16",
+            "4w-16\\sim0"
+          ]
+        },
+        "feedback": {
+          "success_message_html": "<p>That is it — Desmos reports \\(w=4\\) with RMSE \\(0\\). Keep that result in mind for the next question.</p>",
+          "retry_message_html": "<p>Not yet. Check two things: did you keep both sides exactly as written, and did you put ~ (not =) between them?</p>",
+          "attempt_based_hints": [
+            {
+              "min_attempts": 3,
+              "message_html": "<p>All on one line: type the left side <strong>6w-7</strong>, then the <strong>~</strong> symbol, then the right side <strong>2w+9</strong>.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 5,
+          "solution_html": "<p>The line to enter is <strong>6w-7~2w+9</strong>. Desmos finds \\(w=4\\) with RMSE \\(0\\).</p>"
+        },
+        "progression": { "require_success": true }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_followup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Your regression found \\(w=4\\) with RMSE \\(0\\). The question actually asks: what is the value of \\(3w\\)?",
+        "choices": [
+          "\\(12\\)",
+          "\\(4\\)",
+          "\\(7\\)",
+          "\\(64\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "You can type \\(3w\\) on a new line in the calculator — Desmos still remembers \\(w\\).",
+        "explanation": "Correct: \\(3w=3(4)=12\\). Typing \\(3w\\) directly works because the regression left \\(w=4\\) stored — no re-solving, no copying decimals by hand."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Let the stored value do the work",
+        "initial_expressions": [],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which sequence is the regression method for solving an equation?",
+        "choices": [
+          "If the variable is \\(x\\) or \\(y\\), capitalize it; replace = with ~; read the value Desmos found; confirm RMSE is \\(0\\) or tiny; answer with the original variable.",
+          "Move everything to one side; graph the expression; click every x-intercept; report the x-values.",
+          "Replace the variable with \\(x\\); replace = with ~; read the y-intercept as the answer.",
+          "Replace = with ~ on every equation in the problem; read all the values at once."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Think: rename, ~, read, RMSE, translate back.",
+        "explanation": "You have it. Rename \\(x\\) or \\(y\\) to a capital, swap = for ~, read the value, confirm the RMSE is essentially zero, and report using the question's original variable."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You have a new SAT tool</h2><p>You can now solve an equation by swapping = for ~, dodge the reserved letters with capital \\(X\\) and \\(Y\\), aim the search with braces when there is more than one solution, set up a system as one regression plus definitions, and keep computing with the stored result.</p><p>Just remember the trade-off: regression hands you <em>one</em> solution. When a question needs all of them — or a count of them — graph instead.</p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}
