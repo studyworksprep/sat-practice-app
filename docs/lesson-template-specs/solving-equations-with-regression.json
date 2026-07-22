@@ -316,7 +316,7 @@
         "goal": { "type": "multi_expression", "required_count": 2, "roles": ["definition", "regression"] },
         "validation": {
           "mode": "normalized",
-          "expected": ["u=13-v", "u^2+v^2\\sim85"],
+          "expected": ["u=13-v", "u^{2}+v^{2}\\sim85"],
           "state_rules": { "min_expressions": 2, "max_expressions": 2, "require_visible_only": true }
         },
         "feedback": {
