@@ -215,7 +215,7 @@ passive explanation alone:
 
 ### 2g. Quality target for a complete lesson
 
-A substantial tool lesson will often contain 15–35 short blocks, including:
+A substantial tool lesson will often contain 15–40 short blocks, including:
 
 - at least one learner-controlled exploration;
 - checks after each major idea and important variation;
@@ -653,12 +653,24 @@ Rules for manual branching:
 
 ## 7. Reference implementation and compact example
 
-The canonical full-quality reference is
-`docs/lesson-template-specs/solving-equations-by-graphing-x-intercepts.json`.
-It demonstrates exploration before explanation, checks after instruction,
-common variations, preset and scratch calculator states, exact-choice
-comparison, an interface-control image, a gated transfer task, and final
-retrieval.
+Use these full-quality references when planning a substantial lesson:
+
+- `docs/lesson-template-specs/solving-equations-by-graphing-x-intercepts.json`
+  demonstrates exploration before explanation, checks after instruction,
+  common variations, preset and scratch calculator states, exact-choice
+  comparison, an interface-control image, a gated transfer task, and final
+  retrieval.
+- `docs/lesson-template-specs/solving-equations-with-regression.json`
+  demonstrates slower concept pacing across roughly 40 blocks. It previews
+  new sections before introducing unfamiliar terms, teaches one important
+  concept per block, defines vocabulary before checking it, uses explicit
+  transitions and concrete process outlines to preserve the lesson's logic,
+  bolds instructions and terms that students might skim, distributes correct
+  answers across choice positions, fades from guided calculator work to
+  independent transfer, and ends with a focused cumulative practice set.
+
+Treat these as models for instructional decisions, not rigid templates. Match
+the number and type of blocks to the tool being taught.
 
 The smaller example below is copy-paste-ready and demonstrates the same
 sequence without every possible variation:
