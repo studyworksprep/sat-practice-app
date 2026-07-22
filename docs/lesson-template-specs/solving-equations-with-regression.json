@@ -281,8 +281,13 @@
     },
     {
       "kind": "text",
+      "id": "systems_section_overview",
+      "html": "<h2>Next: solve with more than one variable</h2><p>So far, every regression has solved for <strong>one variable in one equation</strong>. SAT questions can also give you several equations that must work together.</p><p>Regression can help with those questions too, but the calculator setup has extra rules. In the next part, you will learn this sequence:</p><ol><li><strong>Understand what a system is.</strong></li><li><strong>Rewrite an equation as a definition.</strong></li><li><strong>Choose one equation for regression.</strong></li><li><strong>Check that each variable is defined only once.</strong></li></ol><blockquote><p><strong>For now, do not enter anything.</strong> Start by learning what the new term <em>system</em> means.</p></blockquote>"
+    },
+    {
+      "kind": "text",
       "id": "what_is_a_system",
-      "html": "<h2>What is a system?</h2><p>A <strong>system of equations</strong> is a group of two or more equations that use the same variables and must all be true at the same time.</p><p>A <strong>solution to a system</strong> gives one value for each variable. Those values must make <strong>every equation</strong> in the system true.</p><p>Example: \\((p,q)=(6,4)\\) solves the system \\(p+q=10\\) and \\(p-q=2\\), because \\(6+4=10\\) and \\(6-4=2\\).</p>"
+      "html": "<h2>Step 1: What is a system?</h2><p>You are beginning the first step from the overview: <strong>understand the kind of problem you are solving</strong>.</p><p>A <strong>system of equations</strong> is a group of two or more equations that use the same variables and must all be true at the same time.</p><p>A <strong>solution to a system</strong> gives one value for each variable. Those values must make <strong>every equation</strong> in the system true.</p><p>Example: \\((p,q)=(6,4)\\) solves \\(p+q=10\\) and \\(p-q=2\\), because \\(6+4=10\\) and \\(6-4=2\\).</p>"
     },
     {
       "kind": "raw_block",
@@ -299,13 +304,13 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Substitute each pair into both equations. A system solution must make both equations true.",
-        "explanation": "Correct. \\(6+3=9\\) and \\(6-3=3\\), so \\((6,3)\\) satisfies the entire system."
+        "explanation": "Correct. \\(6+3=9\\) and \\(6-3=3\\), so \\((6,3)\\) satisfies the entire system. <strong>Next, you will learn the special form Desmos needs for the supporting equation.</strong>"
       }
     },
     {
       "kind": "text",
       "id": "definition_vs_equation",
-      "html": "<h2>Definition versus equation</h2><p>An <strong>equation</strong> says that two expressions have the same value, such as \\(a+b=15\\). Neither variable is isolated.</p><p>A <strong>definition</strong> gives one variable directly in terms of other values, such as \\(a=15-b\\). The variable being defined is <strong>alone on the left side</strong>.</p><p>These two statements contain the same relationship, but Desmos needs the second form as a supporting line for a regression system.</p>"
+      "html": "<h2>Step 2: Turn an equation into a definition</h2><p>You now know that a system contains equations that must work together. To enter that system with regression, Desmos needs the supporting equation in a special form called a <strong>definition</strong>.</p><p>An <strong>equation</strong> states that two expressions have the same value, such as \\(a+b=15\\). Neither variable is isolated.</p><p>A <strong>definition</strong> gives one variable directly in terms of other values, such as \\(a=15-b\\). The variable being defined is <strong>alone on the left side</strong>.</p><p><strong>Your action:</strong> rearrange the easier equation until one variable is alone. The next check asks you to recognize that form.</p>"
     },
     {
       "kind": "raw_block",
@@ -322,20 +327,25 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "A definition of b must have b alone on the left side.",
-        "explanation": "Right. \\(b=15-a\\) directly defines \\(b\\) using \\(a\\)."
+        "explanation": "Right. \\(b=15-a\\) directly defines \\(b\\) using \\(a\\). <strong>You are now ready to connect a definition to one regression line.</strong>"
       }
     },
     {
       "kind": "text",
       "id": "one_regression_rule",
-      "html": "<h2>Use exactly one regression line</h2><p>When you enter a system with regression, <strong>exactly one line uses ~</strong>. Every other line must be a definition.</p><p>For \\(a+b=15\\) and \\(a^2+b^2=117\\), one valid setup is:</p><ul><li><strong>a=15-b</strong> - the definition</li><li><strong>a^2+b^2~117</strong> - the one regression</li></ul><p><strong>Do not enter two regression lines.</strong> Desmos needs the definitions to connect the variables to the single regression.</p>"
+      "html": "<h2>Step 3: Use one regression line</h2><p>A system setup combines the definition you just learned with regression.</p><p><strong>Exactly one line uses ~.</strong> Every other line must be a definition.</p><p>For \\(a+b=15\\) and \\(a^2+b^2=117\\), one valid setup is:</p><ul><li><strong>a=15-b</strong> - the definition</li><li><strong>a^2+b^2~117</strong> - the one regression</li></ul><p><strong>Do not enter two regression lines.</strong> The definition connects the variables to the single regression.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "system_regression_outline",
+      "html": "<h2>The complete system-regression plan</h2><p>Before you practice, pause and see how the pieces fit together.</p><ol><li><strong>Identify the system.</strong> The equations share variables and must be true together.</li><li><strong>Rewrite an easier equation as a definition.</strong> Put one variable alone on the left.</li><li><strong>Use the hardest equation as the one regression.</strong> Replace its equals sign with <strong>~</strong>.</li><li><strong>Inspect the setup.</strong> Make sure each variable is defined only once, then read and check the values Desmos finds.</li></ol><blockquote><p><strong>Keep this four-step plan in view.</strong> The next few blocks let you practice one decision at a time before you build a complete system.</p></blockquote>"
     },
     {
       "kind": "raw_block",
       "id": "system_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which pair follows the rule of one definition plus one regression for \\(p+q=14\\) and \\(p^2+q^2=106\\)?",
+        "prompt": "Use the system-regression plan. Which pair correctly starts the setup for \\(p+q=14\\) and \\(p^2+q^2=106\\)?",
         "choices": [
           "\\(p+q=14\\) and \\(p^2+q^2\\sim106\\)",
           "\\(p+q\\sim14\\) and \\(p^2+q^2\\sim106\\)",
@@ -345,13 +355,13 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Look for exactly one line with a variable alone on the left and exactly one line using ~.",
-        "explanation": "Exactly. \\(p=14-q\\) is the definition, and \\(p^2+q^2\\sim106\\) is the single regression."
+        "explanation": "Exactly. \\(p=14-q\\) is a definition, and \\(p^2+q^2\\sim106\\) is the single regression. <strong>Next, you will practice deciding which equation should get each job.</strong>"
       }
     },
     {
       "kind": "text",
       "id": "choose_regression_line",
-      "html": "<h2>Choose which equation becomes the regression</h2><p>First ask: <strong>Which equation would be harder to rearrange so one variable is alone?</strong></p><p>Use that harder equation as the regression. Rewrite the easier equation as a definition.</p><p>For \\(c+d=20\\) and \\(c^3+cd^2=350\\), the linear equation is easy to rewrite as \\(c=20-d\\). The nonlinear equation is harder to rearrange, so enter it as <strong>c^3+cd^2~350</strong>.</p>"
+      "html": "<h2>Choose which equation gets each job</h2><p>The outline told you to make an easier equation the definition and the hardest equation the regression. Now focus only on that choice.</p><p>Ask: <strong>Which equation would be harder to rearrange so one variable is alone?</strong></p><p>Use that harder equation as the regression. Rewrite the easier equation as a definition.</p><p>For \\(c+d=20\\) and \\(c^3+cd^2=350\\), the linear equation is easy to rewrite as \\(c=20-d\\). The nonlinear equation is harder to rearrange, so enter it as <strong>c^3+cd^2~350</strong>.</p><p><strong>On the next block, practice making only this job choice.</strong></p>"
     },
     {
       "kind": "raw_block",
@@ -368,13 +378,13 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Rearrange the easy linear equation and reserve the one regression for the harder relationship.",
-        "explanation": "Correct. The linear equation gives a clean definition, leaving the harder nonlinear equation as the single regression."
+        "explanation": "Correct. The linear equation gives a clean definition, leaving the harder nonlinear equation as the single regression. <strong>One final setup rule remains: a variable cannot receive two definitions.</strong>"
       }
     },
     {
       "kind": "text",
       "id": "define_once_rule",
-      "html": "<h2>Define each variable only once</h2><p>A variable can have only <strong>one definition</strong> in the calculator setup.</p><p>For example, do not enter both \\(c=20-d\\) and \\(c=\\sqrt[3]{350-cd^2}\\). Both lines try to define \\(c\\), so Desmos cannot use them together as intended.</p><p><strong>If a variable would be defined twice:</strong> keep the easier definition and change the other relationship into the one regression line.</p>"
+      "html": "<h2>Step 4: Check for duplicate definitions</h2><p>You have chosen the definition and regression jobs. Before running the regression, perform one final setup check.</p><p>A variable can have only <strong>one definition</strong> in the calculator.</p><p>Do not enter both \\(c=20-d\\) and \\(c=\\sqrt[3]{350-cd^2}\\). Both lines try to define \\(c\\).</p><p><strong>If a variable is defined twice:</strong> keep the easier definition and change the other relationship into the one regression line.</p>"
     },
     {
       "kind": "raw_block",
@@ -391,13 +401,13 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Look for one definition of m and one regression. Do not define m on two lines.",
-        "explanation": "Correct. \\(m=11-n\\) defines \\(m\\) once, and \\(m^2+n^2\\sim61\\) is the one regression."
+        "explanation": "Correct. \\(m=11-n\\) defines \\(m\\) once, and \\(m^2+n^2\\sim61\\) is the one regression. <strong>You have now practiced every setup decision separately.</strong>"
       }
     },
     {
       "kind": "text",
       "id": "model_complete_system",
-      "html": "<h2>Model the complete system setup</h2><p>For \\(m+n=11\\) and \\(m^2+n^2=61\\):</p><ol><li><strong>Rewrite the easy equation:</strong> \\(m=11-n\\).</li><li><strong>Use the harder equation as the regression:</strong> \\(m^2+n^2\\sim61\\).</li><li><strong>Read one ordered pair:</strong> Desmos may report \\((m,n)=(5,6)\\) or \\((6,5)\\).</li><li><strong>Check both original equations</strong> with the reported pair.</li></ol>",
+      "html": "<h2>See the four steps together</h2><p>Now combine the pieces you practiced separately for \\(m+n=11\\) and \\(m^2+n^2=61\\):</p><ol><li><strong>Identify the system:</strong> both equations use \\(m\\) and \\(n\\).</li><li><strong>Write the definition:</strong> \\(m=11-n\\).</li><li><strong>Write the regression:</strong> \\(m^2+n^2\\sim61\\).</li><li><strong>Inspect and check:</strong> \\(m\\) is defined once. Desmos may report \\((m,n)=(5,6)\\) or \\((6,5)\\); substitute the pair into both original equations.</li></ol><blockquote><p><strong>Next, you will decide when this method is useful and when another method is safer.</strong></p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -420,7 +430,7 @@
     {
       "kind": "text",
       "id": "when_to_choose_regression",
-      "html": "<h2>Choose the method that matches the question</h2><p><strong>Regression is a strong choice when:</strong></p><ul><li>you need one solution and any valid solution will do;</li><li>you know a range where a desired solution lives;</li><li>you want Desmos to keep the solution assigned to a variable for later steps.</li></ul><p><strong>Use graphing or another method when:</strong></p><ul><li>you need every solution, such as when a question asks for their sum;</li><li>you must distinguish among no solution, one solution, and two solutions;</li><li>missing a second solution would change the answer.</li></ul><p>Regression finding one match does not prove that no other matches exist.</p>"
+      "html": "<h2>Choose the method that matches the question</h2><p>You can now build a regression system. The next decision is whether regression gives enough information for the question being asked.</p><p><strong>Regression is a strong choice when:</strong></p><ul><li>you need one solution and any valid solution will do;</li><li>you know a range where a desired solution lives;</li><li>you want Desmos to keep the solution assigned to a variable for later steps.</li></ul><p><strong>Use graphing or another method when:</strong></p><ul><li>you need every solution, such as when a question asks for their sum;</li><li>you must distinguish among no solution, one solution, and two solutions;</li><li>missing a second solution would change the answer.</li></ul><p>Regression finding one match does not prove that no other matches exist.</p>"
     },
     {
       "kind": "raw_block",
@@ -443,7 +453,7 @@
     {
       "kind": "text",
       "id": "transfer_prompt",
-      "html": "<h2>Put the system process together</h2><p><strong>Do not solve this in the scratch calculator yet.</strong> Your task will begin in the required calculator on the next screen.</p><p>The system is \\(u+v=13\\) and \\(u^2+v^2=85\\).</p><blockquote><p><strong>On the next screen:</strong> enter exactly two lines. Rewrite the easier equation as one definition, then use the harder equation as the one regression. Make sure no variable is defined twice.</p></blockquote>"
+      "html": "<h2>Your turn: use the full plan</h2><p>You have learned and practiced each part of the system setup. Now you will combine all four steps on a new system.</p><p><strong>Do not solve this in the scratch calculator yet.</strong> Your task begins in the required calculator on the next screen.</p><p>The system is \\(u+v=13\\) and \\(u^2+v^2=85\\).</p><blockquote><p><strong>On the next screen:</strong> enter exactly two lines. Rewrite the easier equation as one definition, use the harder equation as the one regression, and check that no variable is defined twice.</p></blockquote>"
     },
     {
       "kind": "raw_block",
