@@ -1,6 +1,6 @@
 # Lesson JSON Authoring Guide (Import From JSON)
 
-> **Status: Living document.** Last verified: 2026-07-19 (shared lesson calculator and preset graphs). Verify against `lib/lesson/lesson-validation` when in doubt.
+> **Status: Living document.** Last verified: 2026-07-22 (instructional quality standard, shared lesson calculator, and preset graphs). Verify against `lib/lesson/lesson-validation` when in doubt.
 
 This document tells you exactly how to produce a JSON "LessonTemplateSpec"
 that the Studyworks admin **Lessons → Import from JSON** page accepts and
@@ -36,16 +36,199 @@ Produce **one JSON object** and nothing else:
 - `blocks` is required and must be a non-empty array.
 - Blocks render to the learner **top-to-bottom, one slide at a time**, in
   array order. A straight sequence is the default; questions can branch to
-  per-answer paths and merge back (see §4).
+  per-answer paths and merge back (see §5).
 
 Each entry in `blocks` is an object with a `kind` field that selects how it
 compiles. The kinds below are the only ones allowed.
 
 ---
 
-## 2. Block kinds — use these
+## 2. Instructional quality standard
 
-### 2a. `text` — explanation, worked examples, headings, images
+A lesson should teach **one specific, reusable tool beneath an official SAT
+skill**. It is not a chapter summary and should not try to introduce every
+mathematically related idea. Define the tool narrowly enough that a learner
+can recognize when to use it, carry it out, handle common variations, and
+retrieve the process later without being prompted.
+
+### 2a. Start with a tool-level objective
+
+Before writing blocks, complete this sentence:
+
+> By the end of this lesson, the learner can **[use a specific tool]** to
+> **[solve or answer a specific class of SAT questions]**, including
+> **[the most important variations]**.
+
+Keep every block in service of that objective. Do not introduce adjacent
+concepts merely because they are mathematically connected. For example, a
+lesson about solving equations with x-intercepts does not need function
+notation or a general treatment of functions.
+
+Plan the lesson around:
+
+- the exact student action or decision being taught;
+- the prerequisite ideas the student must already know;
+- two to four realistic variations or failure points;
+- the evidence that will show the learner can use the tool independently.
+
+### 2b. Use this learning sequence
+
+For a full strategy lesson, use this sequence as the default. Combine steps
+only when the content is genuinely simple.
+
+1. **Invite a short exploration.** Give the learner something concrete to
+   inspect, click, compare, or try before explaining everything.
+2. **Check the observation.** Ask a question that can be answered directly
+   from that exploration.
+3. **Name and explain the idea.** Give the minimum definition or principle
+   needed to make sense of what the learner just saw.
+4. **Check the meaning.** Confirm the learner can connect the definition to
+   a new but closely related example.
+5. **State a short repeatable process.** Prefer three to five named steps.
+6. **Model or guide one complete use of the process.** Keep the calculator,
+   diagram, or other relevant evidence visible.
+7. **Vary one feature at a time.** Examples include a different variable,
+   exact versus decimal answers, one/two/no solutions, restrictions, or a
+   requested intermediate quantity.
+8. **Check each important variation after it has been taught or explored.**
+9. **Require transfer.** Give a fresh problem without telling the learner
+   every step or which answer is correct.
+10. **End with retrieval.** Ask the learner to recall the process, decision
+    rule, or sequence without looking back, then close with a concise summary.
+
+This order matters. A knowledge check must never depend on information that
+appears only after the check. A learner should be able to answer from a
+guided exploration, a definition already provided, or a process already
+modeled.
+
+### 2c. Write for learning, not for a textbook
+
+- Use direct, conversational language: “Click both intercepts” is better
+  than “Identify all points at which the relation intersects the abscissa.”
+- Address the learner as “you” and use short paragraphs and sentences.
+- Introduce one new idea per slide. Break long explanations into a sequence
+  of explanation, action, and check blocks.
+- Prefer plain English before formal notation. Use technical vocabulary only
+  when the learner needs the term, and define it immediately.
+- Avoid unnecessary precision or scope. Do not introduce function notation,
+  formal proof language, or a new representation unless it helps perform the
+  tool being taught.
+- Explain why a step works, but keep that explanation close to the action it
+  justifies.
+- Use images to explain unfamiliar interface controls or visual structures.
+  The image must have useful alt text; the surrounding prose must still make
+  the action understandable if the image does not load.
+
+### 2d. Design SAT-authentic knowledge checks
+
+Use checks to strengthen retrieval and diagnose a specific misconception,
+not merely to add activity. For central ideas, prefer `allow_retry: true`, a
+targeted `hint`, and a short confirming `explanation`.
+
+Every check should satisfy all of these rules:
+
+- The correct answer is supported by material the learner has already seen
+  or by an exploration the learner has just completed.
+- The question tests one identifiable idea or decision.
+- Incorrect choices represent plausible student errors: reversing
+  coordinates, losing a sign, using the wrong variable, stopping after one
+  solution, confusing exact and approximate values, or performing the wrong
+  transformation.
+- Choices are parallel in format and similar in specificity. Avoid joke
+  answers, obvious length clues, overlapping answers, and “all/none of the
+  above” unless absolutely necessary.
+- Use four choices when imitating a normal SAT multiple-choice item, unless
+  the learning purpose clearly calls for fewer.
+
+**Do not use proofs, written justifications, or other constructed-response
+work as prompts or distractors.** The SAT does not ask students to submit a
+proof or written solution, so options such as “the question asks for a
+written algebraic proof” are not authentic sources of difficulty.
+
+The SAT can still make a calculator-friendly problem more demanding by
+asking for a value that appears during a specified solution path rather than
+asking for the final solution. Appropriate checks may ask the learner to:
+
+- select the expression that results after getting zero on one side;
+- identify a coefficient, constant, or parameter after rewriting an
+  equation in the form requested by the problem;
+- report the value of an intermediate quantity, such as the value inside a
+  completed square, instead of the final value of the variable;
+- choose which answer choice matches calculator decimals in exact form;
+- determine how many distinct real solutions exist;
+- translate a temporary calculator variable back to the variable used in
+  the question;
+- respect a domain, sign, or contextual restriction after finding possible
+  solutions.
+
+The difficulty should come from selecting and executing the right step, not
+from pretending the SAT assesses a response format it does not use.
+
+### 2e. Use feedback to produce another attempt
+
+A retry hint should help the learner inspect the relevant evidence or redo
+one step without giving away the answer. The success explanation should
+connect the answer to the underlying idea.
+
+```json
+{
+  "prompt": "After moving every term to the left, which expression should you graph?",
+  "choices": ["\\(x^2-4x+1\\)", "\\(x^2+4x+1\\)", "\\(x^2+1\\)", "\\(4x\\)"],
+  "correct_index": 0,
+  "allow_retry": true,
+  "hint": "Subtract \\(4x\\) from both sides and look at the left side.",
+  "explanation": "Yes. The equation becomes \\(x^2-4x+1=0\\), so graph \\(x^2-4x+1\\)."
+}
+```
+
+Avoid hints such as “Try again” or “Remember the rule” when a more targeted
+nudge is possible. Avoid success messages that only say “Correct.”
+
+### 2f. Use evidence-aligned learning mechanics intentionally
+
+The block sequence should reflect these principles rather than relying on
+passive explanation alone:
+
+- **Manage cognitive load:** segment the process, remove notation and
+  vocabulary outside the objective, and keep one main action per block.
+- **Prompt generation before telling:** let the learner inspect a graph or
+  attempt a bounded prediction before naming the rule, but provide enough
+  guidance that the exploration is not guesswork.
+- **Use worked-example fading:** model the entire process once, guide the
+  next use, then require the learner to perform the transfer task with fewer
+  prompts.
+- **Practice retrieval:** use checks that require the learner to recall or
+  apply the idea, including a delayed final check after intervening material.
+- **Give immediate, actionable feedback:** identify the step to reconsider;
+  do not simply mark an answer wrong or reveal the answer immediately.
+- **Use contrast and variation:** change one important feature at a time so
+  learners see what stays constant and what changes.
+- **Pair words with useful visuals:** show the graph, control, or diagram
+  being discussed. A decorative image does not count as instruction.
+- **Gate true prerequisites:** use retry-until-correct or required Desmos
+  validation when later blocks depend on the learner understanding the
+  current step. Do not gate trivia or low-value details.
+
+### 2g. Quality target for a complete lesson
+
+A substantial tool lesson will often contain 15–25 short blocks, including:
+
+- at least one learner-controlled exploration;
+- checks after each major idea and important variation;
+- one fully independent or gated Desmos task when graphing is part of the
+  tool;
+- a transfer problem that combines multiple steps;
+- a final retrieval check and, optionally, a `lesson_complete` block.
+
+This is a quality target, not a block quota. A shorter lesson is better than
+padding; a longer lesson is appropriate only when each block performs a
+distinct instructional job.
+
+---
+
+## 3. Block kinds — use these
+
+### 3a. `text` — explanation, worked examples, headings, images
 
 ```json
 { "kind": "text", "html": "<p>Your content. Math like \\(x^2+1\\) renders.</p>" }
@@ -53,10 +236,12 @@ compiles. The kinds below are the only ones allowed.
 
 - `html` (**required**): an HTML string. Allowed tags: `p, h1–h6, ul, ol,
   li, strong, em, blockquote, a, img, br`. Keep it simple.
-- Images: `<img src="https://...">` with an absolute URL.
+- Images: use an app-local path such as `<img src="/images/example.svg">`
+  for assets committed under `public/images`, or an absolute HTTPS URL.
+  Always include descriptive `alt` text and usually a `width`.
 - Optional: `explanation_html`.
 
-### 2b. `raw_block` — full control over any block type
+### 3b. `raw_block` — full control over any block type
 
 `raw_block` writes a block verbatim. Use it for knowledge-check questions,
 video, and advanced Desmos. Shape:
@@ -87,7 +272,7 @@ video, and advanced Desmos. Shape:
 - The learner picks an answer, sees the explanation inline, then clicks
   **Continue**. For a simple linear question, that's all you need. To send
   correct and incorrect answers down different paths, add branch fields —
-  see **§4 Branching**.
+  see **§5 Branching**.
 
 **Retry-until-correct checks** — add `allow_retry` to keep the learner on
 the question until they get it right, instead of revealing the answer on
@@ -145,7 +330,7 @@ the first try:
   block type unless you have been given actual question UUIDs** — you
   cannot invent them.
 
-**Desmos interactive (advanced)** — see §3 for the easy path. Full schema:
+**Desmos interactive (advanced)** — see §3c for the easy path. Full schema:
 ```json
 {
   "kind": "raw_block",
@@ -212,7 +397,7 @@ Required: `instructions_html`, `initial_expressions` (array, may be `[]`),
 - `validation.comparison` — only the value `"equivalent"` is accepted;
   used with `mode: "compare_expressions"`.
 
-### 2c. Desmos convenience kinds (easier than raw_block)
+### 3c. Desmos convenience kinds (easier than raw_block)
 
 **`desmos_enter_expression`** — ask the learner to type one expression:
 ```json
@@ -241,7 +426,7 @@ multi-step Desmos sequence. Use only if you specifically want that flow:
 ```
 (Use uppercase parameter letters like `A`, `B` so Desmos makes sliders.)
 
-### 2d. `branching_question` — send correct/incorrect answers different ways
+### 3d. `branching_question` — send correct/incorrect answers different ways
 
 The easiest way to branch. You give a question and per-answer feedback; the
 importer builds the question plus a correct-feedback block, an
@@ -266,7 +451,7 @@ Continue again, and lands on the rejoin block — then the lesson continues.
 
 ---
 
-### 2e. Calculator presentation on ordinary blocks
+### 3e. Calculator presentation on ordinary blocks
 
 Desmos is available as a persistent scratch calculator on ordinary lesson
 blocks by default. Add a top-level `calculator` object to a block spec to
@@ -312,9 +497,80 @@ the learner's ordinary scratch calculator. To give an interactive block a
 complete starting graph, add `initial_state` directly to its content (or use
 the visual editor's **Capture starting graph** button).
 
+#### Choose the calculator mode by the learner's job
+
+| Learner's job | Use | Starting behavior |
+| --- | --- | --- |
+| Read, click, compare, zoom, or toggle an authored graph | `mode: "preset"` | Block-specific graph; keypad begins minimized |
+| Freely calculate or test answer choices | `mode: "scratch"` | Persistent lesson scratchpad; keypad opens for input |
+| Produce a required expression or graph that the lesson validates | `desmos_enter_expression` or `desmos_interactive` | Isolated controlled state; keypad opens and success can gate progress |
+
+Use preset graphs to remove setup work only when setup is not the learning
+goal. Use an interactive block when entering the expression is itself part
+of the skill. Keep the instructions next to the graph precise: tell the
+learner exactly what to click or type and what to notice.
+
+#### Preset graph rules
+
+- Preload evidence, not the learner's answer. A reference curve or comparison
+  graph is appropriate; pre-entering every exact answer choice is not.
+- When learners must compare decimal graph results with exact choices, open
+  a scratch calculator and tell them which candidate values to type. They
+  should generate the decimal evidence themselves.
+- If several graphs should be inspected one at a time, start them with
+  `"hidden": true`. First teach the learner that the colored circle at the
+  left of an expression row toggles that graph. Do not write “turn on each
+  graph” before explaining how.
+- Use `editable: false` only for a reference display where changing or adding
+  expressions would distract from the task. Keep it `true` when exploration
+  is useful.
+- Do not lock the viewport unless the instructional task depends on a fixed
+  window. Learners often need to zoom or pan to verify whether an intercept
+  exists outside the initial view.
+- Give every preset a short action-oriented `title`, such as “Click both
+  x-intercepts” or “Toggle and compare.”
+
+Example with graphs initially off:
+
+```json
+"calculator": {
+  "display": "open",
+  "mode": "preset",
+  "title": "Turn on one graph at a time",
+  "initial_expressions": [
+    { "id": "two", "latex": "x^2-5x+6", "hidden": true },
+    { "id": "one", "latex": "(x-3)^2", "hidden": true },
+    { "id": "none", "latex": "x^2+4", "hidden": true }
+  ],
+  "editable": true,
+  "resettable": true,
+  "lock_viewport": false
+}
+```
+
+#### Teach calculator conventions explicitly
+
+Do not assume a struggling learner knows Desmos interface conventions.
+Explain a control immediately before the first task that requires it. When
+helpful, add an annotated app-local image and a one-action practice block.
+
+For equation-solving lessons, make these points explicit when relevant:
+
+- Desmos can graph a bare expression such as `x^2-5x+6`; do not require
+  `y=` when it adds no value.
+- If the problem uses another variable, explain that the learner may replace
+  it temporarily with `x` for graphing and must translate the final answer
+  back to the original variable.
+- A graph may provide decimals while the choices use radicals or fractions.
+  Have the learner type the exact candidates into the scratch calculator and
+  compare their decimal values.
+- A crossing and a touch both create x-intercepts; no contact with the axis
+  means no real solution in the displayed relationship. Encourage one zoom
+  or pan check before concluding that no intercept exists.
+
 ---
 
-## 3. Math formatting
+## 4. Math formatting
 
 Write math with LaTeX delimiters inside any text/HTML/prompt/choice field:
 - Inline: `\( ... \)` — e.g. `The value \(x^2 + 1\) is positive.`
@@ -331,12 +587,12 @@ a bare expression, so `y=` is optional unless the equation itself needs it.
 
 ---
 
-## 4. Branching (optional: correct/incorrect paths)
+## 5. Branching (optional: correct/incorrect paths)
 
 Branching lets a question route correct and incorrect answers to different
 blocks, then merge them back. Two ways:
 
-- **Easiest:** use the `branching_question` kind (§2d). Prefer this.
+- **Easiest:** use the `branching_question` kind (§3d). Prefer this.
 - **Manual (raw_block):** put branch fields on a `check` block's `content`
   and give every target block a stable `content.id` that the branch fields
   reference **by content.id**:
@@ -369,7 +625,7 @@ Rules for manual branching:
 
 ---
 
-## 5. Hard rules and gotchas
+## 6. Hard rules and gotchas
 
 - **ids are optional.** The importer generates unique ids automatically. If
   you set an `id` on a block, keep it unique within the spec.
@@ -390,39 +646,148 @@ Rules for manual branching:
 
 ---
 
-## 6. Complete example (copy-paste-ready)
+## 7. Reference implementation and compact example
+
+The canonical full-quality reference is
+`docs/lesson-template-specs/solving-equations-by-graphing-x-intercepts.json`.
+It demonstrates exploration before explanation, checks after instruction,
+common variations, preset and scratch calculator states, exact-choice
+comparison, an interface-control image, a gated transfer task, and final
+retrieval.
+
+The smaller example below is copy-paste-ready and demonstrates the same
+sequence without every possible variation:
 
 ```json
 {
-  "title": "Slope-Intercept Form",
-  "description": "Read y = mx + b, check understanding, then graph a line in Desmos.",
+  "title": "Solve Linear Equations by Graphing",
+  "description": "Use an x-intercept to solve a one-variable linear equation and report the answer with the original variable.",
   "blocks": [
     {
       "kind": "text",
-      "html": "<h2>Slope-Intercept Form</h2><p>A line can be written as \\(y = mx + b\\), where \\(m\\) is the <strong>slope</strong> and \\(b\\) is the <strong>y-intercept</strong>.</p><p>For example, \\(y = 2x + 1\\) has slope \\(2\\) and crosses the y-axis at \\((0, 1)\\).</p>"
+      "id": "explore",
+      "html": "<h2>Start with the graph</h2><p>The graph of \\(3x-12\\) is open. Click the point where it meets the x-axis. What x-value do you see?</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click the x-intercept",
+        "initial_expressions": [
+          { "id": "starter", "latex": "3x-12" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
     },
     {
       "kind": "raw_block",
+      "id": "observe_check",
       "block_type": "check",
       "content": {
-        "prompt": "In \\(y = -4x + 7\\), what is the slope?",
-        "choices": ["\\(7\\)", "\\(-4\\)", "\\(4\\)", "\\(-7\\)"],
-        "correct_index": 1,
-        "explanation": "The slope is the coefficient of \\(x\\), which is \\(-4\\)."
+        "prompt": "The graph meets the x-axis at \\((4,0)\\). Which value makes \\(3x-12\\) equal \\(0\\)?",
+        "choices": ["\\(x=4\\)", "\\(x=0\\)", "\\(x=-4\\)", "\\(x=12\\)"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use the horizontal coordinate of the intercept.",
+        "explanation": "Right. At \\(x=4\\), the graph has height \\(0\\), so \\(3x-12=0\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "explain_process",
+      "html": "<h2>The graphing move</h2><p>An x-intercept is where a graph meets the x-axis, so its vertical coordinate is \\(0\\).</p><ol><li>Get zero on one side of the equation.</li><li>Graph the expression on the other side. A bare expression works; <strong>y=</strong> is optional.</li><li>Click the x-intercept and report its x-value.</li></ol>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "rewrite_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "To solve \\(2x+5=17\\) with an x-intercept, which expression should you graph?",
+        "choices": ["\\(2x-12\\)", "\\(2x+22\\)", "\\(2x+5\\)", "\\(17\\)"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Subtract \\(17\\) from both sides so one side is zero.",
+        "explanation": "Yes. Rewriting gives \\(2x-12=0\\), so graph \\(2x-12\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "different_variable",
+      "html": "<h2>Keep the original variable</h2><p>For \\(4t-20=0\\), temporarily graph \\(4x-20\\). Desmos uses x horizontally, but your final answer must still use \\(t\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Let x stand in for t",
+        "initial_expressions": [
+          { "id": "variable_swap", "latex": "4x-20" }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "variable_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The graph of \\(4x-20\\) crosses at \\(x=5\\). What should you report for \\(4t-20=0\\)?",
+        "choices": ["\\(t=5\\)", "\\(x=5\\)", "\\(t=-5\\)", "\\(t=20\\)"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The x in Desmos was only standing in for the original variable.",
+        "explanation": "Exactly. Translate the calculator result back to the original variable: \\(t=5\\)."
       }
     },
     {
       "kind": "desmos_enter_expression",
-      "title": "Graph the line",
-      "instructions_html": "<p>Type the line with slope \\(2\\) and y-intercept \\(1\\): <strong>y=2x+1</strong>.</p>",
-      "expression": "y=2x+1",
-      "expected_expression": "y=2x+1",
+      "id": "transfer",
+      "title": "Build the graph yourself",
+      "instructions_html": "<p>Solve \\(5p+7=2\\). Get zero on one side, replace \\(p\\) with \\(x\\), and enter the expression you should graph.</p>",
+      "expression": "5x+5",
+      "expected_expression": "5x+5",
       "test_values": [-2, 0, 2],
       "require_success": true
     },
     {
-      "kind": "text",
-      "html": "<p>Great work! You read slope-intercept form and graphed a line.</p>"
+      "kind": "raw_block",
+      "id": "transfer_solution_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Your graph crosses the x-axis at \\(x=-1\\). What is the solution to \\(5p+7=2\\)?",
+        "choices": ["\\(p=-1\\)", "\\(x=-1\\)", "\\(p=1\\)", "\\(p=-5\\)"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Translate the calculator's x-value back to the variable in the original equation.",
+        "explanation": "Correct. The temporary graphing variable was x, but the original solution is \\(p=-1\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which sequence correctly solves an equation with an x-intercept?",
+        "choices": [
+          "Get zero on one side; graph the other side; find every x-intercept; report the values using the original variable.",
+          "Graph only the original left side; use its y-intercept as the solution.",
+          "Replace every number with x; use the graph's highest point.",
+          "Graph both sides separately; report every point on either graph."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Think: zero, graph, intercept, original variable.",
+        "explanation": "You have it. That sequence turns each x-intercept into a solution of the original equation."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You have a new SAT tool</h2><p>You can rewrite a linear equation, use a graph to find its solution, and translate the answer back to the original variable.</p>",
+        "button_label": "Complete Lesson"
+      }
     }
   ]
 }
@@ -430,10 +795,34 @@ Rules for manual branching:
 
 ---
 
-## 7. How to confirm it works
+## 8. How to confirm it works
 
 1. Admin → **Lessons → Import from JSON**. Paste the JSON. The page
    compiles and validates live and reports any errors before you import.
 2. Import, open the lesson, and use **Preview as student** to step through
-   every block. Math should typeset, checks should show their explanation
-   and require Continue, and Desmos blocks should accept the answer.
+   every block—do not review only the editor cards.
+3. Confirm the instructional sequence:
+   - every check is answerable from earlier instruction or the immediately
+     preceding exploration;
+   - every major idea and variation is checked;
+   - the transfer task requires the learner to do meaningful work;
+   - the final retrieval check asks for the core process or decision rule.
+4. Audit every answer choice for SAT authenticity. Remove proof, written-work,
+   or other non-SAT response formats. Make each distractor traceable to a
+   plausible mathematical or procedural error.
+5. Verify all math delimiters render and every image loads with useful alt
+   text. Check that no accidental function notation, terminology, or concept
+   falls outside the lesson's stated objective.
+6. Exercise every calculator block exactly as a learner would:
+   - preset expressions and hidden/visible states are correct;
+   - scratch and interactive blocks open ready for typing;
+   - no answer the learner should generate is already entered;
+   - Reset restores the intended starting graph;
+   - a required interactive block accepts equivalent correct input, rejects
+     a realistic wrong input, and gates Continue until success.
+7. Preview at a normal laptop width and a narrow/mobile width. Confirm the
+   lesson and calculator remain usable, the keypad is reachable, images fit,
+   and important instructions are not hidden below a clipped panel.
+8. Read the entire lesson aloud once. Shorten formal or repetitive sentences,
+   define unfamiliar words, and make every instruction state a visible action
+   and a purpose.
