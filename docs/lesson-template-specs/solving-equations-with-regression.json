@@ -533,6 +533,101 @@
       }
     },
     {
+      "kind": "text",
+      "id": "practice_set_intro",
+      "html": "<h2>Practice the most important decisions</h2><p>You have completed the guided examples. The next five questions ask you to use the lesson's main ideas on new problems.</p><ul><li>solve an equation whose variable is \\(x\\);</li><li>reuse a value regression assigned;</li><li>restrict the search for another solution;</li><li>build a system with one definition and one regression;</li><li>choose another method when you need every solution.</li></ul><blockquote><p><strong>Use the scratch calculator when it helps.</strong> Work through each question before choosing an answer.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_single_equation",
+      "block_type": "check",
+      "content": {
+        "prompt": "Use regression to solve \\(4x+7=31\\). What should you report for the original variable?",
+        "choices": [
+          "\\(x=4\\)",
+          "\\(x=6\\)",
+          "\\(X=6\\)",
+          "\\(x=9.5\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Because the original variable is lowercase x, enter \\(4X+7\\sim31\\). Then translate the assigned value back to x.",
+        "explanation": "Correct. Desmos assigns \\(X=6\\), and \\(4(6)+7=31\\). The original equation uses \\(x\\), so report \\(x=6\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_reuse_assignment",
+      "block_type": "check",
+      "content": {
+        "prompt": "The regression \\(3t-2\\sim10\\) assigns \\(t=4\\). What will Desmos display for \\(t^2+3\\) on a later line?",
+        "choices": [
+          "\\(19\\)",
+          "\\(7\\)",
+          "\\(13\\)",
+          "\\(25\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The regression leaves t assigned. Substitute \\(t=4\\) into the later expression.",
+        "explanation": "Right. Desmos keeps \\(t=4\\), so \\(t^2+3=4^2+3=19\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_restricted_solution",
+      "block_type": "check",
+      "content": {
+        "prompt": "Regression has already found the positive solution of \\(w^2=64\\). Which entry directs it to search for the negative solution?",
+        "choices": [
+          "\\(w^2\\sim64\\;\\{w>0\\}\\)",
+          "\\(w^2=64\\;\\{w<0\\}\\)",
+          "\\(w^2\\sim64\\;\\{w<0\\}\\)",
+          "\\(w^2\\sim-64\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep the original two sides, use ~, and restrict w to values below zero.",
+        "explanation": "Correct. The restriction \\(\\{w<0\\}\\) directs regression toward the negative solution, \\(w=-8\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_system_setup",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which setup correctly enters the system \\(r+s=9\\) and \\(r^2+s^2=41\\)?",
+        "choices": [
+          "\\(r=9-s\\) and \\(r^2+s^2\\sim41\\)",
+          "\\(r+s\\sim9\\) and \\(r^2+s^2\\sim41\\)",
+          "\\(r+s=9\\) and \\(r^2+s^2\\sim41\\)",
+          "\\(r=9-s\\) and \\(r=\\sqrt{41-s^2}\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Rewrite the easy linear equation as one definition. Use the harder equation as the single regression.",
+        "explanation": "Exactly. \\(r=9-s\\) defines \\(r\\) once, while \\(r^2+s^2\\sim41\\) is the one regression."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_method_choice",
+      "block_type": "check",
+      "content": {
+        "prompt": "A question asks for the sum of all real solutions of a quadratic equation. Which approach is safer?",
+        "choices": [
+          "Use one unrestricted regression result and assume it is the only solution.",
+          "Use regression and report whichever solution appears first.",
+          "Use a restriction around one guessed solution only.",
+          "Graph the equation or use another method that reveals every real solution."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The requested sum depends on every solution, but regression normally reports only one match.",
+        "explanation": "Correct. Because the question needs every real solution, graphing or another complete solution method is safer than relying on one regression result."
+      }
+    },
+    {
       "kind": "raw_block",
       "id": "final_retrieval_check",
       "block_type": "check",
