@@ -335,7 +335,7 @@
       "id": "system_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which pair follows the rule <strong>one definition plus one regression</strong> for \\(p+q=14\\) and \\(p^2+q^2=106\\)?",
+        "prompt": "Which pair follows the rule of one definition plus one regression for \\(p+q=14\\) and \\(p^2+q^2=106\\)?",
         "choices": [
           "\\(p+q=14\\) and \\(p^2+q^2\\sim106\\)",
           "\\(p+q\\sim14\\) and \\(p^2+q^2\\sim106\\)",
