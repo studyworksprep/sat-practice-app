@@ -137,6 +137,10 @@ Every check should satisfy all of these rules:
 - Choices are parallel in format and similar in specificity. Avoid joke
   answers, obvious length clues, overlapping answers, and “all/none of the
   above” unless absolutely necessary.
+- Vary the correct answer's position across checks. Do not default to the
+  first choice. Before finalizing a lesson, distribute correct answers across
+  the available positions and avoid an obvious repeating pattern. Whenever
+  choices move, update `correct_index` so it still points to the correct one.
 - Use four choices when imitating a normal SAT multiple-choice item, unless
   the learning purpose clearly calls for fewer.
 
@@ -211,7 +215,7 @@ passive explanation alone:
 
 ### 2g. Quality target for a complete lesson
 
-A substantial tool lesson will often contain 15–25 short blocks, including:
+A substantial tool lesson will often contain 15–35 short blocks, including:
 
 - at least one learner-controlled exploration;
 - checks after each major idea and important variation;
@@ -629,7 +633,8 @@ Rules for manual branching:
 
 - **ids are optional.** The importer generates unique ids automatically. If
   you set an `id` on a block, keep it unique within the spec.
-- **`correct_index` is 0-based.**
+- **`correct_index` is 0-based.** Across a lesson, vary it among the valid
+  choice positions; do not make every correct answer choice A.
 - **`choices` need at least 2 entries.**
 - **Don't invent `question_id`s.** Only use `question_link` with real bank
   UUIDs you were given.
