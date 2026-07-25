@@ -87,14 +87,28 @@
     {
       "kind": "text",
       "id": "x_intercept_definition",
-      "html": "<h2>Meet the x-intercept</h2><p>An <strong>x-intercept</strong> is a point where a graph meets the x-axis.</p><p>The first number in an ordered pair is the <strong>x-coordinate</strong>. At the intercept \\((2,0)\\), the x-coordinate is \\(2\\).</p><p><strong>Your action in Desmos:</strong> click every place where the graph crosses or touches the x-axis, then read the first number in each label.</p>"
+      "html": "<h2>Meet the x-intercept</h2><p>An <strong>x-intercept</strong> is a point where a graph meets the x-axis.</p><p>The preset graph of \\((x+5)(x-2)\\) is open. <strong>Click both places where the graph meets the x-axis.</strong> Desmos labels the left point \\((-5,0)\\).</p><p>The first number in an ordered pair is the <strong>x-coordinate</strong>. At \\((-5,0)\\), the x-coordinate is \\(-5\\).</p><p><strong>Your action in Desmos:</strong> click every place where a graph crosses or touches the x-axis, then read the first number in each label.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click both x-intercepts",
+        "initial_expressions": [
+          {
+            "id": "intercept_definition_curve",
+            "latex": "\\left(x+5\\right)\\left(x-2\\right)"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
     },
     {
       "kind": "raw_block",
       "id": "x_intercept_check",
       "block_type": "check",
       "content": {
-        "prompt": "A graph has an x-intercept at \\((-5,0)\\). Which number is its x-coordinate?",
+        "prompt": "Click the left x-intercept on the preset graph. Its label is \\((-5,0)\\). Which number is its x-coordinate?",
         "choices": [
           "\\(0\\), because the point is on the x-axis",
           "\\(5\\), because distance is positive",
@@ -103,8 +117,22 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "The x-coordinate is the first number in an ordered pair.",
+        "hint": "Click the left meeting point, then read the first number in its ordered-pair label.",
         "explanation": "Exactly. The x-coordinate is \\(-5\\). The second coordinate, \\(0\\), tells you that the point is on the x-axis."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Read the left intercept",
+        "initial_expressions": [
+          {
+            "id": "intercept_check_curve",
+            "latex": "\\left(x+5\\right)\\left(x-2\\right)"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
       }
     },
     {
@@ -499,60 +527,150 @@
     {
       "kind": "text",
       "id": "practice_set_intro",
-      "html": "<h2>Practice the most important decisions</h2><p>You have completed the guided examples. The next four questions ask you to retrieve the main decisions without being walked through every step.</p><ul><li>choose the expression to graph;</li><li>translate a temporary x back to the original variable;</li><li>count solutions from graph behavior;</li><li>choose when x-intercepts are the right tool.</li></ul><blockquote><p><strong>Work each question before choosing an answer.</strong></p></blockquote>"
+      "html": "<h2>Practice the complete process</h2><p>You have completed the guided examples. Now you will solve three new equations <strong>from beginning to end</strong>.</p><p>For each equation, you will:</p><ol><li>get zero on one side;</li><li>enter the expression to graph;</li><li>find every x-intercept;</li><li>report the complete answer in the requested form.</li></ol><p>After those full problems, one conceptual question will help you decide when this tool is useful.</p><blockquote><p><strong>Use the required calculator on each setup screen.</strong> Do the rewrite yourself before entering the graph.</p></blockquote>"
+    },
+    {
+      "kind": "desmos_enter_expression",
+      "id": "practice_one_graph",
+      "title": "Practice 1: build the graph",
+      "instructions_html": "<h3>Solve \\(x^2+6=5x\\)</h3><p><strong>Begin at the first step:</strong> rewrite the equation with zero on one side. Then enter only the expression you should graph.</p><p>After your entry is accepted, <strong>use the graph to find every solution</strong> on the next screen.</p>",
+      "expression": "x^2-5x+6",
+      "expected_expression": "x^2-5x+6",
+      "test_values": [
+        -2,
+        0,
+        1,
+        4,
+        6
+      ],
+      "require_success": true
     },
     {
       "kind": "raw_block",
-      "id": "practice_rewrite",
+      "id": "practice_one_answer",
       "block_type": "check",
       "content": {
-        "prompt": "To solve \\(x^2+6=5x\\) with x-intercepts, which expression should you graph?",
+        "prompt": "Use the graph you built to finish \\(x^2+6=5x\\). What is the complete solution?",
         "choices": [
-          "\\(x^2+5x+6\\)",
-          "\\(x^2-5x+6\\)",
-          "\\(x^2+6\\)",
-          "\\(5x-6\\)"
-        ],
-        "correct_index": 1,
-        "allow_retry": true,
-        "hint": "Subtract \\(5x\\) from both sides so one side becomes zero.",
-        "explanation": "Correct. Rewrite as \\(x^2-5x+6=0\\), then graph \\(x^2-5x+6\\)."
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "practice_variable_translation",
-      "block_type": "check",
-      "content": {
-        "prompt": "To solve \\(q^2-9=0\\), you graph \\(x^2-9\\) and find \\(x=-3\\) and \\(x=3\\). What should you report?",
-        "choices": [
-          "\\(x=-3\\) and \\(x=3\\)",
-          "\\(q=0\\) and \\(q=9\\)",
-          "\\(q=-3\\) and \\(q=3\\)",
-          "Only \\(q=3\\)"
+          "\\(x=-3\\) and \\(x=-2\\)",
+          "\\(x=0\\) and \\(x=5\\)",
+          "\\(x=2\\) and \\(x=3\\)",
+          "\\(x=1\\) and \\(x=6\\)"
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Translate the temporary graphing variable back to the variable in the original equation, and keep every intercept.",
-        "explanation": "Right. The calculator's x was standing in for q, so report \\(q=-3\\) and \\(q=3\\)."
+        "hint": "Click both places where the curve meets the x-axis. Read the first number in each label.",
+        "explanation": "Correct. Rewriting gives \\(x^2-5x+6=0\\), and the graph has x-intercepts at \\((2,0)\\) and \\((3,0)\\). Therefore, the complete solution is \\(x=2\\) and \\(x=3\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Finish practice 1",
+        "initial_expressions": [
+          {
+            "id": "practice_one_curve",
+            "latex": "x^2-5x+6"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
       }
     },
     {
+      "kind": "desmos_enter_expression",
+      "id": "practice_two_graph",
+      "title": "Practice 2: change the variable",
+      "instructions_html": "<h3>Solve \\(2r^2+r=7\\)</h3><p>Report both solutions to the nearest tenth.</p><p><strong>Do the complete setup:</strong> get zero on one side, replace \\(r\\) with \\(x\\) for Desmos, and enter the expression to graph.</p><p>After your entry is accepted, <strong>find every intercept and translate x back to r</strong> on the next screen.</p>",
+      "expression": "2x^2+x-7",
+      "expected_expression": "2x^2+x-7",
+      "test_values": [
+        -4,
+        -1,
+        0,
+        2,
+        5
+      ],
+      "require_success": true
+    },
+    {
       "kind": "raw_block",
-      "id": "practice_solution_count",
+      "id": "practice_two_answer",
       "block_type": "check",
       "content": {
-        "prompt": "A graph touches the x-axis at one point and does not cross it anywhere else. How many distinct real solutions does the equation have?",
+        "prompt": "Use the graph to finish \\(2r^2+r=7\\). Which answer gives both solutions to the nearest tenth using the original variable?",
         "choices": [
-          "One distinct real solution",
-          "No real solutions because the graph does not cross",
-          "Two distinct real solutions because a touch counts twice",
-          "The number cannot be determined from the graph"
+          "\\(x\\approx-2.1\\) and \\(x\\approx1.6\\)",
+          "\\(r\\approx-7.0\\) and \\(r\\approx2.0\\)",
+          "Only \\(r\\approx-2.1\\)",
+          "\\(r\\approx-2.1\\) and \\(r\\approx1.6\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Click both x-intercepts, round each x-coordinate to the nearest tenth, and then replace the temporary x with r.",
+        "explanation": "Right. The graph gives x-intercepts near \\(-2.137\\) and \\(1.637\\). Rounded to the nearest tenth and translated back to the original variable, the solutions are \\(r\\approx-2.1\\) and \\(r\\approx1.6\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Finish practice 2",
+        "initial_expressions": [
+          {
+            "id": "practice_two_curve",
+            "latex": "2x^2+x-7"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "desmos_enter_expression",
+      "id": "practice_three_graph",
+      "title": "Practice 3: determine the solution count",
+      "instructions_html": "<h3>Solve \\(n^2+4n=-8\\)</h3><p><strong>Start from the original equation:</strong> get zero on one side, replace \\(n\\) with \\(x\\), and enter the expression to graph.</p><p>After your entry is accepted, <strong>inspect the whole graph and determine how many real solutions exist</strong> on the next screen.</p>",
+      "expression": "x^2+4x+8",
+      "expected_expression": "x^2+4x+8",
+      "test_values": [
+        -6,
+        -3,
+        0,
+        2,
+        5
+      ],
+      "require_success": true
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_three_answer",
+      "block_type": "check",
+      "content": {
+        "prompt": "Use the graph to finish \\(n^2+4n=-8\\). How many real solutions does the equation have?",
+        "choices": [
+          "No real solutions",
+          "One real solution, \\(n=-2\\)",
+          "Two real solutions, \\(n=-4\\) and \\(n=8\\)",
+          "Infinitely many real solutions"
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "A touch is still one x-intercept. Count distinct x-values, not the directions of the curve.",
-        "explanation": "Correct. One touch gives one distinct x-intercept and therefore one distinct real solution."
+        "hint": "Look across the graph for every crossing or touch. Does the curve ever reach the x-axis?",
+        "explanation": "Correct. Rewriting gives \\(n^2+4n+8=0\\). Its graph stays above the x-axis, so there are no x-intercepts and therefore no real solutions."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Finish practice 3",
+        "initial_expressions": [
+          {
+            "id": "practice_three_curve",
+            "latex": "x^2+4x+8"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
       }
     },
     {
