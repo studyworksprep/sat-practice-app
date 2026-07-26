@@ -18,6 +18,7 @@ authorization matrix to prove it's fresh.
 | Document | What it is |
 |---|---|
 | `upgrade-plan-2026-07.md` | **The active roadmap** — verified against code + production |
+| `foundations-and-question-patterns.md` | Curriculum model for section-wide foundation lessons + question-pattern lessons (adopted design + owner/instructor workstream) |
 | `runbook.md` | Operational runbook (incidents, deploys, hotfix migrations, e2e) |
 | `database.md` | Schema operations + safe service-role usage |
 | `lesson-json-authoring-guide.md` | Lesson JSON authoring format |
