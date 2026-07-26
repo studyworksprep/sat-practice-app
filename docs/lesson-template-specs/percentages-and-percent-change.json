@@ -1,0 +1,752 @@
+{
+  "title": "Solve Percent and Percent Change Problems with Desmos",
+  "description": "Translate percent statements into equations, use Desmos percent-of notation with regression, apply the percent-change template, and solve multi-step percent problems.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "explore_percent_regression",
+      "html": "<h2>Start by reading what Desmos finds</h2><p>The calculator shows <strong>75~p% of 90</strong>. You do not need to understand every symbol yet.</p><p>Look below the expression and find the value Desmos assigns to \\(p\\). Then notice the RMSE value.</p><blockquote><p><strong>Before you continue:</strong> use the assigned value to estimate what percent \\(75\\) is of \\(90\\).</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Read p and RMSE",
+        "initial_expressions": [
+          {
+            "id": "first_percent_regression",
+            "latex": "75\\sim p\\%\\operatorname{of}90"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "exploration_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What value does Desmos assign to \\(p\\) in \\(75\\sim p\\%\\text{ of }90\\)?",
+        "choices": [
+          "\\(p\\approx15.0\\)",
+          "\\(p\\approx75.0\\)",
+          "\\(p\\approx83.3\\)",
+          "\\(p\\approx120.0\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Read the value displayed for p below the regression. You can also compare 75 with 90: the percent should be below 100.",
+        "explanation": "Right. Desmos assigns \\(p\\approx83.3\\), so \\(75\\) is about \\(83.3\\%\\) of \\(90\\). <strong>Next, you will unpack the percent notation that made this entry work.</strong>"
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Check the assigned percent",
+        "initial_expressions": [
+          {
+            "id": "first_percent_check",
+            "latex": "75\\sim p\\%\\operatorname{of}90"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "percent_symbol_meaning",
+      "html": "<h2>What a percent means</h2><p><strong>Percent</strong> means <strong>per 100</strong>. The symbol \\(\\%\\) divides a number by \\(100\\).</p><p>For example, \\(35\\%=\\frac{35}{100}=0.35\\). A variable works the same way: \\(p\\%=\\frac{p}{100}\\).</p><p>This meaning is why a percent can be used directly inside a Desmos calculation or regression.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "percent_of_input",
+      "html": "<h2>Use the Desmos percent-of tool</h2><p>Type a number or variable, then enter the <strong>%</strong> symbol. Desmos automatically adds the word <strong>of</strong>. Type the comparison number after <strong>of</strong>.</p><p>For example, enter <strong>35% of 80</strong>. The word <strong>of</strong> means multiply, so Desmos calculates the same value as \\(0.35\\cdot80\\).</p><blockquote><p><strong>Look at the two calculator lines:</strong> both should equal \\(28\\).</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Compare percent-of and decimal multiplication",
+        "initial_expressions": [
+          {
+            "id": "percent_of_example",
+            "latex": "35\\%\\operatorname{of}80"
+          },
+          {
+            "id": "decimal_percent_example",
+            "latex": "0.35\\cdot80"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "percent_of_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which Desmos entry directly represents \\(35\\%\\) of \\(80\\)?",
+        "choices": [
+          "\\(35+80\\%\\)",
+          "\\(35\\%\\text{ of }80\\)",
+          "\\(80\\%\\text{ of }35\\)",
+          "\\(35\\div80\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Keep the percent first and place the comparison number after the word of.",
+        "explanation": "Correct. <strong>35% of 80</strong> tells Desmos to calculate \\(\\frac{35}{100}\\cdot80=28\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "decimal_conversion",
+      "html": "<h2>Connect percents and decimals</h2><p>You can always replace a percent with a decimal.</p><ul><li><strong>Percent to decimal:</strong> divide by \\(100\\), or move the decimal point two places left. For example, \\(6.5\\%=0.065\\).</li><li><strong>Decimal to percent:</strong> multiply by \\(100\\), or move the decimal point two places right. For example, \\(0.42=42\\%\\).</li></ul><p>The Desmos percent-of tool is a shortcut for the same conversion. Use whichever form makes the problem easiest to translate and check.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "decimal_conversion_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which decimal is equal to \\(6.5\\%\\)?",
+        "choices": [
+          "\\(6.5\\)",
+          "\\(0.65\\)",
+          "\\(0.0065\\)",
+          "\\(0.065\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Divide 6.5 by 100, which moves its decimal point two places left.",
+        "explanation": "Exactly. \\(6.5\\div100=0.065\\), so \\(6.5\\%=0.065\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "regression_percent_overview",
+      "html": "<h2>Next: let regression find the unknown percent</h2><p>The <strong>regression symbol</strong> is <strong>~</strong>. It asks Desmos to adjust an unknown variable until the two sides match as closely as possible.</p><p>In a complete percent sentence, the word <strong>is</strong> can become <strong>~</strong>. For example:</p><p>\\[75\\text{ is }p\\%\\text{ of }90\\quad\\longrightarrow\\quad75\\sim p\\%\\text{ of }90\\]</p><p><strong>Your action:</strong> keep the quantities in the same order and translate the words into symbols.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "regression_variable_rule",
+      "html": "<h2>Use a variable Desmos can adjust</h2><p>Regression can adjust letters such as \\(p\\), \\(r\\), or \\(t\\).</p><p>Lowercase \\(x\\) and \\(y\\) already have special graphing roles in Desmos. If the problem's unknown is \\(x\\) or \\(y\\), <strong>temporarily use uppercase \\(X\\) or \\(Y\\)</strong>.</p><p>Example: to translate <em>\\(36\\) is \\(x\\%\\) of \\(48\\)</em>, enter <strong>36~X% of 48</strong>. If Desmos assigns \\(X=75\\), report \\(x=75\\).</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "regression_variable_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which entry correctly uses regression to translate \\(36\\) is \\(x\\%\\) of \\(48\\)?",
+        "choices": [
+          "\\(36\\sim X\\%\\text{ of }48\\)",
+          "\\(36\\sim x\\%\\text{ of }48\\)",
+          "\\(48\\sim X\\%\\text{ of }36\\)",
+          "\\(36=X\\%\\text{ of }48\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Keep 36 before the regression symbol, keep 48 after of, and replace lowercase x with uppercase X.",
+        "explanation": "Correct. Uppercase \\(X\\) is the temporary regression variable. Desmos finds \\(X=75\\), so the original variable is \\(x=75\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "rmse_meaning",
+      "html": "<h2>Check RMSE before trusting the result</h2><p><strong>RMSE</strong> measures how closely the two sides of a regression match. You do not need to calculate it.</p><ul><li><strong>RMSE = 0:</strong> the match is exact.</li><li><strong>A tiny RMSE</strong>, such as \\(1.4\\times10^{-13}\\): the match is extremely close, with only numerical rounding.</li><li><strong>A noticeably larger RMSE:</strong> inspect your translation before trusting the assigned value.</li></ul><blockquote><p><strong>Always read both:</strong> the assigned variable value and the RMSE.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "rmse_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A percent regression assigns \\(p=62.5\\) and reports RMSE \\(=1.4\\times10^{-13}\\). What does the RMSE tell you?",
+        "choices": [
+          "The percent is \\(1.4\\times10^{-13}\\%\\).",
+          "The equation has thirteen solutions.",
+          "The setup must be wrong because the RMSE is not printed as exactly zero.",
+          "The two sides match extremely closely; the tiny value is numerical rounding."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "A large negative exponent makes the number extremely close to zero.",
+        "explanation": "Right. That RMSE is effectively zero, so the regression produced a very close match. It does not replace the assigned value \\(p=62.5\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "basic_percent_process",
+      "html": "<h2>A four-step process for percent sentences</h2><ol><li><strong>Find the result and the base.</strong> In the statement <em>54 is what percent of 72</em>, the result is \\(54\\) and the base after <em>of</em> is \\(72\\).</li><li><strong>Choose an acceptable variable.</strong> Use \\(p\\) for an unknown percent unless the question requires another letter.</li><li><strong>Translate the complete sentence.</strong> Enter <strong>54~p% of 72</strong>.</li><li><strong>Read and check.</strong> Report \\(p\\) as a percent, confirm RMSE is zero or tiny, and substitute the value into the sentence.</li></ol><blockquote><p><strong>On the next screen:</strong> build this regression yourself.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "guided_percent_entry",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Translate the whole percent sentence",
+        "instructions_html": "<p>Use regression to answer: <strong>54 is what percent of 72?</strong></p><p>Enter the complete translation with <strong>~</strong>, the variable <strong>p</strong>, and Desmos <strong>% of</strong> notation.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "54\\sim p\\%\\operatorname{of}72"
+          ],
+          "state_rules": {
+            "min_expressions": 1,
+            "max_expressions": 1,
+            "require_visible_only": true
+          }
+        },
+        "feedback": {
+          "success_message_html": "<p>Good translation. Now read the value assigned to \\(p\\) and check the RMSE.</p>",
+          "retry_message_html": "<p>Keep the sentence in order: <strong>54 ~ p% of 72</strong>.</p>",
+          "attempt_based_hints": [
+            {
+              "min_attempts": 2,
+              "message_html": "<p>Type <strong>54~p% of 72</strong>. Entering % makes Desmos add <strong>of</strong>.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>The required entry is <strong>54~p% of 72</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "guided_percent_result",
+      "block_type": "check",
+      "content": {
+        "prompt": "What percent of \\(72\\) is \\(54\\)?",
+        "choices": [
+          "\\(54\\%\\)",
+          "\\(75\\%\\)",
+          "\\(72\\%\\)",
+          "\\(133.3\\%\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Read the assigned value of p. Check that p% of 72 equals 54.",
+        "explanation": "Correct. Desmos assigns \\(p=75\\), and \\(75\\%\\) of \\(72\\) is \\(0.75(72)=54\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Read p and verify",
+        "initial_expressions": [
+          {
+            "id": "guided_percent_result_regression",
+            "latex": "54\\sim p\\%\\operatorname{of}72"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "old_and_new",
+      "html": "<h2>Next: identify Old and New</h2><p>A <strong>percent change</strong> compares a value after a change with the value used as the starting point.</p><ul><li><strong>Old</strong> is the starting value or basis for comparison.</li><li><strong>New</strong> is the value after the increase or decrease.</li></ul><p><strong>The change is always a percent of Old.</strong> If a price rises from \\(80\\) to \\(92\\), the increase is based on \\(80\\), not \\(92\\).</p>"
+    },
+    {
+      "kind": "text",
+      "id": "percent_change_template",
+      "html": "<h2>Use one percent-change template</h2><p>Translate most percent-change statements with one of these forms:</p><p>\\[\\text{New}=\\text{Old}+p\\%\\text{ of Old}\\]</p><p>\\[\\text{New}=\\text{Old}-p\\%\\text{ of Old}\\]</p><ul><li>Use <strong>+</strong> for <strong>increase</strong>, <strong>greater than</strong>, or <strong>more than</strong>.</li><li>Use <strong>-</strong> for <strong>decrease</strong>, <strong>less than</strong>, or <strong>fewer than</strong>.</li></ul><p>When a value in the template is unknown, replace the equals sign with <strong>~</strong> and let regression solve for it.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "change_direction_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which sign belongs in the percent-change template for each direction?",
+        "choices": [
+          "Use minus for both increases and decreases.",
+          "Use plus for both increases and decreases.",
+          "Use plus for an increase and minus for a decrease.",
+          "Use multiplication for an increase and division for a decrease."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "An increase adds an amount to Old. A decrease removes an amount from Old.",
+        "explanation": "Exactly. New is Old plus the increase, or Old minus the decrease."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "model_percent_increase",
+      "html": "<h2>Model an increase</h2><p>A price of \\(\\$80\\) increases by \\(15\\%\\). Let \\(n\\) be the new price.</p><p>Use the template:</p><p>\\[n\\sim80+15\\%\\text{ of }80\\]</p><p>Desmos assigns \\(n=92\\). The increase is \\(15\\%\\) of \\(80\\), or \\(12\\), so \\(80+12=92\\).</p><blockquote><p><strong>Inspect the calculator:</strong> confirm the assigned value and RMSE.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Read the new value",
+        "initial_expressions": [
+          {
+            "id": "increase_model",
+            "latex": "n\\sim80+15\\%\\operatorname{of}80"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "increase_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "An \\(\\$80\\) price increases by \\(15\\%\\). What is the new price?",
+        "choices": [
+          "\\(\\$92\\)",
+          "\\(\\$95\\)",
+          "\\(\\$68\\)",
+          "\\(\\$12\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use New = 80 + 15% of 80. The percent is based on the old price.",
+        "explanation": "Correct. \\(15\\%\\) of \\(80\\) is \\(12\\), and \\(80+12=92\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "model_percent_decrease",
+      "html": "<h2>Model a decrease with an unknown percent</h2><p>A membership fee falls from \\(\\$80\\) to \\(\\$68\\). Let \\(p\\) be the percent decrease.</p><p><strong>New is 68, Old is 80, and decrease means minus:</strong></p><p>\\[68\\sim80-p\\%\\text{ of }80\\]</p><p>Desmos assigns \\(p=15\\). The decrease is \\(12\\), and \\(12\\) is \\(15\\%\\) of the old value \\(80\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Find the percent decrease",
+        "initial_expressions": [
+          {
+            "id": "decrease_model",
+            "latex": "68\\sim80-p\\%\\operatorname{of}80"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "decrease_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A value decreases from \\(80\\) to \\(68\\). What is the percent decrease?",
+        "choices": [
+          "\\(12\\%\\)",
+          "\\(17.6\\%\\)",
+          "\\(15\\%\\)",
+          "\\(85\\%\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Use 68 ~ 80 - p% of 80. The difference 12 is compared with the old value 80.",
+        "explanation": "Right. \\(68=80-15\\%\\text{ of }80\\), so the percent decrease is \\(15\\%\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "than_basis_rule",
+      "html": "<h2>The value after than is Old</h2><p>Phrases such as <strong>greater than</strong> and <strong>less than</strong> describe percent change.</p><p>In the statement <em>\\(84\\) is \\(40\\%\\) greater than \\(60\\)</em>, the value after <strong>than</strong> is \\(60\\). That is the comparison basis, so it is <strong>Old</strong>.</p><p>The translation is \\(84=60+40\\%\\text{ of }60\\).</p><blockquote><p><strong>Ask one question:</strong> greater or less than what? The answer is the Old value.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "than_basis_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the statement \\(84\\) is \\(40\\%\\) greater than \\(60\\), which value is Old, the basis for comparison?",
+        "choices": [
+          "\\(84\\)",
+          "\\(60\\)",
+          "\\(40\\)",
+          "\\(24\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Find the value after the word than. The percent change is based on that value.",
+        "explanation": "Correct. The value after than is \\(60\\), so the added amount is \\(40\\%\\) of \\(60\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "model_greater_than",
+      "html": "<h2>Translate greater than directly</h2><p>Suppose \\(54\\) is \\(p\\%\\) greater than \\(45\\).</p><ul><li><strong>New:</strong> \\(54\\)</li><li><strong>Old:</strong> \\(45\\), the value after <em>than</em></li><li><strong>Direction:</strong> greater means plus</li></ul><p>Enter <strong>54~45+p% of 45</strong>. Desmos assigns \\(p=20\\), so \\(54\\) is \\(20\\%\\) greater than \\(45\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Find the percent greater",
+        "initial_expressions": [
+          {
+            "id": "greater_than_model",
+            "latex": "54\\sim45+p\\%\\operatorname{of}45"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "less_than_translation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which regression correctly translates \\(63\\) is \\(p\\%\\) less than \\(90\\)?",
+        "choices": [
+          "\\(63\\sim90+p\\%\\text{ of }90\\)",
+          "\\(63\\sim90-p\\%\\text{ of }63\\)",
+          "\\(90\\sim63-p\\%\\text{ of }63\\)",
+          "\\(63\\sim90-p\\%\\text{ of }90\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The value after than is Old, and less than means subtract a percent of Old.",
+        "explanation": "Correct. Old is \\(90\\), so the change is a percent of \\(90\\), and less than requires subtraction. This regression gives \\(p=30\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "mathematical_sentence_principle",
+      "html": "<h2>Translate the complete mathematical sentence</h2><p>Most complete mathematical sentences tell you how their quantities are related. Percent language is one useful example.</p><ul><li><strong>is</strong> becomes <strong>~</strong> when regression will solve an unknown;</li><li><strong>of</strong> tells you the multiplication base;</li><li><strong>greater than</strong> becomes Old plus a percent of Old;</li><li><strong>less than</strong> becomes Old minus a percent of Old.</li></ul><p><strong>Read the entire sentence before calculating.</strong> Give every number and phrase a job, write the equation in the same logical order, then check that the result matches the original meaning.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "complex_section_overview",
+      "html": "<h2>Next: connect two percent statements</h2><p>A more complex question may describe an intermediate value and then use that value in another step.</p><p>Example: a sale price is \\(20\\%\\) less than an original price, and a \\(\\$12\\) fee makes the total \\(\\$92\\).</p><p>Desmos can connect those statements with two lines. Before seeing the complete setup, you will learn the job of each line.</p><blockquote><p><strong>For now, do not enter anything.</strong> Start with the supporting definition.</p></blockquote>"
+    },
+    {
+      "kind": "text",
+      "id": "definition_rule",
+      "html": "<h2>Write the intermediate value as a definition</h2><p>A <strong>definition</strong> places one variable alone on the left and tells Desmos how to calculate it.</p><p>If \\(a\\) is the original price and \\(s\\) is the sale price after a \\(20\\%\\) discount, enter:</p><p>\\[s=a-20\\%\\text{ of }a\\]</p><p>This line defines \\(s\\) from \\(a\\). It does not use regression.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "one_regression_rule",
+      "html": "<h2>Use exactly one regression line</h2><p>After defining the intermediate value, translate the remaining statement with <strong>one</strong> regression.</p><p>If a \\(\\$12\\) fee makes the total \\(\\$92\\), enter:</p><p>\\[s+12\\sim92\\]</p><p><strong>Exactly one line uses ~.</strong> The definition connects \\(s\\) and \\(a\\); the regression adjusts the remaining unknown until the total matches.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "define_once_rule",
+      "html": "<h2>Define each variable only once</h2><p>Before submitting a multi-line setup, check that no variable receives two definitions.</p><p>Keep \\(s=a-20\\%\\text{ of }a\\). Do not add another line such as \\(s=92-12\\), because that would define \\(s\\) twice.</p><p><strong>If a relationship would define the same variable again, use that relationship as the one regression instead.</strong></p>"
+    },
+    {
+      "kind": "text",
+      "id": "model_complex_percent",
+      "html": "<h2>Put the complex setup together</h2><p>A sale price is \\(20\\%\\) less than an original price. After a \\(\\$12\\) fee, the total is \\(\\$92\\).</p><ol><li><strong>Definition:</strong> \\(s=a-20\\%\\text{ of }a\\)</li><li><strong>One regression:</strong> \\(s+12\\sim92\\)</li><li><strong>Read and check:</strong> Desmos assigns \\(a=100\\) and \\(s=80\\), with RMSE zero or tiny.</li></ol><p>The original price was \\(\\$100\\): a \\(20\\%\\) discount gives \\(\\$80\\), and the fee gives \\(\\$92\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Inspect one definition and one regression",
+        "initial_expressions": [
+          {
+            "id": "complex_definition",
+            "latex": "s=a-20\\%\\operatorname{of}a"
+          },
+          {
+            "id": "complex_regression",
+            "latex": "s+12\\sim92"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "complex_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A discounted price \\(d\\) is \\(25\\%\\) less than original price \\(b\\). After \\(\\$18\\) shipping, the total is \\(\\$93\\). Which two-line setup follows the regression rules?",
+        "choices": [
+          "\\(d=b-25\\%\\text{ of }b\\) and \\(d+18\\sim93\\)",
+          "\\(d\\sim b-25\\%\\text{ of }b\\) and \\(d+18\\sim93\\)",
+          "\\(d=b-25\\%\\text{ of }d\\) and \\(d+18\\sim93\\)",
+          "\\(b=d-25\\%\\text{ of }b\\) and \\(d=93-18\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use the original price b as the percent base. Look for one definition of d and exactly one regression.",
+        "explanation": "Correct. The first line defines the discounted price from the original price. The second line is the single regression, and no variable is defined twice."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "practice_set_intro",
+      "html": "<h2>Practice the complete process</h2><p>The next three problems require you to use the tool from beginning to end.</p><ol><li>Translate a basic percent sentence and report the percent.</li><li>Translate a percent decrease and report the change.</li><li>Build a two-line definition-plus-regression setup and report the original value.</li></ol><blockquote><p><strong>Use each required calculator.</strong> Continue only after your full equation setup is accepted, then read the assigned values and answer the result check.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_basic_entry",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Practice 1: translate a percent sentence",
+        "instructions_html": "<p>Answer: <strong>63 is what percent of 84?</strong></p><p>Enter one complete regression using \\(p\\), <strong>~</strong>, and Desmos <strong>% of</strong> notation.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "63\\sim p\\%\\operatorname{of}84"
+          ],
+          "state_rules": {
+            "min_expressions": 1,
+            "max_expressions": 1,
+            "require_visible_only": true
+          }
+        },
+        "feedback": {
+          "success_message_html": "<p>Good. Now read \\(p\\), inspect RMSE, and finish the question on the next screen.</p>",
+          "retry_message_html": "<p>Keep the sentence in order: result, regression symbol, unknown percent, then the base after of.</p>",
+          "attempt_based_hints": [
+            {
+              "min_attempts": 2,
+              "message_html": "<p>Enter <strong>63~p% of 84</strong>.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>The required entry is <strong>63~p% of 84</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_basic_result",
+      "block_type": "check",
+      "content": {
+        "prompt": "What percent of \\(84\\) is \\(63\\)?",
+        "choices": [
+          "\\(56\\%\\)",
+          "\\(75\\%\\)",
+          "\\(84\\%\\)",
+          "\\(133.3\\%\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Read the value assigned to p, then check that p% of 84 equals 63.",
+        "explanation": "Correct. Desmos assigns \\(p=75\\), and \\(75\\%\\) of \\(84\\) is \\(63\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Finish practice 1",
+        "initial_expressions": [
+          {
+            "id": "practice_basic_regression",
+            "latex": "63\\sim p\\%\\operatorname{of}84"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_change_entry",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Practice 2: translate a percent decrease",
+        "instructions_html": "<p>A population decreases from \\(240\\) to \\(198\\). Find the percent decrease.</p><p>Enter the complete regression using the percent-change template and the variable \\(p\\).</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "enter_expression",
+          "required_count": 1
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "198\\sim240-p\\%\\operatorname{of}240"
+          ],
+          "state_rules": {
+            "min_expressions": 1,
+            "max_expressions": 1,
+            "require_visible_only": true
+          }
+        },
+        "feedback": {
+          "success_message_html": "<p>Good. You used New = Old - p% of Old. Read \\(p\\) and finish the question next.</p>",
+          "retry_message_html": "<p>New is 198, Old is 240, and a decrease subtracts a percent of Old.</p>",
+          "attempt_based_hints": [
+            {
+              "min_attempts": 2,
+              "message_html": "<p>Enter <strong>198~240-p% of 240</strong>.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>The required entry is <strong>198~240-p% of 240</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_change_result",
+      "block_type": "check",
+      "content": {
+        "prompt": "A population decreases from \\(240\\) to \\(198\\). What is the percent decrease?",
+        "choices": [
+          "\\(15\\%\\)",
+          "\\(20\\%\\)",
+          "\\(21\\%\\)",
+          "\\(17.5\\%\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Read p from 198 ~ 240 - p% of 240. The decrease of 42 is compared with Old, 240.",
+        "explanation": "Right. Desmos assigns \\(p=17.5\\), and \\(17.5\\%\\) of \\(240\\) is \\(42\\). Then \\(240-42=198\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Finish practice 2",
+        "initial_expressions": [
+          {
+            "id": "practice_change_regression",
+            "latex": "198\\sim240-p\\%\\operatorname{of}240"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_complex_entry",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Practice 3: connect two statements",
+        "instructions_html": "<p>A museum ticket has original price \\(b\\). Its student price \\(d\\) is \\(30\\%\\) less than \\(b\\). After a \\(\\$7\\) fee, the total is \\(\\$42\\).</p><p><strong>Enter exactly two lines:</strong> one definition of \\(d\\), then one regression for the total. Do not define a variable twice.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "multi_expression",
+          "required_count": 2,
+          "roles": [
+            "definition",
+            "regression"
+          ]
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "d=b-30\\%\\operatorname{of}b",
+            "d+7\\sim42"
+          ],
+          "state_rules": {
+            "min_expressions": 2,
+            "max_expressions": 2,
+            "require_visible_only": true
+          }
+        },
+        "feedback": {
+          "success_message_html": "<p>Well built: one percent definition and one regression. Now read \\(b\\) and \\(d\\).</p>",
+          "retry_message_html": "<p>Use exactly two lines. Define the discounted price from the original price, then use one regression for the fee and total.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>Use only two lines: one definition and one regression.</p>"
+            },
+            {
+              "trigger": "too_few_expressions",
+              "message_html": "<p>You need both the discount definition and the total regression.</p>"
+            },
+            {
+              "trigger": "missing_second_expression",
+              "message_html": "<p>Add the fee-and-total relationship on its own line.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 3,
+          "solution_html": "<p>Enter <strong>d=b-30% of b</strong> and <strong>d+7~42</strong>.</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "practice_complex_result",
+      "block_type": "check",
+      "content": {
+        "prompt": "The student ticket is \\(30\\%\\) less than the original price, and a \\(\\$7\\) fee makes the total \\(\\$42\\). What is the original ticket price \\(b\\)?",
+        "choices": [
+          "\\(\\$50\\)",
+          "\\(\\$42\\)",
+          "\\(\\$35\\)",
+          "\\(\\$60\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Read b from the two-line setup. Check that 30% off b gives d, and d + 7 equals 42.",
+        "explanation": "Correct. Desmos assigns \\(b=50\\) and \\(d=35\\). A \\(30\\%\\) discount on \\(50\\) is \\(15\\), so \\(50-15=35\\), and \\(35+7=42\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Finish practice 3",
+        "initial_expressions": [
+          {
+            "id": "practice_complex_definition",
+            "latex": "d=b-30\\%\\operatorname{of}b"
+          },
+          {
+            "id": "practice_complex_regression",
+            "latex": "d+7\\sim42"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which summary correctly describes the percent-and-regression strategy?",
+        "choices": [
+          "Use New as the percent base, use plus for every change, and define the same variable on every line.",
+          "Convert every percent to a whole number, use lowercase x for every regression, and ignore RMSE.",
+          "Translate the complete sentence, use the value after of or than as the basis, apply New = Old plus or minus p% of Old, use an acceptable regression variable, and check the assignment and RMSE.",
+          "Use regression only for known percents and switch the positions of New and Old when the wording says less than."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Recall the sentence translation, Old as the comparison base, the plus-or-minus template, and the regression checks.",
+        "explanation": "You have it. The words identify the equation, Old supplies the percent base, the direction selects plus or minus, and regression finds the unknown while RMSE helps you check the match."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can translate and solve percent problems</h2><p>You can convert percents and decimals, use Desmos % of notation, solve unknown-percent equations with regression, apply the percent-change template, identify the basis after of or than, and connect definitions to one regression in a multi-step problem.</p><p><strong>Read the complete mathematical sentence, translate each phrase, and check the result against the original meaning.</strong></p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}
+
