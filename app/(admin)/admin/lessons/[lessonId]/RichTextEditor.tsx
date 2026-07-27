@@ -158,8 +158,8 @@ export function RichTextEditor({
         <Tool ed={editor} active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered list">
           1.
         </Tool>
-        <Tool ed={editor} active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Quote">
-          ❝
+        <Tool ed={editor} active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Callout">
+          <b>!</b>
         </Tool>
         <span style={S.sep} />
         <button type="button" style={S.btn} title="Insert inline equation" onClick={() => openInsertMath(false)}>
@@ -198,7 +198,7 @@ export function RichTextEditor({
         </div>
       ) : null}
 
-      <EditorContent editor={editor} />
+      <EditorContent editor={editor} className="prose lesson-prose" />
       {uploadErr ? <div style={S.err}>Image upload failed: {uploadErr}</div> : null}
     </div>
   );
