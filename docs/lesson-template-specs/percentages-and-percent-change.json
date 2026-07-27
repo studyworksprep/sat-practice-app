@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "explore_percent_regression",
-      "html": "<h2>Start by reading what Desmos finds</h2><p>The calculator shows <strong>75~p% of 90</strong>. You do not need to understand every symbol yet.</p><p>Look below the expression and find the value Desmos assigns to \\(p\\). Then notice the RMSE value.</p><blockquote><p><strong>Before you continue:</strong> use the assigned value to estimate what percent \\(75\\) is of \\(90\\).</p></blockquote>",
+      "html": "<h2>Start by reading what Desmos finds</h2><p>The calculator shows <strong>75~p% of 90</strong>. You do not need to understand every symbol yet.</p><p>Look below the expression and find the value Desmos assigns to \\(p\\). Then notice the RMSE value.</p><blockquote><p><strong>Next step:</strong> Use the assigned value to estimate what percent \\(75\\) is of \\(90\\).</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "preset",
@@ -65,7 +65,7 @@
       "content": {
         "type": "desmos_interactive",
         "title": "Enter a percent calculation two ways",
-        "instructions_html": "<p>Calculate <strong>35% of 80</strong> in two ways.</p><ol><li>On the first line, enter <strong>35%</strong>. Desmos will add <strong>of</strong>; then enter <strong>80</strong>.</li><li>On the second line, enter the matching decimal calculation: <strong>0.35*80</strong>.</li></ol><p><strong>Submit when both lines show 28.</strong></p>",
+        "instructions_html": "<p>Calculate <strong>35% of 80</strong> in two ways.</p><blockquote><p><strong>Tip:</strong> Entering <strong>%</strong> makes Desmos add <strong>of</strong> automatically.</p></blockquote><ol><li>On the first line, enter <strong>35%</strong>, then enter <strong>80</strong> after <strong>of</strong>.</li><li>On the second line, enter the matching decimal calculation: <strong>0.35*80</strong>.</li></ol><p><strong>Submit when both lines show 28.</strong></p>",
         "initial_expressions": [],
         "goal": {
           "type": "multi_expression",
@@ -167,7 +167,7 @@
     {
       "kind": "text",
       "id": "regression_variable_rule",
-      "html": "<h2>Use a variable Desmos can adjust</h2><p>Regression can adjust letters such as \\(p\\), \\(r\\), or \\(t\\).</p><p>Lowercase \\(x\\) and \\(y\\) already have special graphing roles in Desmos. If the problem's unknown is \\(x\\) or \\(y\\), <strong>temporarily use uppercase \\(X\\) or \\(Y\\)</strong>.</p><p>Example: to translate <em>\\(36\\) is \\(x\\%\\) of \\(48\\)</em>, enter <strong>36~X% of 48</strong>. If Desmos assigns \\(X=75\\), report \\(x=75\\).</p>"
+      "html": "<h2>Use a variable Desmos can adjust</h2><p>Regression can adjust letters such as \\(p\\), \\(r\\), or \\(t\\).</p><p>Lowercase \\(x\\) and \\(y\\) already have special graphing roles in Desmos.</p><blockquote><p><strong>Watch out:</strong> If the unknown is \\(x\\) or \\(y\\), temporarily use uppercase \\(X\\) or \\(Y\\).</p></blockquote><p>Example: to translate <em>\\(36\\) is \\(x\\%\\) of \\(48\\)</em>, enter <strong>36~X% of 48</strong>. If Desmos assigns \\(X=75\\), report \\(x=75\\).</p>"
     },
     {
       "kind": "raw_block",
@@ -190,7 +190,7 @@
     {
       "kind": "text",
       "id": "rmse_meaning",
-      "html": "<h2>Check RMSE before trusting the result</h2><p><strong>RMSE</strong> measures how closely the two sides of a regression match. You do not need to calculate it.</p><ul><li><strong>RMSE = 0:</strong> the match is exact.</li><li><strong>A tiny RMSE</strong>, such as \\(1.4\\times10^{-13}\\): the match is extremely close, with only numerical rounding.</li><li><strong>A noticeably larger RMSE:</strong> inspect your translation before trusting the assigned value.</li></ul><blockquote><p><strong>Always read both:</strong> the assigned variable value and the RMSE.</p></blockquote>"
+      "html": "<h2>Check RMSE before trusting the result</h2><p><strong>RMSE</strong> measures how closely the two sides of a regression match. You do not need to calculate it.</p><ul><li><strong>RMSE = 0:</strong> the match is exact.</li><li><strong>A tiny RMSE</strong>, such as \\(1.4\\times10^{-13}\\): the match is extremely close, with only numerical rounding.</li><li><strong>A noticeably larger RMSE:</strong> inspect your translation before trusting the assigned value.</li></ul><blockquote><p><strong>Key idea:</strong> Always read both the assigned variable value and the RMSE.</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -213,7 +213,7 @@
     {
       "kind": "text",
       "id": "basic_percent_process",
-      "html": "<h2>A four-step process for percent sentences</h2><ol><li><strong>Find the result and the base.</strong> In the statement <em>54 is what percent of 72</em>, the result is \\(54\\) and the base after <em>of</em> is \\(72\\).</li><li><strong>Choose an acceptable variable.</strong> Use \\(p\\) for an unknown percent unless the question requires another letter.</li><li><strong>Translate the complete sentence.</strong> Enter <strong>54~p% of 72</strong>.</li><li><strong>Read and check.</strong> Report \\(p\\) as a percent, confirm RMSE is zero or tiny, and substitute the value into the sentence.</li></ol><blockquote><p><strong>On the next screen:</strong> build this regression yourself.</p></blockquote>"
+      "html": "<h2>A four-step process for percent sentences</h2><ol><li><strong>Find the result and the base.</strong> In the statement <em>54 is what percent of 72</em>, the result is \\(54\\) and the base after <em>of</em> is \\(72\\).</li><li><strong>Choose an acceptable variable.</strong> Use \\(p\\) for an unknown percent unless the question requires another letter.</li><li><strong>Translate the complete sentence.</strong> Enter <strong>54~p% of 72</strong>.</li><li><strong>Read and check.</strong> Report \\(p\\) as a percent, confirm RMSE is zero or tiny, and substitute the value into the sentence.</li></ol><blockquote><p><strong>Next step:</strong> Build this regression yourself on the next screen.</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -291,12 +291,12 @@
     {
       "kind": "text",
       "id": "old_and_new",
-      "html": "<h2>Next: identify Old and New</h2><p>A <strong>percent change</strong> compares a value after a change with the value used as the starting point.</p><ul><li><strong>Old</strong> is the starting value or basis for comparison.</li><li><strong>New</strong> is the value after the increase or decrease.</li></ul><p><strong>The change is always a percent of Old.</strong> If a price rises from \\(80\\) to \\(92\\), the increase is based on \\(80\\), not \\(92\\).</p>"
+      "html": "<h2>Next: identify Old and New</h2><p>A <strong>percent change</strong> compares a value after a change with the value used as the starting point.</p><ul><li><strong>Old</strong> is the starting value or basis for comparison.</li><li><strong>New</strong> is the value after the increase or decrease.</li></ul><blockquote><p><strong>Key idea:</strong> The change is always a percent of Old.</p></blockquote><p>If a price rises from \\(80\\) to \\(92\\), the increase is based on \\(80\\), not \\(92\\).</p>"
     },
     {
       "kind": "text",
       "id": "percent_change_template",
-      "html": "<h2>Use one percent-change template</h2><p>Translate most percent-change statements with one of these forms:</p><p>\\[\\text{New}=\\text{Old}+p\\%\\text{ of Old}\\]</p><p>\\[\\text{New}=\\text{Old}-p\\%\\text{ of Old}\\]</p><ul><li>Use <strong>+</strong> for <strong>increase</strong>, <strong>greater than</strong>, or <strong>more than</strong>.</li><li>Use <strong>-</strong> for <strong>decrease</strong>, <strong>less than</strong>, or <strong>fewer than</strong>.</li></ul><p>When a value in the template is unknown, replace the equals sign with <strong>~</strong> and let regression solve for it.</p>"
+      "html": "<h2>Use one percent-change template</h2><p>Translate most percent-change statements with one of these forms:</p><blockquote><p><strong>Formula:</strong></p><p>\\[\\text{New}=\\text{Old}+p\\%\\text{ of Old}\\]</p><p>\\[\\text{New}=\\text{Old}-p\\%\\text{ of Old}\\]</p></blockquote><ul><li>Use <strong>+</strong> for <strong>increase</strong>, <strong>greater than</strong>, or <strong>more than</strong>.</li><li>Use <strong>-</strong> for <strong>decrease</strong>, <strong>less than</strong>, or <strong>fewer than</strong>.</li></ul><p>When a value in the template is unknown, replace the equals sign with <strong>~</strong> and let regression solve for it.</p>"
     },
     {
       "kind": "raw_block",
@@ -437,7 +437,7 @@
     {
       "kind": "text",
       "id": "than_basis_rule",
-      "html": "<h2>The value after than is Old</h2><p>Phrases such as <strong>greater than</strong> and <strong>less than</strong> describe percent change.</p><p>In the statement <em>\\(84\\) is \\(40\\%\\) greater than \\(60\\)</em>, the value after <strong>than</strong> is \\(60\\). That is the comparison basis, so it is <strong>Old</strong>.</p><p>The translation is \\(84=60+40\\%\\text{ of }60\\).</p><blockquote><p><strong>Ask one question:</strong> greater or less than what? The answer is the Old value.</p></blockquote>"
+      "html": "<h2>The value after than is Old</h2><p>Phrases such as <strong>greater than</strong> and <strong>less than</strong> describe percent change.</p><p>In the statement <em>\\(84\\) is \\(40\\%\\) greater than \\(60\\)</em>, the value after <strong>than</strong> is \\(60\\). That is the comparison basis, so it is <strong>Old</strong>.</p><p>The translation is \\(84=60+40\\%\\text{ of }60\\).</p><blockquote><p><strong>Key idea:</strong> Ask greater or less than what? That value is Old.</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -519,12 +519,12 @@
     {
       "kind": "text",
       "id": "mathematical_sentence_principle",
-      "html": "<h2>Translate the complete mathematical sentence</h2><p>Most complete mathematical sentences tell you how their quantities are related. Percent language is one useful example.</p><ul><li><strong>is</strong> becomes <strong>~</strong> when regression will solve an unknown;</li><li><strong>of</strong> tells you the multiplication base;</li><li><strong>greater than</strong> becomes Old plus a percent of Old;</li><li><strong>less than</strong> becomes Old minus a percent of Old.</li></ul><p><strong>Read the entire sentence before calculating.</strong> Give every number and phrase a job, write the equation in the same logical order, then check that the result matches the original meaning.</p>"
+      "html": "<h2>Translate the complete mathematical sentence</h2><p>Most complete mathematical sentences tell you how their quantities are related. Percent language is one useful example.</p><ul><li><strong>is</strong> becomes <strong>~</strong> when regression will solve an unknown;</li><li><strong>of</strong> tells you the multiplication base;</li><li><strong>greater than</strong> becomes Old plus a percent of Old;</li><li><strong>less than</strong> becomes Old minus a percent of Old.</li></ul><blockquote><p><strong>Key idea:</strong> Read the entire mathematical sentence, give every number and phrase a job, and translate it in the same logical order.</p></blockquote><p>Then check that the result matches the original meaning.</p>"
     },
     {
       "kind": "text",
       "id": "complex_section_overview",
-      "html": "<h2>Next: connect two percent statements</h2><p>A more complex question may describe an intermediate value and then use that value in another step.</p><p>Example: a sale price is \\(20\\%\\) less than an original price, and a \\(\\$12\\) fee makes the total \\(\\$92\\).</p><p>Desmos can connect those statements with two lines. Before seeing the complete setup, you will learn the job of each line.</p><blockquote><p><strong>For now, do not enter anything.</strong> Start with the supporting definition.</p></blockquote>"
+      "html": "<h2>Next: connect two percent statements</h2><p>A more complex question may describe an intermediate value and then use that value in another step.</p><p>Example: a sale price is \\(20\\%\\) less than an original price, and a \\(\\$12\\) fee makes the total \\(\\$92\\).</p><p>Desmos can connect those statements with two lines. Before seeing the complete setup, you will learn the job of each line.</p><blockquote><p><strong>Next step:</strong> Do not enter anything yet; first learn the supporting definition.</p></blockquote>"
     },
     {
       "kind": "text",
@@ -534,12 +534,12 @@
     {
       "kind": "text",
       "id": "one_regression_rule",
-      "html": "<h2>Use exactly one regression line</h2><p>After defining the intermediate value, translate the remaining statement with <strong>one</strong> regression.</p><p>If a \\(\\$12\\) fee makes the total \\(\\$92\\), enter:</p><p>\\[s+12\\sim92\\]</p><p><strong>Exactly one line uses ~.</strong> The definition connects \\(s\\) and \\(a\\); the regression adjusts the remaining unknown until the total matches.</p>"
+      "html": "<h2>Use exactly one regression line</h2><p>After defining the intermediate value, translate the remaining statement with <strong>one</strong> regression.</p><p>If a \\(\\$12\\) fee makes the total \\(\\$92\\), enter:</p><p>\\[s+12\\sim92\\]</p><blockquote><p><strong>Rule:</strong> Exactly one line uses <strong>~</strong>.</p></blockquote><p>The definition connects \\(s\\) and \\(a\\); the regression adjusts the remaining unknown until the total matches.</p>"
     },
     {
       "kind": "text",
       "id": "define_once_rule",
-      "html": "<h2>Define each variable only once</h2><p>Before submitting a multi-line setup, check that no variable receives two definitions.</p><p>Keep \\(s=a-20\\%\\text{ of }a\\). Do not add another line such as \\(s=92-12\\), because that would define \\(s\\) twice.</p><p><strong>If a relationship would define the same variable again, use that relationship as the one regression instead.</strong></p>"
+      "html": "<h2>Define each variable only once</h2><blockquote><p><strong>Rule:</strong> Define each variable only once.</p></blockquote><p>Before submitting a multi-line setup, check that no variable receives two definitions.</p><p>Keep \\(s=a-20\\%\\text{ of }a\\). Do not add another line such as \\(s=92-12\\), because that would define \\(s\\) twice.</p><p>If a relationship would define the same variable again, use that relationship as the one regression instead.</p>"
     },
     {
       "kind": "raw_block",
@@ -622,7 +622,7 @@
     {
       "kind": "text",
       "id": "practice_set_intro",
-      "html": "<h2>Practice the complete process</h2><p>The next three problems require you to use the tool from beginning to end.</p><ol><li>Translate a basic percent sentence and report the percent.</li><li>Translate a percent decrease and report the change.</li><li>Build a two-line definition-plus-regression setup and report the original value.</li></ol><blockquote><p><strong>Use each required calculator.</strong> Continue only after your full equation setup is accepted, then read the assigned values and answer the result check.</p></blockquote>"
+      "html": "<h2>Practice the complete process</h2><p>The next three problems require you to use the tool from beginning to end.</p><ol><li>Translate a basic percent sentence and report the percent.</li><li>Translate a percent decrease and report the change.</li><li>Build a two-line definition-plus-regression setup and report the original value.</li></ol><blockquote><p><strong>Tip:</strong> Continue only after each full equation setup is accepted; then read the assigned values and answer the result check.</p></blockquote>"
     },
     {
       "kind": "raw_block",
