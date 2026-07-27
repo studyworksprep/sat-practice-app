@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { uploadFigure } from '@/lib/content/upload-figure-client';
-import type { PendingGraph } from '@/lib/admin/lessonGenMapper';
+import type { PendingGraph } from '@/lib/admin/lessonGenTypes';
 
 const SHOT_WIDTH = 560;
 const SHOT_HEIGHT = 380;

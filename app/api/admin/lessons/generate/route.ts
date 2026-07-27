@@ -9,13 +9,13 @@ import {
   RETURN_GENERATED_LESSON_TOOL,
   buildRevisionUserMessage,
 } from '@/lib/admin/lessonGenPrompt';
-import {
-  generatedLessonToBlocks,
-  type GeneratedLesson,
-  type QuestionHint,
-} from '@/lib/admin/lessonGenMapper';
-// The validator is shared .mjs (also runs client-side in the import
-// preview); it has no type declarations.
+import { sanitizeQuestionHtml } from '@/lib/sanitize';
+import type { GeneratedLessonSpec, QuestionHint } from '@/lib/admin/lessonGenTypes';
+// The pipeline + validator are shared .mjs (the validator also runs
+// client-side in the import preview); they have no type declarations.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { generatedSpecToBlocks } from '@/lib/lesson/generated-spec.mjs';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { validateLessonBlocks } from '@/lib/lesson/lesson-validation.mjs';
@@ -112,7 +112,7 @@ export const POST = apiRoute(async (request: Request) => {
   const generated = extractToolUse(
     response,
     RETURN_GENERATED_LESSON_TOOL.name,
-  ) as GeneratedLesson | null;
+  ) as GeneratedLessonSpec | null;
   if (
     !generated ||
     typeof generated.title !== 'string' ||
@@ -145,12 +145,17 @@ export const POST = apiRoute(async (request: Request) => {
     return (await run(true)) ?? (hint.difficulty != null ? run(false) : null);
   };
 
-  // Figures render server-side (deterministic SVG) and land in the
-  // shared question-figures bucket, content-addressed — same store
-  // the editor's manual image upload uses.
-  const mapped = await generatedLessonToBlocks(generated, resolveQuestion, (svg) =>
-    uploadSvgFigure(ctx.supabase, svg),
-  );
+  // The spec runs through the shared import compiler
+  // (lib/lesson/generated-spec.mjs → compileLessonTemplateSpec), so
+  // the generator and Import-from-JSON share one contract. Figures
+  // render server-side (deterministic SVG) and land in the shared
+  // question-figures bucket, content-addressed — same store the
+  // editor's manual image upload uses.
+  const mapped = await generatedSpecToBlocks(generated, {
+    resolveQuestion,
+    uploadFigureSvg: (svg: string) => uploadSvgFigure(ctx.supabase, svg),
+    sanitizeHtml: sanitizeQuestionHtml,
+  });
   if (mapped.blocks.length === 0) {
     return fail('Every generated block was invalid. Try regenerating.', 502);
   }
