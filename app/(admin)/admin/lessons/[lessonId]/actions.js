@@ -16,6 +16,8 @@ import { validateLessonBlocks } from '@/lib/lesson/lesson-validation.mjs';
 
 const VALID_STATUSES = new Set(['draft', 'published', 'archived']);
 const VALID_VISIBILITIES = new Set(['shared', 'private']);
+const VALID_KINDS = new Set(['standard', 'foundation']);
+const VALID_SECTIONS = new Set(['math', 'reading_writing']);
 
 const QUESTION_CARD_COLUMNS =
   'id, display_code, question_type, domain_name, skill_name, difficulty, score_band, stem_html';
@@ -48,6 +50,21 @@ export async function updateLessonMetadata(_prev, formData) {
     return actionFail('Invalid visibility');
   }
 
+  const kind = formData.get('kind');
+  if (typeof kind !== 'string' || !VALID_KINDS.has(kind)) {
+    return actionFail('Invalid lesson kind');
+  }
+  // foundation_sequence only exists on foundations (DB check
+  // constraint); the form may submit a stale value after a kind flip,
+  // so clear it here rather than erroring.
+  const rawSequence = formData.get('foundation_sequence');
+  const sequenceNum =
+    typeof rawSequence === 'string' && rawSequence.trim() !== ''
+      ? Number.parseInt(rawSequence, 10)
+      : null;
+  const foundationSequence =
+    kind === 'foundation' && Number.isInteger(sequenceNum) ? sequenceNum : null;
+
   const { error } = await ctx.supabase
     .from('lessons')
     .update({
@@ -58,6 +75,8 @@ export async function updateLessonMetadata(_prev, formData) {
           : null,
       status,
       visibility,
+      kind,
+      foundation_sequence: foundationSequence,
       updated_at: new Date().toISOString(),
     })
     .eq('id', lessonId);
@@ -228,4 +247,76 @@ export async function deleteLesson(_prev, formData) {
 
   revalidatePath('/admin/lessons');
   redirect('/admin/lessons?deleted=1');
+}
+
+// ─── Scope tags (lesson_topics) ──────────────────────────────────
+//
+// The builder edits skill- and section-grain tags directly; pattern
+// tags arrive via the pattern catalog tooling. Grain coherence is
+// enforced by the lesson_topics_one_grain check constraint — these
+// actions just shape the row.
+
+export async function addLessonTopic(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await adminCtx();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  const lessonId = formData.get('lesson_id');
+  if (typeof lessonId !== 'string' || !lessonId) return actionFail('lesson_id required');
+
+  const section = formData.get('section');
+  const domainName = formData.get('domain_name');
+  const skillCode = formData.get('skill_code');
+
+  let row;
+  if (typeof section === 'string' && section) {
+    if (!VALID_SECTIONS.has(section)) return actionFail('Invalid section');
+    row = { lesson_id: lessonId, section };
+  } else if (typeof domainName === 'string' && domainName) {
+    row = {
+      lesson_id: lessonId,
+      domain_name: domainName,
+      skill_code: typeof skillCode === 'string' && skillCode ? skillCode : null,
+    };
+  } else {
+    return actionFail('Pick a section or a skill to tag.');
+  }
+
+  const { error } = await ctx.supabase.from('lesson_topics').insert(row);
+  if (error) {
+    if (error.code === '23505') return actionFail('That tag already exists on this lesson.');
+    return actionFail(`Failed to add tag: ${error.message}`);
+  }
+
+  revalidatePath(`/admin/lessons/${lessonId}`);
+  return actionOk({ savedAt: Date.now() });
+}
+
+export async function removeLessonTopic(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await adminCtx();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  const lessonId = formData.get('lesson_id');
+  const topicId = formData.get('topic_id');
+  if (typeof lessonId !== 'string' || !lessonId) return actionFail('lesson_id required');
+  if (typeof topicId !== 'string' || !topicId) return actionFail('topic_id required');
+
+  const { error } = await ctx.supabase
+    .from('lesson_topics')
+    .delete()
+    .eq('id', topicId)
+    .eq('lesson_id', lessonId);
+  if (error) return actionFail(`Failed to remove tag: ${error.message}`);
+
+  revalidatePath(`/admin/lessons/${lessonId}`);
+  return actionOk({ savedAt: Date.now() });
 }

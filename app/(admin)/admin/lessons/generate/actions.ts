@@ -21,6 +21,8 @@ import {
   LESSON_GEN_TEMPLATE_NAME,
   LESSON_INFO_PLACEHOLDER,
 } from '@/lib/admin/lessonGenPrompt';
+import { SAT_TAXONOMY } from '@/lib/practice/sat-taxonomy';
+import type { LessonScope } from '@/lib/admin/lessonGenTypes';
 // Shared .mjs validator (also runs client-side); no type declarations.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -88,6 +90,28 @@ interface SaveGeneratedLessonInput {
   title?: unknown;
   description?: unknown;
   blocks?: unknown;
+  scope?: unknown;
+}
+
+// Narrow the client-supplied scope; anything malformed is ignored
+// (the save must not fail over a tag).
+function parseScope(scope: unknown): LessonScope | null {
+  if (!scope || typeof scope !== 'object') return null;
+  const s = scope as Record<string, unknown>;
+  if (s.grain === 'skill' && typeof s.skillCode === 'string' && s.skillCode.trim()) {
+    return { grain: 'skill', skillCode: s.skillCode.trim() };
+  }
+  if (s.grain === 'pattern' && typeof s.patternId === 'string' && s.patternId.trim()) {
+    return { grain: 'pattern', patternId: s.patternId.trim() };
+  }
+  return null;
+}
+
+function domainNameForSkill(skillCode: string): string | null {
+  for (const domain of SAT_TAXONOMY) {
+    if (domain.skills.some((skill) => skill.code === skillCode)) return domain.name;
+  }
+  return null;
 }
 
 // Persists a previewed AI draft as a lessons row + lesson_blocks.
@@ -166,6 +190,34 @@ export async function saveGeneratedLesson(input: SaveGeneratedLessonInput) {
     return actionFail(`Failed to insert blocks: ${insertBlocksErr.message}`);
   }
 
+  // Stamp the launch scope as a lesson_topics row so the lesson counts
+  // toward coverage (skill grain) or its pattern immediately. A tag
+  // failure must not lose the saved lesson — surface it as a warning
+  // the admin can fix in the editor.
+  let scopeWarning: string | null = null;
+  const scope = parseScope(input?.scope);
+  if (scope) {
+    if (scope.grain === 'skill') {
+      const domainName = domainNameForSkill(scope.skillCode);
+      if (domainName) {
+        const { error } = await ctx.supabase.from('lesson_topics').insert({
+          lesson_id: lesson.id,
+          domain_name: domainName,
+          skill_code: scope.skillCode,
+        });
+        if (error) scopeWarning = `Lesson saved, but tagging skill ${scope.skillCode} failed: ${error.message}`;
+      } else {
+        scopeWarning = `Lesson saved, but "${scope.skillCode}" is not a known skill code — tag it in the editor.`;
+      }
+    } else {
+      const { error } = await ctx.supabase.from('lesson_topics').insert({
+        lesson_id: lesson.id,
+        pattern_id: scope.patternId,
+      });
+      if (error) scopeWarning = `Lesson saved, but tagging the question pattern failed: ${error.message}`;
+    }
+  }
+
   revalidatePath('/admin/lessons');
-  return actionOk({ lessonId: lesson.id });
+  return actionOk({ lessonId: lesson.id, scopeWarning });
 }

@@ -26,12 +26,16 @@ import { LESSON_INFO_PLACEHOLDER } from '@/lib/admin/lessonGenPrompt';
 import { savePromptTemplate, resetPromptTemplate, saveGeneratedLesson } from './actions';
 import { DraftPreview, type DraftBlock } from './DraftPreview';
 import { GraphImageResolver } from './GraphImageResolver';
-import type { PendingGraph } from '@/lib/admin/lessonGenTypes';
+import type { LessonScope, PendingGraph } from '@/lib/admin/lessonGenTypes';
 import f from '../../../forms.module.css';
 
 interface GenerateClientProps {
   initialTemplate: string;
   isCustomized: boolean;
+  /** Scope-aware prefill for the brief (from ?skill= / ?pattern=). */
+  initialBrief?: string;
+  /** When set, the save action stamps the matching lesson_topics row. */
+  scope?: LessonScope | null;
 }
 
 interface ValidationIssue {
@@ -73,9 +77,14 @@ function warningText(w: unknown): string {
   return String(w);
 }
 
-export function GenerateClient({ initialTemplate, isCustomized }: GenerateClientProps) {
+export function GenerateClient({
+  initialTemplate,
+  isCustomized,
+  initialBrief = '',
+  scope = null,
+}: GenerateClientProps) {
   const router = useRouter();
-  const [brief, setBrief] = useState('');
+  const [brief, setBrief] = useState(initialBrief);
   const [template, setTemplate] = useState(initialTemplate);
   // The last loaded/saved template text, for the "edited (unsaved)" hint.
   const [baseline, setBaseline] = useState(initialTemplate);
@@ -205,6 +214,7 @@ export function GenerateClient({ initialTemplate, isCustomized }: GenerateClient
       title: draft.title,
       description: draft.description,
       blocks: draft.blocks,
+      scope,
     });
     if (result?.ok && result.data && typeof result.data.lessonId === 'string') {
       // Keep busy='saving' through the navigation so the button

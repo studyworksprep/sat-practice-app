@@ -205,6 +205,17 @@ The unique index extends accordingly.
    `/admin/content/units`), pattern picker in the question editor and
    drafts review, kind/scope fields in the lesson builder + AI generate
    flow, AI-assisted bulk classification queue (§4 step 3).
+   **Partially landed 2026-07-27**: the units worklist's per-unit
+   "Generate lesson" link now carries `?skill=`, the generate page
+   prefills the brief from scope facts (taxonomy names, published
+   depth + difficulty mix, `expected_minutes`; `?pattern=` prefills
+   recognition cue + process once patterns exist) and stamps the
+   matching `lesson_topics` row on save; the lesson builder gained
+   kind/foundation-order metadata fields and a Scope-tags editor
+   (section + skill grains; pattern tags display but are authored via
+   the catalog tooling). Still open from this step: the
+   pattern-catalog editor, the question-editor/drafts pattern picker,
+   and the classification queue.
 3. Consumers, in dependency order: `recommend.ts` chain →
    generator front-load pass → drill `pattern_id` filter → detours →
    efficacy expansion → wizard/Today/roster surfaces.
