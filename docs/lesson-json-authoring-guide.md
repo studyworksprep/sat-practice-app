@@ -462,6 +462,15 @@ Required: `question_html`, `choices` (array of `{ id, text }`, ≥2),
 answers, clicks Continue, sees only the feedback for their answer, clicks
 Continue again, and lands on the rejoin block — then the lesson continues.
 
+Note: the question itself renders as plain text + LaTeX (not HTML), so the
+compiler flattens `question_html` and `explanation_html` — tags are
+stripped, entities decoded, `\\( … \\)` math kept. Write them as simple
+one-paragraph HTML and rely on LaTeX (not markup) for emphasis inside the
+question. The three feedback fields (`correct_html`, `incorrect_html`,
+`rejoin_html`) become real text blocks and keep full HTML. When
+`explanation_html` is omitted the check shows no inline explanation — the
+feedback blocks are the explanation.
+
 ---
 
 ### 3e. Calculator presentation on ordinary blocks
