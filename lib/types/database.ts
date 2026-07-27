@@ -1351,21 +1351,27 @@ export type Database = {
       }
       lesson_topics: {
         Row: {
-          domain_name: string
+          domain_name: string | null
           id: string
           lesson_id: string
+          pattern_id: string | null
+          section: string | null
           skill_code: string | null
         }
         Insert: {
-          domain_name: string
+          domain_name?: string | null
           id?: string
           lesson_id: string
+          pattern_id?: string | null
+          section?: string | null
           skill_code?: string | null
         }
         Update: {
-          domain_name?: string
+          domain_name?: string | null
           id?: string
           lesson_id?: string
+          pattern_id?: string | null
+          section?: string | null
           skill_code?: string | null
         }
         Relationships: [
@@ -1376,6 +1382,13 @@ export type Database = {
             referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lesson_topics_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "question_patterns"
+            referencedColumns: ["id"]
+          },
         ]
       }
       lessons: {
@@ -1383,7 +1396,9 @@ export type Database = {
           author_id: string
           created_at: string | null
           description: string | null
+          foundation_sequence: number | null
           id: string
+          kind: string
           status: string
           title: string
           updated_at: string | null
@@ -1393,7 +1408,9 @@ export type Database = {
           author_id: string
           created_at?: string | null
           description?: string | null
+          foundation_sequence?: number | null
           id?: string
+          kind?: string
           status?: string
           title: string
           updated_at?: string | null
@@ -1403,7 +1420,9 @@ export type Database = {
           author_id?: string
           created_at?: string | null
           description?: string | null
+          foundation_sequence?: number | null
           id?: string
+          kind?: string
           status?: string
           title?: string
           updated_at?: string | null
@@ -2097,6 +2116,7 @@ export type Database = {
           id: string
           notes: string | null
           options: Json | null
+          pattern_id: string | null
           promoted_at: string | null
           promoted_by: string | null
           question_id: string
@@ -2115,6 +2135,7 @@ export type Database = {
           id?: string
           notes?: string | null
           options?: Json | null
+          pattern_id?: string | null
           promoted_at?: string | null
           promoted_by?: string | null
           question_id: string
@@ -2133,6 +2154,7 @@ export type Database = {
           id?: string
           notes?: string | null
           options?: Json | null
+          pattern_id?: string | null
           promoted_at?: string | null
           promoted_by?: string | null
           question_id?: string
@@ -2145,6 +2167,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "question_content_drafts_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "question_patterns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "question_content_drafts_question_id_fkey"
             columns: ["question_id"]
@@ -2295,6 +2324,45 @@ export type Database = {
           },
         ]
       }
+      question_patterns: {
+        Row: {
+          created_at: string | null
+          domain_code: string
+          id: string
+          name: string
+          process_summary: string | null
+          recognition_cue: string
+          sequence: number
+          skill_code: string
+          test_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          domain_code: string
+          id?: string
+          name: string
+          process_summary?: string | null
+          recognition_cue: string
+          sequence?: number
+          skill_code: string
+          test_type?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          domain_code?: string
+          id?: string
+          name?: string
+          process_summary?: string | null
+          recognition_cue?: string
+          sequence?: number
+          skill_code?: string
+          test_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       questions_v2: {
         Row: {
           approved_at: string | null
@@ -2317,6 +2385,7 @@ export type Database = {
           last_fixed_by: string | null
           options: Json | null
           options_rendered: Json | null
+          pattern_id: string | null
           question_type: string
           rationale_html: string | null
           rationale_rendered: string | null
@@ -2356,6 +2425,7 @@ export type Database = {
           last_fixed_by?: string | null
           options?: Json | null
           options_rendered?: Json | null
+          pattern_id?: string | null
           question_type: string
           rationale_html?: string | null
           rationale_rendered?: string | null
@@ -2395,6 +2465,7 @@ export type Database = {
           last_fixed_by?: string | null
           options?: Json | null
           options_rendered?: Json | null
+          pattern_id?: string | null
           question_type?: string
           rationale_html?: string | null
           rationale_rendered?: string | null
@@ -2413,7 +2484,15 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "questions_v2_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "question_patterns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       questions_v2_fix_suggestions: {
         Row: {
