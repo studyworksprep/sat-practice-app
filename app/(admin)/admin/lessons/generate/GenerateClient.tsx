@@ -26,7 +26,7 @@ import { LESSON_INFO_PLACEHOLDER } from '@/lib/admin/lessonGenPrompt';
 import { savePromptTemplate, resetPromptTemplate, saveGeneratedLesson } from './actions';
 import { DraftPreview, type DraftBlock } from './DraftPreview';
 import { GraphImageResolver } from './GraphImageResolver';
-import type { PendingGraph } from '@/lib/admin/lessonGenMapper';
+import type { PendingGraph } from '@/lib/admin/lessonGenTypes';
 import f from '../../../forms.module.css';
 
 interface GenerateClientProps {

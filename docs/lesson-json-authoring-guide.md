@@ -1,6 +1,6 @@
 # Lesson JSON Authoring Guide (Import From JSON)
 
-> **Status: Living document.** Last verified: 2026-07-22 (instructional quality standard, shared lesson calculator, and preset graphs). Verify against `lib/lesson/lesson-validation` when in doubt.
+> **Status: Living document.** Last verified: 2026-07-27 (AI generator convergence — this spec format is now also the AI generation contract). Verify against `lib/lesson/lesson-validation` when in doubt.
 
 This document tells you exactly how to produce a JSON "LessonTemplateSpec"
 that the Studyworks admin **Lessons → Import from JSON** page accepts and
@@ -11,12 +11,21 @@ The importer is the source of truth: `lib/lesson/template-import.mjs`
 import, errors block the import; warnings do not.
 
 > Related: **Lessons → Generate with AI** (`/admin/lessons/generate`)
-> drafts a lesson from a free-form brief instead of a JSON spec. It
-> emits text / check / video-placeholder / question_link /
-> desmos_interactive blocks (plus figure and graph images rendered
-> into text blocks) through its own mapper
-> (`lib/admin/lessonGenMapper.ts`) and runs the same
-> `validateLessonBlocks` gate before saving a draft.
+> drafts a lesson from a free-form brief — and since 2026-07-27 it
+> emits this SAME LessonTemplateSpec format and compiles through the
+> same importer. `lib/lesson/generated-spec.mjs` first resolves four
+> generator-only kinds the model needs because it cannot mint URLs,
+> UUIDs, or images (`question_suggestion` → a real `question_link`;
+> `figure` → a server-rendered image; `graph_image` → a
+> browser-rendered image; `video_placeholder` → an empty video block),
+> then runs `compileLessonTemplateSpec` and the same
+> `validateLessonBlocks` gate before the preview/save step. Everything
+> in this guide — including §2's instructional standard, retry checks,
+> branching, and calculator presentation — applies to generated
+> lessons too. One safety difference: AI-authored `require_success`
+> gates arrive **disabled**, with a draft warning listing them, and
+> are re-enabled by the reviewing admin after verifying the expected
+> expressions.
 
 ---
 
