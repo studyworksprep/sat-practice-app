@@ -380,6 +380,23 @@ a{
 .prose strong{ font-weight: 700; }
 .prose em{ font-style: italic; }
 
+/* Lesson Callouts: blockquote is reserved for one key idea, formula, tip, or warning. */
+.lesson-prose blockquote{
+  margin: 14px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--color-app-accent, #4f7ce0);
+  border-left-width: 4px;
+  border-radius: 8px;
+  background: var(--color-app-accent-bg, rgba(79,124,224,0.08));
+  color: var(--fg1, var(--text));
+  font-style: normal;
+}
+.lesson-prose blockquote > :first-child{ margin-top: 0; }
+.lesson-prose blockquote > :last-child{ margin-bottom: 0; }
+.lesson-prose blockquote > p:first-child > strong:first-child{
+  color: var(--color-app-accent, #4f7ce0);
+}
+
 .prose img{
   max-width: 100%;
   height: auto;
