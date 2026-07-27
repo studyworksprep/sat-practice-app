@@ -70,7 +70,7 @@ function LessonCompletePreview({ block }: { block: Block }) {
   useMathTypeset(ref, html);
   return (
     <div ref={ref} style={S.complete}>
-      {html.trim() ? <SafeHtml as="div" html={html} /> : <span style={S.placeholder}>No closing message yet.</span>}
+      {html.trim() ? <SafeHtml as="div" html={html} className="prose lesson-prose" /> : <span style={S.placeholder}>No closing message yet.</span>}
       <div style={{ marginTop: 12 }}>
         <span style={S.completeBtn}>🏁 {label}</span>
       </div>
@@ -85,7 +85,7 @@ function TextPreview({ block }: { block: Block }) {
   if (!html.trim()) return <EmptyPreview label="Empty text block — click Edit to add content." />;
   return (
     <div ref={ref}>
-      <SafeHtml as="div" html={html} />
+      <SafeHtml as="div" html={html} className="prose lesson-prose" />
     </div>
   );
 }
@@ -235,7 +235,7 @@ function DesmosPreview({ block }: { block: Block }) {
       <div style={{ minWidth: 0 }}>
         <div style={S.linkedTitle}>{title || 'Desmos interactive'}</div>
         {instructions ? (
-          <SafeHtml as="div" html={instructions} className={undefined} />
+          <SafeHtml as="div" html={instructions} className="prose lesson-prose" />
         ) : (
           <span style={S.placeholder}>No instructions yet.</span>
         )}
