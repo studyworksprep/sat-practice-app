@@ -16,6 +16,8 @@ import {
   saveLessonBlocks,
   updateLessonMetadata,
   deleteLesson,
+  addLessonTopic,
+  removeLessonTopic,
 } from './actions';
 import a from '../../../admin.module.css';
 
@@ -32,10 +34,10 @@ export default async function AdminLessonEditPage({ params }) {
     redirect('/');
   }
 
-  const [{ data: lesson }, { data: blocks }] = await Promise.all([
+  const [{ data: lesson }, { data: blocks }, { data: topics }] = await Promise.all([
     supabase
       .from('lessons')
-      .select('id, title, description, status, visibility, author_id, created_at, updated_at')
+      .select('id, title, description, status, visibility, kind, foundation_sequence, author_id, created_at, updated_at')
       .eq('id', lessonId)
       .maybeSingle(),
     supabase
@@ -43,6 +45,10 @@ export default async function AdminLessonEditPage({ params }) {
       .select('id, sort_order, block_type, content')
       .eq('lesson_id', lessonId)
       .order('sort_order'),
+    supabase
+      .from('lesson_topics')
+      .select('id, section, domain_name, skill_code, pattern_id, question_patterns(name)')
+      .eq('lesson_id', lessonId),
   ]);
 
   if (!lesson) notFound();
@@ -68,10 +74,13 @@ export default async function AdminLessonEditPage({ params }) {
       <EditorClient
         lesson={lesson}
         initialBlocks={blocks ?? []}
+        topics={topics ?? []}
         actions={{
           updateMetadata: updateLessonMetadata,
           saveBlocks: saveLessonBlocks,
           deleteLesson,
+          addTopic: addLessonTopic,
+          removeTopic: removeLessonTopic,
         }}
       />
     </main>

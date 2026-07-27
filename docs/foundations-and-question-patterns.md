@@ -192,10 +192,30 @@ The unique index extends accordingly.
    + `lesson_topics` grains + `questions_v2.pattern_id` (+ drafts
    column). Apply via MCP `apply_migration` per
    `supabase/migrations/README.md`; regenerate `lib/types/database.ts`.
+   **✅ Landed 2026-07-27** — migration
+   `20260727190000_question_patterns_lesson_scopes.sql`, applied to
+   dev + prod via MCP; types regenerated. Constraint probes verified
+   in dev (one-grain check rejects mixed rows, section values
+   restricted to `math`/`reading_writing`, `foundation_sequence`
+   rejected on standard lessons, pattern delete cascades its tags and
+   nulls its questions). Guardrail confirmed against the live
+   `get_plan_inputs`: `has_lesson` matches `lesson_topics.skill_code`
+   only, so section-/pattern-grain rows cannot flip unit coverage.
 2. Admin surfaces: pattern-catalog editor (per skill, under
    `/admin/content/units`), pattern picker in the question editor and
    drafts review, kind/scope fields in the lesson builder + AI generate
    flow, AI-assisted bulk classification queue (§4 step 3).
+   **Partially landed 2026-07-27**: the units worklist's per-unit
+   "Generate lesson" link now carries `?skill=`, the generate page
+   prefills the brief from scope facts (taxonomy names, published
+   depth + difficulty mix, `expected_minutes`; `?pattern=` prefills
+   recognition cue + process once patterns exist) and stamps the
+   matching `lesson_topics` row on save; the lesson builder gained
+   kind/foundation-order metadata fields and a Scope-tags editor
+   (section + skill grains; pattern tags display but are authored via
+   the catalog tooling). Still open from this step: the
+   pattern-catalog editor, the question-editor/drafts pattern picker,
+   and the classification queue.
 3. Consumers, in dependency order: `recommend.ts` chain →
    generator front-load pass → drill `pattern_id` filter → detours →
    efficacy expansion → wizard/Today/roster surfaces.

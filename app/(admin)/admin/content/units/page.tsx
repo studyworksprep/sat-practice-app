@@ -223,7 +223,13 @@ export default async function AdminContentUnitsPage() {
                 </Td>
                 <Td style={{ textAlign: 'center' }}>{c.packCovered ? '✓' : '—'}</Td>
                 <Td style={{ textAlign: 'right' }}>
-                  <Link href="/admin/lessons/generate" className={a.link}>
+                  {/* Scoped link: the generate page prefills the brief
+                      from this unit's facts and stamps the skill tag
+                      on save. */}
+                  <Link
+                    href={`/admin/lessons/generate?skill=${encodeURIComponent(c.unit.skill_code)}`}
+                    className={a.link}
+                  >
                     Generate lesson →
                   </Link>
                 </Td>

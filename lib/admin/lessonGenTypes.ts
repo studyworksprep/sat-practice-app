@@ -35,3 +35,11 @@ export interface MappedBlockRow {
   block_type: 'text' | 'check' | 'video' | 'question_link' | 'desmos_interactive' | 'lesson_complete';
   content: unknown;
 }
+
+// The scope a generation was launched with (?skill= / ?pattern= on
+// the generate page). Carried through the client so the save action
+// can stamp the matching lesson_topics grain
+// (docs/foundations-and-question-patterns.md §3.1).
+export type LessonScope =
+  | { grain: 'skill'; skillCode: string }
+  | { grain: 'pattern'; patternId: string };
