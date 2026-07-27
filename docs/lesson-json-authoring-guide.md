@@ -117,6 +117,9 @@ modeled.
 - Address the learner as “you” and use short paragraphs and sentences.
 - Introduce one new idea per slide. Break long explanations into a sequence
   of explanation, action, and check blocks.
+- When one sentence, formula, tip, warning, or transition is the detail the
+  learner must not miss, isolate it in one **Callout** box (see §3a) instead
+  of relying on bold text inside a longer paragraph.
 - Prefer plain English before formal notation. Use technical vocabulary only
   when the learner needs the term, and define it immediately.
 - Avoid unnecessary precision or scope. Do not introduce function notation,
@@ -253,6 +256,46 @@ distinct instructional job.
   for assets committed under `public/images`, or an absolute HTTPS URL.
   Always include descriptive `alt` text and usually a `width`.
 - Optional: `explanation_html`.
+
+#### Callout boxes — isolate the detail learners must not miss
+
+A **Callout** is a visually shaded box inside a text block or Desmos
+`instructions_html`. Author it with `blockquote`; the shared lesson
+stylesheet supplies the appearance automatically, and the lesson editor's
+**Callout** button creates the same element.
+
+```html
+<blockquote>
+  <p><strong>Key idea:</strong> The value after <em>than</em> is the Old value.</p>
+</blockquote>
+```
+
+For a formula, keep the label and the formula together:
+
+```html
+<blockquote>
+  <p><strong>Formula:</strong></p>
+  <p>\[\text{New}=\text{Old}+p\%\text{ of Old}\]</p>
+</blockquote>
+```
+
+Use Callouts consistently:
+
+- Put **one important idea** in a Callout. A box must not introduce several
+  unrelated rules.
+- Use a short bold label such as **Key idea**, **Formula**, **Tip**,
+  **Watch out**, or **Next step**. The label keeps the meaning clear even
+  without color.
+- Use at most one Callout in most blocks. If several details all need boxes,
+  the block probably needs to be split.
+- Keep ordinary explanation and routine examples outside the box. A Callout
+  is for the sentence or formula the learner should retrieve, check, or act
+  on.
+- Do not add inline styles or custom classes. Use plain `blockquote` markup
+  so JSON imports, the visual editor, admin preview, and student view remain
+  consistent.
+- A Callout does not replace good sequencing. Teach the idea before checking
+  it, and keep important transitions explicit.
 
 ### 3b. `raw_block` — full control over any block type
 
