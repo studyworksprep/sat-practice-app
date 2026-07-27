@@ -465,7 +465,7 @@ function TextBlock({ block, isRead, onRead }) {
 
   return (
     <div style={S.card}>
-      <HtmlBlock className="prose" html={block.content?.html || ''} />
+      <HtmlBlock className="prose lesson-prose" html={block.content?.html || ''} />
     </div>
   );
 }
@@ -476,7 +476,7 @@ function LessonCompleteBlock({ block, isComplete, onComplete }) {
   const label = block.content?.button_label || 'Complete Lesson';
   return (
     <div style={S.card}>
-      <HtmlBlock className="prose" html={block.content?.html || ''} />
+      <HtmlBlock className="prose lesson-prose" html={block.content?.html || ''} />
       <div style={{ textAlign: 'center', marginTop: 12 }}>
         <button
           type="button"
@@ -906,12 +906,12 @@ function DesmosInteractiveBlock({
       {content.title && (
         <h3 style={{ margin: '0 0 10px', fontSize: 18 }}>{content.title}</h3>
       )}
-      <HtmlBlock className="prose" html={content.instructions_html} />
+      <HtmlBlock className="prose lesson-prose" html={content.instructions_html} />
       <div style={S.calculatorCallout}>
         Complete this activity in the Desmos pane, then check your work here.
       </div>
       {content.caption_html && (
-        <HtmlBlock className="prose muted" html={content.caption_html} />
+        <HtmlBlock className="prose lesson-prose muted" html={content.caption_html} />
       )}
       {!calculator && (
         <p style={{ color: 'var(--danger, #d97775)', fontSize: 13 }}>
