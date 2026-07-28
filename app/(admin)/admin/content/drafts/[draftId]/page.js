@@ -40,7 +40,7 @@ export default async function DraftEditorPage({ params }) {
     .from('question_content_drafts')
     .select(`
       id, question_id, status, notes,
-      stem_html, stimulus_html, rationale_html, options, hints,
+      stem_html, stimulus_html, rationale_html, options, hints, pattern_id,
       created_at, updated_at, created_by, promoted_at
     `)
     .eq('id', draftId)
@@ -53,12 +53,25 @@ export default async function DraftEditorPage({ params }) {
     .select(`
       id, display_code, question_type,
       stem_html, stimulus_html, rationale_html, options, correct_answer,
-      domain_name, skill_name, difficulty, score_band, source
+      domain_name, skill_name, skill_code, difficulty, score_band, source,
+      pattern_id
     `)
     .eq('id', draft.question_id)
     .maybeSingle();
 
   if (!current) notFound();
+
+  // Question-pattern picker options for this question's skill —
+  // new questions get classified at draft review so cataloged skills
+  // never regress to untyped (foundations doc §4 step 3).
+  const { data: skillPatterns } = current.skill_code
+    ? await supabase
+        .from('question_patterns')
+        .select('id, name, recognition_cue, sequence')
+        .eq('test_type', 'sat')
+        .eq('skill_code', current.skill_code)
+        .order('sequence', { ascending: true })
+    : { data: [] };
 
   // Merge: draft fields override current row fields, NULL means
   // "leave as-is". This is the same rule promoteDraft will apply.
@@ -129,7 +142,11 @@ export default async function DraftEditorPage({ params }) {
           create a new draft) to propose further changes.
         </Card>
       ) : (
-        <DraftEditor draft={draft} />
+        <DraftEditor
+          draft={draft}
+          patterns={skillPatterns ?? []}
+          currentPatternId={current.pattern_id}
+        />
       )}
     </main>
   );
@@ -142,7 +159,7 @@ export default async function DraftEditorPage({ params }) {
 // live in separate <form> elements so they submit independently.
 // ──────────────────────────────────────────────────────────────
 
-function DraftEditor({ draft }) {
+function DraftEditor({ draft, patterns, currentPatternId }) {
   const saveBound = saveDraft.bind(null, draft.id);
   const promoteBound = promoteDraft.bind(null, draft.id);
   const rejectBound = rejectDraft.bind(null, draft.id);
@@ -162,6 +179,27 @@ function DraftEditor({ draft }) {
           rows={4}
         />
         <Field label="notes" name="notes" value={draft.notes} rows={3} />
+        {patterns.length > 0 && (
+          <label style={S.label}>
+            question pattern (promotes onto the question; blank = leave unchanged)
+            <select
+              name="pattern_id"
+              defaultValue={draft.pattern_id ?? ''}
+              style={S.select}
+            >
+              <option value="">
+                {currentPatternId
+                  ? '(leave as currently classified)'
+                  : '(leave unclassified)'}
+              </option>
+              {patterns.map((p) => (
+                <option key={p.id} value={p.id} title={p.recognition_cue}>
+                  #{p.sequence} {p.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label style={S.label}>
           status
           <select name="status" defaultValue={draft.status} style={S.select}>

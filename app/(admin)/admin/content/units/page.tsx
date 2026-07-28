@@ -222,7 +222,14 @@ export default async function AdminContentUnitsPage() {
                   )}
                 </Td>
                 <Td style={{ textAlign: 'center' }}>{c.packCovered ? '✓' : '—'}</Td>
-                <Td style={{ textAlign: 'right' }}>
+                <Td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  <Link
+                    href={`/admin/content/units/${encodeURIComponent(c.unit.skill_code)}`}
+                    className={a.link}
+                    style={{ marginRight: 12 }}
+                  >
+                    Patterns
+                  </Link>
                   {/* Scoped link: the generate page prefills the brief
                       from this unit's facts and stamps the skill tag
                       on save. */}

@@ -65,6 +65,11 @@ export async function saveDraft(draftId, formData) {
 
   const options = parseOptionsOrThrow(options_raw);
   const hints = parseHintLines(formData.get('hints'));
+  // Pattern classification (foundations doc §4 step 3): the picker is
+  // rendered only for cataloged skills; blank means "leave the
+  // production row's classification unchanged", matching the other
+  // NULL-means-skip draft fields.
+  const pattern_id = emptyToNull(formData.get('pattern_id'));
 
   const { error } = await supabase
     .from('question_content_drafts')
@@ -74,6 +79,7 @@ export async function saveDraft(draftId, formData) {
       rationale_html,
       options,
       hints,
+      pattern_id,
       notes,
       status,
       // created_by isn't updated on save — it's set at creation
@@ -94,7 +100,7 @@ export async function promoteDraft(draftId) {
   // are non-null (only those get copied).
   const { data: draft, error: loadErr } = await supabase
     .from('question_content_drafts')
-    .select('id, question_id, status, stem_html, stimulus_html, rationale_html, options, hints')
+    .select('id, question_id, status, stem_html, stimulus_html, rationale_html, options, hints, pattern_id')
     .eq('id', draftId)
     .maybeSingle();
 
@@ -109,6 +115,8 @@ export async function promoteDraft(draftId) {
   // §3.2 hints — jsonb array, no rendered-column companion (hints
   // render client-side through sanitizeQuestionHtml, unrendered).
   if (draft.hints          != null) update.hints          = draft.hints;
+  // Pattern classification rides the same non-null-copies rule.
+  if (draft.pattern_id     != null) update.pattern_id     = draft.pattern_id;
 
   if (Object.keys(update).length === 0) {
     throw new Error('draft has no non-NULL fields to promote');

@@ -213,9 +213,17 @@ The unique index extends accordingly.
    matching `lesson_topics` row on save; the lesson builder gained
    kind/foundation-order metadata fields and a Scope-tags editor
    (section + skill grains; pattern tags display but are authored via
-   the catalog tooling). Still open from this step: the
-   pattern-catalog editor, the question-editor/drafts pattern picker,
-   and the classification queue.
+   the catalog tooling).
+   **2026-07-28**: the pattern-catalog editor landed at
+   `/admin/content/units/<skill_code>` (linked per-unit from the
+   worklist; full CRUD with per-pattern classified counts and a
+   typed-confirm delete that surfaces its blast radius), and the
+   drafts editor gained the pattern picker (shown only for cataloged
+   skills; saves to `question_content_drafts.pattern_id` and promotes
+   onto `questions_v2` under the same non-null-copies rule — new
+   questions are born classified, §4 step 3.4). Still open from this
+   step: a picker on the shared question review page (rides the
+   classification-queue PR) and the classification queue itself.
 3. Consumers, in dependency order: `recommend.ts` chain →
    generator front-load pass → drill `pattern_id` filter → detours →
    efficacy expansion → wizard/Today/roster surfaces.
