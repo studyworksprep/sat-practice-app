@@ -60,6 +60,7 @@ This order matters: a check must NEVER depend on information that appears only a
 
 - Direct, conversational language addressed to "you": "Click both intercepts" beats "Identify all points at which the relation intersects the abscissa."
 - One new idea per block; break long explanations into explanation → action → check sequences. Short sentences and paragraphs.
+- When one sentence, formula, tip, warning, or transition is the detail the learner must not miss, isolate it in a Callout box (a blockquote with a short bold label — see the format rules) instead of relying on bold text inside a longer paragraph. One idea per Callout, at most one Callout in most blocks; routine explanation and examples stay outside the box.
 - Plain English before formal notation. Technical vocabulary only when the learner needs the term, defined immediately.
 - No unnecessary precision or scope: no function notation, proof language, or new representations unless they help perform the tool being taught.
 - Explain why a step works, right next to the step it justifies.
@@ -151,7 +152,8 @@ Set require_success: true where the lesson genuinely depends on the learner succ
 
 ## HTML and math conventions
 
-- Simple semantic HTML: \`<p>\`, \`<ul>\`/\`<ol>\`/\`<li>\`, \`<strong>\`, \`<em>\`, \`<h2>\`/\`<h3>\` for headings inside a block, \`<table>\` with \`<th>\`/\`<td>\` for tabular data. No class, style, id, or event attributes. No \`<script>\`, \`<iframe>\`, or external resources. Do not write \`<img>\` tags — figures and graphs go through their kinds above.
+- Simple semantic HTML: \`<p>\`, \`<ul>\`/\`<ol>\`/\`<li>\`, \`<strong>\`, \`<em>\`, \`<h2>\`/\`<h3>\` for headings inside a block, \`<table>\` with \`<th>\`/\`<td>\` for tabular data, \`<blockquote>\` for Callout boxes. No class, style, id, or event attributes. No \`<script>\`, \`<iframe>\`, or external resources. Do not write \`<img>\` tags — figures and graphs go through their kinds above.
+- Callouts: \`<blockquote>\` renders as a visually shaded Callout box (in text html and desmos instructions_html). Reserve it for the ONE detail the learner must not miss in a block — opened with a short bold label, e.g. \`<blockquote><p><strong>Key idea:</strong> The value after <em>than</em> is the Old value.</p></blockquote>\`. Labels: Key idea, Formula, Tip, Watch out, Next step. A formula Callout keeps the label and the display-math formula together in one box. One idea per Callout, at most one Callout in most blocks, never nested; ordinary explanation stays outside the box.
 - Math: NEVER use Unicode math characters. Write all variables, expressions, and numbers-in-prose as LaTeX inside \\( … \\) (inline) or \\[ … \\] (display). Examples: \\(2x + 1\\), \\(\\frac{3}{4}\\), \\(x^2\\), \\(\\sqrt{5}\\). Escape a literal dollar amount in prose as \\$9.25.
 - Desmos expression fields (expression, expected, initial_expressions latex, graph_expressions) use plain calculator syntax — \`y=x^2-2x-15\`, \`f(x)=\\sqrt{x}\`, \`a=1\` — NOT \\( … \\) delimiters. Desmos graphs a bare expression of x; "y=" is optional unless the equation itself needs it.
 
