@@ -15,7 +15,8 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
-import { adherenceSummaryLine, ADHERENCE_LABELS, computeAdherence } from '@/lib/plan/adherence';
+import { adherenceSummaryLine, ADHERENCE_LABELS } from '@/lib/plan/adherence';
+import { loadStudentPlanState, type PlanTaskRow } from '@/lib/plan/load-plan-state';
 import {
   generatePlanAction,
   activatePlanAction,
@@ -44,16 +45,7 @@ const TASK_LABELS: Record<string, string> = {
   flashcards: 'Flashcards',
 };
 
-interface TaskRow {
-  id: string;
-  plan_id: string;
-  week_index: number;
-  scheduled_date: string | null;
-  task_type: string;
-  payload: unknown;
-  source: string;
-  status: string;
-}
+type TaskRow = PlanTaskRow;
 
 function str(obj: unknown, key: string): string | null {
   if (obj && typeof obj === 'object' && typeof (obj as Record<string, unknown>)[key] === 'string') {
@@ -186,30 +178,12 @@ export default async function StudentPlanPage({ params }: PageProps) {
   // RLS: a student this tutor can't see reads as absent → 404.
   if (!student) notFound();
 
-  const { data: plans } = await supabase
-    .from('study_plans')
-    .select('id, status, goal_score, starting_score, test_date, config, created_at')
-    .eq('student_id', studentId)
-    .eq('test_type', 'sat')
-    .in('status', ['draft', 'active'])
-    .order('created_at', { ascending: false });
-
-  const draft = (plans ?? []).find((p) => p.status === 'draft') ?? null;
-  const active = (plans ?? []).find((p) => p.status === 'active') ?? null;
-
-  const planIds = [draft?.id, active?.id].filter((v): v is string => Boolean(v));
-  const tasksByPlan = new Map<string, TaskRow[]>();
-  if (planIds.length) {
-    const { data: taskRows } = await supabase
-      .from('plan_tasks')
-      .select('id, plan_id, week_index, scheduled_date, task_type, payload, source, status')
-      .in('plan_id', planIds)
-      .order('scheduled_date', { ascending: true });
-    for (const t of (taskRows ?? []) as TaskRow[]) {
-      if (!tasksByPlan.has(t.plan_id)) tasksByPlan.set(t.plan_id, []);
-      tasksByPlan.get(t.plan_id)!.push(t);
-    }
-  }
+  const today = new Date().toISOString().slice(0, 10);
+  const { draft, active, tasksByPlan, adherence } = await loadStudentPlanState(
+    supabase,
+    studentId,
+    today,
+  );
 
   // Unit options for the editor's skill selects (swap + manual drill/lesson).
   const { data: unitRows } = await supabase
@@ -222,18 +196,6 @@ export default async function StudentPlanPage({ params }: PageProps) {
     skillCode: u.skill_code,
     title: u.title,
   }));
-
-  // Adherence (§2.4): completion vs. schedule on the active plan.
-  const today = new Date().toISOString().slice(0, 10);
-  const adherence = active
-    ? computeAdherence(
-        (tasksByPlan.get(active.id) ?? []).map((t) => ({
-          scheduledDate: t.scheduled_date,
-          status: t.status as 'pending' | 'completed' | 'skipped',
-        })),
-        today,
-      )
-    : null;
 
   const name = studentName(student);
   const defaults = {

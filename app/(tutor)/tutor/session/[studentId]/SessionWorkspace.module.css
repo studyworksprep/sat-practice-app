@@ -1,0 +1,463 @@
+/* =============================================================
+   Session workspace (§4.1). Tokens from [data-tree="next"].
+
+   Same page vocabulary as the student detail / plan pages
+   (container, breadcrumb, eyebrow header, rounded cards); the
+   prep card takes the gold accent — it is the one thing the
+   tutor reads before the student sits down.
+============================================================= */
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s6) var(--s7);
+  display: grid;
+  gap: var(--s4);
+  font-family: var(--font-sans);
+  color: var(--fg1);
+}
+
+/* ---------- Breadcrumb + header ---------- */
+
+.breadcrumb {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+  align-self: flex-start;
+}
+.breadcrumb:hover { text-decoration: underline; }
+
+.header { padding: var(--s2) 0 0; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-700);
+  margin-bottom: var(--s1);
+}
+
+.h1 {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s1);
+}
+
+.sub {
+  color: var(--fg3);
+  font-size: 13px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+}
+
+/* ---------- Stats strip ---------- */
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s3);
+}
+
+.stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--s3) var(--s4);
+  box-shadow: var(--shadow-sm);
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  margin-bottom: var(--s1);
+}
+
+.statValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.statRange,
+.statDetail {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg3);
+}
+
+.statLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+}
+.statLink:hover { text-decoration: underline; }
+
+/* ---------- Cards ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--s4);
+  box-shadow: var(--shadow-sm);
+}
+
+.cardTitle {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s1);
+}
+
+.cardSub {
+  font-size: 12px;
+  color: var(--fg3);
+  margin: 0 0 var(--s3);
+}
+
+/* ---------- Prep card ---------- */
+
+.prepCard {
+  composes: card;
+  border-color: var(--color-gold-700);
+  border-width: 1px;
+  background:
+    linear-gradient(0deg, color-mix(in srgb, var(--color-gold-700) 4%, transparent),
+      color-mix(in srgb, var(--color-gold-700) 4%, transparent)),
+    var(--card);
+}
+
+.prepHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-bottom: var(--s3);
+}
+
+.prepWindow {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+.prepGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: var(--s4);
+}
+
+.prepColTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+  margin: 0 0 var(--s2);
+}
+
+.prepList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s1);
+  font-size: 13px;
+}
+
+.prepEmpty {
+  font-size: 13px;
+  color: var(--fg3);
+  margin: 0;
+}
+
+.moverUp { color: var(--color-navy-900); }
+.moverDown { color: #a4262c; }
+
+.moverDelta {
+  font-size: 12px;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+}
+
+.prepFocus {
+  border-left: 1px solid var(--border);
+  padding-left: var(--s4);
+}
+
+.focusTitle {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-navy-900);
+  margin: 0 0 var(--s1);
+}
+
+.focusReason {
+  font-size: 13px;
+  color: var(--fg1);
+  margin: 0 0 var(--s2);
+}
+
+.focusAction {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: none;
+}
+.focusAction:hover { text-decoration: underline; }
+
+/* ---------- Two-column body ---------- */
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--s4);
+  align-items: start;
+}
+
+.rail {
+  display: grid;
+  gap: var(--s4);
+}
+
+/* ---------- Coverage table ---------- */
+
+.tableWrap { overflow-x: auto; }
+
+.coverageTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.coverageTable th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg3);
+  padding: var(--s1) var(--s2);
+  border-bottom: 1px solid var(--border);
+}
+
+.coverageTable td {
+  padding: var(--s1) var(--s2);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.coverageTable tr:last-child td { border-bottom: none; }
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.trendUp { color: #0f7b3d; font-weight: 600; }
+.trendDown { color: #a4262c; font-weight: 600; }
+
+.decayedRow td { background: color-mix(in srgb, #a4262c 5%, transparent); }
+
+/* ---------- Chips ---------- */
+
+.chip {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--fg1);
+  white-space: nowrap;
+}
+
+.adherence_on_track, .status_mastered { background: #e7f4ec; border-color: #bfe3cd; color: #0f7b3d; }
+.adherence_ahead { background: #e8f0fe; border-color: #c5d8f7; color: #1d4ed8; }
+.adherence_behind, .status_decayed { background: #fdecea; border-color: #f5c6c3; color: #a4262c; }
+.adherence_not_started, .status_not_started { background: var(--card); color: var(--fg3); }
+.status_in_progress { background: #fff7e6; border-color: #f3dfb6; color: #8a6100; }
+.status_practiced { background: #e8f0fe; border-color: #c5d8f7; color: #1d4ed8; }
+
+/* ---------- Quick actions ---------- */
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.actionBtn {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  padding: var(--s2) var(--s3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  color: var(--color-navy-900);
+  text-decoration: none;
+  background: var(--card);
+}
+.actionBtn:hover { border-color: var(--color-app-accent); color: var(--color-app-accent); }
+
+/* ---------- Assignments ---------- */
+
+.assignmentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s2);
+}
+
+.assignmentLink {
+  display: grid;
+  gap: 2px;
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--fg1);
+}
+.assignmentLink:hover { border-color: var(--color-app-accent); }
+
+.assignmentTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-navy-900);
+}
+
+.assignmentMeta {
+  font-size: 12px;
+  color: var(--fg3);
+}
+
+/* ---------- Notes ---------- */
+
+.noteForm { display: grid; gap: var(--s2); }
+
+.noteInput {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 13px;
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  resize: vertical;
+  background: var(--card);
+  color: var(--fg1);
+}
+.noteInput:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 1px;
+}
+
+.noteFormFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+}
+
+.noteHint {
+  font-size: 11px;
+  color: var(--fg3);
+}
+
+.primaryBtn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: var(--s2) var(--s4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-navy-900);
+  background: var(--color-navy-900);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.primaryBtn:hover { opacity: 0.92; }
+.primaryBtn:disabled { opacity: 0.6; cursor: default; }
+.primaryBtn:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+}
+
+.formError {
+  font-size: 12px;
+  color: #a4262c;
+  margin: 0;
+}
+
+.noteList {
+  list-style: none;
+  margin: var(--s3) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s2);
+}
+
+.noteItem {
+  border-top: 1px solid var(--border);
+  padding-top: var(--s2);
+}
+
+.noteMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg3);
+  margin-bottom: 2px;
+}
+
+.deleteNoteForm { display: inline; }
+
+.deleteNoteBtn {
+  font-size: 11px;
+  border: none;
+  background: none;
+  color: var(--fg3);
+  cursor: pointer;
+  padding: 0 var(--s1);
+}
+.deleteNoteBtn:hover { color: #a4262c; }
+
+.noteBody {
+  font-size: 13px;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 960px) {
+  .statsRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .prepGrid { grid-template-columns: 1fr; }
+  .prepFocus { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: var(--s3); }
+  .columns { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .container { padding: var(--s4) var(--s3) var(--s6); }
+  .statsRow { grid-template-columns: 1fr; }
+}

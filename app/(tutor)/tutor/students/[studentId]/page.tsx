@@ -379,6 +379,9 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
         <div className={s.snapshotHead}>
           <h2 className={s.snapshotTitle}>Snapshot</h2>
           <div className={s.snapshotHeadActions}>
+            <Link href={`/tutor/session/${student.id}`} className={s.cardHeaderLink}>
+              Session workspace →
+            </Link>
             <Link href={`/tutor/students/${student.id}/plan`} className={s.cardHeaderLink}>
               Study plan →
             </Link>
