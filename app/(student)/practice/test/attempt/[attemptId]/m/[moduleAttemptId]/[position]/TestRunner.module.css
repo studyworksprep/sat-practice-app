@@ -568,3 +568,31 @@
   background: var(--color-app-accent);
   color: #fff;
 }
+
+/* ── Mobile breakpoints (§6.3) ─────────────────────────────────
+   Bluebook-parity layout regions stay put (top bar / content /
+   bottom bar); these only compress the chrome for small screens. */
+
+@media (max-width: 720px) {
+  .topBar {
+    padding: var(--s2) var(--s3);
+    gap: var(--s2);
+  }
+  .testName { display: none; }
+  .topBarRight { flex-wrap: wrap; row-gap: 4px; }
+  .main { padding: var(--s3); }
+  .bottomBar {
+    padding: var(--s2) var(--s3);
+    gap: var(--s2);
+  }
+  .navBtnSecondary,
+  .navBtnPrimary { padding: 8px 14px; }
+}
+
+@media (max-width: 560px) {
+  .topBar { grid-template-columns: auto 1fr; }
+  .topBarCenter { justify-self: end; }
+  .bottomBarLeft { display: none; }
+  .bottomBar { grid-template-columns: auto 1fr; }
+  .bottomBarCenter { justify-self: start; }
+}

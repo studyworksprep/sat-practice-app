@@ -1,0 +1,35 @@
+/* Countdown + streak strip (§6.1), living in AppSidebar's
+   .footerSlot (which brings the padding + top border and hides
+   itself in collapsed/icon-rail mode). */
+
+.strip {
+  display: grid;
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-navy-900, #102a43);
+  white-space: nowrap;
+}
+
+/* Streak kept alive today — gold, the app's warm accent. */
+.valueLit {
+  color: var(--color-gold-700, #b7791f);
+}
+
+.label {
+  font-size: 11px;
+  color: var(--fg3, #52606d);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -33,10 +33,12 @@ export const metadata = {
   description: 'Practice SAT questions with Supabase + Next.js',
 };
 
+// No maximumScale cap (§6.3): pinch-zoom is an accessibility
+// baseline — iOS ignores the cap anyway and Android honoring it
+// just locked zoom out for the users who need it most.
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({ children }) {
