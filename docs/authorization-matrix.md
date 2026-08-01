@@ -45,7 +45,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/act/score-conversion/actions.ts` | `upsertConversionRows`, `deleteConversionTable`, `createConversionForm` | requireRole[admin] |
 | `app/(admin)/admin/content/actions.js` | `addScoreConversions`, `deleteScoreConversion`, `updateTestThresholds`, `saveSkillLearnability` | requireRole[admin] |
 | `app/(admin)/admin/content/drafts/[draftId]/actions.js` | `saveDraft`, `promoteDraft`, `rejectDraft` | requireRole[admin] |
-| `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson` | requireRole[admin] |
+| `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson`, `addLessonTopic`, `removeLessonTopic` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/import/actions.js` | `importBlocksIntoLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/actions.js` | `createLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/efficacy-actions.ts` | `refreshEfficacy` | requireServiceRole |
@@ -69,6 +69,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/assignments/new/actions.ts` | `createAssignment` | requireUser + rateLimit |
 | `app/(tutor)/tutor/lesson-packs/actions.ts` | `createPack`, `renamePack`, `deletePack`, `addQuestionToPack`, `removeQuestionFromPack`, `reorderPackQuestions`, `searchQuestions`, `listDomainsAndSkills`, `listConceptTags` | requireUser + rateLimit |
 | `app/(tutor)/tutor/roster/actions.ts` | `updateStudentProfile` | requireRole[admin|manager|teacher] + requireServiceRole |
+| `app/(tutor)/tutor/session/[studentId]/actions.ts` | `addTutorNote`, `deleteTutorNote` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/students/[studentId]/actions.js` | `importStudentPracticeHistory`, `addTestRegistration`, `removeTestRegistration`, `addOfficialScore`, `deleteStudentPracticeTest`, `removeOfficialScore` | requireUser + requireServiceRole |
 | `app/(tutor)/tutor/students/[studentId]/plan/actions.ts` | `generatePlanAction`, `activatePlanAction`, `moveTaskAction`, `removeTaskAction`, `swapSkillAction`, `addTaskAction`, `regenerateWeekAction` | requireUser |
 | `app/(tutor)/tutor/training/assignments/[id]/actions.js` | `startTrainingAssignment` | requireUser + rateLimit |
@@ -96,4 +97,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_17 route handlers, 48 server-action modules enumerated._
+_17 route handlers, 49 server-action modules enumerated._

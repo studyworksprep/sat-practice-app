@@ -172,6 +172,30 @@
   font-weight: 700;
 }
 
+/* Same pill as .editBtn, but it's a link (the session workspace
+   is navigation, not a mutation) with the gold cockpit accent. */
+.sessionBtn {
+  display: inline-block;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--color-navy-900);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  text-decoration: none;
+  transition:
+    background var(--dur-fast) var(--ease-std),
+    border-color var(--dur-fast) var(--ease-std),
+    color var(--dur-fast) var(--ease-std);
+}
+.sessionBtn:hover {
+  background: var(--color-app-accent-soft);
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
 .editBtn {
   background: transparent;
   border: 1px solid var(--border-strong);

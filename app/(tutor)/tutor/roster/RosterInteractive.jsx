@@ -219,18 +219,23 @@ function ActiveTable({ students, canEdit, onEdit }) {
               <td className={s.td}>{st.highSchool ?? <span className={s.muted}>—</span>}</td>
               <td className={s.tdNum}>{st.graduationYear ?? '—'}</td>
               <td className={s.tdAction}>
-                {canEdit && (
-                  <div className={s.actionRow}>
-                    <button
-                      type="button"
-                      className={s.editBtn}
-                      onClick={() => onEdit(st)}
-                    >
-                      Quick edit
-                    </button>
-                    <ArchiveButton studentId={st.id} archive />
-                  </div>
-                )}
+                <div className={s.actionRow}>
+                  <Link href={`/tutor/session/${st.id}`} className={s.sessionBtn}>
+                    Session
+                  </Link>
+                  {canEdit && (
+                    <>
+                      <button
+                        type="button"
+                        className={s.editBtn}
+                        onClick={() => onEdit(st)}
+                      >
+                        Quick edit
+                      </button>
+                      <ArchiveButton studentId={st.id} archive />
+                    </>
+                  )}
+                </div>
               </td>
             </tr>
           ))}
