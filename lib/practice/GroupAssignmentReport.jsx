@@ -29,6 +29,7 @@ import { ErrorLogButton } from './ErrorLogButton';
 import { FlashcardsButton } from './FlashcardsButton';
 import { QuestionNotes } from './QuestionNotes';
 import { subjectFromDomainCode } from './DomainBreakdownCard';
+import { PresenterMode } from './PresenterMode';
 import { QuestionMapGrid } from './QuestionMapGrid';
 import { ReportHero } from './ReportHero';
 import { SkillBreakdownCard } from './SkillBreakdownCard';
@@ -83,6 +84,9 @@ export function GroupAssignmentReport({
     firstReal ? firstReal.position : 0,
   );
   const [revealed, setRevealed] = useState(() => new Set());
+  // Presenter mode (§4.2) — shares selection + reveal state, same
+  // as the per-student AssignmentReport.
+  const [presenting, setPresenting] = useState(false);
 
   function reveal(position) {
     setRevealed((prev) => {
@@ -91,6 +95,10 @@ export function GroupAssignmentReport({
       next.add(position);
       return next;
     });
+  }
+
+  function revealAll() {
+    setRevealed(new Set(items.map((it) => it.position)));
   }
 
   const selected = items.find((it) => it.position === selectedPosition) ?? items[0];
@@ -133,6 +141,14 @@ export function GroupAssignmentReport({
             <span>{metrics.totalQuestions} questions</span>
           </div>
         </div>
+        <button
+          type="button"
+          className={s.presentBtn}
+          onClick={() => setPresenting(true)}
+          title="Full-screen review for a live group session: large type, arrow-key navigation, reveal controls, drawing overlay"
+        >
+          ▶ Present
+        </button>
       </header>
 
       <ReportHero
@@ -403,6 +419,47 @@ export function GroupAssignmentReport({
           </section>
         )}
       </div>
+
+      {/* ---------- Presenter mode (§4.2) ---------- */}
+      {presenting && selected && (
+        <PresenterMode
+          title={assignment.title}
+          subtitle={`${metrics.totalStudents} student${metrics.totalStudents === 1 ? '' : 's'}`}
+          groups={groups}
+          positions={items.map((it) => it.position)}
+          selectedPosition={selected.position}
+          onSelect={setSelectedPosition}
+          revealed={revealed}
+          onReveal={reveal}
+          onRevealAll={revealAll}
+          onExit={() => setPresenting(false)}
+        >
+          <CohortBreakdown
+            cohort={selected.cohort}
+            totalStudents={students.length}
+          />
+          {selected.missing ? (
+            <p className={s.missingNote}>
+              This question is no longer available in the question bank.
+            </p>
+          ) : (
+            <QuestionRenderer
+              key={`present-group-${selected.position}-${isRevealed ? 'r' : 'q'}`}
+              mode="review"
+              layout={selected.layout ?? 'single'}
+              question={selected}
+              selectedOptionId={null}
+              responseText=""
+              result={isRevealed ? {
+                isCorrect: null,
+                correctOptionId: selected.reveal.correctOptionId,
+                correctAnswerDisplay: selected.reveal.correctAnswerDisplay,
+                rationaleHtml: selected.reveal.rationaleHtml,
+              } : null}
+            />
+          )}
+        </PresenterMode>
+      )}
     </main>
   );
 }

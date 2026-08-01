@@ -1,0 +1,186 @@
+/* =============================================================
+   Presenter mode (§4.2). Full-viewport overlay, portaled to
+   <body>, so it works identically with and without browser
+   fullscreen. Light surface — this projects onto a wall or a
+   shared screen; question content wants paper, not slate.
+============================================================= */
+
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  color: var(--fg1, #1f2933);
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+/* ---------- Top bar ---------- */
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 20px;
+  background: var(--color-navy-900, #102a43);
+  color: #fff;
+  flex-wrap: wrap;
+}
+
+.topBarLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 200px;
+}
+
+.title {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtitle {
+  font-size: 12px;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+.topBarCenter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 200px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.navBtn,
+.toolBtn,
+.counterBtn,
+.exitBtn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.navBtn { font-size: 15px; padding: 6px 14px; }
+
+.navBtn:hover:not(:disabled),
+.toolBtn:hover:not(:disabled),
+.counterBtn:hover,
+.exitBtn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.navBtn:disabled,
+.toolBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.navBtn:focus-visible,
+.toolBtn:focus-visible,
+.counterBtn:focus-visible,
+.exitBtn:focus-visible {
+  outline: 2px solid var(--color-gold-700, #b7791f);
+  outline-offset: 1px;
+}
+
+.toolBtnAccent {
+  background: var(--color-gold-700, #b7791f);
+  border-color: var(--color-gold-700, #b7791f);
+}
+.toolBtnAccent:hover:not(:disabled) { background: #a56a15; }
+
+.toolBtnActive {
+  background: #fff;
+  color: var(--color-navy-900, #102a43);
+}
+.toolBtnActive:hover { background: #f1f5f9; }
+
+.exitBtn { border-color: rgba(255, 255, 255, 0.5); }
+
+/* ---------- Jump map drawer ---------- */
+
+.mapDrawer {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border, #d9e2ec);
+  background: var(--card, #fff);
+  box-shadow: 0 4px 12px rgba(16, 42, 67, 0.08);
+}
+
+/* ---------- Content ---------- */
+
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.content {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 28px 32px 64px;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+/* ---------- Draw layer ---------- */
+
+.drawLayer {
+  position: absolute;
+  /* Below the top bar so presenter controls stay reachable while
+     drawing; Excalidraw brings its own toolbars inside this box. */
+  top: 53px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+}
+
+/* Excalidraw paints its own island UI; the canvas itself stays
+   transparent so the drawing sits over the question. */
+.drawLayer :global(.excalidraw) {
+  --color-surface: transparent;
+}
+
+.drawLoading {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg3, #52606d);
+  background: #fff;
+  border: 1px solid var(--border, #d9e2ec);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+
+@media (max-width: 720px) {
+  .topBar { padding: 8px 10px; gap: 8px; }
+  .content { padding: 20px 14px 48px; }
+  .subtitle { display: none; }
+}

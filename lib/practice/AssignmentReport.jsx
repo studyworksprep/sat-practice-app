@@ -33,6 +33,7 @@ import { BrokenButton } from './BrokenButton';
 import { ErrorLogButton } from './ErrorLogButton';
 import { FlashcardsButton } from './FlashcardsButton';
 import { QuestionNotes } from './QuestionNotes';
+import { PresenterMode } from './PresenterMode';
 import { QuestionMapGrid } from './QuestionMapGrid';
 import { ReviewDailyMap } from './ReviewDailyMap';
 import { subjectFromDomainCode } from './DomainBreakdownCard';
@@ -105,6 +106,10 @@ export function AssignmentReport({
     firstReal ? firstReal.position : 0,
   );
   const [revealed, setRevealed] = useState(() => new Set());
+  // Presenter mode (§4.2). Shares selection + reveal state with the
+  // report proper, so anything revealed while projecting stays
+  // marked on the map after exiting.
+  const [presenting, setPresenting] = useState(false);
 
   function reveal(position) {
     setRevealed((prev) => {
@@ -113,6 +118,10 @@ export function AssignmentReport({
       next.add(position);
       return next;
     });
+  }
+
+  function revealAll() {
+    setRevealed(new Set(items.map((it) => it.position)));
   }
 
   const selected = items.find((it) => it.position === selectedPosition) ?? items[0];
@@ -172,15 +181,25 @@ export function AssignmentReport({
             )}
           </div>
         </div>
-        {rebuildHref && (
-          <Link
-            href={rebuildHref}
-            className={s.rebuildBtn}
-            title="Recompute the report from every attempt the student has on this assignment's questions"
+        <div className={s.headerActions}>
+          <button
+            type="button"
+            className={s.presentBtn}
+            onClick={() => setPresenting(true)}
+            title="Full-screen review for a live session: large type, arrow-key navigation, reveal controls, drawing overlay"
           >
-            ↻ Rebuild from attempts
-          </Link>
-        )}
+            ▶ Present
+          </button>
+          {rebuildHref && (
+            <Link
+              href={rebuildHref}
+              className={s.rebuildBtn}
+              title="Recompute the report from every attempt the student has on this assignment's questions"
+            >
+              ↻ Rebuild from attempts
+            </Link>
+          )}
+        </div>
       </header>
 
       {/* ---------- Headline + supporting tiles ----------
@@ -479,6 +498,43 @@ export function AssignmentReport({
         </section>
       )}
       </div>
+
+      {/* ---------- Presenter mode (§4.2) ---------- */}
+      {presenting && selected && (
+        <PresenterMode
+          title={assignment ? assignment.title : 'Session review'}
+          subtitle={studentName}
+          groups={groups}
+          positions={items.map((it) => it.position)}
+          selectedPosition={selected.position}
+          onSelect={setSelectedPosition}
+          revealed={revealed}
+          onReveal={reveal}
+          onRevealAll={revealAll}
+          onExit={() => setPresenting(false)}
+        >
+          {selected.missing ? (
+            <p className={s.missingNote}>
+              This question is no longer available in the question bank.
+            </p>
+          ) : (
+            <QuestionRenderer
+              key={`present-${selected.position}-${isRevealed ? 'r' : 'q'}`}
+              mode="review"
+              layout={selected.layout ?? 'single'}
+              question={selected}
+              selectedOptionId={selected.studentAnswer?.selectedOptionId ?? null}
+              responseText={selected.studentAnswer?.responseText ?? ''}
+              result={isRevealed ? {
+                isCorrect: selected.studentAnswer?.isCorrect ?? null,
+                correctOptionId: selected.reveal.correctOptionId,
+                correctAnswerDisplay: selected.reveal.correctAnswerDisplay,
+                rationaleHtml: selected.reveal.rationaleHtml,
+              } : null}
+            />
+          )}
+        </PresenterMode>
+      )}
     </main>
   );
 }
