@@ -145,6 +145,20 @@ export async function createAssignment(
     }
   }
 
+  // Same default-title convention for lesson assignments (§4.3):
+  // list surfaces render a real label without a lessons join.
+  if (assignmentType === 'lesson' && !title) {
+    const lessonId = typePayload.row.lesson_id;
+    if (lessonId) {
+      const { data: lessonRow } = await supabase
+        .from('lessons')
+        .select('title')
+        .eq('id', lessonId)
+        .maybeSingle();
+      if (lessonRow?.title) title = lessonRow.title;
+    }
+  }
+
   const { data: assignment, error: insertErr } = await supabase
     .from('assignments_v2')
     .insert({
@@ -180,6 +194,27 @@ export async function createAssignment(
     return actionFail(
       `Assignment created but students could not be added: ${studentsErr.message}`,
     );
+  }
+
+  // Save-as-template (§4.3): the questions-type filter_criteria is a
+  // lossless snapshot of the form, so a template is that JSON plus a
+  // name. Best-effort — a template hiccup must not fail the
+  // assignment that was just created (RLS: owner-only insert).
+  if (
+    assignmentType === 'questions' &&
+    String(formData.get('save_template') || '') === '1'
+  ) {
+    const templateName = String(formData.get('template_name') || '')
+      .trim()
+      .slice(0, 120);
+    if (templateName && typePayload.row.filter_criteria) {
+      await supabase.from('assignment_templates').insert({
+        teacher_id: user.id,
+        name: templateName,
+        assignment_type: 'questions',
+        filter_criteria: typePayload.row.filter_criteria,
+      });
+    }
   }
 
   redirect(`/tutor/assignments/${assignment.id}`);
@@ -488,12 +523,15 @@ async function buildLessonPayload(
   const lessonId = String(formData.get('lesson_id') || '').trim();
   if (!lessonId) return { ok: false, error: 'Select a lesson.' };
 
+  // Published only — the student viewer's lesson list applies the
+  // same filter, so assigning a draft would hand out a dead link.
   const { data: lesson } = await supabase
     .from('lessons')
-    .select('id')
+    .select('id, title, status')
     .eq('id', lessonId)
+    .eq('status', 'published')
     .maybeSingle();
-  if (!lesson) return { ok: false, error: 'Lesson not found.' };
+  if (!lesson) return { ok: false, error: 'Lesson not found or not published.' };
 
   return {
     ok: true,

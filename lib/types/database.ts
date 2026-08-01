@@ -492,6 +492,36 @@ export type Database = {
           },
         ]
       }
+      assignment_templates: {
+        Row: {
+          assignment_type: string
+          created_at: string
+          filter_criteria: Json
+          id: string
+          name: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          assignment_type?: string
+          created_at?: string
+          filter_criteria: Json
+          id?: string
+          name: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          assignment_type?: string
+          created_at?: string
+          filter_criteria?: Json
+          id?: string
+          name?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       assignments_v2: {
         Row: {
           archived_at: string | null

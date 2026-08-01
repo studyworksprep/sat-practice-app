@@ -1,22 +1,40 @@
 // Teacher assignment-creation page. Server Component loads the data
 // the form needs (the teacher's students, the taxonomy for the
-// question filters, the list of practice tests, the list of lessons)
-// and hands it to the client island that renders the form.
+// question filters, the practice tests, published lessons, lesson
+// packs, and the teacher's saved templates) and hands it to the
+// client island that renders the form.
 //
-// All three assignment types live in one form. The client island
+// All four assignment types live in one form. The client island
 // toggles which field group is shown based on the selected type;
 // the Server Action validates per-type on submit.
+//
+// One-click authoring (§4.3) enters through search params, resolved
+// server-side into a `prefill` prop:
+//   ?from_student=<id> — "Assign from weaknesses": the student's
+//     low-accuracy skills from the last 30 days land in the picker,
+//     weighted heavier the more they were missed. Implies ?student=.
+//   ?template=<id>     — apply a saved template's filter snapshot.
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { createAssignment } from './actions';
+import { deleteAssignmentTemplate } from './template-actions';
 import { NewAssignmentInteractive } from './NewAssignmentInteractive';
 import styles from './NewAssignmentInteractive.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export default async function NewAssignmentPage() {
+// Same floors the session workspace's prep card uses for one
+// student; window matches the performance page's 30 days.
+const WEAKNESS_WINDOW_DAYS = 30;
+const WEAKNESS_MIN_SKILL_ATTEMPTS = 3;
+const WEAKNESS_MIN_STUDENT_ATTEMPTS = 3;
+const WEAKNESS_ACCURACY_BELOW = 0.6;
+const WEAKNESS_MAX_SKILLS = 6;
+
+export default async function NewAssignmentPage({ searchParams }) {
   const { user, profile, supabase } = await requireUser();
+  const params = (await searchParams) ?? {};
 
   if (profile.role === 'student' || profile.role === 'practice') {
     redirect('/dashboard');
@@ -45,6 +63,8 @@ export default async function NewAssignmentPage() {
     { data: lessonPacksRaw },
     { data: lessonPackQuestionRows },
     { data: teacherJunctions },
+    { data: lessonRows },
+    { data: templateRows },
   ] = await Promise.all([
     // The picker needs names/emails only, so read profiles directly.
     // (This used to select from student_practice_stats, whose
@@ -89,6 +109,21 @@ export default async function NewAssignmentPage() {
           .select('teacher:profiles!teacher_id(id, first_name, last_name, email)')
           .eq('manager_id', user.id)
       : Promise.resolve({ data: [] }),
+    // Published lessons for the lesson assignment type (§4.3). The
+    // student viewer only lists published lessons, so drafts never
+    // appear here either.
+    supabase
+      .from('lessons')
+      .select('id, title')
+      .eq('status', 'published')
+      .order('title', { ascending: true }),
+    // The teacher's template shelf. RLS is owner-scoped, but the
+    // explicit filter keeps admins from seeing a cross-tutor menu.
+    supabase
+      .from('assignment_templates')
+      .select('id, name, assignment_type, filter_criteria')
+      .eq('teacher_id', user.id)
+      .order('created_at', { ascending: false }),
   ]);
 
   // Bucket junction rows by pack id so the picker shows "12
@@ -155,6 +190,67 @@ export default async function NewAssignmentPage() {
     }));
   const difficulties = Array.from(difficultiesSet).sort((a, b) => a - b);
 
+  // ── One-click prefill (§4.3) ──────────────────────────────────
+  // Resolved server-side so deep links stay short and the weak-skill
+  // computation reuses the same RPC the session workspace trusts.
+  // The client rehydrates availableBands/availableCount from the
+  // taxonomy and silently drops skills that no longer exist.
+  let prefill = null;
+
+  const templateParam = typeof params.template === 'string' ? params.template : null;
+  const fromStudentParam =
+    typeof params.from_student === 'string' ? params.from_student : null;
+
+  if (templateParam) {
+    const t = (templateRows ?? []).find((row) => row.id === templateParam);
+    const fc = t?.filter_criteria;
+    if (t && fc && Array.isArray(fc.skillSelections)) {
+      prefill = {
+        label: `Template · ${t.name}`,
+        skills: fc.skillSelections,
+        difficulties: Array.isArray(fc.difficulties) ? fc.difficulties : [],
+        size: typeof fc.size === 'number' ? fc.size : null,
+        unansweredOnly: fc.unansweredOnly === true,
+      };
+    }
+  } else if (fromStudentParam) {
+    const since = new Date(
+      Date.now() - WEAKNESS_WINDOW_DAYS * 86_400_000,
+    ).toISOString();
+    const { data: perfRows } = await supabase.rpc('get_roster_skill_performance', {
+      p_roster: [fromStudentParam],
+      p_since: since,
+      p_min_skill_attempts: WEAKNESS_MIN_SKILL_ATTEMPTS,
+      p_min_student_attempts: WEAKNESS_MIN_STUDENT_ATTEMPTS,
+      p_struggling_threshold: WEAKNESS_ACCURACY_BELOW,
+    });
+    const weak = (perfRows ?? [])
+      .filter((r) => r.attempts > 0 && r.accuracy < WEAKNESS_ACCURACY_BELOW)
+      .sort((a, b) => b.missed - a.missed || a.accuracy - b.accuracy)
+      .slice(0, WEAKNESS_MAX_SKILLS);
+    if (weak.length > 0) {
+      const studentRow = students.find((s) => s.id === fromStudentParam);
+      prefill = {
+        label: studentRow
+          ? `${studentRow.name}'s weak skills, last ${WEAKNESS_WINDOW_DAYS} days`
+          : `Weak skills, last ${WEAKNESS_WINDOW_DAYS} days`,
+        // Heaviest-missed skills get more of the set: 2× / 1.5× / 1×.
+        skills: weak.map((r, i) => ({
+          domain: r.domain_name,
+          skill: r.skill_name,
+          scoreBands: [],
+          weight: i === 0 ? 2 : i === 1 ? 1.5 : 1,
+        })),
+        difficulties: [],
+        size: null,
+        unansweredOnly: false,
+      };
+    }
+  }
+
+  const templates = (templateRows ?? []).map((t) => ({ id: t.id, name: t.name }));
+  const lessons = (lessonRows ?? []).map((l) => ({ id: l.id, title: l.title ?? 'Untitled lesson' }));
+
   return (
     <main className={styles.container}>
       <a href="/tutor/assignments" className={styles.breadcrumb}>
@@ -169,13 +265,23 @@ export default async function NewAssignmentPage() {
       </header>
 
       <NewAssignmentInteractive
+        // The island seeds selection state in lazy useState
+        // initializers, which don't re-run on a same-route
+        // client-side navigation (e.g. picking a template). Keying
+        // by the prefill source forces a remount whenever the
+        // recipe changes.
+        key={templateParam ?? fromStudentParam ?? 'blank'}
         students={students}
         teachers={teachers}
         domains={domains}
         difficulties={difficulties}
         practiceTests={(practiceTests ?? []).map((pt) => ({ id: pt.id, label: pt.name ?? pt.code ?? pt.id }))}
         lessonPacks={lessonPacks}
+        lessons={lessons}
+        templates={templates}
+        prefill={prefill}
         createAction={createAssignment}
+        deleteTemplateAction={deleteAssignmentTemplate}
       />
     </main>
   );

@@ -385,8 +385,7 @@ function LessonView({ assignment }) {
       )}
       {assignment.lesson_id && (
         <Button
-          href={`/lessons/${assignment.lesson_id}`}
-          external
+          href={`/learn/${assignment.lesson_id}`}
           style={{ alignSelf: 'flex-start' }}
         >
           Open lesson

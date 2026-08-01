@@ -572,9 +572,18 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                 <IconTile icon={InboxIcon} palette="navy" size="sm" />
                 Assignments
               </div>
-              <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.cardHeaderLink}>
-                + New assignment
-              </Link>
+              <div className={s.snapshotHeadActions}>
+                <Link
+                  href={`/tutor/assignments/new?student=${student.id}&from_student=${student.id}`}
+                  className={s.cardHeaderLink}
+                  title="Open the assignment form with this student's weakest recent skills already in the picker, weighted by how often they were missed"
+                >
+                  Assign from weaknesses →
+                </Link>
+                <Link href={`/tutor/assignments/new?student=${student.id}`} className={s.cardHeaderLink}>
+                  + New assignment
+                </Link>
+              </div>
             </div>
             {assignments.length === 0 ? (
               <p className={s.empty}>This student has no assignments.</p>

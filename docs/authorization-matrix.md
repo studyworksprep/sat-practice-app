@@ -66,7 +66,9 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(student)/today/actions.ts` | `startPlanTask`, `markTaskDone` | requireUser + rateLimit |
 | `app/(student)/welcome/actions.ts` | `saveGoalAction`, `startDiagnosticAction`, `generateFirstPlanAction`, `activateFirstPlanAction` | requireUser + rateLimit |
 | `app/(tutor)/tutor/assignments/[id]/actions.js` | `addAssignmentMembers`, `submitAssignmentOnBehalf`, `archiveAssignment` | requireUser |
+| `app/(tutor)/tutor/assignments/[id]/reassign-actions.ts` | `reassignAssignment` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/assignments/new/actions.ts` | `createAssignment` | requireUser + rateLimit |
+| `app/(tutor)/tutor/assignments/new/template-actions.ts` | `deleteAssignmentTemplate` | requireRole[admin|manager|teacher] |
 | `app/(tutor)/tutor/lesson-packs/actions.ts` | `createPack`, `renamePack`, `deletePack`, `addQuestionToPack`, `removeQuestionFromPack`, `reorderPackQuestions`, `searchQuestions`, `listDomainsAndSkills`, `listConceptTags` | requireUser + rateLimit |
 | `app/(tutor)/tutor/roster/actions.ts` | `updateStudentProfile` | requireRole[admin|manager|teacher] + requireServiceRole |
 | `app/(tutor)/tutor/session/[studentId]/actions.ts` | `addTutorNote`, `deleteTutorNote` | requireRole[admin|manager|teacher] |
@@ -97,4 +99,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_17 route handlers, 49 server-action modules enumerated._
+_17 route handlers, 51 server-action modules enumerated._
