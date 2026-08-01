@@ -17,6 +17,8 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate, formatRelativeShort, isPastDueDate } from '@/lib/formatters';
+import { adherenceSummaryLine, ADHERENCE_LABELS } from '@/lib/plan/adherence';
+import { loadStudentPlanState } from '@/lib/plan/load-plan-state';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
@@ -77,6 +79,8 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     { data: publishedTests },
     aggregate,
     aggregateAct,
+    planState,
+    { data: coverageRows },
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -167,6 +171,12 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .order('code', { ascending: true }),
     loadDashboardAggregate(studentId),
     loadDashboardAggregateAct(studentId),
+    // Plan adherence (§4.4) — same shared loader the plan page and
+    // session workspace use.
+    loadStudentPlanState(supabase, studentId, new Date().toISOString().slice(0, 10)),
+    // Curriculum coverage (§4.4) — status counts for the snapshot;
+    // the session workspace renders the full per-unit table.
+    supabase.rpc('get_student_coverage', { p_student: studentId }),
   ]);
 
   if (rpcErr) {
@@ -343,6 +353,22 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
 
   const daysToTest = daysUntil(student.satTestDate);
 
+  // Coverage status counts for the snapshot's Coverage row (§4.4).
+  // "Started" = anything beyond not_started; decayed is called out
+  // because it's the retention alarm a tutor acts on.
+  const coverage = (() => {
+    const rows = coverageRows ?? [];
+    let started = 0;
+    let mastered = 0;
+    let decayed = 0;
+    for (const c of rows) {
+      if (c.status !== 'not_started') started++;
+      if (c.status === 'mastered') mastered++;
+      if (c.status === 'decayed') decayed++;
+    }
+    return { total: rows.length, started, mastered, decayed };
+  })();
+
   return (
     <main className={s.container}>
       <Link href="/tutor/dashboard" className={s.breadcrumb}>
@@ -412,6 +438,46 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
                     : undefined}
                 />
               )}
+              {/* §4.4: plan adherence + curriculum coverage join the
+                  header — with struggling-with and progress below,
+                  the six-questions set now lives on one page. */}
+              <ProfileRow
+                label="Plan"
+                value={
+                  planState.adherence
+                    ? ADHERENCE_LABELS[planState.adherence.status]
+                    : planState.draft
+                      ? 'Draft awaiting review'
+                      : 'No plan'
+                }
+                sub={
+                  planState.adherence
+                    ? adherenceSummaryLine(planState.adherence)
+                    : undefined
+                }
+                tone={
+                  planState.adherence?.status === 'behind'
+                    ? 'bad'
+                    : planState.adherence?.status === 'on_track' ||
+                        planState.adherence?.status === 'ahead'
+                      ? 'good'
+                      : undefined
+                }
+              />
+              <ProfileRow
+                label="Coverage"
+                value={
+                  coverage.total > 0
+                    ? `${coverage.started} / ${coverage.total} units`
+                    : '—'
+                }
+                sub={
+                  coverage.total > 0
+                    ? `${coverage.mastered} mastered${coverage.decayed > 0 ? ` · ${coverage.decayed} decayed` : ''}`
+                    : undefined
+                }
+                tone={coverage.decayed > 0 ? 'bad' : undefined}
+              />
               <ProfileRow
                 label="Last activity"
                 value={formatRelativeShort(student.lastActivityAt) ?? '—'}
