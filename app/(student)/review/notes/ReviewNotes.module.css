@@ -16,7 +16,7 @@
   display: inline-block;
   margin-bottom: 8px;
   font-size: 13px;
-  color: var(--color-app-accent, #4f7ce0);
+  color: var(--color-app-accent, #102a43);
   text-decoration: none;
 }
 .backLink:hover { text-decoration: underline; }
@@ -169,7 +169,7 @@
 }
 .searchInput:focus {
   outline: none;
-  border-color: var(--color-app-accent, #4f7ce0);
+  border-color: var(--color-app-accent, #102a43);
 }
 
 .tagRow {
@@ -264,7 +264,7 @@
 
 .metaLink {
   font-size: 11px;
-  color: var(--color-app-accent, #4f7ce0);
+  color: var(--color-app-accent, #102a43);
   text-decoration: none;
   margin-left: auto;
 }

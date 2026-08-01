@@ -528,7 +528,7 @@
   flex-shrink: 0;
   white-space: nowrap;
 }
-.typeBadge_assignment { background: #eef2ff; color: #4338ca; }
+.typeBadge_assignment { background: var(--tile-violet-bg, #ede9fe); color: var(--tile-violet-fg, #5e3fbf); }
 .typeBadge_test       { background: #fff7ed; color: #c2410c; }
 .typeBadge_session    { background: #ecfdf5; color: #047857; }
 

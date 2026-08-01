@@ -113,7 +113,7 @@ const S = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' },
   uploadInline: { display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 400 },
   fileInput: { fontSize: '0.75rem' },
-  uploading: { color: '#2563eb' },
+  uploading: { color: 'var(--color-app-primary, #102a43)' },
   error: { color: '#991b1b' },
   textarea: {
     padding: '0.5rem 0.75rem',

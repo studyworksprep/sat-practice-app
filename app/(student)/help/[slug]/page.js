@@ -6,6 +6,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getArticle, getOrderedArticles } from '../content';
+import { IconTile } from '@/lib/ui/IconTile';
 import s from '../Help.module.css';
 
 export function generateStaticParams() {
@@ -34,7 +35,7 @@ export default async function HelpArticlePage({ params }) {
       <Link href="/help" className={s.backLink}>← All Help articles</Link>
 
       <div className={s.articleHeaderRow}>
-        <span className={s.articleHeaderIcon} aria-hidden>{article.icon}</span>
+        <IconTile icon={article.icon} palette={article.palette} size="lg" className={s.articleHeaderIcon} />
         <h1 className={s.h1}>{article.title}</h1>
       </div>
       <p className={s.lead}>{article.blurb}</p>

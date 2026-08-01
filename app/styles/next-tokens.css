@@ -45,6 +45,11 @@
   --color-gold-700: #cb6e17;
   --color-gold-800: #b44d12;
   --color-gold-900: #8d2b0b;
+  /* The brand/wordmark gold — the exact value used by the Studyworks
+     logo assets (public/studyworks-logo.svg, app/icon.svg,
+     lib/ui/StudyworksWordmark.tsx). Part of the scale so UI that wants
+     to echo the wordmark references a token, not a stray literal. */
+  --color-gold-wordmark: #bf8700;
 
   /* ---------- Slate (neutral text + UI) ---------- */
   --color-slate-50:  #f8fafc;
@@ -73,6 +78,10 @@
   --color-app-accent:       var(--color-app-primary);
   --color-app-accent-hover: var(--color-app-primary-hover);
   --color-app-accent-soft:  var(--color-app-primary-soft);
+  /* Previously referenced with per-call-site fallbacks (#eef / blue
+     rgba) but never defined — defining it here retires those blue
+     fallbacks in one move. */
+  --color-app-accent-bg:    var(--color-app-primary-soft);
 
   /* ---------- Semantic (muted) ---------- */
   --color-success: #5ba876;

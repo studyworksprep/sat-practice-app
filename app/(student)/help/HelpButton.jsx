@@ -15,6 +15,7 @@
 
 import { useEffect, useState } from 'react';
 import { getArticle } from './content';
+import { IconTile } from '@/lib/ui/IconTile';
 import s from './HelpButton.module.css';
 
 /**
@@ -73,7 +74,7 @@ export function HelpButton({ slug, label = 'Help' }) {
         >
           <div className={s.card} onClick={(e) => e.stopPropagation()}>
             <div className={s.header}>
-              <span className={s.headerIcon} aria-hidden>{article.icon}</span>
+              <IconTile icon={article.icon} palette={article.palette} size="md" className={s.headerIcon} />
               <h2 id="help-modal-title" className={s.title}>{article.title}</h2>
               <button
                 type="button"

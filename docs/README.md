@@ -22,6 +22,7 @@ authorization matrix to prove it's fresh.
 | `runbook.md` | Operational runbook (incidents, deploys, hotfix migrations, e2e) |
 | `database.md` | Schema operations + safe service-role usage |
 | `lesson-json-authoring-guide.md` | Lesson JSON authoring format |
+| `design/runner-spec.md` | Runner design contract — the codified Bluebook exception (parity-locked vs brand-adjustable) |
 | `lesson-template-specs/` | Lesson template specifications |
 | `../supabase/migrations/README.md` | Migration-directory state — **read before any `supabase db` command** |
 | `../SUBSCRIPTION_PLAN.md` | Billing model as shipped |

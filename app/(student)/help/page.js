@@ -5,6 +5,7 @@
 
 import Link from 'next/link';
 import { getOrderedArticles } from './content';
+import { IconTile } from '@/lib/ui/IconTile';
 import s from './Help.module.css';
 
 export const metadata = {
@@ -42,7 +43,7 @@ export default async function HelpIndexPage({ searchParams }) {
       <div className={s.articleGrid}>
         {articles.map((a) => (
           <Link key={a.slug} href={`/help/${a.slug}`} className={s.articleCard}>
-            <span className={s.articleIcon} aria-hidden>{a.icon}</span>
+            <IconTile icon={a.icon} palette={a.palette} size="md" className={s.articleIcon} />
             <div className={s.articleBody}>
               <div className={s.articleTitle}>{a.title}</div>
               <p className={s.articleBlurb}>{a.blurb}</p>

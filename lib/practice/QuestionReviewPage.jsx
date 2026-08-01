@@ -143,7 +143,7 @@ export async function QuestionReviewPage({ questionId, chrome }) {
       <nav style={{ marginBottom: '1rem' }}>
         <Link
           href={chrome.backHref}
-          style={{ color: '#2563eb', textDecoration: 'none', fontSize: '0.9rem' }}
+          style={{ color: 'var(--color-app-primary, #102a43)', textDecoration: 'none', fontSize: '0.9rem' }}
         >
           ← {chrome.backLabel}
         </Link>

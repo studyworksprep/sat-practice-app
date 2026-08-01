@@ -202,7 +202,7 @@ function Section({ title, badge, badgeStyle, children }) {
 const S = {
   main: { maxWidth: 1200, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
   breadcrumb: { marginBottom: '1rem', fontSize: '0.85rem', color: '#6b7280' },
-  crumbLink: { color: '#2563eb', textDecoration: 'none' },
+  crumbLink: { color: 'var(--color-app-primary, #102a43)', textDecoration: 'none' },
   header: { marginBottom: '1.5rem' },
   h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' },
   sub: { color: '#4b5563', marginTop: 0 },
@@ -213,7 +213,7 @@ const S = {
   badge: { padding: '0.15rem 0.55rem', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600 },
   badgeRed: { background: '#fee2e2', color: '#991b1b' },
 
-  link: { color: '#2563eb', textDecoration: 'none' },
+  link: { color: 'var(--color-app-primary, #102a43)', textDecoration: 'none' },
   rolePill: { display: 'inline-block', marginLeft: '0.4rem', padding: '0.05rem 0.4rem', borderRadius: 999, fontSize: '0.65rem', fontWeight: 600 },
   empty: { color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem', padding: '0.5rem 0', margin: 0 },
 };

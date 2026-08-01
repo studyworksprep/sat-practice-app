@@ -25,6 +25,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { IconTile } from '@/lib/ui/IconTile';
+import { InfoIcon } from '@/lib/ui/icons';
 
 const SEEN_KEY = 'studyworks_help_intro_seen';
 const DISMISSED_KEY = 'studyworks_help_banner_dismissed';
@@ -86,13 +88,13 @@ export function HelpDashboardBanner({ accountCreatedAt }) {
         padding: '12px 16px',
         marginBottom: 16,
         borderRadius: 10,
-        background: 'linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%)',
-        border: '1px solid var(--accent, #4f46e5)',
+        background: 'linear-gradient(135deg, var(--color-navy-50, #f0f4f8) 0%, #e9eef4 100%)',
+        border: '1px solid var(--accent, #102a43)',
       }}
     >
-      <span style={{ fontSize: 22, lineHeight: 1 }} aria-hidden>👋</span>
+      <IconTile icon={InfoIcon} palette="gold" size="md" />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--accent, #4f46e5)' }}>
+        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--accent, #102a43)' }}>
           New here? Start with the Help guide.
         </div>
         <div style={{ fontSize: 13, color: 'var(--fg2, #555)', marginTop: 2 }}>
@@ -107,7 +109,7 @@ export function HelpDashboardBanner({ accountCreatedAt }) {
           fontWeight: 600,
           padding: '6px 14px',
           borderRadius: 6,
-          background: 'var(--accent, #4f46e5)',
+          background: 'var(--accent, #102a43)',
           color: '#fff',
           textDecoration: 'none',
           whiteSpace: 'nowrap',

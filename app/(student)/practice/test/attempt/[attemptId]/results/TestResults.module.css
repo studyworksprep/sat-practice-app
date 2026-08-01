@@ -343,7 +343,7 @@
   line-height: 1.05;
 }
 .sectionTileRw   .sectionTileScaled { color: #ea580c; }
-.sectionTileMath .sectionTileScaled { color: #2563eb; }
+.sectionTileMath .sectionTileScaled { color: var(--color-subject-math, #2f5fcc); }
 
 .sectionTileMax {
   font-size: 14px;
@@ -452,7 +452,7 @@
 }
 
 .domainCardPctRw   { font-size: 22px; font-weight: 750; letter-spacing: -0.01em; color: #ea580c; }
-.domainCardPctMath { font-size: 22px; font-weight: 750; letter-spacing: -0.01em; color: #2563eb; }
+.domainCardPctMath { font-size: 22px; font-weight: 750; letter-spacing: -0.01em; color: var(--color-subject-math, #2f5fcc); }
 
 .domainRow {
   padding: var(--s3) 0;
@@ -498,7 +498,7 @@
 }
 
 .barFillRw   { background: #ea580c; }
-.barFillMath { background: #2563eb; }
+.barFillMath { background: var(--color-subject-math, #2f5fcc); }
 
 .skillList {
   list-style: none;
@@ -655,7 +655,7 @@
 }
 
 .timingStatRw   .timingStatValue { color: #ea580c; }
-.timingStatMath .timingStatValue { color: #2563eb; }
+.timingStatMath .timingStatValue { color: var(--color-subject-math, #2f5fcc); }
 
 /* Per-module wall-clock usage against allotted. */
 .moduleTimingList {

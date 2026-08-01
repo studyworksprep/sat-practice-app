@@ -106,7 +106,7 @@ function buildVM(q) {
 
 const S = {
   main: { maxWidth: 960, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  backLink: { color: '#2563eb', textDecoration: 'none', fontSize: '0.9rem' },
+  backLink: { color: 'var(--color-app-primary, #102a43)', textDecoration: 'none', fontSize: '0.9rem' },
   header: { marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid #e5e7eb' },
   eyebrow: { fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9ca3af' },
   h1: { fontSize: '1.6rem', fontWeight: 700, margin: '0.15rem 0 0.35rem' },

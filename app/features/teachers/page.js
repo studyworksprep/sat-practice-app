@@ -216,10 +216,10 @@ const slides = [
         ]}
         note={{
           title: 'Studyworks Prep educators',
-          text: <>Teachers with <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: '#2563eb' }}>Studyworks Prep</a> get full access at no cost, along with all their students.</>,
-          bg: 'rgba(79,124,224,0.06)',
-          border: 'rgba(79,124,224,0.2)',
-          titleColor: '#2563eb',
+          text: <>Teachers with <a href="https://www.studyworksprep.com" target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: 'var(--color-app-primary, #102a43)' }}>Studyworks Prep</a> get full access at no cost, along with all their students.</>,
+          bg: 'rgba(16,42,67,0.05)',
+          border: 'rgba(16,42,67,0.2)',
+          titleColor: 'var(--color-app-primary, #102a43)',
           textColor: '#64748b',
         }}
       />

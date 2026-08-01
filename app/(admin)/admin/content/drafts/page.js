@@ -123,7 +123,7 @@ function StatusPill({ status }) {
 
 const S = {
   main: { maxWidth: 1100, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  backLink: { color: '#2563eb', textDecoration: 'none', fontSize: '0.9rem' },
+  backLink: { color: 'var(--color-app-primary, #102a43)', textDecoration: 'none', fontSize: '0.9rem' },
   header: { marginBottom: '1.5rem', paddingBottom: '0.75rem', borderBottom: '1px solid #e5e7eb' },
   h1: { fontSize: '1.5rem', fontWeight: 700, margin: 0 },
   sub: { color: '#6b7280', fontSize: '0.875rem', marginTop: '0.25rem' },

@@ -342,7 +342,7 @@
   font-variant-numeric: tabular-nums;
 }
 .scorePillRw   .scorePillValue { color: #ea580c; }
-.scorePillMath .scorePillValue { color: #2563eb; }
+.scorePillMath .scorePillValue { color: var(--color-subject-math, #2f5fcc); }
 .scorePillLabel {
   font-size: 9px;
   font-weight: 700;
