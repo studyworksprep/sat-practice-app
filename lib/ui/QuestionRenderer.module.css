@@ -569,3 +569,28 @@
   padding-left: var(--s4);
   margin-top: var(--s2);
 }
+
+/* ── Keyboard focus (§6.3) ─────────────────────────────────────
+   The MCQ radio is visually hidden (sr-only pattern above), so
+   keyboard focus previously rendered nothing at all. Ring the
+   whole option label when its hidden input holds keyboard focus;
+   :focus-within is the fallback for engines without :has(). */
+
+.option:focus-within {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+}
+.option:has(:focus-visible) {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+}
+/* Mouse clicks focus the input too; suppress the ring unless the
+   focus is keyboard-driven where :has() support allows. */
+.option:has(input:focus:not(:focus-visible)) {
+  outline: none;
+}
+
+.crossOutBtn:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+}

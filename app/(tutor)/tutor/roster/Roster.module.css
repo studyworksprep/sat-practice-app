@@ -60,7 +60,7 @@
   font-family: inherit;
   font-size: 13px;
 }
-.search:focus { outline: 2px solid var(--color-app-accent); outline-offset: 1px; }
+.search:focus-visible { outline: 2px solid var(--color-app-accent); outline-offset: 1px; }
 
 .select {
   padding: 8px 10px;
@@ -312,7 +312,7 @@
   font-family: inherit;
   font-size: 13px;
 }
-.input:focus { outline: 2px solid var(--color-app-accent); outline-offset: 1px; }
+.input:focus-visible { outline: 2px solid var(--color-app-accent); outline-offset: 1px; }
 
 .activeRow {
   display: flex;
@@ -429,3 +429,14 @@
 .reachClose { color: var(--color-app-accent, #0284c7); font-weight: 700; }
 .reachMid   { color: var(--color-amber-fg, #b45309);   font-weight: 700; }
 .reachLow   { color: var(--color-danger-fg, #b91c1c);  font-weight: 700; }
+
+/* ── Mobile breakpoint (§6.3) ──────────────────────────────────
+   .tableWrap already scrolls horizontally; on phones, tighten
+   cell padding so more of the row fits before the scroll. */
+@media (max-width: 720px) {
+  .th, .thNum, .thStatus, .thAction,
+  .row td {
+    padding: 8px 8px;
+  }
+  .table { font-size: 12px; }
+}

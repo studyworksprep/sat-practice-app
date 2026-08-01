@@ -3716,6 +3716,13 @@ export type Database = {
           skill_code: string
         }[]
       }
+      get_practice_streak: {
+        Args: { p_user: string }
+        Returns: {
+          current_streak: number
+          practiced_today: boolean
+        }[]
+      }
       get_practice_volume_by_week: {
         Args: { weeks?: number }
         Returns: {

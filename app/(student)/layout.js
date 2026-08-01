@@ -24,6 +24,7 @@ import { maybeSendWelcomeEmail } from '@/lib/email/maybeSendWelcomeEmail';
 import { sidebarEnabledFor } from '@/lib/flags-server';
 import { AppNav } from '@/lib/ui/AppNav';
 import { AppShell } from '@/lib/ui/AppSidebar';
+import { SidebarFooterStrip } from '@/lib/ui/SidebarFooterStrip';
 import {
   STUDENT_LINKS,
   studentSections,
@@ -103,22 +104,62 @@ export default async function StudentTreeLayout({ children }) {
 
   if (await sidebarEnabledFor(navUser.role)) {
     let sections;
+    let footer = null;
     if (isTutor) {
       sections = tutorSectionsForRole(profile.role);
     } else {
       // Today (§2.3) anchors the sidebar only when the student has an
       // active plan — without one the link would open an empty surface.
-      // Head-count against the partial one-active-plan index, so this
-      // per-request check stays ~free.
-      const { count } = await supabase
-        .from('study_plans')
-        .select('id', { count: 'exact', head: true })
-        .eq('student_id', user.id)
-        .eq('status', 'active');
-      sections = studentSections({ hasTutor, hasPlan: (count ?? 0) > 0 });
+      // The plan read also feeds the footer strip (§6.1): plan test
+      // date wins over the profile date, same precedence as the
+      // dashboard; the streak comes from one aggregate RPC.
+      const [{ data: activePlans }, { data: profileDates }, { data: streakRows }] =
+        await Promise.all([
+          supabase
+            .from('study_plans')
+            .select('id, test_date')
+            .eq('student_id', user.id)
+            .eq('status', 'active')
+            .limit(1),
+          supabase
+            .from('profiles')
+            .select('sat_test_date')
+            .eq('id', user.id)
+            .maybeSingle()
+            .then((r) => ({ data: r.data ? [r.data] : [] })),
+          supabase.rpc('get_practice_streak', { p_user: user.id }),
+        ]);
+      const activePlan = (activePlans ?? [])[0] ?? null;
+      sections = studentSections({ hasTutor, hasPlan: Boolean(activePlan) });
+
+      const testDateIso = activePlan?.test_date ?? profileDates?.[0]?.sat_test_date ?? null;
+      let daysToTest = null;
+      let testDateLabel = null;
+      if (testDateIso) {
+        const target = new Date(`${String(testDateIso).slice(0, 10)}T00:00:00Z`);
+        if (!Number.isNaN(target.getTime())) {
+          const todayUtc = new Date();
+          const todayMidnight = Date.UTC(
+            todayUtc.getUTCFullYear(), todayUtc.getUTCMonth(), todayUtc.getUTCDate(),
+          );
+          daysToTest = Math.round((target.getTime() - todayMidnight) / 86_400_000);
+          testDateLabel = target.toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', timeZone: 'UTC',
+          });
+        }
+      }
+      const streak = (streakRows ?? [])[0] ?? null;
+      footer = (
+        <SidebarFooterStrip
+          daysToTest={daysToTest}
+          testDateLabel={testDateLabel}
+          currentStreak={streak?.current_streak ?? 0}
+          practicedToday={streak?.practiced_today ?? false}
+        />
+      );
     }
     return (
-      <AppShell user={navUser} sections={sections}>
+      <AppShell user={navUser} sections={sections} footer={footer}>
         {children}
       </AppShell>
     );
