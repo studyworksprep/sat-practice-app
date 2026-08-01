@@ -116,7 +116,7 @@ export default async function DraftEditorPage({ params }) {
         </div>
         <div style={S.pane}>
           <h2 style={S.paneTitle}>Draft (proposed)</h2>
-          <Card style={{ padding: '1rem', borderColor: '#2563eb', borderWidth: 2, borderStyle: 'solid' }}>
+          <Card style={{ padding: '1rem', borderColor: 'var(--color-app-primary, #102a43)', borderWidth: 2, borderStyle: 'solid' }}>
             <QuestionRenderer mode="teacher" question={mergedVM.question} result={mergedVM.result} />
           </Card>
         </div>
@@ -263,7 +263,7 @@ function buildVM(source, rendered, current) {
 
 const S = {
   main: { maxWidth: 1400, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
-  backLink: { color: '#2563eb', textDecoration: 'none', fontSize: '0.9rem' },
+  backLink: { color: 'var(--color-app-primary, #102a43)', textDecoration: 'none', fontSize: '0.9rem' },
   header: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     gap: '1rem', marginBottom: '1.5rem', paddingBottom: '0.75rem',
@@ -284,7 +284,7 @@ const S = {
   select: { padding: '0.375rem 0.5rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.95rem', fontWeight: 400 },
   rowNote: { color: '#6b7280', fontSize: '0.8rem' },
   primaryBtn: {
-    padding: '0.5rem 1rem', background: '#2563eb', color: 'white',
+    padding: '0.5rem 1rem', background: 'var(--color-app-primary, #102a43)', color: 'white',
     border: 'none', borderRadius: 6, fontWeight: 600, cursor: 'pointer',
   },
   promoteBtn: {

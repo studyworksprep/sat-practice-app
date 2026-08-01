@@ -15,6 +15,8 @@
 // tune. Every task carries a plain-language `why`, and the numeric knobs
 // are the documented constants below.
 
+import { skillDisplayName } from './task-labels.ts';
+
 export type PlanTaskType =
   | 'lesson'
   | 'drill'
@@ -154,7 +156,7 @@ export interface SkillRef {
 }
 
 export function buildDrillPayload(s: SkillRef, why: string): Record<string, unknown> {
-  const label = `${s.domainCode}/${s.skillCode}`;
+  const label = skillDisplayName(s.domainCode, s.skillCode);
   return {
     domain_code: s.domainCode,
     skill_code: s.skillCode,
@@ -172,7 +174,7 @@ export function buildDrillPayload(s: SkillRef, why: string): Record<string, unkn
 }
 
 export function buildLessonPayload(s: SkillRef, why: string): Record<string, unknown> {
-  const label = `${s.domainCode}/${s.skillCode}`;
+  const label = skillDisplayName(s.domainCode, s.skillCode);
   return {
     domain_code: s.domainCode,
     skill_code: s.skillCode,
@@ -285,7 +287,7 @@ export function generatePlan(input: PlanInput): PlanDraft {
     });
   }
 
-  const top = ranked.slice(0, 3).map((s) => `${s.domainCode}/${s.skillCode}`).join(', ');
+  const top = ranked.slice(0, 3).map((s) => skillDisplayName(s.domainCode, s.skillCode)).join(', ');
   const gapText =
     input.startingScore != null
       ? `from ${input.startingScore} toward ${input.goalScore}`

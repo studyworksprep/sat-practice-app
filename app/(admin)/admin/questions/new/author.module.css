@@ -29,7 +29,7 @@
   line-height: 1;
 }
 .toolBtn:hover { background: #f3f4f6; }
-.toolBtnActive { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+.toolBtnActive { background: var(--color-app-primary-soft, rgba(16,42,67,0.06)); border-color: color-mix(in srgb, var(--color-app-primary) 30%, transparent); color: var(--color-app-primary, #102a43); }
 
 .sep {
   width: 1px;
@@ -112,7 +112,7 @@
 
 .primaryBtn {
   padding: 0.35rem 0.85rem;
-  background: #2563eb; color: #fff;
+  background: var(--color-app-primary, #102a43); color: #fff;
   border: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer;
 }
 .ghostBtn {

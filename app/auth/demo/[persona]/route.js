@@ -51,7 +51,7 @@ function plainError(message, status = 500, detail) {
   <h1 style="font-size:1.5rem;margin:0 0 0.5rem">Couldn't start the demo</h1>
   <p>${escapeHtml(message)}</p>
   ${detail ? `<pre style="background:#f3f4f6;padding:12px;border-radius:8px;font-size:12px;overflow:auto">${escapeHtml(detail)}</pre>` : ''}
-  <p><a href="/" style="color:#1d4ed8">← Back to home</a></p>
+  <p><a href="/" style="color:#102a43">← Back to home</a></p>
 </body></html>`;
   return new NextResponse(body, {
     status,

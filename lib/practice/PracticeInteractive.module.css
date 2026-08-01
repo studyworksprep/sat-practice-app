@@ -52,7 +52,7 @@
   left: -30%;
   width: 30%;
   height: 100%;
-  background: var(--color-app-accent, #2451b3);
+  background: var(--color-app-accent, #102a43);
   border-radius: 2px;
   opacity: 0;
   transition: opacity var(--dur-fast, 120ms) var(--ease-std, ease);

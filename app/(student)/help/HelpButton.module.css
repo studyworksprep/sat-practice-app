@@ -124,7 +124,7 @@
   display: inline-flex;
   align-items: center;
 }
-.footerBtn:hover { border-color: var(--accent, #4f46e5); }
+.footerBtn:hover { border-color: var(--accent, #102a43); }
 
 .footerBtnPrimary {
   background: #f59e0b;

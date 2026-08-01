@@ -16,3 +16,7 @@ tests/.auth/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# macOS + local agent config
+.DS_Store
+.claude/

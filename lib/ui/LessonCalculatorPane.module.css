@@ -53,7 +53,7 @@
 }
 
 .badgeRequired {
-  color: var(--color-app-accent, #4f7ce0);
+  color: var(--color-app-accent, #102a43);
 }
 
 .title {
@@ -82,8 +82,8 @@
 }
 
 .actionButton:hover {
-  border-color: var(--color-app-accent, #4f7ce0);
-  color: var(--color-app-accent, #4f7ce0);
+  border-color: var(--color-app-accent, #102a43);
+  color: var(--color-app-accent, #102a43);
 }
 
 .body {

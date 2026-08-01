@@ -6,6 +6,12 @@
 // re-validated on every navigation. The shapes + colors come straight
 // from the design-system asset.
 //
+// Colors reference the brand tokens (--color-app-primary navy,
+// --color-gold-wordmark) with the literal values as fallbacks, so the
+// in-app wordmark stays aligned with app/styles/next-tokens.css. The
+// standalone assets (public/studyworks-logo.svg, app/icon.svg) keep
+// the literals — they render outside the app's CSS.
+//
 // variant="full" — the two-gear wordmark with the Studyworks text.
 // variant="mark" — the navy gear alone, square; used by the sidebar's
 //                  collapsed icon rail where there is no room for text.
@@ -27,7 +33,7 @@ export function StudyworksWordmark({ className, variant = 'full' }: WordmarkProp
         aria-label="Studyworks"
         className={className}
       >
-        <g fill="#102a43">
+        <g fill="var(--color-app-primary, #102a43)">
           <g>
             <rect x="-8" y="-66" width="16" height="16" rx="2.5" />
             <rect x="-8" y="50" width="16" height="16" rx="2.5" />
@@ -58,7 +64,7 @@ export function StudyworksWordmark({ className, variant = 'full' }: WordmarkProp
       className={className}
     >
       <g transform="translate(68, 94)">
-        <g fill="#102a43">
+        <g fill="var(--color-app-primary, #102a43)">
           <g>
             <rect x="-8" y="-66" width="16" height="16" rx="2.5" />
             <rect x="-8" y="50" width="16" height="16" rx="2.5" />
@@ -76,7 +82,7 @@ export function StudyworksWordmark({ className, variant = 'full' }: WordmarkProp
         <circle r="16" fill="#ffffff" />
       </g>
       <g transform="translate(124, 36) rotate(22)">
-        <g fill="#bf8700">
+        <g fill="var(--color-gold-wordmark, #bf8700)">
           <g>
             <rect x="-5" y="-38" width="10" height="10" rx="1.8" />
             <rect x="-5" y="28" width="10" height="10" rx="1.8" />
@@ -100,9 +106,9 @@ export function StudyworksWordmark({ className, variant = 'full' }: WordmarkProp
         fontWeight="700"
         fontSize="86"
         letterSpacing="-1.3"
-        fill="#102a43"
+        fill="var(--color-app-primary, #102a43)"
       >
-        Study<tspan fill="#bf8700">works</tspan>
+        Study<tspan fill="var(--color-gold-wordmark, #bf8700)">works</tspan>
       </text>
     </svg>
   );

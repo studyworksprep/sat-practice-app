@@ -278,7 +278,7 @@ const S = {
   headerLabel: { fontSize: '0.85rem', fontWeight: 600, color: '#374151' },
   hint: { color: '#6b7280', fontSize: '0.85rem', margin: '0.25rem 0' },
   primaryBtn: {
-    padding: '0.375rem 0.75rem', background: '#2563eb', color: 'white',
+    padding: '0.375rem 0.75rem', background: 'var(--color-app-primary, #102a43)', color: 'white',
     border: 'none', borderRadius: 6, fontWeight: 600, fontSize: '0.85rem',
     cursor: 'pointer',
   },
@@ -319,6 +319,6 @@ const S = {
   },
   uploadRow: { display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' },
   fileInput: { fontSize: '0.85rem' },
-  uploading: { color: '#2563eb' },
+  uploading: { color: 'var(--color-app-primary, #102a43)' },
   error: { color: '#991b1b' },
 };

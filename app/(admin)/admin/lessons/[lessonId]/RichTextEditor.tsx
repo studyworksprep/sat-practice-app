@@ -264,8 +264,8 @@ const S: Record<string, React.CSSProperties> = {
   },
   btnActive: { background: 'var(--color-app-accent-bg, #eef)', borderColor: 'var(--color-app-accent)', color: 'var(--color-app-accent)' },
   btnPrimary: {
-    background: 'var(--color-app-accent, #4f7ce0)',
-    borderColor: 'var(--color-app-accent, #4f7ce0)',
+    background: 'var(--color-app-accent, #102a43)',
+    borderColor: 'var(--color-app-accent, #102a43)',
     color: '#fff',
   },
   err: { color: 'var(--color-danger)', fontSize: 12, padding: '4px 10px' },

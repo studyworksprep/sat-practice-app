@@ -289,11 +289,11 @@
 }
 
 .adherence_on_track, .status_mastered { background: #e7f4ec; border-color: #bfe3cd; color: #0f7b3d; }
-.adherence_ahead { background: #e8f0fe; border-color: #c5d8f7; color: #1d4ed8; }
+.adherence_ahead { background: var(--tile-violet-bg, #ede9fe); border-color: color-mix(in srgb, var(--tile-violet-fg, #5e3fbf) 25%, transparent); color: var(--tile-violet-fg, #5e3fbf); }
 .adherence_behind, .status_decayed { background: #fdecea; border-color: #f5c6c3; color: #a4262c; }
 .adherence_not_started, .status_not_started { background: var(--card); color: var(--fg3); }
 .status_in_progress { background: #fff7e6; border-color: #f3dfb6; color: #8a6100; }
-.status_practiced { background: #e8f0fe; border-color: #c5d8f7; color: #1d4ed8; }
+.status_practiced { background: var(--color-app-primary-soft, rgba(16,42,67,0.06)); border-color: color-mix(in srgb, var(--color-app-primary) 20%, transparent); color: var(--color-app-primary, #102a43); }
 
 /* ---------- Quick actions ---------- */
 

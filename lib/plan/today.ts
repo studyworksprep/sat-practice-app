@@ -21,6 +21,7 @@
 // tsconfig's allowImportingTsExtensions sanctions it for tsc.
 import { daysBetween } from './generate-plan.ts';
 import type { PlanTaskType } from './generate-plan.ts';
+import { planTaskTitle } from './task-labels.ts';
 
 export const MAX_TODAY_TASKS = 3;
 
@@ -148,18 +149,9 @@ export const MANUAL_COMPLETE_TYPES: readonly PlanTaskType[] = [
   'flashcards',
 ];
 
-/** Student-facing fallback title when a task payload doesn't carry one. */
+/** Student-facing task title — full skill names, legacy code titles
+ *  upgraded, typed fallback when the payload carries none. One home:
+ *  lib/plan/task-labels.ts. */
 export function taskTitle(t: TodayTaskRow): string {
-  const title = t.payload?.title;
-  if (typeof title === 'string' && title.trim()) return title;
-  switch (t.taskType) {
-    case 'lesson': return 'Lesson';
-    case 'drill': return 'Skill drill';
-    case 'review': return 'Spaced review';
-    case 'practice_set': return 'Practice set';
-    case 'full_test': return 'Full-length practice test';
-    case 'vocab': return 'Vocabulary practice';
-    case 'flashcards': return 'Flashcard review';
-    default: return 'Study task';
-  }
+  return planTaskTitle(t.taskType, t.payload);
 }

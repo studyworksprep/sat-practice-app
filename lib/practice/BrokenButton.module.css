@@ -189,7 +189,7 @@
 
 .textarea:focus {
   outline: none;
-  border-color: var(--color-navy-500, #4f7ce0);
+  border-color: var(--color-navy-500, #627d98);
 }
 
 .preview {
@@ -277,7 +277,7 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--color-navy-500, #4f7ce0);
+  border-color: var(--color-navy-500, #627d98);
 }
 
 .brokenToggle {

@@ -30,7 +30,7 @@
   letter-spacing: -0.01em;
 }
 .titlePctRw   { color: #ea580c; }
-.titlePctMath { color: #2563eb; }
+.titlePctMath { color: var(--color-subject-math, #2f5fcc); }
 
 .domain {
   padding: var(--s3) 0;
@@ -82,7 +82,7 @@
   transition: width var(--dur-slow) var(--ease-std);
 }
 .barFillRw   { background: #ea580c; }
-.barFillMath { background: #2563eb; }
+.barFillMath { background: var(--color-subject-math, #2f5fcc); }
 
 .skillList {
   list-style: none;

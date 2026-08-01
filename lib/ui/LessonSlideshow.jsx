@@ -238,7 +238,7 @@ export function LessonSlideshow({
                 width: `${progressPct}%`,
                 background: isComplete
                   ? 'var(--success, #5ba876)'
-                  : 'var(--color-app-accent, var(--accent, #4f7ce0))',
+                  : 'var(--color-app-accent, var(--accent, #102a43))',
               }}
             />
           </div>
@@ -637,8 +637,8 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
             bg = 'rgba(217,119,117,0.10)';
             border = '1px solid var(--danger, #d97775)';
           } else if (isSelected) {
-            bg = 'rgba(79,124,224,0.08)';
-            border = '1px solid var(--color-app-accent, var(--accent, #4f7ce0))';
+            bg = 'rgba(16,42,67,0.06)';
+            border = '1px solid var(--color-app-accent, var(--accent, #102a43))';
           }
           return (
             <button
@@ -963,7 +963,7 @@ function DesmosInteractiveBlock({
             marginTop: 8,
             borderTop: '1px solid var(--border, #ddd)',
             paddingTop: 8,
-            color: 'var(--color-app-accent, var(--accent, #4f7ce0))',
+            color: 'var(--color-app-accent, var(--accent, #102a43))',
           }}
         >
           <HtmlBlock html={solutionHtml} />
@@ -990,7 +990,7 @@ const S = {
   },
   empty: { padding: 24, textAlign: 'center' },
   muted: { color: 'var(--muted, #6b7280)', fontSize: 13 },
-  link: { color: 'var(--color-app-accent, var(--accent, #4f7ce0))' },
+  link: { color: 'var(--color-app-accent, var(--accent, #102a43))' },
 
   progressRow: {
     display: 'flex',
@@ -1027,7 +1027,7 @@ const S = {
   kicker: {
     fontSize: 12,
     fontWeight: 600,
-    color: 'var(--color-app-accent, var(--accent, #4f7ce0))',
+    color: 'var(--color-app-accent, var(--accent, #102a43))',
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: '0.04em',
@@ -1052,14 +1052,14 @@ const S = {
     marginTop: 12,
     padding: '10px 12px',
     borderRadius: 8,
-    border: '1px solid var(--color-app-accent, #4f7ce0)',
-    background: 'var(--color-app-accent-bg, rgba(79,124,224,0.08))',
+    border: '1px solid var(--color-app-accent, #102a43)',
+    background: 'var(--color-app-accent-bg, rgba(16,42,67,0.06))',
     color: 'var(--fg2, #374151)',
     fontSize: 13,
   },
 
   primaryBtn: {
-    background: 'var(--color-app-accent, var(--accent, #4f7ce0))',
+    background: 'var(--color-app-accent, var(--accent, #102a43))',
     color: '#fff',
     border: 'none',
     padding: '8px 16px',
@@ -1072,8 +1072,8 @@ const S = {
     display: 'inline-flex',
     alignItems: 'center',
     background: 'transparent',
-    color: 'var(--color-app-accent, var(--accent, #4f7ce0))',
-    border: '1px solid var(--color-app-accent, var(--accent, #4f7ce0))',
+    color: 'var(--color-app-accent, var(--accent, #102a43))',
+    border: '1px solid var(--color-app-accent, var(--accent, #102a43))',
     padding: '6px 12px',
     borderRadius: 6,
     fontSize: 13,
@@ -1114,7 +1114,7 @@ const S = {
 
   completeWrap: { textAlign: 'center', marginTop: 8 },
   completeBtn: {
-    background: 'var(--color-app-accent, var(--accent, #4f7ce0))',
+    background: 'var(--color-app-accent, var(--accent, #102a43))',
     color: '#fff',
     border: 'none',
     padding: '10px 32px',

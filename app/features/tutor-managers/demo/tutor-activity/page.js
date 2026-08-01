@@ -161,7 +161,7 @@ export default function DemoTutorActivityPage() {
             )}
             {math.length > 0 && (
               <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Math</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-subject-math, #2f5fcc)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Math</div>
                 {math.map(d => (
                   <DomainMasteryCard key={d.domain_name} domain={d} isOpen={openDomain === d.domain_name} onToggle={() => setOpenDomain(openDomain === d.domain_name ? null : d.domain_name)} />
                 ))}

@@ -9,13 +9,22 @@
 // '/practice/tests' — so the article cross-links navigate within the
 // student tree rather than bouncing to legacy.
 
+// Article icons come from the shared SVG system (upgrade-plan §6.2 —
+// emoji icons retired); each entry pairs an icon component with an
+// IconTile palette, rendered by the pages via <IconTile>.
+import {
+  InfoIcon, PerformanceIcon, PracticeIcon, TestIcon, NotesIcon,
+  SearchIcon, FlashcardsIcon, ReviewIcon, ClipboardCheckIcon,
+  CalendarIcon, GoalIcon, ReportIcon, HelpIcon,
+} from '@/lib/ui/icons';
+
 export const HELP_ARTICLES = [
   {
     slug: 'getting-started',
     title: 'Welcome — Start Here',
     blurb: 'A 2-minute orientation to Studyworks and what to do in your first week.',
     summary: 'New to Studyworks? Read this first. A short orientation to the platform, a five-step plan for your first week, a quick tour of every tab in the top nav, and pointers to the most useful guides for self-study students.',
-    icon: '👋',
+    icon: InfoIcon, palette: 'gold',
     order: 1,
     sections: [
       {
@@ -75,7 +84,7 @@ export const HELP_ARTICLES = [
     title: 'Your Dashboard',
     blurb: 'Greeting, stats tiles, recently finished, and the performance grid.',
     summary: 'Your Dashboard is the single-screen summary you land on after logging in. It shows your target, your week-over-week pace, what you most recently completed, and a Performance grid that segments every domain by skill so you can see at a glance where the points are hiding.',
-    icon: '📊',
+    icon: PerformanceIcon, palette: 'navy',
     order: 2,
     sections: [
       {
@@ -144,7 +153,7 @@ export const HELP_ARTICLES = [
     title: 'Practice Sessions',
     blurb: 'How to start, run, and review a filtered practice session.',
     summary: 'A Practice session is a set of questions you pick by filter and work through in one sitting — no timer, no adaptive scoring, just focused reps on whatever you want to drill. This guide covers how to choose useful filters, what each control in the runner does, and how to get the most out of the post-session review.',
-    icon: '🎯',
+    icon: PracticeIcon, palette: 'math',
     order: 3,
     sections: [
       {
@@ -196,7 +205,7 @@ export const HELP_ARTICLES = [
     title: 'Practice Tests',
     blurb: 'Full-length, timed, adaptive — how to take one and what to do after.',
     summary: 'A Practice test is a full-length, timed simulation of the digital SAT or the ACT — the closest thing to the real exam you can do on Studyworks. This guide covers when to take one, how to take it under realistic conditions, and (most importantly) what to do during the post-test review, which is where the actual score gains come from.',
-    icon: '📝',
+    icon: TestIcon, palette: 'violet',
     order: 4,
     sections: [
       {
@@ -254,7 +263,7 @@ export const HELP_ARTICLES = [
     title: 'Notes, Error Log & Flashcards',
     blurb: 'The Notes tab is where you turn mistakes into improvement. Read this.',
     summary: 'The Notes tab is your study hub. It gives you three different tools for capturing what you learn: Flashcards for terms and formulas, Error Log entries for process mistakes and traps, and Notes for concepts that need a real explanation. Choosing the right tool for each lesson is the single highest-leverage habit on the platform — this article walks through when to use which.',
-    icon: '📓',
+    icon: NotesIcon, palette: 'amber',
     order: 5,
     sections: [
       {
@@ -306,7 +315,7 @@ export const HELP_ARTICLES = [
     title: 'Error Log',
     blurb: 'A journal of process mistakes you don\'t want to repeat — one entry per missed question.',
     summary: 'The Error Log is a per-question journal of process mistakes — traps you fell for, steps you skipped, assumptions you made. It\'s most useful for changing your habits over time. This guide covers how to write a good entry, when to use it (and when to reach for a Flashcard or Note instead), and how to use the two Error Log views in your weekly routine.',
-    icon: '🔍',
+    icon: SearchIcon, palette: 'danger',
     order: 6,
     sections: [
       {
@@ -380,7 +389,7 @@ export const HELP_ARTICLES = [
     title: 'Flashcards',
     blurb: 'For terms, formulas, and rules — anything you need to remember on demand.',
     summary: 'Flashcards are for the small, atomic stuff: one fact per card, drilled into long-term memory through spaced repetition. This guide covers how the mastery system works, when to reach for a flashcard vs a Note, how to write cards that actually teach you something, and how to fit a few minutes of card review into your day.',
-    icon: '📇',
+    icon: FlashcardsIcon, palette: 'pink',
     order: 7,
     sections: [
       {
@@ -456,7 +465,7 @@ export const HELP_ARTICLES = [
     title: 'The Review Tab',
     blurb: 'Common Errors, Weak Queue, and the pre-test study surface.',
     summary: 'The Review tab is a focused study surface for the days before your test. It gives you two active drill tools — Common Errors and the Weak Questions drill — plus links into long-form re-reading of your saved Notes, Error Log, and Flashcards. Lean on it most heavily in the final two weeks before test day.',
-    icon: '🔁',
+    icon: ReviewIcon, palette: 'cyan',
     order: 8,
     sections: [
       {
@@ -500,7 +509,7 @@ export const HELP_ARTICLES = [
     title: 'Assignments',
     blurb: 'When a tutor has assigned specific work.',
     summary: 'If you have a tutor on Studyworks, Assignments is where their work for you shows up — pending at the top, completed below. This guide covers how to work through one and what to do if you don\'t have a tutor (short version: skip this article and use the self-study routine).',
-    icon: '📋',
+    icon: ClipboardCheckIcon, palette: 'navy',
     order: 9,
     sections: [
       {
@@ -538,7 +547,7 @@ export const HELP_ARTICLES = [
     title: 'Study Routine (No Tutor)',
     blurb: 'A concrete weekly plan you can run on your own.',
     summary: 'A concrete weekly routine for students prepping without a tutor: four practice days, one review day, two rest days, with a full-length practice test every other Saturday. This article walks through what a normal weekday looks like, what to do on review day, how to handle practice-test weeks, and the most common mistakes to avoid.',
-    icon: '🗓️',
+    icon: CalendarIcon, palette: 'success',
     order: 10,
     sections: [
       {
@@ -612,7 +621,7 @@ export const HELP_ARTICLES = [
     title: 'Understanding Your Scores',
     blurb: 'What difficulty levels, score bands, and practice-test scores actually mean.',
     summary: 'A plain-English guide to how the SAT and ACT are scored, what difficulty levels and Score Bands (1-7) actually mean, why the digital SAT\'s second module adapts, and how to set a realistic goal based on your baseline.',
-    icon: '🎯',
+    icon: GoalIcon, palette: 'gold',
     order: 11,
     sections: [
       {
@@ -676,7 +685,7 @@ export const HELP_ARTICLES = [
     slug: 'billing',
     title: 'Billing & Subscription',
     blurb: 'Plans, your free trial, and exactly how to cancel.',
-    icon: '💳',
+    icon: ReportIcon, palette: 'slate',
     order: 10,
     sections: [
       {
@@ -734,7 +743,7 @@ export const HELP_ARTICLES = [
     title: 'FAQ & Troubleshooting',
     blurb: 'Common questions and what to do when something looks wrong.',
     summary: 'Quick answers to the questions that come up most often: a question marked wrong, the calculator not loading, an interrupted practice test, missing assignments, and a few common what-should-I-do-now questions about pacing and when to take the real SAT.',
-    icon: '❓',
+    icon: HelpIcon, palette: 'navy',
     order: 12,
     sections: [
       {

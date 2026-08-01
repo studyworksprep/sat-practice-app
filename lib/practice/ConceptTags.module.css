@@ -22,7 +22,7 @@
   align-items: center;
   gap: 4px;
   background: var(--color-blue-50, rgba(79, 124, 224, 0.1));
-  color: var(--color-blue-700, #4f7ce0);
+  color: var(--color-app-primary, #102a43);
   border: 1px solid var(--color-blue-200, rgba(79, 124, 224, 0.25));
   border-radius: 14px;
   padding: 3px 10px;
@@ -99,7 +99,7 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--color-navy-500, #4f7ce0);
+  border-color: var(--color-navy-500, #627d98);
 }
 
 .input:disabled {

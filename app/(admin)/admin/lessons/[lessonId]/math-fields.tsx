@@ -178,8 +178,8 @@ const S: Record<string, React.CSSProperties> = {
     lineHeight: 1,
   },
   primary: {
-    background: 'var(--color-app-accent, #4f7ce0)',
-    borderColor: 'var(--color-app-accent, #4f7ce0)',
+    background: 'var(--color-app-accent, #102a43)',
+    borderColor: 'var(--color-app-accent, #102a43)',
     color: '#fff',
   },
   popover: {

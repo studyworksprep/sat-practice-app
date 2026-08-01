@@ -36,9 +36,9 @@
 }
 
 .sw-tool-btn:hover:not(:disabled) {
-  background: var(--color-app-accent-soft, #e0f2fe);
-  border-color: var(--color-app-accent, #0284c7);
-  color: var(--color-app-accent, #0284c7);
+  background: var(--color-app-accent-soft, rgba(16,42,67,0.06));
+  border-color: var(--color-app-accent, #102a43);
+  color: var(--color-app-accent, #102a43);
 }
 
 .sw-tool-btn:disabled {
@@ -47,7 +47,7 @@
 }
 
 .sw-tool-btn:focus-visible {
-  outline: 2px solid var(--color-app-accent, #0284c7);
+  outline: 2px solid var(--color-app-accent, #102a43);
   outline-offset: 2px;
 }
 
@@ -64,9 +64,9 @@
 /* Open / pressed — same accent treatment as the existing
    PracticeInteractive markBtn-active style. */
 .sw-tool-btn-active {
-  background: var(--color-app-accent-soft, #e0f2fe);
-  border-color: var(--color-app-accent, #0284c7);
-  color: var(--color-app-accent, #0284c7);
+  background: var(--color-app-accent-soft, rgba(16,42,67,0.06));
+  border-color: var(--color-app-accent, #102a43);
+  color: var(--color-app-accent, #102a43);
 }
 
 /* Saved-content tint — gold dot on the icon row. Used by

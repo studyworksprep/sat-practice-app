@@ -190,7 +190,7 @@ function displayLink(id, profile) {
 const S = {
   main: { maxWidth: 1100, margin: '2rem auto', padding: '0 1.5rem', fontFamily: 'system-ui, sans-serif' },
   breadcrumb: { marginBottom: '1rem', fontSize: '0.85rem', color: '#6b7280' },
-  crumbLink: { color: '#2563eb', textDecoration: 'none' },
+  crumbLink: { color: 'var(--color-app-primary, #102a43)', textDecoration: 'none' },
   header: { marginBottom: '1.5rem' },
   h1: { fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' },
   sub: { color: '#4b5563', marginTop: 0 },
@@ -198,6 +198,6 @@ const S = {
   h2: { fontSize: '1rem', fontWeight: 600, marginTop: 0, marginBottom: '1rem', color: '#111827' },
   addRow: { display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' },
   select: { padding: '0.4rem 0.6rem', border: '1px solid #d1d5db', borderRadius: 6, fontSize: '0.85rem', background: 'white', minWidth: 200 },
-  userLink: { color: '#2563eb', textDecoration: 'none' },
+  userLink: { color: 'var(--color-app-primary, #102a43)', textDecoration: 'none' },
   empty: { color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem', padding: '0.75rem 0' },
 };

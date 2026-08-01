@@ -17,6 +17,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { adherenceSummaryLine, ADHERENCE_LABELS } from '@/lib/plan/adherence';
 import { loadStudentPlanState, type PlanTaskRow } from '@/lib/plan/load-plan-state';
+import { planTaskTitle } from '@/lib/plan/task-labels';
 import {
   generatePlanAction,
   activatePlanAction,
@@ -103,7 +104,7 @@ function PlanWeeks({
             </div>
             <ul className={styles.tasks}>
               {byWeek.get(w)!.map((t) => {
-                const title = str(t.payload, 'title') ?? TASK_LABELS[t.task_type] ?? t.task_type;
+                const title = planTaskTitle(t.task_type, t.payload);
                 const why = str(t.payload, 'why');
                 const open = t.status === 'pending';
                 const stateClass =
