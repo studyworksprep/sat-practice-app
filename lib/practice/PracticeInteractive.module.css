@@ -466,3 +466,14 @@
   }
   .navBtn { padding: 8px 14px; }
 }
+
+/* §6.3b: name the question card so the View Transition animates
+   it as its own group — the chrome (header, map) sits in the root
+   snapshot and stays visually still while the card cross-fades. */
+.article {
+  view-transition-name: sw-question;
+}
+:global(::view-transition-old(sw-question)),
+:global(::view-transition-new(sw-question)) {
+  animation-duration: 160ms;
+}
