@@ -205,9 +205,12 @@ export default async function SessionWorkspacePage({ params }: PageProps) {
   const testDate = active?.test_date ?? student.sat_test_date;
   const countdown = daysUntil(testDate, today);
   const sortedCoverage = [...coverage].sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0));
+  // Non-plan focus suggestions deep-link into "assign from
+  // weaknesses" (§4.3): the form opens with this student's weak
+  // skills already weighted in the picker.
   const focusHref = prep.focus.kind === 'catch_up'
     ? `/tutor/students/${studentId}/plan`
-    : `/tutor/assignments/new?student=${studentId}`;
+    : `/tutor/assignments/new?student=${studentId}&from_student=${studentId}`;
 
   return (
     <main className={s.container}>
@@ -402,6 +405,13 @@ export default async function SessionWorkspacePage({ params }: PageProps) {
           <section className={s.card}>
             <h2 className={s.cardTitle}>Quick actions</h2>
             <div className={s.actionsRow}>
+              <a
+                className={s.actionBtn}
+                href={`/tutor/assignments/new?student=${studentId}&from_student=${studentId}`}
+                title="Assignment form prefilled with this student's weakest recent skills"
+              >
+                Assign from weaknesses
+              </a>
               <a className={s.actionBtn} href={`/tutor/assignments/new?student=${studentId}`}>
                 Assign practice
               </a>

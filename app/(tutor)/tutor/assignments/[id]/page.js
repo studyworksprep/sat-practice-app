@@ -16,7 +16,9 @@ import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentTypeBadge } from '@/lib/ui/AssignmentTypeBadge';
 import { formatDate, isPastDueDate } from '@/lib/formatters';
 import { addAssignmentMembers, submitAssignmentOnBehalf } from './actions';
+import { reassignAssignment } from './reassign-actions';
 import { AddMembersPicker } from './AddMembersPicker';
+import { ReassignPanel } from './ReassignPanel';
 import { SubmitOnBehalfButton } from './SubmitOnBehalfButton';
 import s from './AssignmentDetail.module.css';
 
@@ -268,6 +270,23 @@ export default async function TutorAssignmentDetailPage({ params }) {
     .filter((p) => p.id && !enrolledIds.has(p.id))
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  // The reassign pool (§4.3) includes everyone visible — enrolled
+  // students too, since a copy with a fresh due date is a
+  // legitimate re-issue of the same worksheet.
+  const reassignEligible = [
+    ...(eligibleStudents ?? []).map((row) => ({
+      id: row.user_id,
+      role: 'student',
+      name:
+        [row.first_name, row.last_name].filter(Boolean).join(' ')
+        || row.email || 'Student',
+      email: row.email,
+    })),
+    ...eligibleTeachers,
+  ]
+    .filter((p) => p.id)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
   const title = assignment.title
     ?? (assignment.assignment_type === 'lesson' ? assignment.lesson?.title : null)
     ?? (assignment.assignment_type === 'practice_test' ? assignment.practice_test?.name : null)
@@ -368,6 +387,14 @@ export default async function TutorAssignmentDetailPage({ params }) {
             assignmentId={assignment.id}
             eligible={eligible}
             addAction={addAssignmentMembers}
+          />
+        )}
+
+        {!assignment.archived_at && (
+          <ReassignPanel
+            assignmentId={assignment.id}
+            eligible={reassignEligible}
+            reassignAction={reassignAssignment}
           />
         )}
 

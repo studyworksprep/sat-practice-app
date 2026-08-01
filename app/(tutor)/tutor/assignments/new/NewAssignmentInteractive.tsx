@@ -1,4 +1,4 @@
-// Teacher assignment-creation form. One form, three type-specific
+// Teacher assignment-creation form. One form, four type-specific
 // payload groups toggled by the selected assignment_type.
 //
 // Key design points:
@@ -22,7 +22,7 @@
 'use client';
 
 import { useActionState, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { ActionResult } from '@/lib/types';
 import styles from './NewAssignmentInteractive.module.css';
 
@@ -42,11 +42,29 @@ type DomainTaxonomy = {
 type PersonOption = { id: string; name: string; email: string | null };
 type PracticeTestOption = { id: string; label: string };
 type LessonPackOption = { id: string; name: string; questionCount: number };
+type LessonOption = { id: string; title: string };
+type TemplateOption = { id: string; name: string };
+
+/** Server-resolved one-click prefill (§4.3): a template or a
+ *  student's weak skills. Skills are the persisted shape (no
+ *  availableBands/Count) — rehydrated against `domains` below. */
+type Prefill = {
+  label: string;
+  skills: { domain: string; skill: string; scoreBands: number[]; weight: number }[];
+  difficulties: number[];
+  size: number | null;
+  unansweredOnly: boolean;
+};
 
 type CreateAction = (
   prev: ActionResult | null,
   fd: FormData,
 ) => Promise<ActionResult | null>;
+
+type TemplateDeleteAction = (
+  prev: ActionResult | null,
+  fd: FormData,
+) => Promise<ActionResult>;
 
 interface Props {
   students: PersonOption[];
@@ -60,7 +78,11 @@ interface Props {
   difficulties: number[];
   practiceTests: PracticeTestOption[];
   lessonPacks: LessonPackOption[];
+  lessons?: LessonOption[];
+  templates?: TemplateOption[];
+  prefill?: Prefill | null;
   createAction: CreateAction;
+  deleteTemplateAction?: TemplateDeleteAction;
 }
 
 // ── Selected-skill state ────────────────────────────────────────
@@ -90,17 +112,22 @@ export function NewAssignmentInteractive({
   difficulties,
   practiceTests,
   lessonPacks,
+  lessons = [],
+  templates = [],
+  prefill = null,
   createAction,
+  deleteTemplateAction,
 }: Props) {
   const [state, submitAction, isPending] = useActionState<ActionResult | null, FormData>(
     createAction,
     null,
   );
+  const router = useRouter();
 
   const hasTeachers = teachers.length > 0;
-  const [assignmentType, setAssignmentType] = useState<'questions' | 'practice_test' | 'lesson_pack'>(
-    'questions',
-  );
+  const [assignmentType, setAssignmentType] = useState<
+    'questions' | 'practice_test' | 'lesson' | 'lesson_pack'
+  >('questions');
 
   // Deep-link support:
   //   ?target=trainees&teacher=<id> — manager flow from the teacher
@@ -147,12 +174,41 @@ export function NewAssignmentInteractive({
     }
     return new Set();
   });
-  const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>([]);
-  const [globalDifficulties, setGlobalDifficulties] = useState<Set<number>>(new Set());
+  // Prefill (§4.3): rehydrate the persisted skill shape against the
+  // live taxonomy — availableBands/availableCount come from the
+  // `domains` prop, and skills that have vanished from the published
+  // bank are silently dropped rather than submitted into a
+  // guaranteed sampling failure.
+  const [selectedSkills, setSelectedSkills] = useState<SelectedSkill[]>(() => {
+    if (!prefill?.skills?.length) return [];
+    const out: SelectedSkill[] = [];
+    for (const p of prefill.skills) {
+      const domain = domains.find((d) => d.name === p.domain);
+      const skill = domain?.skills.find((sk) => sk.name === p.skill);
+      if (!domain || !skill) continue;
+      const bands = Array.isArray(p.scoreBands)
+        ? p.scoreBands.filter((b) => skill.scoreBands.includes(b))
+        : [];
+      out.push({
+        domain: domain.name,
+        skill: skill.name,
+        scoreBands: bands,
+        weight: WEIGHT_STEPS.includes(p.weight) ? p.weight : DEFAULT_WEIGHT,
+        availableBands: skill.scoreBands,
+        availableCount: skill.count,
+      });
+    }
+    return out;
+  });
+  const [globalDifficulties, setGlobalDifficulties] = useState<Set<number>>(
+    () => new Set((prefill?.difficulties ?? []).filter((d) => difficulties.includes(d))),
+  );
   const [skillSearch, setSkillSearch] = useState('');
   // When on, the Server Action drops any question a selected student
   // has already attempted (see actions.ts buildQuestionsPayload).
-  const [unattemptedOnly, setUnattemptedOnly] = useState(false);
+  const [unattemptedOnly, setUnattemptedOnly] = useState(prefill?.unansweredOnly ?? false);
+  // Save-as-template (§4.3) — questions type only.
+  const [saveTemplate, setSaveTemplate] = useState(false);
 
   const visiblePeople = target === 'trainees' ? teachers : students;
   const peopleLabel = target === 'trainees' ? 'Trainees' : 'Students';
@@ -286,8 +342,40 @@ export function NewAssignmentInteractive({
     [selectedSkills],
   );
 
+  // Applying a template navigates with ?template= (server-side
+  // prefill) so the recipe resolves through the same path as a
+  // shared deep link; the current ?student selection is preserved.
+  const applyTemplate = (templateId: string) => {
+    if (!templateId) return;
+    const qs = new URLSearchParams({ template: templateId });
+    const student = searchParams?.get('student') ?? searchParams?.get('from_student');
+    if (student) qs.set('student', student);
+    router.push(`/tutor/assignments/new?${qs.toString()}`);
+  };
+
   return (
     <form action={submitAction} className={styles.form}>
+      {/* Template shelf (§4.3) */}
+      {templates.length > 0 && (
+        <section className={styles.card}>
+          <div className={styles.sectionLabel}>Start from a template</div>
+          <p className={styles.sectionHint}>
+            Your saved question recipes. Applying one fills the skill picker below —
+            fresh questions are sampled each time.
+          </p>
+          <ul className={styles.templateList}>
+            {templates.map((t) => (
+              <TemplateRow
+                key={t.id}
+                template={t}
+                onApply={applyTemplate}
+                deleteAction={deleteTemplateAction}
+              />
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Type selector */}
       <section className={styles.card}>
         <div className={styles.sectionLabel}>Type</div>
@@ -295,6 +383,7 @@ export function NewAssignmentInteractive({
           {[
             { value: 'questions', label: 'Questions' },
             { value: 'practice_test', label: 'Practice test' },
+            { value: 'lesson', label: 'Lesson' },
             { value: 'lesson_pack', label: 'Lesson pack' },
           ].map((t) => (
             <label
@@ -430,6 +519,11 @@ export function NewAssignmentInteractive({
             its own score bands and a weight that controls how many of
             its questions appear relative to the others.
           </p>
+          {prefill && selectedSkills.length > 0 && (
+            <p className={styles.prefillBanner}>
+              Prefilled from <strong>{prefill.label}</strong> — adjust freely before creating.
+            </p>
+          )}
 
           <div className={styles.twoCol}>
             {/* Left: skill browser */}
@@ -643,9 +737,46 @@ export function NewAssignmentInteractive({
               type="number"
               min={1}
               max={50}
-              defaultValue={10}
+              defaultValue={prefill?.size ?? 10}
               className={`${styles.input} ${styles.inputSm}`}
             />
+          </div>
+
+          {/* Save-as-template (§4.3): stores the recipe above under a
+              name so the next assignment starts from this shelf. */}
+          <div style={{ marginTop: '16px' }}>
+            <label className={styles.notAttempted}>
+              <input
+                type="checkbox"
+                name="save_template"
+                value="1"
+                checked={saveTemplate}
+                onChange={(e) => setSaveTemplate(e.target.checked)}
+              />
+              <span className={styles.notAttemptedText}>
+                <span>Save these filters as a template</span>
+                <span className={styles.muted}>
+                  Skills, weights, bands, difficulty, and size — reusable from
+                  &ldquo;Start from a template&rdquo; on this page.
+                </span>
+              </span>
+            </label>
+            {saveTemplate && (
+              <div className={styles.fieldRow} style={{ marginTop: '8px' }}>
+                <label className={styles.fieldLabel} htmlFor="template_name">
+                  Template name
+                </label>
+                <input
+                  id="template_name"
+                  name="template_name"
+                  type="text"
+                  maxLength={120}
+                  required
+                  placeholder="e.g. Algebra tune-up, 10 medium"
+                  className={styles.input}
+                />
+              </div>
+            )}
           </div>
 
           {/* Hidden serialized payload fields. The Server Action reads
@@ -722,6 +853,30 @@ export function NewAssignmentInteractive({
         </section>
       )}
 
+      {assignmentType === 'lesson' && (
+        <section className={styles.card}>
+          <div className={styles.sectionLabel}>Lesson</div>
+          {lessons.length === 0 ? (
+            <p className={styles.empty}>No published lessons yet.</p>
+          ) : (
+            <div className={styles.fieldRow}>
+              <label className={styles.fieldLabel} htmlFor="lesson_id">Lesson</label>
+              <select
+                id="lesson_id"
+                name="lesson_id"
+                className={styles.select}
+                defaultValue=""
+              >
+                <option value="" disabled>Select a lesson…</option>
+                {lessons.map((l) => (
+                  <option key={l.id} value={l.id}>{l.title}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </section>
+      )}
+
       {assignmentType === 'lesson_pack' && (
         <section className={styles.card}>
           <div className={styles.sectionLabel}>Lesson pack</div>
@@ -765,5 +920,61 @@ export function NewAssignmentInteractive({
         </button>
       </div>
     </form>
+  );
+}
+
+// ── Template shelf row (§4.3) ───────────────────────────────────
+// Lives outside the main <form> flow visually but INSIDE it in the
+// DOM would nest forms — so delete goes through a button click that
+// builds its own FormData, ArchiveButton-style, instead of a nested
+// <form action>.
+
+function TemplateRow({
+  template,
+  onApply,
+  deleteAction,
+}: {
+  template: TemplateOption;
+  onApply: (id: string) => void;
+  deleteAction?: TemplateDeleteAction;
+}) {
+  const [deleteState, setDeleteState] = useState<ActionResult | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteAction || deleting) return;
+    setDeleting(true);
+    const fd = new FormData();
+    fd.set('template_id', template.id);
+    const result = await deleteAction(null, fd);
+    setDeleteState(result);
+    setDeleting(false);
+  };
+
+  if (deleteState?.ok) return null;
+
+  return (
+    <li className={styles.templateRow}>
+      <span className={styles.templateName}>{template.name}</span>
+      <span className={styles.templateActions}>
+        <button
+          type="button"
+          className={styles.templateApplyBtn}
+          onClick={() => onApply(template.id)}
+        >
+          Apply
+        </button>
+        <button
+          type="button"
+          className={styles.templateDeleteBtn}
+          onClick={handleDelete}
+          disabled={deleting || !deleteAction}
+          aria-label={`Delete template ${template.name}`}
+          title={deleteState && !deleteState.ok ? deleteState.error : 'Delete template'}
+        >
+          {deleting ? '…' : '✕'}
+        </button>
+      </span>
+    </li>
   );
 }
