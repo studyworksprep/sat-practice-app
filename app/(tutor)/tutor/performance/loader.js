@@ -27,6 +27,8 @@ export const PERFORMANCE_WINDOW_DAYS = 30;
 const MIN_SKILL_ATTEMPTS = 5;
 const MIN_STUDENT_ATTEMPTS_PER_SKILL = 3;
 const STRUGGLING_THRESHOLD = 0.6;
+/** Mastery-delta lookback (§4.4) — 4 weeks, matching get_student_coverage's trend_4w. */
+const TREND_WINDOW_DAYS = 28;
 
 const NUM_WEEKS = Math.ceil(PERFORMANCE_WINDOW_DAYS / 7);
 
@@ -81,6 +83,7 @@ export async function loadRosterPerformance(supabase) {
   const [
     { data: skillRows, error: skillErr },
     { data: trendRows, error: trendErr },
+    { data: skillTrendRows },
     { data: officialRows },
     { data: practiceRows },
   ] = await Promise.all([
@@ -99,6 +102,17 @@ export async function loadRosterPerformance(supabase) {
           p_num_weeks: NUM_WEEKS,
         })
       : Promise.resolve({ data: [], error: null }),
+    // Per-skill mastery movement (§4.4): roster-average delta over
+    // the last 4 weeks, from get_roster_skill_trend (a set-wise
+    // wrapper over get_skill_mastery_asof — live from attempts,
+    // not snapshots). Best-effort: a null result just hides the
+    // delta chips rather than failing the page.
+    rosterIds.length > 0
+      ? supabase.rpc('get_roster_skill_trend', {
+          p_roster: rosterIds,
+          p_days: TREND_WINDOW_DAYS,
+        })
+      : Promise.resolve({ data: [] }),
     profileIds.length > 0
       ? supabase
           .from('sat_official_scores')
@@ -162,18 +176,33 @@ export async function loadRosterPerformance(supabase) {
     };
   });
 
-  const skills = (skillRows ?? []).map((r) => ({
-    skill_code: r.skill_code,
-    skill_name: r.skill_name,
-    domain_code: r.domain_code,
-    domain_name: r.domain_name,
-    attempts: Number(r.attempts ?? 0),
-    correct: Number(r.correct ?? 0),
-    missed: Number(r.missed ?? 0),
-    accuracy: Number(r.accuracy ?? 0),
-    studentsTouched: Number(r.students_touched ?? 0),
-    studentsBelow60: Number(r.students_below_60 ?? 0),
-  }));
+  // Key the mastery deltas by (domain, skill) for the merge below.
+  const deltaByKey = new Map();
+  for (const r of skillTrendRows ?? []) {
+    deltaByKey.set(`${r.domain_code}|${r.skill_code}`, {
+      delta: r.avg_delta == null ? null : Number(r.avg_delta),
+      masteryNow: r.avg_mastery_now == null ? null : Number(r.avg_mastery_now),
+    });
+  }
+
+  const skills = (skillRows ?? []).map((r) => {
+    const trend4w = deltaByKey.get(`${r.domain_code}|${r.skill_code}`) ?? null;
+    return {
+      skill_code: r.skill_code,
+      skill_name: r.skill_name,
+      domain_code: r.domain_code,
+      domain_name: r.domain_name,
+      attempts: Number(r.attempts ?? 0),
+      correct: Number(r.correct ?? 0),
+      missed: Number(r.missed ?? 0),
+      accuracy: Number(r.accuracy ?? 0),
+      studentsTouched: Number(r.students_touched ?? 0),
+      studentsBelow60: Number(r.students_below_60 ?? 0),
+      /** Roster-average mastery movement over the last 4 weeks; null when unknown. */
+      masteryDelta4w: trend4w?.delta ?? null,
+      masteryNow: trend4w?.masteryNow ?? null,
+    };
+  });
 
   const trend = (trendRows ?? []).map((r) => ({
     startIso: r.start_iso,
@@ -260,6 +289,17 @@ export function sortSkills(skills, sort) {
         b.missed - a.missed
         || b.studentsBelow60 - a.studentsBelow60
         || a.accuracy - b.accuracy);
+      break;
+    case 'improving-least':
+      // §4.4: the master tutor's "where is effort not converting?"
+      // Smallest (or most negative) 4-week mastery movement first;
+      // skills with no delta signal sink to the end.
+      arr.sort((a, b) => {
+        if (a.masteryDelta4w == null && b.masteryDelta4w == null) return b.attempts - a.attempts;
+        if (a.masteryDelta4w == null) return 1;
+        if (b.masteryDelta4w == null) return -1;
+        return a.masteryDelta4w - b.masteryDelta4w || b.attempts - a.attempts;
+      });
       break;
     case 'name':
       arr.sort((a, b) => (a.skill_name ?? '').localeCompare(b.skill_name ?? ''));

@@ -3772,6 +3772,17 @@ export type Database = {
           students_touched: number
         }[]
       }
+      get_roster_skill_trend: {
+        Args: { p_days?: number; p_roster: string[]; p_test_type?: string }
+        Returns: {
+          avg_delta: number
+          avg_mastery_now: number
+          avg_mastery_then: number
+          domain_code: string
+          skill_code: string
+          students: number
+        }[]
+      }
       get_roster_weekly_trend: {
         Args: { p_num_weeks?: number; p_roster: string[] }
         Returns: {

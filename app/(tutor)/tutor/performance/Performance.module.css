@@ -471,3 +471,35 @@
   color: var(--fg2);
   font-variant-numeric: tabular-nums;
 }
+
+/* ── 4-week mastery delta chip (§4.4) ──────────────────────── */
+
+.deltaChip {
+  margin-top: 6px;
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  align-self: flex-start;
+}
+
+.deltaUp {
+  color: #0f7b3d;
+  background: #e7f4ec;
+  border-color: #bfe3cd;
+}
+
+.deltaDown {
+  color: #a4262c;
+  background: #fdecea;
+  border-color: #f5c6c3;
+}
+
+.deltaFlat {
+  color: var(--fg3);
+  background: transparent;
+  border-color: var(--border);
+}

@@ -10,12 +10,13 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import s from './Performance.module.css';
 
 const SORT_OPTIONS = [
-  { value: 'struggling',     label: 'Most students struggling' },
-  { value: 'most-missed',    label: 'Most missed (cohort total)' },
-  { value: 'accuracy-asc',   label: 'Lowest cohort accuracy' },
-  { value: 'accuracy-desc',  label: 'Highest cohort accuracy' },
-  { value: 'attempts',       label: 'Most cohort attempts' },
-  { value: 'name',           label: 'Skill name (A–Z)' },
+  { value: 'struggling',      label: 'Most students struggling' },
+  { value: 'improving-least', label: 'Improving least (4-wk Δ)' },
+  { value: 'most-missed',     label: 'Most missed (cohort total)' },
+  { value: 'accuracy-asc',    label: 'Lowest cohort accuracy' },
+  { value: 'accuracy-desc',   label: 'Highest cohort accuracy' },
+  { value: 'attempts',        label: 'Most cohort attempts' },
+  { value: 'name',            label: 'Skill name (A–Z)' },
 ];
 
 export function PerformanceSortToolbar({ initialSort }) {

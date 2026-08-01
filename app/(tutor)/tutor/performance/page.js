@@ -211,10 +211,13 @@ export default async function TutorPerformancePage({ searchParams }) {
 function SkillTile({ skill }) {
   const accPct = Math.round(skill.accuracy * 100);
   const tone = accuracyToneClass(accPct);
+  const delta = skill.masteryDelta4w;
   return (
     <div
       className={`${s.skillTile} ${tone}`}
-      title={`${skill.skill_name} · ${accPct}% on ${skill.attempts} attempts · ${skill.studentsTouched} student${skill.studentsTouched === 1 ? '' : 's'} touched`}
+      title={`${skill.skill_name} · ${accPct}% on ${skill.attempts} attempts · ${skill.studentsTouched} student${skill.studentsTouched === 1 ? '' : 's'} touched${
+        delta == null ? '' : ` · mastery ${delta > 0 ? '+' : ''}${delta} over 4 weeks`
+      }`}
     >
       <div className={s.skillTileTop}>
         <div className={s.skillTileName}>{skill.skill_name}</div>
@@ -229,6 +232,23 @@ function SkillTile({ skill }) {
         {skill.attempts} attempt{skill.attempts === 1 ? '' : 's'}
         {' · '}
         {skill.studentsTouched} student{skill.studentsTouched === 1 ? '' : 's'}
+      </div>
+      {/* 4-week mastery movement (§4.4) — flat and unknown both
+          render as a quiet dash so tiles stay scannable. */}
+      <div
+        className={`${s.deltaChip} ${
+          delta == null || delta === 0
+            ? s.deltaFlat
+            : delta > 0
+              ? s.deltaUp
+              : s.deltaDown
+        }`}
+      >
+        {delta == null
+          ? '— 4-wk'
+          : delta === 0
+            ? '± 0 4-wk'
+            : `${delta > 0 ? '▲ +' : '▼ '}${delta} 4-wk`}
       </div>
     </div>
   );
