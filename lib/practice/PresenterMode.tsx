@@ -54,6 +54,13 @@ interface ExcalidrawSceneSnapshot {
 /** Zoom steps for the projected type. */
 const SCALES = [1, 1.15, 1.3, 1.5] as const;
 
+/** Desmos pane width (% of the stage), draggable via the divider. */
+const CALC_WIDTH_KEY = 'sw:presenter-calc-width';
+const CALC_DEFAULT_PCT = 46;
+const CALC_MIN_PCT = 25;
+const CALC_MAX_PCT = 65;
+const clampCalcPct = (p: number) => Math.min(CALC_MAX_PCT, Math.max(CALC_MIN_PCT, p));
+
 export interface PresenterModeProps {
   title: string;
   subtitle?: string | null;
@@ -92,13 +99,59 @@ export function PresenterMode({
   children,
 }: PresenterModeProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const desmosPaneRef = useRef<HTMLDivElement>(null);
   const [scaleIdx, setScaleIdx] = useState(1);
   const [mapOpen, setMapOpen] = useState(true);
   const [calcOpen, setCalcOpen] = useState(true);
+  const [calcWidth, setCalcWidth] = useState(CALC_DEFAULT_PCT);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [drawing, setDrawing] = useState(false);
   const [Excalidraw, setExcalidraw] = useState<ExcalidrawComponent | null>(null);
   const sceneRef = useRef<ExcalidrawSceneSnapshot | null>(null);
+
+  // Restore the tutor's preferred calculator split across sessions.
+  useEffect(() => {
+    try {
+      const stored = Number(window.localStorage.getItem(CALC_WIDTH_KEY));
+      if (Number.isFinite(stored) && stored >= CALC_MIN_PCT && stored <= CALC_MAX_PCT) {
+        setCalcWidth(stored);
+      }
+    } catch { /* storage unavailable — keep the default */ }
+  }, []);
+
+  const commitCalcWidth = useCallback((pct: number) => {
+    const next = clampCalcPct(pct);
+    setCalcWidth(next);
+    try { window.localStorage.setItem(CALC_WIDTH_KEY, String(Math.round(next))); } catch { /* ignore */ }
+  }, []);
+
+  // Drag the divider to resize the calculator column. Pointer capture
+  // routes every move to the divider (so the drag survives crossing
+  // the Desmos canvas), and the pane's flex-basis is written directly
+  // during the drag — React state commits once, on release (the
+  // FloatingCalculator pattern: smoother than re-rendering per frame).
+  const onDividerPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const stage = stageRef.current;
+    if (!stage) return;
+    const rect = stage.getBoundingClientRect();
+    const divider = e.currentTarget;
+    const pctAt = (clientX: number) => clampCalcPct(((clientX - rect.left) / rect.width) * 100);
+    const onMove = (ev: PointerEvent) => {
+      if (desmosPaneRef.current) desmosPaneRef.current.style.flexBasis = `${pctAt(ev.clientX)}%`;
+    };
+    const finish = (ev: PointerEvent) => {
+      commitCalcWidth(pctAt(ev.clientX));
+      divider.removeEventListener('pointermove', onMove);
+      divider.removeEventListener('pointerup', finish);
+      divider.removeEventListener('pointercancel', finish);
+    };
+    divider.setPointerCapture(e.pointerId);
+    divider.addEventListener('pointermove', onMove);
+    divider.addEventListener('pointerup', finish);
+    divider.addEventListener('pointercancel', finish);
+  }, [commitCalcWidth]);
 
   const index = Math.max(0, positions.indexOf(selectedPosition));
   const isRevealed = revealed.has(selectedPosition);
@@ -292,16 +345,40 @@ export function PresenterMode({
           layout: calculator on the left, question on the right.
           The draw layer overlays the stage only, so the top bar
           and map drawer stay reachable while drawing. */}
-      <div className={s.stage}>
+      <div ref={stageRef} className={s.stage}>
         {desmosEligible ? (
-          <div className={`${s.desmosPane} ${calcOpen ? '' : s.desmosPaneClosed}`}>
-            <DesmosPanel
-              key={`presenter-desmos-${desmosKey ?? 'q'}`}
-              isOpen={calcOpen}
-              storageKey={desmosKey != null ? `desmos:presenter:${desmosKey}` : undefined}
-              fitToContainer
-            />
-          </div>
+          <>
+            <div
+              ref={desmosPaneRef}
+              className={`${s.desmosPane} ${calcOpen ? '' : s.desmosPaneClosed}`}
+              style={calcOpen ? { flexBasis: `${calcWidth}%` } : undefined}
+            >
+              <DesmosPanel
+                key={`presenter-desmos-${desmosKey ?? 'q'}`}
+                isOpen={calcOpen}
+                storageKey={desmosKey != null ? `desmos:presenter:${desmosKey}` : undefined}
+                fitToContainer
+              />
+            </div>
+            {calcOpen ? (
+              <div
+                className={s.divider}
+                role="separator"
+                aria-orientation="vertical"
+                aria-label="Resize calculator (drag, or left/right arrow keys)"
+                tabIndex={0}
+                onPointerDown={onDividerPointerDown}
+                onKeyDown={(e) => {
+                  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+                  // Stop the presenter's global ←/→ question walk from
+                  // firing while the divider itself is focused.
+                  e.preventDefault();
+                  e.stopPropagation();
+                  commitCalcWidth(calcWidth + (e.key === 'ArrowRight' ? 4 : -4));
+                }}
+              />
+            ) : null}
+          </>
         ) : null}
 
         <div className={s.scroll}>

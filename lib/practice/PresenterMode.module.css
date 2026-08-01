@@ -141,18 +141,67 @@
 }
 
 /* Desmos pane — the practice runner's two-column math format:
-   calculator left on the math-tinted wash, question right. */
+   calculator left on the math-tinted wash, question right. Width is
+   set inline (flex-basis %) and dragged via the divider. */
 .desmosPane {
-  flex: 0 0 min(44%, 640px);
+  flex: 0 0 46%;
   min-width: 0;
-  border-right: 1px solid var(--border, #d9e2ec);
   background: var(--color-subject-math-soft, #e0ecff);
   overflow: hidden;
 }
 
 .desmosPaneClosed {
-  flex-basis: 0;
-  border-right: none;
+  flex-basis: 0 !important;
+}
+
+/* Drag divider between the calculator and the question. The hit
+   area is 10px; the visible line is 1px with a centred pill handle
+   that brightens on hover/focus (the runner's divider treatment). */
+.divider {
+  flex: 0 0 10px;
+  cursor: col-resize;
+  touch-action: none;
+  position: relative;
+  background: transparent;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: 0 auto;
+  width: 1px;
+  background: var(--border, #d9e2ec);
+  transition: background 0.15s ease;
+}
+
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(16, 42, 67, 0.18);
+  transition: background 0.15s ease, height 0.15s ease;
+}
+
+.divider:hover::before,
+.divider:focus-visible::before {
+  background: color-mix(in srgb, var(--color-app-primary, #102a43) 35%, transparent);
+}
+
+.divider:hover::after,
+.divider:focus-visible::after {
+  background: color-mix(in srgb, var(--color-app-primary, #102a43) 55%, transparent);
+  height: 48px;
+}
+
+.divider:focus-visible {
+  outline: 2px solid var(--color-gold-700, #b7791f);
+  outline-offset: -2px;
 }
 
 /* ---------- Content ---------- */
