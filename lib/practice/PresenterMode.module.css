@@ -130,10 +130,36 @@
   box-shadow: 0 4px 12px rgba(16, 42, 67, 0.08);
 }
 
+/* ---------- Stage (Desmos pane + content + draw layer) ---------- */
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+/* Desmos pane — the practice runner's two-column math format:
+   calculator left on the math-tinted wash, question right. */
+.desmosPane {
+  flex: 0 0 min(44%, 640px);
+  min-width: 0;
+  border-right: 1px solid var(--border, #d9e2ec);
+  background: var(--color-subject-math-soft, #e0ecff);
+  overflow: hidden;
+}
+
+.desmosPaneClosed {
+  flex-basis: 0;
+  border-right: none;
+}
+
 /* ---------- Content ---------- */
 
 .scroll {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -146,16 +172,20 @@
   line-height: 1.55;
 }
 
+/* While drawing, Excalidraw's floating toolbar sits top-center of
+   the stage; push the question down so it never covers the text. */
+.contentDrawing {
+  padding-top: 96px;
+}
+
 /* ---------- Draw layer ---------- */
 
 .drawLayer {
+  /* Covers the stage only — the top bar and map drawer stay
+     reachable while drawing; Excalidraw brings its own toolbars
+     inside this box. */
   position: absolute;
-  /* Below the top bar so presenter controls stay reachable while
-     drawing; Excalidraw brings its own toolbars inside this box. */
-  top: 53px;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 5;
 }
 
