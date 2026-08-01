@@ -101,19 +101,27 @@ export function PresenterMode({
     [positions, index, onSelect],
   );
 
+  // The reports pass onExit as an inline closure (new identity every
+  // render), so effects must never list it as a dependency — the
+  // fullscreen effect re-running on each parent render exited and
+  // re-requested fullscreen on every Next/Back. Read it via a ref.
+  const onExitRef = useRef(onExit);
+  useEffect(() => { onExitRef.current = onExit; });
+
   // ── Fullscreen + scroll lock ────────────────────────────────────
   // Best-effort browser fullscreen: some contexts (iframes, iPad
   // Safari settings) refuse — the fixed overlay still covers the
   // viewport, so presenting works either way. When fullscreen WAS
   // granted, the browser's own Esc exits it; we treat that as
   // exiting presenter mode too so the two never get out of sync.
+  // Mount-only: fullscreen is entered once per presenter session.
   useEffect(() => {
     const el = rootRef.current;
     let sawFullscreen = false;
     el?.requestFullscreen?.().catch(() => {});
     const onFsChange = () => {
       if (document.fullscreenElement) sawFullscreen = true;
-      else if (sawFullscreen) onExit();
+      else if (sawFullscreen) onExitRef.current();
     };
     document.addEventListener('fullscreenchange', onFsChange);
     const prevOverflow = document.body.style.overflow;
@@ -123,7 +131,7 @@ export function PresenterMode({
       document.body.style.overflow = prevOverflow;
       if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
     };
-  }, [onExit]);
+  }, []);
 
   // ── Keyboard ────────────────────────────────────────────────────
   // Suspended while the draw layer is up: Excalidraw owns the
@@ -134,7 +142,7 @@ export function PresenterMode({
       if (e.key === 'Escape') {
         e.preventDefault();
         if (drawing) setDrawing(false);
-        else if (!document.fullscreenElement) onExit();
+        else if (!document.fullscreenElement) onExitRef.current();
         // With fullscreen active the browser exits it on Esc and
         // the fullscreenchange listener above closes presenter.
         return;
@@ -148,7 +156,7 @@ export function PresenterMode({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [drawing, step, onReveal, selectedPosition, onExit]);
+  }, [drawing, step, onReveal, selectedPosition]);
 
   // Excalidraw loads lazily the first time the draw layer opens.
   useEffect(() => {
