@@ -433,6 +433,9 @@ export function GroupAssignmentReport({
           onReveal={reveal}
           onRevealAll={revealAll}
           onExit={() => setPresenting(false)}
+          desmosEligible={!selected.missing
+            && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '')}
+          desmosKey={selected.questionId}
         >
           <CohortBreakdown
             cohort={selected.cohort}

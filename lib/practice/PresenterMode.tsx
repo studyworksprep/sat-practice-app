@@ -21,6 +21,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { QuestionMapGrid } from './QuestionMapGrid';
+import { DesmosPanel } from '@/lib/ui/DesmosPanel';
 import s from './PresenterMode.module.css';
 
 // Loose Excalidraw typing, same rationale as ExcalidrawNode.tsx.
@@ -66,6 +67,12 @@ export interface PresenterModeProps {
   onReveal: (position: number) => void;
   onRevealAll: () => void;
   onExit: () => void;
+  /** True when the current question is a math question — shows the
+   *  Desmos pane (default open) in the runner's two-column format. */
+  desmosEligible?: boolean;
+  /** Per-question identity for the Desmos localStorage key, matching
+   *  the practice runner's per-question graph persistence. */
+  desmosKey?: string | number | null;
   children: React.ReactNode;
 }
 
@@ -80,11 +87,15 @@ export function PresenterMode({
   onReveal,
   onRevealAll,
   onExit,
+  desmosEligible = false,
+  desmosKey = null,
   children,
 }: PresenterModeProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [scaleIdx, setScaleIdx] = useState(1);
-  const [mapOpen, setMapOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(true);
+  const [calcOpen, setCalcOpen] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [drawing, setDrawing] = useState(false);
   const [Excalidraw, setExcalidraw] = useState<ExcalidrawComponent | null>(null);
   const sceneRef = useRef<ExcalidrawSceneSnapshot | null>(null);
@@ -111,18 +122,20 @@ export function PresenterMode({
   // ── Fullscreen + scroll lock ────────────────────────────────────
   // Best-effort browser fullscreen: some contexts (iframes, iPad
   // Safari settings) refuse — the fixed overlay still covers the
-  // viewport, so presenting works either way. When fullscreen WAS
-  // granted, the browser's own Esc exits it; we treat that as
-  // exiting presenter mode too so the two never get out of sync.
+  // viewport, so presenting works either way. Losing fullscreen
+  // does NOT close presenter: native dialogs (Excalidraw's image
+  // upload file picker, print, etc.) force the browser out of
+  // fullscreen, and closing the whole presenter on that made
+  // Draw → Upload image exit the session. Instead we track the
+  // state and offer a "⛶ Fullscreen" button to re-enter; exiting
+  // presenter is the ✕ button or Esc (pressed while not
+  // fullscreen — the first Esc in fullscreen only leaves
+  // fullscreen, which is the browser's own behavior).
   // Mount-only: fullscreen is entered once per presenter session.
   useEffect(() => {
     const el = rootRef.current;
-    let sawFullscreen = false;
     el?.requestFullscreen?.().catch(() => {});
-    const onFsChange = () => {
-      if (document.fullscreenElement) sawFullscreen = true;
-      else if (sawFullscreen) onExitRef.current();
-    };
+    const onFsChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener('fullscreenchange', onFsChange);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -143,8 +156,8 @@ export function PresenterMode({
         e.preventDefault();
         if (drawing) setDrawing(false);
         else if (!document.fullscreenElement) onExitRef.current();
-        // With fullscreen active the browser exits it on Esc and
-        // the fullscreenchange listener above closes presenter.
+        // With fullscreen active the browser's own Esc handling
+        // exits fullscreen first; a second Esc closes presenter.
         return;
       }
       if (drawing) return;
@@ -225,6 +238,16 @@ export function PresenterMode({
           <button type="button" className={s.toolBtn} onClick={onRevealAll} disabled={allRevealed}>
             Reveal all
           </button>
+          {desmosEligible ? (
+            <button
+              type="button"
+              className={`${s.toolBtn} ${calcOpen ? s.toolBtnActive : ''}`}
+              onClick={() => setCalcOpen((v) => !v)}
+              aria-pressed={calcOpen}
+            >
+              Calculator
+            </button>
+          ) : null}
           <button
             type="button"
             className={`${s.toolBtn} ${drawing ? s.toolBtnActive : ''}`}
@@ -233,6 +256,16 @@ export function PresenterMode({
           >
             ✎ Draw
           </button>
+          {!isFullscreen ? (
+            <button
+              type="button"
+              className={s.toolBtn}
+              onClick={() => rootRef.current?.requestFullscreen?.().catch(() => {})}
+              aria-label="Re-enter fullscreen"
+            >
+              ⛶ Fullscreen
+            </button>
+          ) : null}
           <button type="button" className={s.exitBtn} onClick={onExit}>
             ✕ Exit
           </button>
@@ -254,15 +287,34 @@ export function PresenterMode({
         </div>
       ) : null}
 
-      {/* ── Content ─────────────────────────────────────────── */}
-      <div className={s.scroll}>
-        <div className={s.content} style={{ zoom: SCALES[scaleIdx] }}>
-          {children}
-        </div>
-      </div>
+      {/* ── Stage: optional Desmos pane + scrolling content ──
+          The two-column format mirrors the practice runner's math
+          layout: calculator on the left, question on the right.
+          The draw layer overlays the stage only, so the top bar
+          and map drawer stay reachable while drawing. */}
+      <div className={s.stage}>
+        {desmosEligible ? (
+          <div className={`${s.desmosPane} ${calcOpen ? '' : s.desmosPaneClosed}`}>
+            <DesmosPanel
+              key={`presenter-desmos-${desmosKey ?? 'q'}`}
+              isOpen={calcOpen}
+              storageKey={desmosKey != null ? `desmos:presenter:${desmosKey}` : undefined}
+              fitToContainer
+            />
+          </div>
+        ) : null}
 
-      {/* ── Draw layer ──────────────────────────────────────── */}
-      {drawing ? (
+        <div className={s.scroll}>
+          <div
+            className={`${s.content} ${drawing ? s.contentDrawing : ''}`}
+            style={{ zoom: SCALES[scaleIdx] }}
+          >
+            {children}
+          </div>
+        </div>
+
+        {/* ── Draw layer ────────────────────────────────────── */}
+        {drawing ? (
         <div className={s.drawLayer}>
           {Excalidraw ? (
             <Excalidraw
@@ -291,7 +343,8 @@ export function PresenterMode({
             <div className={s.drawLoading}>Loading whiteboard…</div>
           )}
         </div>
-      ) : null}
+        ) : null}
+      </div>
     </div>,
     document.body,
   );

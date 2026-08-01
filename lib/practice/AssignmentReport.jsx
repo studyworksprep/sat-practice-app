@@ -512,6 +512,9 @@ export function AssignmentReport({
           onReveal={reveal}
           onRevealAll={revealAll}
           onExit={() => setPresenting(false)}
+          desmosEligible={!selected.missing
+            && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '')}
+          desmosKey={selected.questionId}
         >
           {selected.missing ? (
             <p className={s.missingNote}>
