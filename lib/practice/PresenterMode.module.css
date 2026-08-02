@@ -121,6 +121,37 @@
 
 .exitBtn { border-color: rgba(255, 255, 255, 0.5); }
 
+/* ---------- Question meta strip ---------- */
+
+/* Slim navy strip attached under the top bar: domain · skill, plus
+   the score band as a gold chip. Projected-legible but unobtrusive. */
+.metaBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 20px;
+  background: var(--color-navy-800, #243b53);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 13px;
+  font-weight: 600;
+  flex-wrap: wrap;
+}
+
+.metaItem + .metaItem::before {
+  content: '·';
+  margin-right: 8px;
+  opacity: 0.6;
+}
+
+.metaBand {
+  background: var(--color-gold-500, #f0b429);
+  color: var(--color-navy-900, #102a43);
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 9px;
+}
+
 /* ---------- Jump map drawer ---------- */
 
 .mapDrawer {

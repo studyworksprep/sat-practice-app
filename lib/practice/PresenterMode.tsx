@@ -74,6 +74,14 @@ export interface PresenterModeProps {
   onReveal: (position: number) => void;
   onRevealAll: () => void;
   onExit: () => void;
+  /** Taxonomy of the current question — shown as a meta strip under
+   *  the top bar so the tutor can cite topic/skill + score band while
+   *  presenting. Null/absent (e.g. a missing question) hides the strip. */
+  taxonomy?: {
+    domainName?: string | null;
+    skillName?: string | null;
+    scoreBand?: number | null;
+  } | null;
   /** True when the current question is a math question — shows the
    *  Desmos pane (default open) in the runner's two-column format. */
   desmosEligible?: boolean;
@@ -94,6 +102,7 @@ export function PresenterMode({
   onReveal,
   onRevealAll,
   onExit,
+  taxonomy = null,
   desmosEligible = false,
   desmosKey = null,
   children,
@@ -336,6 +345,17 @@ export function PresenterMode({
           </button>
         </div>
       </div>
+
+      {/* ── Question meta: topic/skill + score band ─────────── */}
+      {taxonomy && (taxonomy.domainName || taxonomy.skillName || taxonomy.scoreBand != null) ? (
+        <div className={s.metaBar}>
+          {taxonomy.domainName ? <span className={s.metaItem}>{taxonomy.domainName}</span> : null}
+          {taxonomy.skillName ? <span className={s.metaItem}>{taxonomy.skillName}</span> : null}
+          {taxonomy.scoreBand != null ? (
+            <span className={s.metaBand}>Band {taxonomy.scoreBand}</span>
+          ) : null}
+        </div>
+      ) : null}
 
       {/* ── Jump map (collapsible) ──────────────────────────── */}
       {mapOpen ? (

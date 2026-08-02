@@ -512,6 +512,11 @@ export function AssignmentReport({
           onReveal={reveal}
           onRevealAll={revealAll}
           onExit={() => setPresenting(false)}
+          taxonomy={selected.missing ? null : {
+            domainName: selected.taxonomy?.domain_name ?? null,
+            skillName: selected.taxonomy?.skill_name ?? null,
+            scoreBand: selected.taxonomy?.score_band ?? null,
+          }}
           desmosEligible={!selected.missing
             && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '')}
           desmosKey={selected.questionId}
