@@ -61,6 +61,7 @@ export default async function TutorTrainingReviewPage({ params }) {
       questionNotesCanView={questionNotesCanView}
       questionNotesIsAdmin={questionNotesIsAdmin}
       currentUserId={currentUserId}
+      canFlagBroken={['manager', 'admin'].includes(profile.role)}
     />
   );
 }

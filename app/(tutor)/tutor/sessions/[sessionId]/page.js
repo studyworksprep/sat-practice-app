@@ -120,6 +120,7 @@ export default async function TutorSessionReviewPage({ params }) {
       questionNotesCanView={questionNotesCanView}
       questionNotesIsAdmin={questionNotesIsAdmin}
       currentUserId={currentUserId}
+      canFlagBroken={['manager', 'admin'].includes(profile.role)}
       rebuildHref={rebuildHref}
     />
   );
