@@ -109,6 +109,9 @@ export function PresenterMode({
   const [drawing, setDrawing] = useState(false);
   const [Excalidraw, setExcalidraw] = useState<ExcalidrawComponent | null>(null);
   const sceneRef = useRef<ExcalidrawSceneSnapshot | null>(null);
+  // Excalidraw's imperative API (updateScene) — used by the presenter's
+  // own Clear button and the transparent-background guard below.
+  const excaliApiRef = useRef<{ updateScene: (scene: Record<string, unknown>) => void } | null>(null);
 
   // Restore the tutor's preferred calculator split across sessions.
   useEffect(() => {
@@ -309,6 +312,15 @@ export function PresenterMode({
           >
             ✎ Draw
           </button>
+          {drawing ? (
+            <button
+              type="button"
+              className={s.toolBtn}
+              onClick={() => excaliApiRef.current?.updateScene({ elements: [] })}
+            >
+              Clear drawing
+            </button>
+          ) : null}
           {!isFullscreen ? (
             <button
               type="button"
@@ -331,10 +343,7 @@ export function PresenterMode({
           <QuestionMapGrid
             groups={groups}
             selectedId={selectedPosition}
-            onSelect={(id: string | number) => {
-              onSelect(Number(id));
-              setMapOpen(false);
-            }}
+            onSelect={(id: string | number) => onSelect(Number(id))}
             revealed={revealed as Set<string | number>}
           />
         </div>
@@ -395,6 +404,9 @@ export function PresenterMode({
         <div className={s.drawLayer}>
           {Excalidraw ? (
             <Excalidraw
+              excalidrawAPI={(api: { updateScene: (scene: Record<string, unknown>) => void } | null) => {
+                excaliApiRef.current = api;
+              }}
               initialData={
                 sceneRef.current ?? {
                   appState: { viewBackgroundColor: 'transparent', currentItemStrokeColor: '#e03131' },
@@ -406,6 +418,16 @@ export function PresenterMode({
                 files: Record<string, unknown>,
               ) => {
                 sceneRef.current = { elements, appState, files };
+                // The canvas must stay transparent — a white background
+                // paints over the question. Excalidraw resets
+                // viewBackgroundColor on some internal actions; snap it
+                // back whenever anything sets it (one extra onChange
+                // fires with 'transparent', then this stays quiet).
+                if (appState?.viewBackgroundColor !== 'transparent') {
+                  excaliApiRef.current?.updateScene({
+                    appState: { viewBackgroundColor: 'transparent' },
+                  });
+                }
               }}
               UIOptions={{
                 canvasActions: {
@@ -413,6 +435,15 @@ export function PresenterMode({
                   loadScene: false,
                   saveToActiveFile: false,
                   toggleTheme: false,
+                  // Excalidraw's own clear-canvas confirm dialog portals
+                  // outside the fullscreened presenter element, so it's
+                  // invisible in fullscreen — and confirming it resets
+                  // the background to white. The top bar's "Clear
+                  // drawing" button replaces it (no dialog, background
+                  // untouched). Same reason the background picker is
+                  // hidden: transparent is load-bearing here.
+                  clearCanvas: false,
+                  changeViewBackgroundColor: false,
                 },
               }}
             />
