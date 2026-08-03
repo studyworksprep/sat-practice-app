@@ -520,6 +520,18 @@ export function AssignmentReport({
           desmosEligible={!selected.missing
             && MATH_DOMAIN_CODES_FOR_CALC.has(selected.taxonomy?.domain_code ?? '')}
           desmosKey={selected.questionId}
+          tagsNode={
+            !selected.missing && conceptTagsCanTag && conceptTagsCatalog ? (
+              <ConceptTags
+                key={`present-tags-${selected.questionId}`}
+                questionId={selected.questionId}
+                initialTags={conceptTagsCatalog}
+                initialQuestionTagIds={selected.conceptTagIds ?? []}
+                canTag={conceptTagsCanTag}
+                canDelete={conceptTagsCanDelete}
+              />
+            ) : null
+          }
         >
           {selected.missing ? (
             <p className={s.missingNote}>
