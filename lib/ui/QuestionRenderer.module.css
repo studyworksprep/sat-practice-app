@@ -53,6 +53,34 @@
   color: var(--color-slate-700);
   overflow-x: auto;
   min-width: 0;
+  /* Size container for the cell-padding query below. The column's
+     width comes from the grid track, so inline-size containment
+     is safe here. */
+  container-type: inline-size;
+}
+
+/* Let data-table cells compress before the overflow-x scrollbar
+   kicks in. `overflow-wrap: anywhere` (unlike break-word) factors
+   soft-break opportunities into the cells' min-content width, so
+   table auto-layout can squeeze long tokens instead of forcing
+   the whole table wider than the pane. Breaks only happen when
+   the alternative is overflow — typical cells are untouched.
+   Table-scoped: .twoCol's own overflow keeps everything else. */
+.stimulusColumn table th,
+.stimulusColumn table td {
+  overflow-wrap: anywhere;
+}
+
+/* In a genuinely narrow pane, cell padding is a meaningful share
+   of the table's minimum width (8 gutters on a 4-column table) —
+   tighten it before resorting to scroll. Container query, so this
+   tracks the pane, not the viewport (the same renderer serves
+   report cards far narrower than the runners). */
+@container (max-width: 600px) {
+  .stimulusColumn table th,
+  .stimulusColumn table td {
+    padding: 5px 7px;
+  }
 }
 
 /* ---------- Two-column card ---------- */
@@ -79,6 +107,14 @@
 @media (min-width: 820px) {
   .twoCol {
     grid-template-columns: 1fr 1fr;
+  }
+  /* Data-bearing stimuli (the caller flags stimulus HTML that
+     carries a <table>) get a wider passage pane so multi-column
+     data tables fit without horizontal scrolling. Prose-only
+     questions keep the even split — reading line length there is
+     deliberate. */
+  .twoCol[data-stimulus-table] {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   }
 }
 

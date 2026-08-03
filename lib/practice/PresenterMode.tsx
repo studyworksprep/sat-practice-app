@@ -54,6 +54,10 @@ interface ExcalidrawSceneSnapshot {
 /** Zoom steps for the projected type. */
 const SCALES = [1, 1.15, 1.3, 1.5] as const;
 
+/** Above this many questions the jump map switches to the dense
+ *  layout (a full practice test is 98; assignments run ~30-40). */
+const DENSE_MAP_THRESHOLD = 40;
+
 /** Desmos pane width (% of the stage), draggable via the divider. */
 const CALC_WIDTH_KEY = 'sw:presenter-calc-width';
 const CALC_DEFAULT_PCT = 46;
@@ -376,6 +380,7 @@ export function PresenterMode({
             selectedId={selectedPosition}
             onSelect={(id: string | number) => onSelect(Number(id))}
             revealed={revealed as Set<string | number>}
+            dense={positions.length > DENSE_MAP_THRESHOLD}
           />
         </div>
       ) : null}

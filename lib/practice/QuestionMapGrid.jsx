@@ -49,10 +49,14 @@ const DIFF_CLASS = {
  * @param {string | number | null} props.selectedId
  * @param {(id: string | number) => void} props.onSelect
  * @param {Set<string | number>} [props.revealed]
+ * @param {boolean} [props.dense] - compact layout for large item
+ *   counts (a full practice test is 98 questions): ~22px cells,
+ *   groups flowing horizontally instead of stacking. Callers with
+ *   assignment-sized maps (~30-40 questions) keep the default.
  */
-export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null }) {
+export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null, dense = false }) {
   return (
-    <div className={s.mapModules}>
+    <div className={dense ? `${s.mapModules} ${s.mapModulesDense}` : s.mapModules}>
       {groups.map((group) => {
         // Empty string / null suppresses the label row entirely so
         // ungrouped callers (e.g. ReviewInteractive's single-group
@@ -97,16 +101,16 @@ export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null 
                 >
                   <span className={s.mapNum}>{it.ordinalLabel}</span>
                   {it.marked && (
-                    <BookmarkIcon filled size={10} className={s.mapFlag} />
+                    <BookmarkIcon filled size={dense ? 8 : 10} className={s.mapFlag} />
                   )}
                   {it.status === 'correct' && (
                     <span className={s.mapStatusCorrect} aria-hidden="true">
-                      <CorrectIcon size={16} />
+                      <CorrectIcon size={dense ? 10 : 16} />
                     </span>
                   )}
                   {it.status === 'incorrect' && (
                     <span className={s.mapStatusWrong} aria-hidden="true">
-                      <IncorrectIcon size={16} />
+                      <IncorrectIcon size={dense ? 10 : 16} />
                     </span>
                   )}
                 </button>
