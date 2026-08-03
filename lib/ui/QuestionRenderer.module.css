@@ -91,24 +91,6 @@
   color: var(--color-slate-700);
 }
 
-/* Reading-passage column gets a faint cream wash so it reads as
-   paper next to the cooler answer column. Reinforces the
-   reading-vs-answering mental split. Only applied via the
-   data-passage attribute the caller sets in the two-column
-   layout (RW). */
-.twoColLeft[data-passage="paper"] {
-  background: var(--bg-paper);
-}
-
-/* Math equivalent — the Desmos panel column gets a soft math-
-   blue wash, mirroring the cream's "this is your workspace"
-   identity for the math side. The wash shows in the padding
-   around Desmos's own white canvas; collapsed slot panes have
-   no padding so the wash naturally disappears with the panel. */
-.twoColLeft[data-pane="desmos"] {
-  background: var(--color-subject-math-soft);
-}
-
 .twoColRight {
   padding: var(--s5) var(--s6);
   display: flex;
