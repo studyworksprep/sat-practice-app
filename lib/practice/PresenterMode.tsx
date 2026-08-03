@@ -82,6 +82,12 @@ export interface PresenterModeProps {
     skillName?: string | null;
     scoreBand?: number | null;
   } | null;
+  /** Concept-tag editor for the current question, or null when the
+   *  viewer can't tag (the reports only pass it for manager/admin —
+   *  the same server-resolved gate as the in-report tag tools).
+   *  Presenter hides it behind a "Show tags" toggle so tags don't
+   *  project to students by default. */
+  tagsNode?: React.ReactNode;
   /** True when the current question is a math question — shows the
    *  Desmos pane (default open) in the runner's two-column format. */
   desmosEligible?: boolean;
@@ -103,6 +109,7 @@ export function PresenterMode({
   onRevealAll,
   onExit,
   taxonomy = null,
+  tagsNode = null,
   desmosEligible = false,
   desmosKey = null,
   children,
@@ -113,6 +120,10 @@ export function PresenterMode({
   const [scaleIdx, setScaleIdx] = useState(1);
   const [mapOpen, setMapOpen] = useState(true);
   const [calcOpen, setCalcOpen] = useState(true);
+  // Tags start hidden every presenting session (they're staff-facing;
+  // the projector shouldn't show them unless the tutor asks). Once
+  // toggled on, the choice persists across questions.
+  const [tagsShown, setTagsShown] = useState(false);
   const [calcWidth, setCalcWidth] = useState(CALC_DEFAULT_PCT);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [drawing, setDrawing] = useState(false);
@@ -416,6 +427,21 @@ export function PresenterMode({
             style={{ zoom: SCALES[scaleIdx] }}
           >
             {children}
+            {/* Concept tags — where they usually show (below the
+                question), collapsed behind a toggle. */}
+            {tagsNode != null ? (
+              <div className={s.tagsSection}>
+                <button
+                  type="button"
+                  className={s.showTagsBtn}
+                  onClick={() => setTagsShown((v) => !v)}
+                  aria-expanded={tagsShown}
+                >
+                  {tagsShown ? 'Hide tags' : 'Show tags'}
+                </button>
+                {tagsShown ? tagsNode : null}
+              </div>
+            ) : null}
           </div>
         </div>
 
