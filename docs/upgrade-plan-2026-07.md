@@ -2,10 +2,10 @@
 
 > **Status: Living document — the active roadmap.** Baseline verified
 > against code + production: 2026-07-12. Delivery is tracked in the
-> **Status ledger** below (last updated 2026-07-31) — every phase PR
+> **Status ledger** below (last updated 2026-08-01) — every phase PR
 > updates it, per the docs rules.
 
-## Status ledger (updated 2026-07-31)
+## Status ledger (updated 2026-08-01)
 
 | Item | Status | Landed | Notes |
 |---|---|---|---|
