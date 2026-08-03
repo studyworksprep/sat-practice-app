@@ -10,6 +10,18 @@
 // navigator popup (grid of question bubbles + "Go to Review Page"
 // button). Next / Back are on the right.
 //
+// §6.3b instant-next: the island owns position + per-question state.
+// Next/Back/jump within the module are client state changes fed by
+// loadTestQuestionAction — no route change, no island remount, so
+// the timer interval, cross-outs, and Desmos panel all survive
+// navigation. A ±1 prefetch cache keeps the neighbor payloads warm,
+// the N+1 question pre-renders in a hidden <Activity> pane, and the
+// question area cross-fades via the View Transitions API. The URL
+// stays in sync through history.pushState so refresh / deep-link /
+// back-forward still resolve through the server page. Leaving the
+// module (review page, next module, results, exit) is still a real
+// router.push.
+//
 // Timer derives from moduleInfo.startedAt + timeLimitSeconds;
 // timeLimitSeconds arrives already multiplied by the student's
 // time-accommodation on the parent attempt, so no client-side
@@ -17,7 +29,17 @@
 
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import {
+  Activity,
+  startTransition as reactStartTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { DesmosPanel } from '@/lib/ui/DesmosPanel';
@@ -25,6 +47,7 @@ import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { ToolButton } from '@/lib/ui/ToolButton';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { BookmarkIcon, CalculatorIcon } from '@/lib/ui/icons';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import { NavPopover } from './NavPopover';
 import s from './TestRunner.module.css';
 
@@ -41,27 +64,57 @@ const DESMOS_TOGGLE_KEY = 'sw:desmos-open';
 export function TestRunnerInteractive({
   attemptId,
   moduleAttemptId,
-  moduleItemId,
-  position,
-  total,
-  moduleInfo,
-  navItems,
-  question,
-  initialAnswer,
+  initialPayload,
   recordItemAnswerAction,
   toggleMarkForReviewAction,
   finishModuleAction,
   pauseTestModuleAction,
-  desmosSavedState = null,
-  desmosCanSave = false,
+  loadQuestionAction,
 }) {
   const router = useRouter();
+  const [confirm, confirmDialog] = useConfirm();
 
-  const [selectedId, setSelectedId] = useState(initialAnswer.selectedOptionId ?? null);
-  const [responseText, setResponseText] = useState(initialAnswer.responseText ?? '');
-  const [markedForReview, setMarkedForReview] = useState(!!initialAnswer.markedForReview);
+  // Module-constant data. The item list is fixed for the module's
+  // lifetime (no mid-module injection in tests), so total and
+  // moduleInfo never change after mount.
+  const total = initialPayload.total;
+  const moduleInfo = initialPayload.moduleInfo;
+
+  // Position-derived state — swaps atomically in applyPayload when
+  // the student moves to a new question.
+  const [position, setPosition] = useState(initialPayload.position);
+  const [moduleItemId, setModuleItemId] = useState(initialPayload.moduleItemId);
+  const [question, setQuestion] = useState(initialPayload.question);
+  const [desmosState, setDesmosState] = useState(initialPayload.desmos);
+  // Navigator pills. Server-computed once at mount; from then on the
+  // client patches answered/marked itself as the student works, so
+  // prefetched payloads (whose navItems snapshot may predate an
+  // in-flight save) never overwrite live status — applyPayload
+  // deliberately ignores payload.navItems.
+  const [navItems, setNavItems] = useState(initialPayload.navItems);
+
+  const [selectedId, setSelectedId] = useState(initialPayload.initialAnswer.selectedOptionId ?? null);
+  const [responseText, setResponseText] = useState(initialPayload.initialAnswer.responseText ?? '');
+  const [marked, setMarked] = useState(!!initialPayload.initialAnswer.markedForReview);
+  const [markPending, setMarkPending] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [navOpen, setNavOpen] = useState(false);
+
+  // Render-synced mirrors for async callbacks that must read the
+  // current values without re-binding on every keystroke.
+  const positionRef = useRef(position);
+  positionRef.current = position;
+  const formRef = useRef({ selectedId, responseText, marked });
+  formRef.current = { selectedId, responseText, marked };
+
+  // Client-authoritative overlay of the student's work this session,
+  // keyed by position. Recorded when leaving a question; preferred
+  // over a payload's initialAnswer when arriving. This closes the
+  // race where a neighbor's payload was prefetched before the
+  // fire-and-forget answer save landed — without it, Back to a
+  // just-answered question could briefly show the pre-answer state.
+  const formByPosRef = useRef(new Map());
+
   // Cross-out (eliminated MCQ options). Keyed by the test's per-
   // module question position so navigating Prev/Next within the
   // same module preserves what the student has already eliminated.
@@ -118,28 +171,68 @@ export function TestRunnerInteractive({
   // DesmosPanel via onCalcReady once the calculator mounts.
   const calcRef = useRef(null);
   const showSavedStateBtn =
-    desmosEligible && (desmosCanSave || desmosSavedState != null);
-  // useTransition lets us render a "pending" state on the Next/Back
-  // buttons while the server fetches the next question. Without
-  // this, router.push appears to do nothing until the new page is
-  // ready — exactly the "it's unresponsive, click it again" trap
-  // the user ran into.
+    desmosEligible && (desmosState.canSave || desmosState.savedState != null);
+
+  // useTransition renders a "pending" state on the Next/Back buttons
+  // for the (now rare) case where the target payload isn't cached
+  // yet and the action round-trip is visible.
   const [isNavPending, startNav] = useTransition();
 
-  // Prefetch the neighbor question + review pages. Next.js App
-  // Router's prefetch loads the RSC payload and hydrates on arrival
-  // so Next/Back become near-instant. Runs on mount + whenever
-  // position changes.
+  // ── Prefetch cache (±1 payloads) ──────────────────────────
+  // Keyed by position → Promise<ActionResult>. Hot path: by the
+  // time the student clicks Next/Back, the call is already in
+  // flight (or done), so click-to-render is bounded by the slower
+  // of (DB query, network) — and usually by neither, because the
+  // N+1 payload has also pre-rendered in the hidden pane below.
+  const prefetchRef = useRef(new Map());
+
+  const callLoad = useCallback(
+    (pos) => loadQuestionAction({ attemptId, moduleAttemptId, position: pos }),
+    [loadQuestionAction, attemptId, moduleAttemptId],
+  );
+
+  const prefetch = useCallback(
+    (pos) => {
+      if (pos < 0 || pos >= total) return;
+      const cache = prefetchRef.current;
+      if (cache.has(pos)) return;
+      cache.set(pos, callLoad(pos).catch(() => null));
+    },
+    [callLoad, total],
+  );
+
+  // Warm prefetch cache for ±1 whenever position changes.
   useEffect(() => {
-    if (position > 0) {
-      router.prefetch(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/${position - 1}`);
-    }
-    if (position + 1 < total) {
-      router.prefetch(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/${position + 1}`);
-    } else {
-      router.prefetch(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/review`);
-    }
-  }, [attemptId, moduleAttemptId, position, total, router]);
+    prefetch(position - 1);
+    prefetch(position + 1);
+  }, [position, prefetch]);
+
+  // Keep the module-review route warm — it's the one Next/jump
+  // target that is still a real route change.
+  useEffect(() => {
+    router.prefetch(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/review`);
+  }, [attemptId, moduleAttemptId, router]);
+
+  // §6.3b instant-next: resolve the NEXT question's prefetched
+  // payload into state so a hidden <Activity> pane can pre-render
+  // its whole subtree (HTML parse, option layout, math) before the
+  // click. Content-wise this exposes nothing new — the identical
+  // watermarked bytes already sit in the prefetch cache; they're
+  // just also in a hidden DOM subtree now. Deliberately N+1 only.
+  // Runs after the prefetch effect above (declaration order), so
+  // the promise is already in the cache.
+  const [nextPayload, setNextPayload] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    setNextPayload(null);
+    const pending = prefetchRef.current.get(position + 1);
+    if (!pending) return undefined;
+    pending.then((res) => {
+      if (cancelled || !res?.ok) return;
+      if (res.result?.kind === 'ok') setNextPayload(res.result.payload);
+    });
+    return () => { cancelled = true; };
+  }, [position]);
 
   // ── Timer ─────────────────────────────────────────────────
   const [secondsRemaining, setSecondsRemaining] = useState(() =>
@@ -214,6 +307,17 @@ export function TestRunnerInteractive({
   const saveTimer = useRef(null);
   const pendingSaveRef = useRef(null);
 
+  // Patch the navigator pill for an item the student just answered.
+  // Matches the server's answered semantics (a saved attempts row
+  // with a response); never un-sets — re-saves keep the pill solid.
+  const markItemAnswered = useCallback((itemId) => {
+    setNavItems((prev) => prev.map((it) => (
+      it.moduleItemId === itemId && !it.answered
+        ? { ...it, answered: true }
+        : it
+    )));
+  }, []);
+
   const flushSave = useCallback(async (answer) => {
     const now = Date.now();
     const deltaMs = Math.max(0, now - lastSaveTimeRef.current);
@@ -242,7 +346,6 @@ export function TestRunnerInteractive({
     } catch (err) {
       setSaveError(err.message ?? String(err));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleAttemptId, moduleItemId, question.questionType, recordItemAnswerAction]);
 
   function scheduleSave(next) {
@@ -256,46 +359,60 @@ export function TestRunnerInteractive({
 
   function handleSelectOption(id) {
     setSelectedId(id);
+    markItemAnswered(moduleItemId);
     scheduleSave({ selectedOptionId: id });
   }
 
   function handleResponseText(text) {
     setResponseText(text);
+    if (text.trim().length > 0) markItemAnswered(moduleItemId);
     scheduleSave({ responseText: text });
   }
 
-  async function handleToggleMark() {
-    const optimistic = !markedForReview;
-    setMarkedForReview(optimistic);
-    const fd = new FormData();
-    fd.set('moduleAttemptId', moduleAttemptId);
-    fd.set('moduleItemId', moduleItemId);
-    try {
-      const res = await toggleMarkForReviewAction(null, fd);
-      if (res?.ok && typeof res.marked === 'boolean') {
-        setMarkedForReview(res.marked);
-      } else if (!res?.ok) {
-        setMarkedForReview(!optimistic);
-        setSaveError(res?.error ?? 'Could not flag question');
+  // Mark-for-review toggle. §6.3b: useOptimistic replaces the
+  // hand-rolled flip-then-rollback — the optimistic flag applies
+  // instantly inside the transition and auto-reverts if the action
+  // fails (setMarked never fires). The navigator pill still patches
+  // on confirmation only; the header button is the primary feedback
+  // surface.
+  const [optimisticMarked, addOptimisticMarked] = useOptimistic(marked);
+  function handleToggleMark() {
+    if (markPending) return;
+    const itemId = moduleItemId;
+    setMarkPending(true);
+    reactStartTransition(async () => {
+      addOptimisticMarked(!marked);
+      const fd = new FormData();
+      fd.set('moduleAttemptId', moduleAttemptId);
+      fd.set('moduleItemId', itemId);
+      try {
+        const res = await toggleMarkForReviewAction(null, fd);
+        if (res?.ok && typeof res.marked === 'boolean') {
+          setMarked(res.marked);
+          setNavItems((prev) => prev.map((it) => (
+            it.moduleItemId === itemId ? { ...it, marked: res.marked } : it
+          )));
+        } else if (!res?.ok) {
+          setSaveError(res?.error ?? 'Could not flag question');
+        }
+      } catch (err) {
+        setSaveError(err.message ?? String(err));
+      } finally {
+        setMarkPending(false);
       }
-    } catch (err) {
-      setMarkedForReview(!optimistic);
-      setSaveError(err.message ?? String(err));
-    }
+    });
   }
 
   // Fire any pending save without awaiting — Server Actions run on
   // their own and we don't need to block navigation on the round-
-  // trip. The user already saw the answer selected; if the save
-  // fails, the next page will refetch the last-saved answer from
-  // the server. Keeping navigation snappy is the priority.
+  // trip. The user already saw the answer selected; the client-side
+  // form overlay (formByPosRef) keeps the answer visible if they
+  // navigate back before the save lands.
   //
   // Also flushes elapsed time as a time-only save so questions the
   // student only looked at still get attempts.time_spent_ms
-  // credit. The time-only path insert a placeholder attempts row
+  // credit. The time-only path inserts a placeholder attempts row
   // if one doesn't exist yet — same shape mark-for-review uses.
-  // Only advances lastSaveTimeRef on successful delivery so a
-  // failed beacon doesn't lose the elapsed time.
   function flushSavePendingInBackground() {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     if (pendingSaveRef.current) {
@@ -320,14 +437,110 @@ export function TestRunnerInteractive({
     })();
   }
 
-  const goToPosition = useCallback((newPosition) => {
+  // ── Client-state navigation (§6.3b) ───────────────────────
+  const applyPayload = useCallback((payload) => {
+    // View Transitions API gives us a free cross-fade across the
+    // synchronous state update — the browser snapshots the DOM,
+    // our setState swaps the question content, and the browser
+    // animates between the two snapshots. The question area
+    // carries view-transition-name: sw-question (TestRunner
+    // .module.css) so it animates as its own group while the
+    // Bluebook chrome — timer, bars — stays visually still.
+    // Falls through synchronously on browsers without the API or
+    // for users with prefers-reduced-motion: reduce.
+    const swap = () => {
+      // The student's own work this session beats the payload's
+      // server snapshot (which may predate an in-flight save).
+      const local = formByPosRef.current.get(payload.position);
+      setPosition(payload.position);
+      setModuleItemId(payload.moduleItemId);
+      setQuestion(payload.question);
+      setDesmosState(payload.desmos);
+      setSelectedId(local ? local.selectedId : (payload.initialAnswer.selectedOptionId ?? null));
+      setResponseText(local ? local.responseText : (payload.initialAnswer.responseText ?? ''));
+      setMarked(local ? local.marked : !!payload.initialAnswer.markedForReview);
+      setSaveError(null);
+      // navItems deliberately NOT taken from the payload — the
+      // client's patched copy is authoritative (see declaration).
+    };
+
+    const supportsVT =
+      typeof document !== 'undefined'
+      && typeof document.startViewTransition === 'function';
+    const reduceMotion =
+      typeof window !== 'undefined'
+      && typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (supportsVT && !reduceMotion) {
+      const vt = document.startViewTransition(swap);
+      // A hidden document (backgrounded tab) aborts the transition;
+      // the swap itself still applies. Swallow the rejection so it
+      // doesn't surface as an unhandled-rejection error.
+      vt.finished.catch(() => {});
+    } else {
+      swap();
+    }
+
+    // Drop stale prefetch entries from before this hop — adjacents
+    // will be re-warmed by the effect above.
+    prefetchRef.current = new Map();
+    // Keep the URL in sync so refresh / share / deep-link / back-
+    // forward all still resolve to the right question. pushState
+    // (not replaceState) preserves the existing UX where the
+    // browser back button walks back through the module. Skip
+    // entirely when the URL already matches — popstate hops
+    // (back / forward button) get here AFTER the browser has
+    // already updated the URL, and re-pushing would corrupt the
+    // history stack.
+    if (typeof window !== 'undefined') {
+      const url = `/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/${payload.position}`;
+      if (window.location.pathname !== url) {
+        try { window.history.pushState(null, '', url); } catch {}
+      }
+    }
+  }, [attemptId, moduleAttemptId]);
+
+  const navigateTo = useCallback((target) => {
+    if (target < 0 || target >= total) return;
+    if (target === positionRef.current) return;
+    // Snapshot the question we're leaving so returning to it always
+    // shows the student's latest work, even if a prefetched payload
+    // raced the fire-and-forget save.
+    formByPosRef.current.set(positionRef.current, { ...formRef.current });
+    const cache = prefetchRef.current;
+    let pending = cache.get(target);
+    if (!pending) {
+      pending = callLoad(target);
+      cache.set(target, pending);
+    }
+    startNav(async () => {
+      try {
+        const res = await pending;
+        if (!res?.ok) {
+          setSaveError(res?.error ?? 'Could not load that question.');
+          return;
+        }
+        if (res.result.kind === 'redirect') {
+          router.push(res.result.redirectTo);
+          return;
+        }
+        if (res.result.kind !== 'ok') {
+          setSaveError('Could not load that question.');
+          return;
+        }
+        applyPayload(res.result.payload);
+      } catch (err) {
+        setSaveError(err?.message ?? 'Could not load that question.');
+      }
+    });
+  }, [total, callLoad, applyPayload, router]);
+
+  function goToPosition(newPosition) {
     flushSavePendingInBackground();
     setNavOpen(false);
-    startNav(() => {
-      router.push(`/practice/test/attempt/${attemptId}/m/${moduleAttemptId}/${newPosition}`);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attemptId, moduleAttemptId, router]);
+    navigateTo(newPosition);
+  }
 
   function goNext() {
     if (position + 1 >= total) {
@@ -354,6 +567,42 @@ export function TestRunnerInteractive({
     });
   }
 
+  // popstate keeps the in-page state in sync with the browser's
+  // own back/forward buttons. We re-resolve the position from the
+  // current URL and load it through the action; if the URL doesn't
+  // match this module at all, fall back to a real route change.
+  useEffect(() => {
+    function onPop() {
+      if (typeof window === 'undefined') return;
+      const m = window.location.pathname.match(
+        new RegExp(
+          `^/practice/test/attempt/${escapeRegExp(attemptId)}/m/${escapeRegExp(moduleAttemptId)}/(\\d+)$`,
+        ),
+      );
+      if (!m) {
+        // Browser navigated outside the module — let the router
+        // handle it.
+        router.refresh();
+        return;
+      }
+      const pos = Number(m[1]);
+      if (!Number.isInteger(pos) || pos === positionRef.current) return;
+      if (pos >= total) return;
+      formByPosRef.current.set(positionRef.current, { ...formRef.current });
+      void (async () => {
+        const res = await callLoad(pos);
+        if (!res?.ok) return;
+        if (res.result.kind === 'redirect') {
+          router.push(res.result.redirectTo);
+          return;
+        }
+        if (res.result.kind === 'ok') applyPayload(res.result.payload);
+      })();
+    }
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [attemptId, moduleAttemptId, total, callLoad, applyPayload, router]);
+
   // Save and Exit. We await the pending answer save before pausing
   // so the student's last-edited response and elapsed time per
   // question land on the server first; THEN paused_at is stamped
@@ -361,11 +610,14 @@ export function TestRunnerInteractive({
   // screen on return. Same await-discipline as the timeout
   // handler — pausing closes the runner, so we need durable
   // writes before we redirect.
-  const pauseConfirmText = 'Save your progress and exit the test? The timer will pause and you can pick up here later from the dashboard.';
   async function handleSaveAndExit() {
-    if (typeof window !== 'undefined' && !window.confirm(pauseConfirmText)) {
-      return;
-    }
+    const ok = await confirm({
+      title: 'Save your progress and exit?',
+      body: 'The timer pauses and your answers are saved — you can pick up right here later from the dashboard.',
+      confirmLabel: 'Save & exit',
+      cancelLabel: 'Keep working',
+    });
+    if (!ok) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     if (pendingSaveRef.current) {
       try { await flushSave(pendingSaveRef.current); } catch {}
@@ -450,16 +702,21 @@ export function TestRunnerInteractive({
         type="button"
         onClick={handleToggleMark}
         className={s.markBtn}
-        aria-pressed={markedForReview}
+        aria-pressed={optimisticMarked}
       >
         <BookmarkIcon
-          filled={markedForReview}
-          className={markedForReview ? s.markIconActive : s.markIconInactive}
+          filled={optimisticMarked}
+          className={optimisticMarked ? s.markIconActive : s.markIconInactive}
         />
         Mark for Review
       </button>
     </div>
   );
+
+  // The renderer fully resets its keyed-by-question internal state
+  // when the student moves on — only the QuestionRenderer subtree
+  // gets the new key, not the whole island.
+  const rendererKey = question.questionId;
 
   return (
     <div className={s.shell}>
@@ -470,7 +727,10 @@ export function TestRunnerInteractive({
           <div className={s.testName}>{moduleInfo.testName}</div>
         </div>
         <div className={s.topBarCenter}>
-          <div className={timerClass} aria-live="off">
+          {/* suppressHydrationWarning: the clock text derives from
+              Date.now(), so the server-rendered digits are always a
+              beat behind the client's first paint. */}
+          <div className={timerClass} aria-live="off" suppressHydrationWarning>
             {formatClock(secondsRemaining)}
           </div>
         </div>
@@ -480,9 +740,10 @@ export function TestRunnerInteractive({
               way it does on the report surfaces. */}
           {showSavedStateBtn && (
             <DesmosSavedStateButton
+              key={`saved-${question.questionId}`}
               questionId={question.questionId}
-              initialSavedState={desmosSavedState}
-              canSave={desmosCanSave}
+              initialSavedState={desmosState.savedState}
+              canSave={desmosState.canSave}
               calcRef={calcRef}
             />
           )}
@@ -515,7 +776,18 @@ export function TestRunnerInteractive({
 
       {/* Question body ————————————————————— */}
       <main className={s.main}>
+        {/* §6.3b instant-next: the visible question and a hidden
+            pre-render of the NEXT question live in a keyed array
+            of <Activity> panes. On Next, the hidden pane's key
+            becomes the visible key, so React flips the SAME
+            subtree from hidden to visible — the HTML has already
+            been parsed and the tree built, making the swap
+            near-instant. Keys are questionId on both the pane
+            and the renderer so the instance survives the flip. */}
+        {[
+        <Activity key={rendererKey} mode="visible">
         <QuestionRenderer
+          key={rendererKey}
           mode="practice"
           layout={question.layout ?? 'single'}
           question={question}
@@ -543,6 +815,25 @@ export function TestRunnerInteractive({
           leftSlotCollapsed={desmosEligible && !desmosVisible}
           slotAnimate={desmosAnimate}
         />
+        </Activity>,
+        nextPayload && nextPayload.question.questionId !== rendererKey ? (
+          <Activity key={nextPayload.question.questionId} mode="hidden">
+            <QuestionRenderer
+              key={nextPayload.question.questionId}
+              mode="practice"
+              layout={nextPayload.question.layout ?? 'single'}
+              question={nextPayload.question}
+              selectedOptionId={null}
+              onSelectOption={() => {}}
+              responseText=""
+              onResponseText={() => {}}
+              crossedOptionIds={null}
+              onToggleCross={() => {}}
+              result={null}
+            />
+          </Activity>
+        ) : null,
+        ]}
         {saveError && (
           <p role="alert" className={s.saveError}>{saveError}</p>
         )}
@@ -593,8 +884,11 @@ export function TestRunnerInteractive({
 
       {/* Top-of-viewport progress strip while nav is pending.
           Gives the student an instant "something is happening"
-          cue even while the server fetches the next question. */}
+          cue for the rare uncached hop (jump via navigator,
+          leaving for the review page). */}
       {isNavPending && <div className={s.navProgress} aria-hidden="true" />}
+
+      {confirmDialog}
     </div>
   );
 }
@@ -609,6 +903,10 @@ function formatClock(seconds) {
   const m = Math.floor(seconds / 60);
   const sec = seconds % 60;
   return `${m}:${String(sec).padStart(2, '0')}`;
+}
+
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 export function routeAfterFinish(res, router, attemptId) {
