@@ -23,6 +23,7 @@ import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { ErrorLogButton } from '@/lib/practice/ErrorLogButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
+import { PresenterMode } from '@/lib/practice/PresenterMode';
 import { QuestionNotes } from '@/lib/practice/QuestionNotes';
 import { StudentQuestionNotes } from '@/lib/practice/StudentQuestionNotes';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
@@ -81,6 +82,14 @@ export function TestResultsInteractive({
   const [showScoreDialog, setShowScoreDialog] = useState(false);
   const router = useRouter();
 
+  // Presenter mode (§4.2) — staff-only: a tutor reviewing a completed
+  // test with the student in the room. Shares selection + reveal
+  // state with the review pane below, same as the assignment reports,
+  // so the reveal-gated flow carries over (the student's original
+  // answer always shows; correct answer + rationale wait for Reveal).
+  const canPresent = canRecalculate;
+  const [presenting, setPresenting] = useState(false);
+
   // Group items by module once. Items in groups carry a
   // moduleOrdinal field (1..N within their module) for the
   // question-map labels and the per-question detail header. The
@@ -91,6 +100,33 @@ export function TestResultsInteractive({
     () => moduleGroups.flatMap((g) => g.items),
     [moduleGroups],
   );
+
+  // QuestionMapGrid groups — shared by the review pane's map and
+  // presenter mode's jump map, so both render identically.
+  const mapGridGroups = useMemo(() => moduleGroups.map((group) => ({
+    key: group.key,
+    label: (
+      <>
+        <span className={s.mapModuleSubject}>
+          {SUBJECT_NAME[group.subject] ?? group.subject}
+        </span>
+        <span className={s.mapModuleDot}>·</span>
+        <span className={s.mapModuleNumber}>
+          Module {group.moduleNumber}
+        </span>
+      </>
+    ),
+    countNote: `${group.correct}/${group.total}`,
+    items: group.items.map((it) => ({
+      id: it.ordinal,
+      ordinalLabel: it.moduleOrdinal,
+      status: it.status,
+      difficulty: it.taxonomy?.difficulty ?? null,
+      marked: !!it.marked,
+      missing: it.missing,
+      ariaLabel: `Question ${it.moduleOrdinal}, ${it.status}`,
+    })),
+  })), [moduleGroups]);
 
   const selected = groupedItems.find((r) => r.ordinal === selectedOrdinal) ?? groupedItems[0];
   const isRevealed = revealed.has(selected?.ordinal);
@@ -109,6 +145,10 @@ export function TestResultsInteractive({
       next.add(ordinal);
       return next;
     });
+  }
+
+  function revealAll() {
+    setRevealed(new Set(groupedItems.filter((it) => !it.missing).map((it) => it.ordinal)));
   }
 
   async function handleExportPdf() {
@@ -171,6 +211,15 @@ export function TestResultsInteractive({
           </div>
         </div>
         <div className={s.headerActions}>
+          {canPresent && (
+            <button
+              type="button"
+              className={s.presentBtn}
+              onClick={() => setPresenting(true)}
+            >
+              ▶ Present
+            </button>
+          )}
           <button
             type="button"
             className={s.pdfBtn}
@@ -402,30 +451,7 @@ export function TestResultsInteractive({
           </div>
 
           <QuestionMapGrid
-            groups={moduleGroups.map((group) => ({
-              key: group.key,
-              label: (
-                <>
-                  <span className={s.mapModuleSubject}>
-                    {SUBJECT_NAME[group.subject] ?? group.subject}
-                  </span>
-                  <span className={s.mapModuleDot}>·</span>
-                  <span className={s.mapModuleNumber}>
-                    Module {group.moduleNumber}
-                  </span>
-                </>
-              ),
-              countNote: `${group.correct}/${group.total}`,
-              items: group.items.map((it) => ({
-                id: it.ordinal,
-                ordinalLabel: it.moduleOrdinal,
-                status: it.status,
-                difficulty: it.taxonomy?.difficulty ?? null,
-                marked: !!it.marked,
-                missing: it.missing,
-                ariaLabel: `Question ${it.moduleOrdinal}, ${it.status}`,
-              })),
-            }))}
+            groups={mapGridGroups}
             selectedId={selected?.ordinal}
             onSelect={setSelectedOrdinal}
             revealed={revealed}
@@ -571,6 +597,62 @@ export function TestResultsInteractive({
           Start another →
         </Link>
       </div>
+
+      {/* ---------- Presenter mode (§4.2) ---------- */}
+      {presenting && selected && (
+        <PresenterMode
+          title={testName}
+          subtitle={pdfData?.student?.name ?? testCode ?? null}
+          groups={mapGridGroups}
+          positions={groupedItems.map((it) => it.ordinal)}
+          selectedPosition={selected.ordinal}
+          onSelect={setSelectedOrdinal}
+          revealed={revealed}
+          onReveal={reveal}
+          onRevealAll={revealAll}
+          onExit={() => setPresenting(false)}
+          taxonomy={selected.missing ? null : {
+            domainName: selected.taxonomy?.domain_name ?? null,
+            skillName: selected.taxonomy?.skill_name ?? null,
+            scoreBand: selected.taxonomy?.score_band ?? null,
+          }}
+          desmosEligible={!selected.missing && selected.subject === 'MATH'}
+          desmosKey={selected.questionId}
+          tagsNode={
+            !selected.missing && conceptTagsCanTag && conceptTagsCatalog ? (
+              <ConceptTags
+                key={`present-tags-${selected.questionId}`}
+                questionId={selected.questionId}
+                initialTags={conceptTagsCatalog}
+                initialQuestionTagIds={selected.conceptTagIds ?? []}
+                canTag={conceptTagsCanTag}
+                canDelete={conceptTagsCanDelete}
+              />
+            ) : null
+          }
+        >
+          {selected.missing ? (
+            <p className={s.missingNote}>
+              This question is no longer available in the question bank.
+            </p>
+          ) : (
+            <QuestionRenderer
+              key={`present-${selected.ordinal}-${isRevealed ? 'r' : 'q'}`}
+              mode="review"
+              layout={selected.layout ?? 'single'}
+              question={selected}
+              selectedOptionId={selected.studentAnswer?.selectedOptionId ?? null}
+              responseText={selected.studentAnswer?.responseText ?? ''}
+              result={isRevealed ? {
+                isCorrect: selected.studentAnswer?.isCorrect ?? null,
+                correctOptionId: selected.reveal.correctOptionId,
+                correctAnswerDisplay: selected.reveal.correctAnswerDisplay,
+                rationaleHtml: selected.reveal.rationaleHtml,
+              } : null}
+            />
+          )}
+        </PresenterMode>
+      )}
 
       {showScoreDialog && (
         <RecalculateScoreDialog

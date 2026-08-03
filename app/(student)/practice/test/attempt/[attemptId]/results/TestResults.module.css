@@ -1261,3 +1261,28 @@
   text-decoration: none;
 }
 .footerLinkPrimary:hover { text-decoration: underline; }
+
+/* Presenter launcher (§4.2) — staff-only, mirrors the assignment
+   reports' Present button. */
+.presentBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-navy-900);
+  border: 1px solid var(--color-navy-900);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--dur-fast) var(--ease-std);
+}
+.presentBtn:hover { opacity: 0.9; }
+.presentBtn:focus-visible {
+  outline: 2px solid var(--color-app-accent);
+  outline-offset: 2px;
+}
