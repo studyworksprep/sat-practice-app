@@ -1,0 +1,154 @@
+/* Bluebook-runner-shaped skeleton. Region metrics mirror
+   TestRunner.module.css (top bar / full-width main / sticky
+   bottom bar); shimmer treatment mirrors PageSkeleton's. */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--bg);
+  font-family: var(--font-sans);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+/* ---------- Top bar ---------- */
+
+.topBar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--s4);
+  padding: var(--s3) var(--s5);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.topBarLeft   { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.topBarCenter { justify-self: center; }
+.topBarRight  { display: flex; gap: var(--s2); justify-content: flex-end; }
+
+.moduleLabel { width: 240px; max-width: 100%; height: 15px; border-radius: 4px; }
+.testName    { width: 140px; height: 11px; border-radius: 4px; }
+.timer       { width: 88px; height: 38px; border-radius: 10px; }
+.toolBtn     { width: 96px; height: 36px; border-radius: var(--radius-pill); }
+
+/* ---------- Question area ---------- */
+
+.main {
+  flex: 1;
+  padding: var(--s5) var(--s6);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.questionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.numChip  { width: 30px; height: 30px; border-radius: 6px; }
+.markPill { width: 150px; height: 16px; border-radius: 4px; }
+
+/* Dashed rule under the question header — the runner's own
+   divider treatment, kept static (not shimmered). */
+.rule {
+  border-bottom: 1px dashed var(--border-strong);
+}
+
+.stem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  padding-top: var(--s2);
+}
+
+.line      { height: 15px; border-radius: 4px; }
+.lineLong  { width: min(560px, 90%); }
+.lineMed   { width: min(400px, 70%); }
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  margin-top: var(--s2);
+  max-width: 760px;
+}
+
+.option { height: 58px; border-radius: 10px; }
+
+/* ---------- Bottom bar ---------- */
+
+.bottomBar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: var(--s3) var(--s5);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  position: sticky;
+  bottom: 0;
+}
+
+.bottomBarCenter { grid-column: 2; justify-self: center; }
+.bottomBarRight  { grid-column: 3; display: flex; gap: var(--s2); justify-content: flex-end; }
+
+.questionPill  { width: 160px; height: 38px; border-radius: var(--radius-pill); }
+.navBtn        { width: 84px;  height: 40px; border-radius: var(--radius-pill); }
+.navBtnPrimary { width: 92px;  height: 40px; border-radius: var(--radius-pill); }
+
+/* ---------- Shimmer (family treatment) ---------- */
+
+.shimmer {
+  background-color: rgba(17, 24, 39, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.option {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(17, 24, 39, 0.04) 45%,
+    rgba(17, 24, 39, 0.06) 50%,
+    rgba(17, 24, 39, 0.04) 55%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  background-position-x: 100%;
+  animation: test-runner-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes test-runner-shimmer {
+  0%   { background-position-x: 100%; }
+  100% { background-position-x: -100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer::after {
+    animation: none;
+    background: rgba(17, 24, 39, 0.04);
+  }
+}
+
+@media (max-width: 720px) {
+  .topBarRight { display: none; }
+  .moduleLabel { width: 160px; }
+}

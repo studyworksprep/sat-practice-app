@@ -23,6 +23,7 @@ import {
   deleteQuestionNote,
   updateQuestionNote,
 } from './question-notes-actions';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './QuestionNotes.module.css';
 
 const ROLE_LABEL = { admin: 'Admin', manager: 'Manager', teacher: 'Teacher' };
@@ -61,6 +62,7 @@ export function QuestionNotes({
   const [editContent, setEditContent] = useState('');
   const [error, setError] = useState(null);
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
 
   const panelRef = useRef(null);
 
@@ -132,9 +134,14 @@ export function QuestionNotes({
     });
   }
 
-  function handleDelete(noteId) {
+  async function handleDelete(noteId) {
     if (pending) return;
-    if (!window.confirm('Delete this note?')) return;
+    const ok = await confirm({
+      title: 'Delete this note?',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteQuestionNote({ noteId });
@@ -301,6 +308,7 @@ export function QuestionNotes({
           {error && <div className={s.error}>{error}</div>}
         </div>
       )}
+      {confirmDialog}
     </div>
   );
 }

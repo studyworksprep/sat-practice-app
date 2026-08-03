@@ -7,14 +7,22 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './Imports.module.css';
 
 export function DeleteJobButton({ jobId, sourceTest, deleteAction }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
 
-  function onClick() {
-    if (!window.confirm(`Delete the import job for "${sourceTest}"? This removes uploaded files and drafts. Approved questions on act_questions stay.`)) return;
+  async function onClick() {
+    const ok = await confirm({
+      title: `Delete the import job for "${sourceTest}"?`,
+      body: 'This removes uploaded files and drafts. Approved questions on act_questions stay.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     const fd = new FormData();
     fd.set('job_id', jobId);
     startTransition(async () => {
@@ -28,15 +36,18 @@ export function DeleteJobButton({ jobId, sourceTest, deleteAction }) {
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={pending}
-      className={s.deleteBtn}
-      title="Delete this import job"
-      aria-label="Delete import job"
-    >
-      {pending ? '…' : '✕'}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={pending}
+        className={s.deleteBtn}
+        title="Delete this import job"
+        aria-label="Delete import job"
+      >
+        {pending ? '…' : '✕'}
+      </button>
+      {confirmDialog}
+    </>
   );
 }

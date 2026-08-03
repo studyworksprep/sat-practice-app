@@ -17,6 +17,7 @@ import {
   upsertConversionRows,
   deleteConversionTable,
 } from './actions';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './ScoreConversion.module.css';
 
 const NEW_ROW = { raw_score: '', scaled_score: '' };
@@ -37,6 +38,7 @@ export function ConversionEditor({ sourceTest, section, sectionLabel, initialRow
   const [okMsg, setOkMsg] = useState(null);
   const [pending, startTransition] = useTransition();
   const [deletePending, startDelete] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
 
   function updateCell(idx, field, value) {
     setTableRows((prev) => {
@@ -142,7 +144,13 @@ export function ConversionEditor({ sourceTest, section, sectionLabel, initialRow
   }
 
   async function clearTable() {
-    if (!window.confirm(`Delete every ${sectionLabel} row for ${sourceTest}? This can't be undone.`)) return;
+    const ok = await confirm({
+      title: `Delete every ${sectionLabel} row for ${sourceTest}?`,
+      body: "This can't be undone.",
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     setError(null);
     setOkMsg(null);
     const fd = new FormData();
@@ -281,6 +289,7 @@ export function ConversionEditor({ sourceTest, section, sectionLabel, initialRow
 
       {error && <div role="alert" className={s.banner}>{error}</div>}
       {okMsg && <div role="status" className={s.bannerOk}>{okMsg}</div>}
+      {confirmDialog}
     </section>
   );
 }

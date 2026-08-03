@@ -152,6 +152,29 @@
   display: flex;
   flex-direction: column;
   gap: var(--s4);
+  /* §6.3b: name the question area so the View Transition animates
+     it as its own group — the Bluebook chrome (top bar, timer,
+     bottom bar) sits in the root snapshot and stays visually
+     still while the question cross-fades. Same sw-question name
+     as the practice runner; the two runners never co-exist on a
+     page. */
+  view-transition-name: sw-question;
+}
+
+/* Timing overrides for the cross-fade driven by
+   document.startViewTransition in TestRunnerInteractive's
+   applyPayload — short enough to feel like a snap, not a fade.
+   Mirrors PracticeInteractive.module.css (these :global rules are
+   only loaded with their island's chunk, so each runner carries
+   its own copy). */
+:global(::view-transition-old(root)),
+:global(::view-transition-new(root)) {
+  animation-duration: 160ms;
+  animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+}
+:global(::view-transition-old(sw-question)),
+:global(::view-transition-new(sw-question)) {
+  animation-duration: 160ms;
 }
 
 .saveError {

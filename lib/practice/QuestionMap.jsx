@@ -29,6 +29,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitPracticeSession } from './session-actions';
 import { domainSection } from '@/lib/ui/question-layout';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './QuestionMap.module.css';
 
 /**
@@ -52,13 +53,16 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   const [submitError, setSubmitError] = useState(null);
 
-  function handleSubmitSet() {
+  async function handleSubmitSet() {
     setSubmitError(null);
-    const ok = typeof window !== 'undefined'
-      ? window.confirm('Finish this set? Any unanswered questions will be marked as skipped.')
-      : true;
+    const ok = await confirm({
+      title: 'Finish this set?',
+      body: 'Any unanswered questions will be marked as skipped.',
+      confirmLabel: 'Finish',
+    });
     if (!ok) return;
     startTransition(async () => {
       const fd = new FormData();
@@ -186,6 +190,7 @@ export function QuestionMap({ basePath, sessionId, currentPosition, items, canSu
           </div>
         </div>
       )}
+      {confirmDialog}
     </>
   );
 }

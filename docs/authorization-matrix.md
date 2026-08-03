@@ -80,6 +80,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/account/actions.js` | `updateProfile`, `updateEmail`, `addTeacherCode` | requireUser |
 | `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan`, `proposeRepace` | requireUser |
 | `lib/plan/plan-edit-actions.ts` | `movePlanTask`, `addManualPlanTask`, `removePlanTask`, `swapPlanTaskSkill`, `regeneratePlanWeek` | requireUser |
+| `lib/practice-test/load-test-question-action.ts` | `loadTestQuestionAction` | requireUser |
 | `lib/practice-test/score-actions.ts` | `recalculateScore` | requireServiceRole |
 | `lib/practice/broken-actions.js` | `loadBrokenDataAction`, `flagQuestionBroken`, `saveQuestionCorrections` | requireRole[admin|manager] |
 | `lib/practice/concept-tags-actions.ts` | `addConceptTag`, `removeConceptTagFromQuestion` | requireRole[admin|manager] |
@@ -99,4 +100,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_17 route handlers, 51 server-action modules enumerated._
+_17 route handlers, 52 server-action modules enumerated._

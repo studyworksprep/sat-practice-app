@@ -193,7 +193,10 @@ export default async function ImportJobStatusPage({ params }) {
                 }
                 confirmMessage={
                   status === 'completed'
-                    ? 'Re-parse this section? Existing drafts will be replaced.'
+                    ? {
+                        title: 'Re-parse this section?',
+                        body: 'Existing drafts will be replaced.',
+                      }
                     : null
                 }
               />

@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { ActionResult, NoteTaxonomy, StudentNote } from '@/lib/types';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from '../Notes.module.css';
 import type { NoteEditorSavePayload } from '../NoteEditor';
 
@@ -75,6 +76,7 @@ export function NoteDetailInteractive({
   deleteNoteAction,
 }: Props) {
   const router = useRouter();
+  const [confirm, confirmDialog] = useConfirm();
   const [tagsInput, setTagsInput] = useState(tagsToString(initialNote.tags));
   const [error, setError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(
@@ -138,9 +140,15 @@ export function NoteDetailInteractive({
     skillName:   initialNote.skillName,
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (mode !== 'edit') return;
-    if (!window.confirm('Delete this note? This cannot be undone.')) return;
+    const ok = await confirm({
+      title: 'Delete this note?',
+      body: 'This cannot be undone.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteNoteAction(initialNote.id);
@@ -194,6 +202,7 @@ export function NoteDetailInteractive({
         onChange={(e) => setTagsInput(e.target.value)}
         disabled={isPending}
       />
+      {confirmDialog}
     </main>
   );
 }

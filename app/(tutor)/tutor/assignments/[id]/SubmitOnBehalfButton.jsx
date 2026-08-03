@@ -6,15 +6,16 @@
 // submitAssignmentOnBehalf for the server-side details.
 //
 // Confirmation. The action permanently flips both the session
-// and the junction row, so we double-check via window.confirm
-// before submitting. Cancelling the dialog leaves the form
-// untouched.
+// and the junction row, so we double-check via the branded
+// confirm dialog before submitting. Cancelling the dialog leaves
+// the form untouched.
 
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './AssignmentDetail.module.css';
 
 export function SubmitOnBehalfButton({
@@ -27,6 +28,10 @@ export function SubmitOnBehalfButton({
 }) {
   const [state, submitAction, isPending] = useActionState(action, null);
   const router = useRouter();
+  const [confirm, confirmDialog] = useConfirm();
+  // Set once the tutor has confirmed, so the re-triggered submit
+  // passes straight through instead of prompting again.
+  const confirmedRef = useRef(false);
 
   // Once the action returns a session id, jump straight to the
   // report so the tutor sees the work they just locked in. If
@@ -45,20 +50,41 @@ export function SubmitOnBehalfButton({
   // summary instead of a misleading "hasn't started yet".
   const totalNum = Number(total ?? 0);
   const doneNum = Number(done ?? 0);
-  const confirmText =
+  const confirmOpts =
     doneNum === 0
-      ? `${studentName} hasn't answered any questions on this assignment yet. Mark it complete anyway?`
+      ? {
+          title: 'Mark it complete anyway?',
+          body: `${studentName} hasn't answered any questions on this assignment yet.`,
+        }
       : doneNum >= totalNum && totalNum > 0
-        ? `Mark this assignment complete on ${studentName}'s behalf? They've answered all ${totalNum} questions and will be able to view the report afterward.`
-        : `Mark this assignment complete on ${studentName}'s behalf? They've answered ${doneNum} of ${totalNum} questions; the rest will show as Unanswered on the report.`;
+        ? {
+            title: `Mark this assignment complete on ${studentName}'s behalf?`,
+            body: `They've answered all ${totalNum} questions and will be able to view the report afterward.`,
+          }
+        : {
+            title: `Mark this assignment complete on ${studentName}'s behalf?`,
+            body: `They've answered ${doneNum} of ${totalNum} questions; the rest will show as Unanswered on the report.`,
+          };
 
   function handleSubmit(e) {
-    if (typeof window !== 'undefined' && !window.confirm(confirmText)) {
-      e.preventDefault();
+    // Second pass after the tutor confirmed — let the submit
+    // through to the action.
+    if (confirmedRef.current) {
+      confirmedRef.current = false;
+      return;
     }
+    e.preventDefault();
+    const form = e.currentTarget;
+    void (async () => {
+      const ok = await confirm({ ...confirmOpts, confirmLabel: 'Mark complete' });
+      if (!ok) return;
+      confirmedRef.current = true;
+      form.requestSubmit();
+    })();
   }
 
   return (
+    <>
     <form action={submitAction} onSubmit={handleSubmit} className={s.submitOnBehalfForm}>
       <input type="hidden" name="assignment_id" value={assignmentId} />
       <input type="hidden" name="student_id" value={studentId} />
@@ -76,5 +102,7 @@ export function SubmitOnBehalfButton({
         </span>
       )}
     </form>
+    {confirmDialog}
+    </>
   );
 }

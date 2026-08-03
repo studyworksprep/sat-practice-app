@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/browser';
 import { sanitizeQuestionHtml } from '@/lib/sanitize';
 import { useMathTypeset, useQrefHighlight } from '@/lib/ui/preview-effects';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './Review.module.css';
 
 const STATUS_TONE = {
@@ -38,6 +39,7 @@ export function DraftCard({
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   const [error, setError] = useState(null);
 
   // Local editor state. Reset to draft props every time we
@@ -103,14 +105,23 @@ export function DraftCard({
     if (draft.status === 'approved') return;
     runAction(approveAction);
   }
-  function onReject() {
-    if (!window.confirm(`Reject this draft (Q${draft.source_ordinal}, ${draft.section})?`)) return;
+  async function onReject() {
+    const ok = await confirm({
+      title: `Reject this draft (Q${draft.source_ordinal}, ${draft.section})?`,
+      confirmLabel: 'Reject',
+      tone: 'danger',
+    });
+    if (!ok) return;
     runAction(rejectAction);
   }
-  function onUnapprove() {
-    if (!window.confirm(
-      `Unapprove draft Q${draft.source_ordinal}? The promoted question will be deleted from act_questions.`,
-    )) return;
+  async function onUnapprove() {
+    const ok = await confirm({
+      title: `Unapprove draft Q${draft.source_ordinal}?`,
+      body: 'The promoted question will be deleted from act_questions.',
+      confirmLabel: 'Unapprove',
+      tone: 'danger',
+    });
+    if (!ok) return;
     runAction(unapproveAction);
   }
 
@@ -311,6 +322,7 @@ export function DraftCard({
           {error && <div className={s.cardError}>{error}</div>}
         </div>
       )}
+      {confirmDialog}
     </article>
   );
 }

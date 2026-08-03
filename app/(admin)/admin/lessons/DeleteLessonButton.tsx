@@ -5,22 +5,41 @@
 
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useRef } from 'react';
 import { Button } from '@/lib/ui/Button';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import { deleteLesson } from './[lessonId]/actions';
 
 export function DeleteLessonButton({ lessonId, title }: { lessonId: string; title: string }) {
   const [state, formAction, pending] = useActionState(deleteLesson, null);
+  const [confirm, confirmDialog] = useConfirm();
+  // Set once the admin has confirmed, so the re-triggered submit
+  // passes straight through instead of prompting again.
+  const confirmedRef = useRef(false);
   const err = state as { ok?: boolean; error?: string } | null;
 
   return (
+    <>
     <form
       action={formAction}
       onSubmit={(e) => {
-        const ok = window.confirm(
-          `Delete "${title || 'this lesson'}"? This permanently removes its blocks and any student progress. This cannot be undone.`,
-        );
-        if (!ok) e.preventDefault();
+        if (confirmedRef.current) {
+          confirmedRef.current = false;
+          return;
+        }
+        e.preventDefault();
+        const form = e.currentTarget;
+        void (async () => {
+          const ok = await confirm({
+            title: `Delete "${title || 'this lesson'}"?`,
+            body: 'This permanently removes its blocks and any student progress. This cannot be undone.',
+            confirmLabel: 'Delete',
+            tone: 'danger',
+          });
+          if (!ok) return;
+          confirmedRef.current = true;
+          form.requestSubmit();
+        })();
       }}
       style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
     >
@@ -33,5 +52,7 @@ export function DeleteLessonButton({ lessonId, title }: { lessonId: string; titl
         <span style={{ color: 'var(--color-danger)', fontSize: 11 }}>{err.error}</span>
       ) : null}
     </form>
+    {confirmDialog}
+    </>
   );
 }

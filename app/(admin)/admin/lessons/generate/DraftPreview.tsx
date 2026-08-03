@@ -13,6 +13,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/lib/ui/Button';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import { BlockPreview } from '../[lessonId]/BlockPreview';
 import { blockMetaFor } from '../[lessonId]/block-meta';
 import { DraftBlockBoundary } from './DraftBlockBoundary';
@@ -58,11 +59,18 @@ export function DraftPreview({
   onDiscard,
 }: DraftPreviewProps) {
   const [feedback, setFeedback] = useState('');
+  const [confirm, confirmDialog] = useConfirm();
   const isBusy = busy !== 'idle';
   const feedbackMissing = !feedback.trim();
 
-  function handleDiscard() {
-    if (window.confirm('Discard this draft? Nothing has been saved yet.')) {
+  async function handleDiscard() {
+    const ok = await confirm({
+      title: 'Discard this draft?',
+      body: 'Nothing has been saved yet.',
+      confirmLabel: 'Discard',
+      tone: 'danger',
+    });
+    if (ok) {
       onDiscard();
     }
   }
@@ -175,6 +183,7 @@ export function DraftPreview({
           </button>
         </div>
       </div>
+      {confirmDialog}
     </div>
   );
 }

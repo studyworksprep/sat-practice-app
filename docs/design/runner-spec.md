@@ -1,6 +1,6 @@
 # Runner design spec — the codified Bluebook exception
 
-> **Status: Living.** Last verified against code 2026-08-01.
+> **Status: Living.** Last verified against code 2026-08-03.
 > This is the design contract for the two "runner" surfaces — the
 > practice-session runner and the practice-test runner. Design audits
 > and restyles of the runners work from this document. The runners'
@@ -119,9 +119,11 @@ token level; the practice runner may additionally take brand structure
 (cards, rails, serif flashes) as long as the region layout and the
 option/map/timer verbs stay recognizably Bluebook.**
 
-The passage/paper distinction is shared: reading passages sit on the
-`--bg-paper` cream wash in both runners so the passage column reads as
-paper against the cooler answer column.
+Both columns of the two-pane layouts are plain white. (2026-08-03:
+the cream passage wash and the soft math-blue Desmos-pane wash were
+removed by owner preference — the tinted columns read as odd against
+the otherwise neutral cards. Column separation relies on the 1px
+divider alone; the subject rail carries subject identity.)
 
 ## Known deviations to keep (and why)
 

@@ -172,12 +172,11 @@
 }
 
 /* Desmos pane — the practice runner's two-column math format:
-   calculator left on the math-tinted wash, question right. Width is
-   set inline (flex-basis %) and dragged via the divider. */
+   calculator left, question right. Width is set inline
+   (flex-basis %) and dragged via the divider. */
 .desmosPane {
   flex: 0 0 46%;
   min-width: 0;
-  background: var(--color-subject-math-soft, #e0ecff);
   overflow: hidden;
 }
 
