@@ -13,18 +13,23 @@
 
 import { useTransition, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './Review.module.css';
 
 export function BulkApproveButton({ jobId, section, action, disabled }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   const [message, setMessage] = useState(null);
   const [skippedDetails, setSkippedDetails] = useState([]);
 
-  function onClick() {
-    if (!window.confirm(
-      `Approve every pending ${section} draft? Skipped drafts (no correct answer, no category, etc.) will stay pending so you can fix them.`,
-    )) return;
+  async function onClick() {
+    const ok = await confirm({
+      title: `Approve every pending ${section} draft?`,
+      body: 'Skipped drafts (no correct answer, no category, etc.) will stay pending so you can fix them.',
+      confirmLabel: 'Approve all',
+    });
+    if (!ok) return;
     setMessage(null);
     setSkippedDetails([]);
     const fd = new FormData();
@@ -66,6 +71,7 @@ export function BulkApproveButton({ jobId, section, action, disabled }) {
           ))}
         </ul>
       )}
+      {confirmDialog}
     </div>
   );
 }
@@ -73,10 +79,16 @@ export function BulkApproveButton({ jobId, section, action, disabled }) {
 export function FinalizeJobButton({ jobId, action }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   const [error, setError] = useState(null);
 
-  function onClick() {
-    if (!window.confirm('Mark this import job completed? You can re-open it later by rejecting an approved draft.')) return;
+  async function onClick() {
+    const ok = await confirm({
+      title: 'Mark this import job completed?',
+      body: 'You can re-open it later by rejecting an approved draft.',
+      confirmLabel: 'Mark completed',
+    });
+    if (!ok) return;
     setError(null);
     const fd = new FormData();
     fd.set('job_id', jobId);
@@ -101,6 +113,7 @@ export function FinalizeJobButton({ jobId, action }) {
         {pending ? 'Finalizing…' : 'Finalize job →'}
       </button>
       {error && <div className={s.bulkMessage}>{error}</div>}
+      {confirmDialog}
     </div>
   );
 }

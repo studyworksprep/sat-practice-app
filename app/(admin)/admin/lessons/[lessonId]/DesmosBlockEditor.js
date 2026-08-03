@@ -14,6 +14,7 @@
 'use client';
 
 import { Button } from '@/lib/ui/Button';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import {
   cleanupDesmosContent,
   createDesmosTemplate,
@@ -58,6 +59,7 @@ const rowBox = {
 };
 
 export function DesmosBlockEditor({ content, onChange }) {
+  const [confirm, confirmDialog] = useConfirm();
   const data = cleanupDesmosContent({
     ...content,
     type: 'desmos_interactive',
@@ -93,8 +95,13 @@ export function DesmosBlockEditor({ content, onChange }) {
     onChange(next);
   }
 
-  function applyTemplate(kind, label) {
-    if (confirm(`Replace this block's content with the "${label}" template?`)) {
+  async function applyTemplate(kind, label) {
+    const ok = await confirm({
+      title: `Replace this block's content with the "${label}" template?`,
+      confirmLabel: 'Replace',
+      tone: 'danger',
+    });
+    if (ok) {
       onChange(createDesmosTemplate(kind));
     }
   }
@@ -285,6 +292,7 @@ export function DesmosBlockEditor({ content, onChange }) {
         <TextField label="step_label" value={data.step_label} onChange={(v) => patch({ step_label: v })} />
         <CheckboxField label="inherit_from_previous_workflow_desmos" checked={data.inherit_from_previous_workflow_desmos} onChange={(c) => patch({ inherit_from_previous_workflow_desmos: c })} />
       </Section>
+      {confirmDialog}
     </div>
   );
 }

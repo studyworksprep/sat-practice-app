@@ -23,6 +23,7 @@
 
 import { useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/browser';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 
 /**
  * @param {object} props
@@ -30,6 +31,7 @@ import { createClient } from '@/lib/supabase/browser';
  * @param {string}     props.name           - hidden input name (default 'options')
  */
 export function OptionsEditor({ initialOptions, name = 'options' }) {
+  const [confirm, confirmDialog] = useConfirm();
   const initialArr = Array.isArray(initialOptions) ? initialOptions : null;
   const [options, setOptions] = useState(
     initialArr == null
@@ -56,10 +58,13 @@ export function OptionsEditor({ initialOptions, name = 'options' }) {
     ]);
   }
 
-  function disableOverride() {
-    const sure = window.confirm(
-      'Discard all option edits and leave the production options unchanged on promote?',
-    );
+  async function disableOverride() {
+    const sure = await confirm({
+      title: 'Discard all option edits?',
+      body: 'The production options stay unchanged on promote.',
+      confirmLabel: 'Discard',
+      tone: 'danger',
+    });
     if (sure) setOptions(null);
   }
 
@@ -130,6 +135,7 @@ export function OptionsEditor({ initialOptions, name = 'options' }) {
           </button>
         </>
       )}
+      {confirmDialog}
     </div>
   );
 }

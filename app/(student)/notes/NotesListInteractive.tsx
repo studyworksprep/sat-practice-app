@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ActionResult, StudentNoteSummary } from '@/lib/types';
 import type { NotesIndexFacets } from './loaders';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './Notes.module.css';
 
 interface Props {
@@ -56,6 +57,7 @@ export function NotesListInteractive({
   deleteNoteAction,
 }: Props) {
   const router = useRouter();
+  const [confirm, confirmDialog] = useConfirm();
   const [notes, setNotes] = useState(initialNotes);
   const [search, setSearch] = useState(initialSearch);
   const [activeTag, setActiveTag] = useState(initialTag);
@@ -196,8 +198,14 @@ export function NotesListInteractive({
 
   const hasTaxonomyFilter = !!(activeSubject || activeDomain || activeSkill);
 
-  const handleDelete = (id: string) => {
-    if (!window.confirm('Delete this note? This cannot be undone.')) return;
+  const handleDelete = async (id: string) => {
+    const ok = await confirm({
+      title: 'Delete this note?',
+      body: 'This cannot be undone.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     setError(null);
     startTransition(async () => {
       const res = await deleteNoteAction(id);
@@ -395,6 +403,7 @@ export function NotesListInteractive({
           </div>
         )}
       </div>
+      {confirmDialog}
     </div>
   );
 }

@@ -14,6 +14,7 @@
 
 import { useTransition, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from '../Imports.module.css';
 
 export function ParseButton({
@@ -26,10 +27,16 @@ export function ParseButton({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   const [error, setError] = useState(null);
 
-  function onClick() {
-    if (confirmMessage && !window.confirm(confirmMessage)) return;
+  async function onClick() {
+    // confirmMessage is a {title, body} pair (or null to skip the
+    // confirmation entirely).
+    if (confirmMessage) {
+      const ok = await confirm({ ...confirmMessage, confirmLabel: 'Parse' });
+      if (!ok) return;
+    }
     setError(null);
     const fd = new FormData();
     fd.set('job_id', jobId);
@@ -54,6 +61,7 @@ export function ParseButton({
         {pending ? 'Parsing…' : label}
       </button>
       {error && <div className={s.parseError}>{error}</div>}
+      {confirmDialog}
     </>
   );
 }

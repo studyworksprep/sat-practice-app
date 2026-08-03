@@ -8,6 +8,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { addOfficialScore, removeOfficialScore } from './actions';
 import { parseLocalOrIso } from '@/lib/formatters';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './StudentDetail.module.css';
 
 const RW_DOMAINS = [
@@ -68,6 +69,7 @@ export function OfficialScoresCard({ studentId, scores }) {
 
 function ScoreRow({ studentId, score, onRemoved }) {
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   const hasDomains = [...RW_DOMAINS, ...MATH_DOMAINS].some(([key]) => score[key] != null);
   return (
     <li className={s.scoreRow}>
@@ -101,8 +103,13 @@ function ScoreRow({ studentId, score, onRemoved }) {
         type="button"
         className={s.scoreRemove}
         disabled={pending}
-        onClick={() => {
-          if (!confirm('Remove this score?')) return;
+        onClick={async () => {
+          const ok = await confirm({
+            title: 'Remove this score?',
+            confirmLabel: 'Remove',
+            tone: 'danger',
+          });
+          if (!ok) return;
           const fd = new FormData();
           fd.set('student_id', studentId);
           fd.set('id', score.id);
@@ -115,6 +122,7 @@ function ScoreRow({ studentId, score, onRemoved }) {
       >
         ✕
       </button>
+      {confirmDialog}
     </li>
   );
 }

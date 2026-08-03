@@ -25,6 +25,7 @@
 
 import { useState, useTransition } from 'react';
 import { saveDesmosState, deleteDesmosState } from './desmos-actions';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './DesmosSavedStateButton.module.css';
 
 /**
@@ -46,6 +47,7 @@ export function DesmosSavedStateButton({
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(null);
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
 
   const hasSaved = savedState != null;
 
@@ -86,10 +88,15 @@ export function DesmosSavedStateButton({
     setOpen(false);
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     setError(null);
     if (!hasSaved) return;
-    if (!window.confirm('Delete saved calculator state for this question?')) return;
+    const ok = await confirm({
+      title: 'Delete saved calculator state for this question?',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     startTransition(async () => {
       const res = await deleteDesmosState({ questionId });
       if (!res?.ok) {
@@ -185,6 +192,7 @@ export function DesmosSavedStateButton({
         </div>
       )}
       {!open && error && <div className={s.errorInline}>{error}</div>}
+      {confirmDialog}
     </div>
   );
 }

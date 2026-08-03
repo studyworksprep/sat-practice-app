@@ -9,6 +9,7 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './Review.module.css';
 
 export function SessionLifecycleButtons({
@@ -18,14 +19,17 @@ export function SessionLifecycleButtons({
   abandonAction,
 }) {
   const router = useRouter();
+  const [confirm, confirmDialog] = useConfirm();
   const [pending, startTransition] = useTransition();
   const [err, setErr] = useState(null);
 
-  function doSubmit() {
+  async function doSubmit() {
     setErr(null);
-    const ok = window.confirm(
-      'Submit this set? Any unanswered questions will be marked as skipped.',
-    );
+    const ok = await confirm({
+      title: 'Submit this set?',
+      body: 'Any unanswered questions will be marked as skipped.',
+      confirmLabel: 'Submit',
+    });
     if (!ok) return;
     startTransition(async () => {
       const fd = new FormData();
@@ -39,11 +43,14 @@ export function SessionLifecycleButtons({
     });
   }
 
-  function doAbandon() {
+  async function doAbandon() {
     setErr(null);
-    const ok = window.confirm(
-      'Abandon this set? No report will be created and the session will disappear from your lists.',
-    );
+    const ok = await confirm({
+      title: 'Abandon this set?',
+      body: 'No report will be created and the session will disappear from your lists.',
+      confirmLabel: 'Abandon',
+      tone: 'danger',
+    });
     if (!ok) return;
     startTransition(async () => {
       const fd = new FormData();
@@ -79,6 +86,7 @@ export function SessionLifecycleButtons({
       >
         Abandon
       </button>
+      {confirmDialog}
     </div>
   );
 }

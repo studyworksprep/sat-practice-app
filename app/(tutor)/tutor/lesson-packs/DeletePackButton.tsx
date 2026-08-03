@@ -1,14 +1,15 @@
-// Per-row delete button on the lesson-pack list. confirm() guard
-// before calling the server action so an accidental click can't
-// take a pack down. Sits beside the card link (which is the click
-// target for opening the builder); the wrapper keeps event handling
-// off the surrounding <Link>.
+// Per-row delete button on the lesson-pack list. Confirm-dialog
+// guard before calling the server action so an accidental click
+// can't take a pack down. Sits beside the card link (which is the
+// click target for opening the builder); the wrapper keeps event
+// handling off the surrounding <Link>.
 
 'use client';
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { deletePack } from './actions';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './LessonPacksList.module.css';
 
 export function DeletePackButton({
@@ -20,11 +21,15 @@ export function DeletePackButton({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
 
-  function onClick() {
-    const ok = window.confirm(
-      `Delete "${packName}"? This removes the pack and its question list. Students who were assigned this pack are not affected.`,
-    );
+  async function onClick() {
+    const ok = await confirm({
+      title: `Delete "${packName}"?`,
+      body: 'This removes the pack and its question list. Students who were assigned this pack are not affected.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
     if (!ok) return;
     startTransition(async () => {
       const res = await deletePack(packId);
@@ -37,14 +42,17 @@ export function DeletePackButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={pending}
-      className={s.deleteBtn}
-      aria-label={`Delete ${packName}`}
-    >
-      {pending ? '…' : 'Delete'}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={pending}
+        className={s.deleteBtn}
+        aria-label={`Delete ${packName}`}
+      >
+        {pending ? '…' : 'Delete'}
+      </button>
+      {confirmDialog}
+    </>
   );
 }

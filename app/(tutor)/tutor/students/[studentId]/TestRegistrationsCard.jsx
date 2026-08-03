@@ -7,6 +7,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDate, parseLocalOrIso } from '@/lib/formatters';
 import { addTestRegistration, removeTestRegistration } from './actions';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from './StudentDetail.module.css';
 
 export function TestRegistrationsCard({ studentId, registrations }) {
@@ -81,6 +82,7 @@ export function TestRegistrationsCard({ studentId, registrations }) {
 
 function RegRow({ studentId, registration, upcoming, onRemoved }) {
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   return (
     <li className={s.regRow}>
       <span className={upcoming ? s.regDateUpcoming : s.regDate}>
@@ -90,8 +92,13 @@ function RegRow({ studentId, registration, upcoming, onRemoved }) {
         type="button"
         className={s.regRemove}
         disabled={pending}
-        onClick={() => {
-          if (!confirm('Remove this registration?')) return;
+        onClick={async () => {
+          const ok = await confirm({
+            title: 'Remove this registration?',
+            confirmLabel: 'Remove',
+            tone: 'danger',
+          });
+          if (!ok) return;
           const fd = new FormData();
           fd.set('student_id', studentId);
           fd.set('id', registration.id);
@@ -104,6 +111,7 @@ function RegRow({ studentId, registration, upcoming, onRemoved }) {
       >
         ✕
       </button>
+      {confirmDialog}
     </li>
   );
 }

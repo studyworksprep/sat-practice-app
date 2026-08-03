@@ -15,6 +15,7 @@
 
 import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from '../Imports.module.css';
 
 export function FileUploadButton({
@@ -27,13 +28,21 @@ export function FileUploadButton({
   const router = useRouter();
   const inputRef = useRef(null);
   const [pending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   const [error, setError] = useState(null);
 
-  function onPick(e) {
+  async function onPick(e) {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (hasExisting && !window.confirm(`Replace the existing file with "${file.name}"?`)) return;
+    if (hasExisting) {
+      const ok = await confirm({
+        title: `Replace the existing file with "${file.name}"?`,
+        confirmLabel: 'Replace',
+        tone: 'danger',
+      });
+      if (!ok) return;
+    }
     setError(null);
     const fd = new FormData();
     fd.set('job_id', jobId);
@@ -52,6 +61,7 @@ export function FileUploadButton({
   const label = pending ? 'Uploading…' : hasExisting ? 'Replace' : 'Upload';
 
   return (
+    <>
     <span className={s.fileUploadWrap}>
       <button
         type="button"
@@ -70,5 +80,7 @@ export function FileUploadButton({
       />
       {error && <span className={s.fileUploadError}>{error}</span>}
     </span>
+    {confirmDialog}
+    </>
   );
 }

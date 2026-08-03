@@ -13,11 +13,13 @@ import {
   updateFlashcard,
 } from '@/lib/practice/flashcards-actions';
 import { MASTERY_LABELS } from '@/lib/practice/flashcards-helpers';
+import { useConfirm } from '@/lib/ui/ConfirmDialog';
 import s from '../../notes/flashcards/Flashcards.module.css';
 
 const CARDS_PER_PAGE = 20;
 
 export function FlashcardSetInteractive({ set, initialCards }) {
+  const [confirm, confirmDialog] = useConfirm();
   const [cards, setCards] = useState(initialCards);
 
   // Search + sort + pagination
@@ -125,11 +127,14 @@ export function FlashcardSetInteractive({ set, initialCards }) {
     });
   }
 
-  function deleteCard(cardId) {
+  async function deleteCard(cardId) {
     if (pendingDelete) return;
-    if (typeof window !== 'undefined' && !window.confirm('Delete this flashcard?')) {
-      return;
-    }
+    const ok = await confirm({
+      title: 'Delete this flashcard?',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     setDeletingId(cardId);
     startDelete(async () => {
       const res = await deleteFlashcard({ cardId });
@@ -409,6 +414,7 @@ export function FlashcardSetInteractive({ set, initialCards }) {
           </>
         )}
       </section>
+      {confirmDialog}
     </main>
   );
 }
