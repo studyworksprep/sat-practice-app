@@ -125,6 +125,17 @@ removed by owner preference — the tinted columns read as odd against
 the otherwise neutral cards. Column separation relies on the 1px
 divider alone; the subject rail carries subject identity.)
 
+The reading two-column boundary is a **draggable divider**
+(2026-08-03, a parity *addition* — Bluebook's reading view has one):
+QuestionRenderer's `.paneDivider` between the passage and question
+panes, ported from presenter mode's calculator divider (pointer-
+captured drag, ←/→ on the focused separator, 25–70% clamp,
+double-click resets to the stylesheet default — even split, or the
+wider 6.5b data-table split). The chosen width persists in
+localStorage (`sw:qr-pane-split`) and follows the student across
+both runners and the review/report surfaces, which all share the
+renderer.
+
 ## Known deviations to keep (and why)
 
 - The practice runner's per-question **Submit** (vs Bluebook's
