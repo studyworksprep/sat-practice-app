@@ -465,6 +465,7 @@ export function GroupAssignmentReport({
           ) : (
             <QuestionRenderer
               key={`present-group-${selected.position}-${isRevealed ? 'r' : 'q'}`}
+              frameless
               mode="review"
               layout={selected.layout ?? 'single'}
               question={selected}
