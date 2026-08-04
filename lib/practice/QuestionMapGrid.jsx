@@ -59,10 +59,13 @@ const DIFF_CLASS = {
  *   over M2) beside a Math column — instead of free-flow wrapping.
  */
 export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null, dense = false }) {
-  // Dense + columned: stack groups sharing a `column` key, columns
-  // side by side. Insertion order of both columns and groups is
-  // preserved from the caller's array.
-  if (dense && groups.some((g) => g.column != null)) {
+  // Dense: bucket groups into columns by their `column` key (groups
+  // without one stand alone), then let the columns share the full
+  // width. Insertion order of both columns and groups is preserved.
+  // data-cols drives the container's track count so a single-column
+  // map (e.g. a 50-question assignment, one ungrouped bucket) spans
+  // the whole width instead of sitting in one narrow track.
+  if (dense) {
     const columns = [];
     const byKey = new Map();
     for (const g of groups) {
@@ -75,7 +78,10 @@ export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null,
       byKey.get(key).push(g);
     }
     return (
-      <div className={`${s.mapModules} ${s.mapModulesDense}`}>
+      <div
+        className={`${s.mapModules} ${s.mapModulesDense}`}
+        data-cols={columns.length === 1 ? '1' : undefined}
+      >
         {columns.map((col) => (
           <div key={col.key} className={s.mapColumn}>
             {col.groups.map((group) => renderGroup(group, { selectedId, onSelect, revealed, dense }))}
@@ -86,7 +92,7 @@ export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null,
   }
 
   return (
-    <div className={dense ? `${s.mapModules} ${s.mapModulesDense}` : s.mapModules}>
+    <div className={s.mapModules}>
       {groups.map((group) => renderGroup(group, { selectedId, onSelect, revealed, dense }))}
     </div>
   );
