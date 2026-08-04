@@ -146,6 +146,83 @@
   color: var(--color-slate-700);
 }
 
+/* ---------- Draggable pane divider (reading two-column) ----------
+   Bluebook's reading view lets the student drag the passage/
+   question boundary; .twoColSplit adds a 10px divider track
+   between the panes (visuals ported from presenter mode's
+   calculator divider). The renderer sets --sw-pane-split inline
+   once the student drags; until then the minmax fallbacks
+   reproduce the static defaults — even split, or the wider 6.5b
+   passage pane when the stimulus carries a data table. */
+@media (min-width: 820px) {
+  .twoColSplit {
+    grid-template-columns: minmax(0, var(--sw-pane-split, 1fr)) auto minmax(0, 1fr);
+  }
+  .twoColSplit[data-stimulus-table] {
+    grid-template-columns: minmax(0, var(--sw-pane-split, 1.5fr)) auto minmax(0, 1fr);
+  }
+  /* The divider draws the boundary line — the left pane's own
+     border would double it. */
+  .twoColSplit > .twoColLeft {
+    border-right: none;
+  }
+}
+
+/* Stacked layout has no second pane to resize. */
+.paneDivider {
+  display: none;
+}
+
+@media (min-width: 820px) {
+  .paneDivider {
+    display: block;
+    width: 10px;
+    cursor: col-resize;
+    touch-action: none;
+    position: relative;
+    background: transparent;
+  }
+
+  .paneDivider::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: 0 auto;
+    width: 1px;
+    background: var(--border);
+    transition: background 0.15s ease;
+  }
+
+  .paneDivider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 36px;
+    border-radius: 999px;
+    background: rgba(16, 42, 67, 0.18);
+    transition: background 0.15s ease, height 0.15s ease;
+  }
+
+  .paneDivider:hover::before,
+  .paneDivider:focus-visible::before {
+    background: color-mix(in srgb, var(--color-app-primary) 35%, transparent);
+  }
+
+  .paneDivider:hover::after,
+  .paneDivider:focus-visible::after {
+    background: color-mix(in srgb, var(--color-app-primary) 55%, transparent);
+    height: 48px;
+  }
+
+  .paneDivider:focus-visible {
+    outline: 2px solid var(--color-gold-700, #b7791f);
+    outline-offset: -2px;
+  }
+}
+
 .twoColRight {
   padding: var(--s5) var(--s6);
   display: flex;
