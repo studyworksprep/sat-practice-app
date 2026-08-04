@@ -134,11 +134,21 @@
    keep the default treatment. */
 
 .mapModulesDense {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  /* Columns share the full width (one per subject when there's room,
+     stacking below ~760px). Cells inside stretch into the spare
+     horizontal space rather than the map hugging its content and
+     leaving the right half of the stage empty. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  align-items: start;
   column-gap: var(--s6);
   row-gap: var(--s3);
+}
+
+/* One bucket (an ungrouped large map) spans the full width rather
+   than occupying a single 360px track. */
+.mapModulesDense[data-cols="1"] {
+  grid-template-columns: 1fr;
 }
 
 /* Column stack for dense groups sharing a `column` key (e.g. an RW
@@ -147,11 +157,12 @@
   display: grid;
   gap: var(--s3);
   align-content: start;
+  min-width: 0;
 }
 
 .mapModulesDense .mapModule {
-  flex: 0 0 auto;
   gap: 4px;
+  min-width: 0;
 }
 
 .mapModulesDense .mapModuleLabel {
@@ -160,16 +171,23 @@
 }
 
 .mapModulesDense .mapGrid {
-  /* Flex so the group hugs its content width — lets two modules sit
-     side by side per row; wraps within the group if it ever must. */
-  display: flex;
-  flex-wrap: wrap;
+  /* Equal tracks that grow into the available width — a module's
+     cells spread across its column instead of bunching at the left.
+     auto-fit keeps every row on the same track widths, so a wrapped
+     tail row lines up with the row above it. */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(22px, 1fr));
   gap: 3px;
 }
 
 .mapModulesDense .mapItem {
+  /* Height is pinned; width flexes with the track. Spare space makes
+     the cells wider, never taller, so the strip's height is constant
+     however wide the stage is. The cap stops a short module (or a
+     narrow test) from stretching cells into lozenges. */
   aspect-ratio: auto;
-  width: 22px;
+  width: 100%;
+  max-width: 34px;
   height: 22px;
   border-width: 1px;
   border-radius: 4px;
