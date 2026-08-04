@@ -134,7 +134,11 @@ double-click resets to the stylesheet default — even split, or the
 wider 6.5b data-table split). The chosen width persists in
 localStorage (`sw:qr-pane-split`) and follows the student across
 both runners and the review/report surfaces, which all share the
-renderer.
+renderer. The Desmos slot layout (math questions with the
+calculator open) carries the same divider under its own key
+(`sw:qr-calc-split`); it goes zero-width and inert while the
+calculator is collapsed so the open/close animation is
+undisturbed.
 
 ## Known deviations to keep (and why)
 

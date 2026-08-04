@@ -221,6 +221,18 @@
     outline: 2px solid var(--color-gold-700, #b7791f);
     outline-offset: -2px;
   }
+
+  /* Collapsed slot layout: the divider stays mounted (track-count
+     parity keeps the open/collapse transition interpolable) but
+     takes no space and no input. */
+  .paneDividerCollapsed {
+    width: 0;
+    pointer-events: none;
+  }
+  .paneDividerCollapsed::before,
+  .paneDividerCollapsed::after {
+    display: none;
+  }
 }
 
 .twoColRight {
@@ -252,12 +264,23 @@
   transition: grid-template-columns var(--dur-slow) var(--ease-std);
 }
 
+/* Three tracks (pane / divider / question) in BOTH states, and the
+   pane track in % rather than fr, so the open/collapse transition
+   still interpolates and the 6.5c divider var slots straight in.
+   The divider element goes zero-width while collapsed (see
+   .paneDividerCollapsed), so the middle auto track vanishes with
+   the pane. */
 @media (min-width: 820px) {
   .slotOpen {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, var(--sw-pane-split, 50%)) auto minmax(0, 1fr);
   }
   .slotCollapsed {
-    grid-template-columns: 0fr 1fr;
+    grid-template-columns: minmax(0, 0%) auto minmax(0, 1fr);
+  }
+  /* The divider draws the boundary line — the open pane's own
+     border would double it (same treatment as .twoColSplit). */
+  .slotOpen > .twoColLeft {
+    border-right: none;
   }
 }
 
