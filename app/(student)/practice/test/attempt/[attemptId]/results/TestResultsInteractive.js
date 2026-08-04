@@ -15,6 +15,7 @@ import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { recalculateScore } from '@/lib/practice-test/score-actions';
+import { Button } from '@/lib/ui/Button';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
@@ -215,30 +216,24 @@ export function TestResultsInteractive({
         </div>
         <div className={s.headerActions}>
           {canPresent && (
-            <button
-              type="button"
-              className={s.presentBtn}
+            <Button
               onClick={() => setPresenting(true)}
+              title="Full-screen review for a live session: large type, arrow-key navigation, reveal controls, drawing overlay"
             >
               ▶ Present
-            </button>
+            </Button>
           )}
-          <button
-            type="button"
-            className={s.pdfBtn}
+          <Button
+            variant="secondary"
             onClick={handleExportPdf}
             disabled={exportingPdf}
           >
             {exportingPdf ? 'Building PDF…' : '⇩ Export PDF'}
-          </button>
+          </Button>
           {canRecalculate && (
-            <button
-              type="button"
-              className={s.recalcBtn}
-              onClick={() => setShowScoreDialog(true)}
-            >
+            <Button variant="secondary" onClick={() => setShowScoreDialog(true)}>
               Recalculate score
-            </button>
+            </Button>
           )}
         </div>
       </header>

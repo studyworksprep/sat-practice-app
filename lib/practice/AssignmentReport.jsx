@@ -24,6 +24,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { Button } from '@/lib/ui/Button';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
@@ -182,22 +183,20 @@ export function AssignmentReport({
           </div>
         </div>
         <div className={s.headerActions}>
-          <button
-            type="button"
-            className={s.presentBtn}
+          <Button
             onClick={() => setPresenting(true)}
             title="Full-screen review for a live session: large type, arrow-key navigation, reveal controls, drawing overlay"
           >
             ▶ Present
-          </button>
+          </Button>
           {rebuildHref && (
-            <Link
+            <Button
+              variant="secondary"
               href={rebuildHref}
-              className={s.rebuildBtn}
               title="Recompute the report from every attempt the student has on this assignment's questions"
             >
               ↻ Rebuild from attempts
-            </Link>
+            </Button>
           )}
         </div>
       </header>
