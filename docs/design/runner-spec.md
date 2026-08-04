@@ -140,6 +140,15 @@ calculator open) carries the same divider under its own key
 calculator is collapsed so the open/close animation is
 undisturbed.
 
+Presenter mode renders questions **frameless** (2026-08-03):
+QuestionRenderer's `frameless` prop drops the rounded-card chrome so
+the two-column layouts fill the stage edge-to-edge — a reading
+passage|question split then reads exactly like the math
+calculator|question split, which is the parity the two question types
+were missing. Single-column stacks clamp to 920px instead (a
+full-bleed option row on a projector is unreadable). Only presenter
+passes the prop; the runners and in-page report panes keep the card.
+
 ## Known deviations to keep (and why)
 
 - The practice runner's per-question **Submit** (vs Bluebook's

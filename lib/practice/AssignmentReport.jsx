@@ -540,6 +540,7 @@ export function AssignmentReport({
           ) : (
             <QuestionRenderer
               key={`present-${selected.position}-${isRevealed ? 'r' : 'q'}`}
+              frameless
               mode="review"
               layout={selected.layout ?? 'single'}
               question={selected}

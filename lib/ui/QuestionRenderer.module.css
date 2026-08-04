@@ -12,6 +12,23 @@
   display: contents;
 }
 
+/* ---------- Frameless variant (presenter mode) ----------
+   The rounded-card chrome is dropped so the two-column layouts fill
+   the host edge-to-edge — reading's passage|question split then
+   mirrors the presenter's calculator|question split. Single-column
+   stacks clamp to a readable width instead (a full-bleed option row
+   on a projector is unreadable). */
+
+.frameless .twoCol {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.framelessSingle {
+  max-width: 920px;
+}
+
 /* ---------- Taxonomy strip (teacher mode) ---------- */
 
 .taxonomy {

@@ -37,6 +37,7 @@ const DIFF_CLASS = {
  *   key: string,
  *   label: React.ReactNode,
  *   countNote?: string,
+ *   column?: string,
  *   items: Array<{
  *     id: string | number,
  *     ordinalLabel: string | number,
@@ -53,18 +54,65 @@ const DIFF_CLASS = {
  *   counts (a full practice test is 98 questions): ~22px cells,
  *   groups flowing horizontally instead of stacking. Callers with
  *   assignment-sized maps (~30-40 questions) keep the default.
+ *   Groups carrying a `column` key (e.g. subject) are stacked into
+ *   one column per key — a full test reads as an RW column (M1
+ *   over M2) beside a Math column — instead of free-flow wrapping.
  */
 export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null, dense = false }) {
+  // Dense + columned: stack groups sharing a `column` key, columns
+  // side by side. Insertion order of both columns and groups is
+  // preserved from the caller's array.
+  if (dense && groups.some((g) => g.column != null)) {
+    const columns = [];
+    const byKey = new Map();
+    for (const g of groups) {
+      const key = g.column ?? g.key;
+      if (!byKey.has(key)) {
+        const bucket = [];
+        byKey.set(key, bucket);
+        columns.push({ key, groups: bucket });
+      }
+      byKey.get(key).push(g);
+    }
+    return (
+      <div className={`${s.mapModules} ${s.mapModulesDense}`}>
+        {columns.map((col) => (
+          <div key={col.key} className={s.mapColumn}>
+            {col.groups.map((group) => renderGroup(group, { selectedId, onSelect, revealed, dense }))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className={dense ? `${s.mapModules} ${s.mapModulesDense}` : s.mapModules}>
-      {groups.map((group) => {
-        // Empty string / null suppresses the label row entirely so
-        // ungrouped callers (e.g. ReviewInteractive's single-group
-        // map) don't render a hollow header strip above the grid.
-        const hasLabel = group.label != null && group.label !== '';
-        const hasCount = !!group.countNote;
-        return (
-        <div key={group.key} className={s.mapModule}>
+      {groups.map((group) => renderGroup(group, { selectedId, onSelect, revealed, dense }))}
+    </div>
+  );
+}
+
+function renderGroup(group, { selectedId, onSelect, revealed, dense }) {
+  return (
+    <MapGroup
+      key={group.key}
+      group={group}
+      selectedId={selectedId}
+      onSelect={onSelect}
+      revealed={revealed}
+      dense={dense}
+    />
+  );
+}
+
+function MapGroup({ group, selectedId, onSelect, revealed, dense }) {
+  // Empty string / null suppresses the label row entirely so
+  // ungrouped callers (e.g. ReviewInteractive's single-group
+  // map) don't render a hollow header strip above the grid.
+  const hasLabel = group.label != null && group.label !== '';
+  const hasCount = !!group.countNote;
+  return (
+        <div className={s.mapModule}>
           {(hasLabel || hasCount) && (
             <div className={s.mapModuleLabel}>
               {hasLabel && (typeof group.label === 'string' ? (
@@ -118,8 +166,5 @@ export function QuestionMapGrid({ groups, selectedId, onSelect, revealed = null,
             })}
           </div>
         </div>
-        );
-      })}
-    </div>
   );
 }

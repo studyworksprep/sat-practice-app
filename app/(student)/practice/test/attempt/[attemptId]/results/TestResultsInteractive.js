@@ -105,6 +105,9 @@ export function TestResultsInteractive({
   // presenter mode's jump map, so both render identically.
   const mapGridGroups = useMemo(() => moduleGroups.map((group) => ({
     key: group.key,
+    // Dense (presenter) maps stack the two modules of each subject
+    // into one column - an RW column beside a Math column.
+    column: group.subject,
     label: (
       <>
         <span className={s.mapModuleSubject}>
@@ -638,6 +641,7 @@ export function TestResultsInteractive({
           ) : (
             <QuestionRenderer
               key={`present-${selected.ordinal}-${isRevealed ? 'r' : 'q'}`}
+              frameless
               mode="review"
               layout={selected.layout ?? 'single'}
               question={selected}

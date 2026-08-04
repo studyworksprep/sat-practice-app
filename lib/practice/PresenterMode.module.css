@@ -244,9 +244,12 @@
 }
 
 .content {
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 28px 32px 64px;
+  /* Full-bleed: the question renders frameless in presenter, so a
+     reading passage|question split fills the stage like the math
+     calculator|question split. Single-column stacks clamp
+     themselves to a readable width inside QuestionRenderer's
+     frameless variant. */
+  padding: 24px 28px 64px;
   font-size: 17px;
   line-height: 1.55;
 }

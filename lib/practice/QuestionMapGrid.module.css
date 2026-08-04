@@ -141,6 +141,14 @@
   row-gap: var(--s3);
 }
 
+/* Column stack for dense groups sharing a `column` key (e.g. an RW
+   column with M1 over M2 beside a Math column). */
+.mapColumn {
+  display: grid;
+  gap: var(--s3);
+  align-content: start;
+}
+
 .mapModulesDense .mapModule {
   flex: 0 0 auto;
   gap: 4px;
