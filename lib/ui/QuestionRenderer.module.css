@@ -59,16 +59,35 @@
   container-type: inline-size;
 }
 
-/* Let data-table cells compress before the overflow-x scrollbar
-   kicks in. `overflow-wrap: anywhere` (unlike break-word) factors
+/* Let data cells compress before the overflow-x scrollbar kicks
+   in. `overflow-wrap: anywhere` (unlike break-word) factors
    soft-break opportunities into the cells' min-content width, so
    table auto-layout can squeeze long tokens instead of forcing
    the whole table wider than the pane. Breaks only happen when
    the alternative is overflow — typical cells are untouched.
-   Table-scoped: .twoCol's own overflow keeps everything else. */
-.stimulusColumn table th,
+   Deliberately td-only: headers keep whole words, so their
+   longest single word becomes the column's floor and header text
+   wraps at word boundaries instead of mid-word. (Header words
+   are short; data cells carry the long unbreakable tokens.) */
 .stimulusColumn table td {
   overflow-wrap: anywhere;
+}
+.stimulusColumn table th {
+  overflow-wrap: break-word;
+}
+
+/* Squeeze no more than necessary: QTI stimuli wrap tables in a
+   <figure>, whose UA default 40px side margins steal pane width;
+   and a compressing table should claim the full pane before it
+   starts breaking words. width: max-content + max-width: 100%
+   = natural size when it fits, full-pane (not narrower) when it
+   doesn't. */
+.stimulusColumn figure {
+  margin-inline: 0;
+}
+.stimulusColumn table {
+  width: max-content;
+  max-width: 100%;
 }
 
 /* In a genuinely narrow pane, cell padding is a meaningful share
