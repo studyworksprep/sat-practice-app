@@ -125,3 +125,72 @@
 
 .mapStatusCorrect { color: var(--color-diff-easy-fg); }
 .mapStatusWrong   { color: var(--color-diff-hard-fg); }
+
+/* ---------- Dense variant ----------
+   For large maps (a full practice test is 98 questions across four
+   modules): ~22px cells and module groups flowing horizontally so
+   the whole test reads as a slim heat strip instead of four stacked
+   blocks. Activated via the `dense` prop; assignment-sized maps
+   keep the default treatment. */
+
+.mapModulesDense {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: var(--s6);
+  row-gap: var(--s3);
+}
+
+.mapModulesDense .mapModule {
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.mapModulesDense .mapModuleLabel {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.mapModulesDense .mapGrid {
+  /* Flex so the group hugs its content width — lets two modules sit
+     side by side per row; wraps within the group if it ever must. */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.mapModulesDense .mapItem {
+  aspect-ratio: auto;
+  width: 22px;
+  height: 22px;
+  border-width: 1px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.mapModulesDense .mapItemActive {
+  outline-width: 2px;
+  outline-offset: 1px;
+}
+
+.mapModulesDense .mapItemRevealed::after {
+  top: 1px; right: 1px;
+  width: 4px; height: 4px;
+}
+
+.mapModulesDense .mapFlag {
+  top: -4px;
+  left: -4px;
+  width: 12px;
+  height: 12px;
+  border-width: 1px;
+}
+
+.mapModulesDense .mapStatusCorrect,
+.mapModulesDense .mapStatusWrong {
+  bottom: -3px;
+  right: -3px;
+  width: 12px;
+  height: 12px;
+  border-width: 1px;
+}
