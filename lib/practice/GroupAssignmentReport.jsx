@@ -19,6 +19,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { Button } from '@/lib/ui/Button';
 import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
@@ -141,14 +142,12 @@ export function GroupAssignmentReport({
             <span>{metrics.totalQuestions} questions</span>
           </div>
         </div>
-        <button
-          type="button"
-          className={s.presentBtn}
+        <Button
           onClick={() => setPresenting(true)}
           title="Full-screen review for a live group session: large type, arrow-key navigation, reveal controls, drawing overlay"
         >
           ▶ Present
-        </button>
+        </Button>
       </header>
 
       <ReportHero
