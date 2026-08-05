@@ -26,14 +26,18 @@
 // Desmos requires window.Desmos.GraphingCalculator at runtime;
 // app/layout.js loads the script globally so any descendant of
 // the root layout has it available.
+//
+// All styling lives in LessonSlideshow.module.css — add classes there
+// rather than reaching for inline styles, which can't express the
+// hover / focus / disabled / reduced-motion states this runtime needs.
 
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import HtmlBlock from '@/components/HtmlBlock';
 import { MathText } from '@/lib/ui/MathText';
 import { LessonCalculatorPane } from '@/lib/ui/LessonCalculatorPane';
-import slideshowStyles from './LessonSlideshow.module.css';
+import s from './LessonSlideshow.module.css';
 import {
   isLessonCompletionLocked,
   normalizeLessonCalculatorPresentation,
@@ -44,7 +48,12 @@ import {
   buildBlockIndexMap,
   resolveAnswerNavigation,
   resolveContinueNavigation,
+  resolveResumeIndex,
 } from '@/lib/lesson/runtime-navigation.mjs';
+
+// Above this many blocks the per-step segments get too thin to read, so
+// the progress meter falls back to a continuous bar.
+const MAX_SEGMENTED_BLOCKS = 30;
 
 export function LessonSlideshow({
   blocks = [],
@@ -60,8 +69,26 @@ export function LessonSlideshow({
   showCompleteButton = true,
   debugMode = false,
   calculatorStoragePrefix = 'lesson-desmos',
+  // Optional call-to-action on the completion banner. The admin preview
+  // leaves these unset so a read-only playthrough has no exit ramp.
+  completionHref = null,
+  completionLabel = 'Back to lessons',
 }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(() =>
+    resolveResumeIndex({
+      blocks,
+      completedBlockIds: initialCompletedBlockIds,
+      isComplete: initialIsComplete,
+    }),
+  );
+  const [showResumeNotice, setShowResumeNotice] = useState(
+    () =>
+      resolveResumeIndex({
+        blocks,
+        completedBlockIds: initialCompletedBlockIds,
+        isComplete: initialIsComplete,
+      }) > 0,
+  );
   const [completedBlockIds, setCompletedBlockIds] = useState(
     () => new Set(initialCompletedBlockIds),
   );
@@ -78,6 +105,9 @@ export function LessonSlideshow({
   const [pendingAdvance, setPendingAdvance] = useState(null);
   const [lessonCalculator, setLessonCalculator] = useState(null);
   const [calculatorOpenOverride, setCalculatorOpenOverride] = useState(null);
+  // Scopes the arrow-key shortcuts: Desmos binds arrows for its own
+  // graph navigation, and it lives outside this column.
+  const lessonColumnRef = useRef(null);
 
   const blockIndexById = useMemo(() => buildBlockIndexMap(blocks), [blocks]);
   const currentBlock = blocks[currentIndex] || null;
@@ -112,20 +142,51 @@ export function LessonSlideshow({
       ? Math.round((completedBlockIds.size / blocks.length) * 100)
       : 0;
 
-  const currentIsLocked = Boolean(
-    currentBlock &&
-      ((currentBlock.block_type === 'desmos_interactive' &&
-        currentBlock.content?.progression?.require_success &&
-        !completedBlockIds.has(currentBlock.id) &&
-        !forceUnlockedBlockIds.includes(currentBlock.id)) ||
-        // A retry check gates Continue until it's answered correctly,
-        // the same way a require_success desmos block does. It completes
-        // only on a correct answer (see the check onSubmit wiring), so a
-        // not-yet-completed retry check keeps the learner on the slide.
-        (currentBlock.block_type === 'check' &&
-          currentBlock.content?.allow_retry &&
-          !completedBlockIds.has(currentBlock.id))),
-  );
+  // Answered-check tally for the completion banner. Counts only blocks
+  // the learner actually submitted, so a lesson finished without doing
+  // every optional check still reports an honest denominator.
+  const checkTally = useMemo(() => {
+    let answered = 0;
+    let correct = 0;
+    for (const block of blocks) {
+      if (block.block_type !== 'check' && block.block_type !== 'desmos_interactive') {
+        continue;
+      }
+      const answer = checkAnswers[block.id];
+      if (!answer) continue;
+      answered += 1;
+      if (answer.correct) correct += 1;
+    }
+    return { answered, correct };
+  }, [blocks, checkAnswers]);
+
+  // Why Continue is disabled, as learner-facing copy — null when it
+  // isn't. A silently dead button reads as a broken page, so the footer
+  // renders this alongside it.
+  const lockReason = (() => {
+    if (!currentBlock) return null;
+    if (
+      currentBlock.block_type === 'desmos_interactive' &&
+      currentBlock.content?.progression?.require_success &&
+      !completedBlockIds.has(currentBlock.id) &&
+      !forceUnlockedBlockIds.includes(currentBlock.id)
+    ) {
+      return 'Finish this activity in Desmos and check your work to continue.';
+    }
+    // A retry check gates Continue until it's answered correctly, the
+    // same way a require_success desmos block does. It completes only on
+    // a correct answer (see the check onSubmit wiring), so a
+    // not-yet-completed retry check keeps the learner on the slide.
+    if (
+      currentBlock.block_type === 'check' &&
+      currentBlock.content?.allow_retry &&
+      !completedBlockIds.has(currentBlock.id)
+    ) {
+      return 'Answer correctly to continue.';
+    }
+    return null;
+  })();
+  const currentIsLocked = Boolean(lockReason);
 
   function recordBlockComplete(blockId) {
     if (!blockId) return;
@@ -168,7 +229,8 @@ export function LessonSlideshow({
     });
   }
 
-  function goNext() {
+  const goNext = useCallback(() => {
+    setShowResumeNotice(false);
     // First Continue after answering: jump to the recorded branch /
     // linear target. Subsequent Continues use rejoin-aware navigation.
     if (pendingAdvance && pendingAdvance.fromIndex === currentIndex) {
@@ -185,11 +247,59 @@ export function LessonSlideshow({
     });
     setCurrentIndex(result.nextIndex);
     setActiveBranchState(result.activeBranchState);
+  }, [activeBranchState, blockIndexById, blocks, currentIndex, pendingAdvance]);
+
+  const goPrev = useCallback(() => {
+    setShowResumeNotice(false);
+    setCurrentIndex((prev) => Math.max(prev - 1, 0));
+  }, []);
+
+  function restartFromBeginning() {
+    setShowResumeNotice(false);
+    setCurrentIndex(0);
+    setActiveBranchState(null);
+    setPendingAdvance(null);
   }
 
-  function goPrev() {
-    setCurrentIndex((prev) => Math.max(prev - 1, 0));
-  }
+  const canGoNext = currentIndex < blocks.length - 1 && !currentIsLocked;
+  const canGoPrev = currentIndex > 0;
+
+  // ← / → step through the lesson. Scoped to the lesson column so the
+  // shortcut never steals arrow keys from Desmos (which owns them for
+  // graph navigation) or from a text field; `document.body` is included
+  // so the keys work before anything has been focused.
+  useEffect(() => {
+    function onKeyDown(event) {
+      if (event.defaultPrevented) return;
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+
+      const target = event.target;
+      const inScope =
+        target === document.body ||
+        (lessonColumnRef.current && lessonColumnRef.current.contains(target));
+      if (!inScope) return;
+      if (
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.tagName === 'SELECT' ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (event.key === 'ArrowRight' && canGoNext) {
+        event.preventDefault();
+        goNext();
+      } else if (event.key === 'ArrowLeft' && canGoPrev) {
+        event.preventDefault();
+        goPrev();
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [canGoNext, canGoPrev, goNext, goPrev]);
 
   function captureWorkflowDesmosState(block, payload) {
     const workflowId = block?.content?.workflow_id;
@@ -207,21 +317,21 @@ export function LessonSlideshow({
 
   if (blocks.length === 0) {
     return (
-      <div style={S.empty}>
-        <p style={S.muted}>This lesson has no blocks yet.</p>
+      <div className={s.empty}>
+        <p className={s.muted}>This lesson has no blocks yet.</p>
       </div>
     );
   }
 
   return (
-    <div className={`${slideshowStyles.workspace} ${calculatorOpen ? '' : slideshowStyles.workspaceSingle}`}>
-      <div className={slideshowStyles.lessonColumn}>
-      <div style={S.container}>
+    <div className={`${s.workspace} ${calculatorOpen ? '' : s.workspaceSingle}`}>
+      <div className={s.lessonColumn} ref={lessonColumnRef}>
+      <div className={s.container}>
       {calculatorPresentation.display !== 'hidden' && !calculatorOpen && (
-        <div className={slideshowStyles.calculatorToggleRow}>
+        <div className={s.calculatorToggleRow}>
           <button
             type="button"
-            className={slideshowStyles.calculatorToggle}
+            className={s.calculatorToggle}
             onClick={() => setCalculatorOpenOverride({ blockId: currentBlock?.id, open: true })}
           >
             Open Desmos
@@ -230,26 +340,47 @@ export function LessonSlideshow({
         </div>
       )}
       {showProgressBar && (
-        <div style={S.progressRow}>
-          <div style={S.progressTrack}>
-            <div
-              style={{
-                ...S.progressFill,
-                width: `${progressPct}%`,
-                background: isComplete
-                  ? 'var(--success, #5ba876)'
-                  : 'var(--color-app-accent, var(--accent, #102a43))',
-              }}
-            />
-          </div>
-          <span style={S.progressPct}>
+        <div className={s.progressRow}>
+          {blocks.length <= MAX_SEGMENTED_BLOCKS ? (
+            <div className={s.progressSegments} aria-hidden="true">
+              {blocks.map((block, i) => (
+                <span
+                  key={block.id ?? i}
+                  className={`${s.segment} ${
+                    completedBlockIds.has(block.id) ? s.segmentDone : ''
+                  } ${i === currentIndex ? s.segmentCurrent : ''}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className={s.progressTrack} aria-hidden="true">
+              <div
+                className={`${s.progressFill} ${isComplete ? s.progressFillComplete : ''}`}
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+          )}
+          <span className={s.progressPct}>
             {isComplete ? 'Complete' : `${progressPct}%`}
           </span>
         </div>
       )}
 
+      {showResumeNotice && (
+        <div className={s.resumeNotice} role="status">
+          <span>Picking up where you left off.</span>
+          <button
+            type="button"
+            className={s.resumeRestart}
+            onClick={restartFromBeginning}
+          >
+            Start from the beginning
+          </button>
+        </div>
+      )}
+
       {currentBlock && (
-        <div key={currentBlock.id} style={S.blockHost}>
+        <div key={currentBlock.id} className={s.blockHost}>
           {currentBlock.block_type === 'text' && (
             <TextBlock
               block={currentBlock}
@@ -291,6 +422,7 @@ export function LessonSlideshow({
               block={currentBlock}
               isComplete={completedBlockIds.has(currentBlock.id)}
               hrefFor={questionLinkHref}
+              debugMode={debugMode}
             />
           )}
           {currentBlock.block_type === 'desmos_interactive' && (
@@ -347,9 +479,9 @@ export function LessonSlideshow({
       )}
 
       {debugMode && currentBlock && (
-        <details style={S.debugCard}>
-          <summary style={S.debugSummary}>Debug info</summary>
-          <div style={S.debugGrid}>
+        <details className={s.debugCard}>
+          <summary className={s.debugSummary}>Debug info</summary>
+          <div className={s.debugGrid}>
             <DebugRow k="block_id" v={currentBlock.id} />
             <DebugRow k="block_type" v={currentBlock.block_type} />
             <DebugRow
@@ -390,44 +522,50 @@ export function LessonSlideshow({
         </details>
       )}
 
-      <div style={S.navRow}>
+      <div className={s.navRow}>
         <button
           type="button"
           onClick={goPrev}
           disabled={currentIndex === 0}
-          style={S.navBtn}
+          className={s.navBtn}
         >
           Previous
         </button>
-        <span style={S.navLabel}>
-          Block {Math.min(currentIndex + 1, blocks.length)} of {blocks.length}
+        <span className={s.navLabel}>
+          Step {Math.min(currentIndex + 1, blocks.length)} of {blocks.length}
         </span>
         {/* The lesson_complete block is a terminal — it carries its own
             "Complete Lesson" button, so no Continue is shown on it. */}
         {currentBlock?.block_type === 'lesson_complete' ? (
-          <span style={{ width: 96 }} aria-hidden />
+          <span className={s.navSpacer} aria-hidden />
         ) : (
           <button
             type="button"
             onClick={goNext}
             disabled={currentIndex >= blocks.length - 1 || currentIsLocked}
-            style={S.navBtn}
+            className={`${s.primaryBtn} ${s.navBtnNext}`}
           >
             Continue
           </button>
         )}
       </div>
 
+      {currentIsLocked && (
+        <p className={s.lockHint} role="status" aria-live="polite">
+          {lockReason}
+        </p>
+      )}
+
       {showCompleteButton &&
         !isComplete &&
         currentBlock?.block_type !== 'lesson_complete' &&
         currentIndex >= blocks.length - 1 && (
-          <div style={S.completeWrap}>
+          <div className={s.completeWrap}>
             <button
               type="button"
               onClick={handleMarkComplete}
               disabled={isLessonCompletionLocked(blocks, [...completedBlockIds])}
-              style={S.completeBtn}
+              className={s.completeBtn}
             >
               Mark Lesson Complete
             </button>
@@ -435,8 +573,22 @@ export function LessonSlideshow({
         )}
 
       {isComplete && (
-        <div style={S.completeBanner}>
-          <span style={S.completeText}>Lesson Complete!</span>
+        <div className={s.completeBanner} role="status">
+          <div className={s.completeCheck} aria-hidden="true">
+            ✓
+          </div>
+          <div className={s.completeText}>Lesson complete</div>
+          {checkTally.answered > 0 && (
+            <p className={s.completeScore}>
+              You answered {checkTally.correct} of {checkTally.answered}{' '}
+              {checkTally.answered === 1 ? 'check' : 'checks'} correctly.
+            </p>
+          )}
+          {completionHref && (
+            <a href={completionHref} className={s.completeCta}>
+              {completionLabel}
+            </a>
+          )}
         </div>
       )}
       </div>
@@ -464,8 +616,11 @@ function TextBlock({ block, isRead, onRead }) {
   }, [isRead, onRead]);
 
   return (
-    <div style={S.card}>
-      <HtmlBlock className="prose lesson-prose" html={block.content?.html || ''} />
+    <div className={s.card}>
+      <HtmlBlock
+        className={`prose lesson-prose ${s.prosePane}`}
+        html={block.content?.html || ''}
+      />
     </div>
   );
 }
@@ -475,14 +630,17 @@ function TextBlock({ block, isRead, onRead }) {
 function LessonCompleteBlock({ block, isComplete, onComplete }) {
   const label = block.content?.button_label || 'Complete Lesson';
   return (
-    <div style={S.card}>
-      <HtmlBlock className="prose lesson-prose" html={block.content?.html || ''} />
-      <div style={{ textAlign: 'center', marginTop: 12 }}>
+    <div className={s.card}>
+      <HtmlBlock
+        className={`prose lesson-prose ${s.prosePane}`}
+        html={block.content?.html || ''}
+      />
+      <div className={s.completeBlockActions}>
         <button
           type="button"
           onClick={onComplete}
           disabled={isComplete}
-          style={S.completeBtn}
+          className={s.completeBtn}
         >
           {isComplete ? 'Lesson Complete' : label}
         </button>
@@ -495,15 +653,10 @@ function VideoBlock({ block, isWatched, onWatched }) {
   const embedUrl = getEmbedUrl(block.content?.url);
 
   return (
-    <div style={{ ...S.card, padding: 0, overflow: 'hidden' }}>
+    <div className={`${s.card} ${s.cardFlush}`}>
       {embedUrl ? (
         <div
-          style={{
-            position: 'relative',
-            paddingBottom: '56.25%',
-            height: 0,
-            background: '#000',
-          }}
+          className={s.videoFrame}
           onClick={() => {
             if (!isWatched) onWatched();
           }}
@@ -511,38 +664,29 @@ function VideoBlock({ block, isWatched, onWatched }) {
           <iframe
             src={embedUrl}
             title="lesson video"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              border: 'none',
-            }}
+            className={s.videoIframe}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
         </div>
       ) : (
-        <div style={{ padding: 20 }}>
+        <div className={s.videoFallback}>
           {block.content?.url ? (
             <a
               href={block.content.url}
               target="_blank"
               rel="noopener noreferrer"
-              style={S.link}
+              className={s.link}
             >
               {block.content.url}
             </a>
           ) : (
-            <span style={S.muted}>No video URL set</span>
+            <span className={s.muted}>No video URL set</span>
           )}
         </div>
       )}
       {block.content?.caption && (
-        <p style={{ ...S.muted, padding: '8px 16px', margin: 0 }}>
-          {block.content.caption}
-        </p>
+        <p className={s.videoCaption}>{block.content.caption}</p>
       )}
     </div>
   );
@@ -602,20 +746,20 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
     setRevealed(true);
   }
 
-  const borderColor = revealed
+  const stateClass = revealed
     ? selected === correctIdx
-      ? 'var(--success, #5ba876)'
-      : 'var(--danger, #d97775)'
+      ? s.checkCardCorrect
+      : s.checkCardWrong
     : showHint
-      ? 'var(--danger, #d97775)'
-      : 'var(--border, rgba(17,24,39,0.08))';
+      ? s.checkCardWrong
+      : '';
 
   return (
-    <div style={{ ...S.card, border: `2px solid ${borderColor}` }}>
-      <div style={S.kicker}>Knowledge Check</div>
-      <MathText as="p" style={S.checkPrompt}>{content.prompt}</MathText>
+    <div className={`${s.card} ${s.checkCard} ${stateClass}`}>
+      <div className={s.kicker}>Knowledge Check</div>
+      <MathText as="p" className={s.checkPrompt}>{content.prompt}</MathText>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div className={s.choiceList}>
         {choices.map((choice, i) => {
           const isCorrectChoice = i === correctIdx;
           const isSelected = i === selected;
@@ -623,22 +767,14 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
           // choice is correct — that stays hidden until the learner
           // gets there themselves.
           const isWrongPick = showHint && isSelected && !isCorrectChoice;
-          let bg = 'transparent';
-          let border = '1px solid var(--border, #ddd)';
+          let choiceState = '';
           if (revealed) {
-            if (isCorrectChoice) {
-              bg = 'rgba(91,168,118,0.10)';
-              border = '1px solid var(--success, #5ba876)';
-            } else if (isSelected) {
-              bg = 'rgba(217,119,117,0.10)';
-              border = '1px solid var(--danger, #d97775)';
-            }
+            if (isCorrectChoice) choiceState = s.choiceCorrect;
+            else if (isSelected) choiceState = s.choiceWrong;
           } else if (isWrongPick) {
-            bg = 'rgba(217,119,117,0.10)';
-            border = '1px solid var(--danger, #d97775)';
+            choiceState = s.choiceWrong;
           } else if (isSelected) {
-            bg = 'rgba(16,42,67,0.06)';
-            border = '1px solid var(--color-app-accent, var(--accent, #102a43))';
+            choiceState = s.choiceSelected;
           }
           return (
             <button
@@ -646,54 +782,17 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
               type="button"
               onClick={() => handleSelect(i)}
               disabled={revealed}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '10px 14px',
-                borderRadius: 8,
-                background: bg,
-                border,
-                cursor: revealed ? 'default' : 'pointer',
-                textAlign: 'left',
-                fontSize: 14,
-                width: '100%',
-                fontFamily: 'inherit',
-                color: 'inherit',
-              }}
+              className={`${s.choice} ${choiceState}`}
             >
-              <span
-                style={{
-                  fontWeight: 700,
-                  color: 'var(--muted, #6b7280)',
-                  width: 20,
-                  flexShrink: 0,
-                }}
-              >
+              <span className={s.choiceLetter}>
                 {String.fromCharCode(65 + i)}
               </span>
               <MathText as="span">{choice}</MathText>
               {revealed && isCorrectChoice && (
-                <span
-                  style={{
-                    marginLeft: 'auto',
-                    color: 'var(--success, #5ba876)',
-                    fontWeight: 700,
-                  }}
-                >
-                  ✓
-                </span>
+                <span className={s.choiceMark}>✓</span>
               )}
               {((revealed && isSelected && !isCorrectChoice) || isWrongPick) && (
-                <span
-                  style={{
-                    marginLeft: 'auto',
-                    color: 'var(--danger, #d97775)',
-                    fontWeight: 700,
-                  }}
-                >
-                  ✗
-                </span>
+                <span className={s.choiceMark}>✗</span>
               )}
             </button>
           );
@@ -705,20 +804,20 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
           type="button"
           onClick={handleSubmit}
           disabled={selected === null}
-          style={{ ...S.primaryBtn, marginTop: 12 }}
+          className={`${s.primaryBtn} ${s.checkSubmit}`}
         >
           {showHint ? 'Try Again' : 'Check Answer'}
         </button>
       )}
 
       {showHint && !revealed && (
-        <div style={S.hint} role="status" aria-live="polite">
+        <div className={s.hint} role="status" aria-live="polite">
           <strong>Try again.</strong> <MathText as="span">{hintHtml}</MathText>
         </div>
       )}
 
       {revealed && content.explanation && (
-        <div style={S.explanation}>
+        <div className={s.explanation}>
           <strong>Explanation:</strong> <MathText as="span">{content.explanation}</MathText>
         </div>
       )}
@@ -726,31 +825,32 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
   );
 }
 
-function QuestionLinkBlock({ block, isComplete, hrefFor }) {
+function QuestionLinkBlock({ block, isComplete, hrefFor, debugMode = false }) {
   const questionId = block.content?.question_id;
   if (!questionId) return null;
 
   const href = typeof hrefFor === 'function' ? hrefFor(questionId) : null;
 
   return (
-    <div style={S.card}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
+    <div className={s.card}>
+      <div className={s.questionRow}>
         <div>
-          <div style={S.kicker}>Practice Question</div>
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{questionId}</span>
+          <div className={s.kicker}>Practice Question</div>
+          {/* The raw question id is authoring detail — learners get a
+              sentence, authors get the id back under debug. */}
+          <span className={s.questionLabel}>
+            {isComplete
+              ? 'Open this question again to review your work.'
+              : 'Try this question from the question bank.'}
+          </span>
+          {debugMode && <div className={s.questionId}>{questionId}</div>}
         </div>
         {href ? (
-          <a href={href} style={S.secondaryBtn}>
-            {isComplete ? 'Review' : 'Practice'} →
+          <a href={href} className={s.secondaryBtn}>
+            {isComplete ? 'Review' : 'Practice'} <span aria-hidden="true">→</span>
           </a>
         ) : (
-          <span style={S.inertPill}>Linked question (preview · inert)</span>
+          <span className={s.inertPill}>Linked question (preview · inert)</span>
         )}
       </div>
     </div>
@@ -891,8 +991,8 @@ function DesmosInteractiveBlock({
 
   if (contentError) {
     return (
-      <div style={S.card}>
-        <p style={{ color: 'var(--danger, #d97775)' }}>
+      <div className={s.card}>
+        <p className={s.errorText}>
           Invalid desmos_interactive block: {contentError}
         </p>
       </div>
@@ -902,19 +1002,20 @@ function DesmosInteractiveBlock({
   if (!content) return null;
 
   return (
-    <div style={S.card}>
-      {content.title && (
-        <h3 style={{ margin: '0 0 10px', fontSize: 18 }}>{content.title}</h3>
-      )}
-      <HtmlBlock className="prose lesson-prose" html={content.instructions_html} />
-      <div style={S.calculatorCallout}>
+    <div className={s.card}>
+      {content.title && <h3 className={s.desmosTitle}>{content.title}</h3>}
+      <HtmlBlock
+        className={`prose lesson-prose ${s.prosePane}`}
+        html={content.instructions_html}
+      />
+      <div className={s.calculatorCallout}>
         Complete this activity in the Desmos pane, then check your work here.
       </div>
       {content.caption_html && (
         <HtmlBlock className="prose lesson-prose muted" html={content.caption_html} />
       )}
       {!calculator && (
-        <p style={{ color: 'var(--danger, #d97775)', fontSize: 13 }}>
+        <p className={s.loadingText}>
           Desmos is still loading. If it does not appear, refresh and try again.
         </p>
       )}
@@ -923,49 +1024,30 @@ function DesmosInteractiveBlock({
         type="button"
         onClick={handleCheck}
         disabled={!calculator}
-        style={{ ...S.primaryBtn, marginTop: 10 }}
+        className={`${s.primaryBtn} ${s.checkSubmit}`}
       >
         Check Answer
       </button>
 
       {feedbackState === 'success' && (
-        <div
-          role="status"
-          aria-live="polite"
-          style={{ marginTop: 12, color: 'var(--success, #5ba876)' }}
-        >
+        <div role="status" aria-live="polite" className={s.feedbackSuccess}>
           <HtmlBlock
             html={feedbackHtml || content.feedback.success_message_html}
           />
         </div>
       )}
       {feedbackState === 'retry' && (
-        <div
-          role="status"
-          aria-live="polite"
-          style={{ marginTop: 12, color: 'var(--danger, #d97775)' }}
-        >
+        <div role="status" aria-live="polite" className={s.feedbackRetry}>
           <HtmlBlock html={feedbackHtml || content.feedback.retry_message_html} />
         </div>
       )}
       {progressiveHintHtml && (
-        <div
-          aria-live="polite"
-          style={{ marginTop: 8, color: 'var(--muted, #6b7280)', fontSize: 13 }}
-        >
+        <div aria-live="polite" className={s.progressiveHint}>
           <HtmlBlock html={progressiveHintHtml} />
         </div>
       )}
       {solutionHtml && (
-        <div
-          aria-live="polite"
-          style={{
-            marginTop: 8,
-            borderTop: '1px solid var(--border, #ddd)',
-            paddingTop: 8,
-            color: 'var(--color-app-accent, var(--accent, #102a43))',
-          }}
-        >
+        <div aria-live="polite" className={s.solution}>
           <HtmlBlock html={solutionHtml} />
         </div>
       )}
@@ -980,173 +1062,3 @@ function DebugRow({ k, v }) {
     </div>
   );
 }
-
-const S = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 16,
-    fontFamily: 'inherit',
-  },
-  empty: { padding: 24, textAlign: 'center' },
-  muted: { color: 'var(--muted, #6b7280)', fontSize: 13 },
-  link: { color: 'var(--color-app-accent, var(--accent, #102a43))' },
-
-  progressRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-  },
-  progressTrack: {
-    flex: 1,
-    height: 6,
-    borderRadius: 3,
-    background: 'var(--border, #eee)',
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
-    transition: 'width 0.3s',
-  },
-  progressPct: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: 'var(--muted, #6b7280)',
-  },
-
-  blockHost: { marginBottom: 4 },
-
-  card: {
-    padding: '20px 24px',
-    background: 'var(--card, #ffffff)',
-    border: '1px solid var(--border, rgba(17,24,39,0.08))',
-    borderRadius: 12,
-  },
-
-  kicker: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: 'var(--color-app-accent, var(--accent, #102a43))',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-  },
-  checkPrompt: { fontSize: 15, fontWeight: 600, margin: '0 0 12px' },
-  explanation: {
-    marginTop: 12,
-    padding: '10px 14px',
-    borderRadius: 6,
-    background: 'rgba(0,0,0,0.04)',
-    fontSize: 14,
-  },
-  hint: {
-    marginTop: 12,
-    padding: '10px 14px',
-    borderRadius: 6,
-    background: 'rgba(217,119,117,0.10)',
-    border: '1px solid var(--danger, #d97775)',
-    fontSize: 14,
-  },
-  calculatorCallout: {
-    marginTop: 12,
-    padding: '10px 12px',
-    borderRadius: 8,
-    border: '1px solid var(--color-app-accent, #102a43)',
-    background: 'var(--color-app-accent-bg, rgba(16,42,67,0.06))',
-    color: 'var(--fg2, #374151)',
-    fontSize: 13,
-  },
-
-  primaryBtn: {
-    background: 'var(--color-app-accent, var(--accent, #102a43))',
-    color: '#fff',
-    border: 'none',
-    padding: '8px 16px',
-    borderRadius: 6,
-    fontSize: 13,
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
-  secondaryBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    background: 'transparent',
-    color: 'var(--color-app-accent, var(--accent, #102a43))',
-    border: '1px solid var(--color-app-accent, var(--accent, #102a43))',
-    padding: '6px 12px',
-    borderRadius: 6,
-    fontSize: 13,
-    fontWeight: 600,
-    textDecoration: 'none',
-  },
-  inertPill: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '4px 10px',
-    borderRadius: 999,
-    fontSize: 11,
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-    background: 'var(--color-slate-100, rgba(0,0,0,0.05))',
-    color: 'var(--muted, #6b7280)',
-    border: '1px solid var(--border, #ddd)',
-  },
-
-  navRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 8,
-  },
-  navBtn: {
-    background: 'transparent',
-    border: '1px solid var(--border, #ddd)',
-    color: 'inherit',
-    padding: '6px 14px',
-    borderRadius: 6,
-    fontSize: 13,
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-  },
-  navLabel: { color: 'var(--muted, #6b7280)', fontSize: 12 },
-
-  completeWrap: { textAlign: 'center', marginTop: 8 },
-  completeBtn: {
-    background: 'var(--color-app-accent, var(--accent, #102a43))',
-    color: '#fff',
-    border: 'none',
-    padding: '10px 32px',
-    borderRadius: 8,
-    fontSize: 15,
-    fontWeight: 600,
-    cursor: 'pointer',
-  },
-  completeBanner: {
-    textAlign: 'center',
-    padding: 24,
-    borderRadius: 12,
-    background: 'rgba(91,168,118,0.10)',
-    border: '1px solid var(--success, #5ba876)',
-  },
-  completeText: {
-    fontSize: 16,
-    fontWeight: 700,
-    color: 'var(--success, #5ba876)',
-  },
-
-  debugCard: {
-    padding: 10,
-    border: '1px solid var(--border, #ddd)',
-    borderRadius: 8,
-    background: 'var(--card, #fff)',
-  },
-  debugSummary: { cursor: 'pointer', fontSize: 12, fontWeight: 700 },
-  debugGrid: {
-    fontSize: 12,
-    marginTop: 8,
-    display: 'grid',
-    gap: 4,
-  },
-};

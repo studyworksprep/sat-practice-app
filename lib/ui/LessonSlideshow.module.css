@@ -1,3 +1,18 @@
+/* Lesson slideshow — shared styling for the student viewer, the admin
+   preview, and the canvas editor's live pane.
+
+   Everything below the workspace section used to live in an inline `S`
+   style object inside LessonSlideshow.jsx. Inline styles can't express
+   hover, focus, disabled, transition, or media-query states, which is
+   why the runtime looked unfinished next to the rest of the app. Tokens
+   come from app/styles/next-tokens.css — no literal colors here.
+
+   Status colors use the --tile-*-fg pair rather than --color-success /
+   --color-danger: the latter two are tuned for fills and fail WCAG AA
+   as text. Same choice Delta.module.css and Sparkline.module.css make. */
+
+/* ── Workspace layout ─────────────────────────────────────────── */
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(320px, 1fr) minmax(380px, 0.88fr);
@@ -16,31 +31,786 @@
 .calculatorToggleRow {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 8px;
+  margin-bottom: var(--s2);
 }
 
 .calculatorToggle {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid var(--color-app-accent, #102a43);
-  border-radius: 8px;
-  background: var(--card, #fff);
-  color: var(--color-app-accent, #102a43);
+  border: 1px solid var(--color-app-accent);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--color-app-accent);
   padding: 7px 11px;
   font: inherit;
   font-size: 13px;
   font-weight: 650;
   cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-std);
 }
 
 .calculatorToggle:hover {
-  background: var(--color-app-accent-bg, #eef2ff);
+  background: var(--color-app-accent-bg);
+}
+
+.calculatorToggle:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-ring-accent);
 }
 
 @media (max-width: 800px) {
   .workspace,
   .workspaceSingle {
     display: block;
+  }
+}
+
+/* ── Shell ────────────────────────────────────────────────────── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  font-family: inherit;
+}
+
+.empty {
+  padding: var(--s5);
+  text-align: center;
+}
+
+.muted {
+  color: var(--fg3);
+  font-size: var(--body-sm-size);
+}
+
+.link {
+  color: var(--color-app-accent);
+}
+
+/* The block host is keyed on the block id, so it remounts on every step
+   and replays this animation — that is what makes the runtime read as a
+   slideshow rather than swapped content. */
+.blockHost {
+  margin-bottom: var(--s1);
+  animation: blockIn var(--dur-base) var(--ease-out) both;
+}
+
+@keyframes blockIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Progress ─────────────────────────────────────────────────── */
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.progressTrack {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-200);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-app-accent);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.progressFillComplete {
+  background: var(--tile-success-fg);
+}
+
+/* One segment per block, so progress reads as discrete steps rather
+   than a percentage that jumps by odd amounts. */
+.progressSegments {
+  flex: 1;
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.segment {
+  flex: 1;
+  height: 6px;
+  min-width: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-slate-200);
+  transition:
+    background var(--dur-base) var(--ease-std),
+    transform var(--dur-fast) var(--ease-std);
+}
+
+.segmentDone {
+  background: var(--color-app-accent);
+}
+
+/* The current step reads as a taller notch so position is legible even
+   when every segment behind it is filled. */
+.segmentCurrent {
+  background: var(--color-app-highlight);
+  transform: scaleY(1.8);
+}
+
+/* Tabular figures + a reserved min-width so the label doesn't reflow
+   (and nudge the track) as the percentage ticks up. */
+.progressPct {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  font-variant-numeric: tabular-nums;
+  min-width: 5ch;
+  text-align: right;
+}
+
+/* ── Resume notice ────────────────────────────────────────────── */
+
+.resumeNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  padding: 10px var(--s4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-app-accent);
+  background: var(--color-app-accent-bg);
+  color: var(--fg1);
+  font-size: var(--body-sm-size);
+}
+
+.resumeRestart {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-app-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.resumeRestart:focus-visible {
+  outline: none;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-ring-accent);
+}
+
+/* ── Cards ────────────────────────────────────────────────────── */
+
+.card {
+  padding: var(--s5);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Video: the iframe reaches the card edge, so no padding and clip the
+   corners instead. */
+.cardFlush {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ── Reading typography ───────────────────────────────────────── */
+
+/* Caps the measure for running lesson copy. Element selectors aren't
+   rewritten by CSS modules, so these reach the innerHTML that
+   HtmlBlock injects. */
+.prosePane {
+  max-width: 68ch;
+  font-size: var(--body-size);
+  line-height: var(--body-lh);
+}
+
+.prosePane h1,
+.prosePane h2,
+.prosePane h3,
+.prosePane h4 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+}
+
+.prosePane h2 {
+  font-size: 21px;
+}
+
+.prosePane h3 {
+  font-size: 18px;
+}
+
+.prosePane h4 {
+  font-size: 16px;
+}
+
+.kicker {
+  font-size: var(--eyebrow-size);
+  font-weight: var(--eyebrow-weight);
+  letter-spacing: var(--eyebrow-tracking);
+  text-transform: uppercase;
+  color: var(--color-app-accent);
+  margin-bottom: var(--s2);
+}
+
+/* ── Knowledge check ──────────────────────────────────────────── */
+
+.checkCard {
+  border-width: 2px;
+}
+
+.checkCardCorrect {
+  border-color: var(--tile-success-fg);
+}
+
+.checkCardWrong {
+  border-color: var(--tile-danger-fg);
+}
+
+.checkPrompt {
+  font-size: var(--body-size);
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0 0 var(--s3);
+}
+
+.choiceList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px var(--s4);
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.45;
+  width: 100%;
+  font-family: inherit;
+  color: inherit;
+  transition:
+    background var(--dur-fast) var(--ease-std),
+    border-color var(--dur-fast) var(--ease-std);
+}
+
+.choice:hover:not(:disabled) {
+  background: var(--color-slate-50);
+  border-color: var(--color-app-accent);
+}
+
+.choice:focus-visible {
+  outline: none;
+  border-color: var(--color-app-accent);
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.choice:disabled {
+  cursor: default;
+}
+
+.choiceSelected {
+  background: var(--color-app-primary-soft);
+  border-color: var(--color-app-accent);
+}
+
+.choiceCorrect {
+  background: var(--color-success-bg);
+  border-color: var(--tile-success-fg);
+}
+
+.choiceWrong {
+  background: var(--color-danger-bg);
+  border-color: var(--tile-danger-fg);
+}
+
+.choiceLetter {
+  font-weight: 700;
+  color: var(--fg3);
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.choiceMark {
+  margin-left: auto;
+  font-weight: 700;
+}
+
+.choiceCorrect .choiceMark {
+  color: var(--tile-success-fg);
+}
+
+.choiceWrong .choiceMark {
+  color: var(--tile-danger-fg);
+}
+
+.checkSubmit {
+  margin-top: var(--s3);
+}
+
+.explanation {
+  margin-top: var(--s3);
+  padding: 12px var(--s4);
+  border-radius: var(--radius-sm);
+  background: var(--color-slate-50);
+  border: 1px solid var(--border);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.hint {
+  margin-top: var(--s3);
+  padding: 12px var(--s4);
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-bg);
+  border: 1px solid var(--tile-danger-fg);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+
+.primaryBtn {
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  border: 1px solid var(--color-app-accent);
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-std),
+    border-color var(--dur-fast) var(--ease-std);
+}
+
+.primaryBtn:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+
+.primaryBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--color-app-accent);
+  border: 1px solid var(--color-app-accent);
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+
+.secondaryBtn:hover {
+  background: var(--color-app-primary-soft);
+}
+
+.secondaryBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.inertPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--eyebrow-tracking);
+  background: var(--color-slate-100);
+  color: var(--fg3);
+  border: 1px solid var(--border-strong);
+}
+
+/* ── Navigation ───────────────────────────────────────────────── */
+
+.navRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s2);
+}
+
+/* Ghost — the secondary direction. Paired with .primaryBtn on Continue
+   so the forward action reads as the primary one. */
+.navBtn {
+  min-width: 104px;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--fg1);
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-std),
+    border-color var(--dur-fast) var(--ease-std);
+}
+
+.navBtn:hover:not(:disabled) {
+  background: var(--color-slate-100);
+  border-color: var(--fg3);
+}
+
+.navBtn:focus-visible {
+  outline: none;
+  border-color: var(--color-app-accent);
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.navBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.navBtnNext {
+  min-width: 104px;
+}
+
+.navSpacer {
+  width: 104px;
+}
+
+.navLabel {
+  color: var(--fg2);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Why Continue is dead — otherwise a gated check reads as a bug. */
+.lockHint {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--fg2);
+}
+
+/* ── Completion ───────────────────────────────────────────────── */
+
+.completeWrap {
+  text-align: center;
+}
+
+.completeBtn {
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  border: 1px solid var(--color-app-accent);
+  padding: 12px 32px;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-std),
+    border-color var(--dur-fast) var(--ease-std);
+}
+
+.completeBtn:hover:not(:disabled) {
+  background: var(--color-app-accent-hover);
+  border-color: var(--color-app-accent-hover);
+}
+
+.completeBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.completeBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.completeBanner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+  text-align: center;
+  padding: var(--s6) var(--s5);
+  border-radius: var(--radius-lg);
+  background: var(--color-success-bg);
+  border: 1px solid var(--tile-success-fg);
+}
+
+.completeCheck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill);
+  background: var(--tile-success-fg);
+  color: var(--bg-white);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  animation: completePop var(--dur-slow) var(--ease-out) both;
+}
+
+@keyframes completePop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.completeText {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--tile-success-fg);
+}
+
+.completeScore {
+  margin: 0;
+  font-size: var(--body-size);
+  color: var(--fg2);
+}
+
+.completeCta {
+  margin-top: var(--s2);
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-app-accent);
+  color: var(--bg-white);
+  border: 1px solid var(--color-app-accent);
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+
+.completeCta:hover {
+  background: var(--color-app-accent-hover);
+}
+
+.completeCta:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-ring-accent);
+}
+
+.completeBlockActions {
+  text-align: center;
+  margin-top: var(--s3);
+}
+
+/* ── Video ────────────────────────────────────────────────────── */
+
+.videoFrame {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  background: var(--color-slate-900);
+}
+
+.videoIframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.videoFallback {
+  padding: var(--s5);
+}
+
+.videoCaption {
+  color: var(--fg3);
+  font-size: var(--body-sm-size);
+  padding: var(--s2) var(--s4);
+  margin: 0;
+}
+
+/* ── Practice-question link ───────────────────────────────────── */
+
+.questionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s4);
+  flex-wrap: wrap;
+}
+
+.questionLabel {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+/* Author-facing only — students never see the raw id. */
+.questionId {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg3);
+  margin-top: var(--s1);
+}
+
+/* ── Desmos interactive ───────────────────────────────────────── */
+
+.desmosTitle {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+  margin: 0 0 10px;
+}
+
+.calculatorCallout {
+  margin-top: var(--s3);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-app-accent);
+  background: var(--color-app-accent-bg);
+  color: var(--fg2);
+  font-size: 13px;
+}
+
+.feedbackSuccess {
+  margin-top: var(--s3);
+  color: var(--tile-success-fg);
+}
+
+.feedbackRetry {
+  margin-top: var(--s3);
+  color: var(--tile-danger-fg);
+}
+
+.progressiveHint {
+  margin-top: var(--s2);
+  color: var(--fg2);
+  font-size: var(--body-sm-size);
+}
+
+.solution {
+  margin-top: var(--s2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--s2);
+  color: var(--color-app-accent);
+}
+
+.errorText {
+  color: var(--tile-danger-fg);
+}
+
+.loadingText {
+  color: var(--fg2);
+  font-size: var(--body-sm-size);
+}
+
+/* ── Debug (dev-only affordance) ──────────────────────────────── */
+
+.debugCard {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+}
+
+.debugSummary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.debugGrid {
+  font-size: 12px;
+  margin-top: var(--s2);
+  display: grid;
+  gap: var(--s1);
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+
+@media (max-width: 560px) {
+  .card {
+    padding: var(--s4);
+  }
+
+  .navBtn,
+  .navBtnNext {
+    min-width: 0;
+    padding: 9px 12px;
+  }
+
+  .navSpacer {
+    width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calculatorToggle,
+  .choice,
+  .primaryBtn,
+  .secondaryBtn,
+  .navBtn,
+  .completeBtn,
+  .completeCta,
+  .progressFill,
+  .segment {
+    transition: none;
+  }
+
+  /* `both` fill-mode means these must be neutralised, not just sped up —
+     an animation-less `opacity: 0` keyframe would leave them invisible. */
+  .blockHost,
+  .completeCheck {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }

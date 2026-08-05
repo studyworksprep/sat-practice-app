@@ -40,6 +40,8 @@ export function LessonViewerInteractive({
       questionLinkHref={(qid) => `/practice/${qid}`}
       debugMode={debug}
       calculatorStoragePrefix={`lesson-desmos:${lessonId}`}
+      completionHref="/learn"
+      completionLabel="Back to Learn"
     />
   );
 }
