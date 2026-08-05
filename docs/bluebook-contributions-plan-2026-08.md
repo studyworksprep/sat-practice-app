@@ -12,7 +12,7 @@
 | 1 — Schema | **Done** (2026-08-05) | `contributor_codes`, `bluebook_submissions`, `score_conversion.submission_id` + `.flagged_at`, private `bluebook-reports` bucket, validation trigger, RLS — dev **and** prod. Two deltas from the plan text, both recorded below: contribution is a capability (`can_contribute()`) rather than only a role, and the module-2 routing check reads `practice_tests_v2` thresholds because `practice_test_routing_rules` is v1-dead. |
 | 2 — Server | **Done** (2026-08-05) | Parser moved server-side (`lib/bluebook/parse-report.ts`, linkedom) with fixture tests; submission create/cross-check/review/promote actions; provenance loop closed in both the upload route and Recalculate. Also fixed a hard-coded adaptive-routing threshold in the upload route — see below. |
 | 3 — UI | **Done** (2026-08-05) | New `(contributor)` route group at `/contribute` (list + three-flow wizard incl. the Bluebook entry view and the checksummed grid), admin review queue at `/admin/bluebook-submissions`, nav + proxy + role-landing wiring. Driven end-to-end in the browser: a real flow-C submission landed with its distractor, and verify worked. Promotion is verified at the SQL and authorization layers but **not** through the running app — the local `.env.local` service-role key is invalid (see below). |
-| 4 — Trust & polish | Not started | |
+| 4 — Trust & polish | **Done** (2026-08-05) | Shared track-record tally behind both surfaces, auto-verification for evidence-backed submissions from proven contributors (dev **and** prod), contributor guide at `docs/bluebook-contributor-guide.md`. |
 
 Goal: let tutors and (eventually) external contributors submit official Bluebook practice-test
 results to grow the score-calibration dataset, without tying submissions to enrolled students
@@ -209,6 +209,43 @@ upload-bluebook route.
   submissions from contributors above a track-record threshold.
 - Docs for contributors: how to save the My Practice report as HTML, privacy rules
   (no student names anywhere, consent is the contributor's responsibility).
+
+**As built (2026-08-05):**
+
+- **Auto-verification never writes `score_conversion`.** It skips one human step of two — the
+  reading of evidence that already speaks for itself. Promotion stays a deliberate
+  manager/admin act on every submission, auto-accepted ones included.
+- **The rule (`lib/bluebook/contributor-trust.ts`) is deliberately mean.** All four conditions
+  must hold: a stored artifact, no severe flag (`conversion_conflict` / `route_inconsistent`),
+  never had a submission rejected, and at least 3 promoted. Being too strict costs a reviewer
+  thirty seconds; being too loose puts a bad curve in front of students.
+- **`auto_verified_at` rather than relaxing the reviewer requirement.** The trigger's rule was
+  "verified requires `reviewed_by`" — the thing stopping a submission from marking itself
+  reviewed. Auto-verified rows have no reviewer, so they carry their own marker; the two are
+  mutually exclusive and a row with neither is still refused. "Who accepted this?" always has
+  exactly one answer.
+- **The auto-verify write goes through the service role, and that is the design working.** A
+  contributor has *no* UPDATE policy on their own submissions — the only UPDATE policy is the
+  staff one, which excludes your own rows. The first cut ran this on the caller's own client,
+  where the update silently matched zero rows; caught by probing RLS directly. Nobody, the
+  contributor included, may move their own submission to verified. The rule can, because the
+  rule is not them.
+- **The threshold is stated to the contributor**, on their own contributions page, rather than
+  left to be inferred from behaviour.
+
+## Open items after the phase build (2026-08-05)
+
+1. **Nothing issues or redeems a `contributor_code` yet.** The table, the role, the capability
+   helper, the middleware and the landing route all exist and work, but there is no admin UI to
+   mint a code and no signup path to redeem one — so the `contributor` role is currently
+   assignable only by an admin editing `profiles.role` directly. Tutors are unaffected: they
+   hold the capability through `is_teacher()` and can contribute today. This is what to build
+   before inviting anyone from outside. The pattern to follow is `teacher_codes`:
+   `app/(admin)/admin/users/codes/` for issuance, `app/api/signup/route.js` for redemption.
+2. **Re-run the promote button once the local service-role key is refreshed** (see Phase 3).
+3. **`scripts/dev-seed-ui-preview.sql` numbers module items from 0**, where production numbers
+   from 1. Harmless now — the grid reads real ordinals rather than assuming — but it makes dev
+   an unrepresentative place to eyeball anything ordinal-related.
 
 ### Verification
 - Parser fixtures (multiple report vintages if available).

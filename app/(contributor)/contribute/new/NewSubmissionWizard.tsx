@@ -86,9 +86,9 @@ export function NewSubmissionWizard({
   canLinkAttempts: boolean;
 }) {
   const [flow, setFlow] = useState<Flow | null>(null);
-  const [done, setDone] = useState<{ id: string; flags: unknown[] } | null>(null);
+  const [done, setDone] = useState<{ id: string; flags: unknown[]; autoVerified?: boolean } | null>(null);
 
-  if (done) return <SubmittedPanel flags={done.flags} />;
+  if (done) return <SubmittedPanel flags={done.flags} autoVerified={Boolean(done.autoVerified)} />;
 
   return (
     <>
@@ -144,7 +144,7 @@ function FlowCard({
   );
 }
 
-function SubmittedPanel({ flags }: { flags: unknown[] }) {
+function SubmittedPanel({ flags, autoVerified }: { flags: unknown[]; autoVerified: boolean }) {
   const router = useRouter();
   const conflict = flags.some((f) => (f as { code?: string })?.code === 'conversion_conflict');
 
@@ -154,7 +154,9 @@ function SubmittedPanel({ flags }: { flags: unknown[] }) {
       <p className={s.muted} style={{ marginTop: 8 }}>
         {conflict
           ? 'One thing to flag: another official report gave a different scaled score for the same module counts. Nothing is wrong with what you sent — a reviewer will look at both and work out which is right.'
-          : 'A reviewer will check it before it feeds the scoring data. You can follow its progress from your contributions list.'}
+          : autoVerified
+            ? 'Your report was accepted straight away — you\u2019ve sent enough that held up that we no longer read each one first. It goes into the scoring data on the next pass.'
+            : 'A reviewer will check it before it feeds the scoring data. You can follow its progress from your contributions list.'}
       </p>
       <div className={s.actions}>
         <Button href="/contribute">Back to contributions</Button>
@@ -263,7 +265,7 @@ function TestPicker({
   );
 }
 
-type DoneHandler = (d: { id: string; flags: unknown[] }) => void;
+type DoneHandler = (d: { id: string; flags: unknown[]; autoVerified?: boolean }) => void;
 
 // ── Flow A: upload the report ─────────────────────────────────────
 
@@ -316,7 +318,11 @@ function HtmlUploadFlow({ tests, onDone }: { tests: TestOption[]; onDone: DoneHa
         meta: metaPayload(meta),
       });
       if (!res.ok) return setError(res.error);
-      onDone({ id: res.data!.submissionId, flags: res.data!.validationFlags });
+      onDone({
+        id: res.data!.submissionId,
+        flags: res.data!.validationFlags,
+        autoVerified: res.data!.autoVerified,
+      });
     });
   }
 
@@ -432,7 +438,11 @@ function AttemptLinkFlow({
         html: html ?? null,
       });
       if (!res.ok) return setError(res.error);
-      onDone({ id: res.data!.submissionId, flags: res.data!.validationFlags });
+      onDone({
+        id: res.data!.submissionId,
+        flags: res.data!.validationFlags,
+        autoVerified: res.data!.autoVerified,
+      });
     });
   }
 

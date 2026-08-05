@@ -10,6 +10,7 @@ import { requireUserPage } from '@/lib/api/auth';
 import { redirect } from 'next/navigation';
 import { Button } from '@/lib/ui/Button';
 import { formatDate } from '@/lib/formatters';
+import { tallyRecord, acceptanceRate, AUTO_VERIFY_MIN_PROMOTED } from '@/lib/bluebook/contributor-trust';
 import s from './Contribute.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +25,11 @@ const STATUS_COPY: Record<string, { label: string; className: string; blurb: str
     label: 'Verified',
     className: s.pillVerified,
     blurb: 'Checked and accepted; not yet folded into the scoring data.',
+  },
+  auto_verified: {
+    label: 'Accepted',
+    className: s.pillVerified,
+    blurb: 'Accepted on your track record, without waiting for a reviewer. Not yet folded into the scoring data.',
   },
   promoted: {
     label: 'Promoted',
@@ -63,6 +69,7 @@ export default async function ContributePage() {
     .select(
       `id, status, entry_method, created_at, report_date, subject_label,
        rw_scaled, math_scaled, validation_flags, review_note,
+       auto_verified_at, html_artifact_path,
        practice_test:practice_tests_v2(name)`,
     )
     .eq('contributor_id', user.id)
@@ -70,8 +77,12 @@ export default async function ContributePage() {
     .limit(200);
 
   const rows = submissions ?? [];
-  const promoted = rows.filter((r) => r.status === 'promoted').length;
-  const reviewed = rows.filter((r) => r.status !== 'pending').length;
+  const record = tallyRecord(rows.map((r) => ({ status: r.status as string })));
+  const rate = acceptanceRate(record);
+  // Same rule the server applies, stated to the contributor so the
+  // threshold isn't a secret they have to infer from behaviour.
+  const promotedShortfall = Math.max(0, AUTO_VERIFY_MIN_PROMOTED - record.promoted);
+  const autoVerifying = promotedShortfall === 0 && record.rejected === 0;
 
   return (
     <main className={s.container}>
@@ -88,13 +99,26 @@ export default async function ContributePage() {
 
       <div className={s.actions} style={{ marginTop: 0, marginBottom: 20 }}>
         <Button href="/contribute/new">New submission</Button>
-        {rows.length > 0 && (
+        {record.total > 0 && (
           <span className={s.muted}>
-            {rows.length} submitted · {promoted} promoted
-            {reviewed > 0 && ` · ${reviewed} reviewed`}
+            {record.total} sent · {record.promoted} in the scoring data
+            {record.pending > 0 && ` · ${record.pending} awaiting review`}
+            {rate != null && ` · ${rate}% accepted`}
           </span>
         )}
       </div>
+
+      {record.total > 0 && (
+        <p className={s.muted} style={{ marginTop: -8, marginBottom: 20 }}>
+          {autoVerifying
+            ? 'Your uploaded reports are now accepted without waiting for a reviewer. Anything hand-entered, or anything that disagrees with data we already hold, still gets read by a person.'
+            : record.rejected > 0
+              ? 'Uploaded reports go through a reviewer first. Get in touch if you think a rejection was a mistake.'
+              : `Once ${promotedShortfall} more submission${promotedShortfall === 1 ? '' : 's'} ${
+                  promotedShortfall === 1 ? 'has' : 'have'
+                } made it into the scoring data, your uploaded reports will be accepted without waiting for a reviewer.`}
+        </p>
+      )}
 
       {rows.length === 0 ? (
         <div className={s.card}>
@@ -107,7 +131,8 @@ export default async function ContributePage() {
         </div>
       ) : (
         rows.map((row) => {
-          const status = STATUS_COPY[row.status] ?? STATUS_COPY.pending;
+          const key = row.status === 'verified' && row.auto_verified_at ? 'auto_verified' : row.status;
+          const status = STATUS_COPY[key] ?? STATUS_COPY.pending;
           const test = Array.isArray(row.practice_test) ? row.practice_test[0] : row.practice_test;
           const flags = Array.isArray(row.validation_flags) ? row.validation_flags : [];
 
@@ -156,8 +181,9 @@ export default async function ContributePage() {
       )}
 
       <p className={s.muted} style={{ marginTop: 24 }}>
-        Questions about what to send, or a report that won&rsquo;t parse?{' '}
-        <Link href="/help">Get in touch</Link>.
+        Not sure what to send, or got a report that won&rsquo;t parse?{' '}
+        <Link href="/help">Get in touch</Link> — a file we can&rsquo;t read usually means
+        College Board changed the report format, which is worth knowing about.
       </p>
     </main>
   );

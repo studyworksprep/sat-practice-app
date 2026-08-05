@@ -40,6 +40,7 @@ import {
   type ResponseVector,
 } from './parse-report.ts';
 import { loadAttemptVector, diffResponseVectors, type VectorDiff } from './attempt-vector.ts';
+import { tallyRecord, evaluateAutoVerify } from './contributor-trust.ts';
 
 const ARTIFACT_BUCKET = 'bluebook-reports';
 
@@ -235,6 +236,8 @@ export interface CreatedSubmission {
   submissionId: string;
   status: string;
   validationFlags: unknown[];
+  /** True when the trust rule accepted it without a reviewer. */
+  autoVerified?: boolean;
 }
 
 interface SubmissionRow {
@@ -509,14 +512,89 @@ async function insertSubmission(
     return { ok: false, result: actionFail(tidyDbError(error.message)) };
   }
 
+  const validationFlags = (data.validation_flags ?? []) as unknown[];
+  const autoVerified = await maybeAutoVerify({
+    submissionId: data.id as string,
+    contributorId: row.contributor_id,
+    hasArtifact: Boolean(row.html_artifact_path),
+    validationFlags,
+  });
+
   return {
     ok: true,
     result: actionOk({
       submissionId: data.id as string,
-      status: data.status as string,
-      validationFlags: (data.validation_flags ?? []) as unknown[],
+      status: autoVerified ? 'verified' : (data.status as string),
+      validationFlags,
+      autoVerified,
     }),
   };
+}
+
+/**
+ * Apply the trust rule to a freshly created submission.
+ *
+ * Runs after the insert rather than as part of it because the RLS INSERT
+ * policy pins new rows to status='pending' — a submission cannot be born
+ * verified, which is the property that makes "verified" mean anything.
+ * Lifting it afterwards is a separate, auditable act.
+ *
+ * It needs the service role, and the reason is the point of the design:
+ * a contributor has NO update policy on their own submissions. The only
+ * UPDATE policy is the staff one, and it excludes your own rows. So the
+ * caller's own client cannot perform this write — the update would
+ * silently match zero rows — and that is correct. Nobody, including the
+ * contributor, may move their own submission to verified. The rule can,
+ * because the rule is not them.
+ *
+ * Any failure leaves the submission pending, which is the right way to
+ * fail: a reviewer sees one more item and nothing has been trusted that
+ * shouldn't have been.
+ */
+async function maybeAutoVerify(input: {
+  submissionId: string;
+  contributorId: string;
+  hasArtifact: boolean;
+  validationFlags: unknown[];
+}): Promise<boolean> {
+  // Cheapest disqualifier first: no artifact, no rule, no bypass.
+  if (!input.hasArtifact) return false;
+
+  let svc;
+  try {
+    ({ service: svc } = await requireServiceRole(
+      'apply the Bluebook auto-verification rule — a contributor has no UPDATE policy on their own submissions, by design',
+    ));
+  } catch {
+    return false;
+  }
+
+  const { data: history, error } = await svc
+    .from('bluebook_submissions')
+    .select('status')
+    .eq('contributor_id', input.contributorId)
+    .neq('id', input.submissionId);
+  if (error) return false;
+
+  const verdict = evaluateAutoVerify({
+    hasArtifact: input.hasArtifact,
+    validationFlags: input.validationFlags,
+    record: tallyRecord((history ?? []) as Array<{ status: string }>),
+  });
+  if (!verdict.autoVerify) return false;
+
+  // auto_verified_at is what lets the DB trigger accept a verified row
+  // with no reviewer; without it this update is refused outright. The
+  // status guard keeps a concurrent human review from being clobbered.
+  const { data: updated } = await svc
+    .from('bluebook_submissions')
+    .update({ status: 'verified', auto_verified_at: new Date().toISOString() })
+    .eq('id', input.submissionId)
+    .eq('status', 'pending')
+    .select('id')
+    .maybeSingle();
+
+  return Boolean(updated);
 }
 
 // ── review ────────────────────────────────────────────────────────

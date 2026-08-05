@@ -676,6 +676,7 @@ export type Database = {
       bluebook_submissions: {
         Row: {
           attempt_id: string | null
+          auto_verified_at: string | null
           contributor_id: string
           created_at: string
           entry_method: string
@@ -703,6 +704,7 @@ export type Database = {
         }
         Insert: {
           attempt_id?: string | null
+          auto_verified_at?: string | null
           contributor_id: string
           created_at?: string
           entry_method: string
@@ -730,6 +732,7 @@ export type Database = {
         }
         Update: {
           attempt_id?: string | null
+          auto_verified_at?: string | null
           contributor_id?: string
           created_at?: string
           entry_method?: string
@@ -4187,10 +4190,6 @@ export type Database = {
         Returns: number
       }
       stg_clear_practice_test: { Args: { p_code: string }; Returns: undefined }
-      student_has_lesson_assignment: {
-        Args: { p_lesson_id: string; p_student_id: string }
-        Returns: boolean
-      }
       teacher_can_view_student: {
         Args: { target_student_id: string }
         Returns: boolean

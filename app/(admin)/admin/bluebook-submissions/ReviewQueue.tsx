@@ -17,6 +17,7 @@ import {
   artifactDownloadUrl,
   type PromotionResult,
 } from '@/lib/bluebook/submission-actions';
+import { acceptanceRate, type ContributorRecord } from '@/lib/bluebook/contributor-trust';
 import s from '../../forms.module.css';
 
 export interface QueueRow {
@@ -30,13 +31,14 @@ export interface QueueRow {
   rw: { m1: number | null; m2: number | null; scaled: number | null };
   math: { m1: number | null; m2: number | null; scaled: number | null };
   hasArtifact: boolean;
+  autoVerified: boolean;
   linkedAttempt: boolean;
   flags: unknown[];
   reviewNote: string | null;
   contributorName: string;
   contributorRole: string;
   isOwnSubmission: boolean;
-  record: { total: number; promoted: number; rejected: number };
+  record: ContributorRecord;
 }
 
 const ENTRY_METHOD_LABEL: Record<string, string> = {
@@ -145,9 +147,7 @@ function SubmissionCard({ row }: { row: QueueRow }) {
 
   const flags = row.flags.map(describeFlag);
   const severe = flags.some((f) => f.severe);
-  const acceptRate = row.record.total
-    ? Math.round((row.record.promoted / row.record.total) * 100)
-    : null;
+  const acceptRate = acceptanceRate(row.record);
 
   function act(fn: () => Promise<{ ok: boolean; error?: string; data?: unknown }>) {
     setError(null); setMessage(null);
@@ -214,7 +214,9 @@ function SubmissionCard({ row }: { row: QueueRow }) {
             {row.reportDate && ` · taken ${row.reportDate}`}
           </div>
         </div>
-        <span className={s.hint}>{row.status}</span>
+        <span className={s.hint}>
+          {row.autoVerified && row.status === 'verified' ? 'verified by rule' : row.status}
+        </span>
       </div>
 
       <div className={s.muted} style={{ marginTop: 8 }}>
@@ -230,10 +232,18 @@ function SubmissionCard({ row }: { row: QueueRow }) {
       </div>
 
       <div className={s.muted} style={{ marginTop: 6 }}>
-        Contributor record: {row.record.total} submitted
-        {acceptRate != null && `, ${acceptRate}% promoted`}
+        Contributor record: {row.record.total} sent, {row.record.promoted} promoted
         {row.record.rejected > 0 && `, ${row.record.rejected} rejected`}
+        {acceptRate != null ? ` (${acceptRate}% of decided)` : ' — nothing decided yet'}
       </div>
+
+      {row.autoVerified && (
+        <p className={s.muted} style={{ marginTop: 6 }}>
+          Verified by the trust rule, not by a person: the report is attached, nothing
+          severe was flagged, and this contributor has a clean record. Promotion is still
+          yours to make — read the report first if anything here looks off.
+        </p>
+      )}
 
       {flags.length > 0 && (
         <ul style={{ margin: '10px 0 0', paddingLeft: 18, fontSize: 13, lineHeight: 1.6 }}>

@@ -19,6 +19,7 @@ authorization matrix to prove it's fresh.
 |---|---|
 | `upgrade-plan-2026-07.md` | **The active roadmap** — verified against code + production |
 | `bluebook-contributions-plan-2026-08.md` | Bluebook contributions build plan — settled design + phase ledger |
+| `bluebook-contributor-guide.md` | How to send Bluebook results — written for contributors, not engineers |
 | `foundations-and-question-patterns.md` | Curriculum model for section-wide foundation lessons + question-pattern lessons (adopted design + owner/instructor workstream) |
 | `runbook.md` | Operational runbook (incidents, deploys, hotfix migrations, e2e) |
 | `database.md` | Schema operations + safe service-role usage |

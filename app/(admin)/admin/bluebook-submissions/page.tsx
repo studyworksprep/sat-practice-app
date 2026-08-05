@@ -17,6 +17,7 @@
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
+import { tallyRecord, EMPTY_RECORD } from '@/lib/bluebook/contributor-trust';
 import { ReviewQueue, type QueueRow } from './ReviewQueue';
 import a from '../../admin.module.css';
 
@@ -44,7 +45,7 @@ export default async function AdminBluebookSubmissionsPage({
       `id, contributor_id, status, entry_method, created_at, report_date, subject_label,
        rw_m1_correct, rw_m2_correct, rw_scaled,
        math_m1_correct, math_m2_correct, math_scaled,
-       html_artifact_path, validation_flags, review_note, attempt_id,
+       html_artifact_path, validation_flags, review_note, attempt_id, auto_verified_at,
        practice_test:practice_tests_v2(name),
        contributor:profiles!bluebook_submissions_contributor_id_fkey(first_name, last_name, email, role)`,
     )
@@ -66,20 +67,23 @@ export default async function AdminBluebookSubmissionsPage({
         .in('contributor_id', contributorIds)
     : { data: [] };
 
-  const record = new Map<string, { total: number; promoted: number; rejected: number }>();
+  // Tallied with the same helper the auto-verify rule uses, so what a
+  // reviewer reads on the card and what the rule acted on can't drift.
+  const byContributor = new Map<string, Array<{ status: string }>>();
   for (const h of history ?? []) {
     const id = h.contributor_id as string;
-    const entry = record.get(id) ?? { total: 0, promoted: 0, rejected: 0 };
-    entry.total += 1;
-    if (h.status === 'promoted') entry.promoted += 1;
-    if (h.status === 'rejected') entry.rejected += 1;
-    record.set(id, entry);
+    const list = byContributor.get(id) ?? [];
+    list.push({ status: h.status as string });
+    byContributor.set(id, list);
   }
+  const record = new Map(
+    [...byContributor.entries()].map(([id, rows]) => [id, tallyRecord(rows)]),
+  );
 
   const queueRows: QueueRow[] = rows.map((r) => {
     const test = Array.isArray(r.practice_test) ? r.practice_test[0] : r.practice_test;
     const who = Array.isArray(r.contributor) ? r.contributor[0] : r.contributor;
-    const stats = record.get(r.contributor_id as string) ?? { total: 0, promoted: 0, rejected: 0 };
+    const stats = record.get(r.contributor_id as string) ?? EMPTY_RECORD;
 
     return {
       id: r.id as string,
@@ -100,6 +104,7 @@ export default async function AdminBluebookSubmissionsPage({
         scaled: r.math_scaled as number | null,
       },
       hasArtifact: Boolean(r.html_artifact_path),
+      autoVerified: Boolean(r.auto_verified_at),
       linkedAttempt: Boolean(r.attempt_id),
       flags: Array.isArray(r.validation_flags) ? (r.validation_flags as unknown[]) : [],
       reviewNote: (r.review_note as string) ?? null,
