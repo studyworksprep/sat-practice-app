@@ -39,9 +39,15 @@ const BLOCKED_FOR_PRACTICE = [
   '/admin',
   '/review',
   '/tutor',
+  '/contribute',
 ];
 
 // Routes that require an active subscription (or exemption).
+//
+// /contribute is deliberately absent. Contributors donate calibration
+// data; the `contributor` role has no subscription and never will, and
+// gating the one surface they exist to use behind /subscribe would put
+// them in a redirect loop.
 const SUBSCRIPTION_REQUIRED = ['/practice', '/review', '/dashboard', '/tutor', '/today'];
 
 // Routes that are always accessible (no subscription check).

@@ -11,7 +11,7 @@
 | 0 — Security prerequisite | **Done** (2026-08-05) | RLS enabled on `score_conversion` + `practice_test_routing_rules` on dev **and** prod, with authenticated-read / admin-write policies + the demo read-only lockdown. Read audit found the student scoring path reads the table through the RLS-bound user client, so bare RLS-with-no-policies would have silently degraded every new score to the estimated curve. |
 | 1 — Schema | **Done** (2026-08-05) | `contributor_codes`, `bluebook_submissions`, `score_conversion.submission_id` + `.flagged_at`, private `bluebook-reports` bucket, validation trigger, RLS — dev **and** prod. Two deltas from the plan text, both recorded below: contribution is a capability (`can_contribute()`) rather than only a role, and the module-2 routing check reads `practice_tests_v2` thresholds because `practice_test_routing_rules` is v1-dead. |
 | 2 — Server | **Done** (2026-08-05) | Parser moved server-side (`lib/bluebook/parse-report.ts`, linkedom) with fixture tests; submission create/cross-check/review/promote actions; provenance loop closed in both the upload route and Recalculate. Also fixed a hard-coded adaptive-routing threshold in the upload route — see below. |
-| 3 — UI | Not started | |
+| 3 — UI | **Done** (2026-08-05) | New `(contributor)` route group at `/contribute` (list + three-flow wizard incl. the Bluebook entry view and the checksummed grid), admin review queue at `/admin/bluebook-submissions`, nav + proxy + role-landing wiring. Driven end-to-end in the browser: a real flow-C submission landed with its distractor, and verify worked. Promotion is verified at the SQL and authorization layers but **not** through the running app — the local `.env.local` service-role key is invalid (see below). |
 | 4 — Trust & polish | Not started | |
 
 Goal: let tutors and (eventually) external contributors submit official Bluebook practice-test
@@ -174,6 +174,35 @@ disagrees with — flagging both sides, overwriting neither.
   `practice_test_module_items_v2` ordinals) with optional distractor popover.
 - Admin review queue (extend `(admin)`, near `bluebook-batch`): pending submissions, parsed
   summary, artifact link, conflict flags, verify/reject/promote, contributor track record.
+
+**As built (2026-08-05):**
+
+- **`(contributor)` route group, not an extension of `(tutor)`.** The audience is wider than
+  either existing tree: tutors hold the capability implicitly, outside contributors hold the
+  role. `(tutor)`'s layout would have locked the second group out. Staff keep their usual nav
+  at `/contribute`; the `contributor` role gets a nav of just Contribute + Help, because every
+  other surface would redirect or 403 for them.
+- **`/contribute` is deliberately absent from `SUBSCRIPTION_REQUIRED`.** Contributors donate
+  data and have no subscription; gating the one surface they exist to use would put them in a
+  redirect loop. It *is* in `BLOCKED_FOR_PRACTICE`.
+- **The grid reads real ordinals, not 1..N.** Production numbers questions from 1, but that is
+  data rather than a guarantee — and the dev seed numbers from 0, which is how this surfaced.
+  The wizard is handed each module's actual ordinal list, so the vector it builds is keyed the
+  way the module items are on any test.
+- **The artifact is downloaded, never navigated to.** The reviewer's link is a short-lived
+  signed URL with `download: true`: the file is untrusted HTML from a contributor and must not
+  render as a document in the app's origin.
+
+**Verification gap to close (2026-08-05).** Flow C was driven end-to-end in a browser against
+dev — a real submission landed with its distractor captured, the checksum gate held, and
+verify worked. **Promotion could not be completed through the running app**: the local
+`.env.local` `SUPABASE_SERVICE_ROLE_KEY` is invalid, so every `requireServiceRole` path fails
+with "Invalid API key" (the role gate passes and the error surfaces correctly — it's the key,
+not the code). Promotion is covered at the SQL layer instead, exercised on dev inside a
+rolled-back transaction: `submission_id` stamped, the conflicting curve skipped rather than
+overwritten, `flagged_at` left set. **Re-run the promote button once the local key is
+refreshed.** The same stale key blocks local testing of the Recalculate flow and the
+upload-bluebook route.
 
 ### Phase 4 — Trust & polish
 - Contributor stats (submitted / verified / rejected); auto-verify rule for HTML-backed

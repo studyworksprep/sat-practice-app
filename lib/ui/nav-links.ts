@@ -46,7 +46,8 @@ export type NavIconName =
   | 'teachers'
   | 'users'
   | 'questions'
-  | 'lessons';
+  | 'lessons'
+  | 'contribute';
 
 export interface NavLink {
   href: string;
@@ -215,12 +216,20 @@ const ADMIN_PERFORMANCE: NavLink = {
   matchPrefix: '/admin/performance',
 };
 
+// The admin's window onto contributed submissions: the review queue,
+// plus the older batch-upload tool it sits next to.
+const ADMIN_SUBMISSIONS: NavLink = {
+  href: '/admin/bluebook-submissions', label: 'Submissions', icon: 'contribute',
+  matchPrefix: ['/admin/bluebook-submissions', '/admin/bluebook-batch'],
+};
+
 const OPERATE_LINKS: readonly NavLink[] = [
   ADMIN_OVERVIEW,
   ADMIN_USERS,
   ADMIN_QUESTIONS,
   ADMIN_LESSONS,
   ADMIN_PERFORMANCE,
+  ADMIN_SUBMISSIONS,
 ];
 
 // Teach cluster: the tutor/manager surfaces an admin needs day-to-
@@ -250,6 +259,25 @@ export function adminLinks(): NavItem[] {
   ];
 }
 
+// Bluebook contributions. Staff reach it from their own nav; outside
+// contributors have a nav made of this and nothing else, because
+// everything else in the app would redirect or 403 for them and a nav
+// full of dead ends is worse than a short one.
+const CONTRIBUTE: NavLink = {
+  href: '/contribute', label: 'Contribute', icon: 'contribute',
+  matchPrefix: '/contribute',
+};
+
+/** Nav for the `contributor` role — an outside account with no roster
+ *  and no subscription, whose whole reason to be here is /contribute. */
+export function contributorLinks(): NavItem[] {
+  return [CONTRIBUTE, STUDENT_HELP];
+}
+
+export function contributorSections(): NavSection[] {
+  return [{ title: null, links: [CONTRIBUTE, STUDENT_HELP] }];
+}
+
 /** Top-bar links for the tutor tree (AppNav). Admins get the unified
  *  admin nav (Operate · Teach · Train) on every tree — keeps
  *  "Dashboard" pointing at /admin instead of silently rebinding to
@@ -257,9 +285,9 @@ export function adminLinks(): NavItem[] {
 export function tutorLinksForRole(role: string): NavItem[] {
   if (role === 'admin') return adminLinks();
   if (role === 'manager') {
-    return [...BASE_TUTOR_LINKS, MANAGER_TEACHERS];
+    return [...BASE_TUTOR_LINKS, MANAGER_TEACHERS, CONTRIBUTE];
   }
-  return [...BASE_TUTOR_LINKS];
+  return [...BASE_TUTOR_LINKS, CONTRIBUTE];
 }
 
 // ── Sidebar sections (Phase 6.1) ─────────────────────────────────
@@ -292,6 +320,7 @@ const TEACHER_SECTIONS: readonly NavSection[] = [
   { title: 'Assign', links: [TUTOR_ASSIGNMENTS, TUTOR_LESSON_PACKS] },
   { title: 'Analyze', links: [TUTOR_PERFORMANCE] },
   { title: 'Train', links: [TUTOR_TRAIN] },
+  { title: 'Contribute', links: [CONTRIBUTE] },
 ];
 
 const ADMIN_SECTIONS: readonly NavSection[] = [

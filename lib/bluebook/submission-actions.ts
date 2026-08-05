@@ -163,6 +163,72 @@ export async function crossCheckAttempt(input: {
   });
 }
 
+// ── flow B: the Bluebook entry view ───────────────────────────────
+
+export interface AttemptEntryView {
+  attemptId: string;
+  testName: string;
+  practiceTestId: string;
+  finishedAt: string | null;
+  counts: { rw: { m1: number; m2: number }; math: { m1: number; m2: number } };
+  routes: { rw: 'easy' | 'hard' | null; math: 'easy' | 'hard' | null };
+  modules: Array<{
+    key: string;
+    label: string;
+    answers: Array<{ ordinal: number; response: string | null }>;
+  }>;
+}
+
+const MODULE_LABELS: Record<string, string> = {
+  RW1: 'Reading & Writing · Module 1',
+  RW2: 'Reading & Writing · Module 2',
+  MATH1: 'Math · Module 1',
+  MATH2: 'Math · Module 2',
+};
+
+/**
+ * The attempt's answers, ordered for transcription into Bluebook.
+ *
+ * This exists because the slow, error-prone part of flow B isn't the
+ * software — it's a human copying 98 answers into another application.
+ * Returning them grouped and in order, with correctness deliberately
+ * left out, gives the tutor something to read straight down without
+ * losing their place or being tempted to "fix" an answer on the way in.
+ */
+export async function loadAttemptEntryView(input: {
+  attemptId: string;
+}): Promise<ActionResult<{ data: AttemptEntryView | null }>> {
+  let ctx;
+  try {
+    ctx = await requireRole([...CONTRIBUTOR_ROLES]);
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  if (!input?.attemptId) return actionFail('attemptId required');
+
+  const vector = await loadAttemptVector(ctx.supabase, input.attemptId);
+  if (!vector) return actionFail('Attempt not found');
+
+  return actionOk({
+    attemptId: vector.attemptId,
+    testName: vector.testName,
+    practiceTestId: vector.practiceTestId,
+    finishedAt: vector.finishedAt,
+    counts: {
+      rw: { m1: vector.counts.rw.m1, m2: vector.counts.rw.m2 },
+      math: { m1: vector.counts.math.m1, m2: vector.counts.math.m2 },
+    },
+    routes: vector.routes,
+    modules: vector.modules.map((m) => ({
+      key: m.key,
+      label: MODULE_LABELS[m.key] ?? m.key,
+      answers: m.items.map((i) => ({ ordinal: i.ordinal, response: i.response })),
+    })),
+  });
+}
+
 // ── create ────────────────────────────────────────────────────────
 
 export interface CreatedSubmission {
@@ -502,6 +568,48 @@ export async function reviewSubmission(input: {
   }
 
   return actionOk({ status: data.status as string });
+}
+
+/**
+ * A short-lived link to a submission's stored report.
+ *
+ * Signed rather than public, and returned as a download rather than a
+ * page: the artifact is untrusted HTML supplied by the contributor, so
+ * the one thing a reviewer must not do is open it as a document in the
+ * same origin as the app. Storage RLS still gates the request — this
+ * only mints a URL for a file the caller could already read.
+ */
+export async function artifactDownloadUrl(input: {
+  submissionId: string;
+}): Promise<ActionResult<{ data: { url: string } | null }>> {
+  let ctx;
+  try {
+    ctx = await requireRole([...STAFF_ROLES]);
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error');
+  }
+
+  if (!input?.submissionId) return actionFail('submissionId required');
+
+  const { data: submission } = await ctx.supabase
+    .from('bluebook_submissions')
+    .select('id, html_artifact_path')
+    .eq('id', input.submissionId)
+    .maybeSingle();
+
+  if (!submission?.html_artifact_path) {
+    return actionFail('This submission has no stored report');
+  }
+
+  const { data, error } = await ctx.supabase.storage
+    .from(ARTIFACT_BUCKET)
+    .createSignedUrl(submission.html_artifact_path, 300, { download: true });
+
+  if (error || !data?.signedUrl) {
+    return actionFail(error?.message ?? 'Could not create a link to the report');
+  }
+  return actionOk({ url: data.signedUrl });
 }
 
 // ── promote ───────────────────────────────────────────────────────
