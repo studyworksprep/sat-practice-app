@@ -9,7 +9,7 @@
 | Phase | State | Notes |
 |---|---|---|
 | 0 — Security prerequisite | **Done** (2026-08-05) | RLS enabled on `score_conversion` + `practice_test_routing_rules` on dev **and** prod, with authenticated-read / admin-write policies + the demo read-only lockdown. Read audit found the student scoring path reads the table through the RLS-bound user client, so bare RLS-with-no-policies would have silently degraded every new score to the estimated curve. |
-| 1 — Schema | Not started | |
+| 1 — Schema | **Done** (2026-08-05) | `contributor_codes`, `bluebook_submissions`, `score_conversion.submission_id` + `.flagged_at`, private `bluebook-reports` bucket, validation trigger, RLS — dev **and** prod. Two deltas from the plan text, both recorded below: contribution is a capability (`can_contribute()`) rather than only a role, and the module-2 routing check reads `practice_tests_v2` thresholds because `practice_test_routing_rules` is v1-dead. |
 | 2 — Server | Not started | |
 | 3 — UI | Not started | |
 | 4 — Trust & polish | Not started | |
@@ -101,6 +101,31 @@ policies for `authenticated`. Verify score display + test routing still work on 
   (test_id, section, m1, m2) match with an existing `score_conversion` row at a *different*
   scaled score → flag both for review (do not block, do not overwrite).
 - RLS: contributors insert + select own rows; staff (is_teacher/admin) select/update all.
+
+**As built (2026-08-05) — three decisions the plan text left open:**
+
+1. **Contribution is a capability, not just a role.** `contributor` exists as a base role for
+   outside contributors, but `profiles.role` is single-valued: a tutor who switched to it would
+   lose their roster, and flow B *requires* the contributor to still be their student's tutor.
+   So the gate everywhere is `can_contribute()` = `is_teacher() or is_contributor()`. Staff hold
+   the capability implicitly; outside contributors hold it via the role.
+2. **The module-2 routing check reads `practice_tests_v2`, not `practice_test_routing_rules`.**
+   The v2 migration moved adaptive thresholds onto `rw_route_threshold` / `math_route_threshold`
+   columns and left the routing-rules table behind as v1 residue with no consumers. The trigger
+   compares a submission's optional `{rw,math}_m2_route` against
+   `m1_correct >= threshold -> 'hard'` (the rule in `lib/practice-test/adaptive-routing.js`).
+   When a test has no threshold it records a `route_check_skipped` flag rather than duplicating
+   that module's `DEFAULT_THRESHOLDS`, where the two copies would drift.
+   Route codes are `easy` / `hard` — not `std` / `adv`.
+3. **Staff cannot review their own submissions.** Since tutors are contributors, an unqualified
+   `is_teacher()` UPDATE policy would have made the review gate a formality — you could verify
+   and promote your own data. The policy carries `contributor_id <> auth.uid()`.
+
+Hard violations raise (malformed vector, checksum mismatch, count above the module's item count,
+illegal status transition, verifying an `html_upload` with no stored artifact). Soft findings land
+in `validation_flags` and never block: `conversion_conflict`, `route_inconsistent`,
+`route_check_skipped`. A conflict also stamps `score_conversion.flagged_at` on the row it
+disagrees with — flagging both sides, overwriting neither.
 
 ### Phase 2 — Server
 - Refactor `lib/parseBluebookHtml.js` so the existing student upload route and the new

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -673,6 +673,147 @@ export type Database = {
         }
         Relationships: []
       }
+      bluebook_submissions: {
+        Row: {
+          attempt_id: string | null
+          contributor_id: string
+          created_at: string
+          entry_method: string
+          html_artifact_path: string | null
+          id: string
+          math_m1_correct: number | null
+          math_m2_correct: number | null
+          math_m2_route: string | null
+          math_scaled: number | null
+          practice_test_id: string
+          promoted_at: string | null
+          report_date: string | null
+          responses: Json
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          rw_m1_correct: number | null
+          rw_m2_correct: number | null
+          rw_m2_route: string | null
+          rw_scaled: number | null
+          status: string
+          subject_label: string | null
+          updated_at: string
+          validation_flags: Json
+        }
+        Insert: {
+          attempt_id?: string | null
+          contributor_id: string
+          created_at?: string
+          entry_method: string
+          html_artifact_path?: string | null
+          id?: string
+          math_m1_correct?: number | null
+          math_m2_correct?: number | null
+          math_m2_route?: string | null
+          math_scaled?: number | null
+          practice_test_id: string
+          promoted_at?: string | null
+          report_date?: string | null
+          responses?: Json
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rw_m1_correct?: number | null
+          rw_m2_correct?: number | null
+          rw_m2_route?: string | null
+          rw_scaled?: number | null
+          status?: string
+          subject_label?: string | null
+          updated_at?: string
+          validation_flags?: Json
+        }
+        Update: {
+          attempt_id?: string | null
+          contributor_id?: string
+          created_at?: string
+          entry_method?: string
+          html_artifact_path?: string | null
+          id?: string
+          math_m1_correct?: number | null
+          math_m2_correct?: number | null
+          math_m2_route?: string | null
+          math_scaled?: number | null
+          practice_test_id?: string
+          promoted_at?: string | null
+          report_date?: string | null
+          responses?: Json
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rw_m1_correct?: number | null
+          rw_m2_correct?: number | null
+          rw_m2_route?: string | null
+          rw_scaled?: number | null
+          status?: string
+          subject_label?: string | null
+          updated_at?: string
+          validation_flags?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bluebook_submissions_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "practice_test_attempts_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bluebook_submissions_contributor_id_fkey"
+            columns: ["contributor_id"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bluebook_submissions_contributor_id_fkey"
+            columns: ["contributor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bluebook_submissions_contributor_id_fkey"
+            columns: ["contributor_id"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "bluebook_submissions_practice_test_id_fkey"
+            columns: ["practice_test_id"]
+            isOneToOne: false
+            referencedRelation: "practice_tests_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bluebook_submissions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bluebook_submissions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bluebook_submissions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       bug_reports: {
         Row: {
           created_at: string
@@ -854,6 +995,82 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      contributor_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          note: string | null
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contributor_codes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributor_codes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributor_codes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "contributor_codes_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributor_codes_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributor_codes_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       curriculum_units: {
         Row: {
@@ -1662,6 +1879,8 @@ export type Database = {
           finished_at: string | null
           id: string
           math_scaled: number | null
+          official_source: string | null
+          officialized_at: string | null
           plan_task_id: string | null
           practice_test_id: string
           rw_scaled: number | null
@@ -1679,6 +1898,8 @@ export type Database = {
           finished_at?: string | null
           id?: string
           math_scaled?: number | null
+          official_source?: string | null
+          officialized_at?: string | null
           plan_task_id?: string | null
           practice_test_id: string
           rw_scaled?: number | null
@@ -1696,6 +1917,8 @@ export type Database = {
           finished_at?: string | null
           id?: string
           math_scaled?: number | null
+          official_source?: string | null
+          officialized_at?: string | null
           plan_task_id?: string | null
           practice_test_id?: string
           rw_scaled?: number | null
@@ -2800,33 +3023,60 @@ export type Database = {
       }
       score_conversion: {
         Row: {
+          attempt_id: string | null
+          created_at: string | null
+          flagged_at: string | null
           id: string
           module1_correct: number
           module2_correct: number
           scaled_score: number
           section: string
+          submission_id: string | null
           test_id: string
           test_name: string
         }
         Insert: {
+          attempt_id?: string | null
+          created_at?: string | null
+          flagged_at?: string | null
           id?: string
           module1_correct: number
           module2_correct: number
           scaled_score: number
           section: string
+          submission_id?: string | null
           test_id: string
           test_name: string
         }
         Update: {
+          attempt_id?: string | null
+          created_at?: string | null
+          flagged_at?: string | null
           id?: string
           module1_correct?: number
           module2_correct?: number
           scaled_score?: number
           section?: string
+          submission_id?: string | null
           test_id?: string
           test_name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "score_conversion_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "practice_test_attempts_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "score_conversion_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "bluebook_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skill_learnability: {
         Row: {
@@ -3682,6 +3932,7 @@ export type Database = {
         Args: { p_test_type?: string }
         Returns: number
       }
+      can_contribute: { Args: never; Returns: boolean }
       can_view: { Args: { target: string }; Returns: boolean }
       can_view_from: {
         Args: { target: string; viewer: string }
@@ -3869,6 +4120,7 @@ export type Database = {
         Returns: Json
       }
       is_admin: { Args: never; Returns: boolean }
+      is_contributor: { Args: never; Returns: boolean }
       is_demo: { Args: never; Returns: boolean }
       is_lesson_assignment_student: {
         Args: { p_assignment_id: string; p_student_id: string }
