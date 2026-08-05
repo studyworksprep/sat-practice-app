@@ -37,6 +37,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "katex": "^0.16.11",
+    "linkedom": "^0.18.13",
     "mathjax-full": "^3.2.1",
     "mathlive": "^0.109.2",
     "next": "^16.2.3",

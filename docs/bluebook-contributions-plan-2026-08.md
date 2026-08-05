@@ -10,7 +10,7 @@
 |---|---|---|
 | 0 — Security prerequisite | **Done** (2026-08-05) | RLS enabled on `score_conversion` + `practice_test_routing_rules` on dev **and** prod, with authenticated-read / admin-write policies + the demo read-only lockdown. Read audit found the student scoring path reads the table through the RLS-bound user client, so bare RLS-with-no-policies would have silently degraded every new score to the estimated curve. |
 | 1 — Schema | **Done** (2026-08-05) | `contributor_codes`, `bluebook_submissions`, `score_conversion.submission_id` + `.flagged_at`, private `bluebook-reports` bucket, validation trigger, RLS — dev **and** prod. Two deltas from the plan text, both recorded below: contribution is a capability (`can_contribute()`) rather than only a role, and the module-2 routing check reads `practice_tests_v2` thresholds because `practice_test_routing_rules` is v1-dead. |
-| 2 — Server | Not started | |
+| 2 — Server | **Done** (2026-08-05) | Parser moved server-side (`lib/bluebook/parse-report.ts`, linkedom) with fixture tests; submission create/cross-check/review/promote actions; provenance loop closed in both the upload route and Recalculate. Also fixed a hard-coded adaptive-routing threshold in the upload route — see below. |
 | 3 — UI | Not started | |
 | 4 — Trust & polish | Not started | |
 
@@ -136,6 +136,36 @@ disagrees with — flagging both sides, overwriting neither.
 - **Close the provenance loop (pending follow-up from 2026-08-05):** update the existing
   upload-bluebook route and the Recalculate flow to set `official_source`, `officialized_at`,
   and `score_conversion.attempt_id` at write time.
+
+**As built (2026-08-05):**
+
+- **The parser is server-side and there is only one of it.** `lib/parseBluebookHtml.js` used
+  the browser's `DOMParser`, so each client parsed the `.htm` itself and POSTed the *parsed*
+  questions — the server stored a hand-editable answer vector on faith. It is now
+  `lib/bluebook/parse-report.ts` (linkedom). The tutor upload card and the admin batch tool
+  preview through `POST /api/bluebook/parse` and send the raw file; `upload-bluebook` re-parses
+  it. **The parse endpoint deliberately returns no per-question correct answers** — a parsed
+  report is the answer key for a whole form, and the `contributor` role is an outside account.
+- **Wrong-answer placeholders are deterministic.** When a report omits the student's own answer
+  (the "show my answers" toggle) the parser synthesizes one. It used to pick at random, which
+  meant re-parsing the stored artifact produced different bytes — defeating the point of keeping
+  it. It is now derived from the ordinal, and `toResponseVector` never records a synthesized
+  value as `chosen`, so a placeholder can't be mistaken for real distractor data.
+- **A flow-B disagreement is refused, not recorded.** If an attached report disagrees with the
+  linked attempt on any question, the submission is rejected with the count. It means the
+  answers keyed into Bluebook aren't the answers the student gave, so the official scores
+  describe a different sitting. A contributor who trusts the report over the app submits it
+  through flow A instead, where the report's own vector is what gets stored.
+- **Promotion never overwrites a conflicting curve.** A section whose (test, section, m1, m2)
+  key already exists at a different scaled score is skipped and reported; the existing row keeps
+  its `flagged_at`. Promotion is manager/admin only (it writes `score_conversion`, which is
+  admin-write), goes through the service role, and re-checks the self-review rule that RLS would
+  otherwise have enforced.
+- **Fixed in passing: the upload route's adaptive-routing threshold was hard-coded** to 18 (RW)
+  and 14 (Math). Real per-test thresholds live on `practice_tests_v2` and range 16–19 / 14–16 in
+  production, so uploads for any test that wasn't 18/14 were attached to the wrong module-2 form —
+  and therefore to the wrong questions. It now calls `chooseModule2Route`, the same function the
+  live runner routes students with.
 
 ### Phase 3 — UI
 - Contributor surface (new route group `(contributor)` or extend `(tutor)`): submission list +

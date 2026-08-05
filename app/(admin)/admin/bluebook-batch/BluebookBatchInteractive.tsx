@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-// parseBluebookHtml is a JS module from the legacy tree; it parses
-// `.htm` exports into { testName, testDate, questions, correctCounts }.
-// Loaded lazily inside the change handler so the page itself stays
-// server-rendered and the parser bundle only loads when needed.
+// Reports are parsed server-side via POST /api/bluebook/parse. This used
+// to import the parser and run it in the browser, then POST the parsed
+// questions — which meant the stored answer vector was whatever this
+// page said it was. Rows now carry the raw file text and the upload
+// endpoint re-parses it; what's rendered here is a preview.
 import s from '../../forms.module.css';
 import btn from '@/lib/ui/Button.module.css';
 
@@ -24,10 +25,25 @@ interface Row {
   rwScore: string;
   mathScore: string;
   file: File | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parsed: any | null;
+  /** Raw file text, sent as-is to the upload endpoint. */
+  html: string | null;
+  parsed: ParsedPreview | null;
   parseError: string | null;
+  parsing: boolean;
   status: RowStatus;
+}
+
+/** The subset of /api/bluebook/parse's response this page renders. It
+ *  carries no per-question correct answers — see the route's comment. */
+interface ParsedPreview {
+  testName: string;
+  testDate: string;
+  reportDate: string | null;
+  questionCount: number;
+  correctCounts: {
+    rw: { m1: number; m2: number; total: number };
+    math: { m1: number; m2: number; total: number };
+  };
 }
 
 function emptyRow(key: number, defaultStudentId: string): Row {
@@ -38,8 +54,10 @@ function emptyRow(key: number, defaultStudentId: string): Row {
     rwScore: '',
     mathScore: '',
     file: null,
+    html: null,
     parsed: null,
     parseError: null,
+    parsing: false,
     status: { kind: 'idle' },
   };
 }
@@ -76,25 +94,28 @@ export function BluebookBatchInteractive({
 
   async function handleFile(key: number, file: File | null) {
     if (!file) {
-      updateRow(key, { file: null, parsed: null, parseError: null });
+      updateRow(key, { file: null, html: null, parsed: null, parseError: null, parsing: false });
       return;
     }
-    updateRow(key, { file, parsed: null, parseError: null, status: { kind: 'idle' } });
+    updateRow(key, {
+      file, html: null, parsed: null, parseError: null, parsing: true, status: { kind: 'idle' },
+    });
     try {
       const text = await file.text();
-      const { parseBluebookHtml } = await import('@/lib/parseBluebookHtml');
-      const data = parseBluebookHtml(text);
-      if (!data.questions.length) {
-        updateRow(key, {
-          parseError:
-            'File parsed but no questions found. Make sure this is a Bluebook "Details" export.',
-        });
+      const res = await fetch('/api/bluebook/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html: text }),
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload?.ok) {
+        updateRow(key, { parseError: payload?.error ?? 'Could not read that file.', parsing: false });
         return;
       }
-      updateRow(key, { parsed: data, parseError: null });
+      updateRow(key, { html: text, parsed: payload.data, parseError: null, parsing: false });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      updateRow(key, { parseError: msg || 'Could not parse the HTML file' });
+      updateRow(key, { parseError: msg || 'Could not read that file.', parsing: false });
     }
   }
 
@@ -106,7 +127,8 @@ export function BluebookBatchInteractive({
     if (!Number.isFinite(rw) || rw < 200 || rw > 800) return false;
     if (!Number.isFinite(m)  || m  < 200 || m  > 800) return false;
     // File is optional — score-only uploads are allowed by the endpoint.
-    if (r.file && (!r.parsed || r.parseError)) return false;
+    if (r.parsing) return false;
+    if (r.file && (!r.html || !r.parsed || r.parseError)) return false;
     return true;
   }
 
@@ -120,9 +142,8 @@ export function BluebookBatchInteractive({
           practice_test_id: r.testId,
           rw_score: Number(r.rwScore),
           math_score: Number(r.mathScore),
-          test_date: null,
-          questions: r.parsed?.questions ?? null,
-          correctCounts: r.parsed?.correctCounts ?? null,
+          test_date: r.parsed?.reportDate ?? null,
+          html: r.html,
         }),
       });
       // Read the body as text first — the upload endpoint sometimes
@@ -288,9 +309,12 @@ function RowCard({
           {row.parseError && (
             <span className={s.err} style={{ marginTop: 4 }}>{row.parseError}</span>
           )}
+          {row.parsing && (
+            <span className={s.muted} style={{ marginTop: 4 }}>Reading the report…</span>
+          )}
           {row.parsed && (
             <span className={s.muted} style={{ marginTop: 4 }}>
-              Parsed {row.parsed.questions.length} questions
+              Read {row.parsed.questionCount} questions
               {' · '}
               RW {row.parsed.correctCounts.rw.total} correct (M1 {row.parsed.correctCounts.rw.m1} / M2 {row.parsed.correctCounts.rw.m2})
               {' · '}

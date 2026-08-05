@@ -21,9 +21,11 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 // ── 1. TypeScript ratchet ────────────────────────────────────────────
-// Baseline last lowered 2026-07-15 (§6.1: lib/ui/nav-links.js →
-// lib/ui/nav-links.ts, the scheduled Phase 6 seam conversion).
-const JS_FILE_BASELINE = 313;
+// Baseline last lowered 2026-08-05: lib/parseBluebookHtml.js →
+// lib/bluebook/parse-report.ts. The Bluebook parser moved off the
+// browser's DOMParser onto a server-side one, which was a rewrite of
+// the module's entry points either way.
+const JS_FILE_BASELINE = 312;
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {

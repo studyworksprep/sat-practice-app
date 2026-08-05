@@ -1,0 +1,37 @@
+<!doctype html>
+<!--
+  Current vintage with the report site's "show my answers" toggle OFF:
+  the answer cell carries only "Correct" / "Incorrect", never the
+  student's own choice.
+
+  This is the variant that forces synthesizeStudentAnswer, and the reason
+  toResponseVector must not record `chosen` for these rows — a
+  synthesized letter would look exactly like real distractor data.
+
+  Counts asserted by parse-report.test.mjs: RW m1 1 / m2 1 (2 of 4).
+-->
+<html>
+<head><title>MyPractice - SAT Practice 4 - March 8, 2026 - Details</title></head>
+<body>
+<table>
+  <tbody>
+    <tr data-tr="0" class="table-row reading-and-writing module-1">
+      <th>1</th><td>Reading and Writing</td><td><div>B</div></td>
+      <td><p class="correct">Correct</p></td><td><button>Review</button></td><td>Information and Ideas</td>
+    </tr>
+    <tr data-tr="1" class="table-row reading-and-writing module-1">
+      <th>2</th><td>Reading and Writing</td><td><div>D</div></td>
+      <td><p class="cb-red1-color">Incorrect</p></td><td><button>Review</button></td><td>Craft and Structure</td>
+    </tr>
+    <tr data-tr="2" class="table-row reading-and-writing module-2">
+      <th>1</th><td>Reading and Writing</td><td><div>A</div></td>
+      <td><p class="correct">Correct</p></td><td><button>Review</button></td><td>Expression of Ideas</td>
+    </tr>
+    <tr data-tr="3" class="table-row reading-and-writing module-2">
+      <th>2</th><td>Reading and Writing</td><td><div>7</div></td>
+      <td><p class="cb-red1-color">Incorrect</p></td><td><button>Review</button></td><td>Algebra</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
