@@ -254,3 +254,26 @@ upload-bluebook route.
   `score_conversion` row lands with `submission_id`.
 - Confirm product pipelines (`item_stats`, mastery snapshots, review queue) are untouched by
   submissions (nothing keys off `bluebook_submissions`).
+
+**As verified (2026-08-05):**
+
+- **Parser fixtures — done, but synthetic.** No real College Board export was in the repo, and
+  checking one in would mean checking in a real student's answers. Three fixtures reproduce the
+  structures the original browser parser was written against (current vintage, the status-only
+  variant, the older heading-driven format); each fixture's header records the counts its tests
+  assert. Ten tests, including re-parse determinism and a doctored file with inline script.
+- **Trigger tests — done, as SQL probes against dev before each migration reached prod.** 11 for
+  the Phase 1 trigger, 13 RLS probes, 6 more for the Phase 4 auto-verify guards. They live in
+  the phase commit messages rather than in a suite; a `pgTAP`-style home for them is a
+  reasonable follow-up.
+- **Playwright — partially.** The existing e2e suite is a *negative* auth harness and
+  deliberately doesn't drive Server Actions (see its own header comment), so the plan's
+  "happy path per entry flow" doesn't fit it as written. What was added fits: anon → 401 on
+  `/api/bluebook/parse`, students blocked from `/contribute`, `/contribute/new` and the review
+  queue, teachers blocked from the review queue, and — the assertion that would catch an
+  over-tightened layout — teachers **able** to reach both contributor pages. 23 pass.
+  The happy paths were instead driven by hand in a browser (Phase 3 notes what that did and
+  didn't cover).
+- **Product pipelines untouched — confirmed.** `bluebook_submissions` is referenced only by its
+  own feature files, its own validation trigger, and the intended
+  `score_conversion.submission_id` FK. No other function, view, or foreign key touches it.

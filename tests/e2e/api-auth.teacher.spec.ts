@@ -11,7 +11,7 @@
 // page-auth.teacher.spec.ts.
 
 import { test, expect } from '@playwright/test';
-import { ADMIN_ONLY_PAGES } from './helpers/fixtures';
+import { ADMIN_ONLY_PAGES, CONTRIBUTOR_PAGES } from './helpers/fixtures';
 
 test.describe('Teacher authenticated — admin boundary', () => {
   for (const { path, heading } of ADMIN_ONLY_PAGES) {
@@ -21,6 +21,20 @@ test.describe('Teacher authenticated — admin boundary', () => {
         page.getByRole('heading', { name: heading }),
         `teacher should not see the admin heading at ${path}`,
       ).toHaveCount(0);
+    });
+  }
+});
+
+// The counterpart to the admin-only list above: contribution is a
+// capability tutors hold, so these pages MUST render for a teacher. A
+// regression that over-tightened the (contributor) layout to
+// admin-only would pass every negative test in this suite and quietly
+// lock out the people the feature was built for.
+test.describe('Teacher — contribution surfaces are open', () => {
+  for (const { path, heading } of CONTRIBUTOR_PAGES) {
+    test(`teacher can reach ${path}`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.getByRole('heading', { name: heading })).toBeVisible();
     });
   }
 });
