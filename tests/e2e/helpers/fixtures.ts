@@ -51,6 +51,10 @@ export const REQUIRE_USER_ROUTES: ReadonlyArray<{ url: string; method: 'GET' | '
   { url: '/api/billing/create-checkout', method: 'POST' },
   { url: '/api/billing/create-portal', method: 'POST' },
   { url: '/api/practice-test/time-ping', method: 'POST' },
+  // Parses uploaded Bluebook reports. requireRole, so anon is 401 before
+  // a byte of the upload is looked at — which is the point: the body is
+  // untrusted HTML from whoever sent it.
+  { url: '/api/bluebook/parse', method: 'POST' },
 ];
 
 /** HTTP routes guarded by requireExternalApiAccess (API-key auth; the
@@ -69,6 +73,10 @@ export const EXTERNAL_KEY_ROUTES: ReadonlyArray<{ url: string; method: 'GET' }> 
 export const ADMIN_ONLY_PAGES: ReadonlyArray<{ path: string; heading: RegExp }> = [
   { path: '/admin/users', heading: /users/i },
   { path: '/admin/lessons/generate', heading: /generate lesson with ai/i },
+  // The contributed-submissions review queue. A teacher reaching this
+  // would be able to act on submissions the review gate means to keep
+  // them away from.
+  { path: '/admin/bluebook-submissions', heading: /bluebook submissions/i },
 ];
 
 /** Pages tutors (teacher/manager/admin) reach and students must not.
@@ -76,6 +84,19 @@ export const ADMIN_ONLY_PAGES: ReadonlyArray<{ path: string; heading: RegExp }> 
 export const TUTOR_PAGES: ReadonlyArray<{ path: string; heading: RegExp }> = [
   { path: '/tutor/dashboard', heading: /tutor dashboard/i },
   { path: '/tutor/roster', heading: /roster/i },
+];
+
+/** Pages the contribution capability opens — staff and the dedicated
+ *  `contributor` role. Students and practice-only users must not reach
+ *  them; the (contributor) layout is the boundary.
+ *
+ *  Listed separately from TUTOR_PAGES because the allowed set is
+ *  deliberately WIDER than the tutor tree: an outside contributor has no
+ *  roster and no subscription and still belongs here. A test that
+ *  asserted "tutor-only" would encode the wrong rule. */
+export const CONTRIBUTOR_PAGES: ReadonlyArray<{ path: string; heading: RegExp }> = [
+  { path: '/contribute', heading: /bluebook contributions/i },
+  { path: '/contribute/new', heading: /new submission/i },
 ];
 
 /** A page that requires a signed-in user of any role. Anonymous callers

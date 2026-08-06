@@ -24,6 +24,7 @@ export default async function NextLoginPage() {
     const dest =
       role === 'admin' ? '/admin'
       : role === 'teacher' || role === 'manager' ? '/tutor/dashboard'
+      : role === 'contributor' ? '/contribute'
       : role === 'practice' ? '/practice'
       : '/dashboard';
     redirect(dest);

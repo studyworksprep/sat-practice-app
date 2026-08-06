@@ -21,9 +21,11 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 // ── 1. TypeScript ratchet ────────────────────────────────────────────
-// Baseline last lowered 2026-07-15 (§6.1: lib/ui/nav-links.js →
-// lib/ui/nav-links.ts, the scheduled Phase 6 seam conversion).
-const JS_FILE_BASELINE = 313;
+// Baseline last lowered 2026-08-05: lib/parseBluebookHtml.js →
+// lib/bluebook/parse-report.ts. The Bluebook parser moved off the
+// browser's DOMParser onto a server-side one, which was a rewrite of
+// the module's entry points either way.
+const JS_FILE_BASELINE = 312;
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {
@@ -71,6 +73,18 @@ const RETIRED_TERMS = [
   'Smart Review', // pre-rebuild review queue; current surface is Review drills
 ];
 
+// Proper nouns for things that still exist and merely happen to contain a
+// retired term. Stripped before scanning, so the bare term stays banned.
+// Keep this list to exact, unambiguous phrases — it is a scalpel, not an
+// allowlist. Adding a whole living doc to ALLOWLIST_PREFIXES to silence
+// one proper noun would mute every other retired term in it too.
+const EXEMPT_PHRASES = [
+  // The production Supabase project's dashboard name. Docs have to be able
+  // to say which project they mean; the pre-rebuild nav tab it collides
+  // with is unrelated.
+  'SAT Question Bank',
+];
+
 const ALLOWLIST_PREFIXES = [
   'docs/architecture-plan.md',
   'docs/decommission-plan.md',
@@ -93,7 +107,11 @@ const hits = [];
 for (const file of scanFiles) {
   const rel = relative(ROOT, file).replaceAll('\\', '/');
   if (ALLOWLIST_PREFIXES.some((p) => rel.startsWith(p))) continue;
-  const text = readFileSync(file, 'utf8');
+  let text = readFileSync(file, 'utf8');
+  for (const phrase of EXEMPT_PHRASES) {
+    // Replace with same-length filler so reported line numbers stay honest.
+    text = text.replaceAll(phrase, '.'.repeat(phrase.length));
+  }
   for (const term of RETIRED_TERMS) {
     if (text.includes(term)) {
       const line = text.slice(0, text.indexOf(term)).split('\n').length;

@@ -79,6 +79,9 @@ const NAV_ICONS: Record<NavIconName, IconComponent> = {
   users: asIcon(UsersIcon),
   questions: asIcon(QuestionBankIcon),
   lessons: asIcon(BookOpenIcon),
+  // Contributions reuse the question-bank glyph: what a contribution
+  // ultimately feeds is the calibration data behind score reporting.
+  contribute: asIcon(QuestionBankIcon),
 };
 
 // Aliased through the same seam as NAV_ICONS.

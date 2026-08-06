@@ -60,6 +60,7 @@ export default async function NextTreeRoot(props) {
     const dest =
       role === 'admin' ? '/admin'
       : role === 'teacher' || role === 'manager' ? '/tutor/dashboard'
+      : role === 'contributor' ? '/contribute'
       : role === 'practice' ? '/practice'
       : '/dashboard';
     redirect(dest);

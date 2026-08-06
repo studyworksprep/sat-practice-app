@@ -44,7 +44,15 @@ export type ApiResult<T extends Record<string, unknown> = Record<string, unknown
 // Roles + auth context.
 // ──────────────────────────────────────────────────────────────
 
-export type UserRole = 'practice' | 'student' | 'teacher' | 'manager' | 'admin';
+/** Base roles, mirroring the profiles.role CHECK constraint.
+ *
+ *  `contributor` is the base role for an OUTSIDE Bluebook contributor —
+ *  someone with no roster and no subscription who exists only to submit
+ *  calibration data. It is NOT how tutors contribute: profiles.role is
+ *  single-valued, so a tutor switching to it would lose their roster.
+ *  For "may this session submit?", ask the DB's can_contribute() (staff
+ *  or contributor), not this union. */
+export type UserRole = 'practice' | 'student' | 'teacher' | 'manager' | 'admin' | 'contributor';
 
 /** The real AuthContext now lives beside its implementation in
  *  lib/api/auth.ts (typed user, profile, and Database-generic

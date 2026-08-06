@@ -1,0 +1,75 @@
+<!doctype html>
+<!--
+  Bluebook "MyPractice — Details" export, current vintage: one <tr> per
+  question carrying section + module in its class list.
+
+  Synthetic, not a real export: no saved College Board file existed in
+  the repo when the parser was moved server-side, and a real one would
+  carry a real student's answers. Structure follows the shapes the
+  original browser parser was written against — per-row classes, the
+  "D; Correct" answer cell, and the <div>-wrapped correct answer.
+
+  Counts asserted by parse-report.test.mjs:
+    RW   m1 2 / m2 1   (3 of 6)
+    MATH m1 1 / m2 2   (3 of 6)
+-->
+<html>
+<head><title>MyPractice - SAT Practice 11 - February 21, 2026 - Details</title></head>
+<body>
+<table>
+  <thead>
+    <tr><th>#</th><th>Section</th><th>Correct Answer</th><th>Your Answer</th><th></th><th>Domain</th></tr>
+  </thead>
+  <tbody>
+    <tr data-tr="0" class="table-row reading-and-writing module-1">
+      <th>1</th><td>Reading and Writing</td><td><div>B</div></td>
+      <td><p class="correct">B; Correct</p></td><td><button>Review</button></td><td>Information and Ideas</td>
+    </tr>
+    <tr data-tr="1" class="table-row reading-and-writing module-1">
+      <th>2</th><td>Reading and Writing</td><td><div>D</div></td>
+      <td><p class="cb-red1-color">A; Incorrect</p></td><td><button>Review</button></td><td>Craft and Structure</td>
+    </tr>
+    <tr data-tr="2" class="table-row reading-and-writing module-1">
+      <th>3</th><td>Reading and Writing</td><td><div>C</div></td>
+      <td><p class="correct">C; Correct</p></td><td><button>Review</button></td><td>Expression of Ideas</td>
+    </tr>
+    <tr data-tr="3" class="table-row reading-and-writing module-2">
+      <th>1</th><td>Reading and Writing</td><td><div>A</div></td>
+      <td><p class="correct">A; Correct</p></td><td><button>Review</button></td><td>Standard English Conventions</td>
+    </tr>
+    <tr data-tr="4" class="table-row reading-and-writing module-2">
+      <th>2</th><td>Reading and Writing</td><td><div>B</div></td>
+      <td><p class="cb-red1-color">C; Incorrect</p></td><td><button>Review</button></td><td>Information and Ideas</td>
+    </tr>
+    <tr data-tr="5" class="table-row reading-and-writing module-2">
+      <th>3</th><td>Reading and Writing</td><td><div>D</div></td>
+      <td><p class="cb-red1-color">Omitted</p></td><td><button>Review</button></td><td>Craft and Structure</td>
+    </tr>
+    <tr data-tr="6" class="table-row math module-1">
+      <th>1</th><td>Math</td><td><div>C</div></td>
+      <td><p class="correct">C; Correct</p></td><td><button>Review</button></td><td>Algebra</td>
+    </tr>
+    <tr data-tr="7" class="table-row math module-1">
+      <th>2</th><td>Math</td><td><div>17</div></td>
+      <td><p class="cb-red1-color">12; Incorrect</p></td><td><button>Review</button></td><td>Advanced Math</td>
+    </tr>
+    <tr data-tr="8" class="table-row math module-1">
+      <th>3</th><td>Math</td><td><div>A</div></td>
+      <td><p class="cb-red1-color">D; Incorrect</p></td><td><button>Review</button></td><td>Problem-Solving and Data Analysis</td>
+    </tr>
+    <tr data-tr="9" class="table-row math module-2">
+      <th>1</th><td>Math</td><td><div>B</div></td>
+      <td><p class="correct">B; Correct</p></td><td><button>Review</button></td><td>Geometry and Trigonometry</td>
+    </tr>
+    <tr data-tr="10" class="table-row math module-2">
+      <th>2</th><td>Math</td><td><div>0</div></td>
+      <td><p class="correct">0; Correct</p></td><td><button>Review</button></td><td>Algebra</td>
+    </tr>
+    <tr data-tr="11" class="table-row math module-2">
+      <th>3</th><td>Math</td><td><div>D</div></td>
+      <td><p class="cb-red1-color">B; Incorrect</p></td><td><button>Review</button></td><td>Advanced Math</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

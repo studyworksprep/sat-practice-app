@@ -22,7 +22,7 @@ import s from './AppNav.module.css';
 /**
  * @param {object} props
  * @param {{email: string, role: string, firstName?: string|null}} props.user
- * @param {Array<{href: string, label: string, match?: (path: string) => boolean}>} props.links
+ * @param {Array<import('./nav-links').NavItem>} props.links — NavLink entries plus { kind: 'divider' } sentinels
  * @param {React.ReactNode} [props.rightExtras] — optional slot for
  *   role-specific extras (e.g. a "Switch role" toggle for tutors).
  */

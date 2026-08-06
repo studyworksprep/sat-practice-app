@@ -52,31 +52,51 @@ function UploadModal({ studentId, tests, onClose, onUploaded }) {
   const [rwScore, setRwScore] = useState('');
   const [mathScore, setMathScore] = useState('');
   const [testDate, setTestDate] = useState('');
+  // The raw file text, held so the submit below can send the bytes
+  // themselves. `parsed` is only what the server told us they say.
+  const [html, setHtml] = useState(null);
   const [parsed, setParsed] = useState(null);
   const [parseError, setParseError] = useState(null);
+  const [parsing, setParsing] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [pending, startTransition] = useTransition();
 
   const composite = (Number(rwScore) || 0) + (Number(mathScore) || 0);
 
+  // Parsing happens on the server (/api/bluebook/parse). This used to
+  // run the parser in the browser and POST the parsed questions, which
+  // meant the stored answer vector was whatever the page said it was.
+  // What we show here is a preview; the upload endpoint re-parses the
+  // same bytes and stores its own reading of them.
   async function handleFileChange(e) {
     const f = e.target.files?.[0];
-    if (!f) return;
+    setHtml(null);
     setParsed(null);
     setParseError(null);
     setResult(null);
+    if (!f) return;
+
+    setParsing(true);
     try {
       const text = await f.text();
-      const { parseBluebookHtml } = await import('@/lib/parseBluebookHtml');
-      const data = parseBluebookHtml(text);
-      if (!data.questions.length) {
-        setParseError('No questions could be extracted from this file.');
+      const res = await fetch('/api/bluebook/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html: text }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.ok) {
+        setParseError(data?.error ?? 'Could not read that file.');
         return;
       }
-      setParsed(data);
+      setHtml(text);
+      setParsed(data.data);
+      if (!testDate && data.data.reportDate) setTestDate(data.data.reportDate);
     } catch (err) {
-      setParseError(err?.message ?? 'Failed to parse the HTML file');
+      setParseError(err?.message ?? 'Could not read that file.');
+    } finally {
+      setParsing(false);
     }
   }
 
@@ -101,8 +121,7 @@ function UploadModal({ studentId, tests, onClose, onUploaded }) {
             rw_score: rw,
             math_score: math,
             test_date: testDate || null,
-            questions: parsed?.questions ?? null,
-            correctCounts: parsed?.correctCounts ?? null,
+            html,
           }),
         });
         const data = await res.json();
@@ -165,7 +184,8 @@ function UploadModal({ studentId, tests, onClose, onUploaded }) {
                 Bluebook HTML <span className={s.muted}>— optional</span>
               </span>
               <input type="file" accept=".htm,.html" onChange={handleFileChange} className={s.input} />
-              {!parsed && (
+              {parsing && <span className={s.muted}>Reading the report…</span>}
+              {!parsed && !parsing && (
                 <span className={s.muted}>
                   Skip to record scores only, without question-level details.
                 </span>
@@ -178,6 +198,7 @@ function UploadModal({ studentId, tests, onClose, onUploaded }) {
               <div className={s.parsedSummary}>
                 <div className={s.parsedHead}>{parsed.testName}</div>
                 {parsed.testDate && <div className={s.muted}>{parsed.testDate}</div>}
+                <div className={s.muted}>{parsed.questionCount} questions read</div>
                 <div className={s.parsedRow}>
                   <span>RW <strong>{parsed.correctCounts.rw.total}</strong> correct (M1 {parsed.correctCounts.rw.m1} · M2 {parsed.correctCounts.rw.m2})</span>
                   <span>Math <strong>{parsed.correctCounts.math.total}</strong> correct (M1 {parsed.correctCounts.math.m1} · M2 {parsed.correctCounts.math.m2})</span>
@@ -240,7 +261,7 @@ function UploadModal({ studentId, tests, onClose, onUploaded }) {
               <button type="button" className={s.btnSecondary} onClick={onClose} disabled={pending}>
                 Cancel
               </button>
-              <button type="submit" className={s.btnPrimary} disabled={pending}>
+              <button type="submit" className={s.btnPrimary} disabled={pending || parsing}>
                 {pending ? 'Uploading…' : 'Upload'}
               </button>
             </div>

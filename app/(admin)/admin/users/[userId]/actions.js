@@ -8,7 +8,12 @@ import { redirect } from 'next/navigation';
 import { requireRole, requireServiceRole } from '@/lib/api/auth';
 import { actionOk, actionFail, ApiError } from '@/lib/api/response';
 
-const VALID_ROLES = ['practice', 'student', 'teacher', 'manager', 'admin'];
+// Mirrors the profiles.role CHECK constraint. `contributor` is the
+// outside-Bluebook-contributor role: no roster, no subscription, reaches
+// only /contribute. Tutors do NOT need it — they hold the contribution
+// capability through is_teacher() — so switching a tutor to it would
+// cost them their roster for nothing.
+const VALID_ROLES = ['practice', 'student', 'teacher', 'manager', 'admin', 'contributor'];
 
 function getUserId(formData) {
   const userId = formData.get('user_id');

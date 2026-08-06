@@ -101,12 +101,21 @@ export async function recalculateScore(
     return actionFail('Could not compute composite score');
   }
 
+  // official_source / officialized_at record that these scores came off
+  // a real Bluebook report rather than out of the estimator. Before
+  // 2026-08-05 the Recalculate dialog left them unset, so every
+  // correction a tutor made was indistinguishable from an app estimate
+  // the moment it landed — the columns had to be reconstructed
+  // forensically from Postgres xmin adjacency. They get stamped at write
+  // time now.
   const { error: updateErr } = await svc
     .from('practice_test_attempts_v2')
     .update({
       composite_score: composite,
       rw_scaled: rwScaled,
       math_scaled: mathScaled,
+      official_source: 'recalculate',
+      officialized_at: new Date().toISOString(),
     })
     .eq('id', attemptId);
   if (updateErr) return actionFail(updateErr.message);
@@ -124,6 +133,12 @@ export async function recalculateScore(
       .maybeSingle();
     const testName = test?.name ?? 'Practice Test';
 
+    // attempt_id is the curve row's provenance: it names the attempt
+    // whose transcribed Bluebook scores produced this
+    // (m1, m2) -> scaled mapping. Without it a conversion row is just a
+    // number, and a row that predates an app-scored attempt may well be
+    // the row the estimator itself read — so coincidence of counts and
+    // score proves nothing. Only an explicit link counts.
     const upserts = [
       {
         test_id: practiceTestId,
@@ -132,6 +147,7 @@ export async function recalculateScore(
         module1_correct: rwM1Correct,
         module2_correct: rwM2Correct,
         scaled_score: rwScaled,
+        attempt_id: attemptId,
       },
       {
         test_id: practiceTestId,
@@ -140,6 +156,7 @@ export async function recalculateScore(
         module1_correct: mathM1Correct,
         module2_correct: mathM2Correct,
         scaled_score: mathScaled,
+        attempt_id: attemptId,
       },
     ];
     const { error: convErr } = await svc

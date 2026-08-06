@@ -12,10 +12,10 @@
 // an implementation detail, so we assert the heading is absent.
 
 import { test, expect } from '@playwright/test';
-import { ADMIN_ONLY_PAGES, TUTOR_PAGES } from './helpers/fixtures';
+import { ADMIN_ONLY_PAGES, TUTOR_PAGES, CONTRIBUTOR_PAGES } from './helpers/fixtures';
 
 test.describe('Student authenticated — role boundary', () => {
-  for (const { path, heading } of [...ADMIN_ONLY_PAGES, ...TUTOR_PAGES]) {
+  for (const { path, heading } of [...ADMIN_ONLY_PAGES, ...TUTOR_PAGES, ...CONTRIBUTOR_PAGES]) {
     test(`student does not see ${path}`, async ({ page }) => {
       await page.goto(path);
       await expect(
