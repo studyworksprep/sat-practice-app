@@ -111,6 +111,7 @@ export function DesmosPanel({
 
     calcRef.current = window.Desmos.GraphingCalculator(hostRef.current, {
       autosize: true, keypad: true, expressions: true, settingsMenu: true,
+      expressionsCollapsed: false,
       keypadActivated: calculatorOptions.keypadActivated ?? false,
       zoomButtons: true, forceEnableGeometryFunctions: true,
       images: false, folders: false, notes: false, links: false,
@@ -119,6 +120,7 @@ export function DesmosPanel({
 
     activeStorageKeyRef.current = storageKey || null;
     restoreOrSeed(activeStorageKeyRef.current);
+    expandExpressionsColumn();
     scheduleResize();
     // Observe changes → debounced save.
     calcRef.current.observeEvent?.('change', () => scheduleSave());
@@ -149,6 +151,7 @@ export function DesmosPanel({
     saveToLocalStorage(previousKey);
     activeStorageKeyRef.current = nextKey;
     restoreOrSeed(nextKey);
+    expandExpressionsColumn();
     scheduleResize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey]);
@@ -163,6 +166,10 @@ export function DesmosPanel({
         keypad: calculatorOptions.expressions ?? true,
         keypadActivated: calculatorOptions.keypadActivated ?? false,
         zoomButtons: calculatorOptions.lockViewport !== true,
+        // Re-expand whenever this effect fires (block change, pane
+        // open) so the column never arrives collapsed — see
+        // expandExpressionsColumn for why this matters.
+        expressionsCollapsed: false,
       });
       if (isOpen && calculatorOptions.keypadActivated) {
         requestAnimationFrame(() => {
@@ -186,6 +193,22 @@ export function DesmosPanel({
     rafRef.current = requestAnimationFrame(() => {
       try { calcRef.current.resize(); } catch {}
     });
+  }
+
+  // The calculator instance lives across block changes (destroying it
+  // per block is slow and loses state), so UI state carries over too:
+  // a column collapsed on one block — via the « chevron, or by an
+  // expressions:false→true round-trip when a read-only preset graph
+  // hands off to an editable scratch scope — arrives collapsed on the
+  // next, and the » restore chevron is genuinely hard to find. Every
+  // scope load re-expands, so a fresh block always starts with the
+  // input column visible. Collapsing mid-block still works; it just
+  // doesn't follow the learner to the next block.
+  function expandExpressionsColumn() {
+    if (!calcRef.current) return;
+    try {
+      calcRef.current.updateSettings?.({ expressionsCollapsed: false });
+    } catch {}
   }
 
   function saveToLocalStorage(key = activeStorageKeyRef.current) {

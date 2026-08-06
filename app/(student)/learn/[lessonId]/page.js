@@ -82,8 +82,11 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
 
   // Author name — one extra round-trip, but the lessons table
   // doesn't denormalize this and the legacy /api/lessons/[id]
-  // route does the same lookup.
-  let authorName = 'Unknown';
+  // route does the same lookup. null (not 'Unknown') when the
+  // profile is missing or unreadable under the student's RLS —
+  // "by Unknown" in the header reads as broken, so the byline
+  // simply doesn't render.
+  let authorName = null;
   if (lesson.author_id) {
     const { data: author } = await supabase
       .from('profiles')
@@ -92,7 +95,7 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
       .maybeSingle();
     if (author) {
       authorName =
-        [author.first_name, author.last_name].filter(Boolean).join(' ') || 'Unknown';
+        [author.first_name, author.last_name].filter(Boolean).join(' ') || null;
     }
   }
 
@@ -108,7 +111,7 @@ export default async function StudentLessonViewerPage({ params, searchParams }) 
           <p className={s.viewerDescription}>{lesson.description}</p>
         )}
         <div className={s.viewerMeta}>
-          <span className={s.viewerByline}>by {authorName}</span>
+          {authorName && <span className={s.viewerByline}>by {authorName}</span>}
           {topics.length > 0 && (
             <div className={s.viewerTopics}>
               {topics.map((t, i) => (
