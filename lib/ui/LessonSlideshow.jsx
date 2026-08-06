@@ -323,49 +323,58 @@ export function LessonSlideshow({
     );
   }
 
+  const calculatorToggleVisible =
+    calculatorPresentation.display !== 'hidden' && !calculatorOpen;
+
   return (
-    <div className={`${s.workspace} ${calculatorOpen ? '' : s.workspaceSingle}`}>
-      <div className={s.lessonColumn} ref={lessonColumnRef}>
-      <div className={s.container}>
-      {calculatorPresentation.display !== 'hidden' && !calculatorOpen && (
-        <div className={s.calculatorToggleRow}>
-          <button
-            type="button"
-            className={s.calculatorToggle}
-            onClick={() => setCalculatorOpenOverride({ blockId: currentBlock?.id, open: true })}
-          >
-            Open Desmos
-            {calculatorPresentation.required ? ' · required' : ''}
-          </button>
-        </div>
-      )}
-      {showProgressBar && (
-        <div className={s.progressRow}>
-          {blocks.length <= MAX_SEGMENTED_BLOCKS ? (
-            <div className={s.progressSegments} aria-hidden="true">
-              {blocks.map((block, i) => (
-                <span
-                  key={block.id ?? i}
-                  className={`${s.segment} ${
-                    completedBlockIds.has(block.id) ? s.segmentDone : ''
-                  } ${i === currentIndex ? s.segmentCurrent : ''}`}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className={s.progressTrack} aria-hidden="true">
-              <div
-                className={`${s.progressFill} ${isComplete ? s.progressFillComplete : ''}`}
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
+    <div className={s.viewer}>
+      {/* One full-width band above both columns: progress + the Desmos
+          re-open affordance. Keeping it out of the lesson column means
+          the lesson card and the calculator pane top-align, instead of
+          the ragged edge the old in-column placement produced. */}
+      {(showProgressBar || calculatorToggleVisible) && (
+        <div className={s.topBand}>
+          {showProgressBar && (
+            <>
+              {blocks.length <= MAX_SEGMENTED_BLOCKS ? (
+                <div className={s.progressSegments} aria-hidden="true">
+                  {blocks.map((block, i) => (
+                    <span
+                      key={block.id ?? i}
+                      className={`${s.segment} ${
+                        completedBlockIds.has(block.id) ? s.segmentDone : ''
+                      } ${i === currentIndex ? s.segmentCurrent : ''}`}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className={s.progressTrack} aria-hidden="true">
+                  <div
+                    className={`${s.progressFill} ${isComplete ? s.progressFillComplete : ''}`}
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+              )}
+              <span className={s.progressPct}>
+                {isComplete ? 'Complete' : `${progressPct}%`}
+              </span>
+            </>
           )}
-          <span className={s.progressPct}>
-            {isComplete ? 'Complete' : `${progressPct}%`}
-          </span>
+          {calculatorToggleVisible && (
+            <button
+              type="button"
+              className={s.calculatorToggle}
+              onClick={() => setCalculatorOpenOverride({ blockId: currentBlock?.id, open: true })}
+            >
+              Open Desmos
+              {calculatorPresentation.required ? ' · required' : ''}
+            </button>
+          )}
         </div>
       )}
 
+      <div className={`${s.workspace} ${calculatorOpen ? '' : s.workspaceSingle}`}>
+      <div className={s.lessonColumn} ref={lessonColumnRef}>
       {showResumeNotice && (
         <div className={s.resumeNotice} role="status">
           <span>Picking up where you left off.</span>
@@ -522,6 +531,10 @@ export function LessonSlideshow({
         </details>
       )}
 
+      {/* margin-top:auto pins this to the column's bottom edge, so in
+          two-column mode the nav lines up with the calculator pane's
+          bottom instead of floating mid-column. */}
+      <div className={s.navFooter}>
       <div className={s.navRow}>
         <button
           type="button"
@@ -602,6 +615,7 @@ export function LessonSlideshow({
           onCalcReady={setLessonCalculator}
         />
       )}
+      </div>
     </div>
   );
 }

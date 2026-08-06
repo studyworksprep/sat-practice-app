@@ -77,7 +77,7 @@ export default async function StudentLearnPage({ searchParams }) {
 
   const enriched = lessons.map((l) => ({
     ...l,
-    author_name: authorMap.get(l.author_id) ?? 'Unknown',
+    author_name: authorMap.get(l.author_id) ?? null,
     topics: topicsByLesson.get(l.id) ?? [],
     progress: progressMap.get(l.id) ?? null,
   }));
@@ -160,7 +160,9 @@ export default async function StudentLearnPage({ searchParams }) {
                     </div>
                   )}
                 </div>
-                <div className={s.lessonAuthor}>by {lesson.author_name}</div>
+                {lesson.author_name && (
+                  <div className={s.lessonAuthor}>by {lesson.author_name}</div>
+                )}
               </Card>
             </a>
           ))}
@@ -179,8 +181,9 @@ async function fetchAuthorMap(supabase, lessons) {
     .select('id, first_name, last_name')
     .in('id', authorIds);
   for (const a of authors ?? []) {
-    const name = [a.first_name, a.last_name].filter(Boolean).join(' ') || 'Unknown';
-    map.set(a.id, name);
+    // No 'Unknown' sentinel — a missing name means no byline at all.
+    const name = [a.first_name, a.last_name].filter(Boolean).join(' ');
+    if (name) map.set(a.id, name);
   }
   return map;
 }
