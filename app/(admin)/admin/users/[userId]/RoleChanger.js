@@ -11,6 +11,7 @@ const ROLES = [
   { value: 'teacher', label: 'Teacher' },
   { value: 'manager', label: 'Manager' },
   { value: 'admin', label: 'Admin' },
+  { value: 'contributor', label: 'Contributor' },
 ];
 
 export function RoleChanger({ userId, currentRole }) {

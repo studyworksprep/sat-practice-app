@@ -30,6 +30,14 @@ export async function Relationships({ supabase, subject }) {
       </p>
     );
   }
+  if (role === 'contributor') {
+    return (
+      <p style={S.empty}>
+        Contributors have no roster — they only submit Bluebook results. Without
+        this branch the panel would just render blank.
+      </p>
+    );
+  }
   return null;
 }
 

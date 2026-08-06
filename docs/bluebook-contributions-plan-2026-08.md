@@ -236,11 +236,11 @@ upload-bluebook route.
 ## Open items after the phase build (2026-08-05)
 
 1. **Nothing issues or redeems a `contributor_code` yet.** The table, the role, the capability
-   helper, the middleware and the landing route all exist and work, but there is no admin UI to
-   mint a code and no signup path to redeem one — so the `contributor` role is currently
-   assignable only by an admin editing `profiles.role` directly. Tutors are unaffected: they
-   hold the capability through `is_teacher()` and can contribute today. This is what to build
-   before inviting anyone from outside. The pattern to follow is `teacher_codes`:
+   helper, the middleware and the landing route all exist and work, and an admin can now assign
+   the role from the user-detail page — but there is still no UI to mint a code and no signup
+   path to redeem one, so a code you insert today is inert. Tutors are unaffected: they hold the
+   capability through `is_teacher()` and can contribute now. Build this before inviting anyone
+   from outside; the pattern to follow is `teacher_codes` —
    `app/(admin)/admin/users/codes/` for issuance, `app/api/signup/route.js` for redemption.
 2. **Re-run the promote button once the local service-role key is refreshed** (see Phase 3).
 3. **`scripts/dev-seed-ui-preview.sql` numbers module items from 0**, where production numbers
