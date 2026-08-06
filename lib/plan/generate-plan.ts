@@ -15,7 +15,9 @@
 // tune. Every task carries a plain-language `why`, and the numeric knobs
 // are the documented constants below.
 
-import { skillDisplayName } from './task-labels.ts';
+import { skillDisplayName, renderDrillWhy } from './task-labels.ts';
+import type { DrillWhyCode } from './task-labels.ts';
+import { VOLUME_CURVE } from '../mastery.ts';
 
 export type PlanTaskType =
   | 'lesson'
@@ -133,11 +135,45 @@ function priority(s: SkillState, maxQInSection: number): number {
   return gap * learn * leverage;
 }
 
-function whyForDrill(s: SkillState): string {
-  if (s.coverageStatus === 'not_started') return 'Not started yet — build a base';
-  if (s.coverageStatus === 'decayed') return 'Slipping — refresh before it fades';
-  const headroom = s.mastery == null ? null : Math.max(0, s.masteryThreshold - s.mastery);
-  return headroom ? `~${headroom} points of headroom to mastery` : 'Weak skill worth reinforcing';
+/** Below this many attempts the mastery score is dominated by its volume
+ *  factor rather than by how the student is actually doing: at 5
+ *  attempts a flawless run still scores ~53 of 100. Under this bar the
+ *  drill copy talks about evidence, not shortfall. */
+export const LOW_EVIDENCE_ATTEMPTS = 8;
+
+/** Implied weighted accuracy — the mastery score with its volume factor
+ *  divided back out. Approximate (it ignores the ≤5% recency bonus, so
+ *  it reads a touch high), which is fine for picking which sentence to
+ *  show and is never surfaced as a number. Null when there's nothing to
+ *  divide. */
+function impliedAccuracy(mastery: number | null, attempts: number): number | null {
+  if (mastery == null || attempts <= 0) return null;
+  const volumeFactor = 1 - Math.exp(-VOLUME_CURVE * attempts);
+  if (volumeFactor <= 0) return null;
+  return Math.min(1, mastery / 100 / volumeFactor);
+}
+
+/** Why a drill is on the plan. The generator picks the CODE; the
+ *  sentence lives in lib/plan/task-labels.ts so copy changes never
+ *  require rewriting stored payloads. */
+export interface DrillWhy {
+  code: DrillWhyCode;
+  /** Questions attempted so far — the low-evidence copy names it. */
+  attempts: number;
+}
+
+function whyForDrill(s: SkillState): DrillWhy {
+  const attempts = s.attemptsCount;
+  if (s.coverageStatus === 'not_started') return { code: 'not_started', attempts };
+  if (s.coverageStatus === 'decayed') return { code: 'decayed', attempts };
+  // Too few questions for the score to mean much yet — say that, rather
+  // than reporting a gap the student would read as a verdict.
+  if (attempts < LOW_EVIDENCE_ATTEMPTS) return { code: 'low_evidence', attempts };
+  const accuracy = impliedAccuracy(s.mastery, attempts);
+  if (accuracy == null) return { code: 'low_evidence', attempts };
+  if (accuracy >= 0.85) return { code: 'near_threshold', attempts };
+  if (accuracy >= 0.7) return { code: 'mixed', attempts };
+  return { code: 'shaky', attempts };
 }
 
 // ── Task payload builders ─────────────────────────────────────────
@@ -155,8 +191,14 @@ export interface SkillRef {
   expectedMinutes?: number;
 }
 
-export function buildDrillPayload(s: SkillRef, why: string): Record<string, unknown> {
+/** `why` takes either a hand-written sentence (tutor adds and skill
+ *  swaps, which pass through verbatim forever) or a DrillWhy reason.
+ *  A reason additionally stamps why_code / why_attempts, which the
+ *  display layer prefers — the rendered sentence is still written so a
+ *  raw payload stays self-describing. */
+export function buildDrillPayload(s: SkillRef, why: string | DrillWhy): Record<string, unknown> {
   const label = skillDisplayName(s.domainCode, s.skillCode);
+  const reason = typeof why === 'string' ? null : why;
   return {
     domain_code: s.domainCode,
     skill_code: s.skillCode,
@@ -169,7 +211,8 @@ export function buildDrillPayload(s: SkillRef, why: string): Record<string, unkn
     },
     title: `Drill: ${label}`,
     minutes: Math.min(s.expectedMinutes ?? AVG_TASK_MINUTES, AVG_TASK_MINUTES),
-    why,
+    why: reason ? renderDrillWhy(reason.code, reason.attempts) : why,
+    ...(reason ? { why_code: reason.code, why_attempts: reason.attempts } : {}),
   };
 }
 
