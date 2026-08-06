@@ -395,10 +395,25 @@ automatic: finishing the linked session/lesson/test marks the task.
 
 **2.3 Student surface: "Today".** The new sidebar's anchor item
 (see Phase 6). Shows today's 1–3 tasks with one-tap starts, why-this
-copy ("Quadratics is your highest-leverage weak skill — 40 points of
-headroom"), week progress, and the countdown. This is the
+copy, week progress, and the countdown. This is the
 focus-and-clarity deliverable for overwhelmed students: the app opens
 to *what to do next*, not a menu.
+
+The why-this line names the CAUSE, never a mastery shortfall
+(revised 2026-08-06). The original design said "40 points of
+headroom" — an undefined term on a scale students read as accuracy,
+and a misleading one: mastery is damped by a volume factor
+(`lib/mastery.ts`), so in production the shortfall mostly tracked how
+little a skill had been practiced rather than how well it was going.
+At 1–3 attempts — 7,445 of ~14k skill rows — average mastery was
+10–28 against an implied accuracy of 75–77%. The generator now stores
+a reason code (`payload.why_code` + `why_attempts`) and
+`lib/plan/task-labels.ts` owns the sentence, so copy changes never
+need a payload backfill; rows written before the code are upgraded at
+render time, banded by the stored headroom magnitude. A collapsed
+"How progress is measured" disclosure at the foot of /today explains
+the score for students who want it — native `<details>`, so the page
+stays free of client islands.
 
 **2.4 Tutor surfaces.**
 - **Intake wizard** on the student page: upload Bluebook/official

@@ -16,7 +16,7 @@ import Link from 'next/link';
 import type { ComponentType } from 'react';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
-import { buildTodayView, taskTitle, MANUAL_COMPLETE_TYPES } from '@/lib/plan/today';
+import { buildTodayView, taskTitle, taskWhy, MANUAL_COMPLETE_TYPES } from '@/lib/plan/today';
 import type { TodayTaskRow } from '@/lib/plan/today';
 import type { PlanTaskType } from '@/lib/plan/generate-plan';
 import {
@@ -215,6 +215,8 @@ export default async function TodayPage({ searchParams }: PageProps) {
           </div>
         </section>
       )}
+
+      <MasteryNote />
     </main>
   );
 }
@@ -254,6 +256,34 @@ function Header({
   );
 }
 
+// The one place mastery is explained, for the student who wonders where
+// "why this task" comes from. Collapsed by default and last on the page,
+// so it costs nothing to the student who doesn't care — and a native
+// <details> keeps this page free of client islands (see file header).
+function MasteryNote() {
+  return (
+    <details className={s.masteryNote}>
+      <summary className={s.masteryNoteSummary}>How progress is measured</summary>
+      <div className={s.masteryNoteBody}>
+        <p>
+          Every skill has a mastery score out of 100, and 80 counts as
+          mastered. It goes up when you answer correctly — faster on harder
+          questions — but it only climbs as high as your practice count
+          allows, because four right answers in a row aren&rsquo;t enough to
+          be sure of anything. Getting a few right in the last couple of
+          weeks adds a small bonus on top.
+        </p>
+        <p>
+          So a skill you&rsquo;re doing well on can still sit low: you
+          haven&rsquo;t done enough of it yet. That&rsquo;s also why this
+          isn&rsquo;t your accuracy percentage — that one lives on your{' '}
+          <Link href="/dashboard" className={s.inlineLink}>dashboard</Link>.
+        </p>
+      </div>
+    </details>
+  );
+}
+
 function TaskCard({
   task,
   isPrimary,
@@ -264,7 +294,7 @@ function TaskCard({
   today: string;
 }) {
   const kind = TYPE_ICON[task.taskType] ?? TYPE_ICON.drill;
-  const why = typeof task.payload.why === 'string' ? task.payload.why : null;
+  const why = taskWhy(task);
   const minutes = typeof task.payload.minutes === 'number' ? task.payload.minutes : null;
   const overdue = task.scheduledDate != null && task.scheduledDate < today;
   const manual = MANUAL_COMPLETE_TYPES.includes(task.taskType);

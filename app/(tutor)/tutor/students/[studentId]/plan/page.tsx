@@ -17,7 +17,7 @@ import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { adherenceSummaryLine, ADHERENCE_LABELS } from '@/lib/plan/adherence';
 import { loadStudentPlanState, type PlanTaskRow } from '@/lib/plan/load-plan-state';
-import { planTaskTitle } from '@/lib/plan/task-labels';
+import { planTaskTitle, planTaskWhy } from '@/lib/plan/task-labels';
 import {
   generatePlanAction,
   activatePlanAction,
@@ -47,13 +47,6 @@ const TASK_LABELS: Record<string, string> = {
 };
 
 type TaskRow = PlanTaskRow;
-
-function str(obj: unknown, key: string): string | null {
-  if (obj && typeof obj === 'object' && typeof (obj as Record<string, unknown>)[key] === 'string') {
-    return (obj as Record<string, string>)[key];
-  }
-  return null;
-}
 
 function num(obj: unknown, key: string): number | null {
   if (obj && typeof obj === 'object' && typeof (obj as Record<string, unknown>)[key] === 'number') {
@@ -105,7 +98,9 @@ function PlanWeeks({
             <ul className={styles.tasks}>
               {byWeek.get(w)!.map((t) => {
                 const title = planTaskTitle(t.task_type, t.payload);
-                const why = str(t.payload, 'why');
+                // Same line the student reads on /today, so a tutor is
+                // never reasoning about copy the student can't see.
+                const why = planTaskWhy(t.payload);
                 const open = t.status === 'pending';
                 const stateClass =
                   t.status === 'completed'

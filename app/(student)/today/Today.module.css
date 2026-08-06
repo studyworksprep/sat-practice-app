@@ -326,6 +326,41 @@
   transition: width var(--dur-fast) var(--ease-std);
 }
 
+/* ---------- "How progress is measured" ---------- */
+
+/* Deliberately quiet: a single muted line until opened, so the page's
+   answer to "what do I do now" stays the loudest thing on it. */
+.masteryNote {
+  margin-top: calc(-1 * var(--s2));
+}
+
+.masteryNoteSummary {
+  cursor: pointer;
+  width: fit-content;
+  font-size: 12px;
+  color: var(--fg3);
+  padding: 4px 2px;
+  border-radius: var(--radius-sm, 6px);
+}
+
+.masteryNoteSummary:hover { color: var(--fg2); }
+
+.masteryNoteSummary:focus-visible {
+  outline: 2px solid var(--color-navy-700);
+  outline-offset: 2px;
+}
+
+.masteryNoteBody {
+  padding: 4px 2px 0;
+  max-width: 62ch;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg2);
+}
+
+.masteryNoteBody p { margin: 0 0 8px; }
+.masteryNoteBody p:last-child { margin-bottom: 0; }
+
 /* ---------- Narrow viewports ---------- */
 
 @media (max-width: 560px) {
