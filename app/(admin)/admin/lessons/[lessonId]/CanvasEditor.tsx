@@ -382,12 +382,10 @@ const S: Record<string, React.CSSProperties> = {
   badges: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' },
   viewToggle: { display: 'flex', gap: 4, marginLeft: 8 },
   canvas: { display: 'flex', flexDirection: 'column', gap: 4, margin: '12px 0' },
+  // No card chrome of its own — LessonSlideshow carries its
+  // containing surface, shared with the student viewer.
   preview: {
     margin: '12px 0',
-    padding: 16,
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-lg, 12px)',
-    background: 'var(--bg-white, var(--card))',
   },
 
   summary: {

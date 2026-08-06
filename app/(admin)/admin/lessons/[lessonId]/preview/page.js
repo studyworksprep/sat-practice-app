@@ -71,7 +71,9 @@ export default async function AdminLessonPreviewPage({ params, searchParams }) {
         </p>
       </header>
 
-      <section className={a.section}>
+      {/* No a.section wrapper — LessonSlideshow carries its own
+          containing surface, shared with the student viewer. */}
+      <section>
         <LessonSlideshow
           blocks={blocks ?? []}
           questionLinkHref={null}

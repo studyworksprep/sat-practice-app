@@ -13,11 +13,20 @@
 
 /* ── Workspace layout ─────────────────────────────────────────── */
 
+/* The runtime carries its own containing surface so every host —
+   student viewer, admin preview — gets the identical framed look
+   instead of content floating loose on the page background. Hosts
+   must NOT wrap this in another card. */
 .viewer {
   display: flex;
   flex-direction: column;
   gap: var(--s4);
   font-family: inherit;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s5);
 }
 
 /* Full-width band above both columns: progress plus the Desmos
@@ -788,6 +797,10 @@
 /* ── Responsive ───────────────────────────────────────────────── */
 
 @media (max-width: 560px) {
+  .viewer {
+    padding: var(--s4);
+  }
+
   .card {
     padding: var(--s4);
   }
