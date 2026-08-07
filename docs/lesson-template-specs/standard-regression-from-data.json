@@ -1,0 +1,622 @@
+{
+  "title": "Find a Standard Regression Equation from Data",
+  "description": "Turn information from a table, graph, or word problem into points, enter the points in a Desmos table, and use the Regression button to fit a linear, quadratic, or exponential equation.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_objective",
+      "html": "<h2>Turn points into an equation</h2><p>Some SAT questions give you data and ask for an equation that matches it. The data may appear in a table, on a graph, or inside a word problem.</p><p>In this lesson, you will use one repeatable tool: <strong>identify input-output points, enter them in a Desmos table, and use the Regression button to produce a standard equation</strong>.</p><blockquote><p><strong>Goal:</strong> Use this tool for a line, a quadratic, or an exponential model without typing the equation yourself.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "first_table_exploration",
+      "html": "<h2>Start with three points</h2><p>Use the open calculator. Select <strong>Add Item (+) → Table</strong>. Enter these points one row at a time:</p><p>\\((0,2), (1,5), (2,8)\\)</p><p>Put the first coordinate in the left column and the second coordinate in the right column.</p><p>After the three rows are filled, look beside the table values for a small button that looks like <strong>a line with four scatterplot dots</strong>. Click it and keep the model set to a line.</p><blockquote><p><strong>Explore first:</strong> read the equation Desmos displays. You do not need to type that equation.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Enter the three points",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "first_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which equation did the linear regression produce for the points \\((0,2)\\), \\((1,5)\\), and \\((2,8)\\)?",
+        "choices": [
+          "\\(y=2x+3\\)",
+          "\\(y=3x-2\\)",
+          "\\(y=3x+2\\)",
+          "\\(y=x^2+2\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Look at the equation displayed beside the table. It should give \\(y=2\\) when \\(x=0\\).",
+        "explanation": "Right. Desmos displays \\(y=3x+2\\), which matches all three points. You entered the data; the Regression button built the equation."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Read the regression equation",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "what_standard_regression_does",
+      "html": "<h2>What standard regression does</h2><p>A <strong>regression</strong> finds an equation that matches a collection of input-output points as closely as possible.</p><p>In this workflow, Desmos already knows the standard equation forms. You supply the points and select the model type. Desmos supplies the coefficients and displays the finished equation.</p><blockquote><p><strong>Key idea:</strong> If the needed equation has one of the standard forms in this lesson, do not type the equation yourself.</p></blockquote>"
+    },
+    {
+      "kind": "text",
+      "id": "recognize_the_question",
+      "html": "<h2>Recognize when this tool fits</h2><p>Look for both parts:</p><ol><li>The question provides or implies <strong>input-output points</strong>.</li><li>The question asks for an <strong>equation that matches or models those data</strong>.</li></ol><p>The points may be printed in a table, marked on a graph, or described with input and output quantities in words.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "recognition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which question is the clearest match for standard regression from a table?",
+        "choices": [
+          "Solve \\(4x+7=31\\) for \\(x\\).",
+          "A table lists years and account balances. Which exponential equation models the balances?",
+          "Factor \\(x^2-7x+12\\).",
+          "Find the slope of a line whose equation is already given."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Look for both data pairs and a request for an equation that models them.",
+        "explanation": "Correct. The years and balances become input-output points, and the question asks for an equation that models those points."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "three_point_sources",
+      "html": "<h2>Three places points can hide</h2><ul><li><strong>Table:</strong> each row pairs the first column's input with the second column's output.</li><li><strong>Graph:</strong> read marked or clearly visible ordered pairs. Choose exact points when possible.</li><li><strong>Words:</strong> pair each stated input value with its corresponding output value.</li></ul><blockquote><p><strong>Always write the pair as:</strong> \\((\\text{input},\\text{output})\\), which plays the role of \\((x,y)\\).</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "point_source_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A graph marks the points \\((-2,7)\\), \\((0,3)\\), and \\((4,-5)\\). How should those data be entered in a Desmos table?",
+        "choices": [
+          "Enter only the three y-values because the graph supplies x.",
+          "Enter \\(7,3,-5\\) in the left column and \\(-2,0,4\\) in the right column.",
+          "Enter the equation of the graph instead of using a table.",
+          "Enter \\(-2,0,4\\) in the left column and \\(7,3,-5\\) in the right column."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The first coordinate is the input and belongs in the left column. The second coordinate is the output.",
+        "explanation": "Exactly. Keep each ordered pair together: x-values on the left and their matching y-values on the right."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "extract_points_from_graph",
+      "html": "<h2>Extract data from a graph</h2><p>The open graph has three marked points on a curve. Click each marked point and read its label.</p><p>Record the ordered pairs in increasing x-order. These are the rows you would enter in a Desmos table.</p><blockquote><p><strong>Your action:</strong> click all three marked points before continuing.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click the three marked points",
+        "initial_expressions": [
+          {
+            "id": "graph_source_curve",
+            "latex": "y=2x^2-x+3"
+          },
+          {
+            "id": "graph_source_point_0",
+            "latex": "\\left(0,3\\right)"
+          },
+          {
+            "id": "graph_source_point_1",
+            "latex": "\\left(1,4\\right)"
+          },
+          {
+            "id": "graph_source_point_2",
+            "latex": "\\left(2,9\\right)"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "graph_points_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which three rows come from the marked points on the graph?",
+        "choices": [
+          "\\((0,3), (1,4), (2,9)\\)",
+          "\\((3,0), (4,1), (9,2)\\)",
+          "\\((0,2), (1,-1), (2,3)\\)",
+          "\\((0,3), (1,3), (2,3)\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Click each marked point and read the complete ordered-pair label. Do not reverse the coordinates.",
+        "explanation": "Correct. The marked points are \\((0,3)\\), \\((1,4)\\), and \\((2,9)\\). A graph can therefore supply the rows for a regression table."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Read the marked points",
+        "initial_expressions": [
+          {
+            "id": "graph_check_curve",
+            "latex": "y=2x^2-x+3"
+          },
+          {
+            "id": "graph_check_point_0",
+            "latex": "\\left(0,3\\right)"
+          },
+          {
+            "id": "graph_check_point_1",
+            "latex": "\\left(1,4\\right)"
+          },
+          {
+            "id": "graph_check_point_2",
+            "latex": "\\left(2,9\\right)"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "standard_model_forms",
+      "html": "<h2>The three standard models</h2><p>After you enter the points, choose the equation type the question reasonably calls for:</p><ul><li><strong>Linear:</strong> \\(y=mx+b\\) — points follow a line or outputs change by a constant amount.</li><li><strong>Quadratic:</strong> \\(y=ax^2+bx+c\\) — points follow a parabola.</li><li><strong>Exponential:</strong> \\(y=a\\cdot b^x\\) — outputs repeatedly multiply by the same factor or change by the same percent over equal input intervals.</li></ul><p>You do not need to calculate the coefficients. Selecting the appropriate standard model tells Desmos which form to fit.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "model_type_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The x-values increase by 1 while the y-values are 7, 14, 28, and 56. Which standard model should you select?",
+        "choices": [
+          "Linear, because the y-values increase",
+          "Quadratic, because there are four points",
+          "Exponential, because each output is multiplied by 2",
+          "Custom, because the values are large"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Compare each output with the one before it. Are you adding a fixed amount or multiplying by a fixed factor?",
+        "explanation": "Right. Each output is twice the previous output, so the data fit a standard exponential model."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "four_step_process",
+      "html": "<h2>The four-step process</h2><ol><li><strong>Identify points.</strong> Turn the table, graph, or description into \\((\\text{input},\\text{output})\\) pairs.</li><li><strong>Enter a table.</strong> In Desmos, select <strong>Add Item (+) → Table</strong>. Put inputs on the left and outputs on the right.</li><li><strong>Click Regression.</strong> Use the small button beside the table values that looks like a fitted line with four dots.</li><li><strong>Choose the type.</strong> Keep Linear for \\(y=mx+b\\), or use the dropdown to select Quadratic or Exponential.</li></ol><blockquote><p><strong>Do not type the model equation:</strong> the standard Regression tool supplies it.</p></blockquote>"
+    },
+    {
+      "kind": "text",
+      "id": "regression_button_guide",
+      "html": "<h2>Find the Regression button</h2><p>After a Desmos table contains data, look beside the table values for this control:</p><p><img src=\"/images/desmos-standard-regression-button-guide.svg\" alt=\"Simplified Desmos table with an arrow pointing to the Regression button, shown as a fitted line with four scatterplot dots\" width=\"760\"></p><p>Click the button first. Then use its model dropdown only if the question calls for a quadratic or exponential equation instead of a line.</p><blockquote><p><strong>What to remember:</strong> table first, Regression button second, model type third.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "button_sequence_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "You entered four points and need a quadratic equation. What should you do next?",
+        "choices": [
+          "Type \\(y=ax^2+bx+c\\) on a new line and solve for all three letters.",
+          "Choose Linear and change the displayed coefficients by hand.",
+          "Delete the table and plot each point separately.",
+          "Click the Regression button beside the table, then select Quadratic from its dropdown."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The standard tool already contains the quadratic form. Use the table's Regression control.",
+        "explanation": "Correct. Click the Regression button, then select Quadratic. Desmos fits \\(y=ax^2+bx+c\\) without requiring you to type it."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "guided_linear_setup",
+      "html": "<h2>Guided practice: fit a line</h2><p>Select <strong>Reset</strong> in the calculator so you have a blank workspace. Add a new table and enter:</p><p>\\((-1,11), (0,9), (2,5), (4,1)\\)</p><p>Click the Regression button. The points follow a line, so keep the model set to Linear.</p><blockquote><p><strong>Before you continue:</strong> verify that the displayed equation matches \\((0,9)\\).</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Fit a line to four points",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "guided_linear_result",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which linear equation should Desmos display for \\((-1,11)\\), \\((0,9)\\), \\((2,5)\\), and \\((4,1)\\)?",
+        "choices": [
+          "\\(y=2x+9\\)",
+          "\\(y=-2x+9\\)",
+          "\\(y=-2x-9\\)",
+          "\\(y=9x-2\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Read the equation beside the table. The output is 9 when the input is 0, and the outputs decrease as x increases.",
+        "explanation": "Exactly. The regression gives \\(y=-2x+9\\). It has a negative slope and passes through \\((0,9)\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Read the linear model",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "function_notation_inputs_outputs",
+      "html": "<h2>Word problems with function notation</h2><p>Function notation can hide the input-output structure.</p><ul><li>The function <strong>gives</strong>, <strong>estimates</strong>, <strong>predicts</strong>, or <strong>represents</strong> the <strong>output</strong>. That quantity corresponds to \\(y\\).</li><li>The output is described <strong>in terms of</strong>, <strong>based on</strong>, or <strong>after</strong> an <strong>input</strong>. That quantity corresponds to \\(x\\).</li></ul><p>For example, “\\(g(t)\\) estimates the temperature \\(t\\) hours after noon” means \\(t\\) is the input and \\(g(t)\\) is the output.</p><blockquote><p><strong>Translation:</strong> each statement \\(g(t)=v\\) becomes the point \\((t,v)\\).</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "function_roles_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The function \\(P(h)\\) estimates a plant's height, in centimeters, \\(h\\) weeks after planting. Which quantity belongs in each Desmos table column?",
+        "choices": [
+          "Left: \\(h\\); right: \\(P(h)\\)",
+          "Left: \\(P(h)\\); right: \\(h\\)",
+          "Left: weeks and centimeters mixed together; right: blank",
+          "Left: the function name \\(P\\); right: the letter \\(h\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The phrase “h weeks after planting” names the input. The function estimates the output height.",
+        "explanation": "Correct. Time \\(h\\) is the input on the left, and the estimated height \\(P(h)\\) is the output on the right."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "function_word_problem_points",
+      "html": "<h2>Translate statements into rows</h2><p>A function \\(g(t)\\) estimates the amount of medicine remaining, in milligrams, \\(t\\) hours after a dose. The problem states:</p><ul><li>\\(g(0)=96\\)</li><li>\\(g(1)=48\\)</li><li>\\(g(2)=24\\)</li></ul><p>Read each statement as <strong>input first, output second</strong>. Then decide which standard model matches the repeated change.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "function_points_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which points should be entered for \\(g(0)=96\\), \\(g(1)=48\\), and \\(g(2)=24\\)?",
+        "choices": [
+          "\\((96,0), (48,1), (24,2)\\)",
+          "\\((0,1), (1,2), (2,3)\\)",
+          "\\((0,96), (1,48), (2,24)\\)",
+          "\\((g,96), (g,48), (g,24)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "In \\(g(t)=v\\), the point is \\((t,v)\\).",
+        "explanation": "Right. The inputs are 0, 1, and 2; their corresponding outputs are 96, 48, and 24."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "guided_exponential_regression",
+      "html": "<h2>Fit the function data</h2><p>Reset the scratch calculator. Add a table for \\((0,96)\\), \\((1,48)\\), and \\((2,24)\\).</p><p>Click the Regression button. The output is multiplied by \\(0.5\\) each hour, so use the dropdown to select <strong>Exponential</strong>.</p><p>Desmos will show the equation using \\(x\\) and \\(y\\). Translate those roles back to the problem: \\(x\\) stands for \\(t\\), and \\(y\\) stands for \\(g(t)\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Fit the medicine data",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "guided_exponential_result",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which equation models the medicine data?",
+        "choices": [
+          "\\(g(t)=48t+96\\)",
+          "\\(g(t)=96(0.5)^t\\)",
+          "\\(g(t)=0.5(96)^t\\)",
+          "\\(g(t)=96t^2+0.5\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The initial output is 96, and each one-hour increase multiplies the output by 0.5.",
+        "explanation": "Correct. Desmos's \\(y=96(0.5)^x\\) becomes \\(g(t)=96(0.5)^t\\) in the problem's notation."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Read and translate the model",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "standard_vs_custom_boundary",
+      "html": "<h2>Know the boundary of this tool</h2><p>Use the Regression button directly when the equation you need is, or reasonably could be, one of these exact standard forms:</p><p>\\(y=mx+b\\), \\(y=ax^2+bx+c\\), or \\(y=a\\cdot b^x\\).</p><p>If the question requires a special version of an equation or a different model type, the standard dropdown is not the right workflow. That requires <strong>Custom Regression</strong>, which belongs in a different lesson.</p><blockquote><p><strong>For this lesson:</strong> select a provided standard form; do not type a custom model.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "boundary_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which requested model is directly covered by this standard-regression lesson?",
+        "choices": [
+          "A logarithmic model \\(y=a+b\\log x\\)",
+          "A power model \\(y=ax^p\\)",
+          "A specially required vertex-form model \\(y=a(x-h)^2+k\\)",
+          "An exponential model \\(y=a\\cdot b^x\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Use only the linear, standard quadratic, or exponential form supplied by the Regression dropdown.",
+        "explanation": "Exactly. \\(y=a\\cdot b^x\\) is one of the standard models in this lesson. The other requests need a different workflow or custom form."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "quadratic_two_point_problem",
+      "html": "<h2>A quadratic challenge: only two stated points</h2><p>A question may tell you that a parabola has vertex \\((2,-3)\\) and passes through \\((5,6)\\).</p><p>A standard regression table sees only the rows you enter. Two rows are not enough for it to consistently determine all three coefficients in \\(y=ax^2+bx+c\\).</p><p>However, a parabola is symmetric across the vertical line through its vertex. That symmetry can supply a third point.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "quadratic_symmetry_visual",
+      "html": "<h2>Reflect a point across the vertex line</h2><p>The vertex is \\((2,-3)\\), so the vertical symmetry line is \\(x=2\\).</p><p>The known point \\((5,6)\\) is 3 units to the right of \\(x=2\\). The matching point is 3 units to the left and has the <strong>same y-coordinate</strong>.</p><p>Inspect the preset graph. Click the two points at height \\(6\\) and compare their horizontal distances from \\(x=2\\).</p><blockquote><p><strong>Symmetry move:</strong> reflect the x-coordinate across the vertex's x-value; keep y unchanged.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Compare the symmetric points",
+        "initial_expressions": [
+          {
+            "id": "symmetry_parabola",
+            "latex": "y=\\left(x-2\\right)^2-3"
+          },
+          {
+            "id": "symmetry_axis",
+            "latex": "x=2"
+          },
+          {
+            "id": "symmetry_vertex",
+            "latex": "\\left(2,-3\\right)"
+          },
+          {
+            "id": "symmetry_known_point",
+            "latex": "\\left(5,6\\right)"
+          },
+          {
+            "id": "symmetry_reflected_point",
+            "latex": "\\left(-1,6\\right)"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "symmetric_point_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The vertex is \\((2,-3)\\), and \\((5,6)\\) is on the parabola. Which point is its reflection across \\(x=2\\)?",
+        "choices": [
+          "\\((-1,6)\\)",
+          "\\((-5,6)\\)",
+          "\\((2,6)\\)",
+          "\\((-1,-6)\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The known x-value is 3 units right of 2. Move 3 units left of 2 and keep the y-value 6.",
+        "explanation": "Correct. Three units left of \\(x=2\\) is \\(x=-1\\), and the reflected point stays at height 6."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Locate the reflected point",
+        "initial_expressions": [
+          {
+            "id": "symmetry_check_parabola",
+            "latex": "y=\\left(x-2\\right)^2-3"
+          },
+          {
+            "id": "symmetry_check_axis",
+            "latex": "x=2"
+          },
+          {
+            "id": "symmetry_check_vertex",
+            "latex": "\\left(2,-3\\right)"
+          },
+          {
+            "id": "symmetry_check_known",
+            "latex": "\\left(5,6\\right)"
+          },
+          {
+            "id": "symmetry_check_reflected",
+            "latex": "\\left(-1,6\\right)"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "third_point_reason_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why add the reflected point before using standard quadratic regression?",
+        "choices": [
+          "The table requires every point to have a negative x-coordinate.",
+          "A quadratic equation cannot contain its vertex.",
+          "Regression works only when two points share a y-coordinate.",
+          "The third point gives the table enough point data to consistently determine the three standard-form coefficients."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The standard quadratic form contains three coefficients: a, b, and c.",
+        "explanation": "Right. The vertex and one given point provide only two table rows. Symmetry creates a valid third row for fitting \\(a\\), \\(b\\), and \\(c\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "quadratic_regression_task",
+      "html": "<h2>Use all three quadratic points</h2><p>Reset the scratch calculator. Enter these rows:</p><p>\\((2,-3), (5,6), (-1,6)\\)</p><p>Click the Regression button and select <strong>Quadratic</strong>. Read the standard-form equation Desmos produces.</p><p>Then check the vertex input: when \\(x=2\\), the equation should give \\(y=-3\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Fit the quadratic from three points",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "quadratic_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which standard-form quadratic matches \\((2,-3)\\), \\((5,6)\\), and \\((-1,6)\\)?",
+        "choices": [
+          "\\(y=x^2+4x+1\\)",
+          "\\(y=x^2-4x+1\\)",
+          "\\(y=x^2-2x-3\\)",
+          "\\(y=-x^2+4x-1\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Read the displayed quadratic. As a quick check, substitute \\(x=2\\); the result must be \\(-3\\).",
+        "explanation": "Correct. \\(y=x^2-4x+1\\) gives \\(y=-3\\) at \\(x=2\\) and \\(y=6\\) at both symmetric inputs \\(x=-1\\) and \\(x=5\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Read and check the quadratic",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_problem",
+      "html": "<h2>Independent transfer: build the model</h2><p>A function \\(B(t)\\) estimates the number of bacteria in a sample \\(t\\) hours after an experiment begins.</p><ul><li>At the start, there are 80 bacteria.</li><li>After 2 hours, there are 180 bacteria.</li><li>After 4 hours, there are 405 bacteria.</li></ul><p>Without being told every step, turn the statements into points, enter a Desmos table, choose the standard model, and read the equation.</p><blockquote><p><strong>Do the calculator work before continuing.</strong> Use the function wording to decide input and output.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Model the bacteria data",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_points_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which table rows correctly represent the bacteria data?",
+        "choices": [
+          "\\((80,0), (180,2), (405,4)\\)",
+          "\\((0,80), (1,180), (2,405)\\)",
+          "\\((0,80), (2,180), (4,405)\\)",
+          "\\((0,2), (80,180), (4,405)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Time after the experiment begins is the input. The bacteria count estimated by \\(B(t)\\) is the output.",
+        "explanation": "Correct. The rows are \\((0,80)\\), \\((2,180)\\), and \\((4,405)\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Check the data rows",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_model_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which equation should the standard regression produce for the bacteria data?",
+        "choices": [
+          "\\(B(t)=80(1.5)^t\\)",
+          "\\(B(t)=80t+1.5\\)",
+          "\\(B(t)=1.5(80)^t\\)",
+          "\\(B(t)=80t^2+1.5t\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Select Exponential in the Regression dropdown. The starting value is 80, and a two-hour increase multiplies the output by 2.25, so the one-hour factor is 1.5.",
+        "explanation": "Exactly. Desmos displays \\(y=80(1.5)^x\\), which translates to \\(B(t)=80(1.5)^t\\). It gives 180 at \\(t=2\\) and 405 at \\(t=4\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Confirm the exponential model",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "process_summary",
+      "html": "<h2>Keep the workflow short</h2><ol><li>Find or create \\((\\text{input},\\text{output})\\) points.</li><li>Enter the points in a Desmos table.</li><li>Click the Regression button beside the table.</li><li>Select Linear, Quadratic, or Exponential and read the equation.</li></ol><p>For function notation, translate \\(x\\) and \\(y\\) back to the problem's input and output names. For a vertex plus one point, reflect the point across the vertex line to create a third quadratic row.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which summary gives the complete standard-regression strategy?",
+        "choices": [
+          "Guess an equation, type it in Desmos, and change coefficients until the graph looks close.",
+          "Enter outputs only, click Linear, and use the result for every dataset.",
+          "Solve each pair separately, then average the equations.",
+          "Identify input-output points, enter them in a table, click Regression, choose the appropriate standard model, and translate the displayed equation back to the problem."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Recall the four actions: points, table, Regression button, model type. Then remember to use the problem's variable names.",
+        "explanation": "You have it. That sequence handles points from tables, graphs, and word problems while letting the standard Regression tool build the equation."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can turn data into a standard equation</h2><p>You can identify input-output points, fit a linear, quadratic, or exponential model with the Desmos Regression button, translate function notation, and use symmetry when a quadratic question states only a vertex and one point.</p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}
