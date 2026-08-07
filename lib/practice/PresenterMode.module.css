@@ -252,6 +252,39 @@
   padding: 24px 28px 64px;
   font-size: 17px;
   line-height: 1.55;
+
+  /* Projection scale (the A+ / A− steps), set as --presenter-scale
+     from the component.
+
+     Deliberately NOT CSS `zoom`. MathJax's CHTML output sizes math
+     against the surrounding text by measuring a 60ex probe's
+     offsetHeight and dividing by the container's computed font-size
+     (its matchFontHeight option, on by default). Safari inflates
+     offsetHeight under `zoom` but leaves the computed font-size
+     unzoomed, so every expression typeset while zoomed came out
+     ~zoom× too large and sat off the text baseline — at the default
+     1.15 step, inline math rendered 1.39× the text height instead of
+     1.20×, both for \( … \) and \[ … \]. Chrome scales neither value,
+     which is why this only ever showed in Safari.
+
+     `transform` is layout-neutral, so MathJax measures the unscaled
+     box in every browser and the math scales with the text like
+     everything else. Two properties of the surrounding CSS make the
+     swap behave exactly like `zoom` did, and both are load-bearing:
+     scaled overflow still counts toward .scroll's scrollable area, so
+     the stage scrolls to the bottom of tall questions; and the width
+     division reproduces zoom's line wrapping, with the global
+     `box-sizing: border-box` (app/globals.css) keeping the padding
+     inside the divided width so nothing overflows horizontally.
+
+     Note this makes .content a containing block for any
+     position: fixed descendant. Nothing in the QuestionRenderer
+     subtree uses one today — the app's fixed-position components
+     aren't mounted inside presenter — but that's the thing to check
+     if question content ever grows one. */
+  transform: scale(var(--presenter-scale, 1));
+  transform-origin: top left;
+  width: calc(100% / var(--presenter-scale, 1));
 }
 
 /* While drawing, Excalidraw's floating toolbar sits top-center of

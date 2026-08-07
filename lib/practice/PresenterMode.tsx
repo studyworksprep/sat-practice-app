@@ -51,7 +51,9 @@ interface ExcalidrawSceneSnapshot {
   files: Record<string, unknown>;
 }
 
-/** Zoom steps for the projected type. */
+/** Zoom steps for the projected type. Applied as a `transform: scale()`
+ *  via --presenter-scale, not CSS `zoom` — see .content in the
+ *  stylesheet for why (Safari mis-sizes MathJax under `zoom`). */
 const SCALES = [1, 1.15, 1.3, 1.5] as const;
 
 /** Above this many questions the jump map switches to the dense
@@ -429,7 +431,7 @@ export function PresenterMode({
         <div className={s.scroll}>
           <div
             className={`${s.content} ${drawing ? s.contentDrawing : ''}`}
-            style={{ zoom: SCALES[scaleIdx] }}
+            style={{ '--presenter-scale': SCALES[scaleIdx] } as React.CSSProperties}
           >
             {children}
             {/* Concept tags — where they usually show (below the
