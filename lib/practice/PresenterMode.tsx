@@ -1,9 +1,16 @@
-// Presenter mode (§4.2) — the full-screen review surface for a live
+// Presenter mode (§4.2) — the full-viewport review surface for a live
 // tutoring session. AssignmentReport and GroupAssignmentReport mount
 // this when the tutor hits Present: app chrome disappears (the
-// overlay portals to <body> and requests browser fullscreen), type
-// scales up for projection, ←/→ walk the questions, R reveals the
-// current one, and a toggleable Excalidraw layer annotates on top.
+// overlay portals to <body> and covers the viewport), type scales up
+// for projection, ←/→ walk the questions, R reveals the current one,
+// and a toggleable Excalidraw layer annotates on top.
+//
+// Browser fullscreen is opt-in, via the ⛶ Fullscreen button. Taking
+// over the whole display is an invasive thing to do to someone who
+// only clicked Present — it hides their tab bar, dock and clock, and
+// on a second monitor it's often the wrong screen — so it's offered,
+// not imposed. The overlay already covers the viewport, so presenting
+// works the same either way.
 //
 // The reports stay the owners of all review state — which question
 // is selected, what's revealed — and pass the rendered question in
@@ -51,7 +58,9 @@ interface ExcalidrawSceneSnapshot {
   files: Record<string, unknown>;
 }
 
-/** Zoom steps for the projected type. */
+/** Zoom steps for the projected type. Applied as a `transform: scale()`
+ *  via --presenter-scale, not CSS `zoom` — see .content in the
+ *  stylesheet for why (Safari mis-sizes MathJax under `zoom`). */
 const SCALES = [1, 1.15, 1.3, 1.5] as const;
 
 /** Above this many questions the jump map switches to the dense
@@ -193,28 +202,26 @@ export function PresenterMode({
   );
 
   // The reports pass onExit as an inline closure (new identity every
-  // render), so effects must never list it as a dependency — the
-  // fullscreen effect re-running on each parent render exited and
-  // re-requested fullscreen on every Next/Back. Read it via a ref.
+  // render), so effects must never list it as a dependency: an effect
+  // that tears down and re-runs on every parent render used to exit
+  // and re-request fullscreen on each Next/Back. Read it via a ref.
   const onExitRef = useRef(onExit);
   useEffect(() => { onExitRef.current = onExit; });
 
-  // ── Fullscreen + scroll lock ────────────────────────────────────
-  // Best-effort browser fullscreen: some contexts (iframes, iPad
-  // Safari settings) refuse — the fixed overlay still covers the
-  // viewport, so presenting works either way. Losing fullscreen
-  // does NOT close presenter: native dialogs (Excalidraw's image
-  // upload file picker, print, etc.) force the browser out of
-  // fullscreen, and closing the whole presenter on that made
-  // Draw → Upload image exit the session. Instead we track the
-  // state and offer a "⛶ Fullscreen" button to re-enter; exiting
-  // presenter is the ✕ button or Esc (pressed while not
-  // fullscreen — the first Esc in fullscreen only leaves
-  // fullscreen, which is the browser's own behavior).
-  // Mount-only: fullscreen is entered once per presenter session.
+  // ── Fullscreen tracking + scroll lock ───────────────────────────
+  // Presenter does NOT request fullscreen on mount — the tutor opts
+  // in with the "⛶ Fullscreen" button (see the file header). This
+  // effect only tracks the state so that button knows whether to
+  // show, and drops fullscreen on the way out if it was entered.
+  //
+  // Losing fullscreen does NOT close presenter: native dialogs
+  // (Excalidraw's image upload file picker, print, etc.) force the
+  // browser out of fullscreen, and closing the whole presenter on
+  // that made Draw → Upload image exit the session. Exiting is the
+  // ✕ button or Esc — and while fullscreen is on, the first Esc only
+  // leaves fullscreen (the browser's own behavior), so it takes a
+  // second one.
   useEffect(() => {
-    const el = rootRef.current;
-    el?.requestFullscreen?.().catch(() => {});
     const onFsChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener('fullscreenchange', onFsChange);
     const prevOverflow = document.body.style.overflow;
@@ -230,8 +237,23 @@ export function PresenterMode({
   // Suspended while the draw layer is up: Excalidraw owns the
   // keyboard there (its tools live on single letters). Esc still
   // works — it drops the draw layer first, then exits presenter.
+  //
+  // Every key, Esc included, is ignored while a text field has focus.
+  // Esc used to be handled ahead of that guard, so dismissing the
+  // concept-tag search popover (its input closes itself on Esc and
+  // doesn't stop propagation) tore down the whole presenter session
+  // mid-lesson. Browser fullscreen was quietly absorbing the first
+  // Esc and masking it; now that fullscreen is opt-in, it isn't.
+  // Closing the field unmounts it, so focus is back on the body by
+  // the time a second Esc arrives and that one exits presenter —
+  // innermost-first dismissal, which is what Esc should do.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      const inField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
+        || target?.isContentEditable === true;
+      if (inField) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         if (drawing) setDrawing(false);
@@ -241,8 +263,6 @@ export function PresenterMode({
         return;
       }
       if (drawing) return;
-      const tag = (e.target as HTMLElement | null)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
       else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); onReveal(selectedPosition); }
@@ -350,7 +370,7 @@ export function PresenterMode({
               type="button"
               className={s.toolBtn}
               onClick={() => rootRef.current?.requestFullscreen?.().catch(() => {})}
-              aria-label="Re-enter fullscreen"
+              aria-label="Enter fullscreen"
             >
               ⛶ Fullscreen
             </button>
@@ -426,28 +446,42 @@ export function PresenterMode({
           </>
         ) : null}
 
-        <div className={s.scroll}>
-          <div
-            className={`${s.content} ${drawing ? s.contentDrawing : ''}`}
-            style={{ zoom: SCALES[scaleIdx] }}
-          >
+        {/* The projection scale lives on the scroller, not on
+            .content, so the staff chrome below can align its padding
+            to the scaled question without being scaled itself. */}
+        <div
+          className={s.scroll}
+          style={{ '--presenter-scale': SCALES[scaleIdx] } as React.CSSProperties}
+        >
+          <div className={`${s.content} ${drawing ? s.contentDrawing : ''}`}>
             {children}
-            {/* Concept tags — where they usually show (below the
-                question), collapsed behind a toggle. */}
-            {tagsNode != null ? (
-              <div className={s.tagsSection}>
-                <button
-                  type="button"
-                  className={s.showTagsBtn}
-                  onClick={() => setTagsShown((v) => !v)}
-                  aria-expanded={tagsShown}
-                >
-                  {tagsShown ? 'Hide tags' : 'Show tags'}
-                </button>
-                {tagsShown ? tagsNode : null}
-              </div>
-            ) : null}
           </div>
+
+          {/* Concept tags — where they usually show (below the
+              question), collapsed behind a toggle.
+
+              Deliberately a SIBLING of .content, not a child: .content
+              carries the projection transform, which makes it the
+              containing block for position: fixed descendants. The tag
+              popover is fixed-positioned at viewport coordinates it
+              measures itself, so inside .content those coordinates got
+              re-anchored and scaled, and .scroll's overflow clipped
+              what was left — the popover opened somewhere off-screen.
+              Tags are staff chrome rather than projected content, so
+              like the top bar and meta strip they stay unscaled. */}
+          {tagsNode != null ? (
+            <div className={s.tagsSection}>
+              <button
+                type="button"
+                className={s.showTagsBtn}
+                onClick={() => setTagsShown((v) => !v)}
+                aria-expanded={tagsShown}
+              >
+                {tagsShown ? 'Hide tags' : 'Show tags'}
+              </button>
+              {tagsShown ? tagsNode : null}
+            </div>
+          ) : null}
         </div>
 
         {/* ── Draw layer ────────────────────────────────────── */}

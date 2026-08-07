@@ -26,6 +26,7 @@ import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-an
 import { gradeActMcq } from '@/lib/practice/load-act-question';
 import { recordQuestionOutcome } from '@/lib/review/queue';
 import { recommendLessonsForSkills } from '@/lib/lesson/recommend';
+import { loadDetourPreference } from '@/lib/practice/detour-preference.mjs';
 import type { ActionResult, QuestionType } from '@/lib/types';
 
 type SubmitAnswerResult = ActionResult<{
@@ -123,6 +124,14 @@ export async function submitAnswer(
   const hintsUsed = Number.isInteger(hintsUsedRaw)
     ? Math.max(0, Math.min(hintsUsedRaw, 10))
     : 0;
+  // Client-reported active ms on this question since the last flush
+  // (the runner accumulates earlier unanswered visits client-side and
+  // sends the total here). Clamped to [0, 1h] like the practice-test
+  // time-ping route; the increment RPCs clamp again server-side.
+  const timeSpentRaw = Number(formData.get('timeSpentMs') ?? 0);
+  const timeSpentMs = Number.isFinite(timeSpentRaw) && timeSpentRaw > 0
+    ? Math.min(Math.round(timeSpentRaw), 3_600_000)
+    : 0;
 
   // Load the session and verify ownership + position. We pull
   // test_type so the grading + write paths fork between SAT (queries
@@ -207,10 +216,22 @@ export async function submitAnswer(
         selected_option_id: String(selectedOptionId),
         is_correct: isCorrect,
         source: 'practice',
+        time_spent_ms: timeSpentMs > 0 ? timeSpentMs : null,
       });
       if (insertErr) {
         return actionFail(`Failed to record attempt: ${insertErr.message}`);
       }
+    } else if (timeSpentMs > 0) {
+      // Re-submit inside the session window: first-attempt-wins keeps
+      // the recorded answer, but the student is still spending time on
+      // the question — accumulate it. Atomic RPC (not read-then-write)
+      // because a visibilitychange beacon can land concurrently;
+      // best-effort because grading feedback must not fail over a
+      // timing write.
+      await supabase.rpc('increment_act_attempt_time', {
+        p_attempt_id: existing.id,
+        p_delta_ms: timeSpentMs,
+      });
     }
   } else {
     // SAT path. Look up the question from v2 — question_type +
@@ -273,6 +294,7 @@ export async function submitAnswer(
         // (get_skill_mastery_asof) half-weights hint-assisted
         // corrects, and a null response_json means unassisted.
         response_json: hintsUsed > 0 ? { hints_used: hintsUsed } : null,
+        time_spent_ms: timeSpentMs > 0 ? timeSpentMs : null,
       });
       if (insertErr) {
         return actionFail(`Failed to record attempt: ${insertErr.message}`);
@@ -292,6 +314,13 @@ export async function submitAnswer(
         } catch {
           // Swallow — the attempt is recorded either way.
         }
+      });
+    } else if (timeSpentMs > 0) {
+      // Re-submit inside the session window — same accumulate
+      // semantics as the ACT branch above.
+      await supabase.rpc('increment_attempt_time', {
+        p_attempt_id: existing.id,
+        p_delta_ms: timeSpentMs,
       });
     }
   }
@@ -572,6 +601,13 @@ export async function togglePracticeMark(
 // (no scaffolding, and /learn is a student route), and the test runner
 // is a separate component that never reaches these actions (Bluebook
 // parity). SAT only — the detour queries read questions_v2.
+//
+// The whole feature is switchable per student
+// (profiles.practice_detours_enabled — off by default for a student
+// with an assigned tutor, so a crafted assignment runs as it was
+// built). The runner hides the offer client-side, and
+// loadDetourSession re-checks it here so a direct action call can't
+// inject a question the student opted out of.
 
 const DETOUR_MAX_PER_SESSION = 2;
 const DETOUR_MODES = new Set(['practice', 'review']);
@@ -617,6 +653,10 @@ async function loadDetourSession(
   }
   if (session.test_type !== 'sat' || !DETOUR_MODES.has(session.mode ?? '')) {
     return { session: null, error: 'Detours are not available in this session' };
+  }
+  const { enabled } = await loadDetourPreference(supabase, userId);
+  if (!enabled) {
+    return { session: null, error: 'Step-back offers are turned off for this student' };
   }
   const fc =
     session.filter_criteria && typeof session.filter_criteria === 'object'

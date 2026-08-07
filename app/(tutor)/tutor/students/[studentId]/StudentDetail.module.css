@@ -1087,3 +1087,33 @@
   fill: var(--fg1);
   font-family: inherit;
 }
+
+/* ---------- Practice-experience toggle (§3.2 step-back offers) ---------- */
+
+.toggleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.toggleText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggleLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
+.toggleHelp {
+  font-size: 12px;
+  color: var(--fg2);
+  line-height: 1.45;
+}
+
+.toggleError {
+  margin-top: 10px;
+}

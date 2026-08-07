@@ -26,6 +26,7 @@ Runs on every matched request. Detected: session refresh only.
 | `/api/cron/repace` | — | requireRole[admin] + service client (RLS bypass) |
 | `/api/external/score-report/[attemptId]` | GET | requireExternalApiAccess + service client (RLS bypass) |
 | `/api/practice-test/time-ping` | POST | requireUser |
+| `/api/practice/time-ping` | — | requireUser + rateLimit |
 | `/api/public/students/[studentId]/practice-data` | GET | requireExternalApiAccess + service client (RLS bypass) |
 | `/api/public/students/provision` | POST | requireExternalApiAccess + service client (RLS bypass) |
 | `/api/public/students/search` | GET | requireExternalApiAccess + service client (RLS bypass) |
@@ -78,7 +79,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/training/assignments/[id]/actions.js` | `startTrainingAssignment` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/practice/actions.js` | `createTrainingSession`, `countAvailable` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/review/actions.js` | `createTrainingWeakQueueDrill`, `createTrainingSkillDrill` | requireUser + rateLimit |
-| `app/account/actions.js` | `updateProfile`, `updateEmail`, `addTeacherCode` | requireUser |
+| `app/account/actions.js` | `updateProfile`, `updateDetourPreference`, `updateEmail`, `addTeacherCode` | requireUser |
 | `lib/bluebook/submission-actions.ts` | `crossCheckAttempt`, `loadAttemptEntryView`, `createHtmlUploadSubmission`, `createAttemptLinkedSubmission`, `createManualGridSubmission`, `reviewSubmission`, `artifactDownloadUrl`, `promoteSubmission` | requireRole[...CONTRIBUTOR_ROLES|...STAFF_ROLES] + requireServiceRole |
 | `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan`, `proposeRepace` | requireUser |
 | `lib/plan/plan-edit-actions.ts` | `movePlanTask`, `addManualPlanTask`, `removePlanTask`, `swapPlanTaskSkill`, `regeneratePlanWeek` | requireUser |
@@ -102,4 +103,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_18 route handlers, 53 server-action modules enumerated._
+_19 route handlers, 53 server-action modules enumerated._

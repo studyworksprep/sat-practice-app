@@ -292,7 +292,17 @@ export function TestRunnerInteractive({
     }
 
     function onVisibility() {
-      if (document.visibilityState === 'hidden') fireBeacon();
+      if (document.visibilityState === 'hidden') {
+        fireBeacon();
+      } else {
+        // Back from a hidden tab. The beacon at hide time already
+        // billed the active segment; re-baseline so the hidden gap
+        // itself is never billed to whichever question happened to
+        // be open when the student returns. (The module wall-clock
+        // keeps running regardless — per-question time is meant to
+        // measure engagement, not elapsed time.)
+        lastSaveTimeRef.current = Date.now();
+      }
     }
 
     document.addEventListener('visibilitychange', onVisibility);

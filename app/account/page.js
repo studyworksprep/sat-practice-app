@@ -4,8 +4,9 @@
 // loading flashes; the page renders fully formed in the first
 // paint. See docs/architecture-plan.md §3.4.
 //
-// Three sections render in the island:
+// Four sections render in the island:
 //   - Profile (name, school, grad year, target SAT, test date, email)
+//   - Practice experience (§3.2 step-back offers — students only)
 //   - Teachers (linked list + add-by-code form)
 //   - Subscription (status snapshot + manage / choose plan)
 //
@@ -14,8 +15,14 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { resolveDetoursEnabled } from '@/lib/practice/detour-preference.mjs';
 import { userHasAccess } from '@/lib/subscription';
-import { updateProfile, updateEmail, addTeacherCode } from './actions';
+import {
+  updateProfile,
+  updateEmail,
+  updateDetourPreference,
+  addTeacherCode,
+} from './actions';
 import { AccountClient } from './AccountClient';
 
 export const dynamic = 'force-dynamic';
@@ -37,7 +44,7 @@ export default async function AccountPage() {
     supabase
       .from('profiles')
       .select(
-        'first_name, last_name, email, high_school, graduation_year, target_sat_score, sat_test_date, role, user_type, subscription_exempt, teacher_invite_code',
+        'first_name, last_name, email, high_school, graduation_year, target_sat_score, sat_test_date, role, user_type, subscription_exempt, teacher_invite_code, practice_detours_enabled',
       )
       .eq('id', user.id)
       .maybeSingle(),
@@ -66,6 +73,11 @@ export default async function AccountPage() {
     .map((row) => row.teacher)
     .filter(Boolean);
 
+  // §3.2 step-back offers. The tutor-link read above already tells us
+  // whether the derived default is off, so this costs no extra trip.
+  const detourPreference = profile?.practice_detours_enabled ?? null;
+  const hasAssignedTutor = (teacherLinks ?? []).length > 0;
+
   return (
     <AccountClient
       user={{ id: user.id, email: user.email ?? null }}
@@ -73,8 +85,17 @@ export default async function AccountPage() {
       access={access}
       subscription={subscription}
       teachers={teachers}
+      detours={{
+        enabled: resolveDetoursEnabled({
+          preference: detourPreference,
+          hasAssignedTutor,
+        }),
+        isExplicit: typeof detourPreference === 'boolean',
+        hasAssignedTutor,
+      }}
       updateProfileAction={updateProfile}
       updateEmailAction={updateEmail}
+      updateDetourPreferenceAction={updateDetourPreference}
       addTeacherCodeAction={addTeacherCode}
     />
   );

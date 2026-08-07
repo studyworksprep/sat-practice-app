@@ -10,7 +10,10 @@
 //      mirror; it gets updated on confirmation by the existing
 //      auth → profile sync. We do not touch it here.
 //
-//   3. Teacher connection — student enters a code (the
+//   3. Practice experience — the §3.2 step-back-offers switch.
+//      Same RLS story as profile edits: the student owns their row.
+//
+//   4. Teacher connection — student enters a code (the
 //      teacher's profiles.teacher_invite_code). The lookup,
 //      assignment insert, and one-way subscription_exempt flip
 //      live in the link_self_to_teacher_by_code SECURITY DEFINER
@@ -105,6 +108,42 @@ export async function updateProfile(_prev, formData) {
   revalidatePath('/account');
   revalidatePath('/dashboard');
   return actionOk(updates);
+}
+
+/**
+ * Set the caller's §3.2 step-back-offers preference.
+ *
+ * Always writes an explicit boolean, never null: once a student
+ * has touched the switch, linking a tutor later must not silently
+ * flip it back to the derived default. See
+ * lib/practice/detour-preference.mjs for the tri-state.
+ */
+export async function updateDetourPreference(_prev, formData) {
+  let ctx;
+  try {
+    ctx = await requireUser();
+  } catch (err) {
+    if (err instanceof ApiError) return err.toActionResult();
+    return actionFail('Unexpected error loading user');
+  }
+
+  const raw = formData.get('practice_detours_enabled');
+  if (raw !== 'true' && raw !== 'false') {
+    return actionFail('Invalid value');
+  }
+  const enabled = raw === 'true';
+
+  const { error } = await ctx.supabase
+    .from('profiles')
+    .update({ practice_detours_enabled: enabled })
+    .eq('id', ctx.user.id);
+
+  if (error) return actionFail(`Failed to save: ${error.message}`);
+
+  // The runner page is force-dynamic and re-reads the setting on
+  // every question load, so only this page needs revalidating.
+  revalidatePath('/account');
+  return actionOk({ enabled });
 }
 
 /**
