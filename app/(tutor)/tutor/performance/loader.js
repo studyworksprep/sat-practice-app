@@ -44,8 +44,8 @@ export async function loadRosterPerformance(supabase) {
   //      start_date + target so the table can include archived
   //      students behind a toggle and compute archive summaries).
   const [
-    { data: rosterRows },
-    { data: profileRows },
+    { data: rosterRows, error: rosterErr },
+    { data: profileRows, error: profileErr },
   ] = await Promise.all([
     supabase.from('student_practice_stats').select('user_id'),
     supabase
@@ -53,6 +53,12 @@ export async function loadRosterPerformance(supabase) {
       .select('id, first_name, last_name, email, target_sat_score, start_date, created_at, is_active')
       .eq('role', 'student'),
   ]);
+
+  // Surface failed reads instead of rendering them as an empty
+  // roster — a statement timeout here used to masquerade as
+  // "No activity yet" (see 20260804120000_set_based_visibility_policies.sql).
+  if (rosterErr) throw rosterErr;
+  if (profileErr) throw profileErr;
 
   const rosterIds = (rosterRows ?? [])
     .map((r) => r.user_id)
