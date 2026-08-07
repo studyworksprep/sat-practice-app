@@ -1,0 +1,499 @@
+{
+  "title": "Find Missing Constants with Custom Regression",
+  "description": "Turn data into a custom Desmos regression using table variables, incorporate relationships as definitions, and substitute function rules to find missing constants in a required equation form.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_objective",
+      "html": "<h2>Fit the equation the question requires</h2><p>Standard regression works when the needed model is already available as Linear, Quadratic, or Exponential. Some SAT questions instead give you a particular equation form with missing constants or extra information connecting those constants.</p><p>In this lesson, you will use one reusable tool: <strong>enter points in a table, write a custom regression with the table variables, and add definitions for any extra relationships</strong>.</p><blockquote><p><strong>Goal:</strong> Find missing constants while preserving the exact equation form the question asks about.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "connection_to_standard_regression",
+      "html": "<h2>What stays the same—and what changes</h2><p>You still begin by finding input-output pairs from a table, graph, or word problem. You still enter those points in a Desmos table.</p><p>The change comes after the table is filled:</p><ul><li><strong>Standard regression:</strong> click the Regression button and choose a supplied model.</li><li><strong>Custom regression:</strong> type the required equation yourself, connect it to the table with \\\\(x_1\\\\) and \\\\(y_1\\\\), and replace the equals sign with \\\\(\\sim\\\\).</li></ul>"
+    },
+    {
+      "kind": "text",
+      "id": "first_custom_exploration",
+      "html": "<h2>Explore a missing constant</h2><p>A function has the required form</p><p>\\[q(t)=a(t-2)^2+5\\]</p><p>and its graph contains \\\\((2,5)\\\\) and \\\\((4,17)\\\\).</p><p>In the open calculator, select <strong>Add Item (+) → Table</strong> and enter those two points. Then add a new expression and type:</p><p>\\[y_1\\sim a(x_1-2)^2+5\\]</p><blockquote><p><strong>Explore first:</strong> read the value Desmos assigns to \\\\(a\\\\). Do not use the table's Regression button.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Fit the required vertex form",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "first_custom_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What value should the custom regression assign to \\\\(a\\\\)?",
+        "choices": [
+          "\\\\(a=12\\\\)",
+          "\\\\(a=5\\\\)",
+          "\\\\(a=3\\\\)",
+          "\\\\(a=2\\\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Read the assigned value below the custom regression. You can check it with the point \\\\((4,17)\\\\): \\\\(17=a(4-2)^2+5\\\\).",
+        "explanation": "Correct. Desmos assigns \\\\(a=3\\\\), so the required equation is \\\\(q(t)=3(t-2)^2+5\\\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Read the assigned constant",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "why_custom_regression",
+      "html": "<h2>Why the custom equation matters</h2><p>The question did not ask for an arbitrary standard-form quadratic. It supplied the vertex-form structure \\\\(a(t-2)^2+5\\\\) and asked you to determine its missing constant.</p><p>Typing that same structure into the regression lets Desmos adjust only \\\\(a\\\\). The known values \\\\(2\\\\) and \\\\(5\\\\) stay fixed.</p><blockquote><p><strong>Use custom regression when:</strong> the question supplies a form with missing constants, requires a special form, or gives additional relationships among the constants.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "custom_recognition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which question is the clearest match for custom regression?",
+        "choices": [
+          "A table is linear, and the question asks for its equation in the form \\\\(y=mx+b\\\\).",
+          "A parabola has the form \\\\(f(x)=a(x-4)^2+k\\\\), and the question asks for the missing values of \\\\(a\\\\) and \\\\(k\\\\).",
+          "A table is exponential, and any equivalent exponential equation is acceptable.",
+          "A graph already labels its complete equation."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Look for a required equation structure containing missing constants.",
+        "explanation": "Right. The question requires a particular vertex form and asks for its missing constants, so you should type that structure as a custom regression."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "table_variable_roles",
+      "html": "<h2>The table controls the variable names</h2><p>A Desmos table normally labels its columns \\\\(x_1\\\\) and \\\\(y_1\\\\). Your custom regression must use those exact table variables:</p><ul><li>\\\\(x_1\\\\) means each input in the left column.</li><li>\\\\(y_1\\\\) means each matching output in the right column.</li></ul><p>It does not matter whether the original problem uses \\\\(x\\\\), \\\\(t\\\\), \\\\(n\\\\), or another input letter. Inside the regression, replace that input with \\\\(x_1\\\\) and replace the function's output with \\\\(y_1\\\\).</p><blockquote><p><strong>Key idea:</strong> Match the equation to the table headers, not to the original variable names.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "table_variable_translation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A problem gives \\\\(P(n)=c(n-4)^2+7\\\\) and points from \\\\(P\\\\). Which custom regression correctly connects that form to a Desmos table?",
+        "choices": [
+          "\\\\(P(n)\\sim c(n-4)^2+7\\\\)",
+          "\\\\(y\\sim c(x-4)^2+7\\\\)",
+          "\\\\(x_1\\sim c(y_1-4)^2+7\\\\)",
+          "\\\\(y_1\\sim c(x_1-4)^2+7\\\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The table's left column is \\\\(x_1\\\\), and its right column is \\\\(y_1\\\\).",
+        "explanation": "Exactly. Replace the original input \\\\(n\\\\) with \\\\(x_1\\\\), replace the output \\\\(P(n)\\\\) with \\\\(y_1\\\\), and connect the two sides with \\\\(\\sim\\\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "four_step_process",
+      "html": "<h2>The four-step custom-regression process</h2><ol><li><strong>Identify points.</strong> Write each one as \\\\((\\\\text{input},\\\\text{output})\\\\).</li><li><strong>Enter a table.</strong> Put inputs under \\\\(x_1\\\\) and outputs under \\\\(y_1\\\\).</li><li><strong>Translate the required form.</strong> Replace the function output with \\\\(y_1\\\\), replace its input with \\\\(x_1\\\\), and replace \\\\(=\\\\) with \\\\(\\sim\\\\).</li><li><strong>Add known relationships as definitions.</strong> Rewrite each relationship so one constant is defined in terms of the others.</li></ol><blockquote><p><strong>Then read and interpret:</strong> use the assigned constants to answer in the original notation and units.</p></blockquote>"
+    },
+    {
+      "kind": "text",
+      "id": "regression_symbol_rule",
+      "html": "<h2>Use regression, not equality</h2><p>The table contains many \\\\(x_1\\\\)- and \\\\(y_1\\\\)-values. A custom model must compare its predictions with all those rows.</p><p>Use the regression symbol \\\\(\\sim\\\\) between \\\\(y_1\\\\) and the model. On a keyboard, type the tilde character <strong>~</strong>.</p><ul><li><strong>Correct regression:</strong> \\\\(y_1\\sim a(x_1-h)^2+k\\\\)</li><li><strong>Not the custom regression:</strong> \\\\(y_1=a(x_1-h)^2+k\\\\)</li></ul><p>The equals sign states an equation; the regression symbol tells Desmos to adjust the missing constants to fit the table.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "regression_symbol_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which entry tells Desmos to fit the model \\\\(c(x-3)^2+8\\\\) to the table?",
+        "choices": [
+          "\\\\(y_1\\sim c(x_1-3)^2+8\\\\)",
+          "\\\\(y_1=c(x_1-3)^2+8\\\\)",
+          "\\\\(y\\sim c(x-3)^2+8\\\\)",
+          "\\\\(x_1\\sim c(y_1-3)^2+8\\\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use \\\\(y_1\\\\) for the table output, \\\\(x_1\\\\) for the table input, and \\\\(\\sim\\\\) for regression.",
+        "explanation": "Correct. \\\\(y_1\\sim c(x_1-3)^2+8\\\\) connects every table row to the required model and lets Desmos adjust \\\\(c\\\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "definitions_intro",
+      "html": "<h2>Turn extra information into a definition</h2><p>A question may tell you how two missing constants are related. For example:</p><p>\\[a+b=10\\]</p><p>Desmos needs that information in <strong>definition form</strong>. Isolate one constant and enter:</p><p>\\[a=10-b\\]</p><p>You could instead use \\\\(b=10-a\\\\). Either definition gives Desmos a direct rule for replacing one constant with the other.</p><blockquote><p><strong>Watch out:</strong> Entering \\\\(a+b=10\\\\) is not the definition Desmos needs for this workflow.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "definition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A question states that \\\\(p+q=18\\\\). Which Desmos line correctly enters that information as a definition?",
+        "choices": [
+          "\\\\(p+q\\sim18\\\\)",
+          "\\\\(p+q=18\\\\)",
+          "\\\\(p=18-q\\\\)",
+          "\\\\(y_1=p+q+18\\\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Isolate one missing constant so Desmos can replace it with an expression involving the other.",
+        "explanation": "Right. \\\\(p=18-q\\\\) defines \\\\(p\\\\) in terms of \\\\(q\\\\). The equivalent definition \\\\(q=18-p\\\\) would also work."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "guided_definition_problem",
+      "html": "<h2>Guided practice: use a coefficient relationship</h2><p>A function has the form</p><p>\\[r(t)=at^2+bt+4\\]</p><p>The question tells you that \\\\(a+b=10\\\\) and \\\\(r(2)=34\\\\).</p><p>Reset the scratch calculator and follow these steps:</p><ol><li>Enter the point \\\\((2,34)\\\\) in a table.</li><li>Enter the definition \\\\(a=10-b\\\\).</li><li>Enter the custom regression \\\\(y_1\\sim ax_1^2+bx_1+4\\\\).</li></ol><p>Desmos adjusts the remaining free constant \\\\(b\\\\); the definition then supplies \\\\(a\\\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Combine a definition and regression",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "guided_definition_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which values should Desmos produce for \\\\(a\\\\) and \\\\(b\\\\)?",
+        "choices": [
+          "\\\\(a=10,\\ b=0\\\\)",
+          "\\\\(a=5,\\ b=5\\\\)",
+          "\\\\(a=3,\\ b=7\\\\)",
+          "\\\\(a=15,\\ b=-5\\\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Read the assigned value of \\\\(b\\\\), then use \\\\(a=10-b\\\\). Check that \\\\(4a+2b+4=34\\\\).",
+        "explanation": "Correct. Regression gives \\\\(b=5\\\\), and the definition gives \\\\(a=10-5=5\\\\). The equation is \\\\(r(t)=5t^2+5t+4\\\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Read both constants",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "why_definitions_reduce_unknowns",
+      "html": "<h2>A definition reduces the unknowns</h2><p>The table supplied one point equation. By itself, one point could not determine both \\\\(a\\\\) and \\\\(b\\\\).</p><p>The relationship \\\\(a+b=10\\\\) supplied another piece of information. Rewriting it as \\\\(a=10-b\\\\) reduced the model to one free constant, so the one data point could determine the result.</p><blockquote><p><strong>Before you regress:</strong> count the missing constants and look for every independent fact that connects them.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "definition_reasoning_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A custom regression contains two missing constants but only one data point. What additional information could make the constants determinable?",
+        "choices": [
+          "A second name for the same function",
+          "A larger graphing window",
+          "A direction to round the final answer",
+          "An independent relationship between the two constants, entered as a definition"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The model needs another independent condition that reduces the number of free constants.",
+        "explanation": "Exactly. An independent relationship can define one constant in terms of the other, leaving one free constant for the data point to determine."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "function_notation_mapping",
+      "html": "<h2>When the points belong to a function</h2><p>If the table contains points from \\\\(g\\\\), then the table output \\\\(y_1\\\\) represents values of \\\\(g\\\\). The table input \\\\(x_1\\\\) represents the input to \\\\(g\\\\).</p><p>Translate function statements this way:</p><ul><li>\\\\(g(2)=7\\\\) becomes the table row \\\\((2,7)\\\\).</li><li>In the regression, replace \\\\(g(x)\\\\) with \\\\(y_1\\\\).</li><li>Replace the input \\\\(x\\\\) inside the rule with \\\\(x_1\\\\).</li></ul><p>Do not keep \\\\(g(x)\\\\) in the custom regression unless you separately define that function in Desmos. Directly substituting the rule is usually clearer.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "function_mapping_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The points in the table come from \\\\(g(t)\\\\). What do the table variables represent?",
+        "choices": [
+          "\\\\(x_1\\\\) represents \\\\(t\\\\), and \\\\(y_1\\\\) represents \\\\(g(t)\\\\).",
+          "\\\\(x_1\\\\) represents \\\\(g(t)\\\\), and \\\\(y_1\\\\) represents \\\\(t\\\\).",
+          "Both columns represent \\\\(g(t)\\\\).",
+          "The table variables must be renamed \\\\(g_1\\\\) and \\\\(t_1\\\\)."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The left table column is the input; the right table column is the function's output.",
+        "explanation": "Correct. Use \\\\(x_1\\\\) in place of the original input \\\\(t\\\\), and use \\\\(y_1\\\\) in place of the output \\\\(g(t)\\\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "multiple_function_substitution",
+      "html": "<h2>Substitute other function rules</h2><p>Sometimes a problem defines more than one function. First identify which function produced the points in your table.</p><p>Suppose the points come from \\\\(g\\\\), and the problem states:</p><p>\\[f(x)=x^2+5\\]</p><p>\\[g(x)=f(x)-12\\]</p><p>Substitute the rule for \\\\(f\\\\) into the rule for \\\\(g\\\\):</p><p>\\[g(x)=x^2+5-12\\]</p><p>Then translate the function tied to the table:</p><p>\\[y_1\\sim x_1^2+5-12\\]</p><blockquote><p><strong>Substitution rule:</strong> The table function becomes \\\\(y_1\\\\); other function names should be replaced by their formulas.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "multiple_function_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Points from \\\\(g\\\\) are in the table, \\\\(f(x)=x^2+5\\\\), and \\\\(g(x)=f(x)-12\\\\). Which direct custom-regression entry is best?",
+        "choices": [
+          "\\\\(f(x_1)\\sim x_1^2+5\\\\)",
+          "\\\\(y_1\\sim g(x_1)-12\\\\)",
+          "\\\\(x_1\\sim y_1^2+5-12\\\\)",
+          "\\\\(y_1\\sim x_1^2+5-12\\\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The table output represents \\\\(g\\\\). Replace \\\\(f(x)\\\\) with its formula before changing \\\\(g(x)\\\\) to \\\\(y_1\\\\).",
+        "explanation": "Correct. Substitute \\\\(x^2+5\\\\) for \\\\(f(x)\\\\), then use \\\\(x_1\\\\) and \\\\(y_1\\\\) to connect the resulting rule to the table."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "guided_function_constant",
+      "html": "<h2>Find a constant after substitution</h2><p>The table contains points from \\\\(g\\\\). The problem gives:</p><p>\\[f(x)=x^2+5\\qquad\\text{and}\\qquad g(x)=f(x)-c\\]</p><p>It also states \\\\(g(0)=-3\\\\), \\\\(g(2)=1\\\\), and \\\\(g(3)=6\\\\).</p><p>Reset the calculator. Enter \\\\((0,-3)\\\\), \\\\((2,1)\\\\), and \\\\((3,6)\\\\) in a table. Substitute the rule for \\\\(f\\\\), then enter:</p><p>\\[y_1\\sim x_1^2+5-c\\]</p><p>Read the value Desmos assigns to \\\\(c\\\\).</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Regress after substituting f",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "guided_function_constant_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What value should the regression assign to \\\\(c\\\\)?",
+        "choices": [
+          "\\\\(c=3\\\\)",
+          "\\\\(c=8\\\\)",
+          "\\\\(c=5\\\\)",
+          "\\\\(c=12\\\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Use the first row: \\\\(-3=0^2+5-c\\\\).",
+        "explanation": "Right. Desmos assigns \\\\(c=8\\\\). Substitution gives \\\\(g(x)=x^2+5-8=x^2-3\\\\), which matches all three table rows."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Read and check c",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "special_exponential_form",
+      "html": "<h2>A standard family can still need a custom form</h2><p>A model can be exponential but use constants that mean something specific in the question:</p><p>\\[N(t)=A(1+r)^t\\]</p><p>Here \\\\(A\\\\) is the initial amount and \\\\(r\\\\) is the growth rate. The standard Exponential button would report a base \\\\(b\\\\), but the question may ask directly for \\\\(r\\\\).</p><p>If \\\\(A=200\\\\), enter the definition \\\\(A=200\\\\), then fit the requested structure:</p><p>\\[y_1\\sim A(1+r)^{x_1}\\]</p><blockquote><p><strong>Reason to customize:</strong> The model is exponential, but the parameterization \\\\(1+r\\\\) carries information the question asks you to preserve.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "special_exponential_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A table contains points from \\\\(N(t)=A(1+r)^t\\\\), and the question states \\\\(A=200\\\\). Which pair of Desmos entries preserves the requested form?",
+        "choices": [
+          "\\\\(A+200=0\\\\) and \\\\(y_1=A(1+r)^{x_1}\\\\)",
+          "\\\\(A\\sim200\\\\) and \\\\(N(t)\\sim A(1+r)^t\\\\)",
+          "\\\\(A=200\\\\) and \\\\(y_1\\sim A(1+r)^{x_1}\\\\)",
+          "\\\\(x_1=200\\\\) and \\\\(y_1\\sim r^A\\\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Enter known constant information as a definition, then connect the table output and input with the regression symbol.",
+        "explanation": "Exactly. \\\\(A=200\\\\) fixes the known initial amount, and \\\\(y_1\\sim A(1+r)^{x_1}\\\\) lets Desmos fit the missing rate \\\\(r\\\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "special_exponential_task",
+      "html": "<h2>Fit a growth rate directly</h2><p>A sample follows \\\\(N(t)=A(1+r)^t\\\\), where \\\\(A=200\\\\). The data are:</p><p>\\[(0,200),\\ (1,220),\\ (2,242)\\]</p><p>Reset the calculator. Enter the points in a table, define \\\\(A=200\\\\), and enter \\\\(y_1\\sim A(1+r)^{x_1}\\\\).</p><p>Desmos reports \\\\(r\\\\) as a decimal. Translate it to a percent if the question asks for a percent growth rate.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Fit the missing growth rate",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "special_exponential_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What value should Desmos assign to \\\\(r\\\\), and what percent growth rate is that?",
+        "choices": [
+          "\\\\(r=0.10\\\\), which is \\\\(10\\%\\\\)",
+          "\\\\(r=1.10\\\\), which is \\\\(110\\%\\\\)",
+          "\\\\(r=20\\\\), which is \\\\(20\\%\\\\)",
+          "\\\\(r=200\\\\), which is \\\\(2\\%\\\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The output is multiplied by \\\\(1.10\\\\) each step, and the model writes that factor as \\\\(1+r\\\\).",
+        "explanation": "Correct. \\\\(1+r=1.10\\\\), so \\\\(r=0.10=10\\%\\\\). Custom regression reports the parameter in the form the question uses."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Interpret the fitted rate",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "troubleshooting",
+      "html": "<h2>If Desmos does not assign every constant</h2><p>Inspect the setup before changing the model:</p><ul><li><strong>Table connection:</strong> Did you use \\\\(x_1\\\\) and \\\\(y_1\\\\), including the subscript 1?</li><li><strong>Regression symbol:</strong> Did you use \\\\(\\sim\\\\), not \\\\(=\\\\), on the model line?</li><li><strong>Definitions:</strong> Did you rewrite relationships so one constant is isolated?</li><li><strong>Enough information:</strong> Do the data points and definitions provide enough independent facts for all missing constants?</li><li><strong>Function substitution:</strong> Did you replace other function names with their formulas?</li></ul><p>A missing assigned value usually signals a translation or information problem, not a reason to guess the constant.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "troubleshooting_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A regression contains two missing constants and one table row. Desmos does not determine unique values. What should you check first?",
+        "choices": [
+          "Whether the graph color is visible",
+          "Whether the table has at least ten rows",
+          "Whether the constants use alphabetical order",
+          "Whether the question provides another independent point or a relationship that should be entered as a definition"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Unique constants require enough independent information to determine every free value.",
+        "explanation": "Correct. Look for another data point or a relationship among the constants. Enter a relationship in definition form before rerunning the regression."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_problem",
+      "html": "<h2>Independent transfer: combine every move</h2><p>A function has the required form</p><p>\\[H(t)=u(t-1)^2+v\\]</p><p>The question states that \\\\(u+v=6\\\\) and \\\\(H(3)=18\\\\).</p><p>Your task is to use custom regression to find \\\\(u\\\\) and \\\\(v\\\\). Decide:</p><ul><li>which point belongs in the table;</li><li>how to rewrite \\\\(u+v=6\\\\) as a definition;</li><li>how to translate the required function form into \\\\(x_1\\\\), \\\\(y_1\\\\), and \\\\(\\sim\\\\).</li></ul>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which complete setup correctly represents the transfer problem?",
+        "choices": [
+          "Table \\\\((18,3)\\\\); definition \\\\(u+v=6\\\\); model \\\\(H(t)=u(t-1)^2+v\\\\)",
+          "Table \\\\((3,18)\\\\); definition \\\\(v=6-u\\\\); model \\\\(y_1\\sim u(x_1-1)^2+v\\\\)",
+          "Table \\\\((3,18)\\\\); definition \\\\(u\\sim6-v\\\\); model \\\\(x_1\\sim u(y_1-1)^2+v\\\\)",
+          "Table \\\\((1,6)\\\\); definition \\\\(v=18-u\\\\); model \\\\(y_1=u(x_1-3)^2+v\\\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Translate \\\\(H(3)=18\\\\) as input 3, output 18. Isolate one constant in the relationship, then use the table variables and regression symbol.",
+        "explanation": "Exactly. The data row is \\\\((3,18)\\\\), \\\\(v=6-u\\\\) is a definition, and \\\\(y_1\\sim u(x_1-1)^2+v\\\\) preserves the required vertex form."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_calculator_task",
+      "html": "<h2>Run the transfer regression</h2><p>Reset the scratch calculator and carry out the setup:</p><ol><li>Add a table row for \\\\((3,18)\\\\).</li><li>Enter \\\\(v=6-u\\\\).</li><li>Enter \\\\(y_1\\sim u(x_1-1)^2+v\\\\).</li></ol><p>Read the assigned value of \\\\(u\\\\), then use the definition to read or calculate \\\\(v\\\\).</p><blockquote><p><strong>Before you continue:</strong> substitute both values into the original form and verify that \\\\(H(3)=18\\\\).</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Find u and v",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_constants_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which values should the transfer regression produce?",
+        "choices": [
+          "\\\\(u=6,\\ v=0\\\\)",
+          "\\\\(u=2,\\ v=4\\\\)",
+          "\\\\(u=4,\\ v=2\\\\)",
+          "\\\\(u=3,\\ v=3\\\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Use \\\\(v=6-u\\\\) in \\\\(18=u(3-1)^2+v\\\\).",
+        "explanation": "Correct. Regression gives \\\\(u=4\\\\), and the definition gives \\\\(v=6-4=2\\\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Check the assigned constants",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_equation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is the function in the original notation?",
+        "choices": [
+          "\\\\(H(t)=4(t-1)^2+2\\\\)",
+          "\\\\(H(t)=2(t-1)^2+4\\\\)",
+          "\\\\(H(t)=4(t+1)^2+2\\\\)",
+          "\\\\(H(t)=4t^2-1+2\\\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Return to the supplied form \\\\(H(t)=u(t-1)^2+v\\\\) and substitute \\\\(u=4\\\\), \\\\(v=2\\\\).",
+        "explanation": "Right. The required function is \\\\(H(t)=4(t-1)^2+2\\\\), and \\\\(H(3)=4(2)^2+2=18\\\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "process_summary",
+      "html": "<h2>Keep the custom workflow organized</h2><ol><li>Turn the given information into input-output points.</li><li>Enter the points under \\\\(x_1\\\\) and \\\\(y_1\\\\).</li><li>Rewrite any coefficient relationships as definitions, such as \\\\(a=10-b\\\\).</li><li>Substitute any secondary function rules into the function tied to the table.</li><li>Translate that required model to \\\\(x_1\\\\) and \\\\(y_1\\\\), and replace \\\\(=\\\\) with \\\\(\\sim\\\\).</li><li>Read the assigned constants and translate them back to the problem's notation and units.</li></ol>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which summary gives the correct custom-regression strategy?",
+        "choices": [
+          "Use the table's standard Regression button, then rename its coefficients to match the question.",
+          "Keep the original function letters in the table and connect every statement with equals signs.",
+          "Type several possible equations and choose the one whose graph looks closest.",
+          "Enter input-output points, rewrite extra relationships as definitions, substitute other function rules, and fit the required form using \\\\(y_1\\\\), \\\\(x_1\\\\), and \\\\(\\sim\\\\)."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Recall the essential translations: points into the table, relationships into definitions, other functions into formulas, and the required model into \\\\(y_1\\sim\\\\) an expression in \\\\(x_1\\\\).",
+        "explanation": "You have it. That workflow preserves the equation form the question requires while giving Desmos every data point and coefficient relationship it needs."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can fit a custom equation</h2><p>You can connect table data to a required equation form, use definitions for relationships among missing constants, substitute multiple function rules, and interpret the constants Desmos assigns.</p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}
