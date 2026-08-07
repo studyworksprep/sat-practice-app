@@ -143,6 +143,26 @@
   color: #991b1b;
 }
 
+/* ---------- Practice-experience toggle ---------- */
+
+.toggleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.toggleText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggleLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg1);
+}
+
 /* ---------- Teachers list ---------- */
 
 .teacherList {

@@ -1,14 +1,16 @@
-// Client island for the Account page. Renders three sections —
-// profile, teachers, subscription — from snapshot data passed in
-// by the Server Component. Forms call Server Actions via
-// useActionState; success messages clear after a few seconds so
-// the page stays calm. No fetch, no useEffect.
+// Client island for the Account page. Renders four sections —
+// profile, practice experience, teachers, subscription — from
+// snapshot data passed in by the Server Component. Forms call Server
+// Actions via useActionState; success messages clear after a few
+// seconds so the page stays calm. No fetch, no useEffect.
 
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useTransition } from 'react';
+import { DETOUR_COPY } from '@/lib/practice/detour-preference.mjs';
 import { Button } from '@/lib/ui/Button';
 import { Card } from '@/lib/ui/Card';
+import { Toggle } from '@/lib/ui/Toggle';
 import { ManagePortalButton } from './billing/ManagePortalButton';
 import s from './Account.module.css';
 
@@ -27,10 +29,16 @@ export function AccountClient({
   access,
   subscription,
   teachers,
+  detours,
   updateProfileAction,
   updateEmailAction,
+  updateDetourPreferenceAction,
   addTeacherCodeAction,
 }) {
+  // /account is shared with staff roles; the practice settings only
+  // mean anything for someone who actually works question sets.
+  const isStudent = profile.role === 'student' || profile.role === 'practice';
+
   return (
     <main className={s.page}>
       <div className={s.header}>
@@ -44,6 +52,13 @@ export function AccountClient({
         updateProfileAction={updateProfileAction}
         updateEmailAction={updateEmailAction}
       />
+
+      {isStudent && (
+        <PracticeExperienceSection
+          detours={detours}
+          updateDetourPreferenceAction={updateDetourPreferenceAction}
+        />
+      )}
 
       <TeachersSection
         teachers={teachers}
@@ -152,6 +167,73 @@ function ProfileSection({ profile, user, updateProfileAction, updateEmailAction 
           />
         </div>
       </form>
+    </Card>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Practice experience
+// ─────────────────────────────────────────────────────────────
+
+function PracticeExperienceSection({ detours, updateDetourPreferenceAction }) {
+  // Optimistic local state so the switch moves under the finger; the
+  // server value returns on the next render and takes over. Reverts
+  // if the write fails.
+  const [enabled, setEnabled] = useState(detours.enabled);
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  function onToggle(next) {
+    setEnabled(next);
+    setError(null);
+    setSaved(false);
+    const fd = new FormData();
+    fd.set('practice_detours_enabled', String(next));
+    startTransition(async () => {
+      const res = await updateDetourPreferenceAction(null, fd);
+      if (!res?.ok) {
+        setEnabled(!next);
+        setError(res?.error ?? 'Could not save');
+        return;
+      }
+      setSaved(true);
+    });
+  }
+
+  return (
+    <Card className={s.card}>
+      <SectionHeader
+        title="Practice experience"
+        subtitle="What happens when a practice set gets rough."
+      />
+
+      <div className={s.toggleRow}>
+        <Toggle
+          checked={enabled}
+          onChange={onToggle}
+          disabled={pending}
+          label={DETOUR_COPY.label}
+        />
+        <div className={s.toggleText}>
+          <span className={s.toggleLabel}>{DETOUR_COPY.label}</span>
+          <span className={s.help}>
+            {enabled ? DETOUR_COPY.student.on : DETOUR_COPY.student.off}
+          </span>
+          {!detours.isExplicit && detours.hasAssignedTutor && (
+            <span className={s.help}>
+              Off by default while you have a teacher, so their practice sets
+              run the way they built them. Turn it on any time.
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className={s.formActions}>
+        {error && <span className={s.errorMsg}>{error}</span>}
+        {!error && pending && <span className={s.help}>Saving…</span>}
+        {!error && !pending && saved && <span className={s.successMsg}>Saved.</span>}
+      </div>
     </Card>
   );
 }

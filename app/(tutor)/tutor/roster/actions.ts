@@ -14,9 +14,10 @@
 //
 // Allowlist. The shape stays narrow on purpose. role / email /
 // is_admin / etc. would be privilege expansion; everything here
-// is editorial student-profile metadata that any authorized
+// is either editorial student-profile metadata that any authorized
 // tutor can already see and probably already maintains in a
-// spreadsheet today.
+// spreadsheet today, or a study-experience setting the student can
+// equally set themselves from /account.
 
 'use server';
 
@@ -39,6 +40,9 @@ const ALLOWED_FIELDS = [
   'target_sat_score',
   'start_date',
   'is_active',
+  // §3.2 step-back offers, driven from the student-detail page.
+  // Tri-state — see lib/practice/detour-preference.mjs.
+  'practice_detours_enabled',
 ] as const;
 
 export interface UpdateStudentProfileInput {
@@ -90,6 +94,16 @@ export async function updateStudentProfile(
       // silently writing garbage.
       if (typeof value === 'string') value = value === 'true';
       value = Boolean(value);
+    }
+    if (key === 'practice_detours_enabled') {
+      // Tri-state, so it can't collapse to false the way is_active
+      // does: null means "back to the derived default", a boolean is
+      // an explicit choice, and anything else is a caller bug worth
+      // failing on rather than guessing at.
+      if (value === 'true' || value === 'false') value = value === 'true';
+      if (value !== null && typeof value !== 'boolean') {
+        return actionFail('practice_detours_enabled must be true, false, or null');
+      }
     }
     updates[key] = value;
   }

@@ -21,6 +21,7 @@ import { adherenceSummaryLine, ADHERENCE_LABELS } from '@/lib/plan/adherence';
 import { loadStudentPlanState } from '@/lib/plan/load-plan-state';
 import { loadDashboardAggregate } from '@/lib/practice/load-dashboard-aggregate';
 import { loadDashboardAggregateAct } from '@/lib/practice/load-dashboard-aggregate-act';
+import { resolveDetoursEnabled } from '@/lib/practice/detour-preference.mjs';
 import { SkillBreakdownCard } from '@/lib/practice/SkillBreakdownCard';
 import { buildArchiveSummary } from '@/lib/practice/superscore';
 import {
@@ -34,6 +35,7 @@ import { DeletePracticeTestButton } from './DeletePracticeTestButton';
 import { EditTargetStartButton } from './EditTargetStartModal';
 import { OfficialScoresCard } from './OfficialScoresCard';
 import { ScoreProgressChart } from './ScoreProgressChart';
+import { StepBackOffersCard } from './StepBackOffersCard';
 import { TestRegistrationsCard } from './TestRegistrationsCard';
 import { UploadBluebookCard } from './UploadBluebookCard';
 import s from './StudentDetail.module.css';
@@ -81,6 +83,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     aggregateAct,
     planState,
     { data: coverageRows },
+    { data: tutorLinks },
   ] = await Promise.all([
     supabase
       .from('student_practice_stats')
@@ -88,7 +91,7 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
       .eq('user_id', studentId),
     supabase
       .from('profiles')
-      .select('created_at, start_date')
+      .select('created_at, start_date, practice_detours_enabled')
       .eq('id', studentId)
       .maybeSingle(),
     // Assignments inbox for this student. Includes both SAT and
@@ -177,6 +180,15 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
     // Curriculum coverage (§4.4) — status counts for the snapshot;
     // the session workspace renders the full per-unit table.
     supabase.rpc('get_student_coverage', { p_student: studentId }),
+    // Does this student have a tutor at all? Decides the unset
+    // default for the §3.2 step-back switch below. Not inferable
+    // from "a tutor is looking at this page" — managers and admins
+    // reach it for unassigned students too.
+    supabase
+      .from('teacher_student_assignments')
+      .select('teacher_id')
+      .eq('student_id', studentId)
+      .limit(1),
   ]);
 
   if (rpcErr) {
@@ -197,9 +209,22 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
   // hasn't been set explicitly. The Edit modal still writes to the
   // explicit start_date column; the fallback only governs display
   // and the archived-summary score lookups.
-  const profileForStart = profileRow as { start_date?: string | null; created_at?: string | null } | null;
-  const startDateRaw = profileForStart?.start_date ?? null;
-  const effectiveStartDate = startDateRaw ?? profileForStart?.created_at ?? null;
+  const studentProfile = profileRow as {
+    start_date?: string | null;
+    created_at?: string | null;
+    practice_detours_enabled?: boolean | null;
+  } | null;
+  const startDateRaw = studentProfile?.start_date ?? null;
+  const effectiveStartDate = startDateRaw ?? studentProfile?.created_at ?? null;
+
+  // §3.2 step-back offers. Unset resolves to off for a student with
+  // a tutor — see lib/practice/detour-preference.mjs.
+  const detourPreference = studentProfile?.practice_detours_enabled ?? null;
+  const hasAssignedTutor = (tutorLinks ?? []).length > 0;
+  const detoursEnabled = resolveDetoursEnabled({
+    preference: detourPreference,
+    hasAssignedTutor,
+  });
 
   const student = {
     id: row.user_id ?? studentId,
@@ -867,6 +892,15 @@ export default async function TutorStudentDetailPage({ params }: PageProps) {
           <UploadBluebookCard
             studentId={student.id}
             tests={(publishedTests ?? []) as Array<{ id: string; name: string; code: string | null }>}
+          />
+
+          {/* §3.2 step-back offers — shared with the student's own
+              Account page; either side can change it. */}
+          <StepBackOffersCard
+            studentId={student.id}
+            enabled={detoursEnabled}
+            isExplicit={typeof detourPreference === 'boolean'}
+            hasAssignedTutor={hasAssignedTutor}
           />
         </aside>
       </div>

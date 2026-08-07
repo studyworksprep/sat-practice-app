@@ -26,6 +26,7 @@ import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-an
 import { gradeActMcq } from '@/lib/practice/load-act-question';
 import { recordQuestionOutcome } from '@/lib/review/queue';
 import { recommendLessonsForSkills } from '@/lib/lesson/recommend';
+import { loadDetourPreference } from '@/lib/practice/detour-preference.mjs';
 import type { ActionResult, QuestionType } from '@/lib/types';
 
 type SubmitAnswerResult = ActionResult<{
@@ -572,6 +573,13 @@ export async function togglePracticeMark(
 // (no scaffolding, and /learn is a student route), and the test runner
 // is a separate component that never reaches these actions (Bluebook
 // parity). SAT only — the detour queries read questions_v2.
+//
+// The whole feature is switchable per student
+// (profiles.practice_detours_enabled — off by default for a student
+// with an assigned tutor, so a crafted assignment runs as it was
+// built). The runner hides the offer client-side, and
+// loadDetourSession re-checks it here so a direct action call can't
+// inject a question the student opted out of.
 
 const DETOUR_MAX_PER_SESSION = 2;
 const DETOUR_MODES = new Set(['practice', 'review']);
@@ -617,6 +625,10 @@ async function loadDetourSession(
   }
   if (session.test_type !== 'sat' || !DETOUR_MODES.has(session.mode ?? '')) {
     return { session: null, error: 'Detours are not available in this session' };
+  }
+  const { enabled } = await loadDetourPreference(supabase, userId);
+  if (!enabled) {
+    return { session: null, error: 'Step-back offers are turned off for this student' };
   }
   const fc =
     session.filter_criteria && typeof session.filter_criteria === 'object'

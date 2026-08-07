@@ -2243,6 +2243,7 @@ export type Database = {
           last_name: string | null
           lessonworks_organization_id: string | null
           lessonworks_student_id: string | null
+          practice_detours_enabled: boolean | null
           practice_test_v2_imported_at: string | null
           role: string
           sat_test_date: string | null
@@ -2267,6 +2268,7 @@ export type Database = {
           last_name?: string | null
           lessonworks_organization_id?: string | null
           lessonworks_student_id?: string | null
+          practice_detours_enabled?: boolean | null
           practice_test_v2_imported_at?: string | null
           role?: string
           sat_test_date?: string | null
@@ -2291,6 +2293,7 @@ export type Database = {
           last_name?: string | null
           lessonworks_organization_id?: string | null
           lessonworks_student_id?: string | null
+          practice_detours_enabled?: boolean | null
           practice_test_v2_imported_at?: string | null
           role?: string
           sat_test_date?: string | null
@@ -4121,6 +4124,14 @@ export type Database = {
       import_student_practice_history: {
         Args: { p_student_id: string }
         Returns: Json
+      }
+      increment_act_attempt_time: {
+        Args: { p_attempt_id: string; p_delta_ms: number }
+        Returns: undefined
+      }
+      increment_attempt_time: {
+        Args: { p_attempt_id: string; p_delta_ms: number }
+        Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
       is_contributor: { Args: never; Returns: boolean }
