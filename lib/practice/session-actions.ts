@@ -123,6 +123,14 @@ export async function submitAnswer(
   const hintsUsed = Number.isInteger(hintsUsedRaw)
     ? Math.max(0, Math.min(hintsUsedRaw, 10))
     : 0;
+  // Client-reported active ms on this question since the last flush
+  // (the runner accumulates earlier unanswered visits client-side and
+  // sends the total here). Clamped to [0, 1h] like the practice-test
+  // time-ping route; the increment RPCs clamp again server-side.
+  const timeSpentRaw = Number(formData.get('timeSpentMs') ?? 0);
+  const timeSpentMs = Number.isFinite(timeSpentRaw) && timeSpentRaw > 0
+    ? Math.min(Math.round(timeSpentRaw), 3_600_000)
+    : 0;
 
   // Load the session and verify ownership + position. We pull
   // test_type so the grading + write paths fork between SAT (queries
@@ -207,10 +215,22 @@ export async function submitAnswer(
         selected_option_id: String(selectedOptionId),
         is_correct: isCorrect,
         source: 'practice',
+        time_spent_ms: timeSpentMs > 0 ? timeSpentMs : null,
       });
       if (insertErr) {
         return actionFail(`Failed to record attempt: ${insertErr.message}`);
       }
+    } else if (timeSpentMs > 0) {
+      // Re-submit inside the session window: first-attempt-wins keeps
+      // the recorded answer, but the student is still spending time on
+      // the question — accumulate it. Atomic RPC (not read-then-write)
+      // because a visibilitychange beacon can land concurrently;
+      // best-effort because grading feedback must not fail over a
+      // timing write.
+      await supabase.rpc('increment_act_attempt_time', {
+        p_attempt_id: existing.id,
+        p_delta_ms: timeSpentMs,
+      });
     }
   } else {
     // SAT path. Look up the question from v2 — question_type +
@@ -273,6 +293,7 @@ export async function submitAnswer(
         // (get_skill_mastery_asof) half-weights hint-assisted
         // corrects, and a null response_json means unassisted.
         response_json: hintsUsed > 0 ? { hints_used: hintsUsed } : null,
+        time_spent_ms: timeSpentMs > 0 ? timeSpentMs : null,
       });
       if (insertErr) {
         return actionFail(`Failed to record attempt: ${insertErr.message}`);
@@ -292,6 +313,13 @@ export async function submitAnswer(
         } catch {
           // Swallow — the attempt is recorded either way.
         }
+      });
+    } else if (timeSpentMs > 0) {
+      // Re-submit inside the session window — same accumulate
+      // semantics as the ACT branch above.
+      await supabase.rpc('increment_attempt_time', {
+        p_attempt_id: existing.id,
+        p_delta_ms: timeSpentMs,
       });
     }
   }

@@ -84,18 +84,14 @@ export async function POST(req) {
   }
 
   // Find-or-create on the item-attempt row (fetched above),
-  // accumulate time.
+  // accumulate time. Atomic RPC — a beacon and a concurrent
+  // recordItemAnswer save can race, and read-then-write lost one
+  // of the two deltas.
   if (existingItem) {
-    const { data: current } = await supabase
-      .from('attempts')
-      .select('time_spent_ms')
-      .eq('id', existingItem.attempt_id)
-      .maybeSingle();
-    const next = (current?.time_spent_ms ?? 0) + timeDelta;
-    await supabase
-      .from('attempts')
-      .update({ time_spent_ms: next })
-      .eq('id', existingItem.attempt_id);
+    await supabase.rpc('increment_attempt_time', {
+      p_attempt_id: existingItem.attempt_id,
+      p_delta_ms: timeDelta,
+    });
     return NextResponse.json({ ok: true });
   }
 
