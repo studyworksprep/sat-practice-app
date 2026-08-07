@@ -50,6 +50,11 @@ import {
   resolveContinueNavigation,
   resolveResumeIndex,
 } from '@/lib/lesson/runtime-navigation.mjs';
+import {
+  skippedBlockIdsForForwardJump,
+  shouldCompleteDesmosResult,
+  shouldCompleteOnContinue,
+} from '@/lib/lesson/runtime-progress.mjs';
 
 // Above this many blocks the per-step segments get too thin to read, so
 // the progress meter falls back to a continuous bar.
@@ -92,6 +97,8 @@ export function LessonSlideshow({
   const [completedBlockIds, setCompletedBlockIds] = useState(
     () => new Set(initialCompletedBlockIds),
   );
+  const completedBlockIdsRef = useRef(new Set(initialCompletedBlockIds));
+  const progressWriteQueueRef = useRef(Promise.resolve());
   const [checkAnswers, setCheckAnswers] = useState(initialCheckAnswers);
   const [isComplete, setIsComplete] = useState(initialIsComplete);
   const [forceUnlockedBlockIds, setForceUnlockedBlockIds] = useState([]);
@@ -188,25 +195,42 @@ export function LessonSlideshow({
   })();
   const currentIsLocked = Boolean(lockReason);
 
-  function recordBlockComplete(blockId) {
-    if (!blockId) return;
-    setCompletedBlockIds((prev) => {
-      if (prev.has(blockId)) return prev;
-      const next = new Set(prev);
-      next.add(blockId);
-      return next;
-    });
-    onMarkBlockComplete?.(blockId);
-  }
+  const enqueueProgressWrite = useCallback((write) => {
+    if (typeof write !== 'function') return;
+    progressWriteQueueRef.current = progressWriteQueueRef.current
+      .catch(() => undefined)
+      .then(write);
+  }, []);
+
+  const recordBlocksComplete = useCallback((blockIds) => {
+    const freshIds = [...new Set(blockIds || [])]
+      .filter(Boolean)
+      .filter((blockId) => !completedBlockIdsRef.current.has(blockId));
+    if (freshIds.length === 0) return;
+    const next = new Set(completedBlockIdsRef.current);
+    freshIds.forEach((blockId) => next.add(blockId));
+    completedBlockIdsRef.current = next;
+    setCompletedBlockIds(next);
+    if (onMarkBlockComplete) {
+      enqueueProgressWrite(async () => {
+        for (const blockId of freshIds) {
+          await onMarkBlockComplete(blockId);
+        }
+      });
+    }
+  }, [enqueueProgressWrite, onMarkBlockComplete]);
+
+  const recordBlockComplete = useCallback((blockId) => {
+    recordBlocksComplete([blockId]);
+  }, [recordBlocksComplete]);
 
   function recordCheckAnswer(blockId, payload, { markComplete = true } = {}) {
     setCheckAnswers((prev) => ({ ...prev, [blockId]: payload }));
     if (markComplete) {
-      setCompletedBlockIds((prev) => {
-        const next = new Set(prev);
-        next.add(blockId);
-        return next;
-      });
+      const next = new Set(completedBlockIdsRef.current);
+      next.add(blockId);
+      completedBlockIdsRef.current = next;
+      setCompletedBlockIds(next);
     }
   }
 
@@ -231,9 +255,16 @@ export function LessonSlideshow({
 
   const goNext = useCallback(() => {
     setShowResumeNotice(false);
+    const departingBlock = blocks[currentIndex];
+    if (shouldCompleteOnContinue(departingBlock)) {
+      recordBlockComplete(departingBlock.id);
+    }
     // First Continue after answering: jump to the recorded branch /
     // linear target. Subsequent Continues use rejoin-aware navigation.
     if (pendingAdvance && pendingAdvance.fromIndex === currentIndex) {
+      recordBlocksComplete(
+        skippedBlockIdsForForwardJump(blocks, currentIndex, pendingAdvance.nextIndex),
+      );
       setCurrentIndex(pendingAdvance.nextIndex);
       setActiveBranchState(pendingAdvance.activeBranchState);
       setPendingAdvance(null);
@@ -245,9 +276,12 @@ export function LessonSlideshow({
       activeBranchState,
       blockIndexById,
     });
+    recordBlocksComplete(
+      skippedBlockIdsForForwardJump(blocks, currentIndex, result.nextIndex),
+    );
     setCurrentIndex(result.nextIndex);
     setActiveBranchState(result.activeBranchState);
-  }, [activeBranchState, blockIndexById, blocks, currentIndex, pendingAdvance]);
+  }, [activeBranchState, blockIndexById, blocks, currentIndex, pendingAdvance, recordBlockComplete, recordBlocksComplete]);
 
   const goPrev = useCallback(() => {
     setShowResumeNotice(false);
@@ -311,8 +345,13 @@ export function LessonSlideshow({
   }
 
   function handleMarkComplete() {
+    if (currentBlock?.block_type === 'lesson_complete') {
+      recordBlockComplete(currentBlock.id);
+    }
     setIsComplete(true);
-    onMarkComplete?.();
+    if (onMarkComplete) {
+      enqueueProgressWrite(() => onMarkComplete());
+    }
   }
 
   if (blocks.length === 0) {
@@ -421,7 +460,11 @@ export function LessonSlideshow({
                   selected,
                   correct,
                 });
-                onSubmitCheck?.(currentBlock.id, selected, correct);
+                if (onSubmitCheck) {
+                  enqueueProgressWrite(() =>
+                    onSubmitCheck(currentBlock.id, selected, correct),
+                  );
+                }
                 recordAnswerNav(currentBlock, correct);
               }}
             />
@@ -431,6 +474,7 @@ export function LessonSlideshow({
               block={currentBlock}
               isComplete={completedBlockIds.has(currentBlock.id)}
               hrefFor={questionLinkHref}
+              onOpen={() => recordBlockComplete(currentBlock.id)}
               debugMode={debugMode}
             />
           )}
@@ -443,9 +487,7 @@ export function LessonSlideshow({
                 // For a require_success block, only a correct answer
                 // completes it (and so unlocks Continue) — an incorrect
                 // attempt leaves it locked so the learner can retry.
-                const requireSuccess = Boolean(
-                  currentBlock.content?.progression?.require_success,
-                );
+                const markComplete = shouldCompleteDesmosResult(currentBlock, isCorrect);
                 recordCheckAnswer(
                   currentBlock.id,
                   {
@@ -453,9 +495,13 @@ export function LessonSlideshow({
                     correct: isCorrect,
                     type: 'desmos_interactive',
                   },
-                  { markComplete: isCorrect || !requireSuccess },
+                  { markComplete },
                 );
-                onSubmitDesmos?.(currentBlock.id, isCorrect);
+                if (markComplete && onSubmitDesmos) {
+                  enqueueProgressWrite(() =>
+                    onSubmitDesmos(currentBlock.id, isCorrect),
+                  );
+                }
                 recordAnswerNav(currentBlock, isCorrect);
               }}
               onUnlock={() => {
@@ -839,7 +885,7 @@ function CheckBlock({ block, previousAnswer, onSubmit }) {
   );
 }
 
-function QuestionLinkBlock({ block, isComplete, hrefFor, debugMode = false }) {
+function QuestionLinkBlock({ block, isComplete, hrefFor, onOpen, debugMode = false }) {
   const questionId = block.content?.question_id;
   if (!questionId) return null;
 
@@ -860,7 +906,13 @@ function QuestionLinkBlock({ block, isComplete, hrefFor, debugMode = false }) {
           {debugMode && <div className={s.questionId}>{questionId}</div>}
         </div>
         {href ? (
-          <a href={href} className={s.secondaryBtn}>
+          <a
+            href={href}
+            className={s.secondaryBtn}
+            onClick={() => {
+              if (!isComplete) onOpen?.();
+            }}
+          >
             {isComplete ? 'Review' : 'Practice'} <span aria-hidden="true">→</span>
           </a>
         ) : (
