@@ -54,6 +54,19 @@ export function ConceptTags({
 
   const panelRef = useRef(null);
   const buttonRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // The input is disabled while an add/remove is in flight, and
+  // disabling a focused element hands focus back to <body>. Take it
+  // back once the action settles so the popover keeps the keyboard:
+  // the next tag can be typed straight away, and — the reason this
+  // matters beyond convenience — Esc still lands on the input, where
+  // it closes just the popover. Presenter mode listens for Esc on
+  // window to exit the session, so an Esc that misses this input
+  // used to drop the tutor out of a live lesson right after tagging.
+  useEffect(() => {
+    if (showInput && !pending) inputRef.current?.focus();
+  }, [showInput, pending]);
 
   // Click-outside closes the popover. Same delayed-attach trick the
   // legacy component uses so the click that opened the popover
@@ -222,6 +235,7 @@ export function ConceptTags({
             }}
           >
             <input
+              ref={inputRef}
               type="text"
               className={s.input}
               value={search}
