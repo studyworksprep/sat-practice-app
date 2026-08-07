@@ -4,6 +4,14 @@
   "blocks": [
     {
       "kind": "text",
+      "id": "lesson_prerequisite",
+      "html": "<h2>Complete the standard-regression lesson first</h2><blockquote><p><strong>Prerequisite:</strong> Do not begin this lesson until you have completed <em>Find a Standard Regression Equation from Data</em>.</p></blockquote><p>This lesson assumes you already know how to:</p><ul><li>turn information from a table, graph, or word problem into input-output points;</li><li>enter those points in a Desmos table; and</li><li>use the Regression button to fit a standard linear, quadratic, or exponential model.</li></ul><p>Here, you will build on that workflow by typing a custom model and incorporating additional information about its constants.</p>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
       "id": "lesson_objective",
       "html": "<h2>Fit the equation the question requires</h2><p>Standard regression works when the needed model is already available as Linear, Quadratic, or Exponential. Some SAT questions instead give you a particular equation form with missing constants or extra information connecting those constants.</p><p>In this lesson, you will use one reusable tool: <strong>enter points in a table, write a custom regression with the table variables, and add definitions for any extra relationships</strong>.</p><blockquote><p><strong>Goal:</strong> Find missing constants while preserving the exact equation form the question asks about.</p></blockquote>",
       "calculator": {
