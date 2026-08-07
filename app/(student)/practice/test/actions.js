@@ -260,24 +260,25 @@ export async function recordItemAnswer(_prev, formData) {
   }
 
   if (existingItem) {
-    // Accumulate time_spent_ms by reading the current value and
-    // adding the client-reported delta. Two queries instead of
-    // one, but keeps the semantics clear — UPDATE … SET x = x + n
-    // isn't available through PostgREST without an RPC.
-    if (timeDelta > 0) {
-      const { data: currentAttempt } = await supabase
-        .from('attempts')
-        .select('time_spent_ms')
-        .eq('id', existingItem.attempt_id)
-        .maybeSingle();
-      attemptPatch.time_spent_ms = (currentAttempt?.time_spent_ms ?? 0) + timeDelta;
-    }
-    if (Object.keys(attemptPatch).length > 0) {
-      await supabase
-        .from('attempts')
-        .update(attemptPatch)
-        .eq('id', existingItem.attempt_id);
-    }
+    // Time accumulates via the increment_attempt_time RPC — a
+    // visibilitychange beacon and this save can land concurrently,
+    // and the old read-then-write pattern lost one of the two
+    // deltas when they raced. The answer-field patch is a plain
+    // update; the two writes are independent, so run them together.
+    await Promise.all([
+      timeDelta > 0
+        ? supabase.rpc('increment_attempt_time', {
+            p_attempt_id: existingItem.attempt_id,
+            p_delta_ms: timeDelta,
+          })
+        : Promise.resolve(),
+      Object.keys(attemptPatch).length > 0
+        ? supabase
+            .from('attempts')
+            .update(attemptPatch)
+            .eq('id', existingItem.attempt_id)
+        : Promise.resolve(),
+    ]);
     return { ok: true, isCorrect: hasAnswer ? isCorrect : null, itemAttemptId: existingItem.id };
   }
 

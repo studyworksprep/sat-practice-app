@@ -51,6 +51,7 @@ export const REQUIRE_USER_ROUTES: ReadonlyArray<{ url: string; method: 'GET' | '
   { url: '/api/billing/create-checkout', method: 'POST' },
   { url: '/api/billing/create-portal', method: 'POST' },
   { url: '/api/practice-test/time-ping', method: 'POST' },
+  { url: '/api/practice/time-ping', method: 'POST' },
   // Parses uploaded Bluebook reports. requireRole, so anon is 401 before
   // a byte of the upload is looked at — which is the point: the body is
   // untrusted HTML from whoever sent it.
