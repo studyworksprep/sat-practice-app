@@ -79,7 +79,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(tutor)/tutor/training/assignments/[id]/actions.js` | `startTrainingAssignment` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/practice/actions.js` | `createTrainingSession`, `countAvailable` | requireUser + rateLimit |
 | `app/(tutor)/tutor/training/review/actions.js` | `createTrainingWeakQueueDrill`, `createTrainingSkillDrill` | requireUser + rateLimit |
-| `app/account/actions.js` | `updateProfile`, `updateEmail`, `addTeacherCode` | requireUser |
+| `app/account/actions.js` | `updateProfile`, `updateDetourPreference`, `updateEmail`, `addTeacherCode` | requireUser |
 | `lib/bluebook/submission-actions.ts` | `crossCheckAttempt`, `loadAttemptEntryView`, `createHtmlUploadSubmission`, `createAttemptLinkedSubmission`, `createManualGridSubmission`, `reviewSubmission`, `artifactDownloadUrl`, `promoteSubmission` | requireRole[...CONTRIBUTOR_ROLES|...STAFF_ROLES] + requireServiceRole |
 | `lib/plan/plan-actions.ts` | `generateStudyPlan`, `activatePlan`, `proposeRepace` | requireUser |
 | `lib/plan/plan-edit-actions.ts` | `movePlanTask`, `addManualPlanTask`, `removePlanTask`, `swapPlanTaskSkill`, `regeneratePlanWeek` | requireUser |

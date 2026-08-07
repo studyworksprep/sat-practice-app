@@ -28,6 +28,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { submitAnswer } from '@/lib/practice/session-actions';
+import { loadDetourPreference } from '@/lib/practice/detour-preference.mjs';
 import { loadQuestion } from '@/lib/practice/load-question';
 import { loadQuestionAction } from '@/lib/practice/load-question-action';
 import { PracticeInteractive } from '@/lib/practice/PracticeInteractive';
@@ -47,10 +48,16 @@ export default async function PracticeQuestionPage({ params }) {
   const position = Number(positionStr);
   if (!Number.isInteger(position) || position < 0) notFound();
 
-  const result = await loadQuestion(
-    { userId: user.id, role: profile.role, supabase },
-    { sessionId, position },
-  );
+  // Both reads go out together — the detour switch is independent of
+  // the question payload, and this page is already round-trip
+  // sensitive enough that a serial extra hop would be felt.
+  const [result, detours] = await Promise.all([
+    loadQuestion(
+      { userId: user.id, role: profile.role, supabase },
+      { sessionId, position },
+    ),
+    loadDetourPreference(supabase, user.id),
+  ]);
 
   switch (result.kind) {
     case 'not_found':
@@ -100,6 +107,7 @@ export default async function PracticeQuestionPage({ params }) {
       total={payload.total}
       sessionId={sessionId}
       sessionMode={payload.sessionMode}
+      detoursEnabled={detours.enabled}
       initialQuestion={payload.question}
       initialAttempt={payload.initialAttempt}
       initialDesmos={payload.desmos}
