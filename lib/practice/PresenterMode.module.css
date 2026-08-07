@@ -295,9 +295,18 @@
 
 /* ---------- Concept tags (staff-only, collapsed) ---------- */
 
+/* Sibling of .content, not a child — see the JSX comment: .content's
+   transform would capture this subtree's position: fixed popover. That
+   also means the horizontal padding .content used to provide has to be
+   supplied here, matched to the SCALED question edge so the two still
+   line up as the tutor steps the zoom. Bottom padding gives the
+   scroller the same breathing room .content's 64px did. */
 .tagsSection {
-  margin-top: 20px;
-  padding-top: 14px;
+  /* Horizontal inset as margin rather than padding so the divider
+     rule stays inset from the edges, the way it looked when this
+     lived inside .content. */
+  margin: 20px calc(28px * var(--presenter-scale, 1)) 0;
+  padding: 14px 0 48px;
   border-top: 1px solid var(--border, #d9e2ec);
 }
 
