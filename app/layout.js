@@ -58,7 +58,33 @@ export default function RootLayout({ children }) {
         {/* MathJax config: enable both MathML and TeX input so content
             authored either way renders. TeX uses the standard \( \) inline +
             \[ \] / $$ display delimiters, matching Bluebook-source content.
-            CHTML output keeps native browser layout/font matching. */}
+
+            chtml.matchFontHeight is deliberately OFF, with the scale it
+            would otherwise compute pinned as a constant. Left on, MathJax
+            sizes every expression by measuring a hidden 60ex probe's
+            offsetHeight and dividing by the container's computed
+            font-size — a measurement that is wrong in two ways here:
+
+              - WebKit inflates offsetHeight under an effective zoom but
+                leaves the computed font-size alone, so any Safari user
+                with the site page-zoomed got math scaled by the zoom on
+                top of the zoom. At 115% inline math rendered 1.42x the
+                text height instead of 1.25x; at 150%, 1.84x, and the
+                line boxes containing math grew 17% taller than their
+                neighbours. Chrome scales neither value, so it only ever
+                showed in Safari.
+              - It runs once, whenever that expression is typeset. Inter
+                loads with display: swap, so an expression typeset during
+                the swap window matched the fallback face (1.1911) and
+                one typeset after matched Inter (1.2355) — a ~4% wobble
+                between page loads, in every browser.
+
+            1.2355 is the value the measurement itself produces against
+            Inter once loaded (ex/em 0.5461 ÷ the TeX font's 0.442
+            x-height), so this pins the intended appearance rather than
+            changing it — it just stops re-deriving it from a probe that
+            zoom and font-loading both perturb. Re-measure it if
+            --font-sans ever stops being Inter. */}
         <Script id="mathjax-config" strategy="beforeInteractive">
           {`
             window.MathJax = {
@@ -67,6 +93,10 @@ export default function RootLayout({ children }) {
                 inlineMath: [['\\\\(', '\\\\)']],
                 displayMath: [['\\\\[', '\\\\]'], ['$$', '$$']],
                 processEscapes: true
+              },
+              chtml: {
+                matchFontHeight: false,
+                scale: 1.2355
               }
             };
           `}

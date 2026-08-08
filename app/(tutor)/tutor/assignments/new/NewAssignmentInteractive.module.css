@@ -169,6 +169,8 @@
   gap: 4px;
   max-height: 280px;
   overflow-y: auto;
+  /* Same WebKit row-squashing guard as .domainList below. */
+  grid-auto-rows: min-content;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 6px;
@@ -240,6 +242,15 @@
   gap: 8px;
   max-height: 380px;
   overflow-y: auto;
+  /* Rows must hug their content. With the default `auto`, WebKit
+     treats this container's max-height as a definite size to
+     distribute across the rows and compresses them to fit instead of
+     overflowing into the scroller: every .domainBlock collapsed to
+     41px — header plus a 7px sliver of the skill list, with the rest
+     clipped by .domainBlock's overflow: hidden — and the list did not
+     scroll at all (scrollHeight === clientHeight). Chrome sizes the
+     rows to content and scrolls, so it only showed in Safari. */
+  grid-auto-rows: min-content;
 }
 
 .domainBlock {
@@ -317,6 +328,10 @@
   gap: 8px;
   max-height: 460px;
   overflow-y: auto;
+  /* Same WebKit row-squashing guard as .domainList — and these items
+     are the tallest on the page (band chips + weight slider), so they
+     lose the most when the rows get compressed. */
+  grid-auto-rows: min-content;
 }
 
 .emptySelected {

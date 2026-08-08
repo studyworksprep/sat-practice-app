@@ -106,6 +106,11 @@
   max-height: 320px;
   overflow-y: auto;
   padding-right: 4px;
+  /* Rows must hug their content: WebKit otherwise distributes the
+     max-height across the auto rows and compresses them instead of
+     overflowing into the scroller (Chrome sizes to content). Same
+     guard as .domainList in the new-assignment skill browser. */
+  grid-auto-rows: min-content;
 }
 
 .row {
