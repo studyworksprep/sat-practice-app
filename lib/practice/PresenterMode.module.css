@@ -256,35 +256,31 @@
   /* Projection scale (the A+ / A− steps), set as --presenter-scale
      from the component.
 
-     Deliberately NOT CSS `zoom`. MathJax's CHTML output sizes math
-     against the surrounding text by measuring a 60ex probe's
-     offsetHeight and dividing by the container's computed font-size
-     (its matchFontHeight option, on by default). Safari inflates
-     offsetHeight under `zoom` but leaves the computed font-size
-     unzoomed, so every expression typeset while zoomed came out
-     ~zoom× too large and sat off the text baseline — at the default
-     1.15 step, inline math rendered 1.39× the text height instead of
-     1.20×, both for \( … \) and \[ … \]. Chrome scales neither value,
-     which is why this only ever showed in Safari.
+     `zoom`, deliberately, and not `transform: scale()`. This briefly
+     was a transform, to dodge a Safari bug where MathJax sized math
+     against a 60ex probe whose offsetHeight WebKit inflates under
+     zoom while leaving the computed font-size alone. That is fixed at
+     the source now — app/layout.js pins chtml.scale and turns
+     matchFontHeight off, so MathJax no longer measures anything and
+     math scales with the text under any zoom.
 
-     `transform` is layout-neutral, so MathJax measures the unscaled
-     box in every browser and the math scales with the text like
-     everything else. Two properties of the surrounding CSS make the
-     swap behave exactly like `zoom` did, and both are load-bearing:
-     scaled overflow still counts toward .scroll's scrollable area, so
-     the stage scrolls to the bottom of tall questions; and the width
-     division reproduces zoom's line wrapping, with the global
-     `box-sizing: border-box` (app/globals.css) keeping the padding
-     inside the divided width so nothing overflows horizontally.
+     `transform` cost more than it bought. It is layout-neutral, so
+     .content reserved only its UNSCALED height while painting
+     scale× taller, and a transformed box paints above normal-flow
+     siblings: the question overhung .tagsSection by contentHeight ×
+     (scale − 1) — 130px on a full-length question at the default
+     1.15 step — and swallowed the clicks on Show tags. It also made
+     .content a containing block for position: fixed descendants,
+     which is what displaced the concept-tag popover.
 
-     Note this makes .content a containing block for any
-     position: fixed descendant. Nothing in the QuestionRenderer
-     subtree uses one today — the app's fixed-position components
-     aren't mounted inside presenter — but that's the thing to check
-     if question content ever grows one. */
-  transform: scale(var(--presenter-scale, 1));
-  transform-origin: top left;
-  width: calc(100% / var(--presenter-scale, 1));
+     `zoom` affects layout, so the painted height is the reserved
+     height, siblings flow below it, scrolling and line wrapping are
+     native, and nothing downstream is re-anchored. Tags still live
+     OUTSIDE this element (see the JSX): a fixed-position popover
+     inside a zoomed subtree gets its coordinates and its width
+     scaled too — measured at drift [7, 84] and 322px wide instead of
+     280 — so that part of the #274 layout stands. */
+  zoom: var(--presenter-scale, 1);
 }
 
 /* While drawing, Excalidraw's floating toolbar sits top-center of
@@ -295,12 +291,13 @@
 
 /* ---------- Concept tags (staff-only, collapsed) ---------- */
 
-/* Sibling of .content, not a child — see the JSX comment: .content's
-   transform would capture this subtree's position: fixed popover. That
-   also means the horizontal padding .content used to provide has to be
-   supplied here, matched to the SCALED question edge so the two still
-   line up as the tutor steps the zoom. Bottom padding gives the
-   scroller the same breathing room .content's 64px did. */
+/* Sibling of .content, not a child — see the JSX comment: the
+   projection scale would capture this subtree's position: fixed
+   popover. That also means the horizontal padding .content used to
+   provide has to be supplied here, matched to the SCALED question
+   edge so the two still line up as the tutor steps the zoom. Bottom
+   padding gives the scroller the same breathing room .content's 64px
+   did. */
 .tagsSection {
   /* Horizontal inset as margin rather than padding so the divider
      rule stays inset from the edges, the way it looked when this

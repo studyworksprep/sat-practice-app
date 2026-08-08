@@ -460,15 +460,14 @@ export function PresenterMode({
           {/* Concept tags — where they usually show (below the
               question), collapsed behind a toggle.
 
-              Deliberately a SIBLING of .content, not a child: .content
-              carries the projection transform, which makes it the
-              containing block for position: fixed descendants. The tag
-              popover is fixed-positioned at viewport coordinates it
-              measures itself, so inside .content those coordinates got
-              re-anchored and scaled, and .scroll's overflow clipped
-              what was left — the popover opened somewhere off-screen.
-              Tags are staff chrome rather than projected content, so
-              like the top bar and meta strip they stay unscaled. */}
+              Deliberately a SIBLING of .content, not a child. The tag
+              popover positions itself fixed, at viewport coordinates
+              it measures with getBoundingClientRect. Inside .content
+              those coordinates land in the projection scale's frame
+              rather than the viewport's, so the popover opens away
+              from its button and renders scale× too wide. Keeping it
+              out here also matches what tags are: staff chrome, like
+              the top bar and meta strip, not projected content. */}
           {tagsNode != null ? (
             <div className={s.tagsSection}>
               <button
