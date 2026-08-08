@@ -99,6 +99,11 @@
   gap: 6px;
   max-height: 420px;
   overflow-y: auto;
+  /* Rows must hug their content: WebKit otherwise distributes the
+     max-height across the auto rows and compresses them instead of
+     overflowing into the scroller (Chrome sizes to content). Same
+     guard as .domainList in the new-assignment skill browser. */
+  grid-auto-rows: min-content;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 6px;
@@ -276,6 +281,8 @@
   gap: 2px;
   max-height: 280px;
   overflow-y: auto;
+  /* Same WebKit row-squashing guard as .list above. */
+  grid-auto-rows: min-content;
 }
 
 .tagPickerRow {
