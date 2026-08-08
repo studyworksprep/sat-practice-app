@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="430" viewBox="0 0 1000 430" role="img" aria-labelledby="title desc">
+  <title id="title">Two data sets with the same mean and different spreads</title>
+  <desc id="desc">Set A has dots clustered at 8, 9, 10, 11, and 12. Set B has dots spread across 2, 6, 10, 14, and 18. Both sets have mean 10, but set B has the larger standard deviation.</desc>
+  <rect width="1000" height="430" rx="24" fill="#f8fafc"/>
+  <text x="500" y="42" text-anchor="middle" font-family="system-ui, sans-serif" font-size="25" font-weight="700" fill="#0f172a">Same center, different spread</text>
+  <line x1="500" y1="65" x2="500" y2="390" stroke="#64748b" stroke-width="3" stroke-dasharray="8 8"/>
+  <rect x="418" y="63" width="164" height="34" rx="17" fill="#e2e8f0"/>
+  <text x="500" y="86" text-anchor="middle" font-family="system-ui, sans-serif" font-size="17" font-weight="700" fill="#334155">mean = 10</text>
+
+  <text x="52" y="145" font-family="system-ui, sans-serif" font-size="22" font-weight="700" fill="#1d4ed8">Set A</text>
+  <text x="52" y="172" font-family="system-ui, sans-serif" font-size="17" fill="#334155">8, 9, 10, 11, 12</text>
+  <line x1="150" y1="200" x2="850" y2="200" stroke="#475569" stroke-width="3"/>
+  <g stroke="#475569" stroke-width="2" font-family="system-ui, sans-serif" font-size="15" fill="#475569" text-anchor="middle">
+    <line x1="150" y1="192" x2="150" y2="208"/><text x="150" y="230" stroke="none">0</text>
+    <line x1="325" y1="192" x2="325" y2="208"/><text x="325" y="230" stroke="none">5</text>
+    <line x1="500" y1="192" x2="500" y2="208"/><text x="500" y="230" stroke="none">10</text>
+    <line x1="675" y1="192" x2="675" y2="208"/><text x="675" y="230" stroke="none">15</text>
+    <line x1="850" y1="192" x2="850" y2="208"/><text x="850" y="230" stroke="none">20</text>
+  </g>
+  <g fill="#2563eb" stroke="#ffffff" stroke-width="3">
+    <circle cx="430" cy="175" r="13"/><circle cx="465" cy="175" r="13"/><circle cx="500" cy="175" r="13"/><circle cx="535" cy="175" r="13"/><circle cx="570" cy="175" r="13"/>
+  </g>
+
+  <text x="52" y="295" font-family="system-ui, sans-serif" font-size="22" font-weight="700" fill="#b45309">Set B</text>
+  <text x="52" y="322" font-family="system-ui, sans-serif" font-size="17" fill="#334155">2, 6, 10, 14, 18</text>
+  <line x1="150" y1="350" x2="850" y2="350" stroke="#475569" stroke-width="3"/>
+  <g stroke="#475569" stroke-width="2" font-family="system-ui, sans-serif" font-size="15" fill="#475569" text-anchor="middle">
+    <line x1="150" y1="342" x2="150" y2="358"/><text x="150" y="380" stroke="none">0</text>
+    <line x1="325" y1="342" x2="325" y2="358"/><text x="325" y="380" stroke="none">5</text>
+    <line x1="500" y1="342" x2="500" y2="358"/><text x="500" y="380" stroke="none">10</text>
+    <line x1="675" y1="342" x2="675" y2="358"/><text x="675" y="380" stroke="none">15</text>
+    <line x1="850" y1="342" x2="850" y2="358"/><text x="850" y="380" stroke="none">20</text>
+  </g>
+  <g fill="#d97706" stroke="#ffffff" stroke-width="3">
+    <circle cx="220" cy="325" r="13"/><circle cx="360" cy="325" r="13"/><circle cx="500" cy="325" r="13"/><circle cx="640" cy="325" r="13"/><circle cx="780" cy="325" r="13"/>
+  </g>
+</svg>
