@@ -1,0 +1,603 @@
+{
+  "title": "Recognize and Use Similar Triangles",
+  "description": "Identify similar triangles from matching angles, pair corresponding sides, set up proportions, and solve the right-triangle altitude configuration without mentally rotating the triangles.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_objective",
+      "html": "<h2>Turn matching angles into useful proportions</h2><p>SAT questions do not always say that two triangles are <strong>similar</strong>. You may have to notice the matching angles, decide which sides correspond, and build a proportion yourself.</p><p>You will also learn a special right-triangle diagram in which one altitude creates three similar triangles.</p><blockquote><p><strong>Goal:</strong> Use angle matches—and a small/medium/large side check—to pair corresponding sides and solve missing-length problems.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "angle_exploration",
+      "html": "<h2>Start with the angles</h2><p>The triangles below have different sizes and orientations. Inspect the colored angle marks. Before reading any rule, decide which vertex of the second triangle matches vertex \\(B\\) of the first.</p><p><img src=\"/images/similar-triangles-angle-correspondence.svg\" alt=\"Two differently oriented right triangles with matching angle colors: A matches D, B matches F, and C matches E\" width=\"1000\"></p><blockquote><p><strong>Look past the rotation:</strong> match the angle itself, not its location on the page.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "angle_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the diagram, which vertex corresponds to vertex \\(B\\)?",
+        "choices": [
+          "\\(A\\)",
+          "\\(E\\)",
+          "\\(F\\)",
+          "\\(D\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Find the angle with the same blue marking as angle \\(B\\).",
+        "explanation": "Correct. The blue angles match, so \\(B\\leftrightarrow F\\). Rotation does not change the correspondence."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "similar_definition",
+      "html": "<h2>What similar triangles guarantee</h2><p>Two triangles are <strong>similar</strong> when they have the same shape, even if their sizes or orientations differ.</p><ul><li>Every pair of <strong>corresponding angles is equal</strong>.</li><li>Every pair of <strong>corresponding sides has the same scale factor</strong>, so corresponding side lengths are proportional.</li></ul><p>In the diagram, the angle matches are \\(A\\leftrightarrow D\\), \\(B\\leftrightarrow F\\), and \\(C\\leftrightarrow E\\). Therefore the matching sides are \\(AB\\leftrightarrow DF\\), \\(BC\\leftrightarrow FE\\), and \\(AC\\leftrightarrow DE\\).</p><blockquote><p><strong>Key idea:</strong> Corresponding sides connect corresponding angles.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "definition_meaning_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which statement must be true when two triangles are similar?",
+        "choices": [
+          "Every side in one triangle equals a side in the other triangle.",
+          "Corresponding angles are equal, and corresponding side lengths share one scale factor.",
+          "The triangles face the same direction.",
+          "Both triangles have an area of \\(1\\)."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Similar means same shape, not necessarily same size or orientation.",
+        "explanation": "Exactly. Equal corresponding angles fix the shape, and one scale factor connects all corresponding side lengths."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "aa_similarity",
+      "html": "<h2>The word similar may never appear</h2><p>For triangles, two matching angle pairs are enough. Once two angles match, the third pair must also match because every triangle's angles total \\(180^\\circ\\).</p><p>This is called <strong>AA similarity</strong>: angle-angle similarity.</p><p>For example, one triangle has angles \\(48^\\circ\\), \\(72^\\circ\\), and \\(60^\\circ\\). Another triangle with angles \\(60^\\circ\\), \\(48^\\circ\\), and \\(72^\\circ\\) is similar even though the angles appear in a different order.</p><blockquote><p><strong>SAT recognition rule:</strong> If you can match two angle pairs, treat the triangles as similar and look for corresponding-side proportions.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "aa_recognition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Triangle \\(PQR\\) has \\(\\angle P=48^\\circ\\) and \\(\\angle Q=72^\\circ\\). Triangle \\(XYZ\\) has \\(\\angle X=60^\\circ\\) and \\(\\angle Y=48^\\circ\\). Why can you conclude the triangles are similar?",
+        "choices": [
+          "They both contain a side labeled with a variable.",
+          "Their first-named vertices have equal angles.",
+          "All triangles are similar.",
+          "They have two matching angle pairs: \\(48^\\circ\\) and \\(60^\\circ\\)."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Find each triangle's third angle by subtracting its two given angles from \\(180^\\circ\\).",
+        "explanation": "Correct. Triangle \\(PQR\\) has third angle \\(60^\\circ\\), while triangle \\(XYZ\\) has third angle \\(72^\\circ\\). Two angle pairs match, so AA proves similarity."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "parallel_exploration",
+      "html": "<h2>Parallel lines often hide similar triangles</h2><p>In the diagram, \\(DE\\parallel BC\\). The smaller triangle \\(ADE\\) sits inside the larger triangle \\(ABC\\).</p><p><img src=\"/images/similar-triangles-parallel-lines.svg\" alt=\"Triangle ABC with segment DE parallel to base BC, creating the smaller triangle ADE inside the larger triangle\" width=\"1000\"></p><p>The triangles share angle \\(A\\). The parallel lines also create equal green angles at \\(D\\) and \\(B\\), plus equal blue angles at \\(E\\) and \\(C\\).</p><blockquote><p><strong>Before you continue:</strong> identify the two angle pairs that are enough for AA.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "parallel_similarity_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which angle matches prove \\(\\triangle ADE\\sim\\triangle ABC\\)?",
+        "choices": [
+          "\\(\\angle A\\) matches itself, and \\(\\angle ADE=\\angle ABC\\).",
+          "\\(\\angle D=\\angle E\\), and \\(\\angle B=\\angle C\\).",
+          "\\(\\angle A=\\angle B\\), and \\(\\angle D=\\angle C\\).",
+          "The triangles have no matching angles because one is smaller."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use the shared top angle and one pair made equal by the parallel lines.",
+        "explanation": "Right. The triangles share angle \\(A\\), and the parallel lines give \\(\\angle ADE=\\angle ABC\\). Two equal angle pairs prove AA similarity."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "correspondence_process",
+      "html": "<h2>Match vertices before writing a proportion</h2><p>Use the angles as anchors.</p><ol><li>Match equal angles.</li><li>Write the vertex correspondence in the same order.</li><li>Pair sides that connect matching vertices.</li><li>Only then write a proportion.</li></ol><p>From the first diagram:</p><p>\\[A\\leftrightarrow D,\\qquad B\\leftrightarrow F,\\qquad C\\leftrightarrow E\\]</p><p>so</p><p>\\[\\triangle ABC\\sim\\triangle DFE.\\]</p><p>The order is useful: the first letters match, the second letters match, and the third letters match.</p><blockquote><p><strong>Corresponding sides:</strong> \\(AB\\leftrightarrow DF\\), \\(BC\\leftrightarrow FE\\), and \\(AC\\leftrightarrow DE\\).</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "angle_to_side_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "If \\(A\\leftrightarrow D\\), \\(B\\leftrightarrow F\\), and \\(C\\leftrightarrow E\\), which side corresponds to \\(AC\\)?",
+        "choices": [
+          "\\(EF\\)",
+          "\\(DF\\)",
+          "\\(DE\\)",
+          "\\(FE\\) and \\(DF\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Replace endpoint \\(A\\) with its match and endpoint \\(C\\) with its match.",
+        "explanation": "Correct. \\(A\\leftrightarrow D\\) and \\(C\\leftrightarrow E\\), so side \\(AC\\leftrightarrow DE\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "side_size_shortcut",
+      "html": "<h2>Use side size as a visual cross-check</h2><p>SAT geometry drawings are often roughly to scale. In similar triangles, the smallest side matches the smallest side, the medium side matches the medium side, and the largest side matches the largest side.</p><p>Why? Equal angles sit opposite corresponding sides. The largest angle is opposite the largest side, and the smallest angle is opposite the smallest side.</p><p>In the first diagram, the hypotenuses \\(BC\\) and \\(FE\\) are both the largest sides. The shortest sides \\(AC\\) and \\(DE\\) also match.</p><blockquote><p><strong>Use size as a check, not proof:</strong> Angle labels and angle relationships decide the true correspondence. A sketch can be misleading or marked “not drawn to scale.”</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "side_rank_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the first diagram, which pair contains the largest side of each triangle?",
+        "choices": [
+          "\\(AB\\) and \\(DE\\)",
+          "\\(BC\\) and \\(FE\\)",
+          "\\(AC\\) and \\(DF\\)",
+          "\\(AB\\) and \\(DF\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "In a right triangle, the side opposite the right angle is the hypotenuse and is always largest.",
+        "explanation": "Correct. \\(BC\\) and \\(FE\\) are the hypotenuses, so they are the largest corresponding sides."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "proportion_rule",
+      "html": "<h2>Keep every ratio in one direction</h2><p>For \\(\\triangle ABC\\sim\\triangle DFE\\), the matching sides give</p><p>\\[\\frac{AB}{DF}=\\frac{BC}{FE}=\\frac{AC}{DE}.\\]</p><p>Every numerator comes from the first triangle, and every denominator comes from the second.</p><p>You could reverse all three ratios and still be correct:</p><p>\\[\\frac{DF}{AB}=\\frac{FE}{BC}=\\frac{DE}{AC}.\\]</p><p>What fails is reversing only one ratio.</p><blockquote><p><strong>Proportion rule:</strong> Match positions and keep the triangle order consistent.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "valid_proportion_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Given \\(\\triangle ABC\\sim\\triangle DFE\\), which proportion is valid?",
+        "choices": [
+          "\\(\\frac{AB}{DE}=\\frac{BC}{DF}\\)",
+          "\\(\\frac{AB}{DF}=\\frac{FE}{BC}\\)",
+          "\\(\\frac{AC}{FE}=\\frac{BC}{DE}\\)",
+          "\\(\\frac{AB}{DF}=\\frac{BC}{FE}\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Check both the side matches and the direction of each ratio.",
+        "explanation": "Correct. \\(AB\\leftrightarrow DF\\) and \\(BC\\leftrightarrow FE\\), with first-triangle sides over second-triangle sides in both ratios."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "ordinary_model",
+      "html": "<h2>Model: solve one proportion</h2><p>Suppose \\(\\triangle ABC\\sim\\triangle DFE\\), with \\(AB=6\\), \\(DF=9\\), \\(BC=10\\), and \\(FE=x\\).</p><p>Use the two corresponding pairs:</p><p>\\[\\frac{AB}{DF}=\\frac{BC}{FE}\\qquad\\Longrightarrow\\qquad\\frac69=\\frac{10}{x}.\\]</p><p>Cross multiply:</p><p>\\[6x=90\\qquad\\Longrightarrow\\qquad x=15.\\]</p><p>The first-to-second scale factor is \\(9/6=3/2\\), and \\(10(3/2)=15\\), which confirms the result.</p><blockquote><p><strong>Quick check:</strong> A side in the larger triangle should not come out smaller when the scale factor is greater than \\(1\\).</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Check the proportion",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ordinary_guided_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Again, \\(\\triangle ABC\\sim\\triangle DFE\\). If \\(AC=8\\), \\(DE=12\\), \\(DF=15\\), and \\(AB=x\\), what is \\(x\\)?",
+        "choices": [
+          "\\(10\\)",
+          "\\(18\\)",
+          "\\(22.5\\)",
+          "\\(5\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use \\(AB/DF=AC/DE\\), so \\(x/15=8/12\\).",
+        "explanation": "Correct. \\(x/15=8/12=2/3\\), so \\(x=10\\). Both ratios compare the first triangle with the second."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Solve the matching-side proportion",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "parallel_model",
+      "html": "<h2>Apply the same process inside one diagram</h2><p>Return to the parallel-lines diagram. Because \\(\\triangle ADE\\sim\\triangle ABC\\), the order tells you</p><p>\\[AD\\leftrightarrow AB,\\qquad AE\\leftrightarrow AC,\\qquad DE\\leftrightarrow BC.\\]</p><p>Suppose \\(AD=6\\), \\(AB=15\\), \\(DE=8\\), and \\(BC=x\\). Compare small triangle to large triangle:</p><p>\\[\\frac{AD}{AB}=\\frac{DE}{BC}\\qquad\\Longrightarrow\\qquad\\frac6{15}=\\frac8x.\\]</p><p>Cross multiplying gives \\(6x=120\\), so \\(x=20\\).</p><blockquote><p><strong>Notice:</strong> The question never needed to say “similar.” The shared angle and parallel-line angle match gave you permission to use the proportion.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Solve the nested-triangle proportion",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "parallel_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the same parallel-lines setup, \\(AD=4\\), \\(AB=10\\), \\(DE=6\\), and \\(BC=x\\). What is \\(x\\)?",
+        "choices": [
+          "\\(2.4\\)",
+          "\\(12\\)",
+          "\\(15\\)",
+          "\\(24\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep small over large: \\(AD/AB=DE/BC\\).",
+        "explanation": "Correct. \\(4/10=6/x\\), so \\(4x=60\\) and \\(x=15\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Try the nested-triangle proportion",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ordinary_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two triangles have two matching angle pairs. A side of length \\(4\\) in the smaller triangle corresponds to \\(10\\) in the larger triangle. Another side of length \\(6\\) in the smaller triangle corresponds to \\(x\\). What is \\(x\\)?",
+        "choices": [
+          "\\(12\\)",
+          "\\(15\\)",
+          "\\(16\\)",
+          "\\(24\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Use one direction for both pairs: \\(4/10=6/x\\).",
+        "explanation": "Right. The large-to-small scale factor is \\(10/4=5/2\\), so \\(x=6(5/2)=15\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Independent similar-triangle practice",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "right_altitude_exploration",
+      "html": "<h2>The special right-triangle diagram</h2><p>Now inspect the diagram below. The large triangle \\(ABC\\) is right at \\(C\\), and its hypotenuse \\(AB\\) faces down. Altitude \\(CD\\) meets the hypotenuse at a right angle.</p><p><img src=\"/images/similar-triangles-right-altitude.svg\" alt=\"Right triangle ABC with hypotenuse AB horizontal and altitude CD from right-angle vertex C to the hypotenuse, forming smaller triangles ACD and CBD\" width=\"1000\"></p><p>The altitude creates two smaller right triangles: \\(ACD\\) and \\(CBD\\). Use the colored angle marks to look for AA matches.</p><blockquote><p><strong>Before you continue:</strong> count the right triangles and notice where each right angle is.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "right_altitude_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "How many right triangles are present in the altitude-to-hypotenuse diagram?",
+        "choices": [
+          "One: only \\(\\triangle ABC\\)",
+          "Two: only the two smaller triangles",
+          "Four: the altitude creates three new triangles",
+          "Three: \\(\\triangle ABC\\), \\(\\triangle ACD\\), and \\(\\triangle CBD\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Count the whole triangle, then the triangle on each side of the altitude.",
+        "explanation": "Correct. The diagram contains the large right triangle and two smaller right triangles."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "right_altitude_similarity",
+      "html": "<h2>All three triangles are similar</h2><p>Each smaller triangle has a right angle at \\(D\\). Each also shares one acute angle with the large triangle:</p><ul><li>\\(\\triangle ACD\\) shares angle \\(A\\) with \\(\\triangle ABC\\).</li><li>\\(\\triangle CBD\\) shares angle \\(B\\) with \\(\\triangle ABC\\).</li></ul><p>Right angle plus shared acute angle gives AA similarity. Therefore:</p><p>\\[\\triangle ABC\\sim\\triangle ACD\\sim\\triangle CBD.\\]</p><blockquote><p><strong>Special case:</strong> In a right triangle, an altitude from the right-angle vertex to the hypotenuse creates two smaller triangles that are similar to the original and to each other.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "right_altitude_aa_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why is \\(\\triangle ACD\\) similar to the large triangle \\(\\triangle ABC\\)?",
+        "choices": [
+          "They both have a right angle and share angle \\(A\\), so AA applies.",
+          "They share side \\(AC\\), so all their angles must match.",
+          "Every altitude divides a triangle into congruent triangles.",
+          "Their hypotenuses have equal lengths."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Identify one equal right-angle pair and one acute angle that appears in both triangles.",
+        "explanation": "Exactly. The right angle at \\(C\\) in the large triangle corresponds to the right angle at \\(D\\) in the smaller triangle, and angle \\(A\\) is shared."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "right_altitude_rank_table",
+      "html": "<h2>Do not rotate the triangles—rank their sides</h2><p>Use a \\(15\\)-\\(20\\)-\\(25\\) large triangle. Its altitude and hypotenuse pieces are \\(12\\), \\(9\\), and \\(16\\). Rank the sides inside each triangle:</p><ul><li><strong>Large \\(ABC\\):</strong> small \\(AC=15\\), medium \\(BC=20\\), large \\(AB=25\\).</li><li><strong>Left \\(ACD\\):</strong> small \\(AD=9\\), medium \\(CD=12\\), large \\(AC=15\\).</li><li><strong>Right \\(CBD\\):</strong> small \\(CD=12\\), medium \\(DB=16\\), large \\(CB=20\\).</li></ul><p>The hypotenuse is always the largest side of its own right triangle. The matching positions—small, medium, and large—are corresponding sides.</p><blockquote><p><strong>Correspondence by size:</strong> small matches small, medium matches medium, and large matches large.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "right_altitude_rank_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the \\(15\\)-\\(20\\)-\\(25\\) example, side \\(BC=20\\) is the medium side of the large triangle. Which side is the medium side of the left triangle \\(ACD\\)?",
+        "choices": [
+          "\\(AD=9\\)",
+          "\\(AC=15\\)",
+          "\\(CD=12\\)",
+          "\\(AB=25\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Within triangle \\(ACD\\), order \\(9\\), \\(12\\), and \\(15\\).",
+        "explanation": "Correct. In the left triangle, \\(AD=9\\) is small, \\(CD=12\\) is medium, and hypotenuse \\(AC=15\\) is large. Thus \\(BC\\leftrightarrow CD\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "right_altitude_process",
+      "html": "<h2>A repeatable process for any missing part</h2><ol><li>Choose the two triangles containing the known lengths and the unknown.</li><li>For each chosen triangle, label its sides <strong>small, medium, large</strong>.</li><li>Place matching positions in the same ratio: small with small, medium with medium, or large with large.</li><li>Keep one triangle on top and the other on the bottom.</li><li>Solve and check that the result fits its size position.</li></ol><p>You only need two matching positions to form a proportion. Choose the pair that uses the information in the question.</p><blockquote><p><strong>No mental rotation required:</strong> Compare side ranks within each triangle.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "projection_model",
+      "html": "<h2>Model 1: find a hypotenuse piece</h2><p>Suppose the large triangle has \\(AB=25\\) and \\(AC=15\\). Find \\(AD=d\\).</p><p>Use the large triangle and the left triangle:</p><ul><li>large side: \\(AB=25\\leftrightarrow AC=15\\);</li><li>small side: \\(AC=15\\leftrightarrow AD=d\\).</li></ul><p>Keep large triangle over left triangle:</p><p>\\[\\frac{25}{15}=\\frac{15}{d}.\\]</p><p>Then \\(25d=225\\), so \\(d=9\\).</p><blockquote><p><strong>Size check:</strong> \\(AD=9\\) is smaller than \\(CD=12\\) and \\(AC=15\\), so it fits the left triangle's small position.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Solve for a hypotenuse piece",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "projection_proportion_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For the same large and left triangles, which proportion correctly solves for \\(AD=d\\) from \\(AB=25\\) and \\(AC=15\\)?",
+        "choices": [
+          "\\(\\frac{25}{d}=\\frac{15}{15}\\)",
+          "\\(\\frac{25}{15}=\\frac{15}{d}\\)",
+          "\\(\\frac{25}{15}=\\frac{d}{15}\\)",
+          "\\(\\frac{15}{25}=\\frac{15}{d}\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Match large with large and small with small while keeping the large triangle on top.",
+        "explanation": "Correct. Large-to-large is \\(AB/AC=25/15\\), and small-to-small is \\(AC/AD=15/d\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "altitude_model",
+      "html": "<h2>Model 2: find the altitude</h2><p>Suppose the two hypotenuse pieces are \\(AD=9\\) and \\(DB=16\\). Find \\(CD=h\\).</p><p>Compare the left and right triangles:</p><ul><li>left small \\(AD=9\\leftrightarrow\\) right small \\(CD=h\\);</li><li>left medium \\(CD=h\\leftrightarrow\\) right medium \\(DB=16\\).</li></ul><p>Use small over medium in both triangles:</p><p>\\[\\frac9h=\\frac{h}{16}.\\]</p><p>Then \\(h^2=144\\). A length is positive, so \\(h=12\\).</p><blockquote><p><strong>Notice:</strong> The altitude appears once as the left triangle's medium side and once as the right triangle's small side. It can correctly appear in both parts of the proportion.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Solve for the altitude",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "altitude_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "If \\(AD=9\\), \\(DB=16\\), and \\(CD=h\\), which proportion correctly compares the left and right triangles?",
+        "choices": [
+          "\\(\\frac9{16}=\\frac{h}{h}\\)",
+          "\\(\\frac9h=\\frac{16}{h}\\)",
+          "\\(\\frac{h}{9}=\\frac{h}{16}\\)",
+          "\\(\\frac9h=\\frac{h}{16}\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Compare small over medium in the left triangle, then small over medium in the right triangle.",
+        "explanation": "Correct. Left small over medium is \\(AD/CD=9/h\\); right small over medium is \\(CD/DB=h/16\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "altitude_variation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In another right-triangle altitude diagram, the hypotenuse pieces are \\(4\\) and \\(9\\). If the altitude is \\(h\\), then \\(4/h=h/9\\). What is \\(h\\)?",
+        "choices": [
+          "\\(6\\)",
+          "\\(13\\)",
+          "\\(\\sqrt{13}\\)",
+          "\\(18\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Cross multiply to get \\(h^2=36\\), then use the positive value because \\(h\\) is a length.",
+        "explanation": "Correct. \\(h^2=4\\cdot9=36\\), so the positive altitude is \\(h=6\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Solve the altitude variation",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "leg_model",
+      "html": "<h2>Model 3: find a leg of the large triangle</h2><p>Suppose \\(AB=25\\), \\(DB=16\\), and \\(BC=b\\).</p><p>Use the large triangle and the right triangle:</p><ul><li>large side: \\(AB=25\\leftrightarrow BC=b\\);</li><li>medium side: \\(BC=b\\leftrightarrow DB=16\\).</li></ul><p>Use large over medium:</p><p>\\[\\frac{25}{b}=\\frac{b}{16}.\\]</p><p>Then \\(b^2=400\\), so the positive length is \\(b=20\\).</p><blockquote><p><strong>Size check:</strong> The leg \\(BC=20\\) is shorter than the large triangle's hypotenuse \\(AB=25\\), as it must be.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Solve for the large triangle's leg",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "leg_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For the large triangle and right triangle, \\(AB=18\\), \\(DB=8\\), and \\(BC=x\\). Which equation correctly matches large side with large side and medium side with medium side?",
+        "choices": [
+          "\\(\\frac{18}{8}=\\frac{x}{x}\\)",
+          "\\(\\frac{18}{x}=\\frac{8}{x}\\)",
+          "\\(\\frac{18}{x}=\\frac{x}{8}\\)",
+          "\\(\\frac{x}{18}=\\frac{x}{8}\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "In the large triangle, use large over medium. Repeat large over medium in the right triangle.",
+        "explanation": "Correct. Large-triangle large over medium is \\(AB/BC=18/x\\), and right-triangle large over medium is \\(BC/DB=x/8\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "right_altitude_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Solve the proportion from the previous block: \\(18/x=x/8\\). What is the positive length \\(x\\)?",
+        "choices": [
+          "\\(10\\)",
+          "\\(12\\)",
+          "\\(13\\)",
+          "\\(26\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Cross multiply: \\(x^2=18\\cdot8=144\\).",
+        "explanation": "Correct. \\(x^2=144\\), so the positive side length is \\(x=12\\). It is shorter than hypotenuse \\(18\\), which fits."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Complete the transfer problem",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which process works for both ordinary similar triangles and the right-triangle altitude configuration?",
+        "choices": [
+          "Establish similarity from matching angles; match sides by angle references or side rank; keep one triangle order in the proportion; solve and check the size.",
+          "Match whichever sides are nearest on the page; reverse one ratio; solve without checking.",
+          "Assume every pair of triangles is similar; square each side length; add the results.",
+          "Rotate every triangle on paper; match only the horizontal sides; use area ratios for missing lengths."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Recall the sequence: angles, correspondence, consistent proportion, size check.",
+        "explanation": "You have it. Angles establish similarity, correspondence determines the side pairs, consistent ratios produce the equation, and a size check catches mismatches."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can use similar triangles without rotating them</h2><p>You can recognize AA similarity even when the question does not name it, match sides from corresponding angles, keep proportions consistent, and use small/medium/large positions across the three triangles formed by a right-triangle altitude.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    }
+  ]
+}
