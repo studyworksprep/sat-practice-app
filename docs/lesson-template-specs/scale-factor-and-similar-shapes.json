@@ -5,7 +5,7 @@
     {
       "kind": "text",
       "id": "lesson_objective",
-      "html": "<h2>One scale factor, three different powers</h2><p>When two shapes are <strong>similar</strong>, every corresponding linear measurement changes by the same scale factor. Areas and volumes do not change by that same number.</p><p>In this lesson, you will use the linear scale factor to move among lengths, perimeters, areas, surface areas, and volumes—and work backward from area or volume ratios when needed.</p><blockquote><p><strong>Goal:</strong> Decide whether a problem uses \\(s\\), \\(s^2\\), or \\(s^3\\), then apply that relationship in either direction.</p></blockquote>",
+      "html": "<h2>One scale factor, three different powers</h2><p>When two shapes are <strong>similar</strong>, every corresponding linear measurement changes by the same scale factor. Areas and volumes do not change by that same number.</p><p>In this lesson, you will use the linear scale factor to move among lengths, perimeters, areas, surface areas, and volumes—and work backward from area or volume ratios when needed.</p><p>For example, when the linear scale factor is \\(2\\), lengths and perimeters multiply by \\(2\\), areas and surface areas multiply by \\(4\\), and volumes multiply by \\(8\\).</p><blockquote><p><strong>Goal:</strong> Decide whether a problem uses \\(s\\), \\(s^2\\), or \\(s^3\\), then apply that relationship in either direction.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }
@@ -42,7 +42,7 @@
     {
       "kind": "text",
       "id": "why_area_squares",
-      "html": "<h2>Area scales in two dimensions</h2><p>Area combines two linear dimensions. For a rectangle,</p><p>\\[A=\\text{length}\\times\\text{width}\\]</p><p>If both dimensions are multiplied by \\(s\\), then the new area is</p><p>\\[(s\\cdot\\text{length})(s\\cdot\\text{width})=s^2(\\text{length}\\times\\text{width}).\\]</p><blockquote><p><strong>Area rule:</strong> A linear scale factor of \\(s\\) produces an area scale factor of \\(s^2\\).</p></blockquote>"
+      "html": "<h2>Area scales in two dimensions</h2><p>Area combines two linear dimensions. For a rectangle,</p><p>\\[A=\\text{length}\\times\\text{width}\\]</p><p>If both dimensions are multiplied by \\(s\\), then the new area is</p><p>\\[(s\\cdot\\text{length})(s\\cdot\\text{width})=s^2(\\text{length}\\times\\text{width}).\\]</p><p>With a linear factor of \\(3\\), this becomes \\(3\\cdot3=9\\): sides multiply by \\(3\\), so area multiplies by \\(9\\).</p><blockquote><p><strong>Area rule:</strong> A linear scale factor of \\(s\\) produces an area scale factor of \\(s^2\\).</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -59,7 +59,7 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Think about the two factors multiplied in a formula such as length times width.",
-        "explanation": "Exactly. Both independent linear dimensions scale by \\(s\\), so their product scales by \\(s\\cdot s=s^2\\)."
+        "explanation": "Exactly. Both independent linear dimensions scale by \\(s\\), so their product scales by \\(s\\cdot s=s^2\\). For example, a linear factor of \\(3\\) gives an area factor of \\(3\\cdot3=9\\)."
       }
     },
     {
@@ -88,7 +88,7 @@
     {
       "kind": "text",
       "id": "dimension_rule",
-      "html": "<h2>Match the power to the measurement</h2><p>Let \\(s\\) be the linear scale factor in one fixed direction.</p><ul><li><strong>Lengths and perimeters:</strong> ratio \\(s\\)</li><li><strong>Areas and surface areas:</strong> ratio \\(s^2\\)</li><li><strong>Volumes:</strong> ratio \\(s^3\\)</li></ul><p>A perimeter is made from lengths, so it remains linear. Surface area adds the areas of two-dimensional faces, so it follows the area rule.</p><blockquote><p><strong>Memory cue:</strong> one-dimensional \\(\\to s\\), two-dimensional \\(\\to s^2\\), three-dimensional \\(\\to s^3\\).</p></blockquote>"
+      "html": "<h2>Match the power to the measurement</h2><p>Let \\(s\\) be the linear scale factor in one fixed direction.</p><ul><li><strong>Lengths and perimeters:</strong> ratio \\(s\\)</li><li><strong>Areas and surface areas:</strong> ratio \\(s^2\\)</li><li><strong>Volumes:</strong> ratio \\(s^3\\)</li></ul><p>A perimeter is made from lengths, so it remains linear. Surface area adds the areas of two-dimensional faces, so it follows the area rule.</p><p>If the linear factor is \\(2\\), the three multipliers are easy to see: perimeter \\(\\times2\\), area or surface area \\(\\times4\\), and volume \\(\\times8\\).</p><blockquote><p><strong>Memory cue:</strong> one-dimensional \\(\\to s\\), two-dimensional \\(\\to s^2\\), three-dimensional \\(\\to s^3\\).</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -105,13 +105,52 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "A perimeter is a sum of lengths. A surface area is a sum of face areas.",
-        "explanation": "Correct. Perimeter is linear, while surface area is two-dimensional and therefore uses \\(s^2\\)."
+        "explanation": "Correct. Perimeter is linear, while surface area is two-dimensional and therefore uses \\(s^2\\). For example, if every edge doubles, perimeter doubles but surface area is multiplied by \\(2^2=4\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "proportion_setup",
+      "html": "<h2>Turn the multiplier into a calculation</h2><p>First turn the linear scale factor into the multiplier for the measurement you need. Then compare the new measurement with the original:</p><p>\\[\\frac{\\text{new}}{\\text{original}}=\\frac{\\text{measurement multiplier}}{1}.\\]</p><p>Suppose the linear factor is \\(2\\), the original area is \\(12\\), and the new area is \\(a\\). The area multiplier is \\(2^2=4\\), so set up:</p><p>\\[\\frac{a}{12}=\\frac41.\\]</p><p>You can solve it in either of these ways:</p><ul><li><strong>Desmos:</strong> type \\(a/12\\sim4/1\\). Desmos assigns \\(a=48\\).</li><li><strong>Cross multiply and divide:</strong> \\(a\\cdot1=12\\cdot4\\), so \\(a=48\\).</li></ul><blockquote><p><strong>Fast version:</strong> once you know the measurement multiplier, calculate \\(\\text{new}=\\text{original}\\times\\text{multiplier}\\).</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Solve the scale-factor proportion",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "proportion_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two similar solids have a small-to-large linear scale factor of \\(3\\). The smaller volume is \\(5\\), and the larger volume is \\(v\\). Which Desmos regression correctly sets up the calculation?",
+        "choices": [
+          "\\(v/5\\sim3/1\\)",
+          "\\(v/5\\sim9/1\\)",
+          "\\(v/5\\sim27/1\\)",
+          "\\(5/v\\sim27/1\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Volume uses three dimensions. Cube the linear factor first, then keep the direction new over original.",
+        "explanation": "Correct. The volume multiplier is \\(3^3=27\\), so \\(v/5\\sim27/1\\). Desmos gives \\(v=135\\). By hand, cross multiply: \\(v\\cdot1=5\\cdot27\\), so \\(v=135\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Check the volume proportion",
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
       }
     },
     {
       "kind": "text",
       "id": "forward_area_model",
-      "html": "<h2>From a linear scale factor to a new area</h2><p>Two rectangles are similar. From the smaller rectangle to the larger one, the linear scale factor is \\(\\frac32\\). The smaller area is \\(40\\).</p><ol><li>Square the linear factor: \\(\\left(\\frac32\\right)^2=\\frac94\\).</li><li>Multiply the existing area by the area factor: \\(40\\cdot\\frac94=90\\).</li></ol><blockquote><p><strong>Forward area process:</strong> \\(A_{\\text{new}}=A_{\\text{original}}s^2\\).</p></blockquote>"
+      "html": "<h2>From a linear scale factor to a new area</h2><p>Two rectangles are similar. From the smaller rectangle to the larger one, the linear scale factor is \\(\\frac32\\). The smaller area is \\(40\\).</p><ol><li>Square the linear factor: \\(\\left(\\frac32\\right)^2=\\frac94\\).</li><li>Multiply the existing area by the area factor: \\(40\\cdot\\frac94=90\\).</li></ol><p>With the simpler linear factor \\(2\\), the same process would use area multiplier \\(2^2=4\\): an original area of \\(10\\) would become \\(10\\cdot4=40\\).</p><blockquote><p><strong>Forward area process:</strong> \\(A_{\\text{new}}=A_{\\text{original}}s^2\\).</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -186,12 +225,12 @@
     {
       "kind": "text",
       "id": "why_volume_cubes",
-      "html": "<h2>Volume scales in three dimensions</h2><p>Volume combines three linear dimensions. For a rectangular prism,</p><p>\\[V=\\text{length}\\times\\text{width}\\times\\text{height}.\\]</p><p>If all three dimensions are multiplied by \\(s\\), then the product is multiplied by</p><p>\\[s\\cdot s\\cdot s=s^3.\\]</p><blockquote><p><strong>Volume rule:</strong> A linear scale factor of \\(s\\) produces a volume scale factor of \\(s^3\\).</p></blockquote>"
+      "html": "<h2>Volume scales in three dimensions</h2><p>Volume combines three linear dimensions. For a rectangular prism,</p><p>\\[V=\\text{length}\\times\\text{width}\\times\\text{height}.\\]</p><p>If all three dimensions are multiplied by \\(s\\), then the product is multiplied by</p><p>\\[s\\cdot s\\cdot s=s^3.\\]</p><p>With a linear factor of \\(2\\), this becomes \\(2\\cdot2\\cdot2=8\\): edges multiply by \\(2\\), so volume multiplies by \\(8\\).</p><blockquote><p><strong>Volume rule:</strong> A linear scale factor of \\(s\\) produces a volume scale factor of \\(s^3\\).</p></blockquote>"
     },
     {
       "kind": "text",
       "id": "forward_volume_model",
-      "html": "<h2>From a linear scale factor to a new volume</h2><p>Two solids are similar. From the smaller solid to the larger one, the linear scale factor is \\(\\frac32\\). The smaller volume is \\(64\\).</p><ol><li>Cube the linear factor: \\(\\left(\\frac32\\right)^3=\\frac{27}{8}\\).</li><li>Multiply the existing volume: \\(64\\cdot\\frac{27}{8}=216\\).</li></ol><blockquote><p><strong>Forward volume process:</strong> \\(V_{\\text{new}}=V_{\\text{original}}s^3\\).</p></blockquote>"
+      "html": "<h2>From a linear scale factor to a new volume</h2><p>Two solids are similar. From the smaller solid to the larger one, the linear scale factor is \\(\\frac32\\). The smaller volume is \\(64\\).</p><ol><li>Cube the linear factor: \\(\\left(\\frac32\\right)^3=\\frac{27}{8}\\).</li><li>Multiply the existing volume: \\(64\\cdot\\frac{27}{8}=216\\).</li></ol><p>With the simpler linear factor \\(2\\), the volume multiplier is \\(2^3=8\\): an original volume of \\(10\\) would become \\(10\\cdot8=80\\).</p><blockquote><p><strong>Forward volume process:</strong> \\(V_{\\text{new}}=V_{\\text{original}}s^3\\).</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -214,7 +253,7 @@
     {
       "kind": "text",
       "id": "reverse_area_process",
-      "html": "<h2>Work backward from an area ratio</h2><p>If the area ratio is \\(s^2\\), take a square root to recover the positive linear scale factor.</p><p>Suppose the first-to-second area ratio is \\(49:81\\):</p><p>\\[s=\\sqrt{\\frac{49}{81}}=\\frac79.\\]</p><p>Because scale factors compare lengths, use the positive root.</p><blockquote><p><strong>Area to linear:</strong> \\(s=\\sqrt{\\text{area ratio}}\\).</p></blockquote>"
+      "html": "<h2>Work backward from an area ratio</h2><p>If the area ratio is \\(s^2\\), take a square root to recover the positive linear scale factor. For a simple example, an area multiplier of \\(9\\) comes from a linear factor of \\(\\sqrt9=3\\).</p><p>Suppose the first-to-second area ratio is \\(49:81\\):</p><p>\\[s=\\sqrt{\\frac{49}{81}}=\\frac79.\\]</p><p>Because scale factors compare lengths, use the positive root.</p><blockquote><p><strong>Area to linear:</strong> \\(s=\\sqrt{\\text{area ratio}}\\).</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -237,7 +276,7 @@
     {
       "kind": "text",
       "id": "reverse_volume_process",
-      "html": "<h2>Work backward from a volume ratio</h2><p>If the volume ratio is \\(s^3\\), take a cube root to recover the linear scale factor.</p><p>Suppose the first-to-second volume ratio is \\(8:125\\):</p><p>\\[s=\\sqrt[3]{\\frac{8}{125}}=\\frac25.\\]</p><blockquote><p><strong>Volume to linear:</strong> \\(s=\\sqrt[3]{\\text{volume ratio}}\\).</p></blockquote>"
+      "html": "<h2>Work backward from a volume ratio</h2><p>If the volume ratio is \\(s^3\\), take a cube root to recover the linear scale factor. For a simple example, a volume multiplier of \\(8\\) comes from a linear factor of \\(\\sqrt[3]{8}=2\\).</p><p>Suppose the first-to-second volume ratio is \\(8:125\\):</p><p>\\[s=\\sqrt[3]{\\frac{8}{125}}=\\frac25.\\]</p><blockquote><p><strong>Volume to linear:</strong> \\(s=\\sqrt[3]{\\text{volume ratio}}\\).</p></blockquote>"
     },
     {
       "kind": "raw_block",
@@ -518,7 +557,7 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "Match one, two, and three dimensions with the first, second, and third powers of the linear scale factor.",
-        "explanation": "You have it. Length and perimeter are linear, area and surface area are two-dimensional, and volume is three-dimensional. Moving backward requires the matching root."
+        "explanation": "You have it. Length and perimeter are linear, area and surface area are two-dimensional, and volume is three-dimensional. For a linear factor of \\(2\\), those multipliers are \\(2\\), \\(4\\), and \\(8\\). Moving backward requires the matching root."
       }
     },
     {
