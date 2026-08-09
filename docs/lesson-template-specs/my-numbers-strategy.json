@@ -11,7 +11,7 @@
     {
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Start with a concrete rectangle</h2><p>A rectangle has width \\(w\\) and length \\(w+6\\). Which expression gives its perimeter?</p><ul><li>\\(2w+6\\)</li><li>\\(4w+12\\)</li><li>\\(w^2+12\\)</li><li>\\(4w+6\\)</li></ul><p>Choose \\(w=4\\). That forces the length to be \\(10\\). Find the perimeter of your rectangle.</p>",
+      "html": "<h2>Start with a concrete rectangle</h2><p>A rectangle has width \\(w\\) and length \\(w+6\\). Which expression gives its perimeter?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(2w+6\\)</li><li>\\(4w+12\\)</li><li>\\(w^2+12\\)</li><li>\\(4w+6\\)</li></ol><p>Choose \\(w=4\\). That forces the length to be \\(10\\). Find the perimeter of your rectangle.</p>",
       "calculator": { "display": "open", "mode": "scratch", "title": "Use w = 4" }
     },
     {
@@ -31,7 +31,7 @@
     {
       "kind": "text",
       "id": "first_collision",
-      "html": "<h2>Test every choice</h2><p>Substitute the same value, \\(w=4\\), into all four choices:</p><ul><li>\\(2w+6=14\\)</li><li>\\(4w+12=28\\)</li><li>\\(w^2+12=28\\)</li><li>\\(4w+6=22\\)</li></ul><p>Two choices match your perimeter. That does not mean My Numbers failed. Your first number created a coincidence.</p>",
+      "html": "<h2>Test every choice</h2><p>Substitute the same value, \\(w=4\\), into all four choices:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>\\(2w+6=14\\)</li><li>\\(4w+12=28\\)</li><li>\\(w^2+12=28\\)</li><li>\\(4w+6=22\\)</li></ol><p>Two choices match your perimeter. That does not mean My Numbers failed. Your first number created a coincidence.</p>",
       "calculator": { "display": "available", "mode": "scratch" }
     },
     {
