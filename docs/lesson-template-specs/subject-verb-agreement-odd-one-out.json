@@ -11,7 +11,7 @@
     {
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Try the test before learning the rule</h2><p>Look only at these four answer choices:</p><ul><li><strong>is studying</strong></li><li><strong>study</strong></li><li><strong>have studied</strong></li><li><strong>are studying</strong></li></ul><p>Put <strong>he</strong> before each choice. Then put <strong>they</strong> before each choice. Which answer behaves differently from the other three?</p>",
+      "html": "<h2>Try the test before learning the rule</h2><p>Look only at these four answer choices:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>is studying</strong></li><li><strong>study</strong></li><li><strong>have studied</strong></li><li><strong>are studying</strong></li></ol><p>Put <strong>he</strong> before each choice. Then put <strong>they</strong> before each choice. Which answer behaves differently from the other three?</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -129,7 +129,7 @@
     {
       "kind": "text",
       "id": "worked_unique_singular",
-      "html": "<h2>Worked example: one singular answer</h2><p>Suppose the answers are:</p><ul><li>are restoring</li><li>restore</li><li>have restored</li><li>restores</li></ul><p><strong>They are restoring</strong>, <strong>they restore</strong>, and <strong>they have restored</strong> all work. <strong>He restores</strong> works.</p><p>The split is three plural to one singular, so <strong>restores</strong> is correct.</p>",
+      "html": "<h2>Worked example: one singular answer</h2><p>Suppose the answers are:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>are restoring</li><li>restore</li><li>have restored</li><li>restores</li></ol><p><strong>They are restoring</strong>, <strong>they restore</strong>, and <strong>they have restored</strong> all work. <strong>He restores</strong> works.</p><p>The split is three plural to one singular, so <strong>restores</strong> is correct.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -154,7 +154,7 @@
     {
       "kind": "text",
       "id": "worked_unique_plural",
-      "html": "<h2>Worked example: one plural answer</h2><p>The pattern can reverse:</p><ul><li>supports</li><li>has supported</li><li>is supporting</li><li>support</li></ul><p>The first three fit <strong>he</strong>. Only <strong>they support</strong> works.</p><p>The split is three singular to one plural, so <strong>support</strong> is correct.</p>",
+      "html": "<h2>Worked example: one plural answer</h2><p>The pattern can reverse:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>supports</li><li>has supported</li><li>is supporting</li><li>support</li></ol><p>The first three fit <strong>he</strong>. Only <strong>they support</strong> works.</p><p>The split is three singular to one plural, so <strong>support</strong> is correct.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -187,7 +187,7 @@
       "id": "choices_only_check",
       "block_type": "check",
       "content": {
-        "prompt": "The four choices are are shaped, were shaped, shape, and shapes. The set passes the eligibility gate. Which answer should you choose?",
+        "prompt": "This answer set passes the eligibility gate. Which choice is the odd one out?",
         "choices": [
           "are shaped",
           "were shaped",
@@ -268,24 +268,19 @@
       "id": "was_were_check",
       "block_type": "check",
       "content": {
-        "prompt": "The choices are were, are, have been, and was. Is the shortcut eligible, and if so, which answer is the odd one out?",
-        "choices": [
-          "No; past-tense words always block the shortcut.",
-          "Yes; was is the singular odd one out.",
-          "Yes; were is the plural odd one out.",
-          "No; have been is neither singular nor plural."
-        ],
-        "correct_index": 1,
+        "prompt": "Which choice is the singular odd one out, making this set eligible for the shortcut?",
+        "choices": ["were", "are", "have been", "was"],
+        "correct_index": 3,
         "allow_retry": true,
-        "hint": "Try each complete choice after he and they. Was fits he; the other three fit they.",
-        "explanation": "Exactly. <strong>He was</strong> works, while <strong>they were</strong>, <strong>they are</strong>, and <strong>they have been</strong> work. The set is eligible, and <strong>was</strong> is correct."
+        "hint": "Try each complete choice after he and they. Three fit they; one fits he.",
+        "explanation": "Correct. <strong>Was</strong> fits he; <strong>were</strong>, <strong>are</strong>, and <strong>have been</strong> fit they. Every choice fits exactly one frame, so the three-to-one set is eligible."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "two_two_warning",
-      "html": "<h2>A two-to-two split also fails</h2><p>Suppose every choice fits exactly one frame, but two are singular and two are plural:</p><ul><li>is</li><li>are</li><li>has been</li><li>have been</li></ul><p>There is no single odd answer. Stop and solve the question using another verb strategy.</p>",
+      "html": "<h2>A two-to-two split also fails</h2><p>Suppose every choice fits exactly one frame, but two are singular and two are plural:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>is</li><li>are</li><li>has been</li><li>have been</li></ol><p>There is no single odd answer. Stop and solve the question using another verb strategy.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -310,7 +305,7 @@
     {
       "kind": "text",
       "id": "sat_example_one",
-      "html": "<h2>Apply it to an SAT-style sentence</h2><blockquote><p>The collection of maps, together with several handwritten field journals, ___ how rapidly the coastline changed.</p></blockquote><p>The answer choices are <strong>have revealed</strong>, <strong>reveal</strong>, <strong>reveals</strong>, and <strong>are revealing</strong>.</p><p>Do not analyze the sentence yet. Test the choices.</p>",
+      "html": "<h2>Apply it to an SAT-style sentence</h2><blockquote><p>The collection of maps, together with several handwritten field journals, ___ how rapidly the coastline changed.</p></blockquote><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>have revealed</strong></li><li><strong>reveal</strong></li><li><strong>reveals</strong></li><li><strong>are revealing</strong></li></ol><p>Do not analyze the sentence yet. Test the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -335,7 +330,7 @@
     {
       "kind": "text",
       "id": "sat_example_two",
-      "html": "<h2>Now reverse the pattern</h2><blockquote><p>New measurements of the distant stars, despite the limits of the original instruments, ___ the research team's conclusion.</p></blockquote><p>The choices are <strong>supports</strong>, <strong>has supported</strong>, <strong>is supporting</strong>, and <strong>support</strong>.</p>",
+      "html": "<h2>Now reverse the pattern</h2><blockquote><p>New measurements of the distant stars, despite the limits of the original instruments, ___ the research team's conclusion.</p></blockquote><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>supports</strong></li><li><strong>has supported</strong></li><li><strong>is supporting</strong></li><li><strong>support</strong></li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -360,7 +355,7 @@
     {
       "kind": "text",
       "id": "tense_trap_example",
-      "html": "<h2>Recognize a question where the trick is unsafe</h2><blockquote><p>The laboratory ___ the samples last night.</p></blockquote><p>The choices are <strong>analyzed</strong>, <strong>has analyzed</strong>, <strong>will analyze</strong>, and <strong>analyzes</strong>.</p><p>Several choices fit both <strong>he</strong> and <strong>they</strong>. This is not the odd-one-out subject–verb pattern.</p>",
+      "html": "<h2>Recognize a question where the trick is unsafe</h2><blockquote><p>The laboratory ___ the samples last night.</p></blockquote><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li><strong>analyzed</strong></li><li><strong>has analyzed</strong></li><li><strong>will analyze</strong></li><li><strong>analyzes</strong></li></ol><p>Several choices fit both <strong>he</strong> and <strong>they</strong>. This is not the odd-one-out subject–verb pattern.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -387,17 +382,12 @@
       "id": "form_trap_check",
       "block_type": "check",
       "content": {
-        "prompt": "The choices are documenting, documents, document, and is documenting. Can you use the shortcut?",
-        "choices": [
-          "Yes; documents is the only answer ending in -s.",
-          "No; documenting by itself fits neither he nor they.",
-          "Yes; document is the plural odd one out.",
-          "No; an -ing form can never appear in an eligible choice."
-        ],
-        "correct_index": 1,
+        "prompt": "Which choice makes this answer set ineligible because it fits neither he nor they?",
+        "choices": ["documenting", "documents", "document", "is documenting"],
+        "correct_index": 0,
         "allow_retry": true,
-        "hint": "Test the standalone word documenting separately from the complete phrase is documenting.",
-        "explanation": "Exactly. <strong>Documenting</strong> alone fits neither frame, so the gate fails. The complete phrase <strong>is documenting</strong> would be classifiable, but all four choices must pass."
+        "hint": "Try each entire choice after both he and they. One choice cannot complete either frame.",
+        "explanation": "Correct. <strong>Documenting</strong> alone is not a complete verb, so it fits neither frame and makes the set ineligible. <strong>Is documenting</strong> is a complete singular phrase."
       },
       "calculator": { "display": "hidden" }
     },

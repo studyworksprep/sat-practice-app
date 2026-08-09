@@ -297,6 +297,28 @@ Use Callouts consistently:
 - A Callout does not replace good sequencing. Teach the idea before checking
   it, and keep important transitions explicit.
 
+#### Lettered answer choices inside a text block
+
+Use a real `check` block whenever the learner is supposed to select an
+answer. When a worked example or guided preview must show a static SAT answer
+set, do not run the choices together in a sentence and do not use an ordinary
+bulleted list. Use the shared lettered-list class:
+
+```html
+<blockquote><p>The sentence ___ its main claim.</p></blockquote>
+<ol class="lesson-answer-choices" style="list-style-type: upper-alpha">
+  <li>develop</li>
+  <li>develops</li>
+  <li>have developed</li>
+  <li>are developing</li>
+</ol>
+```
+
+This renders an A–D list in the visual editor, admin preview, and student
+viewer. Preserve the answer order used by any following check. Reserve the
+class for actual candidate answers; processes, examples, and ordinary
+instructional lists should keep normal `ul` or `ol` formatting.
+
 ### 3b. `raw_block` — full control over any block type
 
 `raw_block` writes a block verbatim. Use it for knowledge-check questions,

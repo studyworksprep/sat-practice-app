@@ -250,6 +250,18 @@ a{
 }
 .prose li{ margin: 6px 0; }
 
+/* Static SAT answer sets inside explanatory lesson slides. Interactive
+   checks already render their own lettered choice cards; this class is for
+   worked examples and guided previews that need the same A–D scan pattern. */
+.lesson-prose .lesson-answer-choices{
+  list-style-type: upper-alpha;
+  padding-left: 12px;
+}
+.lesson-prose .lesson-answer-choices > li::marker{
+  color: var(--color-app-accent, #102a43);
+  font-weight: 700;
+}
+
 .prose strong{ font-weight: 700; }
 .prose em{ font-style: italic; }
 
