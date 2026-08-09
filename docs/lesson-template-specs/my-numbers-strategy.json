@@ -1,0 +1,402 @@
+{
+  "title": "Use My Numbers to Make Abstract SAT Problems Concrete",
+  "description": "Recognize when variables can take many valid values, choose easy numbers that obey every condition, solve the concrete version, and test the answer choices with the same values.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Turn variables into numbers you control</h2><p>Some SAT questions describe a whole family of possible situations. The variables do not have one required value, so trying to solve for every variable can create unnecessary algebra.</p><p><strong>My Numbers</strong> replaces those open variables with easy values that obey the problem's rules. You solve your concrete version, then find the answer choice that gives the same result.</p><blockquote><p><strong>The values are your choice, but they must follow every condition in the question.</strong></p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "first_exploration",
+      "html": "<h2>Start with a concrete rectangle</h2><p>A rectangle has width \\(w\\) and length \\(w+6\\). Which expression gives its perimeter?</p><ul><li>\\(2w+6\\)</li><li>\\(4w+12\\)</li><li>\\(w^2+12\\)</li><li>\\(4w+6\\)</li></ul><p>Choose \\(w=4\\). That forces the length to be \\(10\\). Find the perimeter of your rectangle.</p>",
+      "calculator": { "display": "open", "mode": "scratch", "title": "Use w = 4" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "first_value_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "When \\(w=4\\), the width is \\(4\\) and the length is \\(10\\). What is the perimeter?",
+        "choices": ["\\(14\\)", "\\(20\\)", "\\(28\\)", "\\(40\\)"],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Add two widths and two lengths: \\(4+4+10+10\\).",
+        "explanation": "Correct. Your concrete rectangle has perimeter \\(28\\). Now the correct expression must also equal \\(28\\) when \\(w=4\\)."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "text",
+      "id": "first_collision",
+      "html": "<h2>Test every choice</h2><p>Substitute the same value, \\(w=4\\), into all four choices:</p><ul><li>\\(2w+6=14\\)</li><li>\\(4w+12=28\\)</li><li>\\(w^2+12=28\\)</li><li>\\(4w+6=22\\)</li></ul><p>Two choices match your perimeter. That does not mean My Numbers failed. Your first number created a coincidence.</p>",
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "collision_response_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two answer choices work when \\(w=4\\). What should you do next?",
+        "choices": [
+          "Choose the first matching answer.",
+          "Abandon My Numbers and solve every expression algebraically.",
+          "Average the two matching expressions.",
+          "Choose a different legal value for \\(w\\) and test the remaining choices again."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "A coincidence at one input usually disappears at another input.",
+        "explanation": "Exactly. Keep the two surviving choices, switch to another legal value, and test again."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "rerun_new_number",
+      "html": "<h2>Use a second number to break the tie</h2><p>Now choose \\(w=5\\). The length must be \\(11\\), so the perimeter is \\(32\\).</p><p>Test the two choices that previously matched:</p><ul><li>\\(4w+12=32\\)</li><li>\\(w^2+12=37\\)</li></ul><p>The coincidence is gone.</p>",
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "rerun_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression must give the rectangle's perimeter for every valid value of \\(w\\)?",
+        "choices": ["\\(w^2+12\\)", "\\(4w+12\\)", "\\(2w+6\\)", "\\(4w+6\\)"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Use the second test: the true perimeter is \\(32\\) when \\(w=5\\).",
+        "explanation": "Right. \\(4w+12\\) matched both concrete rectangles. The expression \\(w^2+12\\) matched only by coincidence when \\(w=4\\)."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "text",
+      "id": "name_strategy",
+      "html": "<h2>This is My Numbers</h2><p>You replaced an unspecified variable with a legal value, answered the question using that value, and tested every choice using the same value.</p><p>When the first value produced two matches, you used another value. That is the complete strategy in miniature.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "why_strategy_works",
+      "html": "<h2>Why a concrete example can identify a general answer</h2><p>The correct answer must describe every situation allowed by the question. Therefore, it must describe the legal situation you create.</p><p>Wrong answers usually fail immediately. Occasionally a wrong answer happens to work for one special value; a second test removes that coincidence.</p><blockquote><p><strong>You are not proving the formula with one example.</strong> You are using the example to eliminate answer choices.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "recognition_cues",
+      "html": "<h2>Four signs that My Numbers may help</h2><ol><li>There are <strong>more variables than equations</strong>, so the variables do not all have fixed values.</li><li>The <strong>answer choices contain variables</strong>.</li><li>The information is <strong>relative</strong>: it gives ratios, differences, multiples, or other relationships but few exact measurements.</li><li>A word problem contains open quantities that you can make concrete.</li></ol><p>These are cues, not permission to ignore the problem's rules.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "recognition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which question is the clearest candidate for My Numbers?",
+        "choices": [
+          "Solve \\(2x+5=17\\) for \\(x\\).",
+          "A garden has width \\(w\\) and length \\(2w+3\\). Which expression represents its perimeter?",
+          "What is the slope of \\(y=4x-7\\)?",
+          "Which listed number is a solution of \\(x^2-5x+6=0\\)?"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Look for a variable with many possible legal values and variable expressions in the answers.",
+        "explanation": "Correct. The garden can have many widths, and the correct expression must work for any legal width you choose."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "variables_equations_cue",
+      "html": "<h2>Cue 1: more variables than equations</h2><p>An equation such as \\(x=3y\\) connects two variables but does not assign one fixed value to either variable. There are infinitely many legal pairs: \\((3,1)\\), \\((6,2)\\), \\((30,10)\\), and more.</p><p>You can choose one variable, but the relationship then determines the other.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "variables_in_choices_cue",
+      "html": "<h2>Cue 2: variables appear in the choices</h2><p>If every answer is an expression in \\(w\\), \\(p\\), or another unspecified variable, the question often expects a rule that works for many values.</p><p>Give the variable a convenient value, calculate the requested quantity, and make every answer expression use that same value.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "relative_word_cues",
+      "html": "<h2>Cues 3 and 4: relative information and open word problems</h2><p>Watch for phrases such as:</p><ul><li><strong>three times as many</strong></li><li><strong>six more than</strong></li><li><strong>in the ratio 4 to 3</strong></li><li><strong>p percent of</strong></li></ul><p>Those phrases tell you how values must relate. They may still leave you free to choose a starting value.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "five_step_process",
+      "html": "<h2>Use the same five steps</h2><ol><li><strong>Spot the opening.</strong> Identify quantities without fixed values.</li><li><strong>Choose easy legal numbers.</strong> Obey every condition.</li><li><strong>Follow the relationships.</strong> Let your first choice determine any dependent values.</li><li><strong>Answer the actual question.</strong> Compute the requested quantity using your numbers.</li><li><strong>Test every choice.</strong> Reuse the same values. If multiple choices match, choose new numbers and test again.</li></ol>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "legal_numbers",
+      "html": "<h2>Your numbers must be legal</h2><p>Copy every restriction before choosing:</p><ul><li>If \\(n\\) is positive, do not choose \\(0\\) or a negative number.</li><li>If \\(n\\) is an integer, do not choose \\(2.5\\).</li><li>If a variable is in a denominator, do not make that denominator \\(0\\).</li><li>If \\(a&gt;b\\), your values must preserve that order.</li></ul><blockquote><p><strong>Easy does not mean arbitrary.</strong> A value that breaks one condition cannot test the answers.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "constraints_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The problem states that \\(a&gt;b&gt;0\\) and \\(a/b=3\\). Which pair is legal?",
+        "choices": [
+          "\\(a=3,\\ b=1\\)",
+          "\\(a=6,\\ b=0\\)",
+          "\\(a=2,\\ b=4\\)",
+          "\\(a=-3,\\ b=-1\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Check positivity, order, and the ratio—not just one condition.",
+        "explanation": "Right. \\(3&gt;1&gt;0\\) and \\(3/1=3\\). Every other pair violates at least one stated condition."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "helpful_numbers",
+      "html": "<h2>Choose numbers that remove work</h2><p>Good numbers depend on the relationship:</p><ul><li>For percentages, try a starting amount of \\(100\\).</li><li>For a denominator of \\(4\\), try a multiple of \\(4\\).</li><li>For a ratio of \\(3:2\\), try \\(6\\) and \\(4\\).</li><li>For a difference such as \\(w+6\\), choose a small positive \\(w\\) that keeps the arithmetic distinct.</li></ul><p>Your goal is a legal example with easy arithmetic.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "helpful_numbers_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A question involves \\(15\\%\\) of an unspecified positive amount. Which starting amount usually makes the arithmetic easiest?",
+        "choices": ["\\(7\\)", "\\(15\\)", "\\(50\\)", "\\(100\\)"],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Choose an amount that turns a percent directly into the same number of units.",
+        "explanation": "Correct. \\(15\\%\\) of \\(100\\) is \\(15\\), so a starting amount of \\(100\\) usually removes extra computation."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "text",
+      "id": "dependent_values",
+      "html": "<h2>Do not choose dependent values independently</h2><p>If the problem says \\(x=3y\\), you may choose \\(y=2\\), but then \\(x\\) must be \\(6\\). Choosing \\(y=2\\) and \\(x=5\\) would create a different problem.</p><blockquote><p><strong>Choose a starting value; calculate the rest from the given relationships.</strong></p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "ratio_worked_example",
+      "html": "<h2>Worked example: let one value determine the other</h2><p>Suppose \\(x/y=3\\), where \\(y&gt;0\\), and the question asks for</p><p>\\[\\frac{2x+y}{y}.\\]</p><p>Choose \\(y=2\\). The relationship forces \\(x=6\\). Now use those values:</p><p>\\[\\frac{2(6)+2}{2}=\\frac{14}{2}=7.\\]</p>",
+      "calculator": { "display": "open", "mode": "scratch", "title": "Check the ratio example" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "ratio_process_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why was \\(x=6\\) used after choosing \\(y=2\\)?",
+        "choices": [
+          "The answer choices required \\(x\\) to be even.",
+          "The relationship \\(x/y=3\\) forced \\(x=6\\).",
+          "Every My Numbers problem must use \\(2\\) and \\(6\\).",
+          "The value of \\(x\\) could be chosen independently."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Substitute \\(y=2\\) into the given ratio before doing anything else.",
+        "explanation": "Correct. Choosing one free value does not erase the relationship. Since \\(x/2=3\\), \\(x\\) must equal \\(6\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "same_values_rule",
+      "html": "<h2>Carry one consistent world into the choices</h2><p>If you decide that \\(m=10\\) and the problem says \\(n=m+5\\), then your world contains \\(m=10\\) and \\(n=15\\).</p><p>Every answer choice must be tested with those same values. Changing \\(m\\) or \\(n\\) from one choice to another makes the comparison meaningless.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "same_values_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "You chose \\(m=10\\), so \\(n=m+5=15\\), and found that the requested quantity equals \\(25\\). How should you test the answer choices?",
+        "choices": [
+          "Use \\(m=10\\) and \\(n=15\\) in every choice and look for \\(25\\).",
+          "Choose a different value of \\(m\\) for each choice.",
+          "Use \\(m=10\\) but allow \\(n\\) to change in each choice.",
+          "Choose the expression containing the most variables."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "All choices must be tested against the same concrete situation.",
+        "explanation": "Exactly. One fixed set of values creates a fair comparison among all answer choices."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "word_problem_example",
+      "html": "<h2>Use My Numbers in a word problem</h2><p>A club has twice as many junior members as senior members. If \\(s\\) is the number of seniors, which expression gives the total number of junior and senior members?</p><p>Choose \\(s=10\\). The relationship forces the number of juniors to be \\(20\\), so the total is \\(30\\).</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "word_problem_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression matches a total of \\(30\\) when \\(s=10\\)?",
+        "choices": ["\\(2s\\)", "\\(s+2\\)", "\\(3s\\)", "\\(s^2\\)"],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Substitute \\(s=10\\) into every expression and look for \\(30\\).",
+        "explanation": "Correct. \\(3s=30\\) when \\(s=10\\). It represents one group of seniors plus two equally sized groups of juniors."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "text",
+      "id": "relative_geometry_example",
+      "html": "<h2>Use My Numbers with relative geometry</h2><p>A rectangle's length is \\(2w+3\\), where \\(w\\) is its width. Which expression gives its perimeter?</p><p>Choose \\(w=5\\). The length is \\(13\\), so the perimeter is</p><p>\\[2(5)+2(13)=36.\\]</p>",
+      "calculator": { "display": "open", "mode": "scratch", "title": "Test the perimeter choices" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "relative_geometry_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression gives \\(36\\) when \\(w=5\\)?",
+        "choices": ["\\(4w+6\\)", "\\(3w+3\\)", "\\(6w+6\\)", "\\(2w^2+3\\)"],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Use the same \\(w=5\\) in every choice.",
+        "explanation": "Right. \\(6w+6=36\\) when \\(w=5\\), matching the perimeter of your concrete rectangle."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "text",
+      "id": "zero_one_warning",
+      "html": "<h2>Be careful with \\(0\\), \\(1\\), and repeated values</h2><p>Those values can be legal and useful, but they create coincidences more often:</p><ul><li>At \\(x=0\\), many different expressions become \\(0\\).</li><li>At \\(x=1\\), powers such as \\(x\\), \\(x^2\\), and \\(x^3\\) all equal \\(1\\).</li><li>If two variables receive the same value, choices that reverse them may look identical.</li></ul><p>Use values such as \\(3\\), \\(5\\), or distinct values when the answer choices contain several similar expressions.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "collision_causes",
+      "html": "<h2>Why multiple choices sometimes match</h2><p>A wrong expression does not need to be wrong at every input. For example, \\(4w+12\\) and \\(w^2+12\\) both equal \\(28\\) when \\(w=4\\), but they separate at \\(w=5\\).</p><p>A tie means your number did not distinguish the choices. It does not mean both answers are correct.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "collision_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "You choose legal values and two answer choices match your result. Which conclusion is justified?",
+        "choices": [
+          "Both choices must be correct.",
+          "The question has no correct answer.",
+          "The chosen values created a coincidence; test another legal set.",
+          "The longer expression is probably correct."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Think about what happened when \\(w=4\\) in the first rectangle.",
+        "explanation": "Correct. Keep the matching choices and use another legal value to break the tie."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "change_numbers_intentionally",
+      "html": "<h2>Change numbers intelligently</h2><p>When retesting:</p><ul><li>Keep every condition true.</li><li>Choose values unlike the first set.</li><li>Avoid \\(0\\), \\(1\\), or equal values if they caused the tie.</li><li>Retest only the choices that survived the first round.</li></ul><p>You usually need just one additional set.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "when_not_to_use",
+      "html": "<h2>Know when to leave My Numbers in the toolkit</h2><p>Do not force the strategy when:</p><ul><li>the problem already gives enough information to determine the requested value directly;</li><li>your chosen values would replace a fixed value stated in the problem;</li><li>the answer choices are single candidate values for one unknown and direct substitution is simpler;</li><li>ordinary algebra or the calculator gives a faster path.</li></ul><p>My Numbers is powerful because you choose it when it simplifies the question.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "when_not_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which situation does not need My Numbers?",
+        "choices": [
+          "A length is \\(5\\) more than an unspecified width, and the choices are expressions in the width.",
+          "Two quantities are in a \\(3:2\\) ratio, with no fixed values given.",
+          "The equation \\(4x-7=21\\) asks for the one value of \\(x\\).",
+          "A word problem gives only relative amounts and asks for an expression."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Find the situation in which the unknown already has one directly solvable value.",
+        "explanation": "Correct. \\(4x-7=21\\) determines one exact value, so choosing your own \\(x\\) would change the problem."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "neighboring_strategies",
+      "html": "<h2>Keep neighboring strategies separate</h2><p>With <strong>My Numbers</strong>, you create convenient values for open quantities in the problem, calculate a target, and test the expressions in the choices.</p><p>If the choices themselves are candidate values for one requested unknown, trying those supplied values is a different strategy called <strong>Their Numbers</strong>.</p><p>A later <strong>Find the Equation</strong> strategy will also build on My Numbers: create reasonable values from a word problem, ignore the equations at first, and then test each candidate equation. This lesson gives you the number-building foundation for that follow-up.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "independent_transfer",
+      "html": "<h2>Independent transfer</h2><p>A theater sells three times as many standard tickets as premium tickets. Let \\(p\\) be the number of premium tickets. Which expression gives the total number of tickets?</p><p>Choose a legal value for \\(p\\), let the relationship determine the number of standard tickets, find the total, and test the choices.</p>",
+      "calculator": { "display": "open", "mode": "scratch", "title": "Choose and test your numbers" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression gives the total number of tickets?",
+        "choices": ["\\(3p\\)", "\\(p+3\\)", "\\(p^3\\)", "\\(4p\\)"],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "For example, choose \\(p=5\\). Then there are \\(15\\) standard tickets and \\(20\\) total tickets. Which choice equals \\(20\\)?",
+        "explanation": "Correct. With \\(p=5\\), \\(4p=20\\), matching your concrete total. One group of premium tickets plus three equally sized groups of standard tickets makes four groups."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which sequence correctly uses My Numbers?",
+        "choices": [
+          "Choose values for every symbol independently; simplify one answer choice; stop if it works.",
+          "Choose the smallest values shown in the answers; substitute them into the question; average the results.",
+          "Solve every variable algebraically; replace the final value with an easier number; select the closest choice.",
+          "Spot open quantities; choose easy legal values; follow every relationship; answer the question; test all choices with the same values; retest if several match."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Retrieve the opening, the legal-number rule, consistency across choices, and the collision response.",
+        "explanation": "You have it. My Numbers turns one valid situation into evidence, keeps that situation consistent, and uses another legal example only when needed."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "summary",
+      "html": "<h2>My Numbers in one glance</h2><ol><li>Look for variables without fixed values, variable answer choices, relative information, or an open word problem.</li><li>Choose easy values that obey every condition.</li><li>Let the given relationships determine dependent values.</li><li>Calculate exactly what the question asks for.</li><li>Use the same values in every answer choice.</li><li>If more than one choice matches, change the numbers and test again.</li></ol><blockquote><p><strong>Make the problem concrete without changing its rules.</strong></p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can make abstract questions concrete</h2><p>You can recognize a My Numbers opportunity, build a legal example, test every answer consistently, and recover from coincidences.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": { "display": "hidden" }
+    }
+  ]
+}
