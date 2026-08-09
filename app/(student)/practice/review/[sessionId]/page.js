@@ -55,6 +55,12 @@ export default async function PracticeReviewPage({ params }) {
     questionNotesCanView, questionNotesIsAdmin, currentUserId,
   } = await buildSessionReview({ supabase, user, role: profile.role, session });
 
+  // Footer links follow the session's test type. ReviewInteractive
+  // defaults both to the SAT routes, which would bounce an ACT
+  // student into the SAT history list (where the report they just
+  // finished isn't listed) and the SAT launcher.
+  const isAct = session.test_type === 'act';
+
   return (
     <ReviewInteractive
       sessionMeta={sessionMeta}
@@ -70,6 +76,8 @@ export default async function PracticeReviewPage({ params }) {
       questionNotesCanView={questionNotesCanView}
       questionNotesIsAdmin={questionNotesIsAdmin}
       currentUserId={currentUserId}
+      footerBackHref={isAct ? '/practice/history?test=act' : '/practice/history'}
+      footerNextHref={isAct ? '/practice/start?test=act' : '/practice/start'}
     />
   );
 }

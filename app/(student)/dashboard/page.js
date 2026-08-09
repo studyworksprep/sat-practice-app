@@ -69,12 +69,14 @@ export default async function StudentDashboardPage() {
     aggregateAct,
     { data: fullProfile },
     { data: recentSessions },
+    { data: recentActSessions },
     { data: recentTestAttempts },
     { data: assignmentRows },
     { data: activeSession },
     { data: nextRegistrationRow },
     { data: assignmentLinkedSessions },
     { data: recentAttempts },
+    { data: recentActAttempts },
     hasTutor,
     { data: activePlanRow },
   ] = await Promise.all([
@@ -90,8 +92,7 @@ export default async function StudentDashboardPage() {
       .eq('id', user.id)
       .maybeSingle(),
     // Recent completed practice sessions (in-progress / abandoned
-    // belong in Practice hub's list, not here). SAT-only — PR 4 adds
-    // an ACT section that renders alongside this one (§3.4).
+    // belong in Practice hub's list, not here).
     supabase
       .from('practice_sessions')
       .select('id, created_at, question_ids, mode, status, filter_criteria')
@@ -99,6 +100,27 @@ export default async function StudentDashboardPage() {
       .in('mode', ['practice', 'review'])
       .eq('status', 'completed')
       .eq('test_type', 'sat')
+      .order('created_at', { ascending: false })
+      .limit(RECENT_FINISHED_PER_TYPE),
+    // Sibling ACT read. Same shape, same cap — the entries merge
+    // into the single "Recently finished" list below and sort by
+    // finish time alongside the SAT ones, so a student working both
+    // test types sees one true chronology.
+    //
+    // ACT full-form practice tests also live in practice_sessions
+    // (§3.4 "virtual constructs"), but they finalize into
+    // act_practice_test_attempts and their report is the ACT results
+    // page, not the generic session review. buildSessionEntries drops
+    // them in memory — the same place it already drops
+    // assignment-linked sessions — so they don't double-list against
+    // the ACT tests hub with a link to the wrong report.
+    supabase
+      .from('practice_sessions')
+      .select('id, created_at, question_ids, mode, status, filter_criteria')
+      .eq('user_id', user.id)
+      .in('mode', ['practice', 'review'])
+      .eq('status', 'completed')
+      .eq('test_type', 'act')
       .order('created_at', { ascending: false })
       .limit(RECENT_FINISHED_PER_TYPE),
     // Recent completed practice-test attempts.
@@ -178,6 +200,16 @@ export default async function StudentDashboardPage() {
     // session / assignment fetches.
     supabase
       .from('attempts')
+      .select('question_id, is_correct, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(RECENT_ATTEMPTS_CAP),
+    // ACT attempts live in their own table keyed to act_questions.
+    // Reading `attempts` for an ACT session matches nothing, so the
+    // ACT cards would all render "N questions" with no accuracy.
+    // Same row-count bound as the SAT read above.
+    supabase
+      .from('act_attempts')
       .select('question_id, is_correct, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
@@ -328,37 +360,19 @@ export default async function StudentDashboardPage() {
   const finishedEntries = [];
 
   // Practice sessions — compute first-attempt accuracy per session.
-  for (const sess of recentSessions ?? []) {
-    if (!Array.isArray(sess.question_ids) || sess.question_ids.length === 0) continue;
-    // Skip assignment-linked sessions here — those surface as
-    // assignment-type entries below so we don't double-count.
-    if (sess.filter_criteria?.assignment_id) continue;
-    const qidSet = new Set(sess.question_ids);
-    const firstByQid = new Map();
-    for (const a of recentAttempts ?? []) {
-      if (!qidSet.has(a.question_id)) continue;
-      if (a.created_at < sess.created_at) continue;
-      if (!firstByQid.has(a.question_id)) firstByQid.set(a.question_id, a);
-    }
-    let correct = 0;
-    for (const a of firstByQid.values()) if (a.is_correct) correct += 1;
-    const total = sess.question_ids.length;
-    const attempted = firstByQid.size;
-    const accuracyPct =
-      attempted > 0 ? Math.round((correct / attempted) * 100) : null;
-    finishedEntries.push({
+  // Run once per test type: same card shape, different attempts
+  // source (SAT reads `attempts`, ACT reads `act_attempts`) and a
+  // different badge kind so the two are distinguishable at a glance.
+  finishedEntries.push(
+    ...buildSessionEntries(recentSessions, recentAttempts, {
       kind: 'session',
-      id: sess.id,
-      title: `Practice · ${total} question${total === 1 ? '' : 's'}`,
-      finishedAt: sess.created_at,
-      metric:
-        accuracyPct == null
-          ? `${total} questions`
-          : `${correct} of ${attempted} · ${accuracyPct}%`,
-      tone: accuracyTone(accuracyPct),
-      href: `/practice/review/${sess.id}`,
-    });
-  }
+      titlePrefix: 'Practice',
+    }),
+    ...buildSessionEntries(recentActSessions, recentActAttempts, {
+      kind: 'act_session',
+      titlePrefix: 'ACT practice',
+    }),
+  );
 
   // Practice tests. Single-section attempts (sections_only) carry a
   // null composite by design — surface the section's scaled score on
@@ -451,6 +465,50 @@ export default async function StudentDashboardPage() {
       hasActivePlan={Boolean(activePlanRow)}
     />
   );
+}
+
+// Shape a batch of completed practice sessions into "Recently
+// finished" cards. Test-type agnostic: the caller supplies the
+// matching attempts rows (SAT `attempts` / ACT `act_attempts`) and
+// the badge kind, so both sides share one accuracy computation.
+function buildSessionEntries(sessions, attempts, { kind, titlePrefix }) {
+  const entries = [];
+  for (const sess of sessions ?? []) {
+    if (!Array.isArray(sess.question_ids) || sess.question_ids.length === 0) continue;
+    // Skip assignment-linked sessions here — those surface as
+    // assignment-type entries so we don't double-count.
+    if (sess.filter_criteria?.assignment_id) continue;
+    // Skip ACT full-form practice tests — they're practice_sessions
+    // rows too, but their report is the ACT results page and they
+    // already list on the ACT tests hub.
+    if (sess.filter_criteria?.kind === 'practice_test') continue;
+    const qidSet = new Set(sess.question_ids);
+    const firstByQid = new Map();
+    for (const a of attempts ?? []) {
+      if (!qidSet.has(a.question_id)) continue;
+      if (a.created_at < sess.created_at) continue;
+      if (!firstByQid.has(a.question_id)) firstByQid.set(a.question_id, a);
+    }
+    let correct = 0;
+    for (const a of firstByQid.values()) if (a.is_correct) correct += 1;
+    const total = sess.question_ids.length;
+    const attempted = firstByQid.size;
+    const accuracyPct =
+      attempted > 0 ? Math.round((correct / attempted) * 100) : null;
+    entries.push({
+      kind,
+      id: sess.id,
+      title: `${titlePrefix} · ${total} question${total === 1 ? '' : 's'}`,
+      finishedAt: sess.created_at,
+      metric:
+        accuracyPct == null
+          ? `${total} questions`
+          : `${correct} of ${attempted} · ${accuracyPct}%`,
+      tone: accuracyTone(accuracyPct),
+      href: `/practice/review/${sess.id}`,
+    });
+  }
+  return entries;
 }
 
 function accuracyTone(pct) {

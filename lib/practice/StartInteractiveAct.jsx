@@ -59,6 +59,9 @@ const ORDER_OPTIONS = [
  * @param {Function} props.createSessionAction
  * @param {Function} props.countAvailableAction
  * @param {string} [props.basePath='/practice']
+ * @param {string} [props.historyHref='/practice/history?test=act'] -
+ *   where "Practice history" points. Defaults to the ACT slice of the
+ *   shared history page; mirrors StartInteractive's same-named prop.
  */
 export function StartInteractiveAct({
   sections,
@@ -66,6 +69,7 @@ export function StartInteractiveAct({
   createSessionAction,
   countAvailableAction,
   basePath = '/practice',
+  historyHref = '/practice/history?test=act',
 }) {
   // ── Form state ─────────────────────────────────────────────
   // Section selection is independent of category selection — picking
@@ -264,6 +268,12 @@ export function StartInteractiveAct({
               </div>
             </div>
           </div>
+          {/* cardHeader is already space-between with a left group —
+              the history link is the right slot the SAT launcher puts
+              in its title row. */}
+          <a href={historyHref} className={s.historyLink}>
+            Practice history →
+          </a>
         </div>
 
         <form onSubmit={onSubmit} className={s.form}>
