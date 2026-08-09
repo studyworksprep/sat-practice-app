@@ -2,6 +2,62 @@
    Practice history list. Tokens from [data-tree="next"].
 ============================================================= */
 
+/* ---------- Test-type tabs ---------- */
+/* SAT / ACT tabs above the list, per docs/architecture-plan.md
+   §3.4. Same folder-tab treatment as the practice launcher's tabs
+   (PracticeStart.module.css), re-stated here against this page's
+   narrower 980px container so the tabs line up with the list
+   below rather than overhanging it. */
+
+.tabs {
+  max-width: 980px;
+  margin: 0 auto -1px;
+  padding: 12px var(--s6) 0;
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std),
+              border-color var(--dur-fast) var(--ease-std),
+              box-shadow var(--dur-fast) var(--ease-std);
+}
+
+.tab:hover {
+  color: var(--fg1);
+  background: var(--color-slate-50);
+}
+
+.tabActive {
+  background: var(--bg-white);
+  border-color: var(--border);
+  color: var(--fg1);
+  /* Overlap the tabs-row bottom border by a pixel — the folder-tab
+     effect that connects the active tab to the page below. */
+  margin-bottom: -1px;
+  box-shadow: 0 -1px 2px rgba(15, 23, 42, 0.04),
+              -1px 0 2px rgba(15, 23, 42, 0.03),
+              1px 0 2px rgba(15, 23, 42, 0.03);
+}
+
+.tabActive:hover {
+  background: var(--bg-white);
+}
+
 .container {
   max-width: 980px;
   margin: 0 auto;

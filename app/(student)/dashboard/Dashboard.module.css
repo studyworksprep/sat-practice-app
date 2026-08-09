@@ -531,6 +531,10 @@
 .typeBadge_assignment { background: var(--tile-violet-bg, #ede9fe); color: var(--tile-violet-fg, #5e3fbf); }
 .typeBadge_test       { background: #fff7ed; color: #c2410c; }
 .typeBadge_session    { background: #ecfdf5; color: #047857; }
+/* ACT practice sessions. Cyan matches the ACT launcher's IconTile
+   palette, and reads as clearly distinct from the green SAT
+   practice badge sitting next to it in the same list. */
+.typeBadge_act_session { background: #ecfeff; color: #0e7490; }
 
 .finishedMain {
   flex: 1;

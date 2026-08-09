@@ -515,6 +515,7 @@ function kindLabel(kind) {
   if (kind === 'assignment') return 'Assignment';
   if (kind === 'test') return 'Practice test';
   if (kind === 'session') return 'Practice';
+  if (kind === 'act_session') return 'ACT practice';
   return kind;
 }
 

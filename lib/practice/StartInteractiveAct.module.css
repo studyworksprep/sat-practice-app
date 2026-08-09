@@ -89,6 +89,20 @@
   gap: 14px;
 }
 
+/* "Practice history →" — the right slot of cardHeader. Matches the
+   SAT launcher's .historyLink (StartInteractive.module.css) so the
+   two launchers read the same. */
+.historyLink {
+  flex-shrink: 0;
+  color: var(--color-app-accent);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  padding-top: 6px;
+}
+
+.historyLink:hover { text-decoration: underline; }
+
 .cardTitle {
   font-family: var(--font-serif, inherit);
   font-size: 22px;
