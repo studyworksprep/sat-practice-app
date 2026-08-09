@@ -1,0 +1,416 @@
+{
+  "title": "Find the Equation with My Numbers",
+  "description": "Build one realistic set of values from a word problem, then test every answer choice to identify the equation that always matches the context.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Let the story choose the equation</h2><p>In a <strong>Find the Equation</strong> question, a word problem defines variable quantities and the answer choices are equations.</p><p>You do not need to translate the entire story into algebra. Instead, use the <strong>My Numbers</strong> strategy you already know: build one easy, realistic situation, then see which equation tells the truth about it.</p><blockquote><p><strong>Recognition cue:</strong> The choices are equations, and the variables represent quantities from a word problem.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "first_exploration",
+      "html": "<h2>Start with a real membership</h2><p>A gym charges a one-time sign-up fee of $15 and $8 for each month. Let \\(m\\) be the number of months and \\(c\\) be the total cost.</p><p><strong>Ignore the equations for now.</strong> Choose \\(m=4\\). Four months cost $32, and the sign-up fee adds $15, so your total is \\(c=47\\).</p><p>Now test the choices with the pair \\((m,c)=(4,47)\\).</p><ul><li>\\(c=15m+8\\)</li><li>\\(c=8(m+15)\\)</li><li>\\(c=8m+15\\)</li><li>\\(c=23m\\)</li></ul>",
+      "calculator": { "display": "open", "mode": "scratch", "title": "Test m = 4 and c = 47" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "first_exploration_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which equation is true when \\(m=4\\) and \\(c=47\\)?",
+        "choices": ["\\(c=15m+8\\)", "\\(c=8(m+15)\\)", "\\(c=8m+15\\)", "\\(c=23m\\)"],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Put \\(4\\) everywhere you see \\(m\\). Which right side equals \\(47\\)?",
+        "explanation": "Correct. \\(8(4)+15=47\\), so \\(c=8m+15\\) agrees with the membership you built."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "text",
+      "id": "name_the_strategy",
+      "html": "<h2>Find the Equation</h2><p>Your numbers turned four abstract equations into four simple true-or-false tests.</p><p>The correct equation must describe <strong>every</strong> legal situation in the story. A wrong equation usually breaks as soon as you test one ordinary example.</p><blockquote><p><strong>Key idea:</strong> Do not think about the equations until you have built your values from the story.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "recognition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which question is the clearest Find the Equation opportunity?",
+        "choices": [
+          "The choices are four possible values of \\(x\\), and the question asks which value solves an equation.",
+          "A word problem defines \\(p\\) and \\(q\\), and the choices are four equations relating \\(p\\) and \\(q\\).",
+          "The choices are four graphs, and the question asks which graph has the greatest slope.",
+          "The choices are four expressions, and the question asks which expression is equivalent to a given expression."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Look for both parts of the cue: variables defined by a story and equations in the choices.",
+        "explanation": "Exactly. A context defining variable quantities plus candidate equations is the signature pattern for this strategy."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "why_it_works",
+      "html": "<h2>Why one example is powerful</h2><p>An equation is a claim about the relationship between the variables. Your value set is evidence.</p><p>If a candidate equation is false for one legal situation, it cannot describe the relationship. The correct choice remains true because your numbers follow the story's rules.</p><p>Occasionally, two choices are true for the same values by coincidence. You will learn how to handle that later in the lesson.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "five_step_process",
+      "html": "<h2>The five-step process</h2><ol><li><strong>Ignore:</strong> Cover or ignore the equations.</li><li><strong>Build:</strong> Choose an easy value for one quantity, then follow the story to find the others.</li><li><strong>Record:</strong> Write down the complete value set.</li><li><strong>Test:</strong> Use that same set in every equation.</li><li><strong>Retest:</strong> If more than one equation works, build a different legal set and test the tied choices again.</li></ol><blockquote><p><strong>Short version:</strong> Story first. Equations second.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "process_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which sequence correctly uses Find the Equation?",
+        "choices": [
+          "Simplify every equation; choose different values for each choice; pick the shortest equation.",
+          "Read one equation; invent values that make it true; stop after that equation works.",
+          "Choose values for every variable independently; average the equations' results; pick the closest.",
+          "Build values from the story; record them; test every equation with the same values; retest any tie."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The story creates one consistent situation before any answer choice is tested.",
+        "explanation": "Right. One legal situation must be tested consistently across all choices, with a second situation only if a tie remains."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "choose_the_driver",
+      "html": "<h2>Choose the quantity that drives the story</h2><p>Start with a quantity you can choose freely. Then let the stated relationship determine the dependent quantity.</p><p>If a collection has five more red objects than blue objects, choose the number of blue objects first. For example, choose \\(b=10\\). The story then forces \\(r=15\\).</p><blockquote><p><strong>Watch out:</strong> Do not choose \\(b\\) and \\(r\\) separately. They must belong to the same situation.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "driver_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A theater sold \\(7\\) fewer premium tickets than standard tickets. If you choose \\(s=20\\) standard tickets, which value must you use for the number \\(p\\) of premium tickets?",
+        "choices": ["\\(p=27\\)", "\\(p=13\\)", "\\(p=20\\)", "Any convenient value of \\(p\\)"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Premium is the smaller quantity: take \\(7\\) away from \\(20\\).",
+        "explanation": "Correct. The story forces \\(p=20-7=13\\), so the legal value set is \\((s,p)=(20,13)\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "dependent_values",
+      "html": "<h2>Let relationships create the other values</h2><p>You usually choose only one starting value. Every phrase in the context then creates another value:</p><ul><li><strong>6 more than:</strong> add \\(6\\)</li><li><strong>4 times as many:</strong> multiply by \\(4\\)</li><li><strong>$12 per ticket:</strong> multiply the number of tickets by \\(12\\)</li><li><strong>30% of the total:</strong> take \\(0.30\\) of the total</li></ul><p>You are using ordinary number sense to build a real example, not translating the phrases into a formal equation.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "record_the_set",
+      "html": "<h2>Record the whole value set</h2><p>Before you look at the choices, write each variable and its value on one line.</p><p>For the theater example:</p><blockquote><p>\\(s=20\\) standard tickets<br>\\(p=13\\) premium tickets</p></blockquote><p>This tiny record prevents you from reversing the variables or quietly changing a number while testing later choices.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "museum_example",
+      "html": "<h2>Model the complete strategy</h2><p>A museum charges $18 for each adult ticket and $11 for each student ticket. Let \\(a\\) be the number of adult tickets, \\(s\\) the number of student tickets, and \\(r\\) the total revenue.</p><p>Ignore the choices. Choose \\(a=2\\) and \\(s=3\\). The revenue is \\(2(18)+3(11)=69\\), so record:</p><blockquote><p>\\(a=2,\\quad s=3,\\quad r=69\\)</p></blockquote><p>Now test that same set in every candidate equation.</p>",
+      "calculator": { "display": "open", "mode": "scratch", "title": "Test a = 2, s = 3, r = 69" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "museum_equation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which equation is true for \\(a=2\\), \\(s=3\\), and \\(r=69\\)?",
+        "choices": ["\\(r=18a+11s\\)", "\\(r=29(a+s)\\)", "\\(r=18s+11a\\)", "\\(r=11as+18\\)"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Substitute all three recorded values. The correct right side must equal \\(69\\).",
+        "explanation": "Yes. \\(18(2)+11(3)=69\\), so \\(r=18a+11s\\) tells the truth about your museum purchase."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "text",
+      "id": "same_values_rule",
+      "html": "<h2>Keep the evidence fixed</h2><p>Your value set is one real situation. Every equation must face the same evidence.</p><p>If you use \\(a=2\\), \\(s=3\\), and \\(r=69\\) in choice A, keep those exact values for choices B, C, and D.</p><blockquote><p><strong>Nonnegotiable:</strong> Never choose new numbers just to make a different equation work.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "same_values_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Choice A is false for your recorded value set. What should you do before testing choice B?",
+        "choices": [
+          "Change the values so choice B uses easier arithmetic.",
+          "Use only the value of the first variable and ignore the others.",
+          "Keep the complete recorded value set exactly the same.",
+          "Solve choice B for every variable before substituting."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "All four equations are claims about one situation.",
+        "explanation": "Correct. Keeping one value set fixed makes the comparison fair and prevents a wrong choice from being rescued by different evidence."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "direction_language",
+      "html": "<h2>Let common sense handle direction</h2><p>Phrases such as <strong>more than</strong>, <strong>less than</strong>, and <strong>times as many</strong> often tempt students to reverse an equation.</p><p>With My Numbers, you can think about the quantities instead. If there are 6 fewer vans than cars, choose 20 cars and picture removing 6. That gives 14 vans. The pair itself captures the correct direction.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "direction_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A garden has \\(6\\) fewer shrubs than flowers. You choose \\(f=20\\) flowers, so \\(s=14\\) shrubs. Which equation agrees with your values?",
+        "choices": ["\\(f=s-6\\)", "\\(s=f+6\\)", "\\(s=f-6\\)", "\\(f=6s\\)"],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Substitute \\(f=20\\) and \\(s=14\\) into each equation; do not rely on the order of the words.",
+        "explanation": "Right. \\(14=20-6\\), so \\(s=f-6\\). The numbers reveal the direction without a translation rule."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "rate_context",
+      "html": "<h2>Build rates from familiar units</h2><p>A rate tells you how much accumulates for each unit. If water flows at 12 liters per minute, choose a convenient time such as 5 minutes. Common sense gives \\(5\\) groups of \\(12\\), or \\(60\\) liters.</p><p>Record \\(t=5\\) and \\(v=60\\), then test the equations.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "rate_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Water flows at \\(12\\) liters per minute. Let \\(t\\) be minutes and \\(v\\) be liters. Which equation is true for \\(t=5\\) and \\(v=60\\)?",
+        "choices": ["\\(t=12v\\)", "\\(v=12t\\)", "\\(v=t+12\\)", "\\(t=v+12\\)"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Test \\(t=5\\) and \\(v=60\\). Which statement becomes true?",
+        "explanation": "Correct. \\(60=12(5)\\), so \\(v=12t\\) matches the rate situation."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "percent_context",
+      "html": "<h2>Make percentages friendly</h2><p>A bookstore says 35% of its books are hardcover. Let \\(b\\) be the total number of books and \\(h\\) the number of hardcover books.</p><p>Choose a total that makes 35% easy: \\(b=200\\). Then \\(10\\%\\) is 20, \\(30\\%\\) is 60, and \\(5\\%\\) is 10, so \\(h=70\\).</p><blockquote><p>Record \\(b=200,\\quad h=70\\).</p></blockquote>",
+      "calculator": { "display": "open", "mode": "scratch", "title": "Test b = 200 and h = 70" }
+    },
+    {
+      "kind": "text",
+      "id": "percent_test_setup",
+      "html": "<h2>Trust the values, not the equation's appearance</h2><p>Percent equations can be written in unfamiliar orientations. Do not decide which form looks right.</p><p>Insert \\(b=200\\) and \\(h=70\\) into each choice. The correct equation is simply the statement that remains true.</p>",
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "percent_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which equation is true for \\(b=200\\) total books and \\(h=70\\) hardcover books?",
+        "choices": ["\\(b=0.35h\\)", "\\(h=b+0.35\\)", "\\(b=35h\\)", "\\(h=0.35b\\)"],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Substitute \\(200\\) for \\(b\\) and \\(70\\) for \\(h\\). Check which equality is true.",
+        "explanation": "Exactly. \\(70=0.35(200)\\), so \\(h=0.35b\\)."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "text",
+      "id": "helpful_numbers",
+      "html": "<h2>Choose numbers that make the story easy</h2><p>Your numbers should be legal, realistic, and convenient.</p><ul><li>For percentages, use \\(100\\), \\(200\\), or another friendly total.</li><li>For a price per item, use a small whole number of items.</li><li>For a ratio, use multiples of the ratio parts.</li><li>For counts, use nonnegative whole numbers.</li></ul><p>The best choice lets you build the complete situation confidently.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "helpful_numbers_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A problem says 15% of the total survey responses selected option A. Which starting total is especially helpful?",
+        "choices": ["\\(200\\)", "\\(1\\)", "\\(15\\)", "\\(17\\)"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Choose a total whose 15% is an easy whole number.",
+        "explanation": "Yes. \\(15\\%\\) of \\(200\\) is \\(30\\), creating a clean, realistic value set."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "respect_constraints",
+      "html": "<h2>Every condition still matters</h2><p>Your values are invented, but they cannot violate the context. Watch for restrictions such as:</p><ul><li>positive or nonnegative values;</li><li>whole-number counts;</li><li>a minimum or maximum;</li><li>one quantity being larger than another;</li><li>a total being split into parts.</li></ul><blockquote><p><strong>Rule:</strong> Convenient numbers are useful only when they describe a possible situation.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "constraints_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A tournament has a positive whole number \\(n\\) of teams, and \\(n\\ge4\\). Which is a legal, convenient choice for \\(n\\)?",
+        "choices": ["\\(n=-4\\)", "\\(n=2.5\\)", "\\(n=6\\)", "\\(n=0\\)"],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The value must be a whole number, positive, and at least \\(4\\).",
+        "explanation": "Correct. \\(6\\) satisfies every stated condition and is easy to use."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "zero_one_warning",
+      "html": "<h2>Be careful with 0 and 1</h2><p>The numbers \\(0\\) and \\(1\\) are easy, but they can hide differences between equations. Multiplying by \\(1\\), raising \\(1\\) to a power, or multiplying by \\(0\\) can make several wrong expressions look the same.</p><p>Use ordinary values such as \\(3\\), \\(5\\), \\(10\\), or \\(20\\) when they fit the story. Save \\(0\\) or \\(1\\) for situations where they are especially meaningful.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "collision_example",
+      "html": "<h2>When two equations work by accident</h2><p>A context says \\(y\\) is 2 more than twice \\(x\\). You choose \\(x=1\\), so \\(y=4\\).</p><p>Two choices happen to work:</p><ul><li>\\(y=2x+2\\) gives \\(4=4\\).</li><li>\\(y=4x\\) also gives \\(4=4\\).</li></ul><p>This does not mean the question has two answers. Your first value set created a <strong>collision</strong>.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "collision_action_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Two candidate equations are true for your first legal value set. What should you do next?",
+        "choices": [
+          "Pick the equation with fewer symbols.",
+          "Build a different legal value set and retest only the tied equations.",
+          "Change one variable separately inside each tied equation.",
+          "Assume both equations must describe the relationship."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "One example did not separate the choices, so create new evidence from the same story.",
+        "explanation": "Correct. A second legal situation breaks an accidental tie without requiring you to translate the equations."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "retest_deliberately",
+      "html": "<h2>Change the starting value on purpose</h2><p>For the same context, choose \\(x=3\\). Then twice \\(x\\) is \\(6\\), and 2 more gives \\(y=8\\).</p><ul><li>\\(y=2x+2\\) gives \\(8=8\\).</li><li>\\(y=4x\\) gives \\(8=12\\), which is false.</li></ul><p>The second set, \\((x,y)=(3,8)\\), identifies \\(y=2x+2\\).</p><blockquote><p><strong>Retest rule:</strong> Change the value you originally chose, then rebuild every dependent value from the story.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "retest_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "When you retest a tie, which method creates a valid second value set?",
+        "choices": [
+          "Keep every value the same and round the results differently.",
+          "Change a dependent value but leave the starting value fixed.",
+          "Use a different value in each answer choice.",
+          "Choose a new legal starting value and follow the context again."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The second set must still represent one complete situation from the story.",
+        "explanation": "Exactly. Change the driver, then let the same relationships generate the other values."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "supplied_values",
+      "html": "<h2>Use supplied values when the story gives them</h2><p>Sometimes the context already provides a complete example. In that case, do not replace useful information with invented numbers.</p><p>Record the given values and use them to test the equations. The central move stays the same: turn each candidate equation into a true-or-false statement about one consistent situation.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "multi_step_context",
+      "html": "<h2>A context can have more than one step</h2><p>A delivery company charges $9 to start an order, $2.50 per pound, and $4 for insurance. Let \\(w\\) be the package weight in pounds and \\(t\\) be the total charge.</p><p>Ignore the equations. Choose \\(w=4\\):</p><ul><li>Weight charge: \\(4(2.50)=10\\)</li><li>Start fee: \\(9\\)</li><li>Insurance: \\(4\\)</li></ul><p>Now combine every part of the story to find \\(t\\).</p>",
+      "calculator": { "display": "open", "mode": "scratch", "title": "Build the delivery charge" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "multi_step_value_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For a \\(4\\)-pound insured package, what complete value set should you record?",
+        "choices": ["\\(w=4,\\ t=10\\)", "\\(w=4,\\ t=23\\)", "\\(w=4,\\ t=19\\)", "\\(w=23,\\ t=4\\)"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Add the $10 weight charge, $9 start fee, and $4 insurance charge.",
+        "explanation": "Correct. The total is \\(10+9+4=23\\), so record \\((w,t)=(4,23)\\)."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "multi_step_equation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which equation is true for \\(w=4\\) and \\(t=23\\)?",
+        "choices": ["\\(t=9w+6.5\\)", "\\(t=2.5(w+13)\\)", "\\(t=2.5w+13\\)", "\\(t=13w+2.5\\)"],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Use the recorded pair in every choice. The correct right side equals \\(23\\).",
+        "explanation": "Yes. \\(2.5(4)+13=23\\). The \\(13\\) combines the $9 start fee and $4 insurance charge."
+      },
+      "calculator": { "display": "available", "mode": "scratch" }
+    },
+    {
+      "kind": "text",
+      "id": "rearranged_equations",
+      "html": "<h2>The correct equation may look rearranged</h2><p>If \\(q\\) is 5 more than \\(p\\), you might expect \\(q=p+5\\). A choice such as \\(q-p=5\\) says the same thing in a different form.</p><p>Do not reject an equation because its variables appear in an unexpected order. Choose a legal pair such as \\(p=12\\), \\(q=17\\), and test whether the equality is true.</p><blockquote><p><strong>Advantage:</strong> Truth-testing works even when the correct equation does not resemble the wording.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_transfer",
+      "block_type": "check",
+      "content": {
+        "prompt": "A venue charges a one-time cleaning fee of $75 plus $12.50 per attendee. Let \\(n\\) be the number of attendees and \\(C\\) be the total charge. Which equation represents this context?",
+        "choices": ["\\(C=75n+12.5\\)", "\\(C=12.5n+75\\)", "\\(C=12.5(n+75)\\)", "\\(C=87.5n\\)"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Build an example: with \\(n=20\\), the attendee charge is $250 and the total is \\(C=325\\). Test \\(n=20\\) and \\(C=325\\) in every choice.",
+        "explanation": "Correct. Your value set gives \\(325=12.5(20)+75\\), so \\(C=12.5n+75\\)."
+      },
+      "calculator": { "display": "open", "mode": "scratch", "title": "Build and test your own values" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which description captures the complete Find the Equation strategy?",
+        "choices": [
+          "Translate every word into algebra, simplify only the first equation, and stop when it looks familiar.",
+          "Choose values after reading each equation, allowing every choice to use a different example.",
+          "Pick 0 or 1 for every variable, then choose every equation that works for those values.",
+          "Ignore the equations; build and record one legal value set from the story; test every choice with it; rebuild and retest if choices tie."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Retrieve the order: story, values, record, same-value testing, and collision response.",
+        "explanation": "You have it. The story creates the evidence, every equation faces the same evidence, and a second legal example resolves an accidental tie."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>Story first. Equations second.</h2><ol><li>Ignore the choices.</li><li>Build easy, legal values from the context.</li><li>Record every variable.</li><li>Test all equations with the same values.</li><li>Retest with a new legal set if choices tie.</li></ol><p>You can now turn an abstract equation-choice problem into a short series of true-or-false tests.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": { "display": "hidden" }
+    }
+  ]
+}
