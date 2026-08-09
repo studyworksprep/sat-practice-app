@@ -11,7 +11,7 @@
     {
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Start with a real membership</h2><p>A gym charges a one-time sign-up fee of $15 and $8 for each month. Let \\(m\\) be the number of months and \\(c\\) be the total cost.</p><p><strong>Ignore the equations for now.</strong> Choose \\(m=4\\). Four months cost $32, and the sign-up fee adds $15, so your total is \\(c=47\\).</p><p>Now test the choices with the pair \\((m,c)=(4,47)\\).</p><ul><li>\\(c=15m+8\\)</li><li>\\(c=8(m+15)\\)</li><li>\\(c=8m+15\\)</li><li>\\(c=23m\\)</li></ul>",
+      "html": "<h2>Start with a real membership</h2><p>A gym charges a one-time sign-up fee of $15 and $8 for each month. Let \\(m\\) be the number of months and \\(c\\) be the total cost.</p><p><strong>Ignore the equations for now.</strong> Choose \\(m=4\\). Four months cost $32, and the sign-up fee adds $15, so your total is \\(c=47\\).</p><p>Now test the choices with the pair \\((m,c)=(4,47)\\).</p><ol class=\"lesson-answer-choices\"><li>\\(c=15m+8\\)</li><li>\\(c=8(m+15)\\)</li><li>\\(c=8m+15\\)</li><li>\\(c=23m\\)</li></ol>",
       "calculator": { "display": "open", "mode": "scratch", "title": "Test m = 4 and c = 47" }
     },
     {
