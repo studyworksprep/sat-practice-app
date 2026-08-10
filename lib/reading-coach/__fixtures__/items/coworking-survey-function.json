@@ -1,0 +1,146 @@
+{
+  "slug": "coworking-survey-function",
+  "title": "Why people join coworking spaces",
+  "genre": "social_science",
+  "difficulty": 2,
+  "taskType": "function",
+  "source": {
+    "rightsStatus": "owned",
+    "rightsNotes": "Original passage written for Studyworks Reading Coach; fictional study."
+  },
+  "questionStemHtml": "<p>Which choice best describes the function of the second sentence in the text as a whole?</p>",
+  "passageHtml": "<p>Sociologist Maya Trent's survey of 42 coworking spaces concluded that members join primarily to escape household distraction. Yet when Trent's team logged how members actually spent their hours, fewer than a third involved focused solo work; the balance went to conversations, introductions, and impromptu collaborations. Trent now argues that the survey answers reflect what members find easiest to justify — paying for productivity — while the logs capture a motive members rarely name: the wish to belong to a working community.</p>",
+  "processingMode": "whole_passage",
+  "taskRubric": {
+    "canonicalTask": "Explain what role the second sentence plays in the structure of the passage.",
+    "requiredIdeas": [
+      "describe the sentence's function relative to the rest of the passage, not its content alone"
+    ],
+    "acceptableVariants": [
+      "say why the author includes the second sentence",
+      "explain what the second sentence does for the argument"
+    ],
+    "commonWrongTasks": [
+      "summarize the whole passage",
+      "decide whether coworking spaces are worthwhile",
+      "restate what the survey found"
+    ]
+  },
+  "processingUnits": [
+    {
+      "key": "survey",
+      "textHtml": "<p>Sociologist Maya Trent's survey of 42 coworking spaces concluded that members join primarily to escape household distraction.</p>",
+      "requiredIdeas": [
+        "a survey found members join coworking spaces to escape distraction at home"
+      ],
+      "requiredRelations": [],
+      "acceptableOmissions": [
+        "the number 42",
+        "the researcher's name"
+      ],
+      "prohibitedDistortions": [
+        "the survey was about employers rather than members"
+      ]
+    },
+    {
+      "key": "logs",
+      "textHtml": "<p>Yet when Trent's team logged how members actually spent their hours, fewer than a third involved focused solo work; the balance went to conversations, introductions, and impromptu collaborations.</p>",
+      "requiredIdeas": [
+        "activity logs showed most time went to social interaction and collaboration",
+        "focused solo work was a minority of members' time"
+      ],
+      "requiredRelations": [
+        "contrast between what members said in the survey and what the logs showed they did"
+      ],
+      "acceptableOmissions": [
+        "the exact fraction one third"
+      ],
+      "prohibitedDistortions": [
+        "members did no focused work at all",
+        "the logs came from a different research team"
+      ]
+    },
+    {
+      "key": "reinterpretation",
+      "textHtml": "<p>Trent now argues that the survey answers reflect what members find easiest to justify — paying for productivity — while the logs capture a motive members rarely name: the wish to belong to a working community.</p>",
+      "requiredIdeas": [
+        "Trent reinterprets the survey answers as easy-to-justify explanations",
+        "the logs are taken to reveal an unnamed motive: belonging to a community"
+      ],
+      "requiredRelations": [
+        "the log evidence leads Trent to reinterpret the survey responses"
+      ],
+      "acceptableOmissions": [],
+      "prohibitedDistortions": [
+        "members deliberately lied on the survey",
+        "Trent discarded the survey as worthless"
+      ]
+    }
+  ],
+  "passageRubric": {
+    "canonicalSummary": "A survey suggested people join coworking spaces for distraction-free productivity, but activity logs showed most member time going to conversation and collaboration, leading the researcher to conclude that the survey captured a convenient justification while the real, rarely named motive is belonging to a working community.",
+    "requiredIdeas": [
+      "survey: members say they join to escape distraction and be productive",
+      "logs: most observed time was social and collaborative rather than solo work",
+      "conclusion: the stated motive is a justification, the underlying motive is community"
+    ],
+    "requiredRelations": [
+      "contrast between reported motives and observed behavior",
+      "the observed behavior drives the reinterpretation of the survey answers"
+    ],
+    "acceptableOmissions": [
+      "the number 42",
+      "the researcher's name",
+      "the exact fraction one third"
+    ],
+    "prohibitedDistortions": [
+      "members deliberately lied",
+      "coworking spaces fail at supporting productivity",
+      "the survey and logs came from rival research teams"
+    ]
+  },
+  "preanswerRubric": {
+    "canonicalPreanswer": "The second sentence supplies observed-behavior evidence that conflicts with the survey finding, setting up the reinterpretation in the final sentence.",
+    "requiredIdeas": [
+      "it introduces evidence about what members actually did",
+      "that evidence complicates or undercuts the survey finding from the first sentence"
+    ],
+    "acceptableVariants": [
+      "it presents data that contradicts sentence one and sets up the conclusion",
+      "it provides the twist the final reinterpretation builds on"
+    ],
+    "prohibitedClaims": [
+      "it restates the survey finding",
+      "it introduces an unrelated new research question"
+    ]
+  },
+  "choices": [
+    {
+      "label": "A",
+      "html": "<p>It restates the claim introduced in the first sentence in more precise statistical terms.</p>",
+      "correct": false,
+      "rationaleHtml": "<p>The second sentence does not restate the survey finding — it reports behavior that conflicts with it, signaled by 'Yet.'</p>",
+      "errorCode": "wrong_relation"
+    },
+    {
+      "label": "B",
+      "html": "<p>It presents a competing conclusion drawn by a rival research group.</p>",
+      "correct": false,
+      "rationaleHtml": "<p>The logging was done by Trent's own team, not a rival group.</p>",
+      "errorCode": "wrong_actor"
+    },
+    {
+      "label": "C",
+      "html": "<p>It introduces observational evidence that complicates the survey finding reported in the first sentence.</p>",
+      "correct": true,
+      "rationaleHtml": "<p>Correct. The sentence contrasts what members actually did with what the survey said they wanted, which is exactly what the final sentence resolves.</p>"
+    },
+    {
+      "label": "D",
+      "html": "<p>It concedes a limitation of the logging method before defending its reliability.</p>",
+      "correct": false,
+      "rationaleHtml": "<p>The passage never questions or defends the logging method; this adds a move the text does not make.</p>",
+      "errorCode": "unsupported_addition"
+    }
+  ]
+}

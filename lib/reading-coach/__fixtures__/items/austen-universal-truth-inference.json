@@ -1,0 +1,128 @@
+{
+  "slug": "austen-universal-truth-inference",
+  "title": "A truth universally acknowledged",
+  "genre": "literature",
+  "difficulty": 3,
+  "taskType": "inference",
+  "source": {
+    "title": "Pride and Prejudice",
+    "author": "Jane Austen",
+    "year": 1813,
+    "rightsStatus": "public_domain",
+    "rightsNotes": "Published 1813; public domain worldwide."
+  },
+  "questionStemHtml": "<p>Based on the text, the 'truth universally acknowledged' is best understood as reflecting which of the following?</p>",
+  "passageHtml": "<p>It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered as the rightful property of some one or other of their daughters.</p>",
+  "processingMode": "sentence_chunks",
+  "taskRubric": {
+    "canonicalTask": "Work out what the passage implies about who actually holds the supposedly universal belief.",
+    "requiredIdeas": [
+      "recognize that the answer must be inferred from the narrator's framing rather than stated directly"
+    ],
+    "acceptableVariants": [
+      "figure out what the narrator suggests about the so-called truth",
+      "determine whose belief this really is"
+    ],
+    "commonWrongTasks": [
+      "state the main idea of the whole novel",
+      "define the word 'fortune'",
+      "decide whether the man really wants a wife"
+    ]
+  },
+  "processingUnits": [
+    {
+      "key": "claim",
+      "textHtml": "<p>It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.</p>",
+      "requiredIdeas": [
+        "a wealthy single man is said to need a wife",
+        "the claim is framed as a truth everyone accepts"
+      ],
+      "requiredRelations": [],
+      "acceptableOmissions": [],
+      "prohibitedDistortions": [
+        "the man himself announces that he wants a wife"
+      ]
+    },
+    {
+      "key": "families",
+      "textHtml": "<p>However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered as the rightful property of some one or other of their daughters.</p>",
+      "requiredIdeas": [
+        "the man's own feelings and views may be entirely unknown",
+        "the surrounding families are nonetheless convinced and treat him as a future husband for one of their daughters"
+      ],
+      "requiredRelations": [
+        "contrast between the man's unknown views and the families' fixed conviction"
+      ],
+      "acceptableOmissions": [
+        "the exact phrase 'rightful property'"
+      ],
+      "prohibitedDistortions": [
+        "the families consult the man about his intentions",
+        "the man has agreed to marry someone"
+      ]
+    }
+  ],
+  "passageRubric": {
+    "canonicalSummary": "The narrator announces, as if it were a universal truth, that a rich single man must want a wife — then reveals that the conviction really lives in the minds of the neighbouring families, who treat any such newcomer as belonging to one of their daughters regardless of his own unknown views.",
+    "requiredIdeas": [
+      "the opening claim is framed as universally accepted",
+      "the surrounding families are the ones who hold and act on the belief",
+      "the man's own feelings are unknown and effectively ignored"
+    ],
+    "requiredRelations": [
+      "contrast between the stated universal truth and the families' self-interested conviction",
+      "the families' belief leads them to regard the newcomer as destined for one of their daughters"
+    ],
+    "acceptableOmissions": [
+      "the word 'neighbourhood'",
+      "the exact phrase 'rightful property'"
+    ],
+    "prohibitedDistortions": [
+      "the man himself declares he wants a wife",
+      "the narrator sincerely endorses the claim as literal fact"
+    ]
+  },
+  "preanswerRubric": {
+    "canonicalPreanswer": "The 'truth' is really the expectation of the neighbouring families: they, not the man, believe a wealthy bachelor must marry one of their daughters.",
+    "requiredIdeas": [
+      "the belief belongs to the families or community rather than to the man himself"
+    ],
+    "acceptableVariants": [
+      "it is the neighbours' assumption projected onto the newcomer",
+      "the families' hopes, presented ironically as a universal truth"
+    ],
+    "prohibitedClaims": [
+      "the man has said he wants to marry",
+      "the narrator literally believes all rich men seek wives"
+    ]
+  },
+  "choices": [
+    {
+      "label": "A",
+      "html": "<p>The sincere conviction of wealthy single men that they ought to marry promptly.</p>",
+      "correct": false,
+      "rationaleHtml": "<p>The passage stresses that the man's feelings and views are unknown — the conviction belongs to the families, not to him.</p>",
+      "errorCode": "wrong_actor"
+    },
+    {
+      "label": "B",
+      "html": "<p>The expectations of families hoping to see a wealthy newcomer married to one of their daughters.</p>",
+      "correct": true,
+      "rationaleHtml": "<p>Correct. The second sentence locates the 'truth' in the minds of the surrounding families, who treat the newcomer as intended for one of their daughters whatever his own views.</p>"
+    },
+    {
+      "label": "C",
+      "html": "<p>The narrator's belief that marriage is the only reliable source of happiness.</p>",
+      "correct": false,
+      "rationaleHtml": "<p>The passage never discusses happiness; this adds a claim the text does not make.</p>",
+      "errorCode": "unsupported_addition"
+    },
+    {
+      "label": "D",
+      "html": "<p>A legal obligation binding men of fortune to marry within their neighbourhood.</p>",
+      "correct": false,
+      "rationaleHtml": "<p>'Rightful property' is figurative; reading it as a legal rule takes the irony literally and infers far beyond the text.</p>",
+      "errorCode": "excessive_inference"
+    }
+  ]
+}
