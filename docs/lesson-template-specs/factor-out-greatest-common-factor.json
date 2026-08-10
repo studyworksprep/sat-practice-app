@@ -1,0 +1,430 @@
+{
+  "title": "Factor Out the Greatest Common Factor",
+  "description": "Factor a polynomial by finding the greatest numerical and variable factor shared by every term, dividing each term, and checking that no common factor remains inside.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Undo multiplication one shared factor at a time</h2><p>Factoring out a greatest common factor, or GCF, rewrites a sum as a product. You will learn how to:</p><ol><li>find the greatest number shared by every coefficient;</li><li>find the variable factors shared by every term;</li><li>divide each term by the full GCF;</li><li>check that no common factor remains inside the parentheses.</li></ol><blockquote><p><strong>Goal:</strong> Turn a polynomial such as \\(12x^3+18x^2\\) into \\(6x^2(2x+3)\\) and explain every part of that result.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "group_exploration",
+      "html": "<h2>Start with identical groups</h2><p>The diagram arranges \\(6x+9\\) into three identical groups.</p><p><img src=\"/images/gcf-identical-groups.svg\" alt=\"Six x tiles and nine unit tiles split into three identical groups, each containing two x tiles and three unit tiles\" width=\"900\"></p><p>Count what appears in one group, then describe all three groups as a multiplication expression.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "group_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which product represents the three identical groups in the diagram?",
+        "choices": [
+          "\\(2(3x+9)\\)",
+          "\\(3(2x+3)\\)",
+          "\\(6(x+9)\\)",
+          "\\(3(6x+9)\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "There are three groups. One group contains \\(2x+3\\).",
+        "explanation": "Exactly. Three copies of \\(2x+3\\) give \\(3(2x+3)=6x+9\\). Factoring finds that shared group."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "factor_and_gcf_meaning",
+      "html": "<h2>A factor is something being multiplied</h2><p>In \\(3(2x+3)\\), the number \\(3\\) and the expression \\(2x+3\\) are factors. Expanding multiplies \\(3\\) into the parentheses. Factoring reverses that multiplication.</p><p>A <strong>common factor</strong> divides every term. The <strong>greatest common factor</strong> includes the largest numerical factor and every variable factor shared by all terms.</p><blockquote><p><strong>Reverse-distribution idea:</strong> find what every term shares, place it outside parentheses, and place the quotients inside.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "numerical_gcf_model",
+      "html": "<h2>First find the greatest shared number</h2><p>For \\(18x+30\\), compare the positive factors of the coefficients:</p><ul><li>Factors of \\(18\\): \\(1,2,3,6,9,18\\)</li><li>Factors of \\(30\\): \\(1,2,3,5,6,10,15,30\\)</li></ul><p>The common factors are \\(1,2,3,6\\). The greatest is \\(6\\), so the numerical GCF is \\(6\\).</p><blockquote><p><strong>Use the coefficients:</strong> ignore the variables for this step and find the greatest number dividing every coefficient.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "numerical_gcf_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is the greatest numerical factor shared by \\(24x^2\\) and \\(36x\\)?",
+        "choices": ["\\(4\\)", "\\(6\\)", "\\(8\\)", "\\(12\\)"],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "List the factors of \\(24\\) and \\(36\\), then choose the largest number appearing in both lists.",
+        "explanation": "Right. \\(12\\) divides both coefficients: \\(24\\div12=2\\) and \\(36\\div12=3\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "divide_each_term_model",
+      "html": "<h2>Divide every term by the factor outside</h2><p>Return to \\(18x+30\\). The numerical GCF is \\(6\\). Divide each term by \\(6\\):</p><p>\\[\\frac{18x}{6}=3x\\qquad\\text{and}\\qquad\\frac{30}{6}=5.\\]</p><p>Put those quotients inside parentheses:</p><p>\\[18x+30=6(3x+5).\\]</p><blockquote><p><strong>Nothing disappears:</strong> each term outside the parentheses is the GCF times its quotient inside.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "quotient_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "After taking \\(7\\) out of \\(21x+35\\), which quotients belong inside the parentheses?",
+        "choices": ["\\(3x+5\\)", "\\(14x+28\\)", "\\(3x+28\\)", "\\(21x+5\\)"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Calculate \\(21x\\div7\\) and \\(35\\div7\\) separately.",
+        "explanation": "Correct. \\(21x\\div7=3x\\) and \\(35\\div7=5\\), so \\(21x+35=7(3x+5)\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "verify_by_expanding",
+      "html": "<h2>Multiply back to verify</h2><p>Distribution checks the factorization:</p><p>\\[6(3x+5)=6(3x)+6(5)=18x+30.\\]</p><p>If either product does not reproduce its original term, revise the quotient inside the parentheses.</p><blockquote><p><strong>Fast check:</strong> outside factor \\(\times\\) every inside term must rebuild the original polynomial.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "complete_gcf_meaning",
+      "html": "<h2>Equivalent is not always fully factored</h2><p>Several products can expand to the same polynomial:</p><ul><li>\\(24x^2+36x=6x(4x+6)\\)</li><li>\\(24x^2+36x=12x(2x+3)\\)</li></ul><p>Both equal the original polynomial, but the first leaves a common factor of \\(2\\) inside. The second removes the entire GCF.</p><blockquote><p><strong>GCF step complete:</strong> the terms inside the parentheses share no numerical or variable factor greater than \\(1\\).</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "complete_gcf_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression factors \\(24x^2+36x\\) by its full GCF?",
+        "choices": [
+          "\\(4x(6x+9)\\)",
+          "\\(6x(4x+6)\\)",
+          "\\(12x(2x+3)\\)",
+          "\\(12(2x^2+3x)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The greatest shared number is \\(12\\), and both terms contain \\(x\\). Then check that \\(2x\\) and \\(3\\) share nothing else.",
+        "explanation": "Exactly. The full GCF is \\(12x\\), and the quotients \\(2x\\) and \\(3\\) have no remaining common factor."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "variable_factors_meaning",
+      "html": "<h2>A power records repeated variable factors</h2><p>Write powers as repeated multiplication:</p><ul><li>\\(x^3=x\\cdot x\\cdot x\\)</li><li>\\(x^2=x\\cdot x\\)</li></ul><p>The two expressions share two copies of \\(x\\), so their greatest shared variable factor is \\(x^2\\).</p><blockquote><p><strong>Smallest-exponent rule:</strong> for a variable present in every term, use the smallest exponent you see.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "shared_exponent_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is the greatest power of \\(x\\) shared by \\(x^5\\) and \\(x^3\\)?",
+        "choices": ["\\(x^8\\)", "\\(x^3\\)", "\\(x^2\\)", "\\(x^5\\)"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Use the smaller exponent. Both expressions must contain every copy you take out.",
+        "explanation": "Correct. Both terms contain at least three copies of \\(x\\), but \\(x^3\\) does not contain five copies."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "variable_only_model",
+      "html": "<h2>Divide powers by subtracting exponents</h2><p>Factor \\(x^4+x^3\\). The shared variable factor is \\(x^3\\):</p><p>\\[\\frac{x^4}{x^3}=x^{4-3}=x\\qquad\\text{and}\\qquad\\frac{x^3}{x^3}=1.\\]</p><p>Therefore:</p><p>\\[x^4+x^3=x^3(x+1).\\]</p><p>The \\(1\\) matters: multiplying \\(x^3\\cdot1\\) rebuilds the second term.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "variable_only_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(y^6-y^4\\) by its variable GCF.",
+        "choices": [
+          "\\(y^4(y^2-1)\\)",
+          "\\(y^2(y^4-y^2)\\)",
+          "\\(y^4(y^2-y)\\)",
+          "\\(y^6(1-y^2)\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use the smaller exponent, \\(4\\), then subtract exponents while dividing.",
+        "explanation": "Right. The shared factor is \\(y^4\\); the quotients are \\(y^2\\) and \\(1\\), giving \\(y^4(y^2-1)\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "mixed_gcf_process",
+      "html": "<h2>Combine the numerical and variable parts</h2><p>For a polynomial containing coefficients and variables, build the GCF in two parts:</p><ol><li>Find the greatest number dividing every coefficient.</li><li>For each variable in every term, use its smallest exponent.</li><li>Multiply those pieces to form the GCF.</li><li>Divide every term by the complete GCF.</li></ol><blockquote><p><strong>Keep the jobs separate:</strong> number first, variables second, then combine.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "mixed_numeric_part_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For \\(12x^3+18x^2\\), what is the numerical part of the GCF?",
+        "choices": ["\\(2\\)", "\\(3\\)", "\\(12\\)", "\\(6\\)"],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Find the greatest number dividing both \\(12\\) and \\(18\\).",
+        "explanation": "Correct. The greatest numerical factor shared by \\(12\\) and \\(18\\) is \\(6\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "mixed_variable_part_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For \\(12x^3+18x^2\\), what is the variable part of the GCF?",
+        "choices": ["\\(x^3\\)", "\\(x^2\\)", "\\(x\\)", "\\(x^5\\)"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The exponents are \\(3\\) and \\(2\\). Use the smaller one.",
+        "explanation": "Exactly. Both terms contain \\(x^2\\), while the second term does not contain \\(x^3\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "mixed_gcf_model",
+      "html": "<h2>Model the complete division</h2><p>The two pieces combine to give GCF \\(6x^2\\). Divide term by term:</p><p>\\[\\frac{12x^3}{6x^2}=2x\\qquad\\text{and}\\qquad\\frac{18x^2}{6x^2}=3.\\]</p><p>So:</p><p>\\[12x^3+18x^2=6x^2(2x+3).\\]</p><p>Expanding verifies both original terms.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "mixed_gcf_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(20x^4-30x^2\\) by its GCF.",
+        "choices": [
+          "\\(5x^2(4x^2-6)\\)",
+          "\\(10x^4(2-3x^2)\\)",
+          "\\(10x^2(2x^2-3)\\)",
+          "\\(10x(2x^3-3x)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The coefficients share \\(10\\), and the smaller exponent of \\(x\\) is \\(2\\).",
+        "explanation": "Correct. The GCF is \\(10x^2\\), and division leaves \\(2x^2-3\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "multiple_variables",
+      "html": "<h2>Handle each variable independently</h2><p>For \\(15a^3b^2-10a^2b^3\\):</p><ul><li>numerical GCF: \\(5\\);</li><li>smallest exponent of \\(a\\): \\(2\\);</li><li>smallest exponent of \\(b\\): \\(2\\).</li></ul><p>The complete GCF is \\(5a^2b^2\\). Divide each original term by all three pieces.</p><blockquote><p><strong>Every-variable test:</strong> include a variable only if it appears in every term.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "multiple_variable_parts_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is the variable part of the GCF of \\(18m^4n^3\\) and \\(24m^2n^5\\)?",
+        "choices": ["\\(m^2n^3\\)", "\\(m^4n^5\\)", "\\(m^2n^2\\)", "\\(m^6n^8\\)"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "For \\(m\\), compare \\(4\\) and \\(2\\). For \\(n\\), compare \\(3\\) and \\(5\\).",
+        "explanation": "Right. The smaller exponents are \\(2\\) for \\(m\\) and \\(3\\) for \\(n\\), so the shared variable factor is \\(m^2n^3\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "multiple_variable_model",
+      "html": "<h2>Finish the multiple-variable example</h2><p>Divide by \\(5a^2b^2\\):</p><p>\\[\\frac{15a^3b^2}{5a^2b^2}=3a\\qquad\\text{and}\\qquad\\frac{-10a^2b^3}{5a^2b^2}=-2b.\\]</p><p>Therefore:</p><p>\\[15a^3b^2-10a^2b^3=5a^2b^2(3a-2b).\\]</p><p>Notice that the subtraction sign remains with the second quotient.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "multiple_variable_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(18m^4n^3-24m^2n^5\\) by its GCF.",
+        "choices": [
+          "\\(3m^2n^3(6m^2-8n^2)\\)",
+          "\\(6m^4n^5(3-4)\\)",
+          "\\(6m^2n^2(3m^2n-4n^3)\\)",
+          "\\(6m^2n^3(3m^2-4n^2)\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The numerical GCF is \\(6\\), and the variable part is \\(m^2n^3\\). Divide each term by the full product.",
+        "explanation": "Exactly. Dividing by \\(6m^2n^3\\) leaves \\(3m^2-4n^2\\), whose terms share no common factor."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "three_terms",
+      "html": "<h2>The same process works with three or more terms</h2><p>A factor is common only if it divides <strong>every</strong> term.</p><p>For \\(14x^3+21x^2+7x\\), all three coefficients share \\(7\\), and all three terms contain \\(x\\). The GCF is \\(7x\\):</p><p>\\[14x^3+21x^2+7x=7x(2x^2+3x+1).\\]</p><p>The inside terms share no further GCF. Another factoring pattern may sometimes apply later, but the GCF step is complete.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "three_term_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(9y^4-15y^3+6y^2\\) by its GCF.",
+        "choices": [
+          "\\(3y(3y^3-5y^2+2y)\\)",
+          "\\(6y^2(3y^2-5y+1)\\)",
+          "\\(3y^2(3y^2-5y+2)\\)",
+          "\\(3y^3(3y-5+2y)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The coefficients share \\(3\\), and the smallest exponent of \\(y\\) is \\(2\\).",
+        "explanation": "Correct. The GCF is \\(3y^2\\), and the quotients are \\(3y^2\\), \\(-5y\\), and \\(2\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "negative_leading_term",
+      "html": "<h2>You may take out the negative of the GCF</h2><p>The GCF is normally reported as positive. When the leading term is negative, it is often cleaner to take out the negative of that GCF so the first term inside is positive.</p><p>\\[-12x^2+18x=-6x(2x-3).\\]</p><p>Check the signs: \\((-6x)(2x)=-12x^2\\) and \\((-6x)(-3)=18x\\).</p><blockquote><p><strong>Sign check:</strong> dividing by a negative reverses the sign of every quotient.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "negative_gcf_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which factorization takes a negative GCF out of \\(-20x^3-30x^2\\)?",
+        "choices": [
+          "\\(-10x^2(2x-3)\\)",
+          "\\(-10x^2(2x+3)\\)",
+          "\\(10x^2(-2x+3)\\)",
+          "\\(-5x(4x^2+6x)\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Divide both negative terms by \\(-10x^2\\). Both quotients become positive.",
+        "explanation": "Right. The quotients are \\(2x\\) and \\(3\\), so \\(-20x^3-30x^2=-10x^2(2x+3)\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "gcf_one_stop",
+      "html": "<h2>Sometimes there is no nontrivial GCF</h2><p>For \\(6x^2+25\\), the coefficients share only \\(1\\), and \\(x\\) does not appear in both terms. The GCF is \\(1\\).</p><p>Writing \\(1(6x^2+25)\\) changes nothing, so you normally leave the expression as it is and inspect it for some other pattern.</p><blockquote><p><strong>Stop the GCF step:</strong> if every shared numerical and variable factor has been removed—or the GCF was \\(1\\)—do not force another common factor.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "gcf_one_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which expression has GCF \\(1\\)?",
+        "choices": ["\\(8x+12\\)", "\\(15a^2+20a\\)", "\\(9m^3-6m\\)", "\\(8x+15y\\)"],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Check both the coefficient factors and whether the same variable appears in every term.",
+        "explanation": "Correct. \\(8\\) and \\(15\\) share only \\(1\\), and \\(x\\) and \\(y\\) are different variables."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "independent_transfer_intro",
+      "html": "<h2>Independent practice: build the GCF yourself</h2><p>For the next problem, do not choose a factor from the answer choices first.</p><ol><li>Write the numerical GCF.</li><li>Write the smallest exponent of each shared variable.</li><li>Divide every term.</li><li>Only then compare your result with the choices.</li></ol>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_transfer_one",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(42p^5q^3+56p^3q^4\\) by its GCF.",
+        "choices": [
+          "\\(14p^3q^3(3p^2+4q)\\)",
+          "\\(7p^3q^3(6p^2+8q)\\)",
+          "\\(14p^5q^4(3+4)\\)",
+          "\\(14pq^3(3p^4+4p^2q)\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The greatest shared number is \\(14\\). Use the smaller exponent of \\(p\\) and the smaller exponent of \\(q\\).",
+        "explanation": "Correct. The GCF is \\(14p^3q^3\\), and division leaves \\(3p^2+4q\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "independent_negative_intro",
+      "html": "<h2>One more transfer: track every sign</h2><p>The next polynomial has three terms and begins with a negative term. Find the positive GCF first, then decide whether taking out its negative will make the inside easier to read.</p><p>Work through every quotient before opening the hint.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_transfer_two",
+      "block_type": "check",
+      "content": {
+        "prompt": "Factor \\(-28a^3b^2+42a^2b^4-14a^2b^2\\) by taking out a negative GCF.",
+        "choices": [
+          "\\(-7a^2b^2(4a+6b^2-2)\\)",
+          "\\(14a^2b^2(-2a+3b^2-1)\\)",
+          "\\(-14a^2b^2(2a-3b^2+1)\\)",
+          "\\(-14a^3b^4(2-3-1)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The positive GCF is \\(14a^2b^2\\). Dividing each term by its negative changes all three quotient signs.",
+        "explanation": "Exactly. Dividing by \\(-14a^2b^2\\) gives \\(2a\\), \\(-3b^2\\), and \\(1\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "completeness_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "How can you tell that the GCF step is complete?",
+        "choices": [
+          "The terms inside the parentheses share no numerical or variable factor greater than \\(1\\).",
+          "The expression inside the parentheses has exactly two terms.",
+          "The factor outside the parentheses contains every variable from the problem.",
+          "The first term inside the parentheses has coefficient \\(1\\)."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The GCF step is about factors shared by every term, not the number of terms or a required leading coefficient.",
+        "explanation": "Right. Once the inside terms have no remaining common numerical or variable factor, the full GCF has been removed."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which routine correctly factors out a GCF?",
+        "choices": [
+          "Use the largest coefficient as the GCF; copy every variable outside; add the remaining terms.",
+          "Find the greatest shared coefficient and smallest exponent of each shared variable; combine them; divide every term; multiply back to verify.",
+          "Use the smallest coefficient; use the largest variable exponents; divide only the first term.",
+          "Count the terms; choose that number as the GCF; distribute to check."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Retrieve the two-part GCF, the division step, and the verification step.",
+        "explanation": "You have it. Build the GCF from the shared number and variables, divide every term, and expand to confirm the result."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can expose the shared structure of a polynomial</h2><p>You can find numerical and variable GCFs, divide every term, handle several variables and negative-leading expressions, and check that the inside terms share no common factor.</p><p>This GCF move is the first step before every other polynomial-factoring pattern.</p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}

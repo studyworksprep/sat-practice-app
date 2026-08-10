@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" role="img" aria-labelledby="title desc">
+  <title id="title">Six x tiles and nine unit tiles arranged into three identical groups</title>
+  <desc id="desc">Each of three outlined rows contains two blue x tiles and three gold unit tiles, so each row represents two x plus three and the full diagram represents three times the quantity two x plus three.</desc>
+  <rect width="900" height="360" fill="#ffffff"/>
+  <text x="450" y="38" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#172033">6x + 9 arranged as 3 identical groups</text>
+  <g font-family="Arial, sans-serif" font-size="20" text-anchor="middle">
+    <g transform="translate(55 65)">
+      <rect x="0" y="0" width="790" height="78" rx="14" fill="#f7f9fc" stroke="#65738b" stroke-width="2"/>
+      <rect x="28" y="14" width="112" height="50" rx="8" fill="#d9ebff" stroke="#3977b9" stroke-width="2"/>
+      <rect x="153" y="14" width="112" height="50" rx="8" fill="#d9ebff" stroke="#3977b9" stroke-width="2"/>
+      <text x="84" y="47" fill="#173f69">x</text><text x="209" y="47" fill="#173f69">x</text>
+      <rect x="305" y="14" width="50" height="50" rx="8" fill="#fff0bd" stroke="#b68212" stroke-width="2"/>
+      <rect x="368" y="14" width="50" height="50" rx="8" fill="#fff0bd" stroke="#b68212" stroke-width="2"/>
+      <rect x="431" y="14" width="50" height="50" rx="8" fill="#fff0bd" stroke="#b68212" stroke-width="2"/>
+      <text x="330" y="47" fill="#664700">1</text><text x="393" y="47" fill="#664700">1</text><text x="456" y="47" fill="#664700">1</text>
+      <text x="650" y="48" font-size="24" font-weight="700" fill="#172033">2x + 3</text>
+    </g>
+    <g transform="translate(55 151)">
+      <rect x="0" y="0" width="790" height="78" rx="14" fill="#f7f9fc" stroke="#65738b" stroke-width="2"/>
+      <rect x="28" y="14" width="112" height="50" rx="8" fill="#d9ebff" stroke="#3977b9" stroke-width="2"/>
+      <rect x="153" y="14" width="112" height="50" rx="8" fill="#d9ebff" stroke="#3977b9" stroke-width="2"/>
+      <text x="84" y="47" fill="#173f69">x</text><text x="209" y="47" fill="#173f69">x</text>
+      <rect x="305" y="14" width="50" height="50" rx="8" fill="#fff0bd" stroke="#b68212" stroke-width="2"/>
+      <rect x="368" y="14" width="50" height="50" rx="8" fill="#fff0bd" stroke="#b68212" stroke-width="2"/>
+      <rect x="431" y="14" width="50" height="50" rx="8" fill="#fff0bd" stroke="#b68212" stroke-width="2"/>
+      <text x="330" y="47" fill="#664700">1</text><text x="393" y="47" fill="#664700">1</text><text x="456" y="47" fill="#664700">1</text>
+      <text x="650" y="48" font-size="24" font-weight="700" fill="#172033">2x + 3</text>
+    </g>
+    <g transform="translate(55 237)">
+      <rect x="0" y="0" width="790" height="78" rx="14" fill="#f7f9fc" stroke="#65738b" stroke-width="2"/>
+      <rect x="28" y="14" width="112" height="50" rx="8" fill="#d9ebff" stroke="#3977b9" stroke-width="2"/>
+      <rect x="153" y="14" width="112" height="50" rx="8" fill="#d9ebff" stroke="#3977b9" stroke-width="2"/>
+      <text x="84" y="47" fill="#173f69">x</text><text x="209" y="47" fill="#173f69">x</text>
+      <rect x="305" y="14" width="50" height="50" rx="8" fill="#fff0bd" stroke="#b68212" stroke-width="2"/>
+      <rect x="368" y="14" width="50" height="50" rx="8" fill="#fff0bd" stroke="#b68212" stroke-width="2"/>
+      <rect x="431" y="14" width="50" height="50" rx="8" fill="#fff0bd" stroke="#b68212" stroke-width="2"/>
+      <text x="330" y="47" fill="#664700">1</text><text x="393" y="47" fill="#664700">1</text><text x="456" y="47" fill="#664700">1</text>
+      <text x="650" y="48" font-size="24" font-weight="700" fill="#172033">2x + 3</text>
+    </g>
+  </g>
+</svg>
