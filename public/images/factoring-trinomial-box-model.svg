@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="590" viewBox="0 0 960 590" role="img" aria-labelledby="title desc">
+  <title id="title">Area model for multiplying two binomials</title>
+  <desc id="desc">A rectangle with side lengths x plus p and x plus q is split into four regions labeled x squared, qx, px, and pq.</desc>
+  <rect width="960" height="590" fill="#f8fafc"/>
+  <text x="480" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="31" font-weight="700" fill="#172554">Why the sum and product appear</text>
+
+  <g transform="translate(190 130)">
+    <rect x="0" y="0" width="520" height="320" rx="4" fill="#ffffff" stroke="#1e3a8a" stroke-width="5"/>
+    <rect x="0" y="0" width="330" height="205" fill="#dbeafe"/>
+    <rect x="330" y="0" width="190" height="205" fill="#e0e7ff"/>
+    <rect x="0" y="205" width="330" height="115" fill="#dcfce7"/>
+    <rect x="330" y="205" width="190" height="115" fill="#fef3c7"/>
+    <line x1="330" y1="0" x2="330" y2="320" stroke="#1e3a8a" stroke-width="4"/>
+    <line x1="0" y1="205" x2="520" y2="205" stroke="#1e3a8a" stroke-width="4"/>
+
+    <text x="165" y="-25" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#172554">x</text>
+    <text x="425" y="-25" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#172554">q</text>
+    <text x="-32" y="113" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#172554">x</text>
+    <text x="-32" y="272" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#172554">p</text>
+
+    <text x="165" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#1e3a8a">x²</text>
+    <text x="425" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#3730a3">qx</text>
+    <text x="165" y="276" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#166534">px</text>
+    <text x="425" y="276" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#92400e">pq</text>
+
+    <path d="M 0 348 L 0 370 L 520 370 L 520 348" fill="none" stroke="#475569" stroke-width="3"/>
+    <text x="260" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" fill="#334155">x + q</text>
+    <path d="M 548 0 L 570 0 L 570 320 L 548 320" fill="none" stroke="#475569" stroke-width="3"/>
+    <text x="612" y="169" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" fill="#334155" transform="rotate(90 612 169)">x + p</text>
+  </g>
+
+  <text x="480" y="554" text-anchor="middle" font-family="Arial, sans-serif" font-size="29" font-weight="700" fill="#172554">(x + p)(x + q) = x² + (p + q)x + pq</text>
+</svg>
