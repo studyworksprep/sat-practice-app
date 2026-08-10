@@ -1,61 +1,61 @@
 {
   "title": "Good Cop / Bad Cop: Prove Every Reading Answer",
-  "description": "After completing the broader reading-process lesson, use a predicted answer to find promising choices and eliminate every choice containing a false or unsupported detail.",
+  "description": "Use your answer target to test one choice at a time: notice what matches, cross out anything wrong or unsupported, and keep only a choice whose whole meaning answers the question and fits the text.",
   "blocks": [
     {
       "kind": "text",
-      "id": "prerequisite_notice",
-      "html": "<h2>Prerequisite: complete the broader reading lesson first</h2><blockquote><p><strong>Before starting Good Cop / Bad Cop, you should have completed Process and Pre-Answer Reading Comprehension Questions.</strong></p></blockquote><p>This lesson begins after you have already read any introduction, identified the question's job, understood the passage sentence by sentence, and formed your own pre-answer.</p><p>If you are not yet comfortable doing those steps without answer choices, return to the broader reading lesson before continuing.</p>",
+      "id": "before_you_start",
+      "html": "<h2>Start with an answer target</h2><blockquote><p><strong>Complete Process and Pre-Answer Reading Comprehension Questions before this lesson.</strong></p></blockquote><p>Good Cop / Bad Cop starts after you have read any context, named the question's job, built a usable understanding of the passage, and formed an answer target in your own words.</p><p>If those steps are not comfortable yet, return to the broader reading lesson first.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
-      "id": "prerequisite_retrieval",
+      "id": "answer_target_check",
       "block_type": "check",
       "content": {
         "prompt": "What should you have in mind before using Good Cop / Bad Cop on the answer choices?",
         "choices": [
           "A guess based on the most familiar words in the choices",
           "A list of outside facts you know about the passage's topic",
-          "A text-based pre-answer formed after reading the introduction, question, and passage",
-          "A decision to choose whichever answer is most detailed"
+          "A text-based answer target formed after reading the question and passage",
+          "A decision to choose whichever answer gives the most detail"
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Good Cop needs a prediction produced by the broader reading process. If that process is unfamiliar, complete the prerequisite lesson first.",
-        "explanation": "Correct. Good Cop / Bad Cop evaluates choices against a pre-answer and the text; it does not create your first understanding of the passage."
+        "hint": "The choices should not create your first understanding of the passage.",
+        "explanation": "Correct. Your answer target comes from the question and passage. Good Cop / Bad Cop helps you test the choices against it."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
-      "id": "opening_exploration",
-      "html": "<h2>One passage, four attractive choices</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><blockquote><p>After workers cleared fallen branches from a forest plot, dormant seeds that had remained beneath the leaf litter began to sprout. Ecologist Ren Ito suggests that the disturbance exposed some seeds to the light and warmer soil they needed to germinate.</p></blockquote><p><strong>Pre-answer:</strong> Clearing the plot exposed long-buried seeds to conditions that helped some of them sprout.</p><p>Use that prediction, but inspect every word before deciding.</p>",
+      "id": "opening_question",
+      "html": "<h2>Try one before learning the names</h2><p><strong>Question:</strong> Which choice best states the main idea of the text?</p><blockquote><p>After workers cleared fallen branches from a forest plot, dormant seeds beneath the leaf litter began to sprout. Ecologist Ren Ito suggests that the clearing exposed some seeds to the light and warmer soil they needed to germinate.</p></blockquote><p>Pause and form an answer target. Then look at each choice for what fits and what does not.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
-      "id": "opening_exploration_check",
+      "id": "opening_question_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which choice is completely supported by the passage?",
+        "prompt": "Which choice is completely supported and answers the question?",
         "choices": [
-          "Clearing fallen branches may have exposed some dormant seeds to conditions that supported germination.",
-          "Every dormant seed in the forest sprouted only because workers planted it in warmer soil.",
-          "Workers introduced a new seed species that had never existed in the forest plot.",
-          "The new sprouts showed that ecologists can no longer study undisturbed forests."
+          "Clearing fallen branches may have exposed some dormant seeds to conditions that helped them sprout.",
+          "Light and warmer soil caused every buried seed in the forest plot to germinate.",
+          "The sprouts proved that fallen branches had prevented all plant growth in the plot.",
+          "Ito found that workers cleared the branches for the purpose of making dormant seeds sprout."
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "Find the choice that matches the pre-answer, then verify its subject, degree, and cause against the passage.",
-        "explanation": "Right. The first choice preserves the workers' action, the possible mechanism, and the limited claim about some seeds."
+        "hint": "Keep the clearing, the possible explanation, and the limit to some seeds. Cross out any added certainty or purpose.",
+        "explanation": "Right. Choice A keeps the passage's cautious language and limited result. B changes some seeds into every seed. C makes a much broader claim about all plant growth. D invents the workers' purpose."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
-      "id": "name_the_roles",
-      "html": "<h2>Good Cop finds; Bad Cop verifies</h2><p><strong>Good Cop</strong> looks for choices that roughly match your pre-answer. This is the positive search: Which option seems to be saying the right thing?</p><p><strong>Bad Cop</strong> treats every remaining word as unproven. This is the skeptical audit: Is each actor, action, comparison, and limitation supported?</p><blockquote><p><strong>The correct answer must pass both roles.</strong> A promising beginning cannot excuse an unsupported ending.</p></blockquote>",
+      "id": "one_choice_two_questions",
+      "html": "<h2>One choice, two questions</h2><p>Take the choices one at a time. You do not need two trips through the list.</p><ol><li><strong>Good Cop:</strong> What in this choice matches my answer target and the text?</li><li><strong>Bad Cop:</strong> What in this choice is wrong, unsupported, or not answering the question?</li><li><strong>Decide:</strong> If any important part fails, cross out the choice. If its whole meaning answers the question and fits the text, keep it.</li></ol><p>Bad Cop will do much of the work because crossing out wrong answers is fast. On the hardest questions, Good Cop helps you decide which of two careful choices actually says what you expected.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -63,354 +63,417 @@
       "id": "roles_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which description correctly assigns the two roles?",
+        "prompt": "How should you use Good Cop and Bad Cop?",
         "choices": [
-          "Good Cop checks grammar; Bad Cop chooses the answer with the strongest wording.",
-          "Good Cop uses outside knowledge; Bad Cop ignores small differences in the choices.",
-          "Good Cop eliminates every answer first; Bad Cop invents a prediction afterward.",
-          "Good Cop finds a choice that fits the pre-answer; Bad Cop demands support for every part of it."
+          "Use Good Cop on all four choices first, then make a second trip through the list with Bad Cop.",
+          "Use Good Cop to find familiar words and Bad Cop to choose the longest answer.",
+          "Use Bad Cop only after you have already selected a final answer.",
+          "For each choice, notice what fits, notice what fails, and then keep it or cross it out."
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "One role searches for agreement; the other tries to disprove the candidate using the passage.",
-        "explanation": "Exactly. Good Cop identifies the likely match, and Bad Cop checks that no word exceeds or contradicts the evidence."
+        "hint": "The two roles belong together on each individual choice.",
+        "explanation": "Exactly. Take one choice at a time and use both questions before moving to the next choice."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
-      "id": "two_pass_process",
-      "html": "<h2>Use two passes</h2><ol><li><strong>Good Cop pass:</strong> compare each choice with your pre-answer. Keep the choice or choices that express roughly the same idea.</li><li><strong>Bad Cop pass:</strong> examine each survivor word by word. Eliminate it if any detail is false, reversed, exaggerated, or unsupported.</li><li><strong>Confirm:</strong> choose the one survivor whose entire meaning is supported.</li></ol><p>You can move quickly through obvious mismatches, but slow down when a choice initially looks attractive.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "degree_words",
-      "html": "<h2>Bad Cop target 1: degree words</h2><p>Small words can make a choice much stronger than the passage:</p><ul><li><strong>some</strong> can become <strong>all</strong></li><li><strong>may</strong> can become <strong>must</strong></li><li><strong>often</strong> can become <strong>always</strong></li><li><strong>one factor</strong> can become <strong>the only factor</strong></li></ul><p>If the passage makes a limited claim, the answer must preserve that limit.</p>",
+      "id": "four_questions",
+      "html": "<h2>Four things to check</h2><p>When a choice looks possible, ask:</p><ol><li><strong>Does it answer the exact question?</strong></li><li><strong>Does it keep the right people or things and say correctly what they did?</strong></li><li><strong>Is it just as careful—or just as strong—as the passage?</strong></li><li><strong>Does it add an idea that the passage never earns?</strong></li></ol><blockquote><p><strong>Check what each part means, not whether it copies the passage's words.</strong> A correct answer will often be a paraphrase.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
-      "id": "degree_words_check",
+      "id": "right_fact_wrong_job_check",
       "block_type": "check",
       "content": {
-        "prompt": "A passage says, 'Some urban trees exposed to nighttime light produced buds earlier in one study.' An answer says, 'All urban trees always produce buds early because nighttime light increases photosynthesis.' Which feature most clearly makes the answer unsupported?",
+        "prompt": "A choice states a true detail from the passage, but the question asks for the passage's main purpose and the choice does not describe that purpose. What should you do?",
         "choices": [
-          "It mentions trees and nighttime light.",
-          "It uses the phrase produce buds.",
-          "It changes some trees in one study into all trees always and adds an unreported cause.",
-          "It places the subject before the verb."
-        ],
-        "correct_index": 2,
-        "allow_retry": true,
-        "hint": "Compare the scope and certainty of the passage with the scope and certainty of the answer.",
-        "explanation": "Correct. The choice exaggerates the result twice and invents a photosynthesis explanation the passage never provides."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "audit_targets",
-      "html": "<h2>What Bad Cop audits</h2><p>For each promising choice, check five targets:</p><ol><li><strong>Actor:</strong> Is the choice about the right person, group, study, or object?</li><li><strong>Direction:</strong> Did an increase become a decrease, or support become opposition?</li><li><strong>Degree:</strong> Did a limited claim become absolute?</li><li><strong>Relationship:</strong> Did association, sequence, or evidence become cause?</li><li><strong>Extra detail:</strong> Did the choice add something that sounds reasonable but is never stated?</li></ol>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "actor_swap",
-      "html": "<h2>Bad Cop target 2: actor swaps</h2><blockquote><p>Geologist Amina Cole proposed that the valley formed gradually. A later research team agreed with Cole's timeline but disputed her explanation of the process.</p></blockquote><p>A choice claiming that <strong>Cole disputed the later team's timeline</strong> uses all the right nouns, but assigns the disagreement to the wrong actor and the wrong idea.</p><p>Track who believes, discovers, criticizes, or causes each thing.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
-      "id": "actor_swap_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which statement is supported by the geologist passage?",
-        "choices": [
-          "Cole rejected the research team's timeline for the valley's formation.",
-          "The later team accepted Cole's timeline but disagreed with her account of how the valley formed.",
-          "The later team proved that the valley formed suddenly rather than gradually.",
-          "Cole and the later team disagreed about every part of the valley's history."
+          "Keep it because any true statement from the passage can answer any reading question.",
+          "Cross it out because a choice must be supported and answer the question's exact job.",
+          "Keep it only if it repeats several words from the passage.",
+          "Ignore the question and decide whether the detail is interesting."
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Separate the two points: timeline and explanation. Then assign each position to the correct actor.",
-        "explanation": "Right. The team agrees with the gradual timeline but disputes Cole's explanation of the process."
+        "hint": "A choice has two requirements: it must fit the text and do the job named in the question.",
+        "explanation": "Right. A statement can be true but still be the wrong answer because it does not answer the question that was asked."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
-      "id": "direction_reversal",
-      "html": "<h2>Bad Cop target 3: reversed direction</h2><p>A distractor may preserve the topic and comparison while flipping the result:</p><ul><li>more becomes less</li><li>earlier becomes later</li><li>supports becomes challenges</li><li>similar becomes different</li></ul><p>Do not reward an answer merely for naming the correct variables. Check the direction connecting them.</p>",
+      "id": "city_maps_example",
+      "html": "<h2>See both roles work together</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><blockquote><p>Early city maps often omit temporary street markets. Historian Lila Deren compared such maps with tax lists and diaries showing that some markets returned every week. Deren argues that the maps recorded permanent structures better than they recorded the full range of daily activity.</p></blockquote><p><strong>Answer target:</strong> Other records show that early maps may miss recurring temporary activity.</p><p>Consider these choices one at a time:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Early maps omitted markets because cartographers wanted to hide all commercial activity.</li><li>Tax lists and diaries suggest that recurring temporary markets may be missing from some early city maps.</li><li>Diary writers produced more accurate maps than professional cartographers did.</li><li>Weekly markets caused cities to replace temporary stalls with permanent structures.</li></ol>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "city_maps_choice_a",
+      "html": "<h2>Choice A: something fits, but something fails</h2><blockquote><p>Early maps omitted markets because cartographers wanted to hide all commercial activity.</p></blockquote><p><strong>Good Cop:</strong> It correctly notices that markets were omitted from early maps.</p><p><strong>Bad Cop:</strong> The passage never says cartographers wanted to hide anything, and it never says all commercial activity was missing.</p><p><strong>Decision:</strong> Cross it out. A partly right choice is still wrong.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "city_maps_remaining_choices",
+      "html": "<h2>Finish the choices</h2><p><strong>Choice B:</strong> It matches the answer target, keeps the limited word <em>some</em>, and adds nothing unsupported. Keep it.</p><p><strong>Choice C:</strong> It mentions diaries and maps, but the passage never says diary writers made maps or compares the skill of the two groups. Cross it out.</p><p><strong>Choice D:</strong> It repeats <em>weekly</em>, <em>temporary</em>, and <em>permanent</em>, but invents a cause-and-effect claim. Cross it out.</p><blockquote><p><strong>Choice B is the only choice with a Good Cop reason to keep it and no Bad Cop reason to reject it.</strong></p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
-      "id": "direction_reversal_check",
+      "id": "city_maps_check",
       "block_type": "check",
       "content": {
-        "prompt": "A study found that seedlings watered twice a week grew taller than seedlings watered once a week. Which choice preserves the direction of the result?",
+        "prompt": "Which part of Choice A forces you to cross it out?",
         "choices": [
-          "Watering frequency had no relationship to seedling height in the study.",
-          "Seedlings watered once a week grew taller than those watered twice a week.",
-          "All seedlings watered twice a week grew to exactly the same height.",
-          "In the study, seedlings watered twice a week grew taller than those watered once a week."
+          "The words early maps",
+          "The statement that markets were omitted",
+          "The claim that cartographers wanted to hide all commercial activity",
+          "The fact that the choice discusses maps"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Find the motive and broad claim that the passage never gives.",
+        "explanation": "Correct. The omission is supported, but the deliberate motive and the claim about all commercial activity are not."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "strong_words",
+      "html": "<h2>Strong words are not automatically wrong</h2><p>Words such as <strong>all</strong>, <strong>only</strong>, <strong>must</strong>, and <strong>caused</strong> should make you check carefully—not cross out automatically.</p><p>A strong word is correct when the passage gives equally strong evidence. It is wrong when it makes the choice broader or more certain than the passage.</p><blockquote><p><strong>Do not use a shortcut based on one word. Compare the strength of the choice with the strength of the text.</strong></p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "strong_words_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A study reports: 'Researchers tested 30 sealed containers. Every container prevented measurable moisture loss during the trial.' Which choice stays within that evidence?",
+        "choices": [
+          "Sealing probably prevents moisture loss in every container under all possible conditions.",
+          "Only unsealed containers prevented moisture loss in the trials.",
+          "The study proved that sealing must work forever, regardless of the container or conditions.",
+          "All 30 sealed containers prevented measurable moisture loss in the reported trials."
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "Keep both groups in their original order and avoid adding certainty the result does not contain.",
-        "explanation": "Correct. The fourth choice preserves the study's comparison without reversing or exaggerating it."
+        "hint": "The passage supports a strong statement about these 30 trials, but not about every possible container or condition.",
+        "explanation": "Right. Choice D keeps the strong result and its limit to the reported trials. The word all is supported here."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
-      "id": "causation_trap",
-      "html": "<h2>Bad Cop target 4: invented cause</h2><p>A passage may report that two things occurred together. That does not automatically prove that one caused the other.</p><ul><li><strong>Supported:</strong> Neighborhoods with more tree cover were cooler during the survey.</li><li><strong>Too strong:</strong> Tree cover was the only cause of every temperature difference.</li></ul><p>Preserve cautious words such as <strong>associated with</strong>, <strong>may</strong>, and <strong>suggests</strong>.</p>",
+      "id": "function_question",
+      "html": "<h2>A true detail can still miss the question</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence?</p><blockquote><p>Researcher Omar Velez argues that city murals can preserve neighborhood memories that official records overlook. For example, one mural lists businesses that were demolished to build a highway.</p></blockquote><p>Form an answer target for what the second sentence <strong>does</strong>, not merely what it says.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
-      "id": "causation_trap_check",
+      "id": "function_question_check",
       "block_type": "check",
       "content": {
-        "prompt": "Researchers observed that neighborhoods with more tree cover were cooler during their survey. Which conclusion is supported?",
+        "prompt": "What function does the second sentence serve?",
         "choices": [
-          "Greater tree cover was associated with cooler neighborhood temperatures in the survey.",
-          "Tree cover was the only possible cause of every temperature difference between neighborhoods.",
-          "Planting one tree will immediately lower the temperature of an entire neighborhood.",
-          "Cool temperatures prevented trees from growing in the surveyed neighborhoods."
+          "It gives a specific example of the kind of neighborhood memory that a mural can preserve.",
+          "It states that highway construction demolished some businesses.",
+          "It proves that all city murals were created to oppose highways.",
+          "It introduces a researcher who disagrees with Velez."
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "Keep the observed relationship without converting it into an exclusive or guaranteed cause.",
-        "explanation": "Right. The first choice reports the association that researchers observed and nothing more."
+        "hint": "Choice B states a true detail, but the question asks why the author included that detail.",
+        "explanation": "Correct. Choice A explains the sentence's job. Choice B is true, but it only repeats the detail instead of explaining its function. C and D add ideas that are not in the text."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
-      "id": "half_right_answers",
-      "html": "<h2>Bad Cop target 5: the half-right answer</h2><p>The most dangerous distractor often begins with a correct statement and ends with an unsupported addition.</p><blockquote><p><strong>Audit past the comma.</strong> Every clause, modifier, and ending phrase must be supported.</p></blockquote><p>If ninety percent of a choice matches your prediction but ten percent is wrong, the entire choice is wrong.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
-      "id": "half_right_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "A passage says a new archive contains letters from factory workers and may help historians study daily life. Which choice is half-right but ultimately unsupported?",
-        "choices": [
-          "The archive may help historians study factory workers' daily lives.",
-          "The archive contains letters written by factory workers.",
-          "The archive may illuminate daily life, and its letters prove that every factory had identical working conditions.",
-          "Historians may use the workers' letters as evidence about daily life."
-        ],
-        "correct_index": 2,
-        "allow_retry": true,
-        "hint": "Find the choice whose beginning matches the passage but whose ending makes a much broader claim.",
-        "explanation": "Correct. The first clause is supported, but the letters do not prove that every factory had identical conditions. Bad Cop rejects the entire choice."
-      },
+      "id": "inference_support",
+      "html": "<h2>A supported conclusion may connect details</h2><p>For an inference question, the correct choice may combine information from different parts of the passage. The exact sentence may not appear in the text.</p><p>Ask whether the passage gives you enough evidence to make the connection. Do not add a new cause, motive, or fact simply because it sounds possible.</p><blockquote><p><strong>Connect the dots the passage gives you. Do not add new dots.</strong></p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
-      "id": "outside_knowledge",
-      "html": "<h2>Reasonable is not the same as supported</h2><p>A wrong answer may be sensible in real life or even factually true. On an SAT reading question, that is not enough. The passage must provide the evidence needed for the answer.</p><p>Bad Cop asks one question: <strong>Where does the text support this?</strong> If you cannot point to the support, eliminate the choice.</p>",
+      "id": "island_lizards_question",
+      "html": "<h2>Try a careful inference</h2><p><strong>Question:</strong> Which conclusion is best supported by the text?</p><blockquote><p>Researchers observed the same lizard species on two islands. On Island A, fruit remained available through winter, and the lizards stayed active throughout the year. On Island B, fruit became scarce in winter, and the lizards were inactive for three winter months. The researchers did not test what caused the difference in activity.</p></blockquote><p>Form the smallest conclusion the facts support before viewing the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
-      "id": "outside_knowledge_check",
+      "id": "island_lizards_check",
       "block_type": "check",
       "content": {
-        "prompt": "A passage reports that one library extended its weekend hours and then surveyed visitor satisfaction. Which statement must be eliminated as unsupported, even if it sounds reasonable?",
+        "prompt": "Which conclusion is best supported?",
         "choices": [
-          "The library extended its weekend hours.",
-          "Every library in the country should extend its weekend hours to increase literacy.",
-          "The library conducted a survey after changing its hours.",
-          "The survey concerned visitor satisfaction."
+          "The loss of winter fruit caused every lizard on Island B to become inactive.",
+          "The islands differed in both winter fruit availability and the lizards' winter activity.",
+          "Lizards of this species can remain active only when they eat fruit every day.",
+          "Island A was warmer than Island B during every month of the study."
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Look for a national recommendation and outcome that the one-library report never establishes.",
-        "explanation": "Right. The broad policy claim and promised literacy effect go far beyond the passage's limited report."
+        "hint": "Keep both observed differences, but do not claim that one caused the other.",
+        "explanation": "Right. Choice B connects the two reported differences without inventing a cause. A and C go beyond the evidence, and D adds a temperature difference never mentioned."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "island_lizards_wrong_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is the main problem with the claim that the loss of fruit caused every Island B lizard to become inactive?",
+        "choices": [
+          "It uses the word winter.",
+          "It discusses the lizards' activity.",
+          "It turns two observed differences into a proven cause and changes the group result into every lizard.",
+          "It mentions Island B rather than Island A."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The researchers specifically say they did not test the cause.",
+        "explanation": "Correct. The choice adds both a cause and an every-lizard claim that the passage does not earn."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
-      "id": "good_cop_pass",
-      "html": "<h2>Practice the Good Cop pass</h2><p><strong>Passage:</strong></p><blockquote><p>Biologist Sofia Mensah found that one moth species visited pale flowers more often on moonlit nights but showed no color preference on nights when clouds blocked the moon.</p></blockquote><p><strong>Pre-answer:</strong> Moonlight may affect which flower color this moth visits.</p><p>On the first pass, look for a choice that roughly matches. Then prepare to audit it.</p>",
+      "id": "two_possible_choices",
+      "html": "<h2>When two choices look possible</h2><p>Do not decide which choice you like and then defend it. Use both roles on each choice.</p><ul><li>What does each choice get right?</li><li>What, if anything, does each choice get wrong?</li><li>Which one answers the exact question and matches the whole answer target?</li></ul><p>Sometimes neither choice has an obvious factual error. Good Cop then matters more: the better choice is the one that directly does the question's job and preserves the passage's main point.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "roof_coating_question",
+      "html": "<h2>Separate two close choices</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><blockquote><p>Engineers applied a reflective coating to the roofs of several buildings. The coated roofs were cooler at midday, but changes in indoor temperature varied depending on features such as insulation. The team concluded that the coating's effect inside a building depends partly on that building's design.</p></blockquote><p><strong>Answer target:</strong> The coating cooled roof surfaces, but its effect indoors varied with building features.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
-      "id": "good_cop_pass_check",
+      "id": "roof_coating_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which choice should Good Cop keep for a full Bad Cop audit?",
+        "prompt": "Which choice survives both Good Cop and Bad Cop?",
         "choices": [
-          "Clouds permanently prevent the moth species from visiting any flowers.",
-          "Pale flowers produce moonlight that attracts every nocturnal insect.",
-          "Mensah found that the moth always prefers pale flowers, regardless of light conditions.",
-          "The moth's flower-color preference appeared on moonlit nights but not on cloudy nights."
+          "The tests proved that insulation alone determines the temperature of every roof.",
+          "Coated roofs were cooler at midday, so the coating lowered indoor temperature in every tested building.",
+          "The team found that building features had no effect on the indoor results.",
+          "Reflective coating can cool roof surfaces, but its effect indoors may vary with building features."
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "Use the pre-answer to locate the choice that preserves the changing preference across the two light conditions.",
-        "explanation": "Correct. The fourth choice matches the prediction and is now ready for a word-by-word audit."
+        "hint": "The best choice must keep both results: cooler roofs and varied indoor effects.",
+        "explanation": "Correct. D keeps both halves of the answer target. B begins with the supported roof result but changes varied indoor effects into a result for every building. A and C contradict the passage."
       },
       "calculator": { "display": "hidden" }
     },
     {
-      "kind": "text",
-      "id": "bad_cop_pass",
-      "html": "<h2>Audit the survivor</h2><p>Now test the surviving moth answer:</p><blockquote><p>The moth's flower-color preference appeared on moonlit nights but not on cloudy nights.</p></blockquote><ul><li><strong>Actor:</strong> the same moth species.</li><li><strong>Behavior:</strong> a flower-color preference.</li><li><strong>Direction:</strong> preference on moonlit nights; no preference on cloudy nights.</li><li><strong>Degree:</strong> no claim about every moth or every night.</li><li><strong>Extra detail:</strong> none.</li></ul><p>The whole choice is supported, so it survives Bad Cop.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
       "kind": "raw_block",
-      "id": "audit_targets_check",
+      "id": "roof_coating_runner_up_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which audit question would be least useful during Bad Cop?",
+        "prompt": "Why must Choice B be crossed out even though its first half is correct?",
         "choices": [
-          "Does the choice preserve the passage's degree of certainty?",
-          "Does the choice assign the claim to the correct actor?",
-          "Is every relationship and added detail supported by the text?",
-          "Does the choice sound sophisticated enough to be written by an expert?"
-        ],
-        "correct_index": 3,
-        "allow_retry": true,
-        "hint": "Bad Cop tests textual support, not tone or sophistication.",
-        "explanation": "Right. An answer's style does not make it correct; every part of its meaning must be supported."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "complete_routine",
-      "html": "<h2>The complete Good Cop / Bad Cop routine</h2><ol><li>Bring forward the pre-answer from the broader reading process.</li><li>Use Good Cop to find choices that roughly match it.</li><li>Use Bad Cop to check actor, direction, degree, relationship, and extra detail.</li><li>Eliminate a choice as soon as any part fails.</li><li>Choose the one answer whose complete meaning is supported.</li></ol><blockquote><p><strong>No partial credit:</strong> a partly true answer is a wrong answer.</p></blockquote>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "worked_science_transfer",
-      "html": "<h2>Worked SAT-style application</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><blockquote><p>In laboratory tests, bean plants exposed to a high concentration of microplastic particles developed shorter roots than plants grown without the particles. Researcher Lian Wu cautions that soil conditions in farms are more complex than those in the laboratory, so additional field studies are needed.</p></blockquote><p><strong>Pre-answer:</strong> High microplastic exposure shortened roots in a lab test, but researchers cannot yet assume the same result under farm conditions.</p><p>Find the match, then audit every word.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
-      "id": "worked_science_transfer_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which choice passes both Good Cop and Bad Cop?",
-        "choices": [
-          "High microplastic exposure was linked to shorter bean roots in laboratory tests, but field research is needed before extending the result to farms.",
-          "Microplastic particles shorten the roots of every crop grown on every farm.",
-          "Wu's field studies proved that farm soil prevents microplastics from affecting roots.",
-          "Bean plants developed shorter roots because researchers removed all soil from the laboratory."
+          "It says the coating lowered indoor temperature in every tested building, but the indoor results varied.",
+          "It uses the word roofs instead of surfaces.",
+          "It mentions indoor temperature, which the passage never discusses.",
+          "It says the roofs were cooler at midday, which reverses the result."
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "Keep the laboratory result and Wu's limitation. Reject universal, completed-field-study, and invented-cause claims.",
-        "explanation": "Correct. The first choice preserves both the result and its stated limit without adding a cause or universal conclusion."
+        "hint": "Read past the comma and compare every tested building with varied.",
+        "explanation": "Right. The supported beginning cannot rescue the unsupported ending. Every important part has to work."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
-      "id": "worked_literary_transfer",
-      "html": "<h2>Apply the audit to a literary passage</h2><p><strong>Introduction:</strong> The following text is adapted from a story in which Arun is preparing to perform his music in public for the first time.</p><blockquote><p>Behind the curtain, Arun retied the same loose knot three times. When the announcer spoke his name, he stopped tugging at it, lifted his instrument, and stepped toward the stage before his hands could find another task.</p></blockquote><p><strong>Question:</strong> Which choice best describes Arun?</p><p><strong>Pre-answer:</strong> He is nervous but makes himself go onstage.</p>",
+      "id": "no_choice_fits",
+      "html": "<h2>When none of the choices fits</h2><p>Do not choose the least bad answer just because you have already spent time on the question.</p><ol><li>Read the question again. Did you name the right job?</li><li>Return to the important sentence or contrast in the passage.</li><li>Check whether your answer target was too broad, too narrow, or missing a limit.</li><li>Update the target and try the choices again.</li></ol><p>The choices can reveal that your first target needs repair, but they still do not get to replace the passage as your evidence.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
-      "id": "worked_literary_transfer_check",
+      "id": "no_choice_fits_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which choice is fully supported?",
+        "prompt": "Your answer target does not fit any choice exactly, and every choice seems to have a problem. What should you do?",
         "choices": [
-          "Arun is annoyed because the announcer mispronounces his name.",
-          "Arun confidently waits backstage without distracting himself.",
-          "Arun's repeated fidgeting suggests nervousness, but he moves toward the stage when called.",
-          "Arun decides to leave because he has forgotten how to play his instrument."
-        ],
-        "correct_index": 2,
-        "allow_retry": true,
-        "hint": "Match the pre-answer, then reject any choice that invents a mistake, confidence, or decision to leave.",
-        "explanation": "Right. The repeated knot-tying supports nervousness, and his movement toward the stage shows that he proceeds anyway."
-      },
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "text",
-      "id": "independent_transfer_one",
-      "html": "<h2>Independent transfer: evaluate every word</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><blockquote><p>Archaeologists once believed that a coastal settlement was occupied only during summer fishing trips. However, chemical analysis of cooking vessels revealed traces of plants harvested in winter, indicating that at least some residents likely remained there year-round.</p></blockquote><p>Form a pre-answer, use Good Cop to find a match, and use Bad Cop to audit it.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
-      "id": "independent_transfer_one_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which choice is completely supported?",
-        "choices": [
-          "The settlement was occupied exclusively by fishers who never harvested plants.",
-          "Evidence from cooking vessels suggests that at least some people may have lived at the settlement beyond the summer.",
-          "Chemical analysis proved that every resident remained at the settlement throughout every winter.",
-          "Archaeologists abandoned the settlement after winter plants stopped growing there."
+          "Choose the answer that sounds most academic.",
+          "Return to the question and passage, repair the answer target, and then test the choices again.",
+          "Choose the answer with the fewest words.",
+          "Ignore the answer target and use outside knowledge to pick a reasonable statement."
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Preserve the new evidence and its cautious scope: at least some residents likely remained year-round.",
-        "explanation": "Correct. The second choice keeps the evidence, the challenge to the summer-only view, and the passage's limited certainty."
+        "hint": "A complete mismatch is a signal to repair your understanding, not to force an answer.",
+        "explanation": "Correct. Recheck the job, the important text, and any limits before testing the choices again."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
-      "id": "independent_transfer_two",
-      "html": "<h2>Independent transfer: identify a sentence's function</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence?</p><blockquote><p>Economist Priya Sen argues that average travel time alone can hide unequal access to public transportation. Two neighborhoods may have the same average commute, for instance, even if residents of one have frequent trains while residents of the other must rely on a single unpredictable bus route.</p></blockquote><p>Pre-answer the function, then audit the choices for actor, relationship, and extra detail.</p>",
+      "id": "bee_navigation_question",
+      "html": "<h2>Practice: a tempting added idea</h2><p><strong>Question:</strong> Which choice best states the main idea?</p><blockquote><p>Some bees use patterns of polarized light to navigate. In a laboratory test, bees took longer to reach a feeder when a coating blocked those light patterns. The researchers did not measure whether the extra travel time changed how much energy the bees used.</p></blockquote><p>Form an answer target. Then take the choices one at a time: what fits, and what fails?</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
-      "id": "independent_transfer_two_check",
+      "id": "bee_navigation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice is completely supported and answers the question?",
+        "choices": [
+          "The coating permanently destroyed the bees' ability to navigate to any feeder.",
+          "Bees use only polarized light and no other information to navigate.",
+          "Blocking polarized-light patterns was connected with slower navigation in the laboratory test.",
+          "The bees' longer travel time proved that they used more energy to reach the feeder."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep the laboratory result and do not add permanence, only, or an unmeasured energy result.",
+        "explanation": "Correct. C reports the tested change without going beyond it. A and B make unsupported broad claims. D adds an energy conclusion the researchers did not measure."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "bee_navigation_wrong_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What exact part makes the energy answer wrong?",
+        "choices": [
+          "It refers to the bees.",
+          "It mentions the feeder.",
+          "It says the travel time was longer.",
+          "It says the longer time proved greater energy use, which the researchers did not measure."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Separate the measured travel time from the unmeasured energy claim.",
+        "explanation": "Right. The answer begins with a real result and then adds an unsupported conclusion."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "devon_poem_question",
+      "html": "<h2>Practice: a character's reaction</h2><p><strong>Introduction:</strong> The following text is adapted from a story in which Devon has submitted a poem anonymously to a school publication.</p><blockquote><p>Devon listened from the next table as the editors praised the poem's imagery. He opened his mouth to tell them who had written it, then stopped and folded the acceptance email into a smaller square beneath the table.</p></blockquote><p><strong>Question:</strong> Which choice best describes Devon's reaction?</p><p>Form an answer target before viewing the choices.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "devon_poem_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice is best supported?",
+        "choices": [
+          "Devon seems pleased by the praise but remains hesitant to identify himself as the poet.",
+          "Devon is embarrassed because he believes the editors think the poem is poorly written.",
+          "Devon is angry that the editors do not already know he wrote the poem.",
+          "Devon decides never to submit another piece of writing."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use both actions: he nearly speaks, but then stops and folds the email out of sight.",
+        "explanation": "Correct. A connects his interest in the praise with his hesitation to reveal himself. B contradicts the praise, while C and D invent reactions and decisions."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "devon_poem_wrong_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why is the claim that Devon is angry at the editors unsupported?",
+        "choices": [
+          "The claim is about the wrong character.",
+          "The text shows hesitation about speaking, but it gives no sign that Devon blames or resents the editors.",
+          "The editors never discuss the poem.",
+          "The text directly says Devon is pleased."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Do not turn silence or hesitation into a specific emotion without evidence.",
+        "explanation": "Right. Anger is possible in some imagined story, but this text supports hesitation rather than blame or resentment."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "transportation_question",
+      "html": "<h2>Practice: what does the example do?</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence?</p><blockquote><p>Economist Priya Sen argues that average travel time alone can hide unequal access to public transportation. Two neighborhoods may have the same average commute, for instance, even if residents of one have frequent trains while residents of the other must rely on a single unpredictable bus route.</p></blockquote><p>Form an answer target for the second sentence's job, then test each choice.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transportation_check",
       "block_type": "check",
       "content": {
         "prompt": "What function does the second sentence serve?",
         "choices": [
           "It rejects Sen's argument by proving that average commute times are always accurate.",
           "It argues that trains are less predictable than buses in every neighborhood.",
-          "It introduces a second economist whose view is unrelated to Sen's claim.",
-          "It illustrates how equal average commute times can conceal meaningful differences in transportation access."
+          "It illustrates how equal average commute times can hide meaningful differences in transportation access.",
+          "It introduces a second economist whose view is unrelated to Sen's claim."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Connect the two-neighborhood example to Sen's claim about what an average can hide.",
+        "explanation": "Correct. C explains what the example does. A reverses the author's purpose, B changes the comparison and broadens it, and D invents a new person."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "remember_the_process",
+      "html": "<h2>Say the process without looking back</h2><p>Before continuing, say what Good Cop and Bad Cop ask about each choice.</p><p>Then name the four things you check when a choice looks possible. Do not look back. Say them in your own words before continuing.</p><p>Now use the process on one final question without help.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "final_question",
+      "html": "<h2>Finish with a new passage</h2><p><strong>Question:</strong> Which conclusion is best supported by the text?</p><blockquote><p>Oceanographers placed sound sensors near two reefs. Before nearby construction began, sound levels and dolphin visits were similar at both reefs. During construction, the reef near the site became louder and received fewer dolphin visits, while the distant reef showed little change. The researchers did not determine what caused the decline in visits.</p></blockquote><p>Form an answer target. Then take each choice once: what fits, and what fails?</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_question_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which conclusion is best supported?",
+        "choices": [
+          "Construction noise permanently drove every dolphin away from the nearby reef.",
+          "The distant reef became louder and received fewer dolphin visits during construction.",
+          "The researchers proved that noise was the only cause of the decline in dolphin visits.",
+          "During construction, the nearby reef became louder and received fewer dolphin visits, while the distant reef changed little."
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "The second sentence gives two contrasting neighborhoods as an example of the problem named in the first.",
-        "explanation": "Right. The example shows how one average can hide a major difference in the quality and reliability of access."
+        "hint": "Keep the observed comparison between the reefs without claiming a cause the researchers did not determine.",
+        "explanation": "Correct. D reports the paired changes and nothing more. A and C invent a proven cause and stronger claims. B reverses which reef changed."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "raw_block",
-      "id": "final_retrieval",
+      "id": "final_wrong_choice_check",
       "block_type": "check",
       "content": {
-        "prompt": "Without looking back, which description captures the full Good Cop / Bad Cop strategy?",
+        "prompt": "What forces you to cross out the claim that noise was the only cause of the decline in visits?",
         "choices": [
-          "Bring a text-based pre-answer; use Good Cop to find a rough match; use Bad Cop to reject any unsupported actor, direction, degree, relationship, or extra detail.",
-          "Read the choices before the passage; let Good Cop select familiar words; let Bad Cop choose the longest survivor.",
-          "Use Good Cop to accept any partly true answer; use Bad Cop only when two answers have the same length.",
-          "Ignore the pre-answer; use outside knowledge to decide which choice sounds most reasonable."
+          "The researchers did not determine the cause, so the choice adds both certainty and the word only.",
+          "The passage does not mention dolphins.",
+          "The nearby reef did not become louder.",
+          "The distant reef changed more than the nearby reef."
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "Retrieve the prerequisite prediction, the positive matching pass, and the skeptical evidence audit.",
-        "explanation": "Exactly. Good Cop finds the candidate, and Bad Cop makes every part of that candidate prove itself against the passage."
+        "hint": "Compare proved and only with the final sentence of the passage.",
+        "explanation": "Right. The timing and observations may make noise a possibility, but the passage does not prove it or rule out other causes."
       },
       "calculator": { "display": "hidden" }
     },
@@ -419,10 +482,9 @@
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can make every answer prove itself</h2><p>You can use your pre-answer to locate a likely match, then audit its actors, direction, degree, relationships, and added details. A choice survives only when every part is supported.</p>",
+        "html": "<h2>One choice, two questions</h2><p>For each answer, Good Cop asks what matches your answer target. Bad Cop asks what is wrong, unsupported, or not answering the question. Cross out a choice when any important part fails, and keep it only when its whole meaning works.</p><p>Remember to check the exact job, the right people or things and what they did, the strength and limits of the statement, and any added idea the passage does not earn.</p><p>On easier questions, elimination will usually get you there quickly. On harder questions, using both sides helps you separate two choices that initially look possible.</p>",
         "button_label": "Complete Lesson"
       }
     }
   ]
 }
-
