@@ -654,22 +654,38 @@ Test two students, an assigned tutor, an unrelated tutor, and an admin:
 **Scope:** schema, types, validation, admin JSON import/preview/publish, and
 fixtures. No Claude calls and no student runner.
 
-Checklist:
+Checklist (completed 2026-08-10, branch `codex/reading-coach-pr1`):
 
-- [ ] Re-read `CLAUDE.md` and `supabase/migrations/README.md`.
-- [ ] Update from `main` and create a dedicated `codex/` branch.
-- [ ] Verify the live catalog and Data API exposure settings through Supabase.
-- [ ] Create the timestamped schema migration and explicit grants/RLS.
-- [ ] Apply only to the intended development project through the Supabase MCP.
-- [ ] Run advisors and verify policies with multiple personas.
-- [ ] Regenerate `lib/types/database.ts`.
-- [ ] Add typed item spec, parser, sanitizer integration, and validator.
-- [ ] Add admin list/import/preview/draft/publish surfaces.
-- [ ] Add at least three clearly licensed/public-domain/original fixtures,
-  covering different task types and processing modes.
-- [ ] Add validator and RLS tests.
-- [ ] Update this ledger and any affected living documentation.
-- [ ] Run typecheck, lint, unit tests, production build, and relevant e2e tests.
+- [x] Re-read `CLAUDE.md` and `supabase/migrations/README.md`.
+- [x] Update from `main` and create a dedicated `codex/` branch.
+- [x] Verify the live catalog and Data API exposure settings through Supabase.
+- [x] Create the timestamped schema migration and explicit grants/RLS
+  (`20260810154651_reading_coach_schema.sql`; turns uniqueness uses
+  `NULLS NOT DISTINCT` so NULL `unit_key` stages cannot duplicate
+  attempts; no anon or delete grants; demo read-only policies).
+- [x] Apply only to the intended development project through the Supabase MCP
+  (applied to studyworks-dev; production deferred to PR 4).
+- [x] Run advisors and verify policies with multiple personas
+  (advisors: no new findings; `scripts/verify-reading-coach-rls.sql`
+  runs 22 persona checks — all pass. Note: the RLS helpers read
+  `auth.jwt() -> 'app_metadata'`, so simulated claims must carry it).
+- [x] Regenerate `lib/types/database.ts` (now generated from dev,
+  which is a strict superset of prod until the PR 4 launch migration).
+- [x] Add typed item spec, parser, sanitizer integration, and validator
+  (`lib/reading-coach/types.ts`, `schema.ts`; publish-only rights gate).
+- [x] Add admin list/import/preview/draft/publish surfaces
+  (`app/(admin)/admin/reading-coach/…`; re-importing an existing slug
+  drafts the next version; publish syncs item identity from the
+  version's stored `itemMeta` snapshot).
+- [x] Add at least three clearly licensed/public-domain/original fixtures,
+  covering different task types and processing modes
+  (Darwin main_idea/adaptive, Austen inference/sentence_chunks,
+  original coworking passage function/whole_passage).
+- [x] Add validator and RLS tests (`lib/reading-coach/schema.test.mjs`,
+  20 unit tests; RLS persona script above).
+- [x] Update this ledger and any affected living documentation.
+- [x] Run typecheck, lint, unit tests, production build, and relevant e2e tests
+  (no Reading Coach e2e exists yet — arrives with the PR 3 runner).
 
 PR 1 acceptance:
 
@@ -738,7 +754,7 @@ Reading Coach is launch-ready when:
 
 | Phase | Status | PR | Notes |
 |---|---|---|---|
-| PR 1 — content/persistence | Not started | — | Next handoff target |
+| PR 1 — content/persistence | Built 2026-08-10, in review | — | Branch `codex/reading-coach-pr1`; schema applied to dev only; RLS persona suite green; 3 fixtures |
 | PR 2 — evaluator/QA | Not started | — | Blocked on PR 1 |
 | PR 3 — student runner | Not started | — | Blocked on evaluator QA |
 | PR 4 — integration/launch | Not started | — | Requires owner launch approval |

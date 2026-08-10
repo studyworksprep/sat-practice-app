@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -2824,6 +2824,427 @@ export type Database = {
           },
         ]
       }
+      reading_coach_choices: {
+        Row: {
+          choice_html: string
+          error_code: string | null
+          id: string
+          is_correct: boolean
+          item_version_id: string
+          label: string
+          rationale_html: string
+          sort_order: number
+        }
+        Insert: {
+          choice_html: string
+          error_code?: string | null
+          id?: string
+          is_correct: boolean
+          item_version_id: string
+          label: string
+          rationale_html: string
+          sort_order: number
+        }
+        Update: {
+          choice_html?: string
+          error_code?: string | null
+          id?: string
+          is_correct?: boolean
+          item_version_id?: string
+          label?: string
+          rationale_html?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_coach_choices_item_version_id_fkey"
+            columns: ["item_version_id"]
+            isOneToOne: false
+            referencedRelation: "reading_coach_item_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reading_coach_item_versions: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          item_id: string
+          passage_html: string
+          processing_mode: string
+          published_at: string | null
+          question_stem_html: string
+          rubric: Json
+          task_type: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          item_id: string
+          passage_html: string
+          processing_mode: string
+          published_at?: string | null
+          question_stem_html: string
+          rubric: Json
+          task_type: string
+          version_number: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          item_id?: string
+          passage_html?: string
+          processing_mode?: string
+          published_at?: string | null
+          question_stem_html?: string
+          rubric?: Json
+          task_type?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_coach_item_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_item_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_item_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reading_coach_item_versions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "reading_coach_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reading_coach_items: {
+        Row: {
+          created_at: string
+          created_by: string
+          current_version_id: string | null
+          difficulty: number
+          genre: string
+          id: string
+          slug: string
+          source_metadata: Json
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          current_version_id?: string | null
+          difficulty: number
+          genre: string
+          id?: string
+          slug: string
+          source_metadata?: Json
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          current_version_id?: string | null
+          difficulty?: number
+          genre?: string
+          id?: string
+          slug?: string
+          source_metadata?: Json
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_coach_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reading_coach_items_current_version_fk"
+            columns: ["current_version_id"]
+            isOneToOne: false
+            referencedRelation: "reading_coach_item_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reading_coach_sessions: {
+        Row: {
+          choice_correct: boolean | null
+          completed_at: string | null
+          completion_mode: string | null
+          id: string
+          item_version_id: string
+          last_activity_at: string
+          selected_choice_id: string | null
+          source: string
+          source_id: string | null
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          choice_correct?: boolean | null
+          completed_at?: string | null
+          completion_mode?: string | null
+          id?: string
+          item_version_id: string
+          last_activity_at?: string
+          selected_choice_id?: string | null
+          source?: string
+          source_id?: string | null
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          choice_correct?: boolean | null
+          completed_at?: string | null
+          completion_mode?: string | null
+          id?: string
+          item_version_id?: string
+          last_activity_at?: string
+          selected_choice_id?: string | null
+          source?: string
+          source_id?: string | null
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_coach_sessions_item_version_id_fkey"
+            columns: ["item_version_id"]
+            isOneToOne: false
+            referencedRelation: "reading_coach_item_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_sessions_selected_choice_id_fkey"
+            columns: ["selected_choice_id"]
+            isOneToOne: false
+            referencedRelation: "reading_coach_choices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      reading_coach_turn_reviews: {
+        Row: {
+          disposition: string
+          notes: string | null
+          reviewed_at: string
+          reviewer_id: string
+          turn_id: string
+        }
+        Insert: {
+          disposition: string
+          notes?: string | null
+          reviewed_at?: string
+          reviewer_id: string
+          turn_id: string
+        }
+        Update: {
+          disposition?: string
+          notes?: string | null
+          reviewed_at?: string
+          reviewer_id?: string
+          turn_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_coach_turn_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_turn_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_turn_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "reading_coach_turn_reviews_turn_id_fkey"
+            columns: ["turn_id"]
+            isOneToOne: true
+            referencedRelation: "reading_coach_turns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reading_coach_turns: {
+        Row: {
+          attempt_number: number
+          cache_read_tokens: number | null
+          client_request_id: string
+          completed_at: string | null
+          created_at: string
+          error_code: string | null
+          evaluation_json: Json | null
+          evidence: Json | null
+          feedback_text: string | null
+          id: string
+          input_tokens: number | null
+          latency_ms: number | null
+          model_id: string | null
+          output_tokens: number | null
+          prompt_version: string | null
+          session_id: string
+          stage: string
+          status: string
+          student_text: string
+          unit_key: string | null
+          user_id: string
+          verdict: string | null
+        }
+        Insert: {
+          attempt_number: number
+          cache_read_tokens?: number | null
+          client_request_id: string
+          completed_at?: string | null
+          created_at?: string
+          error_code?: string | null
+          evaluation_json?: Json | null
+          evidence?: Json | null
+          feedback_text?: string | null
+          id?: string
+          input_tokens?: number | null
+          latency_ms?: number | null
+          model_id?: string | null
+          output_tokens?: number | null
+          prompt_version?: string | null
+          session_id: string
+          stage: string
+          status?: string
+          student_text: string
+          unit_key?: string | null
+          user_id: string
+          verdict?: string | null
+        }
+        Update: {
+          attempt_number?: number
+          cache_read_tokens?: number | null
+          client_request_id?: string
+          completed_at?: string | null
+          created_at?: string
+          error_code?: string | null
+          evaluation_json?: Json | null
+          evidence?: Json | null
+          feedback_text?: string | null
+          id?: string
+          input_tokens?: number | null
+          latency_ms?: number | null
+          model_id?: string | null
+          output_tokens?: number | null
+          prompt_version?: string | null
+          session_id?: string
+          stage?: string
+          status?: string
+          student_text?: string
+          unit_key?: string | null
+          user_id?: string
+          verdict?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_coach_turns_session_id_user_id_fkey"
+            columns: ["session_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "reading_coach_sessions"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "reading_coach_turns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_turns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_coach_turns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       review_queue: {
         Row: {
           created_at: string
@@ -3896,6 +4317,10 @@ export type Database = {
       snapshot_student_skill_mastery: {
         Args: { p_asof?: string; p_student: string; p_test_type?: string }
         Returns: number
+      }
+      student_has_lesson_assignment: {
+        Args: { p_lesson_id: string; p_student_id: string }
+        Returns: boolean
       }
       teacher_can_view_student: {
         Args: { target_student_id: string }

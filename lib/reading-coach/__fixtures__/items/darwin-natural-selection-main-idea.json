@@ -1,0 +1,133 @@
+{
+  "slug": "darwin-natural-selection-main-idea",
+  "title": "Natural selection at work",
+  "genre": "science",
+  "difficulty": 1,
+  "taskType": "main_idea",
+  "source": {
+    "title": "On the Origin of Species",
+    "author": "Charles Darwin",
+    "year": 1859,
+    "rightsStatus": "public_domain",
+    "rightsNotes": "Published 1859; public domain worldwide. Excerpt lightly abridged."
+  },
+  "questionStemHtml": "<p>Which choice best states the main idea of the text?</p>",
+  "passageHtml": "<p>It may be said that natural selection is daily and hourly scrutinising, throughout the world, every variation, even the slightest; rejecting that which is bad, preserving and adding up all that is good; silently and insensibly working at the improvement of each organic being in relation to its conditions of life. We see nothing of these slow changes in progress, until the hand of time has marked the long lapse of ages.</p>",
+  "processingMode": "adaptive",
+  "taskRubric": {
+    "canonicalTask": "Find the main point of the passage as a whole.",
+    "requiredIdeas": [
+      "identify the central claim of the whole passage, not a single detail"
+    ],
+    "acceptableVariants": [
+      "say what the passage is mostly about",
+      "state the author's overall point"
+    ],
+    "commonWrongTasks": [
+      "summarize only one sentence or detail",
+      "explain what a single phrase means",
+      "give an opinion about evolution"
+    ]
+  },
+  "processingUnits": [
+    {
+      "key": "scrutiny",
+      "textHtml": "<p>It may be said that natural selection is daily and hourly scrutinising, throughout the world, every variation, even the slightest; rejecting that which is bad, preserving and adding up all that is good; silently and insensibly working at the improvement of each organic being in relation to its conditions of life.</p>",
+      "requiredIdeas": [
+        "natural selection constantly examines every variation, even tiny ones",
+        "harmful variations are rejected while useful ones are kept and accumulated",
+        "the process works silently toward improving each organism"
+      ],
+      "requiredRelations": [
+        "contrast between rejecting the bad and preserving the good"
+      ],
+      "acceptableOmissions": [
+        "the phrase about conditions of life"
+      ],
+      "prohibitedDistortions": [
+        "selection acts quickly or in sudden bursts",
+        "selection chooses with conscious intent",
+        "selection creates the variations itself"
+      ]
+    },
+    {
+      "key": "timescale",
+      "textHtml": "<p>We see nothing of these slow changes in progress, until the hand of time has marked the long lapse of ages.</p>",
+      "requiredIdeas": [
+        "the changes cannot be observed while they are happening",
+        "only the passage of long ages makes them visible"
+      ],
+      "requiredRelations": [
+        "contrast between change constantly occurring and change only becoming visible much later"
+      ],
+      "acceptableOmissions": [],
+      "prohibitedDistortions": [
+        "people can directly watch selection improving organisms"
+      ]
+    }
+  ],
+  "passageRubric": {
+    "canonicalSummary": "Natural selection constantly and invisibly filters every small variation — discarding harmful ones and accumulating helpful ones — and its slow improvements become visible only after immense stretches of time.",
+    "requiredIdeas": [
+      "natural selection constantly examines and filters small variations",
+      "bad variations are rejected and good ones preserved and built up",
+      "the process is slow and invisible, showing results only over long ages"
+    ],
+    "requiredRelations": [
+      "continual filtering of variations produces gradual improvement",
+      "contrast between the process operating constantly and its results being visible only after long ages"
+    ],
+    "acceptableOmissions": [
+      "the phrase about conditions of life",
+      "the 'daily and hourly' wording, if constancy is otherwise conveyed"
+    ],
+    "prohibitedDistortions": [
+      "natural selection acts quickly or visibly",
+      "selection is guided by conscious intent",
+      "variation itself is produced by selection"
+    ]
+  },
+  "preanswerRubric": {
+    "canonicalPreanswer": "The main idea is that natural selection is an ongoing, imperceptible filtering of tiny variations that gradually improves living things over vast stretches of time.",
+    "requiredIdeas": [
+      "constant filtering and accumulation of small variations",
+      "improvement is gradual and visible only over long time"
+    ],
+    "acceptableVariants": [
+      "selection slowly and invisibly improves organisms by keeping good variations and discarding bad ones"
+    ],
+    "prohibitedClaims": [
+      "selection works rapidly or in visible steps",
+      "selection has conscious goals"
+    ]
+  },
+  "choices": [
+    {
+      "label": "A",
+      "html": "<p>Natural selection continuously and imperceptibly preserves useful variations, producing improvements that become apparent only across vast periods of time.</p>",
+      "correct": true,
+      "rationaleHtml": "<p>Correct. It captures both halves of the passage: the constant, silent filtering of variations and the long timescale over which its results appear.</p>"
+    },
+    {
+      "label": "B",
+      "html": "<p>Natural selection acts primarily during rare, dramatic episodes of environmental upheaval.</p>",
+      "correct": false,
+      "rationaleHtml": "<p>The passage says the opposite: selection works 'daily and hourly,' constantly rather than in rare episodes.</p>",
+      "errorCode": "reversal"
+    },
+    {
+      "label": "C",
+      "html": "<p>Careful observers can watch natural selection improving organisms from day to day.</p>",
+      "correct": false,
+      "rationaleHtml": "<p>The final sentence states that we see nothing of these changes while they are in progress.</p>",
+      "errorCode": "reversal"
+    },
+    {
+      "label": "D",
+      "html": "<p>Every variation an organism displays eventually proves useful to it.</p>",
+      "correct": false,
+      "rationaleHtml": "<p>The passage distinguishes bad variations, which are rejected, from good ones, which are preserved — not every variation is useful.</p>",
+      "errorCode": "contradicted_detail"
+    }
+  ]
+}
