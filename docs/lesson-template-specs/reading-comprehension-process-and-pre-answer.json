@@ -1,11 +1,11 @@
 {
   "title": "Process and Pre-Answer Reading Comprehension Questions",
-  "description": "Use a five-step reading routine to understand short SAT passages, predict an answer before viewing the choices, and select the choice that matches the text.",
+  "description": "Use a five-step routine to identify the question's job, build a usable understanding of a short SAT passage, form a flexible answer target, and prove the matching choice from the text.",
   "blocks": [
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Take control before the choices do</h2><p>SAT reading passages are short, but they can still overload you with names, claims, and details. This lesson gives you one repeatable process for staying focused.</p><p>By the end, you will be able to read the introduction and question, understand the passage sentence by sentence, form your own answer, and then find the matching choice.</p><blockquote><p><strong>Core habit:</strong> Think before you look at the answer choices.</p></blockquote>",
+      "html": "<h2>Take control before the choices do</h2><p>SAT reading passages are short, but they can still overload you with names, claims, and details. This lesson gives you one repeatable process for main-idea, detail, function, and inference questions.</p><p>By the end, you will be able to identify your job, build a usable understanding of the passage, form an answer target in your own words, and prove which choice matches the text.</p><blockquote><p><strong>Core habit:</strong> Think before you look at the answer choices.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -19,7 +19,7 @@
       "id": "opening_observation_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which statement is the strongest pre-answer for the passage's main idea?",
+        "prompt": "Which choice best states the main idea of the text?",
         "choices": [
           "Natural moonlight is the only reliable guide for every migrating bird.",
           "City lights cause migrating birds to reach resting places sooner.",
@@ -36,7 +36,7 @@
     {
       "kind": "text",
       "id": "name_the_process",
-      "html": "<h2>The five-step process</h2><ol><li><strong>Read the introduction</strong>, if one is present.</li><li><strong>Read the question</strong> and identify your exact job.</li><li><strong>Read the passage</strong>, making sure each sentence makes sense.</li><li><strong>Pre-answer</strong>: state your own answer before viewing the choices.</li><li><strong>Match and eliminate</strong>: choose the option that matches your prediction and the text.</li></ol><p>You will practice each step, then use the full process independently.</p>",
+      "html": "<h2>The five-step process</h2><ol><li><strong>Read the context</strong>: use the introduction if one is present.</li><li><strong>Name the job</strong>: translate the question into exactly what you must find.</li><li><strong>Build the meaning</strong>: read the whole passage and know what each sentence contributes; repair only when the meaning breaks down.</li><li><strong>Form an answer target</strong>: answer the question in your own words before viewing the choices.</li><li><strong>Prove the choice</strong>: select the option that matches your target and is supported by the text.</li></ol><p>You will practice each step, then use the full process independently.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -47,14 +47,14 @@
         "prompt": "Which sequence follows the reading process?",
         "choices": [
           "Read the choices; skim for repeated words; guess the passage's topic; reread the question.",
-          "Read the introduction; read the question; understand the passage; pre-answer; match and eliminate.",
+          "Read the context; name the job; build the meaning; form an answer target; prove the choice.",
           "Read the passage; choose the longest answer; check the introduction only if stuck.",
           "Read the question; eliminate two choices; use the remaining choices to interpret the passage."
         ],
         "correct_index": 1,
         "allow_retry": true,
         "hint": "The process gathers context and defines the task before it exposes you to the choices.",
-        "explanation": "Correct. Introduction, question, passage, pre-answer, then choices. That order protects your reading from attractive distractors."
+        "explanation": "Correct. Context and task come first, then passage meaning and your own answer target. Only after that do the choices appear."
       },
       "calculator": { "display": "hidden" }
     },
@@ -86,7 +86,7 @@
     {
       "kind": "text",
       "id": "question_step",
-      "html": "<h2>Step 2: Read the question and name the job</h2><p>Many SAT reading questions look similar, but their tasks differ. Before reading the passage, translate the question into a short job:</p><ul><li><strong>Main idea:</strong> What is the passage mostly saying?</li><li><strong>Detail:</strong> What does the passage state about one specific thing?</li><li><strong>Purpose or function:</strong> Why did the author include this sentence or example?</li><li><strong>Inference:</strong> What conclusion is fully supported?</li></ul><p>Knowing the job tells you what information to hold onto.</p>",
+      "html": "<h2>Step 2: Read the question and name the job</h2><p>Many SAT reading questions look similar, but their tasks differ. Before reading the passage, translate the question into a short job:</p><ul><li><strong>Main idea:</strong> What is the passage mostly saying?</li><li><strong>Detail:</strong> What does the passage state about one specific thing?</li><li><strong>Purpose or function:</strong> Why did the author include this sentence or example?</li><li><strong>Inference:</strong> What is the smallest conclusion the text supports?</li></ul><blockquote><p><strong>Keep the whole passage:</strong> The question tells you what to produce, not what you can safely ignore.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -111,7 +111,7 @@
     {
       "kind": "text",
       "id": "sentence_step",
-      "html": "<h2>Step 3: Understand each sentence</h2><p>After each sentence, pause and turn it into a short sound bite. You do not need to remember every name or number. You do need to preserve the sentence's logical role.</p><ul><li>Who or what is the sentence about?</li><li>What happened, changed, or was claimed?</li><li>Does the sentence agree, contrast, explain, or provide evidence?</li></ul><blockquote><p><strong>If your sound bite is empty, reread.</strong> Moving your eyes across a sentence is not the same as understanding it.</p></blockquote>",
+      "html": "<h2>Step 3: Build usable meaning</h2><p>After a clear sentence, move on if you can quickly say what it contributed. You do not need an elaborate paraphrase of every easy sentence, and you do not need to memorize every name or number.</p><ul><li>Who or what is the sentence about?</li><li>What happened, changed, or was claimed?</li><li>Does it agree, contrast, explain, qualify, or provide evidence?</li></ul><blockquote><p><strong>Know the contribution:</strong> If you cannot say what a sentence added, stop and repair it before moving on.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -142,7 +142,7 @@
     {
       "kind": "text",
       "id": "repair_strategy",
-      "html": "<h2>Repair a sentence that did not land</h2><p>If you finish a sentence and cannot say what it contributed, do not continue hoping the meaning will appear later.</p><ol><li>Return to the sentence.</li><li>Read one clause at a time.</li><li>Replace names with roles such as <strong>a researcher</strong> or <strong>an earlier theory</strong>.</li><li>State the relationship in plain language.</li></ol><p>This pause takes seconds and often saves a much longer struggle with the choices.</p>",
+      "html": "<h2>Repair a sentence that did not land</h2><p>If you finish a sentence and cannot say what it contributed, use a specific repair instead of rereading the same way.</p><ol><li>Return to the sentence.</li><li>Read one clause at a time.</li><li>Replace names with roles such as <strong>a researcher</strong> or <strong>an earlier theory</strong>.</li><li>Notice words that signal contrast, cause, evidence, or qualification.</li><li>State the relationship in plain language.</li></ol><p>This pause takes seconds and often saves a much longer struggle with the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -160,20 +160,76 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "The goal is to repair your understanding before a misunderstanding spreads to the rest of the passage.",
-        "explanation": "Right. Chunk the sentence and form a usable sound bite before moving on."
+        "explanation": "Right. Chunk the sentence and identify its basic contribution before moving on."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "warranted_inference",
+      "html": "<h2>Inference is allowed—guessing is not</h2><p>Understanding a passage often requires you to connect information across sentences. An inference question asks you to make the smallest conclusion that those connections support.</p><ul><li><strong>Allowed:</strong> connect facts and relationships the passage gives you.</li><li><strong>Not allowed:</strong> add a new cause, motive, fact, or prediction just because it seems possible.</li></ul><blockquote><p><strong>Inference rule:</strong> Connect the dots the passage gives you. Do not add new dots.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "inference_exploration",
+      "html": "<h2>Form a minimum inference</h2><p><strong>Question:</strong> Which conclusion about the moth study is best supported by the text?</p><blockquote><p>Biologist Erika Chen recorded visits by one moth species to white and yellow flowers. After sunset, the moths visited white flowers more often, but during daytime trials, visits to the two colors were equally frequent.</p></blockquote><p>Before continuing, say the smallest conclusion that combines the nighttime and daytime results. Do not invent a reason for the difference.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "inference_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which conclusion about the moth study is best supported by the text?",
+        "choices": [
+          "The moths were unable to detect yellow flowers after sunset.",
+          "Yellow flowers produced less nectar in every trial.",
+          "Flower color was associated with different visit rates after sunset but not during the daytime trials.",
+          "Moths of all species visit white flowers more often at every time of day."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep the contrast between the nighttime and daytime results, but do not add a mechanism or universal claim.",
+        "explanation": "Correct. The passage supports a difference after sunset and no difference during the daytime trials. It does not explain why."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "background_knowledge",
+      "html": "<h2>Use what you know—but do not use it as proof</h2><p>Background knowledge helps language and situations make sense. It can help you understand why a fact matters, but the SAT answer must still be supported by the passage.</p><blockquote><p><strong>Evidence rule:</strong> Use what you know to understand the passage. Use the passage to prove the answer.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "background_knowledge_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A passage states that a desert plant opens its pores only at night. You know that daytime deserts can be hot and dry. How should you use that knowledge?",
+        "choices": [
+          "Treat anything generally true about deserts as proof of the correct answer.",
+          "Use it to understand why nighttime opening may matter, but require the passage to support the answer.",
+          "Replace the passage's explanation with whatever you already know about plants.",
+          "Ignore the passage whenever its facts differ from what you expected."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Separate what helps you understand the situation from what can prove an answer choice.",
+        "explanation": "Right. Prior knowledge can help the passage make sense, but the passage remains the evidence for the SAT answer."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "preanswer_step",
-      "html": "<h2>Step 4: Pre-answer before viewing choices</h2><p>Answer the question in your own words while the passage is still controlling your thinking. Your pre-answer can be a phrase, not a polished sentence.</p><ul><li><strong>Main idea:</strong> name the topic and the central claim.</li><li><strong>Detail:</strong> state the exact requested fact.</li><li><strong>Purpose:</strong> say what the sentence or example does.</li></ul><p>Do not peek at the choices for vocabulary or inspiration. Attractive wrong answers are designed to reshape an uncertain reading.</p>",
+      "html": "<h2>Step 4: Form an answer target</h2><p>Answer the question in your own words while the passage is still controlling your thinking. Your target can be a short phrase, not a polished sentence.</p><ul><li><strong>Main idea:</strong> topic plus central point.</li><li><strong>Detail:</strong> the exact requested fact.</li><li><strong>Purpose:</strong> what the sentence or example does.</li><li><strong>Inference:</strong> the smallest supported conclusion.</li></ul><p>Do not peek at the choices for vocabulary or inspiration. Attractive wrong answers can reshape an uncertain reading.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "preanswer_quality",
-      "html": "<h2>Make the prediction specific but flexible</h2><p>A useful pre-answer captures the required meaning without demanding identical wording.</p><ul><li><strong>Too broad:</strong> The passage discusses insects.</li><li><strong>Useful:</strong> City noise changes when crickets begin their evening calls.</li><li><strong>Too specific:</strong> Every cricket delays its call by exactly seventeen minutes.</li></ul><blockquote><p><strong>Match meaning, not wording.</strong> The correct choice may paraphrase your idea.</p></blockquote>",
+      "html": "<h2>Make the target specific but flexible</h2><p>A useful answer target captures the required meaning without demanding identical wording.</p><ul><li><strong>Too broad:</strong> The passage discusses insects.</li><li><strong>Useful:</strong> City noise changes when crickets begin their evening calls.</li><li><strong>Too specific:</strong> Every cricket delays its call by exactly seventeen minutes.</li></ul><p>Your target is a hypothesis, not a verdict. If no choice fits, reread the question and passage and revise the target instead of forcing a match.</p><blockquote><p><strong>Match meaning, not wording.</strong> The correct choice may sharpen or paraphrase your idea.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -181,7 +237,7 @@
       "id": "preanswer_quality_check",
       "block_type": "check",
       "content": {
-        "prompt": "A passage says that crickets near busy roads begin calling later than crickets in quiet fields. Which is the most useful pre-answer to a main-idea question?",
+        "prompt": "A passage says that crickets near busy roads begin calling later than crickets in quiet fields. Which is the most useful answer target for a main-idea question?",
         "choices": [
           "Crickets are insects that produce sounds.",
           "Roads are harmful to every animal living nearby.",
@@ -191,39 +247,20 @@
         "correct_index": 3,
         "allow_retry": true,
         "hint": "Choose the statement that preserves the comparison and does not add a new universal claim.",
-        "explanation": "Correct. It captures the reported relationship between traffic noise and calling time without overclaiming."
+        "explanation": "Correct. It captures the reported relationship between traffic noise and calling time without overclaiming or demanding exact wording."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "worked_example_setup",
-      "html": "<h2>Model the full process</h2><p><strong>Question job:</strong> What is the main idea?</p><blockquote><p>Museums sometimes display replicas when an original object is too fragile to exhibit. In a study of one history gallery, visitors who saw a replica alongside a short explanation of how it was made recalled more about the original object than visitors who saw the replica without that context.</p></blockquote><p><strong>Sentence 1:</strong> Museums may use replicas to protect fragile originals.</p><p><strong>Sentence 2:</strong> Visitors learned more when the replica came with an explanation.</p><p>Now combine those sound bites into a pre-answer.</p>",
-      "calculator": { "display": "hidden" }
-    },
-    {
-      "kind": "raw_block",
-      "id": "worked_preanswer_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "Which pre-answer best combines both sentences?",
-        "choices": [
-          "When museums use replicas, explaining the replica's creation can help visitors understand the protected original.",
-          "Museums should replace all fragile originals with inexpensive replicas.",
-          "Visitors are unable to distinguish replicas from original historical objects.",
-          "A history gallery measured how much visitors paid for replica objects."
-        ],
-        "correct_index": 0,
-        "allow_retry": true,
-        "hint": "Include why a replica may be used and what the study found about added context.",
-        "explanation": "Exactly. The pre-answer links the use of replicas with the study's finding that explanatory context improves learning."
-      },
+      "html": "<h2>Model the full process</h2><p><strong>Question job:</strong> What is the main idea?</p><blockquote><p>Museums sometimes display replicas when an original object is too fragile to exhibit. In a study of one history gallery, visitors who saw a replica alongside a short explanation of how it was made recalled more about the original object than visitors who saw the replica without that context.</p></blockquote><p><strong>Sentence 1 contribution:</strong> Museums may use replicas to protect fragile originals.</p><p><strong>Sentence 2 contribution:</strong> Visitors learned more when the replica came with an explanation.</p><p>Pause and combine those contributions into an answer target before continuing.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "choices_step",
-      "html": "<h2>Step 5: Reveal the choices and find the match</h2><p>Only now should you read the answer choices. For the museum passage, suppose the choices are:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Original artifacts are always more valuable to visitors than replicas are.</li><li>Museums mainly use replicas to reduce the cost of gallery admission.</li><li>Context about a replica can improve what visitors learn about the original object.</li><li>Visitors remember objects best when museums provide no written explanation.</li></ol><p>Your prediction does not need identical words. It needs the same meaning.</p>",
+      "html": "<h2>Step 5: Reveal and prove the choice</h2><p><strong>Model answer target:</strong> When a museum uses a replica, an explanation can help visitors understand the protected original.</p><p>Only now should you read the answer choices:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Original artifacts are always more valuable to visitors than replicas are.</li><li>Museums mainly use replicas to reduce the cost of gallery admission.</li><li>Context about a replica can improve what visitors learn about the original object.</li><li>Visitors remember objects best when museums provide no written explanation.</li></ol><p>Find the same meaning, then confirm that the passage supports every important part of the choice. If none fits, revisit your target instead of forcing a match.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -240,7 +277,7 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Look for a paraphrase of the prediction, not repeated vocabulary alone.",
+        "hint": "Look for the same meaning, not repeated vocabulary alone, and confirm it against the passage.",
         "explanation": "Right. The third choice restates the study's result without adding a claim the passage never made."
       },
       "calculator": { "display": "hidden" }
@@ -248,7 +285,7 @@
     {
       "kind": "text",
       "id": "fiction_intro_variation",
-      "html": "<h2>Variation: an introduction carries essential context</h2><p><strong>Introduction:</strong> The following text is adapted from a story in which Lena has returned to her childhood neighborhood after living abroad for ten years.</p><blockquote><p>At the corner, Lena slowed before the bakery's bright new sign. The lettering was unfamiliar, but the warm scent drifting through the doorway was exactly as she remembered it.</p></blockquote><p><strong>Question:</strong> Which choice best describes Lena's reaction to the bakery?</p><p>Pre-answer before viewing the choices.</p>",
+      "html": "<h2>Variation: an introduction carries essential context</h2><p><strong>Introduction:</strong> The following text is adapted from a story in which Lena has returned to her childhood neighborhood after living abroad for ten years.</p><blockquote><p>At the corner, Lena slowed before the bakery's bright new sign. The lettering was unfamiliar, but the warm scent drifting through the doorway was exactly as she remembered it.</p></blockquote><p><strong>Question:</strong> Which choice best describes Lena's reaction to the bakery?</p><p>Form an answer target before viewing the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -323,7 +360,7 @@
     {
       "kind": "text",
       "id": "independent_transfer_one",
-      "html": "<h2>Independent transfer</h2><p>Use the entire five-step process without a worked outline.</p><p><strong>Question:</strong> Which choice best states the main idea of the text?</p><blockquote><p>Some young reef fish recognize predators by detecting chemical cues in the water. In one experiment, fish raised in water containing a low level of pollution did not respond to those cues as strongly as fish raised in clean water, suggesting that even modest pollution may interfere with an important survival response.</p></blockquote><p>Form your pre-answer before continuing to the choices.</p>",
+      "html": "<h2>Independent transfer</h2><p>Use the entire five-step process without a worked outline.</p><p><strong>Question:</strong> Which choice best states the main idea of the text?</p><blockquote><p>Some young reef fish recognize predators by detecting chemical cues in the water. In one experiment, fish raised in water containing a low level of pollution did not respond to those cues as strongly as fish raised in clean water, suggesting that even modest pollution may interfere with an important survival response.</p></blockquote><p>Form your answer target before continuing to the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -348,7 +385,7 @@
     {
       "kind": "text",
       "id": "independent_transfer_two",
-      "html": "<h2>Transfer to a purpose question</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence in the text as a whole?</p><blockquote><p>Historian Mina Patel argues that neighborhood newsletters can preserve details omitted from official city records. For example, a 1978 newsletter from one neighborhood lists the names of residents who organized an informal food-delivery network during a transit strike.</p></blockquote><p>Name the job of the second sentence before reading the choices.</p>",
+      "html": "<h2>Transfer to a purpose question</h2><p><strong>Question:</strong> Which choice best describes the function of the second sentence in the text as a whole?</p><blockquote><p>Historian Mina Patel argues that neighborhood newsletters can preserve details omitted from official city records. For example, a 1978 newsletter from one neighborhood lists the names of residents who organized an informal food-delivery network during a transit strike.</p></blockquote><p>Form an answer target for the sentence's job before reading the choices.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -378,14 +415,14 @@
         "prompt": "Without looking back, which routine should you use on a reading comprehension question?",
         "choices": [
           "Read the choices first, borrow their vocabulary, and then skim the passage for a match.",
-          "Read any introduction, identify the question's job, understand each sentence, pre-answer, then match and eliminate.",
+          "Read the context, name the job, build the meaning, form an answer target, then prove the choice from the text.",
           "Read the passage once without pausing, select a familiar claim, and use the question only to break a tie.",
           "Ignore introductions, summarize only the longest sentence, and choose the most detailed answer."
         ],
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Retrieve all five steps in order, especially the point at which you first view the choices.",
-        "explanation": "Exactly. Context and task come first, careful reading comes next, and your own prediction comes before the choices."
+        "explanation": "Exactly. Context and task come first, then usable passage meaning and your own answer target. Only then do you reveal and prove a choice."
       },
       "calculator": { "display": "hidden" }
     },
@@ -394,7 +431,7 @@
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You control the reading process</h2><p>You can identify the task, turn each sentence into a useful sound bite, create a text-based pre-answer, and find the choice that matches.</p><p><strong>Next lesson:</strong> Good Cop / Bad Cop will make the final match-and-eliminate step more precise.</p>",
+        "html": "<h2>You control the reading process</h2><p>You can read the context, name the job, build usable meaning, form a flexible answer target, and prove a choice from the text.</p><p>You also know the line between a warranted inference and a guess: connect the dots the passage gives you, but do not add new dots.</p><p><strong>Next lesson:</strong> Good Cop / Bad Cop will make the final proof-and-eliminate step more precise.</p>",
         "button_label": "Complete Lesson"
       }
     }
