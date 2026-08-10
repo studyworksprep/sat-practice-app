@@ -211,6 +211,10 @@ const ADMIN_LESSONS: NavLink = {
   href: '/admin/lessons', label: 'Lessons', icon: 'lessons',
   matchPrefix: '/admin/lessons',
 };
+const ADMIN_READING_COACH: NavLink = {
+  href: '/admin/reading-coach', label: 'Reading Coach', icon: 'learn',
+  matchPrefix: '/admin/reading-coach',
+};
 const ADMIN_PERFORMANCE: NavLink = {
   href: '/admin/performance', label: 'Performance', icon: 'performance',
   matchPrefix: '/admin/performance',
@@ -228,6 +232,7 @@ const OPERATE_LINKS: readonly NavLink[] = [
   ADMIN_USERS,
   ADMIN_QUESTIONS,
   ADMIN_LESSONS,
+  ADMIN_READING_COACH,
   ADMIN_PERFORMANCE,
   ADMIN_SUBMISSIONS,
 ];
