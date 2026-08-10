@@ -37,6 +37,7 @@ import { QuestionNotes } from './QuestionNotes';
 import { PresenterMode } from './PresenterMode';
 import { QuestionMapGrid } from './QuestionMapGrid';
 import { ReviewDailyMap } from './ReviewDailyMap';
+import { ReviewTimingBand } from './ReviewTimingBand';
 import { subjectFromDomainCode } from './DomainBreakdownCard';
 import { SkillBreakdownCard } from './SkillBreakdownCard';
 import { ReportHero } from './ReportHero';
@@ -107,6 +108,10 @@ export function AssignmentReport({
     firstReal ? firstReal.position : 0,
   );
   const [revealed, setRevealed] = useState(() => new Set());
+  // Hovered timing-band segment. Owned here rather than inside the
+  // band so the band's readout can stay a plain presentational
+  // component (the student review does the same).
+  const [hoverPosition, setHoverPosition] = useState(null);
   // Presenter mode (§4.2). Shares selection + reveal state with the
   // report proper, so anything revealed while projecting stays
   // marked on the map after exiting.
@@ -331,6 +336,78 @@ export function AssignmentReport({
         </section>
       )}
 
+      {/* ---------- Pacing ----------
+           The hero tile above gives total + median; this is where
+           the per-question detail lives. Two reads of the same
+           timing.entries: the band shows the whole session's shape
+           (segment width ∝ time, colored by result), the list
+           names the specific time sinks. Both jump the review to
+           the question when clicked.
+
+           Hidden entirely when nothing was measured — sessions
+           from before per-question timing shipped would otherwise
+           render an all-zero band, which reads as "the student
+           spent no time" rather than "we didn't record it". */}
+      {timing && timing.measuredCount > 0 && (
+        <section className={s.card}>
+          <div className={s.cardHead}>
+            <div className={s.cardHeadMain}>
+              <h2 className={s.h2}>Pacing</h2>
+              <p className={s.cardHint}>
+                One segment per question, sized by the time spent on
+                it and colored by the result. Hover for the
+                question, click to open it below.
+              </p>
+            </div>
+          </div>
+
+          <ReviewTimingBand
+            timing={timing}
+            items={items}
+            hoverPosition={hoverPosition}
+            setHoverPosition={setHoverPosition}
+            onSelect={setSelectedPosition}
+          />
+
+          {timing.slowest?.length > 0 && (
+            <div className={s.slowestBlock}>
+              <div className={s.slowestLabel}>Longest questions</div>
+              <ol className={s.slowestList}>
+                {timing.slowest.map((e) => (
+                  <li key={e.position}>
+                    <button
+                      type="button"
+                      className={s.slowestRow}
+                      onClick={() => setSelectedPosition(e.position)}
+                    >
+                      <span className={s.slowestNum}>Q{e.position + 1}</span>
+                      <span className={s.slowestSkill}>
+                        {e.skillName ?? e.domainName ?? 'Question'}
+                      </span>
+                      <span className={statusClass(e.status)}>
+                        {e.status}
+                      </span>
+                      <span className={s.slowestTime}>
+                        {formatDuration(e.timeSpentMs)}
+                        {/* Ratio against the session's own median —
+                            "3m" only means something next to what
+                            this student's typical question cost. */}
+                        {medianMs > 0 && (
+                          <span className={s.slowestRel}>
+                            {' '}
+                            {(e.timeSpentMs / medianMs).toFixed(1)}× median
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* ---------- Question map ---------- */}
       {/* Per-question review: map on the left, detail on the right
           on wide screens; stacks on narrow. The map sticks to the
@@ -379,8 +456,15 @@ export function AssignmentReport({
                 {selected.taxonomy?.score_band != null && (
                   <> · Band {selected.taxonomy.score_band}</>
                 )}
-                {selected.studentAnswer?.timeSpentMs != null && (
-                  <> · {formatDuration(selected.studentAnswer.timeSpentMs)}</>
+                {/* Guard on > 0, not != null: formatDuration(0)
+                    returns '', which used to leave a dangling
+                    separator on rows with a zero-time attempt. */}
+                {(selected.studentAnswer?.timeSpentMs ?? 0) > 0 && (
+                  <>
+                    {' · '}
+                    {formatDuration(selected.studentAnswer.timeSpentMs)} on
+                    this question
+                  </>
                 )}
               </span>
             </div>
@@ -560,6 +644,15 @@ export function AssignmentReport({
 }
 
 // ──────────────────────────────────────────────────────────────
+
+// Status chip on a "longest questions" row. Slow-and-wrong is the
+// row a tutor acts on, so the three states stay visually distinct
+// rather than sharing one neutral pill.
+function statusClass(status) {
+  if (status === 'correct') return `${s.slowestStatus} ${s.slowestCorrect}`;
+  if (status === 'incorrect') return `${s.slowestStatus} ${s.slowestWrong}`;
+  return `${s.slowestStatus} ${s.slowestMissing}`;
+}
 
 function buildWeakSkills(metrics) {
   const out = [];

@@ -256,6 +256,121 @@
   color: var(--fg1);
 }
 
+/* ---------- Pacing: "longest questions" shortlist ----------
+   Sits under the timing band inside the Pacing card. The band
+   itself brings its own styles (ReviewInteractive.module.css);
+   only the list below it is local. Rows are buttons — clicking
+   one selects that question in the review below. */
+
+.slowestBlock {
+  display: grid;
+  gap: var(--s2);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--border);
+}
+
+.slowestLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg3);
+}
+
+.slowestList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+/* Every column but the skill name is fixed-width. Each row is its
+   own grid (the button owns the box, so it can carry the hover
+   background), which means `auto` columns would size per-row and
+   the status + time would come out ragged down the list. Fixed
+   widths make the four columns stack cleanly instead. */
+.slowestRow {
+  appearance: none;
+  width: 100%;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 5rem 8.5rem;
+  align-items: center;
+  gap: var(--s3);
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background var(--dur-fast) var(--ease-std);
+}
+.slowestRow:hover,
+.slowestRow:focus-visible {
+  background: var(--bg);
+}
+
+.slowestNum {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+}
+
+.slowestSkill {
+  font-size: 13px;
+  color: var(--fg2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slowestStatus {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+  text-align: right;
+}
+.slowestCorrect { color: var(--color-diff-easy-fg); }
+.slowestWrong   { color: var(--color-diff-hard-fg); }
+.slowestMissing { color: var(--fg3); }
+
+.slowestTime {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.slowestRel {
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--fg3);
+}
+
+@media (max-width: 560px) {
+  /* Four columns don't fit a phone — the skill name gets squeezed
+     to "Text S…", which is the one field you can't guess from
+     context. Reflow to two rows so it gets the full width, and
+     drop the median ratio (the absolute time is what has to
+     survive). */
+  .slowestRel { display: none; }
+  .slowestRow {
+    grid-template-columns: 2.2rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "num skill skill"
+      "num status time";
+    row-gap: 2px;
+  }
+  .slowestNum { grid-area: num; }
+  .slowestSkill { grid-area: skill; }
+  .slowestStatus { grid-area: status; text-align: left; }
+  .slowestTime { grid-area: time; }
+}
+
 /* ---------- Per-question review layout ----------
    Wide viewports get a 2-column shell — question map on the left,
    selected-question detail on the right. Narrow viewports stack.
