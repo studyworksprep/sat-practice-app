@@ -114,7 +114,7 @@ files — the directory is not a faithful mirror (see
 | Assignment types: server accepts `questions`, `practice_test`, `lesson`, `lesson_pack` (`actions.ts:91`); UI offers only three — `lesson` is a latent path | code |
 | Bluebook upload writes full item-level attempt data but triggers no plan/recommendation step; does not touch `profiles` | `upload-bluebook/route.js` |
 | Vercel functions in `iad1`; production DB in us-west-2; ~7–11 serial DB round-trips per submit; zero data caching (`cache=MISS` on all logged requests) | Vercel deployment metadata + production logs + code trace |
-| Vestigial schema in production: `classes`/`class_enrollments`/`class_invites` (0 rows), `profile_cards` view (0 rows), 11 `stg_*` staging tables | production schema |
+| Vestigial schema in production: `classes`/`class_enrollments`/`class_invites` (0 rows), `profile_cards` view (0 rows); the 11 `stg_*` staging tables found by the audit were dropped 2026-08-10 | production schema |
 | Live but unintegrated: `sat_vocabulary` (991 words) + `sat_vocabulary_progress` (23 rows) | production counts |
 | 42 of 151 migration files lack timestamp prefixes (apply order ambiguous) | `supabase/migrations/` listing |
 | CI runs lint + build only — no `tsc --noEmit`, no e2e auth specs, no unit-test runner | `.github/workflows/ci.yml` |
@@ -248,8 +248,9 @@ drift, so the fix is a **baseline reset** (dump schema → archive the
 directory → `migration repair`), documented in
 `supabase/migrations/README.md` and scheduled as its own operation.
 Fold the vestigial-object drops (`classes`/`class_enrollments`/
-`class_invites`, `profile_cards`, `stg_*`) into that reset, after an
-archival export. Also: scrub stale comments describing the retired v1
+`class_invites`, `profile_cards`) into that reset, after an
+archival export (the `stg_*` tables were already dropped 2026-08-10,
+`20260810131605_drop_stg_staging_tables.sql`). Also: scrub stale comments describing the retired v1
 id-translation map and UI-version switch; add audit-parity logging to the raw `createServiceClient()`
 call sites the wrapper can't serve (demo-tour loaders, cron); fix the
 README; regenerate the authorization matrix; **rewrite the

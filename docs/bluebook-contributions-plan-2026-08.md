@@ -35,11 +35,12 @@ and without double data entry. Decided in design discussion 2026-08-05 (Julio + 
   explicit `attempt_id` / `submission_id` links count.
 - Per-question flags live in `attempts` (`is_correct`, `selected_option_id`), joined via
   `practice_test_item_attempts_v2.attempt_id = attempts.id` (NOT via `context_id`).
-- **Security issue (closed for two of three, 2026-08-05):** RLS was disabled on
+- **Security issue (closed, 2026-08-10):** RLS was disabled on
   `score_conversion`, `practice_test_routing_rules`, and the `stg_*` tables in prod — the anon
-  key could write ground truth. Phase 0 enabled RLS on the first two on dev + prod. The 11
-  `stg_*` tables are still open and still flagged by the Supabase security advisor; they are
-  slated for deletion in a separate cleanup (`docs/database.md` "Known drift").
+  key could write ground truth. Phase 0 enabled RLS on the first two on dev + prod
+  (2026-08-05); the 11 `stg_*` tables were dropped outright on dev + prod 2026-08-10
+  (`20260810131605_drop_stg_staging_tables.sql`). The advisor no longer reports any
+  RLS-disabled tables on either project.
 - Known data-quality wrinkles: 25 item-attempt rows reference questions later swapped out of
   their module slot; several attempts have a 200 section from an all-zero (not-taken) section.
 
@@ -80,8 +81,8 @@ and without double data entry. Decided in design discussion 2026-08-05 (Julio + 
 ## Build phases
 
 ### Phase 0 — Security prerequisite
-Enable RLS on `score_conversion` and `practice_test_routing_rules` (leave `stg_*` for a
-separate cleanup). First audit how the app reads these tables: if all reads are server-side
+Enable RLS on `score_conversion` and `practice_test_routing_rules` (the `stg_*` cleanup
+landed separately: dropped 2026-08-10). First audit how the app reads these tables: if all reads are server-side
 (service role), enabling RLS with no policies is safe; if clients read them, add read-only
 policies for `authenticated`. Verify score display + test routing still work on dev, then prod.
 

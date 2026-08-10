@@ -108,8 +108,12 @@ migration-tracking table (verified 2026-07-12 — see
 treat the directory as an audit log, apply new migrations via the
 MCP `apply_migration` tool, and never `db push` to production. Also
 pending from that audit: dropping the vestigial `classes`,
-`class_enrollments`, `class_invites` tables, the unused
-`profile_cards` view, and the 11 `stg_*` staging tables.
+`class_enrollments`, `class_invites` tables and the unused
+`profile_cards` view. (The 11 `stg_*` staging tables and their
+`stg_clear_practice_test` helper were dropped on dev + prod
+2026-08-10 — `20260810131605_drop_stg_staging_tables.sql` — after
+the owner confirmed they were no longer in use; they had RLS
+disabled and were flagged by the security advisor.)
 
 ## Scheduled jobs
 
