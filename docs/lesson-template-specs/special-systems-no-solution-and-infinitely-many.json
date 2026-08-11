@@ -1,0 +1,608 @@
+{
+  "title": "Special Systems: No Solution and Infinitely Many Solutions",
+  "description": "Recognize parallel and overlapping lines, then use sliders, slope-intercept form, and proportions to find constants that create no solution or infinitely many solutions.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>When a system does not have one intersection</h2><p>In the previous lesson, you solved systems by graphing both equations and clicking their intersections. This lesson focuses on two special results:</p><ul><li><strong>No solution:</strong> the graphs never intersect.</li><li><strong>Infinitely many solutions:</strong> the two equations graph as the same line.</li></ul><p>On the SAT, a question often tells you which result a system must have and asks you to find one or more missing constants.</p><blockquote><p><strong>Your goal:</strong> Create the requested graph using a slider when one constant is missing, or use slope and proportions when several constants are missing.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "no_solution_exploration",
+      "html": "<h2>Explore a system with no intersection</h2><p>The equations \\(y=2x+1\\) and \\(y=2x-3\\) are graphed.</p><p>Pan and zoom. Try to find a point where the lines meet.</p><blockquote><p><strong>Before you continue:</strong> decide whether these lines will ever intersect.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Search for an intersection",
+        "initial_expressions": [
+          {
+            "id": "parallel_first",
+            "latex": "y=2x+1"
+          },
+          {
+            "id": "parallel_second",
+            "latex": "y=2x-3"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "no_solution_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What did the graphs of \\(y=2x+1\\) and \\(y=2x-3\\) show?",
+        "choices": [
+          "The lines intersect once at \\((0,1)\\).",
+          "The lines overlap at every point.",
+          "The lines stay the same distance apart and never intersect.",
+          "The lines intersect twice outside the visible window."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Compare the lines' directions and the space between them as you pan.",
+        "explanation": "Right. The lines are parallel: they have the same direction but different positions, so they never intersect."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Compare the parallel lines",
+        "initial_expressions": [
+          {
+            "id": "parallel_check_first",
+            "latex": "y=2x+1"
+          },
+          {
+            "id": "parallel_check_second",
+            "latex": "y=2x-3"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "no_solution_explanation",
+      "html": "<h2>No intersection means no solution</h2><p>A solution to a system must be a point on both graphs. Parallel lines never share a point, so there is no ordered pair that makes both equations true.</p><p>In \\(y=mx+b\\) form, parallel lines have the <strong>same slope</strong> but <strong>different y-intercepts</strong>.</p><ul><li>\\(y=2x+1\\) has slope \\(2\\) and y-intercept \\(1\\).</li><li>\\(y=2x-3\\) has slope \\(2\\) and y-intercept \\(-3\\).</li></ul><blockquote><p><strong>No solution:</strong> same slope, different y-intercepts.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "no_solution_rule_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which pair of equations represents a system with no solution?",
+        "choices": [
+          "\\(y=3x+2\\) and \\(y=-3x+2\\)",
+          "\\(y=-4x+1\\) and \\(y=-4x+6\\)",
+          "\\(y=2x-5\\) and \\(y=5x-2\\)",
+          "\\(y=x+7\\) and \\(2y=2x+14\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Look for equal slopes and unequal y-intercepts.",
+        "explanation": "Correct. Both lines have slope \\(-4\\), but their y-intercepts are \\(1\\) and \\(6\\), so they are parallel and distinct."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "infinite_solution_exploration",
+      "html": "<h2>Explore two equations that make one line</h2><p>Desmos contains two equations: \\(2x+y=6\\) and \\(4x+2y=12\\). The graph may look as though only one line is present because the lines sit exactly on top of each other.</p><p>Use the colored circle beside the second equation to hide and show its graph. Notice that the visible line does not move.</p><blockquote><p><strong>What this reveals:</strong> every point on one line is also on the other line.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Hide and show the overlapping line",
+        "initial_expressions": [
+          {
+            "id": "overlap_first",
+            "latex": "2x+y=6"
+          },
+          {
+            "id": "overlap_second",
+            "latex": "4x+2y=12"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "infinite_solution_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why does the system \\(2x+y=6\\) and \\(4x+2y=12\\) have infinitely many solutions?",
+        "choices": [
+          "The lines are parallel and never touch.",
+          "The lines have the same y-intercept but different slopes.",
+          "Each line contains infinitely many points, even though the lines are different.",
+          "Both equations create the same line, so every point on that line satisfies both equations."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Hide either graph. Does the set of visible points change?",
+        "explanation": "Exactly. The second equation is twice the first equation, so both equations describe the same line and share every point."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Confirm the graphs overlap",
+        "initial_expressions": [
+          {
+            "id": "overlap_check_first",
+            "latex": "2x+y=6"
+          },
+          {
+            "id": "overlap_check_second",
+            "latex": "4x+2y=12"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "infinite_solution_explanation",
+      "html": "<h2>One shared line means infinitely many solutions</h2><p>Overlapping lines have the same slope and the same y-intercept. They do not merely cross once; they share every point.</p><p>Rewriting the example makes this visible:</p><ul><li>\\(2x+y=6\\) becomes \\(y=-2x+6\\).</li><li>\\(4x+2y=12\\) also becomes \\(y=-2x+6\\).</li></ul><blockquote><p><strong>Infinitely many solutions:</strong> same slope and same y-intercept.</p></blockquote>"
+    },
+    {
+      "kind": "text",
+      "id": "special_systems_contrast",
+      "html": "<h2>Keep the two special pictures separate</h2><ul><li><strong>No solution:</strong> two distinct parallel lines. Same slope, different y-intercepts.</li><li><strong>Infinitely many solutions:</strong> one line sitting on top of the other. Same slope, same y-intercept.</li></ul><p>The slope decides whether the lines point in the same direction. The y-intercept decides whether equal-slope lines are separate or identical.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "special_systems_contrast_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A system's equations have the same slope and the same y-intercept. What must its graph show?",
+        "choices": [
+          "One line sitting exactly on top of the other",
+          "Two parallel lines with space between them",
+          "Two lines that cross once",
+          "A line and a parabola that cross twice"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "A line is fixed once both its slope and y-intercept are fixed.",
+        "explanation": "Right. Matching both the slope and y-intercept makes the equations graph as the same line, producing infinitely many solutions."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "method_outline",
+      "html": "<h2>Choose the method from the number of missing constants</h2><ol><li><strong>Graph first.</strong> Enter both equations and identify the requested visual state.</li><li><strong>One missing constant:</strong> use a slider and move it until the lines become parallel or overlap.</li><li><strong>Two or more missing constants:</strong> rewrite both equations in \\(y=mx+b\\) form and match the needed features.</li><li><strong>Standard form:</strong> proportions may reveal the same relationship faster.</li></ol><blockquote><p><strong>Decision rule:</strong> One unknown invites a slider; several unknowns require relationships.</p></blockquote>"
+    },
+    {
+      "kind": "text",
+      "id": "slider_no_solution_exploration",
+      "html": "<h2>One missing constant: slide to no solution</h2><p>Suppose the system is \\(y=ax+1\\) and \\(y=2x-3\\), and the question asks for the value of \\(a\\) that makes the system have no solution.</p><p>In Desmos, uppercase \\(A\\) stands for \\(a\\). Drag the \\(A\\) slider until the two lines are parallel. Record the slider value.</p><blockquote><p><strong>Target picture:</strong> same direction, different positions.</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Move A until the lines are parallel",
+        "initial_expressions": [
+          {
+            "id": "slider_parallel_first",
+            "latex": "y=Ax+1"
+          },
+          {
+            "id": "slider_parallel_second",
+            "latex": "y=2x-3"
+          },
+          {
+            "id": "slider_parallel_value",
+            "latex": "A=0"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "slider_no_solution_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which value of a makes \\(y=ax+1\\) and \\(y=2x-3\\) have no solution?",
+        "choices": [
+          "\\(a=-3\\)",
+          "\\(a=1\\)",
+          "\\(a=2\\)",
+          "\\(a=3\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Move the slider until both lines have the same direction. Read the value of A.",
+        "explanation": "Correct. At \\(a=2\\), both lines have slope \\(2\\), while their y-intercepts remain \\(1\\) and \\(-3\\). They are distinct parallel lines."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Test the slope with A",
+        "initial_expressions": [
+          {
+            "id": "slider_parallel_check_first",
+            "latex": "y=Ax+1"
+          },
+          {
+            "id": "slider_parallel_check_second",
+            "latex": "y=2x-3"
+          },
+          {
+            "id": "slider_parallel_check_value",
+            "latex": "A=0"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "slider_no_solution_explanation",
+      "html": "<h2>The slider found the matching slope</h2><p>In \\(y=ax+1\\), the missing constant \\(a\\) controls the slope. The second line's slope is \\(2\\).</p><p>Setting \\(a=2\\) makes the slopes match. The fixed y-intercepts are already different, so the resulting lines are parallel rather than overlapping.</p><blockquote><p><strong>Use the picture to identify the value, then name why it works.</strong></p></blockquote>"
+    },
+    {
+      "kind": "text",
+      "id": "slider_infinite_exploration",
+      "html": "<h2>One missing constant: slide to one shared line</h2><p>Now consider \\(y=3x+b\\) and \\(2y=6x+8\\). The question asks for the value of \\(b\\) that makes the system have infinitely many solutions.</p><p>In Desmos, uppercase \\(B\\) stands for \\(b\\). Move the slider until the adjustable line sits exactly on top of the fixed line. Hide and show either graph if you need to confirm the overlap.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Move B until the lines overlap",
+        "initial_expressions": [
+          {
+            "id": "slider_overlap_first",
+            "latex": "y=3x+B"
+          },
+          {
+            "id": "slider_overlap_second",
+            "latex": "2y=6x+8"
+          },
+          {
+            "id": "slider_overlap_value",
+            "latex": "B=0"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "slider_infinite_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which value of b makes \\(y=3x+b\\) and \\(2y=6x+8\\) have infinitely many solutions?",
+        "choices": [
+          "\\(b=3\\)",
+          "\\(b=4\\)",
+          "\\(b=6\\)",
+          "\\(b=8\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Move B until hiding either graph leaves the same visible line.",
+        "explanation": "Right. Dividing the second equation by \\(2\\) gives \\(y=3x+4\\), so \\(b=4\\) makes the two equations identical."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Test the intercept with B",
+        "initial_expressions": [
+          {
+            "id": "slider_overlap_check_first",
+            "latex": "y=3x+B"
+          },
+          {
+            "id": "slider_overlap_check_second",
+            "latex": "2y=6x+8"
+          },
+          {
+            "id": "slider_overlap_check_value",
+            "latex": "B=0"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "slider_method_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which situation is the best fit for the slider approach?",
+        "choices": [
+          "Three constants are missing, and the question asks for their sum.",
+          "No constants are missing, and the system has one intersection.",
+          "Two constants are missing from different equations.",
+          "One constant is missing, and the question asks which value creates parallel or overlapping lines."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "A slider directly controls one unknown value at a time.",
+        "explanation": "Exactly. With one missing constant, a slider lets you manipulate that value until the graph reaches the requested state."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "multiple_constants_transition",
+      "html": "<h2>Several missing constants need algebraic conditions</h2><p>A graph can show the target state, but moving several sliders at once is inefficient and may not reveal exact values.</p><p>When two or more constants are missing, rewrite both equations in \\(y=mx+b\\) form. Then impose the condition named by the question:</p><ul><li><strong>No solution:</strong> slopes equal, y-intercepts unequal.</li><li><strong>Infinitely many:</strong> slopes equal, y-intercepts equal.</li></ul>"
+    },
+    {
+      "kind": "text",
+      "id": "mx_plus_b_setup",
+      "html": "<h2>Expose the slopes and intercepts</h2><p>Consider the system</p><p>\\[ax+2y=10\\]</p><p>\\[6x+3y=c\\]</p><p>Solve each equation for \\(y\\):</p><ul><li>\\(ax+2y=10\\) becomes \\(y=-\\frac{a}{2}x+5\\).</li><li>\\(6x+3y=c\\) becomes \\(y=-2x+\\frac{c}{3}\\).</li></ul><p>Now the slopes and y-intercepts are visible. The first slope is \\(-\\frac{a}{2}\\), and the second is \\(-2\\). The intercepts are \\(5\\) and \\(\\frac{c}{3}\\).</p>"
+    },
+    {
+      "kind": "text",
+      "id": "multiple_constants_no_solution_model",
+      "html": "<h2>Create no solution</h2><p>For no solution, first make the slopes equal:</p><p>\\[-\\frac{a}{2}=-2\\]</p><p>so \\(a=4\\).</p><p>Then keep the y-intercepts different:</p><p>\\[\\frac{c}{3}\\ne5\\]</p><p>so \\(c\\ne15\\).</p><blockquote><p><strong>No-solution condition:</strong> \\(a=4\\) and \\(c\\ne15\\).</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "multiple_constants_no_solution_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For \\(ax+2y=10\\) and \\(6x+3y=c\\), which condition makes the system have no solution?",
+        "choices": [
+          "\\(a=4\\) and \\(c\\ne15\\)",
+          "\\(a\\ne4\\) and \\(c=15\\)",
+          "\\(a=4\\) and \\(c=15\\)",
+          "\\(a\\ne4\\) and \\(c\\ne15\\)"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "No solution requires equal slopes but unequal y-intercepts.",
+        "explanation": "Correct. \\(a=4\\) matches the slopes, and \\(c\\ne15\\) keeps the intercepts different."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "multiple_constants_infinite_model",
+      "html": "<h2>Create infinitely many solutions</h2><p>Use the same rewritten equations:</p><ul><li>\\(y=-\\frac{a}{2}x+5\\)</li><li>\\(y=-2x+\\frac{c}{3}\\)</li></ul><p>For the lines to overlap, match both features:</p><ul><li>Equal slopes give \\(a=4\\).</li><li>Equal y-intercepts give \\(\\frac{c}{3}=5\\), so \\(c=15\\).</li></ul><blockquote><p><strong>Infinite-solution condition:</strong> \\(a=4\\) and \\(c=15\\).</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "multiple_constants_infinite_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which values make \\(ax+2y=10\\) and \\(6x+3y=c\\) represent the same line?",
+        "choices": [
+          "\\(a=2\\), \\(c=10\\)",
+          "\\(a=4\\), \\(c=12\\)",
+          "\\(a=4\\), \\(c=15\\)",
+          "\\(a=6\\), \\(c=15\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Match both the slopes and the y-intercepts from the rewritten equations.",
+        "explanation": "Right. \\(a=4\\) makes both slopes \\(-2\\), and \\(c=15\\) makes both y-intercepts \\(5\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "gated_graph_transition",
+      "html": "<h2>Confirm the algebra with a graph</h2><p>Use the no-solution values \\(a=4\\) and \\(c=12\\). The system becomes</p><p>\\[4x+2y=10\\]</p><p>\\[6x+3y=12\\]</p><p>Enter both complete equations exactly as written. Submit the graph, then inspect the two lines.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "gated_no_solution_graph",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Graph the no-solution system",
+        "instructions_html": "<p>Enter <strong>\\(4x+2y=10\\)</strong> on one row and <strong>\\(6x+3y=12\\)</strong> on another row. Keep both graphs visible, then submit.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "multi_expression",
+          "required_count": 2,
+          "roles": [
+            "first equation",
+            "second equation"
+          ]
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "4x+2y=10",
+            "6x+3y=12"
+          ],
+          "state_rules": {
+            "min_expressions": 2,
+            "max_expressions": 2,
+            "require_visible_only": true,
+            "must_include_variables": [
+              "x",
+              "y"
+            ]
+          }
+        },
+        "feedback": {
+          "success_message_html": "<p>Both equations are graphed. The lines have the same slope and different y-intercepts, so they stay parallel.</p>",
+          "retry_message_html": "<p>Check that both complete equations match the system exactly, one equation per row.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_second_expression",
+              "message_html": "<p>Enter the second equation on another row so you can compare both lines.</p>"
+            },
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>Keep exactly two expression rows, one for each equation.</p>"
+            }
+          ],
+          "attempt_based_hints": [
+            {
+              "min_attempts": 2,
+              "message_html": "<p>Enter \\(4x+2y=10\\) and \\(6x+3y=12\\) without rearranging them.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 4,
+          "solution_html": "<p>Use one row for \\(4x+2y=10\\) and one row for \\(6x+3y=12\\).</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "gated_graph_confirmation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why do \\(4x+2y=10\\) and \\(6x+3y=12\\) have no solution?",
+        "choices": [
+          "Their slopes are different, so the lines cross once.",
+          "Their slopes are equal, but their y-intercepts are different.",
+          "Their slopes and y-intercepts are both equal.",
+          "Neither equation can be graphed without solving for y."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The graph shows distinct parallel lines. Connect that picture to slope and intercept.",
+        "explanation": "Correct. The equations become \\(y=-2x+5\\) and \\(y=-2x+4\\): equal slopes, unequal intercepts."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "proportions_transition",
+      "html": "<h2>Proportions: the faster standard-form method</h2><p>When equivalent lines are written in standard form, every term in one equation is multiplied by the same scale factor to produce the other equation.</p><p>For</p><p>\\[a_1x+b_1y=c_1\\]</p><p>\\[a_2x+b_2y=c_2\\]</p><p>infinitely many solutions require</p><blockquote><p>\\[\\frac{a_2}{a_1}=\\frac{b_2}{b_1}=\\frac{c_2}{c_1}\\]</p></blockquote><p>The x-coefficient, y-coefficient, and constant must all use the same multiplier.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "proportion_scale_model",
+      "html": "<h2>Use one ratio to find a missing coefficient</h2><p>Suppose \\(4x+6y=10\\) and \\(10x+ny=25\\) have infinitely many solutions.</p><p>The x-coefficients and constants show the same scale factor:</p><p>\\[\\frac{10}{4}=\\frac{25}{10}=2.5\\]</p><p>Apply that factor to the y-coefficient:</p><p>\\[n=6(2.5)=15\\]</p><p>The second equation is \\(2.5\\) times the first, so both graph as the same line.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "proportion_missing_coefficient_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The system \\(4x+6y=10\\) and \\(10x+ny=25\\) has infinitely many solutions. What is n?",
+        "choices": [
+          "\\(6\\)",
+          "\\(10\\)",
+          "\\(12\\)",
+          "\\(15\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The multiplier from 4 to 10 must also multiply 6.",
+        "explanation": "Correct. The scale factor is \\(\\frac{10}{4}=2.5\\), so \\(n=6(2.5)=15\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "proportion_no_solution_model",
+      "html": "<h2>Proportions also expose no solution</h2><p>Compare \\(4x+6y=10\\) with \\(10x+15y=30\\).</p><p>The variable coefficients are proportional:</p><p>\\[\\frac{10}{4}=\\frac{15}{6}=2.5\\]</p><p>That makes the slopes equal. But the constant does not follow the same factor:</p><p>\\[10(2.5)=25\\ne30\\]</p><p>The lines therefore have the same slope but different intercepts.</p><blockquote><p><strong>No solution in standard form:</strong> the x- and y-coefficients are proportional, but the constants are not in that same proportion.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "proportion_no_solution_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What kind of system is \\(6x+9y=12\\) and \\(10x+15y=25\\)?",
+        "choices": [
+          "No solution, because the variable coefficients share a ratio but the constants do not",
+          "Infinitely many solutions, because \\(\\frac{10}{6}=\\frac{15}{9}\\)",
+          "One solution, because all three constants are different",
+          "Two solutions, because each equation contains two variables"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The variable-coefficient scale factor is \\(\\frac{5}{3}\\). Check whether multiplying 12 by \\(\\frac{5}{3}\\) gives 25.",
+        "explanation": "Right. The x- and y-coefficients scale by \\(\\frac{5}{3}\\), but \\(12\\left(\\frac{5}{3}\\right)=20\\), not \\(25\\). The lines are parallel and distinct."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "within_equation_ratio",
+      "html": "<h2>Find a coefficient ratio directly</h2><p>Sometimes the SAT asks for a ratio such as \\(\\frac{a_1}{b_1}\\), not the individual coefficients.</p><p>If two equations represent the same line, the ratio of the x-coefficient to the y-coefficient is the same in both equations:</p><blockquote><p>\\[\\frac{a_1}{b_1}=\\frac{a_2}{b_2}\\]</p></blockquote><p>For example, if \\(Ax+By=14\\) and \\(12x+18y=42\\) have infinitely many solutions, then</p><p>\\[\\frac{A}{B}=\\frac{12}{18}=\\frac{2}{3}\\]</p><p>You can answer the requested ratio without first finding \\(A\\) and \\(B\\) separately.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "within_equation_ratio_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The equations \\(px+qy=20\\) and \\(15x+25y=50\\) represent the same line. What is \\(\\frac{p}{q}\\)?",
+        "choices": [
+          "\\(\\frac{2}{5}\\)",
+          "\\(\\frac{5}{3}\\)",
+          "\\(\\frac{3}{5}\\)",
+          "\\(\\frac{5}{2}\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "For equivalent lines, \\(\\frac{p}{q}=\\frac{15}{25}\\). Reduce that ratio.",
+        "explanation": "Correct. \\(\\frac{p}{q}=\\frac{15}{25}=\\frac{3}{5}\\). The individual values of p and q are unnecessary."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_transition",
+      "html": "<h2>Independent transfer: find two constants</h2><p>The system</p><p>\\[(k+1)x+my=8\\]</p><p>\\[9x+12y=24\\]</p><p>has infinitely many solutions. Find \\(k+m\\).</p><p>No slider can efficiently determine both missing values. Use the shared scale factor across the x-term, y-term, and constant.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "If \\((k+1)x+my=8\\) and \\(9x+12y=24\\) have infinitely many solutions, what is \\(k+m\\)?",
+        "choices": [
+          "\\(5\\)",
+          "\\(6\\)",
+          "\\(7\\)",
+          "\\(8\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The constant 8 is multiplied by 3 to become 24. Apply that factor to both variable coefficients.",
+        "explanation": "Correct. Multiplying the first equation by \\(3\\) gives the second: \\(3(k+1)=9\\), so \\(k=2\\), and \\(3m=12\\), so \\(m=4\\). Therefore, \\(k+m=6\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which summary correctly connects the graph and algebra for special systems?",
+        "choices": [
+          "No solution means different slopes; infinitely many means equal slopes only; proportions are unnecessary.",
+          "No solution means equal y-intercepts; infinitely many means different y-intercepts; sliders work best for several unknowns.",
+          "No solution and infinitely many solutions both require all three standard-form terms to be proportional.",
+          "No solution means equal slopes and unequal intercepts; infinitely many means equal slopes and equal intercepts; one unknown can be explored with a slider, while several unknowns call for equations or proportions."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Recall the two pictures and the method choice based on the number of missing constants.",
+        "explanation": "You have it. The graph identifies the required relationship, and slope-intercept form or proportions makes that relationship exact."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can build special systems</h2><p>You can recognize parallel and overlapping lines, use a slider when one constant is missing, and impose exact slope and intercept conditions when several constants are missing.</p><p>You can also use proportional standard-form coefficients to create equivalent lines, diagnose parallel lines, and answer a requested coefficient ratio directly.</p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}

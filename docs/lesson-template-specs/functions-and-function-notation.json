@@ -1,0 +1,639 @@
+{
+  "title": "Functions and Function Notation on the SAT",
+  "description": "Interpret functions as input-output rules, translate function notation into points, graphs, and equations, and use Desmos regression to find a missing constant.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Read function notation as information</h2><p>Function notation can look unfamiliar, but SAT questions use it to communicate a few concrete ideas:</p><ul><li>an input produces an output;</li><li>an input-output pair is a point on a graph;</li><li>an equation such as \\(f(x)=7\\) can be solved for the input; and</li><li>a function condition can determine a missing constant.</li></ul><blockquote><p><strong>Your goal:</strong> Translate the notation first, then use the graph or Desmos setup that matches the question.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
+      "id": "first_exploration",
+      "html": "<h2>Explore inputs and outputs</h2><p>The graph of \\(y=x^2\\) is open with three points marked. Click all three points and read their coordinates.</p><p>For each point, the first coordinate is the input and the second coordinate is the output.</p><blockquote><p><strong>Notice:</strong> Two different inputs produce the same output of \\(4\\).</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Click the input-output points",
+        "initial_expressions": [
+          {
+            "id": "first_function_graph",
+            "latex": "y=x^2"
+          },
+          {
+            "id": "first_point_left",
+            "latex": "(-2,4)"
+          },
+          {
+            "id": "first_point_middle",
+            "latex": "(0,0)"
+          },
+          {
+            "id": "first_point_right",
+            "latex": "(2,4)"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "first_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which two inputs produce the output 4 on the graph of \\(y=x^2\\)?",
+        "choices": [
+          "\\(0\\) and \\(4\\)",
+          "\\(-4\\) and \\(4\\)",
+          "\\(-2\\) and \\(2\\)",
+          "\\(2\\) and \\(4\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Look for the two marked points whose second coordinate is 4.",
+        "explanation": "Right. The points \\((-2,4)\\) and \\((2,4)\\) show that inputs \\(-2\\) and \\(2\\) both produce output \\(4\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Use the marked points",
+        "initial_expressions": [
+          {
+            "id": "first_check_graph",
+            "latex": "y=x^2"
+          },
+          {
+            "id": "first_check_left",
+            "latex": "(-2,4)"
+          },
+          {
+            "id": "first_check_middle",
+            "latex": "(0,0)"
+          },
+          {
+            "id": "first_check_right",
+            "latex": "(2,4)"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "function_definition",
+      "html": "<h2>What makes a relation a function?</h2><p>A <strong>function</strong> is a rule that assigns exactly one output to each allowed input.</p><p>Different inputs may share an output. That happened when both \\(-2\\) and \\(2\\) produced \\(4\\). What cannot happen is one input producing two different outputs.</p><blockquote><p><strong>Function rule:</strong> Each input has exactly one output.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "function_definition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which set of ordered pairs represents a function?",
+        "choices": [
+          "\\(\\{(1,2),(1,5),(3,7)\\}\\)",
+          "\\(\\{(-2,4),(0,1),(3,4)\\}\\)",
+          "\\(\\{(0,-1),(0,1),(2,3)\\}\\)",
+          "\\(\\{(4,2),(4,2),(4,6)\\}\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Check whether any first coordinate is paired with two different second coordinates.",
+        "explanation": "Correct. In \\(\\{(-2,4),(0,1),(3,4)\\}\\), each input appears with only one output. Sharing the output \\(4\\) is allowed."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "notation_definition",
+      "html": "<h2>Read \\(f(x)\\) as an output</h2><p>The expression \\(f(x)\\) is read as “f of x.”</p><ul><li>\\(f\\) is the function's name.</li><li>\\(x\\) inside the parentheses is the input.</li><li>\\(f(x)\\) is the output produced by that input.</li></ul><p>The notation \\(f(x)\\) does <strong>not</strong> mean \\(f\\cdot x\\). The letter \\(f\\) names the rule.</p><blockquote><p><strong>Translation:</strong> \\(f(3)\\) means “the output of function f when the input is 3.”</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "notation_definition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What does \\(g(-2)\\) mean?",
+        "choices": [
+          "The output of function g when the input is \\(-2\\)",
+          "The product of g and \\(-2\\)",
+          "The input of g when the output is \\(-2\\)",
+          "The slope of g at every point"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The value inside the parentheses is the input.",
+        "explanation": "Right. \\(g(-2)\\) names the output produced when function g receives input \\(-2\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "evaluate_function_model",
+      "html": "<h2>Evaluate by replacing the input variable</h2><p>Suppose</p><p>\\[f(x)=2x^2-1\\]</p><p>To find \\(f(3)\\), replace every \\(x\\) in the rule with \\(3\\):</p><p>\\[f(3)=2(3)^2-1=18-1=17\\]</p><p>The input is \\(3\\), and the resulting output is \\(17\\).</p><blockquote><p><strong>Evaluation process:</strong> Substitute the number inside the parentheses for the rule's input variable.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "evaluate_function_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "If \\(h(t)=3t-5\\), what is \\(h(4)\\)?",
+        "choices": [
+          "\\(3\\)",
+          "\\(7\\)",
+          "\\(12\\)",
+          "\\(17\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Replace t with 4 in the rule 3t - 5.",
+        "explanation": "Correct. \\(h(4)=3(4)-5=12-5=7\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "notation_to_point",
+      "html": "<h2>Function notation names a point</h2><p>The statement \\(f(3)=17\\) contains an input and an output:</p><ul><li>input: \\(3\\)</li><li>output: \\(17\\)</li></ul><p>That information becomes the ordered pair \\((3,17)\\). Therefore, \\((3,17)\\) lies on the graph of \\(y=f(x)\\).</p><blockquote><p><strong>Point translation:</strong> \\(f(a)=b\\) means the point \\((a,b)\\) is on the graph of f.</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "notation_to_point_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The statement \\(p(-4)=9\\) corresponds to which point on the graph of p?",
+        "choices": [
+          "\\((4,-9)\\)",
+          "\\((9,-4)\\)",
+          "\\((-4,9)\\)",
+          "\\((-9,4)\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The function input becomes the x-coordinate, and the output becomes the y-coordinate.",
+        "explanation": "Exactly. The input is \\(-4\\) and the output is \\(9\\), so the point is \\((-4,9)\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "point_to_notation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The point \\((5,-2)\\) lies on the graph of \\(y=q(x)\\). Which statement must be true?",
+        "choices": [
+          "\\(q(-2)=5\\)",
+          "\\(q(5)=-2\\)",
+          "\\(q(2)=-5\\)",
+          "\\(q(-5)=2\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Translate (input, output) into q(input) = output.",
+        "explanation": "Correct. The point \\((5,-2)\\) means input \\(5\\) produces output \\(-2\\), so \\(q(5)=-2\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "graph_evaluation_exploration",
+      "html": "<h2>Evaluate a function from its graph</h2><p>The graph of \\(f(x)=(x-1)^2+2\\) and the vertical line \\(x=3\\) are open.</p><p>Click their intersection. The x-coordinate is the input \\(3\\), and the y-coordinate is \\(f(3)\\).</p><blockquote><p><strong>Read the point before continuing.</strong></p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Find the output at x = 3",
+        "initial_expressions": [
+          {
+            "id": "evaluation_function",
+            "latex": "f(x)=(x-1)^2+2"
+          },
+          {
+            "id": "evaluation_input_line",
+            "latex": "x=3"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "graph_evaluation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The graph and the line \\(x=3\\) intersect at \\((3,6)\\). What is \\(f(3)\\)?",
+        "choices": [
+          "\\(3\\)",
+          "\\(-3\\)",
+          "\\(9\\)",
+          "\\(6\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "At input 3, read the second coordinate as the function's output.",
+        "explanation": "Right. The point \\((3,6)\\) means \\(f(3)=6\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Use the intersection point",
+        "initial_expressions": [
+          {
+            "id": "evaluation_check_function",
+            "latex": "f(x)=(x-1)^2+2"
+          },
+          {
+            "id": "evaluation_check_input",
+            "latex": "x=3"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "point_graph_equivalence",
+      "html": "<h2>Three ways to state the same fact</h2><p>These statements are equivalent:</p><ul><li>\\(f(3)=6\\)</li><li>the point \\((3,6)\\) lies on the graph of f</li><li>when the input is \\(3\\), the output is \\(6\\)</li></ul><p>SAT questions often give one representation and ask for another. Translate through the input-output pair.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "solve_function_equation",
+      "html": "<h2>When the output is given, solve for the input</h2><p>Now suppose \\(f(x)=x^2+3\\) and the question asks for all values of \\(x\\) such that \\(f(x)=7\\).</p><p>The equation \\(f(x)=7\\) asks:</p><blockquote><p><strong>At which inputs does the graph of f reach the output 7?</strong></p></blockquote><p>Graph \\(y=f(x)\\) and the horizontal line \\(y=7\\). Each intersection's x-coordinate solves the equation.</p>"
+    },
+    {
+      "kind": "text",
+      "id": "solve_function_graph_exploration",
+      "html": "<h2>Find every input with output 7</h2><p>The graph of \\(f(x)=x^2+3\\) and the horizontal line \\(y=7\\) are open.</p><p>Click every intersection and record the x-coordinates. Do not stop after the first point.</p>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Solve f(x) = 7",
+        "initial_expressions": [
+          {
+            "id": "solve_function_curve",
+            "latex": "f(x)=x^2+3"
+          },
+          {
+            "id": "solve_function_output",
+            "latex": "y=7"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "solve_function_equation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which values solve \\(f(x)=7\\) when \\(f(x)=x^2+3\\)?",
+        "choices": [
+          "\\(x=-2\\) and \\(x=2\\)",
+          "\\(x=2\\) only",
+          "\\(x=-4\\) and \\(x=4\\)",
+          "\\(x=7\\) only"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Read the x-coordinate of each point where the curve meets y = 7.",
+        "explanation": "Correct. The intersections are \\((-2,7)\\) and \\((2,7)\\), so both \\(x=-2\\) and \\(x=2\\) make \\(f(x)=7\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Use both intersections",
+        "initial_expressions": [
+          {
+            "id": "solve_check_curve",
+            "latex": "f(x)=x^2+3"
+          },
+          {
+            "id": "solve_check_output",
+            "latex": "y=7"
+          }
+        ],
+        "editable": false,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "notation_decision_process",
+      "html": "<h2>Decide what the notation is asking</h2><ol><li><strong>A number is inside the parentheses:</strong> evaluate the output. Example: \\(f(4)\\).</li><li><strong>An output is set equal to \\(f(x)\\):</strong> solve for the input. Example: \\(f(x)=7\\).</li><li><strong>Both input and output are stated:</strong> translate to a point. Example: \\(f(a)=b\\) means \\((a,b)\\).</li></ol><blockquote><p><strong>Always identify the input and output before calculating.</strong></p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "notation_decision_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A graph contains the point \\((-1,8)\\). Which interpretation is correct?",
+        "choices": [
+          "\\(f(8)=-1\\), so 8 is the input",
+          "\\(f(-1)=8\\), so -1 is the input and 8 is the output",
+          "\\(f(x)=-1\\), so 8 is the only solution",
+          "\\(f(-1)=-8\\), because the input is negative"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "An ordered pair is written as (input, output).",
+        "explanation": "Exactly. The point \\((-1,8)\\) translates to \\(f(-1)=8\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "missing_constant_transition",
+      "html": "<h2>A common SAT variation: find a constant inside a function</h2><p>The question may define a function with one missing constant, then use that function in another equation.</p><p>Example:</p><p>\\[f(x)=ax^2+5\\]</p><p>\\[f(a)=13\\]</p><p>The first line defines the function. The second line supplies a condition that the same function must satisfy.</p><blockquote><p><strong>Safest Desmos path:</strong> enter the definition exactly as given, then enter the condition as a regression.</p></blockquote>"
+    },
+    {
+      "kind": "text",
+      "id": "missing_constant_substitution",
+      "html": "<h2>Understand what \\(f(a)\\) does</h2><p>In \\(f(x)=ax^2+5\\), the letter \\(a\\) is a missing constant. In \\(f(a)\\), that same value is also used as the function's input.</p><p>Replacing \\(x\\) with \\(a\\) gives</p><p>\\[f(a)=a(a)^2+5=a^3+5\\]</p><p>So the condition \\(f(a)=13\\) is a solvable equation: \\(a^3+5=13\\).</p><p>You do not need to carry out that substitution by hand if you preserve the function definition in Desmos.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "missing_constant_substitution_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "If \\(g(x)=bx+4\\), which expression is equal to \\(g(b)\\)?",
+        "choices": [
+          "\\(b+4\\)",
+          "\\(bx+4\\)",
+          "\\(b^2+4\\)",
+          "\\(2b+4\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Replace the input x in bx + 4 with b. The coefficient b remains in place.",
+        "explanation": "Correct. \\(g(b)=b(b)+4=b^2+4\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "regression_process",
+      "html": "<h2>The two-line regression setup</h2><p>For \\(f(x)=ax^2+5\\) and \\(f(a)=13\\):</p><ol><li>Enter the function definition exactly as given: <strong>f(x)=ax^2+5</strong>.</li><li>On a new row, enter the condition with a regression symbol: <strong>f(a)~13</strong>.</li><li>Read the value Desmos assigns to \\(a\\).</li><li>Use that value to answer the quantity the question requests.</li></ol><p>On a keyboard, type the tilde character <strong>~</strong> to create \\(\\sim\\).</p><blockquote><p><strong>Keep the symbols straight:</strong> The function definition uses \\(=\\). The condition used to find the constant uses \\(\\sim\\).</p></blockquote>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "regression_setup_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which Desmos setup is safest for \\(f(x)=ax^2+5\\) and \\(f(a)=13\\)?",
+        "choices": [
+          "\\(f(x)\\sim ax^2+5\\) and \\(f(a)=13\\)",
+          "\\(f(x)=ax^2+5\\) and \\(f(a)\\sim13\\)",
+          "\\(f(a)=ax^2+5\\) and \\(f(x)\\sim13\\)",
+          "\\(y=ax^2+5\\) only"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Define the function with =. Use ~ only on the condition that Desmos should satisfy by adjusting a.",
+        "explanation": "Right. The first row preserves the function definition, and the regression row asks Desmos to choose a so that \\(f(a)=13\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "regression_model",
+      "html": "<h2>Read the missing constant</h2><p>The two-line setup is open:</p><ul><li>\\(f(x)=ax^2+5\\)</li><li>\\(f(a)\\sim13\\)</li></ul><p>Desmos assigns \\(a=2\\). Check the original condition:</p><p>\\[f(2)=2(2)^2+5=8+5=13\\]</p><blockquote><p><strong>Result:</strong> The missing constant is \\(a=2\\).</p></blockquote>",
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Inspect the assigned value of a",
+        "initial_expressions": [
+          {
+            "id": "model_function_definition",
+            "latex": "f(x)=ax^2+5"
+          },
+          {
+            "id": "model_function_regression",
+            "latex": "f(a)\\sim13"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "regression_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For \\(f(x)=ax^2+5\\) and \\(f(a)=13\\), what value does the regression assign to a?",
+        "choices": [
+          "\\(a=1\\)",
+          "\\(a=2\\)",
+          "\\(a=4\\)",
+          "\\(a=8\\)"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Read the assigned value below f(a) ~ 13, or check which value makes a³ + 5 = 13.",
+        "explanation": "Correct. \\(a=2\\) makes \\(f(a)=a^3+5=8+5=13\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "preset",
+        "title": "Verify a = 2",
+        "initial_expressions": [
+          {
+            "id": "result_function_definition",
+            "latex": "f(x)=ax^2+5"
+          },
+          {
+            "id": "result_function_regression",
+            "latex": "f(a)\\sim13"
+          }
+        ],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "fixed_input_variation",
+      "html": "<h2>The condition may use a fixed input</h2><p>The missing constant does not have to appear inside the function parentheses.</p><p>Suppose</p><p>\\[g(x)=bx+4\\]</p><p>and \\(g(5)=19\\). Use the same two-line structure:</p><ul><li>definition: \\(g(x)=bx+4\\)</li><li>regression: \\(g(5)\\sim19\\)</li></ul><p>Desmos adjusts \\(b\\) until the function's output at input \\(5\\) is \\(19\\).</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "fixed_input_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "If \\(g(x)=bx+4\\) and \\(g(5)=19\\), what is b?",
+        "choices": [
+          "\\(b=2\\)",
+          "\\(b=4\\)",
+          "\\(b=5\\)",
+          "\\(b=3\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Enter g(x) = bx + 4, then g(5) ~ 19. You can check with 5b + 4 = 19.",
+        "explanation": "Correct. Desmos assigns \\(b=3\\), and \\(g(5)=3(5)+4=19\\)."
+      },
+      "calculator": {
+        "display": "open",
+        "mode": "scratch",
+        "title": "Define g, then use regression",
+        "initial_expressions": [],
+        "editable": true,
+        "resettable": true,
+        "lock_viewport": false
+      }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_transition",
+      "html": "<h2>Independent transfer: build the setup yourself</h2><p>A function is defined by</p><p>\\[r(x)=cx^2+4\\]</p><p>and \\(r(c)=31\\).</p><p>On the next screen, enter exactly two rows: the function definition exactly as given and the function condition as a regression. Submit the setup, then read the value assigned to \\(c\\).</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_regression_setup",
+      "block_type": "desmos_interactive",
+      "content": {
+        "type": "desmos_interactive",
+        "title": "Define r and solve for c",
+        "instructions_html": "<p>Enter the definition <strong>\\(r(x)=cx^2+4\\)</strong>. On another row, enter the regression <strong>\\(r(c)\\sim31\\)</strong>. Keep exactly two expression rows, then submit.</p>",
+        "initial_expressions": [],
+        "goal": {
+          "type": "multi_expression",
+          "required_count": 2,
+          "roles": [
+            "function definition",
+            "function condition regression"
+          ]
+        },
+        "validation": {
+          "mode": "normalized",
+          "expected": [
+            "r(x)=cx^2+4",
+            "r(c)\\sim31"
+          ],
+          "state_rules": {
+            "min_expressions": 2,
+            "max_expressions": 2,
+            "require_visible_only": true
+          }
+        },
+        "feedback": {
+          "success_message_html": "<p>Well built. The definition uses =, the condition uses ~, and Desmos can assign the missing constant c.</p>",
+          "retry_message_html": "<p>Check both rows. Preserve the function definition exactly, then change only the condition's equals sign to ~.</p>",
+          "targeted_hints": [
+            {
+              "trigger": "missing_second_expression",
+              "message_html": "<p>You need two rows: one function definition and one regression condition.</p>"
+            },
+            {
+              "trigger": "too_many_expressions",
+              "message_html": "<p>Keep exactly two rows: the definition and the regression.</p>"
+            }
+          ],
+          "attempt_based_hints": [
+            {
+              "min_attempts": 2,
+              "message_html": "<p>Enter \\(r(x)=cx^2+4\\), then enter \\(r(c)\\sim31\\) on the next row.</p>"
+            }
+          ],
+          "reveal_solution_after_attempts": 4,
+          "solution_html": "<p>Use the two rows \\(r(x)=cx^2+4\\) and \\(r(c)\\sim31\\).</p>"
+        },
+        "progression": {
+          "require_success": true
+        }
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_result_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For \\(r(x)=cx^2+4\\) and \\(r(c)=31\\), what value does Desmos assign to c?",
+        "choices": [
+          "\\(c=1\\)",
+          "\\(c=2\\)",
+          "\\(c=3\\)",
+          "\\(c=9\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Read the regression result. You can verify it with c³ + 4 = 31.",
+        "explanation": "Correct. \\(r(c)=c(c)^2+4=c^3+4\\), and \\(3^3+4=31\\), so \\(c=3\\)."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "requested_expression_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The regression gives \\(c=3\\). If the question asks for \\(2c+1\\), what should you answer?",
+        "choices": [
+          "\\(4\\)",
+          "\\(6\\)",
+          "\\(9\\)",
+          "\\(7\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The regression found the constant, but the final question asks for an expression involving that constant.",
+        "explanation": "Right. Substitute \\(c=3\\): \\(2c+1=2(3)+1=7\\)."
+      }
+    },
+    {
+      "kind": "text",
+      "id": "common_mistakes",
+      "html": "<h2>Avoid the three common notation errors</h2><ul><li><strong>Reversing a point:</strong> \\(f(a)=b\\) means \\((a,b)\\), not \\((b,a)\\).</li><li><strong>Treating f as multiplication:</strong> \\(f(3)\\) is a function output, not \\(f\\cdot3\\).</li><li><strong>Using the wrong Desmos symbol:</strong> define \\(f(x)\\) with \\(=\\), then use \\(\\sim\\) on the condition that determines the missing constant.</li></ul><p>After Desmos finds the constant, return to the original question and report the requested value or expression.</p>"
+    },
+    {
+      "kind": "raw_block",
+      "id": "common_mistakes_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A question gives \\(p(x)=2x+k\\) and \\(p(k)=18\\). Which action should you avoid?",
+        "choices": [
+          "Entering \\(p(x)=2x+k\\) as the function definition",
+          "Entering \\(p(k)\\sim18\\) as the condition",
+          "Reading the value Desmos assigns to k",
+          "Replacing the definition's equals sign with ~ and treating \\(p(x)\\) as the regression"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The function must be defined before Desmos can evaluate p(k).",
+        "explanation": "Correct. Keep \\(p(x)=2x+k\\) as a definition. The separate condition \\(p(k)\\sim18\\) is the regression line."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which summary correctly interprets function notation and the missing-constant workflow?",
+        "choices": [
+          "\\(f(a)=b\\) means \\((b,a)\\); use ~ for every function definition.",
+          "A function may give one input several outputs; \\(f(3)\\) means f times 3.",
+          "\\(f(a)=b\\) means \\((a,b)\\); evaluate a fixed input by substitution or graph reading; solve \\(f(x)=b\\) for inputs; define the function with = and enter a missing-constant condition with ~.",
+          "Every function equation has exactly one solution, so one graph intersection is always enough."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Recall input-output order, the difference between evaluation and solving, and the two Desmos symbols.",
+        "explanation": "You have it. That sequence translates the notation correctly and preserves the safest Desmos setup for missing constants."
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can read and use function notation</h2><p>You can identify a function, interpret its inputs and outputs, translate function statements into points and graphs, evaluate function values, and solve equations such as \\(f(x)=7\\).</p><p>You can also define a function exactly as given and use a regression condition to find a missing constant safely in Desmos.</p>",
+        "button_label": "Complete Lesson"
+      }
+    }
+  ]
+}
