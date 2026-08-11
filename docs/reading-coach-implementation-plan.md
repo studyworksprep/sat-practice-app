@@ -664,13 +664,19 @@ Checklist (completed 2026-08-10, branch `codex/reading-coach-pr1`):
   `NULLS NOT DISTINCT` so NULL `unit_key` stages cannot duplicate
   attempts; no anon or delete grants; demo read-only policies).
 - [x] Apply only to the intended development project through the Supabase MCP
-  (applied to studyworks-dev; production deferred to PR 4).
+  (applied to studyworks-dev 2026-08-10). **Production was then applied
+  same-day with explicit owner authorization** — ahead of the original
+  PR 4 timing — because the PR 1 admin surfaces and nav link deploy
+  continuously, and prod admins otherwise hit an error page on
+  /admin/reading-coach. Persona suite re-run against prod: 22/22;
+  advisors clean.
 - [x] Run advisors and verify policies with multiple personas
   (advisors: no new findings; `scripts/verify-reading-coach-rls.sql`
   runs 22 persona checks — all pass. Note: the RLS helpers read
   `auth.jwt() -> 'app_metadata'`, so simulated claims must carry it).
-- [x] Regenerate `lib/types/database.ts` (now generated from dev,
-  which is a strict superset of prod until the PR 4 launch migration).
+- [x] Regenerate `lib/types/database.ts` (generated from dev; after the
+  same-day prod application the schemas are converged again — dev's
+  only extras are in-flight work unrelated to Reading Coach).
 - [x] Add typed item spec, parser, sanitizer integration, and validator
   (`lib/reading-coach/types.ts`, `schema.ts`; publish-only rights gate).
 - [x] Add admin list/import/preview/draft/publish surfaces
@@ -754,7 +760,7 @@ Reading Coach is launch-ready when:
 
 | Phase | Status | PR | Notes |
 |---|---|---|---|
-| PR 1 — content/persistence | Built 2026-08-10, in review | — | Branch `codex/reading-coach-pr1`; schema applied to dev only; RLS persona suite green; 3 fixtures |
+| PR 1 — content/persistence | Merged 2026-08-10 | #296 | Schema applied to dev AND prod (owner-authorized, same day); RLS persona suite green on both; 3 fixtures; admin nav linked in #297 |
 | PR 2 — evaluator/QA | Not started | — | Blocked on PR 1 |
 | PR 3 — student runner | Not started | — | Blocked on evaluator QA |
 | PR 4 — integration/launch | Not started | — | Requires owner launch approval |
