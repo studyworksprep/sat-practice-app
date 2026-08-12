@@ -205,7 +205,7 @@ const ADMIN_USERS: NavLink = {
 // page — the tab still reads as "you are in Questions".
 const ADMIN_QUESTIONS: NavLink = {
   href: '/admin/questions', label: 'Questions', icon: 'questions',
-  matchPrefix: ['/admin/questions', '/admin/content', '/tutor/review'],
+  matchPrefix: ['/admin/questions', '/admin/content', '/admin/concept-tags', '/tutor/review'],
 };
 const ADMIN_LESSONS: NavLink = {
   href: '/admin/lessons', label: 'Lessons', icon: 'lessons',

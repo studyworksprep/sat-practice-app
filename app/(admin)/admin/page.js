@@ -212,6 +212,7 @@ export default async function AdminLandingPage() {
           <NavCard href="/admin/users" title="User management" desc="Create, edit, and assign users." />
           <NavCard href="/admin/questions" title="Question content" desc="Browse and edit the question bank." />
           <NavCard href="/admin/questions/new" title="Write a question" desc="Author a new Studyworks question." />
+          <NavCard href="/admin/concept-tags" title="Concept tags" desc="Rename, merge, and delete question concept tags." />
           <NavCard href="/admin/content/units" title="Curriculum coverage" desc="Lesson-production worklist — weakest units first." />
           <NavCard href="/admin/reading-coach" title="Reading Coach" desc="Author passages, rubrics, and choices for guided reading practice." />
           <NavCard href="/admin/performance" title="Student performance" desc="Aggregate stats across cohorts." />

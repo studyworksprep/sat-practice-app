@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -4285,6 +4285,10 @@ export type Database = {
         Args: { p_difficulty: number; p_score_band: number }
         Returns: number
       }
+      merge_concept_tags: {
+        Args: { p_source_tag_id: string; p_target_tag_id: string }
+        Returns: Json
+      }
       migration_status: {
         Args: never
         Returns: {
@@ -4317,10 +4321,6 @@ export type Database = {
       snapshot_student_skill_mastery: {
         Args: { p_asof?: string; p_student: string; p_test_type?: string }
         Returns: number
-      }
-      student_has_lesson_assignment: {
-        Args: { p_lesson_id: string; p_student_id: string }
-        Returns: boolean
       }
       teacher_can_view_student: {
         Args: { target_student_id: string }

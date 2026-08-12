@@ -74,6 +74,10 @@ export const EXTERNAL_KEY_ROUTES: ReadonlyArray<{ url: string; method: 'GET' }> 
 export const ADMIN_ONLY_PAGES: ReadonlyArray<{ path: string; heading: RegExp }> = [
   { path: '/admin/users', heading: /users/i },
   { path: '/admin/lessons/generate', heading: /generate lesson with ai/i },
+  // Catalog-wide tag management: rename/merge/delete reach every
+  // question a tag is on, so this surface is admin-only even though
+  // managers can tag individual questions.
+  { path: '/admin/concept-tags', heading: /concept tags/i },
   // The contributed-submissions review queue. A teacher reaching this
   // would be able to act on submissions the review gate means to keep
   // them away from.
