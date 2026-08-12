@@ -45,6 +45,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/act/imports/[jobId]/review/actions.ts` | `saveDraft`, `approveDraft`, `bulkApprove`, `unapproveDraft`, `rejectDraft`, `finalizeJob` | requireRole[admin] |
 | `app/(admin)/admin/act/imports/actions.ts` | `createImportJob`, `deleteImportJob` | requireRole[admin] |
 | `app/(admin)/admin/act/score-conversion/actions.ts` | `upsertConversionRows`, `deleteConversionTable`, `createConversionForm` | requireRole[admin] |
+| `app/(admin)/admin/concept-tags/actions.ts` | `renameConceptTag`, `deleteConceptTag`, `mergeConceptTags` | requireRole[admin] |
 | `app/(admin)/admin/content/actions.js` | `addScoreConversions`, `deleteScoreConversion`, `updateTestThresholds`, `saveSkillLearnability` | requireRole[admin] |
 | `app/(admin)/admin/content/drafts/[draftId]/actions.js` | `saveDraft`, `promoteDraft`, `rejectDraft` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson`, `addLessonTopic`, `removeLessonTopic` | requireRole[admin] |
@@ -104,4 +105,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_19 route handlers, 54 server-action modules enumerated._
+_19 route handlers, 55 server-action modules enumerated._
