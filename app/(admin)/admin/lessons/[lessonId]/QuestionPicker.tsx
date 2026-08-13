@@ -15,7 +15,10 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 import { Button } from '@/lib/ui/Button';
 import { SafeHtml } from '@/lib/ui/SafeHtml';
 import { useMathTypeset } from '@/lib/ui/preview-effects';
-import { searchQuestionBank, getQuestionById } from './actions';
+import {
+  searchLessonEditorQuestions,
+  getLessonEditorQuestion,
+} from '@/lib/lesson/editor-question-actions';
 import f from '../../../forms.module.css';
 
 type Question = {
@@ -49,7 +52,7 @@ export function QuestionPicker({
   function runSearch(query: string) {
     setError(null);
     startTransition(async () => {
-      const res = (await searchQuestionBank({ q: query })) as
+      const res = (await searchLessonEditorQuestions({ q: query })) as
         | { ok: true; data: { rows: Question[]; total: number } }
         | { ok: false; error: string };
       if (res.ok) {
@@ -66,7 +69,7 @@ export function QuestionPicker({
     runSearch('');
     if (selectedId) {
       startTransition(async () => {
-        const res = (await getQuestionById(selectedId)) as
+        const res = (await getLessonEditorQuestion(selectedId)) as
           | { ok: true; data: { question: Question | null } }
           | { ok: false; error: string };
         if (res.ok) setSelected(res.data.question);

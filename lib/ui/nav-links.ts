@@ -155,6 +155,10 @@ const TUTOR_ASSIGNMENTS: NavLink = {
   href: '/tutor/assignments', label: 'Assignments', icon: 'inbox',
   matchPrefix: '/tutor/assignments',
 };
+const TUTOR_LESSONS: NavLink = {
+  href: '/tutor/lessons', label: 'Lessons', icon: 'lessons',
+  matchPrefix: '/tutor/lessons',
+};
 // Lesson packs — sidebar-only. The surface has existed at
 // /tutor/lesson-packs since the rebuild but never had a top-nav tab
 // (upgrade plan §6.1 calls it "currently orphaned off-nav").
@@ -183,6 +187,7 @@ const MANAGER_TEACHERS: NavLink = {
 const BASE_TUTOR_LINKS: readonly NavLink[] = [
   TUTOR_DASHBOARD,
   TUTOR_ROSTER,
+  TUTOR_LESSONS,
   TUTOR_ASSIGNMENTS,
   TUTOR_PERFORMANCE,
   TUTOR_TRAIN,
@@ -321,7 +326,7 @@ export function studentSections(
 }
 
 const TEACHER_SECTIONS: readonly NavSection[] = [
-  { title: 'Teach', links: [TUTOR_DASHBOARD, TUTOR_ROSTER] },
+  { title: 'Teach', links: [TUTOR_DASHBOARD, TUTOR_ROSTER, TUTOR_LESSONS] },
   { title: 'Assign', links: [TUTOR_ASSIGNMENTS, TUTOR_LESSON_PACKS] },
   { title: 'Analyze', links: [TUTOR_PERFORMANCE] },
   { title: 'Train', links: [TUTOR_TRAIN] },

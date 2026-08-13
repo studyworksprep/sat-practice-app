@@ -116,6 +116,7 @@ export default async function NewAssignmentPage({ searchParams }) {
       .from('lessons')
       .select('id, title')
       .eq('status', 'published')
+      .eq('visibility', 'shared')
       .order('title', { ascending: true }),
     // The teacher's template shelf. RLS is owner-scoped, but the
     // explicit filter keeps admins from seeing a cross-tutor menu.

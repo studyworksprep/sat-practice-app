@@ -22,10 +22,20 @@ import { CanvasEditor } from './CanvasEditor';
 import a from '../../../admin.module.css';
 import f from '../../../forms.module.css';
 
-export function EditorClient({ lesson, initialBlocks, topics, actions }) {
+export function EditorClient({
+  lesson,
+  initialBlocks,
+  topics,
+  actions,
+  revisionMode = false,
+}) {
   return (
     <div style={S.col}>
-      <MetadataSection lesson={lesson} action={actions.updateMetadata} />
+      <MetadataSection
+        lesson={lesson}
+        action={actions.updateMetadata}
+        revisionMode={revisionMode}
+      />
       <ScopeTagsSection
         lessonId={lesson.id}
         topics={topics ?? []}
@@ -36,15 +46,20 @@ export function EditorClient({ lesson, initialBlocks, topics, actions }) {
         lessonId={lesson.id}
         initialBlocks={initialBlocks}
         action={actions.saveBlocks}
+        saveLabel={revisionMode ? 'Save draft' : 'Save lesson'}
       />
-      <DangerZone lessonId={lesson.id} action={actions.deleteLesson} />
+      <DangerZone
+        lessonId={lesson.id}
+        action={actions.deleteLesson}
+        revisionMode={revisionMode}
+      />
     </div>
   );
 }
 
 // ─── Metadata ────────────────────────────────────────────────────
 
-function MetadataSection({ lesson, action }) {
+function MetadataSection({ lesson, action, revisionMode }) {
   const [state, formAction, pending] = useActionState(action, null);
   // Controlled so the foundation-order field appears/disappears with
   // the kind; the server clears foundation_sequence for standard.
@@ -77,31 +92,38 @@ function MetadataSection({ lesson, action }) {
           />
         </label>
 
-        <div className={f.grid}>
-          <label className={f.label}>
-            <span className={f.labelText}>Status</span>
-            <select
-              name="status"
-              defaultValue={lesson.status ?? 'draft'}
-              className={f.select}
-            >
-              <option value="draft">draft</option>
-              <option value="published">published</option>
-              <option value="archived">archived</option>
-            </select>
-          </label>
-          <label className={f.label}>
-            <span className={f.labelText}>Visibility</span>
-            <select
-              name="visibility"
-              defaultValue={lesson.visibility ?? 'shared'}
-              className={f.select}
-            >
-              <option value="shared">shared</option>
-              <option value="private">private</option>
-            </select>
-          </label>
-        </div>
+        {revisionMode ? (
+          <div style={S.draftNotice}>
+            Private draft · Only you and admins can see this work. Publication
+            is controlled by the admin review workflow.
+          </div>
+        ) : (
+          <div className={f.grid}>
+            <label className={f.label}>
+              <span className={f.labelText}>Status</span>
+              <select
+                name="status"
+                defaultValue={lesson.status ?? 'draft'}
+                className={f.select}
+              >
+                <option value="draft">draft</option>
+                <option value="published">published</option>
+                <option value="archived">archived</option>
+              </select>
+            </label>
+            <label className={f.label}>
+              <span className={f.labelText}>Visibility</span>
+              <select
+                name="visibility"
+                defaultValue={lesson.visibility ?? 'shared'}
+                className={f.select}
+              >
+                <option value="shared">shared</option>
+                <option value="private">private</option>
+              </select>
+            </label>
+          </div>
+        )}
 
         <div className={f.grid}>
           <label className={f.label}>
@@ -256,15 +278,17 @@ function ScopeTagsSection({ lessonId, topics, addAction, removeAction }) {
 
 // ─── Danger zone ─────────────────────────────────────────────────
 
-function DangerZone({ lessonId, action }) {
+function DangerZone({ lessonId, action, revisionMode }) {
   const [state, formAction, pending] = useActionState(action, null);
 
   return (
     <section className={a.section} style={S.danger}>
       <h2 className={a.h2}>Danger zone</h2>
       <p className={f.formHint}>
-        Deleting a lesson cascades to its blocks, assignments, and student
-        progress. Type <code>DELETE</code> to confirm.
+        {revisionMode
+          ? 'Delete this private draft and its working blocks. The published lesson is never affected.'
+          : 'Deleting a lesson cascades to its blocks, assignments, and student progress.'}{' '}
+        Type <code>DELETE</code> to confirm.
       </p>
       <form action={formAction} className={f.row}>
         <input type="hidden" name="lesson_id" value={lessonId} />
@@ -276,7 +300,7 @@ function DangerZone({ lessonId, action }) {
           style={{ maxWidth: 160 }}
         />
         <Button type="submit" variant="remove" disabled={pending}>
-          {pending ? 'Deleting…' : 'Delete lesson'}
+          {pending ? 'Deleting…' : revisionMode ? 'Delete draft' : 'Delete lesson'}
         </Button>
         {state?.ok === false && !pending && (
           <span className={f.err}>{state.error}</span>
@@ -289,6 +313,14 @@ function DangerZone({ lessonId, action }) {
 const S = {
   col: { display: 'flex', flexDirection: 'column', gap: 16 },
   danger: { borderColor: 'var(--color-danger)' },
+  draftNotice: {
+    padding: '10px 12px',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--color-app-accent)',
+    background: 'var(--color-app-accent-bg, #eef2ff)',
+    color: 'var(--fg2)',
+    fontSize: 13,
+  },
   tagRow: {
     display: 'flex',
     flexWrap: 'wrap',

@@ -10,6 +10,7 @@
 //
 // Server Component. Per-row links are admin-only.
 
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { Button } from '@/lib/ui/Button';
@@ -110,6 +111,20 @@ export default async function AdminLessonsPage({ searchParams }) {
           edit its metadata and blocks.
         </p>
       </header>
+
+      <section className={a.section}>
+        <div style={S.cta}>
+          <div>
+            <h2 className={a.h2}>Tutor submissions</h2>
+            <p className={a.help}>
+              Review proposed lesson improvements and new lessons without mixing private drafts into the canonical library.
+            </p>
+          </div>
+          <Link href="/admin/lessons/review">
+            <Button variant="secondary">Open review queue</Button>
+          </Link>
+        </div>
+      </section>
 
       {imported && (
         <div style={S.flash}>

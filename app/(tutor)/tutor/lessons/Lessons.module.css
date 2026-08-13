@@ -1,0 +1,32 @@
+.container { max-width: 1180px; margin: 0 auto; padding: 32px 24px 56px; display: flex; flex-direction: column; gap: 22px; color: var(--fg1); }
+.header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+.eyebrow { color: var(--color-gold-700); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.h1 { margin: 4px 0 8px; font: 700 34px/1.12 var(--font-serif); color: var(--color-navy-900); }
+.sub { margin: 0; max-width: 720px; color: var(--fg3); font-size: 14px; }
+.newForm { display: flex; gap: 8px; align-items: center; }
+.newForm input { min-width: 230px; padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--radius-md); font: inherit; }
+.section { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); padding: 20px; box-shadow: var(--shadow-sm); }
+.sectionHead { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+.sectionHead h2 { margin: 0 0 3px; font: 700 20px/1.2 var(--font-serif); color: var(--color-navy-900); }
+.sectionHead p, .empty { margin: 0; color: var(--fg3); font-size: 13px; }
+.draftGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.draftCard { display: flex; flex-direction: column; gap: 8px; padding: 14px; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-white, white); }
+.draftCard:hover { border-color: var(--color-app-accent); }
+.cardTop { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cardMeta { color: var(--fg3); font-size: 12px; }
+.reviewNote { color: var(--color-diff-med-fg); font-size: 12px; }
+.stateBadge, .kindBadge { display: inline-flex; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; background: var(--color-slate-100); white-space: nowrap; }
+.state_submitted { background: var(--color-app-accent-bg, #eef2ff); color: var(--color-app-accent); }
+.state_changes_requested { background: var(--color-diff-med-bg); color: var(--color-diff-med-fg); }
+.state_approved { background: var(--color-success-bg); color: var(--color-diff-easy-fg); }
+.state_rejected { background: var(--color-diff-hard-bg); color: var(--color-diff-hard-fg); }
+.lessonList { display: flex; flex-direction: column; }
+.lessonRow { display: flex; justify-content: space-between; align-items: center; gap: 22px; padding: 16px 0; border-top: 1px solid var(--border); }
+.lessonRow:first-child { border-top: 0; }
+.lessonBody { min-width: 0; }
+.lessonBody p { margin: 6px 0 0; color: var(--fg3); font-size: 13px; }
+.kindBadge { color: var(--color-gold-700); }
+.topics { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.topics span { padding: 2px 7px; border: 1px solid var(--border); border-radius: 999px; color: var(--fg3); font-size: 11px; }
+.actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+@media (max-width: 700px) { .lessonRow { align-items: flex-start; flex-direction: column; } .actions { width: 100%; flex-wrap: wrap; } .newForm { width: 100%; } .newForm input { min-width: 0; flex: 1; } }

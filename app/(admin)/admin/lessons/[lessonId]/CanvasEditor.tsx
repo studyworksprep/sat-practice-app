@@ -54,6 +54,7 @@ import f from '../../../forms.module.css';
 
 type Block = {
   id?: string;
+  source_block_id?: string | null;
   block_type?: string;
   sort_order?: number;
   content?: Record<string, unknown>;
@@ -80,12 +81,14 @@ export function CanvasEditor({
   lessonId,
   initialBlocks,
   action,
+  saveLabel = 'Save lesson',
 }: {
   lessonId: string;
   initialBlocks: Block[];
   // Server action — typed loosely to avoid coupling to the JS action's
   // signature; useActionState narrows it at the call site.
   action: (prev: unknown, formData: FormData) => Promise<unknown>;
+  saveLabel?: string;
 }) {
   const [blocks, setBlocks] = useState<Block[]>(() => ensureIds(initialBlocks));
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -307,7 +310,7 @@ export function CanvasEditor({
         <input type="hidden" name="lesson_id" value={lessonId} />
         <input type="hidden" name="blocks" value={JSON.stringify(blocks)} />
         <Button type="submit" variant="primary" disabled={pending || !validation.ok}>
-          {pending ? 'Saving…' : 'Save lesson'}
+          {pending ? 'Saving…' : saveLabel}
         </Button>
         <Button type="button" variant="secondary" disabled={!dirty || pending} onClick={discard}>
           Discard changes
