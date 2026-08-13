@@ -9,6 +9,35 @@ export const dynamic = 'force-dynamic';
 
 const ACTIVE_STATES = new Set(['draft', 'submitted', 'changes_requested']);
 
+type DirectFormAction = (formData: FormData) => void | Promise<void>;
+const createDraftAction = createNewLessonDraft as unknown as DirectFormAction;
+const proposeEditAction = proposeLessonEdit as unknown as DirectFormAction;
+
+type Lesson = {
+  id: string;
+  title: string;
+  description: string | null;
+  kind: string;
+  updated_at: string;
+};
+
+type Revision = {
+  id: string;
+  base_lesson_id: string | null;
+  title: string;
+  state: string;
+  updated_at: string;
+  submitted_at: string | null;
+  review_note: string | null;
+};
+
+type LessonTopic = {
+  lesson_id: string;
+  section: string | null;
+  domain_name: string | null;
+  skill_code: string | null;
+};
+
 export default async function TutorLessonsPage() {
   const { user, profile, supabase } = await requireUser();
   if (profile.role === 'admin') redirect('/admin/lessons');
@@ -30,15 +59,18 @@ export default async function TutorLessonsPage() {
       .from('lesson_topics')
       .select('lesson_id, section, domain_name, skill_code'),
   ]);
+  const lessonRows = (lessons ?? []) as Lesson[];
+  const revisionRows = (revisions ?? []) as Revision[];
+  const topics = (topicRows ?? []) as LessonTopic[];
 
-  const topicsByLesson = new Map();
-  for (const topic of topicRows ?? []) {
+  const topicsByLesson = new Map<string, LessonTopic[]>();
+  for (const topic of topics) {
     if (!topicsByLesson.has(topic.lesson_id)) topicsByLesson.set(topic.lesson_id, []);
-    topicsByLesson.get(topic.lesson_id).push(topic);
+    topicsByLesson.get(topic.lesson_id)?.push(topic);
   }
 
-  const activeByBase = new Map();
-  for (const revision of revisions ?? []) {
+  const activeByBase = new Map<string, Revision>();
+  for (const revision of revisionRows) {
     if (revision.base_lesson_id && ACTIVE_STATES.has(revision.state)) {
       activeByBase.set(revision.base_lesson_id, revision);
     }
@@ -55,7 +87,7 @@ export default async function TutorLessonsPage() {
             touching the live lesson, or draft something new for admin review.
           </p>
         </div>
-        <form action={createNewLessonDraft} className={s.newForm}>
+        <form action={createDraftAction} className={s.newForm}>
           <input name="title" aria-label="New lesson title" placeholder="New lesson title" />
           <Button type="submit">Create draft</Button>
         </form>
@@ -68,11 +100,11 @@ export default async function TutorLessonsPage() {
             <p>Private to you and admins; submitted work becomes read-only during review.</p>
           </div>
         </div>
-        {(revisions ?? []).length === 0 ? (
+        {revisionRows.length === 0 ? (
           <p className={s.empty}>You have no lesson drafts yet.</p>
         ) : (
           <div className={s.draftGrid}>
-            {(revisions ?? []).map((revision) => (
+            {revisionRows.map((revision) => (
               <Link key={revision.id} href={`/tutor/lessons/drafts/${revision.id}`} className={s.draftCard}>
                 <div className={s.cardTop}>
                   <strong>{revision.title}</strong>
@@ -95,14 +127,14 @@ export default async function TutorLessonsPage() {
         <div className={s.sectionHead}>
           <div>
             <h2>Published lessons</h2>
-            <p>{lessons?.length ?? 0} canonical lessons available to students.</p>
+            <p>{lessonRows.length} canonical lessons available to students.</p>
           </div>
         </div>
-        {(lessons ?? []).length === 0 ? (
+        {lessonRows.length === 0 ? (
           <p className={s.empty}>No published lessons are available.</p>
         ) : (
           <div className={s.lessonList}>
-            {(lessons ?? []).map((lesson) => {
+            {lessonRows.map((lesson) => {
               const active = activeByBase.get(lesson.id);
               const topics = topicsByLesson.get(lesson.id) ?? [];
               return (
@@ -130,7 +162,7 @@ export default async function TutorLessonsPage() {
                         {active.state === 'submitted' ? 'View submission' : 'Resume draft'}
                       </Button>
                     ) : (
-                      <form action={proposeLessonEdit}>
+                      <form action={proposeEditAction}>
                         <input type="hidden" name="lesson_id" value={lesson.id} />
                         <Button type="submit">Propose changes</Button>
                       </form>
@@ -146,21 +178,21 @@ export default async function TutorLessonsPage() {
   );
 }
 
-function StateBadge({ state }) {
-  const labels = {
+function StateBadge({ state }: { state: string }) {
+  const labels: Record<string, string> = {
     draft: 'Draft', submitted: 'In review', changes_requested: 'Changes requested',
     approved: 'Published', rejected: 'Rejected', withdrawn: 'Withdrawn',
   };
   return <span className={`${s.stateBadge} ${s[`state_${state}`] ?? ''}`}>{labels[state] ?? state}</span>;
 }
 
-function sectionLabel(section) {
+function sectionLabel(section: string | null) {
   if (section === 'reading_writing') return 'Reading & Writing';
   if (section === 'math') return 'Math';
   return 'Lesson';
 }
 
-function formatDate(value) {
+function formatDate(value: string | null) {
   if (!value) return '—';
   return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }

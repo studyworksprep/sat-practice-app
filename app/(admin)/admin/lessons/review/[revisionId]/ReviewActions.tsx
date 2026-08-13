@@ -4,7 +4,7 @@ import { useActionState } from 'react';
 import { Button } from '@/lib/ui/Button';
 import f from '@/app/(admin)/forms.module.css';
 
-type ActionState = { ok?: boolean; error?: string } | null;
+type ActionState = { ok: boolean; error?: string } | null;
 type ReviewAction = (prev: ActionState, formData: FormData) => Promise<ActionState>;
 
 export function ReviewActions({

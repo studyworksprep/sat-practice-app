@@ -1,12 +1,41 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import type { CSSProperties, ReactNode } from 'react';
 import { requireUser } from '@/lib/api/auth';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import a from '@/app/(admin)/admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export default async function LessonReviewQueuePage({ searchParams }) {
+type Person = {
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+};
+
+type SubmittedRevision = {
+  id: string;
+  title: string;
+  base_lesson_id: string | null;
+  change_summary: string | null;
+  submitted_at: string | null;
+  owner: Person | null;
+  base: { title: string } | null;
+};
+
+type RecentRevision = {
+  id: string;
+  title: string;
+  state: string;
+  reviewed_at: string | null;
+  owner: Person | null;
+};
+
+export default async function LessonReviewQueuePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ changes_requested?: string; rejected?: string }>;
+}) {
   const sp = (await searchParams) ?? {};
   const { profile, supabase } = await requireUser();
   if (profile.role !== 'admin') {
@@ -26,6 +55,8 @@ export default async function LessonReviewQueuePage({ searchParams }) {
     `).in('state', ['approved', 'rejected', 'changes_requested'])
       .order('reviewed_at', { ascending: false }).limit(20),
   ]);
+  const submittedRows = (submitted ?? []) as unknown as SubmittedRevision[];
+  const recentRows = (recent ?? []) as unknown as RecentRevision[];
 
   return (
     <main className={a.container}>
@@ -39,10 +70,10 @@ export default async function LessonReviewQueuePage({ searchParams }) {
       {sp.rejected === '1' && <Flash>Proposal rejected.</Flash>}
 
       <section className={a.section}>
-        <h2 className={a.h2}>Awaiting review ({submitted?.length ?? 0})</h2>
-        {!submitted?.length ? <p className={a.help}>Nothing is waiting for review.</p> : (
+        <h2 className={a.h2}>Awaiting review ({submittedRows.length})</h2>
+        {submittedRows.length === 0 ? <p className={a.help}>Nothing is waiting for review.</p> : (
           <Table><thead><tr><Th>Proposal</Th><Th>Contributor</Th><Th>Source</Th><Th>Submitted</Th><Th /></tr></thead>
-            <tbody>{submitted.map((row) => <tr key={row.id}>
+            <tbody>{submittedRows.map((row) => <tr key={row.id}>
               <Td><strong>{row.title}</strong>{row.change_summary && <div style={S.muted}>{row.change_summary}</div>}</Td>
               <Td>{personName(row.owner)}</Td>
               <Td>{row.base?.title ?? 'New lesson'}</Td>
@@ -55,9 +86,9 @@ export default async function LessonReviewQueuePage({ searchParams }) {
 
       <section className={a.section}>
         <h2 className={a.h2}>Recent decisions</h2>
-        {!recent?.length ? <p className={a.help}>No decisions yet.</p> : (
+        {recentRows.length === 0 ? <p className={a.help}>No decisions yet.</p> : (
           <Table><thead><tr><Th>Proposal</Th><Th>Contributor</Th><Th>Decision</Th><Th>Date</Th><Th /></tr></thead>
-            <tbody>{recent.map((row) => <tr key={row.id}>
+            <tbody>{recentRows.map((row) => <tr key={row.id}>
               <Td>{row.title}</Td><Td>{personName(row.owner)}</Td><Td>{stateLabel(row.state)}</Td>
               <Td>{formatDate(row.reviewed_at)}</Td>
               <Td><Link className={a.link} href={`/admin/lessons/review/${row.id}`}>View →</Link></Td>
@@ -69,11 +100,11 @@ export default async function LessonReviewQueuePage({ searchParams }) {
   );
 }
 
-function Flash({ children }) { return <div style={S.flash}>{children}</div>; }
-function personName(person) { return [person?.first_name, person?.last_name].filter(Boolean).join(' ') || person?.email || 'Tutor'; }
-function formatDate(v) { return v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; }
-function stateLabel(v) { return ({ approved: 'Published', rejected: 'Rejected', changes_requested: 'Changes requested' })[v] ?? v; }
+function Flash({ children }: { children: ReactNode }) { return <div style={S.flash}>{children}</div>; }
+function personName(person: Person | null) { return [person?.first_name, person?.last_name].filter(Boolean).join(' ') || person?.email || 'Tutor'; }
+function formatDate(value: string | null) { return value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; }
+function stateLabel(value: string) { return ({ approved: 'Published', rejected: 'Rejected', changes_requested: 'Changes requested' } as Record<string, string>)[value] ?? value; }
 const S = {
   muted: { color: 'var(--fg3)', fontSize: 12, marginTop: 4, maxWidth: 520 },
   flash: { padding: '10px 14px', background: 'var(--color-success-bg)', color: 'var(--color-diff-easy-fg)', border: '1px solid var(--color-success)', borderRadius: 8 },
-};
+} satisfies Record<string, CSSProperties>;

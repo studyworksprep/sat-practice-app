@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
+import type { CSSProperties } from 'react';
 import { requireUser } from '@/lib/api/auth';
 import { Button } from '@/lib/ui/Button';
+import type { Json } from '@/lib/types';
 import { LessonSlideshow } from '@/lib/ui/LessonSlideshow';
 import { EditorClient } from '@/app/(admin)/admin/lessons/[lessonId]/EditorClient';
 import {
@@ -19,14 +21,56 @@ export const dynamic = 'force-dynamic';
 
 const EDITABLE = new Set(['draft', 'changes_requested']);
 
-export default async function TutorLessonDraftPage({ params, searchParams }) {
+type PreviewBlock = {
+  id: string;
+  source_block_id: string | null;
+  sort_order: number;
+  block_type: string;
+  content: Json;
+};
+
+const Slideshow = LessonSlideshow as unknown as (props: {
+  blocks: PreviewBlock[];
+  questionLinkHref: string | null;
+  showCompleteButton?: boolean;
+  calculatorStoragePrefix: string;
+}) => React.ReactElement;
+
+type DirectFormAction = (formData: FormData) => void | Promise<void>;
+const submitDraftAction = submitRevision as unknown as DirectFormAction;
+
+type DraftRevision = {
+  id: string;
+  base_lesson_id: string | null;
+  published_lesson_id: string | null;
+  owner_id: string;
+  state: string;
+  title: string;
+  description: string | null;
+  kind: string;
+  foundation_sequence: number | null;
+  change_summary: string | null;
+  review_note: string | null;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  updated_at: string;
+  base: { id: string; title: string; updated_at: string } | null;
+};
+
+export default async function TutorLessonDraftPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ revisionId: string }>;
+  searchParams: Promise<{ submitted?: string }>;
+}) {
   const { revisionId } = await params;
   const sp = (await searchParams) ?? {};
   const { user, profile, supabase } = await requireUser();
   if (profile.role === 'admin') redirect(`/admin/lessons/review/${revisionId}`);
   if (!['teacher', 'manager'].includes(profile.role)) redirect('/dashboard');
 
-  const [{ data: revision }, { data: blocks }, { data: topics }] = await Promise.all([
+  const [{ data: revisionData }, { data: blocks }, { data: topics }] = await Promise.all([
     supabase.from('lesson_revisions').select(`
       id, base_lesson_id, published_lesson_id, owner_id, state, title, description, kind,
       foundation_sequence, change_summary, review_note, submitted_at,
@@ -39,7 +83,8 @@ export default async function TutorLessonDraftPage({ params, searchParams }) {
       .select('id, source_topic_id, section, domain_name, skill_code, pattern_id, question_patterns(name)')
       .eq('revision_id', revisionId),
   ]);
-  if (!revision) notFound();
+  if (!revisionData) notFound();
+  const revision = revisionData as unknown as DraftRevision;
 
   const editable = EDITABLE.has(revision.state);
   return (
@@ -105,7 +150,7 @@ export default async function TutorLessonDraftPage({ params, searchParams }) {
                 Save metadata and blocks first. Submission locks the draft while an admin reviews it.
               </p>
             </div>
-            <form action={submitRevision} className={f.form}>
+            <form action={submitDraftAction} className={f.form}>
               <input type="hidden" name="revision_id" value={revision.id} />
               <label className={f.label}>
                 <span className={f.labelText}>Reviewer summary</span>
@@ -129,7 +174,7 @@ export default async function TutorLessonDraftPage({ params, searchParams }) {
             <h2 className={a.h2}>Submitted preview</h2>
             {revision.change_summary && <p className={a.help}>{revision.change_summary}</p>}
           </div>
-          <LessonSlideshow
+          <Slideshow
             blocks={blocks ?? []}
             questionLinkHref={null}
             showCompleteButton={false}
@@ -141,15 +186,15 @@ export default async function TutorLessonDraftPage({ params, searchParams }) {
   );
 }
 
-function stateLabel(state) {
+function stateLabel(state: string) {
   return ({
     draft: 'Draft', submitted: 'In review', changes_requested: 'Changes requested',
     approved: 'Published', rejected: 'Rejected', withdrawn: 'Withdrawn',
-  })[state] ?? state;
+  } as Record<string, string>)[state] ?? state;
 }
 
 const S = {
   success: { padding: '10px 14px', border: '1px solid var(--color-success)', borderRadius: 8, background: 'var(--color-success-bg)', color: 'var(--color-diff-easy-fg)' },
   requested: { borderColor: 'var(--color-diff-med-fg)', background: 'var(--color-diff-med-bg)' },
   submitSection: { borderColor: 'var(--color-app-accent)' },
-};
+} satisfies Record<string, CSSProperties>;
