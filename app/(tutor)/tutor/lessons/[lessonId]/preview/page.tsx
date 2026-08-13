@@ -1,12 +1,31 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import type { Json } from '@/lib/types';
 import { LessonSlideshow } from '@/lib/ui/LessonSlideshow';
 import a from '@/app/(admin)/admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TutorLessonPreviewPage({ params }) {
+type PreviewBlock = {
+  id: string;
+  sort_order: number;
+  block_type: string;
+  content: Json;
+};
+
+const Slideshow = LessonSlideshow as unknown as (props: {
+  blocks: PreviewBlock[];
+  questionLinkHref: string | null;
+  showCompleteButton?: boolean;
+  calculatorStoragePrefix: string;
+}) => React.ReactElement;
+
+export default async function TutorLessonPreviewPage({
+  params,
+}: {
+  params: Promise<{ lessonId: string }>;
+}) {
   const { lessonId } = await params;
   const { profile, supabase } = await requireUser();
   if (profile.role === 'admin') redirect(`/admin/lessons/${lessonId}/preview`);
@@ -38,7 +57,7 @@ export default async function TutorLessonPreviewPage({ params }) {
           Read-only student-style preview. This does not write lesson progress.
         </p>
       </header>
-      <LessonSlideshow
+      <Slideshow
         blocks={blocks ?? []}
         questionLinkHref={null}
         showCompleteButton={false}
