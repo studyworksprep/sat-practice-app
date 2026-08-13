@@ -1593,6 +1593,220 @@ export type Database = {
           },
         ]
       }
+      lesson_publication_history: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          lesson_id: string
+          revision_id: string | null
+          snapshot: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          lesson_id: string
+          revision_id?: string | null
+          snapshot: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          lesson_id?: string
+          revision_id?: string | null
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_publication_history_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_publication_history_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_revision_blocks: {
+        Row: {
+          block_type: string
+          content: Json
+          created_at: string
+          id: string
+          revision_id: string
+          source_block_id: string | null
+          sort_order: number
+        }
+        Insert: {
+          block_type: string
+          content?: Json
+          created_at?: string
+          id?: string
+          revision_id: string
+          source_block_id?: string | null
+          sort_order?: number
+        }
+        Update: {
+          block_type?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          revision_id?: string
+          source_block_id?: string | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_revision_blocks_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_revision_topics: {
+        Row: {
+          domain_name: string | null
+          id: string
+          pattern_id: string | null
+          revision_id: string
+          section: string | null
+          source_topic_id: string | null
+          skill_code: string | null
+        }
+        Insert: {
+          domain_name?: string | null
+          id?: string
+          pattern_id?: string | null
+          revision_id: string
+          section?: string | null
+          source_topic_id?: string | null
+          skill_code?: string | null
+        }
+        Update: {
+          domain_name?: string | null
+          id?: string
+          pattern_id?: string | null
+          revision_id?: string
+          section?: string | null
+          source_topic_id?: string | null
+          skill_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_revision_topics_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "question_patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revision_topics_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_revisions: {
+        Row: {
+          base_lesson_id: string | null
+          base_lesson_updated_at: string | null
+          change_summary: string | null
+          created_at: string
+          description: string | null
+          foundation_sequence: number | null
+          id: string
+          kind: string
+          owner_id: string
+          published_lesson_id: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          state: string
+          submitted_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          base_lesson_id?: string | null
+          base_lesson_updated_at?: string | null
+          change_summary?: string | null
+          created_at?: string
+          description?: string | null
+          foundation_sequence?: number | null
+          id?: string
+          kind?: string
+          owner_id: string
+          published_lesson_id?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          state?: string
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          base_lesson_id?: string | null
+          base_lesson_updated_at?: string | null
+          change_summary?: string | null
+          created_at?: string
+          description?: string | null
+          foundation_sequence?: number | null
+          id?: string
+          kind?: string
+          owner_id?: string
+          published_lesson_id?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          state?: string
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_revisions_base_lesson_id_fkey"
+            columns: ["base_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revisions_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revisions_published_lesson_id_fkey"
+            columns: ["published_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revisions_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_pack_questions: {
         Row: {
           added_at: string
@@ -4177,6 +4391,18 @@ export type Database = {
       }
     }
     Functions: {
+      can_edit_lesson_revision: {
+        Args: { p_revision_id: string }
+        Returns: boolean
+      }
+      can_view_lesson_revision: {
+        Args: { p_revision_id: string }
+        Returns: boolean
+      }
+      create_lesson_revision: {
+        Args: { p_base_lesson_id?: string | null; p_title?: string }
+        Returns: string
+      }
       activate_study_plan: { Args: { p_plan_id: string }; Returns: string }
       assignment_has_visible_student: {
         Args: { p_assignment_id: string }
@@ -4423,6 +4649,10 @@ export type Database = {
       merge_concept_tags: {
         Args: { p_source_tag_id: string; p_target_tag_id: string }
         Returns: Json
+      }
+      publish_lesson_revision: {
+        Args: { p_force?: boolean; p_revision_id: string }
+        Returns: string
       }
       migration_status: {
         Args: never

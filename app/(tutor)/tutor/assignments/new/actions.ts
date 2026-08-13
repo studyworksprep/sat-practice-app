@@ -527,9 +527,10 @@ async function buildLessonPayload(
   // same filter, so assigning a draft would hand out a dead link.
   const { data: lesson } = await supabase
     .from('lessons')
-    .select('id, title, status')
+    .select('id, title, status, visibility')
     .eq('id', lessonId)
     .eq('status', 'published')
+    .eq('visibility', 'shared')
     .maybeSingle();
   if (!lesson) return { ok: false, error: 'Lesson not found or not published.' };
 

@@ -292,6 +292,11 @@ export async function addLessonTopic(_prev, formData) {
     return actionFail(`Failed to add tag: ${error.message}`);
   }
 
+  await ctx.supabase
+    .from('lessons')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', lessonId);
+
   revalidatePath(`/admin/lessons/${lessonId}`);
   return actionOk({ savedAt: Date.now() });
 }
@@ -316,6 +321,11 @@ export async function removeLessonTopic(_prev, formData) {
     .eq('id', topicId)
     .eq('lesson_id', lessonId);
   if (error) return actionFail(`Failed to remove tag: ${error.message}`);
+
+  await ctx.supabase
+    .from('lessons')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', lessonId);
 
   revalidatePath(`/admin/lessons/${lessonId}`);
   return actionOk({ savedAt: Date.now() });

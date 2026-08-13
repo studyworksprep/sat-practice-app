@@ -17,7 +17,7 @@ import { SafeHtml } from '@/lib/ui/SafeHtml';
 import { MathText } from '@/lib/ui/MathText';
 import { useMathTypeset } from '@/lib/ui/preview-effects';
 import { blockMetaFor } from './block-meta';
-import { getQuestionById } from './actions';
+import { getLessonEditorQuestion } from '@/lib/lesson/editor-question-actions';
 
 type Block = {
   id?: string;
@@ -181,7 +181,7 @@ function QuestionLinkPreview({ block }: { block: Block }) {
     if (!qid) return;
     let alive = true;
     (async () => {
-      const res = (await getQuestionById(qid)) as
+      const res = (await getLessonEditorQuestion(qid)) as
         | { ok: true; data: { question: QuestionCard | null } }
         | { ok: false; error: string };
       if (!alive) return;
