@@ -22,10 +22,10 @@
 //            verified.
 //   review   staff, and never on their own submission — the policy
 //            carries contributor_id <> auth.uid().
-//   promote  manager/admin only, through the service role, because
-//            score_conversion is admin-write. This is the only path
-//            that writes the calibration table; contributors never
-//            touch it directly.
+//   promote  manager/admin only, through the service role. Ordinary
+//            submissions may write score_conversion; campaign rows are
+//            accepted as item-level observations without collapsing
+//            them into that count-only table.
 
 'use server';
 
@@ -41,8 +41,10 @@ import {
 } from './parse-report.ts';
 import { loadAttemptVector, diffResponseVectors, type VectorDiff } from './attempt-vector.ts';
 import { tallyRecord, evaluateAutoVerify } from './contributor-trust.ts';
+import { recognizeStudyForm, type ResponseSnapshotItem } from './scoring-study.ts';
 
 const ARTIFACT_BUCKET = 'bluebook-reports';
+const MAX_SCORE_SUMMARY_BYTES = 5 * 1024 * 1024;
 
 /** Mirrors the DB's can_contribute(): staff, or the contributor role. */
 const CONTRIBUTOR_ROLES = ['teacher', 'manager', 'admin', 'contributor'] as const;
@@ -61,6 +63,19 @@ export interface SubmissionMeta extends SectionScores {
   subjectLabel?: string | null;
   /** When the Bluebook test was taken. Used to spot format revisions. */
   reportDate?: string | null;
+}
+
+/** Binary evidence crosses the Server Action boundary as a typed array,
+ * which React serializes without base64 inflation. */
+export interface ScoreSummaryEvidence {
+  bytes: Uint8Array;
+  mimeType: 'image/png' | 'image/jpeg' | 'image/webp';
+  fileName: string;
+}
+
+export interface CalibrationStudyMeta {
+  campaignId?: string | null;
+  plannedPatternId?: string | null;
 }
 
 // ── shared validation ─────────────────────────────────────────────
@@ -258,6 +273,68 @@ interface SubmissionRow {
   subject_label: string | null;
   report_date: string | null;
   html_artifact_path: string | null;
+  score_summary_artifact_path: string;
+  campaign_id: string | null;
+  planned_pattern_id: string | null;
+  form_fingerprint: string | null;
+  response_snapshot: ResponseSnapshotItem[];
+}
+
+function scoreSummaryProblem(file: ScoreSummaryEvidence | null | undefined): string | null {
+  if (!file) return 'Attach a screenshot of the score summary';
+  if (!(file.bytes instanceof Uint8Array) || file.bytes.byteLength === 0) {
+    return 'The score-summary screenshot is empty';
+  }
+  if (file.bytes.byteLength > MAX_SCORE_SUMMARY_BYTES) {
+    return 'The score-summary screenshot must be 5 MB or smaller';
+  }
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.mimeType)) {
+    return 'The score summary must be a PNG, JPEG, or WebP image';
+  }
+
+  const b = file.bytes;
+  const png = b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47;
+  const jpeg = b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
+  const webp =
+    b.length >= 12 &&
+    String.fromCharCode(...b.slice(0, 4)) === 'RIFF' &&
+    String.fromCharCode(...b.slice(8, 12)) === 'WEBP';
+  if (
+    (file.mimeType === 'image/png' && !png) ||
+    (file.mimeType === 'image/jpeg' && !jpeg) ||
+    (file.mimeType === 'image/webp' && !webp)
+  ) {
+    return 'The score-summary file contents do not match its image type';
+  }
+  return null;
+}
+
+function scoreSummaryExtension(mimeType: ScoreSummaryEvidence['mimeType']): string {
+  if (mimeType === 'image/png') return 'png';
+  if (mimeType === 'image/webp') return 'webp';
+  return 'jpg';
+}
+
+async function uploadScoreSummary(
+  supabase: Parameters<typeof recognizeStudyForm>[0],
+  contributorId: string,
+  submissionId: string,
+  evidence: ScoreSummaryEvidence,
+): Promise<{ path: string | null; error: string | null }> {
+  const problem = scoreSummaryProblem(evidence);
+  if (problem) return { path: null, error: problem };
+  const path = `${contributorId}/${submissionId}-score-summary.${scoreSummaryExtension(evidence.mimeType)}`;
+  const bytes = new Uint8Array(evidence.bytes.byteLength);
+  bytes.set(evidence.bytes);
+  const { error } = await supabase.storage
+    .from(ARTIFACT_BUCKET)
+    .upload(path, new Blob([bytes.buffer], { type: evidence.mimeType }), {
+      contentType: evidence.mimeType,
+      upsert: false,
+    });
+  return error
+    ? { path: null, error: `Could not store the score-summary screenshot: ${error.message}` }
+    : { path, error: null };
 }
 
 /**
@@ -272,6 +349,8 @@ export async function createHtmlUploadSubmission(input: {
   practiceTestId: string;
   html: string;
   meta: SubmissionMeta;
+  scoreSummary: ScoreSummaryEvidence;
+  study?: CalibrationStudyMeta;
 }): Promise<ActionResult<{ data: CreatedSubmission | null }>> {
   let ctx;
   try {
@@ -287,6 +366,8 @@ export async function createHtmlUploadSubmission(input: {
   }
   const scoreProblem = validateScores(input.meta ?? {});
   if (scoreProblem) return actionFail(scoreProblem);
+  const evidenceProblem = scoreSummaryProblem(input.scoreSummary);
+  if (evidenceProblem) return actionFail(evidenceProblem);
 
   let parsed;
   try {
@@ -299,6 +380,15 @@ export async function createHtmlUploadSubmission(input: {
   const responses = toResponseVector(parsed);
   const submissionId = randomUUID();
   const artifactPath = `${ctx.user.id}/${submissionId}.html`;
+  let studyForm: Awaited<ReturnType<typeof recognizeStudyForm>> | null = null;
+
+  if (input.study?.campaignId) {
+    try {
+      studyForm = await recognizeStudyForm(ctx.supabase, input.practiceTestId, parsed, responses);
+    } catch (err) {
+      return actionFail(err instanceof Error ? err.message : 'Could not recognize the Bluebook form');
+    }
+  }
 
   // Artifact first. A row whose html_artifact_path points at nothing is
   // worse than an orphaned object: the trigger lets an html_upload reach
@@ -312,6 +402,17 @@ export async function createHtmlUploadSubmission(input: {
     });
   if (uploadErr) return actionFail(`Could not store the report: ${uploadErr.message}`);
 
+  const summaryUpload = await uploadScoreSummary(
+    ctx.supabase,
+    ctx.user.id,
+    submissionId,
+    input.scoreSummary,
+  );
+  if (summaryUpload.error || !summaryUpload.path) {
+    await ctx.supabase.storage.from(ARTIFACT_BUCKET).remove([artifactPath]);
+    return actionFail(summaryUpload.error ?? 'Could not store the score-summary screenshot');
+  }
+
   const row: SubmissionRow = {
     id: submissionId,
     contributor_id: ctx.user.id,
@@ -320,23 +421,30 @@ export async function createHtmlUploadSubmission(input: {
     attempt_id: null,
     rw_m1_correct: countCorrect(responses, 'RW1'),
     rw_m2_correct: countCorrect(responses, 'RW2'),
-    rw_m2_route: null,
+    rw_m2_route: studyForm?.routes.rw ?? null,
     rw_scaled: input.meta.rwScaled ?? null,
     math_m1_correct: countCorrect(responses, 'MATH1'),
     math_m2_correct: countCorrect(responses, 'MATH2'),
-    math_m2_route: null,
+    math_m2_route: studyForm?.routes.math ?? null,
     math_scaled: input.meta.mathScaled ?? null,
     responses,
     subject_label: input.meta.subjectLabel?.trim() || null,
     report_date: input.meta.reportDate ?? parsed.reportDate ?? null,
     html_artifact_path: artifactPath,
+    score_summary_artifact_path: summaryUpload.path,
+    campaign_id: input.study?.campaignId ?? null,
+    planned_pattern_id: input.study?.plannedPatternId?.trim() || null,
+    form_fingerprint: studyForm?.formFingerprint ?? null,
+    response_snapshot: studyForm?.responseSnapshot ?? [],
   };
 
   const created = await insertSubmission(ctx.supabase, row);
   if (!created.ok) {
     // Roll the artifact back so a failed attempt doesn't leave evidence
     // for a submission that doesn't exist.
-    await ctx.supabase.storage.from(ARTIFACT_BUCKET).remove([artifactPath]);
+    await ctx.supabase.storage
+      .from(ARTIFACT_BUCKET)
+      .remove([artifactPath, summaryUpload.path]);
   }
   return created.result;
 }
@@ -360,6 +468,7 @@ export async function createAttemptLinkedSubmission(input: {
   attemptId: string;
   meta: SubmissionMeta;
   html?: string | null;
+  scoreSummary: ScoreSummaryEvidence;
 }): Promise<ActionResult<{ data: (CreatedSubmission & { diff?: VectorDiff }) | null }>> {
   let ctx;
   try {
@@ -372,6 +481,8 @@ export async function createAttemptLinkedSubmission(input: {
   if (!input?.attemptId) return actionFail('attemptId required');
   const scoreProblem = validateScores(input.meta ?? {});
   if (scoreProblem) return actionFail(scoreProblem);
+  const evidenceProblem = scoreSummaryProblem(input.scoreSummary);
+  if (evidenceProblem) return actionFail(evidenceProblem);
 
   const attemptVector = await loadAttemptVector(ctx.supabase, input.attemptId);
   if (!attemptVector) return actionFail('Attempt not found');
@@ -409,6 +520,17 @@ export async function createAttemptLinkedSubmission(input: {
     if (uploadErr) return actionFail(`Could not store the report: ${uploadErr.message}`);
   }
 
+  const summaryUpload = await uploadScoreSummary(
+    ctx.supabase,
+    ctx.user.id,
+    submissionId,
+    input.scoreSummary,
+  );
+  if (summaryUpload.error || !summaryUpload.path) {
+    if (artifactPath) await ctx.supabase.storage.from(ARTIFACT_BUCKET).remove([artifactPath]);
+    return actionFail(summaryUpload.error ?? 'Could not store the score-summary screenshot');
+  }
+
   const row: SubmissionRow = {
     id: submissionId,
     contributor_id: ctx.user.id,
@@ -427,11 +549,18 @@ export async function createAttemptLinkedSubmission(input: {
     subject_label: input.meta.subjectLabel?.trim() || null,
     report_date: input.meta.reportDate ?? null,
     html_artifact_path: artifactPath,
+    score_summary_artifact_path: summaryUpload.path,
+    campaign_id: null,
+    planned_pattern_id: null,
+    form_fingerprint: null,
+    response_snapshot: [],
   };
 
   const created = await insertSubmission(ctx.supabase, row);
-  if (!created.ok && artifactPath) {
-    await ctx.supabase.storage.from(ARTIFACT_BUCKET).remove([artifactPath]);
+  if (!created.ok) {
+    await ctx.supabase.storage
+      .from(ARTIFACT_BUCKET)
+      .remove([...(artifactPath ? [artifactPath] : []), summaryUpload.path]);
   }
   return created.result;
 }
@@ -456,6 +585,7 @@ export async function createManualGridSubmission(input: {
   };
   routes?: { rw?: 'easy' | 'hard' | null; math?: 'easy' | 'hard' | null };
   meta: SubmissionMeta;
+  scoreSummary: ScoreSummaryEvidence;
 }): Promise<ActionResult<{ data: CreatedSubmission | null }>> {
   let ctx;
   try {
@@ -468,14 +598,27 @@ export async function createManualGridSubmission(input: {
   if (!input?.practiceTestId) return actionFail('Select a practice test');
   const scoreProblem = validateScores(input.meta ?? {});
   if (scoreProblem) return actionFail(scoreProblem);
+  const evidenceProblem = scoreSummaryProblem(input.scoreSummary);
+  if (evidenceProblem) return actionFail(evidenceProblem);
 
   const responses = input.responses ?? {};
   if (!Object.keys(responses).length) {
     return actionFail('Mark the questions that were answered incorrectly before submitting');
   }
 
+  const submissionId = randomUUID();
+  const summaryUpload = await uploadScoreSummary(
+    ctx.supabase,
+    ctx.user.id,
+    submissionId,
+    input.scoreSummary,
+  );
+  if (summaryUpload.error || !summaryUpload.path) {
+    return actionFail(summaryUpload.error ?? 'Could not store the score-summary screenshot');
+  }
+
   const row: SubmissionRow = {
-    id: randomUUID(),
+    id: submissionId,
     contributor_id: ctx.user.id,
     practice_test_id: input.practiceTestId,
     entry_method: 'manual_grid',
@@ -492,9 +635,18 @@ export async function createManualGridSubmission(input: {
     subject_label: input.meta.subjectLabel?.trim() || null,
     report_date: input.meta.reportDate ?? null,
     html_artifact_path: null,
+    score_summary_artifact_path: summaryUpload.path,
+    campaign_id: null,
+    planned_pattern_id: null,
+    form_fingerprint: null,
+    response_snapshot: [],
   };
 
-  return (await insertSubmission(ctx.supabase, row)).result;
+  const created = await insertSubmission(ctx.supabase, row);
+  if (!created.ok) {
+    await ctx.supabase.storage.from(ARTIFACT_BUCKET).remove([summaryUpload.path]);
+  }
+  return created.result;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -517,6 +669,7 @@ async function insertSubmission(
     submissionId: data.id as string,
     contributorId: row.contributor_id,
     hasArtifact: Boolean(row.html_artifact_path),
+    isCalibrationStudy: Boolean(row.campaign_id),
     validationFlags,
   });
 
@@ -555,8 +708,12 @@ async function maybeAutoVerify(input: {
   submissionId: string;
   contributorId: string;
   hasArtifact: boolean;
+  isCalibrationStudy: boolean;
   validationFlags: unknown[];
 }): Promise<boolean> {
+  // Study scores are always checked against the summary image by a
+  // person, regardless of the contributor's historical trust tier.
+  if (input.isCalibrationStudy) return false;
   // Cheapest disqualifier first: no artifact, no rule, no bypass.
   if (!input.hasArtifact) return false;
 
@@ -659,6 +816,7 @@ export async function reviewSubmission(input: {
  */
 export async function artifactDownloadUrl(input: {
   submissionId: string;
+  kind?: 'report' | 'score_summary';
 }): Promise<ActionResult<{ data: { url: string } | null }>> {
   let ctx;
   try {
@@ -672,17 +830,24 @@ export async function artifactDownloadUrl(input: {
 
   const { data: submission } = await ctx.supabase
     .from('bluebook_submissions')
-    .select('id, html_artifact_path')
+    .select('id, html_artifact_path, score_summary_artifact_path')
     .eq('id', input.submissionId)
     .maybeSingle();
 
-  if (!submission?.html_artifact_path) {
-    return actionFail('This submission has no stored report');
+  const artifactPath = input.kind === 'score_summary'
+    ? submission?.score_summary_artifact_path
+    : submission?.html_artifact_path;
+  if (!artifactPath) {
+    return actionFail(
+      input.kind === 'score_summary'
+        ? 'This submission has no stored score-summary screenshot'
+        : 'This submission has no stored report',
+    );
   }
 
   const { data, error } = await ctx.supabase.storage
     .from(ARTIFACT_BUCKET)
-    .createSignedUrl(submission.html_artifact_path, 300, { download: true });
+    .createSignedUrl(artifactPath, 300, { download: true });
 
   if (error || !data?.signedUrl) {
     return actionFail(error?.message ?? 'Could not create a link to the report');
@@ -694,6 +859,7 @@ export async function artifactDownloadUrl(input: {
 
 export interface PromotionResult {
   conversionsWritten: number;
+  researchObservationPreserved?: boolean;
   conflictsSkipped: Array<{
     section: string;
     module1Correct: number;
@@ -704,10 +870,11 @@ export interface PromotionResult {
 }
 
 /**
- * Write a verified submission's section curves into score_conversion.
+ * Promote a verified submission into its appropriate scoring dataset.
  *
- * The only code path that writes calibration ground truth. Two rules it
- * will not bend:
+ * Ordinary submissions may write score_conversion. Campaign submissions
+ * are already materialized as item-level ground truth and promotion only
+ * records that review is complete. Two rules this path will not bend:
  *
  *   * It never overwrites a conflicting curve. If a row already exists
  *     for this (test, section, m1, m2) at a different scaled score, that
@@ -726,7 +893,7 @@ export async function promoteSubmission(input: {
   let ctx;
   try {
     ctx = await requireServiceRole(
-      'promote a verified Bluebook submission into score_conversion (admin-write table)',
+      'promote a verified Bluebook submission into an admin-controlled scoring dataset',
       { allowedRoles: [...PROMOTER_ROLES] },
     );
   } catch (err) {
@@ -739,7 +906,7 @@ export async function promoteSubmission(input: {
   const { data: submission, error: loadErr } = await ctx.service
     .from('bluebook_submissions')
     .select(
-      `id, contributor_id, status, practice_test_id,
+      `id, contributor_id, status, practice_test_id, campaign_id,
        rw_m1_correct, rw_m2_correct, rw_scaled,
        math_m1_correct, math_m2_correct, math_scaled`,
     )
@@ -801,6 +968,24 @@ export async function promoteSubmission(input: {
     return actionFail(
       'This submission has no section with a complete (module 1, module 2, scaled score) triple to promote',
     );
+  }
+
+  // A campaign observation is already normalized at ingestion. Do not
+  // collapse it into score_conversion's one-row-per-count key: another
+  // pattern at the same counts and a different score is valuable study
+  // evidence, not a row to overwrite or discard.
+  if (submission.campaign_id) {
+    const { error: statusErr } = await ctx.service
+      .from('bluebook_submissions')
+      .update({ status: 'promoted', promoted_at: new Date().toISOString() })
+      .eq('id', submission.id)
+      .eq('status', 'verified');
+    if (statusErr) return actionFail(tidyDbError(statusErr.message));
+    return actionOk({
+      conversionsWritten: 0,
+      conflictsSkipped: [],
+      researchObservationPreserved: true,
+    });
   }
 
   const conflictsSkipped: PromotionResult['conflictsSkipped'] = [];

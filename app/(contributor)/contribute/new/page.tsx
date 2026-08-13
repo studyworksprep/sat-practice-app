@@ -11,7 +11,12 @@
 
 import { redirect } from 'next/navigation';
 import { requireUserPage } from '@/lib/api/auth';
-import { NewSubmissionWizard, type ModuleShape, type AttemptOption } from './NewSubmissionWizard';
+import {
+  NewSubmissionWizard,
+  type ModuleShape,
+  type AttemptOption,
+  type CampaignOption,
+} from './NewSubmissionWizard';
 import s from '../Contribute.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -22,7 +27,7 @@ export default async function NewSubmissionPage() {
   const isStaff = ['teacher', 'manager', 'admin'].includes(profile.role);
   if (!isStaff && profile.role !== 'contributor') redirect('/');
 
-  const [{ data: tests }, { data: attempts }] = await Promise.all([
+  const [{ data: tests }, { data: attempts }, { data: campaigns }] = await Promise.all([
     supabase
       .from('practice_tests_v2')
       .select('id, code, name')
@@ -39,6 +44,11 @@ export default async function NewSubmissionPage() {
       .not('finished_at', 'is', null)
       .order('finished_at', { ascending: false })
       .limit(60),
+    supabase
+      .from('bluebook_calibration_campaigns')
+      .select('id, name, practice_test_id, requires_html_report, requires_score_image')
+      .eq('is_active', true)
+      .order('name'),
   ]);
 
   const { data: alreadyLinked } = await supabase
@@ -128,6 +138,13 @@ export default async function NewSubmissionPage() {
         attempts={attemptOptions}
         moduleShapes={moduleShapes}
         canLinkAttempts={isStaff}
+        campaigns={(campaigns ?? []).map((campaign) => ({
+          id: campaign.id as string,
+          name: campaign.name as string,
+          practiceTestId: campaign.practice_test_id as string,
+          requiresHtmlReport: Boolean(campaign.requires_html_report),
+          requiresScoreImage: Boolean(campaign.requires_score_image),
+        })) satisfies CampaignOption[]}
       />
     </main>
   );

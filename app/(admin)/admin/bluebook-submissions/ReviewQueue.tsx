@@ -31,6 +31,10 @@ export interface QueueRow {
   rw: { m1: number | null; m2: number | null; scaled: number | null };
   math: { m1: number | null; m2: number | null; scaled: number | null };
   hasArtifact: boolean;
+  hasScoreSummary: boolean;
+  campaignId: string | null;
+  plannedPatternId: string | null;
+  formFingerprint: string | null;
   autoVerified: boolean;
   linkedAttempt: boolean;
   flags: unknown[];
@@ -77,16 +81,19 @@ function SectionLine({
   );
 }
 
-function describeFlag(flag: unknown): { text: string; severe: boolean } {
+function describeFlag(flag: unknown, isCampaign: boolean): { text: string; severe: boolean } {
   const f = flag as Record<string, unknown>;
   switch (f?.code) {
     case 'conversion_conflict':
       return {
         severe: true,
-        text:
-          `Conflicts with an existing curve: ${f.section} at ${f.module1_correct}+${f.module2_correct} ` +
-          `is already recorded as ${f.existing_scaled}, this submission says ${f.submitted_scaled}. ` +
-          `Promotion will skip this section rather than overwrite it.`,
+        text: isCampaign
+          ? `Same-count score difference: ${f.section} at ${f.module1_correct}+${f.module2_correct} ` +
+            `has an aggregate curve value of ${f.existing_scaled}; this response pattern scored ${f.submitted_scaled}. ` +
+            `Verify the screenshot. The item-level observation will be preserved separately and will not overwrite the curve.`
+          : `Conflicts with an existing curve: ${f.section} at ${f.module1_correct}+${f.module2_correct} ` +
+            `is already recorded as ${f.existing_scaled}, this submission says ${f.submitted_scaled}. ` +
+            `Promotion will skip this section rather than overwrite it.`,
       };
     case 'route_inconsistent':
       return {
@@ -145,7 +152,7 @@ function SubmissionCard({ row }: { row: QueueRow }) {
   const [promotion, setPromotion] = useState<PromotionResult | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const flags = row.flags.map(describeFlag);
+  const flags = row.flags.map((flag) => describeFlag(flag, Boolean(row.campaignId)));
   const severe = flags.some((f) => f.severe);
   const acceptRate = acceptanceRate(row.record);
 
@@ -173,7 +180,9 @@ function SubmissionCard({ row }: { row: QueueRow }) {
       if (!res.ok) return setError(res.error);
       setPromotion(res.data);
       setMessage(
-        res.data!.conversionsWritten === 1
+        res.data!.researchObservationPreserved
+          ? 'Accepted into the item-level research dataset; no aggregate curve row was written.'
+          : res.data!.conversionsWritten === 1
           ? '1 conversion row written.'
           : `${res.data!.conversionsWritten} conversion rows written.`,
       );
@@ -181,10 +190,10 @@ function SubmissionCard({ row }: { row: QueueRow }) {
     });
   }
 
-  function openArtifact() {
+  function openArtifact(kind: 'report' | 'score_summary') {
     setError(null);
     startTransition(async () => {
-      const res = await artifactDownloadUrl({ submissionId: row.id });
+      const res = await artifactDownloadUrl({ submissionId: row.id, kind });
       if (!res.ok) return setError(res.error);
       // Downloaded, never navigated to: the file is untrusted HTML from
       // a contributor and must not render in this origin.
@@ -224,6 +233,14 @@ function SubmissionCard({ row }: { row: QueueRow }) {
         {' — '}
         {ENTRY_METHOD_WEIGHT[row.entryMethod] ?? ''}
       </div>
+
+      {row.campaignId && (
+        <div className={s.muted} style={{ marginTop: 6 }}>
+          <strong>Scoring study:</strong> {row.campaignId}
+          {row.plannedPatternId && ` · pattern ${row.plannedPatternId}`}
+          {row.formFingerprint && ` · form ${row.formFingerprint.slice(0, 12)}`}
+        </div>
+      )}
 
       <div style={{ marginTop: 8, fontVariantNumeric: 'tabular-nums' }}>
         <SectionLine label="R&amp;W" section={row.rw} />
@@ -302,12 +319,26 @@ function SubmissionCard({ row }: { row: QueueRow }) {
             )}
             {row.status === 'verified' && (
               <Button size="sm" onClick={promote} disabled={pending}>
-                {pending ? 'Promoting…' : 'Promote into the curves'}
+                {pending
+                  ? 'Promoting…'
+                  : row.campaignId
+                    ? 'Accept into research dataset'
+                    : 'Promote into the curves'}
               </Button>
             )}
             {row.hasArtifact && (
-              <Button size="sm" variant="secondary" onClick={openArtifact} disabled={pending}>
+              <Button size="sm" variant="secondary" onClick={() => openArtifact('report')} disabled={pending}>
                 Download the report
+              </Button>
+            )}
+            {row.hasScoreSummary && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => openArtifact('score_summary')}
+                disabled={pending}
+              >
+                Download score screenshot
               </Button>
             )}
             {!row.hasArtifact && row.linkedAttempt && (

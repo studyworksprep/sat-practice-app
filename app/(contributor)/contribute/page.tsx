@@ -69,7 +69,8 @@ export default async function ContributePage() {
     .select(
       `id, status, entry_method, created_at, report_date, subject_label,
        rw_scaled, math_scaled, validation_flags, review_note,
-       auto_verified_at, html_artifact_path,
+       auto_verified_at, html_artifact_path, score_summary_artifact_path,
+       campaign_id, planned_pattern_id,
        practice_test:practice_tests_v2(name)`,
     )
     .eq('contributor_id', user.id)
@@ -111,7 +112,7 @@ export default async function ContributePage() {
       {record.total > 0 && (
         <p className={s.muted} style={{ marginTop: -8, marginBottom: 20 }}>
           {autoVerifying
-            ? 'Your uploaded reports are now accepted without waiting for a reviewer. Anything hand-entered, or anything that disagrees with data we already hold, still gets read by a person.'
+            ? 'Your ordinary uploaded reports are now accepted without waiting for a reviewer. Scoring-study submissions, anything hand-entered, and anything that disagrees with ordinary curve data still get read by a person.'
             : record.rejected > 0
               ? 'Uploaded reports go through a reviewer first. Get in touch if you think a rejection was a mistake.'
               : `Once ${promotedShortfall} more submission${promotedShortfall === 1 ? '' : 's'} ${
@@ -125,8 +126,8 @@ export default async function ContributePage() {
           <p style={{ margin: 0 }}>You haven&rsquo;t sent anything yet.</p>
           <p className={s.muted} style={{ marginTop: 8, marginBottom: 0 }}>
             The quickest route is the saved score report: open the test in My Practice on
-            the College Board site, save the Details page as HTML, and upload it. Nothing
-            to type in but the two section scores.
+            the College Board site, save the Details page as HTML, capture the score summary,
+            and upload both. Nothing to type in but the two section scores.
           </p>
         </div>
       ) : (
@@ -142,6 +143,7 @@ export default async function ContributePage() {
                 <div>
                   <strong>{test?.name ?? 'Practice test'}</strong>
                   {row.subject_label && <span className={s.muted}> · {row.subject_label}</span>}
+                  {row.campaign_id && <span className={s.muted}> · scoring study</span>}
                 </div>
                 <span className={`${s.pill} ${status.className}`}>{status.label}</span>
               </div>
@@ -151,6 +153,7 @@ export default async function ContributePage() {
                 {' · sent '}
                 {formatDate(row.created_at)}
                 {row.report_date && ` · taken ${formatDate(row.report_date)}`}
+                {row.planned_pattern_id && ` · pattern ${row.planned_pattern_id}`}
               </div>
 
               <div style={{ marginTop: 8 }}>
@@ -171,7 +174,10 @@ export default async function ContributePage() {
                 <ul className={s.flagList}>
                   {flags.map((flag: unknown, i: number) => {
                     const code = (flag as { code?: string })?.code ?? '';
-                    return <li key={i}>{FLAG_COPY[code] ?? code}</li>;
+                    const copy = code === 'conversion_conflict' && row.campaign_id
+                      ? 'The same module counts have produced a different score before. A reviewer will verify the screenshot and preserve this response pattern as a separate study observation.'
+                      : (FLAG_COPY[code] ?? code);
+                    return <li key={i}>{copy}</li>;
                   })}
                 </ul>
               )}

@@ -25,6 +25,7 @@ import {
   loadAttemptEntryView,
   type AttemptEntryView,
   type CrossCheckResult,
+  type ScoreSummaryEvidence,
 } from '@/lib/bluebook/submission-actions';
 import s from '../Contribute.module.css';
 
@@ -49,6 +50,14 @@ interface TestOption {
   id: string;
   name: string;
   code: string;
+}
+
+export interface CampaignOption {
+  id: string;
+  name: string;
+  practiceTestId: string;
+  requiresHtmlReport: boolean;
+  requiresScoreImage: boolean;
 }
 
 type Flow = 'html_upload' | 'attempt_link' | 'manual_grid';
@@ -79,16 +88,31 @@ export function NewSubmissionWizard({
   attempts,
   moduleShapes,
   canLinkAttempts,
+  campaigns,
 }: {
   tests: TestOption[];
   attempts: AttemptOption[];
   moduleShapes: Record<string, ModuleShape>;
   canLinkAttempts: boolean;
+  campaigns: CampaignOption[];
 }) {
   const [flow, setFlow] = useState<Flow | null>(null);
-  const [done, setDone] = useState<{ id: string; flags: unknown[]; autoVerified?: boolean } | null>(null);
+  const [done, setDone] = useState<{
+    id: string;
+    flags: unknown[];
+    autoVerified?: boolean;
+    scoringStudy?: boolean;
+  } | null>(null);
 
-  if (done) return <SubmittedPanel flags={done.flags} autoVerified={Boolean(done.autoVerified)} />;
+  if (done) {
+    return (
+      <SubmittedPanel
+        flags={done.flags}
+        autoVerified={Boolean(done.autoVerified)}
+        scoringStudy={Boolean(done.scoringStudy)}
+      />
+    );
+  }
 
   return (
     <>
@@ -116,7 +140,7 @@ export function NewSubmissionWizard({
       </div>
 
       {flow === 'html_upload' && (
-        <HtmlUploadFlow tests={tests} onDone={setDone} />
+        <HtmlUploadFlow tests={tests} campaigns={campaigns} onDone={setDone} />
       )}
       {flow === 'attempt_link' && (
         <AttemptLinkFlow attempts={attempts} onDone={setDone} />
@@ -144,7 +168,15 @@ function FlowCard({
   );
 }
 
-function SubmittedPanel({ flags, autoVerified }: { flags: unknown[]; autoVerified: boolean }) {
+function SubmittedPanel({
+  flags,
+  autoVerified,
+  scoringStudy,
+}: {
+  flags: unknown[];
+  autoVerified: boolean;
+  scoringStudy: boolean;
+}) {
   const router = useRouter();
   const conflict = flags.some((f) => (f as { code?: string })?.code === 'conversion_conflict');
 
@@ -152,7 +184,9 @@ function SubmittedPanel({ flags, autoVerified }: { flags: unknown[]; autoVerifie
     <div className={s.card}>
       <div className={s.flowTitle}>Thank you — that&rsquo;s in.</div>
       <p className={s.muted} style={{ marginTop: 8 }}>
-        {conflict
+        {conflict && scoringStudy
+          ? 'The same module counts have produced a different score before. That is useful evidence for this study: a reviewer will verify the screenshot and preserve this as a separate response-pattern observation.'
+          : conflict
           ? 'One thing to flag: another official report gave a different scaled score for the same module counts. Nothing is wrong with what you sent — a reviewer will look at both and work out which is right.'
           : autoVerified
             ? 'Your report was accepted straight away — you\u2019ve sent enough that held up that we no longer read each one first. It goes into the scoring data on the next pass.'
@@ -250,12 +284,17 @@ function metaPayload(meta: Meta) {
 }
 
 function TestPicker({
-  tests, value, onChange,
-}: { tests: TestOption[]; value: string; onChange: (id: string) => void }) {
+  tests, value, onChange, disabled = false,
+}: { tests: TestOption[]; value: string; onChange: (id: string) => void; disabled?: boolean }) {
   return (
     <label className={s.field}>
       <span className={s.fieldLabel}>Practice test</span>
-      <select className={s.input} value={value} onChange={(e) => onChange(e.target.value)}>
+      <select
+        className={s.input}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+      >
         <option value="">— Select —</option>
         {tests.map((t) => (
           <option key={t.id} value={t.id}>{t.name}</option>
@@ -265,18 +304,81 @@ function TestPicker({
   );
 }
 
-type DoneHandler = (d: { id: string; flags: unknown[]; autoVerified?: boolean }) => void;
+async function scoreSummaryPayload(file: File): Promise<ScoreSummaryEvidence> {
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+    throw new Error('The score summary must be a PNG, JPEG, or WebP image.');
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error('The score-summary screenshot must be 5 MB or smaller.');
+  }
+  return {
+    bytes: new Uint8Array(await file.arrayBuffer()),
+    mimeType: file.type as ScoreSummaryEvidence['mimeType'],
+    fileName: file.name,
+  };
+}
+
+function ScoreSummaryPicker({
+  file,
+  onChange,
+}: {
+  file: File | null;
+  onChange: (file: File | null) => void;
+}) {
+  return (
+    <label className={s.field}>
+      <span className={s.fieldLabel}>Score-summary screenshot — required</span>
+      <input
+        type="file"
+        accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
+        className={s.input}
+        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+      />
+      <span className={s.muted}>
+        {file
+          ? `${file.name} · ${Math.max(1, Math.round(file.size / 1024))} KB`
+          : 'Include the test name and the R&W and Math scores. Crop out names, email addresses, and other personal information. PNG, JPEG, or WebP; 5 MB maximum.'}
+      </span>
+    </label>
+  );
+}
+
+type DoneHandler = (d: {
+  id: string;
+  flags: unknown[];
+  autoVerified?: boolean;
+  scoringStudy?: boolean;
+}) => void;
 
 // ── Flow A: upload the report ─────────────────────────────────────
 
-function HtmlUploadFlow({ tests, onDone }: { tests: TestOption[]; onDone: DoneHandler }) {
+function HtmlUploadFlow({
+  tests,
+  campaigns,
+  onDone,
+}: {
+  tests: TestOption[];
+  campaigns: CampaignOption[];
+  onDone: DoneHandler;
+}) {
   const [testId, setTestId] = useState('');
+  const [campaignId, setCampaignId] = useState('');
+  const [plannedPatternId, setPlannedPatternId] = useState('');
   const [html, setHtml] = useState<string | null>(null);
+  const [scoreSummary, setScoreSummary] = useState<File | null>(null);
   const [preview, setPreview] = useState<ParsedPreview | null>(null);
   const [parsing, setParsing] = useState(false);
   const [meta, setMeta] = useState<Meta>(EMPTY_META);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const campaign = campaigns.find((entry) => entry.id === campaignId) ?? null;
+
+  function pickCampaign(nextCampaignId: string) {
+    setCampaignId(nextCampaignId);
+    const next = campaigns.find((entry) => entry.id === nextCampaignId);
+    if (next) setTestId(next.practiceTestId);
+  }
 
   async function onFile(file: File | null) {
     setHtml(null); setPreview(null); setError(null);
@@ -310,18 +412,31 @@ function HtmlUploadFlow({ tests, onDone }: { tests: TestOption[]; onDone: DoneHa
     setError(null);
     if (!testId) return setError('Choose which practice test this report is for.');
     if (!html) return setError('Attach the saved score report first.');
+    if (!scoreSummary) return setError('Attach a screenshot of the score summary.');
 
     startTransition(async () => {
+      let summaryPayload: ScoreSummaryEvidence;
+      try {
+        summaryPayload = await scoreSummaryPayload(scoreSummary);
+      } catch (err) {
+        return setError(err instanceof Error ? err.message : 'Could not read the screenshot.');
+      }
       const res = await createHtmlUploadSubmission({
         practiceTestId: testId,
         html,
         meta: metaPayload(meta),
+        scoreSummary: summaryPayload,
+        study: {
+          campaignId: campaignId || null,
+          plannedPatternId: plannedPatternId || null,
+        },
       });
       if (!res.ok) return setError(res.error);
       onDone({
         id: res.data!.submissionId,
         flags: res.data!.validationFlags,
         autoVerified: res.data!.autoVerified,
+        scoringStudy: Boolean(campaignId),
       });
     });
   }
@@ -330,13 +445,58 @@ function HtmlUploadFlow({ tests, onDone }: { tests: TestOption[]; onDone: DoneHa
     <div className={s.card}>
       <div className={s.sectionLabel}>Upload the score report</div>
 
-      <p className={s.muted} style={{ margin: '8px 0 16px' }}>
-        On the College Board My Practice site, open the test and go to the question
-        detail view, then save the page as HTML. Upload that file here. We read it on our
-        side and keep the original as the record of where the numbers came from.
-      </p>
+      <div className={s.instructions}>
+        <strong>Capture both pieces of evidence</strong>
+        <ol>
+          <li>
+            Sign in to <a href="https://mypractice.collegeboard.org" target="_blank" rel="noreferrer">My Practice</a>{' '}
+            with the same credentials used in Bluebook, open the completed test, and choose
+            <strong> Score Details</strong>.
+          </li>
+          <li>
+            On the question-by-question page—the table showing every correct answer and your
+            answer—use your browser&rsquo;s <strong>File → Save Page As</strong> command and save
+            <strong> Webpage, HTML Only</strong>. Browser wording varies slightly.
+          </li>
+          <li>
+            Return to the test&rsquo;s score summary and capture an image that clearly shows the
+            practice-test name and both section scores. Crop out the student&rsquo;s name, email,
+            and any other personal information.
+          </li>
+        </ol>
+      </div>
 
-      <TestPicker tests={tests} value={testId} onChange={setTestId} />
+      {campaigns.length > 0 && (
+        <label className={s.field}>
+          <span className={s.fieldLabel}>Submission purpose</span>
+          <select className={s.input} value={campaignId} onChange={(e) => pickCampaign(e.target.value)}>
+            <option value="">Standard contribution</option>
+            {campaigns.map((entry) => (
+              <option key={entry.id} value={entry.id}>{entry.name}</option>
+            ))}
+          </select>
+        </label>
+      )}
+
+      {campaign && (
+        <label className={s.field}>
+          <span className={s.fieldLabel}>
+            Assigned pattern ID <span className={s.muted}>— optional</span>
+          </span>
+          <input
+            className={s.input}
+            value={plannedPatternId}
+            maxLength={80}
+            placeholder="For example: M-H-042"
+            onChange={(e) => setPlannedPatternId(e.target.value)}
+          />
+          <span className={s.muted}>
+            Enter the code supplied by the study coordinator. Do not use a student name.
+          </span>
+        </label>
+      )}
+
+      <TestPicker tests={tests} value={testId} onChange={setTestId} disabled={Boolean(campaign)} />
 
       <label className={s.field}>
         <span className={s.fieldLabel}>Saved report file</span>
@@ -346,6 +506,8 @@ function HtmlUploadFlow({ tests, onDone }: { tests: TestOption[]; onDone: DoneHa
         />
         {parsing && <span className={s.muted}>Reading the report…</span>}
       </label>
+
+      <ScoreSummaryPicker file={scoreSummary} onChange={setScoreSummary} />
 
       {preview && (
         <div className={s.diffBox} style={{ borderColor: 'var(--border)', background: 'transparent' }}>
@@ -375,7 +537,7 @@ function HtmlUploadFlow({ tests, onDone }: { tests: TestOption[]; onDone: DoneHa
       {error && <p role="alert" className={s.error}>{error}</p>}
 
       <div className={s.actions}>
-        <Button onClick={submit} disabled={pending || parsing || !html}>
+        <Button onClick={submit} disabled={pending || parsing || !html || !scoreSummary}>
           {pending ? 'Sending…' : 'Send submission'}
         </Button>
       </div>
@@ -393,6 +555,7 @@ function AttemptLinkFlow({
   const [loading, setLoading] = useState(false);
   const [meta, setMeta] = useState<Meta>(EMPTY_META);
   const [html, setHtml] = useState<string | null>(null);
+  const [scoreSummary, setScoreSummary] = useState<File | null>(null);
   const [check, setCheck] = useState<CrossCheckResult | null>(null);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -430,12 +593,20 @@ function AttemptLinkFlow({
   function submit() {
     setError(null);
     if (!attemptId) return setError('Pick the test attempt this is for.');
+    if (!scoreSummary) return setError('Attach a screenshot of the score summary.');
 
     startTransition(async () => {
+      let summaryPayload: ScoreSummaryEvidence;
+      try {
+        summaryPayload = await scoreSummaryPayload(scoreSummary);
+      } catch (err) {
+        return setError(err instanceof Error ? err.message : 'Could not read the screenshot.');
+      }
       const res = await createAttemptLinkedSubmission({
         attemptId,
         meta: metaPayload(meta),
         html: html ?? null,
+        scoreSummary: summaryPayload,
       });
       if (!res.ok) return setError(res.error);
       onDone({
@@ -563,10 +734,12 @@ function AttemptLinkFlow({
             />
           </div>
 
+          <ScoreSummaryPicker file={scoreSummary} onChange={setScoreSummary} />
+
           {error && <p role="alert" className={s.error}>{error}</p>}
 
           <div className={s.actions}>
-            <Button onClick={submit} disabled={pending || checking || blockedByDiff}>
+            <Button onClick={submit} disabled={pending || checking || blockedByDiff || !scoreSummary}>
               {pending ? 'Sending…' : 'Send submission'}
             </Button>
             {blockedByDiff && (
@@ -610,6 +783,7 @@ function ManualGridFlow({
   });
   const [marks, setMarks] = useState<Record<string, GridEntry>>({});
   const [meta, setMeta] = useState<Meta>(EMPTY_META);
+  const [scoreSummary, setScoreSummary] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -667,6 +841,7 @@ function ManualGridFlow({
     if (!allModulesBalance) {
       return setError('Every module you entered a count for needs its wrong answers marked first.');
     }
+    if (!scoreSummary) return setError('Attach a screenshot of the score summary.');
 
     // Build the full vector: everything correct except what was flipped.
     const responses: Record<string, Record<string, GridEntry>> = {};
@@ -679,6 +854,12 @@ function ManualGridFlow({
     }
 
     startTransition(async () => {
+      let summaryPayload: ScoreSummaryEvidence;
+      try {
+        summaryPayload = await scoreSummaryPayload(scoreSummary);
+      } catch (err) {
+        return setError(err instanceof Error ? err.message : 'Could not read the screenshot.');
+      }
       const res = await createManualGridSubmission({
         practiceTestId: testId,
         responses,
@@ -689,6 +870,7 @@ function ManualGridFlow({
           mathM2: counts.MATH2 === '' ? null : Number(counts.MATH2),
         },
         meta: metaPayload(meta),
+        scoreSummary: summaryPayload,
       });
       if (!res.ok) return setError(res.error);
       onDone({ id: res.data!.submissionId, flags: res.data!.validationFlags });
@@ -768,10 +950,12 @@ function ManualGridFlow({
             <ScoreFields meta={meta} setMeta={setMeta} />
           </div>
 
+          <ScoreSummaryPicker file={scoreSummary} onChange={setScoreSummary} />
+
           {error && <p role="alert" className={s.error}>{error}</p>}
 
           <div className={s.actions}>
-            <Button onClick={submit} disabled={pending || !allModulesBalance}>
+            <Button onClick={submit} disabled={pending || !allModulesBalance || !scoreSummary}>
               {pending ? 'Sending…' : 'Send submission'}
             </Button>
             {!allModulesBalance && countsEntered && (

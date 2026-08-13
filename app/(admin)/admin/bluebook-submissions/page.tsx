@@ -45,7 +45,9 @@ export default async function AdminBluebookSubmissionsPage({
       `id, contributor_id, status, entry_method, created_at, report_date, subject_label,
        rw_m1_correct, rw_m2_correct, rw_scaled,
        math_m1_correct, math_m2_correct, math_scaled,
-       html_artifact_path, validation_flags, review_note, attempt_id, auto_verified_at,
+       html_artifact_path, score_summary_artifact_path,
+       campaign_id, planned_pattern_id, form_fingerprint,
+       validation_flags, review_note, attempt_id, auto_verified_at,
        practice_test:practice_tests_v2(name),
        contributor:profiles!bluebook_submissions_contributor_id_fkey(first_name, last_name, email, role)`,
     )
@@ -104,6 +106,10 @@ export default async function AdminBluebookSubmissionsPage({
         scaled: r.math_scaled as number | null,
       },
       hasArtifact: Boolean(r.html_artifact_path),
+      hasScoreSummary: Boolean(r.score_summary_artifact_path),
+      campaignId: (r.campaign_id as string) ?? null,
+      plannedPatternId: (r.planned_pattern_id as string) ?? null,
+      formFingerprint: (r.form_fingerprint as string) ?? null,
       autoVerified: Boolean(r.auto_verified_at),
       linkedAttempt: Boolean(r.attempt_id),
       flags: Array.isArray(r.validation_flags) ? (r.validation_flags as unknown[]) : [],
@@ -131,11 +137,10 @@ export default async function AdminBluebookSubmissionsPage({
         <div className={a.eyebrow}>Admin · Contributions</div>
         <h1 className={a.h1}>Bluebook submissions</h1>
         <p className={a.sub}>
-          Contributed official results, waiting to be folded into the scoring curves.
-          Verify what checks out, then promote it — promotion is the only path that writes{' '}
-          <code>score_conversion</code>, and every row it writes carries the submission it
-          came from. A section that conflicts with an existing curve is never overwritten;
-          it&rsquo;s skipped and reported.
+          Contributed official results, waiting for evidence review. Standard contributions
+          can be promoted into <code>score_conversion</code>; scoring-study submissions remain
+          item-level observations so response patterns with identical counts are preserved.
+          Existing curve rows are never overwritten.
         </p>
       </header>
 

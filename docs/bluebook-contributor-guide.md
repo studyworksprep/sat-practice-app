@@ -2,7 +2,7 @@
 
 > **Status: Living document.** Written for contributors (tutors and
 > invited outside contributors), not for engineers. Last verified
-> against the shipped flows: 2026-08-05.
+> against the shipped flows: 2026-08-13.
 
 ## Why this exists
 
@@ -33,21 +33,30 @@ right/wrong pattern — no name attached — but it is still their test.
 ## The quickest route: send the score report
 
 If you have access to the student's College Board account, this takes
-about a minute and involves no typing beyond two numbers.
+about a minute and involves no typing beyond two numbers. Every new
+submission also needs an image of the score summary so a reviewer can
+verify those two manually entered numbers.
 
 1. Sign in at **mypractice.collegeboard.org**.
 2. Open the practice test.
-3. Go to the **question-by-question detail view** — the table listing
+3. Choose **Score Details**, then go to the **question-by-question detail view** — the table listing
    every question with its correct answer and whether it was answered
    correctly. (Not the summary page: the summary has the scores but not
    the per-question data.)
 4. Save the page as HTML. In most browsers: **File → Save Page As**, and
-   choose "Page Source" or "HTML Only". A `.htm` or `.html` file lands
-   in your downloads.
-5. In Studyworks, go to **Contribute → New submission → Upload the score
-   report**, pick the practice test, and attach the file.
-6. Type the two section scores from the report summary. That's the only
-   thing the file doesn't contain.
+   choose **Webpage, HTML Only** (the exact wording varies). A `.htm` or
+   `.html` file lands in your downloads.
+5. Return to the test's score-summary view and take a screenshot that
+   clearly shows the practice-test name and the Reading and Writing and
+   Math scores. Crop out the student's name, email address, and any other
+   identifying information. On macOS use **Shift–Command–4**; on Windows
+   use **Windows–Shift–S**. Save as PNG, JPEG, or WebP (5 MB maximum).
+6. In Studyworks, go to **Contribute → New submission → Upload the score
+   report**, pick the submission purpose and practice test, and attach
+   both files. If a scoring-study coordinator gave you a pattern ID,
+   enter it exactly; never substitute a student's name.
+7. Type the two section scores from the summary. The screenshot is what
+   lets the reviewer verify them.
 
 You'll see the counts we read out of the file before you send it. If
 they don't match the report in front of you, you've probably got a
@@ -64,7 +73,9 @@ you don't re-enter any of it.
    specifically so you can read it while typing into another window. A
    dash means the question was left blank.
 3. Bluebook gives you official scores. Type those in.
-4. If you also saved the report, attach it — we'll check it against the
+4. Capture and attach the score-summary screenshot described above;
+   it is required so the reviewer can verify the typed scores.
+5. If you also saved the report, attach it — we'll check it against the
    attempt question by question.
 
 **If the check finds a mismatch**, an answer got mis-keyed into Bluebook
@@ -87,7 +98,8 @@ The grid then won't let you send until the number you've flipped matches
 — which is the check that catches a slipped row. When you flip a
 question you can optionally record which answer they picked; it's useful
 data about which wrong answers tempt students, but it's genuinely
-optional and skipping it costs nothing.
+optional and skipping it costs nothing. Attach the required score-summary
+screenshot before sending so the reviewer can verify the scaled scores.
 
 This route takes the longest and is the one a reviewer scrutinises most,
 because nothing corroborates it but that checksum. Use it when the
@@ -102,9 +114,10 @@ Every submission goes `pending → verified → promoted`.
 - **Promoted** — in the scoring data. This is the finish line.
 - **Not accepted** — a reviewer found a problem and left a note.
 
-Once you've had three submissions promoted and none rejected, your
-**uploaded score reports** are accepted without waiting for a reviewer —
-the file is the evidence, so there's little left for a person to check.
+Once you've had three submissions promoted and none rejected, ordinary
+**uploaded score reports** may be accepted without waiting for a reviewer.
+Controlled scoring-study submissions always receive human review because
+the reviewer must compare the typed scores with the summary screenshot.
 Hand-entered grids always get read by a person, and so does anything
 that disagrees with data we already have, no matter how good your
 record.
@@ -115,9 +128,10 @@ promotes every submission, including auto-accepted ones.
 ## Things that get flagged
 
 - **"Another official report gave a different scaled score."** Two
-  reports disagree about the same module counts. This isn't a mark
-  against you — it's genuinely interesting, and a reviewer looks at
-  both. We never overwrite existing data with a conflicting figure.
+  reports disagree about the same module counts. On an ordinary
+  contribution a reviewer checks both. In a scoring study, the different
+  response patterns are deliberately preserved as separate observations;
+  they are never collapsed into one count-only row.
 - **"The module 1 count doesn't match the module 2 form."** On an
   adaptive test, module 1's score determines which module 2 the student
   sees. If those don't line up, one of the numbers is off.
