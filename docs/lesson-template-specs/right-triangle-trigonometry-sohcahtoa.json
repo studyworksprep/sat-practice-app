@@ -1,11 +1,11 @@
 {
   "title": "Right Triangle Trigonometry with SOHCAHTOA",
-  "description": "Choose and solve sine, cosine, and tangent equations for SAT right triangles, manage degree and radian mode, and transfer trig ratios across similar triangles.",
+  "description": "Sketch and label SAT right triangles, choose and solve exact sine, cosine, and tangent equations, manage degree and radian mode, and transfer trig ratios across similar triangles.",
   "blocks": [
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Turn a right triangle into one equation</h2><p>When a right-triangle question gives an acute angle and at least one side, sine, cosine, or tangent can connect what you know to what you need.</p><p>You will learn how to label the sides, choose the correct trig function, solve for a side or angle, and keep Desmos in the correct angle mode. At the end, you will connect the same ratios to similar triangles.</p><blockquote><p><strong>Goal:</strong> Use SOHCAHTOA to build one correct equation, solve it in Desmos, and check that the answer fits the triangle.</p></blockquote>",
+      "html": "<h2>Turn point and side labels into one trig equation</h2><p>SAT questions usually name vertices and sides, not “opposite” or “adjacent.” Your first job is to sketch the right triangle, place the point labels, and identify each side relative to the given acute angle.</p><p>You will use that labeled sketch to choose sine, cosine, or tangent, isolate the requested side in exact form, and manage Desmos angle mode. At the end, you will connect the same ratios to similar triangles.</p><blockquote><p><strong>Goal:</strong> Translate SAT point labels into a reliable diagram and an exact SOHCAHTOA expression.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }
@@ -13,7 +13,7 @@
     {
       "kind": "text",
       "id": "side_exploration",
-      "html": "<h2>Start with the marked angle</h2><p>Inspect the right triangle below. The acute angle is \\(\\theta\\). Notice that each side name is based on its position relative to \\(\\theta\\).</p><p><img src=\"/images/right-triangle-sohcahtoa.svg\" alt=\"Right triangle with theta at the lower-right vertex, the vertical side labeled opposite, the bottom leg labeled adjacent, and the slanted side labeled hypotenuse\" width=\"1000\"></p><blockquote><p><strong>First look:</strong> Find the right angle before naming any other side.</p></blockquote>",
+      "html": "<h2>Start with the marked angle and point labels</h2><p>Inspect \\(\\triangle ABC\\). It is right at \\(C\\), and the acute angle being used is \\(\\angle B=\\theta\\). The side names come from those two facts.</p><p><img src=\"/images/right-triangle-sohcahtoa.svg\" alt=\"Triangle ABC right at C with theta at B; AC is opposite theta, BC is adjacent to theta, and AB is the hypotenuse\" width=\"1000\"></p><blockquote><p><strong>First look:</strong> Find the right-angle vertex and the acute-angle vertex before naming any side.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }
@@ -70,6 +70,35 @@
     },
     {
       "kind": "text",
+      "id": "draw_reference_sketch",
+      "html": "<h2>Build your own reference sketch from the words</h2><p>A problem may say: “In right triangle \\(PQR\\), angle \\(Q\\) is a right angle and \\(\\angle R=32^\\circ\\).” Turn that sentence into a quick sketch:</p><ol><li>Draw any right triangle. It does not need to be to scale.</li><li>Put \\(Q\\) at the right-angle vertex.</li><li>Put \\(R\\) at one acute vertex and label it \\(32^\\circ\\).</li><li>Put \\(P\\) at the remaining vertex.</li><li>Label the sides from \\(\\angle R\\): \\(PQ\\) is opposite, \\(QR\\) is adjacent, and \\(PR\\) is the hypotenuse.</li></ol><blockquote><p><strong>SAT habit:</strong> Copy every point, angle, and side label onto your sketch before choosing a trig function.</p></blockquote>",
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "raw_block",
+      "id": "point_label_translation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In right triangle \\(PQR\\), \\(\\angle Q=90^\\circ\\), and the trig angle is \\(\\angle R\\). After making a sketch, how should you label the sides relative to \\(\\angle R\\)?",
+        "choices": [
+          "\\(PQ\\) adjacent, \\(QR\\) opposite, \\(PR\\) hypotenuse",
+          "\\(PQ\\) opposite, \\(QR\\) adjacent, \\(PR\\) hypotenuse",
+          "\\(PR\\) opposite, \\(PQ\\) adjacent, \\(QR\\) hypotenuse",
+          "\\(QR\\) opposite, \\(PR\\) adjacent, \\(PQ\\) hypotenuse"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The side across from the right angle at Q is the hypotenuse. Then look across from angle R.",
+        "explanation": "Correct. \\(PR\\) is across from the right angle, \\(PQ\\) is across from angle \\(R\\), and \\(QR\\) is the remaining leg touching angle \\(R\\)."
+      },
+      "calculator": {
+        "display": "hidden"
+      }
+    },
+    {
+      "kind": "text",
       "id": "sohcahtoa_definition",
       "html": "<h2>SOHCAHTOA stores the three ratios</h2><p>For an acute angle \\(\\theta\\) in a right triangle:</p><ul><li><strong>SOH:</strong> \\(\\sin(\\theta)=\\dfrac{\\text{opposite}}{\\text{hypotenuse}}\\)</li><li><strong>CAH:</strong> \\(\\cos(\\theta)=\\dfrac{\\text{adjacent}}{\\text{hypotenuse}}\\)</li><li><strong>TOA:</strong> \\(\\tan(\\theta)=\\dfrac{\\text{opposite}}{\\text{adjacent}}\\)</li></ul><blockquote><p><strong>Mnemonic:</strong> SOH = sine, opposite, hypotenuse; CAH = cosine, adjacent, hypotenuse; TOA = tangent, opposite, adjacent.</p></blockquote>",
       "calculator": {
@@ -81,7 +110,7 @@
       "id": "ratio_selection_check",
       "block_type": "check",
       "content": {
-        "prompt": "Relative to \\(\\theta\\), a problem gives the adjacent side and asks for the opposite side. Which trig function uses exactly those two sides?",
+        "prompt": "In right triangle \\(PQR\\), \\(\\angle Q=90^\\circ\\), and the angle being used is \\(\\angle R\\). The question gives \\(QR\\) and asks for \\(PQ\\). Which trig function should you use?",
         "choices": [
           "Sine",
           "Cosine",
@@ -90,8 +119,8 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "Look for the part of SOHCAHTOA containing opposite and adjacent but not hypotenuse.",
-        "explanation": "Correct. TOA connects opposite and adjacent: \\(\\tan(\\theta)=\\text{opposite}/\\text{adjacent}\\)."
+        "hint": "On your sketch, \\(PQ\\) is opposite angle R and \\(QR\\) is adjacent.",
+        "explanation": "Correct. The point labels translate to opposite and adjacent, so TOA gives \\(\\tan(R)=PQ/QR\\)."
       },
       "calculator": {
         "display": "hidden"
@@ -100,7 +129,7 @@
     {
       "kind": "text",
       "id": "sohcahtoa_process",
-      "html": "<h2>A four-step process</h2><ol><li><strong>Mark the angle.</strong> Use the acute angle given or requested.</li><li><strong>Label the sides.</strong> Identify opposite, adjacent, and hypotenuse relative to that angle.</li><li><strong>Choose the ratio.</strong> Pick SOH, CAH, or TOA using only the known side and the requested side.</li><li><strong>Solve and check.</strong> Enter the calculation in Desmos, then confirm that the hypotenuse is longest and the size is reasonable.</li></ol><blockquote><p><strong>Decision rule:</strong> The two side labels in the problem choose the trig function for you.</p></blockquote>",
+      "html": "<h2>A five-step process</h2><ol><li><strong>Sketch.</strong> Draw a right triangle and copy the vertex labels.</li><li><strong>Mark.</strong> Place the right angle, the given acute angle, known lengths, and the requested side.</li><li><strong>Relabel.</strong> Write opposite, adjacent, and hypotenuse beside the point-labeled sides.</li><li><strong>Choose and solve.</strong> Pick SOH, CAH, or TOA from the known and requested sides, then isolate the requested side.</li><li><strong>Keep it exact.</strong> Select the matching trig expression unless the question explicitly requests an approximation.</li></ol><blockquote><p><strong>Decision rule:</strong> Your reference sketch translates SAT labels into the two side names that choose the trig function.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }
@@ -137,11 +166,11 @@
     {
       "kind": "text",
       "id": "tangent_model",
-      "html": "<h2>Model 1: find the opposite side</h2><p>A right triangle has an acute angle of \\(35^\\circ\\), an adjacent side of \\(12\\), and an opposite side of \\(x\\).</p><p>The two relevant sides are opposite and adjacent, so use TOA:</p><p>\\[\\tan(35^\\circ)=\\frac{x}{12}.\\]</p><p>Multiply by \\(12\\):</p><p>\\[x=12\\tan(35^\\circ)\\approx8.4.\\]</p><blockquote><p><strong>Desmos entry in Degrees mode:</strong> Type \\(12\\tan(35)\\).</p></blockquote>",
+      "html": "<h2>Model 1: translate the labels, then use tangent</h2><p>In right triangle \\(ABC\\), \\(\\angle C=90^\\circ\\), \\(\\angle A=35^\\circ\\), \\(AC=12\\), and \\(BC=x\\).</p><p>Make a sketch. From \\(\\angle A\\), \\(BC\\) is opposite and \\(AC\\) is adjacent. Therefore:</p><p>\\[\\tan(35^\\circ)=\\frac{BC}{AC}=\\frac{x}{12}.\\]</p><p>Multiply by \\(12\\):</p><p>\\[x=12\\tan(35^\\circ).\\]</p><p>This trig expression is the exact side length. A decimal is only an approximation.</p><blockquote><p><strong>Exact answer:</strong> \\(BC=12\\tan(35^\\circ)\\).</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
-        "title": "Calculate the opposite side",
+        "title": "Check the exact tangent expression",
         "editable": true,
         "resettable": true,
         "lock_viewport": false
@@ -152,7 +181,7 @@
       "id": "tangent_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "For the \\(35^\\circ\\) triangle with adjacent side \\(12\\) and opposite side \\(x\\), which equation is correct?",
+        "prompt": "In \\(\\triangle ABC\\), \\(\\angle C=90^\\circ\\), \\(\\angle A=35^\\circ\\), \\(AC=12\\), and \\(BC=x\\). Which equation is correct?",
         "choices": [
           "\\(\\sin(35^\\circ)=12/x\\)",
           "\\(\\cos(35^\\circ)=x/12\\)",
@@ -161,8 +190,8 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Tangent is opposite over adjacent. Keep the side labels in that order.",
-        "explanation": "Correct. The opposite side \\(x\\) goes over the adjacent side \\(12\\)."
+        "hint": "Sketch the triangle. From angle A, BC is opposite and AC is adjacent.",
+        "explanation": "Correct. The point labels become opposite \\(BC=x\\) over adjacent \\(AC=12\\)."
       },
       "calculator": {
         "display": "open",
@@ -178,22 +207,22 @@
       "id": "tangent_result_check",
       "block_type": "check",
       "content": {
-        "prompt": "In Degrees mode, what is \\(12\\tan(35)\\) to the nearest tenth?",
+        "prompt": "Which is the exact value of \\(BC\\) in the previous triangle?",
         "choices": [
-          "\\(6.9\\)",
-          "\\(8.4\\)",
-          "\\(12.7\\)",
-          "\\(17.1\\)"
+          "\\(\\dfrac{12}{\\tan(35^\\circ)}\\)",
+          "\\(12\\tan(35^\\circ)\\)",
+          "\\(12\\sin(35^\\circ)\\)",
+          "\\(\\tan(12^\\circ)\\)"
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Confirm Degrees mode, then type 12 times tangent of 35.",
-        "explanation": "Right. \\(12\\tan(35^\\circ)\\approx8.402\\), so the opposite side is about \\(8.4\\)."
+        "hint": "Solve \\(\\tan(35^\\circ)=x/12\\) for x without converting the trig value to a decimal.",
+        "explanation": "Right. Multiplying both sides by \\(12\\) gives the exact result \\(BC=12\\tan(35^\\circ)\\)."
       },
       "calculator": {
         "display": "open",
         "mode": "scratch",
-        "title": "Evaluate in Degrees mode",
+        "title": "Compare exact answer choices",
         "editable": true,
         "resettable": true,
         "lock_viewport": false
@@ -202,11 +231,11 @@
     {
       "kind": "text",
       "id": "sine_hypotenuse_model",
-      "html": "<h2>Model 2: the unknown is in the denominator</h2><p>A right triangle has an angle of \\(28^\\circ\\), opposite side \\(9\\), and hypotenuse \\(h\\).</p><p>Opposite and hypotenuse point to SOH:</p><p>\\[\\sin(28^\\circ)=\\frac9h.\\]</p><p>Because \\(h\\) is in the denominator, multiply by \\(h\\), then divide by sine:</p><p>\\[h=\\frac9{\\sin(28^\\circ)}\\approx19.2.\\]</p><blockquote><p><strong>Reasonableness check:</strong> The hypotenuse \\(19.2\\) is longer than the known leg \\(9\\).</p></blockquote>",
+      "html": "<h2>Model 2: identify the hypotenuse from the right angle</h2><p>In right triangle \\(XYZ\\), \\(\\angle Y=90^\\circ\\), \\(\\angle X=28^\\circ\\), \\(YZ=9\\), and \\(XZ=h\\).</p><p>On your sketch, \\(XZ\\) lies across from the right angle, so it is the hypotenuse. Relative to \\(\\angle X\\), \\(YZ\\) is opposite. Use SOH:</p><p>\\[\\sin(28^\\circ)=\\frac{YZ}{XZ}=\\frac9h.\\]</p><p>Isolate the hypotenuse:</p><p>\\[h=\\frac9{\\sin(28^\\circ)}.\\]</p><blockquote><p><strong>Exact answer:</strong> \\(XZ=\\dfrac9{\\sin(28^\\circ)}\\).</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
-        "title": "Calculate the hypotenuse",
+        "title": "Inspect the exact sine expression",
         "editable": true,
         "resettable": true,
         "lock_viewport": false
@@ -217,7 +246,7 @@
       "id": "sine_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "Which equation correctly uses the \\(28^\\circ\\) angle, opposite side \\(9\\), and hypotenuse \\(h\\)?",
+        "prompt": "In \\(\\triangle XYZ\\), \\(\\angle Y=90^\\circ\\), \\(\\angle X=28^\\circ\\), \\(YZ=9\\), and \\(XZ=h\\). Which equation is correct?",
         "choices": [
           "\\(\\cos(28^\\circ)=9/h\\)",
           "\\(\\sin(28^\\circ)=h/9\\)",
@@ -226,8 +255,8 @@
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "SOH means opposite over hypotenuse.",
-        "explanation": "Correct. Sine uses opposite over hypotenuse, so \\(\\sin(28^\\circ)=9/h\\)."
+        "hint": "The side across from the right angle at Y is XZ. From angle X, YZ is opposite.",
+        "explanation": "Correct. The point-labeled sides translate to opposite \\(YZ=9\\) over hypotenuse \\(XZ=h\\)."
       },
       "calculator": {
         "display": "hidden"
@@ -238,22 +267,22 @@
       "id": "sine_result_check",
       "block_type": "check",
       "content": {
-        "prompt": "What is \\(9/\\sin(28^\\circ)\\) to the nearest tenth?",
+        "prompt": "Which is the exact value of \\(XZ\\)?",
         "choices": [
-          "\\(19.2\\)",
-          "\\(9.5\\)",
-          "\\(4.2\\)",
-          "\\(0.5\\)"
+          "\\(\\dfrac9{\\sin(28^\\circ)}\\)",
+          "\\(9\\sin(28^\\circ)\\)",
+          "\\(\\dfrac{\\sin(28^\\circ)}9\\)",
+          "\\(\\dfrac9{\\cos(28^\\circ)}\\)"
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "Use Degrees mode and keep the entire sine value in the denominator.",
-        "explanation": "Correct. The hypotenuse is approximately \\(19.2\\), which is longer than the leg of \\(9\\)."
+        "hint": "Solve \\(\\sin(28^\\circ)=9/h\\) for h. The unknown begins in the denominator.",
+        "explanation": "Correct. Multiplying by h and dividing by \\(\\sin(28^\\circ)\\) gives \\(XZ=9/\\sin(28^\\circ)\\)."
       },
       "calculator": {
         "display": "open",
         "mode": "scratch",
-        "title": "Evaluate the sine calculation",
+        "title": "Compare exact sine forms",
         "editable": true,
         "resettable": true,
         "lock_viewport": false
@@ -262,11 +291,11 @@
     {
       "kind": "text",
       "id": "cosine_guided_model",
-      "html": "<h2>Guided variation: use cosine</h2><p>A right triangle has an angle of \\(41^\\circ\\), hypotenuse \\(18\\), and adjacent side \\(a\\).</p><p>Adjacent and hypotenuse point to CAH:</p><p>\\[\\cos(41^\\circ)=\\frac{a}{18}.\\]</p><p>Multiply by \\(18\\):</p><p>\\[a=18\\cos(41^\\circ).\\]</p><p>Use Degrees mode to evaluate the expression.</p>",
+      "html": "<h2>Guided variation: translate a new set of point labels</h2><p>In right triangle \\(PQR\\), \\(\\angle Q=90^\\circ\\), \\(\\angle P=41^\\circ\\), \\(PR=18\\), and \\(PQ=a\\).</p><p>Sketch it before continuing. The right angle makes \\(PR\\) the hypotenuse. Relative to \\(\\angle P\\), \\(PQ\\) is adjacent. Use CAH:</p><p>\\[\\cos(41^\\circ)=\\frac{PQ}{PR}=\\frac{a}{18}.\\]</p><p>Therefore:</p><p>\\[a=18\\cos(41^\\circ).\\]</p><blockquote><p><strong>Keep it exact:</strong> The requested side is \\(18\\cos(41^\\circ)\\), not a rounded decimal.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
-        "title": "Find the adjacent side",
+        "title": "Check the exact cosine form",
         "editable": true,
         "resettable": true,
         "lock_viewport": false
@@ -277,61 +306,22 @@
       "id": "cosine_result_check",
       "block_type": "check",
       "content": {
-        "prompt": "What is \\(18\\cos(41^\\circ)\\) to the nearest tenth?",
+        "prompt": "For the point-labeled triangle above, which is the exact value of \\(PQ\\)?",
         "choices": [
-          "\\(11.8\\)",
-          "\\(23.9\\)",
-          "\\(13.6\\)",
-          "\\(17.3\\)"
+          "\\(\\dfrac{18}{\\cos(41^\\circ)}\\)",
+          "\\(18\\sin(41^\\circ)\\)",
+          "\\(18\\cos(41^\\circ)\\)",
+          "\\(\\dfrac{\\cos(41^\\circ)}{18}\\)"
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Confirm Degrees mode and multiply 18 by cosine of 41.",
-        "explanation": "Correct. \\(18\\cos(41^\\circ)\\approx13.6\\). The adjacent leg is shorter than hypotenuse \\(18\\), as expected."
+        "hint": "From angle P, PQ is adjacent and PR is the hypotenuse. Solve \\(\\cos(41^\\circ)=a/18\\).",
+        "explanation": "Correct. CAH gives \\(\\cos(41^\\circ)=PQ/18\\), so \\(PQ=18\\cos(41^\\circ)\\)."
       },
       "calculator": {
         "display": "open",
         "mode": "scratch",
-        "title": "Evaluate the cosine calculation",
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
-      }
-    },
-    {
-      "kind": "text",
-      "id": "inverse_trig_intro",
-      "html": "<h2>When the angle is missing, use inverse trig</h2><p>If two side lengths are known and the question asks for an acute angle, first choose the ratio from those two sides. Then use the inverse of that trig function.</p><p>For opposite \\(8\\), adjacent \\(15\\), and angle \\(\\theta\\):</p><p>\\[\\tan(\\theta)=\\frac8{15}.\\]</p><p>In Degrees mode, type \\(\\operatorname{arctan}(8/15)\\):</p><p>\\[\\theta=\\tan^{-1}\\left(\\frac8{15}\\right)\\approx28.1^\\circ.\\]</p><blockquote><p><strong>Notation:</strong> \\(\\tan^{-1}\\) here means inverse tangent, not \\(1/\\tan\\).</p></blockquote>",
-      "calculator": {
-        "display": "open",
-        "mode": "scratch",
-        "title": "Find the missing angle",
-        "editable": true,
-        "resettable": true,
-        "lock_viewport": false
-      }
-    },
-    {
-      "kind": "raw_block",
-      "id": "inverse_trig_check",
-      "block_type": "check",
-      "content": {
-        "prompt": "A right triangle has opposite side \\(8\\) and adjacent side \\(15\\). Which Desmos calculation finds the acute angle in degrees?",
-        "choices": [
-          "\\(\\tan(8/15)\\)",
-          "\\(\\operatorname{arctan}(8/15)\\)",
-          "\\(\\operatorname{arcsin}(15/8)\\)",
-          "\\(8\\tan(15)\\)"
-        ],
-        "correct_index": 1,
-        "allow_retry": true,
-        "hint": "Opposite and adjacent choose tangent. Because the angle is unknown, undo tangent with inverse tangent.",
-        "explanation": "Right. \\(\\operatorname{arctan}(8/15)\\approx28.1^\\circ\\) in Degrees mode."
-      },
-      "calculator": {
-        "display": "open",
-        "mode": "scratch",
-        "title": "Use inverse tangent",
+        "title": "Compare exact cosine forms",
         "editable": true,
         "resettable": true,
         "lock_viewport": false
@@ -340,7 +330,7 @@
     {
       "kind": "text",
       "id": "common_mistakes",
-      "html": "<h2>Three checks catch most trig errors</h2><ul><li><strong>Side check:</strong> Relabel opposite and adjacent from the angle actually being used.</li><li><strong>Order check:</strong> SOHCAHTOA fixes which side belongs in the numerator and denominator.</li><li><strong>Mode check:</strong> A degree symbol requires Degrees mode; an angle written with \\(\\pi\\) usually requires Radians mode.</li></ul><p>After calculating, remember that the hypotenuse must be the longest side and every acute angle must be between \\(0^\\circ\\) and \\(90^\\circ\\).</p><blockquote><p><strong>Do not trust a strange result:</strong> Recheck the side labels and angle mode before changing methods.</p></blockquote>",
+      "html": "<h2>Four checks catch most trig errors</h2><ul><li><strong>Sketch check:</strong> Did you put the right angle and acute angle at the correct named vertices?</li><li><strong>Side check:</strong> Did you relabel opposite and adjacent from the angle actually being used?</li><li><strong>Order check:</strong> Does the ratio follow SOHCAHTOA in the correct numerator-denominator order?</li><li><strong>Exact-form check:</strong> Did you stop at the exact trig expression instead of replacing it with a rounded decimal?</li></ul><p>If you use Desmos to inspect a value, also match its Degrees or Radians setting to the problem.</p><blockquote><p><strong>Do not trust the picture's orientation:</strong> The named vertices—not left, right, top, or bottom—determine every side role.</p></blockquote>",
       "calculator": {
         "display": "hidden"
       }
@@ -353,14 +343,14 @@
         "prompt": "Which sequence is safest for a right-triangle trig question?",
         "choices": [
           "Choose a trig function from the angle's size, then label the sides afterward.",
-          "Always use sine, enter the numbers, and accept the first decimal.",
+          "Always use sine, enter the numbers, and replace the exact form with the first decimal.",
           "Find the longest-looking side, assume the mode, and multiply every value.",
-          "Mark the angle, label the sides, choose the ratio from the two relevant sides, set the angle mode, solve, and check."
+          "Sketch and place the named vertices, mark the angles and sides, translate the sides into opposite/adjacent/hypotenuse, choose the ratio, solve, and keep the exact form."
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "The side labels must come before the trig-function choice.",
-        "explanation": "Exactly. That order makes the diagram choose the ratio and gives you two checks on the final result."
+        "hint": "The reference sketch and side translation must come before the trig-function choice.",
+        "explanation": "Exactly. That sequence makes the point labels choose the ratio and preserves the SAT's usual exact answer form."
       },
       "calculator": {
         "display": "hidden"
@@ -455,7 +445,7 @@
     {
       "kind": "text",
       "id": "mode_is_not_conversion",
-      "html": "<h2>Changing mode is not the same as converting</h2><p>Angle mode tells Desmos how to interpret a number inside a trig function.</p><ul><li>In Degrees mode, \\(\\sin(30)\\) means \\(\\sin(30^\\circ)=0.5\\).</li><li>In Radians mode, \\(\\sin(30)\\) means the sine of \\(30\\) radians, which is about \\(-0.988\\).</li></ul><p>If you convert \\(30^\\circ\\) first, you can instead enter \\(\\sin(\\pi/6)\\) in Radians mode and still get \\(0.5\\).</p><blockquote><p><strong>Match the entry to the mode:</strong> Degrees mode for \\(30\\); Radians mode for \\(\\pi/6\\).</p></blockquote>",
+      "html": "<h2>Changing mode is not the same as converting</h2><p>Angle mode tells Desmos how to interpret a number inside a trig function.</p><ul><li>In Degrees mode, \\(\\sin(30)\\) means \\(\\sin(30^\\circ)=\\frac12\\).</li><li>In Radians mode, \\(\\sin(\\pi/6)=\\frac12\\).</li></ul><p>Both entries describe the same angle because \\(30^\\circ=\\pi/6\\). Typing \\(\\sin(30)\\) in Radians mode describes a different angle.</p><blockquote><p><strong>Match the entry to the mode:</strong> Degrees mode for \\(30\\); Radians mode for \\(\\pi/6\\).</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -480,7 +470,7 @@
         "correct_index": 1,
         "allow_retry": true,
         "hint": "Either keep 30 as degrees or convert it to the equivalent radian measure \\(\\pi/6\\).",
-        "explanation": "Correct. Both matching setups produce \\(0.5\\). The number and the selected angle mode must describe the same angle."
+        "explanation": "Correct. Both matching setups produce the exact value \\(1/2\\). The entry and selected angle mode must describe the same angle."
       },
       "calculator": {
         "display": "open",
@@ -552,7 +542,7 @@
     {
       "kind": "text",
       "id": "combined_problem_model",
-      "html": "<h2>Combined model: trig first, then similarity</h2><p>A smaller right triangle has an acute angle of \\(38^\\circ\\), adjacent side \\(10\\), and opposite side \\(s\\). A similar larger triangle has corresponding adjacent side \\(25\\) and opposite side \\(L\\).</p><p><strong>Step 1: Solve the smaller triangle with tangent.</strong></p><p>\\[s=10\\tan(38^\\circ)\\approx7.81.\\]</p><p><strong>Step 2: Use the similar-triangle scale factor.</strong></p><p>\\[\\text{scale factor}=\\frac{25}{10}=2.5\\]</p><p>\\[L=s(2.5)\\approx7.81(2.5)\\approx19.53.\\]</p><blockquote><p><strong>Combined expression:</strong> \\(L=(10\\tan(38^\\circ))(25/10)\\).</p></blockquote>",
+      "html": "<h2>Combined model: translate two triangles</h2><p>Right triangles \\(ABC\\) and \\(DEF\\) are similar, with \\(A\\leftrightarrow D\\), \\(B\\leftrightarrow E\\), and \\(C\\leftrightarrow F\\). Also, \\(\\angle C=\\angle F=90^\\circ\\), \\(\\angle A=38^\\circ\\), \\(AC=10\\), and \\(DF=25\\). Find \\(EF\\).</p><p>Sketch both triangles and preserve the correspondence. From \\(\\angle A\\), \\(BC\\) is opposite and \\(AC\\) is adjacent:</p><p>\\[BC=10\\tan(38^\\circ).\\]</p><p>The large-to-small scale factor is \\(DF/AC=25/10\\). Because \\(BC\\leftrightarrow EF\\):</p><p>\\[EF=(10\\tan(38^\\circ))\\left(\\frac{25}{10}\\right).\\]</p><blockquote><p><strong>Keep it exact:</strong> Do not round the small triangle before scaling.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -565,7 +555,7 @@
     {
       "kind": "text",
       "id": "combined_problem_shortcut",
-      "html": "<h2>The shared angle gives a shortcut</h2><p>The larger triangle has the same \\(38^\\circ\\) corresponding angle, so it has the same tangent ratio:</p><p>\\[\\tan(38^\\circ)=\\frac{L}{25}.\\]</p><p>Therefore:</p><p>\\[L=25\\tan(38^\\circ)\\approx19.53.\\]</p><p>This is the same as the two-step result because</p><p>\\[(10\\tan(38^\\circ))\\left(\\frac{25}{10}\\right)=25\\tan(38^\\circ).\\]</p><blockquote><p><strong>SAT choice:</strong> You may solve one triangle and scale, or transfer the corresponding angle and use trig directly in the other triangle.</p></blockquote>",
+      "html": "<h2>The corresponding angle gives an exact shortcut</h2><p>Since \\(A\\leftrightarrow D\\), \\(\\angle D=38^\\circ\\). In the larger triangle, \\(EF\\) is opposite \\(\\angle D\\) and \\(DF=25\\) is adjacent:</p><p>\\[\\tan(38^\\circ)=\\frac{EF}{25}.\\]</p><p>Therefore:</p><p>\\[EF=25\\tan(38^\\circ).\\]</p><p>This equals the two-step expression because</p><p>\\[(10\\tan(38^\\circ))\\left(\\frac{25}{10}\\right)=25\\tan(38^\\circ).\\]</p><blockquote><p><strong>SAT choice:</strong> Solve one triangle and scale, or transfer the corresponding angle and use trig directly. Both routes should simplify to the same exact expression.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -580,7 +570,7 @@
       "id": "combined_setup_check",
       "block_type": "check",
       "content": {
-        "prompt": "For the combined example, which expression correctly uses trig on the smaller triangle and then scales to the larger triangle?",
+        "prompt": "Which expression correctly uses \\(\\triangle ABC\\) and then scales its side \\(BC\\) to the corresponding side \\(EF\\)?",
         "choices": [
           "\\((10\\tan(38^\\circ))(25/10)\\)",
           "\\((10/\\tan(38^\\circ))(10/25)\\)",
@@ -589,8 +579,8 @@
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "First find the small opposite side with 10 times tangent, then multiply by the large-to-small scale factor.",
-        "explanation": "Correct. The small opposite side is \\(10\\tan(38^\\circ)\\), and the scale factor from small to large is \\(25/10\\)."
+        "hint": "From angle A, BC is opposite and AC=10 is adjacent. Then use the scale factor DF/AC.",
+        "explanation": "Correct. \\(BC=10\\tan(38^\\circ)\\), and the scale factor from \\(ABC\\) to \\(DEF\\) is \\(25/10\\)."
       },
       "calculator": {
         "display": "open",
@@ -606,17 +596,17 @@
       "id": "combined_result_check",
       "block_type": "check",
       "content": {
-        "prompt": "What is the larger triangle's opposite side \\(L\\) to the nearest tenth?",
+        "prompt": "Which is the simplified exact value of \\(EF\\)?",
         "choices": [
-          "\\(7.8\\)",
-          "\\(19.5\\)",
-          "\\(25.0\\)",
-          "\\(31.3\\)"
+          "\\(10\\tan(38^\\circ)\\)",
+          "\\(25\\tan(38^\\circ)\\)",
+          "\\(\\dfrac{25}{\\tan(38^\\circ)}\\)",
+          "\\(25\\sin(38^\\circ)\\)"
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "In Degrees mode, evaluate either \\((10\\tan(38))(25/10)\\) or \\(25\\tan(38)\\).",
-        "explanation": "Right. Both valid methods give \\(L\\approx19.53\\), which rounds to \\(19.5\\)."
+        "hint": "Simplify \\((10\\tan(38^\\circ))(25/10)\\), or use tangent directly in triangle DEF.",
+        "explanation": "Right. Both methods give the exact result \\(EF=25\\tan(38^\\circ)\\)."
       },
       "calculator": {
         "display": "open",
@@ -630,7 +620,7 @@
     {
       "kind": "text",
       "id": "independent_transfer_prompt",
-      "html": "<h2>Independent transfer</h2><p>Two right triangles are similar. In the smaller triangle, an acute angle is \\(52^\\circ\\), its adjacent side is \\(7\\), and its opposite side is unknown. In the larger triangle, the corresponding adjacent side is \\(20\\).</p><p>Find the larger triangle's corresponding opposite side to the nearest tenth.</p><p>You may solve the smaller triangle and scale, or transfer the \\(52^\\circ\\) angle and use tangent directly in the larger triangle.</p><blockquote><p><strong>Before calculating:</strong> Set Desmos to Degrees mode.</p></blockquote>",
+      "html": "<h2>Independent transfer: make both sketches yourself</h2><p>Right triangles \\(JKL\\) and \\(MNP\\) are similar, with \\(J\\leftrightarrow M\\), \\(K\\leftrightarrow N\\), and \\(L\\leftrightarrow P\\). Angles \\(L\\) and \\(P\\) are right angles. Also, \\(\\angle J=52^\\circ\\), \\(JL=7\\), and \\(MP=20\\).</p><p>Find the exact length of \\(NP\\).</p><p>Draw both triangles, place every point label, and mark the corresponding sides. Then choose either the trig-and-scale route or the corresponding-angle shortcut.</p><blockquote><p><strong>Do not calculate a decimal:</strong> The correct answer will remain a trig expression.</p></blockquote>",
       "calculator": {
         "display": "open",
         "mode": "scratch",
@@ -645,17 +635,17 @@
       "id": "independent_transfer_check",
       "block_type": "check",
       "content": {
-        "prompt": "What is the larger triangle's opposite side to the nearest tenth?",
+        "prompt": "Which is the exact length of \\(NP\\)?",
         "choices": [
-          "\\(9.0\\)",
-          "\\(15.6\\)",
-          "\\(20.0\\)",
-          "\\(25.6\\)"
+          "\\(7\\tan(52^\\circ)\\)",
+          "\\(\\dfrac{20}{\\tan(52^\\circ)}\\)",
+          "\\(20\\cos(52^\\circ)\\)",
+          "\\(20\\tan(52^\\circ)\\)"
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "The direct setup in the larger triangle is \\(L=20\\tan(52^\\circ)\\). The two-step setup is \\((7\\tan(52^\\circ))(20/7)\\).",
-        "explanation": "Correct. Both methods simplify to \\(20\\tan(52^\\circ)\\approx25.6\\)."
+        "hint": "Because J corresponds to M, angle M is 52°. In triangle MNP, NP is opposite angle M and MP=20 is adjacent.",
+        "explanation": "Correct. \\(\\tan(52^\\circ)=NP/20\\), so the exact length is \\(NP=20\\tan(52^\\circ)\\). The trig-and-scale route simplifies to the same expression."
       },
       "calculator": {
         "display": "open",
@@ -675,13 +665,13 @@
         "choices": [
           "Choose sine for every triangle, leave Desmos in Radians mode, and multiply trig values by the scale factor.",
           "Name sides from the right angle only, convert every angle to degrees, and assume similar triangles have equal side lengths.",
-          "Label sides from the chosen acute angle; select SOH, CAH, or TOA from the two relevant sides; match Desmos mode to the angle unit; and use equal corresponding angles to transfer unchanged trig ratios across similar triangles.",
+          "Sketch the named vertices; label sides from the chosen acute angle; select SOH, CAH, or TOA from the two relevant sides; preserve the exact trig form; match Desmos mode to the angle unit; and transfer unchanged ratios across corresponding angles.",
           "Use the drawing's orientation to name sides, switch modes after calculating, and scale angles along with side lengths."
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Recall the sequence: angle, side labels, ratio, mode, solve—and what similarity preserves.",
-        "explanation": "You have it. That process handles ordinary right-triangle trig, unit changes, and combined similar-triangle problems."
+        "hint": "Recall the sequence: sketch, point labels, side roles, ratio, exact form, mode—and what similarity preserves.",
+        "explanation": "You have it. That process handles SAT point labels, exact trig expressions, unit changes, and combined similar-triangle problems."
       },
       "calculator": {
         "display": "hidden"
@@ -692,7 +682,7 @@
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can solve SAT right triangles with trig</h2><p>You can label opposite, adjacent, and hypotenuse from a chosen angle; choose and solve a sine, cosine, or tangent equation; use inverse trig for a missing angle; convert between radians and degrees; set Desmos to the correct angle mode; and carry the same trig ratios across similar triangles.</p>",
+        "html": "<h2>You can solve SAT right triangles with trig</h2><p>You can turn named points and sides into your own labeled sketch, identify opposite, adjacent, and hypotenuse from the given acute angle, choose and solve a sine, cosine, or tangent equation in exact form, convert between radians and degrees, set Desmos to the correct angle mode, and carry unchanged trig ratios across similar triangles.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": {
