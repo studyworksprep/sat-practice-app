@@ -3,6 +3,13 @@ const { withSentryConfig } = require('@sentry/nextjs');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Bluebook contribution actions carry the saved HTML report plus a
+    // score-summary image. Both are authenticated, type/size checked,
+    // and immediately moved to private Storage; 16 MB covers the
+    // existing 10 MB report ceiling plus a 5 MB image ceiling.
+    serverActions: { bodySizeLimit: '16mb' },
+  },
   // React Compiler (stable in Next 16) — automatic memoization across the
   // whole app. Reduces unnecessary re-renders without manual useMemo /
   // useCallback / React.memo. See docs/architecture-plan.md §3.9.

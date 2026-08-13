@@ -673,10 +673,124 @@ export type Database = {
         }
         Relationships: []
       }
+      bluebook_calibration_campaigns: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          practice_test_id: string
+          requires_html_report: boolean
+          requires_score_image: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          is_active?: boolean
+          name: string
+          practice_test_id: string
+          requires_html_report?: boolean
+          requires_score_image?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          practice_test_id?: string
+          requires_html_report?: boolean
+          requires_score_image?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bluebook_calibration_campaigns_practice_test_id_fkey"
+            columns: ["practice_test_id"]
+            isOneToOne: false
+            referencedRelation: "practice_tests_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bluebook_calibration_responses: {
+        Row: {
+          captured_at: string
+          chosen: string | null
+          difficulty: number | null
+          domain_code: string | null
+          domain_name: string | null
+          is_correct: boolean
+          module_number: number
+          ordinal: number
+          question_id: string
+          question_type: string
+          route_code: string
+          score_band: number | null
+          section: string
+          skill_code: string | null
+          skill_name: string | null
+          submission_id: string
+        }
+        Insert: {
+          captured_at?: string
+          chosen?: string | null
+          difficulty?: number | null
+          domain_code?: string | null
+          domain_name?: string | null
+          is_correct: boolean
+          module_number: number
+          ordinal: number
+          question_id: string
+          question_type: string
+          route_code: string
+          score_band?: number | null
+          section: string
+          skill_code?: string | null
+          skill_name?: string | null
+          submission_id: string
+        }
+        Update: {
+          captured_at?: string
+          chosen?: string | null
+          difficulty?: number | null
+          domain_code?: string | null
+          domain_name?: string | null
+          is_correct?: boolean
+          module_number?: number
+          ordinal?: number
+          question_id?: string
+          question_type?: string
+          route_code?: string
+          score_band?: number | null
+          section?: string
+          skill_code?: string | null
+          skill_name?: string | null
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bluebook_calibration_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bluebook_calibration_responses_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "bluebook_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bluebook_submissions: {
         Row: {
           attempt_id: string | null
           auto_verified_at: string | null
+          campaign_id: string | null
           contributor_id: string
           created_at: string
           entry_method: string
@@ -687,8 +801,10 @@ export type Database = {
           math_m2_route: string | null
           math_scaled: number | null
           practice_test_id: string
+          planned_pattern_id: string | null
           promoted_at: string | null
           report_date: string | null
+          response_snapshot: Json
           responses: Json
           review_note: string | null
           reviewed_at: string | null
@@ -697,14 +813,17 @@ export type Database = {
           rw_m2_correct: number | null
           rw_m2_route: string | null
           rw_scaled: number | null
+          score_summary_artifact_path: string | null
           status: string
           subject_label: string | null
           updated_at: string
           validation_flags: Json
+          form_fingerprint: string | null
         }
         Insert: {
           attempt_id?: string | null
           auto_verified_at?: string | null
+          campaign_id?: string | null
           contributor_id: string
           created_at?: string
           entry_method: string
@@ -715,8 +834,10 @@ export type Database = {
           math_m2_route?: string | null
           math_scaled?: number | null
           practice_test_id: string
+          planned_pattern_id?: string | null
           promoted_at?: string | null
           report_date?: string | null
+          response_snapshot?: Json
           responses?: Json
           review_note?: string | null
           reviewed_at?: string | null
@@ -725,14 +846,17 @@ export type Database = {
           rw_m2_correct?: number | null
           rw_m2_route?: string | null
           rw_scaled?: number | null
+          score_summary_artifact_path?: string | null
           status?: string
           subject_label?: string | null
           updated_at?: string
           validation_flags?: Json
+          form_fingerprint?: string | null
         }
         Update: {
           attempt_id?: string | null
           auto_verified_at?: string | null
+          campaign_id?: string | null
           contributor_id?: string
           created_at?: string
           entry_method?: string
@@ -743,8 +867,10 @@ export type Database = {
           math_m2_route?: string | null
           math_scaled?: number | null
           practice_test_id?: string
+          planned_pattern_id?: string | null
           promoted_at?: string | null
           report_date?: string | null
+          response_snapshot?: Json
           responses?: Json
           review_note?: string | null
           reviewed_at?: string | null
@@ -753,12 +879,21 @@ export type Database = {
           rw_m2_correct?: number | null
           rw_m2_route?: string | null
           rw_scaled?: number | null
+          score_summary_artifact_path?: string | null
           status?: string
           subject_label?: string | null
           updated_at?: string
           validation_flags?: Json
+          form_fingerprint?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "bluebook_submissions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "bluebook_calibration_campaigns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bluebook_submissions_attempt_id_fkey"
             columns: ["attempt_id"]
