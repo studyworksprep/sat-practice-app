@@ -1,0 +1,422 @@
+{
+  "title": "Place Transition Words by Logic",
+  "description": "Use transition-word punctuation and three-clause logic to decide whether a transition belongs before or after a full stop in SAT Boundaries questions.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Where does the transition belong?</h2><p>Some SAT Boundaries questions give you two choices that are both grammatically possible:</p><ul><li>a transition just <strong>before</strong> a semicolon or period</li><li>the same transition just <strong>after</strong> that semicolon or period</li></ul><p>Punctuation alone will not separate those choices. You must decide which two ideas the transition connects.</p><p>By the end of this lesson, you will be able to attach a transition to the correct independent clause and use the logic among three clauses to place it.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "first_exploration",
+      "html": "<h2>Compare two placements</h2><p>Read these versions:</p><blockquote><p><strong>Version 1:</strong> The first soil sample contained pollen. The second sample, however, contained no pollen.</p><p><strong>Version 2:</strong> The first soil sample contained pollen. The second sample contained no pollen, however.</p></blockquote><p>The word <strong>however</strong> moves, but the relationship it expresses does not. In both versions, notice which two facts contrast.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "exploration_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In both sample sentences, which two ideas does however contrast?",
+        "choices": [
+          "pollen and soil",
+          "the second sample and the word pollen",
+          "the first sample contained pollen and the second sample contained no pollen",
+          "the placement of the first period and the placement of the second period"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Temporarily move however to the beginning of the second sentence: 'However, the second sample contained no pollen.'",
+        "explanation": "Correct. However marks a contrast between the complete idea before it and the complete idea in the clause that contains it. Moving the word within the second clause does not change that relationship."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "transition_purpose",
+      "html": "<h2>A transition shows the relationship between ideas</h2><p>A <strong>transition word or phrase</strong> tells you how the current independent clause relates to the previous independent clause.</p><ul><li><strong>however, nevertheless, though:</strong> contrast</li><li><strong>therefore, consequently, thus:</strong> cause and result</li><li><strong>moreover, furthermore, in addition:</strong> addition</li><li><strong>for example, specifically:</strong> example or detail</li></ul><p>An <strong>independent clause</strong> is a complete sentence: it has a subject, a verb, and a finished thought.</p><blockquote><p><strong>Key idea:</strong> The transition belongs to one independent clause and points backward to the independent clause before it.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "purpose_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What is the main job of however in this passage? The first trial succeeded. The second trial, however, failed.",
+        "choices": [
+          "It shows that the second trial contrasts with the first trial.",
+          "It turns the second trial into a question.",
+          "It makes the first clause dependent on the second.",
+          "It replaces the verb in the second clause."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Read the two results: succeeded and failed. What relationship do they have?",
+        "explanation": "Right. However tells you that the current clause's failure contrasts with the previous clause's success."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "nonessential_punctuation",
+      "html": "<h2>The transition is nonessential information</h2><p>A transition adds a logical signpost, but it is not needed to make the clause complete. Remove <strong>however</strong> below:</p><blockquote><p>The second trial, <strong>however</strong>, failed.</p></blockquote><p>You are left with <strong>The second trial failed</strong>, which is still a complete sentence. Because the transition is nonessential, punctuation separates it from the essential words of its clause.</p><ul><li><strong>Beginning:</strong> However, the second trial failed.</li><li><strong>Middle:</strong> The second trial, however, failed.</li><li><strong>End:</strong> The second trial failed, however.</li></ul><p>At a clause boundary, a period or semicolon can close the clause where a second comma might otherwise appear: <strong>The second trial failed, however; the team repeated it.</strong></p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "nonessential_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which test shows that nevertheless is nonessential in this sentence? The sensor, nevertheless, recorded the change.",
+        "choices": [
+          "Move the sensor to the end of the sentence.",
+          "Replace recorded with a different verb.",
+          "Add a second subject after nevertheless.",
+          "Remove nevertheless and its commas; 'The sensor recorded the change' remains complete."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Nonessential information can be removed without destroying the sentence's grammatical core.",
+        "explanation": "Exactly. Removing the transition leaves a complete independent clause, so the transition is nonessential and must be offset by punctuation."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "flexible_placement",
+      "html": "<h2>A transition can appear anywhere in its clause</h2><p>At the beginning, in the middle, and at the very end are all possible. The placement changes emphasis, not the direction of the connection.</p><ul><li>However, the backup system worked.</li><li>The backup system, however, worked.</li><li>The backup system worked, however.</li></ul><blockquote><p><strong>Watch out:</strong> A sentence absolutely can end with a transition word or phrase.</p></blockquote><p>In every version, <strong>however</strong> belongs to the clause about the backup system and points backward to the independent clause before it.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "placement_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which statement about transition placement is accurate?",
+        "choices": [
+          "A transition must begin its independent clause.",
+          "A transition may begin, interrupt, or end its independent clause.",
+          "A transition at the end points forward to the next clause.",
+          "A transition becomes essential when it appears in the middle."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Recall the three grammatical versions of 'the backup system worked.'",
+        "explanation": "Correct. A transition can occur anywhere in its clause, including at the very end."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "backward_direction",
+      "html": "<h2>Even at the end, the transition points backward</h2><p>Read this pair:</p><blockquote><p>The forecast predicted clear skies. A storm arrived, however.</p></blockquote><p><strong>However</strong> does not point ahead to an unwritten idea. It belongs to <strong>A storm arrived</strong> and connects that current clause backward to <strong>The forecast predicted clear skies</strong>.</p><p>To find the logic, ask: <strong>What complete clause contains the transition, and what complete clause comes immediately before it?</strong></p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "backward_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In 'The forecast predicted clear skies. A storm arrived, however,' what does however connect?",
+        "choices": [
+          "It connects storm to an idea that must appear in the next sentence.",
+          "It connects clear to skies inside the first clause.",
+          "It connects 'A storm arrived' backward to 'The forecast predicted clear skies.'",
+          "It connects only the subjects forecast and storm."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Identify the complete clause that contains however, then look one independent clause backward.",
+        "explanation": "Right. Sentence-final however still belongs to the storm clause and points backward to the forecast clause."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "three_clause_question_type",
+      "html": "<h2>The SAT trap uses three independent clauses</h2><p>Now suppose a passage contains three complete ideas. Label them <strong>A</strong>, <strong>B</strong>, and <strong>C</strong>.</p><p>The choices may include both of these:</p><ul><li><strong>B, however; C</strong></li><li><strong>B; however, C</strong></li></ul><p>Both can be grammatically correct. The semicolon is a full stop between B and C. The commas show which clause contains the nonessential transition.</p><ul><li>In <strong>B, however; C</strong>, however is at the end of B. It connects <strong>A to B</strong>.</li><li>In <strong>B; however, C</strong>, however is at the beginning of C. It connects <strong>B to C</strong>.</li></ul>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "attachment_map",
+      "html": "<h2>Attach first; judge the logic second</h2><blockquote><p><strong>Transition before the full stop:</strong> A → transition B | C</p><p><strong>Transition after the full stop:</strong> A | B → transition C</p></blockquote><p>When the transition belongs to B, test the relationship between A and B. When it belongs to C, test the relationship between B and C.</p><p>A period works the same way as a semicolon here. The key question is not which full stop looks stronger. It is which pair of clauses has the relationship named by the transition.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "attachment_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "If a choice creates 'A. B, therefore; C,' which relationship must therefore describe?",
+        "choices": [
+          "C must be a result of A.",
+          "B must be a result of A.",
+          "C must be a result of B.",
+          "A must be a result of C."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Therefore appears before the semicolon, at the end of B. Move it to the beginning of B.",
+        "explanation": "Correct. Read it mentally as 'A. Therefore, B. C.' Therefore belongs to B and marks B as a result of A."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "four_step_process",
+      "html": "<h2>Use the A–B–C process</h2><ol><li><strong>Label:</strong> Find the three independent clauses and call them A, B, and C.</li><li><strong>Attach:</strong> Use the punctuation to decide whether the transition belongs to B or C.</li><li><strong>Move:</strong> If the transition is at the end of a clause, mentally move it to the beginning of that same clause.</li><li><strong>Test:</strong> Read one clause backward and check whether the transition's meaning fits that pair.</li></ol><blockquote><p><strong>Decision rule:</strong> Before the full stop means test A–B. After the full stop means test B–C.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "model_before_full_stop",
+      "html": "<h2>Model: the transition belongs to B</h2><p>Read all three clauses:</p><blockquote><p><strong>A:</strong> The observatory's main telescope was under repair. <strong>B:</strong> Astronomers used a smaller backup telescope ___ <strong>C:</strong> The backup instrument had been installed in 2018.</p></blockquote><p>The two serious choices are <strong>, therefore;</strong> and <strong>; therefore,</strong>.</p><p>First test the logic. The repair caused the astronomers to use a backup, so <strong>A leads to B</strong>. Using the backup did not cause it to be installed in 2018, so B does not lead to C.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "model_logic_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Where must therefore go in the observatory passage?",
+        "choices": [
+          "After the semicolon, because C is a result of B",
+          "After the semicolon, because A is a result of C",
+          "Before the semicolon, because C is a result of A",
+          "Before the semicolon, because B is a result of A"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Ask which event is the result of the telescope being under repair.",
+        "explanation": "Exactly. B is a result of A, so therefore belongs to B and must appear before the full stop between B and C."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "model_before_answer",
+      "html": "<h2>Complete the model</h2><p>The correct punctuation is:</p><blockquote><p>The observatory's main telescope was under repair. Astronomers used a smaller backup telescope<strong>, therefore;</strong> the backup instrument had been installed in 2018.</p><p><strong>Mental rewrite:</strong> The observatory's main telescope was under repair. <strong>Therefore,</strong> astronomers used a smaller backup telescope. The backup instrument had been installed in 2018.</p></blockquote><p>The original sentence-final placement is less familiar, but it expresses the same A-to-B logic.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "guided_before_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The museum's climate-control system failed. Staff moved the paintings to a protected storage room ___ the room was renovated in 2022. Which choice fits the logic?",
+        "choices": [
+          ", consequently;",
+          "; consequently,",
+          ", consequently,",
+          "; consequently;"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Label the clauses A, B, and C. The system failure caused which clause: B or C?",
+        "explanation": "Correct. A caused B, so consequently belongs at the end of B, before the semicolon. Moving it gives: 'The system failed. Consequently, staff moved the paintings.'"
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "model_after_full_stop",
+      "html": "<h2>Now the transition belongs to C</h2><p>Read a new set of clauses:</p><blockquote><p><strong>A:</strong> Repairs to the telescope ended on Monday. <strong>B:</strong> Astronomers expected to resume observations that night ___ <strong>C:</strong> Dense clouds covered the sky.</p></blockquote><p>A naturally leads to B: finished repairs explain the expectation. The contrast occurs between B and C: the astronomers expected to observe, but clouds blocked the sky.</p><p>Therefore, <strong>however</strong> must belong to C and appear after the full stop between B and C.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "guided_after_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Repairs to the telescope ended on Monday. Astronomers expected to resume observations that night ___ dense clouds covered the sky. Which choice fits the logic?",
+        "choices": [
+          ", however;",
+          ", however,",
+          "; however,",
+          "; however;"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The contrast is between the expectation in B and the clouds in C. Attach however to the clause about the clouds.",
+        "explanation": "Right. The semicolon ends B, and 'however,' begins C. The transition points backward from C to the contrasting expectation in B."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "period_equivalence",
+      "html": "<h2>A period creates the same placement decision</h2><p>These semicolon patterns have period twins:</p><ul><li><strong>B, however; C</strong> has the same attachment as <strong>B, however. C</strong>. However belongs to B.</li><li><strong>B; however, C</strong> has the same attachment as <strong>B. However, C</strong>. However belongs to C.</li></ul><p>A semicolon and a period are both full stops. When both answers are grammatically complete, use A–B–C logic to decide which side owns the transition.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "period_placement_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The archive lost power. Staff carried the manuscripts to a secure room ___ room had opened five years earlier. Which period choice expresses the correct cause-and-result relationship?",
+        "choices": [
+          ". Consequently, the",
+          ", consequently. The",
+          ", consequently, the",
+          "; consequently; the"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The power loss caused staff to carry the manuscripts. It did not cause the room to open years earlier. Put consequently in B, before the period.",
+        "explanation": "Correct. Consequently belongs to B because B results from A: 'The archive lost power. Consequently, staff carried the manuscripts.' The transition can sit at the end of B before the period."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "move_end_transition",
+      "html": "<h2>Move a sentence-final transition in your mind</h2><p>A transition at the end can feel strange because students see beginning transitions more often. Do not reject it. Move it to the beginning of the <strong>same clause</strong>.</p><ul><li><strong>Original:</strong> A. B, therefore; C.</li><li><strong>Mental rewrite:</strong> A. Therefore, B. C.</li></ul><p>Do not move it across the full stop into C. The rewrite is only a thinking tool that makes the backward connection easier to hear.</p><blockquote><p><strong>Tip:</strong> Keep the transition inside its original clause when you move it.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "movement_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which mental rewrite correctly clarifies 'A. B, nevertheless; C'?",
+        "choices": [
+          "Nevertheless, A. B. C.",
+          "A. B. Nevertheless, C.",
+          "A. B; C, nevertheless.",
+          "A. Nevertheless, B. C."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Nevertheless appears inside B before the full stop. Move it to the beginning of B, not into A or C.",
+        "explanation": "Exactly. The mental rewrite keeps nevertheless in B: 'A. Nevertheless, B. C.' Now it is easier to test the A–B contrast."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "though_two_jobs",
+      "html": "<h2>Watch for the special word though</h2><p><strong>Though</strong> can do two different jobs.</p><ul><li><strong>Transition:</strong> The forecast predicted rain. The match continued, <strong>though</strong>.</li><li><strong>Subordinating word:</strong> <strong>Though the forecast predicted rain</strong> ...</li></ul><p>In the first version, <strong>though</strong> means <strong>however</strong>. It is nonessential and separated by a comma.</p><p>In the second version, <strong>though</strong> is followed directly by a subject and verb, with no comma after <strong>though</strong>. It makes the idea dependent: <strong>Though the forecast predicted rain</strong> cannot stand alone.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "though_job_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In which choice does though act as a nonessential transition meaning however?",
+        "choices": [
+          "The match continued, though.",
+          "Though the match continued.",
+          "Though the match continued, the rain intensified.",
+          "The match that continued though the rain."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Look for a complete independent clause that remains complete when though is removed.",
+        "explanation": "Correct. Remove ', though' and 'The match continued' remains complete. Here though is a nonessential transition pointing backward."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "though_semicolon_trap",
+      "html": "<h2>No comma can reveal a dependent-clause trap</h2><p>Compare these fragments after a semicolon:</p><ul><li><strong>; though, the field remained wet</strong> — the comma marks though as an inserted transition, so <strong>the field remained wet</strong> is independent.</li><li><strong>; though the field remained wet</strong> — no comma after though means <strong>though the field remained wet</strong> is dependent.</li></ul><p>A semicolon must have an independent clause on both sides. Therefore, a choice that creates <strong>; though + subject + verb</strong> without the transition comma can be eliminated: the words after the semicolon are not an independent clause.</p><blockquote><p><strong>Watch out:</strong> With though, check the comma before deciding which job the word performs.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "though_elimination_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why is the punctuation invalid in 'The organizers kept the outdoor venue; though the field remained wet'?",
+        "choices": [
+          "A semicolon can never appear near the word though.",
+          "The clause before the semicolon is missing a verb.",
+          "Without a comma after though, 'though the field remained wet' is dependent, so it cannot stand after a semicolon.",
+          "The word though always points forward to the next sentence."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Read only the words after the semicolon. Can 'Though the field remained wet' stand alone?",
+        "explanation": "Right. Here though is a subordinating word, not a nonessential transition. It creates a dependent clause after a punctuation mark that requires an independent clause."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_intro",
+      "html": "<h2>Put the whole process together</h2><p>For each final question:</p><ol><li>Label A, B, and C.</li><li>Decide which pair has the named relationship.</li><li>Attach the transition to B or C.</li><li>Use the commas and full stop to select the choice.</li></ol><p>Remember to read one independent clause earlier than the blank. Without A, you cannot tell whether a transition at the end of B makes sense.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_before_full_stop",
+      "block_type": "check",
+      "content": {
+        "prompt": "The river flooded the lower trail. Park officials closed that route ___ the upper trail remained open throughout the week. Which choice best fits the logic?",
+        "choices": [
+          "; consequently,",
+          ", consequently;",
+          ", consequently,",
+          "; consequently;"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The flood in A caused the closure in B. The closure did not cause the upper trail to remain open. Attach consequently to B.",
+        "explanation": "Correct. Consequently belongs to B because B results from A: 'The river flooded the lower trail. Consequently, park officials closed that route.' The sentence-final transition comes before the semicolon."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_after_full_stop",
+      "block_type": "check",
+      "content": {
+        "prompt": "The new battery passed every laboratory test. Engineers expected it to last ten hours in the field ___ it stopped working after only six hours. Which choice best fits the logic?",
+        "choices": [
+          ", however;",
+          ", however,",
+          "; however;",
+          "; however,"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The contrast is between the ten-hour expectation in B and the six-hour result in C. Attach however to C.",
+        "explanation": "Exactly. However begins C after the semicolon and points backward to the contrasting expectation in B."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which process solves the transition-placement question type?",
+        "choices": [
+          "Label A–B–C; attach the transition to B or C; move an end transition within its clause if helpful; test A–B or B–C logic; check whether though is truly a transition.",
+          "Choose the transition closest to the blank; a transition always points forward.",
+          "Eliminate every choice that puts a transition at the end of a sentence.",
+          "Ignore the clause before the blank and choose whichever punctuation creates the longest pause."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Retrieve the labels, attachment rule, movement trick, logic pair, and though check.",
+        "explanation": "You have it. Before the full stop means test A–B; after the full stop means test B–C. A transition may end its clause, and though without the transition comma may create a dependent clause instead."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can place transitions by logic</h2><p>You can identify the clause that owns a transition, trace its backward connection, compare A–B with B–C, and handle sentence-final transitions and the special though trap.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": { "display": "hidden" }
+    }
+  ]
+}
