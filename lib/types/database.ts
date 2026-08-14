@@ -794,14 +794,15 @@ export type Database = {
           contributor_id: string
           created_at: string
           entry_method: string
+          form_fingerprint: string | null
           html_artifact_path: string | null
           id: string
           math_m1_correct: number | null
           math_m2_correct: number | null
           math_m2_route: string | null
           math_scaled: number | null
-          practice_test_id: string
           planned_pattern_id: string | null
+          practice_test_id: string
           promoted_at: string | null
           report_date: string | null
           response_snapshot: Json
@@ -818,7 +819,6 @@ export type Database = {
           subject_label: string | null
           updated_at: string
           validation_flags: Json
-          form_fingerprint: string | null
         }
         Insert: {
           attempt_id?: string | null
@@ -827,14 +827,15 @@ export type Database = {
           contributor_id: string
           created_at?: string
           entry_method: string
+          form_fingerprint?: string | null
           html_artifact_path?: string | null
           id?: string
           math_m1_correct?: number | null
           math_m2_correct?: number | null
           math_m2_route?: string | null
           math_scaled?: number | null
-          practice_test_id: string
           planned_pattern_id?: string | null
+          practice_test_id: string
           promoted_at?: string | null
           report_date?: string | null
           response_snapshot?: Json
@@ -851,7 +852,6 @@ export type Database = {
           subject_label?: string | null
           updated_at?: string
           validation_flags?: Json
-          form_fingerprint?: string | null
         }
         Update: {
           attempt_id?: string | null
@@ -860,14 +860,15 @@ export type Database = {
           contributor_id?: string
           created_at?: string
           entry_method?: string
+          form_fingerprint?: string | null
           html_artifact_path?: string | null
           id?: string
           math_m1_correct?: number | null
           math_m2_correct?: number | null
           math_m2_route?: string | null
           math_scaled?: number | null
-          practice_test_id?: string
           planned_pattern_id?: string | null
+          practice_test_id?: string
           promoted_at?: string | null
           report_date?: string | null
           response_snapshot?: Json
@@ -884,21 +885,20 @@ export type Database = {
           subject_label?: string | null
           updated_at?: string
           validation_flags?: Json
-          form_fingerprint?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "bluebook_submissions_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "bluebook_calibration_campaigns"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "bluebook_submissions_attempt_id_fkey"
             columns: ["attempt_id"]
             isOneToOne: false
             referencedRelation: "practice_test_attempts_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bluebook_submissions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "bluebook_calibration_campaigns"
             referencedColumns: ["id"]
           },
           {
@@ -1593,220 +1593,6 @@ export type Database = {
           },
         ]
       }
-      lesson_publication_history: {
-        Row: {
-          created_at: string
-          created_by: string
-          id: string
-          lesson_id: string
-          revision_id: string | null
-          snapshot: Json
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          id?: string
-          lesson_id: string
-          revision_id?: string | null
-          snapshot: Json
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          id?: string
-          lesson_id?: string
-          revision_id?: string | null
-          snapshot?: Json
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lesson_publication_history_lesson_id_fkey"
-            columns: ["lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_publication_history_revision_id_fkey"
-            columns: ["revision_id"]
-            isOneToOne: false
-            referencedRelation: "lesson_revisions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      lesson_revision_blocks: {
-        Row: {
-          block_type: string
-          content: Json
-          created_at: string
-          id: string
-          revision_id: string
-          source_block_id: string | null
-          sort_order: number
-        }
-        Insert: {
-          block_type: string
-          content?: Json
-          created_at?: string
-          id?: string
-          revision_id: string
-          source_block_id?: string | null
-          sort_order?: number
-        }
-        Update: {
-          block_type?: string
-          content?: Json
-          created_at?: string
-          id?: string
-          revision_id?: string
-          source_block_id?: string | null
-          sort_order?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lesson_revision_blocks_revision_id_fkey"
-            columns: ["revision_id"]
-            isOneToOne: false
-            referencedRelation: "lesson_revisions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      lesson_revision_topics: {
-        Row: {
-          domain_name: string | null
-          id: string
-          pattern_id: string | null
-          revision_id: string
-          section: string | null
-          source_topic_id: string | null
-          skill_code: string | null
-        }
-        Insert: {
-          domain_name?: string | null
-          id?: string
-          pattern_id?: string | null
-          revision_id: string
-          section?: string | null
-          source_topic_id?: string | null
-          skill_code?: string | null
-        }
-        Update: {
-          domain_name?: string | null
-          id?: string
-          pattern_id?: string | null
-          revision_id?: string
-          section?: string | null
-          source_topic_id?: string | null
-          skill_code?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lesson_revision_topics_pattern_id_fkey"
-            columns: ["pattern_id"]
-            isOneToOne: false
-            referencedRelation: "question_patterns"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_revision_topics_revision_id_fkey"
-            columns: ["revision_id"]
-            isOneToOne: false
-            referencedRelation: "lesson_revisions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      lesson_revisions: {
-        Row: {
-          base_lesson_id: string | null
-          base_lesson_updated_at: string | null
-          change_summary: string | null
-          created_at: string
-          description: string | null
-          foundation_sequence: number | null
-          id: string
-          kind: string
-          owner_id: string
-          published_lesson_id: string | null
-          review_note: string | null
-          reviewed_at: string | null
-          reviewer_id: string | null
-          state: string
-          submitted_at: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          base_lesson_id?: string | null
-          base_lesson_updated_at?: string | null
-          change_summary?: string | null
-          created_at?: string
-          description?: string | null
-          foundation_sequence?: number | null
-          id?: string
-          kind?: string
-          owner_id: string
-          published_lesson_id?: string | null
-          review_note?: string | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          state?: string
-          submitted_at?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          base_lesson_id?: string | null
-          base_lesson_updated_at?: string | null
-          change_summary?: string | null
-          created_at?: string
-          description?: string | null
-          foundation_sequence?: number | null
-          id?: string
-          kind?: string
-          owner_id?: string
-          published_lesson_id?: string | null
-          review_note?: string | null
-          reviewed_at?: string | null
-          reviewer_id?: string | null
-          state?: string
-          submitted_at?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lesson_revisions_base_lesson_id_fkey"
-            columns: ["base_lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_revisions_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_revisions_published_lesson_id_fkey"
-            columns: ["published_lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_revisions_reviewer_id_fkey"
-            columns: ["reviewer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       lesson_pack_questions: {
         Row: {
           added_at: string
@@ -1942,6 +1728,269 @@ export type Database = {
           {
             foreignKeyName: "lesson_progress_student_id_fkey"
             columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      lesson_publication_history: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          lesson_id: string
+          revision_id: string | null
+          snapshot: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          lesson_id: string
+          revision_id?: string | null
+          snapshot: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          lesson_id?: string
+          revision_id?: string | null
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_publication_history_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_publication_history_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_publication_history_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lesson_publication_history_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_publication_history_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_revision_blocks: {
+        Row: {
+          block_type: string
+          content: Json
+          created_at: string
+          id: string
+          revision_id: string
+          sort_order: number
+          source_block_id: string | null
+        }
+        Insert: {
+          block_type: string
+          content?: Json
+          created_at?: string
+          id?: string
+          revision_id: string
+          sort_order?: number
+          source_block_id?: string | null
+        }
+        Update: {
+          block_type?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          revision_id?: string
+          sort_order?: number
+          source_block_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_revision_blocks_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_revision_topics: {
+        Row: {
+          domain_name: string | null
+          id: string
+          pattern_id: string | null
+          revision_id: string
+          section: string | null
+          skill_code: string | null
+          source_topic_id: string | null
+        }
+        Insert: {
+          domain_name?: string | null
+          id?: string
+          pattern_id?: string | null
+          revision_id: string
+          section?: string | null
+          skill_code?: string | null
+          source_topic_id?: string | null
+        }
+        Update: {
+          domain_name?: string | null
+          id?: string
+          pattern_id?: string | null
+          revision_id?: string
+          section?: string | null
+          skill_code?: string | null
+          source_topic_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_revision_topics_pattern_id_fkey"
+            columns: ["pattern_id"]
+            isOneToOne: false
+            referencedRelation: "question_patterns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revision_topics_revision_id_fkey"
+            columns: ["revision_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_revisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_revisions: {
+        Row: {
+          base_lesson_id: string | null
+          base_lesson_updated_at: string | null
+          change_summary: string | null
+          created_at: string
+          description: string | null
+          foundation_sequence: number | null
+          id: string
+          kind: string
+          owner_id: string
+          published_lesson_id: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          state: string
+          submitted_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          base_lesson_id?: string | null
+          base_lesson_updated_at?: string | null
+          change_summary?: string | null
+          created_at?: string
+          description?: string | null
+          foundation_sequence?: number | null
+          id?: string
+          kind?: string
+          owner_id: string
+          published_lesson_id?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          state?: string
+          submitted_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          base_lesson_id?: string | null
+          base_lesson_updated_at?: string | null
+          change_summary?: string | null
+          created_at?: string
+          description?: string | null
+          foundation_sequence?: number | null
+          id?: string
+          kind?: string
+          owner_id?: string
+          published_lesson_id?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          state?: string
+          submitted_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_revisions_base_lesson_id_fkey"
+            columns: ["base_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revisions_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revisions_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revisions_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lesson_revisions_published_lesson_id_fkey"
+            columns: ["published_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revisions_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revisions_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_revisions_reviewer_id_fkey"
+            columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "student_practice_stats"
             referencedColumns: ["user_id"]
@@ -4391,18 +4440,6 @@ export type Database = {
       }
     }
     Functions: {
-      can_edit_lesson_revision: {
-        Args: { p_revision_id: string }
-        Returns: boolean
-      }
-      can_view_lesson_revision: {
-        Args: { p_revision_id: string }
-        Returns: boolean
-      }
-      create_lesson_revision: {
-        Args: { p_base_lesson_id?: string | null; p_title?: string }
-        Returns: string
-      }
       activate_study_plan: { Args: { p_plan_id: string }; Returns: string }
       assignment_has_visible_student: {
         Args: { p_assignment_id: string }
@@ -4418,12 +4455,20 @@ export type Database = {
         Returns: number
       }
       can_contribute: { Args: never; Returns: boolean }
+      can_edit_lesson_revision: {
+        Args: { p_revision_id: string }
+        Returns: boolean
+      }
       can_view: { Args: { target: string }; Returns: boolean }
       can_view_from: {
         Args: { target: string; viewer: string }
         Returns: boolean
       }
       can_view_lesson: { Args: { p_lesson_id: string }; Returns: boolean }
+      can_view_lesson_revision: {
+        Args: { p_revision_id: string }
+        Returns: boolean
+      }
       compute_mastery_score: {
         Args: {
           p_attempts_count: number
@@ -4433,6 +4478,10 @@ export type Database = {
           p_weighted_total: number
         }
         Returns: number
+      }
+      create_lesson_revision: {
+        Args: { p_base_lesson_id?: string; p_title?: string }
+        Returns: string
       }
       effective_plan: { Args: { p_user: string }; Returns: string }
       get_plan_inputs: {
@@ -4586,6 +4635,16 @@ export type Database = {
           by_score_band: Json
         }[]
       }
+      get_tutor_mastery_movement: {
+        Args: { p_days?: number; p_teachers: string[]; p_test_type?: string }
+        Returns: {
+          avg_mastery_delta: number
+          avg_mastery_now: number
+          skills_worked: number
+          students_measured: number
+          teacher_id: string
+        }[]
+      }
       get_user_practice_summary: {
         Args: never
         Returns: {
@@ -4650,10 +4709,6 @@ export type Database = {
         Args: { p_source_tag_id: string; p_target_tag_id: string }
         Returns: Json
       }
-      publish_lesson_revision: {
-        Args: { p_force?: boolean; p_revision_id: string }
-        Returns: string
-      }
       migration_status: {
         Args: never
         Returns: {
@@ -4664,6 +4719,10 @@ export type Database = {
         }[]
       }
       plan_rank: { Args: { p_plan: string }; Returns: number }
+      publish_lesson_revision: {
+        Args: { p_force?: boolean; p_revision_id: string }
+        Returns: string
+      }
       question_edited_since: {
         Args: { p_question: string; p_since: string }
         Returns: boolean
