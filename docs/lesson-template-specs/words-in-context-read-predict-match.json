@@ -236,6 +236,26 @@
     },
     {
       "kind": "text",
+      "id": "unknown_does_not_mean_wrong",
+      "html": "<h2>Do not force a familiar word into the blank</h2><p>Some students deliberately avoid an unfamiliar answer and force a word they know into the sentence. Familiarity is not evidence. A familiar word that conflicts with the text is still wrong, while an unfamiliar word may be exactly right.</p><p>The digital SAT lets you visually eliminate answer choices. Use that tool to remove a choice when you can name a contextual reason it fails: wrong logic, wrong grammar, wrong subject–object relationship, or no supporting clue.</p><blockquote><p><strong>Elimination rule:</strong> Cross out answers that do not fit. Do not cross out an answer merely because you do not understand it.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "unfamiliar_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Because the finding came from a small preliminary sample, the researchers described their conclusion as _____ and planned a larger study. A student knows that 'conclusive' means final but does not know 'provisional.' What should the student do?",
+        "choices": ["Select 'conclusive' because a known word is safer than an unknown one.", "Eliminate 'provisional' immediately because its meaning is unfamiliar.", "Ignore the context and choose whichever word has the most positive feeling.", "Eliminate 'conclusive' because it conflicts with 'preliminary' and keep 'provisional' in play while testing the remaining clues."],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Use the visual eliminator on a choice only when the text gives you a reason that choice cannot fit.",
+        "explanation": "Exactly. 'Conclusive' conflicts with the preliminary evidence and the planned larger study, so it can be eliminated. 'Provisional' should remain in play until context or word knowledge supports or rejects it; unfamiliarity alone is not a reason to cross it out."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
       "id": "roots_and_cognates",
       "html": "<h2>Use roots and cognates as evidence, not proof</h2><p>A recognizable piece can help you form a tentative definition. For example, <em>provisional</em> resembles Spanish <em>provisional</em> and relates to something arranged for the present, not necessarily forever. But word parts and cognates can mislead, so always confirm the possible meaning with the sentence.</p><ol><li>Notice the familiar piece.</li><li>Form a possible meaning.</li><li>Check whether that meaning fits every clue.</li></ol>",
       "calculator": { "display": "hidden" }
