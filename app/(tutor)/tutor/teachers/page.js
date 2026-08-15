@@ -13,6 +13,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatRelativeShort } from '@/lib/formatters';
+import { loadTeamEffectiveness } from '@/lib/tutor/load-team-effectiveness';
 import s from './Teachers.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -61,24 +62,31 @@ export default async function TutorTeachersPage() {
     : [{ data: [] }, { data: [] }];
 
   // 3) Student-side stats for everyone in any of the teachers'
-  //    rosters. RLS filters; we just feed the union of ids. One
-  //    query lights up the whole team.
+  //    rosters, in parallel with the §5.2 effectiveness rollups
+  //    (mastery movement RPC + assignment completion + plan
+  //    adherence). RLS filters; we just feed the union of ids.
   const allStudentIds = Array.from(
     new Set((tsRows ?? []).map((r) => r.student_id).filter(Boolean)),
   );
-  const { data: studentRows } = allStudentIds.length > 0
-    ? await supabase
-        .from('student_practice_stats')
-        .select('user_id, first_name, last_name, total_attempts, correct_attempts, week_attempts, last_activity_at')
-        .in('user_id', allStudentIds)
-    : { data: [] };
 
-  // Aggregate per teacher.
-  const studentsByTeacher = new Map();
+  // Every teacher gets a roster entry (empty array when no edges)
+  // so the rollup map covers the whole team, not just tutors with
+  // current students.
+  const studentsByTeacher = new Map(teacherIds.map((id) => [id, []]));
   for (const r of tsRows ?? []) {
     if (!studentsByTeacher.has(r.teacher_id)) studentsByTeacher.set(r.teacher_id, []);
     studentsByTeacher.get(r.teacher_id).push(r.student_id);
   }
+
+  const [{ data: studentRows }, effectByTeacher] = await Promise.all([
+    allStudentIds.length > 0
+      ? supabase
+          .from('student_practice_stats')
+          .select('user_id, first_name, last_name, total_attempts, correct_attempts, week_attempts, last_activity_at')
+          .in('user_id', allStudentIds)
+      : Promise.resolve({ data: [] }),
+    loadTeamEffectiveness(supabase, studentsByTeacher),
+  ]);
   const studentById = new Map(
     (studentRows ?? []).map((r) => [r.user_id, r]),
   );
@@ -115,6 +123,7 @@ export default async function TutorTeachersPage() {
       weekAttempts: week,
       accuracy: total > 0 ? Math.round((correct / total) * 100) : null,
       lastActivityAt,
+      effect: effectByTeacher.get(t.id) ?? null,
     };
   });
 
@@ -192,6 +201,11 @@ export default async function TutorTeachersPage() {
                 Sorted by most recent student activity
               </span>
             </div>
+            <p className={s.sectionNote}>
+              Mastery movement, assignment completion, and plan
+              adherence are 4-week signals, not rankings — rosters
+              are small and start from different levels.
+            </p>
             <ul className={s.cardList}>
               {teachers.map((t) => (
                 <li key={t.id}>
@@ -243,7 +257,67 @@ function TeacherCard({ teacher }) {
           {formatRelativeShort(teacher.lastActivityAt) ?? 'No activity'}
         </span>
       </div>
+      <EffectivenessRow effect={teacher.effect} />
     </Link>
+  );
+}
+
+// §5.2 tutor-effectiveness signals: mastery movement, assignment
+// completion, plan adherence — all over the 4-week window.
+function EffectivenessRow({ effect }) {
+  const movement = effect?.movement ?? null;
+  const completion = effect?.completion ?? null;
+  const adherence = effect?.adherence ?? null;
+
+  const deltaValue = movement == null
+    ? '—'
+    : `${movement.avgMasteryDelta > 0 ? '▲ +' : movement.avgMasteryDelta < 0 ? '▼ ' : ''}${movement.avgMasteryDelta}`;
+  const deltaTone = movement == null ? null
+    : movement.avgMasteryDelta > 0 ? 'good'
+    : movement.avgMasteryDelta < 0 ? 'warn'
+    : null;
+  const deltaLabel = movement == null
+    ? 'Mastery Δ · 4wk'
+    : `Mastery Δ · ${movement.studentsMeasured} student${movement.studentsMeasured === 1 ? '' : 's'}`;
+
+  const completionValue = completion?.rate == null
+    ? '—'
+    : `${Math.round(completion.rate * 100)}%`;
+  const completionLabel = completion?.rate == null
+    ? 'Assignments · 4wk'
+    : `Assignments · ${completion.completed}/${completion.assigned} done`;
+
+  return (
+    <div className={s.effectRow}>
+      <Metric label={deltaLabel} value={deltaValue} tone={deltaTone} />
+      <Metric
+        label={completionLabel}
+        value={completionValue}
+        tone={completion?.rate == null ? null : completion.rate >= 0.8 ? 'good' : completion.rate >= 0.5 ? 'ok' : 'warn'}
+      />
+      <AdherencePills adherence={adherence} />
+    </div>
+  );
+}
+
+function AdherencePills({ adherence }) {
+  if (!adherence) return null;
+  const parts = [];
+  if (adherence.onTrack > 0) parts.push({ text: `${adherence.onTrack} on track`, cls: s.adhGood });
+  if (adherence.ahead > 0) parts.push({ text: `${adherence.ahead} ahead`, cls: s.adhGood });
+  if (adherence.behind > 0) parts.push({ text: `${adherence.behind} behind`, cls: s.adhWarn });
+  if (adherence.notStarted > 0) parts.push({ text: `${adherence.notStarted} not started`, cls: s.adhMuted });
+  if (adherence.noPlan > 0) parts.push({ text: `${adherence.noPlan} no plan`, cls: s.adhMuted });
+  if (parts.length === 0) return null;
+  return (
+    <span className={s.adhCluster}>
+      <span className={s.adhPills}>
+        {parts.map((p) => (
+          <span key={p.text} className={`${s.adhPill} ${p.cls}`}>{p.text}</span>
+        ))}
+      </span>
+      <span className={s.metricLabel}>Plan adherence</span>
+    </span>
   );
 }
 

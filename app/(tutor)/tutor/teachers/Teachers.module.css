@@ -224,6 +224,64 @@
 .metricOk   { color: var(--color-diff-med-fg); }
 .metricWarn { color: var(--color-diff-hard-fg); }
 
+/* §5.2 effectiveness signals — second metrics row on each card. */
+.effectRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  border-top: 1px dashed var(--border);
+  padding-top: var(--s3);
+  margin-top: var(--s3);
+}
+
+.adhCluster {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.adhPills {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  flex-wrap: wrap;
+  min-height: 20px;
+}
+
+.adhPill {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--bg2);
+  color: var(--fg2);
+  white-space: nowrap;
+}
+
+.adhGood {
+  background: color-mix(in srgb, var(--color-diff-easy-fg) 12%, transparent);
+  color: var(--color-diff-easy-fg);
+}
+
+.adhWarn {
+  background: color-mix(in srgb, var(--color-diff-hard-fg) 12%, transparent);
+  color: var(--color-diff-hard-fg);
+}
+
+.adhMuted {
+  background: var(--bg2);
+  color: var(--fg3);
+}
+
+.sectionNote {
+  margin: var(--s2) 0 0;
+  font-size: 12.5px;
+  color: var(--fg3);
+  max-width: 62ch;
+}
+
 .teacherLast {
   margin-left: auto;
   font-size: 11px;

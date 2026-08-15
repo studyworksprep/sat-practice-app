@@ -21,7 +21,6 @@ export async function createNewLessonDraft(formData: FormData) {
 
   const title = String(formData.get('title') || '').trim() || 'Untitled lesson';
   const { data, error } = await ctx.supabase.rpc('create_lesson_revision', {
-    p_base_lesson_id: null,
     p_title: title,
   });
   if (error || !data) return actionFail(error?.message ?? 'Draft was not created.');
