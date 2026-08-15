@@ -1,0 +1,390 @@
+{
+  "title": "Solve Words in Context with Read, Predict, Match",
+  "description": "Read the complete text, use logic and context clues to predict the missing meaning, and match that prediction to the best-supported answer choice.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Words in Context are sentence-completion questions</h2><p>A Words in Context question asks which word or phrase most logically and precisely completes a short text. The blank is usually inside one sentence, but the evidence can appear anywhere in the text.</p><p>By the end of this lesson, you will be able to:</p><ul><li>read the entire text and trace its logic,</li><li>predict your own word or phrase before studying the choices,</li><li>test whether an answer fits the sentence perfectly, and</li><li>use elimination and word knowledge when a prediction is difficult.</li></ul>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "opening_exploration",
+      "html": "<h2>Start with the evidence around the blank</h2><blockquote><p>Although early critics described Mara Okafor's installations as chaotic, later researchers found recurring measurements and repeated ratios in nearly every piece. Those discoveries made the designs seem far less <strong>_____</strong> than they first appeared.</p></blockquote><p>Before looking at any answer choices, say a simple word or phrase that could complete the thought. You do not need an impressive vocabulary word. You need the right meaning.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "opening_observation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which word best completes the text about Okafor's designs?",
+        "choices": ["celebrated", "permanent", "arbitrary", "profitable"],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Recurring measurements and repeated ratios show that the designs follow a pattern rather than lacking one.",
+        "explanation": "Right. The evidence makes the designs seem less arbitrary, or less random. The clue is in the previous sentence, so reading only the sentence with the blank would miss it."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "name_the_process",
+      "html": "<h2>The four-step process</h2><ol><li><strong>Read:</strong> Read the entire text, including every sentence without the blank.</li><li><strong>Connect:</strong> Find context clues and map the logical relationships.</li><li><strong>Predict:</strong> Supply your own simple word or phrase that fits perfectly.</li><li><strong>Match:</strong> Find the choice that expresses your prediction and prove that it fits.</li></ol><blockquote><p><strong>Core process:</strong> Read the whole text. Connect the clues. Predict. Match.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "process_order_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which sequence gives you the strongest approach to a Words in Context question?",
+        "choices": ["Read the whole text, connect its clues, predict a meaning, then match a choice.", "Read the blank's sentence, choose the most familiar word, then check the other sentences.", "Define every answer choice first, then read only until one of those words seems possible.", "Use the word that sounds most sophisticated, then invent a reason it could work."],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Your understanding of the text should guide the answer choices, not the other way around.",
+        "explanation": "Exactly. Reading and predicting first keeps attractive answer choices from controlling your interpretation of the text."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "read_every_sentence",
+      "html": "<h2>Read every sentence</h2><p>SAT texts are short, so every sentence can matter. A sentence before the blank may introduce the subject, establish an expectation, or provide the evidence that determines the missing word. A sentence after the blank may explain a result or give an example.</p><blockquote><p><strong>Watch out:</strong> The blank's sentence tells you where the answer goes. The entire text tells you what the answer means.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "whole_text_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For months, the desert plant appeared inactive. After the season's first rainfall, however, it produced new leaves and flowers within days. The response showed that the plant's inactivity had been _____ rather than permanent. Which choice completes the text?",
+        "choices": ["decorative", "beneficial", "unnoticed", "temporary"],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Use both the quick growth after rain and the contrast created by 'rather than permanent.'",
+        "explanation": "Correct. The later growth shows that the inactivity was temporary. Both sentences contribute evidence for that meaning."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "logic_words",
+      "html": "<h2>Map the logic with transition words and conjunctions</h2><p>Small connecting words reveal how ideas relate:</p><ul><li><strong>Contrast:</strong> but, however, although, yet, rather than</li><li><strong>Cause or reason:</strong> because, since</li><li><strong>Result:</strong> therefore, thus, so</li><li><strong>Addition or continuation:</strong> moreover, and, also</li></ul><p>Do not merely notice a connector. State what it makes the text do: reverse direction, give a reason, show a result, or continue the same idea.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "logic_direction_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "At first, reviewers dismissed Chen's measurements as unreliable. However, three independent laboratories later reproduced them. What relationship does 'However' establish?",
+        "choices": ["The later tests explain why the measurements were dismissed.", "The later tests contrast with and weaken the original dismissal.", "The later tests provide another example of unreliable measurement.", "The later tests occurred before the reviewers formed an opinion."],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Ask whether the second sentence continues the reviewers' doubt or pushes against it.",
+        "explanation": "Yes. 'However' marks a reversal: the successful reproductions push against the earlier dismissal. A blank in the second sentence would need to respect that reversal."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "build_a_prediction",
+      "html": "<h2>Predict a meaning in your own words</h2><p>After you understand the text's logic, cover the choices and complete the blank yourself. Your prediction can be a plain word or a short phrase:</p><ul><li>&ldquo;not permanent&rdquo;</li><li>&ldquo;made the theory more believable&rdquo;</li><li>&ldquo;showed that the old view was wrong&rdquo;</li></ul><p>The prediction does not need to look like an SAT answer. It needs to capture the exact job the missing word must do.</p><blockquote><p><strong>Prediction standard:</strong> Your phrase should make the completed sentence logical, precise, and consistent with every clue.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "prediction_quality_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Because the revised model accounted for several anomalies that the previous model could not explain, researchers considered the revised model _____. Which prediction best captures the needed meaning before you see answer choices?",
+        "choices": ["older than the previous model", "difficult to publish", "unrelated to the anomalies", "more convincing or credible"],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "What effect would successfully explaining previously unexplained evidence have on researchers' opinion of the model?",
+        "explanation": "Right. Explaining the anomalies would make the revised model more convincing or credible. That prediction is specific enough to judge the choices."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "perfect_sentence_fit",
+      "html": "<h2>Test the whole sentence, not just the general topic</h2><p>An answer can be related to the passage and still fail in the blank. Check three kinds of fit:</p><ol><li><strong>Grammar:</strong> Does the sentence require a noun, verb, adjective, or adverb?</li><li><strong>Relationship:</strong> Can this subject reasonably perform that action on this object?</li><li><strong>Logic:</strong> Does the completed sentence express the relationship supported by the text?</li></ol><p>Then read the completed sentence from beginning to end. A correct answer should work cleanly, without forcing an unusual interpretation.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "hypothesis_model",
+      "html": "<h2>Model the subject–verb–object test</h2><blockquote><p>The new hypothesis _____ the field of neuroscience by providing a framework that united previously separate findings.</p></blockquote><p>First identify the roles:</p><ul><li><strong>Subject:</strong> the hypothesis</li><li><strong>Action:</strong> what the hypothesis did</li><li><strong>Object:</strong> the field of neuroscience</li><li><strong>Result clue:</strong> it united separate findings</li></ul><p>A useful prediction is <strong>changed or reshaped the field</strong>. The missing verb must describe something a hypothesis can reasonably do to a field, and it must agree with the positive result in the final phrase.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "hypothesis_fit_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The new hypothesis _____ the field of neuroscience by providing a framework that united previously separate findings. Which choice completes the text most logically and precisely?",
+        "choices": ["mistrusted", "transformed", "postponed", "contradicted"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Use the prediction 'changed or reshaped the field,' then check which verb works with both the subject and the object.",
+        "explanation": "Correct. A hypothesis can transform a field, and the unifying framework explains how it did so."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "reject_nearby_words",
+      "html": "<h2>Why related-looking choices can still fail</h2><p>In the hypothesis example:</p><ul><li><strong>Mistrusted</strong> does not work because a hypothesis is not a person capable of mistrusting a field.</li><li><strong>Postponed</strong> does not describe a sensible relationship between a hypothesis and a scientific field.</li><li><strong>Contradicted</strong> can describe what a hypothesis does to a claim, prediction, or piece of evidence. Here, however, saying it &ldquo;contradicted the field&rdquo; does not express the supported idea that the hypothesis united findings and reshaped the discipline.</li></ul><blockquote><p><strong>Key test:</strong> Do not ask only, &ldquo;Is this word related to science?&rdquo; Ask, &ldquo;Can this subject do this action to this object in this exact context?&rdquo;</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "grammar_fit_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The archive's labels were so _____ that researchers could locate individual letters within minutes. Which choice fits both the grammar and the logic?",
+        "choices": ["methodically", "catalog", "precise", "organize"],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "After 'were so,' the sentence needs an adjective describing the labels. The result was easy location of individual letters.",
+        "explanation": "Right. 'Precise' is an adjective, and precise labels would help researchers locate items quickly. The other choices do not fit the required grammatical role."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "match_the_prediction",
+      "html": "<h2>Match meaning, not wording</h2><p>Now uncover the answer choices. Look for a word that expresses your predicted meaning. The answer may be a synonym you did not predict exactly.</p><p>If you predicted &ldquo;divided into opposing groups,&rdquo; a choice such as <em>fractured</em> could match. If you predicted &ldquo;made available to more people,&rdquo; <em>democratized</em> could match.</p><blockquote><p><strong>Match test:</strong> Replace the blank with the choice and reread the sentence. The choice must preserve your prediction and fit every clue.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "prediction_match_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The panelists rarely agreed, even about the field's most basic definitions. Their discussion revealed how _____ the discipline had become. If your prediction is 'split into opposing groups,' which choice is the best match?",
+        "choices": ["fractured", "generous", "methodical", "celebrated"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Look for a word that can mean divided or split, then test it in the completed sentence.",
+        "explanation": "Exactly. 'Fractured' matches the prediction 'split into opposing groups' and is supported by the panelists' persistent disagreement."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "no_match_second_pass",
+      "html": "<h2>If no choice matches, make a second pass</h2><p>A missing match does not mean prediction was a bad strategy. It usually means one of two things:</p><ul><li>Your prediction captured the general topic but missed the exact relationship.</li><li>You overlooked a clue that makes one answer more precise.</li></ul><ol><li>Return to the text.</li><li>Identify the strongest transition, conjunction, example, or result.</li><li>Revise your prediction only if that clue requires it.</li><li>Test the choices again.</li></ol><p>Do not abandon the text and start choosing by sound.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "no_match_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Inexpensive sensors allowed small laboratories to conduct tests that once only wealthy institutes could afford. The sensors therefore _____ advanced research. A student predicted 'made research less expensive,' but no choice says that. Which choice best captures the stronger result clue?",
+        "choices": ["delayed", "measured", "complicated", "democratized"],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The key result is not merely a lower price. Ask what became possible for small laboratories.",
+        "explanation": "Correct. The sensors democratized advanced research by making it accessible to laboratories that previously could not afford it. The first prediction noticed cost but missed the access clue."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "eliminate_by_context",
+      "html": "<h2>When prediction is difficult, eliminate by context</h2><p>Sometimes you understand the passage but cannot produce a clean word. In that case, test each answer against the same standards:</p><ul><li>Does it fit the grammar?</li><li>Can the subject and object have this relationship?</li><li>Does it follow the text's logic and tone?</li><li>Can you point to a specific clue that supports it?</li></ul><p>Eliminate choices that fail. A remaining choice is not correct merely because the others are unfamiliar; it still needs textual support.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "context_elimination_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The committee's conclusion was _____; it followed directly from three independent experiments that produced nearly identical results. Which choice is supported by the context?",
+        "choices": ["arbitrary", "well-supported", "secretive", "reluctant"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The semicolon explains the missing description. What does repeated independent evidence do for a conclusion?",
+        "explanation": "Right. Three independent experiments with similar results make the conclusion well-supported. The other choices have no supporting clue."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "vocabulary_priority",
+      "html": "<h2>Use vocabulary in a reliable order</h2><p>When the answer choices contain difficult words, use the most reliable information first:</p><ol><li><strong>Words you know:</strong> Test familiar meanings against your prediction and eliminate familiar words that clearly fail.</li><li><strong>Recognizable pieces:</strong> Use a known prefix, root, suffix, or a cognate from a Latin language such as Spanish to form a possible meaning.</li><li><strong>The feeling of the word:</strong> Use sound or vague association only as a last resort.</li></ol><blockquote><p><strong>Priority:</strong> Known meaning, then meaningful word parts, then feeling.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "known_words_first_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Unlike the ornate exterior, the building's interior was intentionally _____, with bare walls and almost no decoration. Which choice should a student select if they recognize its meaning?",
+        "choices": ["unadorned", "sumptuous", "erratic", "dubious"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The clue says the interior has bare walls and almost no decoration.",
+        "explanation": "Correct. 'Unadorned' means not decorated, so it matches the direct description. Once a known word fits perfectly, unfamiliar choices do not need to be decoded."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "unknown_does_not_mean_wrong",
+      "html": "<h2>Do not force a familiar word into the blank</h2><p>Some students deliberately avoid an unfamiliar answer and force a word they know into the sentence. Familiarity is not evidence. A familiar word that conflicts with the text is still wrong, while an unfamiliar word may be exactly right.</p><p>The digital SAT lets you visually eliminate answer choices. Use that tool to remove a choice when you can name a contextual reason it fails: wrong logic, wrong grammar, wrong subject–object relationship, or no supporting clue.</p><blockquote><p><strong>Elimination rule:</strong> Cross out answers that do not fit. Do not cross out an answer merely because you do not understand it.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "unfamiliar_choice_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Because the finding came from a small preliminary sample, the researchers described their conclusion as _____ and planned a larger study. A student knows that 'conclusive' means final but does not know 'provisional.' What should the student do?",
+        "choices": ["Select 'conclusive' because a known word is safer than an unknown one.", "Eliminate 'provisional' immediately because its meaning is unfamiliar.", "Ignore the context and choose whichever word has the most positive feeling.", "Eliminate 'conclusive' because it conflicts with 'preliminary' and keep 'provisional' in play while testing the remaining clues."],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Use the visual eliminator on a choice only when the text gives you a reason that choice cannot fit.",
+        "explanation": "Exactly. 'Conclusive' conflicts with the preliminary evidence and the planned larger study, so it can be eliminated. 'Provisional' should remain in play until context or word knowledge supports or rejects it; unfamiliarity alone is not a reason to cross it out."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "roots_and_cognates",
+      "html": "<h2>Use roots and cognates as evidence, not proof</h2><p>A recognizable piece can help you form a tentative definition. For example, <em>provisional</em> resembles Spanish <em>provisional</em> and relates to something arranged for the present, not necessarily forever. But word parts and cognates can mislead, so always confirm the possible meaning with the sentence.</p><ol><li>Notice the familiar piece.</li><li>Form a possible meaning.</li><li>Check whether that meaning fits every clue.</li></ol>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "roots_cognates_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The council adopted a provisional policy, one designed to remain in effect only until the full review was complete. Which meaning of 'provisional' is confirmed by the context?",
+        "choices": ["temporary", "unanimous", "expensive", "controversial"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Use the phrase 'only until the full review was complete' to confirm or reject any meaning suggested by a cognate.",
+        "explanation": "Yes. The time limit confirms that 'provisional' means temporary. The recognizable word form helps, but the context proves the meaning."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "feeling_last_resort",
+      "html": "<h2>A word's feeling is the least reliable clue</h2><p>Students often feel that an unfamiliar word sounds positive, negative, forceful, or uncertain. Those impressions can come from another word with a similar sound, and they are often wrong.</p><p>If you must use a feeling, use it only after you have read the full text, made the best prediction you can, tested known words, and considered recognizable pieces. Then choose the option with the strongest contextual support—not the nicest sound.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "feeling_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The scientist's explanation was lucid; even readers with no technical training understood it immediately. If 'lucid' is unfamiliar, which contextual meaning should override any vague feeling about the word?",
+        "choices": ["controversial", "lengthy", "clear", "tentative"],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The semicolon gives the result of the explanation's quality: nonspecialists understood it immediately.",
+        "explanation": "Correct. The result shows that 'lucid' means clear. Direct context is more reliable than how an unfamiliar word sounds."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "complete_worked_example",
+      "html": "<h2>Work the complete process</h2><blockquote><p>Historians once treated the harbor logs as minor records of local trade. Yet the logs documented shipments from ports across three continents and revealed commercial relationships absent from official treaties. The records therefore _____ historians' understanding of the city's international influence.</p></blockquote><ol><li><strong>Read:</strong> The second sentence contains the decisive evidence.</li><li><strong>Connect:</strong> <em>Yet</em> reverses the idea that the logs were minor; <em>therefore</em> introduces their result.</li><li><strong>Predict:</strong> &ldquo;greatly expanded or changed the understanding.&rdquo;</li><li><strong>Match:</strong> Test each answer against that prediction and the subject–object relationship.</li></ol>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "worked_example_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice most logically and precisely completes the harbor-log text?",
+        "choices": ["broadened", "mistrusted", "concealed", "postponed"],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Match the prediction 'greatly expanded or changed the understanding.' Then reread the completed sentence.",
+        "explanation": "Right. The international evidence broadened historians' understanding. The other verbs do not express the supported relationship between the records and historians' understanding."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "transfer_intro",
+      "html": "<h2>Now transfer the process</h2><p>For each new text, do not begin with the choices. Read every sentence, name the logical relationship, predict a plain meaning, and then match it to the best answer.</p><blockquote><p><strong>Use the same four moves:</strong> Read. Connect. Predict. Match.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_one_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The researchers expected other laboratories to question their surprising result. Despite this initial _____, several teams agreed to repeat the experiment, and all obtained similar findings. Which choice completes the text?",
+        "choices": ["enthusiasm", "skepticism", "precision", "acclaim"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The first sentence predicts questioning. 'Despite' says the teams repeated the work even though that reaction existed.",
+        "explanation": "Correct. 'Skepticism' means doubt, matching both the expected questioning and the contrast introduced by 'Despite.'"
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_two_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The poet revised every line repeatedly, sometimes replacing a single image dozens of times. Describing the finished poem as spontaneous would therefore be _____. Which choice completes the text?",
+        "choices": ["appropriate", "premature", "inconsequential", "inaccurate"],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Repeated revision conflicts with the idea that the poem was created spontaneously. 'Therefore' introduces that result.",
+        "explanation": "Exactly. Calling the heavily revised poem spontaneous would be inaccurate because the description conflicts with the evidence."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "transfer_three_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Rather than overturning the earlier theory, the discovery _____ it by identifying the limited conditions under which its predictions remained accurate. Which choice completes the text?",
+        "choices": ["ignored", "refined", "dramatized", "replaced"],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "'Rather than' rejects total replacement. The discovery made the theory more exact by defining its limits.",
+        "explanation": "Correct. The discovery refined the theory: it did not discard it, but made its scope more precise."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which process best solves a Words in Context question?",
+        "choices": ["Read only the blank's sentence, choose a familiar word, and ignore choices you cannot define.", "Study the answer choices first, select the word with the most positive feeling, and reread only if necessary.", "Read the entire text, connect its logic and clues, predict a perfectly fitting meaning, then match and verify a choice.", "Translate every unfamiliar choice into a root before deciding what the passage is saying."],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Retrieve the four moves: read, connect, predict, match.",
+        "explanation": "You have it. The text determines the meaning; your prediction creates a target; and the final reread proves that the selected answer fits."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "lesson_finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can solve Words in Context questions</h2><p>You can read the full text, trace its logical connections, predict the missing meaning, test subject–verb–object fit, and match the best-supported choice. When vocabulary is difficult, you can rely first on known meanings, then on recognizable pieces, and only last on a word's feeling.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": { "display": "hidden" }
+    }
+  ]
+}
