@@ -1,17 +1,17 @@
 {
   "title": "Find Probability from Tables: Favorable over Total",
-  "description": "Use Total first, let given restrict the group, and find Favorable outcomes within that group to solve SAT probability questions.",
+  "description": "Use Total first, read SAT-style given conditions as restrictions, and find Favorable outcomes within the correct table group.",
   "blocks": [
     {
       "kind": "text",
       "id": "lesson_preview",
-      "html": "<h2>Probability is Favorable over Total</h2><p>Most SAT probability questions do not ask you to count complicated arrangements. Instead, they give you a table of categorized people or objects.</p><p>By the end of this lesson, you will be able to:</p><ol><li>identify the correct <strong>Total</strong>,</li><li>use <strong>given</strong> to restrict that Total,</li><li>find the <strong>Favorable</strong> outcomes inside it, and</li><li>write the probability as Favorable over Total.</li></ol><p>This lesson covers one event at a time. It does not introduce combined probability with <strong>and</strong> or <strong>or</strong>.</p>",
+      "html": "<h2>Probability is Favorable over Total</h2><p>Most SAT probability questions do not ask you to count complicated arrangements. Instead, they give you a table of categorized people or objects.</p><p>By the end of this lesson, you will be able to:</p><ol><li>identify the correct <strong>Total</strong>,</li><li>read the condition after <strong>given that</strong> as a restriction on that Total,</li><li>find the <strong>Favorable</strong> outcomes inside the restricted group, and</li><li>write the probability as Favorable over Total.</li></ol><p>This lesson covers one event at a time. It does not introduce combined probability with <strong>and</strong> or <strong>or</strong>.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "first_exploration",
-      "html": "<h2>Find the group before the fraction</h2><p>A store records the colors and sizes of 50 shirts:</p><blockquote><p><strong>Size | Red | Blue | Total</strong><br>Small | 12 | 8 | 20<br>Large | 18 | 12 | 30<br><strong>Total | 30 | 20 | 50</strong></p></blockquote><p>One shirt is selected at random from <strong>all the shirts</strong>. Before counting blue shirts, decide which number represents every shirt that could be selected.</p>",
+      "html": "<h2>Find the group before the fraction</h2><p>A store records the colors and sizes of 50 shirts:</p><table><caption>Shirts by size and color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Red</th><th scope=\"col\">Blue</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Total</th><td>30</td><td>20</td><td>50</td></tr></tbody></table><p>One shirt is selected at random from <strong>all the shirts</strong>. Before counting blue shirts, decide which number represents every shirt that could be selected.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -36,7 +36,7 @@
     {
       "kind": "text",
       "id": "probability_formula",
-      "html": "<h2>The basic probability rule</h2><blockquote><p><strong>Probability:</strong> Favorable outcomes ÷ Total possible outcomes</p></blockquote><p>The outcomes must be equally likely. In SAT table questions, that usually means one person or item is selected at random, so each counted person or item has the same chance to be chosen.</p><p><strong>Favorable</strong> does not mean good or desirable. It means the outcomes that match what the question asks for.</p><ul><li>Probability 0 means impossible.</li><li>Probability 1 means certain.</li><li>Every probability lies from 0 to 1.</li></ul>",
+      "html": "<h2>The basic probability rule</h2><blockquote><p><strong>Probability:</strong></p><p>\\[\\displaystyle P(\\text{event})=\\frac{\\text{Favorable outcomes}}{\\text{Total possible outcomes}}\\]</p></blockquote><p>The outcomes must be equally likely. In SAT table questions, that usually means one person or item is selected at random, so each counted person or item has the same chance to be chosen.</p><p><strong>Favorable</strong> does not mean good or desirable. It means the outcomes that match what the question asks for.</p><ul><li>Probability 0 means impossible.</li><li>Probability 1 means certain.</li><li>Every probability lies from 0 to 1.</li></ul>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -54,14 +54,14 @@
         "correct_index": 0,
         "allow_retry": true,
         "hint": "Favorable counts the shirts that match blue. Total counts every shirt that could be selected.",
-        "explanation": "Right. There are 20 blue shirts among 50 possible shirts, so the probability is 20/50."
+        "explanation": "Right. There are 20 blue shirts among 50 possible shirts, so the probability is \\(\\frac{20}{50}\\)."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "probability_meaning",
-      "html": "<h2>A probability describes a long-run chance</h2><p>A probability of 20/50, or 2/5, does not predict the result of one specific selection. It describes the chance that a randomly selected outcome will match the event.</p><p>On one selection, the shirt will either be blue or not blue. The probability tells you how likely blue is before the selection happens.</p><p>The SAT usually asks you to build or interpret this fraction, not to explain advanced probability theory.</p>",
+      "html": "<h2>A probability describes a long-run chance</h2><p>A probability of \\(\\frac{20}{50}\\), or \\(\\frac{2}{5}\\), does not predict the result of one specific selection. It describes the chance that a randomly selected outcome will match the event.</p><p>On one selection, the shirt will either be blue or not blue. The probability tells you how likely blue is before the selection happens.</p><p>The SAT usually asks you to build or interpret this fraction, not to explain advanced probability theory.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -100,24 +100,24 @@
       "id": "table_totals_check",
       "block_type": "check",
       "content": {
-        "prompt": "A table contains 40 tenth-grade students and 35 eleventh-grade students. One student is selected at random from all students in the table. Which Total should be used?",
+        "prompt": "Using the shirt table, which choice correctly identifies a row total, a column total, and the grand total?",
         "choices": [
-          "40",
-          "75",
-          "35",
-          "5"
+          "Small row = 20; red column = 20; grand total = 50",
+          "Large row = 30; blue column = 20; grand total = 50",
+          "Large row = 12; blue column = 30; grand total = 20",
+          "Small row = 50; red column = 12; grand total = 30"
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "The selection is from all students, so combine both row totals.",
-        "explanation": "Exactly. All 40 + 35 = 75 students are possible outcomes, so 75 is the grand Total."
+        "hint": "Read across the Large row, down the Blue column, and then check the bottom-right corner.",
+        "explanation": "Exactly. The Large row totals 30, the Blue column totals 20, and the bottom-right grand total is 50."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "given_restricts_total",
-      "html": "<h2>Given describes the Total</h2><p>The word <strong>given</strong> tells you that the selected outcome is already known to belong to a subset.</p><blockquote><p><strong>Translation:</strong> Probability of A <em>given</em> B means restrict the Total to B first.</p></blockquote><p>Examples:</p><ul><li><strong>given the shirt is large</strong> → Total is all large shirts</li><li><strong>given the student is in grade 11</strong> → Total is all grade 11 students</li><li><strong>given the book is hardcover</strong> → Total is all hardcover books</li></ul><p>Do not use the grand total after the question has said <strong>given</strong>.</p>",
+      "html": "<h2>Read the condition after given that</h2><p>The SAT commonly asks a question in this form:</p><blockquote><p><strong>What is the probability of selecting a fiction book, given that the book selected is hardcover?</strong></p></blockquote><ul><li><strong>Target before given:</strong> fiction describes Favorable.</li><li><strong>Condition after given that:</strong> hardcover restricts Total.</li></ul><p>The same restriction can appear as an <strong>if</strong> statement: <em>If the book selected is hardcover, what is the probability that it is fiction?</em></p><table><caption>Library books by format and genre</caption><thead><tr><th scope=\"col\">Format</th><th scope=\"col\">Nonfiction</th><th scope=\"col\">Fiction</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Hardcover</th><td>16</td><td>24</td><td>40</td></tr><tr><th scope=\"row\">Paperback</th><td>20</td><td>30</td><td>50</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>54</td><td>90</td></tr></tbody></table><blockquote><p><strong>Translation:</strong> The condition after <em>given that</em> tells you which row or column becomes the Total.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -125,7 +125,7 @@
       "id": "given_total_check",
       "block_type": "check",
       "content": {
-        "prompt": "A library table shows 16 hardcover nonfiction books and 24 hardcover fiction books. A book is selected at random, given that it is hardcover. What is the Total?",
+        "prompt": "A book represented in the library table is selected at random. What is the probability of selecting a fiction book, given that the book selected is hardcover? Which number is the Total?",
         "choices": [
           "16, because nonfiction is listed first",
           "24, because fiction is favorable",
@@ -142,7 +142,7 @@
     {
       "kind": "text",
       "id": "favorable_within_total",
-      "html": "<h2>Find Favorable inside the restricted group</h2><p>After <strong>given</strong> identifies the Total, stay inside that row or column.</p><p>For the library example:</p><ul><li><strong>Question:</strong> probability the book is fiction, given that it is hardcover</li><li><strong>Total:</strong> all 40 hardcover books</li><li><strong>Favorable:</strong> the 24 fiction books inside the hardcover group</li><li><strong>Probability:</strong> 24/40</li></ul><p>Both numbers come from the restricted hardcover subset.</p>",
+      "html": "<h2>Find Favorable inside the restricted group</h2><p>After the condition <strong>given that the book selected is hardcover</strong> restricts Total, stay inside the hardcover row.</p><ul><li><strong>Total:</strong> all 40 hardcover books</li><li><strong>Favorable:</strong> the 24 fiction books inside the hardcover row</li></ul><p>Now place Favorable over Total:</p><blockquote><p>\\[\\displaystyle \\frac{24\\text{ hardcover fiction books}}{40\\text{ hardcover books}}=\\frac{3}{5}\\]</p></blockquote><p>Both numbers come from the restricted hardcover subset.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -150,24 +150,24 @@
       "id": "favorable_within_check",
       "block_type": "check",
       "content": {
-        "prompt": "Using 16 hardcover nonfiction books and 24 hardcover fiction books, what is the probability of fiction given hardcover?",
+        "prompt": "A book represented in the library table is selected at random. What is the probability of selecting a fiction book, given that the book selected is hardcover?",
         "choices": [
-          "24/40",
+          "\\(\\frac{24}{40}\\)",
           "24 divided by the grand total of all books",
-          "16/40",
-          "40/24"
+          "\\(\\frac{16}{40}\\)",
+          "\\(\\frac{40}{24}\\)"
         ],
         "correct_index": 0,
         "allow_retry": true,
         "hint": "The Total is all 40 hardcover books. Favorable is the fiction count within hardcover.",
-        "explanation": "Right. Within the 40 hardcover books, 24 are fiction, so the probability is 24/40, or 3/5."
+        "explanation": "Right. Within the 40 hardcover books, 24 are fiction, so the probability is \\(\\frac{24}{40}=\\frac{3}{5}\\)."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "grand_total_trap",
-      "html": "<h2>The grand total is the main given trap</h2><p>The grand total is visually easy to find, so it often appears in a wrong answer. Before using it, ask whether every item in the table is still allowed.</p><p>If the question says <strong>given grade 10</strong>, students in other grades are no longer possible outcomes. The denominator must be the grade 10 row total.</p><blockquote><p><strong>Quick check:</strong> Every Favorable outcome must be inside the Total, and the Total must obey the given condition.</p></blockquote>",
+      "html": "<h2>The grand total is the main given trap</h2><p>The grand total is visually easy to find, so it often appears in a wrong answer. Before using it, ask whether every item in the table is still allowed.</p><table><caption>Students by grade and arts choice</caption><thead><tr><th scope=\"col\">Grade</th><th scope=\"col\">Art</th><th scope=\"col\">Music</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Grade 10</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Grade 11</th><td>14</td><td>26</td><td>40</td></tr><tr><th scope=\"row\">Total</th><td>32</td><td>38</td><td>70</td></tr></tbody></table><p>For <em>the probability of selecting a student who chose art, given that the student selected is in grade 10</em>, students in grade 11 are no longer possible outcomes. The denominator must be the grade 10 row total, not 70.</p><blockquote><p><strong>Quick check:</strong> Every Favorable outcome must be inside the Total, and the Total must obey the condition after <em>given that</em>.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -175,24 +175,24 @@
       "id": "denominator_trap_check",
       "block_type": "check",
       "content": {
-        "prompt": "A table shows grade 10: 18 chose art and 12 chose music; grade 11: 14 chose art and 26 chose music. What is the probability of art, given grade 10?",
+        "prompt": "One student represented in the arts-choice table is selected at random. What is the probability of selecting a student who chose art, given that the student selected is in grade 10?",
         "choices": [
-          "18/70",
-          "32/70",
-          "18/32",
-          "18/30"
+          "\\(\\frac{18}{70}\\)",
+          "\\(\\frac{32}{70}\\)",
+          "\\(\\frac{18}{32}\\)",
+          "\\(\\frac{18}{30}\\)"
         ],
         "correct_index": 3,
         "allow_retry": true,
-        "hint": "Given grade 10 makes the Total 18 + 12 = 30. Then find the art count within grade 10.",
-        "explanation": "Correct. The grade 10 row contains 30 students, and 18 of those students chose art, so the probability is 18/30."
+        "hint": "The condition after 'given that' restricts Total to the 18 + 12 = 30 grade 10 students. Then find the art count within that row.",
+        "explanation": "Correct. The grade 10 row contains 30 students, and 18 of those students chose art, so the probability is \\(\\frac{18}{30}\\)."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "without_given",
-      "html": "<h2>Without a restriction, use the full selection group</h2><p>Not every question uses the word <strong>given</strong>. Read the selection phrase:</p><ul><li><strong>selected from all students in the table</strong> → use the grand total</li><li><strong>selected from grade 10 students</strong> → use the grade 10 row total</li><li><strong>selected from students who chose music</strong> → use the music column total</li></ul><p>The word <strong>given</strong> is a strong clue, but any wording that restricts the selection changes the Total.</p>",
+      "html": "<h2>Without given, read the selection group</h2><p>Not every question uses <strong>given that</strong>. Read exactly which group the random selection comes from:</p><ul><li><strong>one student represented in the table</strong> → use the grand total</li><li><strong>one grade 10 student</strong> → use the grade 10 row total</li><li><strong>one student who chose music</strong> → use the music column total</li></ul><p>The phrase <strong>given that</strong> is a strong clue, but any wording that restricts the selection changes the Total.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -202,22 +202,22 @@
       "content": {
         "prompt": "A table shows grade 10: 18 art and 12 music; grade 11: 14 art and 26 music. One student is selected from all 70 students. What is the probability the student chose art?",
         "choices": [
-          "18/30",
-          "32/70",
-          "14/40",
-          "38/70"
+          "\\(\\frac{18}{30}\\)",
+          "\\(\\frac{32}{70}\\)",
+          "\\(\\frac{14}{40}\\)",
+          "\\(\\frac{38}{70}\\)"
         ],
         "correct_index": 1,
         "allow_retry": true,
         "hint": "There is no restriction by grade. Add the art counts for Favorable and use all students for Total.",
-        "explanation": "Exactly. There are 18 + 14 = 32 art students among all 70 students, so the probability is 32/70."
+        "explanation": "Exactly. There are 18 + 14 = 32 art students among all 70 students, so the probability is \\(\\frac{32}{70}\\)."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "complete_model",
-      "html": "<h2>Model the complete table process</h2><p>A nursery records plant size and flower color:</p><blockquote><p><strong>Size | Green | Yellow | Total</strong><br>Small | 9 | 6 | 15<br>Medium | 12 | 8 | 20<br>Large | 15 | 10 | 25<br><strong>Total | 36 | 24 | 60</strong></p></blockquote><p>Find the probability that a plant is green, <strong>given that it is medium</strong>.</p><ol><li><strong>Total first:</strong> given medium → 20 medium plants</li><li><strong>Favorable inside Total:</strong> 12 medium plants are green</li><li><strong>Fraction:</strong> 12/20 = 3/5</li></ol>",
+      "html": "<h2>Model the complete table process</h2><p>A nursery records plant size and flower color:</p><table><caption>Plants by size and flower color</caption><thead><tr><th scope=\"col\">Size</th><th scope=\"col\">Green</th><th scope=\"col\">Yellow</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Small</th><td>9</td><td>6</td><td>15</td></tr><tr><th scope=\"row\">Medium</th><td>12</td><td>8</td><td>20</td></tr><tr><th scope=\"row\">Large</th><td>15</td><td>10</td><td>25</td></tr><tr><th scope=\"row\">Total</th><td>36</td><td>24</td><td>60</td></tr></tbody></table><p>One plant represented in the table is selected at random. Find the probability of selecting a green plant, <strong>given that the plant selected is medium</strong>.</p><ol><li><strong>Total first:</strong> the condition after <em>given that</em> restricts Total to 20 medium plants.</li><li><strong>Favorable inside Total:</strong> 12 plants in the medium row are green.</li><li><strong>Fraction:</strong> \\(\\frac{12}{20}=\\frac{3}{5}\\).</li></ol>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -225,7 +225,7 @@
       "id": "model_check",
       "block_type": "check",
       "content": {
-        "prompt": "Why is 12/20 the correct setup for green given medium in the nursery table?",
+        "prompt": "Why is \\(\\frac{12}{20}\\) the correct setup for the probability of selecting a green plant, given that the plant selected is medium?",
         "choices": [
           "There are 12 green plants in the whole table and 20 yellow plants.",
           "There are 20 plants in the whole table and 12 are medium.",
@@ -235,14 +235,14 @@
         "correct_index": 2,
         "allow_retry": true,
         "hint": "State the restricted Total first, then the matching count inside that same group.",
-        "explanation": "Correct. Given medium restricts the Total to 20 plants, and 12 plants within that group satisfy green."
+        "explanation": "Correct. The condition after 'given that' restricts Total to 20 medium plants, and 12 plants within that group are green."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "reverse_table_direction",
-      "html": "<h2>Given may point to a row or a column</h2><p>Do not assume the given condition always names a row. It can name either table category.</p><blockquote><p><strong>Role | Bus | Bike | Total</strong><br>Student | 18 | 12 | 30<br>Teacher | 6 | 4 | 10<br><strong>Total | 24 | 16 | 40</strong></p></blockquote><p>For the probability of <strong>teacher given bus</strong>:</p><ul><li><strong>Total:</strong> all 24 bus riders—the bus column</li><li><strong>Favorable:</strong> 6 teachers inside that column</li><li><strong>Probability:</strong> 6/24</li></ul>",
+      "html": "<h2>The given condition may name a row or a column</h2><p>Do not assume the condition after <strong>given that</strong> always names a row. It can name either table category.</p><table><caption>Commuters by role and transportation</caption><thead><tr><th scope=\"col\">Role</th><th scope=\"col\">Bus</th><th scope=\"col\">Bike</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Student</th><td>18</td><td>12</td><td>30</td></tr><tr><th scope=\"row\">Teacher</th><td>6</td><td>4</td><td>10</td></tr><tr><th scope=\"row\">Total</th><td>24</td><td>16</td><td>40</td></tr></tbody></table><p>For <em>the probability of selecting a teacher, given that the person selected rides the bus</em>:</p><ul><li><strong>Total:</strong> all 24 bus riders—the bus column</li><li><strong>Favorable:</strong> 6 teachers inside that column</li><li><strong>Probability:</strong> \\(\\frac{6}{24}\\)</li></ul>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -250,24 +250,24 @@
       "id": "reverse_direction_check",
       "block_type": "check",
       "content": {
-        "prompt": "Using students: 18 bus and 12 bike; teachers: 6 bus and 4 bike, what is the probability of teacher given bus?",
+        "prompt": "One person represented in the commuter table is selected at random. What is the probability of selecting a teacher, given that the person selected rides the bus?",
         "choices": [
-          "6/24",
-          "6/10",
-          "24/40",
-          "18/24"
+          "\\(\\frac{6}{24}\\)",
+          "\\(\\frac{6}{10}\\)",
+          "\\(\\frac{24}{40}\\)",
+          "\\(\\frac{18}{24}\\)"
         ],
         "correct_index": 0,
         "allow_retry": true,
-        "hint": "Given bus makes all 24 bus riders the Total. Find teachers within the bus column.",
-        "explanation": "Right. Of the 24 bus riders, 6 are teachers, so the probability is 6/24, or 1/4."
+        "hint": "The condition after 'given that' makes all 24 bus riders the Total. Find teachers within the bus column.",
+        "explanation": "Right. Of the 24 bus riders, 6 are teachers, so the probability is \\(\\frac{6}{24}=\\frac{1}{4}\\)."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "missing_totals",
-      "html": "<h2>If totals are missing, add only the needed group</h2><p>Some tables omit the total row or column. You may need one simple addition before building the probability.</p><p>Suppose an afternoon group contains 16 algebra students and 9 geometry students. For a question <strong>given afternoon</strong>:</p><ul><li>Total = 16 + 9 = 25 afternoon students</li><li>If geometry is Favorable, Favorable = 9</li><li>Probability = 9/25</li></ul><p>You do not need to calculate every total in the table—only the Total named by the selection wording.</p>",
+      "html": "<h2>If totals are missing, add only the needed group</h2><p>Some tables omit the total row or column. You may need one simple addition before building the probability.</p><table><caption>Students by session and class</caption><thead><tr><th scope=\"col\">Session</th><th scope=\"col\">Algebra</th><th scope=\"col\">Geometry</th></tr></thead><tbody><tr><th scope=\"row\">Afternoon</th><td>16</td><td>9</td></tr><tr><th scope=\"row\">Evening</th><td>14</td><td>11</td></tr></tbody></table><p>For <em>the probability of selecting a geometry student, given that the student selected attends the afternoon session</em>:</p><ul><li><strong>Total:</strong> \\(16+9=25\\) afternoon students</li><li><strong>Favorable:</strong> 9 geometry students in the afternoon row</li><li><strong>Probability:</strong> \\(\\frac{9}{25}\\)</li></ul><p>You do not need to calculate every total in the table—only the Total named by the selection wording.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -275,24 +275,24 @@
       "id": "missing_total_check",
       "block_type": "check",
       "content": {
-        "prompt": "An afternoon class group contains 16 algebra students and 9 geometry students. What is the probability of geometry, given afternoon?",
+        "prompt": "One student represented in the class table is selected at random. What is the probability of selecting a geometry student, given that the student selected attends the afternoon session?",
         "choices": [
-          "9/16",
-          "16/25",
-          "25/9",
-          "9/25"
+          "\\(\\frac{9}{16}\\)",
+          "\\(\\frac{16}{25}\\)",
+          "\\(\\frac{25}{9}\\)",
+          "\\(\\frac{9}{25}\\)"
         ],
         "correct_index": 3,
         "allow_retry": true,
         "hint": "First add 16 + 9 for the afternoon Total. Then place the 9 geometry students over that Total.",
-        "explanation": "Correct. The afternoon Total is 25, and 9 of those students are in geometry, so the probability is 9/25."
+        "explanation": "Correct. The afternoon Total is 25, and 9 of those students are in geometry, so the probability is \\(\\frac{9}{25}\\)."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "match_answer_form",
-      "html": "<h2>Keep the setup visible, then match the answer form</h2><p>The unsimplified fraction shows your reasoning clearly:</p><blockquote><p><strong>12 medium green plants / 20 medium plants = 12/20 = 3/5</strong></p></blockquote><p>Build Favorable/Total before simplifying. Then match the answer format the question requests. Equivalent fractions, decimals, and percents describe the same probability, but SAT table questions often let you identify the fraction directly.</p><p>A useful check: Favorable cannot be larger than Total, so your probability fraction should not be greater than 1.</p>",
+      "html": "<h2>Keep the setup visible, then match the answer form</h2><p>The unsimplified fraction shows your reasoning clearly:</p><blockquote><p>\\[\\displaystyle \\frac{12\\text{ medium green plants}}{20\\text{ medium plants}}=\\frac{12}{20}=\\frac{3}{5}\\]</p></blockquote><p>Build the Favorable-over-Total fraction before simplifying. Then match the answer format the question requests. Equivalent fractions, decimals, and percents describe the same probability, but SAT table questions often let you identify the fraction directly.</p><p>A useful check: Favorable cannot be larger than Total, so your probability fraction should not be greater than 1.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -300,36 +300,36 @@
       "id": "answer_form_check",
       "block_type": "check",
       "content": {
-        "prompt": "A table gives 15 Favorable outcomes out of 60 Total outcomes. Which simplified probability is equivalent to the correct setup?",
+        "prompt": "A table gives 15 Favorable outcomes out of 60 Total outcomes. Which simplified probability is equivalent to \\(\\frac{15}{60}\\)?",
         "choices": [
           "4",
-          "1/4",
-          "15/45",
-          "3/4"
+          "\\(\\frac{1}{4}\\)",
+          "\\(\\frac{15}{45}\\)",
+          "\\(\\frac{3}{4}\\)"
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Start with 15/60, then divide the numerator and denominator by 15.",
-        "explanation": "Exactly. Favorable/Total is 15/60, which simplifies to 1/4."
+        "hint": "Divide the numerator and denominator of \\(\\frac{15}{60}\\) by 15.",
+        "explanation": "Exactly. \\(\\frac{15}{60}\\) simplifies to \\(\\frac{1}{4}\\)."
       },
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "single_event_scope",
-      "html": "<h2>Stay with one event at a time</h2><p>This SAT tool covers questions such as:</p><ul><li>probability of blue,</li><li>probability of art given grade 10, or</li><li>probability of teacher given bus.</li></ul><p>Each asks for one matching category inside one Total. This lesson does not cover rules for combining events with <strong>and</strong> or <strong>or</strong>. Do not invent a combination rule when the question only asks for one cell, row, or column.</p>",
+      "html": "<h2>Stay with one event at a time</h2><p>This SAT tool covers questions such as:</p><ul><li>the probability of selecting a blue item,</li><li>the probability of selecting a student who chose art, given that the student selected is in grade 10, or</li><li>the probability of selecting a teacher, given that the person selected rides the bus.</li></ul><p>Each asks for one target category inside one Total. This lesson does not cover rules for combining events with <strong>and</strong> or <strong>or</strong>. Do not invent a combination rule when the question only asks for one cell, row, or column.</p>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "four_step_process",
-      "html": "<h2>Use the same four steps</h2><ol><li><strong>Read the selection:</strong> What can be chosen?</li><li><strong>Find Total:</strong> Use the grand total unless given or other wording restricts the group.</li><li><strong>Find Favorable:</strong> Stay inside that Total and count what matches the event.</li><li><strong>Write and check:</strong> Favorable/Total, simplify if needed, and confirm the result is from 0 to 1.</li></ol><blockquote><p><strong>Memory cue:</strong> Given describes Total. The remaining condition describes Favorable.</p></blockquote>",
+      "html": "<h2>Use the same four steps</h2><ol><li><strong>Read the selection:</strong> What can be chosen?</li><li><strong>Find Total:</strong> Use the grand total unless the condition after <em>given that</em> or other wording restricts the group.</li><li><strong>Find Favorable:</strong> Stay inside that Total and count what matches the target before <em>given</em>.</li><li><strong>Write and check:</strong> Put Favorable over Total, simplify if needed, and confirm the result is from 0 to 1.</li></ol><blockquote><p><strong>Memory cue:</strong> After <em>given that</em> = Total restriction. Before <em>given</em> = Favorable target.</p></blockquote>",
       "calculator": { "display": "hidden" }
     },
     {
       "kind": "text",
       "id": "transfer_intro",
-      "html": "<h2>Apply the process to a fresh table</h2><p>A museum records tour type and visitor age group:</p><blockquote><p><strong>Age group | History | Science | Total</strong><br>Youth | 14 | 21 | 35<br>Adult | 26 | 39 | 65<br><strong>Total | 40 | 60 | 100</strong></p></blockquote><p>For each question, identify the Total before looking for Favorable.</p>",
+      "html": "<h2>Apply the process to a fresh table</h2><p>A museum records tour type and visitor age group:</p><table><caption>Museum visitors by age group and tour</caption><thead><tr><th scope=\"col\">Age group</th><th scope=\"col\">History</th><th scope=\"col\">Science</th><th scope=\"col\">Total</th></tr></thead><tbody><tr><th scope=\"row\">Youth</th><td>14</td><td>21</td><td>35</td></tr><tr><th scope=\"row\">Adult</th><td>26</td><td>39</td><td>65</td></tr><tr><th scope=\"row\">Total</th><td>40</td><td>60</td><td>100</td></tr></tbody></table><p>For each question, identify the Total before looking for Favorable.</p>",
       "calculator": { "display": "hidden" }
     },
     {
@@ -337,7 +337,7 @@
       "id": "transfer_total_check",
       "block_type": "check",
       "content": {
-        "prompt": "Using the museum table, what is the Total for the probability of science given adult?",
+        "prompt": "One visitor represented in the museum table is selected at random. What is the Total for the probability of selecting a visitor who chose the science tour, given that the visitor selected is an adult?",
         "choices": [
           "39 science adults",
           "60 science visitors",
@@ -346,8 +346,8 @@
         ],
         "correct_index": 2,
         "allow_retry": true,
-        "hint": "Treat 'given adult' as the description of every outcome allowed in the Total.",
-        "explanation": "Correct. Given adult restricts the selection to all 65 adult visitors. Science will determine Favorable inside that row."
+        "hint": "Treat the condition 'given that the visitor selected is an adult' as the description of every outcome allowed in the Total.",
+        "explanation": "Correct. The condition after 'given that' restricts the selection to all 65 adult visitors. Science determines Favorable inside that row."
       },
       "calculator": { "display": "hidden" }
     },
@@ -356,17 +356,17 @@
       "id": "transfer_given_probability_check",
       "block_type": "check",
       "content": {
-        "prompt": "Using youth: 14 history and 21 science; adult: 26 history and 39 science, what is the probability of science given adult?",
+        "prompt": "One visitor represented in the museum table is selected at random. What is the probability of selecting a visitor who chose the science tour, given that the visitor selected is an adult?",
         "choices": [
-          "39/65",
-          "39/60",
-          "60/100",
-          "26/65"
+          "\\(\\frac{39}{65}\\)",
+          "\\(\\frac{39}{60}\\)",
+          "\\(\\frac{60}{100}\\)",
+          "\\(\\frac{26}{65}\\)"
         ],
         "correct_index": 0,
         "allow_retry": true,
         "hint": "The adult Total is 65. Find the science count within the adult row.",
-        "explanation": "Right. Of the 65 adult visitors, 39 chose the science tour, so the probability is 39/65."
+        "explanation": "Right. Of the 65 adult visitors, 39 chose the science tour, so the probability is \\(\\frac{39}{65}\\)."
       },
       "calculator": { "display": "hidden" }
     },
@@ -377,15 +377,15 @@
       "content": {
         "prompt": "Using the museum table, one visitor is selected from all 100 visitors. What is the probability the visitor chose history?",
         "choices": [
-          "14/35",
-          "26/65",
-          "60/100",
-          "40/100"
+          "\\(\\frac{14}{35}\\)",
+          "\\(\\frac{26}{65}\\)",
+          "\\(\\frac{60}{100}\\)",
+          "\\(\\frac{40}{100}\\)"
         ],
         "correct_index": 3,
         "allow_retry": true,
         "hint": "There is no age restriction. Use all 100 visitors for Total and the full history column for Favorable.",
-        "explanation": "Correct. All 100 visitors are possible, and 14 + 26 = 40 chose history, so the probability is 40/100."
+        "explanation": "Correct. All 100 visitors are possible, and 14 + 26 = 40 chose history, so the probability is \\(\\frac{40}{100}\\)."
       },
       "calculator": { "display": "hidden" }
     },
@@ -397,14 +397,14 @@
         "prompt": "Without looking back, which process correctly solves a one-event SAT table probability question?",
         "choices": [
           "Find the largest number in the table, divide by the smallest number, and use given as Favorable.",
-          "Identify Total first, let given restrict that Total, find Favorable inside it, and write Favorable/Total.",
+          "Identify Total first, use the condition after 'given that' to restrict it, find Favorable inside it, and write Favorable over Total.",
           "Always use the grand total, even when the question says given, and add the row and column probabilities.",
           "Find Favorable first, treat it as the denominator, and combine categories with and/or."
         ],
         "correct_index": 1,
         "allow_retry": true,
-        "hint": "Retrieve the order: Total, given restriction, Favorable inside, fraction.",
-        "explanation": "You have it. Starting with Total prevents denominator traps, and treating given as a Total restriction keeps both numbers inside the same subset."
+        "hint": "Retrieve the order: Total, the condition after 'given that,' Favorable inside the restricted group, fraction.",
+        "explanation": "You have it. Starting with Total prevents denominator traps, and treating the condition after 'given that' as a restriction keeps both numbers inside the same subset."
       },
       "calculator": { "display": "hidden" }
     },
@@ -413,7 +413,7 @@
       "id": "lesson_finish",
       "block_type": "lesson_complete",
       "content": {
-        "html": "<h2>You can solve SAT probability tables</h2><p>You can identify the correct row, column, or grand Total; use given to restrict the selection; find Favorable outcomes inside that group; and write a valid Favorable-over-Total probability.</p>",
+        "html": "<h2>You can solve SAT probability tables</h2><p>You can identify the correct row, column, or grand Total; use the condition after <em>given that</em> to restrict the selection; find Favorable outcomes inside that group; and write a valid Favorable-over-Total probability.</p>",
         "button_label": "Complete Lesson"
       },
       "calculator": { "display": "hidden" }
