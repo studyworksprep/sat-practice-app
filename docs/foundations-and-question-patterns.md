@@ -235,7 +235,13 @@ The unique index extends accordingly.
    the Server Action and covered by
    `lib/admin/questionPatternCsv.test.mjs`.
    **Question tagging landed 2026-08-16** — migration
-   `20260816120000_question_pattern_tagging.sql`. `questions_v2`
+   `20260816120000_question_pattern_tagging.sql`, applied to dev +
+   prod via MCP. Verified in dev (role gate rejects teacher and
+   unauthenticated callers; a cross-skill pattern is refused; a
+   matching tag records its tagger; clearing wipes all three columns)
+   and in prod (columns, index, SECURITY DEFINER with pinned
+   `search_path`, execute granted to `authenticated` and not `anon`,
+   role gate rejecting, zero rows touched). `questions_v2`
    UPDATE is admin-only (`questions_v2_admin_all`; the
    `demo_readonly_*` policies are RESTRICTIVE guards, not grants), and
    widening it so tutors could classify would also hand them
