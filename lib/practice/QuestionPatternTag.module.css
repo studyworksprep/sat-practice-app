@@ -1,0 +1,100 @@
+/* =============================================================
+   QuestionPatternTag — single-select pattern picker mounted beside
+   ConceptTags in the review surfaces. Deliberately quieter than the
+   concept-tag chips: most questions never carry a pattern, so an
+   untagged control should read as optional, not unfinished.
+============================================================= */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-app-primary, #102a43);
+  opacity: 0.75;
+}
+
+.select {
+  flex: 1 1 220px;
+  min-width: 0;
+  max-width: 420px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--color-app-primary, #102a43);
+  background: var(--surface, #fff);
+  border: 1px solid var(--color-blue-200, rgba(79, 124, 224, 0.25));
+  border-radius: 8px;
+}
+
+.select:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 12px;
+  color: var(--color-app-primary, #102a43);
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+.clear:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.clear:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* The recognition cue for the selected pattern — the whole point of
+   the vocabulary, so it stays visible rather than living in a tooltip.
+   It is how a tutor checks the tag is right before moving on. */
+.cue {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--color-app-primary, #102a43);
+  opacity: 0.7;
+  margin: 0;
+}
+
+.note {
+  font-size: 11.5px;
+  margin: 0;
+}
+
+.ok {
+  color: var(--color-green-700, #166534);
+}
+
+.err {
+  color: var(--color-red-700, #991b1b);
+}
+
+.empty {
+  font-size: 11.5px;
+  color: var(--color-app-primary, #102a43);
+  opacity: 0.55;
+  margin: 0;
+}
+
+.emptyLink {
+  color: inherit;
+  text-decoration: underline;
+}

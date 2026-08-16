@@ -48,6 +48,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/concept-tags/actions.ts` | `renameConceptTag`, `deleteConceptTag`, `mergeConceptTags` | requireRole[admin] |
 | `app/(admin)/admin/content/actions.js` | `addScoreConversions`, `deleteScoreConversion`, `updateTestThresholds`, `saveSkillLearnability` | requireRole[admin] |
 | `app/(admin)/admin/content/drafts/[draftId]/actions.js` | `saveDraft`, `promoteDraft`, `rejectDraft` | requireRole[admin] |
+| `app/(admin)/admin/content/patterns/actions.ts` | `createQuestionPattern`, `updateQuestionPattern`, `deleteQuestionPattern`, `importQuestionPatterns`, `moveQuestionPattern` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson`, `addLessonTopic`, `removeLessonTopic` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/import/actions.js` | `importBlocksIntoLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/actions.js` | `createLesson` | requireRole[admin] |
@@ -98,6 +99,7 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/practice/flashcards-actions.ts` | `listFlashcardSets`, `listFlashcards`, `createFlashcard`, `updateFlashcard`, `deleteFlashcard`, `rateFlashcard`, `createFlashcardSet` | requireUser |
 | `lib/practice/load-question-action.ts` | `loadQuestionAction` | requireUser |
 | `lib/practice/question-notes-actions.ts` | `addQuestionNote`, `updateQuestionNote`, `deleteQuestionNote` | requireRole[admin|manager|teacher] |
+| `lib/practice/question-pattern-actions.ts` | `setQuestionPattern` | requireRole[admin|manager] |
 | `lib/practice/question-search-actions.ts` | `searchQuestions`, `listConceptTagsForSearch` | requireUser |
 | `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `abandonPracticeSession`, `togglePracticeMark`, `getDetourOptions`, `injectEasierQuestion` | requireUser + rateLimit |
 
@@ -109,4 +111,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_19 route handlers, 59 server-action modules enumerated._
+_19 route handlers, 61 server-action modules enumerated._

@@ -21,6 +21,7 @@ import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { BrokenButton } from '@/lib/practice/BrokenButton';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
+import { QuestionPatternTag } from '@/lib/practice/QuestionPatternTag';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
 import { ErrorLogButton } from '@/lib/practice/ErrorLogButton';
 import { FlashcardsButton } from '@/lib/practice/FlashcardsButton';
@@ -56,6 +57,8 @@ export function TestResultsInteractive({
   desmosCanSave = false,
   conceptTagsCatalog = null,
   conceptTagsCanTag = false,
+  questionPatternsCatalog = null,
+  questionPatternsCanTag = false,
   conceptTagsCanDelete = false,
   questionNotesCanView = false,
   questionNotesIsAdmin = false,
@@ -559,16 +562,29 @@ export function TestResultsInteractive({
                 rationaleHtml: selected.reveal.rationaleHtml,
               } : null}
               controlsNode={
-                conceptTagsCanTag && conceptTagsCatalog ? (
+                (conceptTagsCanTag && conceptTagsCatalog) ||
+                (questionPatternsCanTag && questionPatternsCatalog) ? (
                   <div className={s.tutorTools}>
-                    <ConceptTags
-                      key={`tags-${selected.questionId}`}
-                      questionId={selected.questionId}
-                      initialTags={conceptTagsCatalog}
-                      initialQuestionTagIds={selected.conceptTagIds ?? []}
-                      canTag={conceptTagsCanTag}
-                      canDelete={conceptTagsCanDelete}
-                    />
+                    {conceptTagsCanTag && conceptTagsCatalog && (
+                      <ConceptTags
+                        key={`tags-${selected.questionId}`}
+                        questionId={selected.questionId}
+                        initialTags={conceptTagsCatalog}
+                        initialQuestionTagIds={selected.conceptTagIds ?? []}
+                        canTag={conceptTagsCanTag}
+                        canDelete={conceptTagsCanDelete}
+                      />
+                    )}
+                    {questionPatternsCanTag && questionPatternsCatalog && !selected.missing && (
+                      <QuestionPatternTag
+                        key={`pattern-${selected.questionId}`}
+                        questionId={selected.questionId}
+                        skillCode={selected.taxonomy?.skill_code ?? null}
+                        patterns={questionPatternsCatalog}
+                        initialPatternId={selected.patternId ?? null}
+                        canTag={questionPatternsCanTag}
+                      />
+                    )}
                   </div>
                 ) : null
               }

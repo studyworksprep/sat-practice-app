@@ -183,6 +183,8 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
         backLabel="← Back to assignment"
         desmosCanSave={view.desmosCanSave}
         conceptTagsCatalog={view.conceptTagsCatalog}
+        questionPatternsCatalog={view.questionPatternsCatalog}
+        questionPatternsCanTag={view.questionPatternsCanTag}
         conceptTagsCanTag={view.conceptTagsCanTag}
         conceptTagsCanDelete={view.conceptTagsCanDelete}
         questionNotesCanView={view.questionNotesCanView}
@@ -243,6 +245,8 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       backLabel="← Back to assignment"
       desmosCanSave={view.desmosCanSave}
       conceptTagsCatalog={view.conceptTagsCatalog}
+      questionPatternsCatalog={view.questionPatternsCatalog}
+      questionPatternsCanTag={view.questionPatternsCanTag}
       conceptTagsCanTag={view.conceptTagsCanTag}
       conceptTagsCanDelete={view.conceptTagsCanDelete}
       questionNotesCanView={view.questionNotesCanView}

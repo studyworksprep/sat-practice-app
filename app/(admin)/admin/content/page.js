@@ -71,6 +71,10 @@ export default async function AdminContentPage({ searchParams }) {
           <a href="/admin/content/units" className={a.link}>→ Curriculum unit coverage</a>
           {' '}— the §3.4 lesson-production worklist, weakest coverage first.
         </p>
+        <p className={a.sub}>
+          <a href="/admin/content/patterns" className={a.link}>→ Question patterns</a>
+          {' '}— the sub-skill catalog: recognition cue + process per question format.
+        </p>
       </header>
 
       <Section

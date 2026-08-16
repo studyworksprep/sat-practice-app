@@ -29,6 +29,7 @@ import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { ConceptTags } from './ConceptTags';
+import { QuestionPatternTag } from './QuestionPatternTag';
 import { DesmosSavedStateButton } from './DesmosSavedStateButton';
 import { BrokenButton } from './BrokenButton';
 import { ErrorLogButton } from './ErrorLogButton';
@@ -66,6 +67,8 @@ export function AssignmentReport({
   conceptTagsCatalog = null,
   conceptTagsCanTag = false,
   conceptTagsCanDelete = false,
+  questionPatternsCatalog = null,
+  questionPatternsCanTag = false,
   questionNotesCanView = false,
   questionNotesIsAdmin = false,
   currentUserId = null,
@@ -545,16 +548,29 @@ export function AssignmentReport({
                 rationaleHtml: selected.reveal.rationaleHtml,
               } : null}
               controlsNode={
-                conceptTagsCanTag && conceptTagsCatalog ? (
+                (conceptTagsCanTag && conceptTagsCatalog) ||
+                (questionPatternsCanTag && questionPatternsCatalog) ? (
                   <div className={s.tutorTools}>
-                    <ConceptTags
-                      key={`tags-${selected.questionId}`}
-                      questionId={selected.questionId}
-                      initialTags={conceptTagsCatalog}
-                      initialQuestionTagIds={selected.conceptTagIds ?? []}
-                      canTag={conceptTagsCanTag}
-                      canDelete={conceptTagsCanDelete}
-                    />
+                    {conceptTagsCanTag && conceptTagsCatalog && (
+                      <ConceptTags
+                        key={`tags-${selected.questionId}`}
+                        questionId={selected.questionId}
+                        initialTags={conceptTagsCatalog}
+                        initialQuestionTagIds={selected.conceptTagIds ?? []}
+                        canTag={conceptTagsCanTag}
+                        canDelete={conceptTagsCanDelete}
+                      />
+                    )}
+                    {questionPatternsCanTag && questionPatternsCatalog && !selected.missing && (
+                      <QuestionPatternTag
+                        key={`pattern-${selected.questionId}`}
+                        questionId={selected.questionId}
+                        skillCode={selected.taxonomy?.skill_code ?? null}
+                        patterns={questionPatternsCatalog}
+                        initialPatternId={selected.patternId ?? null}
+                        canTag={questionPatternsCanTag}
+                      />
+                    )}
                   </div>
                 ) : null
               }

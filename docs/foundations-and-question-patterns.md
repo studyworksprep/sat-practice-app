@@ -1,11 +1,15 @@
 # Foundations and question patterns — extending the curriculum model
 
-> **Status: Living — adopted design, not yet implemented.** Written
-> 2026-07-26 from the owner's pedagogical observations; verified
-> against the codebase as of that date. The engineering work described
-> in §3 should update this doc (and the upgrade-plan ledger) as it
-> lands. The human workstream in §4 is the operating checklist for the
-> owner and co-instructors and should be kept true as steps complete.
+> **Status: Living — adopted design, partially implemented.** Written
+> 2026-07-26 from the owner's pedagogical observations; last verified
+> against the codebase 2026-08-16. §3.4 step 1 (schema) and most of
+> step 2 (lesson scope/kind fields, scoped generate prefills, the
+> pattern-catalog editor, and question→pattern tagging in the review
+> surfaces) have landed; the content-drafts picker, the classification
+> queue, and every consumer in step 3 have not. The engineering work described in §3
+> should update this doc (and the upgrade-plan ledger) as it lands.
+> The human workstream in §4 is the operating checklist for the owner
+> and co-instructors and should be kept true as steps complete.
 
 ## 1. Why this exists
 
@@ -213,9 +217,55 @@ The unique index extends accordingly.
    matching `lesson_topics` row on save; the lesson builder gained
    kind/foundation-order metadata fields and a Scope-tags editor
    (section + skill grains; pattern tags display but are authored via
-   the catalog tooling). Still open from this step: the
-   pattern-catalog editor, the question-editor/drafts pattern picker,
-   and the classification queue.
+   the catalog tooling).
+   **Pattern-catalog editor landed 2026-08-16** at
+   `/admin/content/patterns` — admin-only, grouped per skill in
+   teaching order, with create/edit/delete/reorder plus a CSV
+   importer (dry-run preview, skip-or-update duplicate policy,
+   template download, and export of the live catalog for round-trip
+   editing in a spreadsheet). Domain/skill codes are validated against
+   `SAT_TAXONOMY` on both authoring paths, so a pattern cannot be
+   filed under a unit that does not exist. Delete states its cost
+   first: tagged questions fall back to unclassified (FK set null),
+   lesson scope tags are removed (FK cascade). The units worklist
+   gained a Patterns column deep-linking per skill, and each pattern
+   row links to `/admin/lessons/generate?pattern=`, which reaches the
+   cue+process prefill built in this step. CSV parse/plan logic is
+   `lib/admin/questionPatternCsv.ts`, shared by the client preview and
+   the Server Action and covered by
+   `lib/admin/questionPatternCsv.test.mjs`.
+   **Question tagging landed 2026-08-16** — migration
+   `20260816120000_question_pattern_tagging.sql`, applied to dev +
+   prod via MCP. Verified in dev (role gate rejects teacher and
+   unauthenticated callers; a cross-skill pattern is refused; a
+   matching tag records its tagger; clearing wipes all three columns)
+   and in prod (columns, index, SECURITY DEFINER with pinned
+   `search_path`, execute granted to `authenticated` and not `anon`,
+   role gate rejecting, zero rows touched). `questions_v2`
+   UPDATE is admin-only (`questions_v2_admin_all`; the
+   `demo_readonly_*` policies are RESTRICTIVE guards, not grants), and
+   widening it so tutors could classify would also hand them
+   `stem_html`, `is_published` and `is_broken`. So the write goes
+   through `set_question_pattern()`, a SECURITY DEFINER function gated
+   on `is_manager()` (manager + admin, matching the concept-tag write
+   bar) that touches `pattern_id` plus new `pattern_tagged_by` /
+   `pattern_tagged_at` attribution columns and nothing else — the same
+   shape as `merge_concept_tags()`. It refuses a pattern whose
+   domain/skill differs from the question's, so the bank cannot
+   accumulate cross-skill tags no recommendation path could use.
+   The picker (`lib/practice/QuestionPatternTag.tsx`) mounts through
+   `QuestionRenderer`'s existing `controlsNode` slot beside
+   `ConceptTags` — **not** inside the renderer, which
+   `TestRunnerInteractive` also mounts. Live surfaces: the per-student
+   and group assignment reports, practice-session review, test
+   results, and the shared question detail page. Options are scoped to
+   the question's own skill, and the control hides itself when that
+   skill has no patterns. `/admin/content/patterns` grew a "Recently
+   tagged" audit strip off the attribution columns.
+   Still open from this step: the pattern picker in the *content
+   drafts* review (`question_content_drafts.pattern_id` is still
+   unwritten — that pipeline stages content fields only), and the
+   AI-assisted classification queue.
 3. Consumers, in dependency order: `recommend.ts` chain →
    generator front-load pass → drill `pattern_id` filter → detours →
    efficacy expansion → wizard/Today/roster surfaces.
@@ -259,7 +309,16 @@ Things to think about:
   `video` blocks) where tone and demonstration matter — passage
   annotation in particular is hard to teach in text alone.
 
-### Step 2 — Draft the pattern catalogs **[now]**
+### Step 2 — Draft the pattern catalogs **[now, and now also in-app]**
+
+Drafting still happens wherever it's fastest — a doc or spreadsheet is
+fine. Since 2026-08-16 the drafts have somewhere to land:
+`/admin/content/patterns` takes either a CSV upload (columns
+`domain_code, skill_code, name, recognition_cue, process_summary,
+sequence`; download the template from the importer) or one-at-a-time
+entry. Import previews every row before writing, and re-importing a
+corrected sheet with "Update existing" is the supported way to revise
+a catalog — the app never becomes a fork of the spreadsheet.
 
 Per skill, starting only with skills where you actually teach
 "see format → run process" (don't force catalogs onto skills you teach
@@ -290,6 +349,15 @@ Rules of thumb:
 
 Classification happens when a skill's first pattern lesson is ready to
 ship — never big-bang across all 3,381 questions.
+
+Since 2026-08-16 there is also an **opportunistic path** that needs no
+queue: any manager or admin reviewing an assignment, a practice
+session, or a test result gets a pattern picker under the question,
+scoped to that question's skill. Tagging the obvious fits as they come
+up costs seconds and needs no sweep. The two are complementary — this
+catches what a tutor happens to see; the queue below is how a skill
+gets covered systematically. Both write the same column, and
+`/admin/content/patterns` shows who tagged what.
 
 1. Engineering provides an AI-assisted queue (drafts-pipeline
    pattern): for a chosen skill, the model proposes a pattern per
@@ -366,8 +434,8 @@ anything in this document.
 
 | Order | Who | What | Depends on |
 |---|---|---|---|
-| 1 | Owner + co-instructors | Foundation inventory (step 1), pattern catalogs for first 3–5 skills (step 2) | nothing — start now |
-| 2 | Engineering | Schema migration + admin surfaces (§3.4 steps 1–2) | design sign-off |
+| 1 | Owner + co-instructors | Foundation inventory (step 1), pattern catalogs for first 3–5 skills (step 2) | nothing — start now; catalogs can be entered or imported at `/admin/content/patterns` |
+| 2 | Engineering | Schema migration + admin surfaces (§3.4 steps 1–2) | design sign-off — schema and the catalog editor done; picker + classification queue outstanding |
 | 3 | Engineering | Recommendation chain, generator front-load, drill filter (§3.4 step 3) | 2 |
 | 4 | Owner + co-instructors | Author foundations (step 4); classify first skills (step 3); backfill rosters (step 5) | 2, and 3 for front-loading to take effect |
 | 5 | Both, ongoing | Pattern lessons per unit-coverage ranking; efficacy review (step 6) | 4 |
