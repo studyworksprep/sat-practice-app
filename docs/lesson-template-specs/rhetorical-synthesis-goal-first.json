@@ -1,0 +1,271 @@
+{
+  "title": "Rhetorical Synthesis: Let the Goal Lead",
+  "description": "Use the student's stated goal to identify the required answer, handle multi-part goals, and consult the notes only when goal-fit alone does not settle the choice.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>The question tells you what to build</h2><p>Rhetorical Synthesis questions show a set of research notes, then ask how a student should use them. The notes look important, but the student's goal is the real decision-maker.</p><p>By the end of this lesson, you can turn that goal into a short requirement list, use it to eliminate choices, and check the notes only when two choices still fit.</p><blockquote><p><strong>Core move:</strong> Start with \"The student wants to...\" - not with the notes.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "first_exploration",
+      "html": "<h2>Try the goal before seeing any notes</h2><p>In a practice item, the student wants to <strong>introduce community archivist Elena Ruiz and emphasize her leadership during an archive's expansion</strong>.</p><p>Which choice sounds as though it could do that job?</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Elena Ruiz, a community archivist, directed the archive's expansion into three neighborhood branches.</li><li>The archive's first neighborhood branch opened in 1998.</li><li>Ruiz cataloged oral histories donated by local residents.</li><li>Three neighborhood branches preserve photographs and recorded interviews.</li></ol><blockquote><p><strong>Do not ask whether each choice is true yet.</strong> Ask which choice fulfills the stated goal.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "first_exploration_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice best introduces Elena Ruiz and emphasizes her leadership during the expansion?",
+        "choices": [
+          "Elena Ruiz, a community archivist, directed the archive's expansion into three neighborhood branches.",
+          "The archive's first neighborhood branch opened in 1998.",
+          "Ruiz cataloged oral histories donated by local residents.",
+          "Three neighborhood branches preserve photographs and recorded interviews."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The answer needs both Elena Ruiz and evidence that she led the expansion.",
+        "explanation": "Exactly. The first choice names Ruiz and shows her directing the expansion. The goal alone identifies the needed content."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "name_the_principle",
+      "html": "<h2>The goal is your filter</h2><p>The notes contain more information than the answer needs. If you read them first, every detail can feel important. If you read the goal first, you know what evidence the answer must select.</p><p>Most wrong choices in these questions can be accurate statements about the notes and still be wrong because they do not perform the requested job.</p><blockquote><p><strong>Question first:</strong> Relevance to the goal matters before completeness as a summary.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "stem_anatomy",
+      "html": "<h2>Find the useful sentence in the stem</h2><p>The ending of a Rhetorical Synthesis item usually contains two parts:</p><ul><li><strong>The goal:</strong> \"The student wants to...\" followed by a specific task.</li><li><strong>The routine direction:</strong> a request to choose the option that most effectively uses relevant information from the notes.</li></ul><p>The routine direction repeats across the question type. The changing goal gives you the useful information.</p><blockquote><p><strong>Read carefully:</strong> The few words after \"wants to\" control the answer.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "stem_anatomy_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which part of the question should control your first pass through the answer choices?",
+        "choices": [
+          "The number of bullet points in the notes",
+          "The repeated direction to use relevant information",
+          "The student's specific goal after 'wants to'",
+          "The topic named in the first note"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Look for the part that changes from one Rhetorical Synthesis question to the next.",
+        "explanation": "Right. The student's specific goal changes each time and defines what the correct answer must accomplish."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "four_step_process",
+      "html": "<h2>Use a four-step process</h2><ol><li><strong>Read the question first.</strong> Go directly to the sentence beginning \"The student wants to...\"</li><li><strong>List the requirements.</strong> Identify the action, subject, focus, and every part joined by <strong>and</strong>.</li><li><strong>Test the choices.</strong> Eliminate any choice that is off focus or misses even one requirement.</li><li><strong>Check notes only if needed.</strong> If two choices still seem to do the job, verify their facts against the notes.</li></ol><blockquote><p><strong>Short version:</strong> Goal, requirements, choices, then notes if needed.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "action_words",
+      "html": "<h2>The action word defines the relationship</h2><p>Start your requirement list with the verb in the goal.</p><ul><li><strong>Introduce:</strong> identify the subject and give the requested context.</li><li><strong>Emphasize:</strong> make one specified feature especially clear.</li><li><strong>Compare or contrast:</strong> mention both subjects and state a similarity or difference.</li><li><strong>Illustrate:</strong> give a concrete example of the idea.</li><li><strong>Support a claim:</strong> provide evidence that makes the claim more convincing.</li></ul><p>A choice can mention the right topic while performing the wrong action.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "action_word_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A student wants to illustrate the claim that some desert plants conserve water. What should the answer contain?",
+        "choices": [
+          "A broad definition of a desert",
+          "A list of several unrelated plant researchers",
+          "A question about why rainfall varies",
+          "A specific example of a desert plant feature that reduces water loss"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "To illustrate a claim, look for an example that shows the claim in action.",
+        "explanation": "Correct. A concrete water-saving feature illustrates the claim; merely discussing deserts or researchers does not."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "requirement_checklist",
+      "html": "<h2>Turn the whole goal into a checklist</h2><p>After the action word, capture the goal's content limits:</p><ul><li><strong>Who or what?</strong> Which person, object, study, or idea must appear?</li><li><strong>Which feature?</strong> What result, quality, difference, or example matters?</li><li><strong>What relationship?</strong> Must the answer show a cause, a contrast, a sequence, or evidence for a claim?</li><li><strong>How many jobs?</strong> Does <strong>and</strong> join two requirements?</li></ul><p>Keep the list short enough to use while scanning four choices.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "and_rule",
+      "html": "<h2>Treat 'and' as a two-part contract</h2><p>Suppose the student wants to <strong>describe a new transit map and explain how it improved accessibility</strong>.</p><p>The correct answer must do two jobs:</p><ol><li>describe the new map;</li><li>explain its accessibility benefit.</li></ol><p>A choice that does only one job is incomplete, even if every word in it matches the notes.</p><blockquote><p><strong>Circle every and:</strong> It often creates a second requirement that tempting choices omit.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "and_rule_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The student wants to introduce a new museum exhibit and explain how visitors can interact with it. Which choice best fulfills the goal?",
+        "choices": [
+          "The museum opened in a renovated train station in 2016.",
+          "Visitors can turn a wheel to change the colors projected on a wall.",
+          "The exhibit, called Light in Motion, contains twelve suspended glass panels.",
+          "Light in Motion is a new exhibit whose projected colors change when visitors turn a wheel."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Look for one choice that both names the new exhibit and explains the visitor's interaction.",
+        "explanation": "Exactly. The final choice introduces the exhibit and explains the interactive action. The other choices do only one job or neither."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "worked_example_prompt",
+      "html": "<h2>Model: solve without the notes</h2><p>The student wants to <strong>explain how a packaging material is made and emphasize one environmental advantage</strong>.</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>A design team began testing packaging prototypes in 2022.</li><li>The packaging is grown by binding agricultural waste with fungal roots, and it can break down in home compost.</li><li>The packaging is shaped in reusable molds before it dries.</li><li>Unlike many plastics, the packaging can break down in home compost.</li></ol><p>Requirement list: <strong>how it is made + environmental advantage</strong>. Choice B is the only one that checks both boxes.</p><blockquote><p><strong>Notice:</strong> You did not need to learn every fact in the notes to identify the answer's required shape.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "worked_example_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Why is 'The packaging is grown by binding agricultural waste with fungal roots, and it can break down in home compost' the best answer?",
+        "choices": [
+          "It is the longest choice and includes the most details.",
+          "It explains how the material is made and gives an environmental advantage.",
+          "It mentions the year when testing began.",
+          "It summarizes every likely note about the packaging."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Match the two clauses in the answer to the two requirements in the goal.",
+        "explanation": "Right. The first clause explains production; the second gives the composting advantage. Goal-fit, not length, makes it correct."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "distractor_patterns",
+      "html": "<h2>Most wrong answers fail the goal in predictable ways</h2><ul><li><strong>Off focus:</strong> true information about the topic, but not the requested feature.</li><li><strong>Half right:</strong> fulfills one part of a goal joined by <strong>and</strong>.</li><li><strong>Wrong action:</strong> describes when the goal asks for a comparison, or gives background when the goal asks for evidence.</li><li><strong>Wrong relationship:</strong> mentions both subjects without stating the requested similarity, difference, cause, or result.</li></ul><p>Labeling the failure is faster than judging which sentence sounds nicest.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "comparison_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "The student wants to compare the migration routes of two whale populations. Which choice has the right structure?",
+        "choices": [
+          "Researchers attached satellite tags to several whales.",
+          "The eastern population traveled mostly near the coast.",
+          "The eastern population followed the coast, whereas the western population crossed deeper offshore waters.",
+          "Both populations began migrating during the same month."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "A comparison must include both populations and state a relationship between their routes.",
+        "explanation": "Correct. The third choice names both routes and directly contrasts them. The second mentions only one population, and the fourth compares timing rather than routes."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "notes_fallback",
+      "html": "<h2>When should you finally read the notes?</h2><p>Usually, the requirement list leaves only one choice. Occasionally, two choices both appear to fulfill the goal. Then - and only then - compare their claims with the notes.</p><p>Look for a choice that changes a number, reverses a relationship, exaggerates a finding, or treats an observed association as proof of cause.</p><blockquote><p><strong>Fallback rule:</strong> Goal-fit creates the finalists; the notes break a real tie.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "fact_check_example",
+      "html": "<h2>Rare case: two choices support the goal</h2><p><strong>Notes:</strong></p><ul><li>Researchers observed native bee visits in twelve community gardens.</li><li>Gardens with at least five flowering plant species averaged 18 bee visits per hour.</li><li>Gardens with one or two flowering plant species averaged 7 bee visits per hour.</li><li>The researchers did not change the gardens' plant diversity.</li></ul><p><strong>Goal:</strong> Support the claim that gardens with greater flowering-plant diversity attracted more native bee visits.</p><p>Two choices may seem useful:</p><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>Gardens with at least five flowering species averaged 18 native bee visits per hour, compared with 7 for gardens with one or two species.</li><li>Adding flowering species caused native bee visits to rise from 7 to 18 per hour.</li></ol><p>Both point toward the claim, so now the notes matter.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "fact_check_example_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice accurately supports the claim without going beyond the notes?",
+        "choices": [
+          "Gardens with at least five flowering species averaged 18 native bee visits per hour, compared with 7 for gardens with one or two species.",
+          "Adding flowering species caused native bee visits to rise from 7 to 18 per hour.",
+          "All twelve gardens received exactly the same number of bee visits.",
+          "The researchers proved that native bees prefer every type of flowering plant."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The researchers observed existing gardens; they did not add plant species themselves.",
+        "explanation": "Correct. The first choice reports the observed difference. The second invents a causal experiment that the notes do not describe."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "independent_transfer",
+      "html": "<h2>Independent transfer</h2><p>Use the full process on this new item. Begin with the goal below, make a requirement list, and only then use the notes if you need them.</p><p><strong>Goal:</strong> The student wants to <strong>compare two methods for estimating a seal colony's size and indicate which method produced the more accurate estimate</strong>.</p><p><strong>Notes:</strong></p><ul><li>A research team estimated the colony with aerial images from a drone and with observers counting from the ground.</li><li>The drone estimate was 1,240 seals.</li><li>The ground estimate was 980 seals.</li><li>A later image audit used as a benchmark counted 1,210 seals.</li></ul><ol class=\"lesson-answer-choices\" style=\"list-style-type: upper-alpha\"><li>The research team used both a drone and ground observers to study a seal colony.</li><li>The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.</li><li>A later image audit counted 1,210 seals in the colony.</li><li>Ground observers estimated 980 seals, making their method more accurate than the drone method.</li></ol>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice compares the two estimates and identifies the more accurate method?",
+        "choices": [
+          "The research team used both a drone and ground observers to study a seal colony.",
+          "The drone estimate of 1,240 seals was closer to the 1,210-seal audit than the ground estimate of 980 was.",
+          "A later image audit counted 1,210 seals in the colony.",
+          "Ground observers estimated 980 seals, making their method more accurate than the drone method."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The answer must compare both estimates and name the method closer to the 1,210 benchmark.",
+        "explanation": "Correct. The second choice includes both estimates and shows that the drone's estimate was closer to the benchmark. The first only names the methods, and the fourth reverses the result."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which process should you use on a Rhetorical Synthesis question?",
+        "choices": [
+          "Read every note, write a full summary, and choose the answer with the most facts.",
+          "Read the notes first, then choose the shortest accurate answer.",
+          "Scan for repeated words from the notes and ignore the student's stated purpose.",
+          "Read the student's goal, list every requirement, test the choices for goal-fit, and check the notes only if more than one choice still fits."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Retrieve the order: goal, requirements, choices, notes if needed.",
+        "explanation": "You have it. Let the goal define the answer first; use the notes as a tiebreaker only when goal-fit does not decide the question."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "summary",
+      "html": "<h2>The strategy in one glance</h2><ol><li>Skip to \"The student wants to...\"</li><li>Turn the action, focus, and every part joined by <strong>and</strong> into requirements.</li><li>Choose the answer that fulfills all requirements; accurate but off-focus summaries are still wrong.</li><li>If two choices truly fit, use the notes to verify numbers, relationships, and the strength of each claim.</li></ol><blockquote><p><strong>Let the goal lead.</strong> In most questions, it gives you enough information to identify the answer without reading the notes first.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can synthesize with purpose</h2><p>You can use the student's goal to find the relevant answer quickly, honor every requirement in a multi-part goal, and consult the notes only when a genuine fact check is necessary.</p>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": { "display": "hidden" }
+    }
+  ]
+}
