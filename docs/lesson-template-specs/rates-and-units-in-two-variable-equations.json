@@ -1,0 +1,323 @@
+{
+  "title": "Rates in Two-Variable Equations: Read the Units",
+  "description": "Use unit labels to interpret coefficients, variables, terms, and totals in contextual linear equations with two variables.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Every term tells a unit story</h2><p>Many SAT questions in Linear Equations in Two Variables describe two groups contributing to one total: two products, two activities, two regions, or two time periods.</p><p>The arithmetic is usually simple. The real test is whether you can explain what each number, variable, and product means.</p><blockquote><p><strong>Your goal:</strong> Use units to read a coefficient, a variable, a full term, and the total in an equation such as \\(ax+by=T\\).</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "opening_exploration",
+      "html": "<h2>Start with one product</h2><p>A school store sells notebooks for \\(\\$5\\) each. Let \\(n\\) be the number of notebooks sold.</p><p>The store's notebook revenue is \\(5n\\) dollars.</p><p>Before continuing, say what each part means:</p><ul><li>What does \\(5\\) measure?</li><li>What does \\(n\\) count?</li><li>What does the complete product \\(5n\\) measure?</li></ul>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "opening_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In the notebook situation, what does \\(5n\\) represent?",
+        "choices": [
+          "The price of one notebook, in dollars",
+          "The number of notebooks sold",
+          "The total revenue, in dollars, from selling \\(n\\) notebooks",
+          "The number of dollars remaining after \\(n\\) notebooks are sold"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Multiply the price for one notebook by the number of notebooks.",
+        "explanation": "Right. \\(\\$5\\) per notebook times \\(n\\) notebooks gives \\(5n\\) dollars of notebook revenue."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "rate_definition",
+      "html": "<h2>A rate connects two different units</h2><p>A <strong>rate</strong> tells how much of one quantity corresponds to one unit of another quantity. The word <strong>per</strong> signals the comparison.</p><ul><li>\\(18\\) pages per minute</li><li>\\(\\$5\\) per notebook</li><li>\\(40\\) miles per gallon</li></ul><p>Multiplying by a matching quantity removes the “per” unit:</p><p>\\[\\frac{\\text{pages}}{\\text{minute}}\\times\\text{minutes}=\\text{pages}\\]</p><blockquote><p><strong>Unit engine:</strong> rate × matching quantity = total amount.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "unit_chain_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A printer produces 18 pages per minute for 7 minutes. Which calculation has the correct units and value?",
+        "choices": [
+          "\\(18+7=25\\) pages",
+          "\\(18\\,\\frac{\\text{pages}}{\\text{minute}}\\times7\\,\\text{minutes}=126\\,\\text{pages}\\)",
+          "\\(18\\,\\frac{\\text{pages}}{\\text{minute}}\\div7\\,\\text{minutes}\\approx2.57\\,\\text{pages}\\)",
+          "\\(18\\times7=126\\) minutes"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The minutes must pair with the denominator unit in pages per minute, leaving pages.",
+        "explanation": "Correct. The minute units cancel, so the product is a total number of pages: \\(126\\)."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "product_anatomy",
+      "html": "<h2>Read all three layers of a term</h2><p>Suppose each bus carries \\(12\\) students and \\(r\\) is the number of buses.</p><p>In the term \\(12r\\):</p><ul><li><strong>Coefficient \\(12\\):</strong> students per bus</li><li><strong>Variable \\(r\\):</strong> number of buses</li><li><strong>Term \\(12r\\):</strong> total students on those buses</li></ul><p>The coefficient and variable describe the two factors. The complete term describes their product.</p><blockquote><p><strong>Do not blur the layers:</strong> \\(r\\) buses and \\(12r\\) students are different quantities.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "product_anatomy_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In \\(12r\\), where \\(r\\) is the number of buses and each bus carries 12 students, what does \\(r\\) represent?",
+        "choices": [
+          "The total number of students",
+          "The number of students per bus",
+          "The number of buses plus the number of students",
+          "The number of buses"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Use the definition supplied for the variable itself, not the meaning of the entire product.",
+        "explanation": "Exactly. The variable \\(r\\) counts buses. The full term \\(12r\\) counts students."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "rate_not_always_coefficient",
+      "html": "<h2>The coefficient is not always the rate</h2><p>In many questions, the coefficient is the rate: \\(5n\\) means \\(5\\) dollars per notebook times \\(n\\) notebooks.</p><p>But suppose a township has \\(6\\) acres in one district, and \\(a\\) is the average number of trees per acre. Then</p><p>\\[6a=6\\,\\text{acres}\\times a\\,\\frac{\\text{trees}}{\\text{acre}}\\]</p><p>Here, the coefficient \\(6\\) is the quantity of acres, the variable \\(a\\) is the rate, and the term \\(6a\\) is the total number of trees.</p><blockquote><p><strong>Reliable rule:</strong> Read the variable's definition and track the units. Never assume the coefficient must be the rate.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "variable_can_be_rate_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A facility has 8 identical tanks. Each tank holds \\(h\\) liters. What does \\(h\\) represent in the term \\(8h\\)?",
+        "choices": [
+          "The total number of liters in all 8 tanks",
+          "The number of liters per tank",
+          "The number of tanks per liter",
+          "The number of tanks"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "The problem defines h for one tank. The product 8h handles all eight tanks.",
+        "explanation": "Correct. \\(h\\) is a rate in liters per tank, while \\(8h\\) is the total number of liters in the eight tanks."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "two_term_equation",
+      "html": "<h2>Two terms are two subtotals</h2><p>A market sells small cartons for \\(\\$4.80\\) each and large cartons for \\(\\$7.25\\) each. Let \\(s\\) and \\(l\\) be the numbers sold. The equation</p><p>\\[4.80s+7.25l=612.50\\]</p><p>has a consistent structure:</p><ul><li>\\(4.80s\\): revenue from small cartons</li><li>\\(7.25l\\): revenue from large cartons</li><li>\\(4.80s+7.25l\\): combined revenue</li><li>\\(612.50\\): the stated total revenue, in dollars</li></ul><blockquote><p><strong>Equation story:</strong> subtotal 1 + subtotal 2 = grand total.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "two_term_term_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In \\(4.80s+7.25l=612.50\\), where \\(l\\) is the number of large cartons sold, what does \\(7.25l\\) represent?",
+        "choices": [
+          "The total number of cartons sold",
+          "The price of one large carton",
+          "The revenue, in dollars, from the large cartons",
+          "The combined revenue from both carton sizes"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The question asks about the complete product, not the coefficient by itself.",
+        "explanation": "Right. \\(\\$7.25\\) per large carton times \\(l\\) large cartons gives the large-carton revenue."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "whole_equation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "What does the complete equation \\(4.80s+7.25l=612.50\\) state?",
+        "choices": [
+          "The revenue from small cartons plus the revenue from large cartons is \\(\\$612.50\\).",
+          "Exactly 612.50 cartons were sold.",
+          "Each carton costs \\(\\$612.50\\).",
+          "The large-carton revenue is always \\(\\$612.50\\)."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Interpret each term as a subtotal, then interpret their sum.",
+        "explanation": "Correct. The left side adds the two revenue subtotals, and the right side gives their combined total."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "four_step_process",
+      "html": "<h2>Use the Label–Pair–Product–Whole process</h2><ol><li><strong>Label.</strong> Write what each variable measures, including its units.</li><li><strong>Pair.</strong> Match a rate with the quantity carrying its denominator unit.</li><li><strong>Product.</strong> State what the full term measures after the units combine.</li><li><strong>Whole.</strong> Read the sum and the right side as the combined total.</li></ol><p>Then answer at the exact layer the question names: coefficient, variable, term, or total.</p><blockquote><p><strong>Fast unit check:</strong> Every term being added must end with the same units as the right side.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "coefficient_interpretation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "At a game booth, green tokens are worth 11 points each and gold tokens are worth 16 points each. If \\(c\\) and \\(d\\) count the two token types, what does 16 represent in \\(11c+16d=430\\)?",
+        "choices": [
+          "The number of points each gold token is worth",
+          "The number of gold tokens won",
+          "The total points from gold tokens",
+          "The combined number of tokens"
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The question asks about the coefficient alone. Its units are points per gold token.",
+        "explanation": "Correct. The coefficient 16 is the rate of 16 points per gold token. The term \\(16d\\) is the total number of gold-token points."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "variable_interpretation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A preserve contains a 5-hectare pine area and a 12-hectare oak area. The equation \\(5p+12q=1{,}140\\) gives the total number of trees. What does \\(p\\) represent?",
+        "choices": [
+          "The total number of pine trees",
+          "The number of hectares in the pine area",
+          "The average number of pine trees per hectare",
+          "The total number of trees in the preserve"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The factor 5 already supplies hectares. What units must p have so 5p is measured in trees?",
+        "explanation": "Exactly. \\(5\\) hectares times \\(p\\) pine trees per hectare gives \\(5p\\) pine trees. Here the variable, not the coefficient, is the rate."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "term_interpretation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A distributor fills \\(m\\) small bottles with 2.5 liters each and \\(n\\) large bottles with 4 liters each. In \\(2.5m+4n=90\\), what does \\(4n\\) represent?",
+        "choices": [
+          "The number of large bottles",
+          "The total number of liters in the large bottles",
+          "The number of liters in one small bottle",
+          "The total number of liters in all bottles"
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Read the complete product: liters per large bottle times the number of large bottles.",
+        "explanation": "Right. \\(4n\\) is the large-bottle subtotal, measured in liters. The entire left side is the total for both bottle sizes."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "build_equation_model",
+      "html": "<h2>Build the equation from two rate products</h2><p>One machine packs \\(28\\) kits per hour for \\(x\\) hours. A second machine packs \\(35\\) kits per hour for \\(y\\) hours. Together they pack \\(910\\) kits.</p><p>Build one subtotal for each machine:</p><ul><li>\\(28\\,\\frac{\\text{kits}}{\\text{hour}}\\times x\\,\\text{hours}=28x\\,\\text{kits}\\)</li><li>\\(35\\,\\frac{\\text{kits}}{\\text{hour}}\\times y\\,\\text{hours}=35y\\,\\text{kits}\\)</li></ul><p>Then add the subtotals:</p><p>\\[28x+35y=910\\]</p><blockquote><p><strong>Build by units:</strong> make each term end in the total's unit before adding.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "build_equation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Pump A moves 12 gallons per minute for \\(x\\) minutes, and pump B moves 8 gallons per minute for \\(y\\) minutes. Together they move 300 gallons. Which equation represents the situation?",
+        "choices": [
+          "\\(12x+8y=300(x+y)\\)",
+          "\\(12y+8x=300\\)",
+          "\\(\\frac{x}{12}+\\frac{y}{8}=300\\)",
+          "\\(12x+8y=300\\)"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Create gallons from each pump: gallons per minute times minutes. Then add the two gallon totals.",
+        "explanation": "Correct. \\(12x\\) and \\(8y\\) are the two gallon subtotals, so their sum equals 300 gallons."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "interval_rate_trap",
+      "html": "<h2>Watch the size of the denominator unit</h2><p>A rate may be given per \\(15\\) minutes, per \\(30\\) minutes, or per package rather than per single minute or item.</p><p>Suppose a scanner processes \\(90\\) records every \\(15\\) minutes. In one hour, it completes</p><p>\\[\\frac{60\\text{ minutes}}{15\\text{ minutes per interval}}=4\\text{ intervals}\\]</p><p>so the total is \\(90\\times4=360\\) records.</p><blockquote><p><strong>Before multiplying:</strong> Express the quantity in the same unit named after “per.”</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "interval_rate_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A trail crew marks 70 meters every 20 minutes. At that rate, how many meters does the crew mark in 2 hours?",
+        "choices": [
+          "\\(140\\)",
+          "\\(280\\)",
+          "\\(420\\)",
+          "\\(8{,}400\\)"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Convert 2 hours to 120 minutes, then count how many 20-minute intervals fit into 120 minutes.",
+        "explanation": "Correct. Two hours contain \\(120\\div20=6\\) intervals, and \\(70\\times6=420\\) meters."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "independent_transfer",
+      "html": "<h2>Independent transfer</h2><p>An aquarium has \\(4\\) identical display tanks and \\(9\\) identical research tanks. Each display tank holds \\(d\\) liters, and each research tank holds \\(r\\) liters. Altogether, the tanks hold \\(690\\) liters.</p><p>The equation is</p><p>\\[4d+9r=690\\]</p><p>Each display tank holds \\(60\\) liters. Find \\(r\\).</p><p>Use the full process: label the variables, interpret each product, substitute \\(d=60\\), and solve for the requested rate.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "For \\(4d+9r=690\\) with \\(d=60\\), how many liters does each research tank hold?",
+        "choices": [
+          "\\(30\\) liters",
+          "\\(45\\) liters",
+          "\\(50\\) liters",
+          "\\(75\\) liters"
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "The four display tanks hold \\(4(60)=240\\) liters. Subtract that subtotal from 690, then divide the remainder among 9 research tanks.",
+        "explanation": "Correct. The research tanks hold \\(690-240=450\\) liters total, so \\(r=450\\div9=50\\) liters per research tank."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which statement gives the most reliable way to interpret a contextual term in a two-variable linear equation?",
+        "choices": [
+          "The coefficient is always the rate, the variable is always time, and the term is always money.",
+          "The variable and the full term always represent the same quantity.",
+          "Ignore the variable definitions and choose the interpretation that uses the largest number.",
+          "Label each factor's units, pair a rate with its matching quantity, read the product as a subtotal, and read the sum as the grand total."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Recall the Label–Pair–Product–Whole process and the fact that either factor can carry the rate.",
+        "explanation": "You have it. Unit labels reveal whether the coefficient or variable is the rate, what the complete term totals, and how the terms combine."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can read rate equations by units</h2><p>You can recognize rates, match them with quantities, and interpret the coefficient, variable, full term, and equation total without confusing their roles.</p><p>You also know that a variable can represent a rate and that interval units must match before you multiply.</p><blockquote><p><strong>Final reminder:</strong> Rate × matching quantity = subtotal; subtotal + subtotal = total.</p></blockquote>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": { "display": "hidden" }
+    }
+  ]
+}
