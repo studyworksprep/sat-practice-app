@@ -1,11 +1,15 @@
 # Foundations and question patterns — extending the curriculum model
 
-> **Status: Living — adopted design, not yet implemented.** Written
-> 2026-07-26 from the owner's pedagogical observations; verified
-> against the codebase as of that date. The engineering work described
-> in §3 should update this doc (and the upgrade-plan ledger) as it
-> lands. The human workstream in §4 is the operating checklist for the
-> owner and co-instructors and should be kept true as steps complete.
+> **Status: Living — adopted design, partially implemented.** Written
+> 2026-07-26 from the owner's pedagogical observations; last verified
+> against the codebase 2026-08-16. §3.4 step 1 (schema) and the
+> authoring half of step 2 (lesson scope/kind fields, scoped generate
+> prefills, and the pattern-catalog editor) have landed; the
+> question-editor pattern picker, the classification queue, and every
+> consumer in step 3 have not. The engineering work described in §3
+> should update this doc (and the upgrade-plan ledger) as it lands.
+> The human workstream in §4 is the operating checklist for the owner
+> and co-instructors and should be kept true as steps complete.
 
 ## 1. Why this exists
 
@@ -213,9 +217,25 @@ The unique index extends accordingly.
    matching `lesson_topics` row on save; the lesson builder gained
    kind/foundation-order metadata fields and a Scope-tags editor
    (section + skill grains; pattern tags display but are authored via
-   the catalog tooling). Still open from this step: the
-   pattern-catalog editor, the question-editor/drafts pattern picker,
-   and the classification queue.
+   the catalog tooling).
+   **Pattern-catalog editor landed 2026-08-16** at
+   `/admin/content/patterns` — admin-only, grouped per skill in
+   teaching order, with create/edit/delete/reorder plus a CSV
+   importer (dry-run preview, skip-or-update duplicate policy,
+   template download, and export of the live catalog for round-trip
+   editing in a spreadsheet). Domain/skill codes are validated against
+   `SAT_TAXONOMY` on both authoring paths, so a pattern cannot be
+   filed under a unit that does not exist. Delete states its cost
+   first: tagged questions fall back to unclassified (FK set null),
+   lesson scope tags are removed (FK cascade). The units worklist
+   gained a Patterns column deep-linking per skill, and each pattern
+   row links to `/admin/lessons/generate?pattern=`, which reaches the
+   cue+process prefill built in this step. CSV parse/plan logic is
+   `lib/admin/questionPatternCsv.ts`, shared by the client preview and
+   the Server Action and covered by
+   `lib/admin/questionPatternCsv.test.mjs`.
+   Still open from this step: the question-editor/drafts pattern
+   picker, and the classification queue.
 3. Consumers, in dependency order: `recommend.ts` chain →
    generator front-load pass → drill `pattern_id` filter → detours →
    efficacy expansion → wizard/Today/roster surfaces.
@@ -259,7 +279,16 @@ Things to think about:
   `video` blocks) where tone and demonstration matter — passage
   annotation in particular is hard to teach in text alone.
 
-### Step 2 — Draft the pattern catalogs **[now]**
+### Step 2 — Draft the pattern catalogs **[now, and now also in-app]**
+
+Drafting still happens wherever it's fastest — a doc or spreadsheet is
+fine. Since 2026-08-16 the drafts have somewhere to land:
+`/admin/content/patterns` takes either a CSV upload (columns
+`domain_code, skill_code, name, recognition_cue, process_summary,
+sequence`; download the template from the importer) or one-at-a-time
+entry. Import previews every row before writing, and re-importing a
+corrected sheet with "Update existing" is the supported way to revise
+a catalog — the app never becomes a fork of the spreadsheet.
 
 Per skill, starting only with skills where you actually teach
 "see format → run process" (don't force catalogs onto skills you teach
@@ -366,8 +395,8 @@ anything in this document.
 
 | Order | Who | What | Depends on |
 |---|---|---|---|
-| 1 | Owner + co-instructors | Foundation inventory (step 1), pattern catalogs for first 3–5 skills (step 2) | nothing — start now |
-| 2 | Engineering | Schema migration + admin surfaces (§3.4 steps 1–2) | design sign-off |
+| 1 | Owner + co-instructors | Foundation inventory (step 1), pattern catalogs for first 3–5 skills (step 2) | nothing — start now; catalogs can be entered or imported at `/admin/content/patterns` |
+| 2 | Engineering | Schema migration + admin surfaces (§3.4 steps 1–2) | design sign-off — schema and the catalog editor done; picker + classification queue outstanding |
 | 3 | Engineering | Recommendation chain, generator front-load, drill filter (§3.4 step 3) | 2 |
 | 4 | Owner + co-instructors | Author foundations (step 4); classify first skills (step 3); backfill rosters (step 5) | 2, and 3 for front-loading to take effect |
 | 5 | Both, ongoing | Pattern lessons per unit-coverage ranking; efficacy review (step 6) | 4 |

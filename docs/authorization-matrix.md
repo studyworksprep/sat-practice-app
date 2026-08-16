@@ -48,6 +48,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/concept-tags/actions.ts` | `renameConceptTag`, `deleteConceptTag`, `mergeConceptTags` | requireRole[admin] |
 | `app/(admin)/admin/content/actions.js` | `addScoreConversions`, `deleteScoreConversion`, `updateTestThresholds`, `saveSkillLearnability` | requireRole[admin] |
 | `app/(admin)/admin/content/drafts/[draftId]/actions.js` | `saveDraft`, `promoteDraft`, `rejectDraft` | requireRole[admin] |
+| `app/(admin)/admin/content/patterns/actions.ts` | `createQuestionPattern`, `updateQuestionPattern`, `deleteQuestionPattern`, `importQuestionPatterns`, `moveQuestionPattern` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson`, `addLessonTopic`, `removeLessonTopic` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/import/actions.js` | `importBlocksIntoLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/actions.js` | `createLesson` | requireRole[admin] |
@@ -109,4 +110,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_19 route handlers, 59 server-action modules enumerated._
+_19 route handlers, 60 server-action modules enumerated._

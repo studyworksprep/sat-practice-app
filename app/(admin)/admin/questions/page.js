@@ -37,6 +37,10 @@ export default async function AdminQuestionsPage({ searchParams }) {
   const broken   = sp.broken   === '1';
   const trimmed  = sp.trimmed  === '1';
   const hasmath  = sp.hasmath  === '1';
+  // Set by the pattern catalog's per-pattern question count
+  // (/admin/content/patterns). Not a FilterBar control — it is a
+  // drill-in from elsewhere, so it shows as a dismissible chip.
+  const pattern  = typeof sp.pattern  === 'string' ? sp.pattern.trim()  : '';
   const page     = Math.max(1, Number(sp.page) || 1);
   const offset   = (page - 1) * PAGE_SIZE;
 
@@ -48,6 +52,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
     )
     .is('deleted_at', null);
 
+  if (pattern) query = query.eq('pattern_id', pattern);
   if (broken)  query = query.eq('is_broken', true);
   if (trimmed) query = query.or('stem_html.ilike.%TRIMMED%,stimulus_html.ilike.%TRIMMED%,rationale_html.ilike.%TRIMMED%');
   if (hasmath) query = query.or('stem_html.ilike.%<math%,stem_html.ilike.%role="math"%,stimulus_html.ilike.%<math%,stimulus_html.ilike.%role="math"%');
@@ -57,9 +62,14 @@ export default async function AdminQuestionsPage({ searchParams }) {
     query = query.or(`display_code.ilike.%${q}%,stem_html.ilike.%${q}%`);
   }
 
-  const { data: rows, count, error } = await query
-    .order('display_code', { ascending: true, nullsFirst: false })
-    .range(offset, offset + PAGE_SIZE - 1);
+  const [{ data: rows, count, error }, { data: patternRow }] = await Promise.all([
+    query
+      .order('display_code', { ascending: true, nullsFirst: false })
+      .range(offset, offset + PAGE_SIZE - 1),
+    pattern
+      ? supabase.from('question_patterns').select('name, skill_code').eq('id', pattern).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
   if (error) {
     return (
@@ -95,7 +105,20 @@ export default async function AdminQuestionsPage({ searchParams }) {
         </div>
       </header>
 
-      <FilterBar current={{ q, broken, trimmed, hasmath }} />
+      {pattern && (
+        <p style={S.patternChip}>
+          Showing questions tagged{' '}
+          <strong>
+            {patternRow ? `“${patternRow.name}” (${patternRow.skill_code})` : 'with this pattern'}
+          </strong>
+          {' · '}
+          <Link href={toUrl({ q, broken, trimmed, hasmath })} style={S.clearLink}>clear</Link>
+          {' · '}
+          <Link href="/admin/content/patterns" style={S.clearLink}>pattern catalog →</Link>
+        </p>
+      )}
+
+      <FilterBar current={{ q, broken, trimmed, hasmath, pattern }} />
 
       {(rows ?? []).length === 0 ? (
         <p style={S.empty}>No questions match the current filters.</p>
@@ -142,7 +165,7 @@ export default async function AdminQuestionsPage({ searchParams }) {
         </Table>
       )}
 
-      <Pagination current={page} last={lastPage} params={{ q, broken, trimmed, hasmath }} />
+      <Pagination current={page} last={lastPage} params={{ q, broken, trimmed, hasmath, pattern }} />
     </main>
   );
 }
@@ -155,6 +178,9 @@ function FilterBar({ current }) {
   // Component; no client JS needed.
   return (
     <form action="/admin/questions" method="get" style={S.filterBar}>
+      {/* Carried through so applying a text filter narrows within the
+          pattern drill-in rather than silently dropping it. */}
+      {current.pattern && <input type="hidden" name="pattern" value={current.pattern} />}
       <input
         type="text"
         name="q"
@@ -230,12 +256,13 @@ function Pagination({ current, last, params }) {
   );
 }
 
-function toUrl({ q, broken, trimmed, hasmath, page }) {
+function toUrl({ q, broken, trimmed, hasmath, pattern, page }) {
   const params = new URLSearchParams();
   if (q)       params.set('q',       q);
   if (broken)  params.set('broken',  '1');
   if (trimmed) params.set('trimmed', '1');
   if (hasmath) params.set('hasmath', '1');
+  if (pattern) params.set('pattern', pattern);
   if (page && page !== 1) params.set('page', String(page));
   const qs = params.toString();
   return `/admin/questions${qs ? `?${qs}` : ''}`;
@@ -271,6 +298,19 @@ function stripToSnippet(html, limit = 120) {
 // admin.module.css; the inline objects below cover the per-page
 // internals — filter bar, snippet column, pagination.
 const S = {
+  patternChip: {
+    margin: '0 0 0.75rem',
+    padding: '0.5rem 0.75rem',
+    background: '#eef2ff',
+    border: '1px solid #c7d2fe',
+    borderRadius: 8,
+    fontSize: '0.85rem',
+    color: '#3730a3',
+  },
+  clearLink: {
+    color: '#3730a3',
+    textDecoration: 'underline',
+  },
   headerRow: {
     display: 'flex',
     alignItems: 'flex-start',
