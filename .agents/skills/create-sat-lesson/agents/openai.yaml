@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create SAT Lesson"
+  short_description: "Create validated SAT lesson JSON"
+  default_prompt: "Use $create-sat-lesson to create an SAT lesson from this topic and rundown."
