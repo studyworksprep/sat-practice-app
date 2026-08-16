@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -3043,6 +3043,8 @@ export type Database = {
           options: Json | null
           options_rendered: Json | null
           pattern_id: string | null
+          pattern_tagged_at: string | null
+          pattern_tagged_by: string | null
           question_type: string
           rationale_html: string | null
           rationale_rendered: string | null
@@ -3083,6 +3085,8 @@ export type Database = {
           options?: Json | null
           options_rendered?: Json | null
           pattern_id?: string | null
+          pattern_tagged_at?: string | null
+          pattern_tagged_by?: string | null
           question_type: string
           rationale_html?: string | null
           rationale_rendered?: string | null
@@ -3123,6 +3127,8 @@ export type Database = {
           options?: Json | null
           options_rendered?: Json | null
           pattern_id?: string | null
+          pattern_tagged_at?: string | null
+          pattern_tagged_by?: string | null
           question_type?: string
           rationale_html?: string | null
           rationale_rendered?: string | null
@@ -3148,6 +3154,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "question_patterns"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_v2_pattern_tagged_by_fkey"
+            columns: ["pattern_tagged_by"]
+            isOneToOne: false
+            referencedRelation: "profile_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_v2_pattern_tagged_by_fkey"
+            columns: ["pattern_tagged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_v2_pattern_tagged_by_fkey"
+            columns: ["pattern_tagged_by"]
+            isOneToOne: false
+            referencedRelation: "student_practice_stats"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3963,6 +3990,42 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_webhook_events: {
+        Row: {
+          api_version: string | null
+          attempts: number
+          error: string | null
+          event_id: string
+          event_type: string
+          payload: Json
+          processed_at: string | null
+          received_at: string
+          stripe_created_at: string
+        }
+        Insert: {
+          api_version?: string | null
+          attempts?: number
+          error?: string | null
+          event_id: string
+          event_type: string
+          payload: Json
+          processed_at?: string | null
+          received_at?: string
+          stripe_created_at: string
+        }
+        Update: {
+          api_version?: string | null
+          attempts?: number
+          error?: string | null
+          event_id?: string
+          event_type?: string
+          payload?: Json
+          processed_at?: string | null
+          received_at?: string
+          stripe_created_at?: string
+        }
+        Relationships: []
+      }
       student_invite_codes: {
         Row: {
           code: string
@@ -4163,6 +4226,7 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          last_stripe_event_at: string | null
           plan: string
           status: string
           stripe_customer_id: string
@@ -4177,6 +4241,7 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          last_stripe_event_at?: string | null
           plan?: string
           status?: string
           stripe_customer_id: string
@@ -4191,6 +4256,7 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          last_stripe_event_at?: string | null
           plan?: string
           status?: string
           stripe_customer_id?: string
@@ -4738,6 +4804,10 @@ export type Database = {
         Args: { p_raw: number; p_section: string }
         Returns: number
       }
+      set_question_pattern: {
+        Args: { p_pattern_id: string; p_question_id: string }
+        Returns: Json
+      }
       snapshot_all_skill_mastery: {
         Args: { p_asof?: string; p_test_type?: string }
         Returns: number
@@ -4745,6 +4815,10 @@ export type Database = {
       snapshot_student_skill_mastery: {
         Args: { p_asof?: string; p_student: string; p_test_type?: string }
         Returns: number
+      }
+      student_has_lesson_assignment: {
+        Args: { p_lesson_id: string; p_student_id: string }
+        Returns: boolean
       }
       teacher_can_view_student: {
         Args: { target_student_id: string }

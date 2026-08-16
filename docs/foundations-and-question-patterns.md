@@ -2,11 +2,11 @@
 
 > **Status: Living — adopted design, partially implemented.** Written
 > 2026-07-26 from the owner's pedagogical observations; last verified
-> against the codebase 2026-08-16. §3.4 step 1 (schema) and the
-> authoring half of step 2 (lesson scope/kind fields, scoped generate
-> prefills, and the pattern-catalog editor) have landed; the
-> question-editor pattern picker, the classification queue, and every
-> consumer in step 3 have not. The engineering work described in §3
+> against the codebase 2026-08-16. §3.4 step 1 (schema) and most of
+> step 2 (lesson scope/kind fields, scoped generate prefills, the
+> pattern-catalog editor, and question→pattern tagging in the review
+> surfaces) have landed; the content-drafts picker, the classification
+> queue, and every consumer in step 3 have not. The engineering work described in §3
 > should update this doc (and the upgrade-plan ledger) as it lands.
 > The human workstream in §4 is the operating checklist for the owner
 > and co-instructors and should be kept true as steps complete.
@@ -234,8 +234,32 @@ The unique index extends accordingly.
    `lib/admin/questionPatternCsv.ts`, shared by the client preview and
    the Server Action and covered by
    `lib/admin/questionPatternCsv.test.mjs`.
-   Still open from this step: the question-editor/drafts pattern
-   picker, and the classification queue.
+   **Question tagging landed 2026-08-16** — migration
+   `20260816120000_question_pattern_tagging.sql`. `questions_v2`
+   UPDATE is admin-only (`questions_v2_admin_all`; the
+   `demo_readonly_*` policies are RESTRICTIVE guards, not grants), and
+   widening it so tutors could classify would also hand them
+   `stem_html`, `is_published` and `is_broken`. So the write goes
+   through `set_question_pattern()`, a SECURITY DEFINER function gated
+   on `is_manager()` (manager + admin, matching the concept-tag write
+   bar) that touches `pattern_id` plus new `pattern_tagged_by` /
+   `pattern_tagged_at` attribution columns and nothing else — the same
+   shape as `merge_concept_tags()`. It refuses a pattern whose
+   domain/skill differs from the question's, so the bank cannot
+   accumulate cross-skill tags no recommendation path could use.
+   The picker (`lib/practice/QuestionPatternTag.tsx`) mounts through
+   `QuestionRenderer`'s existing `controlsNode` slot beside
+   `ConceptTags` — **not** inside the renderer, which
+   `TestRunnerInteractive` also mounts. Live surfaces: the per-student
+   and group assignment reports, practice-session review, test
+   results, and the shared question detail page. Options are scoped to
+   the question's own skill, and the control hides itself when that
+   skill has no patterns. `/admin/content/patterns` grew a "Recently
+   tagged" audit strip off the attribution columns.
+   Still open from this step: the pattern picker in the *content
+   drafts* review (`question_content_drafts.pattern_id` is still
+   unwritten — that pipeline stages content fields only), and the
+   AI-assisted classification queue.
 3. Consumers, in dependency order: `recommend.ts` chain →
    generator front-load pass → drill `pattern_id` filter → detours →
    efficacy expansion → wizard/Today/roster surfaces.
@@ -319,6 +343,15 @@ Rules of thumb:
 
 Classification happens when a skill's first pattern lesson is ready to
 ship — never big-bang across all 3,381 questions.
+
+Since 2026-08-16 there is also an **opportunistic path** that needs no
+queue: any manager or admin reviewing an assignment, a practice
+session, or a test result gets a pattern picker under the question,
+scoped to that question's skill. Tagging the obvious fits as they come
+up costs seconds and needs no sweep. The two are complementary — this
+catches what a tutor happens to see; the queue below is how a skill
+gets covered systematically. Both write the same column, and
+`/admin/content/patterns` shows who tagged what.
 
 1. Engineering provides an AI-assisted queue (drafts-pipeline
    pattern): for a chosen skill, the model proposes a pattern per

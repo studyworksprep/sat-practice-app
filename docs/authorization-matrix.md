@@ -99,6 +99,7 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/practice/flashcards-actions.ts` | `listFlashcardSets`, `listFlashcards`, `createFlashcard`, `updateFlashcard`, `deleteFlashcard`, `rateFlashcard`, `createFlashcardSet` | requireUser |
 | `lib/practice/load-question-action.ts` | `loadQuestionAction` | requireUser |
 | `lib/practice/question-notes-actions.ts` | `addQuestionNote`, `updateQuestionNote`, `deleteQuestionNote` | requireRole[admin|manager|teacher] |
+| `lib/practice/question-pattern-actions.ts` | `setQuestionPattern` | requireRole[admin|manager] |
 | `lib/practice/question-search-actions.ts` | `searchQuestions`, `listConceptTagsForSearch` | requireUser |
 | `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `abandonPracticeSession`, `togglePracticeMark`, `getDetourOptions`, `injectEasierQuestion` | requireUser + rateLimit |
 
@@ -110,4 +111,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_19 route handlers, 60 server-action modules enumerated._
+_19 route handlers, 61 server-action modules enumerated._
