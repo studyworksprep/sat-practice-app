@@ -1,0 +1,303 @@
+{
+  "title": "Inference Questions: Make the Smallest Supported Leap",
+  "description": "Recognize SAT Inference questions, combine sentence-level soundbites, predict the smallest conclusion supported by the whole text, and reject answers that infer too much.",
+  "blocks": [
+    {
+      "kind": "text",
+      "id": "lesson_preview",
+      "html": "<h2>Inference is a careful connection, not a guess</h2><p>SAT Inference questions ask you to complete a text with a logical conclusion. The answer may not be stated word for word, but every important part of it must come from the passage.</p><p>By the end of this lesson, you can compress each sentence into a soundbite, combine the relationships, predict the smallest supported conclusion, and reject choices that go beyond the evidence.</p><blockquote><p><strong>Core rule:</strong> Connect the dots the text gives you. Do not add new dots.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "opening_exploration",
+      "html": "<h2>Put two facts together</h2><p>In a practice study, two bee species gathered food at similar rates at \\(20^\\circ\\text{C}\\) and \\(30^\\circ\\text{C}\\). At \\(35^\\circ\\text{C}\\), species R continued gathering food at about the same rate, but species S gathered food much less often.</p><p>Before looking at any rule, ask: <strong>If those facts are true together, what else is most clearly true?</strong></p><blockquote><p><strong>Stay close to the evidence:</strong> Compare the species at the highest temperature without inventing a biological cause.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "opening_exploration_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice most logically completes the description of the bee study?",
+        "choices": [
+          "Species S must avoid every habitat warmer than \\(30^\\circ\\text{C}\\).",
+          "Species R's food-gathering behavior was less affected by the highest tested temperature than species S's was.",
+          "High temperatures caused species R to gather more food than it needed.",
+          "Both species gathered food at identical rates under every condition."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Use the contrast at \\(35^\\circ\\text{C}\\), but do not add a cause or make a claim about every possible habitat.",
+        "explanation": "Correct. Species R stayed near its earlier rate while species S declined, so R's behavior was less affected by the highest tested temperature."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "definition_and_cue",
+      "html": "<h2>What inference means on the SAT</h2><p>An <strong>inference</strong> is a conclusion that is not stated directly but follows logically from facts or relationships in the text.</p><p>It is not a creative guess, a prediction based on personal experience, or a possible explanation that the passage never supports.</p><p>You can recognize this question pattern by the wording:</p><blockquote><p><strong>Which choice most logically completes the text?</strong></p></blockquote><p>Your job is to supply the smallest conclusion that the whole passage earns.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "definition_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which statement best defines an SAT inference?",
+        "choices": [
+          "Any explanation that seems reasonable based on what you know about the topic",
+          "A detail copied word for word from one sentence",
+          "A prediction about what will happen after the passage ends",
+          "A conclusion not stated directly but supported by the facts and relationships in the text"
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "The answer can go one small step beyond the wording, but the passage must supply the path.",
+        "explanation": "Exactly. An inference connects stated information into a supported conclusion; it does not depend on outside knowledge or speculation."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "four_step_process",
+      "html": "<h2>Use a four-step process</h2><ol><li><strong>Soundbite:</strong> Summarize each sentence or difficult clause in a few plain words.</li><li><strong>Combine:</strong> Notice how the facts relate - contrast, agreement, change, sequence, evidence, or qualification.</li><li><strong>Predict:</strong> Ask, \"If all of this is true, what else is also obviously or most reasonably true?\" Use a little information from each important sentence.</li><li><strong>Prove and disprove:</strong> Keep the choice the text supports, and reject any choice that reverses, exaggerates, or adds to the evidence.</li></ol><blockquote><p><strong>Short version:</strong> Soundbite, combine, predict, prove.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "soundbite_method",
+      "html": "<h2>Soundbites preserve the point, not every detail</h2><p>A soundbite is a short statement of what a sentence contributes. Keep the subject, the main claim or result, and any relationship word that changes the logic.</p><p>Example:</p><blockquote><p>Although an early survey suggested that the marsh was shrinking, satellite measurements collected over fifteen years showed that its total area had remained stable.</p></blockquote><p>Useful soundbite: <strong>Early survey said shrinkage, but longer satellite record showed stability.</strong></p><p>The word <strong>although</strong> matters because it signals that the later evidence challenges the earlier idea.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "soundbite_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which soundbite best preserves the marsh sentence's meaning?",
+        "choices": [
+          "An early survey suggested shrinkage, but a longer satellite record found the marsh stable.",
+          "Every survey found that the marsh was rapidly shrinking.",
+          "Satellite measurements caused the marsh to stop shrinking.",
+          "The early survey measured a different marsh from the satellite study."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "Keep both findings and the contrast between them. Do not turn a measurement into a cause.",
+        "explanation": "Correct. The soundbite preserves the early claim, the later result, and the contrast while dropping unneeded detail."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "combine_facts",
+      "html": "<h2>The conclusion usually lives between sentences</h2><p>Do not treat each fact as a separate mini-question. Ask what changes when the facts are true together.</p><p>Suppose:</p><ul><li>Frog species A lays eggs only in temporary ponds.</li><li>Frog species B lays eggs in temporary and permanent ponds.</li><li>During a drought, the temporary ponds disappeared while several permanent ponds remained.</li></ul><p>Each sentence supplies one piece. Together, they tell you which species lost more of its available egg-laying habitat.</p><blockquote><p><strong>Use the overlap:</strong> A strong inference usually takes a little from more than one sentence.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "combine_facts_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which inference is best supported by the frog facts?",
+        "choices": [
+          "Species B stopped laying eggs before the drought began.",
+          "The drought created new permanent ponds for both species.",
+          "Fewer egg-laying sites remained available to species A than to species B during the drought.",
+          "Species A can survive only in regions that never experience drought."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Combine each species' pond options with the fact that only permanent ponds remained.",
+        "explanation": "Right. Species A lost its only type of egg-laying site, while species B could still use the remaining permanent ponds."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "minimum_inference_rule",
+      "html": "<h2>Make the smallest supported leap</h2><p>The correct answer is often cautious because the evidence is limited. Match the strength and scope of the passage.</p><ul><li><strong>Safer:</strong> may, can, suggests, is associated with, in the study, under the tested conditions.</li><li><strong>Riskier:</strong> always, never, proves, must, completely, all.</li></ul><p>A strong word is not automatically wrong, but the text must earn it. One experiment usually cannot prove a claim about every case.</p><blockquote><p><strong>Do not infer too much:</strong> Prefer the conclusion with the fewest unsupported additions.</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "strength_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "In one study, twelve mulched trees retained more soil moisture than twelve nearby unmulched trees. Which inference matches the evidence's strength and scope?",
+        "choices": [
+          "Mulch always prevents every tree from losing water.",
+          "In this study, the mulched trees retained more soil moisture than the unmulched trees.",
+          "The unmulched trees must have died soon after the study.",
+          "Mulch is the only factor that can affect soil moisture."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Keep the conclusion limited to the studied trees and the measured result.",
+        "explanation": "Correct. The second choice reports exactly what the study supports without turning a limited result into a universal rule."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "worked_example",
+      "html": "<h2>Model the full process</h2><p><strong>Text:</strong></p><blockquote><p>Ecologists surveyed insect species on twenty city rooftops. Rooftops planted with a wider variety of flowering plants had more insect species than rooftops with only one or two plant types. The pattern remained even after the researchers accounted for differences in rooftop size, suggesting that ___</p></blockquote><p><strong>Soundbites:</strong></p><ul><li>More plant variety went with more insect species.</li><li>Roof size did not explain away the pattern.</li></ul><p><strong>Prediction:</strong> Greater plant variety is associated with greater insect diversity on these rooftops, beyond the effect of roof size.</p><p>Now find that meaning in the choices.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "worked_example_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice most logically completes the rooftop text?",
+        "choices": [
+          "larger rooftops always contain fewer insects than smaller rooftops do.",
+          "insects cause rooftop gardeners to plant a wider variety of flowers.",
+          "flowering-plant variety is associated with insect diversity on the surveyed rooftops even when rooftop size is considered.",
+          "every insect species in the city depends on rooftop flowers."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Keep both soundbites: plant variety relates to insect diversity, and rooftop size does not erase that relationship.",
+        "explanation": "Correct. The third choice combines both findings and uses the cautious phrase 'is associated with' rather than inventing a cause."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "distractor_patterns",
+      "html": "<h2>Wrong choices often sound possible but fail one test</h2><ul><li><strong>One-sentence choice:</strong> repeats one fact but ignores how the facts combine.</li><li><strong>Reversal:</strong> flips which group was larger, earlier, stronger, or more affected.</li><li><strong>New cause or motive:</strong> explains why something happened when the passage only reports that it happened.</li><li><strong>Scope jump:</strong> changes some to all, may to must, or one study to a universal rule.</li><li><strong>Outside-knowledge choice:</strong> may be true in the world but is not proved by this text.</li></ul><p>For each choice, ask both questions: What does the text support here? What word or idea goes beyond the text?</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "one_sentence_trap_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A survey found that towers with ventilation slits had lower summer indoor temperatures than nearby towers without slits; the towers were similar in height and building material. Which conclusion best combines the facts?",
+        "choices": [
+          "All historic towers were built from the same material.",
+          "Ventilation slits were used only in the hottest regions.",
+          "Lower temperatures caused builders to cut slits into the towers.",
+          "The presence of ventilation slits was associated with cooler summer interiors among the surveyed towers."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Keep the measured comparison and its limited scope. Do not reverse the relationship or invent a design motive.",
+        "explanation": "Correct. The final choice states the observed association and stays limited to the surveyed towers."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "association_caution",
+      "html": "<h2>Observed together does not automatically mean caused by</h2><p>If a study observes that two things occur together, you may infer an <strong>association</strong>. You usually may not infer that one caused the other unless the study's design or the passage explicitly supports causation.</p><p>For example, if train commuters who read report lower stress than commuters who do not read, the text supports a relationship between reading and reported stress. It does not by itself prove that reading caused the difference.</p><blockquote><p><strong>Language check:</strong> Match \"was associated with\" unless the passage earns \"caused.\"</p></blockquote>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "association_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "A survey found that commuters who read during train trips reported lower stress than commuters who did not. The survey did not assign people to read. Which inference is safest?",
+        "choices": [
+          "Reading during train trips was associated with lower reported stress in the survey.",
+          "Reading during a train trip always eliminates stress.",
+          "Lower stress caused every commuter in the first group to begin reading.",
+          "The survey proved that reading is more effective than every other stress-reduction method."
+        ],
+        "correct_index": 0,
+        "allow_retry": true,
+        "hint": "The groups were observed, not created by an experiment, so report the relationship without claiming cause.",
+        "explanation": "Right. The survey supports an association between reading and lower reported stress, not a universal causal claim."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "data_variation",
+      "html": "<h2>Variation: infer from a pattern in data</h2><p>Researchers measured the percentage of seeds that germinated after ten days at three temperatures:</p><ul><li><strong>Species X:</strong> \\(12\\%\\) at \\(5^\\circ\\text{C}\\), \\(47\\%\\) at \\(15^\\circ\\text{C}\\), and \\(49\\%\\) at \\(25^\\circ\\text{C}\\).</li><li><strong>Species Y:</strong> \\(10\\%\\) at \\(5^\\circ\\text{C}\\), \\(32\\%\\) at \\(15^\\circ\\text{C}\\), and \\(61\\%\\) at \\(25^\\circ\\text{C}\\).</li></ul><p>The researchers concluded that ___</p><p>Soundbite the important comparison: What changed from \\(15^\\circ\\text{C}\\) to \\(25^\\circ\\text{C}\\) for each species?</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "data_variation_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice most logically completes the seed text?",
+        "choices": [
+          "both species germinated at exactly the same rate at every temperature.",
+          "between \\(15^\\circ\\text{C}\\) and \\(25^\\circ\\text{C}\\), germination increased much more for species Y than for species X.",
+          "species X cannot germinate at temperatures above \\(25^\\circ\\text{C}\\).",
+          "temperature was the only possible influence on either species' germination."
+        ],
+        "correct_index": 1,
+        "allow_retry": true,
+        "hint": "Compare the change from 47 to 49 with the change from 32 to 61.",
+        "explanation": "Correct. Species X increased by only 2 percentage points, while species Y increased by 29 points over the same temperature interval."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "prove_and_disprove",
+      "html": "<h2>Use Good Cop and Bad Cop on the choices</h2><p>After you predict the conclusion, test each option from both sides:</p><ol><li><strong>Good Cop:</strong> What part of this choice matches my prediction and the text?</li><li><strong>Bad Cop:</strong> What word, relationship, or added idea makes it wrong or unsupported?</li><li><strong>Decision:</strong> Keep a choice only when its whole meaning survives.</li></ol><p>A partly correct choice is still wrong. On a hard question, Bad Cop often exposes one extra word such as <strong>all</strong>, <strong>caused</strong>, or <strong>only</strong>.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "text",
+      "id": "independent_transfer",
+      "html": "<h2>Independent transfer</h2><p>Use the complete process without a worked outline.</p><blockquote><p>A historian analyzed ceramic fragments from a port city. In layers dated before 1750, most fragments were made from local clay. In layers dated after 1750, a growing share of fragments came from clay sources in distant regions. Shipping records indicate that new trade routes connecting the port to those regions opened during the 1740s. Taken together, the evidence suggests that ___</p></blockquote><p>Make a soundbite for each sentence, combine the timing and the change in clay sources, and predict the smallest supported conclusion before continuing.</p>",
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "independent_transfer_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Which choice most logically completes the ceramic text?",
+        "choices": [
+          "the port city's residents stopped using local clay immediately after 1750.",
+          "ceramic production was the only reason the new trade routes opened.",
+          "the new trade connections likely contributed to the increased use of clay from distant regions after 1750.",
+          "all ceramic fragments made before 1750 came from the same workshop."
+        ],
+        "correct_index": 2,
+        "allow_retry": true,
+        "hint": "Connect the opening of routes in the 1740s with the later increase in distant clay, but keep the conclusion cautious.",
+        "explanation": "Correct. The timing and source change support a likely contribution from expanded trade. The passage does not say local clay disappeared or that ceramics alone caused the routes to open."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "final_retrieval_check",
+      "block_type": "check",
+      "content": {
+        "prompt": "Without looking back, which process should you use when a question asks which choice most logically completes the text?",
+        "choices": [
+          "Choose the answer that seems most interesting, then find one sentence that mentions its topic.",
+          "Summarize only the final sentence and ignore earlier facts unless two choices tie.",
+          "Use background knowledge to predict what probably happened after the passage ends.",
+          "Soundbite each important sentence, combine the relationships, predict the smallest supported conclusion, and prove the choice while rejecting overreach."
+        ],
+        "correct_index": 3,
+        "allow_retry": true,
+        "hint": "Retrieve the four moves: soundbite, combine, predict, prove.",
+        "explanation": "You have it. The correct inference comes from the whole text and makes only the smallest leap the evidence supports."
+      },
+      "calculator": { "display": "hidden" }
+    },
+    {
+      "kind": "raw_block",
+      "id": "finish",
+      "block_type": "lesson_complete",
+      "content": {
+        "html": "<h2>You can infer without guessing</h2><p>You can recognize the \"most logically completes\" question pattern, turn dense sentences into useful soundbites, combine facts across the passage, and predict the smallest supported conclusion.</p><p>You can also reject choices that rely on one sentence, reverse a relationship, invent a cause, use outside knowledge, or make a claim stronger than the evidence allows.</p><blockquote><p><strong>Final reminder:</strong> Connect the text's dots - and stop there.</p></blockquote>",
+        "button_label": "Complete Lesson"
+      },
+      "calculator": { "display": "hidden" }
+    }
+  ]
+}
