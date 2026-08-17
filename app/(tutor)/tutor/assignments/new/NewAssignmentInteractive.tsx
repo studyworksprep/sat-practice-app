@@ -24,6 +24,8 @@
 import { useActionState, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ActionResult } from '@/lib/types';
+import type { LessonCatalogItem } from '@/lib/lesson/catalog';
+import { LessonPicker } from './LessonPicker';
 import styles from './NewAssignmentInteractive.module.css';
 
 // ── Props shape coming from the Server Component page ───────────
@@ -42,7 +44,6 @@ type DomainTaxonomy = {
 type PersonOption = { id: string; name: string; email: string | null };
 type PracticeTestOption = { id: string; label: string };
 type LessonPackOption = { id: string; name: string; questionCount: number };
-type LessonOption = { id: string; title: string };
 type TemplateOption = { id: string; name: string };
 
 /** Server-resolved one-click prefill (§4.3): a template or a
@@ -78,7 +79,7 @@ interface Props {
   difficulties: number[];
   practiceTests: PracticeTestOption[];
   lessonPacks: LessonPackOption[];
-  lessons?: LessonOption[];
+  lessons?: LessonCatalogItem[];
   templates?: TemplateOption[];
   prefill?: Prefill | null;
   createAction: CreateAction;
@@ -859,20 +860,7 @@ export function NewAssignmentInteractive({
           {lessons.length === 0 ? (
             <p className={styles.empty}>No published lessons yet.</p>
           ) : (
-            <div className={styles.fieldRow}>
-              <label className={styles.fieldLabel} htmlFor="lesson_id">Lesson</label>
-              <select
-                id="lesson_id"
-                name="lesson_id"
-                className={styles.select}
-                defaultValue=""
-              >
-                <option value="" disabled>Select a lesson…</option>
-                {lessons.map((l) => (
-                  <option key={l.id} value={l.id}>{l.title}</option>
-                ))}
-              </select>
-            </div>
+            <LessonPicker lessons={lessons} />
           )}
         </section>
       )}
