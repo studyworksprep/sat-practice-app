@@ -17,6 +17,7 @@
 
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
 import { createAssignment } from './actions';
 import { deleteAssignmentTemplate } from './template-actions';
 import { NewAssignmentInteractive } from './NewAssignmentInteractive';
@@ -63,7 +64,7 @@ export default async function NewAssignmentPage({ searchParams }) {
     { data: lessonPacksRaw },
     { data: lessonPackQuestionRows },
     { data: teacherJunctions },
-    { data: lessonRows },
+    lessonCatalog,
     { data: templateRows },
   ] = await Promise.all([
     // The picker needs names/emails only, so read profiles directly.
@@ -112,12 +113,7 @@ export default async function NewAssignmentPage({ searchParams }) {
     // Published lessons for the lesson assignment type (§4.3). The
     // student viewer only lists published lessons, so drafts never
     // appear here either.
-    supabase
-      .from('lessons')
-      .select('id, title')
-      .eq('status', 'published')
-      .eq('visibility', 'shared')
-      .order('title', { ascending: true }),
+    loadLessonCatalog(supabase, { status: 'published', visibility: 'shared' }),
     // The teacher's template shelf. RLS is owner-scoped, but the
     // explicit filter keeps admins from seeing a cross-tutor menu.
     supabase
@@ -250,7 +246,7 @@ export default async function NewAssignmentPage({ searchParams }) {
   }
 
   const templates = (templateRows ?? []).map((t) => ({ id: t.id, name: t.name }));
-  const lessons = (lessonRows ?? []).map((l) => ({ id: l.id, title: l.title ?? 'Untitled lesson' }));
+  const lessons = lessonCatalog;
 
   return (
     <main className={styles.container}>

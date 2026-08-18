@@ -16,6 +16,10 @@ import { requireUser } from '@/lib/api/auth';
 import { Button } from '@/lib/ui/Button';
 import { Table, Th, Td } from '@/lib/ui/Table';
 import { formatDate } from '@/lib/formatters';
+import { filterLessonCatalog, getLessonCatalogFacets } from '@/lib/lesson/catalog';
+import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
+import { LessonCatalogFilterBar } from '@/lib/ui/LessonCatalogFilters';
+import { LessonScopeChips } from '@/lib/ui/LessonScopeChips';
 import { createLesson } from './actions';
 import { refreshEfficacy } from './efficacy-actions';
 import { DeleteLessonButton } from './DeleteLessonButton';
@@ -27,6 +31,15 @@ export default async function AdminLessonsPage({ searchParams }) {
   const sp = (await searchParams) ?? {};
   const imported = typeof sp.imported === 'string' ? sp.imported : '';
   const deleted = sp.deleted === '1';
+  const catalogFilters = {
+    q: stringParam(sp.q),
+    section: stringParam(sp.section),
+    domain: stringParam(sp.domain),
+    kind: stringParam(sp.kind),
+    status: stringParam(sp.status),
+    categorization: stringParam(sp.categorization) || 'all',
+    sort: stringParam(sp.sort) || 'updated',
+  };
 
   const { profile, supabase } = await requireUser();
 
@@ -36,12 +49,8 @@ export default async function AdminLessonsPage({ searchParams }) {
     redirect('/');
   }
 
-  const [{ data: lessons }, { data: blockCounts }, { data: efficacyRows }] = await Promise.all([
-    supabase
-      .from('lessons')
-      .select('id, title, description, status, visibility, author_id, created_at, updated_at')
-      .order('updated_at', { ascending: false })
-      .limit(500),
+  const [lessons, { data: blockCounts }, { data: efficacyRows }] = await Promise.all([
+    loadLessonCatalog(supabase, { limit: 500 }),
     supabase
       .from('lesson_blocks')
       .select('lesson_id'),
@@ -53,6 +62,8 @@ export default async function AdminLessonsPage({ searchParams }) {
       .from('feature_efficacy')
       .select('lesson_id, skill_code, pre_attempts, pre_correct, post_attempts, post_correct, students, refreshed_at'),
   ]);
+  const visibleLessons = filterLessonCatalog(lessons, catalogFilters);
+  const catalogFacets = getLessonCatalogFacets(lessons);
 
   const countByLesson = {};
   for (const row of blockCounts ?? []) {
@@ -83,7 +94,7 @@ export default async function AdminLessonsPage({ searchParams }) {
     }
   }
 
-  const authorIds = [...new Set((lessons ?? []).map((l) => l.author_id).filter(Boolean))];
+  const authorIds = [...new Set(lessons.map((l) => l.author_id).filter(Boolean))];
   const authorMap = {};
   if (authorIds.length > 0) {
     const { data: authors } = await supabase
@@ -194,7 +205,11 @@ export default async function AdminLessonsPage({ searchParams }) {
       <section className={a.section}>
         <div style={S.cta}>
           <div>
-            <h2 className={a.h2}>All lessons ({lessons?.length ?? 0})</h2>
+            <h2 className={a.h2}>
+              All lessons ({visibleLessons.length === lessons.length
+                ? lessons.length
+                : `${visibleLessons.length} of ${lessons.length}`})
+            </h2>
             <p className={a.help}>
               Efficacy = first-attempt practice accuracy on each lesson&rsquo;s
               tagged skills, before → after students completed the lesson
@@ -208,8 +223,19 @@ export default async function AdminLessonsPage({ searchParams }) {
             <Button type="submit" variant="secondary">Refresh efficacy</Button>
           </form>
         </div>
-        {(lessons ?? []).length === 0 ? (
+        <LessonCatalogFilterBar
+          action="/admin/lessons"
+          filters={catalogFilters}
+          facets={catalogFacets}
+          showStatus
+          showCategorization
+        />
+        {lessons.length === 0 ? (
           <p className={a.help}>No lessons yet.</p>
+        ) : visibleLessons.length === 0 ? (
+          <p className={a.help}>
+            No lessons match these filters. <Link href="/admin/lessons">Clear filters</Link>
+          </p>
         ) : (
           <Table>
             <thead>
@@ -225,13 +251,14 @@ export default async function AdminLessonsPage({ searchParams }) {
               </tr>
             </thead>
             <tbody>
-              {(lessons ?? []).map((l) => (
+              {visibleLessons.map((l) => (
                 <tr key={l.id}>
                   <Td>
                     <div style={S.title}>{l.title || <em>Untitled</em>}</div>
                     {l.description && (
                       <div style={S.desc}>{l.description}</div>
                     )}
+                    <LessonScopeChips lesson={l} includeKind />
                   </Td>
                   <Td>{authorMap[l.author_id] ?? '—'}</Td>
                   <Td>
@@ -301,6 +328,10 @@ function EfficacyCell({ entry }) {
 function pct(correct, attempts) {
   if (!attempts) return '—';
   return `${Math.round((correct / attempts) * 100)}%`;
+}
+
+function stringParam(value) {
+  return typeof value === 'string' ? value : '';
 }
 
 function statusStyle(status) {

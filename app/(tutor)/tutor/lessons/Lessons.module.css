@@ -20,7 +20,7 @@
 .state_changes_requested { background: var(--color-diff-med-bg); color: var(--color-diff-med-fg); }
 .state_approved { background: var(--color-success-bg); color: var(--color-diff-easy-fg); }
 .state_rejected { background: var(--color-diff-hard-bg); color: var(--color-diff-hard-fg); }
-.lessonList { display: flex; flex-direction: column; }
+.lessonList { display: flex; flex-direction: column; margin-top: 14px; }
 .lessonRow { display: flex; justify-content: space-between; align-items: center; gap: 22px; padding: 16px 0; border-top: 1px solid var(--border); }
 .lessonRow:first-child { border-top: 0; }
 .lessonBody { min-width: 0; }
@@ -29,4 +29,5 @@
 .topics { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
 .topics span { padding: 2px 7px; border: 1px solid var(--border); border-radius: 999px; color: var(--fg3); font-size: 11px; }
 .actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.filteredEmpty { margin-top: 14px; }
 @media (max-width: 700px) { .lessonRow { align-items: flex-start; flex-direction: column; } .actions { width: 100%; flex-wrap: wrap; } .newForm { width: 100%; } .newForm input { min-width: 0; flex: 1; } }

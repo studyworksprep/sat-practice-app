@@ -551,6 +551,172 @@
 
 .muted { color: var(--fg3); }
 
+/* ---------- Searchable lesson picker ---------- */
+
+.lessonPicker {
+  display: grid;
+  gap: 10px;
+}
+
+.lessonSelection {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-app-accent) 45%, var(--border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-app-accent) 6%, var(--bg-white));
+}
+
+.lessonSelection > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lessonSelectionLabel {
+  color: var(--fg3);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.lessonSelection button {
+  border: 0;
+  background: transparent;
+  color: var(--color-app-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.lessonSearchRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lessonSearchField {
+  display: grid;
+  flex: 1 1 330px;
+  gap: 5px;
+}
+
+.lessonSearchField > span {
+  color: var(--fg2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lessonSearchField input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  color: var(--fg1);
+  font: inherit;
+  font-size: 13px;
+}
+
+.lessonSearchField input:focus {
+  outline: none;
+  border-color: var(--color-app-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-app-accent) 18%, transparent);
+}
+
+.lessonSectionFilters {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.lessonSectionFilters button {
+  min-height: 34px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--bg-white);
+  color: var(--fg2);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.lessonSectionFilters button:hover,
+.lessonSectionFilters .lessonSectionActive {
+  border-color: var(--color-app-accent);
+  color: var(--color-app-accent);
+}
+
+.lessonResultCount {
+  color: var(--fg3);
+  font-size: 11px;
+}
+
+.lessonOptions {
+  display: grid;
+  grid-auto-rows: min-content;
+  max-height: 390px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-white);
+}
+
+.lessonOption {
+  display: block;
+  width: 100%;
+  padding: 11px 12px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.lessonOption:first-child { border-top: 0; }
+.lessonOption:hover { background: var(--color-slate-50); }
+.lessonOptionSelected {
+  background: color-mix(in srgb, var(--color-app-accent) 8%, var(--bg-white));
+  box-shadow: inset 3px 0 var(--color-app-accent);
+}
+
+.lessonOptionTitle {
+  display: block;
+  color: var(--fg1);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.lessonOptionDescription {
+  display: -webkit-box;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--fg3);
+  font-size: 11px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.lessonNoResults {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--fg3);
+  font-size: 13px;
+  text-align: center;
+}
+
 /* Hidden inputs for posting the selected skills payload. */
 .hidden { display: none; }
 

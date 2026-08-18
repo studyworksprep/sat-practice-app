@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
 import { Button } from '@/lib/ui/Button';
+import { filterLessonCatalog, getLessonCatalogFacets } from '@/lib/lesson/catalog';
+import { loadLessonCatalog } from '@/lib/lesson/catalog-server';
+import { LessonCatalogFilterBar } from '@/lib/ui/LessonCatalogFilters';
+import { LessonScopeChips } from '@/lib/ui/LessonScopeChips';
 import { createNewLessonDraft, proposeLessonEdit } from './actions';
 import s from './Lessons.module.css';
 
@@ -13,14 +17,6 @@ type DirectFormAction = (formData: FormData) => void | Promise<void>;
 const createDraftAction = createNewLessonDraft as unknown as DirectFormAction;
 const proposeEditAction = proposeLessonEdit as unknown as DirectFormAction;
 
-type Lesson = {
-  id: string;
-  title: string;
-  description: string | null;
-  kind: string;
-  updated_at: string;
-};
-
 type Revision = {
   id: string;
   base_lesson_id: string | null;
@@ -31,43 +27,35 @@ type Revision = {
   review_note: string | null;
 };
 
-type LessonTopic = {
-  lesson_id: string;
-  section: string | null;
-  domain_name: string | null;
-  skill_code: string | null;
-};
-
-export default async function TutorLessonsPage() {
+export default async function TutorLessonsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { user, profile, supabase } = await requireUser();
   if (profile.role === 'admin') redirect('/admin/lessons');
   if (!['teacher', 'manager'].includes(profile.role)) redirect('/dashboard');
 
-  const [{ data: lessons }, { data: revisions }, { data: topicRows }] = await Promise.all([
-    supabase
-      .from('lessons')
-      .select('id, title, description, kind, updated_at')
-      .eq('status', 'published')
-      .eq('visibility', 'shared')
-      .order('title'),
+  const sp = (await searchParams) ?? {};
+  const catalogFilters = {
+    q: stringParam(sp.q),
+    section: stringParam(sp.section),
+    domain: stringParam(sp.domain),
+    kind: stringParam(sp.kind),
+    sort: stringParam(sp.sort) || 'title',
+  };
+
+  const [lessonRows, { data: revisions }] = await Promise.all([
+    loadLessonCatalog(supabase, { status: 'published', visibility: 'shared' }),
     supabase
       .from('lesson_revisions')
       .select('id, base_lesson_id, title, state, updated_at, submitted_at, review_note')
       .eq('owner_id', user.id)
       .order('updated_at', { ascending: false }),
-    supabase
-      .from('lesson_topics')
-      .select('lesson_id, section, domain_name, skill_code'),
   ]);
-  const lessonRows = (lessons ?? []) as Lesson[];
   const revisionRows = (revisions ?? []) as Revision[];
-  const topics = (topicRows ?? []) as LessonTopic[];
-
-  const topicsByLesson = new Map<string, LessonTopic[]>();
-  for (const topic of topics) {
-    if (!topicsByLesson.has(topic.lesson_id)) topicsByLesson.set(topic.lesson_id, []);
-    topicsByLesson.get(topic.lesson_id)?.push(topic);
-  }
+  const visibleLessons = filterLessonCatalog(lessonRows, catalogFilters);
+  const catalogFacets = getLessonCatalogFacets(lessonRows);
 
   const activeByBase = new Map<string, Revision>();
   for (const revision of revisionRows) {
@@ -127,16 +115,28 @@ export default async function TutorLessonsPage() {
         <div className={s.sectionHead}>
           <div>
             <h2>Published lessons</h2>
-            <p>{lessonRows.length} canonical lessons available to students.</p>
+            <p>
+              {visibleLessons.length === lessonRows.length
+                ? `${lessonRows.length} canonical lessons available to students.`
+                : `${visibleLessons.length} of ${lessonRows.length} lessons match these filters.`}
+            </p>
           </div>
         </div>
+        <LessonCatalogFilterBar
+          action="/tutor/lessons"
+          filters={catalogFilters}
+          facets={catalogFacets}
+        />
         {lessonRows.length === 0 ? (
           <p className={s.empty}>No published lessons are available.</p>
+        ) : visibleLessons.length === 0 ? (
+          <p className={`${s.empty} ${s.filteredEmpty}`}>
+            No lessons match these filters. <Link href="/tutor/lessons">Clear filters</Link>
+          </p>
         ) : (
           <div className={s.lessonList}>
-            {lessonRows.map((lesson) => {
+            {visibleLessons.map((lesson) => {
               const active = activeByBase.get(lesson.id);
-              const topics = topicsByLesson.get(lesson.id) ?? [];
               return (
                 <article key={lesson.id} className={s.lessonRow}>
                   <div className={s.lessonBody}>
@@ -145,13 +145,7 @@ export default async function TutorLessonsPage() {
                       {lesson.kind === 'foundation' && <span className={s.kindBadge}>Foundation</span>}
                     </div>
                     {lesson.description && <p>{lesson.description}</p>}
-                    {topics.length > 0 && (
-                      <div className={s.topics}>
-                        {topics.map((topic, index) => (
-                          <span key={index}>{topic.skill_code || topic.domain_name || sectionLabel(topic.section)}</span>
-                        ))}
-                      </div>
-                    )}
+                    <LessonScopeChips lesson={lesson} />
                   </div>
                   <div className={s.actions}>
                     <Button href={`/tutor/lessons/${lesson.id}/preview`} variant="secondary">
@@ -186,13 +180,11 @@ function StateBadge({ state }: { state: string }) {
   return <span className={`${s.stateBadge} ${s[`state_${state}`] ?? ''}`}>{labels[state] ?? state}</span>;
 }
 
-function sectionLabel(section: string | null) {
-  if (section === 'reading_writing') return 'Reading & Writing';
-  if (section === 'math') return 'Math';
-  return 'Lesson';
-}
-
 function formatDate(value: string | null) {
   if (!value) return '—';
   return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function stringParam(value: string | string[] | undefined): string {
+  return typeof value === 'string' ? value : '';
 }

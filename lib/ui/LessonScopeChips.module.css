@@ -1,0 +1,43 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.chip,
+.kind,
+.uncategorized,
+.more {
+  display: inline-flex;
+  align-items: center;
+  max-width: 260px;
+  padding: 2px 7px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--bg-white);
+  color: var(--fg3);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kind {
+  border-color: color-mix(in srgb, var(--color-gold-700) 35%, var(--border));
+  background: color-mix(in srgb, var(--color-gold-700) 9%, var(--bg-white));
+  color: var(--color-gold-700);
+}
+
+.uncategorized {
+  border-style: dashed;
+  color: var(--color-diff-med-fg);
+}
+
+.more {
+  border-color: transparent;
+  background: transparent;
+}
