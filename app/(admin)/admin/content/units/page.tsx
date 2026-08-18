@@ -14,8 +14,9 @@
 //     legacy signal has_lesson relied on before real lessons carried
 //     topics.
 //
-// Read-only by design — production happens in the lesson tools; this
-// page just ranks and links the work.
+// The coverage view ranks and links the content-production work. The
+// syllabus view is the admin editor for the active per-unit settings
+// consumed today: order, expected minutes, and mastery threshold.
 
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -23,6 +24,11 @@ import { requireUser } from '@/lib/api/auth';
 import { fetchAll } from '@/lib/supabase/fetchAll';
 import { SAT_TAXONOMY } from '@/lib/practice/sat-taxonomy';
 import { Table, Th, Td } from '@/lib/ui/Table';
+import { Button } from '@/lib/ui/Button';
+import {
+  CurriculumUnitSettingsTable,
+  type CurriculumUnitSettingsRow,
+} from './CurriculumUnitSettingsTable';
 import a from '../../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -34,6 +40,7 @@ interface UnitRow {
   title: string;
   sequence: number;
   expected_minutes: number;
+  mastery_threshold: number;
 }
 
 interface TopicRow {
@@ -78,7 +85,13 @@ function coverageOrder(x: UnitCoverage, y: UnitCoverage): number {
   return x.unit.sequence - y.unit.sequence;
 }
 
-export default async function AdminContentUnitsPage() {
+export default async function AdminContentUnitsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = (await searchParams) ?? {};
+  const view = sp.view === 'syllabus' ? 'syllabus' : 'coverage';
   const { profile, supabase } = await requireUser();
 
   if (profile.role !== 'admin') {
@@ -91,7 +104,7 @@ export default async function AdminContentUnitsPage() {
     await Promise.all([
     supabase
       .from('curriculum_units')
-      .select('id, domain_code, skill_code, title, sequence, expected_minutes')
+      .select('id, domain_code, skill_code, title, sequence, expected_minutes, mastery_threshold')
       .eq('test_type', 'sat')
       .order('sequence', { ascending: true }),
     // async wrapper: the Postgrest builder is a thenable, not a
@@ -172,6 +185,20 @@ export default async function AdminContentUnitsPage() {
   const withPublished = coverage.filter((c) => c.publishedLessons > 0).length;
   const withDraft = coverage.filter((c) => c.publishedLessons === 0 && c.draftLessons > 0).length;
   const totalQuestions = (questionRows as unknown[]).length;
+  const syllabusUnits: CurriculumUnitSettingsRow[] = ((unitRows ?? []) as UnitRow[])
+    .map((unit) => ({
+      id: unit.id,
+      domainCode: unit.domain_code,
+      domainName: DOMAIN_BY_CODE.get(unit.domain_code)?.name ?? unit.domain_code,
+      skillCode: unit.skill_code,
+      skillName: skillNameFor(unit.domain_code, unit.skill_code),
+      title: unit.title,
+      section: (MATH_DOMAINS.has(unit.domain_code) ? 'Math' : 'R&W') as 'Math' | 'R&W',
+      sequence: unit.sequence,
+      expectedMinutes: unit.expected_minutes,
+      masteryThreshold: unit.mastery_threshold,
+    }))
+    .sort((x, y) => x.sequence - y.sequence || x.skillCode.localeCompare(y.skillCode));
 
   return (
     <main className={a.container}>
@@ -181,12 +208,11 @@ export default async function AdminContentUnitsPage() {
 
       <header className={a.header}>
         <div className={a.eyebrow}>Admin · Content</div>
-        <h1 className={a.h1}>Curriculum unit coverage</h1>
+        <h1 className={a.h1}>Curriculum units</h1>
         <p className={a.sub}>
-          The Phase 3.4 content worklist: every SAT curriculum unit with its
-          question-bank depth and lesson coverage, weakest coverage first.
-          Author lessons top-down — a published lesson tagged to the unit&rsquo;s
-          skill counts toward plan generation immediately.
+          {view === 'coverage'
+            ? 'The lesson-production worklist: every SAT unit with its question-bank depth and lesson coverage, weakest coverage first.'
+            : 'The active syllabus settings used by coverage and plan generation: teaching order, expected time, and mastery bar.'}
         </p>
         <p className={a.sub}>
           <strong>{withPublished} of {totalUnits}</strong> units have a published
@@ -197,76 +223,103 @@ export default async function AdminContentUnitsPage() {
         </p>
       </header>
 
-      <section className={a.section}>
-        <Table style={{ fontSize: '0.85rem' }}>
-          <thead>
-            <tr>
-              <Th>Unit</Th>
-              <Th>Section</Th>
-              <Th style={{ textAlign: 'right' }}>Questions</Th>
-              <Th style={{ textAlign: 'center' }}>Lessons</Th>
-              <Th style={{ textAlign: 'center' }}>Patterns</Th>
-              <Th style={{ textAlign: 'center' }}>Pack proxy</Th>
-              <Th></Th>
-            </tr>
-          </thead>
-          <tbody>
-            {coverage.map((c) => (
-              <tr key={c.unit.id}>
-                <Td>
-                  <div style={{ fontWeight: 600 }}>{c.unit.title}</div>
-                  <div style={{ color: 'var(--fg3, #6b7280)', fontSize: '0.78rem' }}>
-                    {c.domainName} · <code>{c.unit.skill_code}</code> {c.skillName !== c.unit.title ? `· ${c.skillName}` : ''}
-                  </div>
-                </Td>
-                <Td>{c.section}</Td>
-                <Td style={{ textAlign: 'right' }}>
-                  {c.questionCount.toLocaleString()}
-                  {c.questionCount < 20 && (
-                    <span style={S.thinBadge}> thin</span>
-                  )}
-                </Td>
-                <Td style={{ textAlign: 'center' }}>
-                  {c.publishedLessons > 0 ? (
-                    <span style={S.okBadge}>{c.publishedLessons} published</span>
-                  ) : c.draftLessons > 0 ? (
-                    <span style={S.draftBadge}>{c.draftLessons} draft</span>
-                  ) : (
-                    <span style={S.noneBadge}>none</span>
-                  )}
-                </Td>
-                <Td style={{ textAlign: 'center' }}>
-                  {/* Scoped link into the pattern catalog — the
-                      sub-skill grain of the same unit. */}
-                  <Link
-                    href={`/admin/content/patterns?skill=${encodeURIComponent(c.unit.skill_code)}`}
-                    className={a.link}
-                  >
-                    {c.patternCount > 0 ? c.patternCount : 'add'}
-                  </Link>
-                </Td>
-                <Td style={{ textAlign: 'center' }}>{c.packCovered ? '✓' : '—'}</Td>
-                <Td style={{ textAlign: 'right' }}>
-                  {/* Scoped link: the generate page prefills the brief
-                      from this unit's facts and stamps the skill tag
-                      on save. */}
-                  <Link
-                    href={`/admin/lessons/generate?skill=${encodeURIComponent(c.unit.skill_code)}`}
-                    className={a.link}
-                  >
-                    Generate lesson →
-                  </Link>
-                </Td>
+      <nav aria-label="Curriculum unit views" style={S.viewNav}>
+        <Button
+          href="/admin/content/units?view=coverage"
+          variant={view === 'coverage' ? 'primary' : 'secondary'}
+          size="sm"
+          aria-current={view === 'coverage' ? 'page' : undefined}
+        >
+          Coverage priorities
+        </Button>
+        <Button
+          href="/admin/content/units?view=syllabus"
+          variant={view === 'syllabus' ? 'primary' : 'secondary'}
+          size="sm"
+          aria-current={view === 'syllabus' ? 'page' : undefined}
+        >
+          Syllabus settings
+        </Button>
+      </nav>
+
+      {view === 'syllabus' ? (
+        <CurriculumUnitSettingsTable units={syllabusUnits} />
+      ) : (
+        <section className={a.section}>
+          <Table style={{ fontSize: '0.85rem' }}>
+            <thead>
+              <tr>
+                <Th>Unit</Th>
+                <Th>Section</Th>
+                <Th style={{ textAlign: 'right' }}>Questions</Th>
+                <Th style={{ textAlign: 'center' }}>Lessons</Th>
+                <Th style={{ textAlign: 'center' }}>Patterns</Th>
+                <Th style={{ textAlign: 'center' }}>Pack proxy</Th>
+                <Th></Th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
-      </section>
+            </thead>
+            <tbody>
+              {coverage.map((c) => (
+                <tr key={c.unit.id}>
+                  <Td>
+                    <div style={{ fontWeight: 600 }}>{c.unit.title}</div>
+                    <div style={{ color: 'var(--fg3, #6b7280)', fontSize: '0.78rem' }}>
+                      {c.domainName} · <code>{c.unit.skill_code}</code>{' '}
+                      {c.skillName !== c.unit.title ? `· ${c.skillName}` : ''}
+                    </div>
+                  </Td>
+                  <Td>{c.section}</Td>
+                  <Td style={{ textAlign: 'right' }}>
+                    {c.questionCount.toLocaleString()}
+                    {c.questionCount < 20 && <span style={S.thinBadge}> thin</span>}
+                  </Td>
+                  <Td style={{ textAlign: 'center' }}>
+                    {c.publishedLessons > 0 ? (
+                      <span style={S.okBadge}>{c.publishedLessons} published</span>
+                    ) : c.draftLessons > 0 ? (
+                      <span style={S.draftBadge}>{c.draftLessons} draft</span>
+                    ) : (
+                      <span style={S.noneBadge}>none</span>
+                    )}
+                  </Td>
+                  <Td style={{ textAlign: 'center' }}>
+                    {/* Scoped link into the pattern catalog — the
+                        sub-skill grain of the same unit. */}
+                    <Link
+                      href={`/admin/content/patterns?skill=${encodeURIComponent(c.unit.skill_code)}`}
+                      className={a.link}
+                    >
+                      {c.patternCount > 0 ? c.patternCount : 'add'}
+                    </Link>
+                  </Td>
+                  <Td style={{ textAlign: 'center' }}>{c.packCovered ? '✓' : '—'}</Td>
+                  <Td style={{ textAlign: 'right' }}>
+                    {/* Scoped link: the generate page prefills the brief
+                        from this unit's facts and stamps the skill tag
+                        on save. */}
+                    <Link
+                      href={`/admin/lessons/generate?skill=${encodeURIComponent(c.unit.skill_code)}`}
+                      className={a.link}
+                    >
+                      Generate lesson →
+                    </Link>
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </section>
+      )}
     </main>
   );
 }
 
 const S: Record<string, React.CSSProperties> = {
+  viewNav: {
+    display: 'flex',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
   thinBadge: {
     marginLeft: 6,
     padding: '1px 6px',

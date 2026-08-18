@@ -11,6 +11,7 @@
 // part of the questions_v2 carve-out.
 
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { requireUser } from '@/lib/api/auth';
 import { formatDate } from '@/lib/formatters';
 import { Table, Th, Td } from '@/lib/ui/Table';
@@ -53,7 +54,7 @@ export default async function AdminContentPage({ searchParams }) {
   return (
     <main className={a.container}>
       <nav className={a.breadcrumb}>
-        <a href="/admin">← Admin</a>
+        <Link href="/admin">← Admin</Link>
       </nav>
 
       <header className={a.header}>
@@ -64,15 +65,15 @@ export default async function AdminContentPage({ searchParams }) {
           learnability ratings — the content-operations surface.
         </p>
         <p className={a.sub}>
-          <a href="/admin/content/drafts" className={a.link}>→ Content drafts</a>
+          <Link href="/admin/content/drafts" className={a.link}>→ Content drafts</Link>
           {' '}— staged fixes for questions_v2 rows, side-by-side review + promote.
         </p>
         <p className={a.sub}>
-          <a href="/admin/content/units" className={a.link}>→ Curriculum unit coverage</a>
-          {' '}— the §3.4 lesson-production worklist, weakest coverage first.
+          <Link href="/admin/content/units" className={a.link}>→ Curriculum units</Link>
+          {' '}— lesson coverage plus active syllabus order, time, and mastery settings.
         </p>
         <p className={a.sub}>
-          <a href="/admin/content/patterns" className={a.link}>→ Question patterns</a>
+          <Link href="/admin/content/patterns" className={a.link}>→ Question patterns</Link>
           {' '}— the sub-skill catalog: recognition cue + process per question format.
         </p>
       </header>
