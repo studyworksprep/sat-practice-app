@@ -491,6 +491,10 @@ human review in the existing builder. Target ~40 units covered within
 the phase; leverage the already-working branch/rejoin runtime for
 check-remediation loops inside each lesson. Also author `hints` for the
 top ~500 highest-traffic questions.
+*(2026-08-18: the quality side of this workstream — check data,
+item validity, Desmos gating, figures, voice — is planned in
+`lesson-improvement-plan-2026-08.md`, from the review in
+`lesson-suite-review-2026-08-18.md`.)*
 
 **3.5 Content efficacy** *(greenfield §5.9)*. Once lessons are being
 produced at volume, measure whether they work: pre/post accuracy per
