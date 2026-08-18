@@ -2,10 +2,10 @@
 
 > **Status: Living document — the active roadmap.** Baseline verified
 > against code + production: 2026-07-12. Delivery is tracked in the
-> **Status ledger** below (last updated 2026-08-14) — every phase PR
+> **Status ledger** below (last updated 2026-08-18) — every phase PR
 > updates it, per the docs rules.
 
-## Status ledger (updated 2026-08-14)
+## Status ledger (updated 2026-08-18)
 
 | Item | Status | Landed | Notes |
 |---|---|---|---|
@@ -17,6 +17,7 @@
 | P0.6 public surface hardening | **Done** | 2026-07-12 | |
 | P0.7 hygiene | Partial | 2026-07-12 | comment scrub, service-role audit, README, matrix, tutorial done; **migration baseline reset + vestigial drops still pending** (scheduled op) |
 | 1.1–1.9 knowledge model | **Done** | 2026-07-13 | PR #189; live in production (snapshots, curriculum, coverage, entitlements infra, attempt context, item stats, bank gate, snapshot-on-edit) |
+| 1.2 active curriculum settings | **Done** | 2026-08-18 | `/admin/content/units` now has separate Coverage priorities and Syllabus settings views. Admins can edit the active `curriculum_units` settings already consumed by the product: expected minutes and mastery threshold, plus move units earlier/later within their Math or R&W teaching order. Taxonomy identity stays read-only; mastery-bar changes carry an impact confirmation; existing plan tasks are never rewritten. Prerequisites remain deliberately omitted until plan generation consumes them. Writes use the normal admin/RLS client through colocated Server Actions; no service-role bypass or schema change. |
 | 1.5 tutor-onboarding policy | **Done** | 2026-07-16 | Owner policy encoded: admin-issued `teacher_codes` = Studyworks tutor (free, `subscription_exempt`); codeless teacher signup reopened for outside tutors (paid); sponsorship qualified — only a Studyworks tutor's roster edge grants a student free access. Resolver corrected (`20260716150000`) and **applied to production 2026-07-16** (owner-authorized; live-catalog verified; retention 0 lose / 0 gain across 77 users); proxy's blanket teacher bypass reverted |
 | 1.5 `entitlements_gate` wiring | **Done** | 2026-07-16 | proxy.js + `userHasAccess` consult the flag (30s cache; resolver errors fall back to legacy; provenance fields preserved for the billing UI). Verified both ways in dev: e2e 33/33 under **off** and **on**; sponsored access live-derived under on (rostered student passes, unrostered bounces); rollback restores legacy exactly |
 | 1.5 student invitations | **Done** | 2026-07-16 | Incident response (a shared multi-use tutor code granted a stranger free access; account revoked same day): sponsored student intake moved to **admin-issued, single-use invitation codes** (`student_invite_codes`, migration `20260716210000` — **applied to production 2026-07-16**, owner-authorized, ahead of the PR #201 deploy). Invite from /admin/users (email + tutor → code + welcome email); the invited email is the contact point, not a lock (students may sign up under another address) — the tracker on /admin/users/codes records claimed when/by whom/tutor. The multi-use `teacher_invite_code` is roster-only and **rejected for Studyworks tutors** at signup AND in-app; outside tutors keep it (their students pay). Full matrix verified live in dev; e2e 33/33 |
