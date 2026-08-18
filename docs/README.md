@@ -45,6 +45,7 @@ authorization matrix to prove it's fresh.
 | `architecture-plan.md` | The v1→v2 rebuild design (shipped) |
 | `decommission-plan.md` | Legacy-tree decommission tracker (complete) |
 | `greenfield-build-plan.md` | Restart-from-scratch exploration; adopted ideas tracked in the upgrade plan |
+| `lesson-suite-review-2026-08-18.md` | Instructional-quality review of the 30 lesson specs (best-practice scorecard, system recommendations, per-lesson ratings, verified fix list) |
 | `lesson-builder-feature-audit-2026-04-25.md` | Lesson-builder audit — **contains a known error** (see banner) |
 | `lesson-authoring-integration-contract-2026-04-25.md` | Lessonworks integration contract |
 | `history/authorization-matrix-2026-05-04.md` | Hand-written auth matrix (superseded by the generated one) |
