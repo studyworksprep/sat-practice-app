@@ -22,6 +22,7 @@ authorization matrix to prove it's fresh.
 | `reading-coach-implementation-plan.md` | Reading Coach product, data, AI-evaluation, QA, and phased delivery plan |
 | `bluebook-contributor-guide.md` | How to send Bluebook results — written for contributors, not engineers |
 | `foundations-and-question-patterns.md` | Curriculum model for section-wide foundation lessons + question-pattern lessons (adopted design + owner/instructor workstream) |
+| `lesson-improvement-plan-2026-08.md` | Phased plan for acting on the 2026-08-18 lesson review — AI-authored steps vs tutor-team tasks per phase, with a status ledger |
 | `runbook.md` | Operational runbook (incidents, deploys, hotfix migrations, e2e) |
 | `database.md` | Schema operations + safe service-role usage |
 | `lesson-json-authoring-guide.md` | Lesson JSON authoring format |
