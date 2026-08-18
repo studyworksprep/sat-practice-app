@@ -20,6 +20,9 @@ export async function createNewLessonDraft(formData: FormData) {
   }
 
   const title = String(formData.get('title') || '').trim() || 'Untitled lesson';
+  // p_base_lesson_id is omitted, not passed as null: the SQL default is
+  // NULL::uuid (a draft with no base lesson), and the generated types now
+  // type optional RPC args as `string | undefined`.
   const { data, error } = await ctx.supabase.rpc('create_lesson_revision', {
     p_title: title,
   });
