@@ -21,11 +21,11 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 
 // ── 1. TypeScript ratchet ────────────────────────────────────────────
-// Baseline last lowered 2026-08-05: lib/parseBluebookHtml.js →
-// lib/bluebook/parse-report.ts. The Bluebook parser moved off the
-// browser's DOMParser onto a server-side one, which was a rewrite of
-// the module's entry points either way.
-const JS_FILE_BASELINE = 312;
+// Baseline last lowered 2026-08-15: app/api/webhooks/stripe/route.js →
+// route.ts. The Stripe webhook handler was rewritten for the billing
+// hardening work (idempotency + no silent event drops), so it converted
+// as part of a substantial refactor rather than a bare rename.
+const JS_FILE_BASELINE = 311;
 
 function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {

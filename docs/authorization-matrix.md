@@ -23,6 +23,7 @@ Runs on every matched request. Detected: session refresh only.
 | `/api/billing/create-checkout` | — | requireUser |
 | `/api/billing/create-portal` | — | requireUser |
 | `/api/bluebook/parse` | — | requireRole[admin|contributor|manager|teacher] |
+| `/api/cron/reconcile-subscriptions` | — | requireRole[admin] + service client (RLS bypass) |
 | `/api/cron/repace` | — | requireRole[admin] + service client (RLS bypass) |
 | `/api/external/score-report/[attemptId]` | GET | requireExternalApiAccess + service client (RLS bypass) |
 | `/api/practice-test/time-ping` | POST | requireUser |
@@ -49,6 +50,7 @@ Runs on every matched request. Detected: session refresh only.
 | `app/(admin)/admin/content/actions.js` | `addScoreConversions`, `deleteScoreConversion`, `updateTestThresholds`, `saveSkillLearnability` | requireRole[admin] |
 | `app/(admin)/admin/content/drafts/[draftId]/actions.js` | `saveDraft`, `promoteDraft`, `rejectDraft` | requireRole[admin] |
 | `app/(admin)/admin/content/patterns/actions.ts` | `createQuestionPattern`, `updateQuestionPattern`, `deleteQuestionPattern`, `importQuestionPatterns`, `moveQuestionPattern` | requireRole[admin] |
+| `app/(admin)/admin/content/units/actions.ts` | `updateCurriculumUnitSettings`, `moveCurriculumUnit` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/actions.js` | `updateLessonMetadata`, `saveLessonBlocks`, `searchQuestionBank`, `getQuestionById`, `deleteLesson`, `addLessonTopic`, `removeLessonTopic` | requireRole[admin] |
 | `app/(admin)/admin/lessons/[lessonId]/import/actions.js` | `importBlocksIntoLesson` | requireRole[admin] |
 | `app/(admin)/admin/lessons/actions.js` | `createLesson` | requireRole[admin] |
@@ -111,4 +113,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_19 route handlers, 61 server-action modules enumerated._
+_20 route handlers, 62 server-action modules enumerated._

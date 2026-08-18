@@ -25,6 +25,7 @@ authorization matrix to prove it's fresh.
 | `lesson-improvement-plan-2026-08.md` | Phased plan for acting on the 2026-08-18 lesson review — AI-authored steps vs tutor-team tasks per phase, with a status ledger |
 | `runbook.md` | Operational runbook (incidents, deploys, hotfix migrations, e2e) |
 | `database.md` | Schema operations + safe service-role usage |
+| `billing.md` | Subscription enforcement, the Stripe webhook contract, reconciliation |
 | `lesson-json-authoring-guide.md` | Lesson JSON authoring format |
 | `design/runner-spec.md` | Runner design contract — the codified Bluebook exception (parity-locked vs brand-adjustable) |
 | `lesson-template-specs/` | Lesson template specifications |
