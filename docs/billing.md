@@ -29,11 +29,29 @@ set collapse to a non-access value in `lib/billing/stripe-mapping.ts`:
 The bias is deliberate — deny a non-paying user rather than grant a lapsed
 one.
 
-`trial_end` and `current_period_end` are **display-only**. Nothing in the
-enforcement path compares them to `now()`, so a trial ends only when a
-webhook rewrites the status string. Adding a date guard to
-`effective_plan()` is planned but not shipped; it must not land before
-every live row has real period dates, or it will lock out paying students.
+`trial_end` remains display-only, but `current_period_end` is now part of
+the access decision. The Stripe candidate in `effective_plan()` requires
+the period to be live:
+
+```sql
+and s.status in ('active', 'trialing')
+and (s.current_period_end is null
+     or s.current_period_end > now() - interval '3 days')
+```
+
+So a lapsed subscription stops granting access on its own, with no
+webhook and no cron involved — including a trial whose conversion event
+never arrived, which previously extended the trial indefinitely.
+
+Two deliberate details. The **three-day grace** exists because renewal
+moves `current_period_end` forward via a webhook that can be late;
+denying access the instant the stored date passes would lock out a paying
+customer over a delayed delivery. The **NULL escape is permanent, not
+transitional**: `checkout.session.completed` binds a new subscriber's row
+before `customer.subscription.created` supplies the period dates, so a
+brand-new row legitimately has `current_period_end IS NULL` for a few
+seconds, and without the escape a student who just paid would be bounced
+to `/subscribe`.
 
 Gating is **page-level only**: `proxy.js` skips all `/api/` paths and no
 API route calls `requirePlan`. Gated prefixes are `/practice`, `/review`,
@@ -114,7 +132,6 @@ column must not diverge.
 
 ## Not yet shipped
 
-- Date guard in `effective_plan()` (see the caveat above).
 - Student-facing trial UX and the `customer.subscription.trial_will_end`
   reminder email.
 - Fixture tests driving the webhook route itself; today's coverage is the
