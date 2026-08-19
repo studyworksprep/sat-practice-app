@@ -103,6 +103,7 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/practice/question-notes-actions.ts` | `addQuestionNote`, `updateQuestionNote`, `deleteQuestionNote` | requireRole[admin|manager|teacher] |
 | `lib/practice/question-pattern-actions.ts` | `setQuestionPattern` | requireRole[admin|manager] |
 | `lib/practice/question-search-actions.ts` | `searchQuestions`, `listConceptTagsForSearch` | requireUser |
+| `lib/practice/question-stats-actions.ts` | `loadQuestionStatsAction` | requireRole[admin|manager] |
 | `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `abandonPracticeSession`, `togglePracticeMark`, `getDetourOptions`, `injectEasierQuestion` | requireUser + rateLimit |
 
 ## Attention list
@@ -113,4 +114,4 @@ deliberately public, or fix):
 - Route `/auth/callback` (app/auth/callback/route.js)
 - Route `/auth/confirm/verify` (app/auth/confirm/verify/route.ts)
 
-_20 route handlers, 62 server-action modules enumerated._
+_20 route handlers, 63 server-action modules enumerated._

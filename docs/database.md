@@ -148,6 +148,34 @@ Not scheduled; run on demand (or wire alongside the nightly mastery
 job). The mis-key report is the view `public.item_miskey_audit`
 (staff-only) — review before changing any answer key.
 
+**Live per-question stats (`get_question_stats`, 2026-08-19).** The
+staff "Stats" modal on the question review page
+(`lib/practice/QuestionStatsButton.tsx`, fetched lazily on open via
+`lib/practice/question-stats-actions.ts`) calls
+`public.get_question_stats(question_id)` — SECURITY DEFINER, gated on
+`is_teacher()`, aggregates only. It recomputes on demand for one
+question over practice **and** test attempts (unlike `item_stats`,
+which is a practice-only snapshot) and returns two cuts: `all`
+(bank-wide — the reason it needs SECURITY DEFINER; the `attempts`
+SELECT policy is roster-scoped so a manager querying directly would
+silently get "my roster" numbers) and `roster` (restricted to
+`list_visible_users()`, i.e. what the caller can already see under
+RLS). ~60 ms on the most-attempted question in production. The app
+gates the modal to manager/admin via `QUESTION_STATS_ROLES` in
+`lib/practice/question-stats.ts`; widening to teachers is an app-side
+change only. Internal helper `public.question_stats_cut(uuid, uuid[])`
+has execute revoked from every app role.
+
+**Hardest/easiest ranking (`question_accuracy_ranking`, 2026-08-19).**
+`/admin/performance` ranks questions via
+`public.question_accuracy_ranking(min_students)` — first-attempt
+accuracy per published, non-broken question, SECURITY INVOKER (RLS on
+`attempts` scopes it; the admin page sees the whole bank). ~170 ms
+warm in production. It replaced the last reader of
+`questions_v2.attempt_count` / `correct_count`; those columns are now
+commented `LEGACY — unmaintained` and are slated to be dropped in the
+Phase 3 `questions_v2` normalization. Do not read them.
+
 **Entitlements switchover (`entitlements`, §1.5).** The licensing
 resolver `has_plan()`/`effective_plan()` is **live**: the
 `entitlements_gate` flag was flipped `on` in production 2026-07-17
