@@ -4609,6 +4609,7 @@ export type Database = {
           skill_desc: string
         }[]
       }
+      get_question_stats: { Args: { p_question_id: string }; Returns: Json }
       get_roster_skill_performance: {
         Args: {
           p_min_skill_attempts?: number
@@ -4789,9 +4790,26 @@ export type Database = {
         Args: { p_force?: boolean; p_revision_id: string }
         Returns: string
       }
+      question_accuracy_ranking: {
+        Args: { p_min_students?: number }
+        Returns: {
+          accuracy: number
+          difficulty: number
+          display_code: string
+          domain_name: string
+          n_correct: number
+          n_students: number
+          question_id: string
+          skill_name: string
+        }[]
+      }
       question_edited_since: {
         Args: { p_question: string; p_since: string }
         Returns: boolean
+      }
+      question_stats_cut: {
+        Args: { p_question_id: string; p_users: string[] }
+        Returns: Json
       }
       questions_v2_section_prefix: {
         Args: { domain_code: string }

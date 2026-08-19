@@ -30,6 +30,8 @@ import { QuestionNotes } from '@/lib/practice/QuestionNotes';
 import { loadQuestionNotes } from '@/lib/practice/load-question-notes';
 import { BrokenButton } from '@/lib/practice/BrokenButton';
 import { loadBrokenData } from '@/lib/practice/load-broken-data';
+import { QuestionStatsButton } from '@/lib/practice/QuestionStatsButton';
+import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 
 /**
  * @param {object} props
@@ -177,6 +179,13 @@ export async function QuestionReviewPage({ questionId, chrome }) {
           )}
           {!question.is_published && <Pill tone="warn">Unpublished</Pill>}
           {question.is_broken && <Pill tone="danger">Flagged</Pill>}
+          {/* Lazy: nothing is fetched until the button is clicked. */}
+          <QuestionStatsButton
+            questionId={question.id}
+            canView={QUESTION_STATS_ROLES.includes(profile.role)}
+            optionLabels={isSpr ? [] : wmOptions.map((o) => o.label)}
+            displayCode={question.display_code}
+          />
           {brokenData.canEdit && (
             <BrokenButton
               questionId={question.id}

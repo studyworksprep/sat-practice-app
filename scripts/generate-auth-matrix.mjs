@@ -46,7 +46,36 @@ const GUARDS = [
   ['service client (RLS bypass)', /createServiceClient\(/],
 ];
 
-function detectGuards(text) {
+// Find `NAME ... = [ 'a', 'b' ]` in a file's text. Returns the raw
+// bracket contents or null.
+function findArrayLiteral(text, name) {
+  const m = text.match(new RegExp(`\\b${name}\\b[^=;]*=\\s*\\[([^\\]]*)\\]`));
+  return m ? m[1] : null;
+}
+
+// If `name` is imported from a relative module (`import { NAME } from
+// './x'`), read that module and look for the literal there. One hop
+// only — enough for the "shared roles constant next to the action"
+// pattern without turning this into a bundler.
+function resolveImportedArrayLiteral(text, name, fromFile) {
+  if (!fromFile) return null;
+  const imp = text.match(
+    new RegExp(`import\\s*\\{[^}]*\\b${name}\\b[^}]*\\}\\s*from\\s*['"](\\.{1,2}/[^'"]+)['"]`),
+  );
+  if (!imp) return null;
+  const base = join(fromFile, '..', imp[1]);
+  for (const candidate of [base, `${base}.ts`, `${base}.js`, `${base}.mjs`, `${base}.tsx`]) {
+    try {
+      if (!statSync(candidate).isFile()) continue;
+      return findArrayLiteral(readFileSync(candidate, 'utf8'), name);
+    } catch {
+      // try the next extension
+    }
+  }
+  return null;
+}
+
+function detectGuards(text, file = null) {
   const found = [];
   for (const [name, re] of GUARDS) {
     if (name === 'requireRole') {
@@ -62,15 +91,15 @@ function detectGuards(text) {
         found.push(`requireRole[${[...roles].sort().join('|')}]`);
       } else {
         // Called with a variable (e.g. requireRole(TUTOR_ROLES)) —
-        // resolve the constant's literal if it's defined in-file,
-        // otherwise report the variable name.
+        // resolve the constant's literal if it's defined in-file or
+        // imported from a sibling module, otherwise report the name.
         const dyn = text.match(/requireRole\(\s*(\w+)\s*\)/);
         if (dyn) {
-          const constDef = text.match(
-            new RegExp(`${dyn[1]}[^=]*=\\s*\\[([^\\]]*)\\]`),
-          );
-          if (constDef) {
-            const resolved = constDef[1]
+          const literal =
+            findArrayLiteral(text, dyn[1]) ??
+            resolveImportedArrayLiteral(text, dyn[1], file);
+          if (literal != null) {
+            const resolved = literal
               .split(',')
               .map((r) => r.replace(/['"`\s]/g, ''))
               .filter(Boolean)
@@ -124,13 +153,13 @@ for (const file of allFiles) {
       path: urlPath,
       file: rel,
       methods: exportedHttpMethods(text).join(', ') || '—',
-      guards: detectGuards(text),
+      guards: detectGuards(text, file),
     });
   } else if (/^\s*['"]use server['"]/m.test(text)) {
     actions.push({
       file: rel,
       fns: exportedActionNames(text),
-      guards: detectGuards(text),
+      guards: detectGuards(text, file),
     });
   }
 }

@@ -7,9 +7,12 @@
 
 import { resolveQuestionV2Meta } from '@/lib/practice/weak-queue';
 import { fetchAll } from '@/lib/supabase/fetchAll';
+import { logger } from '@/lib/api/logger';
 
 const FIRST_ATTEMPT_WINDOW_DAYS = 30;
-const MIN_ATTEMPTS_FOR_RANKING = 5;
+// Hardest/easiest ranking: a question needs this many distinct students
+// (first attempts) before its accuracy is worth ranking on.
+const MIN_STUDENTS_FOR_RANKING = 5;
 const MIN_ATTEMPTS_FOR_SKILL = 3;
 const BUCKET_MIN = 400;
 const BUCKET_MAX = 1500;
@@ -128,26 +131,33 @@ function accuracyPct(rows) {
 }
 
 async function loadHardestEasiest(supabase) {
-  const { data: rows } = await supabase
-    .from('questions_v2')
-    .select('id, display_code, attempt_count, correct_count, domain_name, skill_name, difficulty')
-    .eq('is_published', true)
-    .eq('is_broken', false)
-    .gte('attempt_count', MIN_ATTEMPTS_FOR_RANKING)
-    .order('attempt_count', { ascending: false })
-    .limit(2000);
+  // Live first-attempt accuracy per question, computed in SQL
+  // (migration 20260819130000). The denormalized
+  // questions_v2.attempt_count / correct_count this used to read are
+  // frozen legacy counters with no writer — see their column comments.
+  // The RPC is SECURITY INVOKER: this page runs as admin, so RLS on
+  // attempts yields the bank-wide ranking. Rows come back hardest
+  // first (accuracy asc, then n_students desc).
+  const { data: rows, error } = await supabase.rpc('question_accuracy_ranking', {
+    p_min_students: MIN_STUDENTS_FOR_RANKING,
+  });
+  if (error) {
+    logger.warn(
+      { event: 'question_accuracy_ranking_failed', error: error.message },
+      'question_accuracy_ranking_failed',
+    );
+  }
 
   const scored = (rows ?? []).map((q) => ({
-    question_id: q.display_code ?? q.id,
-    question_uuid: q.id,
-    attempt_count: q.attempt_count,
-    correct_count: q.correct_count,
-    accuracy: Math.round((q.correct_count / q.attempt_count) * 100),
+    question_id: q.display_code ?? q.question_id,
+    question_uuid: q.question_id,
+    n_students: q.n_students,
+    n_correct: q.n_correct,
+    accuracy: Math.round(Number(q.accuracy) * 100),
     domain_name: q.domain_name,
     skill_name: q.skill_name,
     difficulty: q.difficulty,
   }));
-  scored.sort((a, b) => a.accuracy - b.accuracy);
 
   return {
     hardest: scored.slice(0, 10),
