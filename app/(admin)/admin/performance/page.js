@@ -165,7 +165,7 @@ function QuestionList({ title, badge, badgeStyle, rows, accentColor }) {
     return (
       <Card>
         <CardHeader title={title} badge={badge} badgeStyle={badgeStyle} />
-        <p style={S.empty}>Not enough data (min 5 attempts per question).</p>
+        <p style={S.empty}>Not enough data (min 5 students per question).</p>
       </Card>
     );
   }
@@ -174,12 +174,13 @@ function QuestionList({ title, badge, badgeStyle, rows, accentColor }) {
       <CardHeader title={title} badge={badge} badgeStyle={badgeStyle} />
       <div style={S.qTable}>
         <div style={S.qHead}>
-          <span>Question</span><span>Skill</span><span>Acc.</span><span>n</span>
+          <span>Question</span><span>Skill</span><span>Acc.</span><span title="Students (first attempts)">n</span>
         </div>
         {rows.map((q, i) => (
           <div key={i} style={S.qRow}>
+            {/* Admin review page — carries the per-question Stats modal. */}
             <a
-              href={`/practice/${q.question_uuid ?? q.question_id}`}
+              href={`/admin/questions/${q.question_uuid ?? q.question_id}`}
               target="_blank"
               rel="noopener noreferrer"
               title={q.question_id}
@@ -189,7 +190,7 @@ function QuestionList({ title, badge, badgeStyle, rows, accentColor }) {
             </a>
             <span style={S.qSkill}>{q.skill_name ?? q.domain_name ?? '—'}</span>
             <span style={{ ...S.qAcc, color: accentColor }}>{q.accuracy}%</span>
-            <span style={S.qN}>{q.attempt_count}</span>
+            <span style={S.qN}>{q.n_students}</span>
           </div>
         ))}
       </div>
