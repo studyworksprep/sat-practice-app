@@ -11,6 +11,7 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { ReviewInteractive } from '@/lib/practice/ReviewInteractive';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
 
@@ -65,6 +66,7 @@ export default async function TutorTrainingReviewPage({ params }) {
       questionNotesIsAdmin={questionNotesIsAdmin}
       currentUserId={currentUserId}
       canFlagBroken={['manager', 'admin'].includes(profile.role)}
+      canViewStats={QUESTION_STATS_ROLES.includes(profile.role)}
     />
   );
 }

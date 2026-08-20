@@ -21,6 +21,7 @@ import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { BrokenButton } from '@/lib/practice/BrokenButton';
 import { QuestionStatsButton } from '@/lib/practice/QuestionStatsButton';
+import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { QuestionPatternTag } from '@/lib/practice/QuestionPatternTag';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
@@ -84,6 +85,8 @@ export function TestResultsInteractive({
   // gate and loadBrokenData's EDIT_ROLES. Teachers reviewing a test
   // don't get to mutate the shared question bank.
   const canFlagBroken = viewerRole === 'manager' || viewerRole === 'admin';
+  // Read-only aggregates — every staff role (QUESTION_STATS_ROLES).
+  const canViewStats = QUESTION_STATS_ROLES.includes(viewerRole);
   const [showScoreDialog, setShowScoreDialog] = useState(false);
   const router = useRouter();
 
@@ -533,20 +536,20 @@ export function TestResultsInteractive({
                 </div>
               )}
               <FlashcardsButton />
+              {canViewStats && !selected.missing && (
+                <QuestionStatsButton
+                  key={`stats-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  canView
+                />
+              )}
               {canFlagBroken && !selected.missing && (
-                <>
-                  <QuestionStatsButton
-                    key={`stats-${selected.questionId}`}
-                    questionId={selected.questionId}
-                    canView
-                  />
-                  <BrokenButton
-                    key={`broken-${selected.questionId}`}
-                    questionId={selected.questionId}
-                    canEdit
-                    lazy
-                  />
-                </>
+                <BrokenButton
+                  key={`broken-${selected.questionId}`}
+                  questionId={selected.questionId}
+                  canEdit
+                  lazy
+                />
               )}
             </div>
           </div>

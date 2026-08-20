@@ -161,10 +161,12 @@ SELECT policy is roster-scoped so a manager querying directly would
 silently get "my roster" numbers) and `roster` (restricted to
 `list_visible_users()`, i.e. what the caller can already see under
 RLS). ~60 ms on the most-attempted question in production. The app
-gates the modal to manager/admin via `QUESTION_STATS_ROLES` in
-`lib/practice/question-stats.ts`; widening to teachers is an app-side
-change only. Internal helper `public.question_stats_cut(uuid, uuid[])`
-has execute revoked from every app role.
+gate (`QUESTION_STATS_ROLES` in `lib/practice/question-stats.ts`) is
+teacher + manager + admin as of 2026-08-20, matching the SQL gate —
+teachers see bank-wide aggregates their roster-scoped row access
+doesn't grant, the same deliberate exposure as `item_stats`. Internal
+helper `public.question_stats_cut(uuid, uuid[])` has execute revoked
+from every app role.
 
 **Hardest/easiest ranking (`question_accuracy_ranking`, 2026-08-19).**
 `/admin/performance` ranks questions via

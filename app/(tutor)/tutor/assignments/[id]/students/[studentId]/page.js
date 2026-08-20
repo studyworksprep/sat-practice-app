@@ -20,6 +20,7 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { buildSessionReview } from '@/lib/practice/build-session-review';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
 import { AssignmentReport } from '@/lib/practice/AssignmentReport';
@@ -191,6 +192,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
         questionNotesIsAdmin={view.questionNotesIsAdmin}
         currentUserId={view.currentUserId}
         canFlagBroken={['manager', 'admin'].includes(profile.role)}
+        canViewStats={QUESTION_STATS_ROLES.includes(profile.role)}
         rebuildHref={`/tutor/assignments/${assignmentId}/students/${studentId}?rebuild=1`}
       />
     );
@@ -253,6 +255,7 @@ export default async function TutorAssignmentStudentReportPage({ params, searchP
       questionNotesIsAdmin={view.questionNotesIsAdmin}
       currentUserId={view.currentUserId}
       canFlagBroken={['manager', 'admin'].includes(profile.role)}
+      canViewStats={QUESTION_STATS_ROLES.includes(profile.role)}
     />
   );
 }

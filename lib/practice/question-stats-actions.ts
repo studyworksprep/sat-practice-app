@@ -1,15 +1,14 @@
 // Server Action for the per-question "Stats" modal.
 //
-// Fetched lazily — only when a manager/admin opens the modal on the
-// question review page — so the page itself never pays for it. One
-// RPC call: public.get_question_stats(question_id) (SECURITY DEFINER,
+// Fetched lazily — only when a staff viewer opens the modal — so the
+// page itself never pays for it. One RPC call:
+// public.get_question_stats(question_id) (SECURITY DEFINER,
 // staff-gated in SQL; aggregates only). We call it through the
 // caller's own RLS-scoped client, so auth.uid() inside the function is
 // the viewer and the `roster` cut is computed for them specifically.
 //
-// Role gate: QUESTION_STATS_ROLES (manager + admin today). The DB
-// function admits any staff role, so widening to teachers is a change
-// to that one array — no migration.
+// Role gate: QUESTION_STATS_ROLES (teacher + manager + admin, matching
+// the DB function's is_teacher() gate).
 
 'use server';
 

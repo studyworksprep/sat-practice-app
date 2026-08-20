@@ -20,6 +20,7 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { requireUser } from '@/lib/api/auth';
+import { QUESTION_STATS_ROLES } from '@/lib/practice/question-stats';
 import { applyWatermark } from '@/lib/content/watermark';
 import { extractMcqCorrectId, formatSprCorrect } from '@/lib/practice/correct-answer';
 import { expandToAttemptIds } from '@/lib/practice/weak-queue';
@@ -466,6 +467,7 @@ export default async function TutorAssignmentGroupReportPage({ params }) {
       questionNotesIsAdmin={notesBundle.isAdmin}
       currentUserId={user.id}
       canFlagBroken={['manager', 'admin'].includes(profile.role)}
+      canViewStats={QUESTION_STATS_ROLES.includes(profile.role)}
     />
   );
 }

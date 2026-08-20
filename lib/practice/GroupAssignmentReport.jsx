@@ -61,6 +61,7 @@ export function GroupAssignmentReport({
   questionNotesIsAdmin = false,
   currentUserId = null,
   canFlagBroken = false,
+  canViewStats = false,
 }) {
   // Live Desmos calc handle for the saved-state button. One panel
   // serves every selected question — same pattern AssignmentReport
@@ -357,20 +358,20 @@ export function GroupAssignmentReport({
                     initialNote={selected.errorNote ?? null}
                   />
                 )}
+                {canViewStats && !selected.missing && (
+                  <QuestionStatsButton
+                    key={`stats-${selected.questionId}`}
+                    questionId={selected.questionId}
+                    canView
+                  />
+                )}
                 {canFlagBroken && !selected.missing && (
-                  <>
-                    <QuestionStatsButton
-                      key={`stats-${selected.questionId}`}
-                      questionId={selected.questionId}
-                      canView
-                    />
-                    <BrokenButton
-                      key={`broken-${selected.questionId}`}
-                      questionId={selected.questionId}
-                      canEdit
-                      lazy
-                    />
-                  </>
+                  <BrokenButton
+                    key={`broken-${selected.questionId}`}
+                    questionId={selected.questionId}
+                    canEdit
+                    lazy
+                  />
                 )}
               </div>
             </div>

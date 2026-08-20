@@ -103,7 +103,7 @@ Runs on every matched request. Detected: session refresh only.
 | `lib/practice/question-notes-actions.ts` | `addQuestionNote`, `updateQuestionNote`, `deleteQuestionNote` | requireRole[admin|manager|teacher] |
 | `lib/practice/question-pattern-actions.ts` | `setQuestionPattern` | requireRole[admin|manager] |
 | `lib/practice/question-search-actions.ts` | `searchQuestions`, `listConceptTagsForSearch` | requireUser |
-| `lib/practice/question-stats-actions.ts` | `loadQuestionStatsAction` | requireRole[admin|manager] |
+| `lib/practice/question-stats-actions.ts` | `loadQuestionStatsAction` | requireRole[admin|manager|teacher] |
 | `lib/practice/session-actions.ts` | `submitAnswer`, `submitPracticeSession`, `abandonPracticeSession`, `togglePracticeMark`, `getDetourOptions`, `injectEasierQuestion` | requireUser + rateLimit |
 
 ## Attention list
