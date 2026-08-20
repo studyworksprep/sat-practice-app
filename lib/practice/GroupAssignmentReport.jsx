@@ -27,6 +27,7 @@ import { ConceptTags } from './ConceptTags';
 import { QuestionPatternTag } from './QuestionPatternTag';
 import { DesmosSavedStateButton } from './DesmosSavedStateButton';
 import { BrokenButton } from './BrokenButton';
+import { QuestionStatsButton } from './QuestionStatsButton';
 import { ErrorLogButton } from './ErrorLogButton';
 import { FlashcardsButton } from './FlashcardsButton';
 import { QuestionNotes } from './QuestionNotes';
@@ -357,12 +358,19 @@ export function GroupAssignmentReport({
                   />
                 )}
                 {canFlagBroken && !selected.missing && (
-                  <BrokenButton
-                    key={`broken-${selected.questionId}`}
-                    questionId={selected.questionId}
-                    canEdit
-                    lazy
-                  />
+                  <>
+                    <QuestionStatsButton
+                      key={`stats-${selected.questionId}`}
+                      questionId={selected.questionId}
+                      canView
+                    />
+                    <BrokenButton
+                      key={`broken-${selected.questionId}`}
+                      questionId={selected.questionId}
+                      canEdit
+                      lazy
+                    />
+                  </>
                 )}
               </div>
             </div>

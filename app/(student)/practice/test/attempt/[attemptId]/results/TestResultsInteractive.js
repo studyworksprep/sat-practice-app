@@ -20,6 +20,7 @@ import { QuestionRenderer } from '@/lib/ui/QuestionRenderer';
 import { FloatingCalculator } from '@/lib/ui/FloatingCalculator';
 import { ReferenceSheetButton } from '@/lib/ui/ReferenceSheetButton';
 import { BrokenButton } from '@/lib/practice/BrokenButton';
+import { QuestionStatsButton } from '@/lib/practice/QuestionStatsButton';
 import { ConceptTags } from '@/lib/practice/ConceptTags';
 import { QuestionPatternTag } from '@/lib/practice/QuestionPatternTag';
 import { DesmosSavedStateButton } from '@/lib/practice/DesmosSavedStateButton';
@@ -533,12 +534,19 @@ export function TestResultsInteractive({
               )}
               <FlashcardsButton />
               {canFlagBroken && !selected.missing && (
-                <BrokenButton
-                  key={`broken-${selected.questionId}`}
-                  questionId={selected.questionId}
-                  canEdit
-                  lazy
-                />
+                <>
+                  <QuestionStatsButton
+                    key={`stats-${selected.questionId}`}
+                    questionId={selected.questionId}
+                    canView
+                  />
+                  <BrokenButton
+                    key={`broken-${selected.questionId}`}
+                    questionId={selected.questionId}
+                    canEdit
+                    lazy
+                  />
+                </>
               )}
             </div>
           </div>
